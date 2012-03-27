@@ -281,7 +281,9 @@ public class ModuleQueryServlet extends HttpServlet
                         // Store in a temp directory until the pipeline is saved
                         String str = System.getProperty("java.io.tmpdir");
                         File tempDir = new File(str);
-                        File uploadedFile = new File(tempDir, i.getName());
+                        File userTempDir = new File(tempDir, username);
+                        userTempDir.mkdir();
+                        File uploadedFile = new File(userTempDir, i.getName());
                         transferUpload(i, uploadedFile);
 
                         // Return a success response
