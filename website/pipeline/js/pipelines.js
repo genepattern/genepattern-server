@@ -304,14 +304,20 @@ var editor = {
 		return location;
 	},
 
+    modulesInWorkspace: function() {
+        var count = 0
+        for (var i in editor.workspace) {
+            if (editor.workspace[i] instanceof Module) {
+                count++;
+            }
+        }
+
+        return count;
+    },
+
     _tLayoutManager: function(module) {
         // Determine if this is the first module in the layout
-        var firstModule = false;
-        var thisModuleId = module.id;
-        var lastModule = editor.workspace[thisModuleId - 1];
-        if (lastModule === undefined || lastModule === null) {
-            firstModule = true;
-        }
+        var firstModule = editor.modulesInWorkspace() <= 1;
 
         // If this is the first module, please it at the top and return
         if (firstModule) {
