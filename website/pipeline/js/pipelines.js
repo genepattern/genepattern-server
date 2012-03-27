@@ -1,6 +1,6 @@
 /**
  * JavaScript used by the GenePattern Pipeline Editor
- * @requires jQuery, jQuery UI, jsPlumb
+ * @requires jQuery, jQuery UI, jQuery Tools, jsPlumb
  * @author Thorin Tabor
  */
 
@@ -489,6 +489,7 @@ var editor = {
     _cleanAfterSave: function() {
         editor.workspace["pipelineVersionComment"] = "";
         editor.workspace["files"] = [];
+        editor._setPipelineName();
     },
 
     _validatePipeline: function() {
@@ -1742,6 +1743,7 @@ function Module(moduleJSON) {
     };
 
 	this.getPort = function (id) {
+        //noinspection JSDuplicatedDeclaration
         for (var i = 0; i < this.inputEnds.length; i++) {
             if (id == this.inputEnds[i].id) {
                 return this.inputEnds[i];

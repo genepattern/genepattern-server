@@ -36,7 +36,13 @@
     </facet>
     <facet type="hibernate" name="Hibernate">
       <configuration>
-        <datasource-map />
+        <datasource-map>
+          <unit-entry name="hibernate.hsqldb.cfg.xml" />
+          <unit-entry name="hibernate.junit.cfg.xml" />
+          <unit-entry name="hibernateSessionFactory" />
+          <unit-entry name="website:WEB-INF:classes:hibernate.hsqldb.cfg.xml" />
+          <unit-entry name="website:WEB-INF:classes:hibernate.junit.cfg.xml" />
+        </datasource-map>
         <deploymentDescriptor name="hibernate.cfg.xml" url="file://$MODULE_DIR$/src/hibernate.cfg.xml" />
         <deploymentDescriptor name="hibernate.cfg.xml" url="file://$MODULE_DIR$/src/hibernate.hsqldb.cfg.xml" />
         <deploymentDescriptor name="hibernate.cfg.xml" url="file://$MODULE_DIR$/src/hibernate.junit.cfg.xml" />
@@ -97,7 +103,30 @@
     <orderEntry type="library" name="lib7" level="project" />
     <orderEntry type="library" name="lib6" level="project" />
     <orderEntry type="library" name="lib8" level="project" />
-    <orderEntry type="module" module-name="Commons-httpclient-3.0.1" />
+    <orderEntry type="module-library">
+      <library>
+        <CLASSES>
+          <root url="file://$MODULE_DIR$/lib" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+        <jarDirectory url="file://$MODULE_DIR$/lib" recursive="false" />
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library">
+      <library>
+        <CLASSES>
+          <root url="file://$MODULE_DIR$/website/WEB-INF/lib" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES>
+          <root url="file://$MODULE_DIR$/website/WEB-INF/lib" />
+        </SOURCES>
+        <jarDirectory url="file://$MODULE_DIR$/website/WEB-INF/lib" recursive="false" />
+        <jarDirectory url="file://$MODULE_DIR$/website/WEB-INF/lib" recursive="false" type="SOURCES" />
+      </library>
+    </orderEntry>
+    <orderEntry type="library" scope="PROVIDED" name="Tomcat 5" level="application_server_libraries" />
   </component>
 </module>
 
