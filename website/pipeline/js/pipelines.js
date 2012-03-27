@@ -1202,7 +1202,7 @@ var properties = {
         label.appendChild(uploadForm);
 
         if (pwr) {
-            var checkBox = this._addPromptWhenRun(uploadForm, labelText, value, !pwr && disabled);
+            var checkBox = this._addPromptWhenRun(uploadForm, labelText, value, disabled);
         }
 
         uploadForm.innerHTML += this._encodeToHTML(labelText) + " ";
