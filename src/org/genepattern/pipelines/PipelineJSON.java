@@ -78,8 +78,12 @@ public class PipelineJSON extends JSONObject {
         return this.getString(PRIVACY);
     }
     
-    public Integer getVersion() throws JSONException {
-        return this.getInt(VERSION);
+    public String getVersion() throws JSONException {
+        return this.getString(VERSION);
+    }
+
+    public String getVersionComment() throws JSONException {
+        return this.getString(VERSION_COMMENT);
     }
     
     public String getLsid() throws JSONException {
