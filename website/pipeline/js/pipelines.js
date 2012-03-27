@@ -104,10 +104,6 @@ var editor = {
         }
     },
 
-    nameToId: function (name) {
-        return name.replace(/\./g, "");
-    },
-
     _setPipelineName: function() {
         $("#" + this.titleSpan)[0].innerHTML = this.workspace["pipelineName"] + " v" + this.workspace["pipelineVersion"];
     },
@@ -1358,13 +1354,6 @@ var properties = {
         return inputBox;
     },
 
-    _addTargetDiv: function(id, content) {
-        var div = document.createElement("div");
-        div.setAttribute("id", id);
-        div.innerHTML = content;
-        $("#" + this.inputDiv).append(div);
-    },
-
     _addFileInput: function(input) {
         var required = input.required ? "*" : "";
         var displayValue = input.promptWhenRun ? properties.PROMPT_WHEN_RUN : input.value;
@@ -1711,6 +1700,7 @@ function Module(moduleJSON) {
     };
 
     this.getPortByPointer = function (pointer) {
+        //noinspection JSDuplicatedDeclaration
         for (var i = 0; i < this.inputEnds.length; i++) {
             if (pointer == this.inputEnds[i].pointer) {
                 return this.inputEnds[i];
@@ -1727,6 +1717,7 @@ function Module(moduleJSON) {
     };
 
     this.hasPort = function(id) {
+        //noinspection JSDuplicatedDeclaration
         for (var i = 0; i < this.inputEnds.length; i++) {
             if (id == this.inputEnds[i].id) {
                 return true;
@@ -1750,6 +1741,7 @@ function Module(moduleJSON) {
             }
         }
 
+        //noinspection JSDuplicatedDeclaration
         for (var i = 0; i < this.outputEnds.length; i++) {
             if (id == this.outputEnds[i].id) {
                 return this.outputEnds[i];
@@ -1790,6 +1782,7 @@ function Module(moduleJSON) {
 
         // Special case for modules with no output types listed
         if (outputPort.module.outputs.length <= 0) {
+            //noinspection JSDuplicatedDeclaration
             for (var i = 0; i < this.fileInputs.length; i++) {
                 var used = this.fileInputs[i].used;
                 if (!used) {
@@ -1933,15 +1926,10 @@ function Module(moduleJSON) {
         else {
             $("#file_" + this.id).hide();
         }
-    }
+    };
 
     this.hasError = function() {
-        if ($("#error_" + this.id).is(":visible")) {
-            return true;
-        }
-        else {
-            return false;
-        }
+        return $("#error_" + this.id).is(":visible");
     };
 
     this.toggleErrorIcon = function(show) {
@@ -1959,7 +1947,7 @@ function Module(moduleJSON) {
         else {
             $("#error_" + this.id).hide();
         }
-    }
+    };
 
     this.toggleAlertIcon = function(show) {
         if (show === undefined) {
@@ -1976,7 +1964,7 @@ function Module(moduleJSON) {
         else {
             $("#alert_" + this.id).hide();
         }
-    }
+    };
 
 	this._createDiv = function() {
         this.ui = document.createElement("div");
@@ -2183,7 +2171,8 @@ function InputParam(paramJSON) {
 /**
  * Class representing a port for connecting modules
  * @param module - A reference to the parent module
- * @param id - The id of the port
+ * @param pointer - The text to which the port is pointing to in the display of the tooltip
+ * @param param - The InputParam associated with the port
  */
 function Port(module, pointer, param) {
 	this.module = module;
@@ -2315,10 +2304,11 @@ function Port(module, pointer, param) {
             this.pipes[0].remove();
             this.pipes.shift();
         }
-    }
+    };
 
 	this.remove = function () {
         jsPlumb.deleteEndpoint(this.endpoint);
+        //noinspection JSDuplicatedDeclaration
         for (var i = 0; i < this.module.inputEnds.length; i++) {
             if (this.module.inputEnds[i] == this) {
                 this.module.inputEnds.splice(i, 1);
@@ -2327,6 +2317,7 @@ function Port(module, pointer, param) {
             }
         }
 
+        //noinspection JSDuplicatedDeclaration
         for (var i = 0; i < this.module.outputEnds.length; i++) {
             if (this.module.outputEnds[i] == this) {
                 this.module.outputEnds.splice(i, 1);
@@ -2417,7 +2408,7 @@ function Port(module, pointer, param) {
 /**
  * Class an input port on a module
  * @param module - A reference to the parent module
- * @param pointer - The input the port is for
+ * @param param - The InputParam for the input port
  */
 function Input(module, param) {
     var pointer = null;
@@ -2503,6 +2494,7 @@ function Pipe(connection) {
     this.saveProps = function(save) {
         this.outputPort.setPointer(save["Output"]);
         this.inputPort.setPointer(save["Input"]);
+        this.inputPort.param.promptWhenRun = false;
     };
 
     this.prepTransport = function() {
