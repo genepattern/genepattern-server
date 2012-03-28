@@ -136,8 +136,12 @@ public class PipelineQueryServlet extends HttpServlet {
             }
         }
         finally {
-            is.close();
-            os.close();
+            if (is != null) {
+                is.close();
+            }
+            if (os != null) {
+                os.close();
+            }
         }
     }
 	
@@ -188,7 +192,7 @@ public class PipelineQueryServlet extends HttpServlet {
 	    TaskInfo info = TaskInfoCache.instance().getTask(lsid);
 	    PipelineModel pipeline = null;
 	    try {
-            pipeline = PipelineModel.toPipelineModel((String) info.getTaskInfoAttributes().get(SERIALIZED_MODEL));
+            pipeline = PipelineModel.toPipelineModel(info.getTaskInfoAttributes().get(SERIALIZED_MODEL));
             pipeline.setLsid(info.getLsid());
         }
         catch (Exception e) {
@@ -240,7 +244,7 @@ public class PipelineQueryServlet extends HttpServlet {
 	            }
 	            else {
 	                // Otherwise, move on
-	                continue;
+	                // continue;
 	            }
 	        }
 	        else {
@@ -287,7 +291,7 @@ public class PipelineQueryServlet extends HttpServlet {
 	    model.setDescription(pipelineObject.getDescription());
 	    model.setAuthor(pipelineObject.getAuthor());
 	    model.setVersion(pipelineObject.getVersionComment());
-	    model.setPrivacy(pipelineObject.getPrivacy() == GPConstants.PRIVATE);
+	    model.setPrivacy(pipelineObject.getPrivacy().equals(GPConstants.PRIVATE));
 	    
 	    String lsid = blankLsidIfNecessary(pipelineObject.getLsid());
 	    model.setLsid(lsid);
@@ -311,9 +315,8 @@ public class PipelineQueryServlet extends HttpServlet {
 	
 	@SuppressWarnings("unchecked")
     private ParameterInfo setParameter(String pName, String value, ParameterInfo[] taskParams, boolean promptWhenRun) throws Exception {
-        for (int i = 0; i < taskParams.length; i++) {
-            ParameterInfo param = taskParams[i];
-            if (pName.equalsIgnoreCase(param.getName())){
+        for (ParameterInfo param : taskParams) {
+            if (pName.equalsIgnoreCase(param.getName())) {
                 param.setValue(value);
                 param.getAttributes().put("altName", param.getName());
                 param.getAttributes().put("altDescription", param.getDescription());
@@ -343,7 +346,7 @@ public class PipelineQueryServlet extends HttpServlet {
 	            boolean pwr = input.getPromptWhenRun();
 	            promptWhenRun[i] = pwr;
 	            if (pwr) {
-	                ParameterInfo pInfo = setParameter(input.getName(), "", moduleParams, true);
+	                ParameterInfo pInfo = setParameter(input.getName(), taskInfo.getParameterInfoArray()[i].getValue(), moduleParams, true);
 	                model.addInputParameter(taskInfo.getName() + taskNum + "." + input.getName(), pInfo);
 	            }
 	            else {
@@ -400,7 +403,7 @@ public class PipelineQueryServlet extends HttpServlet {
 	        return;
 	    }
 	    
-	    String bundle = (String) request.getParameter("bundle");
+	    String bundle = request.getParameter("bundle");
 	    if (bundle == null) {
 	        log.error("Unable to retrieved the saved pipeline");
 	        sendError(response, "Unable to save the pipeline");
