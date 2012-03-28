@@ -1378,7 +1378,7 @@ var properties = {
         var displayValue = input.promptWhenRun ? properties.PROMPT_WHEN_RUN : input.value;
         var disabled = false;
         if (input.port !== null) {
-            displayValue = "Receiving output " + input.port.pointer + " from " + input.port.module.name;
+            displayValue = "Receiving output " + input.port.pipes[0].outputPort.pointer + " from " + input.port.pipes[0].outputModule.name;
             disabled = true;
         }
         if (input.promptWhenRun) {
