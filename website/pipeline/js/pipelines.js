@@ -138,6 +138,7 @@ var editor = {
         }
 
 		var newIn = input.module.suggestInput(output);
+        newIn.param.makeNotPWR();
 
 		// If there are no valid inputs left return null and cancel the pipe
 		if (newIn === null) {
@@ -1216,7 +1217,7 @@ var properties = {
         label.appendChild(uploadForm);
 
         if (pwr) {
-            var checkBox = this._addPromptWhenRun(uploadForm, labelText, value, disabled);
+            var checkBox = this._addPromptWhenRun(uploadForm, labelText, value, value !== properties.PROMPT_WHEN_RUN && disabled);
         }
 
         uploadForm.innerHTML += this._encodeToHTML(labelText) + " ";
@@ -1645,8 +1646,7 @@ function Module(moduleJSON) {
             var value = save[this.inputs[i].name];
             if (value === null) continue;
             if (value == properties.PROMPT_WHEN_RUN) {
-                this.inputs[i].promptWhenRun = true;
-                this.inputs[i].value = properties.PROMPT_WHEN_RUN;
+                this.inputs[i].makePWR();
             }
             else {
                 this.inputs[i].promptWhenRun = false;
@@ -2167,6 +2167,16 @@ function InputParam(paramJSON) {
     this.makeUnused = function() {
         this.used = false;
         this.port = null;
+    };
+
+    this.makePWR = function() {
+        this.promptWhenRun = true;
+        this.value = properties.PROMPT_WHEN_RUN;
+    };
+
+    this.makeNotPWR = function() {
+        this.promptWhenRun = false;
+        this.value = "";
     };
 
     this.prepTransport = function() {
