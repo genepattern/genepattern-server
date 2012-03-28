@@ -2523,6 +2523,18 @@ function Pipe(connection) {
         this.outputPort.setPointer(save["Output"]);
         this.inputPort.setPointer(save["Input"]);
         this.inputPort.param.promptWhenRun = false;
+
+        // Set the old param's port to null
+        this.inputPort.param.port = null;
+
+        // Get the new param from the module
+        var newParam = this.inputModule.getInputByName(this.inputPort.pointer)
+
+        // Set this port to the new param
+        newParam.port = this.inputPort;
+
+        // Set the new param on this port
+        this.inputPort.param = newParam;
     };
 
     this.prepTransport = function() {
