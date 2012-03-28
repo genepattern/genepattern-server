@@ -1093,7 +1093,11 @@ var properties = {
                 bundle[name] = properties.PROMPT_WHEN_RUN;
             }
             else {
-                bundle[name] = inputs[i].value;
+                var value = inputs[i].value;
+                if (inputs[i].getAttribute("type") == "file") {
+                    value = value.replace("C:\\fakepath\\", "");
+                }
+                bundle[name] = value;
             }
         }
         return bundle;

@@ -16,6 +16,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.net.MalformedURLException;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -350,7 +351,14 @@ public class PipelineQueryServlet extends HttpServlet {
 	                model.addInputParameter(taskInfo.getName() + taskNum + "." + input.getName(), pInfo);
 	            }
 	            else {
-	                setParameter(input.getName(), input.getValue(), moduleParams, false);
+                    // Special case for file paths
+                    if (taskInfo.getParameterInfoArray()[i].getAttributes().get("type").equals("java.io.File") && !input.getValue().equals("")) {
+                        String filePath = "<GenePatternURL>getFile.jsp?task=" + URLEncoder.encode(model.getLsid(), "UTF-8") + "&file=" + URLEncoder.encode(input.getValue(), "UTF-8");
+                        setParameter(input.getName(), filePath, moduleParams, false);
+                    }
+                    else {
+                        setParameter(input.getName(), input.getValue(), moduleParams, false);
+                    }
 	            }
 	        }
 	        
@@ -429,10 +437,16 @@ public class PipelineQueryServlet extends HttpServlet {
         
         // Build up the pipeline model to save
         PipelineModel model = null;
+        PipelineCreationHelper controller = null;
         try {
             model = new PipelineModel();
             model.setUserID(username);
+
             setPipelineInfo(model, pipelineObject);
+
+            controller = new PipelineCreationHelper(model);
+            controller.generateLSID();
+
             setModuleInfo(model, modulesList);
             setPipesInfo(model, modulesList, pipesObject);
         }
@@ -445,8 +459,6 @@ public class PipelineQueryServlet extends HttpServlet {
         // Generate a task from the pipeline model and install it
         String newLsid = null;
         try {
-            PipelineCreationHelper controller = new PipelineCreationHelper(model);
-            controller.generateLSID();
             newLsid = controller.generateTask();
         }
         catch (TaskInstallationException e) {
