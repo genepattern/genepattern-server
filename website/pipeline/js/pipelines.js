@@ -1582,6 +1582,33 @@ function Module(moduleJSON) {
 	this.ui = null;
     this.alerts = {};
 
+    this.freePosition = function(isOutput) {
+        var correctList = null;
+        if (isOutput) {
+            correctList = this.outputEnds;
+        }
+        else {
+            correctList = this.inputEnds;
+        }
+        var position = 0.1;
+        while (true) {
+            var notGood = false;
+            for (var i in correctList) {
+                var testPos = correctList[i].position;
+                if (testPos === position) {
+                    notGood = true;
+                }
+            }
+
+            if (!notGood) {
+                return position;
+            }
+            else {
+                position += 0.1;
+            }
+        }
+    };
+
     this.getInputModules = function() {
         var inputModules = new Array();
         for (var i = 0; i < this.inputEnds.length; i++) {
@@ -2253,6 +2280,7 @@ function Port(module, pointer, param) {
 	this.master = pointer == "master";
     this.param = param;
 	this.type = null;
+    this.position = null;
 	this.endpoint = null;
 	this.tooltip = null;
 	this.pipes = [];
@@ -2262,15 +2290,6 @@ function Port(module, pointer, param) {
         var OUTPUT = { isSource: true, paintStyle: { fillStyle: "black" } };
         var MASTER_INPUT = { isTarget: true, paintStyle: { fillStyle: "blue" } };
         var INPUT = { isTarget: true, paintStyle: { fillStyle: "black", outlineColor:"black", outlineWidth: 0 } };
-
-        // Get correct list on module for type
-        var correctList = null;
-        if (this.isOutput()) {
-            correctList = this.module.outputEnds;
-        }
-        else {
-            correctList = this.module.inputEnds;
-        }
 
         // Get the correct base style
         var baseStyle = null;
@@ -2301,16 +2320,15 @@ function Port(module, pointer, param) {
         }
 
         // Calculate position
-        var index = correctList.length;
-        var position = 0.1 * (index + 1);
+        this.position = this.module.freePosition(this.isOutput()); // 0.1 * (index + 1);
 
         // Get the correct position array
         var posArray = null;
         if (this.isOutput()) {
-            posArray = [position, 1, 0, 1];
+            posArray = [this.position, 1, 0, 1];
         }
         else {
-            posArray = [position, 0, 0, -1];
+            posArray = [this.position, 0, 0, -1];
         }
 
         // Get the correct number of max connections
