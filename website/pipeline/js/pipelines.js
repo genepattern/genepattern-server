@@ -59,6 +59,14 @@ var editor = {
             properties.displayPipeline();
             properties.show();
         });
+
+        window.onbeforeunload = function (event) {
+            var message = "If you leave all pipeline changes will be lost.", event = event || window.event;
+            // For IE and Firefox
+            if (event) { event.returnValue = message; }
+            // For Safari
+            return message;
+        };
 	},
 
     updateProgressBar: function(setToValue) {
