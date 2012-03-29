@@ -704,13 +704,24 @@ var library = {
     },
 
     _addCategoryModules: function() {
+        // Sort Categories
+        var sortedCategories = new Array();
         for (var cat in library.moduleCategoryMap) {
+            sortedCategories.push(cat);
+        }
+        sortedCategories = library._sortAlphabetically(sortedCategories);
+
+        for (var iCat = 0; iCat < sortedCategories.length; iCat++) {
+            var cat = sortedCategories[iCat];
             var catDiv = document.createElement("div");
             catDiv.setAttribute("class", "categoryHeader");
             catDiv.innerHTML = properties._encodeToHTML(cat);
 
-            for (var i = 0; i < library.moduleCategoryMap[cat].length; i++) {
-                var module = library.moduleCategoryMap[cat][i];
+            // Sort modules in the category
+            var moduleArray = library._sortModulesAlphabetically(library.moduleCategoryMap[cat]);
+
+            for (var i = 0; i < moduleArray.length; i++) {
+                var module = moduleArray[i];
                 var modDiv = document.createElement("div");
                 modDiv.setAttribute("class", "moduleBullet");
                 modDiv.setAttribute("name", module.lsid);
@@ -921,6 +932,14 @@ var library = {
         return $(stringArray).sort(function(a, b) {
             var compA = a.toUpperCase();
             var compB = b.toUpperCase();
+            return (compA < compB) ? -1 : (compA > compB) ? 1 : 0;
+        });
+    },
+
+    _sortModulesAlphabetically : function(moduleArray) {
+        return $(moduleArray).sort(function(a, b) {
+            var compA = a.name.toUpperCase();
+            var compB = b.name.toUpperCase();
             return (compA < compB) ? -1 : (compA > compB) ? 1 : 0;
         });
     },
