@@ -1842,16 +1842,14 @@ function Module(moduleJSON) {
             }
         }
 
-        // Special case for modules with no output types listed
-        if (outputPort.module.outputs.length <= 0) {
-            //noinspection JSDuplicatedDeclaration
-            for (var i = 0; i < this.fileInputs.length; i++) {
-                var used = this.fileInputs[i].used;
-                if (!used) {
-                    var inputPort = this.addInput(this.fileInputs[i].name);
-                    this.fileInputs[i].makeUsed(inputPort);
-                    return inputPort;
-                }
+        // Special case for when there is no overlap involved, default to first match
+        //noinspection JSDuplicatedDeclaration
+        for (var i = 0; i < this.fileInputs.length; i++) {
+            var used = this.fileInputs[i].used;
+            if (!used) {
+                var inputPort = this.addInput(this.fileInputs[i].name);
+                this.fileInputs[i].makeUsed(inputPort);
+                return inputPort;
             }
         }
 
