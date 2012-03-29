@@ -1,5 +1,5 @@
 /*
- * Copyright © 2012 The Broad Institute, Inc.
+ * Copyright 2012 The Broad Institute, Inc.
  * SOFTWARE COPYRIGHT NOTICE
  * This software and its documentation are the copyright of the Broad Institute, Inc. All rights are reserved.
  *
@@ -2217,8 +2217,7 @@ function Port(module, pointer, param) {
         var MASTER_OUTPUT = { isSource: true, paintStyle: { fillStyle: "blue" } };
         var OUTPUT = { isSource: true, paintStyle: { fillStyle: "black" } };
         var MASTER_INPUT = { isTarget: true, paintStyle: { fillStyle: "blue" } };
-        var REQUIRED_INPUT = { isTarget: true, paintStyle: { fillStyle: "black", outlineColor:"black", outlineWidth: 0 } };
-        var OPTIONAL_INPUT = { isTarget: true, paintStyle: { fillStyle: "lightgray", outlineColor:"black", outlineWidth: 0 } };
+        var INPUT = { isTarget: true, paintStyle: { fillStyle: "black", outlineColor:"black", outlineWidth: 0 } };
 
         // Get correct list on module for type
         var correctList = null;
@@ -2244,12 +2243,7 @@ function Port(module, pointer, param) {
                 baseStyle = MASTER_INPUT;
             }
             else {
-                if (this.isRequired()) {
-                    baseStyle = REQUIRED_INPUT;
-                }
-                else {
-                    baseStyle = OPTIONAL_INPUT;
-                }
+                baseStyle = INPUT;
             }
         }
 
@@ -2292,6 +2286,11 @@ function Port(module, pointer, param) {
         });
         this.endpoint.canvas.setAttribute("name", prefix + this.id + "_" + this.module.id);
         this.endpoint.canvas.setAttribute("id", prefix + this.id + "_" + this.module.id);
+
+        // Add optional class if necessary
+        if (!this.isOutput() && !this.master && !this.isRequired()) {
+            $(this.endpoint.canvas).addClass("optionalPort");
+        }
 
         // Add tooltip
         this._createTooltip(this.pointer);
@@ -2524,6 +2523,9 @@ function Pipe(connection) {
         this.inputPort.setPointer(save["Input"]);
         this.inputPort.param.promptWhenRun = false;
 
+        // Determine if the old port was required or not
+        var oldReq = this.inputPort.isRequired();
+
         // Set the old param's port to null
         this.inputPort.param.port = null;
 
@@ -2535,6 +2537,17 @@ function Pipe(connection) {
 
         // Set the new param on this port
         this.inputPort.param = newParam;
+
+        // Determine if the new port is required or not
+        var newReq = this.inputPort.isRequired();
+
+        // Flip the port's display between optional and required if necessary
+        if (oldReq && !newReq) {
+            $(this.inputPort.endpoint.canvas).addClass("optionalPort");
+        }
+        if (!oldReq && newReq) {
+            $(this.inputPort.endpoint.canvas).removeClass("optionalPort");
+        }
     };
 
     this.prepTransport = function() {
