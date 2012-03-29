@@ -87,17 +87,21 @@ function saveModule()
         url: "/gp/ModuleCreator/save",
         data: { "bundle" : JSON.stringify(json) },
         success: function(response) {
-            var message = response["MESSAGE"];
             var error = response["ERROR"];
             var newLsid = response["lsid"];
             if (error !== undefined && error !== null) {
                 alert(error);
             }
-            if (message !== undefined && message !== null) {
-                alert(message);
-            }
             // Update the LSID upon successful save
-            if (newLsid !== undefined && newLsid !== null) {
+            if (newLsid !== undefined && newLsid !== null)
+            {
+                var vindex = newLsid.lastIndexOf(":");
+                if(vindex != -1)
+                {
+                    var version = newLsid.substring(vindex+1, newLsid.length);
+                    var modtitle = $("#modtitle").val();
+                    alert(modtitle + " version " + version + " saved");
+                }
                 module_editor.lsid = newLsid;
                 $("#lsid").empty().append("LSID: " + newLsid);
                 module_editor.uploadedfiles = [];
