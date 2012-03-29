@@ -1433,6 +1433,18 @@ var properties = {
         }
     },
 
+    _disableDropdownValues: function(dropdown, disabledArray) {
+        for (var i = 0; i < dropdown.length; i++) {
+            var option = dropdown[i];
+            var value = option.value;
+            for (var j in disabledArray) {
+                if (disabledArray[j] === value) {
+                    option.setAttribute("disabled", "true");
+                }
+            }
+        }
+    },
+
     displayModule: function(module) {
         // Clean the old selection
         this._deselectOldSelection();
@@ -1486,13 +1498,20 @@ var properties = {
 
         var inputsToList = new Array();
         var selectedInput = pipe.inputModule.fileInputs[0];
+        var disabledInputs = new Array();
         for (var i = 0; i < pipe.inputModule.fileInputs.length; i++) {
             inputsToList[inputsToList.length] = pipe.inputModule.fileInputs[i].name;
             if (inSelected == pipe.inputModule.fileInputs[i].name) {
                 selectedInput = pipe.inputModule.fileInputs[i];
             }
+            if (pipe.inputModule.fileInputs[i].used && pipe.inputModule.fileInputs[i].name !== inSelected) {
+                disabledInputs[disabledInputs.length] = pipe.inputModule.fileInputs[i].name;
+            }
         }
         var input = this._addDropDown("Input", inputsToList, inSelected, selectedInput.description, false);
+
+        // Disable already selected inputs in the dropdown
+        properties._disableDropdownValues(input, disabledInputs);
 
         // Display the correct description upon dropdown selection
         $(input).change(function() {
@@ -2551,20 +2570,23 @@ function Pipe(connection) {
         // Determine if the old port was required or not
         var oldReq = this.inputPort.isRequired();
 
-        // Set the old param's port to null
-        this.inputPort.param.port = null;
+        // Set the old param to no longer used
+        this.inputPort.param.makeUnused();
 
         // Get the new param from the module
-        var newParam = this.inputModule.getInputByName(this.inputPort.pointer)
+        var newParam = this.inputModule.getInputByName(this.inputPort.pointer);
 
-        // Set this port to the new param
-        newParam.port = this.inputPort;
+        // Set this port to the new param and mark it used
+        newParam.makeUsed(this.inputPort);
 
         // Set the new param on this port
         this.inputPort.param = newParam;
 
         // Determine if the new port is required or not
         var newReq = this.inputPort.isRequired();
+
+        // Check the input module for errors now
+        this.inputModule.checkForWarnings();
 
         // Flip the port's display between optional and required if necessary
         if (oldReq && !newReq) {
