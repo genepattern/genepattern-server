@@ -138,13 +138,15 @@ var editor = {
         }
 
 		var newIn = input.module.suggestInput(output);
-        newIn.param.makeNotPWR();
 
 		// If there are no valid inputs left return null and cancel the pipe
 		if (newIn === null) {
 			output.module.getMasterOutput().detachAll();
 			return;
 		}
+
+        // If the new input is already prompt when run, make it not PWR
+        newIn.param.makeNotPWR();
 
 		// Select the correct output port
 		var newOut = null;
