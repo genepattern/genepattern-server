@@ -1580,13 +1580,6 @@ jQuery(document).ready(function() {
         $(this).attr('name', "name" + module_editor.supportfileinputs.length);
         var parent = $(this).parent();
         parent.append('<input type="file" class="supportfile">');
-        //var fname = "form"+module_editor.supportfileinputs.length +1;
-
-        //var uploadform = $('<form name="'+ fname + '" action="/gp/ModuleCreator/upload" method="post" ' +
-        //                             'enctype="multipart/form-data" class="fileuploadform"></form>');
-        //var name = "file"+module_editor.supportfileinputs.length +1;
-        //uploadform.append('<input type="file" name="' + name + '" class="supportfile">');
-        //parent.append(uploadform);
         $(this).detach();
 
         module_editor.supportfileinputs.push($(this));
@@ -1598,4 +1591,14 @@ jQuery(document).ready(function() {
     });
 
     $("#helpbtn").button();
+
+    $("#modtitle").change(function()
+    {
+        var modtitle = $("#modtitle").val();
+        if(modtitle.indexOf(" ") != -1)
+        {
+            modtitle = modtitle.replace(" ", ".");
+            $("#modtitle").val(modtitle);
+        }
+    });
 });
