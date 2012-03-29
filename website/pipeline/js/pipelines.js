@@ -1204,6 +1204,7 @@ var properties = {
         }
         parentDiv.appendChild(checkBox);
         parentDiv.innerHTML += " ";
+
         return checkBox;
     },
 
@@ -1310,7 +1311,7 @@ var properties = {
         var label = document.createElement("div");
 
         if (pwr) {
-            this._addPromptWhenRun(label, labelText, selected);
+            var checkBox = this._addPromptWhenRun(label, labelText, selected);
         }
 
         label.innerHTML += this._encodeToHTML(labelText) + " ";
@@ -1341,6 +1342,18 @@ var properties = {
         var hr = document.createElement("hr");
         $("#" + this.inputDiv).append(hr);
 
+        // When the prompt when run checkbox is checked, enable or disable upload
+        if (checkBox !== undefined && checkBox !== null) {
+            $(".propertyCheckBox[type='checkbox'][name='" + labelText + "']").change(function() {
+                if ($(this).is(":checked")) {
+                    $("select.propertyValue[name='" + labelText + "']")[0].setAttribute("disabled", "true");
+                }
+                else {
+                    $("select.propertyValue[name='" + labelText + "']")[0].removeAttribute("disabled");
+                }
+            });
+        }
+
         return select;
     },
 
@@ -1348,7 +1361,7 @@ var properties = {
         var label = document.createElement("div");
 
         if (pwr) {
-            this._addPromptWhenRun(label, labelText, value);
+            var checkBox = this._addPromptWhenRun(label, labelText, value);
         }
 
         label.innerHTML += this._encodeToHTML(labelText) + " ";
@@ -1369,6 +1382,18 @@ var properties = {
 
         var hr = document.createElement("hr");
         $("#" + this.inputDiv).append(hr);
+
+        // When the prompt when run checkbox is checked, enable or disable upload
+        if (checkBox !== undefined && checkBox !== null) {
+            $(".propertyCheckBox[type='checkbox'][name='" + labelText + "']").change(function() {
+                if ($(this).is(":checked")) {
+                    $(".propertyValue[type='text'][name='" + labelText + "']")[0].setAttribute("disabled", "true");
+                }
+                else {
+                    $(".propertyValue[type='text'][name='" + labelText + "']")[0].removeAttribute("disabled");
+                }
+            });
+        }
 
         return inputBox;
     },
