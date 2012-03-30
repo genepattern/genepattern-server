@@ -70,16 +70,21 @@ var editor = {
         };
 	},
 
-    showDialog: function(title, message) {
+    showDialog: function(title, message, button) {
         var alert = document.createElement("div");
         var list = document.createElement("ul");
 
         alert.innerHTML = message;
 
+        if (button === undefined || button === null) {
+            button = { "OK": function() { $(this).dialog("close"); }};
+        }
+
         $(alert).dialog({
             modal: true,
             width: 400,
             title: title,
+            buttons: button,
             close: function(event) {
                 $(this).dialog("destroy");
                 $(this).remove();
@@ -599,7 +604,7 @@ var editor = {
 
 	save: function() {
         if (editor.hasErrors()) {
-            alert("The pipeline being edited has errors.  Please fix the errors before saving.");
+            editor.showDialog("ERROR", "The pipeline being edited has errors.  Please fix the errors before saving.");
             return;
         }
 
@@ -613,10 +618,18 @@ var editor = {
                 var error = response["ERROR"];
                 var newLsid = response["lsid"];
                 if (error !== undefined && error !== null) {
-                    editor.showDialog("ERROR", "<div style='text-align: center;'>" + error + "</div>");
+                    editor.showDialog("ERROR", "<div style='text-align: center; font-weight: bold;'>" + error + "</div>");
                 }
                 if (message !== undefined && message !== null) {
-                    editor.showDialog("Save Pipeline Message", "<div style='text-align: center;'>" + message + "</div>");
+                    editor.showDialog("Save Pipeline Message",
+                        "<div style='text-align: center; font-weight: bold;'>" + message + "</div>", {
+                            "Run Pipeline": function() {
+                                self.location="/gp/pages/index.jsf?lsid=" + newLsid;
+                            },
+                            "OK": function() {
+                                $(this).dialog("close");
+                            }
+                        });
                 }
                 // Update the LSID upon successful save
                 if (newLsid !== undefined && newLsid !== null) {
