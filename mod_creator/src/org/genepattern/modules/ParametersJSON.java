@@ -35,7 +35,6 @@ public class ParametersJSON extends JSONObject {
     public static final String NAME = "name";
     public static final String DESCRIPTION = "description";
     public static final String TYPE = "TYPE";
-    public static final String MODE = "MODE";
     //parameter type i.e. java.lang.String - different from TYPE above
     public static final String type = "type";
     public static final String DEFAULT_VALUE = "dvalue";
@@ -51,7 +50,6 @@ public class ParametersJSON extends JSONObject {
             this.put(NAME, object.get(NAME));
             this.put(DESCRIPTION, object.get(DESCRIPTION));
             this.put(TYPE, object.get(TYPE));
-            this.put(MODE, object.get(MODE));
             this.put(FILEFORMAT, object.get(FILEFORMAT));
             this.put(DEFAULT_VALUE, object.get(DEFAULT_VALUE));
             this.put(OPTIONAL, object.get(OPTIONAL));
@@ -81,8 +79,7 @@ public class ParametersJSON extends JSONObject {
             this.put(NAME, pInfo.getName());
             this.put(DESCRIPTION, pInfo.getDescription());
             this.put(type, pAttrs.get(GPConstants.PARAM_INFO_TYPE[0]));
-            this.put(TYPE, pAttrs.get(ParameterInfo.TYPE));            
-            this.put(MODE, pAttrs.get(ParameterInfo.MODE));
+            this.put(TYPE, pAttrs.get(ParameterInfo.TYPE));
             this.put(FILEFORMAT, pAttrs.get(GPConstants.FILE_FORMAT));
             this.put(DEFAULT_VALUE, pInfo.getDefaultValue());
             this.put(PREFIX, pAttrs.get(GPConstants.PARAM_INFO_PREFIX[0]));

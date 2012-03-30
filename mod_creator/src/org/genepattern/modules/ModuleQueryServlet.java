@@ -376,6 +376,13 @@ public class ModuleQueryServlet extends HttpServlet
                     attributes.put(GPConstants.PARAM_INFO_TYPE[0], GPConstants.PARAM_INFO_TYPE_TEXT);
                 }
 
+                if(parameterJSON.getType().equalsIgnoreCase("file"))
+                {
+                    attributes.put(GPConstants.PARAM_INFO_TYPE[0], GPConstants.PARAM_INFO_TYPE_INPUT_FILE);
+                    attributes.put(ParameterInfo.TYPE, ParameterInfo.FILE_TYPE);
+                    attributes.put(ParameterInfo.MODE, ParameterInfo.INPUT_MODE);
+                }
+                
                 if(parameterJSON.isOptional())
                 {
                     attributes.put(GPConstants.PARAM_INFO_OPTIONAL[0], GPConstants.PARAM_INFO_OPTIONAL[1]);
