@@ -55,9 +55,10 @@ var editor = {
 		});
 
         editor._setPipelineName();
-        $("#pipelinePencil").click(function() {
+        $("#pipelinePencil").click(function(event) {
             properties.displayPipeline();
             properties.show();
+            event.stopPropagation();
         });
 
         window.onbeforeunload = function (event) {
@@ -68,6 +69,23 @@ var editor = {
             return message;
         };
 	},
+
+    showDialog: function(title, message) {
+        var alert = document.createElement("div");
+        var list = document.createElement("ul");
+
+        alert.innerHTML = message;
+
+        $(alert).dialog({
+            modal: true,
+            width: 400,
+            title: title,
+            close: function(event) {
+                $(this).dialog("destroy");
+                $(this).remove();
+            }
+        });
+    },
 
     updateProgressBar: function(setToValue) {
         if (setToValue === undefined || setToValue == null) {
@@ -83,6 +101,10 @@ var editor = {
         var lsid = editor._loadGetLsid();
         if (lsid !== null) {
             editor.load(lsid);
+        }
+        else {
+            properties.displayPipeline();
+            properties.show();
         }
     },
 
@@ -567,6 +589,8 @@ var editor = {
                     editor._loadModules(response["modules"]);
                     editor._loadPipes(response["pipes"]);
                     editor._validatePipeline();
+                    properties.displayPipeline();
+                    properties.show();
                 }
             },
             dataType: "json"
@@ -589,10 +613,10 @@ var editor = {
                 var error = response["ERROR"];
                 var newLsid = response["lsid"];
                 if (error !== undefined && error !== null) {
-                    alert(error);
+                    editor.showDialog("ERROR", "<div style='text-align: center;'>" + error + "</div>");
                 }
                 if (message !== undefined && message !== null) {
-                    alert(message);
+                    editor.showDialog("Save Pipeline Message", "<div style='text-align: center;'>" + message + "</div>");
                 }
                 // Update the LSID upon successful save
                 if (newLsid !== undefined && newLsid !== null) {
@@ -1058,19 +1082,26 @@ var properties = {
     inputDiv: "propertiesInput",
     buttonDiv: "propertiesSubmit",
     current: null,
+    displayed: false,
 
     init: function() {
+        $("html").click(function() {
+            properties.hide();
+        });
+
+        $("#" + properties.div).click(function(event) {
+            event.stopPropagation();
+        });
+
         $("#propertiesOk").button();
         $("#propertiesCancel").button();
 
-        $("#propertiesOk").click(function () {
-            properties._deselectOldSelection();
+        $("#propertiesOk").click(function() {
             properties.saveToModel();
             properties.hide();
         });
 
-        $("#propertiesCancel").click(function () {
-            properties._deselectOldSelection();
+        $("#propertiesCancel").click(function() {
             properties.hide();
         });
     },
@@ -1142,11 +1173,16 @@ var properties = {
     },
 
     hide: function() {
-        $("#properties").hide("slide", { direction: "right" }, 500);
+        properties._deselectOldSelection();
+        if (this.displayed) {
+            $("#properties").hide("slide", { direction: "right" }, 500);
+        }
+        this.displayed = false;
     },
 
     show: function() {
         $("#properties").show("slide", { direction: "right" }, 500);
+        this.displayed = true;
     },
 
     _encodeToHTML: function(text) {
@@ -1946,13 +1982,6 @@ function Module(moduleJSON) {
         propertiesButton.setAttribute("alt", "Edit Properties");
         appendTo.appendChild(propertiesButton);
 
-        var deleteButton = document.createElement("img");
-        deleteButton.setAttribute("id", "del_" + baseId);
-        deleteButton.setAttribute("src", "images/delete.gif");
-        deleteButton.setAttribute("class", "deleteButton");
-        deleteButton.setAttribute("alt", "Delete Module");
-        appendTo.appendChild(deleteButton);
-
         var alertIcon = document.createElement("img");
         alertIcon.setAttribute("id", "alert_" + this.id);
         alertIcon.setAttribute("src", "images/alert.gif");
@@ -1968,12 +1997,22 @@ function Module(moduleJSON) {
         errorIcon.setAttribute("alt", "Module Error");
         errorIcon.style.display = "none";
         appendTo.appendChild(errorIcon);
+
+        appendTo.innerHTML += "&#160;&#160;&#160;";
+
+        var deleteButton = document.createElement("img");
+        deleteButton.setAttribute("id", "del_" + baseId);
+        deleteButton.setAttribute("src", "images/delete.gif");
+        deleteButton.setAttribute("class", "deleteButton");
+        deleteButton.setAttribute("alt", "Delete Module");
+        appendTo.appendChild(deleteButton);
     };
 
 	this._addModuleButtonCalls = function () {
-        $("#" + "prop_" + this.id).click(function () {
+        $("#" + "prop_" + this.id).click(function (event) {
             properties.displayModule(editor.getParentModule(this.id));
             properties.show();
+            event.stopPropagation();
         });
 
         $("#" + "del_" + this.id).click(function () {
@@ -2464,13 +2503,14 @@ function Port(module, pointer, param) {
     };
 
 	this._addTooltipButtonCalls = function (id) {
-        $("#" + "prop_" + id).click(function () {
+        $("#" + "prop_" + id).click(function(event) {
             var port = editor.getParentPort(this);
             properties.displayPipe(port.pipes[0]);
             properties.show();
+            event.stopPropagation();
         });
 
-        $("#" + "del_" + id).click(function () {
+        $("#" + "del_" + id).click(function() {
             var port = editor.getParentPort(this);
             port.removePipes();
         });
@@ -2517,7 +2557,7 @@ function Port(module, pointer, param) {
 		}
 		$("#" + editor.div)[0].appendChild(this.tooltip);
 		if (!this.master && this.isInput()) { this._addTooltipButtonCalls(this.tooltip.getAttribute("id")); }
-		$("#" + this.endpoint.canvas.id).tooltip({"tip": "#" + this.tooltip.id, "offset": [-100, -195]});
+		$("#" + this.endpoint.canvas.id).tooltip({"tip": "#" + this.tooltip.id, "offset": [-105, -195]});
 	};
 }
 

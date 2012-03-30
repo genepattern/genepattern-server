@@ -14,14 +14,12 @@
 	position:absolute;
 	z-index: 3000; 
 	top: 5px;
-	left: 0px;
+	left: 0;
 	width: 175px;
     min-height: 100%;
     background-color: #DFDFB9;
-    border-style: solid;
-    border-color: #CCCC99;
-	border-width: 2px;
-	padding: 5px;
+    border: 2px solid #CCCC99;
+    padding: 5px;
 }
 
 .categoryHeader {
@@ -56,13 +54,11 @@ a:hover {
     position:absolute;
     z-index: 3001;
     top: 47px;
-    left: 0px;
+    left: 0;
     width: 99%;
     height: 20px;
     background-color: #666699;
-    border-style: solid;
-    border-color: #FFFFFF;
-    border-width: 1px;
+    border: 1px solid #FFFFFF;
     padding: 5px;
     overflow-x: hidden;
     overflow: hidden;
@@ -98,15 +94,13 @@ a:hover {
 	display: none;
 	position: absolute;
 	z-index: 4000;
-    top: 0px;
-	right: 0px;
+    top: 0;
+	right: 0;
     min-height: 100%;
 	width: 400px;
     background-color: #EBEBCE;
-    border-style: solid;
-    border-color: #CCCC99;
-	border-width: 2px;
-	padding: 5px;
+    border: 2px solid #CCCC99;
+    padding: 5px;
 }
 
 #propertiesVersion {
@@ -129,7 +123,7 @@ a:hover {
 }
 
 ._jsPlumb_endpoint {
-	z-index: 1999;
+	z-index: 2002;
 }
 
 .libraryModuleButton {
@@ -155,44 +149,34 @@ a:hover {
 }
 
 .propertiesButton {
-	border-style: solid;
-	border-width: 0px;
-	border-color: #999999;
-	padding: 5px;
+    border: 0px solid #999999;
+    padding: 5px;
 	height: 16px;
     cursor: pointer;
 }
 
 .deleteButton {
-	border-style: solid;
-	border-width: 0px;
-	border-color: #999999;
-	padding: 5px;
+    border: 0px solid #999999;
+    padding: 5px;
 	height: 16px;
     cursor: pointer;
 }
 
 .fileButton {
-    border-style: solid;
-    border-width: 0px;
-    border-color: #999999;
+    border: 0px solid #999999;
     padding: 5px;
     height: 16px;
 }
 
 .alertButton {
-    border-style: solid;
-    border-width: 0px;
-    border-color: #999999;
+    border: 0px solid #999999;
     padding: 5px;
     height: 16px;
     cursor: pointer;
 }
 
 .errorButton {
-    border-style: solid;
-    border-width: 0px;
-    border-color: #999999;
+    border: 0px solid #999999;
     padding: 5px;
     height: 16px;
     cursor: pointer;
@@ -205,11 +189,9 @@ a:hover {
 	width: 250px;
 	text-align: center;
 	opacity:0.8; 
-	filter:alpha(opacity=80); 
-	border-style: solid;
-	border-color: #00FF00;
-	border-width: 2px;
-	background-color: #CCFFCC;
+	filter:alpha(opacity=80);
+    border: 2px solid #00FF00;
+    background-color: #CCFFCC;
     font-size: 14px;
 }
 
@@ -225,6 +207,10 @@ a:hover {
 
 .module.ui-selected {
 	border-color: #FF0000;
+}
+
+._jsPlumb_connector {
+    z-index: 2001;
 }
 
 ._jsPlumb_connector.ui-selected path {
