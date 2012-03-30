@@ -617,16 +617,17 @@ var editor = {
                 var message = response["MESSAGE"];
                 var error = response["ERROR"];
                 var newLsid = response["lsid"];
+                var newVersion = editor.extractLsidVersion(newLsid);
                 if (error !== undefined && error !== null) {
                     editor.showDialog("ERROR", "<div style='text-align: center; font-weight: bold;'>" + error + "</div>");
                 }
                 if (message !== undefined && message !== null) {
                     editor.showDialog("Save Pipeline Message",
-                        "<div style='text-align: center; font-weight: bold;'>" + message + "</div>", {
+                        "<div style='text-align: center; font-weight: bold;'>" + message + "<br />Version: " + newVersion + "</div>", {
                             "Run Pipeline": function() {
                                 self.location="/gp/pages/index.jsf?lsid=" + newLsid;
                             },
-                            "OK": function() {
+                            "Close": function() {
                                 $(this).dialog("close");
                             }
                         });
