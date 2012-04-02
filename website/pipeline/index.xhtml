@@ -23,35 +23,49 @@
 		<script src="js/jquery.tools.min.js" type="text/javascript" />
         <script src="js/jquery.iframe-post-form.js" type="text/javascript" />
 		<script src="js/pipelines.js" type="text/javascript" />
+
+        <script type="text/javascript" language="javascript">
+            var contextRoot = '#{facesContext.externalContext.requestContextPath}';
+            var createTaskAllowed = #{authorizationBean.createModuleAllowed};
+            var createPublicPipelineAllowed = #{authorizationBean.createPublicPipelineAllowed};
+            var createPrivatePipelineAllowed = #{authorizationBean.createPrivatePipelineAllowed};
+            var createPublicSuiteAllowed = #{authorizationBean.createPublicSuiteAllowed};
+            var createPrivateSuiteAllowed = #{authorizationBean.createPrivateSuiteAllowed};
+        </script>
+        <script type="text/javascript" src="/gp/js/prototype.js"/>
+        <script type="text/javascript" src="/gp/js/genepattern.js"/>
+        <script type="text/javascript" src="/gp/js/mm_menu.js"/>
+        <script type="text/javascript" src="/gp/js/mainMenu.js"/>
 	</head>
 	<body onunload="jsPlumb.unload();">
+        <script language="JavaScript1.2" type="text/javascript">
+            var agt = navigator.userAgent.toLowerCase();
+            var isSafari2 = agt.indexOf("safari/4") != -1;
+            var x = isSafari2 ? -10 : 0;
+            var y =  isSafari2 ? 8 : 18;
+            mmLoadMenus();
+        </script>
+
         <!-- top band with the logo -->
         <div id="topband" class="topband">
             <a href="/gp/pages/index.jsf" target="_top">
                 <img src="/gp/images/GP-logo.gif" alt="GenePattern" height="48" style="border: 0;" width="229" />
             </a>
         </div>
-        <div id="titleBar">
-            <span id="titleSpan" /> <img id="pipelinePencil" src="images/pencil.gif" class="pencil" alt="Edit" />
-            <div id="saveLoadDiv">
-                <!-- <button id="newButton" class="saveLoadButton">New</button>
-                <button id="loadButton" class="saveLoadButton">Load</button> -->
-                <button id="saveButton" class="saveLoadButton">Save</button>
-                <button id="revertButton" class="saveLoadButton">Revert</button>
-            </div>
-        </div>
 
-        <!-- horizontal navigation band
+        <!-- horizontal navigation band -->
         <div id="navband1" class="navband1" style="white-space: nowrap;">
-            <a name="link17" id="link6" href="/gp/pages/index.jsf" onclick="MM_showMenu(window.mm_menu_tasks,x,y,null,'link17')" onmouseover="MM_showMenu(window.mm_menu_tasks,x,y,null,'link17')" onmouseout="MM_startTimeout();">Modules &amp; Pipelines</a> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-            <a name="link14" id="link9" href="/gp/pages/manageSuite.jsf" onclick="MM_showMenu(window.mm_menu_suites,x,y,null,'link14')" onmouseover="MM_showMenu(window.mm_menu_suites,x,y,null,'link14')" onmouseout="MM_startTimeout();">Suites</a> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-            <a name="link15" id="link10" href="/gp/jobResults" onclick="MM_showMenu(window.mm_menu_jobResults,x,y,null,'link15')" onmouseover="MM_showMenu(window.mm_menu_jobResults,x,y,null,'link15')" onmouseout="MM_startTimeout();">Job Results</a> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-            <a name="link12" id="link3" href="/gp/pages/index.jsf?splash=resources" onclick="MM_showMenu(window.mm_menu_resources,x,y,null,'link12')" onmouseover="MM_showMenu(window.mm_menu_resources,x,y,null,'link12')" onmouseout="MM_startTimeout();">Resources</a> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-            <a name="link2" id="link5" href="/gp/pages/index.jsf?splash=downloads" onclick="MM_showMenu(window.mm_menu_downloads,x,y,null,'link2')" onmouseover="MM_showMenu(window.mm_menu_downloads,x,y,null,'link2')" onmouseout="MM_startTimeout();">Downloads</a> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-            <a name="link13" id="link4" href="/gp/pages/serverSettings.jsf" onclick="MM_showMenu(window.mm_menu_administration,x,y,null,'link13')" onmouseover="MM_showMenu(window.mm_menu_administration,x,y,null,'link13')" onmouseout="MM_startTimeout();">Administration</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-            <a name="link11" id="link1" href="/gp/pages/index.jsf" onclick="MM_showMenu(window.mm_menu_documentation,x,y,null,'link11')" onmouseover="MM_showMenu(window.mm_menu_documentation,x,y,null,'link11')" onmouseout="MM_startTimeout();">Help</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-            <a name="link24" id="link24" href="/gp/pages/index.jsf" onclick="MM_showMenu(window.mm_menu_genomespaceloggedin,x,y,null,'link24')" onmouseover="MM_showMenu(window.mm_menu_genomespaceloggedin,x,y,null,'link24')" onmouseout="MM_startTimeout();"><img style="vertical-align:middle" src="/gp/pages/genomespace/genomespace_icon.gif" height="14px" width="14px" border="0" />&nbsp;GenomeSpace</a>
-        </div> -->
+            <a name="link17" id="link6" href="/gp/pages/index.jsf" onclick="MM_showMenu(window.mm_menu_tasks,x,y,null,'link17')" onmouseover="MM_showMenu(window.mm_menu_tasks,x,y,null,'link17')" onmouseout="MM_startTimeout();">Modules &amp; Pipelines</a> &#160;&#160;&#160;&#160;&#160;&#160;
+            <a name="link14" id="link9" href="/gp/pages/manageSuite.jsf" onclick="MM_showMenu(window.mm_menu_suites,x,y,null,'link14')" onmouseover="MM_showMenu(window.mm_menu_suites,x,y,null,'link14')" onmouseout="MM_startTimeout();">Suites</a> &#160;&#160;&#160;&#160;&#160;&#160;
+            <a name="link15" id="link10" href="/gp/jobResults" onclick="MM_showMenu(window.mm_menu_jobResults,x,y,null,'link15')" onmouseover="MM_showMenu(window.mm_menu_jobResults,x,y,null,'link15')" onmouseout="MM_startTimeout();">Job Results</a> &#160;&#160;&#160;&#160;&#160;&#160;
+            <a name="link12" id="link3" href="/gp/pages/index.jsf?splash=resources" onclick="MM_showMenu(window.mm_menu_resources,x,y,null,'link12')" onmouseover="MM_showMenu(window.mm_menu_resources,x,y,null,'link12')" onmouseout="MM_startTimeout();">Resources</a> &#160;&#160;&#160;&#160;&#160;&#160;
+            <a name="link2" id="link5" href="/gp/pages/index.jsf?splash=downloads" onclick="MM_showMenu(window.mm_menu_downloads,x,y,null,'link2')" onmouseover="MM_showMenu(window.mm_menu_downloads,x,y,null,'link2')" onmouseout="MM_startTimeout();">Downloads</a> &#160;&#160;&#160;&#160;&#160;&#160;
+            <a name="link13" id="link4" href="/gp/pages/serverSettings.jsf" onclick="MM_showMenu(window.mm_menu_administration,x,y,null,'link13')" onmouseover="MM_showMenu(window.mm_menu_administration,x,y,null,'link13')" onmouseout="MM_startTimeout();">Administration</a>&#160;&#160;&#160;&#160;&#160;&#160;
+            <a name="link11" id="link1" href="/gp/pages/index.jsf" onclick="MM_showMenu(window.mm_menu_documentation,x,y,null,'link11')" onmouseover="MM_showMenu(window.mm_menu_documentation,x,y,null,'link11')" onmouseout="MM_startTimeout();">Help</a>&#160;&#160;&#160;&#160;&#160;&#160;
+            <a name="link24" id="link24" href="/gp/pages/index.jsf" onclick="MM_showMenu(window.mm_menu_genomespaceloggedin,x,y,null,'link24')" onmouseover="MM_showMenu(window.mm_menu_genomespaceloggedin,x,y,null,'link24')" onmouseout="MM_startTimeout();">
+                <img style="vertical-align:middle" alt="GenomeSpace" src="/gp/pages/genomespace/genomespace_icon.gif" height="14px" width="14px" border="0" />&#160;GenomeSpace
+            </a>
+        </div>
 
         <!--  Main content area -->
         <div id="content" class="content">
@@ -64,6 +78,15 @@
                 <span id="shortcutModules" />
                 <div id="categoryModules" />
             </div>
+            <div id="titleBar">
+                <span id="titleSpan" /> <img id="pipelinePencil" src="images/pencil.gif" class="pencil" alt="Edit" />
+                <div id="saveLoadDiv">
+                    <!-- <button id="newButton" class="saveLoadButton">New</button>
+                 <button id="loadButton" class="saveLoadButton">Load</button> -->
+                    <button id="saveButton" class="saveLoadButton">Save</button>
+                    <button id="revertButton" class="saveLoadButton">Revert</button>
+                </div>
+            </div>
             <div id="workspace"></div>
 
             <!-- Footer
@@ -74,14 +97,14 @@
                             <table width="100%" border="0" cellspacing="0" cellpadding="0">
                                 <tr>
                                     <td>
-                                        <a href="/gp/pages/about.jsf">About GenePattern</a>&nbsp;|&nbsp;<a href="/gp/pages/contactUs.jsf">Contact Us</a>
+                                        <a href="/gp/pages/about.jsf">About GenePattern</a>&#160;|&#160;<a href="/gp/pages/contactUs.jsf">Contact Us</a>
                                     </td>
                                     <td>
                                         <div align="right">
-                                            &copy;2003-2012&nbsp;<a href="http://www.broadinstitute.org" target="_blank">Broad Institute, MIT</a>
+                                            &copy;2003-2012&#160;<a href="http://www.broadinstitute.org" target="_blank">Broad Institute, MIT</a>
                                         </div>
                                     </td>
-                                    <td width="10">&nbsp;</td>
+                                    <td width="10">&#160;</td>
                                     <td width="27">
                                         <a href="http://www.broadinstitute.org" target="_blank">
                                             <img src="/gp/images/broad-symbol.gif" alt="Broad Institute" height="30" style="border: 0;" width="27"/>

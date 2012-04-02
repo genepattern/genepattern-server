@@ -62,6 +62,7 @@ var editor = {
         });
 
         window.onbeforeunload = function (event) {
+            //noinspection JSDuplicatedDeclaration
             var message = "If you leave all pipeline changes will be lost.", event = event || window.event;
             // For IE and Firefox
             if (event) { event.returnValue = message; }
@@ -72,8 +73,6 @@ var editor = {
 
     showDialog: function(title, message, button) {
         var alert = document.createElement("div");
-        var list = document.createElement("ul");
-
         alert.innerHTML = message;
 
         if (button === undefined || button === null) {
@@ -85,7 +84,7 @@ var editor = {
             width: 400,
             title: title,
             buttons: button,
-            close: function(event) {
+            close: function() {
                 $(this).dialog("destroy");
                 $(this).remove();
             }
@@ -192,7 +191,7 @@ var editor = {
 			newOut = output;
 		}
 
-        var newPipe = this.addPipe(newIn, newOut);
+        this.addPipe(newIn, newOut);
 
         input.module.getMasterInput().detachAll();
         input.module.checkForWarnings();
@@ -470,7 +469,7 @@ var editor = {
         while (modules[i.toString()] !== undefined) {
             // Update the idCounter as necessary
             var module = modules[i.toString()];
-            var intId = parseInt(module.id)
+            var intId = parseInt(module.id);
             if (intId >= this.workspace["idCounter"]) { this.workspace["idCounter"] = intId + 1; }
 
             // Set the top and left position, if available
@@ -750,6 +749,7 @@ var library = {
         sortedCategories = library._sortAlphabetically(sortedCategories);
 
         for (var iCat = 0; iCat < sortedCategories.length; iCat++) {
+            //noinspection JSDuplicatedDeclaration
             var cat = sortedCategories[iCat];
             var catDiv = document.createElement("div");
             catDiv.setAttribute("class", "categoryHeader");
@@ -803,7 +803,7 @@ var library = {
             // If unable to find the lsid give up, an error has already been reported
             if (lsid === null) return;
 
-            var module = editor.addModule(lsid);
+            editor.addModule(lsid);
         });
     },
 
@@ -1046,6 +1046,7 @@ var library = {
                 return (compA < compB) ? -1 : (compA > compB) ? 1 : 0;
             });
 
+            //noinspection JSDuplicatedDeclaration
             for (var i = 0; i < moduleList.length; i++) {
                 var module = moduleList[i];
 
@@ -1724,8 +1725,7 @@ function Module(moduleJSON) {
 
     this.isHighestVersion = function() {
         var highest = library.getHighestVersion(this.lsid);
-        if (highest.lsid === this.lsid) { return true; }
-        else { return false }
+        return highest.lsid === this.lsid;
     };
 
     this.getInputByName = function(name) {
@@ -1740,13 +1740,11 @@ function Module(moduleJSON) {
     };
 
     this.isVisualizer = function() {
-        if (this.type == "module visualizer") return true;
-        else return false;
+        return this.type == "module visualizer";
     };
 
     this.isPipeline = function() {
-        if (this.type == "module pipeline") return true;
-        else return false;
+        return this.type == "module pipeline";
     };
 
     this._loadInputs = function(inputs) {
@@ -1852,12 +1850,14 @@ function Module(moduleJSON) {
     };
 
     this.hasPortByPointer = function(pointer) {
+        //noinspection JSDuplicatedDeclaration
         for (var i = 0; i < this.inputEnds.length; i++) {
             if (pointer == this.inputEnds[i].pointer) {
                 return true;
             }
         }
 
+        //noinspection JSDuplicatedDeclaration
         for (var i = 0; i < this.outputEnds.length; i++) {
             if (pointer == this.outputEnds[i].pointer) {
                 return true;
@@ -1892,6 +1892,7 @@ function Module(moduleJSON) {
             }
         }
 
+        //noinspection JSDuplicatedDeclaration
         for (var i = 0; i < this.outputEnds.length; i++) {
             if (id == this.outputEnds[i].id) {
                 return true;
@@ -2053,7 +2054,7 @@ function Module(moduleJSON) {
                 modal: true,
                 width: 400,
                 title: "Module Errors & Alerts",
-                close: function(event) {
+                close: function () {
                     $(this).dialog("destroy");
                     $(this).remove();
                 }

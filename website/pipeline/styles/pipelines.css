@@ -13,7 +13,7 @@
 #library {
 	position:absolute;
 	z-index: 3000; 
-	top: 5px;
+	top: 0px;
 	left: 0;
 	width: 175px;
     min-height: 100%;
@@ -53,19 +53,23 @@ a:hover {
 #titleBar {
     position:absolute;
     z-index: 3001;
-    top: 47px;
-    left: 0;
-    width: 99%;
+    top: 0px;
+    left: 188px;
+    width: 800px;
     height: 20px;
-    background-color: #666699;
-    border: 1px solid #FFFFFF;
+    background-color: #DFDFB9;
+    border: 1px solid #CDC3B7;
     padding: 5px;
     overflow-x: hidden;
     overflow: hidden;
 }
 
+#navband1 {
+    white-space: nowrap;
+}
+
 #titleSpan {
-    color: #FFFFFF;
+    color: #000000;
     font-size: 10pt;
     line-height: 21px;
     font-weight: bold;
