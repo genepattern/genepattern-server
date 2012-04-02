@@ -152,6 +152,13 @@ a:hover {
     text-align: right;
 }
 
+.openButton {
+    border: 0px solid #999999;
+    padding: 5px;
+    height: 16px;
+    cursor: pointer;
+}
+
 .propertiesButton {
     border: 0px solid #999999;
     padding: 5px;

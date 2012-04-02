@@ -1990,6 +1990,13 @@ function Module(moduleJSON) {
         fileIcon.style.display = "none";
         appendTo.appendChild(fileIcon);
 
+        var openButton = document.createElement("img");
+        openButton.setAttribute("id", "open_" + baseId);
+        openButton.setAttribute("src", "images/open.gif");
+        openButton.setAttribute("class", "openButton");
+        openButton.setAttribute("alt", "Open Module");
+        appendTo.appendChild(openButton);
+
         var propertiesButton = document.createElement("img");
         propertiesButton.setAttribute("id", "prop_" + baseId);
         propertiesButton.setAttribute("src", "images/pencil.gif");
@@ -2024,6 +2031,16 @@ function Module(moduleJSON) {
     };
 
 	this._addModuleButtonCalls = function () {
+        $("#" + "open_" + this.id).click(function (event) {
+            var module = editor.getParentModule(this.id);
+            if (module.isPipeline()) {
+                self.location="/gp/pipeline/index.jsf?lsid=" + module.lsid;
+            }
+            else {
+                self.location="/gp/addTask.jsp?name=" + module.lsid;
+            }
+        });
+
         $("#" + "prop_" + this.id).click(function (event) {
             properties.displayModule(editor.getParentModule(this.id));
             properties.show();
