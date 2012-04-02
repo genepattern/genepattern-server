@@ -705,16 +705,20 @@ var library = {
         this._addModuleComboBox();
         this._addCategoryModules();
 
-        $("#closeAllCategories").click(function() {
+        $("#closeAllCategories").click(function(event) {
             $(".moduleBullet").hide("slow");
             $(".categoryOpen").hide();
             $(".categoryClosed").show();
+            if (event.preventDefault) event.preventDefault();
+            if (event.stopPropagation) event.stopPropagation();
         });
 
-        $("#openAllCategories").click(function() {
+        $("#openAllCategories").click(function(event) {
             $(".moduleBullet").show("slow");
             $(".categoryOpen").show();
             $(".categoryClosed").hide();
+            if (event.preventDefault) event.preventDefault();
+            if (event.stopPropagation) event.stopPropagation();
         });
     },
 
@@ -841,6 +845,7 @@ var library = {
             // If unable to find the lsid give up, an error has already been reported
             if (lsid === null) return;
 
+            $("#modulesDropdown").val("");
             editor.addModule(lsid);
         });
     },
@@ -1579,7 +1584,7 @@ var properties = {
         this._displayInputKey();
         var inputs = module.inputs;
         for (var i in inputs) {
-            if (!inputs[i] instanceof InputParam) {
+            if (!(inputs[i] instanceof InputParam)) {
                 continue;
             }
             if (inputs[i].isFile()) {
