@@ -1136,12 +1136,8 @@ jQuery(document).ready(function() {
     ,	useStateCookie:			true
     });
 
-    $(function() {
-		$( "#parameters" ).sortable();
-        $( "#commandlist" ).sortable();
-		$( "#parameters" ).disableSelection();
-
-	});
+    $( "#parameters" ).sortable();
+    $( "#commandlist" ).sortable();
 
     $( "#addparam" )
         .button()
