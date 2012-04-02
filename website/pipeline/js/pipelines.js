@@ -571,6 +571,10 @@ var editor = {
         }
     },
 
+    runPipeline: function(lsid) {
+        self.location="/gp/pages/index.jsf?lsid=" + lsid;
+    },
+
 	load: function(lsid) {
         if (lsid === undefined || lsid === null || lsid === "") {
             editor._cleanWorkspace();
@@ -601,7 +605,7 @@ var editor = {
         });
 	},
 
-	save: function() {
+	save: function(runImmediately) {
         if (editor.hasErrors()) {
             editor.showDialog("ERROR", "The pipeline being edited has errors.  Please fix the errors before saving.");
             return;
@@ -620,11 +624,15 @@ var editor = {
                 if (error !== undefined && error !== null) {
                     editor.showDialog("ERROR", "<div style='text-align: center; font-weight: bold;'>" + error + "</div>");
                 }
+                if (runImmediately && (error === undefined || error === null)) {
+                    editor.runPipeline(newLsid);
+                    return;
+                }
                 if (message !== undefined && message !== null) {
                     editor.showDialog("Save Pipeline Message",
                         "<div style='text-align: center; font-weight: bold;'>" + message + "<br />Version: " + newVersion + "</div>", {
                             "Run Pipeline": function() {
-                                self.location="/gp/pages/index.jsf?lsid=" + newLsid;
+                                editor.runPipeline(newLsid);
                             },
                             "Close": function() {
                                 $(this).dialog("close");

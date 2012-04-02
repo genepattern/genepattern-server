@@ -84,12 +84,13 @@
                     <!-- <button id="newButton" class="saveLoadButton">New</button>
                  <button id="loadButton" class="saveLoadButton">Load</button> -->
                     <button id="saveButton" class="saveLoadButton">Save</button>
+                    <button id="runButton" class="saveLoadButton">Save &amp; Run</button>
                     <button id="revertButton" class="saveLoadButton">Revert</button>
                 </div>
             </div>
             <div id="workspace"></div>
 
-            <!-- Footer
+            <!-- Footer -->
             <div id="footer">
                 <table width="100%" border="0" cellspacing="0" cellpadding="0">
                     <tr>
@@ -115,7 +116,7 @@
                         </td>
                     </tr>
                 </table>
-            </div> -->
+            </div>
         </div>
 
         <div id="loadPipelineDialog">
@@ -176,6 +177,11 @@
             $("#saveButton").button();
             $("#saveButton").click(function() {
                 editor.save();
+            });
+
+            $("#runButton").button();
+            $("#runButton").click(function() {
+                editor.save(true);
             });
 
             $("#revertButton").button();
