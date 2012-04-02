@@ -728,7 +728,7 @@ function loadModuleInfo(module)
 
         $("#supportfilecontent").prepend(currentFilesDiv);
 
-        var currentFilesSelect = $("<select name='currentfiles' multiple='multiple'><select>");
+        var currentFilesSelect = $("<select name='currentfiles' multiple='multiple'></select>");
         supportFilesList = supportFilesList.split(";");
         for(s=0;s<supportFilesList.length;s++)
         {
@@ -742,7 +742,7 @@ function loadModuleInfo(module)
         currentFilesDiv.css("font-size", "0.725em");
 
         currentFilesDiv.append("<br>");
-        
+
         currentFilesDiv.append(currentFilesSelect);
         currentFilesSelect.multiselect({
             header: false,
