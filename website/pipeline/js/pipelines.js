@@ -383,7 +383,7 @@ var editor = {
         else {
             this.workspace.suggestCol++;
         }
-        return { "top": this.workspace.suggestRow * 120, "left": this.workspace.suggestCol * 270 };
+        return { "top": this.workspace.suggestRow * 140, "left": this.workspace.suggestCol * 270 };
     },
 
 	suggestLocation: function(module) {
