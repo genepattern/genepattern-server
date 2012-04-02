@@ -301,7 +301,12 @@ public class ModuleQueryServlet extends HttpServlet
             }
             catch (Exception e) {
                 log.error("error", e);
-                sendError(response, "Exception retrieving the uploaded file");
+                String message = "";
+                if(e.getMessage() != null)
+                {
+                    message = e.getMessage();
+                }
+                sendError(response, "Exception retrieving the uploaded file: " + message);
             }
         }
         else {
@@ -466,7 +471,13 @@ public class ModuleQueryServlet extends HttpServlet
         {
             e.printStackTrace();
             log.error(e);
-            sendError(response, "Exception saving the module.");
+
+            String message = "";
+            if(e.getMessage() != null)
+            {
+                message = e.getMessage();
+            }
+            sendError(response, "An error occurred while saving the module. " + message);
         }
     }
 
@@ -588,7 +599,14 @@ public class ModuleQueryServlet extends HttpServlet
         catch(Exception e)
         {
             log.error(e);
-            sendError(response, "Error: while loading the module with lsid: " + lsid);
+            e.printStackTrace();
+
+            String message = "";
+            if(e.getMessage() != null)
+            {
+                message = e.getMessage();
+            }
+            sendError(response, "Error: while loading the module with lsid: " + lsid + " " + message);
         }
 	}
 
