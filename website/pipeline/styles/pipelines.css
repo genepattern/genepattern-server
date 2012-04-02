@@ -22,19 +22,35 @@
     padding: 5px;
 }
 
+#libraryControls {
+    color: #336;
+    text-decoration: none;
+    font-size: 10px;
+    line-height: 32px;
+    font-weight: normal;
+}
+
 .categoryHeader {
-    font-size: 10pt;
+    font-size: 10px;
+    line-height: 12px;
     font-weight: bold;
+    color: #336;
+    text-decoration: none;
+    cursor: pointer;
 }
 
 .moduleBullet {
-    font-size: 8pt;
+    color: #336;
+    text-decoration: none;
+    font-size: 10px;
+    line-height: 12px;
     font-weight: normal;
-    padding-left: 10px;
 }
 
 .moduleBullet:hover {
-    background-color: #CCCC99;
+    color: #6666FF;
+    text-decoration: none;
+    background-color: #FAFAF3;
 }
 
 .optionalPort svg circle {

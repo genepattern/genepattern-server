@@ -704,6 +704,18 @@ var library = {
 
         this._addModuleComboBox();
         this._addCategoryModules();
+
+        $("#closeAllCategories").click(function() {
+            $(".moduleBullet").hide("slow");
+            $(".categoryOpen").hide();
+            $(".categoryClosed").show();
+        });
+
+        $("#openAllCategories").click(function() {
+            $(".moduleBullet").show("slow");
+            $(".categoryOpen").show();
+            $(".categoryClosed").hide();
+        });
     },
 
     getHighestVersion: function(lsid) {
@@ -760,8 +772,13 @@ var library = {
             //noinspection JSDuplicatedDeclaration
             var cat = sortedCategories[iCat];
             var catDiv = document.createElement("div");
-            catDiv.setAttribute("class", "categoryHeader");
-            catDiv.innerHTML = properties._encodeToHTML(cat);
+            catDiv.setAttribute("class", "categoryContainer");
+            var headDiv = document.createElement("div");
+            headDiv.setAttribute("class", "categoryHeader");
+            headDiv.innerHTML = "&#160;&#160;<img src='/gp/pipeline/images/category-open.gif' alt='Expanded' class='categoryOpen' />" +
+                "<img src='/gp/pipeline/images/category-closed.gif' style='display: none;' alt='Collapsed' class='categoryClosed' />&#160;&#160;" +
+                properties._encodeToHTML(cat);
+            catDiv.appendChild(headDiv);
 
             // Sort modules in the category
             var moduleArray = library._sortModulesAlphabetically(library.moduleCategoryMap[cat]);
@@ -771,7 +788,8 @@ var library = {
                 var modDiv = document.createElement("div");
                 modDiv.setAttribute("class", "moduleBullet");
                 modDiv.setAttribute("name", module.lsid);
-                modDiv.innerHTML = "<a href='#' onclick='return false;'>" + properties._encodeToHTML(this.concatNameForDisplay(module.name, 22)) + "</a>";
+                modDiv.innerHTML = "&#160;&#160;&#160;&#160;<img src='/gp/pipeline/images/module-bullet.gif' alt='Bullet' />&#160;&#160;" +
+                    "<a href='#' onclick='return false;'>" + properties._encodeToHTML(this.concatNameForDisplay(module.name, 22)) + "</a>";
                 $(modDiv).click(function() {
                     var lsid = $(this)[0].getAttribute("name");
 
@@ -788,6 +806,18 @@ var library = {
 
             $("#categoryModules").append(catDiv);
         }
+        $(".categoryHeader").click(function() {
+            if ($(this).parent().children(".moduleBullet").is(":visible")) {
+                $(this).parent().children(".moduleBullet").hide("slow");
+                $(this).children(".categoryOpen").hide();
+                $(this).children(".categoryClosed").show();
+            }
+            else {
+                $(this).parent().children(".moduleBullet").show("slow");
+                $(this).children(".categoryOpen").show();
+                $(this).children(".categoryClosed").hide();
+            }
+        });
     },
 
     _addModuleComboBox: function() {
@@ -1549,6 +1579,9 @@ var properties = {
         this._displayInputKey();
         var inputs = module.inputs;
         for (var i in inputs) {
+            if (!inputs[i] instanceof InputParam) {
+                continue;
+            }
             if (inputs[i].isFile()) {
                 this._addFileInput(inputs[i]);
             }
