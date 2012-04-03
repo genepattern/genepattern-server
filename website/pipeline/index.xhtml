@@ -46,6 +46,22 @@
             mmLoadMenus();
         </script>
 
+        <!-- User settings area -->
+        <div id="systemMessageLink">
+            <table border="0" cellpadding="0" cellspacing="0" class="loginsettings">
+                <tr valign="top">
+                    <td>
+                        <div style="display: inline;" >
+                            <a href="#{facesContext.externalContext.requestContextPath}/pages/accountInfo.jsf">My Settings</a>
+                            |
+                            <a href="#{facesContext.externalContext.request.contextPath}/logout">Sign Out</a>
+                            &#160;${requestScope.userID}&#160;&#160;&#160;
+                        </div>
+                    </td>
+                </tr>
+            </table>
+        </div>
+
         <!-- top band with the logo -->
         <div id="topband" class="topband">
             <a href="/gp/pages/index.jsf" target="_top">

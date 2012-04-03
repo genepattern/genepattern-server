@@ -10,6 +10,21 @@
     z-index: 3000;
 }
 
+#systemMessageLink {
+    font-weight: normal;
+    font-size: 10px;
+    line-height: 22px;
+    color: #339;
+    text-decoration: none;
+    position: absolute;
+    right: 0px;
+    top: 0px;
+    z-index: 3001;
+    width: 100%;
+    height: 25px;
+    text-align: right;
+}
+
 #library {
 	position:absolute;
 	z-index: 3000; 
