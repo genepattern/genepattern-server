@@ -71,12 +71,31 @@ var editor = {
         };
 	},
 
+    isInsideDialog: function(element) {
+        if ($(element).hasClass("ui-dialog")) {
+            return true;
+        }
+        else {
+            var parent = element.parentNode;
+            if (parent === null || parent === undefined) {
+                return false;
+            }
+            else {
+                return editor.isInsideDialog(parent);
+            }
+        }
+    },
+
     showDialog: function(title, message, button) {
         var alert = document.createElement("div");
         alert.innerHTML = message;
 
         if (button === undefined || button === null) {
-            button = { "OK": function() { $(this).dialog("close"); }};
+            button = { "OK": function() {
+                $(this).dialog("close");
+                if (event.preventDefault) event.preventDefault();
+                if (event.stopPropagation) event.stopPropagation();
+            }};
         }
 
         $(alert).dialog({
@@ -1143,8 +1162,10 @@ var properties = {
     displayed: false,
 
     init: function() {
-        $("html").click(function() {
-            properties.hide();
+        $("html").click(function(event) {
+            if (!editor.isInsideDialog(event.target)) {
+                properties.hide();;
+            }
         });
 
         $("#" + properties.div).click(function(event) {
@@ -1419,10 +1440,12 @@ var properties = {
         if (checkBox !== undefined && checkBox !== null) {
             $(".propertyCheckBox[type='checkbox'][name='" + labelText + "']").change(function() {
                 if ($(this).is(":checked")) {
-                    $(".propertyValue[type='file'][name='" + labelText + "']")[0].setAttribute("disabled", "true");
+                    $(".propertyValue[type='file'][name='" + labelText + "']").hide();
+                    properties._showDisplaySettingsButton($(".propertyValue[type='file'][name='" + labelText + "']").parent(), labelText);
                 }
                 else {
-                    $(".propertyValue[type='file'][name='" + labelText + "']")[0].removeAttribute("disabled");
+                    $(".propertyValue[type='file'][name='" + labelText + "']").show();
+                    properties._hideDisplaySettingsButton(labelText);
                 }
             });
         }
@@ -1465,19 +1488,55 @@ var properties = {
         var hr = document.createElement("hr");
         $("#" + this.inputDiv).append(hr);
 
-        // When the prompt when run checkbox is checked, enable or disable upload
+        // When the prompt when run checkbox is checked, enable or disable dropdown
         if (checkBox !== undefined && checkBox !== null) {
             $(".propertyCheckBox[type='checkbox'][name='" + labelText + "']").change(function() {
                 if ($(this).is(":checked")) {
-                    $("select.propertyValue[name='" + labelText + "']")[0].setAttribute("disabled", "true");
+                    $("select.propertyValue[name='" + labelText + "']").hide();
+                    properties._showDisplaySettingsButton($("select.propertyValue[name='" + labelText + "']").parent(), labelText);
                 }
                 else {
-                    $("select.propertyValue[name='" + labelText + "']")[0].removeAttribute("disabled");
+                    $("select.propertyValue[name='" + labelText + "']").show();
+                    properties._hideDisplaySettingsButton(labelText);
                 }
             });
         }
 
         return select;
+    },
+
+    _showDisplaySettingsDialog: function(module, name) {
+        var inner = "Define alternative name and description to display when prompting for this input." +
+        "<br /> <table><tr><td>Display Name</td><td><input type='text' value='" + name +
+            "'/></td></tr><tr><td>Display Description</td><td><input type='text' value='" + module.getInputByName(name).description +
+            "'/></td></tr></table>";
+        editor.showDialog("Set Prompt When Run Display Settings", inner);
+    },
+
+    _showDisplaySettingsButton: function(parent, name) {
+        if ($("button.pwrDisplayButton[name='" + name + "']").size() === 0) {
+            var button = document.createElement("button");
+            button.innerHTML = "Set Prompt When Run Display Settings";
+            button.setAttribute("name", name);
+            button.setAttribute("class", "pwrDisplayButton");
+            parent.append(button);
+            $(button).button();
+            $(button).click(function(event) {
+                // Removed the trailing asterisk if a required param, then show the settings dialog
+                properties._showDisplaySettingsDialog(properties.current, name.substr(-1) === "*" ? name.substr(0, name.length - 1) : name);
+
+                // Prevent the button from submitting the form if it is inside one
+                if (event.preventDefault) event.preventDefault();
+                if (event.stopPropagation) event.stopPropagation();
+            });
+        }
+        else {
+            $("button.pwrDisplayButton[name='" + name + "']").show();
+        }
+    },
+
+    _hideDisplaySettingsButton: function(name) {
+        $("button.pwrDisplayButton[name='" + name + "']").hide();
     },
 
     _addTextBox: function(labelText, value, description, pwr) {
@@ -1510,10 +1569,12 @@ var properties = {
         if (checkBox !== undefined && checkBox !== null) {
             $(".propertyCheckBox[type='checkbox'][name='" + labelText + "']").change(function() {
                 if ($(this).is(":checked")) {
-                    $(".propertyValue[type='text'][name='" + labelText + "']")[0].setAttribute("disabled", "true");
+                    $(".propertyValue[type='text'][name='" + labelText + "']").hide();
+                    properties._showDisplaySettingsButton($(".propertyValue[type='text'][name='" + labelText + "']").parent(), labelText);
                 }
                 else {
-                    $(".propertyValue[type='text'][name='" + labelText + "']")[0].removeAttribute("disabled");
+                    $(".propertyValue[type='text'][name='" + labelText + "']").show();
+                    properties._hideDisplaySettingsButton(labelText);
                 }
             });
         }
