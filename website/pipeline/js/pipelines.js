@@ -71,6 +71,15 @@ var editor = {
         };
 	},
 
+    initPWR: function(module, paramName, pwrJSON) {
+        if (pwrJSON === null || pwrJSON === undefined) return null;
+
+        var name = pwrJSON[0];
+        var desc = pwrJSON[1];
+
+        return new PWRParam(module, paramName, name, desc);
+    },
+
     isInsideDialog: function(element) {
         if ($(element).hasClass("ui-dialog")) {
             return true;
@@ -638,11 +647,15 @@ var editor = {
             success: function(response) {
                 var message = response["MESSAGE"];
                 var error = response["ERROR"];
-                var newLsid = response["lsid"];
-                var newVersion = editor.extractLsidVersion(newLsid);
+
                 if (error !== undefined && error !== null) {
                     editor.showDialog("ERROR", "<div style='text-align: center; font-weight: bold;'>" + error + "</div>");
+                    return;
                 }
+
+                var newLsid = response["lsid"];
+                var newVersion = editor.extractLsidVersion(newLsid);
+
                 if (runImmediately && (error === undefined || error === null)) {
                     editor.runPipeline(newLsid);
                     return;
@@ -1073,10 +1086,10 @@ var library = {
         return files;
     },
 
-    extractInputs: function(inputsJSON) {
+    extractInputs: function(module, inputsJSON) {
         var inputs = new Array();
         for (var i = 0; i < inputsJSON.length; i++) {
-            inputs[inputs.length] = new InputParam(inputsJSON[i]);
+            inputs[inputs.length] = new InputParam(module, inputsJSON[i]);
         }
         return inputs;
     },
@@ -1370,9 +1383,6 @@ var properties = {
         fileUpload.setAttribute("type", "file");
         fileUpload.setAttribute("name", labelText);
         fileUpload.setAttribute("class", "propertyValue");
-        if (disabled !== undefined && disabled) {
-            fileUpload.setAttribute("disabled", "true");
-        }
         uploadForm.appendChild(fileUpload);
 
         // Attach the uploading and done images
@@ -1406,6 +1416,12 @@ var properties = {
 
         var hr = document.createElement("hr");
         $("#" + this.inputDiv).append(hr);
+
+        // If the form element is disabled, set to that initially
+        if (disabled !== undefined && disabled) {
+            $(".propertyValue[type='file'][name='" + labelText + "']").hide();
+            properties._showDisplaySettingsButton($(".propertyValue[type='file'][name='" + labelText + "']").parent(), labelText);
+        }
 
         // When the upload form is submitted, send to the servlet
         $("[name|='" + labelText + "_form']").iframePostForm({
@@ -1488,6 +1504,12 @@ var properties = {
         var hr = document.createElement("hr");
         $("#" + this.inputDiv).append(hr);
 
+        // If the form element is disabled, set to that initially
+        if (selected === properties.PROMPT_WHEN_RUN) {
+            $("select.propertyValue[name='" + labelText + "']").hide();
+            properties._showDisplaySettingsButton($("select.propertyValue[name='" + labelText + "']").parent(), labelText);
+        }
+
         // When the prompt when run checkbox is checked, enable or disable dropdown
         if (checkBox !== undefined && checkBox !== null) {
             $(".propertyCheckBox[type='checkbox'][name='" + labelText + "']").change(function() {
@@ -1565,6 +1587,12 @@ var properties = {
         var hr = document.createElement("hr");
         $("#" + this.inputDiv).append(hr);
 
+        // If the form element is disabled, set to that initially
+        if (value === properties.PROMPT_WHEN_RUN) {
+            $(".propertyValue[type='text'][name='" + labelText + "']").hide();
+            properties._showDisplaySettingsButton($(".propertyValue[type='text'][name='" + labelText + "']").parent(), labelText);
+        }
+
         // When the prompt when run checkbox is checked, enable or disable upload
         if (checkBox !== undefined && checkBox !== null) {
             $(".propertyCheckBox[type='checkbox'][name='" + labelText + "']").change(function() {
@@ -1590,7 +1618,7 @@ var properties = {
             displayValue = "Receiving output " + input.port.pipes[0].outputPort.pointer + " from " + input.port.pipes[0].outputModule.name;
             disabled = true;
         }
-        if (input.promptWhenRun) {
+        if (input.promptWhenRun !== null) {
             disabled = true;
         }
         return this._addFileUpload(input.name + required, displayValue, input.description, true, disabled);
@@ -1598,13 +1626,13 @@ var properties = {
 
     _addTextBoxInput: function(input) {
         var required = input.required ? "*" : "";
-        var displayValue = input.promptWhenRun ? properties.PROMPT_WHEN_RUN : input.value;
+        var displayValue = input.promptWhenRun !== null ? properties.PROMPT_WHEN_RUN : input.value;
         return this._addTextBox(input.name + required, displayValue, input.description, true);
     },
 
     _addDropdownInput: function(input) {
         var required = input.required ? "*" : "";
-        var displayValue = input.promptWhenRun ? properties.PROMPT_WHEN_RUN : input.value;
+        var displayValue = input.promptWhenRun !== null ? properties.PROMPT_WHEN_RUN : input.value;
         return this._addDropDown(input.name + required, input.choices, displayValue, input.description, true);
     },
 
@@ -1733,6 +1761,24 @@ var properties = {
 
 /**
  * Class representing an alert of which  the user should be made aware.
+ * @param module - The module of the prompt when run parameter
+ * @param param - The InputParam object associated with this PWRParam
+ * @param name - The display name of the PWR parameter
+ * @param description - The display description of the PWR parameter
+ */
+function PWRParam(module, param, name, description) {
+    this.module = module;
+    this.param = param;
+    this.name = name;
+    this.description = description;
+
+    this.prepTransport = function() {
+        return [this.name, this.description];
+    };
+}
+
+/**
+ * Class representing an alert of which  the user should be made aware.
  * @param key - Something to key the alert off of
  * @param level - The level of the alert set by a constant on this object
  * @param message - A message to display to the user
@@ -1761,7 +1807,7 @@ function Module(moduleJSON) {
 	this.outputs = moduleJSON.outputs;
 	this.outputEnds = [];
 	this.inputEnds = [];
-	this.inputs = library.extractInputs(moduleJSON.inputs);
+	this.inputs = library.extractInputs(this, moduleJSON.inputs);
 	this.fileInputs = library.extractFileInputs(this.inputs);
 	this.type = "module";
 	this.ui = null;
@@ -1904,7 +1950,7 @@ function Module(moduleJSON) {
                 this.inputs[i].makePWR();
             }
             else {
-                this.inputs[i].promptWhenRun = false;
+                this.inputs[i].promptWhenRun = null;
                 if (!(this.inputs[i].isFile() && value === "")) {
                     this.inputs[i].value = value;
                 }
@@ -1934,7 +1980,7 @@ function Module(moduleJSON) {
         // Mark the error flag if there is a missing required param
         for (var i = 0; i < this.inputs.length; i++) {
             var input = this.inputs[i];
-            if (input.required && input.value === "" && !input.used && input.promptWhenRun !== true) {
+            if (input.required && input.value === "" && !input.used && input.promptWhenRun === null) {
                 showErrorIcon = true;
                 this.alerts[input.name] = new Alert(input.name, "ERROR", "Required parameter " + input.name + " is not set!");
             }
@@ -2418,13 +2464,14 @@ function Visualizer(moduleJSON) {
  * Class representing an input parameter for a module
  * @param paramJSON - A JSON representation of the input param
  */
-function InputParam(paramJSON) {
+function InputParam(module, paramJSON) {
+    this.module = module;
     this.name = paramJSON.name;
     this.description = paramJSON.description;
     this.type = paramJSON.type;
     this.kinds = paramJSON.kinds;
     this.required = paramJSON.required;
-    this.promptWhenRun = paramJSON.promptWhenRun;
+    this.promptWhenRun = editor.initPWR(this.module, this.name, paramJSON.promptWhenRun);
     this.defaultValue = paramJSON.defaultValue;
     this.choices = paramJSON.choices;
     this.used = false;
@@ -2445,20 +2492,23 @@ function InputParam(paramJSON) {
         this.port = null;
     };
 
-    this.makePWR = function() {
-        this.promptWhenRun = true;
+    this.makePWR = function(name, desc) {
+        if (name === undefined) name = this.name;
+        if (desc === undefined) desc = this.description;
+
+        this.promptWhenRun = new PWRParam(this.module, this.name, name, desc);
         this.value = properties.PROMPT_WHEN_RUN;
     };
 
     this.makeNotPWR = function() {
-        this.promptWhenRun = false;
+        this.promptWhenRun = null;
         this.value = "";
     };
 
     this.prepTransport = function() {
         var transport = {};
         transport["name"] = this.name;
-        transport["promptWhenRun"] = this.promptWhenRun;
+        transport["promptWhenRun"] = this.promptWhenRun !== null ? this.promptWhenRun.prepTransport() : null;
         transport["value"] = this.value;
         return transport;
     };
@@ -2467,7 +2517,7 @@ function InputParam(paramJSON) {
         if (this.name != input["name"]) {
             console.log("ERROR: Mismatched parameter loading properties: " + this.name + " and " + input["name"]);
         }
-        this.promptWhenRun = input["promptWhenRun"];
+        this.promptWhenRun = editor.initPWR(this.module, this.name, input["promptWhenRun"]);
         this.value = input["value"];
     };
 }
@@ -2789,7 +2839,7 @@ function Pipe(connection) {
     this.saveProps = function(save) {
         this.outputPort.setPointer(save["Output"]);
         this.inputPort.setPointer(save["Input"]);
-        this.inputPort.param.promptWhenRun = false;
+        this.inputPort.param.promptWhenRun = null;
 
         // Determine if the old port was required or not
         var oldReq = this.inputPort.isRequired();

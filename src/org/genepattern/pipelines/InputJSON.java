@@ -1,5 +1,5 @@
 /*
- * Copyright © 2012 The Broad Institute, Inc.
+ * Copyright 2012 The Broad Institute, Inc.
  * SOFTWARE COPYRIGHT NOTICE
  * This software and its documentation are the copyright of the Broad Institute, Inc. All rights are reserved.
  *
@@ -46,8 +46,15 @@ public class InputJSON extends JSONObject {
     
     public InputJSON(ParameterInfo param, boolean promptWhenRun) {
         try {
+            JSONArray pwrArray = null;
+            if (promptWhenRun) {
+                pwrArray = new JSONArray();
+                pwrArray.put(param.getName());
+                pwrArray.put(param.getDescription());
+            }            
+            
             this.setName(param.getName());
-            this.setPromptWhenRun(promptWhenRun);
+            this.setPromptWhenRun(pwrArray);
             this.setValue(param.getValue());
         }
         catch (JSONException e) {
@@ -58,7 +65,13 @@ public class InputJSON extends JSONObject {
     public InputJSON(JSONObject param) {
         try {
             this.setName(param.getString(NAME));
-            this.setPromptWhenRun(param.getBoolean(PROMPT_WHEN_RUN));
+            if (!param.isNull(PROMPT_WHEN_RUN)) {
+                this.setPromptWhenRun(param.getJSONArray(PROMPT_WHEN_RUN));
+            }
+            else {
+                this.setPromptWhenRun(null);
+            }
+            
             this.setValue(param.getString(VALUE));
         }
         catch (JSONException e) {
@@ -132,17 +145,22 @@ public class InputJSON extends JSONObject {
         }
     }
     
-    public Boolean getPromptWhenRun() throws JSONException {
-        return this.getBoolean(PROMPT_WHEN_RUN);
+    public JSONArray getPromptWhenRun() throws JSONException {
+        try {
+            return this.getJSONArray(PROMPT_WHEN_RUN);
+        }
+        catch (JSONException e) {
+            return null;
+        }
     }
-    
-    public void setPromptWhenRun(Boolean promptWhenRun) throws JSONException {
+
+    public void setPromptWhenRun(JSONArray promptWhenRun) throws JSONException {
         this.put(PROMPT_WHEN_RUN, promptWhenRun);
     }
     
     // TODO: Implement this properly once we can load pipelines with promptWhenRun
     public void determinePromptWhenRun() throws JSONException {
-        this.setPromptWhenRun(false);
+        this.setPromptWhenRun((JSONArray) null);
     }
     
     public String getDefaultValue() throws JSONException {

@@ -1,5 +1,5 @@
 /*
- * Copyright © 2012 The Broad Institute, Inc.
+ * Copyright 2012 The Broad Institute, Inc.
  * SOFTWARE COPYRIGHT NOTICE
  * This software and its documentation are the copyright of the Broad Institute, Inc. All rights are reserved.
  *
@@ -58,6 +58,7 @@ import org.genepattern.webservice.TaskInfo;
 import org.genepattern.webservice.TaskInfoAttributes;
 import org.genepattern.webservice.TaskInfoCache;
 import org.genepattern.webservice.WebServiceException;
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -352,9 +353,9 @@ public class PipelineQueryServlet extends HttpServlet {
 	        // Set all the parameter values
 	        for (int i = 0; i < module.getInputs().length(); i++) {
 	            InputJSON input = (InputJSON) module.getInputs().getJSONObject(i);
-	            boolean pwr = input.getPromptWhenRun();
-	            promptWhenRun[i] = pwr;
-	            if (pwr) {
+	            JSONArray pwr = input.getPromptWhenRun();
+	            promptWhenRun[i] = pwr != null;
+	            if (pwr != null) {
 	                ParameterInfo pInfo = setParameter(input.getName(), taskInfo.getParameterInfoArray()[i].getValue(), moduleParams, true);
 	                model.addInputParameter(taskInfo.getName() + taskNum + "." + input.getName(), pInfo);
 	            }
