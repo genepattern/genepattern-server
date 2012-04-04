@@ -1251,7 +1251,15 @@ var properties = {
             }
 
             if (checked) {
-                bundle[name] = properties.PROMPT_WHEN_RUN;
+                var button = $("button.pwrDisplayButton[name='" + inputs[i].getAttribute("name") + "']")[0];
+                var dName = $.data(button, "name");
+                var dDesc = $.data(button, "description");
+                if (dName === undefined || dName === null || dDesc === undefined || dDesc === null) {
+                    bundle[name] = properties.PROMPT_WHEN_RUN;
+                }
+                else {
+                    bundle[name] = [properties.PROMPT_WHEN_RUN, dName, dDesc];
+                }
             }
             else {
                 var value = inputs[i].value;
@@ -1527,12 +1535,37 @@ var properties = {
         return select;
     },
 
-    _showDisplaySettingsDialog: function(module, name) {
+    _showDisplaySettingsDialog: function(attach, module, name) {
+        var dName = $.data(attach, "name");
+        var dDesc = $.data(attach, "description");
+
+        if (dName === undefined || dName === null || dDesc === undefined || dDesc === null) {
+            var input = module.getInputByName(name);
+            if (input.promptWhenRun !== null) {
+                dName = input.promptWhenRun.name;
+                dDesc = input.promptWhenRun.description;
+            }
+            else {
+                dName = name;
+                dDesc = input.description;
+            }
+        }
+
         var inner = "Define alternative name and description to display when prompting for this input." +
-        "<br /> <table><tr><td>Display Name</td><td><input type='text' value='" + name +
-            "'/></td></tr><tr><td>Display Description</td><td><input type='text' value='" + module.getInputByName(name).description +
+        "<br /> <table><tr><td>Display Name</td><td><input type='text' id='pwrDisplayName' value='" + dName +
+            "'/></td></tr><tr><td>Display Description</td><td><input type='text' id='pwrDisplayDesc' value='" + dDesc +
             "'/></td></tr></table>";
-        editor.showDialog("Set Prompt When Run Display Settings", inner);
+        var button = { "OK": function() {
+            var displayName = $("#pwrDisplayName").val();
+            var displayDesc = $("#pwrDisplayDesc").val();
+            $.data(attach, "name", displayName);
+            $.data(attach, "description", displayDesc);
+
+            $(this).dialog("close");
+            if (event.preventDefault) event.preventDefault();
+            if (event.stopPropagation) event.stopPropagation();
+        }};
+        editor.showDialog("Set Prompt When Run Display Settings", inner, button);
     },
 
     _showDisplaySettingsButton: function(parent, name) {
@@ -1545,7 +1578,7 @@ var properties = {
             $(button).button();
             $(button).click(function(event) {
                 // Removed the trailing asterisk if a required param, then show the settings dialog
-                properties._showDisplaySettingsDialog(properties.current, name.substr(-1) === "*" ? name.substr(0, name.length - 1) : name);
+                properties._showDisplaySettingsDialog(button, properties.current, name.substr(-1) === "*" ? name.substr(0, name.length - 1) : name);
 
                 // Prevent the button from submitting the form if it is inside one
                 if (event.preventDefault) event.preventDefault();
@@ -1946,8 +1979,13 @@ function Module(moduleJSON) {
         for (var i = 0; i < this.inputs.length; i++) {
             var value = save[this.inputs[i].name];
             if (value === null) continue;
-            if (value == properties.PROMPT_WHEN_RUN) {
-                this.inputs[i].makePWR();
+            if (value instanceof Array && value[0] == properties.PROMPT_WHEN_RUN) {
+                this.inputs[i].makePWR(value[1], value[2]);
+            }
+            else if (value == properties.PROMPT_WHEN_RUN) {
+                if (this.inputs[i].promptWhenRun === null) {
+                    this.inputs[i].makePWR();
+                }
             }
             else {
                 this.inputs[i].promptWhenRun = null;
