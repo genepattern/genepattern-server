@@ -324,19 +324,32 @@ public class PipelineQueryServlet extends HttpServlet {
     }
 	
 	@SuppressWarnings("unchecked")
-    private ParameterInfo setParameter(String pName, String value, ParameterInfo[] taskParams, boolean promptWhenRun) throws Exception {
+    private ParameterInfo setParameter(String pName, String value, ParameterInfo[] taskParams, List<String> promptWhenRun) throws Exception {
         for (ParameterInfo param : taskParams) {
             if (pName.equalsIgnoreCase(param.getName())) {
                 param.setValue(value);
-                param.getAttributes().put("altName", param.getName());
-                param.getAttributes().put("altDescription", param.getDescription());
-                if (promptWhenRun) {
+                if (promptWhenRun != null) {
+                    param.getAttributes().put("altName", promptWhenRun.get(0));
+                    param.getAttributes().put("altDescription", promptWhenRun.get(1));
                     param.getAttributes().put(PipelineModel.RUNTIME_PARAM, "1");
+                }
+                else {
+                    param.getAttributes().put("altName", param.getName());
+                    param.getAttributes().put("altDescription", param.getDescription());
                 }
                 return param;
             }
         }
         throw new Exception("Parameter " + pName + " was not found");
+    }
+    
+    private List<String> toPWRList(JSONArray pwr) throws JSONException {
+        if (pwr == null) return null;
+
+        List<String> toReturn = new ArrayList<String>();
+        toReturn.add((String) pwr.get(0));
+        toReturn.add((String) pwr.get(1));
+        return toReturn;
     }
 	
 	private void setModuleInfo(PipelineModel model, List<ModuleJSON> modulesList) throws Exception {
@@ -356,17 +369,17 @@ public class PipelineQueryServlet extends HttpServlet {
 	            JSONArray pwr = input.getPromptWhenRun();
 	            promptWhenRun[i] = pwr != null;
 	            if (pwr != null) {
-	                ParameterInfo pInfo = setParameter(input.getName(), taskInfo.getParameterInfoArray()[i].getValue(), moduleParams, true);
+	                ParameterInfo pInfo = setParameter(input.getName(), taskInfo.getParameterInfoArray()[i].getValue(), moduleParams, toPWRList(pwr));
 	                model.addInputParameter(taskInfo.getName() + taskNum + "." + input.getName(), pInfo);
 	            }
 	            else {
                     // Special case for file paths
                     if (taskInfo.getParameterInfoArray()[i].getAttributes().get("type").equals("java.io.File") && !input.getValue().equals("")) {
                         String filePath = "<GenePatternURL>getFile.jsp?task=" + URLEncoder.encode(model.getLsid(), "UTF-8") + "&file=" + URLEncoder.encode(input.getValue(), "UTF-8");
-                        setParameter(input.getName(), filePath, moduleParams, false);
+                        setParameter(input.getName(), filePath, moduleParams, null);
                     }
                     else {
-                        setParameter(input.getName(), input.getValue(), moduleParams, false);
+                        setParameter(input.getName(), input.getValue(), moduleParams, null);
                     }
 	            }
 	        }
