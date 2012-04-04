@@ -935,95 +935,6 @@ function getParametersJSON()
     return(parameters);
 }
 
-/*function uploadFiles()
-{
-    $('#fileupload').fileupload({
-        dataType: 'json',
-        url: '/gp/ModuleCreator/upload',
-        done: function (e, data) {
-            $.each(data.result, function (index, file) {
-                alert("file: " + file.name);
-            });
-        }
-    });
-} */
-
-/*
-//recursively upload files one at a time
-function uploadSupportFiles()
-{
-    if(module_editor.supportfileinputs.length == 0)
-    {
-        return;
-    }
-
-    var fileuploadform = $('<form name="upname' + module_editor.supportfileinputs.length +'" action="/gp/ModuleCreator/upload" method="post" ' +
-                             'enctype="multipart/form-data" class="fileuploadform"></form>');
-
-    fileuploadform.append(module_editor.supportfileinputs.pop());
-
-    var formDiv = $("<div></div>");
-    formDiv.append(fileuploadform);
-    //alert("after mod editor length: " + module_editor.supportfileinputs.length);
-    //alert("html: " + formDiv.html());
-    fileuploadform.iframePostForm
-    ({
-        json : false,
-        post : function ()
-        {
-            //if file is not empty then upload
-            if ($(this).find('input[type="file"]').val().length <= 0)
-            {
-                alert("this support file val: " + $(this).find('input[type="file"]').val());
-                //cancel request
-                return false;
-            }
-            alert("mypost val: " + $(this).find('input[type=file]').val());
-            alert("uploaded files module: " + module_editor.uploadedfiles);
-            
-        },
-        complete : function (response)
-        {
-
-            //alert("complete: " + $(response));
-            // Work around a bug in the JSON handling of iframe-post-form
-            if(response == null || response == undefined)
-            {
-                alert("An error occurred when uploading the file");
-            }
-            
-            response = $.parseJSON($(response)[0].innerHTML);
-
-            if (response.error !== undefined)
-            {
-                alert(response.error);
-            }
-            else
-            {
-                alert("response location: " + response.location);
-                if(jQuery.inArray(response.location, module_editor.uploadedfiles) == -1)
-                {
-                    module_editor.uploadedfiles.push(response.location);
-                }
-
-                alert("uploaded files module again: " + module_editor.uploadedfiles);
-                
-                if(module_editor.supportfileinputs.length == 0)
-                {
-                    alert("length is 0 SAVING");
-                    saveModule();
-                }
-                else
-                {
-                    uploadSupportFiles();
-                }
-            }
-        }
-    });
-
-    fileuploadform.submit();
-}  */
-
 function uploadSupportFile(file, index)
 {
 
@@ -1032,10 +943,12 @@ function uploadSupportFile(file, index)
                              'enctype="multipart/form-data" class="fileuploadform"></form>');
 
     fileuploadform.append(file);
-    $("<div></div>").append(fileuploadform);
+    var uploaddiv = $("<div></div>"); 
+    uploaddiv.append(fileuploadform);
+    $("body").append(uploaddiv);
     fileuploadform.iframePostForm
     ({
-        iframeID: formId, 
+        iframeID: formId,
         json : false,
         post : function ()
         {
