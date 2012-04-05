@@ -21,6 +21,7 @@ var editor = {
     titleSpan: "titleSpan", // The id of the title span of the pipeline
 	workspace: {			// A map containing all the instance data of the current workspace
 		idCounter: 0, 		// Used to keep track of module instance IDs
+        dirty: true,        // Used to determine if something has changed since last save
 		pipes: [],	        // A list of all current connections in the workspace
         files: [],          // List of all uploaded files, used when saving or uploading
 		suggestRow: 0, 		// Used by the GridLayoutManager
@@ -62,6 +63,9 @@ var editor = {
         });
 
         window.onbeforeunload = function (event) {
+            // If the workspace is not dirty then do not prompt fpr confirmation
+            if (!editor.workspace.dirty) { return; }
+
             //noinspection JSDuplicatedDeclaration
             var message = "If you leave all pipeline changes will be lost.", event = event || window.event;
             // For IE and Firefox
@@ -70,6 +74,14 @@ var editor = {
             return message;
         };
 	},
+
+    makeDirty: function() {
+        this.workspace.dirty = true;
+    },
+
+    makeClean: function() {
+        this.workspace.dirty = false;
+    },
 
     initPWR: function(module, paramName, pwrJSON) {
         if (pwrJSON === null || pwrJSON === undefined) return null;
@@ -171,7 +183,9 @@ var editor = {
             pipelineVersionComment: "",
             pipelineDocumentation: "",
             pipelineLsid: ""
-        }
+        };
+
+        editor.makeDirty();
     },
 
     _setPipelineName: function() {
@@ -223,6 +237,9 @@ var editor = {
 
         input.module.getMasterInput().detachAll();
         input.module.checkForWarnings();
+
+        // Mark the workspace as dirty
+        editor.makeDirty();
 	},
 
 	_nextId: function() {
@@ -337,6 +354,9 @@ var editor = {
     },
 
 	addModule: function(lsid) {
+        // Mark the workspace as dirty
+        editor.makeDirty();
+
         return this._addModule(lsid, this._nextId(), null, null);
 	},
 
@@ -434,6 +454,9 @@ var editor = {
             this.workspace["pipelineDocumentation"] = save["Documentation"];
         }
         editor._setPipelineName();
+
+        // Mark the workspace as dirty
+        editor.makeDirty();
     },
 
     _pipelineTransport: function() {
@@ -565,6 +588,7 @@ var editor = {
         editor.workspace["pipelineVersionComment"] = "";
         editor.workspace["files"] = [];
         editor._setPipelineName();
+        editor.makeClean();
     },
 
     _validatePipeline: function() {
@@ -625,6 +649,7 @@ var editor = {
                     editor._loadModules(response["modules"]);
                     editor._loadPipes(response["pipes"]);
                     editor._validatePipeline();
+                    editor.makeClean();
                 }
             },
             dataType: "json"
@@ -1261,9 +1286,9 @@ var properties = {
     },
 
     hide: function() {
-        properties.saveToModel();
         properties._deselectOldSelection();
         if (this.displayed) {
+            properties.saveToModel();
             $("#properties").hide("slide", { direction: "right" }, 500);
         }
         this.displayed = false;
@@ -1996,6 +2021,9 @@ function Module(moduleJSON) {
         }
         this.toggleFileIcon(showFileIcon);
         this.checkForWarnings();
+
+        // Mark the workspace as dirty
+        editor.makeDirty();
     };
 
     this.checkForWarnings = function() {
@@ -2232,6 +2260,9 @@ function Module(moduleJSON) {
             if (confirmed) {
                 var module = editor.getParentModule(this.id);
                 module.remove();
+
+                // Mark the workspace as dirty
+                editor.makeDirty();
             }
         });
 
@@ -2905,6 +2936,9 @@ function Pipe(connection) {
         if (!oldReq && newReq) {
             $(this.inputPort.endpoint.canvas).removeClass("optionalPort");
         }
+
+        // Mark the workspace as dirty
+        editor.makeDirty();
     };
 
     this.prepTransport = function() {
