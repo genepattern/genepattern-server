@@ -1724,7 +1724,7 @@ var properties = {
         var outSelected = pipe.outputPort.pointer;
         var inSelected = pipe.inputPort.pointer;
 
-        var outputOptions = ["1=1st Output", "2=2nd Output", "3=3rd Output", "4=4th Output"];
+        var outputOptions = ["1=1st Output", "2=2nd Output", "3=3rd Output", "4=4th Output", "stdout=Standard Output", "stderr=Standard Error"];
         outputOptions = outputOptions.concat(pipe.outputModule.outputs);
         if (editor.USE_BETA_OPTIONS) {
             outputOptions = outputOptions.concat(["?scatter&amp;filter&#061;*=Scatter Each Output", "?filelist&amp;filter&#061;*=File List of All Outputs"])
