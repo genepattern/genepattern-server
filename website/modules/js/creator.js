@@ -165,7 +165,8 @@ function addparameter()
                 <td colspan='2'>   \
                     <select name='p_type'>\
                        <option value='text'>Text</option> \
-                       <option value='Numeric'>Numeric</option>  \
+                       <option value='Integer'>Integer</option>  \
+                           <option value='Floating Point'>Floating Point</option>  \
                        <option value='Input File'>Input File</option>\
                            <option value='Directory'>Directory</option>\
                        <option value='Password'>Password</option> \
@@ -810,9 +811,14 @@ function loadParameterInfo(parameters)
             changeParameterType(newParameter.find("select[name='p_type']"));                                   
         }
 
-        if(type == "java.lang.Integer" || type == "java.lang.Float")
+        if(type == "java.lang.Integer")
         {
-            newParameter.find("select[name='p_type']").val("Numeric");
+            newParameter.find("select[name='p_type']").val("Integer");
+            changeParameterType(newParameter.find("select[name='p_type']"));
+        }
+        if(type == "java.lang.Float")
+        {
+            newParameter.find("select[name='p_type']").val("Floating Point");
             changeParameterType(newParameter.find("select[name='p_type']"));
         }
         

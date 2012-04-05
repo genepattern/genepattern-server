@@ -376,16 +376,34 @@ public class ModuleQueryServlet extends HttpServlet
 
                 HashMap attributes = new HashMap();
                 attributes.put(GPConstants.PARAM_INFO_DEFAULT_VALUE[0], parameterJSON.getDefaultValue());
-                if(parameterJSON.getType().equalsIgnoreCase("text"))
-                {
-                    attributes.put(GPConstants.PARAM_INFO_TYPE[0], GPConstants.PARAM_INFO_TYPE_TEXT);
-                }
+
 
                 if(parameterJSON.getType().equalsIgnoreCase("file"))
                 {
                     attributes.put(GPConstants.PARAM_INFO_TYPE[0], GPConstants.PARAM_INFO_TYPE_INPUT_FILE);
                     attributes.put(ParameterInfo.TYPE, ParameterInfo.FILE_TYPE);
                     attributes.put(ParameterInfo.MODE, ParameterInfo.INPUT_MODE);
+                }
+                else if(parameterJSON.getType().equalsIgnoreCase("integer"))
+                {
+                    attributes.put(GPConstants.PARAM_INFO_TYPE[0], GPConstants.PARAM_INFO_TYPE_INTEGER);
+                }
+                else if(parameterJSON.getType().equalsIgnoreCase("floating point"))
+                {
+                    attributes.put(GPConstants.PARAM_INFO_TYPE[0], GPConstants.PARAM_INFO_TYPE_FLOAT);
+                }
+                else if(parameterJSON.getType().equalsIgnoreCase("password"))
+                {
+                    attributes.put(GPConstants.PARAM_INFO_TYPE[0], GPConstants.PARAM_INFO_PASSWORD);
+                }
+                else if(parameterJSON.getType().equalsIgnoreCase("directory"))
+                {
+                    attributes.put(GPConstants.PARAM_INFO_TYPE[0], GPConstants.PARAM_INFO_TYPE_DIR);
+                }
+                else
+                {
+                    //then this must be a text input
+                    attributes.put(GPConstants.PARAM_INFO_TYPE[0], GPConstants.PARAM_INFO_TYPE_TEXT);
                 }
                 
                 if(parameterJSON.isOptional())
