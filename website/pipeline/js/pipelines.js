@@ -1176,7 +1176,7 @@ var properties = {
     init: function() {
         $("html").click(function(event) {
             if (!editor.isInsideDialog(event.target)) {
-                properties.hide();;
+                properties.hide();
             }
         });
 
