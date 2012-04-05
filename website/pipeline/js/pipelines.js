@@ -656,9 +656,19 @@ var editor = {
         });
 	},
 
-	save: function(runImmediately) {
+	save: function(runImmediately, ignorePrompts) {
         if (editor.hasErrors()) {
             editor.showDialog("ERROR", "The pipeline being edited has errors.  Please fix the errors before saving.");
+            return;
+        }
+
+        // Check for whether the pipeline is Untitled
+        if (!ignorePrompts && !editor.confirmIfUntitled(runImmediately)) {
+            return;
+        }
+
+        // Check for pipelines with the same name
+        if (!ignorePrompts && !editor.confirmUniqueName(runImmediately)) {
             return;
         }
 
@@ -712,6 +722,73 @@ var editor = {
             dataType: "json"
         });
 	},
+
+    confirmUniqueName: function(runImmediately) {
+        var nameFound = false;
+
+        // See if another pipeline or module shares a name
+        for (var i in library.modules) {
+            var module = library.modules[i];
+
+            // If not a module, ignore this iteration
+            if (!module instanceof Module) { continue; }
+
+            if (module.name === editor.workspace["pipelineName"]) {
+                // If this lsid is blank there will be no multiple versions to worry about
+                if (editor.workspace["pipelineLsid"] === "") { continue; }
+
+                // If a shared name is found, make sure it's not a different version of the same pipeline
+                var foundBaseLsid = editor.extractBaseLsid(module.lsid);
+                var thisBaseLsid = editor.extractBaseLsid(editor.workspace["pipelineLsid"]);
+                if (foundBaseLsid !== thisBaseLsid) { nameFound = true; }
+            };
+        }
+
+        // If none share a name, return
+        if (!nameFound) {
+            return true;
+        }
+
+        // Otherwise, prompt the user
+        var buttons = { "Yes": function() {
+            $(this).dialog("close");
+            editor.save(runImmediately, true);
+            if (event.preventDefault) event.preventDefault();
+            if (event.stopPropagation) event.stopPropagation();
+        },
+        "No": function() {
+            $(this).dialog("close");
+            if (event.preventDefault) event.preventDefault();
+            if (event.stopPropagation) event.stopPropagation();
+        }};
+        editor.showDialog("Confirm Pipeline Name", "One or more pipelines or modules were already found with this name: <strong>"
+            + editor.workspace["pipelineName"] + "</strong>.<br /><br />Are you sure you want to save the pipeline with this name?", buttons);
+        return false;
+    },
+
+    confirmIfUntitled: function(runImmediately) {
+        var isUntitled = editor.workspace["pipelineName"].indexOf("UntitledPipeline") == 0
+
+        // If not untitled then continue
+        if (!isUntitled) {
+            return true;
+        }
+
+        // Otherwisr prompt the user
+        var buttons = { "Yes": function() {
+            $(this).dialog("close");
+            editor.save(runImmediately, true);
+            if (event.preventDefault) event.preventDefault();
+            if (event.stopPropagation) event.stopPropagation();
+        },
+            "No": function() {
+                $(this).dialog("close");
+                if (event.preventDefault) event.preventDefault();
+                if (event.stopPropagation) event.stopPropagation();
+            }};
+        editor.showDialog("Confirm Pipeline Name", "This pipeline is an untitled pipeline.<br /><br />Are you sure you want to save the pipeline with this name?", buttons);
+        return false;
+    },
 
     bundleAsModule: function() {
         var moduleJSON = {
