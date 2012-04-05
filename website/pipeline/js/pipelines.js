@@ -625,8 +625,6 @@ var editor = {
                     editor._loadModules(response["modules"]);
                     editor._loadPipes(response["pipes"]);
                     editor._validatePipeline();
-                    properties.displayPipeline();
-                    properties.show();
                 }
             },
             dataType: "json"
