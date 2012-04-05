@@ -473,6 +473,16 @@
   <url-pattern>/PipelineDesigner/*</url-pattern>
  </servlet-mapping>
 
+<servlet>
+    <display-name>Module Creator Servlet</display-name>
+    <servlet-name>ModuleCreator</servlet-name>
+    <servlet-class>org.genepattern.modules.ModuleQueryServlet</servlet-class>
+</servlet>
+ <servlet-mapping>
+  <servlet-name>ModuleCreator</servlet-name>
+  <url-pattern>/ModuleCreator/*</url-pattern>
+</servlet-mapping>
+
  <servlet>
   <display-name>JobConfigurationServlet</display-name>
   <servlet-name>JobConfigurationServlet</servlet-name>
