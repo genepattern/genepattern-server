@@ -738,7 +738,7 @@ var library = {
         this._addCategoryModules();
 
         $("#closeAllCategories").click(function(event) {
-            $(".moduleBullet").hide("slow");
+            $(".moduleBullet").hide();
             $(".categoryOpen").hide();
             $(".categoryClosed").show();
             if (event.preventDefault) event.preventDefault();
@@ -746,7 +746,7 @@ var library = {
         });
 
         $("#openAllCategories").click(function(event) {
-            $(".moduleBullet").show("slow");
+            $(".moduleBullet").show();
             $(".categoryOpen").show();
             $(".categoryClosed").hide();
             if (event.preventDefault) event.preventDefault();
@@ -1002,11 +1002,14 @@ var library = {
     },
 
     _addModuleToCategoryMap: function(module) {
-        if (this.moduleCategoryMap[module.category] === undefined || this.moduleCategoryMap[module.category] === null) {
-            this.moduleCategoryMap[module.category] = new Array();
+        var category = module.category;
+        if (category === null || category === "") { category = "Uncategorized"; }
+
+        if (this.moduleCategoryMap[category] === undefined || this.moduleCategoryMap[category] === null) {
+            this.moduleCategoryMap[category] = new Array();
         }
 
-        this.moduleCategoryMap[module.category].push(module);
+        this.moduleCategoryMap[category].push(module);
     },
 
     _readModuleCategories: function() {
