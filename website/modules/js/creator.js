@@ -803,13 +803,14 @@ function loadParameterInfo(parameters)
         var pfileformat = parameters[i].fileformat;
 
         var type = parameters[i].type;
-        if(type == null || type == "")
+
+        if(type == "java.io.File")
         {
             newParameter.find("select[name='p_type']").val("Input File");
             changeParameterType(newParameter.find("select[name='p_type']"));                                   
         }
 
-        if(type == null || type == "java.lang.Integer" || type == "java.lang.Float")
+        if(type == "java.lang.Integer" || type == "java.lang.Float")
         {
             newParameter.find("select[name='p_type']").val("Numeric");
             changeParameterType(newParameter.find("select[name='p_type']"));
