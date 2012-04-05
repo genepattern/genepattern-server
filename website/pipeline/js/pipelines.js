@@ -1170,7 +1170,6 @@ var properties = {
     subtitleDiv: "propertiesSubtitle",
     versionDiv: "propertiesVersion",
     inputDiv: "propertiesInput",
-    buttonDiv: "propertiesSubmit",
     current: null,
     displayed: false,
 
@@ -1183,18 +1182,6 @@ var properties = {
 
         $("#" + properties.div).click(function(event) {
             event.stopPropagation();
-        });
-
-        $("#propertiesOk").button();
-        $("#propertiesCancel").button();
-
-        $("#propertiesOk").click(function() {
-            properties.saveToModel();
-            properties.hide();
-        });
-
-        $("#propertiesCancel").click(function() {
-            properties.hide();
         });
     },
 
@@ -1273,6 +1260,7 @@ var properties = {
     },
 
     hide: function() {
+        properties.saveToModel();
         properties._deselectOldSelection();
         if (this.displayed) {
             $("#properties").hide("slide", { direction: "right" }, 500);
