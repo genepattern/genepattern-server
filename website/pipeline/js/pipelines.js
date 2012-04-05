@@ -2392,11 +2392,20 @@ function Module(moduleJSON) {
         return input;
     };
 
-	this._addMasterInput = function () {
-        return this.addInput("master");
+    this.hasFileInputs = function() {
+        return this.fileInputs.length > 0;
+    }
+
+	this._addMasterInput = function() {
+        if (this.hasFileInputs()) {
+            return this.addInput("master");
+        }
+        else {
+            return null;
+        }
     };
 
-	this._removePipes = function () {
+	this._removePipes = function() {
         while (this.inputEnds.length > 0) {
             if (this.inputEnds[0].master) {
                 this.inputEnds[0].remove();

@@ -31,6 +31,16 @@
             var createPrivatePipelineAllowed = #{authorizationBean.createPrivatePipelineAllowed};
             var createPublicSuiteAllowed = #{authorizationBean.createPublicSuiteAllowed};
             var createPrivateSuiteAllowed = #{authorizationBean.createPrivateSuiteAllowed};
+            var genomeSpaceLoggedIn = #{genomeSpaceBean.loggedIn};
+
+            function showCorrectGSLink() {
+                if (genomeSpaceLoggedIn) {
+                    MM_showMenu(window.mm_menu_genomespaceloggedin,x,y,null,'link24;');
+                }
+                else {
+                    MM_showMenu(window.mm_menu_genomespace,x,y,null,'link24');
+                }
+            }
         </script>
         <script type="text/javascript" src="/gp/js/prototype.js"/>
         <script type="text/javascript" src="/gp/js/genepattern.js"/>
@@ -78,9 +88,10 @@
             <a name="link2" id="link5" href="/gp/pages/index.jsf?splash=downloads" onclick="MM_showMenu(window.mm_menu_downloads,x,y,null,'link2')" onmouseover="MM_showMenu(window.mm_menu_downloads,x,y,null,'link2')" onmouseout="MM_startTimeout();">Downloads</a> &#160;&#160;&#160;&#160;&#160;&#160;
             <a name="link13" id="link4" href="/gp/pages/serverSettings.jsf" onclick="MM_showMenu(window.mm_menu_administration,x,y,null,'link13')" onmouseover="MM_showMenu(window.mm_menu_administration,x,y,null,'link13')" onmouseout="MM_startTimeout();">Administration</a>&#160;&#160;&#160;&#160;&#160;&#160;
             <a name="link11" id="link1" href="/gp/pages/index.jsf" onclick="MM_showMenu(window.mm_menu_documentation,x,y,null,'link11')" onmouseover="MM_showMenu(window.mm_menu_documentation,x,y,null,'link11')" onmouseout="MM_startTimeout();">Help</a>&#160;&#160;&#160;&#160;&#160;&#160;
-            <a name="link24" id="link24" href="/gp/pages/index.jsf" onclick="MM_showMenu(window.mm_menu_genomespaceloggedin,x,y,null,'link24')" onmouseover="MM_showMenu(window.mm_menu_genomespaceloggedin,x,y,null,'link24')" onmouseout="MM_startTimeout();">
+            <a name="link24" id="link24" href="/gp/pages/index.jsf" onclick="showCorrectGSLink()" onmouseover="showCorrectGSLink()" onmouseout="MM_startTimeout();">
                 <img style="vertical-align:middle" alt="GenomeSpace" src="/gp/pages/genomespace/genomespace_icon.gif" height="14px" width="14px" border="0" />&#160;GenomeSpace
             </a>
+
         </div>
 
         <!--  Main content area -->
