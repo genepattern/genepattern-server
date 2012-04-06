@@ -104,9 +104,9 @@ use, misuse, or functionality.
                                 </h:outputText>
                             </h:outputText>
                             <h:outputText rendered="#{!runTaskBean.pipeline}">
-                                <a href="#{facesContext.externalContext.requestContextPath}/addTask.jsp?name=#{runTaskBean.lsid}&#38;view=1">properties</a>&#160;|&#160;<a href="#{facesContext.externalContext.requestContextPath}/makeZip.jsp?name=#{runTaskBean.lsid}">export</a>&#160;|&#160;
+                                <a href="#{facesContext.externalContext.requestContextPath}/modules/addTask.jsf?name=#{runTaskBean.lsid}&#38;view=1">properties</a>&#160;|&#160;<a href="#{facesContext.externalContext.requestContextPath}/makeZip.jsp?name=#{runTaskBean.lsid}">export</a>&#160;|&#160;
                                 <h:panelGroup rendered="#{runTaskBean.editAllowed}">
-                                    <a href="#{facesContext.externalContext.requestContextPath}/addTask.jsp?name=#{runTaskBean.lsid}">edit</a>&#160;|&#160;
+                                    <a href="#{facesContext.externalContext.requestContextPath}/modules/creator.jsf?lsid=#{runTaskBean.lsid}">edit</a>&#160;|&#160;
                                 </h:panelGroup>
                             </h:outputText>
                             <a target="_blank" href="#{facesContext.externalContext.requestContextPath}/getTaskDoc.jsp?name=#{runTaskBean.lsid}">help</a>
@@ -237,7 +237,7 @@ use, misuse, or functionality.
                                 <h:outputText rendered="#{!runTaskBean.pipeline}">
                                     <a href="#{facesContext.externalContext.requestContextPath}/addTask.jsp?name=#{runTaskBean.lsid}&#38;view=1">properties</a>&#160;|&#160;<a href="#{facesContext.externalContext.requestContextPath}/makeZip.jsp?name=#{runTaskBean.lsid}">export</a>&#160;|&#160;
                                     <h:panelGroup rendered="#{runTaskBean.editAllowed}">
-                                        <a href="#{facesContext.externalContext.requestContextPath}/addTask.jsp?name=#{runTaskBean.lsid}">edit</a>&#160;|&#160;
+                                        <a href="#{facesContext.externalContext.requestContextPath}/modules/creator.jsf?lsid=#{runTaskBean.lsid}">edit</a>&#160;|&#160;
                                     </h:panelGroup>
                                 </h:outputText>
                                 <a target="_blank" href="#{facesContext.externalContext.requestContextPath}/getTaskDoc.jsp?name=#{runTaskBean.lsid}">help</a>
