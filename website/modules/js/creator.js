@@ -469,6 +469,7 @@ function changeParameterType(element)
                                 element.parent().parent().find("input[name='choicelist']").each(function()
                                 {
                                     $(this).val(choicelist);
+                                    $(this).data('prevVal', choicelist);
                                     element.data('editing', "Choice");
                                 });
 
