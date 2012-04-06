@@ -10,7 +10,7 @@ function mmLoadMenus() {
   }
 
   if(createTaskAllowed) {
-  	mm_menu_tasks.addMenuItem("New&nbsp;Module","location=contextRoot + '/addTask.jsp'");
+  	mm_menu_tasks.addMenuItem("New&nbsp;Module","location=contextRoot + '/modules/creator.jsf'");
   }
 
   if(createTaskAllowed) {
