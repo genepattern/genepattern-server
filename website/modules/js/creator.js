@@ -140,7 +140,7 @@ function addparameter()
                    Description: \
                </td> \
                <td colspan='3'>  \
-                   <textarea cols='60' name='p_description' rows='3'></textarea> \
+                   <textarea cols='60' name='p_description' rows='2'></textarea> \
                </td>    \
                <td>        \
                    Default Value: <input type='text' name='p_defaultvalue' size='16'/> \
