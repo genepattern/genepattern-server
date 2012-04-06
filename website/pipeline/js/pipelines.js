@@ -709,6 +709,7 @@ var editor = {
                     editor.workspace["pipelineLsid"] = newLsid;
                     editor.workspace["pipelineVersion"] = editor.extractLsidVersion(newLsid);
                     editor.workspace["pipelineVersionComment"] = "";
+                    editor._updateHistoryOnSave();
                     editor._cleanAfterSave();
                 }
                 // Add new version to the modules map
@@ -722,6 +723,10 @@ var editor = {
             dataType: "json"
         });
 	},
+
+    _updateHistoryOnSave: function() {
+        history.pushState(null, "GenePattern Pipeline Editor", location.origin + location.pathname + "?lsid=" + editor.workspace["pipelineLsid"]);
+    },
 
     confirmUniqueName: function(runImmediately) {
         var nameFound = false;
