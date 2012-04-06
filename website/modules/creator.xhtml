@@ -9,7 +9,6 @@
  use, misuse, or functionality.
 !-->
 
-<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE html
         PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
         "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
@@ -19,267 +18,319 @@
 	<title>Create GenePattern Module</title>
 
 	<link type="text/css" rel="stylesheet" href="styles/layout-default-latest.css" />
-    <link  type="text/css" rel="stylesheet" media="screen" href="styles/jquery.multiselect.css" />    
+    <link  type="text/css" rel="stylesheet" media="screen" href="styles/jquery.multiselect.css" />
     <link  type="text/css" rel="stylesheet" media="screen" href="styles/creator.css" />
     <link  type="text/css" rel="stylesheet" media="screen" href="styles/themes/base/jquery.ui.all.css" />
+    <link href="../css/style.css" rel="stylesheet" type="text/css" />
+    <link href="../skin/favicon.ico" rel="shortcut icon" />
 
     <script type="text/javascript" src="js/jquery-1.7.1.js"></script>
-    <script type="text/javascript" src="js/jquery.iframe-post-form.js"></script>	
+    <script type="text/javascript" src="js/jquery.iframe-post-form.js"></script>
     <script type="text/javascript" src="js/jquery-ui-1.8.17.custom.min.js"></script>
 	<script type="text/javascript" src="js/jquery.layout-1.2.0.js"></script>
     <script type="text/javascript" src="js/creator.js"></script>
     <script type="text/javascript" src="js/jquery.multiselect.js"></script>
+
+   <script type="text/javascript" language="javascript">
+        var contextRoot = '#{facesContext.externalContext.requestContextPath}';
+        var createTaskAllowed = #{authorizationBean.createModuleAllowed};
+        var createPublicPipelineAllowed = #{authorizationBean.createPublicPipelineAllowed};
+        var createPrivatePipelineAllowed = #{authorizationBean.createPrivatePipelineAllowed};
+        var createPublicSuiteAllowed = #{authorizationBean.createPublicSuiteAllowed};
+        var createPrivateSuiteAllowed = #{authorizationBean.createPrivateSuiteAllowed};
+        var genomeSpaceLoggedIn = #{genomeSpaceBean.loggedIn};
+
+        function showCorrectGSLink() {
+            if (genomeSpaceLoggedIn) {
+                MM_showMenu(window.mm_menu_genomespaceloggedin,x,y,null,'link24;');
+            }
+            else {
+                MM_showMenu(window.mm_menu_genomespace,x,y,null,'link24');
+            }
+        }
+    </script>
+    <script type="text/javascript" src="/gp/js/prototype.js"/>
+    <script type="text/javascript" src="/gp/js/genepattern.js"/>
+    <script type="text/javascript" src="/gp/js/mm_menu.js"/>
+    <script type="text/javascript" src="/gp/js/mainMenu.js"/>
 </head>
 <body>
+<script language="JavaScript1.2" type="text/javascript">
+    var agt = navigator.userAgent.toLowerCase();
+    var isSafari2 = agt.indexOf("safari/4") != -1;
+    var x = isSafari2 ? -10 : 0;
+    var y =  isSafari2 ? 8 : 18;
+    mmLoadMenus();
+</script>
 
-<div class="ui-layout-north">
-    <div>
-        <span>
-            Name*: <input type="text" id="modtitle" name="title" size="50"/>
-        </span>
-        <span>
-            version
-            <select name="modversion">
-                <option value="">unversioned</option>    
-            </select>
-        </span> 
-        <span id="modcontrols">
-            <button id="helpbtn"><a href='createhelp.jsp' target='help'>Help</a> </button>
-            <button id="savebtn">Save</button>
-        </span>
-    </div>
-    <div class="clear"></div>
+<!-- User settings area -->
+<div id="systemMessageLink">
+    <table border="0" cellpadding="0" cellspacing="0" class="loginsettings">
+        <tr valign="top">
+            <td>
+                <div style="display: inline;">
+                    <a href="#{facesContext.externalContext.requestContextPath}/pages/accountInfo.jsf">My Settings</a>
+                    |
+                     <a href="#{facesContext.externalContext.request.contextPath}/logout">Sign Out</a>
+                     &#160;${requestScope.userID}&#160;&#160;&#160;
+                </div>
+            </td>
+        </tr>
+    </table>
 </div>
 
-<div class="ui-layout-center">
-    <p class="heading">Details</p>
-    <div class ="content">
-        <table border="0" cellspacing="0" cellpadding="0">
-            <tr><td id="lsid" colspan="3"></td></tr>
-            <tr>
-                <td colspan="2">
-                    Description:
-                </td>
-            </tr>
-            <tr>
-                <td colspan="5">
-                    <textarea class="det_textarea" cols="10" rows="2" name="description"></textarea>
-                </td>
-            </tr>
-            <tr>
-                <td colspan="2">
-                    Author:
-                </td>
-            </tr>
-            <tr>
-                <td colspan="5">
-                     <input type="text" name="author" size="70"/>
-                </td>
-            </tr>
-            <tr>
-                <td colspan="2">
-                    Organization:
-                </td>
-            </tr>
-            <tr>
-                <td colspan="5">
-                     <input type="text" name="organization" size="70"/>
-                </td>
-            </tr>
-            <tr>
-                <td colspan="2">
-                    Version Comment:
-                </td>
-            </tr>
-            <tr>
-                <td colspan="5">
-                     <input type="text" name="comment" size="100"/>
-                </td>
-            </tr>
-            <tr >
-                <td colspan="2">
-                    Module Category:
-                    <select name="category">
-                        <option value=""> Uncategorized</option>
-                    </select>
-                    <button id="addcategory">New</button>
-                </td>
-            </tr>
-            <tr>
-                <td>
-                     Privacy:
-                     <select name="privacy">
-                          <option value="private">private</option>
-                         <option value="public">public</option>
-                     </select>
-                </td>
-                <td>
-                     Quality Level:
-                    <select name="quality">
-                        <option value="development">development</option>
-                        <option value="preproduction">preproduction</option>
-                        <option value="production">production</option>
-                    </select>
-                </td>
-            </tr>
-            <tr>
-                <td>
-                    CPU type:
-                    <select name="cpu">
-                        <option value="any">any</option>
-                        <option value="Alpha">Alpha</option>
-                        <option value="Intel">Intel</option>
-                        <option value="PowerPC">PowerPC</option>
-                        <option value="Sparc">Sparc</option>
-                    </select>
-                </td>
-                <td>
-                    Operating System:
-                    <input type="radio" name="os" value="any" id="os" checked="checked"/>
-                    <label for="os">Any</label>
+<!-- top band with the logo -->
+<div id="topband" class="topband">
+    <a href="/gp/pages/index.jsf" target="_top">
+        <img src="/gp/images/GP-logo.gif" alt="GenePattern" height="48" style="border: 0;" width="229" />
+    </a>
+</div>
 
-                    <input type="radio" name="os" value="linux" id="os1"/>
-                    <label for="os1">Linux</label>
+<!-- horizontal navigation band -->
+<div id="navband1" class="navband1" style="white-space: nowrap;">
+    <a name="link17" id="link6" href="/gp/pages/index.jsf" onclick="MM_showMenu(window.mm_menu_tasks,x,y,null,'link17')" onmouseover="MM_showMenu(window.mm_menu_tasks,x,y,null,'link17')" onmouseout="MM_startTimeout();">Modules &amp; Pipelines</a> &#160;&#160;&#160;&#160;&#160;&#160;
+    <a name="link14" id="link9" href="/gp/pages/manageSuite.jsf" onclick="MM_showMenu(window.mm_menu_suites,x,y,null,'link14')" onmouseover="MM_showMenu(window.mm_menu_suites,x,y,null,'link14')" onmouseout="MM_startTimeout();">Suites</a> &#160;&#160;&#160;&#160;&#160;&#160;
+    <a name="link15" id="link10" href="/gp/jobResults" onclick="MM_showMenu(window.mm_menu_jobResults,x,y,null,'link15')" onmouseover="MM_showMenu(window.mm_menu_jobResults,x,y,null,'link15')" onmouseout="MM_startTimeout();">Job Results</a> &#160;&#160;&#160;&#160;&#160;&#160;
+    <a name="link12" id="link3" href="/gp/pages/index.jsf?splash=resources" onclick="MM_showMenu(window.mm_menu_resources,x,y,null,'link12')" onmouseover="MM_showMenu(window.mm_menu_resources,x,y,null,'link12')" onmouseout="MM_startTimeout();">Resources</a> &#160;&#160;&#160;&#160;&#160;&#160;
+    <a name="link2" id="link5" href="/gp/pages/index.jsf?splash=downloads" onclick="MM_showMenu(window.mm_menu_downloads,x,y,null,'link2')" onmouseover="MM_showMenu(window.mm_menu_downloads,x,y,null,'link2')" onmouseout="MM_startTimeout();">Downloads</a> &#160;&#160;&#160;&#160;&#160;&#160;
+    <a name="link13" id="link4" href="/gp/pages/serverSettings.jsf" onclick="MM_showMenu(window.mm_menu_administration,x,y,null,'link13')" onmouseover="MM_showMenu(window.mm_menu_administration,x,y,null,'link13')" onmouseout="MM_startTimeout();">Administration</a>&#160;&#160;&#160;&#160;&#160;&#160;
+    <a name="link11" id="link1" href="/gp/pages/index.jsf" onclick="MM_showMenu(window.mm_menu_documentation,x,y,null,'link11')" onmouseover="MM_showMenu(window.mm_menu_documentation,x,y,null,'link11')" onmouseout="MM_startTimeout();">Help</a>&#160;&#160;&#160;&#160;&#160;&#160;
+    <a name="link24" id="link24" href="/gp/pages/index.jsf" onclick="showCorrectGSLink()" onmouseover="showCorrectGSLink()" onmouseout="MM_startTimeout();">
+        <img style="vertical-align:middle" alt="GenomeSpace" src="/gp/pages/genomespace/genomespace_icon.gif" height="14px" width="14px" border="0" />&#160;GenomeSpace
+    </a>
+</div>
 
-                    <input type="radio" name="os" value="mac" id="os2"/>
-                    <label for="os2">MacOS</label>
+<div id="content" class="content">
+    <!-- Main content body -->
+    <div class="ui-layout-north">
+        <div>
+            <span>
+                Name*: <input type="text" id="modtitle" name="title" size="50"/>
+            </span>
+            <span>
+                version
+                <select name="modversion">
+                    <option value="">unversioned</option>
+                </select>
+            </span>
+            <span id="modcontrols">
+                <button id="helpbtn"><a href='createhelp.jsp' target='help'>Help</a> </button>
+                <button id="savebtn">Save</button>
+            </span>
+        </div>
+    </div>
 
-                    <input type="radio" name="os" value="windows" id="os3"/>
-                    <label for="os3">Windows</label>
-                </td>
-            </tr>
+    <div class="ui-layout-center">
+        <p class="heading">Details</p>
+        <div class ="hcontent">
+            <table border="0" cellspacing="0" cellpadding="0">
+                <tr><td id="lsid" colspan="3"></td></tr>
+                <tr>
+                    <td colspan="2">
+                        Description:
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="5">
+                        <textarea class="det_textarea" cols="10" rows="2" name="description"></textarea>
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="2">
+                        Author:
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="5">
+                         <input type="text" name="author" size="70"/>
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="2">
+                        Organization:
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="5">
+                         <input type="text" name="organization" size="70"/>
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="2">
+                        Version Comment:
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="5">
+                         <input type="text" name="comment" size="100"/>
+                    </td>
+                </tr>
+                <tr >
+                    <td colspan="2">
+                        Module Category:
+                        <select name="category">
+                            <option value=""> Uncategorized</option>
+                        </select>
+                        <button id="addcategory">New</button>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                         Privacy:
+                         <select name="privacy">
+                              <option value="private">private</option>
+                             <option value="public">public</option>
+                         </select>
+                    </td>
+                    <td>
+                         Quality Level:
+                        <select name="quality">
+                            <option value="development">development</option>
+                            <option value="preproduction">preproduction</option>
+                            <option value="production">production</option>
+                        </select>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        CPU type:
+                        <select name="cpu">
+                            <option value="any">any</option>
+                            <option value="Alpha">Alpha</option>
+                            <option value="Intel">Intel</option>
+                            <option value="PowerPC">PowerPC</option>
+                            <option value="Sparc">Sparc</option>
+                        </select>
+                    </td>
+                    <td>
+                        Operating System:
+                        <input type="radio" name="os" value="any" id="os" checked="checked"/>
+                        <label for="os">Any</label>
+
+                        <input type="radio" name="os" value="linux" id="os1"/>
+                        <label for="os1">Linux</label>
+
+                        <input type="radio" name="os" value="mac" id="os2"/>
+                        <label for="os2">MacOS</label>
+
+                        <input type="radio" name="os" value="windows" id="os3"/>
+                        <label for="os3">Windows</label>
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="2">
+                        Language:
+                        <select name="language">
+                            <option value="any">any</option>
+                            <option value="C">C</option>
+                            <option value="C++">C++</option>
+                            <option value="Java">Java</option>
+                            <option value="MATLAB">MATLAB</option>
+                            <option value="Perl">Perl</option>
+                            <option value="Python">Python</option>
+                            <option value="R">R</option>
+                        </select>
+
+                        <b> min. language version: </b>
+                        <input type="text" name="lang_version" size="20"/>
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="3">
+                        Output File Formats:
+                        <select multiple="multiple" name="mod_fileformat"></select>
+                        <button id="addfileformat">New</button>
+                    </td>
+                </tr>
+            </table>
+        </div>
+
+        <p class="heading">Support Files</p>
+        <div  class="hcontent" id="supportfilecontent">
+            <div class="row fileupload-buttonbar">
+                <div>
+                    <!-- The fileinput-button span is used to style the file input field as button -->
+                    <span class="btn btn-success fileinput-button">
+                        <span><i class="icon-plus"></i> Add files...</span>
+                        <input type="file" class="supportfile"/>
+                    </span>
+                </div>
+            </div>
+            <div class="clear"></div>
+            <div id="uploadcontent">
+                <ul id="supportfileslist">
+                </ul>
+            </div>
+        </div>
+
+        <p class="heading">Command Line</p>
+        <div class="hcontent">
+            <span id="commandtype">
+                Type:
+                <select name="c_type">
+                    <option value="Custom">Custom</option>
+                    <option value="Java">Java</option>
+                  <!--  <option value="R">R</option>  -->
+                    <option value="Perl">Perl</option>
+                </select>
+            </span>
+            <div id="commandinfo">
+                <div id='commandtextarea'>
+                    <textarea rows='2' cols ='1' name='cmdtext'></textarea>
+                    <a href='createhelp.jsp#Command' target='help'>
+                        <img border='0' src='styles/images/help2.jpg'/>
+                    </a>
+                </div>
+                <button id="viewparameter">View Argument List</button>
+
+            </div>
+            <div class="clear"></div>
+        </div>
+
+        <p class="heading">Parameters</p>
+        <div class="hcontent">
+            <div class="pcontrols">
+                <span class="addcontrols" >
+                    <button id="addparam">Add</button>
+                    <button id="paramselect">Add one or more parameters</button>
+                </span>
+            </div>
+            <span id="param-bar">
+                <ul>
+                    <li><a href="#" id="addone">Add</a></li>
+                    <li><a href="#" id="addmultiple">Add multiple parameters</a></li>
+                </ul>
+            </span>
+            <div id="parameters"></div>
+        </div>
+    </div>
+    <!-- Footer -->
+    <div class="ui-layout-south">
+        <table width="100%" border="0" cellspacing="0" cellpadding="0">
             <tr>
-                <td colspan="2">
-                    Language:   
-                    <select name="language">
-                        <option value="any">any</option>
-                        <option value="C">C</option>
-                        <option value="C++">C++</option>
-                        <option value="Java">Java</option>
-                        <option value="MATLAB">MATLAB</option>
-                        <option value="Perl">Perl</option>
-                        <option value="Python">Python</option>
-                        <option value="R">R</option>
-                    </select>
-
-                    <b> min. language version: </b>
-                    <input type="text" name="lang_version" size="20"/>
-                </td>
-            </tr>
-            <tr>
-                <td colspan="3">
-                    Output File Formats:         
-                    <select multiple="multiple" name="mod_fileformat"></select>
-                    <button id="addfileformat">New</button>                    
+                <td colspan="4" class="footer">
+                    <table width="100%" border="0" cellspacing="0" cellpadding="0">
+                        <tr>
+                            <td>
+                                <a href="/gp/pages/about.jsf">About GenePattern</a>&#160;|&#160;<a href="/gp/pages/contactUs.jsf">Contact Us</a>
+                            </td>
+                            <td>
+                                <div align="right">
+                                    &copy;2003-2012&#160;<a href="http://www.broadinstitute.org" target="_blank">Broad Institute, MIT</a>
+                                </div>
+                            </td>
+                            <td width="10">&#160;</td>
+                            <td width="27">
+                                <a href="http://www.broadinstitute.org" target="_blank">
+                                    <img src="/gp/images/broad-symbol.gif" alt="Broad Institute" height="30" style="border: 0;" width="27"/>
+                                </a>
+                            </td>
+                        </tr>
+                    </table>
                 </td>
             </tr>
         </table>
     </div>
-    
-    <p class="heading">Support Files</p>
-    <div  class="content" height="300" id="supportfilecontent">
-        <div class="row fileupload-buttonbar">
-            <div>
-                <!-- The fileinput-button span is used to style the file input field as button -->
-                <span class="btn btn-success fileinput-button">
-                    <span><i class="icon-plus"></i> Add files...</span>
-                    <input type="file" class="supportfile">
-                </span>
-            </div>
-        </div>
-        <div class="clear"></div>
-        <div id="uploadcontent">
-            <ul id="supportfileslist"> 
-            </ul>
-        </div>
-    </div>
-
-    <p class="heading">Command Line</p>
-    <div class="content">
-        <span id="commandtype">
-            Type:
-            <select name="c_type">
-                <option value="Custom">Custom</option>                
-                <option value="Java">Java</option>
-              <!--  <option value="R">R</option>  -->
-                <option value="Perl">Perl</option>
-            </select>
-        </span>
-        <div id="commandinfo">
-            <div id='commandtextarea'>
-                <textarea name='cmdtext'></textarea>
-                <a href='createhelp.jsp#Command' target='help'>
-                    <img border='0' src='styles/images/help2.jpg'/>
-                </a>
-            </div>
-            <button id="viewparameter">View Argument List</button>
-            
-        </div>
-        <div class="clear"></div>
-    </div>
-
-    <p class="heading">Parameters</p>
-    <div class="content">
-        <div class="pcontrols">
-            <span class="addcontrols" >
-                <button id="addparam">Add</button>
-                <button id="paramselect">Add one or more parameters</button>
-            </span>
-        </div>
-        <span id="param-bar">
-            <ul>
-                <li><a href="#" id="addone">Add</a></li>
-                <li><a href="#" id="addmultiple">Add multiple parameters</a></li>
-            </ul>
-        </span>
-        <div id="parameters"></div>
-    </div>
 </div>
-
-<!-- dialogs -->
-<div id="addparamdialog" title="Add parameters" class="dialog">
-    How many parameters: <input type="text" id="multiparam"/>
-</div>
-
-<div id="editchoicedialog" title="Edit Choice List">
-    <div>
-        <button id="choiceadd">+</button>
-    </div>
-
-    <table>
-        <tr>
-            <th>Display Value</th>
-            <th>Value</th>
-        </tr>
-    </table>
-</div>
-
-<div id="editfileformatdialog" title="Edit Choice List">
-    <div>
-        <select id="fileformatadd"></select>
-    </div>
-
-    <table>
-        <tr>
-            <th>Display Value</th>
-            <th>Value</th>
-        </tr>
-    </table>
-</div>
-
-<div id="addmodcategorydialog" title="Add Module Category" class="dialog">
-    <h6> Enter new module category:  </h6>
-    <input type="text" id="newcategoryname"/>
-</div>
-
-<div id="addfileformatdialog" title="Add Output File Format" class="dialog">
-    <h6>Enter new output file format: </h6>
-    <input type="text" id="newfileformat"/>
-</div>
-
-<div id="clistdialog" title="Commandline Argument List">
-    <ol id="commandlist"></ol>
-</div>
-
 </body>
 </html>

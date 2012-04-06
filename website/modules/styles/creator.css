@@ -118,6 +118,8 @@ html, body
 	margin: 0;			/* Remove body margin/padding */
 	padding: 0;
 	overflow: hidden;	/* Remove scroll bars on browser window */
+    height: 100%;
+    width: 100%;
 }
 
 p
@@ -271,7 +273,7 @@ div.ui-layout-north
     height: 60px;
 }
 
-.content {
+.hcontent {
     padding: 3px 2px;
     margin-left: 15px;
 }
@@ -387,4 +389,9 @@ div.ui-layout-north
 #currentfiles button 
 {
     font-size: 65%;
+}
+
+.content
+{
+    height: 90%;
 }

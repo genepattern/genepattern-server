@@ -588,7 +588,7 @@ function addsectioncollapseimages()
 
     $(".heading").children(".imgcollapse").toggle();
 
-    $(".heading").next(".content").data("visible", true);    
+    $(".heading").next(".hcontent").data("visible", true);
 }
 
 
@@ -1013,28 +1013,28 @@ jQuery(document).ready(function() {
 
     $(".heading").click(function()
     {
-        var visible = $(this).next(".content").data("visible");
+        var visible = $(this).next(".hcontent").data("visible");
         //if first time then content is visible
         if(visible == undefined)
         {
             visible = true;
         }
 
-        $(this).next(".content").slideToggle(340);
+        $(this).next(".hcontent").slideToggle(340);
         $(this).children(".imgcollapse:first").toggle();
         $(this).children(".imgexpand:first").toggle();
         
         //visibilty has changed to the opposite
-        $(this).next(".content").data("visible", !visible);
+        $(this).next(".hcontent").data("visible", !visible);
     });
 
-    $(".content").show();
+    $(".hcontent").show();
 
-
+    //$(".mheader").load("/gp/modules/header.xhtml");
     // this layout could be created with NO OPTIONS - but showing some here just as a sample...
     // myLayout = $('body').layout(); -- syntax with No Options
 
-    mainLayout = $('body').layout({
+    mainLayout = $('.content').layout({
 
     //	enable showOverflow on west-pane so CSS popups will overlap north pane
         west__showOverflowOnHover: false
@@ -1048,10 +1048,14 @@ jQuery(document).ready(function() {
     ,	north__slidable:		false	// OVERRIDE the pane-default of 'slidable=true'
     ,	north__spacing_open:	0		// no resizer-bar when open (zero height)
     ,	north__spacing_closed:	20		// big resizer-bar when open (zero height)
-    //some pane-size settings
-    ,	north__size:			45
+    ,	south__spacing_open:	0
+
+    ,	south__slidable:		false	// OVERRIDE the pane-default of 'slidable=true'
+        //some pane-size settings
+    ,	north__minHeight:		47
     ,	west__size:			    360
     ,	east__size:				300
+    ,	south__size:		    50        
     ,	center__minWidth:		100
     ,	useStateCookie:			true
     });
