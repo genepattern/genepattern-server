@@ -10,6 +10,7 @@
 */
 
 var mainLayout;
+var run = false;
 
 var module_editor = {
     lsid: "",
@@ -105,7 +106,23 @@ function saveModule()
                 module_editor.lsid = newLsid;
                 $("#lsid").empty().append("LSID: " + newLsid);
                 module_editor.uploadedfiles = [];
-                window.open("../../pages/index.jsf?lsid=" + newLsid, '_self');
+
+                if(run)
+                {
+                    window.open("/gp/pages/index.jsf?lsid=" + newLsid, '_self');
+                }
+                else
+                {
+                    var unversioned = $(' select[name="modversion"] option[value="unversioned"]');
+                    if(unversioned != undefined && unversioned != null)
+                    {
+                        unversioned.remove();
+                    }
+
+                    var modversion = "<option value='" + version + "'>" + version + "</option>";
+                    $('select[name="modversion"]').append(modversion);
+                    $('select[name="modversion"]').val(version);
+                }
             }
         },
         dataType: "json"
@@ -609,6 +626,7 @@ function loadModuleInfo(module)
 
     if(module["lsidVersions"] !== undefined)
     {
+        $('select[name="modversion"]').children().remove();
         var modVersionLsidList = module["lsidVersions"];
         for(v =0;v<modVersionLsidList.length;v++)
         {
@@ -1002,8 +1020,25 @@ function uploadSupportFile(file, index)
     fileuploadform.submit();
 }
 
+function saveAndUpload(runModule)
+{
+    run = runModule;
+    //if no support files need to be upload then skip upload file step
+    if(module_editor.supportfileinputs.length == 0)
+    {
+        saveModule();
+    }
+    else
+    {
+        for(var q=0;q <module_editor.supportfileinputs.length;q++)
+        {
+            uploadSupportFile(module_editor.supportfileinputs[q], q);
+        }
+    }
+}
 jQuery(document).ready(function() {
 
+   // $("body").children().empty();
     addsectioncollapseimages();
     updatemodulecategories();
     updatefileformats();
@@ -1080,21 +1115,7 @@ jQuery(document).ready(function() {
                     .children("ul").toggle();
             })
             .parent()
-                .buttonset();    
-
-    /*$( "#deleteparam" ).button().click(function() {
-        $('.ui-selected').each(function()
-        {
-            var pelement = $(this).find("input[name='p_name']");
-            var felement = $(this).find("input[name='p_flag']");
-            pelement.val("");
-            felement.val("");
-            
-            updateparameter($(this));
-
-            $(this).remove();
-        });
-    }); */
+                .buttonset();
 
     $("#param-bar ul li #addone").click(function()
     {
@@ -1265,18 +1286,13 @@ jQuery(document).ready(function() {
 
     $('#savebtn').button().click(function()
     {
-        //if no support files need to be upload then skip upload file step
-        if(module_editor.supportfileinputs.length == 0)
-        {
-            saveModule();
-        }
-        else
-        {
-            for(var q=0;q <module_editor.supportfileinputs.length;q++)
-            {
-                uploadSupportFile(module_editor.supportfileinputs[q], q);
-            }
-        }
+        saveAndUpload(false);
+    });
+
+    $('#saveRunbtn').button().click(function()
+    {
+       // save and then run the module
+       saveAndUpload(true);
     });
 
 
