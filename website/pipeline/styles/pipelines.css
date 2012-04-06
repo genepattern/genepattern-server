@@ -249,6 +249,10 @@ a:hover {
 	border-color: #0000FF;
 }
 
+.draggedModule {
+    z-index: 2010 !important;
+}
+
 .module.ui-selected {
 	border-color: #FF0000;
 }

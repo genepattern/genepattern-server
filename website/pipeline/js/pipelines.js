@@ -2441,6 +2441,22 @@ function Module(moduleJSON) {
         }
     };
 
+    this._addDragEvents = function() {
+        $(this.ui).draggable({
+            start: function(event, ui) {
+                editor.makeDirty();
+                $(this).addClass("draggedModule");
+            }
+        });
+
+        $(this.ui).draggable({
+            stop: function(event, ui) {
+                editor.makeDirty();
+                $(this).removeClass("draggedModule");
+            }
+        });
+    };
+
 	this._createDiv = function() {
         this.ui = document.createElement("div");
         this.ui.setAttribute("class", this.type);
@@ -2567,6 +2583,7 @@ function Module(moduleJSON) {
         this._addMasterInput();
         jsPlumb.draggable(this.ui);
         this._addModuleButtonCalls();
+        this._addDragEvents();
     };
 
 	this.spawn = function () {
