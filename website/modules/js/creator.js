@@ -1201,8 +1201,8 @@ jQuery(document).ready(function() {
 
     $( "#addmodcategorydialog" ).dialog({
             autoOpen: false,
-            height: 190,
-            width: 340,
+            height: 210,
+            width: 330,
             buttons: {
                     "OK": function() {
                         var category = $("#newcategoryname").val();
@@ -1225,8 +1225,8 @@ jQuery(document).ready(function() {
 
     $( "#addfileformatdialog" ).dialog({
             autoOpen: false,
-            height: 220,
-            width: 440,
+            height: 210,
+            width: 330,
             buttons: {
                     "OK": function() {
                         var fileformat = $("#newfileformat").val();

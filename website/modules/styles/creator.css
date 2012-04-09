@@ -14,11 +14,6 @@ The Broad Institute
     font-size: 0.75em;
 }
 
-td
-{
-    font-size: 0.8125em;
-}
-
 .det_textarea
 {
     padding: 10px;
@@ -104,7 +99,7 @@ margin: 0;
 /* --------------- */
 table
 {
-    font-size: 0.8125em;
+    font-size: 0.6875em;
     margin: 0;
 }
 
@@ -158,7 +153,7 @@ div.ui-layout-north
 
 .pcontrols button
 {
-    font-size: 70%;
+    font-size: 71%;
 }
 
 .parameter table
@@ -233,7 +228,10 @@ div.ui-layout-north
 
 .dialog
 {
-    font-size: 0.8125em;    
+    font-size: 0.8125em;
+    padding: 0;
+    text-align: center;
+    clear: both;
 }
 
 #editchoicedialog button
@@ -244,7 +242,6 @@ div.ui-layout-north
 .ui-dialog .ui-dialog-buttonpane button
 {
     font-size: 0.75em;
-            
 }
 
 .pcontrols
@@ -286,7 +283,7 @@ div.ui-layout-north
 #modcontrols
 {
     float: right;
-    font-size: 0.6875em;
+    font-size: 0.75em;
     margin: 0;
     padding: 0;
 }
@@ -378,7 +375,7 @@ div.ui-layout-north
 
 .delparam button 
 {
-    font-size: 55%;
+    font-size: 58%;
 }
 
 #param-bar ul
@@ -388,7 +385,7 @@ div.ui-layout-north
 
 #currentfiles button 
 {
-    font-size: 65%;
+    font-size: 72%;
 }
 
 .content
