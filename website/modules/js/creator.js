@@ -43,7 +43,7 @@ function saveModule()
     if(modname == undefined || modname == null || modname.length < 1)
     {
         alert("A module name must be specified");
-        return;
+        throw("A module name must be specified");
     }
 
     var description = $('textarea[name="description"]').val();
@@ -66,7 +66,7 @@ function saveModule()
     if(commandLine == undefined || commandLine == null || commandLine.length < 1)
     {
         alert("A command line must be specified");
-        return;
+        throw("A command line must be specified");
     }
 
     var lsid = module_editor.lsid;
@@ -910,7 +910,7 @@ function getParametersJSON()
         if(pname == undefined || pname == null || pname.length < 1)
         {
             alert("A parameter name must be specified for parameter number " + pnum);
-            return;
+            throw("A parameter name is missing");
         }
         //this is an input file type
         if(type === "Input File")
