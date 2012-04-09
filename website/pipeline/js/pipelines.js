@@ -40,10 +40,10 @@ var editor = {
 	init: function() {
 		jsPlumb.Defaults.Connector = ["Bezier", { curviness:50 }];
 		jsPlumb.Defaults.DragOptions = { cursor: "pointer", zIndex:2000 };
-		jsPlumb.Defaults.PaintStyle = { strokeStyle:"black", lineWidth:2 };
+		jsPlumb.Defaults.PaintStyle = { strokeStyle:"#666699", lineWidth:2 };
 		jsPlumb.Defaults.EndpointStyle = { radius:9, fillStyle:"black" };
 		jsPlumb.Defaults.Anchors =  ["BottomCenter", "TopCenter"];
-		jsPlumb.Defaults.Overlays =  [[ "Arrow", { location:0.9 } ]];
+		jsPlumb.Defaults.Overlays =  [[ "Arrow", { location: 1 } ]];
 		jsPlumb.Defaults.MaxConnections = -1;
 
 		jsPlumb.bind("jsPlumbConnection", function(event) {
@@ -431,7 +431,7 @@ var editor = {
         else {
             this.workspace.suggestCol++;
         }
-        return { "top": this.workspace.suggestRow * 140, "left": this.workspace.suggestCol * 270 };
+        return { "top": this.workspace.suggestRow * 120, "left": this.workspace.suggestCol * 230 };
     },
 
 	suggestLocation: function(module) {
@@ -1982,7 +1982,7 @@ function Module(moduleJSON) {
         else {
             correctList = this.inputEnds;
         }
-        var position = 0.1;
+        var position = 0.15;
         while (true) {
             var notGood = false;
             for (var i in correctList) {
@@ -2739,9 +2739,9 @@ function Port(module, pointer, param) {
 	this.pipes = [];
 
 	this.init = function () {
-        var MASTER_OUTPUT = { isSource: true, paintStyle: { fillStyle: "blue" } };
+        var MASTER_OUTPUT = { isSource: true, paintStyle: { radius: 15, fillStyle: "blue" } };
         var OUTPUT = { isSource: true, paintStyle: { fillStyle: "black" } };
-        var MASTER_INPUT = { isTarget: true, paintStyle: { fillStyle: "blue" } };
+        var MASTER_INPUT = { isTarget: true, paintStyle: { radius: 15, fillStyle: "blue" } };
         var INPUT = { isTarget: true, paintStyle: { fillStyle: "black", outlineColor:"black", outlineWidth: 0 } };
 
         // Get the correct base style
@@ -2778,10 +2778,10 @@ function Port(module, pointer, param) {
         // Get the correct position array
         var posArray = null;
         if (this.isOutput()) {
-            posArray = [this.position, 1, 0, 1];
+            posArray = [this.position, 0.8, 0, 1];
         }
         else {
-            posArray = [this.position, 0, 0, -1];
+            posArray = [this.position, 0.1, 0, -1];
         }
 
         // Get the correct number of max connections

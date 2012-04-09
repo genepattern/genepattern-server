@@ -178,6 +178,15 @@ a:hover {
 
 ._jsPlumb_endpoint {
 	z-index: 2002;
+    opacity: 0;
+}
+
+._jsPlumb_endpoint:hover {
+    opacity: 0.2;
+}
+
+._jsPlumb_endpoint:-moz-drag-over {
+    opacity: 0.2;
 }
 
 .libraryModuleButton {
@@ -310,7 +319,7 @@ div.iconSpace {
 }
 
 ._jsPlumb_connector {
-    z-index: 2001;
+    z-index: 1999;
 }
 
 ._jsPlumb_connector.ui-selected path {
@@ -377,4 +386,8 @@ div.iconSpace {
 #pipelineSelectList li {
     padding: 0.4em;
     height: 14px;
+}
+
+.masterPort {
+    opacity: 0.6;
 }
