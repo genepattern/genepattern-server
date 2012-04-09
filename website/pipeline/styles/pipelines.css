@@ -327,13 +327,13 @@ div.iconSpace {
 }
 
 .tooltip {
-    display:none;
-    background:transparent url(../images/bubble.png);
-    background-repeat:no-repeat;
-    font-size:13px;
-    height:70px;
-    width:160px;
-    padding:25px;
+    display: none;
+    background: transparent url(../images/bubble.png);
+    background-repeat: no-repeat;
+    font-size: 13px;
+    height: 70px;
+    width: 160px;
+    padding: 25px;
     color:#000000;
     text-align: center;
     z-index: 9000;
@@ -386,8 +386,4 @@ div.iconSpace {
 #pipelineSelectList li {
     padding: 0.4em;
     height: 14px;
-}
-
-.masterPort {
-    opacity: 0.6;
 }

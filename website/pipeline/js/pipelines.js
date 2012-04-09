@@ -75,6 +75,11 @@ var editor = {
         };
 	},
 
+    log: function(message) {
+        //noinspection JSCheckFunctionSignatures
+        console.log(message);
+    },
+
     makeDirty: function() {
         this.workspace.dirty = true;
     },
@@ -259,7 +264,7 @@ var editor = {
 			element = element.id;
 		}
 		if (element === null) {
-			console.log("getParentModule() received null value");
+			editor.log("getParentModule() received null value");
 			return null;
 		}
 		var id = this._extractModuleId(element);
@@ -278,7 +283,7 @@ var editor = {
 			element = element.id;
 		}
 		if (element === null) {
-			console.log("getParentPort() received null value");
+            editor.log("getParentPort() received null value");
 			return null;
 		}
 		var moduleId = this._extractModuleId(element);
@@ -328,13 +333,13 @@ var editor = {
 				return
 			}
 		}
-        console.log("ERROR: Attempted to remove pipe not found in the workspace");
+        editor.log("ERROR: Attempted to remove pipe not found in the workspace");
 	},
 
     _addModule: function(lsid, id, top, left) {
         var module = library.modules[lsid];
         if (module === undefined || module === null) {
-            console.log("Error adding module: " + lsid);
+            editor.log("Error adding module: " + lsid);
             return null;
         }
         var spawn = module.spawn();
@@ -345,11 +350,9 @@ var editor = {
         return spawn;
     },
 
-    loadModule: function(lsid, id) {
-        return this._addModule(lsid, id, null, null);
-    },
-
     loadModule: function(lsid, id, top, left) {
+        if (top === undefined) { top = null; }
+        if (left === undefined) { left = null; }
         return this._addModule(lsid, id, top, left);
     },
 
@@ -373,7 +376,7 @@ var editor = {
             }
         }
         if (module === null) {
-            console.log("Error adding module: " + name);
+            editor.log("Error adding module: " + name);
             return;
         }
         var spawn = module.spawn();
@@ -387,18 +390,8 @@ var editor = {
 		return jsPlumb.connect({"source": source.endpoint, "target": target.endpoint});
 	},
 
-	_gridLayoutManager: function() {
-		var location = { "top": this.workspace.suggestRow * 120, "left": this.workspace.suggestCol * 270 };
-		this.workspace.suggestCol++;
-		if (this.workspace.suggestCol >= 4) {
-			this.workspace.suggestCol = 0;
-			this.workspace.suggestRow++;
-		}
-		return location;
-	},
-
     modulesInWorkspace: function() {
-        var count = 0
+        var count = 0;
         for (var i in editor.workspace) {
             if (editor.workspace[i] instanceof Module) {
                 count++;
@@ -712,13 +705,6 @@ var editor = {
                     editor._updateHistoryOnSave();
                     editor._cleanAfterSave();
                 }
-                // Add new version to the modules map
-                // TODO: Add in this funtionality in a way that works
-                //if (newLsid !== undefined && newLsid !== null) {
-                //    var baseLsid = editor.extractBaseLsid(newLsid);
-                //    library.moduleVersionMap[baseLsid].push(editor.bundleAsModule());
-                //    library.loadInit = false;
-                //}
             },
             dataType: "json"
         });
@@ -746,7 +732,7 @@ var editor = {
                 var foundBaseLsid = editor.extractBaseLsid(module.lsid);
                 var thisBaseLsid = editor.extractBaseLsid(editor.workspace["pipelineLsid"]);
                 if (foundBaseLsid !== thisBaseLsid) { nameFound = true; }
-            };
+            }
         }
 
         // If none share a name, return
@@ -772,14 +758,14 @@ var editor = {
     },
 
     confirmIfUntitled: function(runImmediately) {
-        var isUntitled = editor.workspace["pipelineName"].indexOf("UntitledPipeline") == 0
+        var isUntitled = editor.workspace["pipelineName"].indexOf("UntitledPipeline") == 0;
 
         // If not untitled then continue
         if (!isUntitled) {
             return true;
         }
 
-        // Otherwisr prompt the user
+        // Otherwise prompt the user
         var buttons = { "Yes": function() {
             $(this).dialog("close");
             editor.save(runImmediately, true);
@@ -904,6 +890,7 @@ var library = {
     _addCategoryModules: function() {
         // Sort Categories
         var sortedCategories = new Array();
+        //noinspection JSDuplicatedDeclaration
         for (var cat in library.moduleCategoryMap) {
             sortedCategories.push(cat);
         }
@@ -1019,7 +1006,7 @@ var library = {
         }
 
         // If we got through the loop without finding it, report the error
-        console.log("ERROR: Could not find module name: " + name + " and version: " + version + ".");
+        editor.log("ERROR: Could not find module name: " + name + " and version: " + version + ".");
         return null;
     },
 
@@ -1102,7 +1089,7 @@ var library = {
         }
 
         // Both versions are exactly the same
-        console.log("WARN: library._higherVersion() called on two versions string that are the same");
+        editor.log("WARN: library._higherVersion() called on two versions string that are the same");
         return false;
     },
 
@@ -1143,7 +1130,7 @@ var library = {
                 this.moduleNames.push(highestModule.name);
             }
             else {
-                console.log("ERROR: Unacceptable length of version array in library._readModuleNames()");
+                editor.log("ERROR: Unacceptable length of version array in library._readModuleNames()");
             }
 
         }
@@ -1179,7 +1166,7 @@ var library = {
                 this.modules[module.lsid] = new Pipeline(module);
             }
             else {
-                console.log("Error detecting module type: " + module.name);
+                editor.log("Error detecting module type: " + module.name);
             }
         }
     },
@@ -1229,11 +1216,13 @@ var library = {
             $("#pipelineSelectList").children().remove();
 
             // Read Pipelines from List
+            //noinspection JSDuplicatedDeclaration
             for (var i in library.moduleVersionMap) {
+                //noinspection JSDuplicatedDeclaration
                 var module = library.getHighestVersion(i + ":fakeVersion");
 
                 if (module === null || module === undefined) {
-                    console.log("ERROR: Reading module array in library.displayLoadDialog()");
+                    editor.log("ERROR: Reading module array in library.displayLoadDialog()");
                     return;
                 }
 
@@ -1250,6 +1239,7 @@ var library = {
 
             //noinspection JSDuplicatedDeclaration
             for (var i = 0; i < moduleList.length; i++) {
+                //noinspection JSDuplicatedDeclaration
                 var module = moduleList[i];
 
                 // Add Pipeline Div to List
@@ -1326,19 +1316,22 @@ var properties = {
 
     saveToModel: function() {
         if (this.current instanceof Module) {
+            //noinspection JSDuplicatedDeclaration
             var save = this._bundleSave();
             this.current.saveProps(save);
         }
         else if (this.current instanceof Pipe) {
+            //noinspection JSDuplicatedDeclaration
             var save = this._bundleSave();
             this.current.saveProps(save);
         }
         else if (this.current instanceof String && this.current == "Pipeline") {
+            //noinspection JSDuplicatedDeclaration
             var save = this._bundleSave();
             editor.saveProps(save);
         }
         else {
-            console.log("ERROR: Cannot determine what is being edited to save to the model");
+            editor.log("ERROR: Cannot determine what is being edited to save to the model");
         }
     },
 
@@ -1425,7 +1418,7 @@ var properties = {
     },
 
     _setVersionDropdown: function(module) {
-        var baseLsid = editor.extractBaseLsid(module.lsid)
+        var baseLsid = editor.extractBaseLsid(module.lsid);
         var moduleArray = library.moduleVersionMap[baseLsid];
 
         var select = document.createElement("select");
@@ -1460,7 +1453,7 @@ var properties = {
 
     _displayInputKey: function() {
         var key = document.createElement("div");
-        key.setAttribute("id", "propertiesKey")
+        key.setAttribute("id", "propertiesKey");
         var hr1 = document.createElement("hr");
         $("#" + this.inputDiv).append(hr1);
         key.innerHTML += "<em>Check for Prompt When Run&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;* Required</em>";
@@ -1553,7 +1546,7 @@ var properties = {
         // When the upload form is submitted, send to the servlet
         $("[name|='" + labelText + "_form']").iframePostForm({
             json : false,
-            post : function () {
+            post : function() {
                 $("[name|='" + labelText + "_uploading']").show();
                 $("[name|='" + labelText + "_done']").hide();
             },
@@ -2008,12 +2001,15 @@ function Module(moduleJSON) {
             if (port.isConnected()) {
                 var module = port.pipes[0].outputModule;
                 // Only add the module to the list if it's not already in the list
+                var inList = false;
                 for (var j = 0; j < inputModules.length; j++) {
                     if (inputModules[j] === module) {
-                        continue;
+                        inList = true;
                     }
                 }
-                inputModules.push(module);
+                if (!inList) {
+                    inputModules.push(module);
+                }
             }
         }
 
@@ -2049,7 +2045,7 @@ function Module(moduleJSON) {
             }
         }
 
-        console.log("ERROR: Was unable to find an input in " + this.name + " named: " + name);
+        editor.log("ERROR: Was unable to find an input in " + this.name + " named: " + name);
         return null;
     };
 
@@ -2063,7 +2059,7 @@ function Module(moduleJSON) {
 
     this._loadInputs = function(inputs) {
         if (this.inputs.length != inputs.length) {
-            console.log("ERROR: Inputs lengths do not match when loading: " + this.name);
+            editor.log("ERROR: Inputs lengths do not match when loading: " + this.name);
             return;
         }
 
@@ -2197,31 +2193,14 @@ function Module(moduleJSON) {
             }
         }
 
+        //noinspection JSDuplicatedDeclaration
         for (var i = 0; i < this.outputEnds.length; i++) {
             if (pointer == this.outputEnds[i].pointer) {
                 return this.outputEnds[i];
             }
         }
 
-        console.log("Unable to find port with pointer: " + pointer + " in module " + this.id);
-    };
-
-    this.hasPort = function(id) {
-        //noinspection JSDuplicatedDeclaration
-        for (var i = 0; i < this.inputEnds.length; i++) {
-            if (id == this.inputEnds[i].id) {
-                return true;
-            }
-        }
-
-        //noinspection JSDuplicatedDeclaration
-        for (var i = 0; i < this.outputEnds.length; i++) {
-            if (id == this.outputEnds[i].id) {
-                return true;
-            }
-        }
-
-        return false;
+        editor.log("Unable to find port with pointer: " + pointer + " in module " + this.id);
     };
 
 	this.getPort = function (id) {
@@ -2239,20 +2218,23 @@ function Module(moduleJSON) {
             }
         }
 
-        console.log("Unable to find port with id: " + id + " in module " + this.id);
+        editor.log("Unable to find port with id: " + id + " in module " + this.id);
     };
 
 	this.suggestInput = function (outputPort) {
+        //noinspection JSDuplicatedDeclaration
         for (var i = 0; i < outputPort.module.outputs.length; i++) {
             var output = outputPort.module.outputs[i];
 
             for (var j = 0; j < this.fileInputs.length; j++) {
                 var input = this.fileInputs[j];
+                //noinspection JSDuplicatedDeclaration
                 var used = input.used;
 
                 if (!used) {
                     // Special case for modules with no input types listed
                     if (input.kinds.length == 0) {
+                        //noinspection JSDuplicatedDeclaration
                         var inputPort = this.addInput(input.name);
                         input.makeUsed(inputPort);
                         return inputPort;
@@ -2262,6 +2244,7 @@ function Module(moduleJSON) {
                         var kind = input.kinds[k];
 
                         if (kind == output) {
+                            //noinspection JSDuplicatedDeclaration
                             var inputPort = this.addInput(input.name);
                             input.makeUsed(inputPort);
                             return inputPort;
@@ -2274,8 +2257,10 @@ function Module(moduleJSON) {
         // Special case for when there is no overlap involved, default to first match
         //noinspection JSDuplicatedDeclaration
         for (var i = 0; i < this.fileInputs.length; i++) {
+            //noinspection JSDuplicatedDeclaration
             var used = this.fileInputs[i].used;
             if (!used) {
+                //noinspection JSDuplicatedDeclaration
                 var inputPort = this.addInput(this.fileInputs[i].name);
                 this.fileInputs[i].makeUsed(inputPort);
                 return inputPort;
@@ -2352,8 +2337,8 @@ function Module(moduleJSON) {
         appendTo.appendChild(deleteButton);
     };
 
-	this._addModuleButtonCalls = function () {
-        $("#" + "open_" + this.id).click(function (event) {
+	this._addModuleButtonCalls = function() {
+        $("#" + "open_" + this.id).click(function() {
             var module = editor.getParentModule(this.id);
             if (module.isPipeline()) {
                 self.location="/gp/pipeline/index.jsf?lsid=" + module.lsid;
@@ -2369,7 +2354,7 @@ function Module(moduleJSON) {
             event.stopPropagation();
         });
 
-        $("#" + "del_" + this.id).click(function () {
+        $("#" + "del_" + this.id).click(function() {
             var confirmed = confirm("Are you sure you want to delete this module?");
             if (confirmed) {
                 var module = editor.getParentModule(this.id);
@@ -2380,7 +2365,7 @@ function Module(moduleJSON) {
             }
         });
 
-        var alertFunc = function () {
+        var alertFunc = function() {
             var module = editor.getParentModule(this.id);
             var alert = document.createElement("div");
             var list = document.createElement("ul");
@@ -2396,7 +2381,7 @@ function Module(moduleJSON) {
                 modal: true,
                 width: 400,
                 title: "Module Errors & Alerts",
-                close: function () {
+                close: function() {
                     $(this).dialog("destroy");
                     $(this).remove();
                 }
@@ -2480,14 +2465,14 @@ function Module(moduleJSON) {
 
     this._addDragEvents = function() {
         $(this.ui).draggable({
-            start: function(event, ui) {
+            start: function() {
                 editor.makeDirty();
                 $(this).addClass("draggedModule");
             }
         });
 
         $(this.ui).draggable({
-            stop: function(event, ui) {
+            stop: function() {
                 editor.makeDirty();
                 $(this).removeClass("draggedModule");
             }
@@ -2513,7 +2498,7 @@ function Module(moduleJSON) {
         return output;
     };
 
-	this._addMasterOutput = function () {
+	this._addMasterOutput = function() {
         if (this.type == "module visualizer") {
             return null;
         }
@@ -2536,7 +2521,7 @@ function Module(moduleJSON) {
                     }
                 }
                 if (!found) {
-                    console.log("ERROR: Unable to find pointer in Module.inputEnds: " + pointer);
+                    editor.log("ERROR: Unable to find pointer in Module.inputEnds: " + pointer);
                 }
             }
         }
@@ -2544,7 +2529,7 @@ function Module(moduleJSON) {
             param = pointer;
         }
         else {
-            console.log("ERROR: Module.addInput() called with invalid param: " + pointer);
+            editor.log("ERROR: Module.addInput() called with invalid param: " + pointer);
             return null;
         }
 
@@ -2556,7 +2541,7 @@ function Module(moduleJSON) {
 
     this.hasFileInputs = function() {
         return this.fileInputs.length > 0;
-    }
+    };
 
 	this._addMasterInput = function() {
         if (this.hasFileInputs()) {
@@ -2591,7 +2576,7 @@ function Module(moduleJSON) {
         }
     };
 
-	this.remove = function () {
+	this.remove = function() {
         this._removePipes();
         $("#" + this.id).remove();
         editor.removeModule(this.id);
@@ -2623,13 +2608,13 @@ function Module(moduleJSON) {
         this._addDragEvents();
     };
 
-	this.spawn = function () {
+	this.spawn = function() {
         var clone = new Module(this.json);
         clone.type = this.type;
         return clone;
     };
 
-	this.getMasterInput = function () {
+	this.getMasterInput = function() {
         return this.inputEnds[0];
     };
 
@@ -2713,7 +2698,7 @@ function InputParam(module, paramJSON) {
 
     this.loadProps = function(input) {
         if (this.name != input["name"]) {
-            console.log("ERROR: Mismatched parameter loading properties: " + this.name + " and " + input["name"]);
+            editor.log("ERROR: Mismatched parameter loading properties: " + this.name + " and " + input["name"]);
         }
         this.promptWhenRun = editor.initPWR(this.module, this.name, input["promptWhenRun"]);
         this.value = input["value"];
@@ -2738,7 +2723,7 @@ function Port(module, pointer, param) {
 	this.tooltip = null;
 	this.pipes = [];
 
-	this.init = function () {
+	this.init = function() {
         var MASTER_OUTPUT = { isSource: true, paintStyle: { radius: 15, fillStyle: "blue" } };
         var OUTPUT = { isSource: true, paintStyle: { fillStyle: "black" } };
         var MASTER_INPUT = { isTarget: true, paintStyle: { radius: 15, fillStyle: "blue" } };
@@ -2848,7 +2833,7 @@ function Port(module, pointer, param) {
         }
     };
 
-	this.remove = function () {
+	this.remove = function() {
         jsPlumb.deleteEndpoint(this.endpoint);
         //noinspection JSDuplicatedDeclaration
         for (var i = 0; i < this.module.inputEnds.length; i++) {
@@ -2868,10 +2853,10 @@ function Port(module, pointer, param) {
             }
         }
 
-        console.log("ERROR: Attempted to remove endpoint which was not found");
+        editor.log("ERROR: Attempted to remove endpoint which was not found");
     };
 
-	this.detachAll = function () {
+	this.detachAll = function() {
         this.endpoint.detachAll();
     };
 
@@ -2905,7 +2890,7 @@ function Port(module, pointer, param) {
 
     this.getInput = function() {
         if (!this.isInput()) {
-            console.log("ERROR: Attented to getInput() on a non-input port.");
+            editor.log("ERROR: Attempted to getInput() on a non-input port.");
             return null;
         }
 
@@ -2915,7 +2900,7 @@ function Port(module, pointer, param) {
             }
         }
 
-        console.log("Unable to find the input " + this.pointer + " in getInput() for " + this.module.name);
+        editor.log("Unable to find the input " + this.pointer + " in getInput() for " + this.module.name);
         return null
     };
 
@@ -3019,7 +3004,7 @@ function Pipe(connection) {
         //$(this.ui).removeClass("ui-selected");
     };
 
-	this.toMaster = function () {
+	this.toMaster = function() {
         return this.inputPort.master;
     };
 
