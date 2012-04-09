@@ -431,7 +431,7 @@ function addNewFileType(name, desc){
 
 
 
-	<% if (viewOnly && LSIDManager.getInstance().getAuthorityType(new LSID(tia.get(GPConstants.LSID))).equals(LSIDUtil.AUTHORITY_MINE)) { %><input type="button" value="Edit" onclick="window.location='addTask.jsp?name=<%= request.getParameter(GPConstants.NAME) %>'" class="button"><% } %>
+	<% if (viewOnly && LSIDManager.getInstance().getAuthorityType(new LSID(tia.get(GPConstants.LSID))).equals(LSIDUtil.AUTHORITY_MINE)) { %><input type="button" value="Edit" onclick="window.location='modules/creator.jsf?lsid=<%= request.getParameter(GPConstants.NAME) %>'" class="button"><% } %>
 
 
 	  <table cols="2" valign="top" width="100%">
