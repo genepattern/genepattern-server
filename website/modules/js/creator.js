@@ -1208,6 +1208,7 @@ jQuery(document).ready(function() {
                         var category = $("#newcategoryname").val();
                         var newcategory = $("<option>" +category + "</option>");
                         $("select[name='category']").append(newcategory);
+                        $("select[name='category']").val(category);
                         $( this ).dialog( "close" );
                     },
                     "Cancel": function() {
@@ -1217,7 +1218,7 @@ jQuery(document).ready(function() {
             resizable: false
      });
 
-    $("#addcategory").click(function()
+    $("#addcategory").button().click(function()
     {
        $( "#addmodcategorydialog" ).dialog("open");           
     });
@@ -1231,12 +1232,18 @@ jQuery(document).ready(function() {
                     "OK": function() {
                         var fileformat = $("#newfileformat").val();
                         var newfileformat = $("<option>" + fileformat + "</option>");
+
+                        //append to parameter input file format
                         $("select[name='fileformat']").each(function()
                         {
                             $(this).append(newfileformat);
                             $(this).multiselect("refresh");
                         });
 
+                        //append to module output file format
+                        $("select[name='mod_fileformat']").append(newfileformat);
+                        $("select[name='mod_fileformat']").multiselect("refresh");
+                        
                         $( this ).dialog( "close" );
                     },
                     "Cancel": function() {
@@ -1247,7 +1254,7 @@ jQuery(document).ready(function() {
     });
 
 
-    $("#addfileformat").click(function()
+    $("#addfileformat").button().click(function()
     {
        $( "#addfileformatdialog" ).dialog("open");           
     });
