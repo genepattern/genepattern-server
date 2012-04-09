@@ -170,7 +170,7 @@
 				      	</div>
 		            </td>
 		            <td align="left"><h:outputText rendered="#{taskGroup.pipeline}"><a href="#{facesContext.externalContext.requestContextPath}/viewPipeline.jsp?name=#{versionInfo.lsid}">#{versionInfo.version}</a></h:outputText>
-		            <h:outputText rendered="#{!taskGroup.pipeline}"><a href="#{facesContext.externalContext.requestContextPath}/addTask.jsp?name=#{versionInfo.lsid}">#{versionInfo.version}</a></h:outputText>
+		            <h:outputText rendered="#{!taskGroup.pipeline}"><a href="#{facesContext.externalContext.requestContextPath}/modules/creator.jsf?lsid=#{versionInfo.lsid}">#{versionInfo.version}</a></h:outputText>
 		            </td>
 		            <td>
 		            <h:outputText rendered="#{taskGroup.pipeline}"><a href="#{facesContext.externalContext.requestContextPath}/viewPipeline.jsp?name=#{versionInfo.lsid}">#{versionInfo.reason}</a></h:outputText>
