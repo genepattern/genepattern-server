@@ -538,7 +538,7 @@ var editor = {
 
             if (added === null) {
                 if (!givenAlert) {
-                    alert("Unable to load one or more of the modules in the pipeline.");
+                    editor.showDialog("Problem Loading Pipeline", "Unable to load one or more of the modules in the pipeline.");
                     givenAlert = true;
                 }
                 i++;
@@ -603,7 +603,7 @@ var editor = {
 
         // Provide an alert if this is not the most recent version of the pipeline
         if (!editor._mostRecentVersion()) {
-            alert("The pipeline you are editing is not the most recent version of the pipeline available.");
+            editor.showDialog("Warning Loading Pipeline", "The pipeline you are editing is not the most recent version of the pipeline available.");
         }
     },
 
@@ -641,7 +641,7 @@ var editor = {
             success: function(response) {
                 var error = response["ERROR"];
                 if (error !== undefined) {
-                    alert(error);
+                    editor.showDialog("Error Loading Pipeline", error);
                 }
                 else {
                     editor._cleanWorkspace();
@@ -1184,6 +1184,25 @@ var library = {
         }
     },
 
+    _createBlackBoxModule: function(name, lsid) {
+        if (name === undefined) { name = "BlackBox"; }
+        if (lsid === undefined) { lsid = ""; }
+
+        // Manually insert the Black Box dummy module
+        var moduleJSON = {
+            name: name,
+            lsid: lsid,
+            version: "",
+            category: "",
+            write: true,
+            outputs: [],
+            inputs: []
+        };
+        var module = new Module(moduleJSON);
+        module.blackbox = true;
+        return module;
+    },
+
     extractFileInputs: function(inputs) {
         var files = new Array();
         for (var i = 0; i < inputs.length; i++) {
@@ -1482,7 +1501,11 @@ var properties = {
             var checkBox = this._addPromptWhenRun(uploadForm, labelText, value, value !== properties.PROMPT_WHEN_RUN && disabled);
         }
 
-        uploadForm.innerHTML += this._encodeToHTML(labelText) + " ";
+        var textLabel = document.createElement("label");
+        textLabel.setAttribute("class", "propertiesLabel");
+        textLabel.innerHTML += this._encodeToHTML(labelText);
+        uploadForm.appendChild(textLabel);
+
         var fileUpload = document.createElement("input");
         fileUpload.setAttribute("type", "file");
         fileUpload.setAttribute("name", labelText);
@@ -1542,7 +1565,7 @@ var properties = {
                 $("[name|='" + labelText + "_done']").show();
 
                 if (response.error !== undefined) {
-                    alert(response.error);
+                    editor.showDialog("Error Uploading File", response.error);
                 }
                 else {
                     editor.workspace["files"].push(response.location);
@@ -1580,7 +1603,11 @@ var properties = {
             var checkBox = this._addPromptWhenRun(label, labelText, selected);
         }
 
-        label.innerHTML += this._encodeToHTML(labelText) + " ";
+        var textLabel = document.createElement("label");
+        textLabel.setAttribute("class", "propertiesLabel");
+        textLabel.innerHTML += this._encodeToHTML(labelText);
+        label.appendChild(textLabel);
+
         var select = document.createElement("select");
         select.setAttribute("name", labelText);
         select.setAttribute("class", "propertyValue");
@@ -1697,7 +1724,11 @@ var properties = {
             var checkBox = this._addPromptWhenRun(label, labelText, value);
         }
 
-        label.innerHTML += this._encodeToHTML(labelText) + " ";
+        var textLabel = document.createElement("label");
+        textLabel.setAttribute("class", "propertiesLabel");
+        textLabel.innerHTML += this._encodeToHTML(labelText);
+        label.appendChild(textLabel);
+
         var inputBox = document.createElement("input");
         inputBox.setAttribute("type", "text");
         inputBox.setAttribute("name", labelText);
@@ -1941,6 +1972,7 @@ function Module(moduleJSON) {
 	this.type = "module";
 	this.ui = null;
     this.alerts = {};
+    this.blackBox = false;
 
     this.freePosition = function(isOutput) {
         var correctList = null;
