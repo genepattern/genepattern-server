@@ -174,7 +174,7 @@ function addparameter()
                     <input type='text' name='p_flag' size='7'/> \
                 </td> \
                 <td> \
-                    <input type='checkbox' name='p_flagspace' size='7' checked='true'> insert space after flag</input> \
+                    <input type='checkbox' name='p_flagspace' size='7' disabled='disabled'> insert space after flag</input> \
                 </td> \
                 <td> \
                      Type*: \
@@ -212,6 +212,7 @@ function addparameter()
 
     $(".delparam button").button().click(function()
     {
+        //first remove the parameter from the commandline
         var pelement = $(this).parent().parent().find("input[name='p_name']");
         var felement = $(this).parent().parent().find("input[name='p_flag']");
         pelement.val("");
@@ -1039,7 +1040,8 @@ function saveAndUpload(runModule)
 }
 jQuery(document).ready(function() {
 
-   // $("body").children().empty();
+    $("input[type='text']").val("");
+
     addsectioncollapseimages();
     updatemodulecategories();
     updatefileformats();
@@ -1154,6 +1156,21 @@ jQuery(document).ready(function() {
     {
         var parameterParent = $(this).parents(".parameter");
 
+        //enable the flag space checkbox if the parameter flag is specified
+        var p_flagspace = parameterParent.find("input[name='p_flagspace']");
+        var p_flag = parameterParent.find("input[name='p_flag']");
+
+        if(p_flag.val() !== undefined && p_flag.val() !== null)
+        {
+            if(p_flag.val() !== "")
+            {
+                p_flagspace.removeAttr("disabled");
+            }
+            else
+            {
+                p_flagspace.attr("disabled", true);   
+            }
+        }
         updateparameter(parameterParent);
     });
 
