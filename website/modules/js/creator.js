@@ -48,6 +48,7 @@ function saveModule()
 
     var description = $('textarea[name="description"]').val();
     var author = $('input[name="author"]').val();
+    author = author + ";" + $('input[name="organization"]').val();
     var privacy = $('select[name="privacy"] option:selected').val();
     var quality = $('select[name="quality"] option:selected').val();
     var language = $('select[name="language"] option:selected').val();
@@ -197,18 +198,6 @@ function addparameter()
         </table> \
     </div>");
     $('#parameters').append(paramDiv);
-
-    paramDiv.click(function()
-    {
-       /* if (!$(this).hasClass("ui-selected"))
-        {
-            $(this).addClass("ui-selected").siblings().removeClass("ui-selected");
-        } */
-        /*else
-        {
-            $(this).removeClass("ui-selected");
-        } */
-    });
 
     $(".delparam button").button().click(function()
     {
@@ -657,7 +646,20 @@ function loadModuleInfo(module)
 
     if(module["author"] !== undefined)
     {
-        $('input[name="author"]').val(module["author"]);
+        var author = module["author"];
+        if(author.indexOf(";") != -1)
+        {
+            var results = author.split(";");
+            author = results[0];
+            var organization = results[1];
+
+            $('input[name="author"]').val(author);
+            $('input[name="organization"]').val(organization);            
+        }
+        else
+        {
+            $('input[name="author"]').val(module["author"]);
+        }
     }
 
     if(module["privacy"] !== undefined)
@@ -1090,7 +1092,7 @@ jQuery(document).ready(function() {
 
     ,	south__slidable:		false	// OVERRIDE the pane-default of 'slidable=true'
         //some pane-size settings
-    ,	north__minHeight:		47
+    ,	north__minHeight:		46
     ,	west__size:			    360
     ,	east__size:				300
     ,	south__size:		    50        
