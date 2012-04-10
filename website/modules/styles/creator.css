@@ -19,6 +19,7 @@ The Broad Institute
     padding: 10px;
     width: 600px;
     font-family: Arial, sans-serif;
+    font-size: 1.6875em;
 }
 
 #commandlist
@@ -99,7 +100,7 @@ margin: 0;
 /* --------------- */
 table
 {
-    font-size: 0.6875em;
+    font-size: 0.75em;
     margin: 0;
 }
 
