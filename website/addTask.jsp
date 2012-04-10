@@ -827,7 +827,7 @@ function addNewFileType(name, desc){
 		authorityType = LSIDManager.getInstance().getAuthorityType(l);
 		if (authorityType.equals(LSIDUtil.AUTHORITY_MINE)) {
 	%>
-			<input type="button" value="Edit" onclick="window.location='addTask.jsp?name=<%= request.getParameter(GPConstants.NAME) %>'" class="button">
+			<input type="button" value="Edit" onclick="window.location='modules/creator.jsf?lsid=<%= request.getParameter(GPConstants.NAME) %>'" class="button">
 	<%	} else { %>
 			<input type="button" value="<%= RUN %>" name="<%= RUN %>" class="little" onclick="runTask()">
 			<%
