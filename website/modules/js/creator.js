@@ -838,8 +838,8 @@ function loadParameterInfo(parameters)
         {
             newParameter.find("input[name='p_flagspace']").attr('checked', true);
         }
-        
-        if(optional === "checkbox")
+
+        if(optional.length > 0)
         {
             newParameter.find("input[name='p_optional']").attr('checked', true);
         }
@@ -889,7 +889,6 @@ function loadParameterInfo(parameters)
 
             newParameter.find('input[name="choicelist"]').val(choices);
             newParameter.find('input[name="choicelist"]').data("prevVal", choices);            
-
         }
 
         updateparameter(newParameter);
