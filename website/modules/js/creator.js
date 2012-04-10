@@ -641,7 +641,7 @@ function loadModuleInfo(module)
         }
         $('select[name="modversion"]').change(function()
         {
-            var editLocation = "creator.html?lsid=" + $(this).val();
+            var editLocation = "creator.jsf?lsid=" + $(this).val();
             window.open(editLocation, '_self');
         });
         $('select[name="modversion"]').val(module["LSID"]);
