@@ -410,7 +410,7 @@ public class ModuleQueryServlet extends HttpServlet
                 
                 if(parameterJSON.isOptional())
                 {
-                    attributes.put(GPConstants.PARAM_INFO_OPTIONAL[0], GPConstants.PARAM_INFO_OPTIONAL[1]);
+                    attributes.put(GPConstants.PARAM_INFO_OPTIONAL[0], "on");
                 }
                 else
                 {
