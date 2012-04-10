@@ -89,6 +89,8 @@ public class ParametersJSON extends JSONObject {
             this.put(DEFAULT_VALUE, pInfo.getDefaultValue());
             this.put(PREFIX, pAttrs.get(GPConstants.PARAM_INFO_PREFIX[0]));
             this.put(OPTIONAL, pAttrs.get(GPConstants.PARAM_INFO_OPTIONAL[0]));
+            this.put(FLAG, pAttrs.get(FLAG));
+            this.put(FLAGSPACE, pAttrs.get(FLAGSPACE));
 
             Map choicesMap = pInfo.getChoices();
             String choices = "";
