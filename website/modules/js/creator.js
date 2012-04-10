@@ -503,7 +503,7 @@ function changeParameterType(element)
             var fileFormatList = $('<select multiple="multiple" name="fileformat"></select>');
             var fileFormatButton = $('<button id="addinputfileformat">New</button>');
 
-            fileFormatButton.click(function()
+            fileFormatButton.button().click(function()
             {
                 $( "#addfileformatdialog" ).dialog("open");
             });
