@@ -976,7 +976,7 @@ function getParametersJSON()
         var parameter = {
             "name": pname, "choices": choices, "description": description, "TYPE": type,
             "dvalue": default_val, "optional": optional,
-            "fileformat": fileformat, "MODE": mode, "value": value, "prefix": prefix, "flag":flag
+            "fileformat": fileformat, "MODE": mode, "value": value, "prefix": prefix, "flag":flag, "flagspace":flagspace
         };
 
         parameters.push(parameter);
