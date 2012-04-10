@@ -557,6 +557,7 @@ function updatemodulecategories()
                 {
                     mcat.append($("<option>" + result[i] + "</option>"));                        
                 }
+                mcat.multiselect("refresh");                
             }
         },
         dataType: "json"
@@ -1238,6 +1239,7 @@ jQuery(document).ready(function() {
                         var newcategory = $("<option>" +category + "</option>");
                         $("select[name='category']").append(newcategory);
                         $("select[name='category']").val(category);
+                        $("select[name='category']").multiselect("refresh");
                         $( this ).dialog( "close" );
                     },
                     "Cancel": function() {
@@ -1435,6 +1437,14 @@ jQuery(document).ready(function() {
         header: false,
         selectedList: 4 // 0-based index
     });
+
+    $("select[name='category'], select[name='privacy'], select[name='quality'], select[name='cpu']").multiselect({
+        multiple: false,
+        header: "Select an option",
+        noneSelectedText: "Select an Option",
+        selectedList: 1
+    });
+
 
     $("#helpbtn").button();
 
