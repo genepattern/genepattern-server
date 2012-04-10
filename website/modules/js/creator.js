@@ -580,6 +580,8 @@ function updatefileformats()
                 }
 
                 $("select[name='mod_fileformat']").multiselect('refresh');
+
+                $("select[name='fileformat']").trigger("change");
             }
         },
         dataType: "json"
