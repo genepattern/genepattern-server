@@ -48,7 +48,13 @@ function saveModule()
 
     var description = $('textarea[name="description"]').val();
     var author = $('input[name="author"]').val();
-    author = author + ";" + $('input[name="organization"]').val();
+    var organization = $('input[name="organization"]').val();
+
+    if(organization !== undefined && organization !== "")
+    {
+        author = author + ";" + organization;           
+    }
+
     var privacy = $('select[name="privacy"] option:selected').val();
     var quality = $('select[name="quality"] option:selected').val();
     var language = $('select[name="language"] option:selected').val();
