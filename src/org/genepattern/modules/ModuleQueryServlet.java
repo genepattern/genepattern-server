@@ -17,8 +17,10 @@ import org.genepattern.server.webservice.server.Status;
 import org.genepattern.server.webservice.server.DirectoryManager;
 import org.genepattern.server.webservice.server.local.LocalTaskIntegratorClient;
 import org.genepattern.server.TaskLSIDNotFoundException;
+import org.genepattern.server.webapp.jsf.AuthorizationHelper;
 import org.genepattern.util.GPConstants;
 import org.genepattern.util.LSID;
+import org.genepattern.util.LSIDUtil;
 import org.apache.log4j.Logger;
 import org.apache.commons.fileupload.RequestContext;
 import org.apache.commons.fileupload.FileUploadBase;
@@ -601,6 +603,17 @@ public class ModuleQueryServlet extends HttpServlet
         try
         {
             TaskInfo taskInfo = getTaskInfo(lsid);
+
+            //check if user is allowed to edit the module
+            boolean createModuleAllowed = AuthorizationHelper.createModule(username);
+            boolean editable = createModuleAllowed && taskInfo.getUserId().equals(username)
+                    && LSIDUtil.getInstance().isAuthorityMine(taskInfo.getLsid());
+
+            if(!editable)
+            {
+                sendError(response, "Module is not editable");
+                return;
+            }
 
             ResponseJSON responseObject = new ResponseJSON();
 
