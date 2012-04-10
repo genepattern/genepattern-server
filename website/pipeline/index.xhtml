@@ -109,10 +109,11 @@
                 <div id="categoryModules" />
             </div>
             <div id="titleBar">
-                <span id="titleSpan" /> <img id="pipelinePencil" src="images/pencil.gif" class="pencil" alt="Edit" />
+                <span id="titleSpan" />
                 <div id="saveLoadDiv">
+                    <button id="pipelinePencil" class="saveLoadButton"><img id="pipelinePencilImg" src="images/pencil.gif" alt="Edit" />Edit</button>
                     <!-- <button id="newButton" class="saveLoadButton">New</button>
-                 <button id="loadButton" class="saveLoadButton">Load</button> -->
+                    <button id="loadButton" class="saveLoadButton">Load</button> -->
                     <button id="saveButton" class="saveLoadButton">Save</button>
                     <button id="runButton" class="saveLoadButton">Save &amp; Run</button>
                     <button id="revertButton" class="saveLoadButton">Revert</button>
@@ -202,6 +203,8 @@
 //            $("#loadButton").click(function() {
 //                library.displayLoadDialog();
 //            });
+
+            $("#pipelinePencil").button();
 
             $("#saveButton").button();
             $("#saveButton").click(function() {
