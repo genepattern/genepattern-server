@@ -812,6 +812,16 @@ function loadParameterInfo(parameters)
         var optional = parameters[i].optional;
         var prefix = parameters[i].prefix;
 
+        if(parameters[i].flag !== undefined && parameters[i].flag !== null)
+        {
+            newParameter.find("input[name='p_flag']").val(parameters[i].flag);
+        }
+
+        if(parameters[i].flagspace !== undefined && parameters[i].flagspace !== null)
+        {
+            newParameter.find("input[name='p_flagspace']").attr('checked', true);
+        }
+        
         if(optional === "checkbox")
         {
             newParameter.find("input[name='p_optional']").attr('checked', true);
@@ -908,6 +918,17 @@ function getParametersJSON()
         var value = "";
         var mode = "";
         var prefix = "";
+        var flag = "";
+        var flagspace ="";
+        if($(this).find("input[name='p_flag']").val() != undefined && $(this).find("input[name='p_flag']").val() !== null)
+        {
+            flag = $(this).find("input[name='p_flag']").val();
+        }
+
+        if($(this).find('input[name="p_flagspace"]').is(':checked'))
+        {
+            flagspace = "on";
+        }
 
         if(pname == undefined || pname == null || pname.length < 1)
         {
@@ -955,7 +976,7 @@ function getParametersJSON()
         var parameter = {
             "name": pname, "choices": choices, "description": description, "TYPE": type,
             "dvalue": default_val, "optional": optional,
-            "fileformat": fileformat, "MODE": mode, "value": value, "prefix": prefix
+            "fileformat": fileformat, "MODE": mode, "value": value, "prefix": prefix, "flag":flag
         };
 
         parameters.push(parameter);

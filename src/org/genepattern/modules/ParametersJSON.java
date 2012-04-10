@@ -43,6 +43,9 @@ public class ParametersJSON extends JSONObject {
     public static final String PREFIX = "prefix";
     public static final String VALUE = "value";
     public static final String CHOICES = "choices";
+    public static final String FLAG = "flag";
+    public static final String FLAGSPACE = "flagspace";
+
 
 
     public ParametersJSON(JSONObject object) {
@@ -56,6 +59,8 @@ public class ParametersJSON extends JSONObject {
             this.put(PREFIX, object.get(PREFIX));
             this.put(VALUE, object.get(VALUE));
             this.put(CHOICES, object.get(CHOICES));
+            this.put(FLAG, object.get(FLAG));
+            this.put(FLAGSPACE, object.get(FLAGSPACE));
 
             String typeString = String.class.getName();
             if(TYPE.equals("FILE"))
