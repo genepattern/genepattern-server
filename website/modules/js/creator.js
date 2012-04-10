@@ -203,6 +203,14 @@ function addparameter()
             </tr>  \
         </table> \
     </div>");
+
+     paramDiv.find("select[name='p_type']").multiselect({
+        multiple: false,
+        header: "Select an option",
+        noneSelectedText: "Select an Option",
+        selectedList: 1
+    });
+    
     $('#parameters').append(paramDiv);
 
     $(".delparam button").button().click(function()
@@ -1438,13 +1446,13 @@ jQuery(document).ready(function() {
         selectedList: 4 // 0-based index
     });
 
-    $("select[name='category'], select[name='privacy'], select[name='quality'], select[name='cpu']").multiselect({
+    $("select[name='category'], select[name='privacy'], select[name='quality'], " +
+      "select[name='c_type'], select[name='cpu'], select[name='language']").multiselect({
         multiple: false,
         header: "Select an option",
         noneSelectedText: "Select an Option",
         selectedList: 1
     });
-
 
     $("#helpbtn").button();
 
