@@ -706,6 +706,7 @@ function loadModuleInfo(module)
         if(module["language"] == "Java")
         {
             $("select[name='c_type']").val(module["language"]);
+            $("select[name='c_type']").multiselect("refresh");
             $("#commandtextarea textarea").data("type", "<java>");
         }
         if(module["language"] == "Perl")
@@ -778,8 +779,6 @@ function loadModuleInfo(module)
             var option = $("<option>" + supportFilesList[s] +"</option>");
             currentFilesSelect.append(option);
         }
-
-        currentFilesDiv.css("font-size", "0.725em");
 
         currentFilesDiv.append("<br>");
 
