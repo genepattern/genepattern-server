@@ -1446,7 +1446,7 @@ jQuery(document).ready(function() {
     });
 
     $("select[name='category'], select[name='privacy'], select[name='quality'], " +
-      "select[name='c_type'], select[name='cpu'], select[name='language']").multiselect({
+      "select[name='c_type'], select[name='cpu'], select[name='language'], select[name='modversion']").multiselect({
         multiple: false,
         header: "Select an option",
         noneSelectedText: "Select an Option",
