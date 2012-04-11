@@ -1540,7 +1540,9 @@ var properties = {
         // If the form element is disabled, set to that initially
         if (disabled !== undefined && disabled) {
             $(".propertyValue[type='file'][name='" + labelText + "']").hide();
-            properties._showDisplaySettingsButton($(".propertyValue[type='file'][name='" + labelText + "']").parent(), labelText);
+            if (value === properties.PROMPT_WHEN_RUN) {
+                properties._showDisplaySettingsButton($(".propertyValue[type='file'][name='" + labelText + "']").parent(), labelText);
+            }
         }
 
         // When the upload form is submitted, send to the servlet
