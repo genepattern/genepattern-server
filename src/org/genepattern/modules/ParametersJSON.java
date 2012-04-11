@@ -92,21 +92,8 @@ public class ParametersJSON extends JSONObject {
             this.put(FLAG, pAttrs.get(FLAG));
             this.put(FLAGSPACE, pAttrs.get(FLAGSPACE));
 
-            Map choicesMap = pInfo.getChoices();
-            String choices = "";
-            if(choicesMap != null && choicesMap.size() > 0)
-            {
-                Iterator<String> it = choicesMap.keySet().iterator();
-                while(it.hasNext())
-                {
-                    String key = it.next();
-                    choices += key + "=" + choicesMap.get(key);
-                    if(it.hasNext())
-                    {
-                        choices += ";";
-                    }
-                }
-            }
+            //returns choices delimted by ; and display name and val delimited by =
+            String choices = pInfo.getValue();
             this.put(CHOICES, choices);
         }
         catch (Exception e) {
