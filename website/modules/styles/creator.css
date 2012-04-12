@@ -11,7 +11,7 @@ The Broad Institute
 
 #commandtype
 {
-    font-size: 0.75em;
+    font-size: 0.875em;
 }
 
 .det_textarea
@@ -60,15 +60,15 @@ min-height: 30px;
 position: relative;
 }
 #param-bar ul {
-font-size: 76%;
+font-size: 95%;
 display: none;
 position: absolute;
 top: 0;
-left: 1px;
+left: 0px;
 width: 161px;
 border: 1px solid #ccc;
 background: white;
-padding: 0 0 0 5px;
+padding: 0 0 0 0px;
 margin: 0;
 z-index: 500;
 }
@@ -81,8 +81,9 @@ height: 100%;
 #param-bar ul li:hover {
 background: none;
 margin: 0;
-    padding:0;
+padding:0;
 }
+
 #param-bar ul li a {
     display: block;
     float: none;
@@ -93,6 +94,7 @@ margin: 0;
 #param-bar ul li a:hover {
     background: #d9f0b7;
     margin: 0;
+    padding: 0;
 }
 
 /* --------------- */
