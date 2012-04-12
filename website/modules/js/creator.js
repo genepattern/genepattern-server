@@ -129,6 +129,7 @@ function saveModule()
                     var modversion = "<option value='" + version + "'>" + version + "</option>";
                     $('select[name="modversion"]').append(modversion);
                     $('select[name="modversion"]').val(version);
+                    $('select[name="modversion"]').multiselect("refresh");
                 }
             }
         },
@@ -647,7 +648,9 @@ function loadModuleInfo(module)
             var version = versionnum.substring(index+1, versionnum.length);
             var modversion = "<option value='" + versionnum + "'>" + version + "</option>";
             $('select[name="modversion"]').append(modversion);
+            $('select[name="modversion"]').multiselect("refresh");
         }
+        
         $('select[name="modversion"]').change(function()
         {
             var editLocation = "creator.jsf?lsid=" + $(this).val();
