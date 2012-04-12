@@ -207,8 +207,8 @@ function addparameter()
 
      paramDiv.find("select[name='p_type']").multiselect({
         multiple: false,
-        header: "Select an option",
-        noneSelectedText: "Select an Option",
+        header: false,
+        noneSelectedText: "",
         selectedList: 1
     });
     
@@ -449,6 +449,16 @@ function changeParameterType(element)
                                 $(this).find("table").append(trow);
                             }
                         }
+
+                        /*$(this).find("input[name='choicen']").live("keydown", function()
+                        {
+                            alert("choice list keydown");
+                            if($(this).val().indexOf(";") != -1 || $(this).val().indexOf("=") != -1)
+                            {
+                                alert("The characters = and ; are not allowed");
+                                $(this).val("");
+                            }
+                        });*/
                     },
                     buttons: {
                             "OK": function() {
@@ -533,6 +543,7 @@ function changeParameterType(element)
             fileFormatTD.show();
             fileFormatList.multiselect({
                 header: false,
+                noneSelectedText: "Specify input file formats",
                 selectedList: 4 // 0-based index
             });
 
@@ -907,7 +918,14 @@ function loadModule(taskId)
                 var message = response["MESSAGE"];
                 var error = response["ERROR"];
                 var module = response["module"];
+
                 if (error !== undefined && error !== null) {
+
+                   /* if(error.indexOf("not editable") != -1)
+                    {
+                        window.open("/gp/addTask.jsp?name=" + taskId, '_self');                                
+                    } */
+
                     alert(error);
                 }
                 if (message !== undefined && message !== null) {
@@ -1449,14 +1467,14 @@ jQuery(document).ready(function() {
 
     $("select[name='mod_fileformat']").multiselect({
         header: false,
+        noneSelectedText: "Specify output file formats",        
         selectedList: 4 // 0-based index
     });
 
     $("select[name='category'], select[name='privacy'], select[name='quality'], " +
       "select[name='c_type'], select[name='cpu'], select[name='language'], select[name='modversion']").multiselect({
         multiple: false,
-        header: "Select an option",
-        noneSelectedText: "Select an Option",
+        header: false,
         selectedList: 1
     });
 
