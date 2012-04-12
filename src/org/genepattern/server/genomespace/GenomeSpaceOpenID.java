@@ -323,7 +323,7 @@ public class GenomeSpaceOpenID extends HttpServlet {
             }
 
             log.debug("Catching errors and redirecting, ending authentication");
-            if (discovered.isVersion2()) { throw new ServletException("No support for HTML PUT redirect from OpenId Provider."); }
+            // if (discovered.isVersion2()) { throw new ServletException("No support for HTML PUT redirect from OpenId Provider."); }
             httpResp.sendRedirect(authReq.getDestinationUrl(true));
 
         }
