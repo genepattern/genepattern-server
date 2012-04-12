@@ -350,6 +350,14 @@ var editor = {
         return spawn;
     },
 
+    _addBlackBoxModule: function(module, id, top, left) {
+        module.id = id;
+        this.workspace[module.id] = module;
+        module.add(top, left);
+        module.checkForWarnings();
+        return module;
+    },
+
     loadModule: function(lsid, id, top, left) {
         if (top === undefined) { top = null; }
         if (left === undefined) { left = null; }
@@ -530,8 +538,12 @@ var editor = {
             var added = this.loadModule(module.lsid, module.id, top, left);
 
             if (added === null) {
+                added = this._addBlackBoxModule(library._createBlackBoxModule(module.name, module.lsid), module.id, module.top, module.left);
                 if (!givenAlert) {
-                    editor.showDialog("Problem Loading Pipeline", "Unable to load one or more of the modules in the pipeline.");
+                    editor.showDialog("Problem Loading Pipeline", "Unable to load one or more of the modules in the pipeline.  " +
+                        "You may view what the Pipeline Designer could load of the pipeline, but will be unable to save this pipeline.");
+                    $("#saveButton").button("disable");
+                    $("#runButton").button("disable");
                     givenAlert = true;
                 }
                 i++;
@@ -1171,8 +1183,24 @@ var library = {
         }
     },
 
+    _createBlackBoxParam: function(module, pointer) {
+        var inputJSON = {
+            name: pointer,
+            description: "Assumed Parameter for " + pointer,
+            type: "Unknown",
+            kinds: [],
+            required: false,
+            promptWhenRun: null,
+            defaultValue: "Unknown",
+            choices: []
+        };
+        var param = new InputParam(module, inputJSON);
+        module.inputs[module.inputs.length] = param;
+        return param;
+    },
+
     _createBlackBoxModule: function(name, lsid) {
-        if (name === undefined) { name = "BlackBox"; }
+        if (name === undefined) { name = "UnknownModule"; }
         if (lsid === undefined) { lsid = ""; }
 
         // Manually insert the Black Box dummy module
@@ -1420,6 +1448,11 @@ var properties = {
     _setVersionDropdown: function(module) {
         var baseLsid = editor.extractBaseLsid(module.lsid);
         var moduleArray = library.moduleVersionMap[baseLsid];
+
+        // Handle the case of unknown modules
+        if (moduleArray === undefined) {
+            moduleArray = [];
+        }
 
         var select = document.createElement("select");
         for (var i = 0; i < moduleArray.length; i++) {
@@ -2037,6 +2070,10 @@ function Module(moduleJSON) {
 
     this.isHighestVersion = function() {
         var highest = library.getHighestVersion(this.lsid);
+        if (highest === null) {
+            editor.log("WARNING: No module found in library for: " + this.name);
+            return true;
+        }
         return highest.lsid === this.lsid;
     };
 
@@ -2159,6 +2196,12 @@ function Module(moduleJSON) {
             this.alerts[this.name] = new Alert("version", "WARNING", "This module is version " + this.version + " which is not the latest version.");
         }
 
+        // Display black box warning
+        if (this.blackbox) {
+            showAlertIcon = true;
+            this.alerts[this.name] = new Alert("Missing Module", "WARNING", "GenePattern is unable to load this module.  You will be unable to change settings on this module or otherwise work with it.");
+        }
+
         // Display icons if appropriate
         this.toggleErrorIcon(showErrorIcon);
         if (!showErrorIcon) {
@@ -2202,7 +2245,16 @@ function Module(moduleJSON) {
             }
         }
 
-        editor.log("Unable to find port with pointer: " + pointer + " in module " + this.id);
+        // Handle the case of BlackBox Modules
+        if (this.blackbox) {
+            var index = this.inputEnds.length;
+            var param = library._createBlackBoxParam(this, pointer);
+            this.inputEnds[index] = new Input(this, param);
+            return this.inputEnds[index];
+        }
+
+        editor.log("WARNING: Unable to find port with pointer: " + pointer + " in module " + this.id);
+        return null;
     };
 
 	this.getPort = function (id) {
