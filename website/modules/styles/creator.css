@@ -23,6 +23,7 @@ The Broad Institute
 #commandlist
 {
     margin-left: 1px;
+    cursor: pointer;
 }
 
 .heading
@@ -385,4 +386,9 @@ div.ui-layout-north
 .content
 {
     height: 90%;
+}
+
+#clistdialog
+{
+    cursor: pointer;
 }

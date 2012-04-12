@@ -190,11 +190,11 @@ function addparameter()
                     <select name='p_type'>\
                        <option value='text'>Text</option> \
                        <option value='Integer'>Integer</option>  \
-                           <option value='Floating Point'>Floating Point</option>  \
+                       <option value='Floating Point'>Floating Point</option>  \
                        <option value='Input File'>Input File</option>\
-                           <option value='Directory'>Directory</option>\
-                       <option value='Password'>Password</option> \
                        <option value='Choice'>Choice</option> \
+                       <option value='Directory'>Directory</option>\
+                       <option value='Password'>Password</option> \
                    </select>  \
                </td> \
                <td>   \
@@ -339,7 +339,7 @@ function updateparameter(parameter)
 
     });
     
-    var pelementval = pelement.val().replace(" ", ".");
+    var pelementval = pelement.val().replace(/ /g, ".");
     pelement.val(pelementval);
     
     var pname_newval = pelement.val();
@@ -435,9 +435,9 @@ function changeParameterType(element)
                             if(rowdata.length > 1)
                             {
                                 var trow = $("<tr><td> <input type='text' name='choicen' size='15' value='"
-                                            + rowdata[0] +"'/> </td>" +
+                                            + rowdata[1] +"'/> </td>" +
                                         "<td> <input type='text' name='choicev' size='15'value='"
-                                         + rowdata[1] + "'/> </td>" +
+                                         + rowdata[0] + "'/> </td>" +
                                         "<td> <button> X </button></td></tr>");
 
                                 trow.find("button").button().click(function()
@@ -1464,7 +1464,7 @@ jQuery(document).ready(function() {
         var modtitle = $("#modtitle").val();
         if(modtitle.indexOf(" ") != -1)
         {
-            modtitle = modtitle.replace(" ", ".");
+            modtitle = modtitle.replace(/ /g, ".");
             $("#modtitle").val(modtitle);
         }
     });
