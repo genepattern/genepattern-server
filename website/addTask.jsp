@@ -105,6 +105,11 @@ if(errors!=null) {
 	LSID lsid = new LSID((String)tia.get(GPConstants.LSID));
 	boolean editable = createModuleAllowed && taskInfo.getUserId().equals(userID) && LSIDUtil.getInstance().isAuthorityMine(taskInfo.getLsid());
 	viewOnly = viewOnly || !editable;
+
+    if(!viewOnly)
+    {
+        response.sendRedirect("modules/creator.jsf?lsid=" + lsid );            
+    }
 } else {
 %>
 <script language="javascript">
