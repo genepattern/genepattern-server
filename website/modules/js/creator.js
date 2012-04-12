@@ -1190,6 +1190,11 @@ jQuery(document).ready(function() {
         resizable: false
     });
 
+    $("input[name='p_flag']").live("keydown", function()
+    {
+        $("input[name='p_flagspace']").removeAttr("disabled");      
+    });
+
     $("input[name='p_flagspace'], input[name='p_name'], input[name='p_flag'], input[name='p_prefix']").live("change", function()
     {
         var parameterParent = $(this).parents(".parameter");
@@ -1206,7 +1211,7 @@ jQuery(document).ready(function() {
             }
             else
             {
-                p_flagspace.attr("disabled", true);   
+                p_flagspace.attr("disabled", true);
             }
         }
         updateparameter(parameterParent);
