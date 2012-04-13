@@ -144,6 +144,15 @@ public class GenomeSpaceReceiveBean {
         return "Upload Directory";
     }
     
+    public boolean isCorrectUser() {
+        HttpServletRequest request = UIBeanHelper.getRequest();
+        String paramUser = request.getParameter("genomespaceuser");
+        String sessionUser = (String) UIBeanHelper.getSession().getAttribute(GenomeSpaceLoginManager.GS_USER_KEY);
+        if (sessionUser == null) return false;      // If there is no genomespace user in the session there is no correct user
+        if (paramUser == null) return true;         // If no user parameter was passed, assume user is correct (backwards compatibility)
+        return paramUser.equals(sessionUser);       // If the two usernames match everything is as it should be
+    }
+    
     public Map<String, SortedSet<TaskInfo>> getKindToModules() {
         if (!initUploadBean()) {
             log.error("Unable to acquire reference to UploadFilesBean in GenomeSpaceReceiveBean.getKindToModules()");

@@ -20,12 +20,13 @@ use, misuse, or functionality.
             Receive GenomeSpace File #{genomeSpaceReceiveBean.refreshPage}
         </ui:define>
         <ui:define name="body">
-            <t:div rendered="#{not genomeSpaceBean.loggedIn or not genomeSpaceBean.genomeSpaceEnabled}">
+            <t:div rendered="#{not genomeSpaceBean.loggedIn or not genomeSpaceBean.genomeSpaceEnabled or genomeSpaceReceiveBean.correctUser}">
 				<h2>Unable to access to the GenomeSpace landing page.</h2><br/>
 				<h:outputText rendered="#{not genomeSpaceBean.genomeSpaceEnabled}"><em>GenomeSpace is not enabled.</em><br/></h:outputText>
 				<h:outputText rendered="#{not genomeSpaceBean.loggedIn}"><em>Not logged in to GenomeSpace.</em><br/></h:outputText>
+				<h:outputText rendered="#{not genomeSpaceReceiveBean.correctUser}"><em>Logged in as an incorrect user.  Please sign out and sign in again.</em><br/></h:outputText>
 			</t:div>
-			<t:div rendered="#{genomeSpaceBean.loggedIn and genomeSpaceBean.genomeSpaceEnabled}">
+			<t:div rendered="#{genomeSpaceBean.loggedIn and genomeSpaceBean.genomeSpaceEnabled and genomeSpaceReceiveBean.correctUser}">
 	        	<h2>GenomeSpace has sent you a file</h2>
 				<t:dataList var="file" value="#{genomeSpaceReceiveBean.receivedFiles}" rowIndexVar="index">
 					<t:div style="text-indent:50px;"><strong>#{file.file.name}</strong>
