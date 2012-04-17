@@ -43,7 +43,7 @@ var editor = {
 		jsPlumb.Defaults.PaintStyle = { strokeStyle:"#666699", lineWidth:2 };
 		jsPlumb.Defaults.EndpointStyle = { radius:9, fillStyle:"black" };
 		jsPlumb.Defaults.Anchors =  ["BottomCenter", "TopCenter"];
-		jsPlumb.Defaults.Overlays =  [[ "Arrow", { location: 1 } ]];
+		jsPlumb.Defaults.Overlays =  [[ "Arrow", { width: 13, length: 13, location: 1, id: "arrow" } ]];
 		jsPlumb.Defaults.MaxConnections = -1;
 
 		jsPlumb.bind("jsPlumbConnection", function(event) {
@@ -417,7 +417,7 @@ var editor = {
         if (firstModule) {
             this.workspace.suggestRow = 0;
             this.workspace.suggestCol = 0;
-            return { "top": 0, "left": 0 };
+            return { "top": 0, "left": 20 };
         }
 
         // Determine if this module goes below or beside the last one
@@ -432,7 +432,7 @@ var editor = {
         else {
             this.workspace.suggestCol++;
         }
-        return { "top": this.workspace.suggestRow * 120, "left": this.workspace.suggestCol * 230 };
+        return { "top": this.workspace.suggestRow * 120, "left": 20 + this.workspace.suggestCol * 230 };
     },
 
 	suggestLocation: function(module) {

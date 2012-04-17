@@ -7,7 +7,6 @@
   -->
 
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<!--suppress HtmlUnknownTarget -->
 <html xmlns="http://www.w3.org/1999/xhtml">
 	<head>
 		<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
@@ -26,6 +25,7 @@
 		<script src="js/pipelines.js" type="text/javascript" />
 
         <script type="text/javascript" language="javascript">
+            var contextRoot = '#{facesContext.externalContext.requestContextPath}';
             var createTaskAllowed = #{authorizationBean.createModuleAllowed};
             var createPublicPipelineAllowed = #{authorizationBean.createPublicPipelineAllowed};
             var createPrivatePipelineAllowed = #{authorizationBean.createPrivatePipelineAllowed};
@@ -114,9 +114,9 @@
                     <button id="pipelinePencil" class="saveLoadButton"><img id="pipelinePencilImg" src="images/pencil.gif" alt="Edit" />Edit</button>
                     <!-- <button id="newButton" class="saveLoadButton">New</button>
                     <button id="loadButton" class="saveLoadButton">Load</button> -->
-                    <button id="saveButton" class="saveLoadButton">Save</button>
-                    <button id="runButton" class="saveLoadButton">Save &amp; Run</button>
-                    <button id="revertButton" class="saveLoadButton">Revert</button>
+                    <button id="saveButton" class="saveLoadButton"><img id="pipelinePencilImg" src="images/save.gif" alt="Edit" />Save</button>
+                    <button id="runButton" class="saveLoadButton"><img id="pipelinePencilImg" src="images/save_run.gif" alt="Edit" />Save &amp; Run</button>
+                    <button id="revertButton" class="saveLoadButton"><img id="pipelinePencilImg" src="images/revert.gif" alt="Edit" />Revert</button>
                 </div>
             </div>
             <div id="workspace"></div>
