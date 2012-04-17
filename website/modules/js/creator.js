@@ -156,12 +156,12 @@ function addparameter()
         <table class='deloptions'>\
         <tr><td>\
         <p>Name*: <br/>\
-        <input type='text' name='p_name' size='28'/>\
+        <input type='text' name='p_name' size='42'/>\
         <input type='checkbox' name='p_optional' size='25'/>Optional</p><p>\
         Description:<br/>\
         <textarea cols='60' name='p_description' rows='2'></textarea></p>\
         </td><td class='lasttd'>\
-        <table class='pmoptions'><tr><td>Default Value:</td><td><input type='text' name='p_defaultvalue' size='16'/><br/>\
+        <table class='pmoptions'><tr><td>Default Value:</td><td><input type='text' name='p_defaultvalue' size='30'/><br/>\
         </td></tr>\
         <tr><td>Flag:</td><td><input type='text' name='p_flag' size='7'/>\
         <input type='checkbox' name='p_flagspace' size='7' disabled='disabled'></input> insert space after flag\
