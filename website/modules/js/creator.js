@@ -211,7 +211,7 @@ function addparameter()
         noneSelectedText: "",
         selectedList: 1
     });
-    
+
     $('#parameters').append(paramDiv);
 
     $(".delparam button").button().click(function()
@@ -606,7 +606,7 @@ function updatefileformats()
                     mcat.append($("<option>" + result[i] + "</option>"));
                 }
 
-                $("select[name='mod_fileformat']").multiselect('refresh');
+                mcat.multiselect('refresh');
 
                 $("select[name='fileformat']").trigger("change");
             }
@@ -668,6 +668,7 @@ function loadModuleInfo(module)
             window.open(editLocation, '_self');
         });
         $('select[name="modversion"]').val(module["LSID"]);
+        $('select[name="modversion"]').multiselect("refresh");
     }
 
     if(module["description"] !== undefined)
@@ -696,11 +697,13 @@ function loadModuleInfo(module)
     if(module["privacy"] !== undefined)
     {
         $('select[name="privacy"]').val(module["privacy"]);
+        $('select[name="privacy"]').multiselect("refresh");
     }
 
     if(module["quality"] !== undefined)
     {
         $('select[name="quality"]').val(module["quality"]);
+        $('select[name="quality"]').multiselect("refresh");
     }
 
     if(module["version"] !== undefined)
@@ -711,10 +714,12 @@ function loadModuleInfo(module)
     if(module["language"] !== undefined)
     {
         $('select[name="language"]').val(module["language"]);
+        $('select[name="language"]').multiselect("refresh");        
 
         if($('select[name="language"]').val() == null)
         {
             $('select[name="language"]').val("any");
+            $('select[name="language"]').multiselect("refresh");
         }
 
         if(module["language"] == "Java")
@@ -726,6 +731,7 @@ function loadModuleInfo(module)
         if(module["language"] == "Perl")
         {
             $("select[name='c_type']").val(module["language"]);
+            $("select[name='c_type']").multiselect("refresh");
             $("#commandtextarea textarea").data("type", "<perl>");
         }
     }
@@ -738,11 +744,13 @@ function loadModuleInfo(module)
     if(module["taskType"] !== undefined)
     {
         $("select[name='category']").val(module["taskType"]);
+        $("select[name='category']").multiselect("refresh");
     }
 
     if(module["cpuType"] !== undefined)
     {
         $("select[name='cpu']").val(module["cpuType"]);
+        $("select[name='cpu']").multiselect("refresh");
     }
 
     if(module["commandLine"] !== undefined)
@@ -756,12 +764,14 @@ function loadModuleInfo(module)
                     module["commandLine"].indexOf("<java>") < 1)
             {
                 $("select[name='c_type']").val("Java");
+                $("select[name='c_type']").multisect("refresh");
                 $("#commandtextarea textarea").data("type", "<java>");                
             }
             if(module["commandLine"].indexOf("<perl>") != -1 &&
                     module["commandLine"].indexOf("<perl>") < 1)
             {
                 $("select[name='c_type']").val("Perl");
+                $("select[name='c_type']").multisect("refresh");                                
                 $("#commandtextarea textarea").data("type", "<perl>");
             }
         }
@@ -776,7 +786,7 @@ function loadModuleInfo(module)
     }
 
     var supportFilesList = module.supportFiles;
-    if(supportFilesList !== undefined && supportFilesList != null)
+    if(supportFilesList !== undefined && supportFilesList != null &&  supportFilesList != "")
     {
         var currentFilesDiv = $("<div id=currentfiles><div>");
         currentFilesDiv.append("Current Files: ");
@@ -870,23 +880,27 @@ function loadParameterInfo(parameters)
         if(type == "java.io.File")
         {
             newParameter.find("select[name='p_type']").val("Input File");
-            changeParameterType(newParameter.find("select[name='p_type']"));                                   
+            newParameter.find("select[name='p_type']").multiselect("refresh");
+            changeParameterType(newParameter.find("select[name='p_type']"));
         }
 
         if(type == "java.lang.Integer")
         {
             newParameter.find("select[name='p_type']").val("Integer");
+            newParameter.find("select[name='p_type']").multiselect("refresh");
             changeParameterType(newParameter.find("select[name='p_type']"));
         }
         if(type == "java.lang.Float")
         {
             newParameter.find("select[name='p_type']").val("Floating Point");
+            newParameter.find("select[name='p_type']").multiselect("refresh");
             changeParameterType(newParameter.find("select[name='p_type']"));
         }
         
         if(pfileformat !== undefined && pfileformat != null && pfileformat.length > 0)
         {
             newParameter.find("select[name='p_type']").val("Input File");
+            newParameter.find("select[name='p_type']").multiselect("refresh");
             changeParameterType(newParameter.find("select[name='p_type']"));
             
             var pfileformatlist = pfileformat.split(";");
@@ -898,9 +912,11 @@ function loadParameterInfo(parameters)
         if(choices !== undefined && choices !== null && choices.length > 0)
         {
             newParameter.find("select[name='p_type']").val("Choice");
+            newParameter.find("select[name='p_type']").multiselect("refresh");
             newParameter.find("select[name='p_type']").trigger("change");
 
             newParameter.find('input[name="choicelist"]').val(choices);
+            newParameter.find('input[name="choicelist"]').multiselect("refresh");
             newParameter.find('input[name="choicelist"]').data("prevVal", choices);            
         }
 
@@ -984,6 +1000,14 @@ function getParametersJSON()
         else if(type === "Password")
         {
             type = "PASSWORD";
+        }
+        else if(type === "Integer")
+        {
+            type = "Integer";
+        }
+        else if(type === "Floating Point")
+        {
+            type = "Floating Point";
         }
         else
         {
