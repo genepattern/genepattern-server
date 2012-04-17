@@ -152,57 +152,33 @@ function editModule()
 function addparameter()
 {
     var paramDiv = $("<div class='parameter'>  \
-        <span class='delparam'> <button >x</button> </span> \
-        <table>    \
-           <tr>    \
-               <td>   \
-                  Name*:  \
-               </td>  \
-               <td colspan='2'>  \
-                   <input type='text' name='p_name' size='28'/> \
-               </td>   \
-               <td>   \
-                   Description: \
-               </td> \
-               <td colspan='3'>  \
-                   <textarea cols='60' name='p_description' rows='2'></textarea> \
-               </td>    \
-               <td>        \
-                   Default Value: <input type='text' name='p_defaultvalue' size='16'/> \
-               </td>  \
-               <td>  \
-                    Optional: <input type='checkbox' name='p_optional' size='25'/>\
-               </td>       \
-           </tr>   \
-            <tr>               \
-                <td>  \
-                    Flag: \
-                </td> \
-                <td> \
-                    <input type='text' name='p_flag' size='7'/> \
-                </td> \
-                <td> \
-                    <input type='checkbox' name='p_flagspace' size='7' disabled='disabled'> insert space after flag</input> \
-                </td> \
-                <td> \
-                     Type*: \
-                </td>     \
-                <td colspan='2'>   \
-                    <select name='p_type'>\
+	<span class='delparam'> <button>x Delete</button> </span> \
+        <table class='deloptions'>\
+        <tr><td>\
+        <p>Name*: <br/>\
+        <input type='text' name='p_name' size='28'/>\
+        <input type='checkbox' name='p_optional' size='25'/>Optional</p><p>\
+        Description:<br/>\
+        <textarea cols='60' name='p_description' rows='2'></textarea></p>\
+        </td><td class='lasttd'>\
+        <table class='pmoptions'><tr><td>Default Value:</td><td><input type='text' name='p_defaultvalue' size='16'/><br/>\
+        </td></tr>\
+        <tr><td>Flag:</td><td><input type='text' name='p_flag' size='7'/>\
+        <input type='checkbox' name='p_flagspace' size='7' disabled='disabled'></input> insert space after flag\
+        </td></tr>\
+        <tr><td>Type*:</td><td><select name='p_type'>\
                        <option value='text'>Text</option> \
                        <option value='Integer'>Integer</option>  \
-                       <option value='Floating Point'>Floating Point</option>  \
+                           <option value='Floating Point'>Floating Point</option>  \
                        <option value='Input File'>Input File</option>\
-                       <option value='Choice'>Choice</option> \
-                       <option value='Directory'>Directory</option>\
+                           <option value='Directory'>Directory</option>\
                        <option value='Password'>Password</option> \
-                   </select>  \
-               </td> \
-               <td>   \
-                    <input type='checkbox' name='p_prefix' size='7'> prefix when specified </input> \
-               </td> \
-            </tr>  \
-        </table> \
+                       <option value='Choice'>Choice</option> \
+                   </select>\
+         <input type='checkbox' name='p_prefix' size='7'></input> prefix when specified \
+        </td></tr></table>\
+        </td></tr>\
+        </table>\
     </div>");
 
      paramDiv.find("select[name='p_type']").multiselect({
@@ -661,7 +637,7 @@ function loadModuleInfo(module)
             $('select[name="modversion"]').append(modversion);
             $('select[name="modversion"]').multiselect("refresh");
         }
-        
+
         $('select[name="modversion"]').change(function()
         {
             var editLocation = "creator.jsf?lsid=" + $(this).val();
@@ -714,7 +690,7 @@ function loadModuleInfo(module)
     if(module["language"] !== undefined)
     {
         $('select[name="language"]').val(module["language"]);
-        $('select[name="language"]').multiselect("refresh");        
+        $('select[name="language"]').multiselect("refresh");
 
         if($('select[name="language"]').val() == null)
         {
@@ -765,13 +741,13 @@ function loadModuleInfo(module)
             {
                 $("select[name='c_type']").val("Java");
                 $("select[name='c_type']").multisect("refresh");
-                $("#commandtextarea textarea").data("type", "<java>");                
+                $("#commandtextarea textarea").data("type", "<java>");
             }
             if(module["commandLine"].indexOf("<perl>") != -1 &&
                     module["commandLine"].indexOf("<perl>") < 1)
             {
                 $("select[name='c_type']").val("Perl");
-                $("select[name='c_type']").multisect("refresh");                                
+                $("select[name='c_type']").multisect("refresh");
                 $("#commandtextarea textarea").data("type", "<perl>");
             }
         }
@@ -917,7 +893,7 @@ function loadParameterInfo(parameters)
 
             newParameter.find('input[name="choicelist"]').val(choices);
             newParameter.find('input[name="choicelist"]').multiselect("refresh");
-            newParameter.find('input[name="choicelist"]').data("prevVal", choices);            
+            newParameter.find('input[name="choicelist"]').data("prevVal", choices);
         }
 
         updateparameter(newParameter);
@@ -939,7 +915,7 @@ function loadModule(taskId)
 
                    /* if(error.indexOf("not editable") != -1)
                     {
-                        window.open("/gp/addTask.jsp?name=" + taskId, '_self');                                
+                        window.open("/gp/addTask.jsp?name=" + taskId, '_self');
                     } */
 
                     alert(error);
@@ -1237,7 +1213,7 @@ jQuery(document).ready(function() {
 
     $("input[name='p_flag']").live("keydown", function()
     {
-        $("input[name='p_flagspace']").removeAttr("disabled");      
+        $("input[name='p_flagspace']").removeAttr("disabled");
     });
 
     $("input[name='p_flagspace'], input[name='p_name'], input[name='p_flag'], input[name='p_prefix']").live("change", function()
@@ -1491,7 +1467,7 @@ jQuery(document).ready(function() {
 
     $("select[name='mod_fileformat']").multiselect({
         header: false,
-        noneSelectedText: "Specify output file formats",        
+        noneSelectedText: "Specify output file formats",
         selectedList: 4 // 0-based index
     });
 

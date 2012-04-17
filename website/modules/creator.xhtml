@@ -19,9 +19,9 @@
 
 	<link type="text/css" rel="stylesheet" href="styles/layout-default-latest.css" />
     <link  type="text/css" rel="stylesheet" media="screen" href="styles/jquery.multiselect.css" />
-    <link  type="text/css" rel="stylesheet" media="screen" href="styles/creator.css" />
     <link  type="text/css" rel="stylesheet" media="screen" href="styles/themes/base/jquery.ui.all.css" />
     <link href="../css/style.css" rel="stylesheet" type="text/css" />
+    <link  type="text/css" rel="stylesheet" media="screen" href="styles/creator.css" />
     <link href="../skin/favicon.ico" rel="shortcut icon" />
 
     <script type="text/javascript" src="js/jquery-1.7.1.js"></script>
@@ -99,6 +99,13 @@
         <img style="vertical-align:middle" alt="GenomeSpace" src="/gp/pages/genomespace/genomespace_icon.gif" height="14px" width="14px" border="0" />&#160;GenomeSpace
     </a>
 </div>
+<!-- Footer -->
+<div class="ui-layout-south">
+    <a href="/gp/pages/about.jsf">About GenePattern</a>&#160;|&#160;<a href="/gp/pages/contactUs.jsf">Contact Us</a>&#160;|&#160;
+    &copy;2003-2012&#160;<a href="http://www.broadinstitute.org" target="_blank">Broad Institute, MIT</a>
+    <a href="http://www.broadinstitute.org" target="_blank"><img src="styles/images/broad_logo.jpg" width="63" height="18" alt="Broad institute" />
+    </a>
+</div>
 
 <div id="content" class="content">
     <!-- Main content body -->
@@ -114,9 +121,9 @@
                 </select>
             </span>
             <span id="modcontrols">
-                <button id="helpbtn"><a href='createhelp.jsp' target='help'>Help</a> </button>
-                <button id="savebtn">Save</button>
-                <button id="saveRunbtn">Save and Run</button>
+                <button id="helpbtn"><img src="styles/images/help.gif" width="16" height="16" alt="help" class="buttonIcon" /><a href='createhelp.jsp' target='help'>Help</a> </button>
+                <button id="savebtn"><img src="styles/images/save.gif" width="16" height="16" alt="save" class="buttonIcon" />Save</button>
+                <button id="saveRunbtn"><img src="styles/images/save_run.gif" width="16" height="16" alt="save and run" class="buttonIcon" />Save and Run</button>                
             </span>
         </div>
     </div>
@@ -125,66 +132,76 @@
         <p class="heading">Details</p>
         <div class ="hcontent">
             <table border="0" cellspacing="0" cellpadding="0">
-                <tr><td id="lsid" colspan="3"></td></tr>
                 <tr>
-                    <td colspan="2">
-                        Description:
+                    <td id="lsid" colspan="3">
+
                     </td>
                 </tr>
                 <tr>
-                    <td colspan="5">
+                    <td>
+                        Description:
+                    </td>
+                    <td colspan="3">
                         <textarea class="det_textarea" cols="10" rows="2" name="description"></textarea>
                     </td>
                 </tr>
                 <tr>
-                    <td colspan="2">
+                    <td>
                         Author:
                     </td>
-                </tr>
-                <tr>
-                    <td colspan="5">
+                    <td colspan="3">
                          <input type="text" name="author" size="70"/>
                     </td>
                 </tr>
                 <tr>
-                    <td colspan="2">
+                    <td>
                         Organization:
                     </td>
-                </tr>
-                <tr>
-                    <td colspan="5">
+                    <td colspan="3">
                          <input type="text" name="organization" size="70"/>
                     </td>
                 </tr>
                 <tr>
-                    <td colspan="2">
+                    <td>
                         Version Comment:
                     </td>
-                </tr>
-                <tr>
-                    <td colspan="5">
+                    <td colspan="3">
                          <input type="text" name="comment" size="100"/>
                     </td>
                 </tr>
-                <tr >
-                    <td colspan="2">
+                <tr>
+                    <td>
                         Module Category:
-                        <select name="category">
-                            <option value=""> Uncategorized</option>
-                        </select>
-                        <button id="addcategory">New</button>
+                    </td>
+                    <td colspan="3">
+                        <table class="no-border">
+                            <tr>
+                                <td>
+                                    <select name="category">
+                                        <option value=""> Uncategorized</option>
+                                    </select>
+                                </td>
+                                <td>
+                                    <button id="addcategory">New</button>
+                                </td>
+                            </tr>
+                        </table>
                     </td>
                 </tr>
                 <tr>
                     <td>
                          Privacy:
-                         <select name="privacy">
-                              <option value="private">private</option>
-                             <option value="public">public</option>
-                         </select>
+                    </td>
+                    <td>
+                        <select name="privacy">
+                            <option value="private">private</option>
+                            <option value="public">public</option>
+                        </select>
                     </td>
                     <td>
                          Quality Level:
+                    </td>
+                    <td>
                         <select name="quality">
                             <option value="development">development</option>
                             <option value="preproduction">preproduction</option>
@@ -195,6 +212,8 @@
                 <tr>
                     <td>
                         CPU type:
+                    </td>
+                    <td>
                         <select name="cpu">
                             <option value="any">any</option>
                             <option value="Alpha">Alpha</option>
@@ -205,6 +224,8 @@
                     </td>
                     <td>
                         Operating System:
+                    </td>
+                    <td>
                         <input type="radio" name="os" value="any" id="os" checked="checked"/>
                         <label for="os">Any</label>
 
@@ -219,8 +240,10 @@
                     </td>
                 </tr>
                 <tr>
-                    <td colspan="2">
+                    <td>
                         Language:
+                    </td>
+                    <td>
                         <select name="language">
                             <option value="any">any</option>
                             <option value="C">C</option>
@@ -231,16 +254,28 @@
                             <option value="Python">Python</option>
                             <option value="R">R</option>
                         </select>
-
+                    </td>
+                    <td>
                         <b> min. language version: </b>
+                    </td>
+                    <td>
                         <input type="text" name="lang_version" size="20"/>
                     </td>
                 </tr>
                 <tr>
-                    <td colspan="3">
-                        Output File Formats:
-                        <select multiple="multiple" name="mod_fileformat"></select>
-                        <button id="addfileformat">New</button>
+                    <td>
+                        Output File Formats:</td>
+                    <td>
+                        <table class="no-border">
+                            <tr>
+                                <td colspan="3">
+                     	            <select multiple="multiple" name="mod_fileformat"></select>
+                                </td>
+                                <td>
+                                    <button id="addfileformat">New</button>
+                                </td>
+                            </tr>
+                        </table>
                     </td>
                 </tr>
             </table>
@@ -252,7 +287,7 @@
                 <div>
                     <!-- The fileinput-button span is used to style the file input field as button -->
                     <span class="btn btn-success fileinput-button">
-                        <span><i class="icon-plus"></i> Add files...</span>
+                        <span><i class="icon-plus"></i><img src="styles/images/file_add.gif" width="16" height="16" alt="help" class="buttonIcon" />Add files...</span>
                         <input type="file" class="supportfile"/>
                     </span>
                 </div>
@@ -267,23 +302,32 @@
         <p class="heading">Command Line</p>
         <div class="hcontent">
             <span id="commandtype">
-                Type:
-                <select name="c_type">
-                    <option value="Custom">Custom</option>
-                    <option value="Java">Java</option>
-                  <!--  <option value="R">R</option>  -->
-                    <option value="Perl">Perl</option>
-                </select>
+            <table class="commandtype_table">
+                <tr>
+                    <td>
+                        Type:
+                    </td>
+                    <td>
+                        <select name="c_type">
+                            <option value="Custom">Custom</option>
+                            <option value="Java">Java</option>
+                            <option value="Perl">Perl</option>
+                        </select>
+                    </td>
+                    <td>
+                        <button id="viewparameter">
+                            <img src="styles/images/open.gif" width="16" height="16" alt="help" class="buttonIcon" />View Argument List</button>
+                    </td>
+                </tr>
+            </table>
             </span>
             <div id="commandinfo">
                 <div id='commandtextarea'>
                     <textarea rows='2' cols ='1' name='cmdtext'></textarea>
                     <a href='createhelp.jsp#Command' target='help'>
-                        <img border='0' src='styles/images/help2.jpg'/>
+                        <img src="styles/images/help.gif" width="16" height="16" alt="help" class="buttonIcon" />
                     </a>
                 </div>
-                <button id="viewparameter">View Argument List</button>
-
             </div>
             <div class="clear"></div>
         </div>
@@ -292,7 +336,7 @@
         <div class="hcontent">
             <div class="pcontrols">
                 <span class="addcontrols" >
-                    <button id="addparam">Add</button>
+                    <button id="addparam">+ Add Parameter</button>
                     <button id="paramselect">Add one or more parameters</button>
                 </span>
             </div>
@@ -304,33 +348,6 @@
             </span>
             <div id="parameters"></div>
         </div>
-    </div>
-    <!-- Footer -->
-    <div class="ui-layout-south">
-        <table width="100%" border="0" cellspacing="0" cellpadding="0">
-            <tr>
-                <td colspan="4" class="footer">
-                    <table width="100%" border="0" cellspacing="0" cellpadding="0">
-                        <tr>
-                            <td>
-                                <a href="/gp/pages/about.jsf">About GenePattern</a>&#160;|&#160;<a href="/gp/pages/contactUs.jsf">Contact Us</a>
-                            </td>
-                            <td>
-                                <div align="right">
-                                    &copy;2003-2012&#160;<a href="http://www.broadinstitute.org" target="_blank">Broad Institute, MIT</a>
-                                </div>
-                            </td>
-                            <td width="10">&#160;</td>
-                            <td width="27">
-                                <a href="http://www.broadinstitute.org" target="_blank">
-                                    <img src="/gp/images/broad-symbol.gif" alt="Broad Institute" height="30" style="border: 0;" width="27"/>
-                                </a>
-                            </td>
-                        </tr>
-                    </table>
-                </td>
-            </tr>
-        </table>
     </div>
 </div>
 
@@ -376,8 +393,8 @@
 </div>
 
 <div id="clistdialog" title="Commandline Argument List">
-    <p>Click and drag a parameter to reorder</p>
     <ol id="commandlist"></ol>
 </div>
+
 </body>
 </html>
