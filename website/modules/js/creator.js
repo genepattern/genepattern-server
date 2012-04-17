@@ -152,7 +152,7 @@ function editModule()
 function addparameter()
 {
     var paramDiv = $("<div class='parameter'>  \
-	<span class='delparam'> <button>x Delete</button> </span> \
+	<span class='delparam'> <button class='delparam'>x Delete</button> </span> \
         <table class='deloptions'>\
         <tr><td>\
         <p>Name*: <br/>\
@@ -165,6 +165,9 @@ function addparameter()
         </td></tr>\
         <tr><td>Flag:</td><td><input type='text' name='p_flag' size='7'/>\
         <input type='checkbox' name='p_flagspace' size='7' disabled='disabled'></input> insert space after flag\
+        </td> \
+        <td>  \
+        <input type='checkbox' name='p_prefix' size='7'></input> prefix when specified \
         </td></tr>\
         <tr><td>Type*:</td><td><select name='p_type'>\
                        <option value='text'>Text</option> \
@@ -175,11 +178,11 @@ function addparameter()
                        <option value='Password'>Password</option> \
                        <option value='Choice'>Choice</option> \
                    </select>\
-         <input type='checkbox' name='p_prefix' size='7'></input> prefix when specified \
         </td></tr></table>\
         </td></tr>\
         </table>\
-    </div>");
+    </div> \
+    <div class='clear'></div>");
 
      paramDiv.find("select[name='p_type']").multiselect({
         multiple: false,
