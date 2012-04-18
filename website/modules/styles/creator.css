@@ -472,11 +472,6 @@ div.ui-layout-north
     font-size: 72%;
 }
 
-.content
-{
-    height: 100%;
-}
-
 
 /*from here, DK's styles */
 
@@ -556,7 +551,7 @@ img.imgexpand {
 	position:fixed;
 	z-index: 8000;
 	width: 100%;
-	height: 25px;
+	height: 26px;
 	background-color: #cddcf1;
 	overflow:hidden;
 	text-align: center;
@@ -592,8 +587,9 @@ input[type="text"] {
 .content {
 	position:fixed;
 	z-index:0;
-	height:100%;
-	padding-bottom:105px;
+	height:84%;
+	padding-bottom:160px;
+    margin-bottom: 350px;
 }
 
 .ui-button-text {
