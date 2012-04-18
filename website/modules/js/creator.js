@@ -158,23 +158,24 @@ function editModule()
 function addparameter()
 {
     var paramDiv = $("<div class='parameter'>  \
-	<span class='delparam'> <button class='delparam'>x Delete</button> </span> \
         <table class='deloptions'>\
-        <tr><td>\
+        <tr><td class='btntd'>\
+        <button class='delparam'>x Delete</button></td><td>\
         <p>Name*: <br/>\
-        <input type='text' name='p_name' size='42'/>\
+        <input type='text' name='p_name' size='28'/>\
         <input type='checkbox' name='p_optional' size='25'/>Optional</p><p>\
         Description:<br/>\
         <textarea cols='60' name='p_description' rows='2'></textarea></p>\
         </td><td class='lasttd'>\
-        <table class='pmoptions'><tr><td>Default Value:</td><td><input type='text' name='p_defaultvalue' size='30'/><br/>\
+        <table class='pmoptions'><tr><td>Default Value:</td><td><input type='text' name='p_defaultvalue' size='16'/><br/>\
         </td></tr>\
         <tr><td>Flag:</td><td><input type='text' name='p_flag' size='7'/>\
         <input type='checkbox' name='p_flagspace' size='7' disabled='disabled'></input> insert space after flag\
         </td> \
-        <td>  \
+        <td> \
         <input type='checkbox' name='p_prefix' size='7'></input> prefix when specified \
-        </td></tr>\
+        </td> \
+        </tr>\
         <tr><td>Type*:</td><td><select name='p_type'>\
                        <option value='text'>Text</option> \
                        <option value='Integer'>Integer</option>  \
@@ -187,10 +188,9 @@ function addparameter()
         </td></tr></table>\
         </td></tr>\
         </table>\
-    </div> \
-    <div class='clear'></div>");
+    </div>");
 
-     paramDiv.find("select[name='p_type']").multiselect({
+    paramDiv.find("select[name='p_type']").multiselect({
         multiple: false,
         header: false,
         noneSelectedText: "",
@@ -199,7 +199,7 @@ function addparameter()
 
     $('#parameters').append(paramDiv);
 
-    $(".delparam button").button().click(function()
+    $(".delparam").button().click(function()
     {
         //first remove the parameter from the commandline
         var pelement = $(this).parent().parent().find("input[name='p_name']");
@@ -209,7 +209,7 @@ function addparameter()
 
         updateparameter($(this).parent().parent());
 
-        $(this).parent().parent().remove();
+        $(this).parents("div:first").remove();
     });
 
     $("select[name='p_type']").live("change", function()

@@ -142,16 +142,6 @@ div.ui-layout-north
     overflow: hidden;
 }
 
-.parameter
-{
-
-}
-
-.parameter table td
-{
-
-}
-
 .addcontrols
 {
     margin: 1px;
@@ -178,36 +168,15 @@ div.ui-layout-north
     padding: 0;
 }
 
-#parameters .ui-selecting
-{
-    border-color: #333366;
-}
-
-#parameters .ui-selected
-{
-    border-color: red; border-style:solid;
-}
-
 #parameters
 {
     list-style-type: none;
     padding: 0;
-    /*width: 99%; */
 
     overflow: auto;
     height: 470px;
     margin: 3px;
 	margin-bottom:105px;
-}
-
-#parameters div.parameter
-{
-
-}
-
-#commandlist .ui-selected
-{
-    border-color: red; border-style:solid; border-width:thin;
 }
 
 #commandpreview button
@@ -221,7 +190,6 @@ div.ui-layout-north
     float: left;
     width: 100%;
 	text-align: left;
-
 }
 
 #commandtype table{
@@ -238,7 +206,7 @@ div.ui-layout-north
 #commandinfo
 {
     float: none;
-    width: 800px;
+    width: 100%;
 }
 
 .clear
@@ -297,13 +265,12 @@ div.ui-layout-north
 #commandtextarea textarea
 {
     padding: 0px;
-    width: 760px;
-    height: 60px;
+    width: 770px;
+    height: 88px;
 	margin-right: 10px;
 	margin-top:5px;
 	margin-bottom:10px;
 	float:left;
-
 }
 
 #commandtextarea img.buttonIcon{
@@ -333,7 +300,6 @@ div.ui-layout-north
 }
 
 .hcontent table td{
-	/*border-bottom: 1px solid #ccc;*/
 	vertical-align:top;
 }
 
@@ -642,7 +608,6 @@ img.buttonIcon {
 
 .parameter
 {
-
 	margin:5px 0 0 0;
 	padding:0;
 	width:auto;
@@ -650,13 +615,13 @@ img.buttonIcon {
 
 .parameter table {
 	width: auto;
-
 }
 
 .parameter table td {
 	border-right: solid 1px #ddd;
 	width:20px;
 	padding:0;
+    vertical-align: middle;
 }
 
 .parameter table td.lasttd {
@@ -687,9 +652,6 @@ table.pmoptions td p {
 .ui-dialog .ui-dialog-title { float: left; margin: -1px 16px 5px 5px; font-size:13px;}
 
 
-span.delparam {
-	float:left;
-}
 
 table.deloptions {
 	float:left;
