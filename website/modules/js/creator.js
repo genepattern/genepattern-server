@@ -1291,6 +1291,16 @@ jQuery(document).ready(function() {
             $(this).parent().next("table").append(choicerow);
     });
 
+    //check for invalid chars ; and = in parameter choice list
+    $("input[name='choicen'], input[name='choicev']").live("keyup", function()
+    {
+        if($(this).val().indexOf(";") != -1 || $(this).val().indexOf("=") != -1)
+        {
+            alert("The characters = and ; are not allowed");
+            $(this).val("");
+        }
+    });
+
     $( "#addmodcategorydialog" ).dialog({
             autoOpen: false,
             height: 210,
