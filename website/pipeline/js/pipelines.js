@@ -538,6 +538,11 @@ var editor = {
             var added = this.loadModule(module.lsid, module.id, top, left);
 
             if (added === null) {
+                self.location="/gp/viewPipeline.jsp?name=" + editor.workspace["pipelineLsid"];
+                editor.makeClean();
+                throw "Stop Loading";
+
+                // Old handling of modules that are not installed
                 added = this._addBlackBoxModule(library._createBlackBoxModule(module.name, module.lsid), module.id, module.top, module.left);
                 if (!givenAlert) {
                     editor.showDialog("Problem Loading Pipeline", "Unable to load one or more of the modules in the pipeline.  " +
@@ -1576,6 +1581,10 @@ var properties = {
             if (value === properties.PROMPT_WHEN_RUN) {
                 properties._showDisplaySettingsButton($(".propertyValue[type='file'][name='" + labelText + "']").parent(), labelText);
             }
+            else {
+                // The upload is disabled due to a pipe being connected to this input, display edit button
+                properties._showEditPipeButton($(".propertyValue[type='file'][name='" + labelText + "']").parent(), labelText);
+            }
         }
 
         // When the upload form is submitted, send to the servlet
@@ -1719,6 +1728,39 @@ var properties = {
         editor.showDialog("Set Prompt When Run Display Settings", inner, button);
     },
 
+    _showEditPipeButton: function(parent, name) {
+        if ($("button.editPipeButton[name='" + name + "']").size() === 0) {
+            var button = document.createElement("button");
+            button.innerHTML = "Edit Connection";
+            button.setAttribute("name", name);
+            button.setAttribute("class", "editPipeButton");
+            parent.append(button);
+            $(button).button();
+            $(button).click(function(event) {
+                var module = properties.current;
+                var paramName = this.getAttribute("name");
+                var input = module.getInputByName(properties._stripTrailingAstrik(paramName));
+                var port = input.port;
+                var pipe = port.pipes[0];
+
+                properties.saveToModel();
+                properties.displayPipe(pipe);
+                properties.show();
+
+                // Prevent the button from submitting the form if it is inside one
+                if (event.preventDefault) event.preventDefault();
+                if (event.stopPropagation) event.stopPropagation();
+            });
+        }
+        else {
+            $("button.editPipeButton[name='" + name + "']").show();
+        }
+    },
+
+    _stripTrailingAstrik: function(name) {
+        return name.substr(-1) === "*" ? name.substr(0, name.length - 1) : name;
+    },
+
     _showDisplaySettingsButton: function(parent, name) {
         if ($("button.pwrDisplayButton[name='" + name + "']").size() === 0) {
             var button = document.createElement("button");
@@ -1729,7 +1771,7 @@ var properties = {
             $(button).button();
             $(button).click(function(event) {
                 // Removed the trailing asterisk if a required param, then show the settings dialog
-                properties._showDisplaySettingsDialog(button, properties.current, name.substr(-1) === "*" ? name.substr(0, name.length - 1) : name);
+                properties._showDisplaySettingsDialog(button, properties.current, properties._stripTrailingAstrik(name));
 
                 // Prevent the button from submitting the form if it is inside one
                 if (event.preventDefault) event.preventDefault();
