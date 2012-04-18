@@ -37,6 +37,12 @@ var Request = {
  	}
 };
 
+//For those browsers that dont have it so at least they won't crash.
+if (!window.console)
+{
+    window.console = { time:function(){}, timeEnd:function(){}, group:function(){}, groupEnd:function(){}, log:function(){} };
+}
+
 function saveModule()
 {
     var modname = $('#modtitle').val();
@@ -506,6 +512,7 @@ function changeParameterType(element)
                 $( "#addfileformatdialog" ).dialog("open");
             });
 
+            console.log("Found file formats: " + $('select[name="mod_fileformat"]').children("option").text());
             //copy option values from the modules output file format list that was generated earlier
             $('select[name="mod_fileformat"]').children("option").each(function()
             {
@@ -587,7 +594,22 @@ function updatefileformats()
 
                 mcat.multiselect('refresh');
 
-                $("select[name='fileformat']").trigger("change");
+                $("select[name='fileformat']").each(function()
+                {
+                    console.log("adding loaded file formats to parameters");
+                    var fileformat = $(this);
+                    $('select[name="mod_fileformat"]').children("option").each(function()
+                    {
+                        fileformat.append("<option>" + $(this).val() + "</option>");
+                    });
+
+                    if(fileformat.data("fileformats") != null && fileformat.data("fileformats") != "")
+                    {
+                        fileformat.val(fileformat.data("fileformats"));
+                    }
+
+                    fileformat.multiselect("refresh");
+                });
             }
         },
         dataType: "json"
@@ -743,14 +765,14 @@ function loadModuleInfo(module)
                     module["commandLine"].indexOf("<java>") < 1)
             {
                 $("select[name='c_type']").val("Java");
-                $("select[name='c_type']").multisect("refresh");
+                $("select[name='c_type']").multiselect("refresh");
                 $("#commandtextarea textarea").data("type", "<java>");
             }
             if(module["commandLine"].indexOf("<perl>") != -1 &&
                     module["commandLine"].indexOf("<perl>") < 1)
             {
                 $("select[name='c_type']").val("Perl");
-                $("select[name='c_type']").multisect("refresh");
+                $("select[name='c_type']").multiselect("refresh");
                 $("#commandtextarea textarea").data("type", "<perl>");
             }
         }
@@ -834,6 +856,10 @@ function loadParameterInfo(parameters)
         if(parameters[i].flag !== undefined && parameters[i].flag !== null)
         {
             newParameter.find("input[name='p_flag']").val(parameters[i].flag);
+            if(newParameter.find("input[name='p_flag']").val() != "")
+            {
+                newParameter.find("input[name='p_flagspace']").removeAttr("disabled");
+            }
         }
 
         if(parameters[i].flagspace !== undefined && parameters[i].flagspace !== null)
@@ -884,6 +910,7 @@ function loadParameterInfo(parameters)
             
             var pfileformatlist = pfileformat.split(";");
             newParameter.find("select[name='fileformat']").val(pfileformatlist);
+            newParameter.find("select[name='fileformat']").data("fileformats", pfileformatlist);
             newParameter.find("select[name='fileformat']").multiselect('refresh');
         }
 
@@ -914,14 +941,14 @@ function loadModule(taskId)
                 var error = response["ERROR"];
                 var module = response["module"];
 
-                if (error !== undefined && error !== null) {
-
-                   /* if(error.indexOf("not editable") != -1)
-                    {
-                        window.open("/gp/addTask.jsp?name=" + taskId, '_self');
-                    } */
-
+                if (error !== undefined && error !== null)
+                {
                     alert(error);
+
+                    if(error.indexOf("not editable") != -1)
+                    {
+                        window.open("/gp/modules/creator.jsf", '_self');
+                    }
                 }
                 if (message !== undefined && message !== null) {
                     alert(message);
