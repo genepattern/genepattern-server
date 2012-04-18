@@ -178,12 +178,12 @@ function addparameter()
         </tr>\
         <tr><td>Type*:</td><td><select name='p_type'>\
                        <option value='text'>Text</option> \
-                       <option value='Integer'>Integer</option>  \
-                           <option value='Floating Point'>Floating Point</option>  \
                        <option value='Input File'>Input File</option>\
-                           <option value='Directory'>Directory</option>\
-                       <option value='Password'>Password</option> \
                        <option value='Choice'>Choice</option> \
+                       <option value='Integer'>Integer</option>  \
+                       <option value='Floating Point'>Floating Point</option>  \
+                       <option value='Directory'>Directory</option>\
+                       <option value='Password'>Password</option> \
                    </select>\
         </td></tr></table>\
         </td></tr>\
@@ -901,7 +901,21 @@ function loadParameterInfo(parameters)
             newParameter.find("select[name='p_type']").multiselect("refresh");
             changeParameterType(newParameter.find("select[name='p_type']"));
         }
+
+        if(type == "PASSWORD")
+        {
+            newParameter.find("select[name='p_type']").val("Password");
+            newParameter.find("select[name='p_type']").multiselect("refresh");
+            changeParameterType(newParameter.find("select[name='p_type']"));
+        }
         
+        if(type == "DIRECTORY")
+        {
+            newParameter.find("select[name='p_type']").val("Directory");
+            newParameter.find("select[name='p_type']").multiselect("refresh");
+            changeParameterType(newParameter.find("select[name='p_type']"));
+        }
+
         if(pfileformat !== undefined && pfileformat != null && pfileformat.length > 0)
         {
             newParameter.find("select[name='p_type']").val("Input File");
