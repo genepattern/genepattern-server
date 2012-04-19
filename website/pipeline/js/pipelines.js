@@ -2390,6 +2390,7 @@ function Module(moduleJSON) {
         fileIcon.setAttribute("src", "images/file.gif");
         fileIcon.setAttribute("class", "fileButton");
         fileIcon.setAttribute("alt", "Embedded File");
+        fileIcon.setAttribute("title", "File Embeded in Module");
         fileIcon.style.display = "none";
         appendTo.appendChild(fileIcon);
 
@@ -2398,6 +2399,7 @@ function Module(moduleJSON) {
         openButton.setAttribute("src", "images/open.gif");
         openButton.setAttribute("class", "openButton");
         openButton.setAttribute("alt", "Open Module");
+        openButton.setAttribute("title", "Open Module in Editor");
         appendTo.appendChild(openButton);
 
         var propertiesButton = document.createElement("img");
@@ -2405,6 +2407,7 @@ function Module(moduleJSON) {
         propertiesButton.setAttribute("src", "images/pencil.gif");
         propertiesButton.setAttribute("class", "propertiesButton");
         propertiesButton.setAttribute("alt", "Edit Properties");
+        propertiesButton.setAttribute("title", "Edit Module Properties");
         appendTo.appendChild(propertiesButton);
 
         var alertIcon = document.createElement("img");
@@ -2413,6 +2416,7 @@ function Module(moduleJSON) {
         alertIcon.setAttribute("class", "alertButton");
         alertIcon.setAttribute("alt", "Module Alert");
         alertIcon.style.display = "none";
+        alertIcon.setAttribute("title", "Module Alert");
         appendTo.appendChild(alertIcon);
 
         var errorIcon = document.createElement("img");
@@ -2421,6 +2425,7 @@ function Module(moduleJSON) {
         errorIcon.setAttribute("class", "errorButton");
         errorIcon.setAttribute("alt", "Module Error");
         errorIcon.style.display = "none";
+        errorIcon.setAttribute("title", "Module Error");
         appendTo.appendChild(errorIcon);
 
         appendTo.innerHTML += "&#160;&#160;&#160;";
@@ -2430,6 +2435,7 @@ function Module(moduleJSON) {
         deleteButton.setAttribute("src", "images/delete.gif");
         deleteButton.setAttribute("class", "deleteButton");
         deleteButton.setAttribute("alt", "Delete Module");
+        deleteButton.setAttribute("title", "Remove Module");
         appendTo.appendChild(deleteButton);
     };
 
@@ -2702,6 +2708,18 @@ function Module(moduleJSON) {
         jsPlumb.draggable(this.ui);
         this._addModuleButtonCalls();
         this._addDragEvents();
+        this._addInfoTooltips();
+    };
+
+    this._addInfoTooltips = function() {
+        // Add tooltips to add appropriate module buttons
+        $(".fileButton").tooltip({tipClass: "infoTooltip"});
+        $(".openButton").tooltip({tipClass: "infoTooltip"});
+        $(".alertButton").tooltip({tipClass: "infoTooltip"});
+        $(".propertiesButton").tooltip({tipClass: "infoTooltip"});
+        $(".alertButton").tooltip({tipClass: "infoTooltip"});
+        $(".errorButton").tooltip({tipClass: "infoTooltip"});
+        $(".deleteButton").tooltip({tipClass: "infoTooltip"});
     };
 
 	this.spawn = function() {
@@ -2961,12 +2979,14 @@ function Port(module, pointer, param) {
         propertiesButton.setAttribute("id", "prop_" + baseId);
         propertiesButton.setAttribute("src", "images/pencil.gif");
         propertiesButton.setAttribute("class", "propertiesButton");
+        propertiesButton.setAttribute("title", "Edit Connection");
         appendTo.appendChild(propertiesButton);
 
         var deleteButton = document.createElement("img");
         deleteButton.setAttribute("id", "del_" + baseId);
         deleteButton.setAttribute("src", "images/delete.gif");
         deleteButton.setAttribute("class", "deleteButton");
+        deleteButton.setAttribute("title", "Remove Connection");
         appendTo.appendChild(deleteButton);
     };
 
@@ -2982,6 +3002,10 @@ function Port(module, pointer, param) {
             var port = editor.getParentPort(this);
             port.removePipes();
         });
+
+        // Add tooltips to the tooltip buttons
+        $("#" + "prop_" + id).tooltip({tipClass: "infoTooltip"});
+        $("#" + "del_" + id).tooltip({tipClass: "infoTooltip"});
     };
 
     this.getInput = function() {

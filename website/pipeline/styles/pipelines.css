@@ -353,6 +353,21 @@ div.iconSpace {
     stroke: red;
 }
 
+.infoTooltip {
+    display: none;
+    background-color: #ffa;
+    border: 1px solid #cc9;
+    padding: 3px;
+    font-size: 13px;
+    -moz-box-shadow: 2px 2px 11px #666;
+    -webkit-box-shadow: 2px 2px 11px #666;
+    text-align: center;
+    z-index: 9001;
+    word-wrap: break-word;
+
+
+}
+
 .tooltip {
     display: none;
     background: transparent url(../images/bubble.png);
