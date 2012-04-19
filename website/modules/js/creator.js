@@ -73,6 +73,37 @@ function isDirty()
     return dirty;
 }
 
+function updateModuleVersions(lsids)
+{
+    if(lsids == undefined || lsids == null)
+    {
+        return;
+    }
+    
+    $('select[name="modversion"]').children().remove();
+    var modVersionLsidList = lsids;
+    for(v =0;v<modVersionLsidList.length;v++)
+    {
+        var versionnum = modVersionLsidList[v];
+        var index = versionnum.lastIndexOf(":");
+        if(index == -1)
+        {
+            alert("An error occurred while loading module versions.\nInvalid lsid: " + moduleVersionLsidList[v]);
+        }
+        var version = versionnum.substring(index+1, versionnum.length);
+        var modversion = "<option value='" + versionnum + "'>" + version + "</option>";
+        $('select[name="modversion"]').append(modversion);
+        $('select[name="modversion"]').multiselect("refresh");
+    }
+
+    $('select[name="modversion"]').change(function()
+    {
+        var editLocation = "creator.jsf?lsid=" + $(this).val();
+        window.open(editLocation, '_self');
+    });
+    $('select[name="modversion"]').multiselect("refresh");
+}
+
 function runModule(lsid)
 {
     window.open("/gp/pages/index.jsf?lsid=" + lsid, '_self');
@@ -138,9 +169,15 @@ function saveModule()
         success: function(response) {
             var error = response["ERROR"];
             var newLsid = response["lsid"];
+            //get updated module versions
+            var versions = response["lsidVersions"];
+
             if (error !== undefined && error !== null) {
                 alert(error);
             }
+
+            updateModuleVersions(versions);
+
             // Update the LSID upon successful save
             if (newLsid !== undefined && newLsid !== null)
             {
@@ -696,27 +733,7 @@ function loadModuleInfo(module)
 
     if(module["lsidVersions"] !== undefined)
     {
-        $('select[name="modversion"]').children().remove();
-        var modVersionLsidList = module["lsidVersions"];
-        for(v =0;v<modVersionLsidList.length;v++)
-        {
-            var versionnum = modVersionLsidList[v];
-            var index = versionnum.lastIndexOf(":");
-            if(index == -1)
-            {
-                alert("An error occurred while loading module versions.\nInvalid lsid: " + moduleVersionLsidList[v]);
-            }
-            var version = versionnum.substring(index+1, versionnum.length);
-            var modversion = "<option value='" + versionnum + "'>" + version + "</option>";
-            $('select[name="modversion"]').append(modversion);
-            $('select[name="modversion"]').multiselect("refresh");
-        }
-
-        $('select[name="modversion"]').change(function()
-        {
-            var editLocation = "creator.jsf?lsid=" + $(this).val();
-            window.open(editLocation, '_self');
-        });
+        updateModuleVersions(module["lsidVersions"]);
         $('select[name="modversion"]').val(module["LSID"]);
         $('select[name="modversion"]').multiselect("refresh");
     }

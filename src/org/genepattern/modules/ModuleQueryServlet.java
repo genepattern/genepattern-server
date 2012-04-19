@@ -335,6 +335,7 @@ public class ModuleQueryServlet extends HttpServlet
         {
             JSONObject moduleJSON = ModuleJSON.parseBundle(bundle);
 	        ModuleJSON moduleObject = ModuleJSON.extract(moduleJSON);
+
             String name = moduleObject.getName();
             String description = moduleObject.getDescription();
 
@@ -487,6 +488,7 @@ public class ModuleQueryServlet extends HttpServlet
             ResponseJSON message = new ResponseJSON();
             message.addMessage("Module Saved");
             message.addChild("lsid", newLsid);
+            message.addChild("lsidVersions", new JSONArray(getModuleVersions(newLsid)));            
             this.write(response, message);
         }
         catch(Exception e)
