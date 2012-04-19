@@ -176,7 +176,6 @@ div.ui-layout-north
     overflow: auto;
     height: 470px;
     margin: 3px;
-	margin-bottom:105px;
 }
 
 #commandpreview button
@@ -220,6 +219,12 @@ div.ui-layout-north
     font-size: 0.75em;
 }
 
+#editchoicedialog
+{
+    text-align: left;
+    font-size: 12px;
+}
+
 .dialog
 {
     font-size: 0.8125em;
@@ -230,7 +235,19 @@ div.ui-layout-north
 
 #editchoicedialog button
 {
-    font-size: 0.75em;
+    font-size: 60%;
+    text-align: left;
+}
+
+#editchoicedialog table
+{
+    width: 310px;
+    margin: 8px;
+}
+
+#editchoicedialog input
+{
+    width: auto;
 }
 
 .ui-dialog .ui-dialog-buttonpane button
@@ -588,8 +605,7 @@ input[type="text"] {
 	position:fixed;
 	z-index:0;
 	height:84%;
-	padding-bottom:160px;
-    margin-bottom: 350px;
+	padding-bottom: 0;
 }
 
 .ui-button-text {
