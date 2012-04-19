@@ -3001,11 +3001,14 @@ function Port(module, pointer, param) {
         $("#" + "del_" + id).click(function() {
             var port = editor.getParentPort(this);
             port.removePipes();
+
+            // Remove the tooltip for this delete element, fixes bug in tooltip
+            $("." + this.id).remove();
         });
 
         // Add tooltips to the tooltip buttons
         $("#" + "prop_" + id).tooltip({tipClass: "infoTooltip"});
-        $("#" + "del_" + id).tooltip({tipClass: "infoTooltip"});
+        $("#" + "del_" + id).tooltip({tipClass: "del_" + id + " infoTooltip"});
     };
 
     this.getInput = function() {
