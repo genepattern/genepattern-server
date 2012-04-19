@@ -56,7 +56,16 @@ function trim(s)
 
 function markDirty()
 {
-    dirty = true;
+    //if page is not already marked as dirty
+    if(!dirty)
+    {
+        dirty = true;
+
+        $(window).bind('beforeunload', function()
+        {
+            return 'If you leave this page all module changes will be lost.';
+        });
+    }
 }
 
 function isDirty()
