@@ -385,14 +385,21 @@ function changeParameterType(element)
                     width: 360,
                     create: function()
                     {
-                        $(this).find("tr td").remove();
+                        var table = $("<table>\
+                            <tr>  \
+                                <th>Value<br/>(required)</th> \
+                                <th>Display Value<br/>(optional)</th> \
+                            </tr>  \
+                        </table>");
+
+                        $(this).append(table);
 
                         var result = choices.split(';');
                         if(result == null || result == "" || result.length < 0)
                         {
                             //start with two rows of data
-                            var trowdef = $("<tr><td> <input type='text' name='choicen' size='15'/> </td>" +
-                                 "<td> <input type='text' name='choicev' size='15'/> </td>" +
+                            var trowdef = $("<tr><td> <input type='text' name='choicev' size='15'/> </td>" +
+                                 "<td> <input type='text' name='choicen' size='15'/> </td>" +
                                  "<td> <button> X </button></td></tr>");
 
                             trowdef.find("button").button().click(function()
@@ -400,8 +407,8 @@ function changeParameterType(element)
                                     $(this).parent().parent().remove();
                             });
 
-                            var trowdef2 = $("<tr><td> <input type='text' name='choicen' size='15'/> </td>" +
-                                 "<td> <input type='text' name='choicev' size='15'/> </td>" +
+                            var trowdef2 = $("<tr><td> <input type='text' name='choicev' size='15'/> </td>" +
+                                 "<td> <input type='text' name='choicen' size='15'/> </td>" +
                                  "<td> <button> X </button></td></tr>");
 
                             trowdef2.find("button").button().click(function()
@@ -418,32 +425,36 @@ function changeParameterType(element)
                         {
                             var rowdata = result[i].split("=");
 
+                            var displayValue = "";
+                            var value = "";
                             if(rowdata.length > 1)
                             {
-                                var trow = $("<tr><td> <input type='text' name='choicen' size='15' value='"
-                                            + rowdata[1] +"'/> </td>" +
-                                        "<td> <input type='text' name='choicev' size='15'value='"
-                                         + rowdata[0] + "'/> </td>" +
-                                        "<td> <button> X </button></td></tr>");
-
-                                trow.find("button").button().click(function()
-                                {
-                                    $(this).parent().parent().remove();
-                                });
-
-                                $(this).find("table").append(trow);
+                                displayValue = rowdata[1];
+                                value = rowdata[0];
                             }
-                        }
-
-                        /*$(this).find("input[name='choicen']").live("keydown", function()
-                        {
-                            alert("choice list keydown");
-                            if($(this).val().indexOf(";") != -1 || $(this).val().indexOf("=") != -1)
+                            else
                             {
-                                alert("The characters = and ; are not allowed");
-                                $(this).val("");
+                                value = rowdata[0];
                             }
-                        });*/
+
+                            var trow = $("<tr><td> <input type='text' name='choicev' size='15' value='"
+                                        + value +"'/> </td>" +
+                                    "<td> <input type='text' name='choicen' size='15'value='"
+                                     + displayValue + "'/> </td>" +
+                                    "<td> <button> X </button></td></tr>");
+
+                            trow.find("button").button().click(function()
+                            {
+                                $(this).parent().parent().remove();
+                            });
+
+                            $(this).find("table").append(trow);
+                        }
+                    },
+                    close: function()
+                    {
+                        $( this ).dialog( "destroy" );                        
+                        $("#editchoicedialog").find( "table" ).remove();
                     },
                     buttons: {
                             "OK": function() {
@@ -473,12 +484,14 @@ function changeParameterType(element)
                                     element.data('editing', "Choice");
                                 });
 
-                                $( this ).dialog( "destroy" );
+                                $("#editchoicedialog").dialog("destroy");
+                                $("#editchoicedialog").find( "table" ).remove();
                             },
                             "Cancel": function() {
                                     var choiceListElement = $("input[name='choicelist']");
                                     choiceListElement.parent().next().data('editing', false);
                                 $( this ).dialog( "destroy" );
+                                $("#editchoicedialog").find( "table" ).remove();                                
                             }
                     },
                     resizable: true
@@ -1294,8 +1307,8 @@ jQuery(document).ready(function() {
     $( "#choiceadd" )
         .button()
         .click(function() {
-            var choicerow = $("<tr><td> <input type='text' name='choicen' size='15'/></td>" +
-                            "<td> <input type='text' name='choicev' size='15'/></td>" +
+            var choicerow = $("<tr><td> <input type='text' name='choicev' size='15'/></td>" +
+                            "<td> <input type='text' name='choicen' size='15'/></td>" +
                             "<td> <button> X </button></td></tr>");
             choicerow.find("button").button().click(function()
             {
