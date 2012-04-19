@@ -11,6 +11,7 @@
 
 var mainLayout;
 var run = false;
+var dirty = false;
 
 var module_editor = {
     lsid: "",
@@ -51,6 +52,21 @@ function trim(s)
 	while(r > l && s[r] == ' ')
 	{	r-=1;	}
 	return s.substring(l, r+1);
+}
+
+function markDirty()
+{
+    dirty = true;
+}
+
+function isDirty()
+{
+    return dirty;
+}
+
+function runModule(lsid)
+{
+    window.open("/gp/pages/index.jsf?lsid=" + lsid, '_self');
 }
 
 function saveModule()
@@ -132,7 +148,7 @@ function saveModule()
 
                 if(run)
                 {
-                    window.open("/gp/pages/index.jsf?lsid=" + newLsid, '_self');
+                    runModule(newLsid);
                 }
                 else
                 {
@@ -1475,13 +1491,28 @@ jQuery(document).ready(function() {
 
     $('#savebtn').button().click(function()
     {
-        saveAndUpload(false);
+        if(!isDirty())
+        {
+            alert("No changes to save");
+        }
+        else
+        {
+            saveAndUpload(false);
+        }
     });
 
     $('#saveRunbtn').button().click(function()
     {
-       // save and then run the module
-       saveAndUpload(true);
+        //no changes detected so skip to run step
+        if(!isDirty() && module_editor.lsid != "")
+        {
+            runModule(module_editor.lsid);
+        }
+        else
+        {
+            // save and then run the module
+            saveAndUpload(true);
+        }
     });
 
 
@@ -1587,5 +1618,10 @@ jQuery(document).ready(function() {
             modtitle = modtitle.replace(/ /g, ".");
             $("#modtitle").val(modtitle);
         }
+    });
+
+    $("body").change(function()
+    {
+        markDirty();
     });
 });
