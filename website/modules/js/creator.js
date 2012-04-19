@@ -43,6 +43,16 @@ if (!window.console)
     window.console = { time:function(){}, timeEnd:function(){}, group:function(){}, groupEnd:function(){}, log:function(){} };
 }
 
+function trim(s)
+{
+	var l=0; var r=s.length -1;
+	while(l < s.length && s[l] == ' ')
+	{	l++; }
+	while(r > l && s[r] == ' ')
+	{	r-=1;	}
+	return s.substring(l, r+1);
+}
+
 function saveModule()
 {
     var modname = $('#modtitle').val();
@@ -151,6 +161,7 @@ function editModule()
 
     if(lsid !== undefined && lsid !== null && lsid.length > 0)
     {
+        lsid = lsid.replace(/#/g, "");
         loadModule(lsid);
     }
 }
@@ -1361,7 +1372,27 @@ jQuery(document).ready(function() {
             buttons: {
                     "OK": function() {
                         var fileformat = $("#newfileformat").val();
+                        fileformat = trim(fileformat);
+
+                        $("#newfileformat").val("");
                         var newfileformat = $("<option>" + fileformat + "</option>");
+
+                        var exists = false;
+                        //check if fileformat already exists
+                        //append to parameter input file format
+                        $("select[name='mod_fileformat']").children().each(function()
+                        {
+                            if($(this).val() == fileformat)
+                            {
+                                exists = true;
+                            }
+                        });
+
+                        if(exists)
+                        {
+                            alert("The file format " + fileformat + " already exists");
+                            return;
+                        }
 
                         //append to parameter input file format
                         $("select[name='fileformat']").each(function()
@@ -1373,10 +1404,11 @@ jQuery(document).ready(function() {
                         //append to module output file format
                         $("select[name='mod_fileformat']").append(newfileformat);
                         $("select[name='mod_fileformat']").multiselect("refresh");
-                        
+
                         $( this ).dialog( "close" );
                     },
                     "Cancel": function() {
+                        $("#newfileformat").val("");
                         $( this ).dialog( "close" );
                     }
             },
