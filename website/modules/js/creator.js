@@ -272,7 +272,7 @@ function addparameter()
 
     $('#parameters').append(paramDiv);
 
-    $(".delparam").button().click(function()
+    paramDiv.find(".delparam").button().click(function()
     {
         //first remove the parameter from the commandline
         var pelement = $(this).parent().parent().find("input[name='p_name']");
