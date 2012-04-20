@@ -862,54 +862,38 @@ function loadModuleInfo(module)
     if(supportFilesList !== undefined && supportFilesList != null &&  supportFilesList != "")
     {
         var currentFilesDiv = $("<div id=currentfiles><div>");
-        currentFilesDiv.append("Current Files: ");
+        currentFilesDiv.append("Current Files (Check to delete): ");
 
         $("#supportfilecontent").prepend(currentFilesDiv);
 
-        var currentFilesSelect = $("<select name='currentfiles' multiple='multiple'></select>");
+       // var currentFilesSelect = $("<select name='currentfiles' multiple='multiple'></select>");
         supportFilesList = supportFilesList.split(";");
         for(s=0;s<supportFilesList.length;s++)
         {
+            var checkbox = $('<input type="checkbox" name="currentfiles" value="' +
+            supportFilesList[s] + '" />').click(function()
+            {
+                var selectedVal = $(this).val();
+
+                if($(this).is(':checked'))
+                {
+                    module_editor.filesToDelete.push(selectedVal);
+                }
+                else
+                {   //remove from delete file list
+                    var index = jQuery.inArray(selectedVal, module_editor.filesToDelete);
+                    module_editor.filesToDelete.splice(index,1);
+                }                
+            });
+
+            currentFilesDiv.append(checkbox);
+
             var currentFileURL = "<a href=\"../../getFile.jsp?task=" + module_editor.lsid + "&file=" + encodeURI(supportFilesList[s]) + "\" target=\"new\">" + htmlEncode(supportFilesList[s]) + "</a> ";
             currentFilesDiv.append(currentFileURL);
-            
-            var option = $("<option>" + supportFilesList[s] +"</option>");
-            currentFilesSelect.append(option);
         }
 
         currentFilesDiv.append("<br>");
 
-        currentFilesDiv.append(currentFilesSelect);
-        currentFilesSelect.multiselect({
-            header: false,
-            selectedList: 1 // 0-based index
-        });
-
-        var delButton = $("<button>Mark for deletion</button>").button().click(function()
-        {
-            var selectedVals = $("select[name='currentfiles']").val();
-            currentFilesDiv.find("p").remove();
-
-            module_editor.filesToDelete = [];
-            if(selectedVals !== null)
-            {
-                for(v=0; v < selectedVals.length; v++)
-                {
-                    module_editor.filesToDelete.push(selectedVals[v]);
-                }
-
-                var deletionfiles = module_editor.filesToDelete;
-
-                if(deletionfiles !== null && deletionfiles !== "")
-                {
-                    currentFilesDiv.append("<p> Marked for deletion: " + deletionfiles + "</p>");
-                }
-                currentFilesDiv.find("p").css("font-size", "1em");
-            }
-        });
-        
-        delButton.css("margin", "3px");
-        currentFilesDiv.append(delButton);
         currentFilesDiv.append("<br><br>");
     }
 }
