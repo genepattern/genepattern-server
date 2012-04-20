@@ -433,9 +433,9 @@ div.ui-layout-north
     max-height:150px;
     overflow: auto;
     min-height: 40px;
-	padding-left: 120px;
-	margin-top: -40px;
-	margin-bottom: 0px;
+	margin-top: -5px;
+	margin-bottom: 0;
+    margin-left: -1px;
 }
 
 #supportfileslist
@@ -568,7 +568,7 @@ img.imgexpand {
 	position:fixed;
 	z-index: 8000;
 	width: 100%;
-	height: 26px;
+	height: 25px;
 	background-color: #cddcf1;
 	overflow:hidden;
 	text-align: center;
@@ -620,20 +620,21 @@ img.buttonIcon {
 
 .parameter
 {
-	margin:5px 0 0 0;
+
+	margin:5px 0 0 -5px;
 	padding:0;
-	width:auto;
+	width:100%;
 }
 
 .parameter table {
-	width: auto;
+	width: 100%;
+
 }
 
 .parameter table td {
 	border-right: solid 1px #ddd;
 	width:20px;
 	padding:0;
-    vertical-align: middle;
 }
 
 .parameter table td.lasttd {
@@ -674,4 +675,10 @@ table.deloptions {
 .helpbutton
 {
     margin-left: 2px;
+    margin-right: -3px;    
+}
+
+.fileupload-buttonbar
+{
+    margin-right: 20px;
 }
