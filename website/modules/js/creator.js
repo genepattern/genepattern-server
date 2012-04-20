@@ -276,6 +276,12 @@ function addparameter()
     {
         //first remove the parameter from the commandline
         var pelement = $(this).parent().parent().find("input[name='p_name']");
+
+        if(!confirm("Are you sure you want to delete this parameter?"))
+        {
+            return;
+        }
+
         var felement = $(this).parent().parent().find("input[name='p_flag']");
         pelement.val("");
         felement.val("");
@@ -1270,34 +1276,13 @@ jQuery(document).ready(function() {
     $( "#parameters" ).sortable();
     $( "#commandlist" ).sortable();
 
-    $( "#addparam" )
-        .button()
-        .click(function() {
-           addparameter();
-        })
-        .next()
-            .button( {
-                text: false,
-                icons: {
-                    primary: "ui-icon-triangle-1-s"
-                }
-            })
-            .click(function() {
-                $("#param-bar")
-                    .children("ul").toggle();
-            })
-            .parent()
-                .buttonset();
-
-    $("#param-bar ul li #addone").click(function()
+    $("#addone").button().click(function()
     {
-        $("#param-bar ul").hide();
         addparameter();
     });
 
-    $("#param-bar ul li #addmultiple").click(function()
+    $("#addmultiple").button().click(function()
     {
-        $("#param-bar ul").hide();
         $( "#addparamdialog" ).dialog("open");
     });
 

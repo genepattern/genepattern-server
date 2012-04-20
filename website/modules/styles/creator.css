@@ -670,3 +670,8 @@ table.deloptions {
 	border: solid 1px #aaa;
 	margin-bottom: 10px;
 }
+
+.helpbutton
+{
+    margin-left: 2px;
+}
