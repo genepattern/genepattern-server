@@ -1265,29 +1265,14 @@ jQuery(document).ready(function() {
         addparameter();
     });
 
+    $("#addparamnum").val("1");
     $("#addmultiple").button().click(function()
     {
-        $( "#addparamdialog" ).dialog("open");
-    });
-
-    $( "#addparamdialog" ).dialog({
-        autoOpen: false,
-        height: 185,
-        width: 240,
-        buttons: {
-                "OK": function() {
-                    var numparams = $("#multiparam").val();
-                    for(i=0;i<numparams;i++)
-                    {
-                        addparameter();
-                    }
-                        $( this ).dialog( "close" );
-                },
-                "Cancel": function() {
-                    $( this ).dialog( "close" );
-                }
-        },
-        resizable: false
+        var numparams = $("#addparamnum").val();
+        for(i=0;i<numparams;i++)
+        {
+            addparameter();
+        }
     });
 
     $("input[name='p_flag']").live("keydown", function()
