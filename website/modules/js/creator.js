@@ -178,8 +178,10 @@ function saveModule()
 
             if (error !== undefined && error !== null) {
                 alert(error);
+                throw(error);
             }
 
+            setDirty(false);
             updateModuleVersions(versions);
 
             // Update the LSID upon successful save
@@ -196,7 +198,6 @@ function saveModule()
                 $("#lsid").empty().append("LSID: " + newLsid);
                 module_editor.uploadedfiles = [];
 
-                setDirty(false);
                 if(run)
                 {
                     runModule(newLsid);
