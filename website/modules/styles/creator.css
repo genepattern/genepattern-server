@@ -667,7 +667,6 @@ table.pmoptions td p {
 
 
 table.deloptions {
-	float:left;
 	border: solid 1px #aaa;
 	margin-bottom: 10px;
 }
@@ -675,5 +674,5 @@ table.deloptions {
 .helpbutton
 {
     margin-left: 2px;
-    margin-right: -3px;    
+    margin-right: -3px;
 }
