@@ -54,17 +54,21 @@ function trim(s)
 	return s.substring(l, r+1);
 }
 
-function markDirty()
+function setDirty(value)
 {
-    //if page is not already marked as dirty
-    if(!dirty)
-    {
-        dirty = true;
+    dirty = value;
 
+    //if page is not already marked as dirty
+    if(dirty)
+    {
         $(window).bind('beforeunload', function()
         {
             return 'If you leave this page all module changes will be lost.';
         });
+    }
+    else
+    {
+        $(window).unbind('beforeunload');   
     }
 }
 
@@ -192,6 +196,7 @@ function saveModule()
                 $("#lsid").empty().append("LSID: " + newLsid);
                 module_editor.uploadedfiles = [];
 
+                setDirty(false);
                 if(run)
                 {
                     runModule(newLsid);
@@ -1025,6 +1030,7 @@ function loadModule(taskId)
                 }
                 loadModuleInfo(response["module"]);
                 loadParameterInfo(response["parameters"]);
+                setDirty(false);
             },
             dataType: "json"
         });
@@ -1602,6 +1608,6 @@ jQuery(document).ready(function() {
 
     $("body").change(function()
     {
-        markDirty();
+        setDirty(true);
     });
 });
