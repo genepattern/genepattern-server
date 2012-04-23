@@ -1450,8 +1450,23 @@ var properties = {
         versionDiv.innerHTML = "v" + this._encodeToHTML(version);
     },
 
-    _setVersionDropdown: function(module) {
-        var baseLsid = editor.extractBaseLsid(module.lsid);
+    _setVersionDropdown: function(moduleOrLsid) {
+        // Set appropriate variables based on if the param is a module or the pipel's lsid
+        var baseLsid = null;
+        var version = null;
+        var id = null;
+        if (moduleOrLsid instanceof Module) {
+            baseLsid = editor.extractBaseLsid(moduleOrLsid.lsid);
+            version = moduleOrLsid.version;
+            id = moduleOrLsid.id;
+        }
+        else {
+            baseLsid = editor.extractBaseLsid(moduleOrLsid);
+            version = editor.workspace["pipelineVersion"];
+            id = "pipeline";
+        }
+
+
         var moduleArray = library.moduleVersionMap[baseLsid];
 
         // Handle the case of unknown modules
@@ -1462,31 +1477,56 @@ var properties = {
         var select = document.createElement("select");
         for (var i = 0; i < moduleArray.length; i++) {
             var option = document.createElement("option");
-            option.setAttribute("value", module.id + "|" + moduleArray[i].lsid);
-            if (moduleArray[i].version == module.version) {
+            option.setAttribute("value", id + "|" + moduleArray[i].lsid);
+            if (moduleArray[i].version == version) {
                 option.setAttribute("selected", "true");
             }
             option.innerHTML = moduleArray[i].version;
             select.appendChild(option);
         }
 
+        // Handle the case of an empty select
+        if (select.children.length === 0) {
+            var option = document.createElement("option");
+            option.innerHTML = "No Version";
+            select.appendChild(option);
+        }
+
         var versionDiv = $("#" + this.versionDiv)[0];
         versionDiv.appendChild(select);
-        $(select).change(function(event) {
-            var value = event.target.value;
-            var parts = value.split("|");
-            var doIt = confirm("This will swap out the currently edited module with another version.  Continue?");
-            if (doIt) {
-                var newModule = editor.replaceModule(parts[0], parts[1]);
-                newModule.checkForWarnings();
-                properties.displayModule(newModule);
-                properties.show();
-            }
-            else {
-                var lsid = editor.workspace[parts[0]].lsid;
-                $(this).val(lsid);
-            }
-        });
+
+        // If this is a module
+        if (moduleOrLsid instanceof Module) {
+            $(select).change(function(event) {
+                var value = event.target.value;
+                var parts = value.split("|");
+                var doIt = confirm("This will swap out the currently edited module with another version.  Continue?");
+                if (doIt) {
+                    var newModule = editor.replaceModule(parts[0], parts[1]);
+                    newModule.checkForWarnings();
+                    properties.displayModule(newModule);
+                    properties.show();
+                }
+                else {
+                    var lsid = editor.workspace[parts[0]].lsid;
+                    $(this).val(lsid);
+                }
+            });
+        }
+        else { // Otherwise this is the pipeline being edited
+            $(select).change(function(event) {
+                var value = event.target.value;
+                var parts = value.split("|");
+                var doIt = confirm("This will load a different version of this pipeline.  Continue?");
+                if (doIt) {
+                    editor.load(parts[1]);
+                }
+                else {
+                    var lsid = editor.workspace["pipelineLsid"];
+                    $(this).val("pipeline|" + lsid);
+                }
+            });
+        }
     },
 
     _displayInputKey: function() {
@@ -1994,7 +2034,7 @@ var properties = {
 
         this.current = new String("Pipeline");
         this._setTitle("Editing Pipeline");
-        this._setVersion(editor.workspace["pipelineVersion"]);
+        this._setVersionDropdown(editor.workspace["pipelineLsid"]);
         this._setSubtitle(editor.workspace["pipelineLsid"].length > 0 ? editor.workspace["pipelineLsid"] : "");
         this._addTextBox("Pipeline Name", editor.workspace["pipelineName"], false, false);
         this._addTextBox("Description", editor.workspace["pipelineDescription"], false, false);
