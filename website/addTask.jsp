@@ -106,7 +106,12 @@ if(errors!=null) {
 	boolean editable = createModuleAllowed && taskInfo.getUserId().equals(userID) && LSIDUtil.getInstance().isAuthorityMine(taskInfo.getLsid());
 	viewOnly = viewOnly || !editable;
 
-    if(!viewOnly)
+
+    String ua = request.getHeader( "User-Agent" );
+    boolean isMSIE = ( ua != null && ua.indexOf( "MSIE" ) != -1 );
+    response.setHeader( "Vary", "User-Agent" );
+
+    if(!isMSIE && !viewOnly)
     {
         response.sendRedirect("modules/creator.jsf?lsid=" + lsid );            
     }
