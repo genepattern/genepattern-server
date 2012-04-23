@@ -1519,6 +1519,16 @@ var properties = {
         return checkBox;
     },
 
+    _addCustomPWRBox: function(appendTo, labelText) {
+        var pwrObject = this.current.getInputByName(properties._stripTrailingAstrik(labelText)).promptWhenRun;
+        if (pwrObject !== null && pwrObject !== undefined) {
+            var customSpace = document.createElement("div");
+            customSpace.setAttribute("class", "customPWRDiv");
+            customSpace.innerHTML = "<em>" + pwrObject.name + ":</em> " + pwrObject.description;
+            $(appendTo).append(customSpace);
+        }
+    },
+
     _addFileUpload: function(labelText, value, description, pwr, disabled) {
         var label = document.createElement("div");
         var uploadForm = document.createElement("form");
@@ -1564,6 +1574,11 @@ var properties = {
         label.appendChild(valueDiv);
 
         $("#" + this.inputDiv).append(label);
+
+        // Add the space for custom prompt when run parameter displays
+        if (this.current instanceof Module) {
+            properties._addCustomPWRBox("#" + this.inputDiv, labelText);
+        }
 
         if (description !== null && description !== false) {
             var desc = document.createElement("div");
@@ -1720,6 +1735,7 @@ var properties = {
             var displayDesc = $("#pwrDisplayDesc").val();
             $.data(attach, "name", displayName);
             $.data(attach, "description", displayDesc);
+            properties._addCustomPWRBox(".customPWRDiv", name);
 
             $(this).dialog("close");
             if (event.preventDefault) event.preventDefault();
