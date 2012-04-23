@@ -1615,10 +1615,10 @@ var properties = {
 
         $("#" + this.inputDiv).append(label);
 
-        // Add the space for custom prompt when run parameter displays
-        if (this.current instanceof Module) {
-            properties._addCustomPWRBox("#" + this.inputDiv, labelText);
-        }
+        // TODO: Add the space for custom prompt when run parameter displays
+        //if (this.current instanceof Module) {
+        //    properties._addCustomPWRBox("#" + this.inputDiv, labelText);
+        //}
 
         if (description !== null && description !== false) {
             var desc = document.createElement("div");
@@ -1775,7 +1775,7 @@ var properties = {
             var displayDesc = $("#pwrDisplayDesc").val();
             $.data(attach, "name", displayName);
             $.data(attach, "description", displayDesc);
-            properties._addCustomPWRBox(".customPWRDiv", name);
+            // TODO: properties._addCustomPWRBox(".customPWRDiv", name);
 
             $(this).dialog("close");
             if (event.preventDefault) event.preventDefault();
