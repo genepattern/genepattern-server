@@ -53,6 +53,21 @@
     <script type="text/javascript" src="/gp/js/genepattern.js"/>
     <script type="text/javascript" src="/gp/js/mm_menu.js"/>
     <script type="text/javascript" src="/gp/js/mainMenu.js"/>
+
+    <!--[if IE]>
+        <script type="text/javascript" language="javascript">
+
+            if(Request.parameter('lsid') !== undefined
+                 && Request.parameter('lsid') !== null)
+            {
+                self.location = "/gp/addTask.jsp?" + "name=" + Request.parameter('lsid');
+            }
+            else
+            {
+                self.location = "/gp/addTask.jsp"; 
+            }
+        </script>
+    <![endif]-->
 </head>
 <body>
 <script language="JavaScript1.2" type="text/javascript">
