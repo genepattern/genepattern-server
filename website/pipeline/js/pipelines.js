@@ -2401,6 +2401,14 @@ function Module(moduleJSON) {
     };
 
 	this._createButtons = function (appendTo, baseId) {
+        var docIcon = document.createElement("img");
+        docIcon.setAttribute("id", "doc_" + this.id);
+        docIcon.setAttribute("src", "images/help.gif");
+        docIcon.setAttribute("class", "fileButton");
+        docIcon.setAttribute("alt", "Documentation");
+        docIcon.setAttribute("title", "Documentation");
+        appendTo.appendChild(docIcon);
+
         var fileIcon = document.createElement("img");
         fileIcon.setAttribute("id", "file_" + this.id);
         fileIcon.setAttribute("src", "images/file.gif");
@@ -2457,6 +2465,11 @@ function Module(moduleJSON) {
     };
 
 	this._addModuleButtonCalls = function() {
+        $("#" + "doc_" + this.id).click(function() {
+            var module = editor.getParentModule(this);
+            window.open("/gp/getTaskDoc.jsp?name=" + module.lsid, "_blank");
+        });
+
         $("#" + "open_" + this.id).click(function() {
             var module = editor.getParentModule(this.id);
             if (module.isPipeline()) {
