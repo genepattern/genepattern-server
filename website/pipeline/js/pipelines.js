@@ -2415,7 +2415,8 @@ function Module(moduleJSON) {
         openButton.setAttribute("src", "images/open.gif");
         openButton.setAttribute("class", "openButton");
         openButton.setAttribute("alt", "Open Module");
-        openButton.setAttribute("title", "Open Module in Editor");
+        openButton.setAttribute("title", "Open Pipeline in Designer");
+        if (!this.isPipeline()) { openButton.style.display = "none"; }
         appendTo.appendChild(openButton);
 
         var propertiesButton = document.createElement("img");
