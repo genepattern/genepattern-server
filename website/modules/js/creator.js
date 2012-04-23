@@ -479,6 +479,8 @@ function changeParameterType(element)
 
                         $(this).append(table);
 
+                        table.find("tbody").sortable();
+                        
                         var result = choices.split(';');
                         if(result == null || result == "" || result.length < 0)
                         {

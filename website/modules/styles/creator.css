@@ -158,16 +158,6 @@ div.ui-layout-north
     font-size: 71%;
 }
 
-.parameter table
-{
-    margin-left: 5px;
-}
-
-.parameter td
-{
-    padding: 0;
-}
-
 #parameters
 {
     list-style-type: none;
@@ -479,11 +469,6 @@ div.ui-layout-north
     font-size: 11px;
 }
 
-#param-bar ul
-{
-    z-index: 500;
-}
-
 #currentfiles button
 {
     font-size: 72%;
@@ -628,7 +613,7 @@ img.buttonIcon {
 
 .parameter table {
 	width: 100%;
-
+    margin-left: 5px;
 }
 
 .parameter table td {
@@ -646,14 +631,16 @@ table.pmoptions td {
 	padding:0;
 }
 
-table.pmoptions td p {
-}
-
 .parameter table td.btntd {
 	text-align:center;
 	padding:0;
 	vertical-align:middle;
 	width: 30px;
+}
+
+.parameter table p
+{
+    font-size: 11px;
 }
 
 .parameter button {
@@ -666,7 +653,8 @@ table.pmoptions td p {
 
 
 
-table.deloptions {
+table.deloptions
+{
 	border: solid 1px #aaa;
 	margin-bottom: 10px;
 }
@@ -674,5 +662,4 @@ table.deloptions {
 .helpbutton
 {
     margin-left: 2px;
-    margin-right: -3px;
 }
