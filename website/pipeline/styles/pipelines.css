@@ -211,7 +211,7 @@ input[type="file"] {
 	width:200px;
 }
 
-#pipelinePencilImg {
+.topRowButton {
     float:left;
     height: 16px;
     margin-right: 5px;
