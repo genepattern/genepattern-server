@@ -203,11 +203,21 @@ public class GenomeSpaceFile extends GpFilePath {
             return null;
         }
         if (path == null) {
-            String[] parts = gsUrl.getPath().split("/users/");
+
+            // Parse using the new DM pattern for files
+            String[] parts = gsUrl.getPath().split("/file/");
+
+            // Check to see if this parsing was successful, if not try old pattern
+            if (parts.length < 2) {
+                parts = gsUrl.getPath().split("/users/");
+            }
+
+            // If there is still an issue with the parsing, throw an error
             if (parts.length < 2) {
                 log.error("GenomeSpace file URL does not match URL pattern: " + gsUrl.getPath());
                 return null;
             }
+
             path = parts[1];
         }
         return path;
