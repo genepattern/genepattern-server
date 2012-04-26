@@ -2,6 +2,11 @@
 var pm_currentId;
 var pm_showing = false;
 var pm_subdir_focus = false;
+var pm_dropdown_focus = false;
+
+function setDropdownFocus() {
+	pm_dropdown_focus = true;
+}
 
 function setSubdirFocus() {
 	pm_subdir_focus = true;
@@ -12,6 +17,11 @@ function pm_registerClickHandler() {
 }
 
 function pm_clickHandler() {
+	if (pm_dropdown_focus) {
+		pm_dropdown_focus = false;
+		  return;
+	  }
+	
   if (pm_subdir_focus) {
 	  pm_subdir_focus = false;
 	  return;

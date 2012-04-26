@@ -64,7 +64,7 @@
                         </tr>
                         <tr>
                             <td>
-                                <t:selectOneMenu id="saveToGenomepace">
+                                <t:selectOneMenu id="saveToGenomepace" onclick="JavaScript:setDropdownFocus()">
                                     <f:selectItems value="#{genomeSpaceBean.allDirectorySelects}" />
                                 </t:selectOneMenu>
                                 <h:commandLink value="Save" action="#{genomeSpaceBean.sendFileToGenomeSpace}" immediate="true">
