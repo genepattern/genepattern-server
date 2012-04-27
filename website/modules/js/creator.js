@@ -685,6 +685,21 @@ function updatefileformats()
                 fileformats = fileformats.substring(1, fileformats.length-1);
 
                 var result = fileformats.split(", ");
+
+                var unique_fileformatlist = [];
+
+                for(m=0;m < result.length;m++)
+                {
+                    var index = unique_fileformatlist.indexOf(result[m]);
+
+                    if(index == -1)
+                    {
+                        unique_fileformatlist.push(result[m]);
+                    }
+                }
+
+                result = unique_fileformatlist;
+                
                 var mcat = $("select[name='mod_fileformat']");
 
                 for(i=0;i < result.length;i++)
