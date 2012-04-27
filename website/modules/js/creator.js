@@ -1051,12 +1051,27 @@ function getParametersJSON()
         var type = $(this).find("select[name='p_type'] option:selected").val();
         var default_val = $(this).find("input[name='p_defaultvalue']").val(); 
         var optional = $(this).find('input[name="p_optional"]').is(':checked') ? "on" : "";
-        var fileformat = "";
+        var fileformatlist = "";
         var value = "";
         var mode = "";
         var prefix = "";
         var flag = "";
         var flagspace ="";
+
+        if($(this).find('select[name="fileformat"]').val() !== undefined
+                && $(this).find('select[name="fileformat"]').val() !== null)
+        {
+            var fileformat = $(this).find('select[name="fileformat"]').val();
+            for(f=0;f< fileformat.length;f++)
+            {
+                fileformatlist = fileformatlist + fileformat[f];
+                if(f+1 < fileformat.length)
+                {
+                    fileformatlist = fileformatlist + ";";
+                }
+            }
+        }
+
         if($(this).find("input[name='p_flag']").val() != undefined && $(this).find("input[name='p_flag']").val() !== null)
         {
             flag = $(this).find("input[name='p_flag']").val();
@@ -1121,7 +1136,7 @@ function getParametersJSON()
         var parameter = {
             "name": pname, "choices": choices, "description": description, "TYPE": type,
             "dvalue": default_val, "optional": optional,
-            "fileformat": fileformat, "MODE": mode, "value": value, "prefix": prefix, "flag":flag, "flagspace":flagspace
+            "fileformat": fileformatlist, "MODE": mode, "value": value, "prefix": prefix, "flag":flag, "flagspace":flagspace
         };
 
         parameters.push(parameter);
