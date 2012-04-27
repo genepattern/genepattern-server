@@ -1597,7 +1597,10 @@ jQuery(document).ready(function() {
         selectedList: 1
     });
 
-    $("#helpbtn").button();
+    $("#helpbtn").button().click(function()
+    {
+          window.open('createhelp.jsp', '_blank');
+    });
 
     $("#modtitle").change(function()
     {
