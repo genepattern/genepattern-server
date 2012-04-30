@@ -52,6 +52,22 @@ var editor = {
 				var output = pipe.outputPort;
 				var input = pipe.inputPort;
 				editor.addDefaultPipe(output, input);
+
+                // Handle clicks on pipes
+                $("svg path:first-child").click(function(event) {
+                    var pipeName = event.target.parentNode.getAttribute("name");
+                    var port = editor._extractPortFromPipe(pipeName);
+                    properties.displayPipe(port.pipes[0]);
+                    properties.show();
+                    event.stopPropagation();
+                });
+                $("svg path:last-child").click(function(event) {
+                    var pipeName = event.target.parentNode.getAttribute("name");
+                    var port = editor._extractPortFromPipe(pipeName);
+                    properties.displayPipe(port.pipes[0]);
+                    properties.show();
+                    event.stopPropagation();
+                });
 			}
 		});
 
@@ -74,6 +90,20 @@ var editor = {
             return message;
         };
 	},
+
+    _extractPortFromPipe: function(pipeName) {
+        var parts = pipeName.split("_");
+
+        if (parts.length < 3) {
+            editor.log("Invalid pipe name given to editor._extractPortFromPipe(): " + pipeName);
+            return null;
+        }
+
+        var moduleName = parts[1];
+        var module = editor.workspace[moduleName];
+        var portName = parts[2];
+        return module.getPort(portName);
+    },
 
     log: function(message) {
         //noinspection JSCheckFunctionSignatures
@@ -395,7 +425,9 @@ var editor = {
     },
 
 	addConnection: function(source, target) {
-		return jsPlumb.connect({"source": source.endpoint, "target": target.endpoint});
+		var connection = jsPlumb.connect({"source": source.endpoint, "target": target.endpoint});
+        connection.canvas.setAttribute("name", "pipe_" + target.module.id + "_" + target.id);
+        return connection;
 	},
 
     modulesInWorkspace: function() {
