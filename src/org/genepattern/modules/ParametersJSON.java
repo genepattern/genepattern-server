@@ -103,7 +103,7 @@ public class ParametersJSON extends JSONObject {
                 String keyName = kIter.next();
                 if(this.get(keyName) == null)
                 {
-                    this.put(keyName, this.get(keyName));
+                    this.put(keyName, pAttrs.get(keyName));
                 }
             }
         }

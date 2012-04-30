@@ -110,7 +110,7 @@ public class ModuleJSON extends JSONObject {
                 String keyName = kIter.next();
                 if(this.get(keyName) == null)
                 {
-                    this.put(keyName, this.get(keyName));
+                    this.put(keyName, tia.get(keyName));
                 }
             }
             String supportFileNames="";
