@@ -375,7 +375,14 @@ public class PipelineQueryServlet extends HttpServlet {
 	            else {
                     // Special case for file paths
                     if (taskInfo.getParameterInfoArray()[i].getAttributes().get("type").equals("java.io.File") && !input.getValue().equals("")) {
-                        String filePath = "<GenePatternURL>getFile.jsp?task=" + URLEncoder.encode(model.getLsid(), "UTF-8") + "&file=" + URLEncoder.encode(input.getValue(), "UTF-8");
+                        String filePath = null;
+                        // Check for values that already embed the <GenePatternURL>
+                        if (input.getValue().startsWith("<GenePatternURL>")) {
+                            filePath = input.getValue();
+                        }
+                        else {
+                            filePath = "<GenePatternURL>getFile.jsp?task=" + URLEncoder.encode(model.getLsid(), "UTF-8") + "&file=" + URLEncoder.encode(input.getValue(), "UTF-8");
+                        }
                         setParameter(input.getName(), filePath, moduleParams, null);
                     }
                     else {
