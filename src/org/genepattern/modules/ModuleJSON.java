@@ -20,6 +20,8 @@ import org.genepattern.webservice.TaskInfoAttributes;
 import org.genepattern.util.GPConstants;
 
 import java.io.File;
+import java.util.Set;
+import java.util.Iterator;
 
 /**
  * User: nazaire
@@ -100,6 +102,17 @@ public class ModuleJSON extends JSONObject {
             this.put(COMMAND_LINE, tia.get(GPConstants.COMMAND_LINE));
             this.put(LSID, tia.get(GPConstants.LSID));
 
+            //add remaining task info attributes
+            Set keys = tia.keySet();
+            Iterator<String> kIter = keys.iterator();
+            while(kIter.hasNext())
+            {
+                String keyName = kIter.next();
+                if(this.get(keyName) == null)
+                {
+                    this.put(keyName, this.get(keyName));
+                }
+            }
             String supportFileNames="";
             if(supportFiles != null)
             {

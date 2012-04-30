@@ -17,7 +17,8 @@ var module_editor = {
     lsid: "",
     uploadedfiles: [],
     supportfileinputs: [],
-    filesToDelete: []
+    filesToDelete: [],
+    otherModAttrs: []
 };
 
 var Request = {
@@ -163,6 +164,15 @@ function saveModule()
         "language": language, "JVMLevel": lang_version, "cpuType": cpu, "taskType": tasktype, "version": version,
         "os": os, "commandLine": commandLine, "LSID": lsid, "supportFiles": supportFiles,
         "filesToDelete": filesToDelete, "fileformat": fileFormats};
+
+    //add other remaining attributes
+    /*for(var m = 0; m < module_editor.modAttrs; m++)
+    {
+        module_editor.modAttrs
+        if(json["module"].indexOf())
+    }  */
+
+    //module_editor.modAttrs.keys();
 
     json["parameters"] = getParametersJSON();
 
@@ -889,7 +899,25 @@ function loadModuleInfo(module)
         $("select[name='mod_fileformat']").multiselect("refresh");
     }
 
-    var supportFilesList = module.supportFiles;
+    //store remaining task info attributes
+    var keys = Object.keys(module);
+    for(k =0; k < keys.length; k++)
+    {
+        console.log("\nkeys: " + keys[k]);
+        var keyName = keys[k];
+        if(keyName != "fileformat" || keyName != "commandLine" || keyName != "description"
+                || keyName != "os" || keyName != "name" || keyName != "author"
+                || keyName != "LSID" || keyName != "lsidVersions" || keyName != "cpuType"
+                || keyName != "privacy" || keyName != "language" || keyName != "version"
+                || keyName != "supportFiles" || keyName != "taskType" || keyName != "quality")
+        {
+            module_editor.otherModAttrs[keyName] = module[keyName];
+        }
+    }
+
+    console.log("other module attributes: " + module_editor.otherModAttrs);
+    module_editor.modAttrs = module;
+    var supportFilesList = module["supportFiles"];
     if(supportFilesList !== undefined && supportFilesList != null &&  supportFilesList != "")
     {
         var currentFilesDiv = $("<div id=currentfiles><div>");
@@ -897,7 +925,7 @@ function loadModuleInfo(module)
 
         $("#supportfilecontent").prepend(currentFilesDiv);
 
-       // var currentFilesSelect = $("<select name='currentfiles' multiple='multiple'></select>");
+        // var currentFilesSelect = $("<select name='currentfiles' multiple='multiple'></select>");
         supportFilesList = supportFilesList.split(";");
         for(s=0;s<supportFilesList.length;s++)
         {

@@ -19,8 +19,8 @@ import org.genepattern.webservice.ParameterInfo;
 import org.genepattern.util.GPConstants;
 
 import java.util.HashMap;
-import java.util.Map;
 import java.util.Iterator;
+import java.util.Set;
 import java.io.File;
 
 /**
@@ -95,6 +95,17 @@ public class ParametersJSON extends JSONObject {
             //returns choices delimted by ; and display name and val delimited by =
             String choices = pInfo.getValue();
             this.put(CHOICES, choices);
+
+            Set keys = pAttrs.keySet();
+            Iterator<String> kIter = keys.iterator();
+            while(kIter.hasNext())
+            {
+                String keyName = kIter.next();
+                if(this.get(keyName) == null)
+                {
+                    this.put(keyName, this.get(keyName));
+                }
+            }
         }
         catch (Exception e) {
             log.error("Error creating parameter JSON from from ParameterInfo object");
