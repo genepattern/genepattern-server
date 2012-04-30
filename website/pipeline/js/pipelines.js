@@ -473,12 +473,19 @@ var editor = {
         return this._tLayoutManager(module);
 	},
 
-    _spacesToPeriods: function(string) {
-        return string.replace(/ /g, ".");
+    _makePipelineNameValid: function(string) {
+        var newName = string.replace(/ /g, ".");
+        if (/^\d+/.test(newName)) {
+            newName = "Pipeline." + newName;
+        }
+        if (/^\.+/.test(newName)) {
+            newName = "Pipeline" + newName;
+        }
+        return newName;
     },
 
     saveProps: function(save) {
-        this.workspace["pipelineName"] = this._spacesToPeriods(save["Pipeline Name"]);
+        this.workspace["pipelineName"] = this._makePipelineNameValid(save["Pipeline Name"]);
         this.workspace["pipelineDescription"] = save["Description"];
         this.workspace["pipelineAuthor"] = save["Author"];
         this.workspace["pipelinePrivacy"] = save["Privacy"];
