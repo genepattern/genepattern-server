@@ -561,7 +561,15 @@ function changeParameterType(element)
                                     {
                                         choicelist += ";";
                                     }
-                                    choicelist += value + "=" + dvalue;
+
+                                    if(dvalue == undefined || dvalue == null|| dvalue == "")
+                                    {
+                                        choicelist += value;    
+                                    }
+                                    else
+                                    {
+                                        choicelist += value + "=" + dvalue;
+                                    }
                                 });
 
                                 element.parent().parent().find("input[name='choicelist']").each(function()
