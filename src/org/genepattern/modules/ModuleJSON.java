@@ -102,14 +102,16 @@ public class ModuleJSON extends JSONObject {
             this.put(COMMAND_LINE, tia.get(GPConstants.COMMAND_LINE));
             this.put(LSID, tia.get(GPConstants.LSID));
 
+            log.error("task info attributes: " + tia.keySet());
             //add remaining task info attributes
             Set keys = tia.keySet();
             Iterator<String> kIter = keys.iterator();
             while(kIter.hasNext())
             {
                 String keyName = kIter.next();
-                if(this.get(keyName) == null)
+                if(!this.has(keyName))
                 {
+                    log.error("adding to module json object: " + keyName);
                     this.put(keyName, tia.get(keyName));
                 }
             }

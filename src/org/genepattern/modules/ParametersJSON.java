@@ -101,7 +101,7 @@ public class ParametersJSON extends JSONObject {
             while(kIter.hasNext())
             {
                 String keyName = kIter.next();
-                if(this.get(keyName) == null)
+                if(!this.has(keyName))
                 {
                     this.put(keyName, pAttrs.get(keyName));
                 }
