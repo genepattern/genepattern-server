@@ -118,6 +118,11 @@ var editor = {
         this.workspace.dirty = false;
     },
 
+    protectAgainstUndefined: function(value) {
+        if (value !== undefined) return value;
+        else return "";
+    },
+
     initPWR: function(module, paramName, pwrJSON) {
         if (pwrJSON === null || pwrJSON === undefined) return null;
 
@@ -2878,11 +2883,11 @@ function InputParam(module, paramJSON) {
     this.kinds = paramJSON.kinds;
     this.required = paramJSON.required;
     this.promptWhenRun = editor.initPWR(this.module, this.name, paramJSON.promptWhenRun);
-    this.defaultValue = paramJSON.defaultValue;
+    this.defaultValue = editor.protectAgainstUndefined(paramJSON.defaultValue);
     this.choices = paramJSON.choices;
     this.used = false;
     this.port = null;
-    this.value = this.defaultValue;
+    this.value = editor.protectAgainstUndefined(this.defaultValue);
 
     this.isFile = function() {
         return this.type === "java.io.File";
