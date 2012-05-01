@@ -18,7 +18,7 @@ var module_editor = {
     uploadedfiles: [],
     supportfileinputs: [],
     filesToDelete: [],
-    otherModAttrs: []
+    otherModAttrs: {}
 };
 
 var Request = {
@@ -163,16 +163,17 @@ function saveModule()
         "author": author, "privacy": privacy, "quality": quality,
         "language": language, "JVMLevel": lang_version, "cpuType": cpu, "taskType": tasktype, "version": version,
         "os": os, "commandLine": commandLine, "LSID": lsid, "supportFiles": supportFiles,
-        "filesToDelete": filesToDelete, "fileformat": fileFormats};
+        "filesToDelete": filesToDelete, "fileFormat": fileFormats};
 
     //add other remaining attributes
-    /*for(var m = 0; m < module_editor.modAttrs; m++)
+    var keys = Object.keys(module_editor.otherModAttrs);
+    for(k =0; k < keys.length; k++)
     {
-        module_editor.modAttrs
-        if(json["module"].indexOf())
-    }  */
-
-    //module_editor.modAttrs.keys();
+        console.log("\nsave keys: " + keys[k]);
+        var keyName = keys[k];
+        console.log("adding to other attributes: " + module_editor.otherModAttrs[keyName]);
+        json.module[keyName] = module_editor.otherModAttrs[keyName];
+    }
 
     json["parameters"] = getParametersJSON();
 
@@ -891,9 +892,9 @@ function loadModuleInfo(module)
         }
     }
 
-    if(module["fileformat"] !== undefined)
+    if(module["fileFormat"] !== undefined)
     {
-        var fileformats = module["fileformat"];
+        var fileformats = module["fileFormat"];
         fileformats = fileformats.split(";");
         $("select[name='mod_fileformat']").val(fileformats);
         $("select[name='mod_fileformat']").multiselect("refresh");
@@ -905,18 +906,16 @@ function loadModuleInfo(module)
     {
         console.log("\nkeys: " + keys[k]);
         var keyName = keys[k];
-        if(keyName != "fileformat" || keyName != "commandLine" || keyName != "description"
-                || keyName != "os" || keyName != "name" || keyName != "author"
-                || keyName != "LSID" || keyName != "lsidVersions" || keyName != "cpuType"
-                || keyName != "privacy" || keyName != "language" || keyName != "version"
-                || keyName != "supportFiles" || keyName != "taskType" || keyName != "quality")
+        if(keyName != "fileFormat" && keyName != "commandLine" && keyName != "description"
+                && keyName != "os" && keyName != "name" && keyName != "author"
+                && keyName != "LSID" && keyName != "lsidVersions" && keyName != "cpuType"
+                && keyName != "privacy" && keyName != "language" && keyName != "version"
+                && keyName != "supportFiles" && keyName != "taskType" && keyName != "quality")
         {
             module_editor.otherModAttrs[keyName] = module[keyName];
         }
     }
 
-    console.log("other module attributes: " + module_editor.otherModAttrs);
-    module_editor.modAttrs = module;
     var supportFilesList = module["supportFiles"];
     if(supportFilesList !== undefined && supportFilesList != null &&  supportFilesList != "")
     {

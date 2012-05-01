@@ -69,6 +69,16 @@ public class ParametersJSON extends JSONObject {
             }
 
             this.put(type, typeString);
+                        
+            Iterator<String> kIter = object.keys();
+            while(kIter.hasNext())
+            {
+                String keyName = kIter.next();
+                if(!this.has(keyName))
+                {
+                    this.put(keyName, object.get(keyName));
+                }
+            }
         }
         catch (Exception e) {
             log.error("object: " + object);

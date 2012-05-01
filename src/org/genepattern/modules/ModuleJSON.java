@@ -43,7 +43,7 @@ public class ModuleJSON extends JSONObject {
     public static final String CPU = "cpuType";
     public static final String OS = "os";
     public static final String COMMAND_LINE = "commandLine";
-    public static final String FILEFORMAT = "fileformat";    
+    public static final String FILEFORMAT = "fileFormat";    
     public static final String SUPPORTFILES = "supportFiles";
     public static final String FILESTODELETE = "filesToDelete";
 
@@ -76,6 +76,16 @@ public class ModuleJSON extends JSONObject {
             this.put(SUPPORTFILES, object.get(SUPPORTFILES));
             this.put(FILESTODELETE, object.get(FILESTODELETE));
             this.put(FILEFORMAT, object.get(FILEFORMAT));
+
+            Iterator<String> kIter = object.keys();
+            while(kIter.hasNext())
+            {
+                String keyName = kIter.next();
+                if(!this.has(keyName))
+                {
+                    this.put(keyName, object.get(keyName));
+                }
+            }
         }
         catch (JSONException e) {
             log.error(e);
@@ -102,7 +112,6 @@ public class ModuleJSON extends JSONObject {
             this.put(COMMAND_LINE, tia.get(GPConstants.COMMAND_LINE));
             this.put(LSID, tia.get(GPConstants.LSID));
 
-            log.error("task info attributes: " + tia.keySet());
             //add remaining task info attributes
             Set keys = tia.keySet();
             Iterator<String> kIter = keys.iterator();
@@ -111,7 +120,6 @@ public class ModuleJSON extends JSONObject {
                 String keyName = kIter.next();
                 if(!this.has(keyName))
                 {
-                    log.error("adding to module json object: " + keyName);
                     this.put(keyName, tia.get(keyName));
                 }
             }
