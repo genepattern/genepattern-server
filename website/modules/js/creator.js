@@ -725,6 +725,10 @@ function updatefileformats()
                     mcat.append($("<option>" + result[i] + "</option>"));
                 }
 
+                if(mcat.data("values") != undefined && mcat.data("values") != null)
+                {
+                    mcat.val(mcat.data("values"));
+                }
                 mcat.multiselect('refresh');
 
                 $("select[name='fileformat']").each(function()
@@ -895,6 +899,7 @@ function loadModuleInfo(module)
     {
         var fileformats = module["fileFormat"];
         fileformats = fileformats.split(";");
+        $("select[name='mod_fileformat']").data("values", fileformats);
         $("select[name='mod_fileformat']").val(fileformats);
         $("select[name='mod_fileformat']").multiselect("refresh");
     }
