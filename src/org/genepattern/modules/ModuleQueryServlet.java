@@ -201,12 +201,20 @@ public class ModuleQueryServlet extends HttpServlet
                     String[] result = fileFormat.split(";");
                     for(String f : result)
                     {
-                        fileFormats.add(f);
+                        f = f.trim();
+                        if(!f.equals("") && !f.equals(" "))
+                        {
+                            fileFormats.add(f);
+                        }
                     }
                 }
                 else
                 {
-                    fileFormats.add(fileFormat);
+                    fileFormat = fileFormat.trim();
+                    if(fileFormats.equals("") && !fileFormats.equals(" "))
+                    {
+                        fileFormats.add(fileFormat);
+                    }
                 }
 
             }
