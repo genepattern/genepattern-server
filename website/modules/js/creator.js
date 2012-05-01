@@ -1474,37 +1474,36 @@ jQuery(document).ready(function() {
                         var fileformat = $("#newfileformat").val();
                         fileformat = trim(fileformat);
 
-                        $("#newfileformat").val("");
-                        var newfileformat = $("<option>" + fileformat + "</option>");
-
-                        var exists = false;
-                        //check if fileformat already exists
-                        //append to parameter input file format
-                        $("select[name='mod_fileformat']").children().each(function()
+                        $("#newfileformat").val("");                        
+                        if(fileformat != "")
                         {
-                            if($(this).val() == fileformat)
+                            var newfileformat = $("<option value='" + fileformat + "'>" + fileformat + " </option>");
+
+                            var exists = false;
+                            //check if fileformat already exists
+                            //append to parameter input file format
+                            $("select[name='mod_fileformat']").children().each(function()
                             {
-                                exists = true;
+                                if($(this).val() == fileformat)
+                                {
+                                    exists = true;
+                                }
+                            });
+
+                            if(exists)
+                            {
+                                alert("The file format " + fileformat + " already exists");
+                                return;
                             }
-                        });
 
-                        if(exists)
-                        {
-                            alert("The file format " + fileformat + " already exists");
-                            return;
+
+                            $("select[name='fileformat']").append(newfileformat);
+                            $("select[name='fileformat']").multiselect("refresh");
+
+                            //append to module output file format
+                            $("select[name='mod_fileformat']").append(newfileformat);
+                            $("select[name='mod_fileformat']").multiselect("refresh");
                         }
-
-                        //append to parameter input file format
-                        $("select[name='fileformat']").each(function()
-                        {
-                            $(this).append(newfileformat);
-                            $(this).multiselect("refresh");
-                        });
-
-                        //append to module output file format
-                        $("select[name='mod_fileformat']").append(newfileformat);
-                        $("select[name='mod_fileformat']").multiselect("refresh");
-
                         $( this ).dialog( "close" );
                     },
                     "Cancel": function() {
