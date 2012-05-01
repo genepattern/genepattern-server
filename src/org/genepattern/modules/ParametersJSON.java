@@ -37,9 +37,9 @@ public class ParametersJSON extends JSONObject {
     public static final String TYPE = "TYPE";
     //parameter type i.e. java.lang.String - different from TYPE above
     public static final String type = "type";
-    public static final String DEFAULT_VALUE = "dvalue";
+    public static final String DEFAULT_VALUE = "default_value";
     public static final String OPTIONAL = "optional";
-    public static final String FILEFORMAT = "fileformat";
+    public static final String FILEFORMAT = "fileFormat";
     public static final String PREFIX = "prefix";
     public static final String VALUE = "value";
     public static final String CHOICES = "choices";

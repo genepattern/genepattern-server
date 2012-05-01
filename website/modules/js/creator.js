@@ -169,9 +169,8 @@ function saveModule()
     var keys = Object.keys(module_editor.otherModAttrs);
     for(k =0; k < keys.length; k++)
     {
-        console.log("\nsave keys: " + keys[k]);
         var keyName = keys[k];
-        console.log("adding to other attributes: " + module_editor.otherModAttrs[keyName]);
+        console.log("\nsaving other module attributes: " + keys[k] + "=" + module_editor.otherModAttrs[keyName]);
         json.module[keyName] = module_editor.otherModAttrs[keyName];
     }
 
@@ -730,7 +729,7 @@ function updatefileformats()
 
                 $("select[name='fileformat']").each(function()
                 {
-                    console.log("adding loaded file formats to parameters");
+                    console.log("Adding loaded file formats to parameters");
                     var fileformat = $(this);
                     $('select[name="mod_fileformat"]').children("option").each(function()
                     {
@@ -963,7 +962,7 @@ function loadParameterInfo(parameters)
         var newParameter = addparameter();
         newParameter.find("input[name='p_name']").val(parameters[i].name);
         newParameter.find("textarea[name='p_description']").val(parameters[i].description);
-        newParameter.find("input[name='p_defaultvalue']").val(parameters[i].dvalue);
+        newParameter.find("input[name='p_defaultvalue']").val(parameters[i].default_value);
         var optional = parameters[i].optional;
         var prefix = parameters[i].prefix;
 
@@ -992,7 +991,7 @@ function loadParameterInfo(parameters)
             newParameter.find("input[name='p_flag']").val(prefix);
         }
 
-        var pfileformat = parameters[i].fileformat;
+        var pfileformat = parameters[i].fileFormat;
 
         var type = parameters[i].type;
 
@@ -1054,6 +1053,22 @@ function loadParameterInfo(parameters)
             newParameter.find('input[name="choicelist"]').data("prevVal", choices);
         }
 
+        var otherAttrs = {};
+        var keys = Object.keys(parameters[i]);
+        for(k =0; k < keys.length; k++)
+        {
+            console.log("\nkeys: " + keys[k]);
+            var keyName = keys[k];
+            if(keyName != "flagspace" && keyName != "name" && keyName != "description"
+                    && keyName != "flag" && keyName != "fileFormat" && keyName != "choices"
+                    && keyName != "default_value" && keyName != "prefix" && keyName != "type"
+                    && keyName != "optional" && keyName != "value" && keyName != "prefix_when_specified")
+            {
+                otherAttrs[keyName] = parameters[i][keyName];
+            }
+        }
+
+        newParameter.data("otherAttrs", otherAttrs);
         updateparameter(newParameter);
     }
 }
@@ -1185,9 +1200,19 @@ function getParametersJSON()
 
         var parameter = {
             "name": pname, "choices": choices, "description": description, "TYPE": type,
-            "dvalue": default_val, "optional": optional,
-            "fileformat": fileformatlist, "MODE": mode, "value": value, "prefix": prefix, "flag":flag, "flagspace":flagspace
+            "default_value": default_val, "optional": optional,
+            "fileFormat": fileformatlist, "MODE": mode, "value": value, "prefix": prefix, "flag":flag, "flagspace":flagspace
         };
+
+        //add other remaining attributes
+        var otherAttrs = $(this).data("otherAttrs");
+        var keys = Object.keys(otherAttrs);
+        for(k =0; k < keys.length; k++)
+        {
+            var keyName = keys[k];
+            parameter[keyName] =  otherAttrs[keyName];
+            console.log("\nsaving other parameter attributes: " + keyName + "=" + otherAttrs[keyName]);            
+        }
 
         parameters.push(parameter);
     });

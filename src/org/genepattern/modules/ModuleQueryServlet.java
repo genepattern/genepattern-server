@@ -158,6 +158,7 @@ public class ModuleQueryServlet extends HttpServlet
         }
         catch (Throwable t)
         {
+            t.printStackTrace();
             log.error("Error listing categories from TaskInfoCache: "+t.getLocalizedMessage());
         }
 
@@ -246,6 +247,7 @@ public class ModuleQueryServlet extends HttpServlet
         }
         catch (Throwable t)
         {
+            t.printStackTrace();
             log.error("Error listing categories from TaskInfoCache: "+t.getLocalizedMessage());
         }
 
@@ -326,7 +328,7 @@ public class ModuleQueryServlet extends HttpServlet
 
         String bundle = request.getParameter("bundle");
 	    if (bundle == null) {
-	        log.error("Unable to retrieved the saved module");
+	        log.error("Unable to retrieve the saved module");
 	        sendError(response, "Unable to save the module");
 	        return;
 	    }
@@ -431,7 +433,19 @@ public class ModuleQueryServlet extends HttpServlet
                 attributes.put(ParametersJSON.FLAGSPACE, parameterJSON.get(ParametersJSON.FLAGSPACE));
 
                 parameter.setValue(parameterJSON.getChoices());
-                
+
+                Iterator<String> paramKeys = parameterJSON.keys();
+                while(paramKeys.hasNext())
+                {
+                    String key = paramKeys.next();
+
+                    //add remaining parameter attributes
+                    if(!attributes.containsKey(key))
+                    {
+                        attributes.put(key, parameterJSON.get(key));
+                    }
+                }
+
                 parameter.setAttributes(attributes);
                 pInfo[i] = parameter;
             }
@@ -638,8 +652,8 @@ public class ModuleQueryServlet extends HttpServlet
         }
         catch(Exception e)
         {
+            e.printStackTrace();            
             log.error(e);
-            e.printStackTrace();
 
             String message = "";
             if(e.getMessage() != null)
