@@ -205,10 +205,7 @@ a:hover {
 }
 
 input[type="file"] {
-	
-	/*background-color:#aaa;
-	margin-right: -30px;*/
-	width:200px;
+	width: 220px;
 }
 
 .topRowButton {
@@ -258,6 +255,7 @@ input[type="file"] {
 #footer {
     position: absolute;
     bottom: 0;
+    display: none;
 }
 
 .openButton {
