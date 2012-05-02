@@ -135,7 +135,8 @@ if(isMSIE && !viewOnly)
             "Module Integrator please switch to either Firefox, Chrome, or Safari.");
    </script>
 <%
-	TreeMap tmFileFormats = new TreeMap(String.CASE_INSENSITIVE_ORDER);
+}
+    TreeMap tmFileFormats = new TreeMap(String.CASE_INSENSITIVE_ORDER);
 
 	int FILE_FORMAT_PARAM_OFFSET = -1;
 	for (int j = 0; j < GPConstants.PARAM_INFO_ATTRIBUTES.length; j++) {
