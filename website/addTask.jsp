@@ -46,6 +46,10 @@
 	session="false" contentType="text/html" language="Java" %>
 
 <%
+String ua = request.getHeader( "User-Agent" );
+boolean isMSIE = ( ua != null && ua.indexOf( "MSIE" ) != -1 );
+response.setHeader( "Vary", "User-Agent" );
+
 try {
 response.setHeader("Cache-Control", "no-store"); // HTTP 1.1 cache control
 response.setHeader("Pragma", "no-cache");		 // HTTP 1.0 cache control
@@ -106,14 +110,9 @@ if(errors!=null) {
 	boolean editable = createModuleAllowed && taskInfo.getUserId().equals(userID) && LSIDUtil.getInstance().isAuthorityMine(taskInfo.getLsid());
 	viewOnly = viewOnly || !editable;
 
-
-    String ua = request.getHeader( "User-Agent" );
-    boolean isMSIE = ( ua != null && ua.indexOf( "MSIE" ) != -1 );
-    response.setHeader( "Vary", "User-Agent" );
-
     if(!isMSIE && !viewOnly)
     {
-        response.sendRedirect("modules/creator.jsf?lsid=" + lsid );            
+        response.sendRedirect("modules/creator.jsf?lsid=" + lsid );
     }
 } else {
 %>
@@ -127,6 +126,15 @@ if(errors!=null) {
 	}
 }
 
+if(isMSIE && !viewOnly)
+ {
+%>
+   <script language="javascript">
+    window.alert("The new Module Integrator version 2.0 is not compatible with this browser. " +
+            "You are being redirected to the previous version of the Module Integrator. To use the new " +
+            "Module Integrator please switch to either Firefox, Chrome, or Safari.");
+   </script>
+<%
 	TreeMap tmFileFormats = new TreeMap(String.CASE_INSENSITIVE_ORDER);
 
 	int FILE_FORMAT_PARAM_OFFSET = -1;
