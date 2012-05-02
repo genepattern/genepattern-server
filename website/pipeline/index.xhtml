@@ -26,9 +26,14 @@
 
         <script type="text/javascript" language="javascript">
             // If Internet Explorer Redirect to the old Pipeline Designer
-            if (navigator.userAgent.indexof("MSIE") !== -1) {
-                editor.showDialog("Unsupported Browser", "The new Pipeline Designer doesn't support Internet Explorer.  Forwarding you now to the older unsupported Pipeline Designer.");
-                self.location="/gp/pipelineDesigner.jsp";
+            if (navigator.userAgent.indexOf("MSIE") !== -1) {
+                editor.showDialog(
+                        "Unsupported Browser",
+                        "The new Pipeline Designer doesn't support Internet Explorer.  Forwarding you now to the older unsupported Pipeline Designer.",
+                        {"Continue": function() {
+                            self.location = "/gp/pipelineDesigner.jsp";
+                        }});
+
             }
 
             var contextRoot = '#{facesContext.externalContext.requestContextPath}';
