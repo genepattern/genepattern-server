@@ -786,9 +786,6 @@ var editor = {
             if (!module instanceof Module) { continue; }
 
             if (module.name === editor.workspace["pipelineName"]) {
-                // If this lsid is blank there will be no multiple versions to worry about
-                if (editor.workspace["pipelineLsid"] === "") { continue; }
-
                 // If a shared name is found, make sure it's not a different version of the same pipeline
                 var foundBaseLsid = editor.extractBaseLsid(module.lsid);
                 var thisBaseLsid = editor.extractBaseLsid(editor.workspace["pipelineLsid"]);
