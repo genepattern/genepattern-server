@@ -1,6 +1,5 @@
-function url = getTaskFileURL(obj, pipelineName, fileName)
-% 
-% this method is deprecated, use getModuleFileURL instead
+function url = getModuleFileURL(obj, pipelineName, fileName)
+%
 % returns the URL for the file saved with the pipeline
 %
 %
