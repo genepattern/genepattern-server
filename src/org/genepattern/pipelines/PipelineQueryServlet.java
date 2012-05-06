@@ -79,7 +79,7 @@ public class PipelineQueryServlet extends HttpServlet {
 		
 		// Route to the appropriate action, returning an error if unknown
 		if (LIBRARY.equals(action)) {
-		    constructLibrary(response);
+		    constructLibrary(request, response);
 		}
 		else if (SAVE.equals(action)) {
 		    savePipeline(request, response);
@@ -541,13 +541,17 @@ public class PipelineQueryServlet extends HttpServlet {
         }
 	}
 	
-	public void constructLibrary(HttpServletResponse response) {
+	public void constructLibrary(HttpServletRequest request, HttpServletResponse response) {
+	    String username = (String) request.getSession().getAttribute("userid");
+	    
 	    ResponseJSON listObject = new ResponseJSON();
 	    Integer count = 0;
         for (TaskInfo info : TaskInfoCache.instance().getAllTasks()) {
-            ModuleJSON mj = new ModuleJSON(info);
-            listObject.addChild(count, mj);
-            count++;
+            if ("public".equals(info.getTaskInfoAttributes().get("privacy")) || info.getUserId().equals(username)) {
+                ModuleJSON mj = new ModuleJSON(info);
+                listObject.addChild(count, mj);
+                count++;
+            }
         }
         
         this.write(response, listObject);
