@@ -7,7 +7,7 @@
   -->
 
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:c="http://java.sun.com/jstl/core">
 	<head>
 		<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
 		<title>GenePattern Pipeline Editor</title>
@@ -92,7 +92,13 @@
             <a name="link15" id="link10" href="/gp/jobResults" onclick="MM_showMenu(window.mm_menu_jobResults,x,y,null,'link15')" onmouseover="MM_showMenu(window.mm_menu_jobResults,x,y,null,'link15')" onmouseout="MM_startTimeout();">Job Results</a> &#160;&#160;&#160;&#160;&#160;&#160;
             <a name="link12" id="link3" href="/gp/pages/index.jsf?splash=resources" onclick="MM_showMenu(window.mm_menu_resources,x,y,null,'link12')" onmouseover="MM_showMenu(window.mm_menu_resources,x,y,null,'link12')" onmouseout="MM_startTimeout();">Resources</a> &#160;&#160;&#160;&#160;&#160;&#160;
             <a name="link2" id="link5" href="/gp/pages/index.jsf?splash=downloads" onclick="MM_showMenu(window.mm_menu_downloads,x,y,null,'link2')" onmouseover="MM_showMenu(window.mm_menu_downloads,x,y,null,'link2')" onmouseout="MM_startTimeout();">Downloads</a> &#160;&#160;&#160;&#160;&#160;&#160;
-            <a name="link13" id="link4" href="/gp/pages/serverSettings.jsf" onclick="MM_showMenu(window.mm_menu_administration,x,y,null,'link13')" onmouseover="MM_showMenu(window.mm_menu_administration,x,y,null,'link13')" onmouseout="MM_startTimeout();">Administration</a>&#160;&#160;&#160;&#160;&#160;&#160;
+            <c:if test="#{authorizationBean.adminServerAllowed}">
+	        	<a name="link13" id="link4"
+	        	    href="#{facesContext.externalContext.requestContextPath}/pages/serverSettings.jsf"
+	           		onclick="MM_showMenu(window.mm_menu_administration,x,y,null,'link13')"
+	           		onmouseover="MM_showMenu(window.mm_menu_administration,x,y,null,'link13')"
+	           		onmouseout="MM_startTimeout();">Administration</a>&#160;&#160;&#160;&#160;&#160;&#160;
+          	</c:if>
             <a name="link11" id="link1" href="/gp/pages/index.jsf" onclick="MM_showMenu(window.mm_menu_documentation,x,y,null,'link11')" onmouseover="MM_showMenu(window.mm_menu_documentation,x,y,null,'link11')" onmouseout="MM_startTimeout();">Help</a>&#160;&#160;&#160;&#160;&#160;&#160;
             <a name="link24" id="link24" href="/gp/pages/index.jsf" onclick="showCorrectGSLink()" onmouseover="showCorrectGSLink()" onmouseout="MM_startTimeout();">
                 <img style="vertical-align:middle" alt="GenomeSpace" src="/gp/pages/genomespace/genomespace_icon.gif" height="14px" width="14px" border="0" />&#160;GenomeSpace
