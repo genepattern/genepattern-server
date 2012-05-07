@@ -242,32 +242,6 @@ clients when they prompt for input for each field.<br><br>
 
 ConsensusClustering example: <span class="example">Type of clustering algorithm</span>
 
-<h4>Choices</h4>
-
-Some parameters are best represented as a drop-down list of choices.  By constraining input to those from the list,
-the user is saved typing and cannot make a mistake by choosing an invalid setting (unless there is a dependency
-on some other parameter).  The entry in the choices field is a simple semi-colon delimited set of choices.<br><br>
-
-ConsensusClustering example: <span class="example">hierarchical;SOM;NMF</span>
-
-<br><br>
-But what if you want the user to be able to choose &quot;human-readable&quot; choices yet have the program accept the same
-ugly or complicated commands that it always has?  No problem.  Each choice may have a command-line component (which
-will be on the left) and
-a human-readable component (on the right), separated by an &quot;=&quot;.  Here's an example:<br><br>
-
-<span class="example"><font size="-1">hierarchical=Hierarchical clustering;SOM=Self-organizing map;NMF=Non-negative Matrix Factorization;=nothing specified;3.14159265=pi</font></span>
-<br>
-<form>
-<table>
-<tr>
-<td valign="top">
-which would create a drop-down list that looks like this:</td>
-<td>
-<select size="5"><option>Hierarchical clustering</option><option>Self-organizing map</option><option>Non-negative Matrix Factorization</option><option>nothing specified</option><option>pi</option></select>
-</td></tr></table>
-</form>
-<br><br>
 
 <h4>Default value</h4>
 
@@ -321,15 +295,41 @@ check the prefix when specified box.  If the optional filename is provided, then
 
 Declaration of the type of an input parameter allows the client to make a smarter presentation of the input to the
 user.  (As of <%=messages.get("ApplicationName")%> 1.2, all parameters are being treated as either text or input file types).  Parameter type
-choices are: text, numeric, password, choice, directory, and input file.
+choices are: Text, Input File, Choice, Integer, Floating Point, Directory, and Password.
 
 <br><br>
-<form>
-ConsensusClustering example: <select><option>text</option><option>integer</option><option>floating point</option><option selected>input file</option></select>
-</form>
+
 
 <h4>File Format</h4>
 When you select a parameter type of input file, a drop-down list of file formats appears in the file format column. Select the valid file format(s) for this parameter. If your module requires an input file format not included in the list, scroll back to the Output Description field and click New to add that format to the list.
+
+
+<h4>Choice</h4>
+
+Some parameters are best represented as a drop-down list of choices.  By constraining input to those from the list,
+the user is saved typing and cannot make a mistake by choosing an invalid setting (unless there is a dependency
+on some other parameter).  The entry in the choices field is a simple semi-colon delimited set of choices.<br><br>
+
+ConsensusClustering example: <span class="example">hierarchical;SOM;NMF</span>
+
+<br><br>
+But what if you want the user to be able to choose &quot;human-readable&quot; choices yet have the program accept the same
+ugly or complicated commands that it always has?  No problem.  Each choice may have a command-line component (which
+will be on the left) and
+a human-readable component (on the right), separated by an &quot;=&quot;.  Here's an example:<br><br>
+
+<span class="example"><font size="-1">hierarchical=Hierarchical clustering;SOM=Self-organizing map;NMF=Non-negative Matrix Factorization;=nothing specified;3.14159265=pi</font></span>
+<br>
+<form>
+<table>
+<tr>
+<td valign="top">
+which would create a drop-down list that looks like this:</td>
+<td>
+<select size="5"><option>Hierarchical clustering</option><option>Self-organizing map</option><option>Non-negative Matrix Factorization</option><option>nothing specified</option><option>pi</option></select>
+</td></tr></table>
+</form>
+<br><br>
 
 <br>
 </body>
