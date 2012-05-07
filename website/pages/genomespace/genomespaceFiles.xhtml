@@ -72,30 +72,25 @@ use, misuse, or functionality.
                 </tr>
                 <tr>
                     <td>
-                        <rich:tree value="#{genomeSpaceBean.fileTree}" var="gsFile" switchType="ajax" adviseNodeOpened="#{genomeSpaceBean.openTreeNode}" nodeFace="#{gsFile.directory}">
-                            <rich:treeNode type="false" icon="/images/iconLeaf.gif" iconLeaf="/images/iconLeaf.gif">
-                                <h:outputLink value="#{gsFile.url}">#{gsFile.name}</h:outputLink>
-                                <!-- Image for popup menu -->
-								<t:graphicImage value="/images/smallOptions.gif" name="Image_#{gsFile.formattedId}"
-										onclick="pm_showMenu('menuDiv_#{gsFile.formattedId}', Position.cumulativeOffset(this), 50, 50);" 
-										onmouseover="MM_swapImage('Image_#{gsFile.formattedId}','','/gp/images/smallOptions2.gif',2)" 
-										onmouseout="MM_swapImgRestore();"/>
-                                <br/>
-                                <h:outputText>#{gsFile.formattedModified}; #{gsFile.formattedLength}</h:outputText>
-                                <br/>
-                            </rich:treeNode>
-							<rich:treeNode type="true" icon="/images/iconFolder.gif" iconLeaf="/images/iconFolder.gif" changeExpandListener="#{genomeSpaceBean.updateExpand}">
-                                <h:outputText>#{gsFile.name}</h:outputText>
-								<!-- Image for popup menu -->
-								<t:graphicImage value="/images/smallOptions.gif" name="Image_#{gsFile.formattedId}"
-										onclick="pm_showMenu('menuDiv_#{gsFile.formattedId}', Position.cumulativeOffset(this), 50, 50);" 
-										onmouseover="MM_swapImage('Image_#{gsFile.formattedId}','','/gp/images/smallOptions2.gif',2)" 
-										onmouseout="MM_swapImgRestore();"/>
-                            </rich:treeNode>
-                        </rich:tree>
-                        <h:outputText rendered="#{genomeSpaceBean.emptyTree}">
-                            No GenomeSpace files to display
-                        </h:outputText>
+                        <rich:tree switchType="ajax" changeExpandListener="#{genomeSpaceBean.updateExpand}">
+         					<rich:recursiveTreeNodesAdaptor roots="#{genomeSpaceBean.fileTree}" var="gsFile" nodes="#{gsFile.childFiles}">
+								<rich:treeNode icon="/images/iconFolder.gif" iconLeaf="/images/iconLeaf.gif">
+	                                <h:outputLink rendered="#{not gsFile.directory}" value="#{gsFile.url}">#{gsFile.name}</h:outputLink>
+									<h:outputText rendered="#{gsFile.directory}">#{gsFile.name}</h:outputText>
+	                                <!-- Image for popup menu -->
+									<t:graphicImage value="/images/smallOptions.gif" name="Image_#{gsFile.formattedId}"
+											onclick="pm_showMenu('menuDiv_#{gsFile.formattedId}', Position.cumulativeOffset(this), 50, 50);" 
+											onmouseover="MM_swapImage('Image_#{gsFile.formattedId}','','/gp/images/smallOptions2.gif',2)" 
+											onmouseout="MM_swapImgRestore();" />
+	                                <br/>
+	                                <h:outputText rendered="#{not gsFile.directory}">#{gsFile.formattedModified}; #{gsFile.formattedLength}</h:outputText>
+	                                <br/>
+									<ui:include src="fileMenu.xhtml">
+           								<ui:param name="file" value="#{gsFile}"/>
+           							</ui:include>
+	                            </rich:treeNode>
+         					</rich:recursiveTreeNodesAdaptor>
+      					</rich:tree>
                     </td>
                 </tr>
                 <tr>

@@ -26,7 +26,7 @@ public class GenomeSpaceFile extends GpFilePath {
     static {
         formatter.applyPattern("MMM dd hh:mm:ss aaa");
     }
-    
+
     // Generic reference to GenomeSpace metadata object
     // Don't use GenomeSpace classes outside of GS jar
     private Object metadata = null;
@@ -41,6 +41,11 @@ public class GenomeSpaceFile extends GpFilePath {
     private URI gsURI = null;
     private String path;
     boolean converted = false;
+    Object gsSession = null;
+    
+    public GenomeSpaceFile(Object gsSession) {
+        this.gsSession = gsSession;
+    }
     
     /**
      * Returns a list of all possible file format types that this 
@@ -65,6 +70,28 @@ public class GenomeSpaceFile extends GpFilePath {
      * @return
      */
     public Set<GenomeSpaceFile> getChildFiles() {
+        if (this.isDirectory() && childFiles == null) {
+            try {
+                GenomeSpaceFile file = GenomeSpaceClientFactory.getGenomeSpaceClient().buildDirectory(gsSession, metadata);
+                childFiles = file.getChildFilesNoLoad();
+            }
+            catch (GenomeSpaceException e) {
+                log.error("Exception getting child files in getChildFiles(): " + this.getName());
+                childFiles = new HashSet<GenomeSpaceFile>();
+            }
+        }
+        
+        return childFiles;
+    }
+    
+    /**
+     * Returns a list of child files to this file
+     * Will not lazily load the directory.
+     * Will always be null unless this is a directory
+     * @return
+     */
+    public Set<GenomeSpaceFile> getChildFilesNoLoad() {
+        if (childFiles == null) return new HashSet<GenomeSpaceFile>();
         return childFiles;
     }
     
@@ -99,6 +126,19 @@ public class GenomeSpaceFile extends GpFilePath {
             return true;
         else
             return false;
+    }
+    
+    /**
+     * Returns the name of the icon to use when displaying the file
+     * @return
+     */
+    public String getIcon() {
+        if (isDirectory()) {
+            return "directory";
+        }
+        else {
+            return "file";
+        }
     }
     
     /**

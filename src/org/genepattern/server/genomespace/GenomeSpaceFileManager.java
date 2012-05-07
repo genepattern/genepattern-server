@@ -31,8 +31,8 @@ public class GenomeSpaceFileManager {
      * @param url
      * @return
      */
-    public static GpFilePath createFile(String url) {
-        return createFile(url, null);
+    public static GenomeSpaceFile createFile(Object gsSession, String url) {
+        return createFile(gsSession, url, null);
     }
     
     /**
@@ -41,8 +41,8 @@ public class GenomeSpaceFileManager {
      * @param url
      * @return
      */
-    public static GpFilePath createFile(URL url) {
-        return createFile(url, null);
+    public static GenomeSpaceFile createFile(Object gsSession, URL url) {
+        return createFile(gsSession, url, null);
     }
     
     /**
@@ -53,9 +53,9 @@ public class GenomeSpaceFileManager {
      * @param metadata
      * @return
      */
-    public static GpFilePath createFile(String url, Object metadata) {
+    public static GenomeSpaceFile createFile(Object gsSession, String url, Object metadata) {
         try {
-            return createFile(new URL(url), null);
+            return createFile(gsSession, new URL(url), null);
         }
         catch (MalformedURLException e) {
             log.error("Unable to create URL object from provided url: " + url);
@@ -71,18 +71,28 @@ public class GenomeSpaceFileManager {
      * @param metadata
      * @return
      */
-    public static GpFilePath createFile(URL url, Object metadata) {
+    public static GenomeSpaceFile createFile(Object gsSession, URL url, Object metadata) {
         if (!isGenomeSpaceFile(url)) {
             log.warn("URL is not a GenomeSpace URL in GenomeSpaceFileManager: " + url);
             //return null;
         }
         
         try {
-            GenomeSpaceFile file = new GenomeSpaceFile();
+            GenomeSpaceFile file = new GenomeSpaceFile(gsSession);
             String filename = extractFilename(url);
             String kind = extractKind(url, filename);
             String extension = SemanticUtil.getExtension(new File(filename));
             boolean converted = determineConversion(kind, extension);
+            
+            // Obtain the metadata if necessary
+            if (metadata == null) {
+                try {
+                    metadata = GenomeSpaceClientFactory.getGenomeSpaceClient().obtainMetadata(gsSession, url);
+                }
+                catch (GenomeSpaceException e) {
+                    log.error("Error obtaining metadata for: " + url);
+                }
+            }
             
             file.setUrl(url);
             file.setName(filename);

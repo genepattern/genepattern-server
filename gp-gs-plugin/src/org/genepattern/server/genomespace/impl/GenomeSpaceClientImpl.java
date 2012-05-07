@@ -193,7 +193,38 @@ public class GenomeSpaceClientImpl implements GenomeSpaceClient {
         
         DataManagerClient dmClient = gsSession.getDataManagerClient();
         GSDirectoryListing root = dmClient.listDefaultDirectory();
-        return buildDirectory(dmClient, root, root.getDirectory());
+        return buildDirectory(gsSession, root, root.getDirectory());
+    }
+    
+    /**
+     * Constructs a recursive representation as a directory as a GenomeSpaceFile
+     * @param dmClient
+     * @param metadata
+     * @return
+     */
+    public GenomeSpaceFile buildDirectory(Object gsSessionObject, Object metadataObject) {
+        GsSession gsSession = null;
+        if (gsSessionObject instanceof GsSession) {
+            gsSession = (GsSession) gsSessionObject;
+        }
+        else {
+            log.error("Object other than GsSession passed into buildDirectory: " + gsSessionObject);
+            return null;
+        }
+        
+        GSFileMetadata metadata = null;
+        if (metadataObject instanceof GSFileMetadata) {
+            metadata = (GSFileMetadata) metadataObject;
+        }
+        else {
+            log.error("Object other than GSFileMetadata passed into buildDirectory: " + metadataObject);
+            return null;
+        }
+        
+        DataManagerClient dmClient = gsSession.getDataManagerClient();
+        GSDirectoryListing dir = dmClient.list(metadata);
+        
+        return buildDirectory(gsSession, dir, metadata);
     }
     
     /**
@@ -203,21 +234,22 @@ public class GenomeSpaceClientImpl implements GenomeSpaceClient {
      * @param metadata
      * @return
      */
-    private GenomeSpaceFile buildDirectory(DataManagerClient dmClient, GSDirectoryListing dir, GSFileMetadata metadata) {
-        GenomeSpaceFile directoryFile = (GenomeSpaceFile) GenomeSpaceFileManager.createFile(metadata.getUrl(), metadata);
+    private GenomeSpaceFile buildDirectory(Object gsSession, GSDirectoryListing dir, GSFileMetadata metadata) {
+        GenomeSpaceFile directoryFile = (GenomeSpaceFile) GenomeSpaceFileManager.createFile(gsSession, metadata.getUrl(), metadata);
         directoryFile.setKind(GenomeSpaceFile.DIRECTORY_KIND);
         directoryFile.setChildFiles(new HashSet<GenomeSpaceFile>());
         
         for (GSFileMetadata i : dir.findDirectories()) {
-            GenomeSpaceFile aFile = (GenomeSpaceFile) buildDirectory(dmClient, dmClient.list(i), i);
-            directoryFile.getChildFiles().add(aFile);
+            GenomeSpaceFile aFile = (GenomeSpaceFile) GenomeSpaceFileManager.createFile(gsSession, i.getUrl(), i); //(GenomeSpaceFile) buildDirectory(dmClient, dmClient.list(i), i);
+            aFile.setKind(GenomeSpaceFile.DIRECTORY_KIND);
+            directoryFile.getChildFilesNoLoad().add(aFile);
         }
         
         for (GSFileMetadata i : dir.findFiles()) {
-            GenomeSpaceFile aFile = (GenomeSpaceFile) GenomeSpaceFileManager.createFile(i.getUrl(), i);
-            directoryFile.getChildFiles().add(aFile);
+            GenomeSpaceFile aFile = (GenomeSpaceFile) GenomeSpaceFileManager.createFile(gsSession, i.getUrl(), i);
+            directoryFile.getChildFilesNoLoad().add(aFile);
         }
-        
+    
         return directoryFile;
     }
     
@@ -430,7 +462,7 @@ public class GenomeSpaceClientImpl implements GenomeSpaceClient {
             if (tool.getName().equals(toolName)) {
                 List<FileParameterWrapper> wrappers = prepareFileParameterWrappers(tool.getFileParameters(), metadata);
                 try {
-                    return gsSession.getAnalysisToolManagerClient().getWebToolLaunchUrl(tool, wrappers);
+                    return gsSession.getAnalysisToolManagerClient().getWebToolLaunchUrl(tool, wrappers, false);
                 }
                 catch (InternalServerException e) {
                     log.error("Error getting the tool URL for the tool: " + tool.getName() + " file: " + file.getName());
@@ -481,5 +513,20 @@ public class GenomeSpaceClientImpl implements GenomeSpaceClient {
         
         // Get the URL
         return dmClient.getFileUrl(metadata, format);
+    }
+
+    public Object obtainMetadata(Object gsSessionObject, URL gsUrl) throws GenomeSpaceException {
+        GsSession gsSession = null;
+        if (gsSessionObject instanceof GsSession) {
+            gsSession = (GsSession) gsSessionObject;
+        }
+        else {
+            log.error("Object other than GsSession passed into obtainMetadata(): " + gsSessionObject);
+            throw new GenomeSpaceException("Object other than GsSession passed into obtainMetadata(): " + gsSessionObject);
+        }
+        
+        // Declare necessary objects
+        DataManagerClient dmClient = gsSession.getDataManagerClient();
+        return dmClient.getMetadata(gsUrl);
     }
 }

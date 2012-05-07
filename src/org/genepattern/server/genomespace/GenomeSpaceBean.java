@@ -12,6 +12,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -38,6 +39,7 @@ import org.genepattern.util.SemanticUtil;
 import org.genepattern.webservice.ParameterInfo;
 import org.genepattern.webservice.TaskInfo;
 import org.richfaces.component.UITree;
+import org.richfaces.component.html.HtmlTree;
 import org.richfaces.component.html.HtmlTreeNode;
 import org.richfaces.component.state.TreeState;
 import org.richfaces.event.NodeExpandedEvent;
@@ -64,7 +66,7 @@ public class GenomeSpaceBean {
     private Map<String, List<TaskInfo>> kindToModules = null;
     private String currentTaskLsid = null;
     private TaskInfo currentTaskInfo = null;
-    private TreeNode<GenomeSpaceFile> fileTree = null;
+    private List<GenomeSpaceFile> fileTree = null;
     private List<GenomeSpaceFile> allFiles = null;
     private List<GenomeSpaceFile> allDirectories = null;
     private Map<String, Set<String>> kindToTools = null;
@@ -355,7 +357,7 @@ public class GenomeSpaceBean {
         Object key = tree.getRowKey();
         Boolean expanded = treeNodesExpanded.get(key.toString());
         if (expanded == null) {
-            expanded = true;
+            expanded = false;
         }
         return expanded;
     }
@@ -367,11 +369,8 @@ public class GenomeSpaceBean {
     @SuppressWarnings("rawtypes")
     public void updateExpand(NodeExpandedEvent event) {
         Object source = event.getSource();
-        if (source instanceof HtmlTreeNode) {
-            UITree tree = ((HtmlTreeNode) source).getUITree();
-            if (tree == null) {
-                return;
-            }
+        if (source instanceof HtmlTree) {
+            UITree tree = (HtmlTree) source;
             
             Object rowKey = tree.getRowKey();
             TreeState state = (TreeState) tree.getComponentState();      
@@ -392,7 +391,7 @@ public class GenomeSpaceBean {
             return list;
         }
         
-        for (GenomeSpaceFile i : dir.getChildFiles()) {
+        for (GenomeSpaceFile i : dir.getChildFilesNoLoad()) {
             if (i.isDirectory()) {
                 buildFilesList(list, i);
             }
@@ -411,10 +410,10 @@ public class GenomeSpaceBean {
      */
     public List<GenomeSpaceFile> getAllFiles() {
         if (isLoggedIn() && allFiles == null) {
+            allFiles = new ArrayList<GenomeSpaceFile>();
             // Get the children of the dummy node, which should contain only one child: the GenomeSpace root directory
             // Since this is of type Set you cannot just get the first child, you have it iterate over the set
-            Set<GenomeSpaceFile> rootSet = getFileTree().getData().getChildFiles();
-            for (GenomeSpaceFile i : rootSet) {
+            for (GenomeSpaceFile i : getFileTree()) {
                 allFiles = buildFilesList(new ArrayList<GenomeSpaceFile>(), i);
                 break;
             }
@@ -438,9 +437,10 @@ public class GenomeSpaceBean {
         }
         
         list.add(dir);
-        for (GenomeSpaceFile i : dir.getChildFiles()) {
+        for (GenomeSpaceFile i : dir.getChildFilesNoLoad()) {
             if (i.isDirectory()) {
                 buildDirectoriesList(list, i);
+      
             }
         }
         
@@ -456,8 +456,7 @@ public class GenomeSpaceBean {
         if (isLoggedIn() && allDirectories == null) {
             // Get the children of the dummy node, which should contain only one child: the GenomeSpace root directory
             // Since this is of type Set you cannot just get the first child, you have it iterate over the set
-            Set<GenomeSpaceFile> rootSet = getFileTree().getData().getChildFiles();
-            for (GenomeSpaceFile i : rootSet) {
+            for (GenomeSpaceFile i : getFileTree()) {
                 allDirectories = buildDirectoriesList(new ArrayList<GenomeSpaceFile>(), i);
                 break;
             }
@@ -488,33 +487,12 @@ public class GenomeSpaceBean {
      */
     public boolean isEmptyTree() {
         if (fileTree == null) return true;
-        GenomeSpaceFile file = fileTree.getData();
+        GenomeSpaceFile file = fileTree.get(0);
         if (file == null) return true;
-        Set<GenomeSpaceFile> children = file.getChildFiles();
+        Set<GenomeSpaceFile> children = file.getChildFilesNoLoad();
         if (children == null) return true;
         if (children.size() == 0) return true;
         return false;
-    }
-    
-    /**
-     * Recursively constructs a node of the GenomeSpace file tree for display in the JSF.
-     * @param data
-     * @return
-     */
-    private TreeNode<GenomeSpaceFile> constructTreeNode(GenomeSpaceFile data) {
-        TreeNode<GenomeSpaceFile> node = new TreeNodeImpl<GenomeSpaceFile>();
-        node.setData(data);
-        int count = 0;
-        
-        if (data.isDirectory()) {
-            for (GenomeSpaceFile i : data.getChildFiles()) {
-                TreeNode<GenomeSpaceFile> child = constructTreeNode(i);
-                node.addChild(count, child);
-                count++;
-            }
-        }
-        
-        return node;
     }
     
     /**
@@ -525,7 +503,7 @@ public class GenomeSpaceBean {
      * the root GenomeSpace directory the most fundamental displayed node.
      * @return
      */
-    private TreeNode<GenomeSpaceFile> constructFileTree() {
+    private List<GenomeSpaceFile> constructFileTree() {
         HttpSession httpSession = UIBeanHelper.getSession();
         Object gsSessionObject = httpSession.getAttribute(GenomeSpaceLoginManager.GS_SESSION_KEY);
         if (gsSessionObject == null) {
@@ -533,28 +511,17 @@ public class GenomeSpaceBean {
             return null;
         }
         GenomeSpaceFile data = GenomeSpaceClientFactory.getGenomeSpaceClient().buildFileTree(gsSessionObject);
-        TreeNode<GenomeSpaceFile> rootChild = constructTreeNode(data);
+        List<GenomeSpaceFile> rootList = new ArrayList<GenomeSpaceFile>();
+        rootList.add(data);
         
-        // Create a dummy file for the hidden root node of the file tree
-        // Gets around a quirk of the JSF component
-        GenomeSpaceFile dummy = new GenomeSpaceFile();
-        dummy.setKind(GenomeSpaceFile.DIRECTORY_KIND);
-        dummy.setName("GenomeSpace Files");
-        dummy.setChildFiles(new HashSet<GenomeSpaceFile>());
-        dummy.getChildFiles().add(data);
-        
-        TreeNode<GenomeSpaceFile> rootNode = new TreeNodeImpl<GenomeSpaceFile>();
-        rootNode.setData(dummy);
-        rootNode.addChild(0, rootChild);
-
-        return rootNode;
+        return rootList;
     }
     
     /**
      * Returns a copy of the GenomeSpace file tree, initializing it lazily if it has not already been built.
      * @return
      */
-    public TreeNode<GenomeSpaceFile> getFileTree() {
+    public List<GenomeSpaceFile> getFileTree() {
         if (fileTree == null) {
             fileTree = constructFileTree();
         }
@@ -568,24 +535,28 @@ public class GenomeSpaceBean {
      * @return
      */
     public GenomeSpaceFile getFile(URL url) {
-        for (GenomeSpaceFile i : getAllFiles()) {
-            URL iUrl;
-            try {
-                iUrl = i.getUrl();
-            }
-            catch (Exception e) {
-                log.error("Error getting url in getFile() from " + i.getName());
-                continue;
-            }
-            if (url.getPath().equals(iUrl.getPath())) {
-                if (url.getQuery() != null) {
-                    return (GenomeSpaceFile) GenomeSpaceFileManager.createFile(url, i.getMetadata());
-                }
-                return i;
-            }
-        }
-        log.info("Unable to find the GenomeSpace file in file list: " + url);
-        return null;
+        HttpSession httpSession = UIBeanHelper.getSession();
+        Object gsSession = httpSession.getAttribute(GenomeSpaceLoginManager.GS_SESSION_KEY);
+        
+        return GenomeSpaceFileManager.createFile(gsSession, url);
+//        for (GenomeSpaceFile i : getAllFiles()) {
+//            URL iUrl;
+//            try {
+//                iUrl = i.getUrl();
+//            }
+//            catch (Exception e) {
+//                log.error("Error getting url in getFile() from " + i.getName());
+//                continue;
+//            }
+//            if (url.getPath().equals(iUrl.getPath())) {
+//                if (url.getQuery() != null) {
+//                    return (GenomeSpaceFile) GenomeSpaceFileManager.createFile(url, i.getMetadata());
+//                }
+//                return i;
+//            }
+//        }
+//        log.info("Unable to find the GenomeSpace file in file list: " + url);
+//        return null;
     }
     
     /**
@@ -612,21 +583,25 @@ public class GenomeSpaceBean {
      * @return
      */
     public GenomeSpaceFile getDirectory(URL url) {
-        for (GenomeSpaceFile i : getAllDirectories()) {
-            URL iUrl;
-            try {
-                iUrl = i.getUrl();
-            }
-            catch (Exception e) {
-                log.error("Error getting url in getDirectory() from " + i.getName());
-                continue;
-            }
-            if (url.equals(iUrl)) {
-                return i;
-            }
-        }
-        log.info("Unable to find the GenomeSpace directory in the directory list: " + url);
-        return null;
+        HttpSession httpSession = UIBeanHelper.getSession();
+        Object gsSession = httpSession.getAttribute(GenomeSpaceLoginManager.GS_SESSION_KEY);
+        
+        return GenomeSpaceFileManager.createFile(gsSession, url);
+//        for (GenomeSpaceFile i : getAllDirectories()) {
+//            URL iUrl;
+//            try {
+//                iUrl = i.getUrl();
+//            }
+//            catch (Exception e) {
+//                log.error("Error getting url in getDirectory() from " + i.getName());
+//                continue;
+//            }
+//            if (url.equals(iUrl)) {
+//                return i;
+//            }
+//        }
+//        log.info("Unable to find the GenomeSpace directory in the directory list: " + url);
+//        return null;
     }
     
     /**
@@ -898,7 +873,10 @@ public class GenomeSpaceBean {
      * @param directoryPath
      */
     public void saveFileToUploads(String fileUrl, String directoryPath) {
-        GenomeSpaceFile file = (GenomeSpaceFile) GenomeSpaceFileManager.createFile(fileUrl);
+        HttpSession httpSession = UIBeanHelper.getSession();
+        Object gsSessionObject = httpSession.getAttribute(GenomeSpaceLoginManager.GS_SESSION_KEY);
+        
+        GenomeSpaceFile file = (GenomeSpaceFile) GenomeSpaceFileManager.createFile(gsSessionObject, fileUrl);
         GpFilePath directory = null;
         
         UploadFilesBean uploadBean = (UploadFilesBean) UIBeanHelper.getManagedBean("#{uploadFilesBean}");

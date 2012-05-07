@@ -123,5 +123,10 @@ use, misuse, or functionality.
                 </tbody>
             </table>
         </div>
+		<script>
+			var element = document.getElementById("menuDiv_#{file.formattedId}");
+			element.parentNode.removeChild(element);
+			document.body.appendChild(element);
+		</script>
     </ui:composition>
 </html>

@@ -120,10 +120,6 @@
 	<classpathentry kind="lib" path="website/WEB-INF/lib/dm-messages-0.1-SNAPSHOT.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/identityServer-common-0.1-SNAPSHOT.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/identityServer-messages-0.1-SNAPSHOT.jar"/>
-	<classpathentry kind="lib" path="website/WEB-INF/lib/jackson-core-asl-1.5.5.jar"/>
-	<classpathentry kind="lib" path="website/WEB-INF/lib/jackson-jaxrs-1.5.5.jar"/>
-	<classpathentry kind="lib" path="website/WEB-INF/lib/jackson-mapper-asl-1.5.5.jar"/>
-	<classpathentry kind="lib" path="website/WEB-INF/lib/jackson-xc-1.5.5.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/jaxb-api-2.2.2.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/jaxb-impl-2.2.3.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/jersey-apache-client-1.5.jar"/>
@@ -142,5 +138,9 @@
 	<classpathentry kind="lib" path="website/WEB-INF/lib/activation.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/commons-logging.jar"/>
 	<classpathentry kind="lib" path="installer/gpdist/Tomcat/server/lib/jaas.jar"/>
+	<classpathentry kind="lib" path="website/WEB-INF/lib/jackson-core-asl-1.9.4.jar"/>
+	<classpathentry kind="lib" path="website/WEB-INF/lib/jackson-jaxrs-1.9.2.jar"/>
+	<classpathentry kind="lib" path="website/WEB-INF/lib/jackson-mapper-asl-1.9.2.jar"/>
+	<classpathentry kind="lib" path="website/WEB-INF/lib/jackson-xc-1.9.2.jar"/>
 	<classpathentry kind="output" path="website/WEB-INF/classes"/>
 </classpath>

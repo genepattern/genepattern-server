@@ -103,7 +103,7 @@
     <orderEntry type="library" name="lib7" level="project" />
     <orderEntry type="library" name="lib6" level="project" />
     <orderEntry type="library" name="lib8" level="project" />
-    <orderEntry type="module-library">
+    <orderEntry type="module-library" exported="">
       <library>
         <CLASSES>
           <root url="file://$MODULE_DIR$/lib" />
@@ -113,7 +113,7 @@
         <jarDirectory url="file://$MODULE_DIR$/lib" recursive="false" />
       </library>
     </orderEntry>
-    <orderEntry type="module-library">
+    <orderEntry type="module-library" exported="">
       <library>
         <CLASSES>
           <root url="file://$MODULE_DIR$/website/WEB-INF/lib" />

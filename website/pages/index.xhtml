@@ -184,6 +184,11 @@ function setInputField(elementId, value) {
   	urlRadio.checked = true;
 }
 
+function preventClose(event) {
+	if (event.preventDefault) event.preventDefault();
+    if (event.stopPropagation) event.stopPropagation();
+}
+
 function checkBatch(elementId) {
 	var inputBatch = pt(elementId + "_batch");
 	inputBatch.checked = true;
@@ -403,16 +408,6 @@ function showFileInput(id) {
 	            	<ui:param name="aFile" value="#{aFile}"/>
 	            </ui:include>
 			</t:dataList>
-			<t:dataList var="file" value="#{genomeSpaceBean.allFiles}" rowIndexVar="fileIndex">
-				<ui:include src="genomespace/fileMenu.xhtml">
-           			<ui:param name="file" value="#{file}"/>
-           		</ui:include>
-           	</t:dataList>
-           	<t:dataList var="file" value="#{genomeSpaceBean.allDirectories}" rowIndexVar="fileIndex">
-				<ui:include src="genomespace/fileMenu.xhtml">
-           			<ui:param name="file" value="#{file}"/>
-           		</ui:include>
-           	</t:dataList>
 		</h:form>
 	</ui:define>
 
