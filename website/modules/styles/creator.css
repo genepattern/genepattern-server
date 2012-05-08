@@ -166,6 +166,7 @@ div.ui-layout-north
     overflow: auto;
     height: 470px;
     margin: 3px;
+	width: auto;
 }
 
 #commandpreview button
@@ -291,7 +292,7 @@ div.ui-layout-north
 	float:left;
     font-size: 11px;
 	margin-left:15px;
-	margin-top:-4px;
+	margin-top:-1px;
 }
 
 #viewparameter img {
@@ -605,10 +606,11 @@ img.buttonIcon {
 
 .parameter
 {
-
 	margin:5px 0 0 -5px;
 	padding:0;
 	width:100%;
+	border-bottom: solid #3386c2 2px;
+	border-top: solid #fff 4px;
 }
 
 .parameter table {
