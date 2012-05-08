@@ -72,7 +72,7 @@ use, misuse, or functionality.
                 </tr>
                 <tr>
                     <td>
-                        <rich:tree switchType="ajax" changeExpandListener="#{genomeSpaceBean.updateExpand}">
+                        <rich:tree switchType="ajax" iconCollapsed="/images/collapsed.gif" iconExpanded="/images/expanded.gif" changeExpandListener="#{genomeSpaceBean.updateExpand}">
          					<rich:recursiveTreeNodesAdaptor roots="#{genomeSpaceBean.fileTree}" var="gsFile" nodes="#{gsFile.childFiles}">
 								<rich:treeNode icon="/images/iconFolder.gif" iconLeaf="/images/iconLeaf.gif">
 	                                <h:outputLink rendered="#{not gsFile.directory}" value="#{gsFile.url}">#{gsFile.name}</h:outputLink>
