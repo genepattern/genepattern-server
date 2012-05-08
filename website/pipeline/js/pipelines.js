@@ -1321,10 +1321,10 @@ var library = {
                     var li = document.createElement("li");
                     li.setAttribute("name", module.lsid);
                     if (module.write) {
-                        li.innerHTML = "<img src='images/pipe.jpeg' /> ";
+                        li.innerHTML = "<img src='images/readwrite.gif' /> ";
                     }
                     else {
-                        li.innerHTML = "<img src='images/readonly.jpeg' /> ";
+                        li.innerHTML = "<img src='images/readonly.gif' /> ";
                     }
                     li.innerHTML += module.name;
                     pipelineList.appendChild(li);
@@ -2484,7 +2484,7 @@ function Module(moduleJSON) {
 	this._createButtons = function (appendTo, baseId) {
         var docIcon = document.createElement("img");
         docIcon.setAttribute("id", "doc_" + this.id);
-        docIcon.setAttribute("src", "images/help.gif");
+        docIcon.setAttribute("src", "images/file.gif");
         docIcon.setAttribute("class", "fileButton");
         docIcon.setAttribute("alt", "Documentation");
         docIcon.setAttribute("title", "Documentation");
@@ -2492,7 +2492,7 @@ function Module(moduleJSON) {
 
         var fileIcon = document.createElement("img");
         fileIcon.setAttribute("id", "file_" + this.id);
-        fileIcon.setAttribute("src", "images/file.gif");
+        fileIcon.setAttribute("src", "images/package.gif");
         fileIcon.setAttribute("class", "fileButton");
         fileIcon.setAttribute("alt", "Embedded File");
         fileIcon.setAttribute("title", "File Embeded in Module");
