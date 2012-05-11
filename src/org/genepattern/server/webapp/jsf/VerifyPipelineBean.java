@@ -21,6 +21,7 @@ import javax.servlet.http.HttpServletRequest;
 import org.apache.log4j.Logger;
 import org.genepattern.codegenerator.AbstractPipelineCodeGenerator;
 import org.genepattern.data.pipeline.PipelineModel;
+import org.genepattern.server.config.ServerConfiguration;
 import org.genepattern.server.genepattern.GenePatternAnalysisTask;
 import org.genepattern.server.webservice.server.local.LocalAdminClient;
 import org.genepattern.util.GPConstants;
@@ -247,5 +248,9 @@ public class VerifyPipelineBean {
 	}
 
 	return (problems.size() == 0) ? new JSONArray() : new JSONArray(problems);
+    }
+    
+    public boolean getUseBeta() {
+        return ServerConfiguration.instance().getGPBooleanProperty(UIBeanHelper.getUserContext(), "pipeline.useBeta", false);
     }
 }

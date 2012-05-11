@@ -238,6 +238,7 @@
             jsPlumb.ready(function() {
                 editor.updateProgressBar();
                 editor.init();
+				editor.USE_BETA_OPTIONS = #{verifyPipelineBean.useBeta};
                 editor.updateProgressBar();
                 $.getJSON("/gp/PipelineDesigner/library", function(data) {
                     editor.updateProgressBar();
