@@ -53,6 +53,7 @@ function mmLoadMenus() {
   // Help menu
   window.mm_menu_documentation = new Menu("root",153,18,"Verdana, Arial, Helvetica, sans-serif",10,"#FFFFFF","#9999FF","#333366","#000033","left","middle",3,0,500,-5,7,true,true,true,3,true,false);
   mm_menu_documentation.addMenuItem("Tutorial","window.open('http://www.broadinstitute.org/cancer/software/genepattern/tutorial/gp_tutorial.html', '_blank');");
+  mm_menu_documentation.addMenuItem("Video Tutorial","window.open('http://www.broadinstitute.org/cancer/software/genepattern/desc/videos', '_blank');");
   mm_menu_documentation.addMenuItem("User Guide","window.open('http://www.broadinstitute.org/cancer/software/genepattern/tutorial/gp_web_client.html', '_blank');");
   mm_menu_documentation.addMenuItem("Programmers Guide","window.open('http://www.broadinstitute.org/cancer/software/genepattern/tutorial/gp_programmer.html', '_blank');");
   mm_menu_documentation.addMenuItem("Module&nbsp;Documentation","location=contextRoot + '/getTaskDoc.jsp'");
