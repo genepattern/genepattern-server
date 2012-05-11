@@ -742,6 +742,15 @@ var editor = {
 
                 var newLsid = response["lsid"];
                 var newVersion = editor.extractLsidVersion(newLsid);
+                
+                // Update the LSID upon successful save
+                if (newLsid !== undefined && newLsid !== null) {
+                    editor.workspace["pipelineLsid"] = newLsid;
+                    editor.workspace["pipelineVersion"] = editor.extractLsidVersion(newLsid);
+                    editor.workspace["pipelineVersionComment"] = "";
+                    editor._updateHistoryOnSave();
+                    editor._cleanAfterSave();
+                }
 
                 if (runImmediately && (error === undefined || error === null)) {
                     editor.runPipeline(newLsid);
@@ -757,14 +766,6 @@ var editor = {
                                 $(this).dialog("close");
                             }
                         });
-                }
-                // Update the LSID upon successful save
-                if (newLsid !== undefined && newLsid !== null) {
-                    editor.workspace["pipelineLsid"] = newLsid;
-                    editor.workspace["pipelineVersion"] = editor.extractLsidVersion(newLsid);
-                    editor.workspace["pipelineVersionComment"] = "";
-                    editor._updateHistoryOnSave();
-                    editor._cleanAfterSave();
                 }
             },
             dataType: "json"
