@@ -393,6 +393,7 @@ public class PipelineQueryServlet extends HttpServlet {
                         setParameter(input.getName(), filePath, moduleParams, null);
                     }
                     else {
+                        moduleParams[i].getAttributes().put("runTimePrompt", null);
                         setParameter(input.getName(), input.getValue(), moduleParams, null);
                     }
 	            }
