@@ -1335,7 +1335,7 @@ jQuery(document).ready(function() {
     // this layout could be created with NO OPTIONS - but showing some here just as a sample...
     // myLayout = $('body').layout(); -- syntax with No Options
 
-    mainLayout = $('.content').layout({
+    mainLayout = $('body').layout({
 
     //	enable showOverflow on west-pane so CSS popups will overlap north pane
         west__showOverflowOnHover: false
@@ -1353,10 +1353,12 @@ jQuery(document).ready(function() {
 
     ,	south__slidable:		false	// OVERRIDE the pane-default of 'slidable=true'
         //some pane-size settings
-    ,	north__minHeight:		46
+    ,	north__minHeight:		80
+    ,	north__height:		    80
+    ,	south__minHeight:		40
     ,	west__size:			    360
     ,	east__size:				300
-    ,	south__size:		    50        
+    ,	south__size:		    34        
     ,	center__minWidth:		100
     ,	useStateCookie:			true
     });

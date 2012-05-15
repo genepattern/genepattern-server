@@ -20,7 +20,8 @@
 	<link type="text/css" rel="stylesheet" href="styles/layout-default-latest.css" />
     <link  type="text/css" rel="stylesheet" media="screen" href="styles/jquery.multiselect.css" />
     <link  type="text/css" rel="stylesheet" media="screen" href="styles/themes/base/jquery.ui.all.css" />
-    <link href="../css/style.css" rel="stylesheet" type="text/css" />
+    <link type="text/css" rel="stylesheet"  href="styles/header_style.css"  />        
+    <link type="text/css" rel="stylesheet"  href="../css/style.css"  />
     <link  type="text/css" rel="stylesheet" media="screen" href="styles/creator.css" />
     <link href="../skin/favicon.ico" rel="shortcut icon" />
 
@@ -78,54 +79,55 @@
     mmLoadMenus();
 </script>
 
-<!-- User settings area -->
-<div id="systemMessageLink">
-    <table border="0" cellpadding="0" cellspacing="0" class="loginsettings">
-        <tr valign="top">
-            <td>
-                <div style="display: inline;">
-                    <a href="#{facesContext.externalContext.requestContextPath}/pages/accountInfo.jsf">My Settings</a>
-                    |
-                     <a href="#{facesContext.externalContext.request.contextPath}/logout">Sign Out</a>
-                     &#160;${requestScope.userID}&#160;&#160;&#160;
-                </div>
-            </td>
-        </tr>
-    </table>
-</div>
 
-<!-- top band with the logo -->
-<div id="topband" class="topband">
-    <a href="/gp/pages/index.jsf" target="_top">
-        <img src="/gp/images/GP-logo.gif" alt="GenePattern" height="48" style="border: 0;" width="229" />
-    </a>
-</div>
+<!--<div id="content" class="content"> -->
 
-<!-- horizontal navigation band -->
-<div id="navband1" class="navband1" style="white-space: nowrap;">
-    <a name="link17" id="link6" href="/gp/pages/index.jsf" onclick="MM_showMenu(window.mm_menu_tasks,x,y,null,'link17')" onmouseover="MM_showMenu(window.mm_menu_tasks,x,y,null,'link17')" onmouseout="MM_startTimeout();">Modules &amp; Pipelines</a> &#160;&#160;&#160;&#160;&#160;&#160;
-    <a name="link14" id="link9" href="/gp/pages/manageSuite.jsf" onclick="MM_showMenu(window.mm_menu_suites,x,y,null,'link14')" onmouseover="MM_showMenu(window.mm_menu_suites,x,y,null,'link14')" onmouseout="MM_startTimeout();">Suites</a> &#160;&#160;&#160;&#160;&#160;&#160;
-    <a name="link15" id="link10" href="/gp/jobResults" onclick="MM_showMenu(window.mm_menu_jobResults,x,y,null,'link15')" onmouseover="MM_showMenu(window.mm_menu_jobResults,x,y,null,'link15')" onmouseout="MM_startTimeout();">Job Results</a> &#160;&#160;&#160;&#160;&#160;&#160;
-    <a name="link12" id="link3" href="/gp/pages/index.jsf?splash=resources" onclick="MM_showMenu(window.mm_menu_resources,x,y,null,'link12')" onmouseover="MM_showMenu(window.mm_menu_resources,x,y,null,'link12')" onmouseout="MM_startTimeout();">Resources</a> &#160;&#160;&#160;&#160;&#160;&#160;
-    <a name="link2" id="link5" href="/gp/pages/index.jsf?splash=downloads" onclick="MM_showMenu(window.mm_menu_downloads,x,y,null,'link2')" onmouseover="MM_showMenu(window.mm_menu_downloads,x,y,null,'link2')" onmouseout="MM_startTimeout();">Downloads</a> &#160;&#160;&#160;&#160;&#160;&#160;
-    <a name="link13" id="link4" href="/gp/pages/serverSettings.jsf" onclick="MM_showMenu(window.mm_menu_administration,x,y,null,'link13')" onmouseover="MM_showMenu(window.mm_menu_administration,x,y,null,'link13')" onmouseout="MM_startTimeout();">Administration</a>&#160;&#160;&#160;&#160;&#160;&#160;
-    <a name="link11" id="link1" href="/gp/pages/index.jsf" onclick="MM_showMenu(window.mm_menu_documentation,x,y,null,'link11')" onmouseover="MM_showMenu(window.mm_menu_documentation,x,y,null,'link11')" onmouseout="MM_startTimeout();">Help</a>&#160;&#160;&#160;&#160;&#160;&#160;
-    <a name="link24" id="link24" href="/gp/pages/index.jsf" onclick="showCorrectGSLink()" onmouseover="showCorrectGSLink()" onmouseout="MM_startTimeout();">
-        <img style="vertical-align:middle" alt="GenomeSpace" src="/gp/pages/genomespace/genomespace_icon.gif" height="14px" width="14px" border="0" />&#160;GenomeSpace
-    </a>
-</div>
-<!-- Footer -->
-<div class="ui-layout-south">
-    <a href="/gp/pages/about.jsf">About GenePattern</a>&#160;|&#160;<a href="/gp/pages/contactUs.jsf">Contact Us</a>&#160;|&#160;
-    &copy;2003-2012&#160;<a href="http://www.broadinstitute.org" target="_blank">Broad Institute, MIT</a>
-    <a href="http://www.broadinstitute.org" target="_blank"><img src="styles/images/broad_logo.jpg" width="63" height="18" alt="Broad institute" />
-    </a>
-</div>
+    <!-- Footer -->
+    <div class="ui-layout-south">
+        <a href="/gp/pages/about.jsf">About GenePattern</a>&#160;|&#160;<a href="/gp/pages/contactUs.jsf">Contact Us</a>&#160;|&#160;
+        &copy;2003-2012&#160;<a href="http://www.broadinstitute.org" target="_blank">Broad Institute, MIT</a>
+        <a href="http://www.broadinstitute.org" target="_blank"><img src="styles/images/broad_logo.jpg" width="63" height="18" alt="Broad institute" />
+        </a>
+    </div>
 
-<div id="content" class="content">
     <!-- Main content body -->
     <div class="ui-layout-north">
-        <div>
+        <!-- User settings area -->
+        <div id="systemMessageLink">
+            <table border="0" cellpadding="0" cellspacing="0" class="loginsettings">
+                <tr valign="top">
+                    <td>
+                        <div style="display: inline;">
+                            <a href="#{facesContext.externalContext.requestContextPath}/pages/accountInfo.jsf">My Settings</a>                          |
+                             <a href="#{facesContext.externalContext.request.contextPath}/logout">Sign Out</a>
+                             &#160;${requestScope.userID}&#160;&#160;&#160;
+                        </div>
+                    </td>
+                </tr>
+            </table>
+        </div>
+
+        <!-- top band with the logo -->
+        <div id="topband" class="modtopband">
+            <a href="/gp/pages/index.jsf" target="_top">
+                <img src="/gp/images/GP-logo.gif" alt="GenePattern" height="48" style="border: 0;" width="229" />
+            </a>
+        </div>
+
+        <!-- horizontal navigation band -->
+        <div id="modnavband1" class="modnavband1" style="white-space: nowrap;">
+            <a name="link17" id="link6" href="/gp/pages/index.jsf" onclick="MM_showMenu(window.mm_menu_tasks,x,y,null,'link17')" onmouseover="MM_showMenu(window.mm_menu_tasks,x,y,null,'link17')" onmouseout="MM_startTimeout();">Modules &amp; Pipelines</a> &#160;&#160;&#160;&#160;&#160;&#160;
+            <a name="link14" id="link9" href="/gp/pages/manageSuite.jsf" onclick="MM_showMenu(window.mm_menu_suites,x,y,null,'link14')" onmouseover="MM_showMenu(window.mm_menu_suites,x,y,null,'link14')" onmouseout="MM_startTimeout();">Suites</a> &#160;&#160;&#160;&#160;&#160;&#160;
+            <a name="link15" id="link10" href="/gp/jobResults" onclick="MM_showMenu(window.mm_menu_jobResults,x,y,null,'link15')" onmouseover="MM_showMenu(window.mm_menu_jobResults,x,y,null,'link15')" onmouseout="MM_startTimeout();">Job Results</a> &#160;&#160;&#160;&#160;&#160;&#160;
+            <a name="link12" id="link3" href="/gp/pages/index.jsf?splash=resources" onclick="MM_showMenu(window.mm_menu_resources,x,y,null,'link12')" onmouseover="MM_showMenu(window.mm_menu_resources,x,y,null,'link12')" onmouseout="MM_startTimeout();">Resources</a> &#160;&#160;&#160;&#160;&#160;&#160;
+            <a name="link2" id="link5" href="/gp/pages/index.jsf?splash=downloads" onclick="MM_showMenu(window.mm_menu_downloads,x,y,null,'link2')" onmouseover="MM_showMenu(window.mm_menu_downloads,x,y,null,'link2')" onmouseout="MM_startTimeout();">Downloads</a> &#160;&#160;&#160;&#160;&#160;&#160;
+            <a name="link13" id="link4" href="/gp/pages/serverSettings.jsf" onclick="MM_showMenu(window.mm_menu_administration,x,y,null,'link13')" onmouseover="MM_showMenu(window.mm_menu_administration,x,y,null,'link13')" onmouseout="MM_startTimeout();">Administration</a>&#160;&#160;&#160;&#160;&#160;&#160;
+            <a name="link11" id="link1" href="/gp/pages/index.jsf" onclick="MM_showMenu(window.mm_menu_documentation,x,y,null,'link11')" onmouseover="MM_showMenu(window.mm_menu_documentation,x,y,null,'link11')" onmouseout="MM_startTimeout();">Help</a>&#160;&#160;&#160;&#160;&#160;&#160;
+            <a name="link24" id="link24" href="/gp/pages/index.jsf" onclick="showCorrectGSLink()" onmouseover="showCorrectGSLink()" onmouseout="MM_startTimeout();">
+                <img style="vertical-align:middle" alt="GenomeSpace" src="/gp/pages/genomespace/genomespace_icon.gif" height="14px" width="14px" border="0" />&#160;GenomeSpace
+            </a>
+        </div>
+        <div id="modheader">
             <span>
                 Name*: <input type="text" id="modtitle" name="title" size="50"/>
                 <a href='createhelp.jsp#Name' target='help'>
@@ -141,11 +143,10 @@
             <span id="modcontrols">
                 <button id="helpbtn"><img src="styles/images/help.gif" width="16" height="16" alt="help" class="buttonIcon"/>Help</button>
                 <button id="savebtn"><img src="styles/images/save.gif" width="16" height="16" alt="save" class="buttonIcon" />Save</button>
-                <button id="saveRunbtn"><img src="styles/images/save_run.gif" width="16" height="16" alt="save and run" class="buttonIcon" />Run</button>                
+                <button id="saveRunbtn"><img src="styles/images/save_run.gif" width="16" height="16" alt="save and run" class="buttonIcon" />Run</button>
             </span>
         </div>
-    </div>
-
+   </div>
     <div class="ui-layout-center">
         <p class="heading">Details</p>
         <div class ="hcontent">
@@ -402,7 +403,7 @@
             <div id="parameters"></div>
         </div>
     </div>
-</div>
+<!--</div> -->
 
 <!-- dialogs -->
 
