@@ -387,6 +387,12 @@ public class PipelineQueryServlet extends HttpServlet {
                         if (input.getValue().startsWith("<GenePatternURL>")) {
                             filePath = input.getValue();
                         }
+                        else if (input.getValue().startsWith("http://")) {  // Check for external HTTP URLs
+                            filePath = input.getValue();
+                        }
+                        else if (input.getValue().startsWith("ftp://")) {  // Check for external FTP URLs
+                            filePath = input.getValue();
+                        }
                         else {
                             filePath = "<GenePatternURL>getFile.jsp?task=" + URLEncoder.encode(model.getLsid(), "UTF-8") + "&file=" + URLEncoder.encode(input.getValue(), "UTF-8");
                         }
