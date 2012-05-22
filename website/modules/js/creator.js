@@ -1067,7 +1067,7 @@ function loadParameterInfo(parameters)
             if(keyName != "flagspace" && keyName != "name" && keyName != "description"
                     && keyName != "flag" && keyName != "fileFormat" && keyName != "choices"
                     && keyName != "default_value" && keyName != "prefix" && keyName != "type"
-                    && keyName != "optional" && keyName != "value" && keyName != "prefix_when_specified")
+                    && keyName != "TYPE" && keyName != "MODE" && keyName != "optional" && keyName != "value" && keyName != "prefix_when_specified")
             {
                 otherAttrs[keyName] = parameters[i][keyName];
             }
