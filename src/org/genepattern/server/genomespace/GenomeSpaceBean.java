@@ -965,7 +965,15 @@ public class GenomeSpaceBean {
             GenomeSpaceLoginManager.loginFromSession(session);
             
             // Forward to index
-            response.sendRedirect("/gp/pages/index.jsf"); 
+            String referrer = (String) request.getSession().getAttribute("origin");
+            request.getSession().removeAttribute("origin");
+            if (referrer == null || referrer.length() == 0) {
+                referrer = request.getParameter("origin");
+            }
+            if (referrer == null || referrer.length() == 0) {
+                referrer = request.getContextPath() + "/pages/index.jsf";
+            }
+            response.sendRedirect(referrer); 
         }
         catch (AuthenticationException e) {
             loginFailed = true;
@@ -1002,7 +1010,15 @@ public class GenomeSpaceBean {
             GenomeSpaceLoginManager.loginFromSession(session);
             
             // Forward to index
-            response.sendRedirect("/gp/pages/index.jsf"); 
+            String referrer = (String) request.getSession().getAttribute("origin");
+            request.getSession().removeAttribute("origin");
+            if (referrer == null || referrer.length() == 0) {
+                referrer = request.getParameter("origin");
+            }
+            if (referrer == null || referrer.length() == 0) {
+                referrer = request.getContextPath() + "/pages/index.jsf";
+            }
+            response.sendRedirect(referrer);
         }
         catch (GenomeSpaceException e) {
             log.error("GenomeSpaceException in autoCreateAccount(): " + e.getMessage());
