@@ -911,7 +911,7 @@ function loadModuleInfo(module)
         console.log("\nkeys: " + keys[k]);
         var keyName = keys[k];
         if(keyName != "fileFormat" && keyName != "commandLine" && keyName != "description"
-                && keyName != "os" && keyName != "name" && keyName != "author"
+                && keyName != "os" && keyName != "name" && keyName != "author" && keyName != "JVMLevel"
                 && keyName != "LSID" && keyName != "lsidVersions" && keyName != "cpuType"
                 && keyName != "privacy" && keyName != "language" && keyName != "version"
                 && keyName != "supportFiles" && keyName != "taskType" && keyName != "quality")
