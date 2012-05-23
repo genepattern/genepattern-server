@@ -1479,7 +1479,7 @@ jQuery(document).ready(function() {
                         $("#newfileformat").val("");                        
                         if(fileformat != "")
                         {
-                            var newfileformat = $("<option value='" + fileformat + "'>" + fileformat + " </option>");
+                            var newfileformat = $("<option value='" + fileformat + "'>" + fileformat + "</option>");
 
                             var exists = false;
                             //check if fileformat already exists
@@ -1503,7 +1503,8 @@ jQuery(document).ready(function() {
                             $("select[name='fileformat']").multiselect("refresh");
 
                             //append to module output file format
-                            $("select[name='mod_fileformat']").append(newfileformat);
+                            var modnewfileformat = $("<option value='" + fileformat + "'>" + fileformat + "</option>");
+                            $("select[name='mod_fileformat']").append(modnewfileformat);
                             $("select[name='mod_fileformat']").multiselect("refresh");
                         }
                         $( this ).dialog( "close" );
