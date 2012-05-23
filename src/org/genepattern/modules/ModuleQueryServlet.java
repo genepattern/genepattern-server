@@ -190,7 +190,7 @@ public class ModuleQueryServlet extends HttpServlet
         });
 
         for (TaskInfo ti : TaskInfoCache.instance().getAllTasks()) {
-            String fileFormat = ti.getTaskInfoAttributes().get("fileFormat");
+            String fileFormat = ti.getTaskInfoAttributes().get(GPConstants.FILE_FORMAT);
             if (fileFormat == null || fileFormat.trim().length() == 0) {
                 //ignore null and blank
             }
@@ -211,7 +211,7 @@ public class ModuleQueryServlet extends HttpServlet
                 else
                 {
                     fileFormat = fileFormat.trim();
-                    if(fileFormats.equals("") && !fileFormats.equals(" "))
+                    if(!fileFormats.equals("") && !fileFormats.equals(" "))
                     {
                         fileFormats.add(fileFormat);
                     }
@@ -226,7 +226,7 @@ public class ModuleQueryServlet extends HttpServlet
             }
             for(ParameterInfo pi : pInfoArray)
             {
-                String pFileFormat = (String)pi.getAttributes().get("fileFormat");
+                String pFileFormat = (String)pi.getAttributes().get(GPConstants.FILE_FORMAT);
 
                 if (!(pFileFormat == null || pFileFormat.trim().length() == 0))
                 {
