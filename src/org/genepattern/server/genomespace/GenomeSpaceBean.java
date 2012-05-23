@@ -23,6 +23,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
+import org.apache.http.HttpRequest;
 import org.apache.log4j.Logger;
 import org.genepattern.server.UserAccountManager;
 import org.genepattern.server.auth.AuthenticationException;
@@ -283,6 +284,11 @@ public class GenomeSpaceBean {
      * @param selectedModule
      */
     public void setSelectedModule(String selectedModule) {
+        HttpServletRequest request = UIBeanHelper.getRequest();
+        
+        // Ignore AJAX requests
+        if (request.getParameter("AJAXREQUEST") != null) { return; }
+        
         this.currentTaskLsid = selectedModule;
         initCurrentLsid();
     }
