@@ -17,6 +17,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import javax.faces.event.FacesEvent;
 import javax.faces.model.SelectItem;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -43,6 +44,7 @@ import org.richfaces.component.html.HtmlTree;
 import org.richfaces.component.html.HtmlTreeNode;
 import org.richfaces.component.state.TreeState;
 import org.richfaces.event.NodeExpandedEvent;
+import org.richfaces.event.NodeSelectedEvent;
 import org.richfaces.model.TreeNode;
 import org.richfaces.model.TreeNodeImpl;
 import org.richfaces.model.TreeRowKey;
@@ -375,6 +377,8 @@ public class GenomeSpaceBean {
             Object rowKey = tree.getRowKey();
             TreeState state = (TreeState) tree.getComponentState();      
             treeNodesExpanded.put(rowKey.toString(), state.isExpanded((TreeRowKey) rowKey));
+            
+            getAllDirectories();
         }
     }
     
@@ -469,10 +473,12 @@ public class GenomeSpaceBean {
      * Get a list of SelectItem objects corresponding to the GenomeSpace directories
      */
     public List<SelectItem> getAllDirectorySelects() throws Exception {
-        List<GenomeSpaceFile> directories = getAllDirectories();      
+        if (allDirectories == null) {
+            getAllDirectories();
+        }    
         List<SelectItem> selectItems = new ArrayList<SelectItem>();
 
-        for (GenomeSpaceFile dir : directories) {
+        for (GenomeSpaceFile dir : allDirectories) {
             SelectItem item = new SelectItem();
             item.setLabel(dir.getRelativePath());
             item.setValue(dir.getUrl().toString());
