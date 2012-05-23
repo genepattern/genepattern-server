@@ -220,9 +220,14 @@ function saveModule()
                         unversioned.remove();
                     }
 
-                    var modversion = "<option value='" + version + "'>" + version + "</option>";
-                    $('select[name="modversion"]').append(modversion);
-                    $('select[name="modversion"]').val(version);
+                    $('select[name="modversion"]').val(newLsid);
+                    if($('select[name="modversion"]').val() != newLsid)
+                    {
+                        var modversion = "<option value='" + newLsid + "'>" + version + "</option>";
+                        $('select[name="modversion"]').append(modversion);
+                        $('select[name="modversion"]').val(version);
+                    }
+
                     $('select[name="modversion"]').multiselect("refresh");
                 }
             }
