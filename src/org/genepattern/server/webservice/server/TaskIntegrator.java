@@ -29,6 +29,7 @@ import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Enumeration;
@@ -49,6 +50,7 @@ import org.apache.tools.ant.taskdefs.Copy;
 import org.apache.tools.ant.taskdefs.Delete;
 import org.apache.tools.ant.types.FileSet;
 import org.genepattern.codegenerator.AbstractPipelineCodeGenerator;
+import org.genepattern.data.pipeline.JobSubmission;
 import org.genepattern.data.pipeline.PipelineModel;
 import org.genepattern.server.TaskUtil;
 import org.genepattern.server.TaskUtil.ZipFileType;
@@ -142,6 +144,38 @@ public class TaskIntegrator {
             oldLSID = (String) tia.remove(LSID);
             if (tia.get(TASK_TYPE).equals(TASK_TYPE_PIPELINE)) {
                 PipelineModel model = PipelineModel.toPipelineModel((String) tia.get(SERIALIZED_MODEL));
+
+                //for taskLib files, such as input files uploaded in the pipeline designer,
+                //    replace old lsid with '<LSID>' command substitution
+                // in our test-case of a pipeline exported from GP 3.3.3, the value contains a urlencoded old lsid
+                //<GenePatternURL>getFile.jsp?task=urn%3Alsid%3A8080.genepatt.genepattern.broadinstitute.org%3Agenepatternmodules%3A4220%3A1&file=all_aml_test.gct
+                // it should look like this instead
+                //<GenePatternURL>getFile.jsp?task=<LSID>&file=all_aml_test.gct
+
+                String encodedOldLSID;
+                try {
+                    encodedOldLSID = URLEncoder.encode(oldLSID, "UTF-8");
+                }
+                catch (Throwable t) {
+                    log.error("failed to encode oldLSID as UTF-8: '"+oldLSID+"'",t);
+                    encodedOldLSID = oldLSID;
+                }
+                for(final JobSubmission js : model.getTasks()) {
+                    for(final Object piObj : js.getParameters()) {
+                        final ParameterInfo pi = (ParameterInfo) piObj;
+                        final String value = pi.getValue();
+                        if (value.contains(oldLSID)) {
+                            log.error("replacing oldLSID with '<LSID>' substitution parameter");
+                            final String newValue = value.replace(oldLSID, "<LSID>");
+                            pi.setValue(newValue);
+                        }
+                        if (value.contains(encodedOldLSID)) {
+                            log.debug("replacing url encoded oldLSID with '<LSID>' substitution parameter");
+                            final String newValue = value.replace(encodedOldLSID, "<LSID>");
+                            pi.setValue(newValue);
+                        }
+                    }
+                }
 
                 // update the pipeline model with the new name
                 model.setName(cloneName);
