@@ -4,13 +4,14 @@ import java.io.File;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLDecoder;
 import java.util.Date;
 import java.util.Set;
 
 import org.apache.log4j.Logger;
-import org.genepattern.server.dm.GpFilePath;
 import org.genepattern.util.SemanticUtil;
 
 public class GenomeSpaceFileManager {
@@ -82,8 +83,9 @@ public class GenomeSpaceFileManager {
             String filename = extractFilename(url);
             String kind = extractKind(url, filename);
             String extension = SemanticUtil.getExtension(new File(filename));
-            boolean converted = determineConversion(kind, extension);
             
+            boolean converted = determineConversion(kind, extension);
+
             // Obtain the metadata if necessary
             if (metadata == null) {
                 try {

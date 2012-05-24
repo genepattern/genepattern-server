@@ -5,6 +5,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -541,6 +543,29 @@ public class GenomeSpaceBean {
     }
     
     /**
+     * If the URL has spaces that need encoded, encode them and return
+     * @param url
+     * @return
+     */
+    private URL encodeURLIfNecessary(URL url) {
+        // If this is true, encoding is not needed
+        if (url.toString().indexOf(" ") < 0) {
+            return url;
+        }
+        
+        // Do the encoding here
+        URI uri;
+        try {
+            uri = new URI(url.getProtocol(), url.getHost(), url.getPath(), null);
+            return uri.toURL();
+        }
+        catch (Exception e) {
+            log.error("Error trying to encode a URL: " + url);
+            return url;
+        } 
+    }
+    
+    /**
      * Iterates over the GenomeSpace file list--initializing lazily if necessary--and returns the first file found
      * with a matching GenomeSpace URL.  (In theory these URLs should be unique.)
      * @param url
@@ -549,26 +574,8 @@ public class GenomeSpaceBean {
     public GenomeSpaceFile getFile(URL url) {
         HttpSession httpSession = UIBeanHelper.getSession();
         Object gsSession = httpSession.getAttribute(GenomeSpaceLoginManager.GS_SESSION_KEY);
-        
+        url = encodeURLIfNecessary(url);
         return GenomeSpaceFileManager.createFile(gsSession, url);
-//        for (GenomeSpaceFile i : getAllFiles()) {
-//            URL iUrl;
-//            try {
-//                iUrl = i.getUrl();
-//            }
-//            catch (Exception e) {
-//                log.error("Error getting url in getFile() from " + i.getName());
-//                continue;
-//            }
-//            if (url.getPath().equals(iUrl.getPath())) {
-//                if (url.getQuery() != null) {
-//                    return (GenomeSpaceFile) GenomeSpaceFileManager.createFile(url, i.getMetadata());
-//                }
-//                return i;
-//            }
-//        }
-//        log.info("Unable to find the GenomeSpace file in file list: " + url);
-//        return null;
     }
     
     /**

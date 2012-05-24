@@ -187,10 +187,14 @@ public class GenomeSpaceFile extends GpFilePath {
     public URL getUrl() throws Exception {
         return gsUrl;
     }
+    
+    public void setUri(URI uri) {
+        gsURI = uri;
+    }
 
     @Override
     public URI getRelativeUri() {
-        if (gsURI == null && gsUrl != null) {
+    if (gsURI == null && gsUrl != null) {
             try {
                 gsURI = new URI(gsUrl.toString());
             }
