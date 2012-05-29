@@ -410,6 +410,7 @@ public class PipelineQueryServlet extends HttpServlet {
                         else {
                             filePath = "<GenePatternURL>getFile.jsp?task=<LSID>&file=" + URLEncoder.encode(input.getValue(), "UTF-8");
                         }
+                        moduleParams[i].getAttributes().put("runTimePrompt", null);
                         setParameter(input.getName(), filePath, moduleParams, null);
                     }
                     else {
