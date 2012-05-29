@@ -191,7 +191,8 @@ public class PipelineQueryServlet extends HttpServlet {
         }
 	}
 	
-	public void loadPipeline(HttpServletRequest request, HttpServletResponse response) {
+	@SuppressWarnings("unchecked")
+    public void loadPipeline(HttpServletRequest request, HttpServletResponse response) {
 	    String lsid = request.getParameter("lsid");
 	    
 	    if (lsid == null) {
@@ -211,6 +212,19 @@ public class PipelineQueryServlet extends HttpServlet {
 	    try {
             pipeline = PipelineModel.toPipelineModel(info.getTaskInfoAttributes().get(SERIALIZED_MODEL));
             pipeline.setLsid(info.getLsid());
+            ParameterInfo[] params = info.getParameterInfoArray();
+            
+            for (ParameterInfo i : params) {
+                String runTimePrompt = (String) i.getAttributes().get("runTimePrompt");
+                if ("1".equals(runTimePrompt)) {
+                    ParameterInfo modelParam = pipeline.getInputParameters().get(i.getName());
+                    String altName = (String) i.getAttributes().get("altName");
+                    String altDescription = (String) i.getAttributes().get("altDescription");
+                    
+                    modelParam.getAttributes().put("altName", altName);
+                    modelParam.getAttributes().put("altDescription", altDescription);
+                }
+            }
         }
         catch (Exception e) {
             sendError(response, "Exception loading pipeline");

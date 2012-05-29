@@ -49,8 +49,8 @@ public class InputJSON extends JSONObject {
             JSONArray pwrArray = null;
             if (promptWhenRun) {
                 pwrArray = new JSONArray();
-                pwrArray.put(param.getName());
-                pwrArray.put(param.getDescription());
+                pwrArray.put(param.getAttributes().get("altName"));
+                pwrArray.put(param.getAttributes().get("altDescription"));
             }            
             
             this.setName(param.getName());
