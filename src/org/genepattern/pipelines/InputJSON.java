@@ -37,7 +37,7 @@ public class InputJSON extends JSONObject {
             this.determineRequired(param.getAttributes().get("optional"));
             this.determinePromptWhenRun();
             this.setDefaultValue((String) param.getAttributes().get("default_value"));
-            this.buildChoices(param.getValue());
+            this.buildChoices(param.getValue(), this.getDefaultValue());
         }
         catch (JSONException e) {
             log.error("Error parsing JSON and initializing InputJSON from ParameterInfo: " + param.getName());
@@ -51,7 +51,7 @@ public class InputJSON extends JSONObject {
                 pwrArray = new JSONArray();
                 pwrArray.put(param.getAttributes().get("altName"));
                 pwrArray.put(param.getAttributes().get("altDescription"));
-            }            
+            }
             
             this.setName(param.getName());
             this.setPromptWhenRun(pwrArray);
@@ -187,14 +187,30 @@ public class InputJSON extends JSONObject {
         this.put(CHOICES, choices);
     }
     
-    public void buildChoices(String choicesString) throws JSONException {
-        JSONArray choicesJSON = new JSONArray();
+    public void buildChoices(String choicesString, String defaultValue) throws JSONException {
+        JSONArray choicesJSON = new JSONArray();  
         if (choicesString != null) {
+            // Specify variable used in testing for defaults
+            boolean foundDefaultValue = false;
+            String fallBackValue = null;
             String[] parts = choicesString.split(";");
-            if (parts.length > 0) { 
+            if (parts.length > 1) { 
                 for (String i : parts) {
                     if (i.length() == 0) { continue; }
                     choicesJSON.put(i);
+                    
+                    // Do testing to make sure the default value exists in the parameter
+                    String[] listParts = i.split("=");
+                    if (listParts.length >= 1) {
+                        if (listParts[0].equals(defaultValue)) foundDefaultValue = true;
+                        if (fallBackValue == null) fallBackValue = listParts[0];
+                    }
+                }
+                
+                // Do final test and alert if default value has no match
+                if (!foundDefaultValue) {
+                    log.error("WARNING: No default value " + defaultValue + " in " + this.getName() + ", " + choicesString);
+                    if (fallBackValue != null) this.setDefaultValue(fallBackValue);
                 }
             }
         }
