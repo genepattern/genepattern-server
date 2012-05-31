@@ -209,7 +209,7 @@ public class InputJSON extends JSONObject {
                 
                 // Do final test and alert if default value has no match
                 if (!foundDefaultValue) {
-                    log.error("WARNING: No default value " + defaultValue + " in " + this.getName() + ", " + choicesString);
+                    log.warn("WARNING: No default value " + defaultValue + " in " + this.getName() + ", " + choicesString);
                     if (fallBackValue != null) this.setDefaultValue(fallBackValue);
                 }
             }
