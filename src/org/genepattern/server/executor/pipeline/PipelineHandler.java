@@ -1432,6 +1432,8 @@ public class PipelineHandler {
         for (ParameterInfo param : parameterInfos) {
             String value = param.getValue();
             if (value != null && value.startsWith(gpUrlTag)) {
+                // substitute <GenePatternURL> with actual value
+                value = value.replace(gpUrlTag, System.getProperty("GenePatternURL"));
                 // substitute <LSID> flags for pipeline files
                 value = value.replace(lsidTag, lsidValue);
                 param.setValue(value);
