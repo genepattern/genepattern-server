@@ -79,7 +79,7 @@ var editor = {
         });
 
         window.onbeforeunload = function (event) {
-            // If the workspace is not dirty then do not prompt fpr confirmation
+            // If the workspace is not dirty then do not prompt for confirmation
             if (!editor.workspace.dirty) { return; }
 
             //noinspection JSDuplicatedDeclaration
@@ -164,6 +164,7 @@ var editor = {
 
         $(alert).dialog({
             modal: true,
+            dialogClass: "top-dialog",
             width: 400,
             title: title,
             buttons: button,
@@ -1391,6 +1392,11 @@ var properties = {
 
     init: function() {
         $("html").click(function(event) {
+        	// Check for uploading status and handle accordingly
+        	if (properties.confirmWhenUploading()) {
+        		return;
+        	}
+        	
             if (!editor.isInsideDialog(event.target)) {
                 properties.hide();
             }
@@ -1399,6 +1405,28 @@ var properties = {
         $("#" + properties.div).click(function(event) {
             event.stopPropagation();
         });
+    },
+    
+    confirmWhenUploading: function() {
+    	return false;
+//    	var isUploading = $(".uploadingImage").is(":visible");
+//    	
+//    	if (!isUploading) {
+//    		return false;
+//    	}
+//
+//        // Otherwise prompt the user
+//        var buttons = { "Yes, Exit and Cancel Upload": function() {
+//        	$(this).dialog("close");
+//        	properties.hide();
+//        	properties._clean();
+//        },
+//            "Stay in Pane": function() {
+//
+//            }};
+//        editor.showDialog("Confirm Exiting Module Editor", "You are currently uploading a file.  Exiting the module editor pane while uploading will cancel your upload.  Are you sure you want to leave the editor pane?", buttons);
+//        
+//        return true;
     },
 
     listToString: function(list) {
@@ -1663,6 +1691,7 @@ var properties = {
 
         // Attach the uploading and done images
         var uploadingImg = document.createElement("img");
+        uploadingImg.setAttribute("class", "uploadingImage");
         uploadingImg.setAttribute("src", "images/uploading.gif");
         uploadingImg.setAttribute("name", labelText + "_uploading");
         uploadingImg.setAttribute("style", "display: none;");
