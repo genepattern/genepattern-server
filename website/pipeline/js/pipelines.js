@@ -136,6 +136,9 @@ var editor = {
         if ($(element).hasClass("ui-dialog")) {
             return true;
         }
+        else if ($(element).hasClass("ui-widget-overlay")) {
+            return true;
+        }
         else {
             var parent = element.parentNode;
             if (parent === null || parent === undefined) {

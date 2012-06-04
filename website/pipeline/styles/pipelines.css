@@ -505,3 +505,11 @@ button.ui-button::-moz-focus-inner { border: 0; padding: 0; } /* reset extra pad
 .ui-dialog table td {
 	padding-right: 10px;
 }
+
+.ui-widget-overlay {
+	z-index: 10000 !important;
+}
+
+.ui-dialog {
+	z-index: 10001 !important;
+}
