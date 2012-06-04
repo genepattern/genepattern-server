@@ -2602,6 +2602,9 @@ function Module(moduleJSON) {
 
                 // Mark the workspace as dirty
                 editor.makeDirty();
+                
+                // Remove the tooltip for this delete element, fixes bug in tooltip
+                $(".infoTooltip").remove();
             }
         });
 
