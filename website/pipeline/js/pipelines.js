@@ -136,7 +136,7 @@ var editor = {
         if ($(element).hasClass("ui-dialog")) {
             return true;
         }
-        else if ($(element).hasClass("ui-widget-overlay")) {
+        else if ($(element).hasClass("ui-widget-overlay") && !$(element).hasClass("properties-overlay")) {
             return true;
         }
         else {
@@ -172,6 +172,27 @@ var editor = {
                 $(this).remove();
             }
         });
+    },
+    
+    showOverlay: function() {
+    	// Init the overlay if not already created
+    	if ($('#propertiesOverlay').length == 0) {
+    		var $overlay = $('<div id="propertiesOverlay" class="ui-widget-overlay properties-overlay"></div>').appendTo('body');
+        	$('.ui-widget-overlay').width($(document).width());
+            $('.ui-widget-overlay').height($(document).height());
+
+            $(window).resize(function() {
+            	$('.ui-widget-overlay').width($(document).width());
+                $('.ui-widget-overlay').height($(document).height());
+            });
+    	}
+    	else {
+    		$('#propertiesOverlay').show();
+    	}	
+    },
+    
+    hideOverlay: function() {
+    	$('#propertiesOverlay').hide();	
     },
 
     updateProgressBar: function(setToValue) {
@@ -1458,6 +1479,7 @@ var properties = {
     },
 
     hide: function() {
+    	editor.hideOverlay();
         properties._deselectOldSelection();
         if (this.displayed) {
             properties.saveToModel();
@@ -1467,6 +1489,7 @@ var properties = {
     },
 
     show: function() {
+    	editor.showOverlay();
         $("#properties").show("slide", { direction: "right" }, 500);
         this.displayed = true;
     },
