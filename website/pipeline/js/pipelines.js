@@ -2451,7 +2451,7 @@ function Module(moduleJSON) {
                 //noinspection JSDuplicatedDeclaration
                 var used = input.used;
 
-                if (!used) {
+                if (!used && !input.isPWR()) {
                     // Special case for modules with no input types listed
                     if (input.kinds.length == 0) {
                         //noinspection JSDuplicatedDeclaration
@@ -2479,7 +2479,7 @@ function Module(moduleJSON) {
         for (var i = 0; i < this.fileInputs.length; i++) {
             //noinspection JSDuplicatedDeclaration
             var used = this.fileInputs[i].used;
-            if (!used) {
+            if (!used && !this.fileInputs[i].isPWR()) {
                 //noinspection JSDuplicatedDeclaration
                 var inputPort = this.addInput(this.fileInputs[i].name);
                 this.fileInputs[i].makeUsed(inputPort);
@@ -2925,6 +2925,10 @@ function InputParam(module, paramJSON) {
     this.makeUnused = function() {
         this.used = false;
         this.port = null;
+    };
+    
+    this.isPWR = function(port) {
+        return this.promptWhenRun !== null;
     };
 
     this.makePWR = function(name, desc) {
