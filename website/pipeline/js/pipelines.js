@@ -1408,25 +1408,24 @@ var properties = {
     },
     
     confirmWhenUploading: function() {
-    	return false;
-//    	var isUploading = $(".uploadingImage").is(":visible");
-//    	
-//    	if (!isUploading) {
-//    		return false;
-//    	}
-//
-//        // Otherwise prompt the user
-//        var buttons = { "Yes, Exit and Cancel Upload": function() {
-//        	$(this).dialog("close");
-//        	properties.hide();
-//        	properties._clean();
-//        },
-//            "Stay in Pane": function() {
-//
-//            }};
-//        editor.showDialog("Confirm Exiting Module Editor", "You are currently uploading a file.  Exiting the module editor pane while uploading will cancel your upload.  Are you sure you want to leave the editor pane?", buttons);
-//        
-//        return true;
+    	var isUploading = $(".uploadingImage").is(":visible");
+    	
+    	if (!isUploading) {
+    		return false;
+    	}
+
+        // Otherwise prompt the user
+        var buttons = { "Yes, Exit and Cancel Upload": function() {
+        	$(this).dialog("close");
+        	properties.hide();
+        	properties._clean();
+        },
+            "Stay in Pane": function() {
+
+            }};
+        editor.showDialog("Confirm Exiting Module Editor", "You are currently uploading a file.  Exiting the module editor pane while uploading will cancel your upload.  Are you sure you want to leave the editor pane?", buttons);
+        
+        return true;
     },
 
     listToString: function(list) {
@@ -1498,7 +1497,13 @@ var properties = {
             else {
                 var value = inputs[i].value;
                 if (inputs[i].getAttribute("type") == "file") {
-                    value = value.replace("C:\\fakepath\\", "");
+                	var uploading = $("form[name='" + inputs[i].getAttribute("name") + "_form']").find(".uploadingImage").is(":visible")
+                	if (uploading) {
+                		value = "";
+                	}
+                	else {
+                		value = value.replace("C:\\fakepath\\", "");
+                	}
                 }
                 bundle[name] = value;
             }
