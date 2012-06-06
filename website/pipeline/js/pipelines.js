@@ -54,20 +54,21 @@ var editor = {
 				editor.addDefaultPipe(output, input);
 
                 // Handle clicks on pipes
-                $("svg path:first-child").click(function(event) {
-                    var pipeName = event.target.parentNode.getAttribute("name");
-                    var port = editor._extractPortFromPipe(pipeName);
-                    properties.displayPipe(port.pipes[0]);
-                    properties.show();
-                    event.stopPropagation();
-                });
-                $("svg path:last-child").click(function(event) {
-                    var pipeName = event.target.parentNode.getAttribute("name");
-                    var port = editor._extractPortFromPipe(pipeName);
-                    properties.displayPipe(port.pipes[0]);
-                    properties.show();
-                    event.stopPropagation();
-                });
+				var pathSet = $("svg path");
+				for (var i = 0; i < pathSet.length; i++) {
+					var path = pathSet[i];
+					var used = path.getAttribute("used");
+					if (used !== "true") {
+						$(path).click(function(event) {
+		                    var pipeName = event.target.parentNode.getAttribute("name");
+		                    var port = editor._extractPortFromPipe(pipeName);
+		                    properties.displayPipe(port.pipes[0]);
+		                    properties.show();
+		                    event.stopPropagation();
+		                });
+						path.setAttribute("used", "true");
+					}
+				}
 			}
 		});
 
