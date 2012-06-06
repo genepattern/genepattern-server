@@ -42,8 +42,8 @@ var editor = {
 		jsPlumb.Defaults.DragOptions = { cursor: "pointer", zIndex:2000 };
 		jsPlumb.Defaults.PaintStyle = { strokeStyle:"#666699", lineWidth:2 };
 		jsPlumb.Defaults.EndpointStyle = { radius:9, fillStyle:"black" };
-		jsPlumb.Defaults.Anchors =  ["BottomCenter", "TopCenter"];
-		jsPlumb.Defaults.Overlays =  [[ "Arrow", { width: 13, length: 13, location: 1, id: "arrow" } ]];
+		jsPlumb.Defaults.Anchors = ["BottomCenter", "TopCenter"];
+		jsPlumb.Defaults.Overlays = [[ "Arrow", { width: 13, length: 13, location: 1, id: "arrow" } ]];
 		jsPlumb.Defaults.MaxConnections = -1;
 
 		jsPlumb.bind("jsPlumbConnection", function(event) {
@@ -1409,6 +1409,11 @@ var properties = {
     
     confirmWhenUploading: function() {
     	var isUploading = $(".uploadingImage").is(":visible");
+        var isDialogOpen = $(".ui-dialog").is(":visible");
+
+        if (isDialogOpen) {
+            return true;
+        }
     	
     	if (!isUploading) {
     		return false;
@@ -1420,9 +1425,9 @@ var properties = {
         	properties.hide();
         	properties._clean();
         },
-            "Stay in Pane": function() {
+        "Stay in Pane": function() {
 
-            }};
+        }};
         editor.showDialog("Confirm Exiting Module Editor", "You are currently uploading a file.  Exiting the module editor pane while uploading will cancel your upload.  Are you sure you want to leave the editor pane?", buttons);
         
         return true;
