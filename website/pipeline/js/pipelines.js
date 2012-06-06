@@ -155,7 +155,7 @@ var editor = {
         alert.innerHTML = message;
 
         if (button === undefined || button === null) {
-            button = { "OK": function() {
+            button = { "OK": function(event) {
                 $(this).dialog("close");
                 if (event.preventDefault) event.preventDefault();
                 if (event.stopPropagation) event.stopPropagation();
@@ -1425,8 +1425,10 @@ var properties = {
         	properties.hide();
         	properties._clean();
         },
-        "Stay in Pane": function() {
-
+        "Stay in Pane": function(event) {
+        	$(this).dialog("close");
+        	if (event.preventDefault) event.preventDefault();
+            if (event.stopPropagation) event.stopPropagation();
         }};
         editor.showDialog("Confirm Exiting Module Editor", "You are currently uploading a file.  Exiting the module editor pane while uploading will cancel your upload.  Are you sure you want to leave the editor pane?", buttons);
         
@@ -1877,7 +1879,7 @@ var properties = {
         "<br /> <table><tr><td>Display Name</td><td><input type='text' id='pwrDisplayName' value='" + dName +
             "'/></td></tr><tr><td>Display Description</td><td><input type='text' id='pwrDisplayDesc' value='" + dDesc +
             "'/></td></tr></table>";
-        var button = { "OK": function() {
+        var button = { "OK": function(event) {
             var displayName = $("#pwrDisplayName").val();
             var displayDesc = $("#pwrDisplayDesc").val();
             $.data(attach, "name", displayName);
