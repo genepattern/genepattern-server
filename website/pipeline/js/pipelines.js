@@ -2510,7 +2510,7 @@ function Module(moduleJSON) {
                 //noinspection JSDuplicatedDeclaration
                 var used = input.used;
 
-                if (!used && !input.isPWR()) {
+                if (!used && !input.isPWR() && input.value === "") {
                     // Special case for modules with no input types listed
                     if (input.kinds.length == 0) {
                         //noinspection JSDuplicatedDeclaration
@@ -2536,12 +2536,13 @@ function Module(moduleJSON) {
         // Special case for when there is no overlap involved, default to first match
         //noinspection JSDuplicatedDeclaration
         for (var i = 0; i < this.fileInputs.length; i++) {
+        	var input = this.fileInputs[i];
             //noinspection JSDuplicatedDeclaration
-            var used = this.fileInputs[i].used;
-            if (!used && !this.fileInputs[i].isPWR()) {
+            var used = input.used;
+            if (!used && !input.isPWR() && input.value === "") {
                 //noinspection JSDuplicatedDeclaration
-                var inputPort = this.addInput(this.fileInputs[i].name);
-                this.fileInputs[i].makeUsed(inputPort);
+                var inputPort = this.addInput(input.name);
+                input.makeUsed(inputPort);
                 return inputPort;
             }
         }
