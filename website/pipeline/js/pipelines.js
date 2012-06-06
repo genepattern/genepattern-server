@@ -91,6 +91,17 @@ var editor = {
             return message;
         };
 	},
+	
+	foundInList: function(list, obj) {
+	    var i;
+	    for (i = 0; i < list.length; i++) {
+	        if (list[i] === obj) {
+	            return true;
+	        }
+	    }
+
+	    return false;
+	},
 
     _extractPortFromPipe: function(pipeName) {
         var parts = pipeName.split("_");
@@ -1774,7 +1785,9 @@ var properties = {
                     editor.showDialog("Error Uploading File", response.error);
                 }
                 else {
-                    editor.workspace["files"].push(response.location);
+                	if (!editor.foundInList(editor.workspace["files"], response.location)) {
+                		editor.workspace["files"].push(response.location);
+                	}
                     valueDiv.innerHTML = "<strong>Current Value:</strong> " + $("[type=file][name='" + labelText + "']").val();
                 }
             }
