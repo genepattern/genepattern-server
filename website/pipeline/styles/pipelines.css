@@ -515,7 +515,7 @@ button.ui-button::-moz-focus-inner { border: 0; padding: 0; } /* reset extra pad
 }
 
 .ui-dialog {
-	z-index: 10001 !important;
+	z-index: 10001;
 }
 
 .top-dialog {

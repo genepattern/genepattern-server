@@ -2658,16 +2658,8 @@ function Module(moduleJSON) {
                 list.appendChild(item);
             }
             alert.appendChild(list);
-
-            $(alert).dialog({
-                modal: true,
-                width: 400,
-                title: "Module Errors & Alerts",
-                close: function() {
-                    $(this).dialog("destroy");
-                    $(this).remove();
-                }
-            });
+            
+            editor.showDialog("Module Errors & Alerts", alert.innerHTML);
         };
 
         $("#" + "error_" + this.id).click(alertFunc);
