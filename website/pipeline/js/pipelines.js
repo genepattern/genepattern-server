@@ -1017,7 +1017,7 @@ var library = {
                 modDiv.setAttribute("class", "moduleBullet");
                 modDiv.setAttribute("name", module.lsid);
                 modDiv.innerHTML = "&#160;&#160;&#160;&#160;<img src='/gp/pipeline/images/module-bullet.gif' alt='Bullet' />&#160;&#160;" +
-                    "<a href='#' onclick='return false;'>" + properties._encodeToHTML(this.concatNameForDisplay(module.name, 22)) + "</a>";
+                    "<a href='#' onclick='return false;'>" + properties._encodeToHTML(this.concatNameForDisplay(module.name, 20)) + "</a>";
                 $(modDiv).click(function() {
                     var lsid = $(this)[0].getAttribute("name");
 
