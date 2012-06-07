@@ -1368,7 +1368,7 @@ var library = {
                     else {
                         li.innerHTML = "<img src='images/readonly.gif' /> ";
                     }
-                    li.innerHTML += module.name;
+                    li.innerHTML += library.concatNameForDisplay(module.name, 40);
                     pipelineList.appendChild(li);
                 }
             }
