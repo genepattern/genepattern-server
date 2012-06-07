@@ -415,7 +415,11 @@ div.iconSpace {
     width: 400px;
     padding: 15px;
     text-align: left;
-    z-index: 10000;
+    z-index: 10000 !important;
+}
+
+#loadingEditorDialog {
+	z-index: 10000 !important;
 }
 
 #loadPipelineHeader {

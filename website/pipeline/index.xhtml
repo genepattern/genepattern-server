@@ -188,6 +188,7 @@
             $("#loadingEditorDialog").dialog({
                 autoOpen: true,
                 modal: true,
+				dialogClass: "top-dialog",
                 width: 400,
                 title: "Please Stand by While Pipeline Designer Loads",
                 beforeClose: function() { return false; }
@@ -202,6 +203,7 @@
             $("#loadPipelineDialog").dialog({
                 autoOpen: false,
                 modal: true,
+				dialogClass: "top-dialog",
                 width: 400,
                 title: "Choose Pipeline to Load"
             });
