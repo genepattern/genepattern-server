@@ -3335,6 +3335,7 @@ function Pipe(connection) {
 		var deleteOutput = this.outputPort.endpoint.connections.length <= 1;
 		this.inputPort.detachAll();
 		this.inputPort.remove();
+		this.inputModule.checkForWarnings();
 		if (deleteOutput) { this.outputPort.remove(); }
 		editor.removePipe(this);
 	};
