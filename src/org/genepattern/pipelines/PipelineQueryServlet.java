@@ -176,7 +176,8 @@ public class PipelineQueryServlet extends HttpServlet {
                         
                         // Test to see if the file already exists
                         if (uploadedFile.exists()) {
-                            throw new Exception("Uploaded file already exists.  You cannot have two files with the same name in the same pipeline.");
+                            String message = "The input file, '"+uploadedFile.getName()+"', has already been uploaded. You can't upload two input files with the same name"; 
+                            throw new Exception(message);
                         }
                         
                         transferUpload(i, uploadedFile);
@@ -188,8 +189,8 @@ public class PipelineQueryServlet extends HttpServlet {
                     }
                 }
             }
-            catch (Exception e) {
-                sendError(response, "Exception retrieving the uploaded file");
+            catch (Throwable t) {
+                sendError(response, "Exception retrieving the uploaded file:\n"+t.getLocalizedMessage());
             }
         }
         else {
