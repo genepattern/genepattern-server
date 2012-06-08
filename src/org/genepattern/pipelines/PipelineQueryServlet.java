@@ -176,7 +176,7 @@ public class PipelineQueryServlet extends HttpServlet {
                         
                         // Test to see if the file already exists
                         if (uploadedFile.exists()) {
-                            throw new Exception("Uploaded file already exists");
+                            throw new Exception("Uploaded file already exists.  You cannot have two files with the same name in the same pipeline.");
                         }
                         
                         transferUpload(i, uploadedFile);
