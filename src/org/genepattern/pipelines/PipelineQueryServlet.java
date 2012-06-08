@@ -173,6 +173,12 @@ public class PipelineQueryServlet extends HttpServlet {
                         File userTempDir = new File(tempDir, username);
                         userTempDir.mkdir();
                         File uploadedFile = new File(userTempDir, i.getName());
+                        
+                        // Test to see if the file already exists
+                        if (uploadedFile.exists()) {
+                            throw new Exception("Uploaded file already exists");
+                        }
+                        
                         transferUpload(i, uploadedFile);
                         
                         // Return a success response
