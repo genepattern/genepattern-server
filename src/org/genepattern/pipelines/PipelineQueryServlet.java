@@ -154,7 +154,7 @@ public class PipelineQueryServlet extends HttpServlet {
             }
         }
     }
-	
+
 	@SuppressWarnings("unchecked")
     public void uploadFile(HttpServletRequest request, HttpServletResponse response) {
 	    RequestContext reqContext = new ServletRequestContext(request);
@@ -169,16 +169,10 @@ public class PipelineQueryServlet extends HttpServlet {
                     if (!i.isFormField()) {
                         // Store in a temp directory until the pipeline is saved
                         String username = (String) request.getSession().getAttribute("userid");
-                        File tempDir = ServerConfiguration.instance().getTempDir();
-                        File userTempDir = new File(tempDir, username);
-                        userTempDir.mkdir();
-                        File uploadedFile = new File(userTempDir, i.getName());
-                        
-                        // Test to see if the file already exists
-                        if (uploadedFile.exists()) {
-                            String message = "The input file, '"+uploadedFile.getName()+"', has already been uploaded. You can't upload two input files with the same name"; 
-                            throw new Exception(message);
-                        }
+
+                        ServerConfiguration.Context userContext = ServerConfiguration.Context.getContextForUser(username);
+                        File fileTempDir = ServerConfiguration.instance().getTemporaryUploadDir(userContext);
+                        File uploadedFile = new File(fileTempDir, i.getName());
                         
                         transferUpload(i, uploadedFile);
                         
@@ -191,6 +185,7 @@ public class PipelineQueryServlet extends HttpServlet {
             }
             catch (Throwable t) {
                 sendError(response, "Exception retrieving the uploaded file:\n"+t.getLocalizedMessage());
+                return;
             }
         }
         else {
@@ -483,20 +478,29 @@ public class PipelineQueryServlet extends HttpServlet {
 	        return;
 	    }
 	    
-	    // Extract the right json from the saved bundle
-	    JSONObject pipelineJSON = PipelineJSON.parseBundle(bundle);
-	    PipelineJSON pipelineObject = PipelineJSON.extract(pipelineJSON);
-	    ModuleJSON[] modulesObject = ModuleJSON.extract(pipelineJSON);
-	    PipeJSON[] pipesObject = PipeJSON.extract(pipelineJSON);
-	    
+        // Extract the right json from the saved bundle
+	    final PipelineJSON pipelineObject;
+        final ModuleJSON[] modulesObject;
+	    final PipeJSON[] pipesObject;
+	    try {
+	        JSONObject pipelineJSON = PipelineJSON.parseBundle(bundle);
+	        pipelineObject = PipelineJSON.extract(pipelineJSON);
+	        modulesObject = ModuleJSON.extract(pipelineJSON);
+	        pipesObject = PipeJSON.extract(pipelineJSON);
+	    }
+	    catch (Throwable t) {
+	        log.error("Error parsing JSON bundle", t);
+	        sendError(response, "Unable to save the pipeline: Server error parsing JSON bundle");
+	        return;
+	    }
 	    // Transform the graph of modules and pipes to an ordered list
 	    List<ModuleJSON> modulesList = null;
 	    try {
             modulesList = transformGraph(modulesObject, pipesObject);
         }
-        catch (Exception e) {
-            log.error("Unable to transform the graph to a list", e);
-            sendError(response, "Unable to save the pipeline");
+        catch (Throwable t) {
+            log.error("Unable to transform the graph to a list", t);
+            sendError(response, "Unable to save the pipeline: Server error, Unable to transform the graph to a list");
             return;
         }
         
@@ -515,9 +519,9 @@ public class PipelineQueryServlet extends HttpServlet {
             setModuleInfo(model, modulesList);
             setPipesInfo(model, modulesList, pipesObject);
         }
-        catch (Exception e) {
-            log.error("Unable to build the pipeline model", e);
-            sendError(response, "Unable to save the pipeline");
+        catch (Throwable t) {
+            log.error("Unable to build the pipeline model", t);
+            sendError(response, "Unable to save the pipeline: Server error, Unable to build the pipeline model");
             return;
         }
         
@@ -528,7 +532,7 @@ public class PipelineQueryServlet extends HttpServlet {
         }
         catch (TaskInstallationException e) {
             log.error("Unable to install the pipeline:" + e.getMessage(), e);
-            sendError(response, "Unable to save the pipeline");
+            sendError(response, "Unable to save the pipeline: "+e.getMessage());
             return;
         }
         
@@ -546,9 +550,9 @@ public class PipelineQueryServlet extends HttpServlet {
                 this.writePipelineDesignerFile(newDir, modulesList);
             }
         }
-        catch (Exception e) {
-            log.error("Unable to retrieve the old taskInfo based on old lsid for: " + newLsid);
-            sendError(response, "Unable to save uploaded files for the pipeline");
+        catch (Throwable t) {
+            log.error("Unable to retrieve the old taskInfo based on old lsid for: " + newLsid, t);
+            sendError(response, "Unable to save uploaded files for the pipeline: "+t.getLocalizedMessage());
             return;
         }
         

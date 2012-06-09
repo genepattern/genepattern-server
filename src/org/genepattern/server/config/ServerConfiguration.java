@@ -1,7 +1,7 @@
 package org.genepattern.server.config;
 
 import java.io.File;
-import java.net.MalformedURLException;
+import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
@@ -487,4 +487,20 @@ public class ServerConfiguration {
     public boolean getAllowInputFilePaths(Context context) {
         return getGPBooleanProperty(context, "allow.input.file.paths", false);
     }
+    
+    public File getTemporaryUploadDir(Context context) throws IOException, Exception {
+        String username = context.getUserId();
+        if (username == null || username.length() == 0) {
+            throw new Exception("userid not set");
+        }
+
+        File serverTempDir = getTempDir();
+        // prefix is used to restrict access to input files based on username
+        String prefix = username + "_";
+        File tempDir = File.createTempFile(prefix + "run", null, serverTempDir);
+        tempDir.delete();
+        tempDir.mkdir();
+        return tempDir;
+    }
+
 }
