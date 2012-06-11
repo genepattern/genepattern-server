@@ -12,6 +12,7 @@
 package org.genepattern.modules;
 
 import org.genepattern.webservice.*;
+import org.genepattern.server.config.ServerConfiguration;
 import org.genepattern.server.genepattern.GenePatternAnalysisTask;
 import org.genepattern.server.webservice.server.Status;
 import org.genepattern.server.webservice.server.DirectoryManager;
@@ -290,12 +291,12 @@ public class ModuleQueryServlet extends HttpServlet
                 for (FileItem i : postParameters) {
                     // Only read the submitted files
                     if (!i.isFormField()) {
-                        // Store in a temp directory until the pipeline is saved
-                        String str = System.getProperty("java.io.tmpdir");
-                        File tempDir = new File(str);
-                        File userTempDir = new File(tempDir, username);
-                        userTempDir.mkdir();
-                        File uploadedFile = new File(userTempDir, i.getName());
+                        // Store in a temp directory until the module is saved
+
+                        ServerConfiguration.Context userContext = ServerConfiguration.Context.getContextForUser(username);
+                        File fileTempDir = ServerConfiguration.instance().getTemporaryUploadDir(userContext);
+                        File uploadedFile = new File(fileTempDir, i.getName());
+                        
                         transferUpload(i, uploadedFile);
 
                         // Return a success response
