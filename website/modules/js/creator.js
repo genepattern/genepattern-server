@@ -922,6 +922,11 @@ function loadModuleInfo(module)
         supportFilesList = supportFilesList.split(";");
         for(s=0;s<supportFilesList.length;s++)
         {
+            //do not show the module manifest in the list of support files
+            if(supportFilesList[s] == "manifest")
+            {
+                continue;
+            }
             var checkbox = $('<input type="checkbox" name="currentfiles" value="' +
             supportFilesList[s] + '" />').click(function()
             {
