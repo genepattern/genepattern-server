@@ -44,7 +44,6 @@ public class ParametersJSON extends JSONObject {
     public static final String VALUE = "value";
     public static final String CHOICES = "choices";
     public static final String FLAG = "flag";
-    public static final String FLAGSPACE = "flagspace";
 
 
 
@@ -60,7 +59,6 @@ public class ParametersJSON extends JSONObject {
             this.put(VALUE, object.get(VALUE));
             this.put(CHOICES, object.get(CHOICES));
             this.put(FLAG, object.get(FLAG));
-            this.put(FLAGSPACE, object.get(FLAGSPACE));
 
             String typeString = String.class.getName();
             if(TYPE.equals("FILE"))
@@ -100,7 +98,6 @@ public class ParametersJSON extends JSONObject {
             this.put(PREFIX, pAttrs.get(GPConstants.PARAM_INFO_PREFIX[0]));
             this.put(OPTIONAL, pAttrs.get(GPConstants.PARAM_INFO_OPTIONAL[0]));
             this.put(FLAG, pAttrs.get(FLAG));
-            this.put(FLAGSPACE, pAttrs.get(FLAGSPACE));
 
             //returns choices delimted by ; and display name and val delimited by =
             String choices = pInfo.getValue();

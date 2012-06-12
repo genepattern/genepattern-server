@@ -264,7 +264,6 @@ function addparameter()
         <table class='pmoptions'><tr><td>Default Value:</td><td><input type='text' name='p_defaultvalue' size='16'/><br/>\
         </td></tr>\
         <tr><td>Flag:</td><td><input type='text' name='p_flag' size='7'/>\
-        <input type='checkbox' name='p_flagspace' size='7' disabled='disabled'></input> insert space after flag\
         </td> \
         <td> \
         <input type='checkbox' name='p_prefix' size='7'></input> prefix when specified \
@@ -327,7 +326,7 @@ function addparameter()
     return paramDiv;
 }
 
-function addtocommandline(flag, name, delimiter, prevflag, prevname, prevdelimiter)
+function addtocommandline(flag, name, prevflag, prevname)
 {
     var text = "";
 
@@ -344,7 +343,7 @@ function addtocommandline(flag, name, delimiter, prevflag, prevname, prevdelimit
 
     if(flag !== "")
     {
-        text = flag + delimiter + text;
+        text = flag + text;
     }
 
     var item = $("<li class='commanditem'>" +
@@ -360,7 +359,7 @@ function addtocommandline(flag, name, delimiter, prevflag, prevname, prevdelimit
 
     if(prevflag !== "")
     {
-        prevtext = prevflag + prevdelimiter + prevtext;
+        prevtext = prevflag + prevtext;
     }
 
     //if no change in value do nothing
@@ -441,21 +440,7 @@ function updateparameter(parameter)
     pelement.data('oldVal',  pname_newval );
     felement.data('oldVal',  pflag_newval );
 
-
-    var delement = parameter.find("input[name='p_flagspace']");
-    var prevdelimiter = delement.data('oldVal');
-
-    var delimiter = "";
-
-    var addspace = delement.is(':checked');
-    if(addspace)
-    {
-       delimiter = " ";
-    }
-
-    delement.data('oldVal',  delimiter);
-
-    addtocommandline(pflag_newval, pname_newval, delimiter, pflag_oldval, pname_oldval, prevdelimiter);
+    addtocommandline(pflag_newval, pname_newval, pflag_oldval, pname_oldval);
 }
 
 function changeParameterType(element)
@@ -979,15 +964,6 @@ function loadParameterInfo(parameters)
         if(parameters[i].flag !== undefined && parameters[i].flag !== null)
         {
             newParameter.find("input[name='p_flag']").val(parameters[i].flag);
-            if(newParameter.find("input[name='p_flag']").val() != "")
-            {
-                newParameter.find("input[name='p_flagspace']").removeAttr("disabled");
-            }
-        }
-
-        if(parameters[i].flagspace !== undefined && parameters[i].flagspace !== null)
-        {
-            newParameter.find("input[name='p_flagspace']").attr('checked', true);
         }
 
         if(optional.length > 0)
@@ -1069,7 +1045,7 @@ function loadParameterInfo(parameters)
         {
             console.log("\nkeys: " + keys[k]);
             var keyName = keys[k];
-            if(keyName != "flagspace" && keyName != "name" && keyName != "description"
+            if(keyName != "name" && keyName != "description"
                     && keyName != "flag" && keyName != "fileFormat" && keyName != "choices"
                     && keyName != "default_value" && keyName != "prefix" && keyName != "type"
                     && keyName != "TYPE" && keyName != "MODE" && keyName != "optional" && keyName != "value" && keyName != "prefix_when_specified")
@@ -1131,7 +1107,6 @@ function getParametersJSON()
         var mode = "";
         var prefix = "";
         var flag = "";
-        var flagspace ="";
 
         if($(this).find('select[name="fileformat"]').val() !== undefined
                 && $(this).find('select[name="fileformat"]').val() !== null)
@@ -1150,11 +1125,6 @@ function getParametersJSON()
         if($(this).find("input[name='p_flag']").val() != undefined && $(this).find("input[name='p_flag']").val() !== null)
         {
             flag = $(this).find("input[name='p_flag']").val();
-        }
-
-        if($(this).find('input[name="p_flagspace"]').is(':checked'))
-        {
-            flagspace = "on";
         }
 
         if(pname == undefined || pname == null || pname.length < 1)
@@ -1200,18 +1170,12 @@ function getParametersJSON()
         if($(this).find('input[name="p_prefix"]').is(":checked"))
         {
             prefix = $(this).find('input[name="p_flag"]').val();
-
-            //check to see if a space should be added after the flag
-            if($(this).find('input[name="p_flagspace"]').is(":checked"))
-            {
-                prefix += " ";    
-            }
         }
 
         var parameter = {
             "name": pname, "choices": choices, "description": description, "TYPE": type,
             "default_value": default_val, "optional": optional,
-            "fileFormat": fileformatlist, "MODE": mode, "value": value, "prefix": prefix, "flag":flag, "flagspace":flagspace
+            "fileFormat": fileformatlist, "MODE": mode, "value": value, "prefix": prefix, "flag":flag
         };
 
         //add other remaining attributes
@@ -1386,30 +1350,11 @@ jQuery(document).ready(function() {
         }
     });
 
-    $("input[name='p_flag']").live("keydown", function()
-    {
-        $("input[name='p_flagspace']").removeAttr("disabled");
-    });
 
-    $("input[name='p_flagspace'], input[name='p_name'], input[name='p_flag'], input[name='p_prefix']").live("change", function()
+    $("input[name='p_name'], input[name='p_flag'], input[name='p_prefix']").live("change", function()
     {
         var parameterParent = $(this).parents(".parameter");
 
-        //enable the flag space checkbox if the parameter flag is specified
-        var p_flagspace = parameterParent.find("input[name='p_flagspace']");
-        var p_flag = parameterParent.find("input[name='p_flag']");
-
-        if(p_flag.val() !== undefined && p_flag.val() !== null)
-        {
-            if(p_flag.val() !== "")
-            {
-                p_flagspace.removeAttr("disabled");
-            }
-            else
-            {
-                p_flagspace.attr("disabled", true);
-            }
-        }
         updateparameter(parameterParent);
     });
 
