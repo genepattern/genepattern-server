@@ -19,8 +19,10 @@ var editor = {
     USE_BETA_OPTIONS: false,
 	div: "workspace",		// The id of the div used for pipeline editing
     titleSpan: "titleSpan", // The id of the title span of the pipeline
+    loading: false,
 	workspace: {			// A map containing all the instance data of the current workspace
 		idCounter: 0, 		// Used to keep track of module instance IDs
+        fileCounter: 1000,  // Used to keep track of file IDs
         dirty: true,        // Used to determine if something has changed since last save
 		pipes: [],	        // A list of all current connections in the workspace
         files: [],          // List of all uploaded files, used when saving or uploading
@@ -47,6 +49,9 @@ var editor = {
 		jsPlumb.Defaults.MaxConnections = -1;
 
 		jsPlumb.bind("jsPlumbConnection", function(event) {
+            // Protect from unwanted firing during loading pipelines
+            if (editor.loading) { return; }
+
 			var pipe = new Pipe(event.connection);
             editor.initPipe(pipe);
             properties.redrawDisplay();
@@ -104,7 +109,7 @@ var editor = {
         editor.makeDirty();
 
         var file = new File(name, path);
-        file.id = editor._nextId();
+        file.id = editor._nextFileId();
         this.workspace[file.id] = file;
         file.add(null, null);
         return file;
@@ -276,6 +281,7 @@ var editor = {
 
         this.workspace = {      // A map containing all the instance data of the current workspace
             idCounter: 0, 		// Used to keep track of module instance IDs
+            fileCounter: 1000,  // Used to keep track of file IDs
             pipes: [],	        // A list of all current connections in the workspace
             files: [],          // List of all uploaded files, used when saving or uploading
             suggestRow: 0, 		// Used by the GridLayoutManager
@@ -330,7 +336,7 @@ var editor = {
             input.param.value = output.module.getFilename();
         }
 
-        input.param.makeUsed(input);
+        input.param.makeUsed();
 
         input.connectPipe(pipe);
         output.connectPipe(pipe);
@@ -347,6 +353,11 @@ var editor = {
 		this.workspace["idCounter"]++;
 		return this.workspace["idCounter"] - 1;
 	},
+
+    _nextFileId: function() {
+        this.workspace["fileCounter"]++;
+        return this.workspace["fileCounter"] - 1;
+    },
 
 	// Takes a module child id in the form of "prefix_moduleid" and returns the module id.
 	_extractModuleId: function(element) {
@@ -776,6 +787,8 @@ var editor = {
     },
 
 	load: function(lsid) {
+        editor.loading = true;
+
         if (lsid === undefined || lsid === null || lsid === "") {
             editor._cleanWorkspace();
             editor._setPipelineName();
@@ -799,6 +812,8 @@ var editor = {
                     editor._validatePipeline();
                     editor.makeClean();
                 }
+
+                editor.loading = false;
             },
             dataType: "json"
         });
@@ -2042,10 +2057,14 @@ var properties = {
                 var module = properties.current;
                 var paramName = this.getAttribute("name");
                 var input = module.getInputByName(properties._stripTrailingAstrik(paramName));
+                input.value = "";
+                input.makeUnused();
                 var port = input.port;
-                var pipe = port.pipes[0];
 
-                pipe.remove();
+                for (var i = 0; i < port.pipes.length; i++) {
+                    port.pipes[i].remove();
+                }
+
                 properties.redrawDisplay();
                 module.checkForWarnings();
 
@@ -3239,14 +3258,12 @@ function InputParam(module, paramJSON) {
         return this.type === "java.io.File";
     };
 
-    this.makeUsed = function(port) {
+    this.makeUsed = function() {
         this.used = true;
-        this.port = port;
     };
 
     this.makeUnused = function() {
         this.used = false;
-        this.port = null;
     };
     
     this.isPWR = function(port) {
@@ -3422,6 +3439,7 @@ function Port(module, pointer, param) {
     };
 
 	this.detachAll = function() {
+        this.pipes = [];
         this.endpoint.detachAll();
     };
 
