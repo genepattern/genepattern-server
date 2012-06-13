@@ -1702,10 +1702,10 @@ public class GenePatternAnalysisTask {
             }
         }
         
-        if (checkStderr) {
-            if (stderrFile != null && stderrFile.exists() && stderrFile.length() > 0L) {
+        if (stderrFile != null && stderrFile.exists() && stderrFile.length() > 0L) {
+            addFileToOutputParameters(jobInfo, stderrFile.getName(), stderrFile.getName(), null);
+            if (checkStderr) {
                 jobStatus = JobStatus.JOB_ERROR;
-                addFileToOutputParameters(jobInfo, stderrFile.getName(), stderrFile.getName(), null);
             }
         }
 
