@@ -1703,14 +1703,14 @@ public class GenePatternAnalysisTask {
         }
         
         if (stderrFile != null && stderrFile.exists() && stderrFile.length() > 0L) {
-            addFileToOutputParameters(jobInfo, stderrFile.getName(), stderrFile.getName(), null);
+            addFileToOutputParameters(jobInfo, stderrFile.getName(), stderrFile.getName(), null, false, true);
             if (checkStderr) {
                 jobStatus = JobStatus.JOB_ERROR;
             }
         }
 
         if (stdoutFile != null && stdoutFile.exists() && stdoutFile.length() > 0L) {
-            addFileToOutputParameters(jobInfo, stdoutFile.getName(), stdoutFile.getName(), null);
+            addFileToOutputParameters(jobInfo, stdoutFile.getName(), stdoutFile.getName(), null, true, false);
         }
         
         if (taskLog != null) {
@@ -3183,6 +3183,16 @@ public class GenePatternAnalysisTask {
      * @author Jim Lerner
      */
     private static void addFileToOutputParameters(JobInfo jobInfo, String fileName, String label, JobInfo parentJobInfo) {
+        boolean isStdout = false;
+        boolean isStderr = false;
+        addFileToOutputParameters(jobInfo, fileName, label, parentJobInfo, isStdout, isStderr);
+    }
+
+    /**
+     * Optionally flag the result file as STDOUT or STDERR. This is necessary because we allow for the name of the STDOUT and STDERR files
+     * to be customized by each module.
+     */
+    private static void addFileToOutputParameters(JobInfo jobInfo, String fileName, String label, JobInfo parentJobInfo, boolean isStdout, boolean isStderr) {
         if (jobInfo == null) {
             log.error("null jobInfo arg!");
             return;
@@ -3190,6 +3200,12 @@ public class GenePatternAnalysisTask {
         fileName = jobInfo.getJobNumber() + "/" + fileName;
         ParameterInfo paramOut = new ParameterInfo(label, fileName, "");
         paramOut.setAsOutputFile();
+        if (isStdout) {
+            paramOut._setAsStdoutFile();
+        }
+        if (isStderr) {
+            paramOut._setAsStderrFile();
+        }
         jobInfo.addParameterInfo(paramOut);
         if (parentJobInfo != null) {
             parentJobInfo.addParameterInfo(paramOut);

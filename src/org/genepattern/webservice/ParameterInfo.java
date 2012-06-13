@@ -168,8 +168,8 @@ public class ParameterInfo implements Serializable {
         return false;
     }
     
-	public boolean _isDirectory() {
-		if (attributes != null && (attributes.containsKey(TYPE) || attributes.containsKey(TYPE.toLowerCase()))) {
+    public boolean _isDirectory() {
+        if (attributes != null && (attributes.containsKey(TYPE) || attributes.containsKey(TYPE.toLowerCase()))) {
             String type = (String) this.attributes.get(TYPE);
             if (type == null)
                 type = (String) this.attributes.get(TYPE.toLowerCase());
@@ -179,6 +179,40 @@ public class ParameterInfo implements Serializable {
         }
         return false;
     }
+
+    //support for STDERR and STDOUT result files
+    private static final String IS_STDOUT_KEY = "IS_STDOUT";
+    private static final String IS_STDERR_KEY = "IS_STDERR";
+    public boolean _isStdoutFile() {
+        return isOutputFile() && attributes != null && attributes.containsKey(IS_STDOUT_KEY);
+    }
+
+    public boolean _isStderrFile() {
+        return isOutputFile() && attributes != null && attributes.containsKey(IS_STDERR_KEY);
+    }
+	
+    public void _setAsStdoutFile() {
+        setAsOutputFile();
+        this.attributes.put(IS_STDOUT_KEY, "true");
+    }
+
+    public void _setAsStderrFile() {
+        setAsOutputFile();
+        this.attributes.put(IS_STDERR_KEY, "true");
+    }
+	
+    //helper methods for configuration properties
+    //private static String CONFIG_PARAM_PREFIX = ".gp.config.";
+    //public boolean _isConfigurationParameter() {
+    //    return name.startsWith(CONFIG_PARAM_PREFIX);
+    //}
+    //public String _getConfigurationParameterName() {
+    //    if (name.startsWith(CONFIG_PARAM_PREFIX)) {
+    //        return name.substring( CONFIG_PARAM_PREFIX.length() );
+    //    }
+    //    //TODO: log error
+    //    return name;
+    //}
 
     /**
      * Sets this as an input file parameter.

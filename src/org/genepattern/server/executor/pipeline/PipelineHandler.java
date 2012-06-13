@@ -1086,6 +1086,27 @@ public class PipelineHandler {
     private static String getOutputFileName(AnalysisDAO dao, JobInfo fromJob, String fileStr)
     throws ServerConfiguration.Exception, FileNotFoundException 
     {
+        //special-case: use 'stdout' from previous job
+        if ("stdout".equals(fileStr)) {
+            //use STDOUT from Job
+            ParameterInfo stdoutParam = getStdoutFile(fromJob);
+            String fileName = null;
+            if (stdoutParam != null) {
+                fileName = stdoutParam.getValue();
+            }
+            return fileName;
+        }
+        //special-case: use 'stderr' from previous job
+        if ("stderr".equals(fileStr)) {
+            //use STDERR from Job
+            ParameterInfo stderrParam = getStderrFile(fromJob);
+            String fileName = null;
+            if (stderrParam != null) {
+                fileName = stderrParam.getValue();
+            }
+            return fileName;
+        }
+        
         //get the ordered list of output files for the job
         List<ParameterInfo> allResultFiles = getOutputFilesRecursive(dao, fromJob);
         
@@ -1135,7 +1156,7 @@ public class PipelineHandler {
     
     /**
      * Added this method to support scatter-gather pipelines.
-     * See the pipelineDesigner.jsp page, which generates the values that we are checking for in this method.
+     * See the Pipeline Designer, which generates the values that we are checking for in this method.
      * 
      *     ctl.options[ctl.options.length]  = new Option('scatter each output', '?scatter&filter=*');
      *     ctl.options[ctl.options.length]  = new Option('file list of all outputs', '?filelist&filter=*');
@@ -1262,6 +1283,7 @@ public class PipelineHandler {
         }
         
         if (fileStr.equals(GPConstants.STDOUT) || fileStr.equals(GPConstants.STDERR)) {
+            log.error("old version of pipeline: '"+fileStr+"' is deprecated");
             fileName = fileStr;
         }
         
@@ -1323,6 +1345,26 @@ public class PipelineHandler {
             }
         }
         return outs;
+    }
+    
+    private static ParameterInfo getStdoutFile(JobInfo jobInfo) {
+        ParameterInfo[] childParams = jobInfo.getParameterInfoArray();
+        for (ParameterInfo childParam : childParams) {
+            if (childParam._isStdoutFile()) {
+                return childParam;
+            }
+        }
+        return null;
+    }
+
+    private static ParameterInfo getStderrFile(JobInfo jobInfo) {
+        ParameterInfo[] childParams = jobInfo.getParameterInfoArray();
+        for (ParameterInfo childParam : childParams) {
+            if (childParam._isStderrFile()) {
+                return childParam;
+            }
+        }
+        return null;
     }
     
     private static boolean isTaskLog(ParameterInfo param) {
