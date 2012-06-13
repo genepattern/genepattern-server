@@ -48,28 +48,8 @@ var editor = {
 
 		jsPlumb.bind("jsPlumbConnection", function(event) {
 			var pipe = new Pipe(event.connection);
-			if (pipe.toMaster()) {
-				var output = pipe.outputPort;
-				var input = pipe.inputPort;
-				editor.addDefaultPipe(output, input);
-
-                // Handle clicks on pipes
-				var pathSet = $("svg path");
-				for (var i = 0; i < pathSet.length; i++) {
-					var path = pathSet[i];
-					var used = path.getAttribute("used");
-					if (used !== "true") {
-						$(path).click(function(event) {
-		                    var pipeName = event.target.parentNode.getAttribute("name");
-		                    var port = editor._extractPortFromPipe(pipeName);
-		                    properties.displayPipe(port.pipes[0]);
-		                    properties.show();
-		                    event.stopPropagation();
-		                });
-						path.setAttribute("used", "true");
-					}
-				}
-			}
+            editor.initPipe(pipe);
+            properties.redrawDisplay();
 		});
 
         editor._setPipelineName();
@@ -91,6 +71,44 @@ var editor = {
             return message;
         };
 	},
+
+    extractFilename: function(path) {
+        // Handle chrome upload paths
+        if (path.indexOf("\\") > -1) {
+            var parts = path.split("\\");
+            return parts[parts.length -1]
+        }
+
+        // Handle URLs
+        var parts = path.split("/");
+        var endPart = parts[parts.length -1];
+        if (endPart.indexOf("=") < 0) { return endPart; }
+
+        // Handle GenePattern URLs
+        parts = endPart.split("=");
+        return parts[parts.length - 1];
+    },
+
+    getFileBox: function(path) {
+        for (var i in editor.workspace) {
+            if (editor.workspace[i] instanceof Module && editor.workspace[i].isFile() && editor.workspace[i].lsid === path) {
+                return editor.workspace[i];
+            }
+        }
+
+        return null;
+    },
+
+    addFile: function(name, path) {
+        // Mark the workspace as dirty
+        editor.makeDirty();
+
+        var file = new File(name, path);
+        file.id = editor._nextId();
+        this.workspace[file.id] = file;
+        file.add(null, null);
+        return file;
+    },
 	
 	foundInList: function(list, obj) {
 	    var i;
@@ -164,7 +182,13 @@ var editor = {
 
     showDialog: function(title, message, button) {
         var alert = document.createElement("div");
-        alert.innerHTML = message;
+
+        if (typeof(message)=='string') {
+            alert.innerHTML = message;;
+        }
+        else {
+            alert.appendChild(message);
+        }
 
         if (button === undefined || button === null) {
             button = { "OK": function(event) {
@@ -185,6 +209,13 @@ var editor = {
                 $(this).remove();
             }
         });
+
+        // Fix z-index for dialog
+        var z = parseInt($(alert).parent().css("z-index"));
+        if (z < 10000) {
+            z += 9000;
+            $(".top-dialog").css("z-index", z);
+        }
     },
     
     showOverlay: function() {
@@ -223,10 +254,8 @@ var editor = {
         if (lsid !== null) {
             editor.load(lsid);
         }
-        else {
-            properties.displayPipeline();
-            properties.show();
-        }
+        properties.displayPipeline();
+        properties.show();
     },
 
     _loadGetLsid: function() {
@@ -279,44 +308,39 @@ var editor = {
         return newPipe;
     },
 
-    addDefaultPipe: function(output, input) {
+    initPipe: function(pipe) {
+        var input = pipe.inputPort;
+        var output = pipe.outputPort;
+
         // If the pipe was drawn to the same module or a module upstream, cancel the pipe
         if (output.module === input.module) {
-            output.module.getMasterOutput().detachAll();
+            output.detachAll();
             return;
         }
         if (output.module.isUpstream(input.module)) {
-            output.module.getMasterOutput().detachAll();
+            output.detachAll();
             return;
         }
 
-		var newIn = input.module.suggestInput(output);
-
-		// If there are no valid inputs left return null and cancel the pipe
-		if (newIn === null) {
-			output.module.getMasterOutput().detachAll();
-			return;
-		}
-
         // If the new input is already prompt when run, make it not PWR
-        newIn.param.makeNotPWR();
+        input.param.makeNotPWR();
 
-		// Select the correct output port
-		var newOut = null;
-		if (output.master) {
-			newOut = output.module.suggestOutput(newIn);
-		}
-		else {
-			newOut = output;
-		}
+        // If the output is from a file, set the value
+        if (output.module.isFile()) {
+            input.param.value = output.module.getFilename();
+        }
 
-        this.addPipe(newIn, newOut);
+        input.param.makeUsed(input);
 
-        input.module.getMasterInput().detachAll();
-        input.module.checkForWarnings();
+        input.connectPipe(pipe);
+        output.connectPipe(pipe);
+
+        editor.workspace["pipes"].push(pipe);
 
         // Mark the workspace as dirty
         editor.makeDirty();
+
+        return
 	},
 
 	_nextId: function() {
@@ -418,7 +442,6 @@ var editor = {
         spawn.id = id;
         this.workspace[spawn.id] = spawn;
         spawn.add(top, left);
-        spawn.checkForWarnings();
         return spawn;
     },
 
@@ -484,29 +507,51 @@ var editor = {
     },
 
     _tLayoutManager: function(module) {
+        var WIDTH = 195;
+        var MARGIN = 40;
+        var EXTRA_TOP_MARGIN = 70;
+
         // Determine if this is the first module in the layout
         var firstModule = editor.modulesInWorkspace() <= 1;
 
-        // If this is the first module, please it at the top and return
+        // Create the JSON object to return
+        var toReturn = { "top": MARGIN + EXTRA_TOP_MARGIN, "left": MARGIN };
+
+        // If this is the first module, please it at the top
         if (firstModule) {
-            this.workspace.suggestRow = 0;
-            this.workspace.suggestCol = 0;
-            return { "top": 0, "left": 20 };
+            this.workspace.suggestRow = MARGIN + EXTRA_TOP_MARGIN;
+            this.workspace.suggestCol = MARGIN;
+
+            // Update for new estimated height
+            this.workspace.suggestRow += module.calculateHeight() + MARGIN;
+
+            return toReturn;
         }
 
         // Determine if this module goes below or beside the last one
-        var below = true;
-        if (module.isVisualizer()) below = false;
+        var below = false;
+        if (module.isVisualizer()) below = true;
 
-        // Update the appropriate position and then return
+        // Update the appropriate position
         if (below) {
-            this.workspace.suggestRow++;
-            this.workspace.suggestCol = 0;
+            toReturn.top = this.workspace.suggestRow;
+            toReturn.left = this.workspace.suggestCol;
+
+            // Update for new estimated height
+            this.workspace.suggestRow += module.calculateHeight() + MARGIN;
         }
         else {
-            this.workspace.suggestCol++;
+            this.workspace.suggestRow = MARGIN + EXTRA_TOP_MARGIN;
+            this.workspace.suggestCol += WIDTH + MARGIN;
+
+            toReturn.top = this.workspace.suggestRow;
+            toReturn.left = this.workspace.suggestCol;
+
+            // Update for new estimated height
+            this.workspace.suggestRow += module.calculateHeight() + MARGIN;
         }
-        return { "top": this.workspace.suggestRow * 120, "left": 20 + this.workspace.suggestCol * 230 };
+
+        return toReturn;
     },
 
 	suggestLocation: function(module) {
@@ -563,7 +608,12 @@ var editor = {
         var transport = {};
         var pipes = editor.workspace["pipes"];
         for (var i = 0; i < pipes.length; i++) {
-            transport[i] = pipes[i].prepTransport();
+            var pipe = pipes[i];
+
+            // Transport only real connections between modules
+            if (!pipe.outputModule.isFile()) {
+                transport[i] = pipes[i].prepTransport();
+            }
         }
         return transport;
     },
@@ -572,7 +622,10 @@ var editor = {
         var transport = {};
         for (var i in editor.workspace) {
             if (editor.workspace[i] instanceof Module) {
-                transport[i] = editor.workspace[i].prepTransport();
+                // Transport only true modules
+                if (!editor.workspace[i].isFile()) {
+                    transport[i] = editor.workspace[i].prepTransport();
+                }
             }
         }
         return transport;
@@ -926,6 +979,7 @@ var library = {
         this._readModuleCategories();
 
         this._addModuleComboBox();
+        this._addFileButton();
         this._addCategoryModules();
 
         $("#closeAllCategories").click(function(event) {
@@ -942,6 +996,98 @@ var library = {
             $(".categoryClosed").hide();
             if (event.preventDefault) event.preventDefault();
             if (event.stopPropagation) event.stopPropagation();
+        });
+    },
+
+    _addFileButton: function() {
+        $("#attachFile").button();
+        $("#attachFile").click(function() {
+            var label = document.createElement("div");
+            label.innerHTML = "<strong>Please select a file below to upload.</strong><br />";
+            var uploadForm = document.createElement("form");
+            uploadForm.setAttribute("id", "upload_form");
+            uploadForm.setAttribute("action", "/gp/PipelineDesigner/upload");
+            uploadForm.setAttribute("method", "POST");
+            uploadForm.setAttribute("enctype", "multipart/form-data");
+            label.appendChild(uploadForm);
+
+            var fileUpload = document.createElement("input");
+            fileUpload.setAttribute("type", "file");
+            fileUpload.setAttribute("name", "uploadInput");
+            fileUpload.setAttribute("id", "uploadInput");
+            fileUpload.setAttribute("class", "propertyValue");
+            uploadForm.appendChild(fileUpload);
+
+            var path = document.createElement("input");
+            path.setAttribute("type", "hidden");
+            path.setAttribute("id", "hiddenFilePath");
+            uploadForm.appendChild(path);
+
+            // Attach the uploading and done images
+            var uploadingImg = document.createElement("img");
+            uploadingImg.setAttribute("class", "uploadingImage");
+            uploadingImg.setAttribute("src", "images/uploading.gif");
+            uploadingImg.setAttribute("id", "fileUploading");
+            uploadingImg.setAttribute("style", "display: none;");
+            uploadForm.appendChild(uploadingImg);
+            var doneImg = document.createElement("img");
+            doneImg.setAttribute("src", "images/complete.gif");
+            doneImg.setAttribute("id", "fileDone");
+            doneImg.setAttribute("style", "display: none;");
+            uploadForm.appendChild(doneImg);
+
+            var buttons = {
+                "OK": function() {
+                    // Add the file to the UI
+                    editor.addFile($("#uploadInput").val(), $("#hiddenFilePath").val());
+
+                    // Tear down the dialog
+                    $(this).dialog("close");
+                    if (event.preventDefault) event.preventDefault();
+                    if (event.stopPropagation) event.stopPropagation();
+                },
+                "Cancel": function() {
+                    $(this).dialog("close");
+                    if (event.preventDefault) event.preventDefault();
+                    if (event.stopPropagation) event.stopPropagation();
+                }
+            };
+
+            editor.showDialog("Attach File", label, buttons);
+            $(".ui-dialog-buttonpane button:contains('OK')").button("disable");
+            $(".ui-dialog-titlebar-close").hide();
+
+            // When the upload form is submitted, send to the servlet
+            $("#upload_form").iframePostForm({
+                json : false,
+                post : function() {
+                    $("#fileUploading").show();
+                    $("#fileDone").hide();
+                },
+                complete : function (response) {
+                    // Work around a bug in the JSON handling of iframe-post-form
+                    response = $.parseJSON($(response)[0].innerHTML);
+
+                    $("#fileUploading").hide();
+                    $("#fileDone").show();
+
+                    if (response["ERROR"] !== undefined) {
+                        editor.showDialog("Error Uploading File", response["ERROR"]);
+                    }
+                    else {
+                        if (!editor.foundInList(editor.workspace["files"], response.location)) {
+                            editor.workspace["files"].push(response.location);
+                        }
+                        $("#hiddenFilePath").val(response.location);
+                        $(".ui-dialog-buttonpane button:contains('OK')").button("enable");
+                    }
+                }
+            });
+
+            // When a file is selected for upload, begin the upload
+            $(fileUpload).change(function() {
+                $(uploadForm).submit();
+            });
         });
     },
 
@@ -1003,8 +1149,8 @@ var library = {
             catDiv.setAttribute("class", "categoryContainer");
             var headDiv = document.createElement("div");
             headDiv.setAttribute("class", "categoryHeader");
-            headDiv.innerHTML = "&#160;&#160;<img src='/gp/pipeline/images/category-open.gif' alt='Expanded' class='categoryOpen' />" +
-                "<img src='/gp/pipeline/images/category-closed.gif' style='display: none;' alt='Collapsed' class='categoryClosed' />&#160;&#160;" +
+            headDiv.innerHTML = "&#160;&#160;<img src='/gp/pipeline/images/category-open.gif' alt='Expanded' style='display: none;' class='categoryOpen' />" +
+                "<img src='/gp/pipeline/images/category-closed.gif' alt='Collapsed' class='categoryClosed' />&#160;&#160;" +
                 properties._encodeToHTML(cat);
             catDiv.appendChild(headDiv);
 
@@ -1390,6 +1536,13 @@ var library = {
         }
 
         $("#loadPipelineDialog").dialog("open");
+
+        // Fix z-index for dialog
+        var z = parseInt($("#loadPipelineDialog").parent().css("z-index"));
+        if (z < 10000) {
+            z += 9000;
+            $(".top-dialog").css("z-index", z);
+        }
     }
 };
 
@@ -1404,7 +1557,7 @@ var properties = {
     versionDiv: "propertiesVersion",
     inputDiv: "propertiesInput",
     current: null,
-    displayed: false,
+    hasFocus: false,
 
     init: function() {
         $("html").click(function(event) {
@@ -1414,13 +1567,30 @@ var properties = {
         	}
         	
             if (!editor.isInsideDialog(event.target)) {
+                this.hasFocus = false;
                 properties.hide();
             }
         });
 
         $("#" + properties.div).click(function(event) {
+            this.hasFocus = true;
             event.stopPropagation();
         });
+
+        $("#" + properties.div).click(function(event) {
+            this.hasFocus = true;
+            event.stopPropagation();
+        });
+    },
+
+    redrawDisplay: function() {
+        if (this.current instanceof Module) {
+            this.displayModule(this.current);
+            this.current.checkForWarnings();
+        }
+        else if (this.current instanceof String && this.current == "Pipeline") {
+            this.displayPipeline();
+        }
     },
     
     confirmWhenUploading: function() {
@@ -1519,14 +1689,8 @@ var properties = {
             }
             else {
                 var value = inputs[i].value;
-                if (inputs[i].getAttribute("type") == "file") {
-                	var uploading = $("form[name='" + inputs[i].getAttribute("name") + "_form']").find(".uploadingImage").is(":visible")
-                	if (uploading) {
-                		value = "";
-                	}
-                	else {
-                		value = value.replace("C:\\fakepath\\", "");
-                	}
+                if (inputs[i].getAttribute("type") == "hidden" && value === properties.PROMPT_WHEN_RUN) {
+                	value = "";
                 }
                 bundle[name] = value;
             }
@@ -1535,19 +1699,15 @@ var properties = {
     },
 
     hide: function() {
-    	editor.hideOverlay();
-        properties._deselectOldSelection();
-        if (this.displayed) {
-            properties.saveToModel();
-            $("#properties").hide("slide", { direction: "right" }, 500);
-        }
-        this.displayed = false;
+        this.hasFocus = false;
     },
 
     show: function() {
-    	editor.showOverlay();
-        $("#properties").show("slide", { direction: "right" }, 500);
-        this.displayed = true;
+        this.hasFocus = true;
+
+        if (this.current instanceof Module) {
+            this.current.checkForWarnings();
+        }
     },
 
     _encodeToHTML: function(text) {
@@ -1589,7 +1749,6 @@ var properties = {
             version = editor.workspace["pipelineVersion"];
             id = "pipeline";
         }
-
 
         var moduleArray = library.moduleVersionMap[baseLsid];
 
@@ -1656,12 +1815,10 @@ var properties = {
     _displayInputKey: function() {
         var key = document.createElement("div");
         key.setAttribute("id", "propertiesKey");
-        var hr1 = document.createElement("hr");
-        $("#" + this.inputDiv).append(hr1);
+        this._addSpacerDiv();
         key.innerHTML += "<em>Check for Prompt When Run&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;* Required</em>";
         $("#" + this.inputDiv).append(key);
-        var hr2 = document.createElement("hr");
-        $("#" + this.inputDiv).append(hr2);
+        this._addSpacerDiv();
     },
 
     _addPromptWhenRun: function(parentDiv, name, value, disabled) {
@@ -1693,126 +1850,80 @@ var properties = {
         }
     },
 
+    _addSpacerDiv: function() {
+        var div = document.createElement("div");
+        div.setAttribute("class", "spacerDiv");
+        $("#" + this.inputDiv).append(div);
+    },
+
     _addFileUpload: function(labelText, value, description, pwr, disabled) {
         var label = document.createElement("div");
-        var uploadForm = document.createElement("form");
-        uploadForm.setAttribute("name", labelText + "_form");
-        uploadForm.setAttribute("action", "/gp/PipelineDesigner/upload");
-        uploadForm.setAttribute("method", "POST");
-        uploadForm.setAttribute("enctype", "multipart/form-data");
-        label.appendChild(uploadForm);
 
         if (pwr) {
-            var checkBox = this._addPromptWhenRun(uploadForm, labelText, value, value !== properties.PROMPT_WHEN_RUN && disabled);
+            var checkBox = this._addPromptWhenRun(label, labelText, value, value !== properties.PROMPT_WHEN_RUN && disabled);
         }
 
         var textLabel = document.createElement("label");
         textLabel.setAttribute("class", "propertiesLabel");
         textLabel.innerHTML += this._encodeToHTML(labelText);
-        uploadForm.appendChild(textLabel);
+        label.appendChild(textLabel);
 
-        var fileUpload = document.createElement("input");
-        fileUpload.setAttribute("type", "file");
-        fileUpload.setAttribute("name", labelText);
-        fileUpload.setAttribute("class", "propertyValue");
-        uploadForm.appendChild(fileUpload);
+        var hiddenField = document.createElement("input");
+        hiddenField.setAttribute("type", "hidden");
+        hiddenField.setAttribute("class", "propertyValue");
+        hiddenField.setAttribute("name", labelText);
+        hiddenField.setAttribute("value", value);
+        label.appendChild(hiddenField);
 
-        // Attach the uploading and done images
-        var uploadingImg = document.createElement("img");
-        uploadingImg.setAttribute("class", "uploadingImage");
-        uploadingImg.setAttribute("src", "images/uploading.gif");
-        uploadingImg.setAttribute("name", labelText + "_uploading");
-        uploadingImg.setAttribute("style", "display: none;");
-        uploadForm.appendChild(uploadingImg);
-        var doneImg = document.createElement("img");
-        doneImg.setAttribute("src", "images/complete.gif");
-        doneImg.setAttribute("name", labelText + "_done");
-        doneImg.setAttribute("style", "display: none;");
-        uploadForm.appendChild(doneImg);
+        if (value === properties.PROMPT_WHEN_RUN) {
+            properties._showDisplaySettingsButton($(label), labelText);
+        }
+        else if (value !== undefined && value !== null && value !== "" && value !== properties.PROMPT_WHEN_RUN && pwr) {
+            // The upload is disabled due to a pipe being connected to this input, display edit button
+            properties._showDeletePipeButton($(label), labelText);
+        }
+        else if (!pwr && labelText === "Documentation") {
+            properties._createDocButton($(label))
+        }
 
         // If the value has been previously set, attach the value div
         var valueDiv = document.createElement("div");
         valueDiv.setAttribute("class", "fileUploadValue");
-        if (value !== null && value !== "" && value !== properties.PROMPT_WHEN_RUN) {
+        if (value !== undefined && value !== null && value !== "" && value !== properties.PROMPT_WHEN_RUN) {
             valueDiv.innerHTML = "<strong>Current Value:</strong> " + properties._encodeToHTML(value);
         }
         label.appendChild(valueDiv);
 
         $("#" + this.inputDiv).append(label);
 
-        // TODO: Add the space for custom prompt when run parameter displays
-        //if (this.current instanceof Module) {
-        //    properties._addCustomPWRBox("#" + this.inputDiv, labelText);
-        //}
-
-        if (description !== null && description !== false) {
+        if (description !== null && description !== false && typeof(description) === "string") {
             var desc = document.createElement("div");
             desc.setAttribute("class", "inputDescription");
             desc.innerHTML = this._encodeToHTML(description);
             $("#" + this.inputDiv).append(desc);
         }
-
-        var hr = document.createElement("hr");
-        $("#" + this.inputDiv).append(hr);
-
-        // If the form element is disabled, set to that initially
-        if (disabled !== undefined && disabled) {
-            $(".propertyValue[type='file'][name='" + labelText + "']").hide();
-            if (value === properties.PROMPT_WHEN_RUN) {
-                properties._showDisplaySettingsButton($(".propertyValue[type='file'][name='" + labelText + "']").parent(), labelText);
-            }
-            else {
-                // The upload is disabled due to a pipe being connected to this input, display edit button
-                properties._showEditPipeButton($(".propertyValue[type='file'][name='" + labelText + "']").parent(), labelText);
-            }
+        else if (description !== null && description !== false) {
+            $("#" + this.inputDiv).append(description);
         }
 
-        // When the upload form is submitted, send to the servlet
-        $("[name|='" + labelText + "_form']").iframePostForm({
-            json : false,
-            post : function() {
-                $("[name|='" + labelText + "_uploading']").show();
-                $("[name|='" + labelText + "_done']").hide();
-            },
-            complete : function (response) {
-                // Work around a bug in the JSON handling of iframe-post-form
-                response = $.parseJSON($(response)[0].innerHTML);
-
-                $("[name|='" + labelText + "_uploading']").hide();
-                $("[name|='" + labelText + "_done']").show();
-
-                if (response.error !== undefined) {
-                    editor.showDialog("Error Uploading File", response.error);
-                }
-                else {
-                	if (!editor.foundInList(editor.workspace["files"], response.location)) {
-                		editor.workspace["files"].push(response.location);
-                	}
-                    valueDiv.innerHTML = "<strong>Current Value:</strong> " + $("[type=file][name='" + labelText + "']").val();
-                }
-            }
-        });
-
-        // When a file is selected for upload, begin the upload
-        $("[name='" + labelText + "'][type=file]").change(function() {
-            $("[name='" + labelText + "_form']").submit();
-        });
+        this._addSpacerDiv();
 
         // When the prompt when run checkbox is checked, enable or disable upload
         if (checkBox !== undefined && checkBox !== null) {
-            $(".propertyCheckBox[type='checkbox'][name='" + labelText + "']").change(function() {
+            $(".propertyCheckBox[name='" + labelText + "']").change(function() {
                 if ($(this).is(":checked")) {
-                    $(".propertyValue[type='file'][name='" + labelText + "']").hide();
-                    properties._showDisplaySettingsButton($(".propertyValue[type='file'][name='" + labelText + "']").parent(), labelText);
+                    properties._showDisplaySettingsButton($(label), labelText);
                 }
                 else {
-                    $(".propertyValue[type='file'][name='" + labelText + "']").show();
                     properties._hideDisplaySettingsButton(labelText);
                 }
+
+                // Save when the select is changed
+                properties.saveToModel();
             });
         }
 
-        return fileUpload;
+        return label;
     },
 
     _addDropDown: function(labelText, values, selected, description, pwr) {
@@ -1851,8 +1962,7 @@ var properties = {
             $("#" + this.inputDiv).append(desc);
         }
 
-        var hr = document.createElement("hr");
-        $("#" + this.inputDiv).append(hr);
+        this._addSpacerDiv();
 
         // If the form element is disabled, set to that initially
         if (selected === properties.PROMPT_WHEN_RUN) {
@@ -1871,8 +1981,16 @@ var properties = {
                     $("select.propertyValue[name='" + labelText + "']").show();
                     properties._hideDisplaySettingsButton(labelText);
                 }
+
+                // Save when changed
+                properties.saveToModel();
             });
         }
+
+        // Save when the select is changed
+        $(select).change(function() {
+            properties.saveToModel();
+        });
 
         return select;
     },
@@ -1905,16 +2023,17 @@ var properties = {
             // TODO: properties._addCustomPWRBox(".customPWRDiv", name);
 
             $(this).dialog("close");
+            $(this).dialog("destroy");
             if (event.preventDefault) event.preventDefault();
             if (event.stopPropagation) event.stopPropagation();
         }};
         editor.showDialog("Set Prompt When Run Display Settings", inner, button);
     },
 
-    _showEditPipeButton: function(parent, name) {
+    _showDeletePipeButton: function(parent, name) {
         if ($("button.editPipeButton[name='" + name + "']").size() === 0) {
             var button = document.createElement("button");
-            button.innerHTML = "Edit Connection";
+            button.innerHTML = "Delete Connection";
             button.setAttribute("name", name);
             button.setAttribute("class", "editPipeButton");
             parent.append(button);
@@ -1926,9 +2045,9 @@ var properties = {
                 var port = input.port;
                 var pipe = port.pipes[0];
 
-                properties.saveToModel();
-                properties.displayPipe(pipe);
-                properties.show();
+                pipe.remove();
+                properties.redrawDisplay();
+                module.checkForWarnings();
 
                 // Prevent the button from submitting the form if it is inside one
                 if (event.preventDefault) event.preventDefault();
@@ -1997,8 +2116,7 @@ var properties = {
             $("#" + this.inputDiv).append(desc);
         }
 
-        var hr = document.createElement("hr");
-        $("#" + this.inputDiv).append(hr);
+        this._addSpacerDiv();
 
         // If the form element is disabled, set to that initially
         if (value === properties.PROMPT_WHEN_RUN) {
@@ -2017,8 +2135,16 @@ var properties = {
                     $(".propertyValue[type='text'][name='" + labelText + "']").show();
                     properties._hideDisplaySettingsButton(labelText);
                 }
+
+                // Save when the select is changed
+                properties.saveToModel();
             });
         }
+
+        // Save when the select is changed
+        $(inputBox).change(function() {
+            properties.saveToModel();
+        });
 
         return inputBox;
     },
@@ -2027,7 +2153,7 @@ var properties = {
         var required = input.required ? "*" : "";
         var displayValue = input.promptWhenRun ? properties.PROMPT_WHEN_RUN : input.value;
         var disabled = false;
-        if (input.port !== null) {
+        if (input.port !== null && input.port.pipes.length > 0) {
             displayValue = "Receiving output " + input.port.pipes[0].outputPort.pointer + " from " + input.port.pipes[0].outputModule.name;
             disabled = true;
         }
@@ -2070,6 +2196,13 @@ var properties = {
         }
     },
 
+    displayFile: function(file) {
+        // Build the new display
+        this._setTitle(file.outputs[0]);
+        this._addSpacerDiv();
+        $("#" + this.inputDiv).append("This is a file that has been included in the pipeline.");
+    },
+
     displayModule: function(module) {
         // Clean the old selection
         this._deselectOldSelection();
@@ -2079,9 +2212,21 @@ var properties = {
         this.current = module;
         module.select();
 
+        // Special handling for files
+        if (module.isFile()) {
+            this.displayFile(module);
+            return;
+        }
+
         // Build the new display
         this._setTitle(module.name);
         this._setSubtitle(module.lsid);
+
+        // Attach the module buttons to the editor
+        var iconDiv = module._createIconSpace(module.ui, module.id);
+        module._createButtons(iconDiv, module.id);
+        $("#" + this.subtitleDiv)[0].appendChild(iconDiv);
+
         this._setVersionDropdown(module);
         this._displayInputKey();
         var inputs = module.inputs;
@@ -2100,58 +2245,42 @@ var properties = {
             }
 
         }
+
+        // Attach button events and tooltips
+        module.addModuleButtonCalls();
+        module.addInfoTooltips();
     },
 
-    displayPipe: function(pipe) {
-        // Clean the old selection
-        this._deselectOldSelection();
-        this._clean();
+    _createDocButton: function(parent) {
+        var docButton = document.createElement("button");
+        docButton.innerHTML = "Attach Documentation";
+        $(docButton).button();
 
-        // Set the new selection
-        this.current = pipe;
-        this._setTitle(pipe.outputModule.name + " to " + pipe.inputModule.name);
-        pipe.select();
+        $(docButton).click(function() {
+            // Trigger the attach file dialog
+            $("#attachFile").trigger("click");
+            // Remove the normal click event
+            $(".ui-dialog-buttonpane button:contains('OK')").off("click");
+            // Add the new doc click event
+            $(".ui-dialog-buttonpane button:contains('OK')").click(function() {
+                // Add the file to the UI
+                var path = $("#hiddenFilePath").val();
+                var parts = path.split("/");
+                var filename = parts[parts.length - 1];
+                $(".fileUploadValue")[0].innerHTML = "<strong>Current Value:</strong> " + filename;
 
-        // Build the new display
-        var outSelected = pipe.outputPort.pointer;
-        var inSelected = pipe.inputPort.pointer;
+                // Add to the hidden field
+                $("input[type='hidden'][name='Documentation']").val(filename);
 
-        var outputOptions = ["1=1st Output", "2=2nd Output", "3=3rd Output", "4=4th Output", "stdout=Standard Output", "stderr=Standard Error"];
-        outputOptions = outputOptions.concat(pipe.outputModule.outputs);
-        if (editor.USE_BETA_OPTIONS) {
-            outputOptions = outputOptions.concat(["?scatter&amp;filter&#061;*=Scatter Each Output", "?filelist&amp;filter&#061;*=File List of All Outputs"])
-        }
+                // Tear down the dialog
+                $(".ui-dialog-buttonpane button:contains('Cancel')").trigger("click");
 
-        this._addDropDown("Output", outputOptions, outSelected, properties.listToString(pipe.outputModule.outputs), false);
-
-        var inputsToList = new Array();
-        var selectedInput = pipe.inputModule.fileInputs[0];
-        var disabledInputs = new Array();
-        for (var i = 0; i < pipe.inputModule.fileInputs.length; i++) {
-            inputsToList[inputsToList.length] = pipe.inputModule.fileInputs[i].name;
-            if (inSelected == pipe.inputModule.fileInputs[i].name) {
-                selectedInput = pipe.inputModule.fileInputs[i];
-            }
-            if (pipe.inputModule.fileInputs[i].used && pipe.inputModule.fileInputs[i].name !== inSelected) {
-                disabledInputs[disabledInputs.length] = pipe.inputModule.fileInputs[i].name;
-            }
-        }
-        var input = this._addDropDown("Input", inputsToList, inSelected, selectedInput.description, false);
-
-        // Disable already selected inputs in the dropdown
-        properties._disableDropdownValues(input, disabledInputs);
-
-        // Display the correct description upon dropdown selection
-        $(input).change(function() {
-            var selectedInput = $(input).val();
-            for (var i = 0; i < pipe.inputModule.fileInputs.length; i++) {
-                if (selectedInput == pipe.inputModule.fileInputs[i].name) {
-                    selectedInput = pipe.inputModule.fileInputs[i];
-                    break;
-                }
-            }
-            $(".inputDescription").get(1).innerHTML = selectedInput.description;
+                // Save the properties
+                properties.saveToModel();
+            });
         });
+
+        parent.append(docButton);
     },
 
     displayPipeline: function() {
@@ -2227,30 +2356,52 @@ function Module(moduleJSON) {
     this.alerts = {};
     this.blackBox = false;
 
-    this.freePosition = function(isOutput) {
-        var correctList = null;
+    this.calculateHeight = function() {
+        var LINE_HEIGHT = 23;
+        var height = 0;
+
+        // Add from inputs
+        height += LINE_HEIGHT * this.fileInputs.length;
+
+        // Add from spacing
+        height += 20;
+
+        // Add from numbered outputs
+        height += LINE_HEIGHT * 4;
+
+        // Add from typed outputs
+        height += LINE_HEIGHT * this.outputs.length;
+
+        // Add from scatter gather
+        height += LINE_HEIGHT * 2;
+
+        return height;
+    };
+
+    this._getInputIndex = function(pointer) {
+        for (var i = 0; i < this.fileInputs.length; i++) {
+            var input = this.fileInputs[i];
+            if (input.name === pointer) {
+                return i;
+            }
+        };
+
+        editor.log("ERROR: Finding input param in Module._getInputIndex()");
+        return null;
+    };
+
+    this.calculatePosition = function(isOutput, pointer) {
+        var LINE_HEIGHT = 22;
+        var height = this.calculateHeight();
         if (isOutput) {
-            correctList = this.outputEnds;
+            var position = LINE_HEIGHT + 13 + (this.fileInputs.length * LINE_HEIGHT) + 6;
+                position += this.outputEnds.length * LINE_HEIGHT;
+            return position / height;
         }
         else {
-            correctList = this.inputEnds;
-        }
-        var position = 0.15;
-        while (true) {
-            var notGood = false;
-            for (var i in correctList) {
-                var testPos = correctList[i].position;
-                if (testPos === position) {
-                    notGood = true;
-                }
-            }
-
-            if (!notGood) {
-                return position;
-            }
-            else {
-                position += 0.1;
-            }
+            var position = LINE_HEIGHT + 13;
+            position += this._getInputIndex(pointer) * LINE_HEIGHT;
+            return position / height;
         }
     };
 
@@ -2294,6 +2445,10 @@ function Module(moduleJSON) {
     };
 
     this.isHighestVersion = function() {
+        if (this.isFile()) {
+            return true;
+        }
+
         var highest = library.getHighestVersion(this.lsid);
         if (highest === null) {
             editor.log("WARNING: No module found in library for: " + this.name);
@@ -2321,22 +2476,19 @@ function Module(moduleJSON) {
         return this.type == "module pipeline";
     };
 
+    this.isFile = function() {
+        return this.type == "module file";
+    };
+
     this._loadInputs = function(inputs) {
         if (this.inputs.length != inputs.length) {
             editor.log("ERROR: Inputs lengths do not match when loading: " + this.name);
             return;
         }
 
-        var showFileIcon = false;
         for (var i = 0; i < this.inputs.length; i++) {
             this.inputs[i].loadProps(inputs[i]);
-
-            // Set the file icon if necessary
-            if (inputs[i].value !== "" && this.inputs[i].isFile()) {
-                showFileIcon = true;
-            }
         }
-        this.toggleFileIcon(showFileIcon);
     };
 
     this.loadProps = function(props) {
@@ -2569,70 +2721,63 @@ function Module(moduleJSON) {
     };
 
 	this._createButtons = function (appendTo, baseId) {
+        var docButton = document.createElement("button");
+        docButton.setAttribute("id", "doc_" + this.id);
+        docButton.setAttribute("class", "saveLoadButton");
         var docIcon = document.createElement("img");
-        docIcon.setAttribute("id", "doc_" + this.id);
         docIcon.setAttribute("src", "images/file.gif");
-        docIcon.setAttribute("class", "fileButton");
+        docIcon.setAttribute("class", "fileButton topRowButton");
         docIcon.setAttribute("alt", "Documentation");
         docIcon.setAttribute("title", "Documentation");
-        appendTo.appendChild(docIcon);
+        docButton.appendChild(docIcon);
+        docButton.innerHTML += "Doc";
+        appendTo.appendChild(docButton);
+        $(docButton).button();
 
-        var fileIcon = document.createElement("img");
-        fileIcon.setAttribute("id", "file_" + this.id);
-        fileIcon.setAttribute("src", "images/package.gif");
-        fileIcon.setAttribute("class", "fileButton");
-        fileIcon.setAttribute("alt", "Embedded File");
-        fileIcon.setAttribute("title", "File Embeded in Module");
-        fileIcon.style.display = "none";
-        appendTo.appendChild(fileIcon);
-
+        var openButtonBig = document.createElement("button");
+        openButtonBig.setAttribute("id", "open_" + this.id);
+        openButtonBig.setAttribute("class", "saveLoadButton");
         var openButton = document.createElement("img");
-        openButton.setAttribute("id", "open_" + baseId);
         openButton.setAttribute("src", "images/open.gif");
-        openButton.setAttribute("class", "openButton");
+        openButton.setAttribute("class", "openButton topRowButton");
         openButton.setAttribute("alt", "Open Module");
         openButton.setAttribute("title", "Open Pipeline in Designer");
-        if (!this.isPipeline()) { openButton.style.display = "none"; }
-        appendTo.appendChild(openButton);
+        openButtonBig.appendChild(openButton);
+        openButtonBig.innerHTML += "Open";
+        appendTo.appendChild(openButtonBig);
+        $(openButtonBig).button();
+        if (!this.isPipeline()) { openButtonBig.style.display = "none"; }
 
-        var propertiesButton = document.createElement("img");
-        propertiesButton.setAttribute("id", "prop_" + baseId);
-        propertiesButton.setAttribute("src", "images/pencil.gif");
-        propertiesButton.setAttribute("class", "propertiesButton");
-        propertiesButton.setAttribute("alt", "Edit Properties");
-        propertiesButton.setAttribute("title", "Edit Module Properties");
-        appendTo.appendChild(propertiesButton);
-
+        var alertButton = document.createElement("button");
+        alertButton.setAttribute("id", "alert_" + this.id);
+        alertButton.setAttribute("class", "saveLoadButton");
         var alertIcon = document.createElement("img");
-        alertIcon.setAttribute("id", "alert_" + this.id);
         alertIcon.setAttribute("src", "images/alert.gif");
-        alertIcon.setAttribute("class", "alertButton");
+        alertIcon.setAttribute("class", "alertButton topRowButton");
         alertIcon.setAttribute("alt", "Module Alert");
-        alertIcon.style.display = "none";
         alertIcon.setAttribute("title", "Module Alert");
-        appendTo.appendChild(alertIcon);
+        alertButton.appendChild(alertIcon);
+        alertButton.innerHTML += "Alert";
+        appendTo.appendChild(alertButton);
+        $(alertButton).button();
+        alertButton.style.display = "none";
 
+        var errorButton = document.createElement("button");
+        errorButton.setAttribute("id", "error_" + this.id);
+        errorButton.setAttribute("class", "saveLoadButton");
         var errorIcon = document.createElement("img");
-        errorIcon.setAttribute("id", "error_" + this.id);
         errorIcon.setAttribute("src", "images/error.gif");
-        errorIcon.setAttribute("class", "errorButton");
+        errorIcon.setAttribute("class", "errorButton topRowButton");
         errorIcon.setAttribute("alt", "Module Error");
-        errorIcon.style.display = "none";
         errorIcon.setAttribute("title", "Module Error");
-        appendTo.appendChild(errorIcon);
-
-        appendTo.innerHTML += "&#160;&#160;&#160;";
-
-        var deleteButton = document.createElement("img");
-        deleteButton.setAttribute("id", "del_" + baseId);
-        deleteButton.setAttribute("src", "images/delete.gif");
-        deleteButton.setAttribute("class", "deleteButton");
-        deleteButton.setAttribute("alt", "Delete Module");
-        deleteButton.setAttribute("title", "Remove Module");
-        appendTo.appendChild(deleteButton);
+        errorButton.appendChild(errorIcon);
+        errorButton.innerHTML += "Error";
+        appendTo.appendChild(errorButton);
+        $(errorButton).button();
+        errorButton.style.display = "none";
     };
 
-	this._addModuleButtonCalls = function() {
+	this.addModuleButtonCalls = function() {
         $("#" + "doc_" + this.id).click(function() {
             var module = editor.getParentModule(this);
             window.open("/gp/getTaskDoc.jsp?name=" + module.lsid, "_blank");
@@ -2645,26 +2790,6 @@ function Module(moduleJSON) {
             }
             else {
                 self.location="/gp/addTask.jsp?name=" + module.lsid;
-            }
-        });
-
-        $("#" + "prop_" + this.id).click(function (event) {
-            properties.displayModule(editor.getParentModule(this.id));
-            properties.show();
-            event.stopPropagation();
-        });
-
-        $("#" + "del_" + this.id).click(function() {
-            var confirmed = confirm("Are you sure you want to delete this module?");
-            if (confirmed) {
-                var module = editor.getParentModule(this.id);
-                module.remove();
-
-                // Mark the workspace as dirty
-                editor.makeDirty();
-                
-                // Remove the tooltip for this delete element, fixes bug in tooltip
-                $(".infoTooltip").remove();
             }
         });
 
@@ -2701,23 +2826,6 @@ function Module(moduleJSON) {
         iconDiv.setAttribute("class", "iconSpace");
         parentDiv.appendChild(iconDiv);
         return iconDiv;
-    };
-
-    this.toggleFileIcon = function(show) {
-        if (show === undefined) {
-            if ($("#file_" + this.id).is(":visible")) {
-                $("#file_" + this.id).hide();
-            }
-            else {
-                $("#file_" + this.id).show();
-            }
-        }
-        else if (show) {
-            $("#file_" + this.id).show();
-        }
-        else {
-            $("#file_" + this.id).hide();
-        }
     };
 
     this.hasError = function() {
@@ -2774,6 +2882,64 @@ function Module(moduleJSON) {
         });
     };
 
+    this._createInputList = function() {
+        var inputList = document.createElement("div");
+
+        for (var i = 0; i < this.fileInputs.length; i++) {
+            var file = this.fileInputs[i];
+            var fileDiv = document.createElement("div");
+            fileDiv.setAttribute("class", "moduleFileItem");
+            fileDiv.innerHTML = library.concatNameForDisplay(file.name, 30);
+            inputList.appendChild(fileDiv);
+        }
+
+        return inputList;
+    };
+
+    this._createOutputList = function() {
+        var outputList = document.createElement("div");
+
+        var outputDiv = document.createElement("div");
+        outputDiv.setAttribute("class", "moduleFileItem outputFileItem");
+        outputDiv.innerHTML = "1st Output";
+        outputList.appendChild(outputDiv);
+
+        outputDiv = document.createElement("div");
+        outputDiv.setAttribute("class", "moduleFileItem outputFileItem");
+        outputDiv.innerHTML = "2nd Output";
+        outputList.appendChild(outputDiv);
+
+        outputDiv = document.createElement("div");
+        outputDiv.setAttribute("class", "moduleFileItem outputFileItem");
+        outputDiv.innerHTML = "3rd Output";
+        outputList.appendChild(outputDiv);
+
+        outputDiv = document.createElement("div");
+        outputDiv.setAttribute("class", "moduleFileItem outputFileItem");
+        outputDiv.innerHTML = "4th Output";
+        outputList.appendChild(outputDiv);
+
+        for (var i = 0; i < this.outputs.length; i++) {
+            var output = this.outputs[i];
+            var outputDiv = document.createElement("div");
+            outputDiv.setAttribute("class", "moduleFileItem outputFileItem");
+            outputDiv.innerHTML = library.concatNameForDisplay(output, 30);
+            outputList.appendChild(outputDiv);
+        }
+
+        outputDiv = document.createElement("div");
+        outputDiv.setAttribute("class", "moduleFileItem outputFileItem");
+        outputDiv.innerHTML = "Scatter Each Output";
+        outputList.appendChild(outputDiv);
+
+        outputDiv = document.createElement("div");
+        outputDiv.setAttribute("class", "moduleFileItem outputFileItem");
+        outputDiv.innerHTML = "File List of All Outputs";
+        outputList.appendChild(outputDiv);
+
+        return outputList;
+    };
+
 	this._createDiv = function() {
         this.ui = document.createElement("div");
         this.ui.setAttribute("class", this.type);
@@ -2781,9 +2947,66 @@ function Module(moduleJSON) {
             this.ui.setAttribute("id", this.id);
         }
         this.ui.setAttribute("name", this.name);
-        this.ui.innerHTML = "<br /><br />" + library.concatNameForDisplay(this.name, 24) + "<br />";
-        var iconDiv = this._createIconSpace(this.ui, this.id);
-        this._createButtons(iconDiv, this.id);
+
+        var titleDiv = document.createElement("div");
+        titleDiv.setAttribute("class", "moduleTitle");
+        titleDiv.innerHTML = library.concatNameForDisplay(this.name, 22);
+        this.ui.appendChild(titleDiv);
+
+        // Create the delete button
+        var deleteButton = document.createElement("img");
+        deleteButton.setAttribute("id", "del_" + this.id);
+        deleteButton.setAttribute("src", "images/delete.gif");
+        deleteButton.setAttribute("class", "deleteButton");
+        deleteButton.setAttribute("alt", "Delete Module");
+        deleteButton.setAttribute("title", "Remove Module");
+        titleDiv.appendChild(deleteButton);
+
+        // Create and append the list of inputs
+        var inputList = this._createInputList();
+        this.ui.appendChild(inputList);
+
+        // Create and append the spacer between inputs and outputs
+        var spacerDiv = document.createElement("div");
+        spacerDiv.setAttribute("class", "spacerDiv");
+        this.ui.appendChild(spacerDiv);
+
+        // Create and append the list of outputs
+        var outputList = this._createOutputList();
+        this.ui.appendChild(outputList);
+
+        // Clicking the div triggers displaying properties
+        $(this.ui).click(function (event) {
+            properties.displayModule(editor.getParentModule(this.id));
+            properties.show();
+            //event.stopPropagation();
+        });
+
+        // Add the tooltip
+        $(deleteButton).tooltip({tipClass: "infoTooltip"});
+
+        // Functionality for the delete button
+        $(deleteButton).click(function() {
+            var confirmed = confirm("Are you sure you want to delete this module?");
+            if (confirmed) {
+                var module = editor.getParentModule(this.id);
+                module.remove();
+
+                // Mark the workspace as dirty
+                editor.makeDirty();
+
+                // Remove the tooltip for this delete element, fixes bug in tooltip
+                $(".infoTooltip").remove();
+
+                // Remove selection in properties
+                properties.displayPipeline();
+                properties.show();
+            }
+        });
+
+        // Display the editor for this module when added
+        properties.displayModule(this);
+        properties.show();
     };
 
 	this.addOutput = function (pointer) {
@@ -2793,31 +3016,19 @@ function Module(moduleJSON) {
         return output;
     };
 
-	this._addMasterOutput = function() {
-        if (this.type == "module visualizer") {
-            return null;
-        }
-        return this.addOutput("master");
-    };
-
-	this.addInput = function (pointer) {
+	this.addInput = function(pointer) {
         var param = null;
         if (typeof pointer === "string") {
-            if (pointer === "master") {
-                param = pointer;
+            var found = false;
+            for (var i = 0; i < this.fileInputs.length; i++) {
+                if (this.fileInputs[i].name == pointer) {
+                    param = this.fileInputs[i];
+                    found = true;
+                    break;
+                }
             }
-            else {
-                var found = false;
-                for (var i = 0; i < this.fileInputs.length; i++) {
-                    if (this.fileInputs[i].name == pointer) {
-                        param = this.fileInputs[i];
-                        found = true;
-                        break;
-                    }
-                }
-                if (!found) {
-                    editor.log("ERROR: Unable to find pointer in Module.inputEnds: " + pointer);
-                }
+            if (!found) {
+                editor.log("ERROR: Unable to find pointer in Module.inputEnds: " + pointer);
             }
         }
         else if (pointer instanceof InputParam) {
@@ -2834,40 +3045,41 @@ function Module(moduleJSON) {
         return input;
     };
 
+    this._addOutputPorts = function() {
+        this.addOutput(1);
+        this.addOutput(2);
+        this.addOutput(3);
+        this.addOutput(4);
+
+        for (var i = 0; i < this.outputs.length; i++) {
+            var output = this.outputs[i];
+            this.addOutput(output);
+        }
+
+        this.addOutput("?scatter&amp;filter&#061;*");
+        this.addOutput("?filelist&amp;filter&#061;*");
+    };
+
+    this._addInputPorts = function() {
+        for (var i = 0; i < this.fileInputs.length; i++) {
+            var input = this.fileInputs[i];
+            input.port = this.addInput(input);
+        }
+    };
+
     this.hasFileInputs = function() {
         return this.fileInputs.length > 0;
     };
 
-	this._addMasterInput = function() {
-        if (this.hasFileInputs()) {
-            return this.addInput("master");
-        }
-        else {
-            return null;
-        }
-    };
-
 	this._removePipes = function() {
         while (this.inputEnds.length > 0) {
-            if (this.inputEnds[0].master) {
-                this.inputEnds[0].remove();
-                continue;
-            }
-
-            if (this.inputEnds[0].isConnected()) {
-                this.inputEnds[0].removePipes();
-            }
+            this.inputEnds[0].removePipes();
+            this.inputEnds[0].remove();
         }
 
         while (this.outputEnds.length > 0) {
-            if (this.outputEnds[0].master) {
-                this.outputEnds[0].remove();
-                continue;
-            }
-
-            if (this.outputEnds[0].isConnected()) {
-                this.outputEnds[0].removePipes();
-            }
+            this.outputEnds[0].removePipes();
+            this.outputEnds[0].remove();
         }
     };
 
@@ -2896,23 +3108,18 @@ function Module(moduleJSON) {
         }
 
         $("#" + editor.div)[0].appendChild(this.ui);
-        this._addMasterOutput();
-        this._addMasterInput();
+        this._addInputPorts();
+        this._addOutputPorts();
         jsPlumb.draggable(this.ui);
-        this._addModuleButtonCalls();
         this._addDragEvents();
-        this._addInfoTooltips();
     };
 
-    this._addInfoTooltips = function() {
+    this.addInfoTooltips = function() {
         // Add tooltips to add appropriate module buttons
         $(".fileButton").tooltip({tipClass: "infoTooltip"});
         $(".openButton").tooltip({tipClass: "infoTooltip"});
         $(".alertButton").tooltip({tipClass: "infoTooltip"});
-        $(".propertiesButton").tooltip({tipClass: "infoTooltip"});
-        $(".alertButton").tooltip({tipClass: "infoTooltip"});
         $(".errorButton").tooltip({tipClass: "infoTooltip"});
-        $(".deleteButton").tooltip({tipClass: "infoTooltip"});
     };
 
 	this.spawn = function() {
@@ -2920,14 +3127,6 @@ function Module(moduleJSON) {
         clone.type = this.type;
         return clone;
     };
-
-	this.getMasterInput = function() {
-        return this.inputEnds[0];
-    };
-
-	this.getMasterOutput = function() {
-		return this.outputEnds[0];
-	};
 }
 
 /**
@@ -2948,6 +3147,74 @@ function Visualizer(moduleJSON) {
 	var module = new Module(moduleJSON);
 	module.type = "module visualizer";
 	return module;
+}
+
+/**
+ * Class representing an available file for use in the editor
+ * @param moduleJSON - A JSON representation of the module
+ */
+function File(name, path) {
+    this._fixFileName = function(filename) {
+        var parts = filename.split("\\");
+        return parts[parts.length - 1];
+    };
+
+    var file = new Module({
+        "inputs": [],
+        "outputs": [this._fixFileName(name)],
+        "name": "",
+        "lsid": path,
+        "version": "",
+        "category": "",
+        "id": "",
+        "write": true});
+    file.type = "module file";
+    file.name = "Input File";
+
+    file.getFilename = function() {
+        return this.outputs[0];
+    };
+
+    file.calculateHeight = function() {
+        return 55;
+    };
+
+    file._createOutputList = function() {
+        var outputList = document.createElement("div");
+
+        var outputDiv = document.createElement("div");
+        outputDiv.setAttribute("class", "moduleFileItem outputFileItem");
+        outputDiv.innerHTML = library.concatNameForDisplay(file.outputs[0], 30);
+        outputList.appendChild(outputDiv);
+
+        return outputList;
+    };
+
+    file.add = function (top, left) {
+        var useLayoutManager = false;
+        if (top === undefined || left === undefined || top === null || left === null) {
+            useLayoutManager = true;
+        }
+
+        this._createDiv();
+
+        if (useLayoutManager) {
+            var location = editor.suggestLocation(this);
+            this.ui.style.top = location["top"] + "px";
+            this.ui.style.left = location["left"] + "px";
+        }
+        else {
+            this.ui.style.top = top;
+            this.ui.style.left = left;
+        }
+
+        $("#" + editor.div)[0].appendChild(this.ui);
+        this.addOutput(this.getFilename());
+        jsPlumb.draggable(this.ui);
+        this._addDragEvents();
+    };
+
+    return file;
 }
 
 /**
@@ -3012,6 +3279,18 @@ function InputParam(module, paramJSON) {
             editor.log("ERROR: Mismatched parameter loading properties: " + this.name + " and " + input["name"]);
         }
         this.promptWhenRun = editor.initPWR(this.module, this.name, input["promptWhenRun"]);
+
+        // Create file box and draw pipes if necessary
+        if (this.isFile() && input["value"] !== "" && input["value"] !== null && input["value"] !== undefined && this.promptWhenRun === null) {
+            var path = input["value"];
+            var name = editor.extractFilename(path);
+            var box = editor.getFileBox(path);
+            if (box === null) {
+                box = editor.addFile(name, path);
+            }
+            editor.addPipe(this.port, box.outputEnds[0]);
+        }
+
         this.value = input["value"];
     };
 }
@@ -3026,7 +3305,6 @@ function Port(module, pointer, param) {
 	this.module = module;
 	this.id = Math.floor(Math.random() * 1000000000000);
     this.pointer = pointer;
-	this.master = pointer == "master";
     this.param = param;
 	this.type = null;
     this.position = null;
@@ -3035,76 +3313,52 @@ function Port(module, pointer, param) {
 	this.pipes = [];
 
 	this.init = function() {
-        var MASTER_OUTPUT = { isSource: true, paintStyle: { radius: 15, fillStyle: "blue" } };
         var OUTPUT = { isSource: true, paintStyle: { fillStyle: "black" } };
-        var MASTER_INPUT = { isTarget: true, paintStyle: { radius: 15, fillStyle: "blue" } };
         var INPUT = { isTarget: true, paintStyle: { fillStyle: "black", outlineColor:"black", outlineWidth: 0 } };
 
         // Get the correct base style
         var baseStyle = null;
-        if (this.isOutput()) {
-            if (this.master) {
-                baseStyle = MASTER_OUTPUT;
-            }
-            else {
-                baseStyle = OUTPUT;
-            }
-        }
-        else {
-            if (this.master) {
-                baseStyle = MASTER_INPUT;
-            }
-            else {
-                baseStyle = INPUT;
-            }
-        }
+        if (this.isOutput()) { baseStyle = OUTPUT; }
+        else { baseStyle = INPUT; }
 
         // Get the correct endpoint name prefix
         var prefix = null;
-        if (this.isOutput()) {
-            prefix = "out_";
-        }
-        else {
-            prefix = "in_";
-        }
+        if (this.isOutput()) { prefix = "out_"; }
+        else { prefix = "in_"; }
 
         // Calculate position
-        this.position = this.module.freePosition(this.isOutput()); // 0.1 * (index + 1);
+        this.position = this.module.calculatePosition(this.isOutput(), pointer);
 
         // Get the correct position array
         var posArray = null;
         if (this.isOutput()) {
-            posArray = [this.position, 0.8, 0, 1];
+            posArray = [1, this.position, 0, 1];
         }
         else {
-            posArray = [this.position, 0.1, 0, -1];
+            posArray = [0, this.position, 0, -1];
         }
 
         // Get the correct number of max connections
         var maxConn = null;
-        if (this.isOutput()) {
-            maxConn = -1;
-        }
-        else {
-            maxConn = 1;
-        }
+        if (this.isOutput()) { maxConn = -1; }
+        else { maxConn = 1; }
 
         // Create endpoint
         this.endpoint = jsPlumb.addEndpoint(this.module.id.toString(), baseStyle, {
             anchor: posArray,
             maxConnections: maxConn,
-            dragAllowedWhenFull: true
+            dragAllowedWhenFull: false,
+            endpoint : [ "Image", {
+                src: "images/port.gif"
+            }]
         });
         this.endpoint.canvas.setAttribute("name", prefix + this.id + "_" + this.module.id);
         this.endpoint.canvas.setAttribute("id", prefix + this.id + "_" + this.module.id);
 
         // Add optional class if necessary
-        if (!this.isOutput() && !this.master && !this.isRequired()) {
+        if (!this.isOutput() && !this.isRequired()) {
             $(this.endpoint.canvas).addClass("optionalPort");
         }
-
-        // Add tooltip
-        this._createTooltip(this.pointer);
     };
 
 	this.connectPipe = function(pipe) {
@@ -3187,27 +3441,6 @@ function Port(module, pointer, param) {
         appendTo.appendChild(deleteButton);
     };
 
-	this._addTooltipButtonCalls = function (id) {
-        $("#" + "prop_" + id).click(function(event) {
-            var port = editor.getParentPort(this);
-            properties.displayPipe(port.pipes[0]);
-            properties.show();
-            event.stopPropagation();
-        });
-
-        $("#" + "del_" + id).click(function() {
-            var port = editor.getParentPort(this);
-            port.removePipes();
-
-            // Remove the tooltip for this delete element, fixes bug in tooltip
-            $("." + this.id).remove();
-        });
-
-        // Add tooltips to the tooltip buttons
-        $("#" + "prop_" + id).tooltip({tipClass: "infoTooltip"});
-        $("#" + "del_" + id).tooltip({tipClass: "del_" + id + " infoTooltip"});
-    };
-
     this.getInput = function() {
         if (!this.isInput()) {
             editor.log("ERROR: Attempted to getInput() on a non-input port.");
@@ -3228,29 +3461,6 @@ function Port(module, pointer, param) {
         this.pointer = pointer;
         $("#tip_point_" + this.id)[0].innerHTML = pointer;
     };
-
-	this._createTooltip = function(name) {
-		this.tooltip = document.createElement("div");
-		this.tooltip.setAttribute("id", "tip_" + this.id + "_" + this.module.id);
-		this.tooltip.setAttribute("class", "tooltip");
-		if (this.master) {
-			if (this.isOutput()) {
-				this.tooltip.innerHTML = "Drag Connections From Here";
-			}
-			else if (this.isInput()) {
-				this.tooltip.innerHTML = "Drag Connections To Here";
-			}
-		}
-		else {
-			this.tooltip.innerHTML = (this.isOutput() ? "Output Selection:<br />" : "Input Parameter:<br />") + "<span id='tip_point_" + this.id + "'>" + name + "</span><br />";
-			if (this.isInput()) {
-				this._createButtons(this.tooltip, this.tooltip.getAttribute("id"));
-			}
-		}
-		$("#" + editor.div)[0].appendChild(this.tooltip);
-		if (!this.master && this.isInput()) { this._addTooltipButtonCalls(this.tooltip.getAttribute("id")); }
-		$("#" + this.endpoint.canvas.id).tooltip({"tip": "#" + this.tooltip.id, "offset": [-105, -195]});
-	};
 }
 
 /**
@@ -3324,19 +3534,11 @@ function Pipe(connection) {
         //$(this.ui).removeClass("ui-selected");
     };
 
-	this.toMaster = function() {
-        return this.inputPort.master;
-    };
-
 	this.remove = function() {
         // Mark the deleted input port as no longer used
         this.inputPort.getInput().makeUnused();
-
-		var deleteOutput = this.outputPort.endpoint.connections.length <= 1;
 		this.inputPort.detachAll();
-		this.inputPort.remove();
 		this.inputModule.checkForWarnings();
-		if (deleteOutput) { this.outputPort.remove(); }
 		editor.removePipe(this);
 	};
 
