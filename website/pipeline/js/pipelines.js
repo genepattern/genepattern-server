@@ -77,6 +77,80 @@ var editor = {
         };
 	},
 
+    expandIfNeeded: function(module) {
+        // Expand the workspace so that modules do not get lost beneath the editor
+        var PROPERTIES_WIDTH = 300;
+        var MODULE_WIDTH = 195;
+        var OFFSET = 195;
+        var bodyWidth = $(document).width();
+        if ($(module.ui).position().left + MODULE_WIDTH + OFFSET > bodyWidth - PROPERTIES_WIDTH) {
+            $("#" + editor.div).width(bodyWidth - OFFSET + PROPERTIES_WIDTH);
+        }
+    },
+
+    errorCount: function() {
+        var count = 0;
+        for (var i in editor.workspace) {
+            var module = editor.workspace[i];
+            if (module instanceof Module) {
+                for (var j in module.alerts) {
+                    var alert = module.alerts[j];
+                    if (alert.level === alert.ERROR) {
+                        count++;
+                    }
+                }
+            }
+        }
+
+        return count;
+    },
+
+    alertCount: function() {
+        var count = 0;
+        for (var i in editor.workspace) {
+            var module = editor.workspace[i];
+            if (module instanceof Module) {
+                for (var j in module.alerts) {
+                    var alert = module.alerts[j];
+                    if (alert.level === alert.WARNING) {
+                        count++;
+                    }
+                }
+            }
+        }
+
+        return count;
+    },
+
+    highlightModuleAlerts: function() {
+        var foundError = false;
+
+        for (var i in editor.workspace) {
+            var module = editor.workspace[i];
+            if (module instanceof Module) {
+                $(module.ui).removeClass("errorModule");
+                $(module.ui).removeClass("alertModule");
+                module.checkForWarnings();
+                var highest = module.highestAlert();
+                if (highest === null) {
+                    continue;
+                }
+
+                if (highest.level === highest.ERROR) {
+                    $(module.ui).addClass("errorModule");
+                    foundError = true;
+                }
+
+                if (highest.level === highest.WARNING) {
+                    $(module.ui).addClass("alertModule");
+                    foundError = true;
+                }
+            }
+        }
+
+        return foundError;
+    },
+
     extractFilename: function(path) {
         // Handle chrome upload paths
         if (path.indexOf("\\") > -1) {
@@ -330,6 +404,9 @@ var editor = {
 
         // If the new input is already prompt when run, make it not PWR
         input.param.makeNotPWR();
+        // Update the PWR icon
+        var iconId = "pwr_" + input.param._nameToId(input.param.name) + "_" + input.module.id;
+        $("#" + iconId).removeClass("promptWhenRunIconOn");
 
         // If the output is from a file, set the value
         if (output.module.isFile()) {
@@ -813,6 +890,7 @@ var editor = {
                     editor.makeClean();
                 }
 
+                properties.redrawDisplay();
                 editor.loading = false;
             },
             dataType: "json"
@@ -820,8 +898,8 @@ var editor = {
 	},
 
 	save: function(runImmediately, ignorePrompts) {
-        if (editor.hasErrors()) {
-            editor.showDialog("ERROR", "The pipeline being edited has errors.  Please fix the errors before saving.");
+        // Check for pipelines with the same name
+        if (!ignorePrompts && !editor.confirmErrors(runImmediately)) {
             return;
         }
 
@@ -883,6 +961,53 @@ var editor = {
 
     _updateHistoryOnSave: function() {
         history.pushState(null, "GenePattern Pipeline Editor", location.origin + location.pathname + "?lsid=" + editor.workspace["pipelineLsid"]);
+    },
+
+    confirmErrors: function(runImmediately) {
+        var foundErrors = editor.highlightModuleAlerts();
+
+        // If no errors found, return
+        if (!foundErrors) {
+            return true;
+        }
+
+        var errorCount = editor.errorCount();
+        var alertCount = editor.alertCount();
+
+        var message = null;
+        if (errorCount > 0) {
+            message = errorCount + " errors were found in your pipeline.  Please fix before saving.";
+        }
+        else {
+            message = alertCount + " warnings were found in the pipeline.  Are you sure you want to continue?";
+        }
+
+        // Otherwise, prompt the user
+        var buttons = null;
+        if (errorCount > 0) {
+            buttons = {
+                "Fix Errors": function() {
+                    $(this).dialog("close");
+                    if (event.preventDefault) event.preventDefault();
+                    if (event.stopPropagation) event.stopPropagation();
+                }};
+        }
+        else {
+            buttons = {
+                "Yes": function() {
+                    $(this).dialog("close");
+                    editor.save(runImmediately, true);
+                    if (event.preventDefault) event.preventDefault();
+                    if (event.stopPropagation) event.stopPropagation();
+                },
+                "No, Review Warnings": function() {
+                    $(this).dialog("close");
+                    if (event.preventDefault) event.preventDefault();
+                    if (event.stopPropagation) event.stopPropagation();
+                }};
+        }
+        editor.showDialog("Pipeline Issues", message, buttons);
+        return false;
     },
 
     confirmUniqueName: function(runImmediately) {
@@ -1187,8 +1312,11 @@ var library = {
 
                     var module = editor.addModule(lsid);
 
+                    // Expand the workspace so that modules do not get lost beneath the editor
+                    editor.expandIfNeeded(module);
+
                     // Scroll page to new module
-                    $("html, body").animate({ scrollTop: module.ui.style.top }, "slow");
+                    $("html, body").animate({ scrollLeft: module.ui.style.left }, "slow");
                 });
                 catDiv.appendChild(modDiv);
             }
@@ -1231,7 +1359,13 @@ var library = {
             if (lsid === null) return;
 
             $("#modulesDropdown").val("");
-            editor.addModule(lsid);
+            var module = editor.addModule(lsid);
+
+            // Expand the workspace so that modules do not get lost beneath the editor
+            editor.expandIfNeeded(module);
+
+            // Scroll page to new module
+            $("html, body").animate({ scrollLeft: module.ui.style.left }, "slow");
         });
     },
 
@@ -1933,6 +2067,11 @@ var properties = {
                     properties._hideDisplaySettingsButton(labelText);
                 }
 
+                // Toggle the pwr icon on module icon
+                var input = properties.current.getInputByName(properties._stripTrailingAstrik(labelText));
+                var iconId = "pwr_" + input._nameToId(labelText) + "_" + properties.current.id;
+                $("#" + iconId).toggleClass("promptWhenRunIconOn");
+
                 // Save when the select is changed
                 properties.saveToModel();
             });
@@ -2102,6 +2241,7 @@ var properties = {
         else {
             $("button.pwrDisplayButton[name='" + name + "']").show();
         }
+
     },
 
     _hideDisplaySettingsButton: function(name) {
@@ -2351,6 +2491,25 @@ function Alert(key, level, message) {
     this.key = key;
     this.level = level;
     this.message = message;
+
+    this.getIcon = function() {
+        var icon = document.createElement("img");
+
+        if (this.level === this.ERROR) {
+            icon.setAttribute("src", "images/error.gif");
+            icon.setAttribute("class", "alertButton");
+            icon.setAttribute("alt", "Module Error");
+            icon.setAttribute("title", "Module Error");
+        }
+        else {
+            icon.setAttribute("src", "images/alert.gif");
+            icon.setAttribute("class", "alertButton");
+            icon.setAttribute("alt", "Module Warning");
+            icon.setAttribute("title", "Module Warning");
+        }
+
+        return icon;
+    };
 }
 
 /**
@@ -2534,7 +2693,6 @@ function Module(moduleJSON) {
     };
 
     this.saveProps = function(save) {
-        var showFileIcon = false;
         for (var i = 0; i < this.inputs.length; i++) {
             var value = save[this.inputs[i].name];
             if (value === null) continue;
@@ -2554,57 +2712,58 @@ function Module(moduleJSON) {
                 // Set the file icon if necessary
                 if (value !== "" && this.inputs[i].isFile()) {
                     this.inputs[i].value = value;
-                    showFileIcon = true;
-                }
-                if (value === "" && this.inputs[i].isFile() && this.inputs[i].value !== "" && this.inputs[i].value !== properties.PROMPT_WHEN_RUN) {
-                    showFileIcon = true;
                 }
                 if (this.inputs[i].isFile() && value === "" && this.inputs[i].value === properties.PROMPT_WHEN_RUN) {
                     this.inputs[i].value = value;
                 }
             }
         }
-        this.toggleFileIcon(showFileIcon);
         this.checkForWarnings();
 
         // Mark the workspace as dirty
         editor.makeDirty();
     };
 
+    this.highestAlert = function() {
+        var toReturn = null;
+        for (var i in this.alerts) {
+            if (toReturn === null) { toReturn = this.alerts[i]; continue; }
+            if (toReturn.level === toReturn.ERROR) { return toReturn; }
+        }
+        return toReturn;
+    };
+
     this.checkForWarnings = function() {
         this.alerts = {};
-
-        var showErrorIcon = false;
-        var showAlertIcon = false;
+        var showAlertDisplay = false;
 
         // Mark the error flag if there is a missing required param
         for (var i = 0; i < this.inputs.length; i++) {
             var input = this.inputs[i];
             if (input.required && input.value === "" && !input.used && input.promptWhenRun === null) {
-                showErrorIcon = true;
-                this.alerts[input.name] = new Alert(input.name, "ERROR", "Required parameter " + input.name + " is not set!");
+                showAlertDisplay = true;
+                this.alerts[input.name] = new Alert(input, "ERROR", input.name + " is not set!");
             }
         }
 
         // Check to see if the module is the latest version
         if (!this.isHighestVersion()) {
-            showAlertIcon = true;
-            this.alerts[this.name] = new Alert("version", "WARNING", "This module is version " + this.version + " which is not the latest version.");
+            showAlertDisplay = true;
+            this.alerts[this.name] = new Alert(this, "WARNING", "This module is version " + this.version + " which is not the latest version.");
         }
 
         // Display black box warning
         if (this.blackbox) {
-            showAlertIcon = true;
+            showAlertDisplay = true;
             this.alerts[this.name] = new Alert("Missing Module", "WARNING", "GenePattern is unable to load this module.  You will be unable to change settings on this module or otherwise work with it.");
         }
 
         // Display icons if appropriate
-        this.toggleErrorIcon(showErrorIcon);
-        if (!showErrorIcon) {
-            this.toggleAlertIcon(showAlertIcon);
+        if (showAlertDisplay) {
+            this.toggleAlertDisplay(showAlertDisplay);
         }
         else {
-            this.toggleAlertIcon(false);
+            this.toggleAlertDisplay(false);
         }
     };
 
@@ -2767,33 +2926,12 @@ function Module(moduleJSON) {
         $(openButtonBig).button();
         if (!this.isPipeline()) { openButtonBig.style.display = "none"; }
 
-        var alertButton = document.createElement("button");
-        alertButton.setAttribute("id", "alert_" + this.id);
-        alertButton.setAttribute("class", "saveLoadButton");
-        var alertIcon = document.createElement("img");
-        alertIcon.setAttribute("src", "images/alert.gif");
-        alertIcon.setAttribute("class", "alertButton topRowButton");
-        alertIcon.setAttribute("alt", "Module Alert");
-        alertIcon.setAttribute("title", "Module Alert");
-        alertButton.appendChild(alertIcon);
-        alertButton.innerHTML += "Alert";
-        appendTo.appendChild(alertButton);
-        $(alertButton).button();
-        alertButton.style.display = "none";
-
-        var errorButton = document.createElement("button");
-        errorButton.setAttribute("id", "error_" + this.id);
-        errorButton.setAttribute("class", "saveLoadButton");
-        var errorIcon = document.createElement("img");
-        errorIcon.setAttribute("src", "images/error.gif");
-        errorIcon.setAttribute("class", "errorButton topRowButton");
-        errorIcon.setAttribute("alt", "Module Error");
-        errorIcon.setAttribute("title", "Module Error");
-        errorButton.appendChild(errorIcon);
-        errorButton.innerHTML += "Error";
-        appendTo.appendChild(errorButton);
-        $(errorButton).button();
-        errorButton.style.display = "none";
+        var alertDiv = document.createElement("div");
+        alertDiv.setAttribute("id", "alert_" + this.id);
+        alertDiv.setAttribute("class", "alertDiv");
+        alertDiv.innerHTML = "WOWIE!";
+        appendTo.appendChild(alertDiv);
+        alertDiv.style.display = "none";
     };
 
 	this.addModuleButtonCalls = function() {
@@ -2811,24 +2949,6 @@ function Module(moduleJSON) {
                 self.location="/gp/addTask.jsp?name=" + module.lsid;
             }
         });
-
-        var alertFunc = function() {
-            var module = editor.getParentModule(this.id);
-            var alert = document.createElement("div");
-            var list = document.createElement("ul");
-
-            for (var i in module.alerts) {
-                var item = document.createElement("li");
-                item.innerHTML = "<strong>" + module.alerts[i].level + ":</strong> " + module.alerts[i].message;
-                list.appendChild(item);
-            }
-            alert.appendChild(list);
-            
-            editor.showDialog("Module Errors & Alerts", alert.innerHTML);
-        };
-
-        $("#" + "error_" + this.id).click(alertFunc);
-        $("#" + "alert_" + this.id).click(alertFunc);
     };
 
     this.select = function() {
@@ -2848,40 +2968,69 @@ function Module(moduleJSON) {
     };
 
     this.hasError = function() {
-        return $("#error_" + this.id).is(":visible");
+        for (var i in this.alerts) {
+            var alert = this.alerts[i];
+            if (alert.level === alert.ERROR) {
+                return true;
+            }
+        }
+
+        return false;
     };
 
-    this.toggleErrorIcon = function(show) {
-        if (show === undefined) {
-            if ($("#error_" + this.id).is(":visible")) {
-                $("#error_" + this.id).hide();
-            }
-            else {
-                $("#error_" + this.id).show();
-            }
-        }
-        else if (show) {
-            $("#error_" + this.id).show();
-        }
-        else {
-            $("#error_" + this.id).hide();
-        }
-    };
+    this.toggleAlertDisplay = function(show) {
+        var alertDiv = $("#alert_" + this.id);
 
-    this.toggleAlertIcon = function(show) {
+        // Check to see if this module is displayed, if not exit
+        if (alertDiv.length < 1) {
+            return;
+        }
+
+        // Clear the box
+        alertDiv[0].innerHTML = "";
+
+        // Make a list of params to highlight
+        var highlight = [];
+
+        for (var i in this.alerts) {
+            var item = document.createElement("div");
+            item.appendChild(this.alerts[i].getIcon());
+            item.innerHTML += this.alerts[i].message;
+            alertDiv.append(item);
+
+            // Add highlighted to list
+            if (this.alerts[i].key instanceof InputParam) { highlight.push(this.alerts[i].key); }
+        }
+
         if (show === undefined) {
-            if ($("#alert_" + this.id).is(":visible")) {
-                $("#alert_" + this.id).hide();
+            if (alertDiv.is(":visible")) {
+                show = false;
             }
             else {
-                $("#alert_" + this.id).show();
+                show = true;
             }
         }
-        else if (show) {
-            $("#alert_" + this.id).show();
+
+        if (show) {
+            alertDiv.show();
+
+            $(".propertyValue").parent().removeClass("alertParam");
+            for (var i = 0; i < highlight.length; i++) {
+                var name = highlight[i].name + (highlight[i].required ? "*" : "");
+                $(".propertyValue[name='" + name + "']").parent().addClass("alertParam");
+            }
+
+            if (!this.hasError()) {
+                $(this.ui).removeClass("errorModule");
+            }
         }
         else {
-            $("#alert_" + this.id).hide();
+            alertDiv.hide();
+            $(".propertyValue").parent().removeClass("alertParam");
+
+            // Remove module icon styles indicating errors
+            $(this.ui).removeClass("errorModule");
+            $(this.ui).removeClass("alertModule");
         }
     };
 
@@ -2890,14 +3039,14 @@ function Module(moduleJSON) {
             start: function() {
                 editor.makeDirty();
                 $(this).addClass("draggedModule");
-            }
-        });
+            },
 
-        $(this.ui).draggable({
             stop: function() {
                 editor.makeDirty();
                 $(this).removeClass("draggedModule");
-            }
+            },
+
+            containment: "parent"
         });
     };
 
@@ -2908,7 +3057,24 @@ function Module(moduleJSON) {
             var file = this.fileInputs[i];
             var fileDiv = document.createElement("div");
             fileDiv.setAttribute("class", "moduleFileItem");
-            fileDiv.innerHTML = library.concatNameForDisplay(file.name, 30);
+            fileDiv.innerHTML = library.concatNameForDisplay(file.name, 26) + (file.required ? "*" : "");
+
+            var pwr = document.createElement("img");
+            pwr.setAttribute("id", "pwr_" + file._nameToId(file.name) + "_" + this.id);
+            pwr.setAttribute("src", "images/pwr.jpeg");
+            pwr.setAttribute("alt", "Prompt When Run");
+            pwr.setAttribute("name", file.name);
+            pwr.setAttribute("class", "promptWhenRunIcon");
+            pwr.setAttribute("title", "Prompt When Run");
+            $(pwr).tooltip({tipClass: "infoTooltip"});
+            $(pwr).click(function() {
+                var module = editor.getParentModule(this);
+                var input = module.getInputByName(this.getAttribute("name"));
+                $(module.ui).trigger("click");
+                $(".propertyCheckBox[name='" + input.name + (input.required ? "*" : "") + "']").trigger("click");
+            });
+            fileDiv.appendChild(pwr);
+
             inputList.appendChild(fileDiv);
         }
 
@@ -2996,6 +3162,7 @@ function Module(moduleJSON) {
 
         // Clicking the div triggers displaying properties
         $(this.ui).click(function (event) {
+            $(this).removeClass("alertModule");
             properties.displayModule(editor.getParentModule(this.id));
             properties.show();
             //event.stopPropagation();
@@ -3254,6 +3421,10 @@ function InputParam(module, paramJSON) {
     this.port = null;
     this.value = editor.protectAgainstUndefined(this.defaultValue);
 
+    this._nameToId = function(name) {
+        return name.replace(/[^a-zA-Z 0-9]+/g,'');
+    };
+
     this.isFile = function() {
         return this.type === "java.io.File";
     };
@@ -3266,7 +3437,7 @@ function InputParam(module, paramJSON) {
         this.used = false;
     };
     
-    this.isPWR = function(port) {
+    this.isPWR = function() {
         return this.promptWhenRun !== null;
     };
 
@@ -3296,6 +3467,12 @@ function InputParam(module, paramJSON) {
             editor.log("ERROR: Mismatched parameter loading properties: " + this.name + " and " + input["name"]);
         }
         this.promptWhenRun = editor.initPWR(this.module, this.name, input["promptWhenRun"]);
+
+        // Set prompt when run icon if necessary
+        if (this.isPWR()) {
+            var iconId = "pwr_" + this._nameToId(this.name) + "_" + this.module.id;
+            $("#" + iconId).toggleClass("promptWhenRunIconOn");
+        }
 
         // Create file box and draw pipes if necessary
         if (this.isFile() && input["value"] !== "" && input["value"] !== null && input["value"] !== undefined && this.promptWhenRun === null) {
