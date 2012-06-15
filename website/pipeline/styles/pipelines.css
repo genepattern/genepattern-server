@@ -130,6 +130,13 @@ a:hover {
     position: fixed;
 }
 
+.modulePropertiesTitle {
+    font-size: 10pt;
+    padding-bottom: 10px;
+    padding-top: 10px;
+    font-weight: bold;
+}
+
 #titleSpan {
     float:left;
     color: #000000;

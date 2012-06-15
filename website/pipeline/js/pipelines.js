@@ -77,6 +77,11 @@ var editor = {
         };
 	},
 
+    getLastFile: function() {
+        var id = editor.workspace.fileCounter - 1;
+        return editor.workspace[id];
+    },
+
     expandIfNeeded: function(module) {
         // Expand the workspace so that modules do not get lost beneath the editor
         var PROPERTIES_WIDTH = 300;
@@ -597,28 +602,35 @@ var editor = {
     _tLayoutManager: function(module) {
         var WIDTH = 195;
         var MARGIN = 40;
-        var EXTRA_TOP_MARGIN = 70;
+        var EXTRA_TOP_MARGIN = 80;
 
         // Determine if this is the first module in the layout
         var firstModule = editor.modulesInWorkspace() <= 1;
 
         // Create the JSON object to return
-        var toReturn = { "top": MARGIN + EXTRA_TOP_MARGIN, "left": MARGIN };
+        var toReturn = { "top": MARGIN + (module.isFile() ? 0 : EXTRA_TOP_MARGIN), "left": MARGIN };
 
         // If this is the first module, please it at the top
         if (firstModule) {
-            this.workspace.suggestRow = MARGIN + EXTRA_TOP_MARGIN;
+            this.workspace.suggestRow = MARGIN + (module.isFile() ? 0 : EXTRA_TOP_MARGIN);
             this.workspace.suggestCol = MARGIN;
 
             // Update for new estimated height
-            this.workspace.suggestRow += module.calculateHeight() + MARGIN;
+            if (module.isFile()) {
+                this.workspace.suggestRow = MARGIN + EXTRA_TOP_MARGIN;
+            }
+            else {
+                this.workspace.suggestRow += module.calculateHeight() + MARGIN;
+            }
 
             return toReturn;
         }
 
         // Determine if this module goes below or beside the last one
         var below = false;
-        if (module.isVisualizer()) below = true;
+        if (module.isVisualizer() || this.workspace.suggestRow === MARGIN + EXTRA_TOP_MARGIN) {
+            below = true;
+        }
 
         // Update the appropriate position
         if (below) {
@@ -629,14 +641,19 @@ var editor = {
             this.workspace.suggestRow += module.calculateHeight() + MARGIN;
         }
         else {
-            this.workspace.suggestRow = MARGIN + EXTRA_TOP_MARGIN;
+            this.workspace.suggestRow = MARGIN + (module.isFile() ? 0 : EXTRA_TOP_MARGIN);
             this.workspace.suggestCol += WIDTH + MARGIN;
 
             toReturn.top = this.workspace.suggestRow;
             toReturn.left = this.workspace.suggestCol;
 
             // Update for new estimated height
-            this.workspace.suggestRow += module.calculateHeight() + MARGIN;
+            if (module.isFile()) {
+                this.workspace.suggestRow = MARGIN + EXTRA_TOP_MARGIN;
+            }
+            else {
+                this.workspace.suggestRow += module.calculateHeight() + MARGIN;
+            }
         }
 
         return toReturn;
@@ -1316,7 +1333,7 @@ var library = {
                     editor.expandIfNeeded(module);
 
                     // Scroll page to new module
-                    $("html, body").animate({ scrollLeft: module.ui.style.left }, "slow");
+                    $("html, body").animate({ scrollLeft: $(module.ui).position().left - 100 }, "slow");
                 });
                 catDiv.appendChild(modDiv);
             }
@@ -2457,6 +2474,43 @@ var properties = {
         this._addDropDown("Privacy", ["private", "public"], editor.workspace["pipelinePrivacy"], false, false);
         this._addTextBox("Version Comment", editor.workspace["pipelineVersionComment"], false, false);
         this._addFileUpload("Documentation", editor.workspace["pipelineDocumentation"], false, false, false);
+    },
+
+    _writeTitle: function(module) {
+        var titleDiv = document.createElement("div");
+        titleDiv.setAttribute("class", "modulePropertiesTitle");
+        titleDiv.innerHTML = module.name;
+        $("#" + this.inputDiv).append(titleDiv);
+        this._addSpacerDiv();
+    },
+
+    displayPWRs: function() {
+        // Clean the old selection
+        this._deselectOldSelection();
+        this._clean();
+
+        this.current = new String("Prompt When Runs");
+        this._setTitle("Prompt When Runs");
+
+        for (var i in editor.workspace) {
+            var module = editor.workspace[i];
+            var wroteTitle = false;
+
+            // Exit if this is not a true module
+            if (!(module instanceof Module)) { continue; }
+            if (module.isFile()) { continue; }
+
+            for (var j = 0; j < module.inputs.length; j++) {
+                var input = module.inputs[j];
+                if (input.promptWhenRun !== null) {
+                    if (!wroteTitle) {
+                        this._writeTitle(module);
+                        wroteTitle = true;
+                    }
+                    this._addFileInput(input);
+                }
+            }
+        }
     }
 };
 
@@ -2830,74 +2884,6 @@ function Module(moduleJSON) {
         editor.log("Unable to find port with id: " + id + " in module " + this.id);
     };
 
-	this.suggestInput = function (outputPort) {
-        //noinspection JSDuplicatedDeclaration
-        for (var i = 0; i < outputPort.module.outputs.length; i++) {
-            var output = outputPort.module.outputs[i];
-
-            for (var j = 0; j < this.fileInputs.length; j++) {
-                var input = this.fileInputs[j];
-                //noinspection JSDuplicatedDeclaration
-                var used = input.used;
-
-                if (!used && !input.isPWR() && input.value === "") {
-                    // Special case for modules with no input types listed
-                    if (input.kinds.length == 0) {
-                        //noinspection JSDuplicatedDeclaration
-                        var inputPort = this.addInput(input.name);
-                        input.makeUsed(inputPort);
-                        return inputPort;
-                    }
-
-                    for (var k = 0; k < input.kinds.length; k++) {
-                        var kind = input.kinds[k];
-
-                        if (kind == output) {
-                            //noinspection JSDuplicatedDeclaration
-                            var inputPort = this.addInput(input.name);
-                            input.makeUsed(inputPort);
-                            return inputPort;
-                        }
-                    }
-                }
-            }
-        }
-
-        // Special case for when there is no overlap involved, default to first match
-        //noinspection JSDuplicatedDeclaration
-        for (var i = 0; i < this.fileInputs.length; i++) {
-        	var input = this.fileInputs[i];
-            //noinspection JSDuplicatedDeclaration
-            var used = input.used;
-            if (!used && !input.isPWR() && input.value === "") {
-                //noinspection JSDuplicatedDeclaration
-                var inputPort = this.addInput(input.name);
-                input.makeUsed(inputPort);
-                return inputPort;
-            }
-        }
-
-        // No valid input found
-        return null;
-    };
-
-	this.suggestOutput = function (input) {
-        for (var i = 0; i < this.outputs.length; i++) {
-            var output = this.outputs[i];
-
-            for (var k = 0; k < input.param.kinds.length; k++) {
-                var kind = input.param.kinds[k];
-
-                if (kind == output) {
-                    return this.addOutput(output);
-                }
-            }
-        }
-
-        // No matched output type found, return first output
-        return this.addOutput(1);
-    };
-
 	this._createButtons = function (appendTo, baseId) {
         var docButton = document.createElement("button");
         docButton.setAttribute("id", "doc_" + this.id);
@@ -3044,6 +3030,10 @@ function Module(moduleJSON) {
             stop: function() {
                 editor.makeDirty();
                 $(this).removeClass("draggedModule");
+
+                // Expand the workspace if necessary
+                var module = editor.getParentModule(this);
+                editor.expandIfNeeded(module);
             },
 
             containment: "parent"
@@ -3548,6 +3538,46 @@ function Port(module, pointer, param) {
         });
         this.endpoint.canvas.setAttribute("name", prefix + this.id + "_" + this.module.id);
         this.endpoint.canvas.setAttribute("id", prefix + this.id + "_" + this.module.id);
+
+        // Add context menu
+        $(this.endpoint.canvas).click(function() {
+            var port = editor.getParentPort(this.id);
+
+            // If already set or output, don't do anything
+            if (port.param === null || port.param === undefined || port.param.value !== "") {
+                return;
+            }
+
+            var buttons = {
+                "Prompt When Run": function() {
+                    $(this).dialog("close");
+                    var id = "pwr_" + port.param._nameToId(port.param.name) + "_" + port.module.id;
+                    $("#" + id).trigger("click");
+                    if (event.preventDefault) event.preventDefault();
+                    if (event.stopPropagation) event.stopPropagation();
+                },
+                "Attach File": function() {
+                    $(this).dialog("close");
+
+                    // Trigger the attach file dialog
+                    $("#attachFile").trigger("click");
+                    // Add the new doc click event
+                    $(".ui-dialog-buttonpane button:contains('OK')").click(function() {
+                        var file = editor.getLastFile();
+                        editor.addPipe(port, file.outputEnds[0]);
+                    });
+
+                    if (event.preventDefault) event.preventDefault();
+                    if (event.stopPropagation) event.stopPropagation();
+                },
+                "Cancel": function() {
+                    $(this).dialog("close");
+                    if (event.preventDefault) event.preventDefault();
+                    if (event.stopPropagation) event.stopPropagation();
+                }
+            };
+            editor.showDialog("Choose Port Action", "Select the input you would like to give the port below:", buttons);
+        });
 
         // Add optional class if necessary
         if (!this.isOutput() && !this.isRequired()) {
