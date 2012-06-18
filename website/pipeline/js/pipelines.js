@@ -1843,15 +1843,7 @@ var properties = {
             }
 
             if (checked) {
-                var button = $("button.pwrDisplayButton[name='" + inputs[i].getAttribute("name") + "']")[0];
-                var dName = $.data(button, "name");
-                var dDesc = $.data(button, "description");
-                if (dName === undefined || dName === null || dDesc === undefined || dDesc === null) {
-                    bundle[name] = properties.PROMPT_WHEN_RUN;
-                }
-                else {
-                    bundle[name] = [properties.PROMPT_WHEN_RUN, dName, dDesc];
-                }
+                bundle[name] = properties.PROMPT_WHEN_RUN;
             }
             else {
                 var value = inputs[i].value;
@@ -2016,6 +2008,22 @@ var properties = {
         }
     },
 
+    _addPWRDisplayButton: function() {
+        var div = document.createElement("div");
+        var label = document.createElement("label");
+        label.innerHTML = "Prompt When Runs";
+        label.setAttribute("class", "propertiesLabel");
+        var button = document.createElement("button");
+        button.innerHTML = "Display Prompt When Runs";
+        $(button).button();
+        $(button).click(function() {
+            properties.displayPWRs();
+        });
+        $(div).append(label);
+        $(div).append(button);
+        $("#" + this.inputDiv).append(div);
+    },
+
     _addSpacerDiv: function() {
         var div = document.createElement("div");
         div.setAttribute("class", "spacerDiv");
@@ -2077,15 +2085,24 @@ var properties = {
         // When the prompt when run checkbox is checked, enable or disable upload
         if (checkBox !== undefined && checkBox !== null) {
             $(".propertyCheckBox[name='" + labelText + "']").change(function() {
+                // Toggle the pwr icon on module icon
+                var module = properties.current;
+                if (!(module instanceof Module)) {
+                    var id = $(label).attr("name");
+                    module = editor.workspace[id];
+                }
+
+                var input = module.getInputByName(properties._stripTrailingAstrik(labelText));
+
                 if ($(this).is(":checked")) {
                     properties._showDisplaySettingsButton($(label), labelText);
+                    input.makePWR(input.name, input.description);
                 }
                 else {
                     properties._hideDisplaySettingsButton(labelText);
+                    input.makeNotPWR();
                 }
 
-                // Toggle the pwr icon on module icon
-                var input = properties.current.getInputByName(properties._stripTrailingAstrik(labelText));
                 var iconId = "pwr_" + input._nameToId(labelText) + "_" + properties.current.id;
                 $("#" + iconId).toggleClass("promptWhenRunIconOn");
 
@@ -2167,6 +2184,12 @@ var properties = {
     },
 
     _showDisplaySettingsDialog: function(attach, module, name) {
+        // Handle the case of PWR view
+        if (!(module instanceof Module)) {
+            var id = $(attach).parent().attr("name");
+            module = editor.workspace[id];
+        }
+
         var dName = $.data(attach, "name");
         var dDesc = $.data(attach, "description");
 
@@ -2189,8 +2212,7 @@ var properties = {
         var button = { "OK": function(event) {
             var displayName = $("#pwrDisplayName").val();
             var displayDesc = $("#pwrDisplayDesc").val();
-            $.data(attach, "name", displayName);
-            $.data(attach, "description", displayDesc);
+            module.getInputByName(name).makePWR(displayName, displayDesc);
             // TODO: properties._addCustomPWRBox(".customPWRDiv", name);
 
             $(this).dialog("close");
@@ -2336,7 +2358,9 @@ var properties = {
         if (input.promptWhenRun !== null) {
             disabled = true;
         }
-        return this._addFileUpload(input.name + required, displayValue, input.description, true, disabled);
+        var div = this._addFileUpload(input.name + required, displayValue, input.description, true, disabled);
+        div.setAttribute("name", input.module.id); // Used in PWR view
+        return div;
     },
 
     _addTextBoxInput: function(input) {
@@ -2474,6 +2498,7 @@ var properties = {
         this._addDropDown("Privacy", ["private", "public"], editor.workspace["pipelinePrivacy"], false, false);
         this._addTextBox("Version Comment", editor.workspace["pipelineVersionComment"], false, false);
         this._addFileUpload("Documentation", editor.workspace["pipelineDocumentation"], false, false, false);
+        this._addPWRDisplayButton();
     },
 
     _writeTitle: function(module) {
@@ -2511,6 +2536,9 @@ var properties = {
                 }
             }
         }
+
+        // Hide check boxes
+        $(".propertyCheckBox").hide();
     }
 };
 
@@ -2750,13 +2778,8 @@ function Module(moduleJSON) {
         for (var i = 0; i < this.inputs.length; i++) {
             var value = save[this.inputs[i].name];
             if (value === null) continue;
-            if (value instanceof Array && value[0] == properties.PROMPT_WHEN_RUN) {
-                this.inputs[i].makePWR(value[1], value[2]);
-            }
-            else if (value == properties.PROMPT_WHEN_RUN) {
-                if (this.inputs[i].promptWhenRun === null) {
-                    this.inputs[i].makePWR();
-                }
+            if (value == properties.PROMPT_WHEN_RUN) {
+                // If prompt when run it has already been saved, so do nothing
             }
             else {
                 this.inputs[i].promptWhenRun = null;
