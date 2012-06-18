@@ -172,7 +172,7 @@ a:hover {
 #properties {
     position: fixed;
 	z-index: 4000;
-    top: 0;
+    top: 112px;
 	right: 0;
     height: 100%;
     overflow-y: auto;
