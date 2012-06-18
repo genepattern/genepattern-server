@@ -36,37 +36,37 @@ public class ModuleHelper {
     private TaskInfo[] tasks;
 
     public ModuleHelper() {
-	this(false);
+        this(false);
     }
 
     /**
      * 
      */
     public ModuleHelper(boolean allVersions) {
-	if (allVersions) {
-	    tasks = (new AdminDAO()).getAllTasksForUser(getUserId());
-	} else {
-	    tasks = (new AdminDAO()).getLatestTasks(getUserId());
-	}
+        if (allVersions) {
+            tasks = (new AdminDAO()).getAllTasksForUser(getUserId());
+        }
+        else {
+            tasks = (new AdminDAO()).getLatestTasks(getUserId());
+        }
     }
 
     /**
      * @return
      */
     public ModuleCategory getRecentlyUsed() {
-	AdminDAO dao = new AdminDAO();
-	String userId = UIBeanHelper.getUserId();
-	int recentJobsToShow = Integer.parseInt(new UserDAO().getPropertyValue(userId, UserPropKey.RECENT_JOBS_TO_SHOW,
-		"4"));
-	return new ModuleCategory("Recently Used", dao.getRecentlyRunTasksForUser(getUserId(), recentJobsToShow));
+        AdminDAO dao = new AdminDAO();
+        String userId = UIBeanHelper.getUserId();
+        int recentJobsToShow = Integer.parseInt(new UserDAO().getPropertyValue(userId, UserPropKey.RECENT_JOBS_TO_SHOW, "4"));
+        return new ModuleCategory("Recently Used", dao.getRecentlyRunTasksForUser(getUserId(), recentJobsToShow));
     }
 
     /**
      * @return
      */
     public ModuleCategory getTasks() {
-	AdminDAO dao = new AdminDAO();
-	return new ModuleCategory("All", tasks);
+        AdminDAO dao = new AdminDAO();
+        return new ModuleCategory("All", tasks);
     }
 
     /**
@@ -74,68 +74,70 @@ public class ModuleHelper {
      */
     public List<ModuleCategory> getTasksByType() {
 
-	List<ModuleCategory> categories = new ArrayList<ModuleCategory>();
-	Map<String, List<TaskInfo>> taskMap = new HashMap<String, List<TaskInfo>>();
+        List<ModuleCategory> categories = new ArrayList<ModuleCategory>();
+        Map<String, List<TaskInfo>> taskMap = new HashMap<String, List<TaskInfo>>();
 
-	for (int i = 0; i < tasks.length; i++) {
-	    TaskInfo ti = tasks[i];
-	    String taskType = ti.getTaskInfoAttributes().get("taskType");
-	    if (taskType == null || taskType.length() == 0) {
-		taskType = "Uncategorized";
-	    }
-	    List<TaskInfo> tasks = taskMap.get(taskType);
-	    if (tasks == null) {
-		tasks = new ArrayList<TaskInfo>();
-		taskMap.put(taskType, tasks);
-	    }
-	    tasks.add(ti);
-	}
+        for (int i = 0; i < tasks.length; i++) {
+            TaskInfo ti = tasks[i];
+            String taskType = ti.getTaskInfoAttributes().get("taskType");
+            if (taskType == null || taskType.length() == 0) {
+                taskType = "Uncategorized";
+            }
+            List<TaskInfo> tasks = taskMap.get(taskType);
+            if (tasks == null) {
+                tasks = new ArrayList<TaskInfo>();
+                taskMap.put(taskType, tasks);
+            }
+            tasks.add(ti);
+        }
 
-	List<String> categoryNames = new ArrayList<String>(taskMap.keySet());
-	Collections.sort(categoryNames);
-	for (String categoryName : categoryNames) {
-	    TaskInfo[] modules = new TaskInfo[taskMap.get(categoryName).size()];
-	    modules = taskMap.get(categoryName).toArray(modules);
-	    categories.add(new ModuleCategory(categoryName, modules));
-	}
-	return categories;
+        List<String> categoryNames = new ArrayList<String>(taskMap.keySet());
+        Collections.sort(categoryNames, String.CASE_INSENSITIVE_ORDER);
+        for (String categoryName : categoryNames) {
+            TaskInfo[] modules = new TaskInfo[taskMap.get(categoryName).size()];
+            modules = taskMap.get(categoryName).toArray(modules);
+            categories.add(new ModuleCategory(categoryName, modules));
+        }
+        return categories;
     }
 
     /**
-     * Gets all module categories for the modules in this <tt>ModuleHelper</tt> instance.
+     * Gets all module categories for the modules in this <tt>ModuleHelper</tt>
+     * instance.
      * 
      * @param selectedLsids
-     *                The module LSIDs that belong to the suite of interest. Used to set the selected and
-     *                selectedVersion properties of <tt>Module</tt> instances.
+     *            The module LSIDs that belong to the suite of interest. Used to
+     *            set the selected and selectedVersion properties of
+     *            <tt>Module</tt> instances.
      * @return The module categories.
      */
     public List<ModuleCategory> getSelectedTasksByType(String[] selectedLsids) {
-	List<ModuleCategory> categories = new ArrayList<ModuleCategory>();
-	Map<String, List<TaskInfo>> taskMap = new HashMap<String, List<TaskInfo>>();
+        List<ModuleCategory> categories = new ArrayList<ModuleCategory>();
+        Map<String, List<TaskInfo>> taskMap = new HashMap<String, List<TaskInfo>>();
 
-	for (int i = 0; i < tasks.length; i++) {
-	    TaskInfo ti = tasks[i];
-	    String taskType = ti.getTaskInfoAttributes().get("taskType");
-	    if (taskType == null || taskType.length() == 0) {
-		taskType = "Uncategorized";
-	    }
-	    List<TaskInfo> tasks = taskMap.get(taskType);
-	    if (tasks == null) {
-		tasks = new ArrayList<TaskInfo>();
-		taskMap.put(taskType, tasks);
-	    }
-	    tasks.add(ti);
-	}
+        for (int i = 0; i < tasks.length; i++) {
+            TaskInfo ti = tasks[i];
+            String taskType = ti.getTaskInfoAttributes().get("taskType");
+            if (taskType == null || taskType.length() == 0) {
+                taskType = "Uncategorized";
+            }
+            List<TaskInfo> tasks = taskMap.get(taskType);
+            if (tasks == null) {
+                tasks = new ArrayList<TaskInfo>();
+                taskMap.put(taskType, tasks);
+            }
+            tasks.add(ti);
+        }
 
-	List<String> categoryNames = new ArrayList<String>(taskMap.keySet());
-	Collections.sort(categoryNames);
-	for (String categoryName : categoryNames) {
-	    TaskInfo[] modules = taskMap.get(categoryName).toArray(new TaskInfo[0]);
-	    ModuleCategory mc = new ModuleCategory(categoryName, modules);
-	    mc.setSelected(Arrays.asList(selectedLsids));
-	    categories.add(mc);
-	}
-	return categories;
+        List<String> categoryNames = new ArrayList<String>(taskMap.keySet());
+        Collections.sort(categoryNames);
+        for (String categoryName : categoryNames) {
+            TaskInfo[] modules = taskMap.get(categoryName).toArray(new TaskInfo[0]);
+            ModuleCategory mc = new ModuleCategory(categoryName, modules);
+            mc.setSelected(Arrays.asList(selectedLsids));
+            categories.add(mc);
+        }
+        return categories;
     }
 
     /**
@@ -144,69 +146,68 @@ public class ModuleHelper {
      * @return
      */
     public List<ModuleCategory> getTasksBySuite() {
-	List<Suite> suites = (new SuiteDAO()).findAll();
-	
-	String userId = UIBeanHelper.getUserId();
-	//user must be logged in ...
-	if (userId == null || userId.trim().equals("")) {
-	    return new ArrayList<ModuleCategory>();
-	}
-	
-	List<ModuleCategory> categories = new ArrayList<ModuleCategory>(suites.size());
-	for (Suite suite : suites) {
-	    if (!userId.equals(suite.getUserId()) && suite.getAccessId().intValue() != GPConstants.ACCESS_PUBLIC) {
-	        //don't include private suites unless owned by someone else
-	        continue;
-	    }
-	    
-	    List<String> lsids = suite.getModules();
-	    List<TaskInfo> suiteTasks = new ArrayList<TaskInfo>();
-	    for (String lsid : lsids) {
-		TaskInfo ti = new AdminDAO().getTask(lsid, userId);
-		if (ti != null) {
-		    suiteTasks.add(ti);
-		}
-	    }
-	    TaskInfo[] taskArray = suiteTasks.toArray(new TaskInfo[0]);
-	    categories.add(new ModuleCategory(suite.getName(), taskArray, false, suite.getLsid()));
-	}
-	return categories;
+        List<Suite> suites = (new SuiteDAO()).findAll();
+
+        String userId = UIBeanHelper.getUserId();
+        // user must be logged in ...
+        if (userId == null || userId.trim().equals("")) { return new ArrayList<ModuleCategory>(); }
+
+        List<ModuleCategory> categories = new ArrayList<ModuleCategory>(suites.size());
+        for (Suite suite : suites) {
+            if (!userId.equals(suite.getUserId()) && suite.getAccessId().intValue() != GPConstants.ACCESS_PUBLIC) {
+                // don't include private suites unless owned by someone else
+                continue;
+            }
+
+            List<String> lsids = suite.getModules();
+            List<TaskInfo> suiteTasks = new ArrayList<TaskInfo>();
+            for (String lsid : lsids) {
+                TaskInfo ti = new AdminDAO().getTask(lsid, userId);
+                if (ti != null) {
+                    suiteTasks.add(ti);
+                }
+            }
+            TaskInfo[] taskArray = suiteTasks.toArray(new TaskInfo[0]);
+            categories.add(new ModuleCategory(suite.getName(), taskArray, false, suite.getLsid()));
+        }
+        return categories;
 
     }
 
     /**
-     * Used when viewing/editing a suite. If modules not in suite, selected version of <tt>Module</tt> set to latest,
-     * otherwise selected version set to version in suite.
+     * Used when viewing/editing a suite. If modules not in suite, selected
+     * version of <tt>Module</tt> set to latest, otherwise selected version set
+     * to version in suite.
      * 
      * @param suite
-     *                The suite.
+     *            The suite.
      * @return The modules.
      */
     public List<ModuleCategory> getTasksByTypeForSuite(Suite suite) {
-	List<ModuleCategory> categories = new ArrayList<ModuleCategory>();
-	List<String> lsids = suite.getModules();
-	Map<String, Map<String, TaskInfo>> taskMap = new HashMap<String, Map<String, TaskInfo>>();
+        List<ModuleCategory> categories = new ArrayList<ModuleCategory>();
+        List<String> lsids = suite.getModules();
+        Map<String, Map<String, TaskInfo>> taskMap = new HashMap<String, Map<String, TaskInfo>>();
 
-	Map<String, TaskInfo> queriedTasks = (new AdminDAO()).getAllTasksForUserWithLsids(getUserId(), lsids);
-	for (Map.Entry entry : queriedTasks.entrySet()) {
-	    addTaskInfoToMap(entry, taskMap);
-	}
+        Map<String, TaskInfo> queriedTasks = (new AdminDAO()).getAllTasksForUserWithLsids(getUserId(), lsids);
+        for (Map.Entry entry : queriedTasks.entrySet()) {
+            addTaskInfoToMap(entry, taskMap);
+        }
 
-	List<String> categoryNames = new ArrayList<String>(taskMap.keySet());
-	Collections.sort(categoryNames);
-	ModuleCategory mc;
-	Map<String, TaskInfo> lsidToTaskInfoMap;
-	for (String categoryName : categoryNames) {
-	    TaskInfo[] modules = new TaskInfo[taskMap.get(categoryName).size()];
-	    lsidToTaskInfoMap = taskMap.get(categoryName);
+        List<String> categoryNames = new ArrayList<String>(taskMap.keySet());
+        Collections.sort(categoryNames);
+        ModuleCategory mc;
+        Map<String, TaskInfo> lsidToTaskInfoMap;
+        for (String categoryName : categoryNames) {
+            TaskInfo[] modules = new TaskInfo[taskMap.get(categoryName).size()];
+            lsidToTaskInfoMap = taskMap.get(categoryName);
 
-	    modules = taskMap.get(categoryName).values().toArray(modules);
-	    mc = new ModuleCategory(categoryName, modules);
-	    mc.setSelectedVersionOfModules(lsidToTaskInfoMap);
+            modules = taskMap.get(categoryName).values().toArray(modules);
+            mc = new ModuleCategory(categoryName, modules);
+            mc.setSelectedVersionOfModules(lsidToTaskInfoMap);
 
-	    categories.add(mc);
-	}
-	return categories;
+            categories.add(mc);
+        }
+        return categories;
     }
 
     /**
@@ -214,17 +215,17 @@ public class ModuleHelper {
      * @param taskMap
      */
     private void addTaskInfoToMap(Map.Entry entry, Map<String, Map<String, TaskInfo>> taskMap) {
-	TaskInfo ti = (TaskInfo) entry.getValue();
-	String taskType = ti.getTaskInfoAttributes().get("taskType");
-	if (taskType == null || taskType.length() == 0) {
-	    taskType = "Uncategorized";
-	}
-	Map<String, TaskInfo> tasks = taskMap.get(taskType);
-	if (tasks == null) {
-	    tasks = new HashMap<String, TaskInfo>();
-	    taskMap.put(taskType, tasks);
-	}
-	tasks.put((String) entry.getKey(), (TaskInfo) entry.getValue());
+        TaskInfo ti = (TaskInfo) entry.getValue();
+        String taskType = ti.getTaskInfoAttributes().get("taskType");
+        if (taskType == null || taskType.length() == 0) {
+            taskType = "Uncategorized";
+        }
+        Map<String, TaskInfo> tasks = taskMap.get(taskType);
+        if (tasks == null) {
+            tasks = new HashMap<String, TaskInfo>();
+            taskMap.put(taskType, tasks);
+        }
+        tasks.put((String) entry.getKey(), (TaskInfo) entry.getValue());
     }
 
 }
