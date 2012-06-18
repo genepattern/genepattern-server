@@ -244,7 +244,7 @@ input[type="file"] {
 }
 
 ._jsPlumb_endpoint {
-	z-index: 2002;
+	z-index: 2000;
     opacity: 0.8;
 }
 

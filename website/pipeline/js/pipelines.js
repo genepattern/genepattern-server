@@ -3566,39 +3566,62 @@ function Port(module, pointer, param) {
         $(this.endpoint.canvas).click(function() {
             var port = editor.getParentPort(this.id);
 
+            // Show the edited port's module
+            properties.displayModule(port.module);
+
             // If already set or output, don't do anything
-            if (port.param === null || port.param === undefined || port.param.value !== "") {
+            if (port.param === null || port.param === undefined) {
                 return;
             }
 
-            var buttons = {
-                "Prompt When Run": function() {
-                    $(this).dialog("close");
-                    var id = "pwr_" + port.param._nameToId(port.param.name) + "_" + port.module.id;
-                    $("#" + id).trigger("click");
-                    if (event.preventDefault) event.preventDefault();
-                    if (event.stopPropagation) event.stopPropagation();
-                },
-                "Attach File": function() {
-                    $(this).dialog("close");
+            var buttons = null;
+            if (port.isConnected()) {
+                buttons = {
+                    "Delete Connection": function() {
+                        $(this).dialog("close");
+                        $(".editPipeButton[name='" + port.param.name + (port.param.required ? "*" : "") + "']").trigger("click");
+                        if (event.preventDefault) event.preventDefault();
+                        if (event.stopPropagation) event.stopPropagation();
+                    }
+                };
+            }
+            else if (port.param.isPWR()) {
+                buttons = {
+                    "Delete Prompt When Run": function() {
+                        $(this).dialog("close");
+                        var id = "pwr_" + port.param._nameToId(port.param.name) + "_" + port.module.id;
+                        $("#" + id).trigger("click");
+                        if (event.preventDefault) event.preventDefault();
+                        if (event.stopPropagation) event.stopPropagation();
+                    }
+                };
+            }
+            else {
+                buttons = {
+                    "Prompt When Run": function() {
+                        $(this).dialog("close");
+                        var id = "pwr_" + port.param._nameToId(port.param.name) + "_" + port.module.id;
+                        $("#" + id).trigger("click");
+                        if (event.preventDefault) event.preventDefault();
+                        if (event.stopPropagation) event.stopPropagation();
+                    },
+                    "Attach File": function() {
+                        $(this).dialog("close");
 
-                    // Trigger the attach file dialog
-                    $("#attachFile").trigger("click");
-                    // Add the new doc click event
-                    $(".ui-dialog-buttonpane button:contains('OK')").click(function() {
-                        var file = editor.getLastFile();
-                        editor.addPipe(port, file.outputEnds[0]);
-                    });
+                        // Trigger the attach file dialog
+                        $("#attachFile").trigger("click");
+                        // Add the new doc click event
+                        $(".ui-dialog-buttonpane button:contains('OK')").click(function() {
+                            var file = editor.getLastFile();
+                            editor.addPipe(port, file.outputEnds[0]);
+                        });
 
-                    if (event.preventDefault) event.preventDefault();
-                    if (event.stopPropagation) event.stopPropagation();
-                },
-                "Cancel": function() {
-                    $(this).dialog("close");
-                    if (event.preventDefault) event.preventDefault();
-                    if (event.stopPropagation) event.stopPropagation();
-                }
-            };
+                        if (event.preventDefault) event.preventDefault();
+                        if (event.stopPropagation) event.stopPropagation();
+                    }
+                };
+            }
+
             editor.showDialog("Choose Port Action", "Select the input you would like to give the port below:", buttons);
         });
 
