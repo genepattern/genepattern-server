@@ -1003,7 +1003,7 @@ var editor = {
         var buttons = null;
         if (errorCount > 0) {
             buttons = {
-                "Fix Errors": function() {
+                "Fix Errors": function(event) {
                     $(this).dialog("close");
                     if (event.preventDefault) event.preventDefault();
                     if (event.stopPropagation) event.stopPropagation();
@@ -1017,7 +1017,7 @@ var editor = {
                     if (event.preventDefault) event.preventDefault();
                     if (event.stopPropagation) event.stopPropagation();
                 },
-                "No, Review Warnings": function() {
+                "No": function() {
                     $(this).dialog("close");
                     if (event.preventDefault) event.preventDefault();
                     if (event.stopPropagation) event.stopPropagation();
@@ -1051,13 +1051,13 @@ var editor = {
         }
 
         // Otherwise, prompt the user
-        var buttons = { "Yes": function() {
+        var buttons = { "Yes": function(event) {
             $(this).dialog("close");
             editor.save(runImmediately, true);
             if (event.preventDefault) event.preventDefault();
             if (event.stopPropagation) event.stopPropagation();
         },
-        "No": function() {
+        "No": function(event) {
             $(this).dialog("close");
             if (event.preventDefault) event.preventDefault();
             if (event.stopPropagation) event.stopPropagation();
@@ -1076,13 +1076,13 @@ var editor = {
         }
 
         // Otherwise prompt the user
-        var buttons = { "Yes": function() {
+        var buttons = { "Yes": function(event) {
             $(this).dialog("close");
             editor.save(runImmediately, true);
             if (event.preventDefault) event.preventDefault();
             if (event.stopPropagation) event.stopPropagation();
         },
-            "No": function() {
+            "No": function(event) {
                 $(this).dialog("close");
                 if (event.preventDefault) event.preventDefault();
                 if (event.stopPropagation) event.stopPropagation();
@@ -1194,7 +1194,7 @@ var library = {
             uploadForm.appendChild(doneImg);
 
             var buttons = {
-                "OK": function() {
+                "OK": function(event) {
                     // Add the file to the UI
                     editor.addFile($("#uploadInput").val(), $("#hiddenFilePath").val());
 
@@ -1203,7 +1203,7 @@ var library = {
                     if (event.preventDefault) event.preventDefault();
                     if (event.stopPropagation) event.stopPropagation();
                 },
-                "Cancel": function() {
+                "Cancel": function(event) {
                     $(this).dialog("close");
                     if (event.preventDefault) event.preventDefault();
                     if (event.stopPropagation) event.stopPropagation();
@@ -3577,7 +3577,7 @@ function Port(module, pointer, param) {
             var buttons = null;
             if (port.isConnected()) {
                 buttons = {
-                    "Delete Connection": function() {
+                    "Delete Connection": function(event) {
                         $(this).dialog("close");
                         $(".editPipeButton[name='" + port.param.name + (port.param.required ? "*" : "") + "']").trigger("click");
                         if (event.preventDefault) event.preventDefault();
@@ -3587,7 +3587,7 @@ function Port(module, pointer, param) {
             }
             else if (port.param.isPWR()) {
                 buttons = {
-                    "Delete Prompt When Run": function() {
+                    "Delete Prompt When Run": function(event) {
                         $(this).dialog("close");
                         var id = "pwr_" + port.param._nameToId(port.param.name) + "_" + port.module.id;
                         $("#" + id).trigger("click");
@@ -3598,14 +3598,14 @@ function Port(module, pointer, param) {
             }
             else {
                 buttons = {
-                    "Prompt When Run": function() {
+                    "Prompt When Run": function(event) {
                         $(this).dialog("close");
                         var id = "pwr_" + port.param._nameToId(port.param.name) + "_" + port.module.id;
                         $("#" + id).trigger("click");
                         if (event.preventDefault) event.preventDefault();
                         if (event.stopPropagation) event.stopPropagation();
                     },
-                    "Attach File": function() {
+                    "Attach File": function(event) {
                         $(this).dialog("close");
 
                         // Trigger the attach file dialog
