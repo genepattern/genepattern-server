@@ -45,7 +45,7 @@ var editor = {
 		jsPlumb.Defaults.PaintStyle = { strokeStyle:"#666699", lineWidth:2 };
 		jsPlumb.Defaults.EndpointStyle = { radius:9, fillStyle:"black" };
 		jsPlumb.Defaults.Anchors = ["BottomCenter", "TopCenter"];
-		jsPlumb.Defaults.Overlays = [[ "Arrow", { width: 13, length: 13, location: 1, id: "arrow" } ]];
+		jsPlumb.Defaults.Overlays = [[ "Arrow", { width: 13, length: 13, location: 0.92, id: "arrow" } ]];
 		jsPlumb.Defaults.MaxConnections = -1;
 
 		jsPlumb.bind("jsPlumbConnection", function(event) {
@@ -3123,6 +3123,17 @@ function Module(moduleJSON) {
     this._createOutputList = function() {
         var outputList = document.createElement("div");
 
+        for (var i = 0; i < this.outputs.length; i++) {
+            var output = this.outputs[i];
+            var outputDiv = document.createElement("div");
+            outputDiv.setAttribute("class", "moduleFileItem outputFileItem");
+            if (library.isODF(output)) {
+                output += " (odf)";
+            }
+            outputDiv.innerHTML = library.concatNameForDisplay(output, 30);
+            outputList.appendChild(outputDiv);
+        }
+
         var outputDiv = document.createElement("div");
         outputDiv.setAttribute("class", "moduleFileItem outputFileItem");
         outputDiv.innerHTML = "1st Output";
@@ -3142,14 +3153,6 @@ function Module(moduleJSON) {
         outputDiv.setAttribute("class", "moduleFileItem outputFileItem");
         outputDiv.innerHTML = "4th Output";
         outputList.appendChild(outputDiv);
-
-        for (var i = 0; i < this.outputs.length; i++) {
-            var output = this.outputs[i];
-            var outputDiv = document.createElement("div");
-            outputDiv.setAttribute("class", "moduleFileItem outputFileItem");
-            outputDiv.innerHTML = library.concatNameForDisplay(output, 30);
-            outputList.appendChild(outputDiv);
-        }
 
         outputDiv = document.createElement("div");
         outputDiv.setAttribute("class", "moduleFileItem outputFileItem");
@@ -3271,15 +3274,15 @@ function Module(moduleJSON) {
     };
 
     this._addOutputPorts = function() {
-        this.addOutput(1);
-        this.addOutput(2);
-        this.addOutput(3);
-        this.addOutput(4);
-
         for (var i = 0; i < this.outputs.length; i++) {
             var output = this.outputs[i];
             this.addOutput(output);
         }
+
+        this.addOutput(1);
+        this.addOutput(2);
+        this.addOutput(3);
+        this.addOutput(4);
 
         this.addOutput("?scatter&amp;filter&#061;*");
         this.addOutput("?filelist&amp;filter&#061;*");
@@ -3578,10 +3581,10 @@ function Port(module, pointer, param) {
         // Get the correct position array
         var posArray = null;
         if (this.isOutput()) {
-            posArray = [1, this.position, 0, 1];
+            posArray = [1, this.position, 1, 0];
         }
         else {
-            posArray = [0, this.position, 0, -1];
+            posArray = [0, this.position, -1, 0];
         }
 
         // Get the correct number of max connections
