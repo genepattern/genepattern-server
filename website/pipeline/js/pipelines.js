@@ -1352,9 +1352,6 @@ var library = {
 
                     var module = editor.addModule(lsid);
 
-                    // Expand the workspace so that modules do not get lost beneath the editor
-                    editor.expandIfNeeded(module);
-
                     // Scroll page to new module
                     $("html, body").animate({ scrollLeft: $(module.ui).position().left - 100 }, "slow");
                 });
@@ -1400,9 +1397,6 @@ var library = {
 
             $("#modulesDropdown").val("");
             var module = editor.addModule(lsid);
-
-            // Expand the workspace so that modules do not get lost beneath the editor
-            editor.expandIfNeeded(module);
 
             // Scroll page to new module
             $("html, body").animate({ scrollLeft: $(module.ui).position().left - 100 }, "slow");
@@ -3340,6 +3334,7 @@ function Module(moduleJSON) {
         this._addOutputPorts();
         jsPlumb.draggable(this.ui);
         this._addDragEvents();
+        editor.expandIfNeeded(this);
     };
 
     this.addInfoTooltips = function() {
