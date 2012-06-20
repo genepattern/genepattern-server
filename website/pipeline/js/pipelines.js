@@ -1156,6 +1156,29 @@ var library = {
         });
     },
 
+    isODF: function(type) {
+        if (type === "Actual Peaks" ||
+            type === "Actual Peaks to EM-matched Peaks" ||
+            type === "Comparative Marker Selection" ||
+            type === "Dataset" ||
+            type === "EM Gaussian Mixtures" ||
+            type === "Gene List" ||
+            type === "KNN Prediction Model" ||
+            type === "Prediction Features" ||
+            type === "Prediction Results" ||
+            type === "Proteomics Analysis Statistics" ||
+            type === "SOM Cluster" ||
+            type === "Spectra Similarity" ||
+            type === "Spectrum Area Change" ||
+            type === "Spectrum Peaks" ||
+            type === "Spectrum Peaks Locate") {
+            return true;
+        }
+        else {
+            return false;
+        }
+    },
+
     _addFileButton: function() {
         $("#attachFile").button();
         $("#attachFile").click(function() {
@@ -1382,7 +1405,7 @@ var library = {
             editor.expandIfNeeded(module);
 
             // Scroll page to new module
-            $("html, body").animate({ scrollLeft: module.ui.style.left }, "slow");
+            $("html, body").animate({ scrollLeft: $(module.ui).position().left - 100 }, "slow");
         });
     },
 
@@ -1546,6 +1569,8 @@ var library = {
             }
 
         }
+
+        this.moduleNames = library._sortAlphabetically(this.moduleNames).toArray();
     },
 
     _sortAlphabetically : function(stringArray) {
@@ -2398,7 +2423,8 @@ var properties = {
 
     displayFile: function(file) {
         // Build the new display
-        this._setTitle(file.outputs[0]);
+        this._setTitle(file.getFilename());
+        this._setSubtitle(file.getDisplayPath());
         this._addSpacerDiv();
         $("#" + this.inputDiv).append("This is a file that has been included in the pipeline.");
     },
@@ -3372,6 +3398,19 @@ function File(name, path) {
 
     file.getFilename = function() {
         return this.outputs[0];
+    };
+
+    file.getPath = function() {
+        return this.lsid;
+    };
+
+    file.getDisplayPath = function() {
+        if (this.lsid.indexOf("ftp://") !== 0 && this.lsid.indexOf("http://") !== 0) {
+            return "Uploaded File: " + this.getFilename();
+        }
+        else {
+            return this.getPath();
+        }
     };
 
     file.calculateHeight = function() {
