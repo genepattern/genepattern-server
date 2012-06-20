@@ -628,7 +628,7 @@ var editor = {
 
         // Determine if this module goes below or beside the last one
         var below = false;
-        if (module.isVisualizer() || this.workspace.suggestRow === MARGIN + EXTRA_TOP_MARGIN) {
+        if (module.isVisualizer() || (this.workspace.suggestRow === MARGIN + EXTRA_TOP_MARGIN && !module.isFile())) {
             below = true;
         }
 
