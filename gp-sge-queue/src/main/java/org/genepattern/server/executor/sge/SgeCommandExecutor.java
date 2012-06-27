@@ -97,18 +97,22 @@ public class SgeCommandExecutor implements CommandExecutor {
         if (sgeProject != null) {
             System.setProperty(Prop.SGE_PROJECT.name(), sgeProject);
         }
-        if (sgeProject != null) {
+        if (sgeSessionFile != null) {
             System.setProperty(Prop.SGE_SESSION_FILE.name(), sgeSessionFile);
         }
         if (sgeLogFilename != null) {
             System.setProperty(Prop.SGE_LOG_FILENAME.name(), sgeLogFilename);
         }
         //initialize Zamboni's SGE service
+        log.debug("initializing Zamboni's SGE service ...");
         sgeBatchSystem = new SgeBatchSystem(sgeBatchSystemName);
+        log.debug("starting job monitor ...");
         startJobMonitor();
+        log.info("... started SGE CommandExecutor.");
     }
 
     public void stop() {
+        log.info("stopping SGE CommandExecutor ...");
         if (sgeBatchSystem != null) {
             try {
                 log.info("Shutting down SGE Batch System ...");
@@ -120,6 +124,7 @@ public class SgeCommandExecutor implements CommandExecutor {
             }
         }
         stopJobMonitor();
+        log.info("... stopped SGE CommandExecutor.");
     }
     
     private void startJobMonitor() {
@@ -166,8 +171,29 @@ public class SgeCommandExecutor implements CommandExecutor {
         //TODO: handle environmentVariables
         //TODO: handle stdinFile
         
+        if (jobInfo == null) {
+            throw new CommandExecutorException("Error: jobInfo == null");
+        }
+        if (commandLine == null) {
+            throw new CommandExecutorException("commandLine == null");
+        }
+        if (log.isDebugEnabled()) {
+            log.debug("commandLine: ");
+            int i=0;
+            for(String arg : commandLine) {
+                log.debug("    arg["+i+"]='"+arg+"'");
+                ++i;
+            }
+            log.debug("runDir: "+runDir);
+            log.debug("stdoutFile: "+stdoutFile);
+            log.debug("stderrFile: "+stderrFile);
+            log.debug("stdinFile: "+stdinFile);
+        }
+        
         try {
+            log.debug("creating batch job ...");
             BatchJob sgeJob = BatchJobUtil.createBatchJob(sgeBatchSystem, jobInfo); 
+            log.debug("sgeJob.setCommand( "+commandLine[0]+" )");
             sgeJob.setCommand( scala.Option.apply( commandLine[0] ) );
             String[] args = null;
             if (commandLine.length <= 1) {
@@ -179,17 +205,24 @@ public class SgeCommandExecutor implements CommandExecutor {
             for(int i=1; i<commandLine.length; ++i) {
                 args[i-1] = commandLine[i];
             } 
+            log.debug("sgeJob.setArgs...");
             sgeJob.setArgs( new scala.Some<String[]>(args) );
+            log.debug("sgeJob.setWorkingDirectory...");
             sgeJob.setWorkingDirectory( new scala.Some<String>(runDir.getPath()) );
+            log.debug("sgeJob.setOutputPath...");
             sgeJob.setOutputPath( new scala.Some<String>(stdoutFile.getPath()) );
+            log.debug("sgeJob.setErrorPath...");
             sgeJob.setErrorPath( new scala.Some<String>(stderrFile.getPath()) );
+            log.debug("sgeJob.setJobName...");
             sgeJob.setJobName( new scala.Some<String>("GP_"+jobInfo.getJobNumber()) );
             if (stdinFile != null) {
+                log.debug("sgeJob.setInputPath...");
                 //@see org.ggf.drmaa.JobTemplate#setInputPath for details 
                 String inputPath = ":"+stdinFile.getAbsolutePath();
                 sgeJob.setInputPath(inputPath);
             }
-            
+
+            log.debug("setting custom properties for sgeJob ...");
             //load custom properties for job
             /*
              * "sge.priority"
@@ -204,43 +237,54 @@ public class SgeCommandExecutor implements CommandExecutor {
             ServerConfiguration.Context jobContext = ServerConfiguration.Context.getContextForJob(jobInfo); 
             Integer priority = ServerConfiguration.instance().getGPIntegerProperty(jobContext, "sge.priority", null);
             if (priority != null) {
+                log.debug("sgeJob.setPriority( "+priority+" )");
                 sgeJob.setPriority( scala.Option.apply( priority ) );
             }
             String queueName = ServerConfiguration.instance().getGPProperty(jobContext, "sge.queueName", null);
             if (queueName != null) {
+                log.debug("sgeJob.setQueueName( "+queueName+" )");
                 sgeJob.setQueueName( scala.Option.apply( queueName ) );
             }
             Object exclusiveObj = ServerConfiguration.instance().getValue(jobContext, "sge.exclusive");
             if (exclusiveObj != null) {
                 Boolean exclusive = ServerConfiguration.instance().getGPBooleanProperty(jobContext, "sge.exclusive");
+                log.debug("sgeJob.setExclusive( "+exclusive+" )");
                 sgeJob.setExclusive( scala.Option.apply( exclusive ) );
             }
             Integer maxRunningTime = ServerConfiguration.instance().getGPIntegerProperty(jobContext, "sge.maxRunningTime", null);
             if (maxRunningTime != null) {
+                log.debug("sgeJob.setMaxRunningTime( "+maxRunningTime+" )");
                 sgeJob.setMaxRunningTime( scala.Option.apply( maxRunningTime ) );
             }
             Integer memoryReservation = ServerConfiguration.instance().getGPIntegerProperty(jobContext, "sge.memoryReservation", null);
             if (memoryReservation != null) {
+                log.debug("sgeJob.setMemoryReservation( "+memoryReservation+" )");
                 sgeJob.setMemoryReservation( scala.Option.apply( memoryReservation ) );
             }
             Integer maxMemory = ServerConfiguration.instance().getGPIntegerProperty(jobContext, "sge.maxMemory", null);
             if (maxMemory != null) {
+                log.debug("sgeJob.setMaxMemory( "+maxMemory+" )");
                 sgeJob.setMaxMemory( scala.Option.apply( maxMemory ) );
             }
             Integer slotReservation = ServerConfiguration.instance().getGPIntegerProperty(jobContext, "sge.slotReservation", null);
             if (slotReservation != null) {
+                log.debug("sgeJob.setSlotReservation( "+slotReservation+" )");
                 sgeJob.setSlotReservation( scala.Option.apply( slotReservation ) );
             }
             Object restartableObj = ServerConfiguration.instance().getValue(jobContext, "sge.restartable");
             if (restartableObj != null) {
                 Boolean restartable = ServerConfiguration.instance().getGPBooleanProperty(jobContext, "sge.restartable");
+                log.debug("sgeJob.setRestartable( "+restartable+" )");
                 sgeJob.setRestartable( scala.Option.apply( restartable ) );
             }
+            log.debug("submitting job...");
             sgeJob = sgeBatchSystem.submit(sgeJob);
             //TODO: think about error handling, the job is presumably running on SGE, however if we have DB errors in the 
             //    following lines of code, the GP server will assume the job is not running
             log.debug("submitted job to SGE, gp_job_id="+jobInfo.getJobNumber()+", sge_job_id="+sgeJob.getJobId());
+            log.debug("creating job record ...");
             BatchJobUtil.createJobRecord(jobInfo, sgeJob);
+            log.debug("... Done!");
         }
         catch (Throwable t) {
             throw new CommandExecutorException("Error submitting job "+jobInfo.getJobNumber()+" to SGE: "+t.getLocalizedMessage(), t);
