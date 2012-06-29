@@ -2,7 +2,9 @@ package org.genepattern.server;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.apache.log4j.Logger;
 import org.genepattern.server.config.ServerConfiguration;
@@ -13,7 +15,6 @@ import org.genepattern.server.dm.userupload.UserUploadManager;
 import org.genepattern.server.dm.userupload.dao.UserUpload;
 import org.genepattern.server.dm.userupload.dao.UserUploadDao;
 import org.genepattern.server.webapp.jsf.AuthorizationHelper;
-import org.genepattern.server.webapp.jsf.UIBeanHelper;
 
 /**
  * Utility class for managing data files.
@@ -147,7 +148,7 @@ public class DataManager {
      * Checks whether the given user has permission to delete the server file at the given filePath reference.
      * 
      * Note: If for some reason the file no longer exists on the server, still return true.
-     * TODO: should have better error handling/doc for when the file is still on the DB but not on the file system
+     * TODO: should have better error handling/doc for when the file is still in the DB but not in the file system.
      * 
      * @param currentUser
      * @param uf
@@ -202,43 +203,6 @@ public class DataManager {
         }
         return false;
     }
-    
-    /**
-     * Updates the database  with a particular file found when syncing the file system and database
-     * @param dao
-     * @param file
-     * @param user
-     * @throws Exception
-     */
-    private static void handleFileSync(UserUploadDao dao, File file, ServerConfiguration.Context userContext) throws Exception {
-        // Exclude file on exclude list (ex: .DS_Store)
-        if (isExcludedFile(file)) {
-            return;
-        }
-        
-        if (userContext == null) {
-            throw new Exception("Missing required parameter, userContext is null");
-        }
-        if (userContext.getUserId() == null) {
-            throw new Exception("Missing required parameter, userContext.userId is null");
-        }
-        
-        UserUpload uploadFile = new UserUpload();
-        
-        String relativePath = UserUploadManager.absoluteToRelativePath(userContext, file.getCanonicalPath());
-        uploadFile.setPath(relativePath);
-        uploadFile.setUserId(userContext.getUserId());
-        uploadFile.setNumParts(1);
-        uploadFile.setNumPartsRecd(1);
-        uploadFile.init(file);
-        dao.saveOrUpdate(uploadFile);
-        
-        if (file.isDirectory()) {
-            for (File i : file.listFiles()) {
-                handleFileSync(dao, i, userContext);
-            }
-        }
-    }
 
     /**
      * Wipes all of a user's uploads from the database, then crawls the upload directory for a given user 
@@ -250,7 +214,8 @@ public class DataManager {
         try {
             UserUploadDao dao = new UserUploadDao();
             List<UserUpload> userFiles = dao.selectAllUserUpload(userId);
-            File uploadDir = getUserUploadDirectory(userId);
+            
+            File uploadDir = ServerConfiguration.instance().getUserUploadDir(Context.getContextForUser(userId));
             if (uploadDir == null) {
                 log.error("Unable to get the user's upload directory in syncUploadFiles()");
                 return;
@@ -265,10 +230,12 @@ public class DataManager {
 
             // Add new entries to the database
             ServerConfiguration.Context userContext = ServerConfiguration.Context.getContextForUser(userId);
-            for (File i : uploadDir.listFiles()) {
-                handleFileSync(dao, i, userContext);
+            String[] relPath = new String[0];
+            Set<String> visitedDirs = new HashSet<String>();
+            for (File file : uploadDir.listFiles()) {
+                handleFileSync(dao, visitedDirs, relPath, file, userContext);
             }
-            
+
             // Commit
             HibernateUtil.commitTransaction();
         }
@@ -276,9 +243,75 @@ public class DataManager {
             log.error("Error committing upload file sync to database");
             HibernateUtil.rollbackTransaction();
         }
+        finally {
+            HibernateUtil.closeCurrentSession();
+        }
+    }
+    
+    /**
+     * Updates the database  with a particular file found when syncing the file system and database.
+     * 
+     * @param dao
+     * @param file
+     * @param user
+     * @throws Exception
+     */
+    private static void handleFileSync(UserUploadDao dao, Set<String> visitedDirs, String[] relPath, File file, ServerConfiguration.Context userContext) throws Exception {
+        // Exclude file on exclude list (ex: .DS_Store)
+        if (isExcludedFile(file)) {
+            return;
+        }
+        
+        if (userContext == null) {
+            throw new Exception("Missing required parameter, userContext is null");
+        }
+        if (userContext.getUserId() == null) {
+            throw new Exception("Missing required parameter, userContext.userId is null");
+        }
+        
+        UserUpload uploadFile = new UserUpload();
+        
+        String[] newRelPath = new String[relPath.length + 1];
+        for(int idx = 0; idx<relPath.length; ++idx) {
+            newRelPath[idx] = relPath[idx];
+        }
+        newRelPath[relPath.length] = file.getName();
+        String relativePath = join(newRelPath, "/");
+        //relativePath += file.getName();
+        //String relativePath = UserUploadManager.absoluteToRelativePath(userContext, file.getCanonicalPath());
+        uploadFile.setPath(relativePath);
+        uploadFile.setUserId(userContext.getUserId());
+        uploadFile.setNumParts(1);
+        uploadFile.setNumPartsRecd(1);
+        uploadFile.init(file);
+        dao.saveOrUpdate(uploadFile); 
+
+        if (file.isDirectory()) {
+            final String canonicalPath = file.getCanonicalPath();
+            if (visitedDirs.contains( canonicalPath )) {
+            }
+            else {
+                visitedDirs.add( canonicalPath );
+                for (File i : file.listFiles()) {
+                    handleFileSync(dao, visitedDirs, newRelPath, i, userContext);
+                }
+            }
+        }
     }
 
-    public static File getUserUploadDirectory(String user) {
-        return ServerConfiguration.instance().getUserUploadDir(Context.getContextForUser(user));
+    private static String join(String[] arr, String sep) {
+        String rval = "";
+        boolean first = true;
+        for(String s : arr) {
+            if (first) {
+                rval = s;
+                first = false;
+            }
+            else {
+                rval += (sep + s);
+            }
+        }
+        return rval;
     }
+
 }
