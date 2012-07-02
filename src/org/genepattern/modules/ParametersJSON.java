@@ -35,14 +35,13 @@ public class ParametersJSON extends JSONObject {
     public static final String NAME = "name";
     public static final String DESCRIPTION = "description";
     public static final String TYPE = "TYPE";
-    //parameter type i.e. java.lang.String - different from TYPE above
+    //parameter "type" i.e. java.lang.String IS different from "TYPE" above
     public static final String type = "type";
     public static final String DEFAULT_VALUE = "default_value";
     public static final String OPTIONAL = "optional";
     public static final String FILEFORMAT = "fileFormat";
     public static final String PREFIX = "prefix";
     public static final String VALUE = "value";
-    public static final String CHOICES = "choices";
     public static final String FLAG = "flag";
 
 
@@ -57,7 +56,6 @@ public class ParametersJSON extends JSONObject {
             this.put(OPTIONAL, object.get(OPTIONAL));
             this.put(PREFIX, object.get(PREFIX));
             this.put(VALUE, object.get(VALUE));
-            this.put(CHOICES, object.get(CHOICES));
             this.put(FLAG, object.get(FLAG));
 
             String typeString = String.class.getName();
@@ -98,10 +96,8 @@ public class ParametersJSON extends JSONObject {
             this.put(PREFIX, pAttrs.get(GPConstants.PARAM_INFO_PREFIX[0]));
             this.put(OPTIONAL, pAttrs.get(GPConstants.PARAM_INFO_OPTIONAL[0]));
             this.put(FLAG, pAttrs.get(FLAG));
+            this.put(VALUE, pAttrs.get(VALUE));
 
-            //returns choices delimted by ; and display name and val delimited by =
-            String choices = pInfo.getValue();
-            this.put(CHOICES, choices);
 
             Set keys = pAttrs.keySet();
             Iterator<String> kIter = keys.iterator();
@@ -133,12 +129,12 @@ public class ParametersJSON extends JSONObject {
           return this.getString(PREFIX);
     }
 
-    public String getChoices() throws JSONException {
-       return this.getString(CHOICES);
+    public String getValue() throws JSONException {
+       return this.getString(VALUE);
     }
 
-    public void setChoices(String value) throws JSONException {
-       this.put(CHOICES, value);
+    public void setValue(String value) throws JSONException {
+       this.put(VALUE, value);
     }
 
     public String getFileFormats() throws JSONException {

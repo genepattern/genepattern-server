@@ -1032,7 +1032,7 @@ function loadParameterInfo(parameters)
             newParameter.find("select[name='fileformat']").multiselect('refresh');
         }
 
-        var choices = parameters[i].choices;
+        var choices = parameters[i].value;
         if(choices !== undefined && choices !== null && choices.length > 0)
         {
             newParameter.find("select[name='p_type']").val("Choice");
@@ -1051,7 +1051,7 @@ function loadParameterInfo(parameters)
             console.log("\nkeys: " + keys[k]);
             var keyName = keys[k];
             if(keyName != "name" && keyName != "description"
-                    && keyName != "flag" && keyName != "fileFormat" && keyName != "choices"
+                    && keyName != "flag" && keyName != "fileFormat"
                     && keyName != "default_value" && keyName != "prefix" && keyName != "type"
                     && keyName != "TYPE" && keyName != "MODE" && keyName != "optional" && keyName != "value" && keyName != "prefix_when_specified")
             {
@@ -1178,9 +1178,9 @@ function getParametersJSON()
         }
 
         var parameter = {
-            "name": pname, "choices": choices, "description": description, "TYPE": type,
+            "name": pname, "description": description, "TYPE": type,
             "default_value": default_val, "optional": optional,
-            "fileFormat": fileformatlist, "MODE": mode, "value": value, "prefix": prefix, "flag":flag
+            "fileFormat": fileformatlist, "MODE": mode, "value": choices, "prefix": prefix, "flag":flag
         };
 
         //add other remaining attributes

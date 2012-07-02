@@ -440,8 +440,8 @@ public class ModuleQueryServlet extends HttpServlet
 
                 attributes.put(ParametersJSON.FLAG, parameterJSON.get(ParametersJSON.FLAG));
 
-                parameter.setValue(parameterJSON.getChoices());
-
+                attributes.put(ParametersJSON.VALUE, parameterJSON.getValue());
+                parameter.setValue(parameterJSON.getValue());
                 Iterator<String> paramKeys = parameterJSON.keys();
                 while(paramKeys.hasNext())
                 {
