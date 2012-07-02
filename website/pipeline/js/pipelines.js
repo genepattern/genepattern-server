@@ -661,7 +661,6 @@ var editor = {
 
 	suggestLocation: function(module) {
 		// Pick your layout manager
-		// return this._gridLayoutManager();
         return this._tLayoutManager(module);
 	},
 
