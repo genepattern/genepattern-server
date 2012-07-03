@@ -77,6 +77,24 @@ var editor = {
         };
 	},
 
+    filenameExists: function(name) {
+        // Check documentation
+        if (name === editor.workspace["pipelineDocumentation"]) {
+            return true;
+        }
+
+        // Check all attached files
+        for (var i in editor.workspace) {
+            var module = editor.workspace[i];
+            if (module instanceof Module && module.isFile() && module.getFilename() === name) {
+                return true;
+            }
+        }
+
+        // If not found, return false
+        return false;
+    },
+
     getLastFile: function() {
         var id = editor.workspace.fileCounter - 1;
         return editor.workspace[id];
@@ -1241,6 +1259,12 @@ var library = {
             $("#upload_form").iframePostForm({
                 json : false,
                 post : function() {
+                    var filename = $(fileUpload).val();
+                    filename = editor.extractFilename(filename);
+                    if (editor.filenameExists(filename)) {
+                        editor.showDialog("Attach File Error", "This file name already exists in the pipeline.  Unable to upload.");
+                        return false;
+                    }
                     $("#fileUploading").show();
                     $("#fileDone").hide();
                 },
