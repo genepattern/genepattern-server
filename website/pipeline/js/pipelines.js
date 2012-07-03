@@ -86,10 +86,9 @@ var editor = {
         // Expand the workspace so that modules do not get lost beneath the editor
         var PROPERTIES_WIDTH = 300;
         var MODULE_WIDTH = 195;
-        var OFFSET = 195;
         var bodyWidth = $(document).width();
-        if ($(module.ui).position().left + MODULE_WIDTH + OFFSET > bodyWidth - PROPERTIES_WIDTH) {
-            $("#" + editor.div).width(bodyWidth - OFFSET + PROPERTIES_WIDTH);
+        if ($(module.ui).position().left + MODULE_WIDTH > bodyWidth - PROPERTIES_WIDTH) {
+            $(".tableDiv").width(bodyWidth + PROPERTIES_WIDTH + 20);
         }
     },
 
@@ -599,25 +598,27 @@ var editor = {
         return count;
     },
 
-    _tLayoutManager: function(module) {
+    _p2LayoutManager: function(module) {
         var WIDTH = 195;
         var MARGIN = 40;
-        var EXTRA_TOP_MARGIN = 80;
+        var NON_FILE_TOP_MARGIN = 80;
+        var EXTRA_TOP_MARGIN = 110;
+        var EXTRA_LEFT_MARGIN = 200;
 
         // Determine if this is the first module in the layout
         var firstModule = editor.modulesInWorkspace() <= 1;
 
         // Create the JSON object to return
-        var toReturn = { "top": MARGIN + (module.isFile() ? 0 : EXTRA_TOP_MARGIN), "left": MARGIN };
+        var toReturn = { "top": MARGIN + (module.isFile() ? EXTRA_TOP_MARGIN : EXTRA_TOP_MARGIN + NON_FILE_TOP_MARGIN), "left": MARGIN  + EXTRA_LEFT_MARGIN};
 
         // If this is the first module, please it at the top
         if (firstModule) {
-            this.workspace.suggestRow = MARGIN + (module.isFile() ? 0 : EXTRA_TOP_MARGIN);
-            this.workspace.suggestCol = MARGIN;
+            this.workspace.suggestRow = MARGIN + (module.isFile() ? EXTRA_TOP_MARGIN : EXTRA_TOP_MARGIN + NON_FILE_TOP_MARGIN);
+            this.workspace.suggestCol = MARGIN + EXTRA_LEFT_MARGIN;
 
             // Update for new estimated height
             if (module.isFile()) {
-                this.workspace.suggestRow = MARGIN + EXTRA_TOP_MARGIN;
+                this.workspace.suggestRow = EXTRA_TOP_MARGIN + MARGIN + NON_FILE_TOP_MARGIN;
             }
             else {
                 this.workspace.suggestRow += module.calculateHeight() + MARGIN;
@@ -628,7 +629,7 @@ var editor = {
 
         // Determine if this module goes below or beside the last one
         var below = false;
-        if (module.isVisualizer() || (this.workspace.suggestRow === MARGIN + EXTRA_TOP_MARGIN && !module.isFile())) {
+        if (module.isVisualizer() || (this.workspace.suggestRow === EXTRA_TOP_MARGIN + MARGIN + NON_FILE_TOP_MARGIN && !module.isFile())) {
             below = true;
         }
 
@@ -641,7 +642,7 @@ var editor = {
             this.workspace.suggestRow += module.calculateHeight() + MARGIN;
         }
         else {
-            this.workspace.suggestRow = MARGIN + (module.isFile() ? 0 : EXTRA_TOP_MARGIN);
+            this.workspace.suggestRow = MARGIN + (module.isFile() ? EXTRA_TOP_MARGIN : EXTRA_TOP_MARGIN + NON_FILE_TOP_MARGIN);
             this.workspace.suggestCol += WIDTH + MARGIN;
 
             toReturn.top = this.workspace.suggestRow;
@@ -649,7 +650,7 @@ var editor = {
 
             // Update for new estimated height
             if (module.isFile()) {
-                this.workspace.suggestRow = MARGIN + EXTRA_TOP_MARGIN;
+                this.workspace.suggestRow = EXTRA_TOP_MARGIN + MARGIN + NON_FILE_TOP_MARGIN;
             }
             else {
                 this.workspace.suggestRow += module.calculateHeight() + MARGIN;
@@ -661,7 +662,7 @@ var editor = {
 
 	suggestLocation: function(module) {
 		// Pick your layout manager
-        return this._tLayoutManager(module);
+        return this._p2LayoutManager(module);
 	},
 
     _makePipelineNameValid: function(string) {
