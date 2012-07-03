@@ -77,6 +77,27 @@ var editor = {
         };
 	},
 
+    isReservedFilename: function(name) {
+        if (name === ".pipelineDesigner") {
+            return true;
+        }
+        if (name === "manifest") {
+            return true;
+        }
+        if (name === ".DS_Store") {
+            return true;
+        }
+        if (name === "Thumbs.db") {
+            return true;
+        }
+        if (name === "desktop.ini") {
+            return true;
+        }
+
+        // If not found, return false
+        return false;
+    },
+
     filenameExists: function(name) {
         // Check documentation
         if (name === editor.workspace["pipelineDocumentation"]) {
@@ -1265,6 +1286,11 @@ var library = {
                         editor.showDialog("Attach File Error", "This file name already exists in the pipeline.  Unable to upload.");
                         return false;
                     }
+                    if (editor.isReservedFilename(filename)) {
+                        editor.showDialog("Attach File Error", "This file has a reserved file name.  Unable to upload.");
+                        return false;
+                    }
+
                     $("#fileUploading").show();
                     $("#fileDone").hide();
                 },
