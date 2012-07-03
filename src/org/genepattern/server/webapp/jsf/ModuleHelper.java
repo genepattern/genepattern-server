@@ -17,6 +17,7 @@ import static org.genepattern.server.webapp.jsf.UIBeanHelper.getUserId;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -92,7 +93,7 @@ public class ModuleHelper {
         }
 
         List<String> categoryNames = new ArrayList<String>(taskMap.keySet());
-        Collections.sort(categoryNames, String.CASE_INSENSITIVE_ORDER);
+        Collections.sort(categoryNames, new PipelineOrder());
         for (String categoryName : categoryNames) {
             TaskInfo[] modules = new TaskInfo[taskMap.get(categoryName).size()];
             modules = taskMap.get(categoryName).toArray(modules);
@@ -226,6 +227,19 @@ public class ModuleHelper {
             taskMap.put(taskType, tasks);
         }
         tasks.put((String) entry.getKey(), (TaskInfo) entry.getValue());
+    }
+    
+    public class PipelineOrder implements Comparator<String> {
+        public int compare(String a, String b) {
+            int base = String.CASE_INSENSITIVE_ORDER.compare(a, b);
+            
+            // Handle the special case of "pipeline"
+            if ("pipeline".equals(a) && "pipeline".equals(b)) return 0;
+            else if ("pipeline".equals(a)) return 1;
+            else if ("pipeline".equals(b)) return -1;
+            
+            return base;
+        }
     }
 
 }
