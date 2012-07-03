@@ -157,63 +157,69 @@
             if (genomeSpaceLoggedIn) $(".genomeSpaceLoggedOut").hide();
         </script>
 
-        <!--  Main content area -->
-        <div id="content" class="content">
-            <!-- Main content body -->
-            <div id="library">
-                <button id="attachFile" class="libraryModuleButton">Attach File</button>
-                <div class="spacerDiv" style="width: 90%;" />
-                <label for="modulesDropdown" class="ui-autocomplete-input">Select Module: </label>
-                <br />
-                <input id="modulesDropdown" size="15" />
-                <button id="addModule" class="libraryModuleButton">Add</button>
-                <div class="spacerDiv" style="width: 90%;" />
-                <span id="shortcutModules" />
-                <div id="libraryControls">
-                    <a id="openAllCategories" href="#">Open All</a> | <a id="closeAllCategories" href="#">Close All</a>
-                </div>
-                <div id="categoryModules" />
-                <div class="bottomSpacer" />
+        <!-- Main content body -->
+        <div id="library">
+            <button id="attachFile" class="libraryModuleButton">Attach File</button>
+            <div class="spacerDiv" style="width: 90%;" />
+            <label for="modulesDropdown" class="ui-autocomplete-input">Select Module: </label>
+            <br />
+            <input id="modulesDropdown" size="15" />
+            <button id="addModule" class="libraryModuleButton">Add</button>
+            <div class="spacerDiv" style="width: 90%;" />
+            <span id="shortcutModules" />
+            <div id="libraryControls">
+                <a id="openAllCategories" href="#">Open All</a> | <a id="closeAllCategories" href="#">Close All</a>
             </div>
-            <div id="titleBar">
-                <span id="titleSpan" />
-                <div id="saveLoadDiv">
-                    <button id="pipelinePencil" class="saveLoadButton"><img id="pipelinePencilImg" class="topRowButton" src="images/pencil.gif" alt="Properties" />Properties</button>
-                    <button id="loadButton" class="saveLoadButton"><img id="loadButtonImg" class="topRowButton" src="images/load.gif" alt="Load" />Load</button>
-                    <button id="saveButton" class="saveLoadButton"><img id="saveButtonImg" class="topRowButton" src="images/save.gif" alt="Save" />Save</button>
-                    <button id="runButton" class="saveLoadButton"><img id="runButtonImg" class="topRowButton" src="images/save_run.gif" alt="Run" />Save &amp; Run</button>
-                    <button id="revertButton" class="saveLoadButton"><img id="revertButtonImg" class="topRowButton" src="images/revert.gif" alt="Revert" />Revert</button>
-                </div>
+            <div id="categoryModules" />
+            <div class="bottomSpacer" />
+        </div>
+        <div id="titleBar">
+            <span id="titleSpan" />
+            <div id="saveLoadDiv">
+                <button id="pipelinePencil" class="saveLoadButton"><img id="pipelinePencilImg" class="topRowButton" src="images/pencil.gif" alt="Properties" />Properties</button>
+                <button id="loadButton" class="saveLoadButton"><img id="loadButtonImg" class="topRowButton" src="images/load.gif" alt="Load" />Load</button>
+                <button id="saveButton" class="saveLoadButton"><img id="saveButtonImg" class="topRowButton" src="images/save.gif" alt="Save" />Save</button>
+                <button id="runButton" class="saveLoadButton"><img id="runButtonImg" class="topRowButton" src="images/save_run.gif" alt="Run" />Save &amp; Run</button>
+                <button id="revertButton" class="saveLoadButton"><img id="revertButtonImg" class="topRowButton" src="images/revert.gif" alt="Revert" />Revert</button>
             </div>
-            <div id="workspace"></div>
+        </div>
+        <div class="tableDiv">
+            <div class="tableRow topTableRow">
+                <div class="tableCell leftTableCell"></div>
+                <div class="tableCell"></div>
+            </div>
+            <div class="tableRow bottomTableRow">
+                <div class="tableCell leftTableCell"></div>
+                <div class="tableCell" id="workspace"></div>
+            </div>
+        </div>
 
-            <!-- Footer -->
-            <div id="footer">
-                <table width="100%" border="0" cellspacing="0" cellpadding="0">
-                    <tr>
-                        <td colspan="4" class="footer">
-                            <table width="100%" border="0" cellspacing="0" cellpadding="0">
-                                <tr>
-                                    <td>
-                                        <a href="/gp/pages/about.jsf">About GenePattern</a>&#160;|&#160;<a href="/gp/pages/contactUs.jsf">Contact Us</a>
-                                    </td>
-                                    <td>
-                                        <div align="right">
-                                            &copy;2003-2012&#160;<a href="http://www.broadinstitute.org" target="_blank">Broad Institute, MIT</a>
-                                        </div>
-                                    </td>
-                                    <td width="10">&#160;</td>
-                                    <td width="27">
-                                        <a href="http://www.broadinstitute.org" target="_blank">
-                                            <img src="/gp/images/broad-symbol.gif" alt="Broad Institute" height="30" style="border: 0;" width="27"/>
-                                        </a>
-                                    </td>
-                                </tr>
-                            </table>
-                        </td>
-                    </tr>
-                </table>
-            </div>
+        <!-- Footer -->
+        <div id="footer">
+            <table width="100%" border="0" cellspacing="0" cellpadding="0">
+                <tr>
+                    <td colspan="4" class="footer">
+                        <table width="100%" border="0" cellspacing="0" cellpadding="0">
+                            <tr>
+                                <td>
+                                    <a href="/gp/pages/about.jsf">About GenePattern</a>&#160;|&#160;<a href="/gp/pages/contactUs.jsf">Contact Us</a>
+                                </td>
+                                <td>
+                                    <div align="right">
+                                        &copy;2003-2012&#160;<a href="http://www.broadinstitute.org" target="_blank">Broad Institute, MIT</a>
+                                    </div>
+                                </td>
+                                <td width="10">&#160;</td>
+                                <td width="27">
+                                    <a href="http://www.broadinstitute.org" target="_blank">
+                                        <img src="/gp/images/broad-symbol.gif" alt="Broad Institute" height="30" style="border: 0;" width="27"/>
+                                    </a>
+                                </td>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+            </table>
         </div>
 
         <div id="loadPipelineDialog">
@@ -287,7 +293,7 @@
             });
             editor.updateProgressBar();
 
-            jsPlumb.ready(function() {		
+            jsPlumb.ready(function() {
                 editor.updateProgressBar();
                 editor.init();
 				editor.USE_BETA_OPTIONS = #{verifyPipelineBean.useBeta};
