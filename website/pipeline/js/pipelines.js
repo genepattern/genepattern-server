@@ -427,6 +427,9 @@ var editor = {
         newIn.connectPipe(newPipe);
         newOut.connectPipe(newPipe);
 
+        // Make not draggable
+        newIn.disableDrag();
+
         editor.workspace["pipes"].push(newPipe);
         return newPipe;
     },
@@ -455,6 +458,9 @@ var editor = {
         if (output.module.isFile()) {
             input.param.value = output.module.getFilename();
         }
+
+        // Make not draggable
+        input.disableDrag();
 
         input.param.makeUsed();
 
@@ -3628,8 +3634,8 @@ function Port(module, pointer, param) {
 	this.pipes = [];
 
 	this.init = function() {
-        var OUTPUT = { isSource: true, paintStyle: { fillStyle: "black" } };
-        var INPUT = { isTarget: true, paintStyle: { fillStyle: "black", outlineColor:"black", outlineWidth: 0 } };
+        var OUTPUT = { isTarget: false, isSource: true, paintStyle: { fillStyle: "black" } };
+        var INPUT = { isTarget: true, isSource: false, paintStyle: { fillStyle: "black", outlineColor:"black", outlineWidth: 0 } };
 
         // Get the correct base style
         var baseStyle = null;
@@ -3737,6 +3743,14 @@ function Port(module, pointer, param) {
         if (!this.isOutput() && !this.isRequired()) {
             $(this.endpoint.canvas).addClass("optionalPort");
         }
+    };
+
+    this.disableDrag = function() {
+        this.endpoint.setEnabled(false);
+    };
+
+    this.enableDrag = function() {
+        this.endpoint.setEnabled(true);
     };
 
 	this.connectPipe = function(pipe) {
@@ -3914,6 +3928,9 @@ function Pipe(connection) {
     };
 
 	this.remove = function() {
+        // Make the input port draggable
+        this.inputPort.enableDrag();
+
         // Mark the deleted input port as no longer used
         this.inputPort.getInput().makeUnused();
 		this.inputPort.detachAll();
