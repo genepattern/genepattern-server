@@ -3160,6 +3160,18 @@ function Module(moduleJSON) {
         return outputList;
     };
 
+    this.getDescriptor = function() {
+        if (this.isFile()) {
+            return "File";
+        }
+        else if (this.isVisualizer()) {
+            return "Visualizer";
+        }
+        else {
+            return "Module";
+        }
+    };
+
 	this._createDiv = function() {
         this.ui = document.createElement("div");
         this.ui.setAttribute("class", this.type);
@@ -3178,8 +3190,8 @@ function Module(moduleJSON) {
         deleteButton.setAttribute("id", "del_" + this.id);
         deleteButton.setAttribute("src", "images/delete.gif");
         deleteButton.setAttribute("class", "deleteButton");
-        deleteButton.setAttribute("alt", "Delete Module");
-        deleteButton.setAttribute("title", "Remove Module");
+        deleteButton.setAttribute("alt", "Delete " + this.getDescriptor());
+        deleteButton.setAttribute("title", "Remove " + this.getDescriptor());
         titleDiv.appendChild(deleteButton);
 
         // Create and append the list of inputs
@@ -3208,9 +3220,9 @@ function Module(moduleJSON) {
 
         // Functionality for the delete button
         $(deleteButton).click(function() {
-            var confirmed = confirm("Are you sure you want to delete this module?");
+            var module = editor.getParentModule(this.id);
+            var confirmed = confirm("Are you sure you want to delete this " + module.getDescriptor() + "?");
             if (confirmed) {
-                var module = editor.getParentModule(this.id);
                 module.remove();
 
                 // Mark the workspace as dirty
