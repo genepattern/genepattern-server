@@ -659,7 +659,7 @@ button.ui-button::-moz-focus-inner { border: 0; padding: 0; } /* reset extra pad
     width: 100%;
     z-index: 5000;
     top: 48px;
-    left: 77px;
+    padding-left: 77px;
 }
 
 .ddsmoothmenu ul {
