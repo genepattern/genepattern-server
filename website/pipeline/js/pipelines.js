@@ -3210,6 +3210,9 @@ function Module(moduleJSON) {
 
         // Clicking the div triggers displaying properties
         $(this.ui).click(function (event) {
+            // Hack for FireFox executing this event before properties save
+            properties.saveToModel();
+
             $(this).removeClass("alertModule");
             properties.displayModule(editor.getParentModule(this.id));
             properties.show();
