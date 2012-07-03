@@ -1370,7 +1370,7 @@ var library = {
         for (var cat in library.moduleCategoryMap) {
             sortedCategories.push(cat);
         }
-        sortedCategories = library._sortAlphabetically(sortedCategories);
+        sortedCategories = library._sortAlphabetically(sortedCategories, true);
 
         for (var iCat = 0; iCat < sortedCategories.length; iCat++) {
             //noinspection JSDuplicatedDeclaration
@@ -1617,8 +1617,14 @@ var library = {
         this.moduleNames = library._sortAlphabetically(this.moduleNames).toArray();
     },
 
-    _sortAlphabetically : function(stringArray) {
+    _sortAlphabetically : function(stringArray, specialCase) {
         return $(stringArray).sort(function(a, b) {
+            // Handle special case for "pipeline"
+            if (specialCase && a === "pipeline" && b === "pipeline") return 0;
+            else if (specialCase && a === "pipeline") return 1;
+            else if (specialCase && b === "pipeline") return -1;
+
+
             var compA = a.toUpperCase();
             var compB = b.toUpperCase();
             return (compA < compB) ? -1 : (compA > compB) ? 1 : 0;
