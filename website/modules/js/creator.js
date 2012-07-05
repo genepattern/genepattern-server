@@ -264,9 +264,7 @@ function addparameter()
         <table class='pmoptions'><tr><td>Default Value:</td><td><input type='text' name='p_defaultvalue' size='16'/><br/>\
         </td></tr>\
         <tr><td>Flag:</td><td><input type='text' name='p_flag' size='7'/>\
-        </td> \
-        <td> \
-        <input type='checkbox' name='p_prefix' size='7'></input> prefix when specified \
+        <input type='checkbox' name='p_prefix' size='7' disabled='disabled'></input> prefix when specified \
         </td> \
         </tr>\
         <tr><td>Type*:</td><td><select name='p_type'>\
@@ -969,6 +967,10 @@ function loadParameterInfo(parameters)
         if(parameters[i].flag !== undefined && parameters[i].flag !== null)
         {
             newParameter.find("input[name='p_flag']").val(parameters[i].flag);
+            if(newParameter.find("input[name='p_flag']").val() != "")
+            {
+                newParameter.find("input[name='p_prefix']").removeAttr("disabled");
+            }
         }
 
         if(optional.length > 0)
@@ -1355,6 +1357,26 @@ jQuery(document).ready(function() {
         }
     });
 
+
+    $("input[name='p_flag']").live("keyup", function()
+    {
+        var parameterParent = $(this).parents(".parameter");
+
+        var p_prefix = parameterParent.find("input[name='p_prefix']");
+        var p_flag = parameterParent.find("input[name='p_flag']");
+
+        if(p_flag.val() !== undefined && p_flag.val() !== null)
+        {
+            if(p_flag.val() !== "")
+            {
+                p_prefix.removeAttr("disabled");
+            }
+            else
+            {
+                p_prefix.attr("disabled", true);
+            }
+        }
+     });
 
     $("input[name='p_name'], input[name='p_flag'], input[name='p_prefix']").live("change", function()
     {
