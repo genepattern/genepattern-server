@@ -2696,7 +2696,7 @@ function Module(moduleJSON) {
 	this.type = "module";
 	this.ui = null;
     this.alerts = {};
-    this.expanded = true;
+    this.expanded = this.outputs.length > 0 || moduleJSON.type === "visualizer" ? false : true;
     this.blackBox = false;
 
     this.advancedConnected = function() {
@@ -3255,31 +3255,37 @@ function Module(moduleJSON) {
 
         var outputDiv = document.createElement("div");
         outputDiv.setAttribute("class", "moduleFileItem outputFileItem advancedOutput");
+        if (!this.expanded) $(outputDiv).addClass("hiddenOutput");
         outputDiv.innerHTML = "1st Output";
         outputList.appendChild(outputDiv);
 
         outputDiv = document.createElement("div");
         outputDiv.setAttribute("class", "moduleFileItem outputFileItem advancedOutput");
+        if (!this.expanded) $(outputDiv).addClass("hiddenOutput");
         outputDiv.innerHTML = "2nd Output";
         outputList.appendChild(outputDiv);
 
         outputDiv = document.createElement("div");
         outputDiv.setAttribute("class", "moduleFileItem outputFileItem advancedOutput");
+        if (!this.expanded) $(outputDiv).addClass("hiddenOutput");
         outputDiv.innerHTML = "3rd Output";
         outputList.appendChild(outputDiv);
 
         outputDiv = document.createElement("div");
         outputDiv.setAttribute("class", "moduleFileItem outputFileItem advancedOutput");
+        if (!this.expanded) $(outputDiv).addClass("hiddenOutput");
         outputDiv.innerHTML = "4th Output";
         outputList.appendChild(outputDiv);
 
         outputDiv = document.createElement("div");
         outputDiv.setAttribute("class", "moduleFileItem outputFileItem advancedOutput");
+        if (!this.expanded) $(outputDiv).addClass("hiddenOutput");
         outputDiv.innerHTML = "Scatter Each Output";
         outputList.appendChild(outputDiv);
 
         outputDiv = document.createElement("div");
         outputDiv.setAttribute("class", "moduleFileItem outputFileItem advancedOutput");
+        if (!this.expanded) $(outputDiv).addClass("hiddenOutput");
         outputDiv.innerHTML = "File List of All Outputs";
         outputList.appendChild(outputDiv);
 
@@ -3301,7 +3307,8 @@ function Module(moduleJSON) {
     this._createLessTab = function() {
         var tab = document.createElement("div");
         tab.setAttribute("class", "moreLessTab");
-        tab.innerHTML = "Show Less";
+        if (this.expanded) tab.innerHTML = "Show Less";
+        else tab.innerHTML = "Show More";
         var module = this;
 
         $(tab).click(function() {
@@ -3396,6 +3403,7 @@ function Module(moduleJSON) {
 	this.addOutput = function (pointer, advanced) {
         var output = new Output(this, pointer);
         if (advanced) output.advanced = true;
+        if (!this.expanded && advanced) $(output.endpoint.canvas).addClass("hiddenOutput");
         var index = this.outputEnds.length;
         this.outputEnds[index] = output;
         return output;
@@ -3738,14 +3746,15 @@ function Port(module, pointer, param) {
         // Calculate position
         this.position = this.module.calculatePosition(this.isOutput(), pointer, true);
         this.collapsedPosition = this.module.calculatePosition(this.isOutput(), pointer, false);
+        var usedPosition = this.module.expanded ? this.position : this.collapsedPosition;
 
         // Get the correct position array
         var posArray = null;
         if (this.isOutput()) {
-            posArray = [1, this.position, 1, 0];
+            posArray = [1, usedPosition, 1, 0];
         }
         else {
-            posArray = [0, this.position, -1, 0];
+            posArray = [0, usedPosition, -1, 0];
         }
 
         // Get the correct number of max connections
