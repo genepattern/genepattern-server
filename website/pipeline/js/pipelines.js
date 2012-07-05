@@ -2696,9 +2696,42 @@ function Module(moduleJSON) {
 	this.type = "module";
 	this.ui = null;
     this.alerts = {};
+    this.expanded = true;
     this.blackBox = false;
 
-    this.calculateHeight = function() {
+    this.collapse = function() {
+        $("#" + this.ui.getAttribute("id") + " .advancedOutput").addClass("hiddenOutput");
+
+        for (var i = 0; i < this.outputEnds.length; i++) {
+            if (this.outputEnds[i].advanced) {
+                $(this.outputEnds[i].endpoint.canvas).addClass("hiddenOutput");
+            }
+
+            this.outputEnds[i].endpoint.anchor.y = this.outputEnds[i].collapsedPosition;
+        }
+
+        $("#" + this.ui.getAttribute("id") + " .moreLessTab")[0].innerHTML = "Show More";
+        this.expanded = false;
+    };
+
+    this.expand = function() {
+        $("#" + this.ui.getAttribute("id") + " .advancedOutput").removeClass("hiddenOutput");
+
+        for (var i = 0; i < this.outputEnds.length; i++) {
+            if (this.outputEnds[i].advanced) {
+                $(this.outputEnds[i].endpoint.canvas).removeClass("hiddenOutput");
+            }
+
+            this.outputEnds[i].endpoint.anchor.y = this.outputEnds[i].position;
+        }
+
+        $("#" + this.ui.getAttribute("id") + " .moreLessTab")[0].innerHTML = "Show Less";
+        this.expanded = true;
+    };
+
+    this.calculateHeight = function(expanded) {
+        if (expanded === undefined) expanded = true;
+
         var LINE_HEIGHT = 23;
         var height = 0;
 
@@ -2708,14 +2741,19 @@ function Module(moduleJSON) {
         // Add from spacing
         height += 20;
 
-        // Add from numbered outputs
-        height += LINE_HEIGHT * 4;
+        // Add from more/less tab
+        height += LINE_HEIGHT;
 
         // Add from typed outputs
         height += LINE_HEIGHT * this.outputs.length;
 
-        // Add from scatter gather
-        height += LINE_HEIGHT * 2;
+        if (expanded) {
+            // Add from numbered outputs
+            height += LINE_HEIGHT * 4;
+
+            // Add from scatter gather
+            height += LINE_HEIGHT * 2;
+        }
 
         return height;
     };
@@ -2732,9 +2770,9 @@ function Module(moduleJSON) {
         return null;
     };
 
-    this.calculatePosition = function(isOutput, pointer) {
-        var LINE_HEIGHT = 22;
-        var height = this.calculateHeight();
+    this.calculatePosition = function(isOutput, pointer, expanded) {
+        var LINE_HEIGHT = 22.5;
+        var height = this.calculateHeight(expanded);
         if (isOutput) {
             var position = LINE_HEIGHT + 13 + (this.fileInputs.length * LINE_HEIGHT) + 6;
                 position += this.outputEnds.length * LINE_HEIGHT;
@@ -3191,32 +3229,32 @@ function Module(moduleJSON) {
         }
 
         var outputDiv = document.createElement("div");
-        outputDiv.setAttribute("class", "moduleFileItem outputFileItem");
+        outputDiv.setAttribute("class", "moduleFileItem outputFileItem advancedOutput");
         outputDiv.innerHTML = "1st Output";
         outputList.appendChild(outputDiv);
 
         outputDiv = document.createElement("div");
-        outputDiv.setAttribute("class", "moduleFileItem outputFileItem");
+        outputDiv.setAttribute("class", "moduleFileItem outputFileItem advancedOutput");
         outputDiv.innerHTML = "2nd Output";
         outputList.appendChild(outputDiv);
 
         outputDiv = document.createElement("div");
-        outputDiv.setAttribute("class", "moduleFileItem outputFileItem");
+        outputDiv.setAttribute("class", "moduleFileItem outputFileItem advancedOutput");
         outputDiv.innerHTML = "3rd Output";
         outputList.appendChild(outputDiv);
 
         outputDiv = document.createElement("div");
-        outputDiv.setAttribute("class", "moduleFileItem outputFileItem");
+        outputDiv.setAttribute("class", "moduleFileItem outputFileItem advancedOutput");
         outputDiv.innerHTML = "4th Output";
         outputList.appendChild(outputDiv);
 
         outputDiv = document.createElement("div");
-        outputDiv.setAttribute("class", "moduleFileItem outputFileItem");
+        outputDiv.setAttribute("class", "moduleFileItem outputFileItem advancedOutput");
         outputDiv.innerHTML = "Scatter Each Output";
         outputList.appendChild(outputDiv);
 
         outputDiv = document.createElement("div");
-        outputDiv.setAttribute("class", "moduleFileItem outputFileItem");
+        outputDiv.setAttribute("class", "moduleFileItem outputFileItem advancedOutput");
         outputDiv.innerHTML = "File List of All Outputs";
         outputList.appendChild(outputDiv);
 
@@ -3233,6 +3271,24 @@ function Module(moduleJSON) {
         else {
             return "Module";
         }
+    };
+
+    this._createLessTab = function() {
+        var tab = document.createElement("div");
+        tab.setAttribute("class", "moreLessTab");
+        tab.innerHTML = "Show Less";
+        var module = this;
+
+        $(tab).click(function() {
+            if (module.expanded) {
+                module.collapse();
+            }
+            else {
+                module.expand();
+            }
+        });
+
+        return tab;
     };
 
 	this._createDiv = function() {
@@ -3269,6 +3325,10 @@ function Module(moduleJSON) {
         // Create and append the list of outputs
         var outputList = this._createOutputList();
         this.ui.appendChild(outputList);
+
+        // Create and append the list of outputs
+        var lessTab = this._createLessTab();
+        this.ui.appendChild(lessTab);
 
         // Clicking the div triggers displaying properties
         $(this.ui).click(function (event) {
@@ -3308,8 +3368,9 @@ function Module(moduleJSON) {
         properties.show();
     };
 
-	this.addOutput = function (pointer) {
+	this.addOutput = function (pointer, advanced) {
         var output = new Output(this, pointer);
+        if (advanced) output.advanced = true;
         var index = this.outputEnds.length;
         this.outputEnds[index] = output;
         return output;
@@ -3350,13 +3411,13 @@ function Module(moduleJSON) {
             this.addOutput(output);
         }
 
-        this.addOutput(1);
-        this.addOutput(2);
-        this.addOutput(3);
-        this.addOutput(4);
+        this.addOutput(1, true);
+        this.addOutput(2, true);
+        this.addOutput(3, true);
+        this.addOutput(4, true);
 
-        this.addOutput("?scatter&amp;filter&#061;*");
-        this.addOutput("?filelist&amp;filter&#061;*");
+        this.addOutput("?scatter&amp;filter&#061;*", true);
+        this.addOutput("?filelist&amp;filter&#061;*", true);
     };
 
     this._addInputPorts = function() {
@@ -3629,9 +3690,11 @@ function Port(module, pointer, param) {
     this.param = param;
 	this.type = null;
     this.position = null;
+    this.collapsedPosition = null;
 	this.endpoint = null;
 	this.tooltip = null;
 	this.pipes = [];
+    this.advanced = false;
 
 	this.init = function() {
         var OUTPUT = { isTarget: false, isSource: true, paintStyle: { fillStyle: "black" } };
@@ -3648,7 +3711,8 @@ function Port(module, pointer, param) {
         else { prefix = "in_"; }
 
         // Calculate position
-        this.position = this.module.calculatePosition(this.isOutput(), pointer);
+        this.position = this.module.calculatePosition(this.isOutput(), pointer, true);
+        this.collapsedPosition = this.module.calculatePosition(this.isOutput(), pointer, false);
 
         // Get the correct position array
         var posArray = null;

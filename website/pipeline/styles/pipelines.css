@@ -372,6 +372,22 @@ input[type="file"] {
     cursor: pointer;
 }
 
+.hiddenOutput {
+    display: none;
+    z-index: -1 !important;
+}
+
+.moreLessTab {
+    text-align: center;
+    margin-left: auto;
+    margin-right: auto;
+    cursor: pointer;
+}
+
+.moreLessTab:hover {
+    background: rgba(0, 0, 0, 0.2);
+}
+
 div.iconSpace {
     margin-top: 3px;
     text-align: left;
