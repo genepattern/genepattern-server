@@ -427,6 +427,11 @@ var editor = {
         newIn.connectPipe(newPipe);
         newOut.connectPipe(newPipe);
 
+        // Expand output module as necessary
+        if (newOut.advanced && !newOut.module.expanded) {
+            newOut.module.expand();
+        }
+
         // Make not draggable
         newIn.disableDrag();
 
@@ -3358,9 +3363,11 @@ function Module(moduleJSON) {
         var outputList = this._createOutputList();
         this.ui.appendChild(outputList);
 
-        // Create and append the list of outputs
-        var lessTab = this._createLessTab();
-        this.ui.appendChild(lessTab);
+        if (!this.isFile()) {
+            // Create and append the list of outputs
+            var lessTab = this._createLessTab();
+            this.ui.appendChild(lessTab);
+        }
 
         // Clicking the div triggers displaying properties
         $(this.ui).click(function (event) {
