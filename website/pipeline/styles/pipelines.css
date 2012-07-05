@@ -384,6 +384,14 @@ input[type="file"] {
     cursor: pointer;
 }
 
+.collapseDisabled {
+    color: #333333;
+}
+
+.collapseDisabled:hover {
+    background: rgba(0, 0, 0, 0.0) !important;
+}
+
 .moreLessTab:hover {
     background: rgba(0, 0, 0, 0.2);
 }

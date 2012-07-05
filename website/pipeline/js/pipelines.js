@@ -2699,7 +2699,32 @@ function Module(moduleJSON) {
     this.expanded = true;
     this.blackBox = false;
 
+    this.advancedConnected = function() {
+        var connected = false;
+
+        for (var i = 0; i < this.outputEnds.length; i++) {
+            if (this.outputEnds[i].advanced && this.outputEnds[i].isConnected()) {
+                connected = true;
+            }
+        }
+
+        return connected;
+    };
+
+    this.disableLessTab = function() {
+        $("#" + this.ui.getAttribute("id") + " .moreLessTab").addClass("collapseDisabled");
+    };
+
+    this.enableLessTab = function() {
+        $("#" + this.ui.getAttribute("id") + " .moreLessTab").removeClass("collapseDisabled");
+    };
+
     this.collapse = function() {
+        // Check for disabled, do nothing is it is
+        if ($("#" + this.ui.getAttribute("id") + " .moreLessTab").hasClass("collapseDisabled")) {
+            return;
+        }
+
         $("#" + this.ui.getAttribute("id") + " .advancedOutput").addClass("hiddenOutput");
 
         for (var i = 0; i < this.outputEnds.length; i++) {
@@ -3809,6 +3834,22 @@ function Port(module, pointer, param) {
         }
     };
 
+    this.removePipe = function(pipe) {
+        for (var i = 0; i < this.pipes.length; i++) {
+            if (this.pipes[i] === pipe) {
+                // Remove the pipe from the array
+                this.pipes.splice(i, 1);
+
+                // Enable the more/less tab if necessary
+                if (this.advanced && !this.module.advancedConnected()) {
+                    this.module.enableLessTab();
+                }
+
+                return;
+            }
+        }
+    };
+
     this.disableDrag = function() {
         this.endpoint.setEnabled(false);
     };
@@ -3819,6 +3860,9 @@ function Port(module, pointer, param) {
 
 	this.connectPipe = function(pipe) {
         this.pipes.push(pipe);
+
+        // Disable more/less tab if necessary
+        if (this.advanced) this.module.disableLessTab();
     };
 
     this.isRequired = function() {
@@ -3998,6 +4042,11 @@ function Pipe(connection) {
         // Mark the deleted input port as no longer used
         this.inputPort.getInput().makeUnused();
 		this.inputPort.detachAll();
+
+        // Remove pipe from input and output ports
+        this.outputPort.removePipe(this);
+        this.inputPort.removePipe(this);
+
 		this.inputModule.checkForWarnings();
 		editor.removePipe(this);
 	};
