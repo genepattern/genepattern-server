@@ -2084,16 +2084,6 @@ var properties = {
         return checkBox;
     },
 
-    _addCustomPWRBox: function(appendTo, labelText) {
-        var pwrObject = this.current.getInputByName(properties._stripTrailingAstrik(labelText)).promptWhenRun;
-        if (pwrObject !== null && pwrObject !== undefined) {
-            var customSpace = document.createElement("div");
-            customSpace.setAttribute("class", "customPWRDiv");
-            customSpace.innerHTML = "<em>" + pwrObject.name + ":</em> " + pwrObject.description;
-            $(appendTo).append(customSpace);
-        }
-    },
-
     _addPWRDisplayButton: function() {
         var div = document.createElement("div");
         var label = document.createElement("label");
@@ -2171,7 +2161,6 @@ var properties = {
         // When the prompt when run checkbox is checked, enable or disable upload
         if (checkBox !== undefined && checkBox !== null) {
             $(".propertyCheckBox[name='" + labelText + "']").change(function() {
-                // Toggle the pwr icon on module icon
                 var module = properties.current;
                 if (!(module instanceof Module)) {
                     var id = $(label).attr("name");
@@ -2188,9 +2177,6 @@ var properties = {
                     properties._hideDisplaySettingsButton(labelText);
                     input.makeNotPWR();
                 }
-
-                var iconId = "pwr_" + input._nameToId(labelText) + "_" + properties.current.id;
-                $("#" + iconId).toggleClass("promptWhenRunIconOn");
 
                 // Save when the select is changed
                 properties.saveToModel();
@@ -3221,23 +3207,6 @@ function Module(moduleJSON) {
             var fileDiv = document.createElement("div");
             fileDiv.setAttribute("class", "moduleFileItem");
             fileDiv.innerHTML = library.concatNameForDisplay(file.name, 26) + (file.required ? "*" : "");
-
-            var pwr = document.createElement("img");
-            pwr.setAttribute("id", "pwr_" + file._nameToId(file.name) + "_" + this.id);
-            pwr.setAttribute("src", "images/pwr.jpeg");
-            pwr.setAttribute("alt", "Prompt When Run");
-            pwr.setAttribute("name", file.name);
-            pwr.setAttribute("class", "promptWhenRunIcon");
-            pwr.setAttribute("title", "Prompt When Run");
-            $(pwr).tooltip({tipClass: "infoTooltip"});
-            $(pwr).click(function() {
-                var module = editor.getParentModule(this);
-                var input = module.getInputByName(this.getAttribute("name"));
-                $(module.ui).trigger("click");
-                $(".propertyCheckBox[name='" + input.name + (input.required ? "*" : "") + "']").trigger("click");
-            });
-            fileDiv.appendChild(pwr);
-
             inputList.appendChild(fileDiv);
         }
 
@@ -3675,11 +3644,17 @@ function InputParam(module, paramJSON) {
 
         this.promptWhenRun = new PWRParam(this.module, this.name, name, desc);
         this.value = properties.PROMPT_WHEN_RUN;
+
+        // Update the port's icon
+        this.port.updateIcon();
     };
 
     this.makeNotPWR = function() {
         this.promptWhenRun = null;
         this.value = "";
+
+        // Update the port's icon
+        this.port.updateIcon();
     };
 
     this.prepTransport = function() {
@@ -3808,8 +3783,7 @@ function Port(module, pointer, param) {
                 buttons = {
                     "Delete Prompt When Run": function(event) {
                         $(this).dialog("close");
-                        var id = "pwr_" + port.param._nameToId(port.param.name) + "_" + port.module.id;
-                        $("#" + id).trigger("click");
+                        $(".propertyCheckBox[name='" + port.param.name + (port.param.required ? "*" : "") + "']").trigger("click");
                         if (event.preventDefault) event.preventDefault();
                         if (event.stopPropagation) event.stopPropagation();
                     }
@@ -3819,8 +3793,9 @@ function Port(module, pointer, param) {
                 buttons = {
                     "Prompt When Run": function(event) {
                         $(this).dialog("close");
-                        var id = "pwr_" + port.param._nameToId(port.param.name) + "_" + port.module.id;
-                        $("#" + id).trigger("click");
+
+                        $(".propertyCheckBox[name='" + port.param.name + (port.param.required ? "*" : "") + "']").trigger("click");
+
                         if (event.preventDefault) event.preventDefault();
                         if (event.stopPropagation) event.stopPropagation();
                     },
@@ -3849,6 +3824,20 @@ function Port(module, pointer, param) {
             $(this.endpoint.canvas).addClass("optionalPort");
         }
     };
+
+    this.updateIcon = function() {
+        // Protect against unset params
+        if (this.param === null) {
+            editor.log("Port.updateIcon() called for a null param: " + this.pointer);
+        }
+
+        if (this.param.isPWR()) {
+            this.endpoint.canvas.setAttribute("src", "images/pwr.jpeg");
+        }
+        else {
+            this.endpoint.canvas.setAttribute("src", "images/port.gif");
+        }
+    }
 
     this.removePipe = function(pipe) {
         for (var i = 0; i < this.pipes.length; i++) {
