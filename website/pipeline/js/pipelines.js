@@ -77,6 +77,18 @@ var editor = {
         };
 	},
 
+    updateAllPorts: function() {
+        for (var i in editor.workspace) {
+            var module = editor.workspace[i];
+            if (module instanceof Module) {
+                for (var j = 0; j < module.inputEnds.length; j++) {
+                    var input = module.inputEnds[j];
+                    input.updateIcon();
+                }
+            }
+        }
+    },
+
     isReservedFilename: function(name) {
         if (name === ".pipelineDesigner") {
             return true;
@@ -273,15 +285,6 @@ var editor = {
     protectAgainstUndefined: function(value) {
         if (value !== undefined) return value;
         else return "";
-    },
-
-    initPWR: function(module, paramName, pwrJSON) {
-        if (pwrJSON === null || pwrJSON === undefined) return null;
-
-        var name = pwrJSON[0];
-        var desc = pwrJSON[1];
-
-        return new PWRParam(module, paramName, name, desc);
     },
 
     isInsideDialog: function(element) {
@@ -950,6 +953,7 @@ var editor = {
                     editor._loadPipeline(response["pipeline"]);
                     editor._loadModules(response["modules"]);
                     editor._loadPipes(response["pipes"]);
+                    setTimeout(editor.updateAllPorts, 100);
                     editor._validatePipeline();
                     editor.makeClean();
                 }
@@ -3608,15 +3612,38 @@ function InputParam(module, paramJSON) {
     this.type = paramJSON.type;
     this.kinds = paramJSON.kinds;
     this.required = paramJSON.required;
-    this.promptWhenRun = editor.initPWR(this.module, this.name, paramJSON.promptWhenRun);
+    this.promptWhenRun = null; // Done in the initPWR() below
     this.defaultValue = editor.protectAgainstUndefined(paramJSON.defaultValue);
     this.choices = paramJSON.choices;
     this.used = false;
     this.port = null;
     this.value = editor.protectAgainstUndefined(this.defaultValue);
 
-    this._nameToId = function(name) {
-        return name.replace(/[^a-zA-Z 0-9]+/g,'');
+    this.initPWR = function(pwrJSON) {
+        if (pwrJSON !== undefined && pwrJSON !== null) {
+            this.makePWR(pwrJSON[0], pwrJSON[1]);
+        }
+        else {
+            this.promptWhenRun = null;
+        }
+
+        return this.promptWhenRun;
+    };
+    this.initPWR(paramJSON.promptWhenRun);
+
+    this.makePWR = function(name, desc) {
+        if (name === undefined) name = this.name;
+        if (desc === undefined) desc = this.description;
+
+        this.promptWhenRun = new PWRParam(this.module, this.name, name, desc);
+        this.value = properties.PROMPT_WHEN_RUN;
+
+        // Update the port's icon
+        if (this.port !== null && this.port !== undefined) {
+            if (!editor.loading) {
+                this.port.updateIcon();
+            }
+        }
     };
 
     this.isFile = function() {
@@ -3633,17 +3660,6 @@ function InputParam(module, paramJSON) {
     
     this.isPWR = function() {
         return this.promptWhenRun !== null;
-    };
-
-    this.makePWR = function(name, desc) {
-        if (name === undefined) name = this.name;
-        if (desc === undefined) desc = this.description;
-
-        this.promptWhenRun = new PWRParam(this.module, this.name, name, desc);
-        this.value = properties.PROMPT_WHEN_RUN;
-
-        // Update the port's icon
-        this.port.updateIcon();
     };
 
     this.makeNotPWR = function() {
@@ -3666,13 +3682,8 @@ function InputParam(module, paramJSON) {
         if (this.name != input["name"]) {
             editor.log("ERROR: Mismatched parameter loading properties: " + this.name + " and " + input["name"]);
         }
-        this.promptWhenRun = editor.initPWR(this.module, this.name, input["promptWhenRun"]);
 
-        // Set prompt when run icon if necessary
-        if (this.isPWR()) {
-            var iconId = "pwr_" + this._nameToId(this.name) + "_" + this.module.id;
-            $("#" + iconId).toggleClass("promptWhenRunIconOn");
-        }
+        this.initPWR(input["promptWhenRun"]);
 
         // Create file box and draw pipes if necessary
         if (this.isFile() && input["value"] !== "" && input["value"] !== null && input["value"] !== undefined && this.promptWhenRun === null) {
