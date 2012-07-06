@@ -953,7 +953,7 @@ var editor = {
                     editor._loadPipeline(response["pipeline"]);
                     editor._loadModules(response["modules"]);
                     editor._loadPipes(response["pipes"]);
-                    setTimeout(editor.updateAllPorts, 100);
+                    setTimeout(editor.updateAllPorts, 200);
                     editor._validatePipeline();
                     editor.makeClean();
                 }
@@ -2425,7 +2425,7 @@ var properties = {
         var displayValue = input.promptWhenRun ? properties.PROMPT_WHEN_RUN : input.value;
         var disabled = false;
         if (input.port !== null && input.port.pipes.length > 0) {
-            displayValue = input.value;
+            displayValue = input.port.pipes[0].outputPort.pointer;
             disabled = true;
         }
         if (input.promptWhenRun !== null) {
@@ -2970,6 +2970,15 @@ function Module(moduleJSON) {
         if (this.blackbox) {
             showAlertDisplay = true;
             this.alerts[this.name] = new Alert("Missing Module", "WARNING", "GenePattern is unable to load this module.  You will be unable to change settings on this module or otherwise work with it.");
+        }
+
+        // Check for incompatible kinds
+        for (var i = 0; i < this.inputEnds.length; i++) {
+            var input = this.inputEnds[i];
+            if (input.isConnected() && !input.param.isCompatible(input.pipes[0].outputPort)) {
+                showAlertDisplay = true;
+                this.alerts[input.name] = new Alert(input, "WARNING", input.param.name + " is receiving a file of a non-compatible type.");
+            }
         }
 
         // Display icons if appropriate
@@ -3644,6 +3653,37 @@ function InputParam(module, paramJSON) {
                 this.port.updateIcon();
             }
         }
+    };
+
+    this.isCompatible = function(outputPort) {
+        if (outputPort.advanced) {
+            return true;
+        }
+
+        if (outputPort.module.isFile()) {
+            var filename = outputPort.module.getFilename();
+            var extension = filename.substr(filename.lastIndexOf('.') + 1);
+
+            if (extension === "odf") {
+                return true;
+            }
+
+            for (var i = 0; i < this.kinds.length; i++) {
+                var kind = this.kinds[i];
+                if (kind === extension) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        for (var i = 0; i < this.kinds.length; i++) {
+            var kind = this.kinds[i];
+            if (kind === outputPort.pointer) {
+                return true;
+            }
+        }
+        return false;
     };
 
     this.isFile = function() {
