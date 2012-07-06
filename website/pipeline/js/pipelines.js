@@ -455,9 +455,6 @@ var editor = {
 
         // If the new input is already prompt when run, make it not PWR
         input.param.makeNotPWR();
-        // Update the PWR icon
-        var iconId = "pwr_" + input.param._nameToId(input.param.name) + "_" + input.module.id;
-        $("#" + iconId).removeClass("promptWhenRunIconOn");
 
         // If the output is from a file, set the value
         if (output.module.isFile()) {
@@ -2424,7 +2421,7 @@ var properties = {
         var displayValue = input.promptWhenRun ? properties.PROMPT_WHEN_RUN : input.value;
         var disabled = false;
         if (input.port !== null && input.port.pipes.length > 0) {
-            displayValue = "Receiving output " + input.port.pipes[0].outputPort.pointer + " from " + input.port.pipes[0].outputModule.name;
+            displayValue = input.value;
             disabled = true;
         }
         if (input.promptWhenRun !== null) {
