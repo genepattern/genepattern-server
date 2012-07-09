@@ -78,6 +78,10 @@ public class PipelineJSON extends JSONObject {
         return this.getString(DESCRIPTION);
     }
     
+    public String getDocumentation() throws JSONException {
+        return this.getString(DOCUMENTATION);
+    }
+    
     public String getAuthor() throws JSONException {
         return this.getString(AUTHOR);
     }

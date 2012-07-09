@@ -23,7 +23,9 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.PrintWriter;
+import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
+import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -536,19 +538,24 @@ public class PipelineQueryServlet extends HttpServlet {
         
         // Create the new pipeline directory in taskLib and move files
         try {
-            if (pipelineObject.getLsid().length() > 0) {
+            File newDir = null;
+            // Existing pipeline being saved
+            if (pipelineObject.getLsid().length() > 0) { 
                 TaskInfo oldInfo = TaskInfoCache.instance().getTask(pipelineObject.getLsid());
-                File newDir = this.copySupportFiles(oldInfo.getName(), pipelineObject.getName(), oldInfo.getLsid(), newLsid, username);
-                this.copyNewFiles(pipelineObject.getFiles(), newDir);
-                PipelineDesignerFile pdFile = new PipelineDesignerFile(newDir);
-                pdFile.writeLegacy(modulesList);
+                newDir = this.copySupportFiles(oldInfo.getName(), pipelineObject.getName(), oldInfo.getLsid(), newLsid, username);
+                
             }
-            else {
-                File newDir = new File(DirectoryManager.getTaskLibDir(pipelineObject.getName() + "." + GPConstants.TASK_TYPE_PIPELINE, newLsid, username));
-                this.copyNewFiles(pipelineObject.getFiles(), newDir);
-                PipelineDesignerFile pdFile = new PipelineDesignerFile(newDir);
-                pdFile.writeLegacy(modulesList);
+            else { // New pipeline being saved
+                newDir = new File(DirectoryManager.getTaskLibDir(pipelineObject.getName() + "." + GPConstants.TASK_TYPE_PIPELINE, newLsid, username));
             }
+            this.copyNewFiles(pipelineObject.getFiles(), newDir);
+            
+            // Create verified files list and purge unnecessary files
+            List<File> verifiedFiles = extractVerifiedFiles(newDir, pipelineObject, model);
+            purgeUnnecessaryFiles(newDir, verifiedFiles);
+            
+            PipelineDesignerFile pdFile = new PipelineDesignerFile(newDir);
+            pdFile.writeLegacy(modulesList);
         }
         catch (Throwable t) {
             log.error("Unable to retrieve the old taskInfo based on old lsid for: " + newLsid, t);
@@ -561,6 +568,83 @@ public class PipelineQueryServlet extends HttpServlet {
         message.addMessage("Pipeline Saved");
         message.addChild("lsid", newLsid);
         this.write(response, message);
+	}
+	
+	private void purgeUnnecessaryFiles(File taskDir, List<File> necessaryFiles) {
+	    for (File file : taskDir.listFiles()) {
+	        boolean necessary = false;
+	        
+	        // Ignore internal pipeline files
+	        if (file.getName() == "manifest" || file.getName() == ".pipelineDesigner") {
+	            necessary = true;
+	            continue; // File is necessary
+	        }
+	        
+	        // Ignore system files
+	        if (file.getName() == "Thumbs.db" || file.getName() == ".DS_Store" || file.getName() == "desktop.ini") {
+	            necessary = true;
+                continue; // File is necessary
+            }
+	        
+	        for (File necessaryFile: necessaryFiles) {
+	            if (necessaryFile.equals(file)) {
+	                necessary = true;
+	                continue; // File is necessary
+	            }
+	        }
+	        
+	        // Otherwise, purge the file
+	        if (!necessary) {
+	            file.delete();
+	        } 
+	    }
+	}
+	
+	private boolean isInternalFile(String path) {
+	    if (path.contains("<GenePatternURL>") && path.contains("<LSID>")) {
+	        return true;
+	    }
+	    else {
+	        return false;
+	    }
+	}
+	
+	private String extractFilename(String path) throws UnsupportedEncodingException {
+	    String[] parts = path.split("=");
+	    String encodedName = parts[parts.length - 1];
+	    return URLDecoder.decode(encodedName, "UTF-8");
+	}
+	
+	private List<File> extractVerifiedFiles(File dir, PipelineJSON pipelineObject, PipelineModel model) throws Exception {
+	    List<File> verified = new ArrayList<File>();
+	    
+	    try {
+	        // Handle documentation files
+            String doc = pipelineObject.getDocumentation();
+            if (!"".equals(doc) && doc != null) {
+                verified.add(new File (dir, doc));
+            }
+            
+            // Handle module input files
+            for (JobSubmission job: model.getTasks()) {
+                for (Object pObj : job.getParameters()) {
+                    ParameterInfo param = (ParameterInfo) pObj;
+                    if ("java.io.File".equals(param.getAttributes().get("type"))) {
+                        if (isInternalFile(param.getValue())) {
+                            String filename = extractFilename(param.getValue());
+                            verified.add(new File (dir, filename));
+                        }
+                    }
+                    
+                }
+            }
+        }
+        catch (JSONException e) {
+            log.error("Unable to extract files");
+            throw new Exception("Unable to extract files: " + e.getLocalizedMessage());
+        }
+	    
+	    return verified;
 	}
 	
 	public void constructLibrary(HttpServletRequest request, HttpServletResponse response) {
