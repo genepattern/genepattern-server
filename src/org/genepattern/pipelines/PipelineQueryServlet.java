@@ -237,10 +237,12 @@ public class PipelineQueryServlet extends HttpServlet {
         PipelineJSON pipelineObject = new PipelineJSON(pipeline, info);
         ResponseJSON modulesObject = createModuleList(pipeline);
         ResponseJSON pipesObject = PipeJSON.createPipeList(pipeline.getTasks());
+        ResponseJSON filesObject = createFileList(pipeline);
         
         responseObject.addChild(PipelineJSON.KEY, pipelineObject);
         responseObject.addChild(ModuleJSON.KEY, modulesObject);
         responseObject.addChild(PipeJSON.KEY, pipesObject);
+        responseObject.addChild(FileJSON.KEY, filesObject);
         
         this.write(response, responseObject);
 	}
@@ -479,14 +481,16 @@ public class PipelineQueryServlet extends HttpServlet {
 	    }
 	    
         // Extract the right json from the saved bundle
-	    final PipelineJSON pipelineObject;
-        final ModuleJSON[] modulesObject;
-	    final PipeJSON[] pipesObject;
+	    PipelineJSON pipelineObject;
+        ModuleJSON[] modulesObject;
+	    PipeJSON[] pipesObject;
+	    Map<String, FileJSON> filesObject;
 	    try {
 	        JSONObject pipelineJSON = PipelineJSON.parseBundle(bundle);
 	        pipelineObject = PipelineJSON.extract(pipelineJSON);
 	        modulesObject = ModuleJSON.extract(pipelineJSON);
 	        pipesObject = PipeJSON.extract(pipelineJSON);
+	        filesObject = FileJSON.extract(pipelineJSON);
 	    }
 	    catch (Throwable t) {
 	        log.error("Error parsing JSON bundle", t);
@@ -551,11 +555,10 @@ public class PipelineQueryServlet extends HttpServlet {
             this.copyNewFiles(pipelineObject.getFiles(), newDir);
             
             // Create verified files list and purge unnecessary files
-            FileCollection verifiedFiles = extractVerifiedFiles(newDir, pipelineObject, model);
+            FileCollection verifiedFiles = extractVerifiedFiles(newDir, pipelineObject, filesObject);
             purgeUnnecessaryFiles(newDir, verifiedFiles.getInternal());
             
             PipelineDesignerFile pdFile = new PipelineDesignerFile(newDir);
-            boolean hasDoc = pipelineObject.getDocumentation() != "" && pipelineObject.getDocumentation() != null;
             pdFile.write(modulesList, verifiedFiles);
         }
         catch (Throwable t) {
@@ -602,7 +605,7 @@ public class PipelineQueryServlet extends HttpServlet {
 	}
 	
 	private boolean isInternalFile(String path) {
-	    if (path.contains("<GenePatternURL>") && path.contains("<LSID>")) {
+	    if ((path.contains("<GenePatternURL>") && path.contains("<LSID>")) || path.startsWith("/") || path.contains(":\\")) {
 	        return true;
 	    }
 	    else {
@@ -610,13 +613,7 @@ public class PipelineQueryServlet extends HttpServlet {
 	    }
 	}
 	
-	private String extractFilename(String path) throws UnsupportedEncodingException {
-	    String[] parts = path.split("=");
-	    String encodedName = parts[parts.length - 1];
-	    return URLDecoder.decode(encodedName, "UTF-8");
-	}
-	
-	private FileCollection extractVerifiedFiles(File dir, PipelineJSON pipelineObject, PipelineModel model) throws Exception {
+	private FileCollection extractVerifiedFiles(File dir, PipelineJSON pipelineObject, Map<String, FileJSON> files) throws Exception {
 	    FileCollection verified = new FileCollection();
 	    
 	    try {
@@ -627,19 +624,19 @@ public class PipelineQueryServlet extends HttpServlet {
             }
             
             // Handle module input files
-            for (JobSubmission job: model.getTasks()) {
-                for (Object pObj : job.getParameters()) {
-                    ParameterInfo param = (ParameterInfo) pObj;
-                    if ("java.io.File".equals(param.getAttributes().get("type"))) {
-                        if (isInternalFile(param.getValue())) {
-                            String filename = extractFilename(param.getValue());
-                            verified.inputFiles.add(new File (dir, filename));
-                        }
-                        else {
-                            verified.urls.add(param.getValue().toString());
-                        }
-                    }
-                    
+            for (FileJSON file : files.values()) {
+                if (isInternalFile(file.getPath())) {
+                    File systemFile = new File (dir, file.getName());
+                    verified.inputFiles.add(systemFile);
+                    verified.positions.put(systemFile, new HashMap<String, String>());
+                    verified.positions.get(systemFile).put("top", file.getTop());
+                    verified.positions.get(systemFile).put("left", file.getLeft());
+                }
+                else {
+                    verified.urls.add(file.getPath());
+                    verified.positions.put(file.getPath(), new HashMap<String, String>());
+                    verified.positions.get(file.getPath()).put("top", file.getTop());
+                    verified.positions.get(file.getPath()).put("left", file.getLeft());
                 }
             }
         }
@@ -711,6 +708,61 @@ public class PipelineQueryServlet extends HttpServlet {
         return new File(newDir);
     }
     
+    public static ResponseJSON createFileList(PipelineModel pipeline) {
+     // Get the pipeline's directory of files
+        File directory = PipelineQueryServlet.getPipelineDirectory(pipeline);
+        
+        // Read the pipeline designer file and populate list for insertion into json
+        PipelineDesignerFile pdFile = new PipelineDesignerFile(directory);
+        Map<String, Object> reads = pdFile.read();
+        Map<Integer, Map<String, String>> fileReads = (Map<Integer, Map<String, String>>) reads.get("files");
+        ResponseJSON listObject = new ResponseJSON();
+        
+        if (fileReads != null) {   
+            Integer idCounter = 0;
+            Map<String, String> fileMap = fileReads.get(idCounter);
+            while (fileMap != null) {
+                if ("file".equals(fileMap.get("type"))) {
+                    FileJSON file = new FileJSON(fileMap.get("name"), buildInternalPath(fileMap.get("name")), fileMap.get("top"), fileMap.get("left"));
+                    listObject.addChild(idCounter, file);
+                    idCounter++;
+                }
+                else if ("url".equals(fileMap.get("type"))) {
+                    FileJSON file = new FileJSON(extractFilename(fileMap.get("name")), fileMap.get("name"), fileMap.get("top"), fileMap.get("left"));
+                    listObject.addChild(idCounter, file);
+                    idCounter++;
+                }
+                else {
+                    idCounter++;
+                }
+                fileMap = fileReads.get(idCounter);
+            }
+        }
+        
+        return listObject;
+    }
+    
+    private static String buildInternalPath(String name) {
+        try {
+            return "<GenePatternURL>getFile.jsp?task=<LSID>&file=" + URLEncoder.encode(name, "UTF-8");
+        }
+        catch (UnsupportedEncodingException e) {
+            log.error("ERROR: Building path for: " + name);
+            return name;
+        }
+    }
+    
+    private static String extractFilename(String path) {
+        String[] parts = path.split("/");
+        try {
+            return URLDecoder.decode(parts[parts.length - 1], "UTF-8");
+        }
+        catch (UnsupportedEncodingException e) {
+            log.error("ERROR: Parsing filename from path: " + path);
+            return path;
+        }
+    }
+    
     public static ResponseJSON createModuleList(PipelineModel pipeline) {
         // Get the pipeline's directory of files
         File directory = PipelineQueryServlet.getPipelineDirectory(pipeline);
@@ -766,6 +818,7 @@ public class PipelineQueryServlet extends HttpServlet {
         public File doc = null;
         public List<File> inputFiles = new ArrayList<File>();
         public List<String> urls = new ArrayList<String>();
+        public Map<Object, Map<String, String>> positions = new HashMap<Object, Map<String, String>>(); 
         
         public List<File> getInternal() {
             List<File> toReturn = new ArrayList<File>();

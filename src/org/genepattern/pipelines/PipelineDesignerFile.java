@@ -90,12 +90,16 @@ public class PipelineDesignerFile extends File {
                 toYaml += "    " + counter + ":\n";
                 toYaml += "        " + "type: file\n";
                 toYaml += "        " + "name: " + file.getName() + "\n";
+                toYaml += "        " + "top: " + files.positions.get(file).get("top") + "\n";
+                toYaml += "        " + "left: " + files.positions.get(file).get("left") + "\n";
                 counter++;
             }
             for (String file : files.urls) {
                 toYaml += "    " + counter + ":\n";
                 toYaml += "        " + "type: url\n";
                 toYaml += "        " + "name: " + file + "\n";
+                toYaml += "        " + "top: " + files.positions.get(file).get("top") + "\n";
+                toYaml += "        " + "left: " + files.positions.get(file).get("left") + "\n";
                 counter++;
             }
             
