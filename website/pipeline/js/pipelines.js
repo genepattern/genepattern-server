@@ -2977,7 +2977,7 @@ function Module(moduleJSON) {
             var input = this.inputEnds[i];
             if (input.isConnected() && !input.param.isCompatible(input.pipes[0].outputPort)) {
                 showAlertDisplay = true;
-                this.alerts[input.name] = new Alert(input, "WARNING", input.param.name + " is receiving a file of a non-compatible type.");
+                this.alerts[input.name] = new Alert(input, "WARNING", input.param.name + " is receiving a file of a incompatible type.");
             }
         }
 
@@ -3657,6 +3657,10 @@ function InputParam(module, paramJSON) {
 
     this.isCompatible = function(outputPort) {
         if (outputPort.advanced) {
+            return true;
+        }
+        
+        if (this.kinds.length < 1) {
             return true;
         }
 
