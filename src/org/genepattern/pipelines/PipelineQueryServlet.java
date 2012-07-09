@@ -71,8 +71,6 @@ public class PipelineQueryServlet extends HttpServlet {
 	public static final String LOAD = "/load";
 	public static final String UPLOAD = "/upload";
 	
-	public static final String PIPELINE_DESIGNER_FILE = ".pipelineDesigner";
-	
 	@Override
 	public void doGet(HttpServletRequest request, HttpServletResponse response) {
 		String action = request.getPathInfo();
@@ -542,12 +540,14 @@ public class PipelineQueryServlet extends HttpServlet {
                 TaskInfo oldInfo = TaskInfoCache.instance().getTask(pipelineObject.getLsid());
                 File newDir = this.copySupportFiles(oldInfo.getName(), pipelineObject.getName(), oldInfo.getLsid(), newLsid, username);
                 this.copyNewFiles(pipelineObject.getFiles(), newDir);
-                this.writePipelineDesignerFile(newDir, modulesList);
+                PipelineDesignerFile pdFile = new PipelineDesignerFile(newDir);
+                pdFile.writeLegacy(modulesList);
             }
             else {
                 File newDir = new File(DirectoryManager.getTaskLibDir(pipelineObject.getName() + "." + GPConstants.TASK_TYPE_PIPELINE, newLsid, username));
                 this.copyNewFiles(pipelineObject.getFiles(), newDir);
-                this.writePipelineDesignerFile(newDir, modulesList);
+                PipelineDesignerFile pdFile = new PipelineDesignerFile(newDir);
+                pdFile.writeLegacy(modulesList);
             }
         }
         catch (Throwable t) {
@@ -561,24 +561,6 @@ public class PipelineQueryServlet extends HttpServlet {
         message.addMessage("Pipeline Saved");
         message.addChild("lsid", newLsid);
         this.write(response, message);
-	}
-	
-	private void writePipelineDesignerFile(File directory, List<ModuleJSON> modules) throws JSONException {
-	    File pdFile = new File(directory, PIPELINE_DESIGNER_FILE);
-	    try {
-            PrintWriter writer = new PrintWriter(new FileWriter(pdFile));
-            int counter = 0;
-            
-            for (ModuleJSON module : modules) {
-                writer.println(counter + " " + module.getTop() + " " + module.getLeft());
-                counter++;
-            }
-            
-            writer.close();
-        }
-        catch (IOException e) {
-            log.error("Unable to write to .pipelineDesigner");
-        }
 	}
 	
 	public void constructLibrary(HttpServletRequest request, HttpServletResponse response) {
@@ -646,38 +628,8 @@ public class PipelineQueryServlet extends HttpServlet {
         File directory = PipelineQueryServlet.getPipelineDirectory(pipeline);
         
         // Read the pipeline designer file and populate list for insertion into json
-        File pdFile = new File(directory, PIPELINE_DESIGNER_FILE);
-        List<String[]> fileReads = new ArrayList<String[]>();
-        if (pdFile.exists()) {
-            try {
-                BufferedReader reader = new BufferedReader(new InputStreamReader(new DataInputStream(new FileInputStream(pdFile))));
-                String line = null;
-                Integer expected = 0;
-                while ((line = reader.readLine()) != null) {
-                    String[] parts = line.trim().split(" ");
-                    if (parts[0].equals(expected.toString())) {
-                        String[] toInsert = new String[2];
-                        if (parts.length >= 2) {
-                            toInsert[0] = parts[1];
-                        }
-                        else {
-                            toInsert[0] = null;
-                        }
-                        if (parts.length >= 3) {
-                            toInsert[1] = parts[2];
-                        }
-                        else {
-                            toInsert[1] = null;
-                        }
-                        fileReads.add(toInsert);
-                        expected++;
-                    }
-                }
-            }
-            catch (Exception e) {
-                log.error("ERROR: Reading pipeline designer file on file load");
-            }
-        }
+        PipelineDesignerFile pdFile = new PipelineDesignerFile(directory);
+        List<String[]> fileReads = pdFile.readLegacy();
 
         // Get the list of modules
         Vector<JobSubmission> jobs = pipeline.getTasks();
