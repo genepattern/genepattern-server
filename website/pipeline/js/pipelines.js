@@ -233,15 +233,19 @@ var editor = {
         return null;
     },
 
-    addFile: function(name, path) {
+    loadFile: function(name, path, top, left) {
         // Mark the workspace as dirty
         editor.makeDirty();
 
         var file = new File(name, path);
         file.id = editor._nextFileId();
         this.workspace[file.id] = file;
-        file.add(null, null);
+        file.add(top, left);
         return file;
+    },
+
+    addFile: function(name, path) {
+        return editor.loadFile(name, path, null, null);
     },
 	
 	foundInList: function(list, obj) {
@@ -771,6 +775,19 @@ var editor = {
         return transport;
     },
 
+    _fileTransport: function() {
+        var transport = {};
+        for (var i in editor.workspace) {
+            if (editor.workspace[i] instanceof Module) {
+                // Transport only files
+                if (editor.workspace[i].isFile()) {
+                    transport[i] = editor.workspace[i].prepTransport();
+                }
+            }
+        }
+        return transport;
+    },
+
     _moduleTransport: function() {
         var transport = {};
         for (var i in editor.workspace) {
@@ -789,6 +806,7 @@ var editor = {
         json["pipeline"] = editor._pipelineTransport();
         json["pipes"] = editor._pipeTransport();
         json["modules"] = editor._moduleTransport();
+        json["files"] = editor._fileTransport();
         return json;
     },
 
@@ -804,8 +822,32 @@ var editor = {
         editor._setPipelineName();
     },
 
-    _loadModules: function(modules) {
+    _loadFiles: function(files) {
         this.removeAllModules();
+
+        var i = 0;
+        while (files[i.toString()] !== undefined) {
+            // Update the idCounter as necessary
+            var file = files[i.toString()];
+            var intId = 1000 + i;
+
+            // Set the top and left position, if available
+            var top = null;
+            var left = null;
+            if (file.top !== undefined && file.top !== null) {
+                top = file.top;
+            }
+            if (file.left !== undefined && file.left !== null) {
+                left = file.left;
+            }
+
+            // Add each file as it is read
+            this.loadFile(file.name, file.path, top, left);
+            i++;
+        }
+    },
+
+    _loadModules: function(modules) {
         var givenAlert = false;
 
         var i = 0;
@@ -949,6 +991,7 @@ var editor = {
                 else {
                     editor._cleanWorkspace();
                     editor._loadPipeline(response["pipeline"]);
+                    editor._loadFiles(response["files"]);
                     editor._loadModules(response["modules"]);
                     editor._loadPipes(response["pipes"]);
                     setTimeout(editor.updateAllPorts, 200);
@@ -3562,6 +3605,15 @@ function File(name, path) {
         "write": true});
     file.type = "module file";
     file.name = "Input File";
+
+    file.prepTransport = function() {
+        var transport = {};
+        transport["name"] = this.getFilename();
+        transport["path"] = this.getPath();
+        transport["top"] = this.ui.style.top;
+        transport["left"] = this.ui.style.left;
+        return transport;
+    };
 
     file.getFilename = function() {
         return this.outputs[0];
