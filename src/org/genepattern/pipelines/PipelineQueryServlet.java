@@ -551,11 +551,12 @@ public class PipelineQueryServlet extends HttpServlet {
             this.copyNewFiles(pipelineObject.getFiles(), newDir);
             
             // Create verified files list and purge unnecessary files
-            List<File> verifiedFiles = extractVerifiedFiles(newDir, pipelineObject, model);
-            purgeUnnecessaryFiles(newDir, verifiedFiles);
+            FileCollection verifiedFiles = extractVerifiedFiles(newDir, pipelineObject, model);
+            purgeUnnecessaryFiles(newDir, verifiedFiles.getInternal());
             
             PipelineDesignerFile pdFile = new PipelineDesignerFile(newDir);
-            pdFile.writeLegacy(modulesList);
+            boolean hasDoc = pipelineObject.getDocumentation() != "" && pipelineObject.getDocumentation() != null;
+            pdFile.write(modulesList, verifiedFiles);
         }
         catch (Throwable t) {
             log.error("Unable to retrieve the old taskInfo based on old lsid for: " + newLsid, t);
@@ -615,14 +616,14 @@ public class PipelineQueryServlet extends HttpServlet {
 	    return URLDecoder.decode(encodedName, "UTF-8");
 	}
 	
-	private List<File> extractVerifiedFiles(File dir, PipelineJSON pipelineObject, PipelineModel model) throws Exception {
-	    List<File> verified = new ArrayList<File>();
+	private FileCollection extractVerifiedFiles(File dir, PipelineJSON pipelineObject, PipelineModel model) throws Exception {
+	    FileCollection verified = new FileCollection();
 	    
 	    try {
 	        // Handle documentation files
             String doc = pipelineObject.getDocumentation();
             if (!"".equals(doc) && doc != null) {
-                verified.add(new File (dir, doc));
+                verified.doc = new File (dir, doc);
             }
             
             // Handle module input files
@@ -632,7 +633,10 @@ public class PipelineQueryServlet extends HttpServlet {
                     if ("java.io.File".equals(param.getAttributes().get("type"))) {
                         if (isInternalFile(param.getValue())) {
                             String filename = extractFilename(param.getValue());
-                            verified.add(new File (dir, filename));
+                            verified.inputFiles.add(new File (dir, filename));
+                        }
+                        else {
+                            verified.urls.add(param.getValue().toString());
                         }
                     }
                     
@@ -713,7 +717,8 @@ public class PipelineQueryServlet extends HttpServlet {
         
         // Read the pipeline designer file and populate list for insertion into json
         PipelineDesignerFile pdFile = new PipelineDesignerFile(directory);
-        List<String[]> fileReads = pdFile.readLegacy();
+        Map<String, Object> reads = pdFile.read();
+        Map<Integer, Map<String, String>> moduleReads = (Map<Integer, Map<String, String>>) reads.get("modules");
 
         // Get the list of modules
         Vector<JobSubmission> jobs = pipeline.getTasks();
@@ -723,13 +728,13 @@ public class PipelineQueryServlet extends HttpServlet {
         for (JobSubmission i : jobs) {
             ModuleJSON module = new ModuleJSON(idCounter, i);
             // If the position list has been populated from the .pipelineDesigner file
-            if (idCounter < fileReads.size()) {
+            if (idCounter < moduleReads.size()) {
                 try {
-                    if (fileReads.get(idCounter)[0] != null) {
-                        module.setTop(fileReads.get(idCounter)[0]);
+                    if (moduleReads.get(idCounter).get("top") != null) {
+                        module.setTop(moduleReads.get(idCounter).get("top"));
                     }
-                    if (fileReads.get(idCounter)[1] != null) {
-                        module.setLeft(fileReads.get(idCounter)[1]);
+                    if (moduleReads.get(idCounter).get("left") != null) {
+                        module.setLeft(moduleReads.get(idCounter).get("left"));
                     }
                 }
                 catch (JSONException e) {
@@ -754,6 +759,21 @@ public class PipelineQueryServlet extends HttpServlet {
         catch (MalformedURLException e) {
             log.error("ERROR: Unable to create appropriate path for pipeline directory: " + name + " " + lsid + " " + userid);
             return null;
+        }
+    }
+    
+    public class FileCollection {
+        public File doc = null;
+        public List<File> inputFiles = new ArrayList<File>();
+        public List<String> urls = new ArrayList<String>();
+        
+        public List<File> getInternal() {
+            List<File> toReturn = new ArrayList<File>();
+            if (doc != null) {
+                toReturn.add(doc);
+            }
+            toReturn.addAll(inputFiles);
+            return toReturn;
         }
     }
 }
