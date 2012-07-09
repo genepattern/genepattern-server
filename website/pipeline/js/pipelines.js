@@ -476,8 +476,6 @@ var editor = {
 
         // Mark the workspace as dirty
         editor.makeDirty();
-
-        return
 	},
 
 	_nextId: function() {
@@ -2108,6 +2106,20 @@ var properties = {
     },
 
     _addFileUpload: function(labelText, value, description, pwr, disabled) {
+    	var param = null;
+    	if (value instanceof InputParam) {
+    		param = value;
+    		if (param.promptWhenRun) {
+    			value = properties.PROMPT_WHEN_RUN;
+    		}
+    		else if (param.port !== null && param.port.pipes.length > 0) {
+    			value = "Receiving " + param.port.pipes[0].outputPort.pointer + " from " + param.port.pipes[0].outputModule.name;
+    		}
+    		else {
+    			value = param.value;
+    		}
+    	}
+    	
         var label = document.createElement("div");
 
         if (pwr) {
@@ -2123,7 +2135,7 @@ var properties = {
         hiddenField.setAttribute("type", "hidden");
         hiddenField.setAttribute("class", "propertyValue");
         hiddenField.setAttribute("name", labelText);
-        hiddenField.setAttribute("value", value);
+        hiddenField.setAttribute("value", param !== null ? param.value : value);
         label.appendChild(hiddenField);
 
         if (value === properties.PROMPT_WHEN_RUN) {
@@ -2141,7 +2153,7 @@ var properties = {
         var valueDiv = document.createElement("div");
         valueDiv.setAttribute("class", "fileUploadValue");
         if (value !== undefined && value !== null && value !== "" && value !== properties.PROMPT_WHEN_RUN) {
-            valueDiv.innerHTML = "<strong>Current Value:</strong> " + properties._encodeToHTML(value);
+            valueDiv.innerHTML = "<strong>Current Value:</strong> " + properties._encodeToHTML(value.toString());
         }
         label.appendChild(valueDiv);
 
@@ -2431,7 +2443,7 @@ var properties = {
         if (input.promptWhenRun !== null) {
             disabled = true;
         }
-        var div = this._addFileUpload(input.name + required, displayValue, input.description, true, disabled);
+        var div = this._addFileUpload(input.name + required, input, input.description, true, disabled);
         div.setAttribute("name", input.module.id); // Used in PWR view
         return div;
     },
