@@ -825,11 +825,9 @@ var editor = {
     _loadFiles: function(files) {
         this.removeAllModules();
 
-        var i = 0;
-        while (files[i.toString()] !== undefined) {
+        for (var i in files) {
             // Update the idCounter as necessary
-            var file = files[i.toString()];
-            var intId = 1000 + i;
+            var file = files[i];
 
             // Set the top and left position, if available
             var top = null;
@@ -843,7 +841,6 @@ var editor = {
 
             // Add each file as it is read
             this.loadFile(file.name, file.path, top, left);
-            i++;
         }
     },
 
