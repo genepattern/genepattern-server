@@ -472,6 +472,16 @@
   <servlet-name>PipelineDesigner</servlet-name>
   <url-pattern>/PipelineDesigner/*</url-pattern>
  </servlet-mapping>
+ 
+ <servlet>
+    <display-name>GenomeSpace Servlet</display-name>
+    <servlet-name>GenomeSpace</servlet-name>
+    <servlet-class>org.genepattern.server.genomespace.GenomeSpaceServlet</servlet-class>    
+ </servlet>
+ <servlet-mapping>
+  <servlet-name>GenomeSpace</servlet-name>
+  <url-pattern>/GenomeSpace/*</url-pattern>
+ </servlet-mapping>
 
 <servlet>
     <display-name>Module Creator Servlet</display-name>
