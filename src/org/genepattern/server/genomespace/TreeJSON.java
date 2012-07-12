@@ -50,14 +50,25 @@ public class TreeJSON extends JSONArray {
         return object;
     }
     
+    private static String menuArrowHTML(GenomeSpaceFile file) {
+        String image = "<img class=\"menuArrow\" src=\"/gp/images/smallOptions.gif\" ale=\"menu\"";
+        image += " onclick=\"pm_showMenu('menuDiv_" + file.getFormattedId() + "', Position.cumulativeOffset(this), 50, 50);\"";
+        image += " onmouseover=\"MM_swapImage('Image_" + file.getFormattedId() + "','','/gp/images/smallOptions2.gif',2)\"";
+        image += " onmouseout=\"MM_swapImgRestore();\"";
+        image += "</img>";
+        return image;
+    }    
+    
     public static JSONObject makeFileJSON(GenomeSpaceFile file) throws Exception {
         JSONObject object = new JSONObject();
         
         JSONObject data = new JSONObject();
-        data.put(TITLE, file.getName());
+        data.put(TITLE, file.getName() + " " + menuArrowHTML(file));
         
         JSONObject attr = new JSONObject();
         attr.put("href", file.getUrl());
+        attr.put("id", file.getUrl());
+        attr.put("onclick", "JavaScript:return false;");
         
         data.put(ATTR, attr);
         

@@ -58,12 +58,42 @@ use, misuse, or functionality.
                 }
                 /* ]]> */
             </script>
+			<script src="#{facesContext.externalContext.requestContextPath}/js/jquery.cookie.js" type="text/javascript" />
+			<script src="#{facesContext.externalContext.requestContextPath}/js/jquery.jstree.js" type="text/javascript" />
         </ui:define>
+
         <h:form>
         	<div style="text-align:right">
         		<strong>Logged in as: #{genomeSpaceBean.username} &nbsp;&nbsp;&nbsp;</strong>  
 				<h:commandButton value="Refresh" action="#{genomeSpaceBean.forceFileRefresh}" />
         	</div>
+			<div id="tree"></div>
+		    <script type="text/javascript">
+		        jq("#tree").jstree({
+		            core:{
+		                "html_titles":true
+		            },
+		
+		            "json_data":{
+		                "ajax": {
+							"url": function(node) {
+								if (node === -1) {
+									return "/gp/GenomeSpace/tree";
+								}
+								var gsURL = jq(node).find("a").attr("href");
+								return "/gp/GenomeSpace/tree?dir=" + encodeURIComponent(gsURL)
+							},
+							"data": function(node){
+								return {
+									id: node.attr ? node.attr("id") : 0
+								};
+							}
+						}
+		            },
+		            plugins:[ "themes", "json_data", "cookies" ]
+		
+		        });
+		    </script>
             <table width="100%" border="0" cellspacing="0" cellpadding="0">
                 <tr>
                     <td height="6" colspan="6">
@@ -75,7 +105,7 @@ use, misuse, or functionality.
                         <rich:tree switchType="ajax" iconCollapsed="/images/collapsed.gif" iconExpanded="/images/expanded.gif" changeExpandListener="#{genomeSpaceBean.updateExpand}">
          					<rich:recursiveTreeNodesAdaptor roots="#{genomeSpaceBean.fileTree}" var="gsFile" nodes="#{gsFile.childFiles}">
 								<rich:treeNode icon="/images/iconFolder.gif" iconLeaf="/images/iconLeaf.gif">
-	                                <h:outputLink rendered="#{not gsFile.directory}" value="#{gsFile.url}">#{gsFile.name}</h:outputLink>
+	                                <h:outputLink rendered="#{not gsFile.directory}" value="#{gsFile.url}" styleClass="gs-tree-file-link">#{gsFile.name}</h:outputLink>
 									<h:outputText rendered="#{gsFile.directory}">#{gsFile.name}</h:outputText>
 	                                <!-- Image for popup menu -->
 									<t:graphicImage value="/images/smallOptions.gif" name="Image_#{gsFile.formattedId}"
@@ -91,6 +121,11 @@ use, misuse, or functionality.
 	                            </rich:treeNode>
          					</rich:recursiveTreeNodesAdaptor>
       					</rich:tree>
+						<script type="text/javascript" language="javascript">
+							jq(".gs-tree-file-link").mousedown(function(event) {
+								event.preventDefault();
+							});
+						</script>
                     </td>
                 </tr>
                 <tr>
