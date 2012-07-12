@@ -2,6 +2,9 @@ package org.genepattern.server.genomespace;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.faces.context.FacesContext;
@@ -48,8 +51,24 @@ public class GenomeSpaceServlet extends HttpServlet {
     
     private void loadTreeLevel(HttpServletRequest request, HttpServletResponse response) {
         GenomeSpaceBean bean = getGSBean(request, response);
-        List<GenomeSpaceFile> tree = bean.getFileTree();
-        TreeJSON json = new TreeJSON(tree);
+        String url = request.getParameter("dir");
+        
+        List<GenomeSpaceFile> tree = null;
+        if (url == null) {
+            tree = bean.getFileTree();
+            tree = new ArrayList<GenomeSpaceFile>(tree.get(0).getChildFiles());
+        }
+        else {
+            tree = new ArrayList<GenomeSpaceFile>(bean.getDirectory(url).getChildFiles());            
+        }
+        
+        TreeJSON json = null;
+        if (!tree.isEmpty()) {
+            json = new TreeJSON(tree);
+        }
+        else {
+            json = new TreeJSON(TreeJSON.EMPTY);
+        }
         this.write(response, json);
     }
     

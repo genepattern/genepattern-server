@@ -596,7 +596,9 @@ public class GenomeSpaceBean {
         HttpSession httpSession = UIBeanHelper.getSession();
         Object gsSession = httpSession.getAttribute(GenomeSpaceLoginManager.GS_SESSION_KEY);
         
-        return GenomeSpaceFileManager.createFile(gsSession, url);
+        GenomeSpaceFile file = GenomeSpaceFileManager.createFile(gsSession, url);
+        file.setKind(GenomeSpaceFile.DIRECTORY_KIND);
+        return file;
 //        for (GenomeSpaceFile i : getAllDirectories()) {
 //            URL iUrl;
 //            try {
