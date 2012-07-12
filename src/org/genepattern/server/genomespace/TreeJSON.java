@@ -63,12 +63,13 @@ public class TreeJSON extends JSONArray {
         JSONObject object = new JSONObject();
         
         JSONObject data = new JSONObject();
-        data.put(TITLE, file.getName() + " " + menuArrowHTML(file));
+        data.put(TITLE, file.getName() + " ");
         
         JSONObject attr = new JSONObject();
         attr.put("href", file.getUrl());
         attr.put("id", file.getUrl());
-        attr.put("onclick", "JavaScript:return false;");
+        attr.put("onclick", "JavaScript:handleTreeClick(this); return false;");
+        attr.put("name", file.getFormattedId());
         
         data.put(ATTR, attr);
         
