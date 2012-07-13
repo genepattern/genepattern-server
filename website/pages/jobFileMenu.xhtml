@@ -47,17 +47,6 @@ use, misuse, or functionality.
 								<h:outputText>Save to GenomeSpace</h:outputText>
 							</td>
 						</tr>
-                        <tr>
-                            <td>
-                                <t:selectOneMenu id="saveToGenomepace" onclick="JavaScript:setDropdownFocus()">
-                                    <f:selectItems value="#{genomeSpaceBean.allDirectorySelects}" />
-                                </t:selectOneMenu>
-                                <h:commandLink value="Save" action="#{genomeSpaceBean.sendFileToGenomeSpace}" immediate="true">
-                                    <f:param name="fileToSave" value="#{fileInfo.value}" />
-                                    <f:param value="true" name="resultFile" />
-                                </h:commandLink>
-                            </td>
-                        </tr>
                     </h:outputText>
                     <!--  END GENOMESPACE ADDITION  -->
                     <tr>
