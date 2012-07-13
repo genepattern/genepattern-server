@@ -100,7 +100,7 @@ public class LoginManager {
     }
     
     /**
-     * Checks if one has logged in through the GenomeSpace OpenOD.  Returns null if not.
+     * Checks if one has logged in through the GenomeSpace OpenID.  Returns null if not.
      * @param request
      * @param response
      * @return
@@ -123,7 +123,8 @@ public class LoginManager {
     public static void handleGenomeSpaceLogin(String gp_username, HttpSession session) {
         Context context = Context.getContextForUser(gp_username);
         boolean genomeSpaceEnabled = GenomeSpaceClientFactory.isGenomeSpaceEnabled(context);
-        if (genomeSpaceEnabled) {
+        String gsUsername = (String) session.getAttribute(GenomeSpaceLoginManager.GS_USER_KEY);
+        if (genomeSpaceEnabled && gsUsername != null) {
             try {
                 GenomeSpaceLoginManager.loginFromDatabase(gp_username, session);
             }
