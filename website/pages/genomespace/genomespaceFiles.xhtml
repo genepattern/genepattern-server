@@ -106,7 +106,7 @@ use, misuse, or functionality.
 						iterate = jq(this).find("li");
 					}
 					else {
-						iterate = data["args"][0].find("li");
+						iterate = jq(data["args"][0]).find("li");
 					}
 					
 					iterate.each(function(index) {
