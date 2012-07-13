@@ -16,6 +16,7 @@ public class TreeJSON extends JSONArray {
     public static final String STATE = "state";
     public static final String STATE_CLOSED = "closed";
     public static final String CHILDREN = "children";  
+    public static final String METADATA = "metadata";
     public static final String TITLE = "title";
     public static final String ATTR = "attr";
     
@@ -50,15 +51,6 @@ public class TreeJSON extends JSONArray {
         return object;
     }
     
-    private static String menuArrowHTML(GenomeSpaceFile file) {
-        String image = "<img class=\"menuArrow\" src=\"/gp/images/smallOptions.gif\" ale=\"menu\"";
-        image += " onclick=\"pm_showMenu('menuDiv_" + file.getFormattedId() + "', Position.cumulativeOffset(this), 50, 50);\"";
-        image += " onmouseover=\"MM_swapImage('Image_" + file.getFormattedId() + "','','/gp/images/smallOptions2.gif',2)\"";
-        image += " onmouseout=\"MM_swapImgRestore();\"";
-        image += "</img>";
-        return image;
-    }    
-    
     public static JSONObject makeFileJSON(GenomeSpaceFile file) throws Exception {
         JSONObject object = new JSONObject();
         
@@ -67,11 +59,23 @@ public class TreeJSON extends JSONArray {
         
         JSONObject attr = new JSONObject();
         attr.put("href", file.getUrl());
-        attr.put("id", file.getUrl());
         attr.put("onclick", "JavaScript:handleTreeClick(this); return false;");
         attr.put("name", file.getFormattedId());
         
         data.put(ATTR, attr);
+        
+        if (file.isDirectory()) {
+            JSONArray children = new JSONArray();
+            for (GenomeSpaceFile child : file.getChildFiles()) {
+                JSONObject childJSON = makeFileJSON(child);
+                children.put(childJSON);
+            }
+            object.put(CHILDREN, children);
+        }  
+        
+        JSONObject metadata = new JSONObject();
+        metadata.put("id", file.getFormattedId());
+        object.put(METADATA, metadata);
         
         object.put(DATA, data);
         if (file.isDirectory()) {

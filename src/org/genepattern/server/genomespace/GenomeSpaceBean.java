@@ -586,6 +586,15 @@ public class GenomeSpaceBean {
         }
     }
     
+    public String getTreeJSON() {
+        List<GenomeSpaceFile> tree = null;
+        tree = getFileTree();
+        tree = new ArrayList<GenomeSpaceFile>(tree.get(0).getChildFiles());
+        
+        TreeJSON json = new TreeJSON(tree);
+        return json.toString();
+    }
+    
     /**
      * Iterates over the GenomeSpace directory list--initializing lazily if necessary--and returns the first 
      * directory found with a matching GenomeSpace URL.  (In theory these URLs should be unique.)
@@ -593,27 +602,27 @@ public class GenomeSpaceBean {
      * @return
      */
     public GenomeSpaceFile getDirectory(URL url) {
-        HttpSession httpSession = UIBeanHelper.getSession();
-        Object gsSession = httpSession.getAttribute(GenomeSpaceLoginManager.GS_SESSION_KEY);
-        
-        GenomeSpaceFile file = GenomeSpaceFileManager.createFile(gsSession, url);
-        file.setKind(GenomeSpaceFile.DIRECTORY_KIND);
-        return file;
-//        for (GenomeSpaceFile i : getAllDirectories()) {
-//            URL iUrl;
-//            try {
-//                iUrl = i.getUrl();
-//            }
-//            catch (Exception e) {
-//                log.error("Error getting url in getDirectory() from " + i.getName());
-//                continue;
-//            }
-//            if (url.equals(iUrl)) {
-//                return i;
-//            }
-//        }
-//        log.info("Unable to find the GenomeSpace directory in the directory list: " + url);
-//        return null;
+//        HttpSession httpSession = UIBeanHelper.getSession();
+//        Object gsSession = httpSession.getAttribute(GenomeSpaceLoginManager.GS_SESSION_KEY);
+//        
+//        GenomeSpaceFile file = GenomeSpaceFileManager.createFile(gsSession, url);
+//        file.setKind(GenomeSpaceFile.DIRECTORY_KIND);
+//        return file;
+        for (GenomeSpaceFile i : getAllDirectories()) {
+            URL iUrl;
+            try {
+                iUrl = i.getUrl();
+            }
+            catch (Exception e) {
+                log.error("Error getting url in getDirectory() from " + i.getName());
+                continue;
+            }
+            if (url.equals(iUrl)) {
+                return i;
+            }
+        }
+        log.info("Unable to find the GenomeSpace directory in the directory list: " + url);
+        return null;
     }
     
     /**

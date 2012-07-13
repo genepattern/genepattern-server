@@ -234,13 +234,23 @@ public class GenomeSpaceClientImpl implements GenomeSpaceClient {
      * @param metadata
      * @return
      */
-    private GenomeSpaceFile buildDirectory(Object gsSession, GSDirectoryListing dir, GSFileMetadata metadata) {
+    private GenomeSpaceFile buildDirectory(Object gsSessionObject, GSDirectoryListing dir, GSFileMetadata metadata) {
+        GsSession gsSession = null;
+        if (gsSessionObject instanceof GsSession) {
+            gsSession = (GsSession) gsSessionObject;
+        }
+        else {
+            log.error("Object other than GsSession passed into buildDirectory: " + gsSessionObject);
+            return null;
+        }
+        DataManagerClient dmClient = gsSession.getDataManagerClient();
+        
         GenomeSpaceFile directoryFile = (GenomeSpaceFile) GenomeSpaceFileManager.createFile(gsSession, metadata.getUrl(), metadata);
         directoryFile.setKind(GenomeSpaceFile.DIRECTORY_KIND);
         directoryFile.setChildFiles(new HashSet<GenomeSpaceFile>());
         
         for (GSFileMetadata i : dir.findDirectories()) {
-            GenomeSpaceFile aFile = (GenomeSpaceFile) GenomeSpaceFileManager.createFile(gsSession, i.getUrl(), i); //(GenomeSpaceFile) buildDirectory(dmClient, dmClient.list(i), i);
+            GenomeSpaceFile aFile = (GenomeSpaceFile) buildDirectory(gsSessionObject, dmClient.list(i), i); // (GenomeSpaceFile) GenomeSpaceFileManager.createFile(gsSession, i.getUrl(), i);
             aFile.setKind(GenomeSpaceFile.DIRECTORY_KIND);
             directoryFile.getChildFilesNoLoad().add(aFile);
         }

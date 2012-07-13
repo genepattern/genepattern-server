@@ -76,10 +76,11 @@ use, misuse, or functionality.
 		    <script type="text/javascript">
 		        jq("#tree").jstree({
 		            core:{
-		                "html_titles":true
+		                "html_titles": true
 		            },
 		
 		            "json_data":{
+						// "data": #{genomeSpaceBean.treeJSON},	
 		                "ajax": {
 							"url": function(node) {
 								if (node === -1) {
@@ -88,7 +89,7 @@ use, misuse, or functionality.
 								var gsURL = jq(node).find("a").attr("href");
 								return "/gp/GenomeSpace/tree?dir=" + encodeURIComponent(gsURL)
 							},
-							"data": function(node){
+							"data": function(node) {
 								return {
 									id: node.attr ? node.attr("id") : 0
 								};
@@ -111,9 +112,16 @@ use, misuse, or functionality.
 					iterate.each(function(index) {
 						
 						var node = iterate.get(index);
+						var name = jq(node).find("a:first").attr("name");
+						
+						// Add the id to the node
+						jq(node).attr("id", name);
+
+						// Check for the case of empty directories
+						var link = jq(node).find("a:first").attr("href");
+						if (link === "#") return;
 						
 						// Append menu arrow
-						var name = jq(node).find("a:first").attr("name");
 						var arrow = document.createElement("img");
 						arrow.setAttribute("class", "menuArrow");
 						arrow.setAttribute("src", "/gp/images/smallOptions.gif");
@@ -121,50 +129,10 @@ use, misuse, or functionality.
 						arrow.setAttribute("onclick", "pm_showMenu('menuDiv_" + name + "', Position.cumulativeOffset(this), 50, 50);");
 						arrow.setAttribute("onmouseover", "MM_swapImage('Image_" + name + "','','/gp/images/smallOptions2.gif',2);");
 						arrow.setAttribute("onmouseout", "MM_swapImgRestore();");
-						jq(node).append(arrow);
+						jq(node).find("a:first").after(arrow);
 					});
 				});
 		    </script>
-            <table width="100%" border="0" cellspacing="0" cellpadding="0">
-                <tr>
-                    <td height="6" colspan="6">
-                        <t:graphicImage value="/images/spacer.gif" width="1" height="6"/>
-                    </td>
-                </tr>
-                <tr>
-                    <td>
-                        <rich:tree switchType="ajax" iconCollapsed="/images/collapsed.gif" iconExpanded="/images/expanded.gif" changeExpandListener="#{genomeSpaceBean.updateExpand}">
-         					<rich:recursiveTreeNodesAdaptor roots="#{genomeSpaceBean.fileTree}" var="gsFile" nodes="#{gsFile.childFiles}">
-								<rich:treeNode icon="/images/iconFolder.gif" iconLeaf="/images/iconLeaf.gif">
-	                                <h:outputLink rendered="#{not gsFile.directory}" value="#{gsFile.url}" styleClass="gs-tree-file-link">#{gsFile.name}</h:outputLink>
-									<h:outputText rendered="#{gsFile.directory}">#{gsFile.name}</h:outputText>
-	                                <!-- Image for popup menu -->
-									<t:graphicImage value="/images/smallOptions.gif" name="Image_#{gsFile.formattedId}"
-											onclick="pm_showMenu('menuDiv_#{gsFile.formattedId}', Position.cumulativeOffset(this), 50, 50);" 
-											onmouseover="MM_swapImage('Image_#{gsFile.formattedId}','','/gp/images/smallOptions2.gif',2)" 
-											onmouseout="MM_swapImgRestore();" />
-	                                <br/>
-	                                <h:outputText rendered="#{not gsFile.directory}">#{gsFile.formattedModified}; #{gsFile.formattedLength}</h:outputText>
-	                                <br/>
-									<ui:include src="fileMenu.xhtml">
-           								<ui:param name="file" value="#{gsFile}"/>
-           							</ui:include>
-	                            </rich:treeNode>
-         					</rich:recursiveTreeNodesAdaptor>
-      					</rich:tree>
-						<script type="text/javascript" language="javascript">
-							jq(".gs-tree-file-link").mousedown(function(event) {
-								event.preventDefault();
-							});
-						</script>
-                    </td>
-                </tr>
-                <tr>
-                    <td colspan="6">
-                        <img src="#{facesContext.externalContext.requestContextPath}/images/divider-pix2.gif" width="100%" height="1" vspace="5"/>
-                    </td>
-                </tr>
-            </table>
         </h:form>
         <p>
             <br/>
