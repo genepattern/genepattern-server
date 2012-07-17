@@ -26,6 +26,13 @@ public class PipelineDesignerFile extends File {
     public PipelineDesignerFile(File dir) {
         super(dir, PIPELINE_DESIGNER_FILE);   
     }
+    
+    public String fixLegacyPosition(String position) {
+        String withoutPX = position.substring(0, position.length() - 2);
+        int pos = Integer.parseInt(withoutPX);
+        pos += 200;
+        return pos + "px";
+    }
 
     public Map<String, Object> readLegacy() {
         Map<String, Object> reads = new HashMap<String, Object>();
@@ -41,10 +48,10 @@ public class PipelineDesignerFile extends File {
                     if (parts[0].equals(expected.toString())) {
                         Map<String, String> toInsert = new HashMap<String, String>();
                         if (parts.length >= 2) {
-                            toInsert.put("top", parts[1]);
+                            toInsert.put("top", fixLegacyPosition(parts[1]));
                         }
                         if (parts.length >= 3) {
-                            toInsert.put("left", parts[2]);
+                            toInsert.put("left", fixLegacyPosition(parts[2]));
                         }
                         ((HashMap<Integer, Map<String, String>>) reads.get("modules")).put(expected, toInsert);
                         expected++;
