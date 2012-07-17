@@ -140,6 +140,28 @@ var editor = {
         var bodyWidth = $(document).width();
         if ($(module.ui).position().left + MODULE_WIDTH > bodyWidth - PROPERTIES_WIDTH) {
             $(".tableDiv").width(bodyWidth + PROPERTIES_WIDTH + 20);
+            $("html, body").animate({ scrollLeft: $(module.ui).position().left - 100 }, "slow");
+        }
+    },
+
+    relocateIfNeeded: function(module) {
+        var LIBRARY_WIDTH = 190;
+        var HEADER_HEIGHT = 112;
+
+        var repaint = false;
+
+        if ($(module.ui).position().left < LIBRARY_WIDTH) {
+            module.ui.style.left = (LIBRARY_WIDTH + 30) + "px";
+            repaint = true;
+        }
+
+        if ($(module.ui).position().top < HEADER_HEIGHT) {
+            module.ui.style.top = (HEADER_HEIGHT + 20) + "px";
+            repaint = true;
+        }
+
+        if (repaint) {
+            jsPlumb.repaintEverything();
         }
     },
 
@@ -3258,9 +3280,10 @@ function Module(moduleJSON) {
                 // Expand the workspace if necessary
                 var module = editor.getParentModule(this);
                 editor.expandIfNeeded(module);
-            },
+                editor.relocateIfNeeded(module);
+            }//,
 
-            containment: "parent"
+            //containment: "parent"
         });
     };
 
