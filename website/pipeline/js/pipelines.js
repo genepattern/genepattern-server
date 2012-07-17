@@ -765,6 +765,10 @@ var editor = {
         }
         editor._setPipelineName();
 
+        // Redisplay pipeline editor
+        properties.displayPipeline();
+        properties.show();
+
         // Mark the workspace as dirty
         editor.makeDirty();
     },

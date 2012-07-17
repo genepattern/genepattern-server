@@ -206,6 +206,8 @@
             $("#revertButton").click(function() {
                 var lsid = editor.workspace["pipelineLsid"];
                 editor.load(lsid);
+                properties.displayPipeline();
+                properties.show();
             });
             editor.updateProgressBar();
 
