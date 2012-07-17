@@ -2969,6 +2969,9 @@ function Module(moduleJSON) {
             if (value === null) continue;
             if (value == properties.PROMPT_WHEN_RUN) {
                 // If prompt when run it has already been saved, so do nothing
+                if(!(this.inputs[i].isFile()) && this.inputs[i].value !== properties.PROMPT_WHEN_RUN){
+                    this.inputs[i].makePWR();
+                }
             }
             else {
                 this.inputs[i].promptWhenRun = null;
