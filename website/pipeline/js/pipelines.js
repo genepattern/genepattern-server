@@ -2412,7 +2412,7 @@ var properties = {
     },
 
     _showDisplaySettingsButton: function(parent, name) {
-        if ($("button.pwrDisplayButton[name='" + name + "']").size() === 0) {
+        if ($(parent).find("button.pwrDisplayButton[name='" + name + "']").size() === 0) {
             var button = document.createElement("button");
             button.innerHTML = "Set Prompt When Run Display Settings";
             button.setAttribute("name", name);
