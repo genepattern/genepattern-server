@@ -239,8 +239,8 @@ public class DataManager {
             // Commit
             HibernateUtil.commitTransaction();
         }
-        catch (Exception e) {
-            log.error("Error committing upload file sync to database");
+        catch (Throwable t) {
+            log.error("Error syncing upload files for user="+userId, t);
             HibernateUtil.rollbackTransaction();
         }
         finally {
@@ -262,11 +262,24 @@ public class DataManager {
             throw new IllegalArgumentException("file==null");
         }
 
-        // Exclude file on exclude list (ex: .DS_Store)
-        if (isExcludedFile(file)) {
+        //skip files which we can't read
+        if (!file.canRead()) {
+            log.error("ignoring file, can't read file="+file);
             return;
         }
-        
+
+        //skip files which don't exist or aren't regular files or directories
+        if (!( (file.isFile() && file.exists()) || file.isDirectory() )) {
+            log.debug("ignoring non-regular file="+file);
+            return;
+        }
+
+        // Exclude file on exclude list (ex: .DS_Store)
+        if (isExcludedFile(file)) {
+            log.debug("ignoring excluded file="+file);
+            return;
+        }
+
         // avoid circular references, from symbolic links
         if (file.isDirectory()) {
             final String canonicalPath = file.getCanonicalPath();
@@ -277,11 +290,6 @@ public class DataManager {
             else {
                 visitedDirs.add( canonicalPath );
             }
-        }
-        
-        if (!( (file.isFile() && file.exists()) || file.isDirectory() )) {
-            //skip files which don't exist or aren't regular files or directories
-            return;
         }
 
         //need a valid userId to proceed
@@ -317,7 +325,7 @@ public class DataManager {
                 handleFileSync(dao, visitedDirs, newRelPath, child, userContext);
             }
             catch (Throwable t) {
-                log.error("Error syncing user upload file, newRelPath="+newRelPath+", parent="+file+", child="+child);
+                log.error("Error syncing user upload file, parent="+file+", child="+child, t);
             }
         }
     }
