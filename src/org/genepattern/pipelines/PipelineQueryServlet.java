@@ -11,16 +11,12 @@ package org.genepattern.pipelines;
 import static org.genepattern.util.GPConstants.SERIALIZED_MODEL;
 
 import java.io.BufferedOutputStream;
-import java.io.BufferedReader;
-import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.io.FileWriter;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
@@ -169,6 +165,10 @@ public class PipelineQueryServlet extends HttpServlet {
                     if (!i.isFormField()) {
                         // Store in a temp directory until the pipeline is saved
                         String username = (String) request.getSession().getAttribute("userid");
+                        
+                        if (username == null) {
+                            throw new Exception("No valid session detected.  Please log in again.");
+                        }
 
                         ServerConfiguration.Context userContext = ServerConfiguration.Context.getContextForUser(username);
                         File fileTempDir = ServerConfiguration.instance().getTemporaryUploadDir(userContext);
@@ -183,8 +183,12 @@ public class PipelineQueryServlet extends HttpServlet {
                     }
                 }
             }
+            catch (Exception e) {
+                sendError(response, "Exception retrieving the uploaded file:\n" + e.getLocalizedMessage());
+                return;
+            }
             catch (Throwable t) {
-                sendError(response, "Exception retrieving the uploaded file:\n"+t.getLocalizedMessage());
+                sendError(response, "Exception retrieving the uploaded file:\n" + t.getLocalizedMessage());
                 return;
             }
         }
