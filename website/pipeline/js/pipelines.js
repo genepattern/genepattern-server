@@ -77,6 +77,16 @@ var editor = {
         };
 	},
 
+    revert: function() {
+        var lsid = editor.workspace["pipelineLsid"];
+        var name = editor.workspace["pipelineName"];
+        editor.load(lsid);
+        editor.workspace["pipelineName"] = name;
+        editor._setPipelineName();
+        properties.displayPipeline();
+        properties.show();
+    },
+
     updateAllPorts: function() {
         for (var i in editor.workspace) {
             var module = editor.workspace[i];
