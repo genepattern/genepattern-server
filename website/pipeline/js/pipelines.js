@@ -76,6 +76,18 @@ var editor = {
             return message;
         };
 	},
+	
+	// Fix for the GP 3.3.3 clone bug
+    fixCloneBug: function(path) {
+        if (path.indexOf("<GenePatternURL>") !== -1 && path.indexOf("<LSID>") === -1) {
+        	var parts = path.split("=");
+        	if (parts.length !== 3) return path;
+        	return parts[0] + "=<LSID>&file=" + parts[2];
+        }
+        else {
+        	return path;
+        }
+    },
 
     revert: function() {
         var lsid = editor.workspace["pipelineLsid"];
@@ -3630,7 +3642,7 @@ function File(name, path) {
         var parts = filename.split("\\");
         return parts[parts.length - 1];
     };
-
+    
     var file = new Module({
         "inputs": [],
         "outputs": [this._fixFileName(name)],
@@ -3832,6 +3844,7 @@ function InputParam(module, paramJSON) {
 
         // Create file box and draw pipes if necessary
         if (this.isFile() && input["value"] !== "" && input["value"] !== null && input["value"] !== undefined && this.promptWhenRun === null) {
+        	input["value"] = editor.fixCloneBug(input["value"]);
             var path = input["value"];
             var name = editor.extractFilename(path);
             var box = editor.getFileBox(path);
