@@ -66,9 +66,12 @@ public class GpFileObjFactory {
         if (uploadFile.isAbsolute()) {
             throw new Exception("user upload file must be a relative path, uploadFile="+uploadFile.getPath());
         }
-        if (uploadFile.getPath().contains("..")) {
-            //TODO: quick and dirty way to prevent relative paths to forbidden parent directories
-            throw new Exception("uploadFile.path can't contain '..'");
+        //TODO: quick and dirty way to prevent relative paths to forbidden parent directories
+        if (uploadFile.getPath().startsWith("../")) {
+            throw new Exception("uploadFile.path can't start with '../'");
+        }
+        if (uploadFile.getPath().contains("/../")) {
+            throw new Exception("uploadFile.path can't contain '/../'");
         }
         
         if (userContext == null) {
@@ -81,7 +84,7 @@ public class GpFileObjFactory {
         //Note: see UserAccountManager class. If the system is running as expected, the user's home directory is created
         //    before the account is created, therefore we can assume the userId is a valid directory name
         if (userContext.getUserId().contains("/") || userContext.getUserId().contains(File.pathSeparator)) {
-            throw new IllegalArgumentException("A valid userId is required, userId='"+userContext.getUserId()+"'. Your userId contains a pathSeparator.");
+            throw new IllegalArgumentException("A valid userId is required, userId='"+userContext.getUserId()+"'. Your userId contains a pathSeparator character ('/').");
         }
         File userUploadDir = ServerConfiguration.instance().getUserUploadDir(userContext);
 
