@@ -81,7 +81,7 @@ public class UserControlPanelBean {
             uploadedFiles = root.getAllFilePaths();
         }
         catch (Exception e) {
-            log.error("Error getting all file paths for " + user + ": " + e.getMessage());
+            log.error("Error getting all file paths for " + user + ": " + e.getMessage(), e);
             return files;
         }
         
