@@ -58,4 +58,18 @@ public class UserUploadDao extends BaseDAO {
         return numDeleted;
     }
 
+    /**
+     * Delete all the entries in the USER_UPLOAD table for the given user.
+     * 
+     * @param userId
+     * @return
+     */
+    public int deleteAllUserUpload(String userId) {
+        String hql = "delete "+UserUpload.class.getName()+" uu where uu.userId = :userId";
+        Query query = HibernateUtil.getSession().createQuery( hql );
+        query.setString("userId", userId);
+        int numDeleted = query.executeUpdate();
+        return numDeleted;
+    }
+
 }
