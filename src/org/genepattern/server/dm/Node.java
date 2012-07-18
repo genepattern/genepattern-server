@@ -45,6 +45,15 @@ public class Node<T> {
         return child;
     }
     
+    public Node<T> addChild(Node<T> child) {
+        if (children == null) {
+            children = new TreeSet<Node<T>>(comparator);
+        }
+        child.parent = this;
+        children.add( child );
+        return child;
+    }
+    
     public Collection<Node<T>> getChildren() {
         if (children == null) {
             return Collections.emptySet();

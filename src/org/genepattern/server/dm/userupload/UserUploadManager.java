@@ -2,6 +2,8 @@ package org.genepattern.server.dm.userupload;
 
 import java.io.File;
 import java.util.List;
+import java.util.SortedMap;
+import java.util.TreeMap;
 
 import org.apache.log4j.Logger;
 import org.genepattern.server.FileUtil;
@@ -174,20 +176,86 @@ public class UserUploadManager {
      * @param inDir
      * @return
      */
-    static public GpDirectory getFileTree(ServerConfiguration.Context userContext) throws Exception {
-        // FIXME: I don't think this method works properly building the tree.  Fix before that functionality is used.
+    static public GpDirectory getFileTree(final ServerConfiguration.Context userContext) throws Exception { 
+        final GpFilePath userDir = GpFileObjFactory.getUserUploadDir(userContext);
+        final GpDirectory root = new GpDirectory(userDir);
+
+        //get the list from the DB
+        final List<UserUpload> all = getAllFiles(userContext.getUserId());
         
-        GpFilePath userDir = GpFileObjFactory.getUserUploadDir(userContext);
-        GpDirectory root = new GpDirectory(userDir);
-        
-        List<UserUpload> all = getAllFiles(userContext.getUserId());
-        for(UserUpload uploadFile : all) {
-            GpFilePath uploadFilePath = GpFileObjFactory.getUserUploadFile(userContext, new File(uploadFile.getPath()));
-            initMetadata(uploadFilePath, uploadFile); 
-            root.add(userContext, uploadFilePath);
+        //initialize the list of GpFilePath objects
+        final SortedMap<String,GpDirectory> allDirs = new TreeMap<String,GpDirectory>();
+        final SortedMap<String,GpFilePath> allFiles = new TreeMap<String,GpFilePath>();
+        for(UserUpload userUpload : all) {
+            GpFilePath uploadFilePath = GpFileObjFactory.getUserUploadFile(userContext, new File(userUpload.getPath()));
+            initMetadata(uploadFilePath, userUpload);
+            if (UserUpload.isDirectory(userUpload)) {
+                GpDirectory gpDirectory = new GpDirectory(uploadFilePath);
+                allDirs.put(userUpload.getPath(), gpDirectory);
+            }
+            else {
+                allFiles.put(userUpload.getPath(),uploadFilePath);
+            }
         }
         
+        //now build the tree
+        for(GpDirectory dir : allDirs.values()) {
+            GpDirectory parentDir = root;
+            final String parentPath = getParentPath(dir.getValue());
+            if (parentPath != null) {
+                if (allDirs.containsKey(parentPath)) {
+                    parentDir = allDirs.get(parentPath);
+                }
+            }
+            parentDir.addChild(dir); 
+        }
+        for(GpFilePath file : allFiles.values()) {
+            GpDirectory parentDir = root;
+            final String parentPath = getParentPath(file);
+            if (parentPath != null) {
+                if (allDirs.containsKey(parentPath)) {
+                    parentDir = allDirs.get(parentPath);
+                }
+            }
+            parentDir.addChild(file); 
+        }
+        
+        //for debugging, walk the tree
+        //List<String> allPaths = new ArrayList<String>();
+        //walk(allPaths,root);
         return root;
+    }
+
+//    //just for debugging
+//    static private void walk(List<String> allPaths, GpDirectory dir) {
+//        String relPath = dir.getValue().getRelativePath();
+//        log.debug(relPath);
+//        allPaths.add(relPath);
+//        for(Node<GpFilePath> child : dir.getChildren()) {
+//            if (child instanceof GpDirectory) {
+//                walk( allPaths, (GpDirectory) child );
+//            }
+//            else {
+//                final String childPath = child.getValue().getRelativePath();
+//                log.debug(childPath);
+//                allPaths.add(childPath);
+//            }
+//        }
+//    }
+
+    static private String getParentPath(final GpFilePath file) {
+        if (file == null) {
+            log.error("Unexpected null arg");
+            return null;
+        }
+        String path = file.getRelativePath();
+        int idx = path.lastIndexOf("/");
+        if (idx < 0) {
+            //has no parent
+            return null;
+        }
+        String parentPath = path.substring(0, idx);
+        return parentPath;
     }
     
     /**
