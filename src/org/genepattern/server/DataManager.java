@@ -211,6 +211,7 @@ public class DataManager {
      * @param user
      */
     public static void syncUploadFiles(String userId) {
+        log.debug("syncUploadFiles(userId='"+userId+"') ...");
         try {
             UserUploadDao dao = new UserUploadDao();
             List<UserUpload> userFiles = dao.selectAllUserUpload(userId);
@@ -246,6 +247,7 @@ public class DataManager {
         finally {
             HibernateUtil.closeCurrentSession();
         }
+        log.debug("syncUploadFiles(userId='"+userId+"') ... Done!");
     }
     
     /**
