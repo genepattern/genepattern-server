@@ -214,7 +214,6 @@ public class DataManager {
         log.debug("syncUploadFiles(userId='"+userId+"') ...");
         try {
             UserUploadDao dao = new UserUploadDao();
-            List<UserUpload> userFiles = dao.selectAllUserUpload(userId);
             
             File uploadDir = ServerConfiguration.instance().getUserUploadDir(Context.getContextForUser(userId));
             if (uploadDir == null) {
@@ -223,16 +222,16 @@ public class DataManager {
             }
             
             // Remove all the old database entries
-            for (UserUpload i : userFiles) {
-                dao.delete(i);
-            }
+            log.debug("deleting old entries ...");
+            int numDeleted = dao.deleteAllUserUpload(userId);
+            log.debug("deleted "+numDeleted+" entries from DB");
             HibernateUtil.commitTransaction();
-            dao = new UserUploadDao();
 
             // Add new entries to the database
             ServerConfiguration.Context userContext = ServerConfiguration.Context.getContextForUser(userId);
             String[] relPath = new String[0];
             Set<String> visitedDirs = new HashSet<String>();
+            dao = new UserUploadDao();
             for (File file : uploadDir.listFiles()) {
                 handleFileSync(dao, visitedDirs, relPath, file, userContext);
             }
@@ -259,11 +258,33 @@ public class DataManager {
      * @throws Exception
      */
     private static void handleFileSync(UserUploadDao dao, Set<String> visitedDirs, String[] relPath, File file, ServerConfiguration.Context userContext) throws Exception {
+        if (file == null) {
+            throw new IllegalArgumentException("file==null");
+        }
+
         // Exclude file on exclude list (ex: .DS_Store)
         if (isExcludedFile(file)) {
             return;
         }
         
+        // avoid circular references, from symbolic links
+        if (file.isDirectory()) {
+            final String canonicalPath = file.getCanonicalPath();
+            if (visitedDirs.contains( canonicalPath )) {
+                log.debug("skipping dir, because it was already visited: "+canonicalPath);
+                return;
+            }
+            else {
+                visitedDirs.add( canonicalPath );
+            }
+        }
+        
+        if (!( (file.isFile() && file.exists()) || file.isDirectory() )) {
+            //skip files which don't exist or aren't regular files or directories
+            return;
+        }
+
+        //need a valid userId to proceed
         if (userContext == null) {
             throw new Exception("Missing required parameter, userContext is null");
         }
@@ -271,32 +292,32 @@ public class DataManager {
             throw new Exception("Missing required parameter, userContext.userId is null");
         }
         
-        UserUpload uploadFile = new UserUpload();
-        
-        String[] newRelPath = new String[relPath.length + 1];
+        //add this file to the DB
+        final UserUpload uploadFile = new UserUpload();
+        final String[] newRelPath = new String[relPath.length + 1];
         for(int idx = 0; idx<relPath.length; ++idx) {
             newRelPath[idx] = relPath[idx];
         }
         newRelPath[relPath.length] = file.getName();
-        String relativePath = join(newRelPath, "/");
-        //relativePath += file.getName();
-        //String relativePath = UserUploadManager.absoluteToRelativePath(userContext, file.getCanonicalPath());
+        final String relativePath = join(newRelPath, "/");
         uploadFile.setPath(relativePath);
         uploadFile.setUserId(userContext.getUserId());
         uploadFile.setNumParts(1);
         uploadFile.setNumPartsRecd(1);
         uploadFile.init(file);
         dao.saveOrUpdate(uploadFile); 
-
-        if (file.isDirectory()) {
-            final String canonicalPath = file.getCanonicalPath();
-            if (visitedDirs.contains( canonicalPath )) {
+        
+        //if it's a directory, add children
+        if (!file.isDirectory()) {
+            return;
+        }
+        //if we're here, it means the file is a directory
+        for(File child : file.listFiles()) {
+            try {
+                handleFileSync(dao, visitedDirs, newRelPath, child, userContext);
             }
-            else {
-                visitedDirs.add( canonicalPath );
-                for (File i : file.listFiles()) {
-                    handleFileSync(dao, visitedDirs, newRelPath, i, userContext);
-                }
+            catch (Throwable t) {
+                log.error("Error syncing user upload file, newRelPath="+newRelPath+", parent="+file+", child="+child);
             }
         }
     }
