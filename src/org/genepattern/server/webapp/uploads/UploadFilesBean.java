@@ -25,8 +25,8 @@ import org.genepattern.server.DataManager;
 import org.genepattern.server.config.ServerConfiguration;
 import org.genepattern.server.config.ServerConfiguration.Context;
 import org.genepattern.server.dm.GpDirectory;
-import org.genepattern.server.dm.GpFileObjFactory;
 import org.genepattern.server.dm.GpFilePath;
+import org.genepattern.server.dm.Node;
 import org.genepattern.server.dm.UserUploadFile;
 import org.genepattern.server.dm.userupload.UserUploadManager;
 import org.genepattern.server.webapp.FileDownloader;
@@ -47,6 +47,16 @@ import org.richfaces.model.TreeRowKey;
 /**
  * Backing bean for displaying user uploaded files and their associated popup menus.
  * 
+ * JSF usage:
+ <pre>
+     #{uploadFileBean.user}
+     #{uploadFileBean.files}
+     #{file.fileLength}
+     #{file.lastModified}
+     #{file.name}
+     #{file.path}
+</pre>
+ * 
  * @author pcarr
  */
 public class UploadFilesBean {
@@ -61,21 +71,12 @@ public class UploadFilesBean {
     public final String SELECTED_TAB = "selectedTab";
     
     public UploadFilesBean() {
-        initFiles();
+        initUserUploadTree();
     }
-    
-/*
- * JSF usage:
-   #{uploadFileBean.user}
-   #{uploadFileBean.files}"
 
-      #{file.fileLength}
-      #{file.lastModified}
-      #{file.name}
-      #{file.path}
-*/
     private List<FileInfoWrapper> files;
     private List<DirectoryInfoWrapper> directories;
+    private DirectoryInfoWrapper rootDir;
     private String currentUser;
     private String currentTaskLsid = null;
     private TaskInfo currentTaskInfo = null;
@@ -147,14 +148,14 @@ public class UploadFilesBean {
     
     public List<FileInfoWrapper> getFiles() {
         if (files == null) {
-            initFiles(); 
+            initUserUploadTree(); 
         }
         return files;
     }
 
     public List<DirectoryInfoWrapper> getDirectories() {
         if (directories == null) {
-            initFiles(); 
+            initUserUploadTree(); 
         }
         return directories;
     }
@@ -203,32 +204,23 @@ public class UploadFilesBean {
         rootNode.setData(rootWrapper);
 
         // Add component trees
-        rootNode.addChild(0, getUploadFilesTree());
+        TreeNode<FileInfoWrapper> uploadFilesTree = getUploadFilesTree();
+        rootNode.addChild(0, uploadFilesTree);
         return rootNode;
     }
     
-    public DirectoryInfoWrapper getUploadDirectory() {
-        for (DirectoryInfoWrapper i : directories) {
-            if (i.isRoot()) {
-                return i;
-            }
-        }
-        return null;
-    }
-    
     /**
-     * Lists all upload files in a tree with the root being the user's upload dir
+     * Lists all upload files in a tree with the root being the user's upload dir.
+     * 
      * @return
      * @throws IOException 
      */
     public TreeNode<FileInfoWrapper> getUploadFilesTree() throws Exception {
-        initDirectories();
-        
-        // Set up the tree's directory structure
-        return getDirectoryNode(getUploadDirectory());
+        initUserUploadTree();
+        return getDirectoryNode(rootDir);
     }
     
-    public TreeNode<FileInfoWrapper> getDirectoryNode(DirectoryInfoWrapper dir) {
+    private TreeNode<FileInfoWrapper> getDirectoryNode(DirectoryInfoWrapper dir) {
         // Set up the root node
         TreeNode<FileInfoWrapper> rootNode = new TreeNodeImpl<FileInfoWrapper>();
         rootNode.setData(dir);
@@ -259,58 +251,37 @@ public class UploadFilesBean {
         return ServerConfiguration.instance().getUserUploadDir(Context.getContextForUser(UIBeanHelper.getUserId()));
     }
     
-    public DirectoryInfoWrapper getWrappedUploadDir(GpDirectory root) {
-        // Create the dir wrapper for the user upload dir
-        DirectoryInfoWrapper rootWrapper = new DirectoryInfoWrapper(root);
-        rootWrapper.setRoot(true);
-        return rootWrapper;
-    }
-    
-    public static boolean isFileDirectory(GpFilePath file) {
-        if (file.getKind() == null || !file.getKind().equalsIgnoreCase("directory")) {
-            return false;
-        }
-        else {
-            return true;
-        }
-    }
-    
-    private void initFiles() {
+    private void initUserUploadTree() {
         currentUser = UIBeanHelper.getUserId();
         files = new ArrayList<FileInfoWrapper>();
         directories = new ArrayList<DirectoryInfoWrapper>();
-        List<GpFilePath> uploadedFiles;
         try {
-            GpDirectory root = UserUploadManager.getFileTree(Context.getContextForUser(currentUser));
-            uploadedFiles = root.getAllFilePaths();
-            directories.add(getWrappedUploadDir(root));
+            Context userContext = Context.getContextForUser(currentUser);
+            GpDirectory userUploadRoot = UserUploadManager.getFileTree(userContext);
+            rootDir = initFilesFromDir(userUploadRoot);
+            initModuleMenuItems();
         }
-        catch (Exception e) {
-            log.error("Error getting all file paths: " + e.getMessage());
-            uploadedFiles = new ArrayList<GpFilePath>();
+        catch (Throwable t) {
+            log.error("Error initializing user uploads file tree for currentUser='"+currentUser+"': "+ t.getMessage(), t);
         }
-        
-        for(GpFilePath file : uploadedFiles) {
-            if (isFileDirectory(file)) {
-                directories.add(new DirectoryInfoWrapper(file));
+    }
+
+    private DirectoryInfoWrapper initFilesFromDir(GpDirectory dir) {
+        DirectoryInfoWrapper dirWrapper = new DirectoryInfoWrapper(dir);
+        directories.add(dirWrapper);
+        for(Node<GpFilePath> child : dir.getChildren()) {
+            if (child instanceof GpDirectory) {
+                DirectoryInfoWrapper childDir = initFilesFromDir( (GpDirectory) child );
+                dirWrapper.addChildDir(childDir);
             }
             else {
-                files.add(new FileInfoWrapper(file));
+                GpFilePath file = child.getValue();
+                FileInfoWrapper childFile = new FileInfoWrapper(file);
+                files.add(childFile);
+                dirWrapper.addChildFile(childFile);
             }
         }
-        initModuleMenuItems();
-    }
-    
-    private void initDirectories() {
-        if (files == null) {
-            initFiles();
-        }
-        
-        for (DirectoryInfoWrapper i : directories) {
-            if (!i.isInit()) {
-                i.initDirectory();
-            }
-        }
+        return dirWrapper;
     }
     
     public void initCurrentLsid(AdminDAO adminDao) {
@@ -625,30 +596,6 @@ public class UploadFilesBean {
             }
         }
         
-        public boolean isParent(DirectoryInfoWrapper dir) {
-            String thisPath = this.getPath();
-            String dirPath = dir.getPath();
-            // Special case for root directory
-            if (dirPath.equals("./") && !thisPath.contains("/")) {
-                return true;
-            }
-            
-            int occur = this.getPath().indexOf(dir.getPath());
-            if (occur < 0) { // This file is not inside the dir or the dir's subdirs
-                return false;
-            }
-            if (occur + dir.getPath().length() >= this.getPath().length()) {
-                return false; // A dir is never a parent of itself
-            }
-            String relPath = this.getPath().substring(occur + dir.getPath().length() + 1);
-            if (relPath.equalsIgnoreCase(this.getFilename())) {
-                return true;
-            }
-            else {
-                return false;
-            }
-        }
-        
         public Collection<SendToModule> getSendToModules() {
             if (sendToModules == null) {
                 sendToModules = initSendToModules();
@@ -795,31 +742,21 @@ public class UploadFilesBean {
     }
     
     public class DirectoryInfoWrapper extends FileInfoWrapper {
-        List<FileInfoWrapper> dirFiles;
-        boolean init = false;
-        GpDirectory gpDirectory;
-        
-        public DirectoryInfoWrapper(GpFilePath file) {
-            super(file);
-            String relativePath = file.getRelativePath();
-            File serverFile = new File(relativePath);
-            Context context = Context.getContextForUser(UIBeanHelper.getUserId());
-            GpFilePath filePath = null;
-            try {
-                filePath = GpFileObjFactory.getUserUploadFile(context, serverFile);
-            }
-            catch (Exception e) {
-                log.error("Unable to get the user upload file from " + serverFile.getAbsolutePath());
-            }
-            GpDirectory directory = new GpDirectory(filePath);
-            this.setDirectory(true);
-            this.gpDirectory = directory;
-        }
+        private List<FileInfoWrapper> dirFiles = new ArrayList<FileInfoWrapper>();
+        private GpDirectory gpDirectory;
 
-        public DirectoryInfoWrapper(GpDirectory dir) {
+        public DirectoryInfoWrapper(final GpDirectory dir) {
             super(dir.getValue());
             this.setDirectory(true);
             this.gpDirectory = dir;
+        }
+        
+        public void addChildDir(DirectoryInfoWrapper childDir) {
+            dirFiles.add(childDir);
+        }
+        
+        public void addChildFile(FileInfoWrapper childFile) {
+            dirFiles.add(childFile);
         }
 
         public List<FileInfoWrapper> getFiles() {
@@ -828,42 +765,8 @@ public class UploadFilesBean {
 
         public void setFiles(List<FileInfoWrapper> files) {
             this.dirFiles = files;
-        }
-        
-        public boolean isInit() {
-            return init;
-        }
-        
-        public void initDirectory() {
-            if (files == null) {
-                initFiles();
-            }
-            dirFiles = new ArrayList<FileInfoWrapper>();
-            
-//            for (Node<GpFilePath> i : gpDirectory.getChildren()) {
-//                if (i.getValue().isDirectory()) {
-//                    dirFiles.add(new DirectoryInfoWrapper(new GpDirectory(i.getValue())));
-//                }
-//                else {
-//                    dirFiles.add(new FileInfoWrapper(i.getValue()));
-//                }
-//            }
-            
-            // Add subdirectories
-            for (DirectoryInfoWrapper i : directories) {
-                if (i.isParent(this)) {
-                    dirFiles.add(i);
-                }
-            }
-            
-            // Add files
-            for (FileInfoWrapper i : files) {
-                if (i.isParent(this)) {
-                    dirFiles.add(i);
-                }
-            }
-            init = true;
-        }
+        } 
     }
+        
 }
 
