@@ -10,6 +10,7 @@ import javax.persistence.Id;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
 
+import org.apache.log4j.Logger;
 import org.genepattern.server.config.ServerConfiguration.Context;
 import org.genepattern.server.dm.GpFilePath;
 import org.genepattern.util.SemanticUtil;
@@ -17,12 +18,22 @@ import org.genepattern.util.SemanticUtil;
 @Entity
 @Table(name="user_upload", uniqueConstraints = {@UniqueConstraint(columnNames={"user_id", "path"})})
 public class UserUpload {
+    private static Logger log = Logger.getLogger(UserUpload.class);
+
     static public UserUpload initFromGpFileObj(Context userContext, GpFilePath fileObj) {
         UserUpload uf = new UserUpload();
         uf.setUserId(userContext.getUserId());
         uf.setPath(fileObj.getRelativePath());
         uf.init(fileObj.getServerFile());
         return uf;
+    }
+    
+    static public boolean isDirectory(final UserUpload userUpload) {
+        if (userUpload == null) {
+            log.error("Unexpected null arg");
+            return false;
+        }
+        return "directory".equalsIgnoreCase( userUpload.getKind() );
     }
     
     @Column(name = "user_id")
