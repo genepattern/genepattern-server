@@ -40,7 +40,7 @@ public class UserUploadDao extends BaseDAO {
      */
     public List<UserUpload> selectAllUserUpload(String userId) {
         if (userId == null) return Collections.emptyList();
-        String hql = "from "+UserUpload.class.getName()+" uu where uu.userId = :userId";
+        String hql = "from "+UserUpload.class.getName()+" uu where uu.userId = :userId order by uu.path";
         Query query = HibernateUtil.getSession().createQuery( hql );
         query.setString("userId", userId);
         List<UserUpload> rval = query.list();
