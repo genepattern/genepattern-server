@@ -4,7 +4,9 @@ import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
+import java.util.Collections;
 import java.util.Date;
+import java.util.List;
 
 import org.apache.log4j.Logger;
 import org.genepattern.server.config.ServerConfiguration.Context;
@@ -224,7 +226,18 @@ abstract public class GpFilePath implements Comparable<GpFilePath> {
         this.numPartsRecd = numPartsRecd;
     }
 
-    
+    //support for directory listings
+    private List<GpFilePath> children;
+    public List<GpFilePath> getChildren() {
+        if (children == null) {
+            return Collections.emptyList();
+        }
+        return Collections.unmodifiableList(children);
+    }
+    public void addChild(GpFilePath child) {
+        children.add(child);
+    }
+
     /**
      * Get the relative URI to this file, the path is specified relative to the GenePatternURL.
      * @return
