@@ -4,6 +4,7 @@ import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
@@ -235,6 +236,9 @@ abstract public class GpFilePath implements Comparable<GpFilePath> {
         return Collections.unmodifiableList(children);
     }
     public void addChild(GpFilePath child) {
+        if (children == null) {
+            children = new ArrayList<GpFilePath>();
+        }
         children.add(child);
     }
 
