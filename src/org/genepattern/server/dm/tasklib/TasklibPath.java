@@ -107,9 +107,4 @@ public class TasklibPath extends GpFilePath {
         return null;
     }
 
-    public String getTasklibValue() {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
 }

@@ -141,10 +141,5 @@ public class JobResultFile extends GpFilePath {
         return null;
     }
 
-    public String getTasklibValue() {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
 }
 

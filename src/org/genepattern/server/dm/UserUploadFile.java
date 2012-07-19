@@ -53,11 +53,6 @@ public class UserUploadFile extends GpFilePath {
         return null;
     }
 
-    public String getTasklibValue() {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
     public boolean canRead(boolean isAdmin, Context userContext) {
         if (isAdmin) {
             return true;

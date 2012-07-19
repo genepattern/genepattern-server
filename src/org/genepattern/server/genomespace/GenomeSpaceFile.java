@@ -233,12 +233,6 @@ public class GenomeSpaceFile extends GpFilePath {
         log.error("Not implemented exception: GenomeSpaceFile.getParamInfoValue()");
         return null;
     }
-
-    @Override
-    public String getTasklibValue() {
-        log.error("Not implemented exception: GenomeSpaceFile.getTasklibValue()");
-        return null;
-    }
     
     @Override
     public String getRelativePath() {

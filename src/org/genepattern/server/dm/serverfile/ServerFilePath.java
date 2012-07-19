@@ -71,11 +71,6 @@ public class ServerFilePath extends GpFilePath {
         throw new IllegalArgumentException("Not implemented!");
     }
 
-    public String getTasklibValue() {
-        // TODO Auto-generated method stub
-        throw new IllegalArgumentException("Not implemented!");
-    }
-    
     /**
      * Implement user permissions for server files.
      */

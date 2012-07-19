@@ -269,9 +269,4 @@ abstract public class GpFilePath implements Comparable<GpFilePath> {
      */
     abstract public String getParamInfoValue();
     
-    /**
-     * Get the string literal to use when serializing a module into the TASK_MASTER table.
-     * @return
-     */
-    abstract public String getTasklibValue();
 }
