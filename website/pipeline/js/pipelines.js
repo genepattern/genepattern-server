@@ -2823,8 +2823,6 @@ function Module(moduleJSON) {
             if (this.outputEnds[i].advanced) {
                 $(this.outputEnds[i].endpoint.canvas).addClass("hiddenOutput");
             }
-
-            this.outputEnds[i].endpoint.anchor.y = this.outputEnds[i].collapsedPosition;
         }
 
         $("#" + this.ui.getAttribute("id") + " .moreLessTab")[0].innerHTML = "Show More";
@@ -2838,8 +2836,6 @@ function Module(moduleJSON) {
             if (this.outputEnds[i].advanced) {
                 $(this.outputEnds[i].endpoint.canvas).removeClass("hiddenOutput");
             }
-
-            this.outputEnds[i].endpoint.anchor.y = this.outputEnds[i].position;
         }
 
         $("#" + this.ui.getAttribute("id") + " .moreLessTab")[0].innerHTML = "Show Less";
@@ -2887,18 +2883,17 @@ function Module(moduleJSON) {
         return null;
     };
 
-    this.calculatePosition = function(isOutput, pointer, expanded) {
-        var LINE_HEIGHT = 22.5;
-        var height = this.calculateHeight(expanded);
+    this.calculatePosition = function(isOutput, pointer) {
+        var LINE_HEIGHT = 22.8;
         if (isOutput) {
-            var position = LINE_HEIGHT + 13 + (this.fileInputs.length * LINE_HEIGHT) + 6;
+            var position = LINE_HEIGHT + 13 + (this.fileInputs.length * LINE_HEIGHT) + 8;
                 position += this.outputEnds.length * LINE_HEIGHT;
-            return position / height;
+            return position;
         }
         else {
             var position = LINE_HEIGHT + 13;
             position += this._getInputIndex(pointer) * LINE_HEIGHT;
-            return position / height;
+            return position;
         }
     };
 
@@ -3871,7 +3866,6 @@ function Port(module, pointer, param) {
     this.param = param;
 	this.type = null;
     this.position = null;
-    this.collapsedPosition = null;
 	this.endpoint = null;
 	this.tooltip = null;
 	this.pipes = [];
@@ -3892,17 +3886,15 @@ function Port(module, pointer, param) {
         else { prefix = "in_"; }
 
         // Calculate position
-        this.position = this.module.calculatePosition(this.isOutput(), pointer, true);
-        this.collapsedPosition = this.module.calculatePosition(this.isOutput(), pointer, false);
-        var usedPosition = this.module.expanded ? this.position : this.collapsedPosition;
+        this.position = this.module.calculatePosition(this.isOutput(), pointer);
 
         // Get the correct position array
         var posArray = null;
         if (this.isOutput()) {
-            posArray = [1, usedPosition, 1, 0];
+            posArray = [1, 0, 1, 0, 0, this.position];
         }
         else {
-            posArray = [0, usedPosition, -1, 0];
+            posArray = [0, 0, -1, 0, 0, this.position];
         }
 
         // Get the correct number of max connections
