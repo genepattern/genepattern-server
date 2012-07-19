@@ -386,6 +386,7 @@ input[type="file"] {
 
 .collapseDisabled {
     color: #333333;
+	display: none;
 }
 
 .collapseDisabled:hover {
