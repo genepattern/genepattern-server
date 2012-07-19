@@ -184,10 +184,13 @@ public class MigrationTool {
         //3) resync the DB entries
         syncUserUploadFiles();
         
-        //4) update prev job input parameters
+        //4) clear the legacy UPLOAD_FILE table
+        deleteAllOldUploadFileRecords();
+        
+        //5) update prev job input parameters
         updatePrevJobInputParams();
         
-        //5) finally, update the flag in the DB, so that we don't do this again
+        //6) finally, update the flag in the DB, so that we don't do this again
         try {
             HibernateUtil.beginTransaction();
             //insert into props ( key, value ) values ('sync.user.uploads.complete', 'true')
@@ -637,5 +640,28 @@ public class MigrationTool {
         return false;
     }
 
+    /**
+     * Delete the record from the DB.
+     * @param path
+     */
+    private static boolean deleteAllOldUploadFileRecords() {
+        log.info("deleting all records from old UPLOAD_FILE table ...");
+        try {
+            HibernateUtil.beginTransaction();
+            final String sqlDel = "delete from upload_file";
+            SQLQuery delQuery = HibernateUtil.getSession().createSQLQuery(sqlDel);
+            int numDeleted = delQuery.executeUpdate();
+            HibernateUtil.commitTransaction();
+            log.info("deleted "+numDeleted+" records");
+            return true;
+        }
+        catch (Throwable t) {
+            log.error("Error deleting all records from UPLOAD_FILE table, Error: "+t.getLocalizedMessage(), t);
+        }
+        finally {
+            HibernateUtil.closeCurrentSession();
+        }
+        return false;
+    }
 
 }
