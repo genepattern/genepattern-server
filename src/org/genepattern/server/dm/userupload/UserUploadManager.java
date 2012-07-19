@@ -10,7 +10,7 @@ import org.genepattern.server.FileUtil;
 import org.genepattern.server.config.ServerConfiguration;
 import org.genepattern.server.config.ServerConfiguration.Context;
 import org.genepattern.server.database.HibernateUtil;
-import org.genepattern.server.dm.GpDirectory;
+import org.genepattern.server.dm.GpDirectoryNode;
 import org.genepattern.server.dm.GpFileObjFactory;
 import org.genepattern.server.dm.GpFilePath;
 import org.genepattern.server.dm.userupload.dao.UserUpload;
@@ -176,21 +176,21 @@ public class UserUploadManager {
      * @param inDir
      * @return
      */
-    static public GpDirectory getFileTree(final ServerConfiguration.Context userContext) throws Exception { 
+    static public GpDirectoryNode getFileTree(final ServerConfiguration.Context userContext) throws Exception { 
         final GpFilePath userDir = GpFileObjFactory.getUserUploadDir(userContext);
-        final GpDirectory root = new GpDirectory(userDir);
+        final GpDirectoryNode root = new GpDirectoryNode(userDir);
 
         //get the list from the DB
         final List<UserUpload> all = getAllFiles(userContext.getUserId());
         
         //initialize the list of GpFilePath objects
-        final SortedMap<String,GpDirectory> allDirs = new TreeMap<String,GpDirectory>();
+        final SortedMap<String,GpDirectoryNode> allDirs = new TreeMap<String,GpDirectoryNode>();
         final SortedMap<String,GpFilePath> allFiles = new TreeMap<String,GpFilePath>();
         for(UserUpload userUpload : all) {
             GpFilePath uploadFilePath = GpFileObjFactory.getUserUploadFile(userContext, new File(userUpload.getPath()));
             initMetadata(uploadFilePath, userUpload);
             if (UserUpload.isDirectory(userUpload)) {
-                GpDirectory gpDirectory = new GpDirectory(uploadFilePath);
+                GpDirectoryNode gpDirectory = new GpDirectoryNode(uploadFilePath);
                 allDirs.put(userUpload.getPath(), gpDirectory);
             }
             else {
@@ -199,8 +199,8 @@ public class UserUploadManager {
         }
         
         //now build the tree
-        for(GpDirectory dir : allDirs.values()) {
-            GpDirectory parentDir = root;
+        for(GpDirectoryNode dir : allDirs.values()) {
+            GpDirectoryNode parentDir = root;
             final String parentPath = getParentPath(dir.getValue());
             if (parentPath != null) {
                 if (allDirs.containsKey(parentPath)) {
@@ -210,7 +210,7 @@ public class UserUploadManager {
             parentDir.addChild(dir); 
         }
         for(GpFilePath file : allFiles.values()) {
-            GpDirectory parentDir = root;
+            GpDirectoryNode parentDir = root;
             final String parentPath = getParentPath(file);
             if (parentPath != null) {
                 if (allDirs.containsKey(parentPath)) {

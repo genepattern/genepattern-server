@@ -16,7 +16,7 @@ import org.genepattern.server.config.ServerConfiguration;
  * 
  * @author pcarr
  */
-public class GpDirectory extends Node<GpFilePath> {
+public class GpDirectoryNode extends Node<GpFilePath> {
     private Map<String, Node<GpFilePath>> allElements = new HashMap<String, Node<GpFilePath>>();
     static private Comparator<Node<GpFilePath>> comparator = new Comparator<Node<GpFilePath>>() {
         public int compare(Node<GpFilePath> o1, Node<GpFilePath> o2) {
@@ -24,7 +24,7 @@ public class GpDirectory extends Node<GpFilePath> {
         }
     };
     
-    public GpDirectory(GpFilePath val) {
+    public GpDirectoryNode(GpFilePath val) {
         super(comparator, val);
     }
     

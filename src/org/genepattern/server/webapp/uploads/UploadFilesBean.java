@@ -24,7 +24,7 @@ import org.apache.log4j.Logger;
 import org.genepattern.server.DataManager;
 import org.genepattern.server.config.ServerConfiguration;
 import org.genepattern.server.config.ServerConfiguration.Context;
-import org.genepattern.server.dm.GpDirectory;
+import org.genepattern.server.dm.GpDirectoryNode;
 import org.genepattern.server.dm.GpFilePath;
 import org.genepattern.server.dm.Node;
 import org.genepattern.server.dm.UserUploadFile;
@@ -257,7 +257,7 @@ public class UploadFilesBean {
         directories = new ArrayList<DirectoryInfoWrapper>();
         try {
             Context userContext = Context.getContextForUser(currentUser);
-            GpDirectory userUploadRoot = UserUploadManager.getFileTree(userContext);
+            GpDirectoryNode userUploadRoot = UserUploadManager.getFileTree(userContext);
             rootDir = initFilesFromDir(userUploadRoot);
             initModuleMenuItems();
         }
@@ -266,12 +266,12 @@ public class UploadFilesBean {
         }
     }
 
-    private DirectoryInfoWrapper initFilesFromDir(GpDirectory dir) {
+    private DirectoryInfoWrapper initFilesFromDir(GpDirectoryNode dir) {
         DirectoryInfoWrapper dirWrapper = new DirectoryInfoWrapper(dir);
         directories.add(dirWrapper);
         for(Node<GpFilePath> child : dir.getChildren()) {
-            if (child instanceof GpDirectory) {
-                DirectoryInfoWrapper childDir = initFilesFromDir( (GpDirectory) child );
+            if (child instanceof GpDirectoryNode) {
+                DirectoryInfoWrapper childDir = initFilesFromDir( (GpDirectoryNode) child );
                 dirWrapper.addChildDir(childDir);
             }
             else {
@@ -743,9 +743,9 @@ public class UploadFilesBean {
     
     public class DirectoryInfoWrapper extends FileInfoWrapper {
         private List<FileInfoWrapper> dirFiles = new ArrayList<FileInfoWrapper>();
-        private GpDirectory gpDirectory;
+        private GpDirectoryNode gpDirectory;
 
-        public DirectoryInfoWrapper(final GpDirectory dir) {
+        public DirectoryInfoWrapper(final GpDirectoryNode dir) {
             super(dir.getValue());
             this.setDirectory(true);
             this.gpDirectory = dir;
