@@ -693,6 +693,101 @@ var editor = {
 
         return count;
     },
+    
+    _getLastPositionedModule: function() {
+    	var selected = null;
+    	
+    	for (var i in editor.workspace) {
+    		var module = editor.workspace[i];
+            if (module instanceof Module && !module.isFile()) {
+                if (selected === null) {
+                	if ($(module.ui).position().left !== 0 && $(module.ui).position().top !== 0) {
+                		selected = module;
+                	}   	
+                	continue;
+                }
+                if ($(module.ui).position().left > $(selected.ui).position().left) {
+                	selected = module;
+                	continue;
+                }
+                if ($(module.ui).position().left === $(selected.ui).position().left) {
+                	if ($(module.ui).position().top > $(selected.ui).position().top) {
+                		selected = module;
+                		continue;
+                	}
+                }
+            }
+        }
+    	
+    	return selected;
+    },
+    
+    _getLastPositionedFile: function() {
+    	var selected = null;
+    	
+    	for (var i in editor.workspace) {
+    		var module = editor.workspace[i];
+            if (module instanceof Module && module.isFile()) {
+                if (selected === null) {
+                	if ($(module.ui).position().left !== 0 && $(module.ui).position().top !== 0) {
+                		selected = module;
+                	}   	
+                	continue;
+                }
+                if ($(module.ui).position().left > $(selected.ui).position().left) {
+                	selected = module;
+                	continue;
+                }
+                if ($(module.ui).position().left === $(selected.ui).position().left) {
+                	if ($(module.ui).position().top > $(selected.ui).position().top) {
+                		selected = module;
+                		continue;
+                	}
+                }
+            }
+        }
+    	
+    	return selected;
+    },
+    
+    _dynamicLayoutManager: function(module) {
+    	var WIDTH = 195;
+        var MARGIN = 40;
+        var NON_FILE_TOP_MARGIN = 80;
+        var EXTRA_TOP_MARGIN = 110;
+        var EXTRA_LEFT_MARGIN = 200;
+        
+        var lastModule = null;
+        
+        if (module.isFile()) {						// Handle Files
+        	lastModule = editor._getLastPositionedFile();
+    		if (lastModule === null) {
+    			return { "top": MARGIN + EXTRA_TOP_MARGIN, "left": MARGIN  + EXTRA_LEFT_MARGIN };
+    		}
+    		else {
+    			return { "top": MARGIN + EXTRA_TOP_MARGIN, "left": MARGIN + WIDTH + $(lastModule.ui).position().left };
+    		}
+    		
+    	}
+    	else if (module.isVisualizer()) {			// Handle Visualizers
+    		lastModule = editor._getLastPositionedModule();
+    		if (lastModule === null) {
+    			return { "top": MARGIN + EXTRA_TOP_MARGIN + NON_FILE_TOP_MARGIN, "left": MARGIN  + EXTRA_LEFT_MARGIN };
+    		}
+    		else {
+    			return { "top": $(lastModule.ui).position().top + MARGIN + lastModule.calculateHeight(), "left": $(lastModule.ui).position().left };
+    		}	
+    	}
+    	else {										// Handle Other Modules
+    		lastModule = editor._getLastPositionedModule();
+    		if (lastModule === null) {
+    			return { "top": MARGIN + EXTRA_TOP_MARGIN + NON_FILE_TOP_MARGIN, "left": MARGIN  + EXTRA_LEFT_MARGIN };
+    		}
+    		else {
+    			return { "top": MARGIN + EXTRA_TOP_MARGIN + NON_FILE_TOP_MARGIN, "left": MARGIN + WIDTH + $(lastModule.ui).position().left };
+    		}
+    	}
+    },
 
     _p2LayoutManager: function(module) {
         var WIDTH = 195;
@@ -758,7 +853,7 @@ var editor = {
 
 	suggestLocation: function(module) {
 		// Pick your layout manager
-        return this._p2LayoutManager(module);
+        return this._dynamicLayoutManager(module);
 	},
 
     _makePipelineNameValid: function(string) {
