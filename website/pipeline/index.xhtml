@@ -163,13 +163,23 @@
             <div id="loadingEditorHeader" >Please Stand by While Pipeline Designer Loads</div>
             <div id="loadingEditorProgressBar" />
         </div>
-
-		<div id="properties">
-            <div id="propertiesVersion"></div>
-			<div id="propertiesTitle"></div>
-            <div id="propertiesSubtitle"></div>
-            <div id="propertiesInput" />
-            <div class="bottomSpacer" />
+		
+		<div id="propertiesWrapper">
+			<table>
+				<tr>
+					<td height="100%">
+						<div id="properties">
+				            <div id="propertiesVersion"></div>
+							<div id="propertiesTitle"></div>
+				            <div id="propertiesSubtitle"></div>
+				            <div id="propertiesInput" />
+						</div>
+					</td>
+				</tr>
+				<tr>
+					<td class="bottomSpacer"></td>
+				</tr>
+			</table>
 		</div>
 		<script type="text/javascript">
             $("#loadingEditorDialog").dialog({

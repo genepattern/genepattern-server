@@ -45,6 +45,7 @@ body {
     float: right;
     margin-right: 20px;
 }
+
 #libraryWrapper {
 	position: fixed;
 	top: 112px;
@@ -210,20 +211,41 @@ a:hover {
     width: 200px;
 }
 
-#properties {
-    position: fixed;
-	z-index: 4000;
-    top: 112px;
+#propertiesWrapper {
+	position: fixed;
+	top: 112px;
 	right: 0;
+	width: 300px;
+	background-color: #EBEBCE;
+    border: 2px solid #CCCC99;
+	height: 100%;
+	padding: 0px;
+	margin: 0px;
+}
+
+#propertiesWrapper table {
+	height: 100%;
+	padding: 0px;
+	margin: 0px;
+	width: 300px;
+}
+
+#propertiesWrapper table tr td {
+	vertical-align: top;
+	padding: 0px;
+	margin: 0px;
+	width: 300px;
+}
+
+#properties {
+	z-index: 4000;
     height: 100%;
     overflow-y: auto;
-	width: 300px;
-	overflow-x:hidden;
-    background-color: #EBEBCE;
-    border: 2px solid #CCCC99;
-    padding: 5px 5px 15px 15px;;
-	font-size:12px;
-	line-height:16px;
+	width: 290px;
+	overflow-x: hidden;
+    padding: 5px 5px 15px 5px;
+	font-size: 12px;
+	line-height: 16px;
 }
 
 #properties hr {

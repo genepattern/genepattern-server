@@ -1390,7 +1390,6 @@ var library = {
             	$("#library").height(height);
             }
             
-            
             if (event.preventDefault) event.preventDefault();
             if (event.stopPropagation) event.stopPropagation();
         });
@@ -2678,6 +2677,12 @@ var properties = {
         this._setSubtitle(file.getDisplayPath());
         this._addSpacerDiv();
         $("#" + this.inputDiv).append("This is a file that has been included in the pipeline.");
+        
+        // Hack to get layout to work correctly in Firefox
+        if ($.browser.mozilla) {
+        	var height = $(document).height() - 142;
+        	$("#properties").height(height);
+        }
     },
 
     displayModule: function(module) {
@@ -2726,6 +2731,12 @@ var properties = {
         // Attach button events and tooltips
         module.addModuleButtonCalls();
         module.addInfoTooltips();
+        
+        // Hack to get layout to work correctly in Firefox
+        if ($.browser.mozilla) {
+        	var height = $(document).height() - 142;
+        	$("#properties").height(height);
+        }
     },
 
     _createDocButton: function(parent) {
@@ -2776,6 +2787,13 @@ var properties = {
         this._addTextBox("Version Comment", editor.workspace["pipelineVersionComment"], false, false);
         this._addFileUpload("Documentation", editor.workspace["pipelineDocumentation"], false, false, false);
         this._addPWRDisplayButton();
+        this._addSpacerDiv();
+        
+        // Hack to get layout to work correctly in Firefox
+        if ($.browser.mozilla) {
+        	var height = $(document).height() - 142;
+        	$("#properties").height(height);
+        }
     },
 
     _writeTitle: function(module) {
@@ -2816,6 +2834,12 @@ var properties = {
 
         // Hide check boxes
         $(".propertyCheckBox").hide();
+        
+        // Hack to get layout to work correctly in Firefox
+        if ($.browser.mozilla) {
+        	var height = $(document).height() - 142;
+        	$("#properties").height(height);
+        }
     }
 };
 
