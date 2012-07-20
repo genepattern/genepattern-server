@@ -64,9 +64,14 @@ public class GenomeSpaceReceiveBean {
         if (filesString != null) {
             String[] fileParams = filesString.split(",");
             for (String param : fileParams) {
-                GpFilePath file = genomeSpaceBean.getFile(param);
-                GSReceivedFileWrapper wrapped = new GSReceivedFileWrapper(file);
-                if (file != null) received.add(wrapped);
+                try {
+                    GpFilePath file = genomeSpaceBean.getFile(param);
+                    GSReceivedFileWrapper wrapped = new GSReceivedFileWrapper(file);
+                    if (file != null) received.add(wrapped);
+                    }
+                catch (Throwable t) {
+                    log.error("Error getting GenomeSpace file: " + param);
+                }
             }
         }
         return received;
