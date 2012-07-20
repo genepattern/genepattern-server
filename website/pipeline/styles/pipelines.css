@@ -47,6 +47,7 @@ body {
 }
 
 #libraryWrapper {
+	z-index: 3000;
 	position: fixed;
 	top: 112px;
 	left: 0;
@@ -212,6 +213,7 @@ a:hover {
 }
 
 #propertiesWrapper {
+	z-index: 4000;
 	position: fixed;
 	top: 112px;
 	right: 0;
