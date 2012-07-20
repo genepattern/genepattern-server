@@ -74,21 +74,31 @@
         </script>
 
         <!-- Main content body -->
-        <div id="library">
-            <button id="attachFile" class="libraryModuleButton">Attach File</button>
-            <div class="spacerDiv" style="width: 90%;" />
-            <label for="modulesDropdown" class="ui-autocomplete-input">Select Module: </label>
-            <br />
-            <input id="modulesDropdown" size="15" />
-            <button id="addModule" class="libraryModuleButton">Add</button>
-            <div class="spacerDiv" style="width: 90%;" />
-            <span id="shortcutModules" />
-            <div id="libraryControls">
-                <a id="openAllCategories" href="#">Open All</a> | <a id="closeAllCategories" href="#">Close All</a>
-            </div>
-            <div id="categoryModules" />
-            <div class="bottomSpacer" />
-        </div>
+		<div id="libraryWrapper">
+			<table>
+				<tr>
+					<td height="100%">
+						<div id="library">
+				            <button id="attachFile" class="libraryModuleButton">Attach File</button>
+				            <div class="spacerDiv" style="width: 90%;" />
+				            <label for="modulesDropdown" class="ui-autocomplete-input">Select Module: </label>
+				            <br />
+				            <input id="modulesDropdown" size="15" />
+				            <button id="addModule" class="libraryModuleButton">Add</button>
+				            <div class="spacerDiv" style="width: 90%;" />
+				            <span id="shortcutModules" />
+				            <div id="libraryControls">
+				                <a id="openAllCategories" href="#">Open All</a> | <a id="closeAllCategories" href="#">Close All</a>
+				            </div>
+				            <div id="categoryModules" />
+				        </div>
+					</td>
+				</tr>
+				<tr>
+					<td class="bottomSpacer"></td>
+				</tr>
+			</table>
+		</div>
         <div id="titleBar">
             <span id="titleSpan" />
             <div id="saveLoadDiv">

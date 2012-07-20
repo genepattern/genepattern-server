@@ -1383,6 +1383,14 @@ var library = {
             $(".moduleBullet").show();
             $(".categoryOpen").show();
             $(".categoryClosed").hide();
+            
+            // Hack to get layout to work correctly in Firefox
+            if ($.browser.mozilla) {
+            	var height = $(document).height() - 142;
+            	$("#library").height(height);
+            }
+            
+            
             if (event.preventDefault) event.preventDefault();
             if (event.stopPropagation) event.stopPropagation();
         });
