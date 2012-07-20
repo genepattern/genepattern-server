@@ -381,7 +381,8 @@ public class PipelineQueryServlet extends HttpServlet {
         return toReturn;
     }
 	
-	private void setModuleInfo(PipelineModel model, List<ModuleJSON> modulesList) throws Exception {
+	@SuppressWarnings("unchecked")
+    private void setModuleInfo(PipelineModel model, List<ModuleJSON> modulesList) throws Exception {
 	    IAdminClient adminClient = new LocalAdminClient(model.getUserID());
         Map<String, TaskInfo> taskCatalog = adminClient.getTaskCatalogByLSID();
 	    
@@ -712,6 +713,7 @@ public class PipelineQueryServlet extends HttpServlet {
         return new File(newDir);
     }
     
+    @SuppressWarnings("unchecked")
     public static ResponseJSON createFileList(PipelineModel pipeline) {
      // Get the pipeline's directory of files
         File directory = PipelineQueryServlet.getPipelineDirectory(pipeline);
@@ -767,6 +769,7 @@ public class PipelineQueryServlet extends HttpServlet {
         }
     }
     
+    @SuppressWarnings("unchecked")
     public static ResponseJSON createModuleList(PipelineModel pipeline) {
         // Get the pipeline's directory of files
         File directory = PipelineQueryServlet.getPipelineDirectory(pipeline);
