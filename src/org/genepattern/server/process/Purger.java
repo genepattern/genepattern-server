@@ -153,6 +153,7 @@ public class Purger extends TimerTask {
      * @param dateCutoff
      */
     private void purgeUserUploads(long dateCutoff) {
+        log.debug("getting user ids from db ...");
         List<String> userIds = new ArrayList<String>();
         HibernateUtil.beginTransaction();
         UserDAO userDao = new UserDAO();
@@ -161,13 +162,17 @@ public class Purger extends TimerTask {
             userIds.add( user.getUserId() );
         }
         HibernateUtil.closeCurrentSession();
+        log.debug("done getting user ids from db.");
+        log.debug("purging data for each user ...");
         for(String userId : userIds) {
             Context userContext = Context.getContextForUser(userId);
             purgeUserUploadsForUser(userContext, dateCutoff);
         }
+        log.debug("done purging data for each user.");
     }
     
     private void purgeUserUploadsForUser(Context userContext, long dateCutoff) {
+        log.debug("purgeUserUploadsForUser(userId='"+userContext.getUserId()+"') ...");
         boolean purgeAll = ServerConfiguration.instance().getGPBooleanProperty(userContext, "upload.purge.all", false);
         
         GpFilePath rootDir = null;
@@ -181,21 +186,36 @@ public class Purger extends TimerTask {
         purgeUserUploadsFromDir(userContext, rootDir, rootDir, dateCutoff, purgeAll);
     }
 
+    private static FilenameFilter fileExcludesFilter = new FilenameFilter() {
+        public boolean accept(File dir, String name) {
+            if ( DataManager.FILE_EXCLUDES.contains( name ) ) {
+                return false;
+            }
+            return true;
+        }
+    };
+
     /**
      * recursively purge each file from the given dir
      */
     private void purgeUserUploadsFromDir(Context userContext, GpFilePath rootDir, GpFilePath dir, long dateCutoff, boolean purgeAll) {
+        log.debug("purging uploads from dir ...");
         File f = dir.getServerFile();
+        log.debug("    serverFile="+f);
         //filter some files from the list of files and directories to be purged
-        FilenameFilter filenameFilter = new FilenameFilter() {
-            public boolean accept(File dir, String name) {
-                if ( DataManager.FILE_EXCLUDES.contains( name ) ) {
-                    return false;
-                }
-                return true;
-            }
-        };
-        File[] uploadFiles = f.listFiles(filenameFilter);
+        //FilenameFilter filenameFilter = new FilenameFilter() {
+        //    public boolean accept(File dir, String name) {
+        //        if ( DataManager.FILE_EXCLUDES.contains( name ) ) {
+        //            return false;
+        //        }
+        //        return true;
+        //    }
+        //};
+        
+        log.debug("    listing files ...");
+        File[] uploadFiles = f.listFiles(fileExcludesFilter);
+        log.debug("    there are "+uploadFiles.length+" files");
+
         for(File uploadFile : uploadFiles) {
             GpFilePath filePath = null;
 
@@ -206,7 +226,8 @@ public class Purger extends TimerTask {
                 filePath = UserUploadManager.getUploadFileObj(userContext, relativePath, initMetaData);
             }
             catch (Throwable t) {
-                String message = "Error getting GpFilePath for file, '"+uploadFile.getPath()+", :"+t.getLocalizedMessage();
+                //TODO: this is probably a sym link which should be ignored
+                String message = "Ignoring uploadFile='"+uploadFile.getPath()+"', Error: "+t.getLocalizedMessage();
                 log.error(message, t);
             }
             if (filePath != null) {
@@ -235,20 +256,25 @@ public class Purger extends TimerTask {
      * @return true if the file was deleted
      */
     private boolean purgeUserUploadFile(Context userContext, GpFilePath uploadFilePath, long dateCutoff, boolean purgeAll) {
+        log.debug("purgeUserUploadFile...");
         //Note: operating on server files because optimization is not as important as consistency
         File serverFile = uploadFilePath.getServerFile();
+        log.debug("    serverFile="+serverFile);
         
         //double-check that it's not a directory
         if (serverFile.isDirectory()) {
+            log.debug("    isDirectory");
             return false;
         }
         //check that it is older than the purge date
         if (serverFile.lastModified() >= dateCutoff) {
+            log.debug("    lastModified >= cutoff");
             return false;
         }
         if (!purgeAll) {
             //only delete partial uploads
             if (uploadFilePath.getNumPartsRecd() == uploadFilePath.getNumParts()) {
+                log.debug("    it's not a partial upload");
                 return false;
             }
         }
@@ -256,6 +282,7 @@ public class Purger extends TimerTask {
         //if we are here, it means delete the file, whether we have a record in the DB or not
         //1) delete the file from the filesystem
         //2) remove the record from the db, single db transaction per file
+        log.debug("    deleting...");
         boolean deleted = false;
         try {
             HibernateUtil.beginTransaction();
@@ -267,6 +294,9 @@ public class Purger extends TimerTask {
             log.error("Error in purgeUserUploadFile for file '"+ uploadFilePath.getRelativeUri()+"': "+t.getLocalizedMessage(), t);
             HibernateUtil.rollbackTransaction();
             return false;
+        }
+        finally {
+            log.debug("    deleted="+deleted);
         }
     }
     
