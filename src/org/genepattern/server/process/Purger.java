@@ -53,12 +53,14 @@ public class Purger extends TimerTask {
 
     @Override
     public void run() {
+        log.debug("running Purger ...");
         if (purgeInterval != -1) {
             try {
                 GregorianCalendar purgeDate = new GregorianCalendar();
                 purgeDate.add(GregorianCalendar.DATE, -purgeInterval);
                 log.info("Purger: purging jobs completed before " + purgeDate.getTime());
 
+                log.debug("purging job results ...");
                 HibernateUtil.beginTransaction();
                 AnalysisDAO ds = new AnalysisDAO();
                 List<Integer> jobIds = ds.getAnalysisJobIds(purgeDate.getTime());
@@ -67,17 +69,27 @@ public class Purger extends TimerTask {
                     ds.deleteJob(jobId);
                 }
                 HibernateUtil.commitTransaction();
-                
-                purgeBatchJobs(purgeDate);               
-                
+                log.debug("done purging job results.");
+
+                log.debug("purging batch jobs ...");
+                purgeBatchJobs(purgeDate);
+                log.debug("done purging batch jobs.");
+
+                log.debug("purging web upload files ...");
                 long dateCutoff = purgeDate.getTime().getTime();
                 // remove input files uploaded using web form
                 purgeWebUploads(dateCutoff);
+                log.debug("done purging web upload files.");
+
                 // Other code purging uploads directory is also called; this is called in addition
                 //purgeDirectUploads(dateCutoff);
+                log.debug("purging user upload files ...");
                 purgeUserUploads(dateCutoff);
+                log.debug("done purging user upload files.");
 
+                log.debug("purging soap attachments ...");
                 File soapAttachmentDir = new File(System.getProperty("soap.attachment.dir"));
+                log.debug("    soapAttachmentDir="+soapAttachmentDir);
                 File[] userDirs = soapAttachmentDir.listFiles();
                 if (userDirs != null) {
                     for (File f : userDirs) {
@@ -88,6 +100,7 @@ public class Purger extends TimerTask {
                         }
                     }
                 }
+                log.debug("done purging soap attachments.");
             } 
             catch (Exception e) {
                 HibernateUtil.rollbackTransaction();
@@ -97,6 +110,7 @@ public class Purger extends TimerTask {
                 HibernateUtil.closeCurrentSession();
             }
         }
+        log.debug("Done running purger!");
     }
 
     /**
@@ -109,6 +123,9 @@ public class Purger extends TimerTask {
     }
 
     private void purge(File dir, long dateCutoff) {
+        if (dir != null) {
+            log.debug("purging files from directory: "+dir.getPath());
+        }
         File[] files = dir.listFiles();
         if (files != null) {
             for (int i = 0; i < files.length; i++) {

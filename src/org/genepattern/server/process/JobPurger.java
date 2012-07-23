@@ -22,32 +22,24 @@ import java.util.Properties;
 import org.apache.log4j.Logger;
 
 public class JobPurger implements Runnable {
-
     private static Logger log = Logger.getLogger(JobPurger.class);
 
     final static int DEFAULT_PURGE_JOBS_INTERVAL = 7;
-
     final static int DEFAULT_PURGE_HOUR = 23;
-
     final static int DEFAULT_PURGE_MINUTE = 0;
 
     protected int purgeInterval = -1;
-
     public Timer timer = new Timer(true);
-
     Purger purger = null;
-
     boolean DEBUG = false;
 
     static JobPurger instance = null;
-
     static Thread purgerThread = null;
 
     public static Thread startJobPurger(Properties props) {
-
-        if (instance != null)
+        if (instance != null) {
             instance.timer.cancel();
-
+        }
         String purgeJobsAfter = props.getProperty("purgeJobsAfter", "-1");
         String purgeTime = props.getProperty("purgeTime", "23:00");
 
@@ -100,7 +92,6 @@ public class JobPurger implements Runnable {
         purger = new Purger(this.purgeInterval);
         timer.scheduleAtFixedRate(purger, nextPurgeTime.getTime(), MILLISECONDS_IN_A_DAY);
         instance = this;
-
     }
 
     public void run() {
