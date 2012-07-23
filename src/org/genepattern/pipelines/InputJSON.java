@@ -55,6 +55,13 @@ public class InputJSON extends JSONObject {
             
             this.setName(param.getName());
             this.setPromptWhenRun(pwrArray);
+            
+            // Hack to fix broken GP 3.3.3 pipelines
+            if (param.isInputFile() && param.getValue().contains("<GenePatternURL>") && !param.getValue().contains("<LSID>")) {
+                this.setValue(param.getValue());
+                return;
+            }
+            
             this.setValue(param.getValue());
         }
         catch (JSONException e) {
