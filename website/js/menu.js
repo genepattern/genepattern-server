@@ -10,7 +10,14 @@
  * @author tabor
  * @requires jQuery, jQuery UI, ddsmoothmenu
  */
+function ensureJQuery() {
+	if ($ !== jq) {
+		$ = jq;
+	}
+}
+
 function buildNavMenu() {
+	ensureJQuery();
 	var menu = $( // Begin creation of navband HTML
 		"<div id=\"navband1\" class=\"navband1 ddsmoothmenu\" style=\"white-space: nowrap;\">\
             <ul>\
