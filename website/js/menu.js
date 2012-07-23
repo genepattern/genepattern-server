@@ -15,6 +15,7 @@
  */
 var Menu = {
 	ensureJQuery: function() {
+		if (typeof jq === 'undefined') return;
 		if ($ !== jq) {
 			$ = jq;
 		}
