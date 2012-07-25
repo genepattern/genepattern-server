@@ -106,7 +106,7 @@ public class UserUploadPurger {
     }
 
     /**
-     * Initialize all required variables before walking the tree.
+     * Initialize all required variables before purging.
      * 
      * @throws Exception - if we shouldn't walk the tree
      */
@@ -125,7 +125,6 @@ public class UserUploadPurger {
      */
     private void purgeUserUploadFile(final GpFilePath gpFilePath) {
         Future<Boolean> task = exec.submit(new Callable<Boolean> () {
-            @Override
             public Boolean call() throws Exception {
                 log.debug("deleting relativeUri='"+gpFilePath.getRelativeUri()+"' ...");
                 boolean deleted = false;
