@@ -43,14 +43,27 @@ public class UserUploadPurger {
     private static Logger log = Logger.getLogger(UserUploadPurger.class);
 
     private Context userContext;
+    private long dateCutoff;
+    private boolean purgeAll;
+
     private ExecutorService exec;
 
     public UserUploadPurger(Context userContext, long dateCutoff, boolean purgeAll) {
         this.userContext = userContext;
-        
-        //current implementation ignores these settings
-        //this.dateCutoff = dateCutoff;
-        //this.purgeAll = purgeAll;
+        this.dateCutoff = dateCutoff;
+        this.purgeAll = purgeAll;
+    }
+    
+    public Context getUserContext() {
+        return userContext;
+    }
+    
+    public long getDateCutoff() {
+        return dateCutoff;
+    }
+    
+    public boolean getPurgeAll() {
+        return purgeAll;
     }
 
     public void purge(ExecutorService exec) throws Exception { 
@@ -123,7 +136,7 @@ public class UserUploadPurger {
      * Schedule the file to be purged.
      * @param gpFilePath
      */
-    private void purgeUserUploadFile(final GpFilePath gpFilePath) {
+    public void purgeUserUploadFile(final GpFilePath gpFilePath) {
         Future<Boolean> task = exec.submit(new Callable<Boolean> () {
             public Boolean call() throws Exception {
                 log.debug("deleting relativeUri='"+gpFilePath.getRelativeUri()+"' ...");
