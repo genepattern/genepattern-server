@@ -76,6 +76,16 @@ public class UserUploadManager {
     }
 
     /**
+     * Create an instance of a GpFilePath object from a UserUpload record.
+     * 
+     */
+    static public GpFilePath getUploadFileObj(Context userContext, File relativePath, UserUpload fromDb) throws Exception {
+        GpFilePath uploadFilePath = GpFileObjFactory.getUserUploadFile(userContext, relativePath);
+        initMetadata(uploadFilePath, fromDb);
+        return uploadFilePath;
+    }
+
+    /**
      * Set all file metadata for the given uploadFilePath from the settings in the DB record.
      * 
      * @param uploadFilePath
