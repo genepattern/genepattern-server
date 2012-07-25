@@ -14,16 +14,20 @@
  * 				adminServerAllowed and genomeSpaceLoggedIn variables are set.
  */
 var Menu = {
+	jquery: null,
+		
 	ensureJQuery: function() {
-		if (typeof jq === 'undefined') return;
-		if ($ !== jq) {
-			$ = jq;
+		if (typeof jq !== 'undefined') {
+			this.jquery = jq;
+		}
+		else {
+			this.jquery = $;
 		}
 	},
 
 	buildNavMenu: function() {
 		Menu.ensureJQuery();
-		var menu = $( // Begin creation of navband HTML
+		var menu = this.jquery( // Begin creation of navband HTML
 			"<div id=\"navband1\" class=\"navband1 ddsmoothmenu\" style=\"white-space: nowrap;\">\
 	            <ul>\
 	                <li><a href=\"/gp/pages/index.jsf\">Modules &#38; Pipelines</a>\
@@ -94,7 +98,7 @@ var Menu = {
 	            <br style=\"clear: left\"/>\
 	        </div>"
 		);
-		$("body").append(menu);
+		this.jquery("body").append(menu);
 		
 		// Initialize the menu
 	    ddsmoothmenu.init({
@@ -104,13 +108,13 @@ var Menu = {
 	        contentsource: "markup" //"markup" or ["container_id", "path_to_menu_file"]
 	    });
 	    
-	    if (!createTaskAllowed) $(".createTaskAllowed").hide();
-	    if (!createPublicPipelineAllowed) $(".createPublicPipelineAllowed").hide();
-	    if (!createPrivatePipelineAllowed) $(".createPrivatePipelineAllowed").hide();
-	    if (!createPublicSuiteAllowed) $(".createPublicSuiteAllowed").hide();
-	    if (!createPrivateSuiteAllowed) $(".createPrivateSuiteAllowed").hide();
-	    if (!adminServerAllowed) $(".adminServerAllowed").hide();
-	    if (!genomeSpaceLoggedIn) $(".genomeSpaceLoggedIn").hide();
-	    if (genomeSpaceLoggedIn) $(".genomeSpaceLoggedOut").hide();
+	    if (!createTaskAllowed) this.jquery(".createTaskAllowed").hide();
+	    if (!createPublicPipelineAllowed) this.jquery(".createPublicPipelineAllowed").hide();
+	    if (!createPrivatePipelineAllowed) this.jquery(".createPrivatePipelineAllowed").hide();
+	    if (!createPublicSuiteAllowed) this.jquery(".createPublicSuiteAllowed").hide();
+	    if (!createPrivateSuiteAllowed) this.jquery(".createPrivateSuiteAllowed").hide();
+	    if (!adminServerAllowed) this.jquery(".adminServerAllowed").hide();
+	    if (!genomeSpaceLoggedIn) this.jquery(".genomeSpaceLoggedIn").hide();
+	    if (genomeSpaceLoggedIn) this.jquery(".genomeSpaceLoggedOut").hide();
 	}
 };
