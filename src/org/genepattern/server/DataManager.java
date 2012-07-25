@@ -123,7 +123,7 @@ public class DataManager {
                 UserUploadDao dao = new UserUploadDao();
                 int numDeleted = dao.deleteUserUpload(userId, uploadedFileObj);
                 if (numDeleted != 1) {
-                    log.error("Error deleting user upload file record from db, '"+uploadedFileObj.getRelativeUri()+"'. numDeleted="+numDeleted);
+                    log.error("Error deleting user upload file record from db, userId="+userId+", path= '"+uploadedFileObj.getRelativePath()+"'. numDeleted="+numDeleted);
                     if (numDeleted > 1) {
                         deleted = false;
                         //rollback if more than one row was deleted
