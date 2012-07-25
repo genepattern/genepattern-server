@@ -1,6 +1,7 @@
 package org.genepattern.server.dm.userupload.dao;
 
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 
 import org.genepattern.server.database.BaseDAO;
@@ -46,6 +47,47 @@ public class UserUploadDao extends BaseDAO {
         List<UserUpload> rval = query.list();
         return rval;
     }
+    
+    /**
+     * Get all user upload files for the given user whose path is prefixed with the given parentPath.
+     * 
+     * @param userId
+     * @param parentPath
+     * 
+     * @return
+     */
+    public List<UserUpload> selectAllUserUpload(String userId, String parentPath) {
+        if (userId == null) return Collections.emptyList();
+        String hql = "from "+UserUpload.class.getName()+" uu where uu.userId = :userId and uu.path like :path order by uu.path";
+        Query query = HibernateUtil.getSession().createQuery( hql );
+        query.setString("userId", userId);
+        parentPath = parentPath + "%";
+        query.setString("path", parentPath);
+        List<UserUpload> rval = query.list();
+        return rval;
+    }
+
+    /**
+     * Get all of the stalled partial uploads for the given user.
+     * A stalled partial upload is a file record in the DB which has not finished being uploaded,
+     * which has not been modified since the given olderThanDate.
+     * 
+     * @param userId
+     * @param olderThanDate
+     * @return
+     */
+    public List<UserUpload> selectStalledPartialUploadsForUser(String userId, Date olderThanDate) {
+        if (userId == null) return Collections.emptyList();
+        final String hql = "from "+UserUpload.class.getName()+
+                " uu where uu.userId = :userId and uu.numParts != uu.numPartsRecd and uu.lastModified < :olderThanDate";
+        Query query = HibernateUtil.getSession().createQuery( hql );
+        query.setString("userId", userId);
+        query.setTimestamp("olderThanDate", olderThanDate);
+        //query.setDate("olderThanDate", olderThanDate);
+        List<UserUpload> rval = query.list();
+        return rval; 
+    }
+    
     
     public int deleteUserUpload(String userId, GpFilePath gpFileObj) {
         String relativePath = gpFileObj.getRelativePath();

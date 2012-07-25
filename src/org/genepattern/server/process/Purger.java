@@ -13,24 +13,19 @@
 package org.genepattern.server.process;
 
 import java.io.File;
-import java.io.FilenameFilter;
 import java.util.ArrayList;
 import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.TimerTask;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import org.apache.log4j.Logger;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.taskdefs.Delete;
-import org.genepattern.server.DataManager;
-import org.genepattern.server.FileUtil;
 import org.genepattern.server.config.ServerConfiguration;
 import org.genepattern.server.config.ServerConfiguration.Context;
 import org.genepattern.server.database.HibernateUtil;
-import org.genepattern.server.dm.GpFilePath;
-import org.genepattern.server.dm.userupload.UserUploadManager;
-//import org.genepattern.server.dm.userupload.dao.UserUpload;
-//import org.genepattern.server.dm.userupload.dao.UserUploadDao;
 import org.genepattern.server.domain.BatchJob;
 import org.genepattern.server.domain.BatchJobDAO;
 import org.genepattern.server.user.User;
@@ -164,142 +159,32 @@ public class Purger extends TimerTask {
         HibernateUtil.closeCurrentSession();
         log.debug("done getting user ids from db.");
         log.debug("purging data for each user ...");
+        
+        ExecutorService exec = Executors.newSingleThreadExecutor();
         for(String userId : userIds) {
             Context userContext = Context.getContextForUser(userId);
-            purgeUserUploadsForUser(userContext, dateCutoff);
+            purgeUserUploadsForUser(exec, userContext, dateCutoff);
         }
+        exec.shutdown();
         log.debug("done purging data for each user.");
     }
     
-    private void purgeUserUploadsForUser(Context userContext, long dateCutoff) {
+    private void purgeUserUploadsForUser(ExecutorService exec, Context userContext, long dateCutoff) {
         log.debug("purgeUserUploadsForUser(userId='"+userContext.getUserId()+"') ...");
-        boolean purgeAll = ServerConfiguration.instance().getGPBooleanProperty(userContext, "upload.purge.all", false);
-        
-        GpFilePath rootDir = null;
+        final boolean purgeAll = ServerConfiguration.instance().getGPBooleanProperty(userContext, "upload.purge.all", false);
+        if (purgeAll) {
+            //TODO: must implement this
+            log.error("purgeAll not implemented for user upload directory");
+        }
+        UserUploadPurger uup = new UserUploadPurger(userContext, dateCutoff, purgeAll);
         try {
-            rootDir = UserUploadManager.getUserUploadDir(userContext);
-        }
-        catch (Exception e) {
-            log.error("Error purging upload files for user: "+userContext.getUserId(), e);
-            return;
-        }
-        purgeUserUploadsFromDir(userContext, rootDir, rootDir, dateCutoff, purgeAll);
-    }
-
-    private static FilenameFilter fileExcludesFilter = new FilenameFilter() {
-        public boolean accept(File dir, String name) {
-            if ( DataManager.FILE_EXCLUDES.contains( name ) ) {
-                return false;
-            }
-            return true;
-        }
-    };
-
-    /**
-     * recursively purge each file from the given dir
-     */
-    private void purgeUserUploadsFromDir(Context userContext, GpFilePath rootDir, GpFilePath dir, long dateCutoff, boolean purgeAll) {
-        log.debug("purging uploads from dir ...");
-        File f = dir.getServerFile();
-        log.debug("    serverFile="+f);
-        //filter some files from the list of files and directories to be purged
-        //FilenameFilter filenameFilter = new FilenameFilter() {
-        //    public boolean accept(File dir, String name) {
-        //        if ( DataManager.FILE_EXCLUDES.contains( name ) ) {
-        //            return false;
-        //        }
-        //        return true;
-        //    }
-        //};
-        
-        log.debug("    listing files ...");
-        File[] uploadFiles = f.listFiles(fileExcludesFilter);
-        log.debug("    there are "+uploadFiles.length+" files");
-
-        for(File uploadFile : uploadFiles) {
-            GpFilePath filePath = null;
-
-            try {
-                //get relative path
-                File relativePath = FileUtil.relativizePath(rootDir.getServerFile(), uploadFile);
-                boolean initMetaData = true;
-                filePath = UserUploadManager.getUploadFileObj(userContext, relativePath, initMetaData);
-            }
-            catch (Throwable t) {
-                //TODO: this is probably a sym link which should be ignored
-                String message = "Ignoring uploadFile='"+uploadFile.getPath()+"', Error: "+t.getLocalizedMessage();
-                log.error(message, t);
-            }
-            if (filePath != null) {
-                if (filePath.isDirectory()) {
-                    //depth-first delete, just in case
-                    //NOTE: as currently implemented, depth-first is not necessary, because
-                    //    we are not deleting directories, just files in directories
-                    purgeUserUploadsFromDir(userContext, rootDir, filePath, dateCutoff, purgeAll);
-                }
-                else {
-                    //purge each individual file here, 
-                    boolean purged = purgeUserUploadFile(userContext, filePath, dateCutoff, purgeAll);
-                }
-            }
-        }
-    }
-    
-    /**
-     * Purge the given file, if and only if, it is supposed to be purged.
-     * 
-     * @param userContext, requires a valid userId
-     * @param uploadFilePath, the file to purge
-     * @param dateCutoff, don't purge if the file is newer than this date
-     * @param purgeAll, when this is true, purge all files, when false, only purge partial uploads
-     * 
-     * @return true if the file was deleted
-     */
-    private boolean purgeUserUploadFile(Context userContext, GpFilePath uploadFilePath, long dateCutoff, boolean purgeAll) {
-        log.debug("purgeUserUploadFile...");
-        //Note: operating on server files because optimization is not as important as consistency
-        File serverFile = uploadFilePath.getServerFile();
-        log.debug("    serverFile="+serverFile);
-        
-        //double-check that it's not a directory
-        if (serverFile.isDirectory()) {
-            log.debug("    isDirectory");
-            return false;
-        }
-        //check that it is older than the purge date
-        if (serverFile.lastModified() >= dateCutoff) {
-            log.debug("    lastModified >= cutoff");
-            return false;
-        }
-        if (!purgeAll) {
-            //only delete partial uploads
-            if (uploadFilePath.getNumPartsRecd() == uploadFilePath.getNumParts()) {
-                log.debug("    it's not a partial upload");
-                return false;
-            }
-        }
-        
-        //if we are here, it means delete the file, whether we have a record in the DB or not
-        //1) delete the file from the filesystem
-        //2) remove the record from the db, single db transaction per file
-        log.debug("    deleting...");
-        boolean deleted = false;
-        try {
-            HibernateUtil.beginTransaction();
-            deleted = DataManager.deleteUserUploadFile(userContext.getUserId(), uploadFilePath);
-            HibernateUtil.commitTransaction();
-            return deleted;
+            uup.purge(exec);
         }
         catch (Throwable t) {
-            log.error("Error in purgeUserUploadFile for file '"+ uploadFilePath.getRelativeUri()+"': "+t.getLocalizedMessage(), t);
-            HibernateUtil.rollbackTransaction();
-            return false;
-        }
-        finally {
-            log.debug("    deleted="+deleted);
+            log.error(t);
         }
     }
-    
+
     private void purgeBatchJobs(GregorianCalendar purgeDate){
     	  HibernateUtil.beginTransaction();
           BatchJobDAO batchJobDAO = new BatchJobDAO();
