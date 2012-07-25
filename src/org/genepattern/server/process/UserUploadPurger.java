@@ -13,7 +13,6 @@ import org.apache.log4j.Logger;
 import org.genepattern.server.DataManager;
 import org.genepattern.server.config.ServerConfiguration.Context;
 import org.genepattern.server.database.HibernateUtil;
-import org.genepattern.server.dm.GpFileObjFactory;
 import org.genepattern.server.dm.GpFilePath;
 import org.genepattern.server.dm.userupload.UserUploadManager;
 import org.genepattern.server.dm.userupload.dao.UserUpload;
