@@ -1620,6 +1620,12 @@ var library = {
                 $(this).parent().children(".moduleBullet").show("slow");
                 $(this).children(".categoryOpen").show();
                 $(this).children(".categoryClosed").hide();
+                
+                // Hack to get layout to work correctly in Firefox
+                if ($.browser.mozilla) {
+                	var height = $(document).height() - 142;
+                	$("#library").height(height);
+                }
             }
         });
     },
