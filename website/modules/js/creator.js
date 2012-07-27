@@ -943,7 +943,7 @@ function loadModuleInfo(module)
 
             currentFilesDiv.append(checkbox);
 
-            var currentFileURL = "<a href=\"../../getFile.jsp?task=" + module_editor.lsid + "&file=" + encodeURI(supportFilesList[s]) + "\" target=\"new\">" + htmlEncode(supportFilesList[s]) + "</a> ";
+            var currentFileURL = "<a href=\"/gp/getFile.jsp?task=" + module_editor.lsid + "&file=" + encodeURI(supportFilesList[s]) + "\" target=\"new\">" + htmlEncode(supportFilesList[s]) + "</a> ";
             currentFilesDiv.append(currentFileURL);
         }
 
