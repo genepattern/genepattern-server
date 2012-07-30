@@ -556,7 +556,6 @@ img.imgexpand {
 }
 
 .ui-layout-south {
-	background-color: #cddcf1;
 	overflow:auto;
 	text-align: center;
 	background-color: #DFDFB9;
@@ -673,4 +672,9 @@ table.deloptions
 {
 	position: relative;
 	top: 40%;
+}
+
+.highlight
+{
+    background-color: #cddcf1;
 }

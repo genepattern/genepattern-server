@@ -105,6 +105,27 @@ function bytesToSize(bytes, precision)
     }
 }
 
+
+/*function bytesToSize(bytes, precision) {
+    var sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
+    var posttxt = 0;
+    if (bytes == 0)
+    {
+        return 'n/a';
+    }
+
+    if (bytes < 1024)
+    {
+        return Number(bytes) + " " + sizes[posttxt];
+    }
+
+    while( bytes >= 1024 ) {
+        posttxt++;
+        bytes = bytes / 1024;
+    }
+    return Number(bytes).toFixed(precision) + " " + sizes[posttxt];
+} */
+
 function updateModuleVersions(lsids)
 {
     if(lsids == undefined || lsids == null)
@@ -1610,32 +1631,7 @@ jQuery(document).ready(function() {
             }
         });
 
-        var sfilelist = $("<li>" + file + "</li>");
-
-        var delbutton = $("<button>x</button>&nbsp;");
-        delbutton.button().click(function()
-        {
-            var index;
-            for(i=0;i<module_editor.supportfileinputs.length;i++)
-            {
-                var value1 = module_editor.supportfileinputs[i].val();
-                var value2 = $(this).parent().text();
-                if(value1 === value2)
-                {
-                    index = i;
-                }
-            }
-
-            module_editor.supportfileinputs.splice(index,1);
-            $(this).parent().remove();
-        });
-
-        sfilelist.prepend(delbutton);
-
-
-        $("#supportfileslist").append(sfilelist);
-
-        module_editor.supportfileinputs.push(this.files[0]);
+        addToSupportFileList(this.files[0]);
 
         //add a new file input field
         $(this).attr('name', "name" + module_editor.supportfileinputs.length);
@@ -1681,28 +1677,59 @@ jQuery(document).ready(function() {
     var dropbox = document.getElementById("dropbox");
 
     // init event handlers
-    dropbox.addEventListener("dragenter", dragEnter, false);
+    dropbox.addEventListener("dragenter", dragEnter, true);
+    dropbox.addEventListener("dragleave", dragLeave, true);
     dropbox.addEventListener("dragexit", dragExit, false);
     dropbox.addEventListener("dragover", dragOver, false);
     dropbox.addEventListener("drop", drop, false);
+
+    //disable default browser behavior of opening files using drag and drop
+    $(document).bind({
+       dragenter: function (e) {
+          e.stopPropagation();
+          e.preventDefault();
+          var dt = e.originalEvent.dataTransfer;
+         dt.effectAllowed = dt.dropEffect = 'none';
+       },
+       dragover: function (e) {
+          e.stopPropagation();
+          e.preventDefault();
+          var dt = e.originalEvent.dataTransfer;
+          dt.effectAllowed = dt.dropEffect = 'none';
+       }
+    });
 });
 
- function dragEnter(evt) {
+function dragEnter(evt)
+{
+    $("#dropbox").addClass("highlight");
     evt.stopPropagation();
     evt.preventDefault();
 }
 
-function dragExit(evt) {
+function dragLeave(evt)
+{
+    $("#dropbox").removeClass("highlight");
     evt.stopPropagation();
     evt.preventDefault();
 }
 
-function dragOver(evt) {
+function dragExit(evt)
+{
     evt.stopPropagation();
     evt.preventDefault();
 }
 
-function drop(evt) {
+function dragOver(evt)
+{
+    evt.stopPropagation();
+    evt.preventDefault();
+}
+
+function drop(evt)
+{
+
+    $("#dropbox").removeClass("highlight");
     evt.stopPropagation();
     evt.preventDefault();
 
@@ -1714,42 +1741,45 @@ function drop(evt) {
         handleFiles(files);
 }
 
+function addToSupportFileList(file)
+{
+    var sfilelist = $("<li>" + file.name + " (" + bytesToSize(file.size) + ")" + "</li>");
+
+    var delbutton = $("<button>x</button>&nbsp;");
+    delbutton.button().click(function()
+    {
+        var index;
+        for(i=0;i<module_editor.supportfileinputs.length;i++)
+        {
+            var value1 = module_editor.supportfileinputs[i].val();
+            var value2 = $(this).parent().text();
+            if(value1 === value2)
+            {
+                index = i;
+            }
+        }
+
+        module_editor.supportfileinputs.splice(index,1);
+        $(this).parent().remove();
+    });
+
+    sfilelist.prepend(delbutton);
+
+
+    $("#supportfileslist").append(sfilelist);
+
+    module_editor.supportfileinputs.push(file);
+}
 
 function handleFiles(files)
 {
 
     for(var i=0;i<files.length;i++)
     {
-        var file = files[i].name;
-
-        var sfilelist = $("<li>" + file + " (" + bytesToSize(files[i].size) + ")" + "</li>");
-
-        var delbutton = $("<button>x</button>&nbsp;");
-        delbutton.button().click(function()
-        {
-            var index;
-            for(i=0;i<module_editor.supportfileinputs.length;i++)
-            {
-                var value1 = module_editor.supportfileinputs[i].val();
-                var value2 = $(this).parent().text();
-                if(value1 === value2)
-                {
-                    index = i;
-                }
-            }
-
-            module_editor.supportfileinputs.splice(index,1);
-            $(this).parent().remove();
-        });
-
-        sfilelist.prepend(delbutton);
-
-
-        $("#supportfileslist").append(sfilelist);
-
-        module_editor.supportfileinputs.push(files[i]);
+        addToSupportFileList(files[i]);
     }
 }
+
 var result = document.getElementById('result');
 
 // upload file
