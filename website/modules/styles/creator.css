@@ -659,3 +659,18 @@ table.deloptions
 {
     margin-left: 2px;
 }
+
+#dropbox
+{
+	width: 95%;
+	height: 100px;
+	border: 2px solid #DDD;
+	-moz-border-radius: 8px;
+	-webkit-border-radius: 8px;
+}
+
+#droplabel
+{
+	position: relative;
+	top: 40%;
+}

@@ -78,6 +78,33 @@ function isDirty()
     return dirty;
 }
 
+function bytesToSize(bytes, precision)
+{
+    var kilobyte = 1024;
+    var megabyte = kilobyte * 1024;
+    var gigabyte = megabyte * 1024;
+    var terabyte = gigabyte * 1024;
+
+    if ((bytes >= 0) && (bytes < kilobyte)) {
+        return bytes + ' B';
+
+    } else if ((bytes >= kilobyte) && (bytes < megabyte)) {
+        return (bytes / kilobyte).toFixed(precision) + ' KB';
+
+    } else if ((bytes >= megabyte) && (bytes < gigabyte)) {
+        return (bytes / megabyte).toFixed(precision) + ' MB';
+
+    } else if ((bytes >= gigabyte) && (bytes < terabyte)) {
+        return (bytes / gigabyte).toFixed(precision) + ' GB';
+
+    } else if (bytes >= terabyte) {
+        return (bytes / terabyte).toFixed(precision) + ' TB';
+
+    } else {
+        return bytes + ' B';
+    }
+}
+
 function updateModuleVersions(lsids)
 {
     if(lsids == undefined || lsids == null)
@@ -1201,65 +1228,6 @@ function getParametersJSON()
     return(parameters);
 }
 
-function uploadSupportFile(file, index)
-{
-
-    var formId = "id" + +index;
-    var fileuploadform = $('<form name="name'+ index + '" action="/gp/ModuleCreator/upload" method="post" ' +
-                             'enctype="multipart/form-data" class="fileuploadform"></form>');
-
-    fileuploadform.append(file);
-    var uploaddiv = $("<div></div>"); 
-    uploaddiv.append(fileuploadform);
-    $("body").append(uploaddiv);
-    fileuploadform.iframePostForm
-    ({
-        iframeID: formId,
-        json : false,
-        post : function ()
-        {
-            //if file is not empty then upload
-            if ($(this).find('input[type="file"]').val().length <= 0)
-            {
-                //cancel request
-                return false;
-            }
-        },
-        complete : function (response)
-        {
-            // Work around a bug in the JSON handling of iframe-post-form
-            if(response === null || response === undefined)
-            {
-                alert("An error occurred when uploading the file");
-            }
-
-            response = $.parseJSON($(response)[0].innerHTML);
-
-            if (response.error !== undefined)
-            {
-                alert(response.error);
-            }
-            else
-            {
-                if(jQuery.inArray(response.location, module_editor.uploadedfiles) == -1)
-                {
-                    module_editor.uploadedfiles.push(response.location);
-                }
-
-                if(module_editor.supportfileinputs.length ==  module_editor.uploadedfiles.length)
-                {
-                    if( module_editor.supportfileinputs.length != 0)
-                    {
-                        module_editor.supportfileinputs = [];
-                        saveModule();
-                    }
-                }
-            }
-        }
-    });
-
-    fileuploadform.submit();
-}
 
 function saveAndUpload(runModule)
 {
@@ -1271,12 +1239,24 @@ function saveAndUpload(runModule)
     }
     else
     {
-        for(var q=0;q <module_editor.supportfileinputs.length;q++)
-        {
-            uploadSupportFile(module_editor.supportfileinputs[q], q);
-        }
+        uploadSupportFiles();
     }
 }
+
+function uploadSupportFiles()
+{
+    if (module_editor.supportfileinputs.length)
+    {
+        var nextFile = module_editor.supportfileinputs.shift();
+
+        uploadFile(nextFile);
+    }
+    else // all support files have been uploaded now save the module
+    {
+        saveModule();
+    }
+}
+
 jQuery(document).ready(function() {
 
     $("input[type='text']").val("");
@@ -1655,13 +1635,13 @@ jQuery(document).ready(function() {
 
         $("#supportfileslist").append(sfilelist);
 
+        module_editor.supportfileinputs.push(this.files[0]);
+
         //add a new file input field
         $(this).attr('name', "name" + module_editor.supportfileinputs.length);
         var parent = $(this).parent();
         parent.append('<input type="file" class="supportfile">');
         $(this).detach();
-
-        module_editor.supportfileinputs.push($(this));
     });
 
     $("select[name='mod_fileformat']").multiselect({
@@ -1696,4 +1676,112 @@ jQuery(document).ready(function() {
     {
         setDirty(true);
     });
+
+    //area for dropping support files
+    var dropbox = document.getElementById("dropbox");
+
+    // init event handlers
+    dropbox.addEventListener("dragenter", dragEnter, false);
+    dropbox.addEventListener("dragexit", dragExit, false);
+    dropbox.addEventListener("dragover", dragOver, false);
+    dropbox.addEventListener("drop", drop, false);
 });
+
+ function dragEnter(evt) {
+    evt.stopPropagation();
+    evt.preventDefault();
+}
+
+function dragExit(evt) {
+    evt.stopPropagation();
+    evt.preventDefault();
+}
+
+function dragOver(evt) {
+    evt.stopPropagation();
+    evt.preventDefault();
+}
+
+function drop(evt) {
+    evt.stopPropagation();
+    evt.preventDefault();
+
+    var files = evt.dataTransfer.files;
+    var count = files.length;
+
+    // Only call the handler if 1 or more files was dropped.
+    if (count > 0)
+        handleFiles(files);
+}
+
+
+function handleFiles(files)
+{
+
+    for(var i=0;i<files.length;i++)
+    {
+        var file = files[i].name;
+
+        var sfilelist = $("<li>" + file + " (" + bytesToSize(files[i].size) + ")" + "</li>");
+
+        var delbutton = $("<button>x</button>&nbsp;");
+        delbutton.button().click(function()
+        {
+            var index;
+            for(i=0;i<module_editor.supportfileinputs.length;i++)
+            {
+                var value1 = module_editor.supportfileinputs[i].val();
+                var value2 = $(this).parent().text();
+                if(value1 === value2)
+                {
+                    index = i;
+                }
+            }
+
+            module_editor.supportfileinputs.splice(index,1);
+            $(this).parent().remove();
+        });
+
+        sfilelist.prepend(delbutton);
+
+
+        $("#supportfileslist").append(sfilelist);
+
+        module_editor.supportfileinputs.push(files[i]);
+    }
+}
+var result = document.getElementById('result');
+
+// upload file
+function uploadFile(file)
+{
+    var destinationUrl = "/gp/ModuleCreator/upload";
+    // prepare XMLHttpRequest
+    var xhr = new XMLHttpRequest();
+    xhr.open('POST', destinationUrl);
+    xhr.onload = function() {
+        console.log("on load response: " + this.responseText);
+
+        var response = $.parseJSON(this.responseText);
+        module_editor.uploadedfiles.push(response.location);
+
+        uploadSupportFiles();
+    };
+    xhr.onerror = function() {
+        result.textContent = this.responseText;
+        console.log("response: " + this.responseText);
+    };
+    xhr.upload.onprogress = function(event) {
+        console.log("upload progress");
+        //handleProgress(event);
+    }
+    xhr.upload.onloadstart = function(event) {
+        console.log("onload start support file upload");
+    }
+
+    // prepare FormData
+    var formData = new FormData();
+    formData.append('myfile', file);
+    xhr.send(formData);
+}
+
