@@ -222,7 +222,7 @@
                 editor.save(true);
             });
 
-            $("#revertButton").button();
+            $("#revertButton").button({disabled: true});
             $("#revertButton").click(function() {
                 editor.revert();
             });

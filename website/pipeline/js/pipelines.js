@@ -1109,6 +1109,10 @@ var editor = {
     runPipeline: function(lsid) {
         self.location="/gp/pages/index.jsf?lsid=" + lsid;
     },
+    
+    enableRevert: function() {
+    	$("#revertButton").button({disabled: false});
+    },
 
 	load: function(lsid) {
         editor.loading = true;
@@ -1136,6 +1140,7 @@ var editor = {
                     editor._loadPipes(response["pipes"]);
                     setTimeout(editor.updateAllPorts, 200);
                     editor._validatePipeline();
+                    editor.enableRevert();
                     editor.makeClean();
                 }
 
@@ -1185,6 +1190,7 @@ var editor = {
                     editor.workspace["pipelineVersion"] = editor.extractLsidVersion(newLsid);
                     editor.workspace["pipelineVersionComment"] = "";
                     editor._updateHistoryOnSave();
+                    editor.enableRevert();
                     editor._cleanAfterSave();
                 }
 
