@@ -4118,7 +4118,7 @@ function Port(module, pointer, param) {
                 };
             }
 
-            editor.showDialog("Choose Port Action", "Select the change to the port below:", buttons);
+            editor.showDialog("Choose Port Action", "", buttons);
         });
 
         // Add optional class if necessary
