@@ -1138,7 +1138,7 @@ var editor = {
                     editor._loadFiles(response["files"]);
                     editor._loadModules(response["modules"]);
                     editor._loadPipes(response["pipes"]);
-                    setTimeout(editor.updateAllPorts, 200);
+                    setTimeout("editor.updateAllPorts()", 200);
                     editor._validatePipeline();
                     editor.enableRevert();
                     editor.makeClean();
