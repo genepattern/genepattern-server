@@ -871,7 +871,7 @@ var editor = {
 	},
 
     _makePipelineNameValid: function(string) {
-    	var newName = string.replace(/[^a-zA-Z 0-9.]+/g, "");
+    	var newName = string.replace(/[^a-zA-Z _0-9.]+/g, "");
         newName = newName.replace(/ /g, ".");
         if (/^\d+/.test(newName)) {
             newName = "Pipeline." + newName;
