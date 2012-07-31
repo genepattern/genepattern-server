@@ -60,14 +60,18 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+/**
+ * Servlet for handling the server-side calls necessary for the new Pipeline Designer
+ * @author tabor
+ */
 public class PipelineQueryServlet extends HttpServlet {
 	private static final long serialVersionUID = 8270613493170496154L;
 	public static Logger log = Logger.getLogger(PipelineQueryServlet.class);
 	
-	public static final String LIBRARY = "/library";
-	public static final String SAVE = "/save";
-	public static final String LOAD = "/load";
-	public static final String UPLOAD = "/upload";
+	public static final String LIBRARY = "/library";   // path for calling the REST-like library call
+	public static final String SAVE = "/save";         // path for calling the REST-like save call
+	public static final String LOAD = "/load";         // path for calling the REST-like load call
+	public static final String UPLOAD = "/upload";     // path for calling the REST-like upload call
 	
 	@Override
 	public void doGet(HttpServletRequest request, HttpServletResponse response) {
@@ -105,6 +109,11 @@ public class PipelineQueryServlet extends HttpServlet {
 	    this.write(response, content.toString());
 	}
 	
+	/**
+	 * Write a string back to the response
+	 * @param response
+	 * @param content
+	 */
 	private void write(HttpServletResponse response, String content) {
 	    PrintWriter writer = null;
         try {
@@ -121,12 +130,23 @@ public class PipelineQueryServlet extends HttpServlet {
         }
 	}
 	
+	/**
+	 * Send an error as JSON back with the response
+	 * @param response
+	 * @param message
+	 */
 	public void sendError(HttpServletResponse response, String message) {
 	    ResponseJSON error = new ResponseJSON();
 	    error.addError("ERROR: " + message);
 	    this.write(response, error);
 	}
 	
+	/**
+	 * Handles the actual transfer of an uploaded file.
+	 * @param from
+	 * @param to
+	 * @throws IOException
+	 */
 	private void transferUpload(FileItem from, File to) throws IOException {
         InputStream is = null;
         OutputStream os = null;
@@ -151,6 +171,12 @@ public class PipelineQueryServlet extends HttpServlet {
         }
     }
 
+	/**
+	 * Handles uploading a file from the Pipeline Designer client to the server
+     * Saves the file in a temp directory until the pipeline is saved.
+	 * @param request
+	 * @param response
+	 */
 	@SuppressWarnings("unchecked")
     public void uploadFile(HttpServletRequest request, HttpServletResponse response) {
 	    RequestContext reqContext = new ServletRequestContext(request);
@@ -197,6 +223,12 @@ public class PipelineQueryServlet extends HttpServlet {
         }
 	}
 	
+	/**
+	 * Load a pipeline using the requested lsid and return a representation of it in JSON 
+	 * to the Pipeline Designer client
+	 * @param request
+	 * @param response
+	 */
 	@SuppressWarnings("unchecked")
     public void loadPipeline(HttpServletRequest request, HttpServletResponse response) {
 	    String lsid = request.getParameter("lsid");
@@ -251,6 +283,16 @@ public class PipelineQueryServlet extends HttpServlet {
         this.write(response, responseObject);
 	}
 	
+	/**
+	 * Returns a list of modules that are upstream from the specified module (must be executed 
+	 * in the pipeline before the given module, provided the list of pipes between the modules 
+	 * in the pipeline)
+	 * @param id
+	 * @param pipesObject
+	 * @param moduleMap
+	 * @return
+	 * @throws JSONException
+	 */
 	private List<ModuleJSON> getUpstreamModules(Integer id, PipeJSON[] pipesObject, Map<Integer, ModuleJSON> moduleMap) throws JSONException {
 	    List<ModuleJSON> inputs = new ArrayList<ModuleJSON>();
 	    for (PipeJSON pipe : pipesObject) {
@@ -262,6 +304,16 @@ public class PipelineQueryServlet extends HttpServlet {
 	    return inputs;
 	}
 	
+	/**
+	 * Places a given module in the list of modules to be executed in the pipeline.
+	 * Used by the algorithm that determines module order in a given pipeline.
+	 * @param moduleList
+	 * @param moduleMap
+	 * @param module
+	 * @param pipesObject
+	 * @return
+	 * @throws Exception
+	 */
 	private List<ModuleJSON> placeModuleInList(List<ModuleJSON> moduleList, Map<Integer, ModuleJSON> moduleMap, 
 	        ModuleJSON module, PipeJSON[] pipesObject) throws Exception {   
 	    
@@ -295,6 +347,14 @@ public class PipelineQueryServlet extends HttpServlet {
 	    return moduleList;
 	}
 	
+	/**
+	 * Transforms the graph of modules in a pipeline into a list of modules, giving an execution 
+	 * order to those modules based on dependencies.
+	 * @param modulesObject
+	 * @param pipesObject
+	 * @return
+	 * @throws Exception
+	 */
 	private List<ModuleJSON> transformGraph(ModuleJSON[] modulesObject, PipeJSON[] pipesObject) throws Exception {
 	    // Build a map of module IDs to module objects
 	    Map<Integer, ModuleJSON> moduleMap = new HashMap<Integer, ModuleJSON>();
@@ -316,6 +376,11 @@ public class PipelineQueryServlet extends HttpServlet {
 	    return moduleList;
 	}
 	
+	/**
+	 * Return a blank lsid if necessary
+	 * @param lsid
+	 * @return
+	 */
 	private String blankLsidIfNecessary(String lsid) {
 	    if (lsid.length() < 10) {
 	        return "";
@@ -471,6 +536,11 @@ public class PipelineQueryServlet extends HttpServlet {
         }
     }
 	
+	/**
+	 * Handle the call to save a pipeline
+	 * @param request
+	 * @param response
+	 */
 	public void savePipeline(HttpServletRequest request, HttpServletResponse response) {
 	    String username = (String) request.getSession().getAttribute("userid");
 	    if (username == null) {
@@ -609,6 +679,11 @@ public class PipelineQueryServlet extends HttpServlet {
 	    }
 	}
 	
+	/**
+	 * Determines if the path to a file is for a file internal to the GenePattern server
+	 * @param path
+	 * @return
+	 */
 	private boolean isInternalFile(String path) {
 	    if ((path.contains("<GenePatternURL>") && path.contains("<LSID>")) || path.startsWith("/") || path.contains(":\\")) {
 	        return true;
