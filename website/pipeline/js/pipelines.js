@@ -2180,7 +2180,7 @@ var properties = {
     },
 
     _setVersionDropdown: function(moduleOrLsid) {
-        // Set appropriate variables based on if the param is a module or the pipel's lsid
+        // Set appropriate variables based on if the param is a module or the pipeline's lsid
         var baseLsid = null;
         var version = null;
         var id = null;
@@ -2212,6 +2212,13 @@ var properties = {
             option.innerHTML = moduleArray[i].version;
             select.appendChild(option);
         }
+        
+        // Sort select
+        $(select).html($("option", $(select)).sort(function(a, b) { 
+            var aText = $(a).text();
+            var bText = $(b).text();
+            return aText == bText ? 0 : library.higherVersion(aText, bText) ? 1 : -1; 
+        }));
 
         // Handle the case of an empty select
         if (select.children.length === 0) {
