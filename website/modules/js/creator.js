@@ -132,7 +132,8 @@ function updateModuleVersions(lsids)
     {
         return;
     }
-    
+
+    var currentVersion = $('select[name="modversion"]').val();
     $('select[name="modversion"]').children().remove();
     var modVersionLsidList = lsids;
     for(v =0;v<modVersionLsidList.length;v++)
@@ -154,6 +155,8 @@ function updateModuleVersions(lsids)
         var editLocation = "creator.jsf?lsid=" + $(this).val();
         window.open(editLocation, '_self');
     });
+
+    $('select[name="modversion"]').val(currentVersion);
     $('select[name="modversion"]').multiselect("refresh");
 }
 
@@ -245,6 +248,7 @@ function saveModule()
             // Update the LSID upon successful save
             if (newLsid !== undefined && newLsid !== null)
             {
+                $("#lsid").empty().append("LSID: " + newLsid);
                 var vindex = newLsid.lastIndexOf(":");
                 if(vindex != -1)
                 {
@@ -253,30 +257,27 @@ function saveModule()
                     alert(modtitle + " version " + version + " saved");
                 }
                 module_editor.lsid = newLsid;
-                $("#lsid").empty().append("LSID: " + newLsid);
                 module_editor.uploadedfiles = [];
+
+                var unversioned = $(' select[name="modversion"] option[value="unversioned"]');
+                if(unversioned != undefined && unversioned != null)
+                {
+                    unversioned.remove();
+                }
+
+                $('select[name="modversion"]').val(newLsid);
+                if($('select[name="modversion"]').val() != newLsid)
+                {
+                    var modversion = "<option value='" + newLsid + "'>" + version + "</option>";
+                    $('select[name="modversion"]').append(modversion);
+                    $('select[name="modversion"]').val(version);
+                }
+
+                $('select[name="modversion"]').multiselect("refresh");
 
                 if(run)
                 {
                     runModule(newLsid);
-                }
-                else
-                {
-                    var unversioned = $(' select[name="modversion"] option[value="unversioned"]');
-                    if(unversioned != undefined && unversioned != null)
-                    {
-                        unversioned.remove();
-                    }
-
-                    $('select[name="modversion"]').val(newLsid);
-                    if($('select[name="modversion"]').val() != newLsid)
-                    {
-                        var modversion = "<option value='" + newLsid + "'>" + version + "</option>";
-                        $('select[name="modversion"]').append(modversion);
-                        $('select[name="modversion"]').val(version);
-                    }
-
-                    $('select[name="modversion"]').multiselect("refresh");
                 }
             }
         },
