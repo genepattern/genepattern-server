@@ -2225,6 +2225,11 @@ var properties = {
 
         // If this is a module
         if (moduleOrLsid instanceof Module) {
+        	$(select).focus(function(event) {
+        		var oldValue = $(this).val();
+                $(this).data("oldValue", oldValue);
+        	});
+        	
             $(select).change(function(event) {
                 var value = event.target.value;
                 var parts = value.split("|");
@@ -2236,7 +2241,7 @@ var properties = {
                     properties.show();
                 }
                 else {
-                    var lsid = editor.workspace[parts[0]].lsid;
+                    var lsid = $(this).data("oldValue");
                     $(this).val(lsid);
                 }
             });
