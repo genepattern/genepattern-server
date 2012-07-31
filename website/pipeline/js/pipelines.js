@@ -90,13 +90,27 @@ var editor = {
     },
 
     revert: function() {
-        var lsid = editor.workspace["pipelineLsid"];
-        var name = editor.workspace["pipelineName"];
-        editor.load(lsid);
-        editor.workspace["pipelineName"] = name;
-        editor._setPipelineName();
-        properties.displayPipeline();
-        properties.show();
+    	var buttons = {
+            "Continue": function() {
+                $(this).dialog("close");
+                
+                var lsid = editor.workspace["pipelineLsid"];
+                var name = editor.workspace["pipelineName"];
+                editor.load(lsid);
+                editor.workspace["pipelineName"] = name;
+                editor._setPipelineName();
+                properties.displayPipeline();
+                properties.show();
+                
+                if (event.preventDefault) event.preventDefault();
+                if (event.stopPropagation) event.stopPropagation();
+            },
+            "Cancel": function() {
+                $(this).dialog("close");
+                if (event.preventDefault) event.preventDefault();
+                if (event.stopPropagation) event.stopPropagation();
+            }};
+        editor.showDialog("Confirm Revert", "This will revert the pipeline back to its last saved state.  Continue?", buttons);
     },
 
     updateAllPorts: function() {
