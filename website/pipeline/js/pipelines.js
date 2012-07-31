@@ -63,6 +63,14 @@ var editor = {
             properties.show();
             event.stopPropagation();
         });
+        
+        $(window).resize(function() {
+        	// Hack to get layout to work correctly in Firefox
+            if ($.browser.mozilla) {
+            	var height = $(document).height() - 142;
+            	$("#library").height(height);
+            }
+        });
 
         window.onbeforeunload = function (event) {
             // If the workspace is not dirty then do not prompt for confirmation
