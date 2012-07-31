@@ -237,38 +237,44 @@ if ((requestParameters.getProperty("deleteFiles") != null || requestParameters.g
 // clone task
 if (requestParameters.getProperty("clone") != null) {
 	String cloneName = requestParameters.getProperty("cloneName");
-	try {
-		StringBuffer sbURL = request.getRequestURL();
-		String queryString = request.getQueryString();
-		if (queryString != null) {
-			sbURL.append("?");
-			sbURL.append(queryString);
-		}
-		lsid = taskIntegratorClient.cloneTask(lsid, cloneName);
-	} catch (WebServiceErrorMessageException wseme) {
-		Vector vProblems = wseme.getErrors();
-		if(vProblems != null && vProblems.size() > 0) {
+    try {
+        StringBuffer sbURL = request.getRequestURL();
+        String queryString = request.getQueryString();
+        if (queryString != null) {
+            sbURL.append("?");
+            sbURL.append(queryString);
+        }
+        lsid = taskIntegratorClient.cloneTask(lsid, cloneName);
+    }
+    catch (Throwable t) {
+        Vector vProblems = new Vector();
+        vProblems.add( t.getLocalizedMessage() );
+        if (t instanceof WebServiceErrorMessageException) {
+            WebServiceErrorMessageException wseme = (WebServiceErrorMessageException) t;
+            vProblems = wseme.getErrors();
+        }
+        if(vProblems != null && vProblems.size() > 0) {
 %>
-			<html>
-	<head>
-		<title>Saved GenePattern module</title>
-	</head>
-	<body>
-	<jsp:include page="navbarHead.jsp"/>
-			<jsp:include page="navbar.jsp"/>
-			There are some problems with the <%= cloneName %> module that need to be fixed:<br><ul>
-<%	
-		    	for (Enumeration eProblems = vProblems.elements(); eProblems.hasMoreElements(); ) {
+<html>
+    <head>
+        <title>Saved GenePattern module</title>
+    </head>
+    <body>
+    <jsp:include page="navbarHead.jsp"/>
+    <jsp:include page="navbar.jsp"/>
+    There are some problems with the <%= cloneName %> module that need to be fixed:<br><ul>
+<%  
+    for (Enumeration eProblems = vProblems.elements(); eProblems.hasMoreElements(); ) {
 %>
-					<li><%= StringUtils.htmlEncode((String)eProblems.nextElement()) %></li>
+        <li><%= StringUtils.htmlEncode((String)eProblems.nextElement()) %></li>
 <%
-				}
+    }
 %>
-			</ul><a href="javascript:history.back()">back</a>
+    </ul><a href="javascript:history.back()">back</a>
 <%
-			return;
-		}
-	}
+                return;
+        }
+    }
 %>
 	<html>
 	<head>
