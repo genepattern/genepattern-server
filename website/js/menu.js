@@ -85,7 +85,7 @@ var Menu = {
 	                        <li><a href=\"/gp/pages/about.jsf\">About</a></li>\
 	                    </ul>\
 	                </li>\
-	                <li><a href=\"/gp/pages/index.jsf\">GenomeSpace</a>\
+	                <li><a href=\"/gp/pages/index.jsf\"><img src=\"/gp/pages/genomespace/genomespace_icon.gif\" class=\"genomeSpaceIcon\" alt=\"GenomeSpace\"></img>GenomeSpace</a>\
 	                    <ul>\
 	                        <li class=\"genomeSpaceLoggedOut\"><a href=\"/gp/pages/genomespace/signon.jsf\">Login</a></li>\
 	                        <li class=\"genomeSpaceLoggedIn\"><a href=\"/gp/pages/genomespace/signon.jsf\">Logout</a></li>\

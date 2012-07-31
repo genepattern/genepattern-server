@@ -12,10 +12,20 @@
 	line-height: 7px;
 }
 
+.genomeSpaceIcon {
+	position: relative;
+	top: 0px;
+	left: 0px;
+	float: left;
+	height: 14px;
+	width: 14px;
+	padding-right: 3px;
+	margin-top: -4px;
+}
+
 .ddsmoothmenu {
     font: bold 11px Verdana;
     background: #666699;
-    width: 100%;
     z-index: 5000;
     top: 48px;
     padding-left: 77px;
