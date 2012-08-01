@@ -385,6 +385,14 @@ public class ModuleQueryServlet extends HttpServlet
             {
                 ParametersJSON  parameterJSON = parameters[i];
                 ParameterInfo parameter = new ParameterInfo();
+                String pName = parameterJSON.getName();
+                if(pName != null && pName.length() > 0 )
+                {
+                    if(Character.isDigit(pName.charAt(0)))
+                    {
+                        sendError(response, "Parameter names cannot start with an integer: " + pName);
+                    }
+                }
                 parameter.setName(parameterJSON.getName());
                 parameter.setDescription(parameterJSON.getDescription());
 
