@@ -1237,7 +1237,7 @@ var editor = {
 	},
 
     _updateHistoryOnSave: function() {
-        history.pushState(null, "GenePattern Pipeline Editor", location.origin + location.pathname + "?lsid=" + editor.workspace["pipelineLsid"]);
+        history.pushState(null, "GenePattern Pipeline Editor", location.host + location.pathname + "?lsid=" + editor.workspace["pipelineLsid"]);
     },
 
     confirmErrors: function(runImmediately) {
@@ -2229,7 +2229,7 @@ var properties = {
             var option = document.createElement("option");
             option.setAttribute("value", id + "|" + moduleArray[i].lsid);
             if (moduleArray[i].version == version) {
-                option.setAttribute("selected", "true");
+                option.setAttribute("selected", "selected");
             }
             option.innerHTML = moduleArray[i].version;
             select.appendChild(option);
@@ -2239,8 +2239,11 @@ var properties = {
         $(select).html($("option", $(select)).sort(function(a, b) { 
             var aText = $(a).text();
             var bText = $(b).text();
-            return aText == bText ? 0 : library.higherVersion(aText, bText) ? 1 : -1; 
+            return aText == bText ? 0 : library.higherVersion(aText, bText) ? -1 : 1; 
         }));
+        
+        // Select the correct version
+        $(select).find("option[selected='selected']").attr("selected", "selected");
 
         // Handle the case of an empty select
         if (select.children.length === 0) {
@@ -2547,7 +2550,7 @@ var properties = {
     _showDeletePipeButton: function(parent, name) {
         if ($("button.editPipeButton[name='" + name + "']").size() === 0) {
             var button = document.createElement("button");
-            button.innerHTML = "Delete Connection";
+            button.innerHTML = "Remove Connection";
             button.setAttribute("name", name);
             button.setAttribute("class", "editPipeButton");
             parent.append(button);
@@ -3597,7 +3600,7 @@ function Module(moduleJSON) {
         deleteButton.setAttribute("id", "del_" + this.id);
         deleteButton.setAttribute("src", "images/delete.gif");
         deleteButton.setAttribute("class", "deleteButton");
-        deleteButton.setAttribute("alt", "Delete " + this.getDescriptor());
+        deleteButton.setAttribute("alt", "Remove " + this.getDescriptor());
         deleteButton.setAttribute("title", "Remove " + this.getDescriptor());
         titleDiv.appendChild(deleteButton);
 
@@ -3637,7 +3640,7 @@ function Module(moduleJSON) {
         // Functionality for the delete button
         $(deleteButton).click(function() {
             var module = editor.getParentModule(this.id);
-            var confirmed = confirm("Are you sure you want to delete this " + module.getDescriptor() + "?");
+            var confirmed = confirm("Are you sure you want to remove this " + module.getDescriptor() + "?");
             if (confirmed) {
                 module.remove();
 
@@ -4102,7 +4105,7 @@ function Port(module, pointer, param) {
             var buttons = null;
             if (port.isConnected()) {
                 buttons = {
-                    "Delete Connection": function(event) {
+                    "Remove Connection": function(event) {
                         $(this).dialog("close");
                         $(".editPipeButton[name='" + port.param.name + (port.param.required ? "*" : "") + "']").trigger("click");
                         if (event.preventDefault) event.preventDefault();
@@ -4112,7 +4115,7 @@ function Port(module, pointer, param) {
             }
             else if (port.param.isPWR()) {
                 buttons = {
-                    "Delete Prompt When Run": function(event) {
+                    "Remove Prompt When Run": function(event) {
                         $(this).dialog("close");
                         $(".propertyCheckBox[name='" + port.param.name + (port.param.required ? "*" : "") + "']").trigger("click");
                         if (event.preventDefault) event.preventDefault();
