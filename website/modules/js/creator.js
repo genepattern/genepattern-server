@@ -334,7 +334,11 @@ function addparameter()
         multiple: false,
         header: false,
         noneSelectedText: "",
-        selectedList: 1
+        selectedList: 1,
+        position: {
+          my: 'left bottom',
+          at: 'left top'
+        }
     });
 
     $('#parameters').append(paramDiv);
@@ -363,11 +367,6 @@ function addparameter()
         var tSelect = $(this);
 
         changeParameterType(tSelect);
-    });
-
-    $("select[name='p_format']").multiselect({
-        header: false,
-        selectedList: 4 // 0-based index
     });
 
     return paramDiv;
@@ -464,12 +463,6 @@ function updateparameter(parameter)
 {
     var pelement = parameter.find("input[name='p_name']");
     var felement = parameter.find("input[name='p_flag']");
-
-    //check for duplicate parameter names
-    $("input[name='p_name']").each(function()
-    {
-
-    });
     
     var pelementval = pelement.val().replace(/ /g, ".");
     pelement.val(pelementval);
@@ -685,7 +678,12 @@ function changeParameterType(element)
             fileFormatList.multiselect({
                 header: false,
                 noneSelectedText: "Specify input file formats",
-                selectedList: 4 // 0-based index
+                selectedList: 4, // 0-based index
+                position:
+                {
+                    my: 'left bottom',
+                    at: 'left top'
+                }
             });
 
             element.data("editing", "Input File");
