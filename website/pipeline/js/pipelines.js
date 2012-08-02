@@ -1220,6 +1220,13 @@ var editor = {
                     editor.runPipeline(newLsid);
                     return;
                 }
+                
+                // Update the library to include the new module
+                $.getJSON("/gp/PipelineDesigner/library", function(data) {
+                    library.initStructure(data);
+                    properties.redrawDisplay();
+                });
+                
                 if (message !== undefined && message !== null) {
                     editor.showDialog("Pipeline Saved",
                         "<div style='text-align: center; font-weight: bold;'>" + message + "<br />Version: " + newVersion + "</div>", {
@@ -1237,7 +1244,7 @@ var editor = {
 	},
 
     _updateHistoryOnSave: function() {
-        history.pushState(null, "GenePattern Pipeline Editor", location.host + location.pathname + "?lsid=" + editor.workspace["pipelineLsid"]);
+    	history.pushState(null, "GenePattern Pipeline Editor", location.protocol + "//" + location.host + location.pathname + "?lsid=" + editor.workspace["pipelineLsid"]);
     },
 
     confirmErrors: function(runImmediately) {
@@ -1390,10 +1397,7 @@ var library = {
     loadInit: false,       // Whether the load pipeline dialog has been initialized or not
 
     init: function(moduleJSON) {
-        this._readModules(moduleJSON);
-        this._readModuleVersions();
-        this._readModuleNames();
-        this._readModuleCategories();
+        this.initStructure(moduleJSON);
 
         this._addModuleComboBox();
         this._addFileButton();
@@ -1421,6 +1425,13 @@ var library = {
             if (event.preventDefault) event.preventDefault();
             if (event.stopPropagation) event.stopPropagation();
         });
+    },
+    
+    initStructure: function(moduleJSON) {
+    	this._readModules(moduleJSON);
+        this._readModuleVersions();
+        this._readModuleNames();
+        this._readModuleCategories();
     },
 
     isODF: function(type) {
