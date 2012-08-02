@@ -1221,7 +1221,7 @@ var editor = {
                     return;
                 }
                 if (message !== undefined && message !== null) {
-                    editor.showDialog("Save Pipeline Message",
+                    editor.showDialog("Pipeline Saved",
                         "<div style='text-align: center; font-weight: bold;'>" + message + "<br />Version: " + newVersion + "</div>", {
                             "Run Pipeline": function() {
                                 editor.runPipeline(newLsid);
