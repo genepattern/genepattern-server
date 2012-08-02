@@ -1623,9 +1623,20 @@ public class GenePatternAnalysisTask {
             stdoutFile = new File(jobDir, STDOUT);
         }
         if (stdoutFile.exists() && stdoutFile.length() <= 0L) {
-            boolean deleted = stdoutFile.delete();
-            if (!deleted) {
-                log.error("Error deleting empty stdout stream for job #"+jobId+", stdoutFile="+stdoutFile.getAbsolutePath());
+            boolean isCustom = !STDOUT.equals(stdoutFile.getName());
+            boolean deleteEmptyStdout = ServerConfiguration.instance().getGPBooleanProperty(jobContext, "job.deleteEmptyStdout", false);
+            boolean deleteEmptyStdoutDefault = ServerConfiguration.instance().getGPBooleanProperty(jobContext, "job.deleteEmptyStdout.default", true);
+            boolean deleteEmptyStdoutCustom = ServerConfiguration.instance().getGPBooleanProperty(jobContext, "job.deleteEmptyStdout.custom", false);
+            
+            boolean delete = deleteEmptyStdout 
+                    || (!isCustom && deleteEmptyStdoutDefault)
+                    || (isCustom && deleteEmptyStdoutCustom);
+            if (delete) {
+                log.debug("deleting empty stdout file for job #"+jobId+", stdout="+stdoutFile.getName());
+                boolean deleted = stdoutFile.delete();
+                if (!deleted) {
+                    log.error("Error deleting empty stdout stream for job #"+jobId+", stdoutFile="+stdoutFile.getAbsolutePath());
+                }
             }
         }
         //handle stderr stream

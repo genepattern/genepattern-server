@@ -53,9 +53,7 @@ class LsfCommand {
             stdoutFilename = stdoutFile.getName();
         }
         if (!GPConstants.STDOUT.equals(stdoutFilename)) {
-            //NOTE: this is only a problem for a module which streams stdout to a non-default location, and which happens to have an empty stdout
-            //    the job will run, but the stdout file will not be deleted
-            log.error("Unexpected setting for stdoutFile.name: "+stdoutFilename+"\n This version of GP can only handle '"+GPConstants.STDOUT+"'");
+            log.debug("custom stdout file="+stdoutFilename);
         }
         
         //Note: BroadCore does not handle the %J idiom for the output file

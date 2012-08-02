@@ -44,13 +44,66 @@ public class LsfJobCompletionListener implements JobCompletionListener {
         }
         return stderrFile;
     }
+    
+    /**
+     * Get the stdout file for the GP job. By convention this is the last arg of the lsf command line, e.g.
+     *     'echo' '/path/to/input.txt' >> 'stdout.txt'
+     * When stdout is redirected to a custom file the command is:
+     *     'echo' '/path/to/input.txt' >> 'custom.txt' 
+     *     
+     * @param lsfJob
+     * @return the path to the stdout file, or null if it can't be determined. Null means, use the default value.
+     */
+    private File getStdoutFile(final LsfJob lsfJob) {
+        try {
+            String stdout = "";
+            final String command = lsfJob.getCommand();
+            int idx = -1;
+            if (command == null) {
+                log.error("lsfJob.command == null");
+            }
+            else {
+                idx = command.lastIndexOf(">>");
+            }
+            if (idx < 0) {
+                log.error("command does not contain '>>', command="+command);
+            }
+            else {
+                stdout = command.substring(idx+2).trim();
+            }
+            if (stdout == null || stdout.length() == 0) {
+                log.error("command does not declare a stdout file, command="+command);
+            }
+            else {
+                if (stdout.startsWith("'") && stdout.endsWith("'")) {
+                    log.debug("trimming quote characters: "+stdout);
+                    stdout = stdout.substring(1, stdout.length()-1);
+                }
+                File stdoutFile = new File(stdout);
+                if (!stdoutFile.isAbsolute()) {
+                    log.debug("stdout file is in job directory");
+                    stdoutFile = new File(lsfJob.getWorkingDirectory(), stdout);
+                }
+                if (stdoutFile.exists()) {
+                    log.debug("stdoutFile="+stdoutFile);
+                    return stdoutFile;
+                }
+            }
+        }
+        catch (Throwable t) {
+            log.error(t);
+        }
+        
+        log.warn("Unable to determine stdout file for lsf job, lsfJob.name="+lsfJob.getName());        
+        final File stdoutFile = new File(lsfJob.getWorkingDirectory(), GPConstants.STDOUT);
+        return stdoutFile;
+    }
 
     public void jobCompleted(final LsfJob job) throws Exception {
         final int gpJobId = getGpJobId(job);
         log.debug("job completed...lsf_id="+job.getLsfJobId()+", internal_job_id="+job.getInternalJobId()+", gp_job_id="+gpJobId);
         final File jobDir = new File(job.getWorkingDirectory());
-        //TODO: this is hard-coded, must update this to handle modules which override the default setting
-        final File stdoutFile = new File(jobDir, GPConstants.STDOUT);
+        final File stdoutFile = getStdoutFile(job);            
         final File stderrFile = getStderrFile(job);
         final String errorMessage = null;
 

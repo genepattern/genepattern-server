@@ -36,6 +36,10 @@ default.properties:
     job.error_status.exit_value: false
     # filter job results based on the given comma separated list of glob patterns
     job.FilenameFilter: [ ".nfs*", ".rte.out", ".lsf*", ".sge.out" ]
+    # when set to true, delete empty stdout files from the job results directory
+    job.deleteEmptyStdout: false
+    job.deleteEmptyStdout.default: true
+    job.deleteEmptyStdout.custom: false
     # initial status of the internal job queue, if true, it means jobs won't execute until the internal queue is resumed
     job.queue.suspend_on_start: false
     # flag to allow users to submit jobs
