@@ -1750,7 +1750,7 @@ function addToSupportFileList(file)
         var index;
         for(i=0;i<module_editor.supportfileinputs.length;i++)
         {
-            var value1 = module_editor.supportfileinputs[i].val();
+            var value1 = module_editor.supportfileinputs[i].name;
             var value2 = $(this).parent().text();
             if(value1 === value2)
             {
