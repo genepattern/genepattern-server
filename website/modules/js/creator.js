@@ -232,6 +232,9 @@ function saveModule()
         url: "/gp/ModuleCreator/save",
         data: { "bundle" : JSON.stringify(json) },
         success: function(response) {
+            //remove wait cursor
+            //$("html").removeClass('busy').unbind('click');
+
             var error = response["ERROR"];
             var newLsid = response["lsid"];
             //get updated module versions
@@ -1251,6 +1254,10 @@ function getParametersJSON()
 
 function saveAndUpload(runModule)
 {
+    //$("html").addClass('busy').bind('click',function(){
+    //    return false;
+    //});
+
     run = runModule;
     //if no support files need to be upload then skip upload file step
     if(module_editor.supportfileinputs.length == 0)
@@ -1742,6 +1749,8 @@ function drop(evt)
 
 function addToSupportFileList(file)
 {
+    setDirty(true);
+
     var sfilelist = $("<li>" + file.name + " (" + bytesToSize(file.size) + ")" + "</li>");
 
     var delbutton = $("<button>x</button>&nbsp;");
