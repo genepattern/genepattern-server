@@ -2697,7 +2697,7 @@ var properties = {
 
         // Save when the select is changed
         $(inputBox).change(function() {
-            properties.saveToModel();
+        	properties.saveToModel();
         });
 
         return inputBox;
@@ -4182,7 +4182,7 @@ function Port(module, pointer, param) {
                 };
             }
 
-            editor.showDialog("Choose Port Action", "", buttons);
+            editor.showDialog("Choose Action", "Choose an action for this input parameter below.", buttons);
         });
 
         // Add optional class if necessary
