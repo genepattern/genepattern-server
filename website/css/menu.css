@@ -10,6 +10,7 @@
     white-space: nowrap;
     position: absolute;
 	line-height: 7px;
+	left: 0px;
 }
 
 .genomeSpaceIcon {
