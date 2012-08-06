@@ -2007,10 +2007,27 @@ var library = {
 
             $(pipelineList).selectable();
             $("#loadPipeline").button();
-            $("#loadPipeline").click(function() {
-                var lsid = $("#pipelineSelectList .ui-selected")[0].getAttribute("name");
-                editor.load(lsid);
-                $("#loadPipelineDialog").dialog("close");
+            $("#loadPipeline").click(function(event) {
+            	if (editor.workspace["dirty"]) {
+            		var buttons = { "Yes, Load the Pipeline": function() {
+                    	$(this).dialog("close");
+                    	var lsid = $("#pipelineSelectList .ui-selected")[0].getAttribute("name");
+                        editor.load(lsid);
+                        $("#loadPipelineDialog").dialog("close");
+                    },
+                    "Cancel": function(event) {
+                    	$(this).dialog("close");
+                    	$("#loadPipelineDialog").dialog("close");
+                    	if (event.preventDefault) event.preventDefault();
+                        if (event.stopPropagation) event.stopPropagation();
+                    }};
+            		editor.showDialog("Load Alert", "Your current pipeline has changes.  If you load a new pipeline these changes will be lost.  Continue?", buttons);
+            	}
+            	else {
+            		var lsid = $("#pipelineSelectList .ui-selected")[0].getAttribute("name");
+                    editor.load(lsid);
+                    $("#loadPipelineDialog").dialog("close");
+            	}   
             });
             $("#cancelPipeline").button();
             $("#cancelPipeline").click(function() {
