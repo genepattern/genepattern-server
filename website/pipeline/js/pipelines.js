@@ -2286,8 +2286,10 @@ var properties = {
         // If this is a module
         if (moduleOrLsid instanceof Module) {
         	$(select).focus(function(event) {
-        		var oldValue = $(this).val();
-                $(this).data("oldValue", oldValue);
+        		if ($(this).data("oldValue") === undefined || $(this).data("oldValue") === null) {
+        			var oldValue = $(this).val();
+                    $(this).data("oldValue", oldValue);
+        		}
         	});
         	
             $(select).change(function(event) {
@@ -2295,6 +2297,7 @@ var properties = {
                 var parts = value.split("|");
                 var doIt = confirm("This will swap out the currently edited module with another version.  Continue?");
                 if (doIt) {
+                	$(this).data("oldValue", null);
                     var newModule = editor.replaceModule(parts[0], parts[1]);
                     newModule.checkForWarnings();
                     properties.displayModule(newModule);
@@ -2303,6 +2306,7 @@ var properties = {
                 else {
                     var lsid = $(this).data("oldValue");
                     $(this).val(lsid);
+                    $(this).data("oldValue", null);
                 }
             });
         }
