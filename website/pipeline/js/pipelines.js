@@ -184,7 +184,8 @@ var editor = {
         var bodyWidth = $(document).width();
         if ($(module.ui).position().left + MODULE_WIDTH > bodyWidth - PROPERTIES_WIDTH) {
             $(".tableDiv").width(bodyWidth + PROPERTIES_WIDTH + 20);
-            $("html, body").animate({ scrollLeft: $(module.ui).position().left - 100 }, "slow");
+            if (!editor.loading)
+            	$("html, body").animate({ scrollLeft: $(module.ui).position().left - 100 }, "slow");
         }
     },
 
@@ -3369,7 +3370,7 @@ function Module(moduleJSON) {
         docIcon.setAttribute("alt", "Documentation");
         docIcon.setAttribute("title", "Documentation");
         docButton.appendChild(docIcon);
-        docButton.innerHTML += "Doc";
+        docButton.innerHTML += "Documentation";
         appendTo.appendChild(docButton);
         $(docButton).button();
 
