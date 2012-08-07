@@ -4111,12 +4111,19 @@ function Port(module, pointer, param) {
         else { maxConn = 1; }
 
         // Create endpoint
+        var image = null;
+        if (this.isOutput()) {
+            image = "images/output.png";
+        }
+        else {
+        	image = "images/input.png";
+        }
         this.endpoint = jsPlumb.addEndpoint(this.module.id.toString(), baseStyle, {
             anchor: posArray,
             maxConnections: maxConn,
             dragAllowedWhenFull: false,
             endpoint : [ "Image", {
-                src: "images/port.gif"
+                src: image
             }]
         });
         this.endpoint.canvas.setAttribute("name", prefix + this.id + "_" + this.module.id);
@@ -4201,7 +4208,7 @@ function Port(module, pointer, param) {
             this.endpoint.canvas.setAttribute("src", "images/pwr.jpeg");
         }
         else {
-            this.endpoint.canvas.setAttribute("src", "images/port.gif");
+            this.endpoint.canvas.setAttribute("src", "images/input.png");
         }
     }
 
