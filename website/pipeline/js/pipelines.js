@@ -1166,7 +1166,7 @@ var editor = {
                     editor.makeClean();
                 }
 
-                properties.redrawDisplay();
+                properties.displayPipeline();
                 editor.loading = false;
             },
             dataType: "json"
