@@ -1702,8 +1702,7 @@ var library = {
         $("#addModule").click(function() {
             var value = $("#modulesDropdown").val();
             var name = library._extractNameFromDropdown(value);
-            var version = library._extractVersionFromDropdown(value);
-            var lsid = library._lookupLsid(name, version);
+            var lsid = library._lookupLsid(name);
 
             // If unable to find the lsid give up, an error has already been reported
             if (lsid === null) return;
@@ -1729,52 +1728,26 @@ var library = {
         $("button[name|='" + lsid + "']").button();
     },
 
-    _lookupLsid: function (name, version) {
+    _lookupLsid: function (name) {
         for (var i in library.modules) {
             var module = library.modules[i];
 
             // Check for naming match
-            if (name == module.name) {
-                // If version is null, assume this is the match
-                if (version === null || version === undefined) {
-                    return library.getHighestVersion(module.lsid).lsid;
-                }
-
-                // If versions match, we found it!
-                if (version === module.version) {
-                    return module.lsid;
-                }
+            if (name === module.name) {
+            	var highest = library.getHighestVersion(module.lsid);
+            	if (module.lsid === highest.lsid) {
+            		return highest.lsid;
+            	}
             }
         }
 
         // If we got through the loop without finding it, report the error
-        editor.log("ERROR: Could not find module name: " + name + " and version: " + version + ".");
+        editor.log("ERROR: Could not find module name: " + name + ".");
         return null;
     },
 
     _extractNameFromDropdown: function(dropdownText) {
-        var spaceIndex = dropdownText.lastIndexOf(" v");
-
-        // No space character + v found in dropdown text
-        if (spaceIndex == -1) {
-            return dropdownText;
-        }
-
-        return dropdownText.substr(0, spaceIndex);
-    },
-
-    _extractVersionFromDropdown: function(dropdownText) {
-        var spaceIndex = dropdownText.lastIndexOf(" v");
-
-        // No space character + v found in dropdown text
-        if (spaceIndex == -1) {
-            return null;
-        }
-
-        var rawVersion = dropdownText.substr(spaceIndex + 2, dropdownText.length);
-
-        if (rawVersion.length < 1)  return null;
-        else return rawVersion;
+        return dropdownText;
     },
 
     _readModuleVersions: function() {
