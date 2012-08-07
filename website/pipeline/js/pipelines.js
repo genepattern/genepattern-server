@@ -85,6 +85,23 @@ var editor = {
         };
 	},
 	
+	pwrCount: function() {
+		var count = 0;
+        for (var i in editor.workspace) {
+            var module = editor.workspace[i];
+            if (module instanceof Module) {
+                for (var j in module.fileInputs) {
+                    var input = module.fileInputs[j];
+                    if (input.isPWR()) {
+                        count++;
+                    }
+                }
+            }
+        }
+
+        return count;
+	},
+	
 	// Fix for the GP 3.3.3 clone bug
     fixCloneBug: function(path) {
         if (path.indexOf("<GenePatternURL>") !== -1 && path.indexOf("<LSID>") === -1) {
@@ -2362,7 +2379,8 @@ var properties = {
         label.setAttribute("class", "propertiesLabel");
         var button = document.createElement("button");
         button.innerHTML = "Display Prompt When Runs";
-        $(button).button();
+        var disable = editor.pwrCount() === 0;
+        $(button).button({"disabled": disable});
         $(button).click(function() {
             properties.displayPWRs();
         });
