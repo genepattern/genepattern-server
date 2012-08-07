@@ -33,7 +33,7 @@ var editor = {
         pipelineDescription: "",
         pipelineAuthor: "",
         pipelinePrivacy: "private",
-        pipelineVersion: "1",
+        pipelineVersion: "0",
         pipelineVersionComment: "",
         pipelineDocumentation: "",
         pipelineLsid: ""
@@ -481,7 +481,7 @@ var editor = {
             pipelineDescription: "",
             pipelineAuthor: "",
             pipelinePrivacy: "private",
-            pipelineVersion: "1",
+            pipelineVersion: "0",
             pipelineVersionComment: "",
             pipelineDocumentation: "",
             pipelineLsid: ""
@@ -491,7 +491,7 @@ var editor = {
     },
 
     _setPipelineName: function() {
-        $("#" + this.titleSpan)[0].innerHTML = this.workspace["pipelineName"] + " v" + this.workspace["pipelineVersion"];
+        $("#" + this.titleSpan).html(this.workspace["pipelineName"] + ((this.workspace["pipelineVersion"] === "0") ? "" : (" v" + this.workspace["pipelineVersion"])));
     },
 
     addPipe: function(newIn, newOut) {
