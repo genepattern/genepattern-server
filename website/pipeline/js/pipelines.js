@@ -2208,7 +2208,7 @@ var properties = {
     },
 
     _setTitle: function(title) {
-        $("#" + this.titleDiv)[0].innerHTML = this._encodeToHTML(title);
+        $("#" + this.titleDiv)[0].innerHTML = library.concatNameForDisplay(this._encodeToHTML(title), 18);
     },
 
     _setSubtitle: function(subtitle) {
