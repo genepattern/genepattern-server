@@ -2691,6 +2691,14 @@ var properties = {
                 properties.saveToModel();
             });
         }
+        
+        // Handle the tab key
+        $(inputBox).keyup(function(event) {
+        	if (event.which === 9) {
+        		var selector = ".propertyValue[name='" + inputBox.getAttribute("name") + "']";
+        		$(selector).focus();
+        	}
+        });
 
         // Save when the select is changed
         $(inputBox).change(function() {
