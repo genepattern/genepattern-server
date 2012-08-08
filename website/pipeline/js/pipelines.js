@@ -2221,6 +2221,11 @@ var properties = {
     },
 
     _setVersionDropdown: function(moduleOrLsid) {
+    	// Protect against the double dropdown bug
+    	if ($("#propertiesVersion select").length !== 0) {
+    		return;
+    	}
+    	
         // Set appropriate variables based on if the param is a module or the pipeline's lsid
         var baseLsid = null;
         var version = null;
