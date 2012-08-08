@@ -4008,6 +4008,7 @@ function InputParam(module, paramJSON) {
 
     this.makeUnused = function() {
         this.used = false;
+        this.value = this.defaultValue;
     };
     
     this.isPWR = function() {
