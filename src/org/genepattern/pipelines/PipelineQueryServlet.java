@@ -584,35 +584,37 @@ public class PipelineQueryServlet extends HttpServlet {
         }
         
         // Build up the pipeline model to save
-        PipelineModel model = null;
-        PipelineCreationHelper controller = null;
-        try {
-            model = new PipelineModel();
-            model.setUserID(username);
-
-            setPipelineInfo(model, pipelineObject);
-
-            controller = new PipelineCreationHelper(model);
-            controller.generateLSID();
-
-            setModuleInfo(model, modulesList);
-            setPipesInfo(model, modulesList, pipesObject);
-        }
-        catch (Throwable t) {
-            log.error("Unable to build the pipeline model", t);
-            sendError(response, "Unable to save the pipeline: Server error, Unable to build the pipeline model");
-            return;
-        }
-        
-        // Generate a task from the pipeline model and install it
         String newLsid = null;
-        try {
-            newLsid = controller.generateTask();
-        }
-        catch (TaskInstallationException e) {
-            log.error("Unable to install the pipeline:" + e.getMessage(), e);
-            sendError(response, "Unable to save the pipeline: "+e.getMessage());
-            return;
+        synchronized(this) {
+            PipelineModel model = null;
+            PipelineCreationHelper controller = null;
+            try {
+                model = new PipelineModel();
+                model.setUserID(username);
+    
+                setPipelineInfo(model, pipelineObject);
+    
+                controller = new PipelineCreationHelper(model);
+                controller.generateLSID();
+    
+                setModuleInfo(model, modulesList);
+                setPipesInfo(model, modulesList, pipesObject);
+            }
+            catch (Throwable t) {
+                log.error("Unable to build the pipeline model", t);
+                sendError(response, "Unable to save the pipeline: Server error, Unable to build the pipeline model");
+                return;
+            }
+            
+            // Generate a task from the pipeline model and install it
+            try {
+                newLsid = controller.generateTask();
+            }
+            catch (TaskInstallationException e) {
+                log.error("Unable to install the pipeline:" + e.getMessage(), e);
+                sendError(response, "Unable to save the pipeline: "+e.getMessage());
+                return;
+            }
         }
         
         // Create the new pipeline directory in taskLib and move files
