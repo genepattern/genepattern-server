@@ -2531,6 +2531,8 @@ var properties = {
         // Save when the select is changed
         $(select).change(function() {
             properties.saveToModel();
+            var selector = ".propertyValue[name='" + select.getAttribute("name") + "']";
+        	$(selector).parent().next().next().find(".propertyValue").focus();
         });
 
         return select;
