@@ -155,6 +155,7 @@ a:hover {
     white-space: nowrap;
     position: fixed;
 	line-height: 7px;
+	width: 100%;
 }
 
 .modulePropertiesTitle {
