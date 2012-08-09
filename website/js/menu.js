@@ -74,8 +74,8 @@ var Menu = {
 	                </li>\
 	                <li><a href=\"/gp/pages/index.jsf\">Help</a>\
 	                    <ul>\
-	                        <li><a href=\"JavaScript:window.open('http://www.broadinstitute.org/cancer/software/genepattern/tutorial/gp_tutorial.html', '_blank')\">Tutotial</a></li>\
-	                        <li><a href=\"JavaScript:window.open('http://www.broadinstitute.org/cancer/software/genepattern/desc/videos', '_blank')\">Video Tutotial</a></li>\
+	                        <li><a href=\"JavaScript:window.open('http://www.broadinstitute.org/cancer/software/genepattern/tutorial/gp_tutorial.html', '_blank')\">Tutorial</a></li>\
+	                        <li><a href=\"JavaScript:window.open('http://www.broadinstitute.org/cancer/software/genepattern/desc/videos', '_blank')\">Video Tutorial</a></li>\
 	                        <li><a href=\"JavaScript:window.open('http://www.broadinstitute.org/cancer/software/genepattern/tutorial/gp_web_client.html', '_blank')\">User Guide</a></li>\
 	                        <li><a href=\"JavaScript:window.open('http://www.broadinstitute.org/cancer/software/genepattern/tutorial/gp_programmer.html', '_blank')\">Programmers Guide</a></li>\
 	                        <li><a href=\"/gp/getTaskDoc.jsp\">Module Documentation</a></li>\
