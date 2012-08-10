@@ -1192,18 +1192,27 @@ var editor = {
 	},
 
 	save: function(runImmediately, ignorePrompts) {
-        // Check for pipelines with the same name
-        if (!ignorePrompts && !editor.confirmErrors(runImmediately)) {
+		if (ignorePrompts === undefined || ignorePrompts === null) {
+			ignorePrompts = {};
+		}
+		
+        // Check for errors
+        if (!ignorePrompts["warn"] && !editor.confirmErrors(runImmediately, ignorePrompts)) {
             return;
         }
 
         // Check for whether the pipeline is Untitled
-        if (!ignorePrompts && !editor.confirmIfUntitled(runImmediately)) {
+        if (!ignorePrompts["untitled"] && !editor.confirmIfUntitled(runImmediately, ignorePrompts)) {
             return;
         }
 
         // Check for pipelines with the same name
-        if (!ignorePrompts && !editor.confirmUniqueName(runImmediately)) {
+        if (!ignorePrompts["sameName"] && !editor.confirmUniqueName(runImmediately, ignorePrompts)) {
+            return;
+        }
+        
+        // Check for saving a read-only pipeline
+        if (!ignorePrompts["readOnly"] && !editor.confirmClone(runImmediately, ignorePrompts)) {
             return;
         }
 
@@ -1265,7 +1274,7 @@ var editor = {
     	history.pushState(null, "GenePattern Pipeline Editor", location.protocol + "//" + location.host + location.pathname + "?lsid=" + editor.workspace["pipelineLsid"]);
     },
 
-    confirmErrors: function(runImmediately) {
+    confirmErrors: function(runImmediately, ignorePrompts) {
         var foundErrors = editor.highlightModuleAlerts();
 
         // If no errors found, return
@@ -1298,7 +1307,8 @@ var editor = {
             buttons = {
                 "Yes": function() {
                     $(this).dialog("close");
-                    editor.save(runImmediately, true);
+                    ignorePrompts["warn"] = true;
+                    editor.save(runImmediately, ignorePrompts);
                     if (event.preventDefault) event.preventDefault();
                     if (event.stopPropagation) event.stopPropagation();
                 },
@@ -1311,8 +1321,40 @@ var editor = {
         editor.showDialog("Pipeline Issues", message, buttons);
         return false;
     },
+    
+    confirmClone: function(runImmediately, ignorePrompts) {
+    	var readOnly = false;
+        // See if read-only
+    	var lsid = editor.workspace["pipelineLsid"];
+    	var module = library.modules[lsid];
+    	if (module !== null && module !== undefined) {
+    		readOnly = !module.write;
+    	}
 
-    confirmUniqueName: function(runImmediately) {
+        // If not read only, return
+        if (!readOnly) {
+            return true;
+        }
+
+        // Otherwise, prompt the user
+        var buttons = { "Continue": function(event) {
+            $(this).dialog("close");
+            ignorePrompts["readOnly"] = true;
+            editor.save(runImmediately, ignorePrompts);
+            if (event.preventDefault) event.preventDefault();
+            if (event.stopPropagation) event.stopPropagation();
+        },
+        "Cancel": function(event) {
+            $(this).dialog("close");
+            if (event.preventDefault) event.preventDefault();
+            if (event.stopPropagation) event.stopPropagation();
+        }};
+        editor.showDialog("Confirm Clone Pipeline", "The pipeline you are attempting to save is read-only.  " +
+        		"Saving this pipeline will result in a new copy of the pipeline with your current edits.", buttons);
+        return false;
+    },
+
+    confirmUniqueName: function(runImmediately, ignorePrompts) {
         var nameFound = false;
 
         // See if another pipeline or module shares a name
@@ -1338,7 +1380,8 @@ var editor = {
         // Otherwise, prompt the user
         var buttons = { "Yes": function(event) {
             $(this).dialog("close");
-            editor.save(runImmediately, true);
+            ignorePrompts["sameName"] = true;
+            editor.save(runImmediately, ignorePrompts);
             if (event.preventDefault) event.preventDefault();
             if (event.stopPropagation) event.stopPropagation();
         },
@@ -1352,7 +1395,7 @@ var editor = {
         return false;
     },
 
-    confirmIfUntitled: function(runImmediately) {
+    confirmIfUntitled: function(runImmediately, ignorePrompts) {
         var isUntitled = editor.workspace["pipelineName"].indexOf("UntitledPipeline") == 0;
 
         // If not untitled then continue
@@ -1363,7 +1406,8 @@ var editor = {
         // Otherwise prompt the user
         var buttons = { "Yes": function(event) {
             $(this).dialog("close");
-            editor.save(runImmediately, true);
+            ignorePrompts["untitled"] = true;
+            editor.save(runImmediately, ignorePrompts);
             if (event.preventDefault) event.preventDefault();
             if (event.stopPropagation) event.stopPropagation();
         },
