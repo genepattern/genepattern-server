@@ -237,8 +237,15 @@ public class PipelineQueryServlet extends HttpServlet {
 	        sendError(response, "No lsid received");
 	        return;
 	    }
-
-	    TaskInfo info = TaskInfoCache.instance().getTask(lsid);
+	    
+	    TaskInfo info = null;
+	    try {
+	        info = TaskInfoCache.instance().getTask(lsid);
+	    }
+	    catch (Throwable t) {
+	        sendError(response, "Unable to load the selected pipeline");
+	        return;
+	    }
 	    
 	    String username = (String) request.getSession().getAttribute("userid");
 	    if (!"public".equals(info.getTaskInfoAttributes().get("privacy")) && !info.getUserId().equals(username)) {
