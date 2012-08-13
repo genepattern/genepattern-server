@@ -429,6 +429,8 @@ var editor = {
             z += 9000;
             $(".top-dialog").css("z-index", z);
         }
+        
+        return alert;
     },
     
     showOverlay: function() {
@@ -4235,7 +4237,16 @@ function Port(module, pointer, param) {
                 };
             }
 
-            editor.showDialog("Choose Action", "Choose an action for this input parameter below.", buttons);
+            var dialog = editor.showDialog("Choose Action", "Choose an action for this input parameter below.", buttons);
+            
+            // Hack to make the dialog look as requested
+            $(dialog).dialog({
+            	width: "230px",
+            	height: "100px",
+            	position: "center"
+            });
+            $(dialog).parent().find(".ui-dialog-buttonpane").css("border-width", "0 0 0 0");
+            $(dialog).hide();
         });
 
         // Add optional class if necessary
