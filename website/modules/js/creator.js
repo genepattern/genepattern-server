@@ -1614,12 +1614,6 @@ jQuery(document).ready(function() {
         var file = $(this).val();
         file = file.replace(/^.*(\\|\/|\:)/, '');
 
-        if(file == "manifest")
-        {
-            alert("You are not allowed to upload files with file name 'manifest'. Please re-name your file and try again.");
-            return;
-        }
-
         $("#supportfileslist").children().each(function()
         {
 
@@ -1749,6 +1743,12 @@ function drop(evt)
 
 function addToSupportFileList(file)
 {
+    if(file.name == "manifest")
+    {
+        alert("You are not allowed to upload files with file name 'manifest'. Please re-name your file and try again.");
+        return;
+    }
+
     setDirty(true);
 
     var sfilelist = $("<li>" + file.name + " (" + bytesToSize(file.size) + ")" + "</li>");
