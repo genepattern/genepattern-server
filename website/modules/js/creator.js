@@ -615,21 +615,26 @@ function changeParameterType(element)
                                     }
                                 });
 
+                                $("#editchoicedialog").dialog("destroy");
+                                $("#editchoicedialog").find( "table" ).remove();
+
                                 element.parent().parent().find("input[name='choicelist']").each(function()
                                 {
                                     $(this).val(choicelist);
                                     $(this).data('prevVal', choicelist);
                                     element.data('editing', "Choice");
-                                });
 
-                                $("#editchoicedialog").dialog("destroy");
-                                $("#editchoicedialog").find( "table" ).remove();
+                                    //validate if default value is valid
+                                    var parent = $(this).closest(".parameter");
+                                    var defaultValueObj = parent.find("input[name='p_defaultvalue']");
+                                    validateDefaultChoiceValue(defaultValueObj);
+                                });
                             },
                             "Cancel": function() {
-                                    var choiceListElement = $("input[name='choicelist']");
-                                    choiceListElement.parent().next().data('editing', false);
+                                var choiceListElement = $("input[name='choicelist']");
+                                choiceListElement.parent().next().data('editing', false);
                                 $( this ).dialog( "destroy" );
-                                $("#editchoicedialog").find( "table" ).remove();                                
+                                $("#editchoicedialog").find( "table" ).remove();
                             }
                     },
                     resizable: true
@@ -1284,6 +1289,47 @@ function uploadSupportFiles()
     }
 }
 
+function validateDefaultChoiceValue(defaultValueObj)
+{
+    var defaultValue = defaultValueObj.val();
+
+    if(defaultValue == undefined || defaultValue == null || defaultValue.length < 1)
+    {
+        return;
+    }
+
+    var choiceValues = [];
+    //we are validating that the default value is valid if this parameter is a drop down
+    var parent = defaultValueObj.closest(".parameter");
+
+    var choiceParameter = parent.find("input[name='choicelist']");
+    if(choiceParameter !== undefined && choiceParameter !== null)
+    {
+        var choicelist = choiceParameter.val();
+        if(choicelist == undefined || choicelist == null)
+        {
+            return;
+        }
+
+        var choices = choicelist.split(';');
+        for(i=0;i<choices.length;i++)
+        {
+            var rowdata = choices[i].split("=");
+            if(rowdata != undefined && rowdata != null && rowdata.length > 0)
+            {
+                choiceValues.push(rowdata[0]);
+                if(rowdata[0] == defaultValue)
+                {
+                    return;
+                }
+            }
+        }
+    }
+
+    defaultValueObj.val("");
+    alert("Default value \"" + defaultValue + "\" could not be found in the list of possible input values:\n" + choiceValues.join(', ') + "\n\nPlease enter a valid default value.");
+}
+
 jQuery(document).ready(function() {
 
     $("input[type='text']").val("");
@@ -1666,6 +1712,11 @@ jQuery(document).ready(function() {
             modtitle = modtitle.replace(/ /g, ".");
             $("#modtitle").val(modtitle);
         }
+    });
+
+    $("input[name='p_defaultvalue']").live("change", function()
+    {
+        validateDefaultChoiceValue($(this));
     });
 
     $("body").change(function()
