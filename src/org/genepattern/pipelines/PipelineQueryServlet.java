@@ -766,7 +766,7 @@ public class PipelineQueryServlet extends HttpServlet {
 	    Integer count = 0;
         for (TaskInfo info : TaskInfoCache.instance().getAllTasks()) {
             if ("public".equals(info.getTaskInfoAttributes().get("privacy")) || info.getUserId().equals(username)) {
-                ModuleJSON mj = new ModuleJSON(info);
+                ModuleJSON mj = new ModuleJSON(info, username);
                 listObject.addChild(count, mj);
                 count++;
             }

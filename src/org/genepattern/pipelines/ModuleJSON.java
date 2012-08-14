@@ -40,12 +40,12 @@ public class ModuleJSON extends JSONObject {
     public static final String TOP = "top";
     public static final String LEFT = "left";
     
-    public ModuleJSON(TaskInfo info) {
+    public ModuleJSON(TaskInfo info, String username) {
         try {
             this.setLsid(info.getLsid());
             this.setName(info.getName());
             this.extractVersion(info.getLsid());
-            this.determineWrite(info.getAccessId());
+            this.determineWrite(info, username);
             this.determineType(info);
             this.setCategory(info.getTaskInfoAttributes().get("taskType"));
             this.constructInputs(info.getParameterInfoArray());
@@ -82,8 +82,8 @@ public class ModuleJSON extends JSONObject {
         }
     }
     
-    public void determineWrite(int accessid) throws JSONException {
-        if (accessid > 1) {
+    public void determineWrite(TaskInfo info, String username) throws JSONException {
+        if (info.getUserId().equals(username)) {
             this.put(WRITE, true);
         }
         else {
