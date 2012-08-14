@@ -408,7 +408,7 @@ public class PipelineQueryServlet extends HttpServlet {
 	    model.setLsid(lsid);
 	}
 	
-	@SuppressWarnings("rawtypes")
+	@SuppressWarnings({ "rawtypes", "unchecked" })
     private ParameterInfo[] copyModuleParams(ParameterInfo[] taskParams) throws WebServiceException {
         ParameterInfo[] newParams = new ParameterInfo[taskParams.length];
 
@@ -419,6 +419,7 @@ public class PipelineQueryServlet extends HttpServlet {
             taskParam.setLabel(taskParams[i].getLabel());
             taskParam.setValue(taskParams[i].getDefaultValue());                        // set to the default by default
             taskParam.setAttributes((HashMap) taskParams[i].getAttributes().clone());   // is a shallow copy OK here?
+
             newParams[i] = taskParam;
         }
         return newParams;
@@ -472,6 +473,7 @@ public class PipelineQueryServlet extends HttpServlet {
 	            promptWhenRun[i] = pwr != null;
 	            if (pwr != null) {
 	                ParameterInfo pInfo = setParameter(input.getName(), taskInfo.getParameterInfoArray()[i].getValue(), moduleParams, toPWRList(pwr));
+	                pInfo.getAttributes().put("name", taskInfo.getName() + taskNum + "." + pInfo.getAttributes().get("name"));
 	                model.addInputParameter(taskInfo.getName() + taskNum + "." + input.getName(), pInfo);
 	            }
 	            else {
