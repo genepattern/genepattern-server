@@ -549,6 +549,7 @@ public class PipelineQueryServlet extends HttpServlet {
 	 * @param response
 	 */
 	public void savePipeline(HttpServletRequest request, HttpServletResponse response) {
+	    // Test the session
 	    String username = (String) request.getSession().getAttribute("userid");
 	    if (username == null) {
 	        sendError(response, "No GenePattern session found.  Please log in.");
@@ -579,6 +580,21 @@ public class PipelineQueryServlet extends HttpServlet {
 	        sendError(response, "Unable to save the pipeline: Server error parsing JSON bundle");
 	        return;
 	    }
+	    
+	    // Test that the saved pipeline has not been deleted
+	    try {
+    	    String lsid = pipelineObject.getLsid();
+    	    if (lsid.length() > 4) { // Test if the lsid is not blank or zero
+    	        TaskInfo info = TaskInfoCache.instance().getTask(lsid);
+    	        if (info == null) throw new Exception("TaskInfo is null");
+    	    }
+	    }
+	    catch (Throwable t) {
+            log.error("Error loading older version of saved pipeline", t);
+            sendError(response, "Unable to save the pipeline: Unable to locate the older versions of the pipeline being saved.");
+            return;
+        }
+	    
 	    // Transform the graph of modules and pipes to an ordered list
 	    List<ModuleJSON> modulesList = null;
 	    try {
