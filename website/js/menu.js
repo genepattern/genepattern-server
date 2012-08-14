@@ -24,6 +24,11 @@ var Menu = {
 			this.jquery = $;
 		}
 	},
+	
+	go: function(url) {
+		window.open(url, "_blank");
+		return false;
+	},
 
 	buildNavMenu: function() {
 		Menu.ensureJQuery();
