@@ -27,7 +27,7 @@ var Menu = {
 	
 	go: function(url) {
 		window.open(url, "_blank");
-		return false;
+		return void(0);
 	},
 
 	buildNavMenu: function() {
@@ -59,17 +59,17 @@ var Menu = {
 	                </li>\
 	                <li><a href=\"/gp/pages/index.jsf?splash=resources\">Resources</a>\
 	                    <ul>\
-	                        <li><a href=\"JavaScript:window.open('http://www.broadinstitute.org/cancer/software/genepattern/gp_mail.html', '_blank')\">Mailing List</a></li>\
+	                        <li><a href=\"JavaScript:Menu.go('http://www.broadinstitute.org/cancer/software/genepattern/gp_mail.html')\">Mailing List</a></li>\
 	                        <li><a href=\"/gp/pages/contactUs.jsf\">Report Bugs</a></li>\
-	                        <li><a href=\"JavaScript:window.open('http://www.broadinstitute.org/cancer/software/genepattern/forum/', '_blank')\">User Forum</a></li>\
+	                        <li><a href=\"JavaScript:Menu.go('http://www.broadinstitute.org/cancer/software/genepattern/forum/')\">User Forum</a></li>\
 	                        <li><a href=\"/gp/pages/contactUs.jsf\">Contact Us</a></li>\
 	                    </ul>\
 	                </li>\
 	                <li><a href=\"/gp/pages/index.jsf?splash=downloads\">Downloads</a>\
 	                    <ul>\
 	                        <li><a href=\"/gp/pages/downloadProgrammingLibaries.jsf\">Programming Languages</a></li>\
-	                        <li><a href=\"JavaScript:window.open('http://www.broadinstitute.org/cancer/software/genepattern/datasets/', '_blank')\">Public Datasets</a></li>\
-	                        <li><a href=\"JavaScript:window.open('http://www.broadinstitute.org/software/gparc/', '_blank')\">GParc</a></li>\
+	                        <li><a href=\"JavaScript:Menu.go('http://www.broadinstitute.org/cancer/software/genepattern/datasets/')\">Public Datasets</a></li>\
+	                        <li><a href=\"JavaScript:Menu.go('http://www.broadinstitute.org/software/gparc/')\">GParc</a></li>\
 	                    </ul>\
 	                </li>\
 	                <li class=\"adminServerAllowed\"><a href=\"/gp/pages/serverSettings.jsf\">Administration</a>\
@@ -79,14 +79,14 @@ var Menu = {
 	                </li>\
 	                <li><a href=\"/gp/pages/index.jsf\">Help</a>\
 	                    <ul>\
-	                        <li><a href=\"JavaScript:window.open('http://www.broadinstitute.org/cancer/software/genepattern/tutorial/gp_tutorial.html', '_blank')\">Tutorial</a></li>\
-	                        <li><a href=\"JavaScript:window.open('http://www.broadinstitute.org/cancer/software/genepattern/desc/videos', '_blank')\">Video Tutorial</a></li>\
-	                        <li><a href=\"JavaScript:window.open('http://www.broadinstitute.org/cancer/software/genepattern/tutorial/gp_web_client.html', '_blank')\">User Guide</a></li>\
-	                        <li><a href=\"JavaScript:window.open('http://www.broadinstitute.org/cancer/software/genepattern/tutorial/gp_programmer.html', '_blank')\">Programmers Guide</a></li>\
+	                        <li><a href=\"JavaScript:Menu.go('http://www.broadinstitute.org/cancer/software/genepattern/tutorial/gp_tutorial.html')\">Tutorial</a></li>\
+	                        <li><a href=\"JavaScript:Menu.go('http://www.broadinstitute.org/cancer/software/genepattern/desc/videos')\">Video Tutorial</a></li>\
+	                        <li><a href=\"JavaScript:Menu.go('http://www.broadinstitute.org/cancer/software/genepattern/tutorial/gp_web_client.html')\">User Guide</a></li>\
+	                        <li><a href=\"JavaScript:Menu.go('http://www.broadinstitute.org/cancer/software/genepattern/tutorial/gp_programmer.html')\">Programmers Guide</a></li>\
 	                        <li><a href=\"/gp/getTaskDoc.jsp\">Module Documentation</a></li>\
-	                        <li><a href=\"JavaScript:window.open('http://www.broadinstitute.org/cancer/software/genepattern/tutorial/gp_fileformats.html', '_blank')\">File Formats</a></li>\
-	                        <li><a href=\"JavaScript:window.open('http://www.broadinstitute.org/cancer/software/genepattern/doc/relnotes/current/', '_blank')\">Release Notes</a></li>\
-	                        <li><a href=\"JavaScript:window.open('http://www.broadinstitute.org/cancer/software/genepattern/doc/faq/', '_blank')\">FAQ</a></li>\
+	                        <li><a href=\"JavaScript:Menu.go('http://www.broadinstitute.org/cancer/software/genepattern/tutorial/gp_fileformats.html')\">File Formats</a></li>\
+	                        <li><a href=\"JavaScript:Menu.go('http://www.broadinstitute.org/cancer/software/genepattern/doc/relnotes/current/')\">Release Notes</a></li>\
+	                        <li><a href=\"JavaScript:Menu.go('http://www.broadinstitute.org/cancer/software/genepattern/doc/faq/')\">FAQ</a></li>\
 	                        <li><a href=\"/gp/pages/about.jsf\">About</a></li>\
 	                    </ul>\
 	                </li>\
@@ -95,8 +95,8 @@ var Menu = {
 	                        <li class=\"genomeSpaceLoggedOut\"><a href=\"/gp/pages/genomespace/signon.jsf\">Login</a></li>\
 	                        <li class=\"genomeSpaceLoggedIn\"><a href=\"/gp/pages/genomespace/signon.jsf\">Logout</a></li>\
 	                        <li class=\"genomeSpaceLoggedIn\"><a href=\"/gp/pages/genomespace/userRegistration.jsf\">Register</a></li>\
-	                        <li><a href=\"JavaScript:window.open('https://gsui.genomespace.org/jsui/', '_blank')\">GenomeSpace UI</a></li>\
-	                        <li><a href=\"JavaScript:window.open('http://www.genomespace.org/', '_blank')\">About</a></li>\
+	                        <li><a href=\"JavaScript:Menu.go('https://gsui.genomespace.org/jsui/')\">GenomeSpace UI</a></li>\
+	                        <li><a href=\"JavaScript:Menu.go('http://www.genomespace.org/')\">About</a></li>\
 	                    </ul>\
 	                </li>\
 	            </ul>\
