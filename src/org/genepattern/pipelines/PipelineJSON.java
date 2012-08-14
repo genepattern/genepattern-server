@@ -102,6 +102,10 @@ public class PipelineJSON extends JSONObject {
         return this.getString(LSID);
     }
     
+    public void setLsid(String lsid) throws JSONException {
+        this.put(LSID, lsid);
+    }
+    
     public List<String> getFiles() throws JSONException {
         List<String> files = new ArrayList<String>();
         JSONArray array = this.getJSONArray(FILES);

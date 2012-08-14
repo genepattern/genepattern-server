@@ -579,14 +579,20 @@ public class PipelineQueryServlet extends HttpServlet {
 	        log.error("Error parsing JSON bundle", t);
 	        sendError(response, "Unable to save the pipeline: Server error parsing JSON bundle");
 	        return;
-	    }
+	    } 
 	    
-	    // Test that the saved pipeline has not been deleted
 	    try {
+	     // Test that the saved pipeline has not been deleted
     	    String lsid = pipelineObject.getLsid();
     	    if (lsid.length() > 4) { // Test if the lsid is not blank or zero
     	        TaskInfo info = TaskInfoCache.instance().getTask(lsid);
     	        if (info == null) throw new Exception("TaskInfo is null");
+    	        
+    	        // Clone pipeline is necessary
+    	        String oldUser = info.getUserId();
+    	        if (!username.equals(oldUser)) {
+    	            pipelineObject.setLsid(""); // Set to Clone
+    	        }
     	    }
 	    }
 	    catch (Throwable t) {
