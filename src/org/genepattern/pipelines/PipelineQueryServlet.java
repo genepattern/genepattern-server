@@ -473,7 +473,7 @@ public class PipelineQueryServlet extends HttpServlet {
 	            promptWhenRun[i] = pwr != null;
 	            if (pwr != null) {
 	                ParameterInfo pInfo = setParameter(input.getName(), taskInfo.getParameterInfoArray()[i].getValue(), moduleParams, toPWRList(pwr));
-	                pInfo.getAttributes().put("name", taskInfo.getName() + taskNum + "." + pInfo.getAttributes().get("name"));
+	                pInfo.getAttributes().put("name", taskInfo.getName() + taskNum + "." + input.getName());
 	                model.addInputParameter(taskInfo.getName() + taskNum + "." + input.getName(), pInfo);
 	            }
 	            else {
