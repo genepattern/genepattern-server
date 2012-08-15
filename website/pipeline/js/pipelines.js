@@ -4187,6 +4187,7 @@ function Port(module, pointer, param) {
 
             // Show the edited port's module
             properties.displayModule(port.module);
+            properties.show();
 
             // If already set or output, don't do anything
             if (port.param === null || port.param === undefined) {
