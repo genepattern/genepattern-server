@@ -2565,6 +2565,8 @@ var properties = {
                     properties._showDisplaySettingsButton($("select.propertyValue[name='" + labelText + "']").parent(), labelText);
                 }
                 else {
+                	var inputParam = properties.current.getInputByName(properties._stripTrailingAstrik(labelText));
+                	$("select.propertyValue[name='" + labelText + "']").val(inputParam.defaultValue);
                     $("select.propertyValue[name='" + labelText + "']").show();
                     properties._hideDisplaySettingsButton(labelText);
                 }
@@ -2731,6 +2733,8 @@ var properties = {
                     properties._showDisplaySettingsButton($(".propertyValue[type='text'][name='" + labelText + "']").parent(), labelText);
                 }
                 else {
+                	var inputParam = properties.current.getInputByName(properties._stripTrailingAstrik(labelText));
+                	$(".propertyValue[type='text'][name='" + labelText + "']").val(inputParam.defaultValue);
                     $(".propertyValue[type='text'][name='" + labelText + "']").show();
                     properties._hideDisplaySettingsButton(labelText);
                 }
