@@ -99,7 +99,6 @@ function mmLoadMenus() {
   window.mm_menu_resources = new Menu("root",89,18,"Verdana, Arial, Helvetica, sans-serif",10,"#FFFFFF","#9999FF","#333366","#000033","left","middle",3,0,500,-5,7,true,true,true,3,true,false);
   mm_menu_resources.addMenuItem("Mailing&nbsp;List","window.open('http://www.broadinstitute.org/cancer/software/genepattern/gp_mail.html', '_blank')");
   mm_menu_resources.addMenuItem("Report&nbsp;Bugs","location=contextRoot + '/pages/contactUs.jsf'");
-  mm_menu_resources.addMenuItem("User&nbsp;Forum","window.open('http://www.broadinstitute.org/cancer/software/genepattern/forum/', '_blank')");
   mm_menu_resources.addMenuItem("Contact Us","location=contextRoot + '/pages/contactUs.jsf'");
  
   mm_menu_resources.hideOnMouseOut=true;

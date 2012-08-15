@@ -61,7 +61,6 @@ var Menu = {
 	                    <ul>\
 	                        <li><a href=\"JavaScript:Menu.go('http://www.broadinstitute.org/cancer/software/genepattern/gp_mail.html')\">Mailing List</a></li>\
 	                        <li><a href=\"/gp/pages/contactUs.jsf\">Report Bugs</a></li>\
-	                        <li><a href=\"JavaScript:Menu.go('http://www.broadinstitute.org/cancer/software/genepattern/forum/')\">User Forum</a></li>\
 	                        <li><a href=\"/gp/pages/contactUs.jsf\">Contact Us</a></li>\
 	                    </ul>\
 	                </li>\
