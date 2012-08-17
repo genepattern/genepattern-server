@@ -1180,7 +1180,7 @@ var editor = {
                     editor._loadFiles(response["files"]);
                     editor._loadModules(response["modules"]);
                     editor._loadPipes(response["pipes"]);
-                    setTimeout("editor.updateAllPorts()", 200);
+                    setTimeout("editor.updateAllPorts()", 300);
                     editor._validatePipeline();
                     editor.enableRevert();
                     editor.makeClean();
@@ -2184,10 +2184,13 @@ var properties = {
             var save = this._bundleSave();
             this.current.saveProps(save);
         }
-        else if (this.current instanceof String && this.current == "Pipeline") {
+        else if (this.current == "Pipeline") {
             //noinspection JSDuplicatedDeclaration
             var save = this._bundleSave();
             editor.saveProps(save);
+        }
+        else if (this.current == "Prompt When Run") {
+            // No need to save anything
         }
         else {
             editor.log("ERROR: Cannot determine what is being edited to save to the model");
@@ -2341,6 +2344,7 @@ var properties = {
                 if (doIt) {
                 	$(this).data("oldValue", null);
                     var newModule = editor.replaceModule(parts[0], parts[1]);
+                    setTimeout("editor.updateAllPorts()", 300);
                     newModule.checkForWarnings();
                     properties.displayModule(newModule);
                     properties.show();
@@ -2593,19 +2597,17 @@ var properties = {
             module = editor.workspace[id];
         }
 
-        var dName = $.data(attach, "name");
-        var dDesc = $.data(attach, "description");
+        var dName = null;
+        var dDesc = null;
 
-        if (dName === undefined || dName === null || dDesc === undefined || dDesc === null) {
-            var input = module.getInputByName(name);
-            if (input.promptWhenRun !== null) {
-                dName = input.promptWhenRun.name;
-                dDesc = input.promptWhenRun.description;
-            }
-            else {
-                dName = name;
-                dDesc = input.description;
-            }
+        var input = module.getInputByName(name);
+        if (input.promptWhenRun !== null) {
+            dName = input.promptWhenRun.name;
+            dDesc = input.promptWhenRun.description;
+        }
+        else {
+            dName = name;
+            dDesc = input.description;
         }
 
         var inner = "Define alternative name and description to display when prompting for this input." +
@@ -2616,7 +2618,6 @@ var properties = {
             var displayName = $("#pwrDisplayName").val();
             var displayDesc = $("#pwrDisplayDesc").val();
             module.getInputByName(name).makePWR(displayName, displayDesc);
-            // TODO: properties._addCustomPWRBox(".customPWRDiv", name);
 
             $(this).dialog("close");
             $(this).dialog("destroy");
@@ -2910,7 +2911,7 @@ var properties = {
         this._deselectOldSelection();
         this._clean();
 
-        this.current = new String("Pipeline");
+        this.current = "Pipeline";
         this._setTitle("Editing Pipeline");
         this._setVersionDropdown(editor.workspace["pipelineLsid"]);
         this._setSubtitle(editor.workspace["pipelineLsid"].length > 0 ? editor.workspace["pipelineLsid"] : "");
@@ -2943,7 +2944,7 @@ var properties = {
         this._deselectOldSelection();
         this._clean();
 
-        this.current = new String("Prompt When Runs");
+        this.current = "Prompt When Run";
         this._setTitle("Prompt When Runs");
 
         for (var i in editor.workspace) {
