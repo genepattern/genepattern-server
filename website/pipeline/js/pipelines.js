@@ -2564,15 +2564,25 @@ var properties = {
         // When the prompt when run checkbox is checked, enable or disable dropdown
         if (checkBox !== undefined && checkBox !== null) {
             $(".propertyCheckBox[type='checkbox'][name='" + labelText + "']").change(function() {
+            	var module = properties.current;
+                if (!(module instanceof Module)) {
+                    var id = $(label).attr("name");
+                    module = editor.workspace[id];
+                }
+                
+                var input = module.getInputByName(properties._stripTrailingAstrik(labelText));
+            	
                 if ($(this).is(":checked")) {
                     $("select.propertyValue[name='" + labelText + "']").hide();
                     properties._showDisplaySettingsButton($("select.propertyValue[name='" + labelText + "']").parent(), labelText);
+                    input.makePWR(input.name, input.description);
                 }
                 else {
                 	var inputParam = properties.current.getInputByName(properties._stripTrailingAstrik(labelText));
                 	$("select.propertyValue[name='" + labelText + "']").val(inputParam.defaultValue);
                     $("select.propertyValue[name='" + labelText + "']").show();
                     properties._hideDisplaySettingsButton(labelText);
+                    input.makeNotPWR();
                 }
 
                 // Save when changed
@@ -2731,15 +2741,25 @@ var properties = {
         // When the prompt when run checkbox is checked, enable or disable upload
         if (checkBox !== undefined && checkBox !== null) {
             $(".propertyCheckBox[type='checkbox'][name='" + labelText + "']").change(function() {
+            	var module = properties.current;
+                if (!(module instanceof Module)) {
+                    var id = $(label).attr("name");
+                    module = editor.workspace[id];
+                }
+                
+                var input = module.getInputByName(properties._stripTrailingAstrik(labelText));
+            	
                 if ($(this).is(":checked")) {
                     $(".propertyValue[type='text'][name='" + labelText + "']").hide();
                     properties._showDisplaySettingsButton($(".propertyValue[type='text'][name='" + labelText + "']").parent(), labelText);
+                    input.makePWR(input.name, input.description);
                 }
                 else {
                 	var inputParam = properties.current.getInputByName(properties._stripTrailingAstrik(labelText));
                 	$(".propertyValue[type='text'][name='" + labelText + "']").val(inputParam.defaultValue);
                     $(".propertyValue[type='text'][name='" + labelText + "']").show();
                     properties._hideDisplaySettingsButton(labelText);
+                    input.makeNotPWR();
                 }
 
                 // Save when the select is changed
@@ -3274,12 +3294,9 @@ function Module(moduleJSON) {
             if (value === null) continue;
             if (value == properties.PROMPT_WHEN_RUN) {
                 // If prompt when run it has already been saved, so do nothing
-                if(!(this.inputs[i].isFile()) && this.inputs[i].value !== properties.PROMPT_WHEN_RUN){
-                    this.inputs[i].makePWR();
-                }
             }
             else {
-                this.inputs[i].promptWhenRun = null;
+                this.inputs[i].makeNotPWR();
                 if (!(this.inputs[i].isFile() && value === "")) {
                     this.inputs[i].value = value;
                 }
@@ -4003,7 +4020,8 @@ function InputParam(module, paramJSON) {
             this.makePWR(pwrJSON[0], pwrJSON[1]);
         }
         else {
-            this.promptWhenRun = null;
+        	this.promptWhenRun = null;
+            this.value = "";
         }
 
         return this.promptWhenRun;
@@ -4082,7 +4100,9 @@ function InputParam(module, paramJSON) {
         this.value = "";
 
         // Update the port's icon
-        this.port.updateIcon();
+        if (this.port !== null && this.port !== undefined) {
+        	this.port.updateIcon();
+        }
     };
 
     this.prepTransport = function() {
@@ -4497,7 +4517,7 @@ function Pipe(connection) {
     this.saveProps = function(save) {
         this.outputPort.setPointer(save["Output"]);
         this.inputPort.setPointer(save["Input"]);
-        this.inputPort.param.promptWhenRun = null;
+        //this.inputPort.param.promptWhenRun = null;
 
         // Determine if the old port was required or not
         var oldReq = this.inputPort.isRequired();
