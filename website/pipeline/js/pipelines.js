@@ -2609,9 +2609,9 @@ var properties = {
         }
 
         var inner = "Define alternative name and description to display when prompting for this input." +
-        "<br /> <table><tr><td>Display Name</td><td><input type='text' id='pwrDisplayName' value='" + dName +
-            "'/></td></tr><tr><td>Display Description</td><td><input type='text' id='pwrDisplayDesc' value='" + dDesc +
-            "'/></td></tr></table>";
+        		"<br /> <table><tr><td>Display Name</td><td><input type='text' id='pwrDisplayName' value=''/>" + 
+        		"</td></tr><tr><td>Display Description</td><td><input type='text' id='pwrDisplayDesc' value=''/>" +
+        		"</td></tr></table>";
         var button = { "OK": function(event) {
             var displayName = $("#pwrDisplayName").val();
             var displayDesc = $("#pwrDisplayDesc").val();
@@ -2624,6 +2624,8 @@ var properties = {
             if (event.stopPropagation) event.stopPropagation();
         }};
         editor.showDialog("Set Prompt When Run Display Settings", inner, button);
+        $("#pwrDisplayName").val(dName);
+        $("#pwrDisplayDesc").val(dDesc);
     },
 
     _showDeletePipeButton: function(parent, name) {
