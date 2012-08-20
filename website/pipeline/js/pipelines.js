@@ -3992,6 +3992,7 @@ function File(name, path) {
         this.addOutput(this.getFilename());
         jsPlumb.draggable(this.ui);
         this._addDragEvents();
+        editor.expandIfNeeded(this);
     };
 
     return file;
