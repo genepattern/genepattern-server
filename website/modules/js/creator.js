@@ -462,8 +462,9 @@ function addtocommandline(flag, name, prevflag, prevname)
 }
 
 //update the specific parameter div
-function updateparameter(parameter)
+function updateparameter(parameter, updateCmdLine)
 {
+    if(typeof(updateCmdLine)==='undefined') updateCmdLine = true;
     var pelement = parameter.find("input[name='p_name']");
     var felement = parameter.find("input[name='p_flag']");
     
@@ -483,7 +484,10 @@ function updateparameter(parameter)
     pelement.data('oldVal',  pname_newval );
     felement.data('oldVal',  pflag_newval );
 
-    addtocommandline(pflag_newval, pname_newval, pflag_oldval, pname_oldval);
+    if(updateCmdLine)
+    {
+        addtocommandline(pflag_newval, pname_newval, pflag_oldval, pname_oldval);
+    }
 }
 
 function changeParameterType(element)
@@ -1117,7 +1121,7 @@ function loadParameterInfo(parameters)
         }
 
         newParameter.data("otherAttrs", otherAttrs);
-        updateparameter(newParameter);
+        updateparameter(newParameter, false);
     }
 }
 
