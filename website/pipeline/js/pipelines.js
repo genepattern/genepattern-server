@@ -2938,7 +2938,12 @@ var properties = {
         this._addTextBox("Pipeline Name", editor.workspace["pipelineName"], false, false);
         this._addTextBox("Description", editor.workspace["pipelineDescription"], false, false);
         this._addTextBox("Author", editor.workspace["pipelineAuthor"], false, false);
-        this._addDropDown("Privacy", ["private", "public"], editor.workspace["pipelinePrivacy"], false, false);
+        
+        var privacyDropdown = null;
+        if (!adminServerAllowed) { privacyDropdown = ["private"]; }
+        else { privacyDropdown = ["private", "public"]; }
+        this._addDropDown("Privacy", privacyDropdown, editor.workspace["pipelinePrivacy"], false, false);
+        
         this._addTextBox("Version Comment", editor.workspace["pipelineVersionComment"], false, false);
         this._addFileUpload("Documentation", editor.workspace["pipelineDocumentation"], false, false, false);
         this._addPWRDisplayButton();
