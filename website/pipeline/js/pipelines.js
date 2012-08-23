@@ -4027,7 +4027,7 @@ function InputParam(module, paramJSON) {
         }
         else {
         	this.promptWhenRun = null;
-            this.value = "";
+            this.value = editor.protectAgainstUndefined(this.defaultValue);
         }
 
         return this.promptWhenRun;
