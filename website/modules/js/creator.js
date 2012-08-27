@@ -1661,26 +1661,6 @@ jQuery(document).ready(function() {
 
     $(".supportfile").live("change", function()
     {
-        var file = $(this).val();
-        file = file.replace(/^.*(\\|\/|\:)/, '');
-
-        $("#supportfileslist").children().each(function()
-        {
-
-            var fileName = $(this).text();
-            //add x for delete button text
-            var newValue = "x" + file;
-
-            //parse out path from file name
-            fileName = fileName.replace(/^.*(\\|\/|\:)/, '');
-
-            if(newValue === fileName)
-            {
-                //trigger click of delete button if file already uploaded
-                $(this).find("button").trigger("click");
-            }
-        });
-
         addToSupportFileList(this.files[0]);
 
         //add a new file input field
@@ -1806,7 +1786,21 @@ function addToSupportFileList(file)
 
     setDirty(true);
 
+    //check for duplicate files
+    $("#supportfileslist").children().each(function()
+    {
+        var supportFileName = $(this).data("fname");
+
+        if(file.name === supportFileName)
+        {
+            //trigger click of delete button if file already uploaded
+            $(this).find("button").trigger("click");
+        }
+    });
+
+
     var sfilelist = $("<li>" + file.name + " (" + bytesToSize(file.size) + ")" + "</li>");
+    sfilelist.data("fname", file.name);
 
     var delbutton = $("<button>x</button>&nbsp;");
     delbutton.button().click(function()
