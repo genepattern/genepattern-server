@@ -395,9 +395,7 @@ function addtocommandline(flag, name, prevflag, prevname)
         text = flag + text;
     }
 
-    var item = $("<li class='commanditem'>" +
-                 text +
-                "</li>");
+    var item = $("<li class='commanditem'>" + text + "</li>");
 
     //construct prev parameter value
     var  prevtext = "";
@@ -447,7 +445,7 @@ function addtocommandline(flag, name, prevflag, prevname)
 
     // if old parameter value was not found then this must be a new parameter so
     // insert it into parameter list
-    if(!found && text !== "")
+    if(text !== "")
     {
         $('#commandlist').append(item);
 
@@ -484,9 +482,47 @@ function updateparameter(parameter, updateCmdLine)
     pelement.data('oldVal',  pname_newval );
     felement.data('oldVal',  pflag_newval );
 
+    var paramExists = true;
+    //check if parameter exists
+    $("input[name='p_name']").each(function()
+    {
+        if($(this).val() == pname_newval)
+        {
+            paramExists = !paramExists;
+        }
+    });
+
+    if(paramExists)
+    {
+        alert("The parameter: " + pname_newval + " already exists.");
+        pelement.val("");
+        return;
+    }
+
+    //do not update the command line
     if(updateCmdLine)
     {
         addtocommandline(pflag_newval, pname_newval, pflag_oldval, pname_oldval);
+    }
+    else
+    {
+        //add any new parameter to the command line argument listing
+        if(pname_oldval == undefined && pflag_oldval == undefined)
+        {
+            var text = "&lt;" + pname_newval + "&gt;";
+            text = pflag_newval + text;
+
+            var decodedText = $('<div/>').html(text).text();
+            var cmdline= $("#commandtextarea textarea").val();
+
+
+            if(cmdline.indexOf(decodedText) != -1)
+            {
+                var item = $("<li class='commanditem'>" + text + "</li>");
+
+                $('#commandlist').append(item);
+            }
+        }
     }
 }
 
