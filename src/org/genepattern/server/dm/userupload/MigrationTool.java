@@ -10,6 +10,7 @@ import org.apache.log4j.Logger;
 import org.genepattern.server.DataManager;
 import org.genepattern.server.config.ServerConfiguration;
 import org.genepattern.server.config.ServerConfiguration.Context;
+import org.genepattern.server.config.ServerProperties;
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.domain.AnalysisJob;
 import org.genepattern.server.domain.AnalysisJobDAO;
@@ -37,12 +38,26 @@ import org.hibernate.SQLQuery;
 public class MigrationTool {
     private static Logger log = Logger.getLogger(MigrationTool.class);
     
+    private static String getInstalledVersion() {
+        //helper method, return the identifier for the version of GP we are running
+        //use this to determine whether or not to migrate job upload files
+        final String gpVersion = ServerProperties.instance().getProperty("GenePatternVersion");
+        if (gpVersion == null) {
+            log.error("GenePatternVersion==null");
+        }
+        return gpVersion;
+    }
+    
     /**
      * added this with the 3.3.3 release to correct a bug (which also exists in previous versions of GP) in the installer.
      * The bug: after installing an updated version of GP, the job upload files for jobs run in the previous version of GP
      * are not in the correct location on the file system.
      */
     public static void migrateJobUploads() {
+        final String gpVersion = getInstalledVersion();
+        if (gpVersion == null) {
+            return;
+        }
         //1) check the DB, if the flag is not already set, go ahead and migrate the files
         final String KEY = "sync.job.uploads.complete";
         try {
@@ -54,7 +69,10 @@ public class MigrationTool {
             if (rval != null && rval.size() > 0) {
                 //if the flag is already set, exit
                 log.debug(KEY+"="+rval.get(0));
-                return;
+                if (gpVersion.equals(rval)) {
+                    log.debug("job upload files already migrated for gpVersion="+gpVersion);
+                    return;
+                }
             }
             HibernateUtil.closeCurrentSession();
         }
@@ -72,7 +90,7 @@ public class MigrationTool {
             final String sql = "insert into PROPS ( key, value ) values ( :key, :value )";
             final SQLQuery query = HibernateUtil.getSession().createSQLQuery(sql);
             query.setString("key", KEY);
-            query.setString("value", "true");
+            query.setString("value", gpVersion);
             int num = query.executeUpdate();
             if (num != 1) {
                 String message = "Error updating db, expecting 1 result but received "+num+". \n"+
@@ -430,7 +448,7 @@ public class MigrationTool {
      * This method is designed to work only for an update from a clean 3.3.2 installation 
      * (with no custom settings in the config file related to the path to user uplaods).
      * 
-     * TODO: delete this code for the 3.4 release
+     * TODO: should only need this when updating from 3.3.2. But we don't have a simple way of knowing this from within this method.
      * 
      */
     private static void migrateUserUploadDirs() {
