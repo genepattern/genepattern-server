@@ -1834,22 +1834,28 @@ function addToSupportFileList(file)
         }
     });
 
-
     var sfilelist = $("<li>" + file.name + " (" + bytesToSize(file.size) + ")" + "</li>");
     sfilelist.data("fname", file.name);
 
     var delbutton = $("<button>x</button>&nbsp;");
     delbutton.button().click(function()
     {
-        var index;
+        var index = -1;
         for(i=0;i<module_editor.supportfileinputs.length;i++)
         {
             var value1 = module_editor.supportfileinputs[i].name;
-            var value2 = $(this).parent().text();
+            var value2 = $(this).parent().data("fname");
             if(value1 === value2)
             {
                 index = i;
             }
+        }
+
+        if(index == -1)
+        {
+            //do nothing, unable to find file in support listing
+            alert("An error occurred while removing file: File not found");
+            return;
         }
 
         module_editor.supportfileinputs.splice(index,1);
