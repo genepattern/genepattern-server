@@ -1083,6 +1083,10 @@ var editor = {
             var inputModule = editor.workspace[pipes[i]["inputModule"]];
             var outputId = pipes[i]["outputPort"];
             var inputId = pipes[i]["inputPort"];
+            
+            // Unescape the IDs if necessary
+            outputId = $('<div/>').html(outputId).text();
+            inputId = $('<div/>').html(inputId).text();
 
             if (!outputModule.hasPortByPointer(outputId)) {
                 outputModule.addOutput(outputId);
@@ -3818,8 +3822,8 @@ function Module(moduleJSON) {
         this.addOutput(3, true);
         this.addOutput(4, true);
 
-        this.addOutput("?scatter&amp;filter&#061;*", true);
-        this.addOutput("?filelist&amp;filter&#061;*", true);
+        this.addOutput("?scatter&filter=*", true);
+        this.addOutput("?filelist&filter=*", true);
     };
 
     this._addInputPorts = function() {

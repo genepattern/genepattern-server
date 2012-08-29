@@ -41,6 +41,7 @@ import org.apache.commons.fileupload.RequestContext;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.apache.commons.fileupload.servlet.ServletRequestContext;
+import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.log4j.Logger;
 import org.genepattern.data.pipeline.JobSubmission;
 import org.genepattern.data.pipeline.PipelineModel;
@@ -527,6 +528,9 @@ public class PipelineQueryServlet extends HttpServlet {
             Integer inputId = pipe.getInputModule();
             String value = pipe.getOutputPort();
             String param = pipe.getInputPort();
+            
+            // Unescape the value
+            value = StringEscapeUtils.unescapeHtml(value);
             
             // Find the index of input and output
             Integer outputIndex = findIndexWithId(outputId, modulesList);
