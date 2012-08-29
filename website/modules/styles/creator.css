@@ -678,3 +678,11 @@ table.deloptions
 {
     background-color: #cddcf1;
 }
+
+.ui-progressbar .ui-progressbar-value { background-image: url(images/pbar-ani.gif); }
+
+
+#savingDialog
+{
+    font-size: 12px;
+}

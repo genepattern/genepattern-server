@@ -12,6 +12,7 @@
 var mainLayout;
 var run = false;
 var dirty = false;
+var saving = false;
 
 var module_editor = {
     lsid: "",
@@ -126,6 +127,25 @@ function bytesToSize(bytes, precision)
     return Number(bytes).toFixed(precision) + " " + sizes[posttxt];
 } */
 
+function abortSave(errorMessage)
+{
+    $("#savingDialog").dialog("destroy");
+    $("#savedDialog").append(errorMessage);
+    $("#savedDialog").dialog({
+        resizable: false,
+        width: 400,
+        height:130,
+        modal: true,
+        title: "Module Save Error",
+        buttons: {
+            Ok: function() {
+                $( this ).dialog( "close" );
+                throw(errorMessage);
+            }
+        }
+    });
+}
+
 function updateModuleVersions(lsids)
 {
     if(lsids == undefined || lsids == null)
@@ -170,7 +190,7 @@ function saveModule()
     var modname = $('#modtitle').val();
     if(modname == undefined || modname == null || modname.length < 1)
     {
-        alert("A module name must be specified");
+        abortSave("A module name must be specified");
         throw("A module name must be specified");
     }
 
@@ -200,7 +220,7 @@ function saveModule()
 
     if(commandLine == undefined || commandLine == null || commandLine.length < 1)
     {
-        alert("A command line must be specified");
+        abortSave("A command line must be specified");
         throw("A command line must be specified");
     }
 
@@ -232,17 +252,29 @@ function saveModule()
         url: "/gp/ModuleCreator/save",
         data: { "bundle" : JSON.stringify(json) },
         success: function(response) {
+            $("#savingDialog").dialog("destroy");
             //remove wait cursor
             //$("html").removeClass('busy').unbind('click');
-
             var error = response["ERROR"];
             var newLsid = response["lsid"];
             //get updated module versions
             var versions = response["lsidVersions"];
 
             if (error !== undefined && error !== null) {
-                alert(error);
-                throw(error);
+                $("#savedDialog").append(error);
+                $("#savedDialog").dialog({
+                    resizable: false,
+                    width: 400,
+                    height:130,
+                    modal: true,
+                    title: "Module Save Error",
+                    buttons: {
+                        Ok: function() {
+                            $( this ).dialog( "close" );
+                            throw(error);
+                        }
+                    }
+                });
             }
 
             setDirty(false);
@@ -257,30 +289,50 @@ function saveModule()
                 {
                     var version = newLsid.substring(vindex+1, newLsid.length);
                     var modtitle = $("#modtitle").val();
-                    alert(modtitle + " version " + version + " saved");
-                }
-                module_editor.lsid = newLsid;
-                module_editor.uploadedfiles = [];
 
-                var unversioned = $(' select[name="modversion"] option[value="unversioned"]');
-                if(unversioned != undefined && unversioned != null)
-                {
-                    unversioned.remove();
-                }
+                    $("#savedDialog").append(modtitle + " version " + version + " saved");
+                    $("#savedDialog").dialog({
+                        resizable: false,
+                        width: 400,
+                        height:130,
+                        modal: true,
+                        title: "Module Saved",
+                        buttons: {
+                            Ok: function() {
+                                $( this ).dialog( "close" );
+                                module_editor.lsid = newLsid;
+                                module_editor.uploadedfiles = [];
 
-                $('select[name="modversion"]').val(newLsid);
-                if($('select[name="modversion"]').val() != newLsid)
-                {
-                    var modversion = "<option value='" + newLsid + "'>" + version + "</option>";
-                    $('select[name="modversion"]').append(modversion);
-                    $('select[name="modversion"]').val(version);
-                }
+                                var unversioned = $(' select[name="modversion"] option[value="unversioned"]');
+                                if(unversioned != undefined && unversioned != null)
+                                {
+                                    unversioned.remove();
+                                }
 
-                $('select[name="modversion"]').multiselect("refresh");
+                                $('select[name="modversion"]').val(newLsid);
+                                if($('select[name="modversion"]').val() != newLsid)
+                                {
+                                    var modversion = "<option value='" + newLsid + "'>" + version + "</option>";
+                                    $('select[name="modversion"]').append(modversion);
+                                    $('select[name="modversion"]').val(version);
+                                }
 
-                if(run)
-                {
-                    runModule(newLsid);
+                                $('select[name="modversion"]').multiselect("refresh");
+
+                                saving = false;
+                                if(run)
+                                {
+                                    runModule(newLsid);
+                                }
+                                else
+                                {
+                                    //reload the editor page using the new LSID
+                                    var editLocation = "creator.jsf?lsid=" + newLsid;
+                                    window.open(editLocation, '_self');;
+                                }
+                            }
+                        }
+                    });
                 }
             }
         },
@@ -1231,7 +1283,7 @@ function getParametersJSON()
 
         if(pname == undefined || pname == null || pname.length < 1)
         {
-            alert("A parameter name must be specified for parameter number " + pnum);
+            abortSave("A parameter name must be specified for parameter number " + pnum);
             throw("A parameter name is missing");
         }
         //this is an input file type
@@ -1302,6 +1354,23 @@ function saveAndUpload(runModule)
     //$("html").addClass('busy').bind('click',function(){
     //    return false;
     //});
+
+    if(saving)
+    {
+        return;
+    }
+
+    saving = true;
+
+    $("#savingDialog").dialog({
+        autoOpen: true,
+        modal: true,
+        height:130,
+        width: 400,
+        title: "Saving Module",
+        beforeClose: function() { return false; }
+    });
+    $('#progressbar').progressbar({ value: 100 });
 
     run = runModule;
     //if no support files need to be upload then skip upload file step
