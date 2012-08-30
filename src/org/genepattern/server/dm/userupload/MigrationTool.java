@@ -58,40 +58,54 @@ public class MigrationTool {
         if (gpVersion == null) {
             return;
         }
-        //1) check the DB, if the flag is not already set, go ahead and migrate the files
+
+        //1) check the DB, if we have not yet migrated job upload files since this version of GP has been installed ...
         final String KEY = "sync.job.uploads.complete";
+        boolean keyExists=false;  //need this to know whether to insert or to update
         try {
+            String VAL = null;
             HibernateUtil.beginTransaction();
             String sql = "select value from PROPS where key = :key";
             SQLQuery query = HibernateUtil.getSession().createSQLQuery(sql);
             query.setString("key", KEY);
             List<String> rval = query.list();
             if (rval != null && rval.size() > 0) {
+                VAL = rval.get(0);
+                log.debug(KEY+"="+VAL);
+            }
+            if (VAL != null && VAL.length() > 0) {
+                keyExists=true;
                 //if the flag is already set, exit
-                log.debug(KEY+"="+rval.get(0));
-                if (gpVersion.equals(rval)) {
+                if (gpVersion.equals(VAL)) {
                     log.debug("job upload files already migrated for gpVersion="+gpVersion);
                     return;
                 }
             }
-            HibernateUtil.closeCurrentSession();
         }
         catch (Throwable t) {
             log.error("Server error: "+t.getLocalizedMessage(), t);
-            HibernateUtil.closeCurrentSession();
             return;
+        }
+        finally {
+            HibernateUtil.closeCurrentSession();
         }
         
         migrateJobUploadDirs();
 
-        //finally) make sure to set the flag in the DB
+        //finally) set the flag in the DB
         try {
             HibernateUtil.beginTransaction();
-            final String sql = "insert into PROPS ( key, value ) values ( :key, :value )";
+            final String sql;
+            if (keyExists) {
+                sql = "update PROPS set value = :value where key = :key";
+            }
+            else {
+                sql = "insert into PROPS ( key, value ) values ( :key, :value )";
+            }
             final SQLQuery query = HibernateUtil.getSession().createSQLQuery(sql);
             query.setString("key", KEY);
             query.setString("value", gpVersion);
-            int num = query.executeUpdate();
+            final int num = query.executeUpdate();
             if (num != 1) {
                 String message = "Error updating db, expecting 1 result but received "+num+". \n"+
                         "\t insert into PROPS ( key, value ) values ( '"+KEY+"', 'true')";
@@ -103,8 +117,10 @@ public class MigrationTool {
         catch (Throwable t) {
             log.error(t);
             HibernateUtil.rollbackTransaction();
-        } 
-
+        }
+        finally {
+            HibernateUtil.closeCurrentSession();
+        }
     }
     
     private static void migrateJobUploadDirs() {
