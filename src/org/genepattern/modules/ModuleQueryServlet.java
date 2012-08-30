@@ -203,7 +203,7 @@ public class ModuleQueryServlet extends HttpServlet
                     for(String f : result)
                     {
                         f = f.trim();
-                        if(!f.equals("") && !f.equals(" "))
+                        if(!f.equals("") && !f.equals(" ") && !fileFormats.contains(f))
                         {
                             fileFormats.add(f);
                         }
@@ -212,7 +212,7 @@ public class ModuleQueryServlet extends HttpServlet
                 else
                 {
                     fileFormat = fileFormat.trim();
-                    if(!fileFormats.equals("") && !fileFormats.equals(" "))
+                    if(!fileFormat.equals("") && !fileFormat.equals(" ") && !fileFormats.contains(fileFormat))
                     {
                         fileFormats.add(fileFormat);
                     }
@@ -236,11 +236,21 @@ public class ModuleQueryServlet extends HttpServlet
                         String[] result = pFileFormat.split(";");
                         for(String f : result)
                         {
-                            fileFormats.add(f);
+                            f = f.trim();
+                            if(!f.equals("") && !f.equals(" ") && !fileFormats.contains(f))
+                            {
+                                fileFormats.add(f);
+                            }
                         }
                     }
                     else
-                        fileFormats.add(pFileFormat);
+                    {
+                        pFileFormat = pFileFormat.trim();
+                        if(!pFileFormat.equals("") && !pFileFormat.equals(" ") && !fileFormats.contains(pFileFormat))
+                        {
+                            fileFormats.add(pFileFormat);
+                        }
+                    }
                 }
             }
         }
@@ -264,7 +274,7 @@ public class ModuleQueryServlet extends HttpServlet
 
         if(fileFormats != null)
         {
-            message.addChild("fileformats", fileFormats.toString());
+            message.addChild("fileformats", new JSONArray(fileFormats));
         }
         else
         {

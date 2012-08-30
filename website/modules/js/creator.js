@@ -835,23 +835,20 @@ function updatefileformats()
             }
             else {
                 var fileformats = response["fileformats"];
-                fileformats = fileformats.substring(1, fileformats.length-1);
-
-                var result = fileformats.split(", ");
 
                 var unique_fileformatlist = [];
 
-                for(m=0;m < result.length;m++)
+                for(m=0;m < fileformats.length;m++)
                 {
-                    var index = unique_fileformatlist.indexOf(result[m]);
+                    var index = unique_fileformatlist.indexOf(fileformats[m]);
 
                     if(index == -1)
                     {
-                        unique_fileformatlist.push(result[m]);
+                        unique_fileformatlist.push(fileformats[m]);
                     }
                 }
 
-                result = unique_fileformatlist;
+                var result = unique_fileformatlist;
                 
                 var mcat = $("select[name='mod_fileformat']");
 
