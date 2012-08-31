@@ -1787,7 +1787,7 @@ jQuery(document).ready(function() {
 
     $("#helpbtn").button().click(function()
     {
-          window.open('createhelp.jsp', '_blank');
+          window.open('createhelp.jsp#editingPropertiesHelp', '_blank');
     });
 
     $("#modtitle").change(function()
