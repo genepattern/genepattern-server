@@ -454,11 +454,11 @@ function addNewFileType(name, desc){
 
 
 	  <table cols="2" valign="top" width="100%">
-		  <tr class="taskperameter"><td>* required field</td><td><a href='help.jsp' target='help'><img border='0' src='images/help2.jpg'/></a></td></tr>
+		  <tr class="taskperameter"><td>* required field</td><td><a href='modules/createhelp.jsp' target='help'><img border='0' src='images/help2.jpg'/></a></td></tr>
 		  <tr class="taskperameter" title="Module name without spaces, used as the name by which the module will be invoked.">
 		  <td valign="top" >Name:*</td>
 		  <td><% if (!viewOnly) { %><input name="<%= GPConstants.NAME %>" maxlength="100" size="<%= taskInfo != null ? Math.max(taskInfo.getName().length() + 2, 20): 20 %>"
-		  value="<%= taskInfo != null ? taskInfo.getName() : "" %>" xonblur="onTaskNameLostFocus(this)"> * (required, no spaces)<a href='help.jsp#Name' target='help'><img border='0' src='images/help2.jpg'/></a><% } else { %><%= taskInfo.getName() %><% } %>
+		  value="<%= taskInfo != null ? taskInfo.getName() : "" %>" xonblur="onTaskNameLostFocus(this)"> * (required, no spaces)<a href='modules/createhelp.jsp#Name_brief' target='help'><img border='0' src='images/help2.jpg'/></a><% } else { %><%= taskInfo.getName() %><% } %>
 		&nbsp;&nbsp;&nbsp;&nbsp;
 
 		
@@ -508,7 +508,7 @@ function addNewFileType(name, desc){
    <%} else {
       out.print(taskInfo != null ? StringUtils.htmlEncode(taskInfo.getDescription()) : "");
   } %>
-<a href='help.jsp#Description' target='help'><img border='0' src='images/help2.jpg'/></a>
+<a href='modules/createhelp.jsp#Description_brief' target='help'><img border='0' src='images/help2.jpg'/></a>
   </td>
   </tr>
 
@@ -522,21 +522,21 @@ function addNewFileType(name, desc){
   <% } else {
      out.print(taskInfo != null ? StringUtils.htmlEncode(tia.get(GPConstants.AUTHOR)) : "");
    } %>
-	<a href='help.jsp#Author' target='help'><img border='0' src='images/help2.jpg'/></a>
+	<a href='modules/createhelp.jsp#Author_brief' target='help'><img border='0' src='images/help2.jpg'/></a>
 
        </td>
   </tr>
 	  <tr class="taskperameter" title="Make available to others">
 	  <td valign="top">Privacy:</td>
 	  <td><%= createSelection(tia, GPConstants.PRIVACY, privacies, "onchange=\"onPrivacyChange(this)\"", viewOnly) %>
-	<a href='help.jsp#Privacy' target='help'><img border='0' src='images/help2.jpg'/></a>
+	<a href='modules/createhelp.jsp#Privacy_brief' target='help'><img border='0' src='images/help2.jpg'/></a>
 	</td>
   </tr>
 
   <tr class="taskperameter" title="Readiness for use by others">
   <td valign="top">Quality&nbsp;level:</td>
   <td ><%= createSelection(tia, GPConstants.QUALITY, qualities, "", viewOnly) %>
-	<a href='help.jsp#Quality' target='help'><img border='0' src='images/help2.jpg'/></a>
+	<a href='modules/createhelp.jsp#Quality_brief' target='help'><img border='0' src='images/help2.jpg'/></a>
 	</td>
 	  </tr>
 
@@ -570,10 +570,10 @@ function addNewFileType(name, desc){
 	<% } %>
 
 	  <tr class="taskperameter" title="the command line used to invoke the application, using &lt;tags&gt; for param &amp; environment variable substitutions.">
-	  <td valign="top" >Command&nbsp;line:*</td>
+	  <td valign="top" >Command&nbsp;line:*<a href='modules/createhelp.jsp#Command_brief' target='help'><img border='0' src='images/help2.jpg'/></a></td>
 
 	  <td valign="top" >
-	  <% if (!viewOnly) { %><textarea name="<%= GPConstants.COMMAND_LINE %>" cols="90" rows="5"><% } %><%= tia != null ? StringUtils.htmlEncode(tia.get(GPConstants.COMMAND_LINE)) : "" %><% if (!viewOnly) { %></textarea><a href='help.jsp#Command' target='help'><img border='0' src='images/help2.jpg'/></a>
+	  <% if (!viewOnly) { %><textarea name="<%= GPConstants.COMMAND_LINE %>" cols="90" rows="5"><% } %><%= tia != null ? StringUtils.htmlEncode(tia.get(GPConstants.COMMAND_LINE)) : "" %><% if (!viewOnly) { %></textarea><a href='modules/createhelp.jsp#Command_brief' target='help'><img border='0' src='images/help2.jpg'/></a>
 	<% } %>
 
 	</td>
@@ -588,7 +588,7 @@ function addNewFileType(name, desc){
 	  <% if (!viewOnly) { %>
 		 <input type="button" onclick="addNewTaskType()" value="New..." class="little">
 	  <% } %>
-	<a href='help.jsp#TaskType' target='help'><img border='0' src='images/help2.jpg'/></a>
+	<a href='modules/createhelp.jsp#TaskType_brief' target='help'><img border='0' src='images/help2.jpg'/></a>
 
 	  </td>
 	  </tr>
@@ -597,7 +597,7 @@ function addNewFileType(name, desc){
 	  <td valign="top">CPU&nbsp;type:</td>
 	  <td >
 		<%= createSelection(tia, GPConstants.CPU_TYPE, cpuTypes, "", viewOnly) %> (if compiled for a specific one)
-	         <a href='help.jsp#cpu' target='help'><img border='0' src='images/help2.jpg'/></a>
+	         <a href='modules/createhelp.jsp#cpu_brief' target='help'><img border='0' src='images/help2.jpg'/></a>
 	</td>
 	   </tr>
 
@@ -605,7 +605,7 @@ function addNewFileType(name, desc){
 	  <td valign="top" >Operating&nbsp;system:</td>
 	  <td >
 		<%= createSelection(tia, GPConstants.OS, oses, "", viewOnly) %> (if operating system-dependent)
-	  <a href='help.jsp#os' target='help'><img border='0' src='images/help2.jpg'/></a>
+	  <a href='modules/createhelp.jsp#os_brief' target='help'><img border='0' src='images/help2.jpg'/></a>
 	</td>
 	   </tr>
 
@@ -622,7 +622,7 @@ function addNewFileType(name, desc){
 	  <td>
 	  <%= createSelection(tia, GPConstants.LANGUAGE, languages, "", viewOnly) %> &nbsp;
 	    <b>min. language version:</b> <% if (!viewOnly) { %><input name="<%= GPConstants.JVM_LEVEL %>" value="<%= tia != null ? StringUtils.htmlEncode(tia.get(GPConstants.JVM_LEVEL)) : "" %>" size="10"><% } else { %><%= tia != null ? StringUtils.htmlEncode(tia.get(GPConstants.JVM_LEVEL)) : "" %><% } %>
-	         <a href='help.jsp#Language' target='help'><img border='0' src='images/help2.jpg'/></a>
+	         <a href='modules/createhelp.jsp#Language_brief' target='help'><img border='0' src='images/help2.jpg'/></a>
 	</td>
 	   </tr>
 
@@ -630,12 +630,12 @@ function addNewFileType(name, desc){
 	  <td valign="top">Version&nbsp;comment:</td>
 	  <td >
 	  	<% if (!viewOnly) { %><textarea name="<%= GPConstants.VERSION %>" cols="50" rows="1"><% } %><%= taskInfo != null ? StringUtils.htmlEncode(tia.get(GPConstants.VERSION)) : "" %><% if (!viewOnly) { %></textarea><% } %>
-	   <a href='help.jsp#VersionComment' target='help'><img border='0' src='images/help2.jpg'/></a>
+	   <a href='modules/createhelp.jsp#VersionComment_brief' target='help'><img border='0' src='images/help2.jpg'/></a>
 	</td>
 	   </tr>
 
 	   <tr class="taskperameter" >
-	  <td>	File format(s):<a href='help.jsp#OutputDescription' target='help'><img border='0' src='images/help2.jpg'/></a> </td>
+	  <td>	File format(s):<a href='modules/createhelp.jsp#OutputDescription_brief' target='help'><img border='0' src='images/help2.jpg'/></a> </td>
 	   <td>
 		<table>
 		<tr>
@@ -729,7 +729,7 @@ function addNewFileType(name, desc){
 	  <td >
 	<font size=-1>
 	  The actual program plus any required libraries will be accessible to your command line as
-	  &lt;<%= GPConstants.LIBDIR %>&gt;<file.separator><i>filename</i></font><a href='help.jsp#SupportFiles' target='help'><img border='0' src='images/help2.jpg'/></a>
+	  &lt;<%= GPConstants.LIBDIR %>&gt;<file.separator><i>filename</i></font><a href='modules/createhelp.jsp#SupportFiles_brief' target='help'><img border='0' src='images/help2.jpg'/></a>
 	<br>
 
 	<% for (i = 1; i <= NUM_ATTACHMENTS; i++) { %>
@@ -786,7 +786,7 @@ function addNewFileType(name, desc){
 	</td>
 	<td>
 	<font size=-1>
-	  The names of these parameters will be available for the command line (above) in the form &lt;name&gt;.<br></font>&nbsp;&nbsp;<a href='help.jsp#inputParameters' target='help'><img border='0' src='images/help2.jpg'/></a>
+	  The names of these parameters will be available for the command line (above) in the form &lt;name&gt;.<br></font>&nbsp;&nbsp;<a href='modules/createhelp.jsp#Parameters_brief' target='help'><img border='0' src='images/help2.jpg'/></a>
 	<br/>
 	<br/>
 <br/>
@@ -821,7 +821,7 @@ function addNewFileType(name, desc){
 	<tr><td colspan="3" align="center">
 	<input type="submit" value="Save" name="save" class="little">&nbsp;&nbsp;
 	<input type="reset" value="Clear" class="little">&nbsp;&nbsp;
-	<input type="button" value="Help" onclick="window.open('help.jsp', 'help')" class="little">
+	<input type="button" value="Help" onclick="window.open('modules/createhelp.jsp', 'help')" class="little">
 	</td></tr>
 	<tr><td></td></tr>
 
@@ -839,7 +839,7 @@ function addNewFileType(name, desc){
 	<% if (!viewOnly) { %>
 	<input type="submit" value="Save" name="save" class="little">&nbsp;&nbsp;
 	<input type="reset" value="Clear" class="little">&nbsp;&nbsp;
-	<input type="button" value="Help" onclick="window.open('help.jsp', 'help')" class="little">
+	<input type="button" value="Help" onclick="window.open('modules/createhelp.jsp', 'help')" class="little">
 	<% } else {
 		lsid = tia.get(GPConstants.LSID);
 		l = new LSID(lsid);
