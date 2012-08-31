@@ -103,7 +103,7 @@ executable or use a scripting language, such as Perl, to create a script
 that is run by an interpreter.</li>
 <li>Use <%=messages.get("ApplicationName")%> to create a module that invokes 
 the program that you have written. 
-It takes just a few minutes to enter the necessary information in the module editor. 
+It takes just a few minutes to enter the necessary information in the module integrator.
 You can decide which parameters from the algorithm to expose to the user and 
 can replace command line parameter names that are hard to remember with names 
 that are self-explanatory. You can also create drop-down list choices for parameters 
@@ -152,10 +152,10 @@ If you want to edit an earlier version, select that version from the drop-down l
 <h4>Help</h4>
 Click Help to display this text.
 <h4>Save</h4>
-Click Save to save your changes, creating a new version of the module, and remain in the editor. 
+Click Save to save your changes, creating a new version of the module, and remain in the module integrator.
 <h4>Save and Run</h4>
 Click Save and Run to save your changes, creating a new version of the module, 
-exit from the editor and run the module.
+exit from the module integrator and run the module.
 
 <br><br><hr>
 
