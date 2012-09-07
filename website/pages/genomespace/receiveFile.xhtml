@@ -41,7 +41,7 @@
 							</li>
 						</h:form>
 						<t:dataList value="#{file.file.conversions}" var="format">
-							<h:form target="_blank">
+							<h:form>
 								<li style="text-indent:10px;">Send to Module as #{format}:
 									<t:selectOneMenu id="module" forceId="true">
 										<f:selectItems value="#{file.moduleSelects[format]}" />
