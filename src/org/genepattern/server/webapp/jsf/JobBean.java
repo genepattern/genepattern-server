@@ -702,8 +702,9 @@ public class JobBean {
                 }
                 allJobs = wrapJobs(jobInfos);
 
-                for (JobResultsWrapper i : allJobs) {
-                    i.setJobInfoWrapper(getJobInfoWrapper(i.getJobNumber()));
+                for (final JobResultsWrapper i : allJobs) {
+                    final JobInfoWrapper wrapper = getJobInfoWrapper(i.getJobNumber());
+                    i.setJobInfoWrapper(wrapper);
                 }
             }
             catch (Exception e) {
@@ -1136,7 +1137,13 @@ public class JobBean {
         }
 
         public String getUrl() {
-            return UIBeanHelper.getServer() + "/jobResults/" + getValue();
+            String filepath = getValue();
+            if (filepath != null) {
+                //replace ' ' with '%20'
+                filepath = filepath.replaceAll(" ", "%20");
+            }
+            String urlStr = UIBeanHelper.getServer() + "/jobResults/" + filepath;
+            return urlStr;
         }
 
         public int getJobNumber() {
