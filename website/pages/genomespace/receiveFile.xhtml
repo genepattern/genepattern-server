@@ -30,7 +30,7 @@
 					<t:div style="text-indent:50px;"><strong>#{file.file.name}</strong>
 					<h:outputText rendered="#{file.file.converted}"> <em>Converted to #{file.file.kind}</em></h:outputText>
 					<ol style="margin-left:50px;">
-						<h:form target="_blank">
+						<h:form>
 							<li style="text-indent:10px;">Save a Copy: 
 								<t:selectOneMenu value="#{genomeSpaceReceiveBean.rootUploadDirectory}" id="uploadDirectory">
 									<f:selectItems value="#{genomeSpaceReceiveBean.uploadDirectories}" />
