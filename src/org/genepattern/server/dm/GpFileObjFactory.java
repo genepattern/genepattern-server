@@ -15,7 +15,28 @@ import org.genepattern.server.dm.serverfile.ServerFileObjFactory;
 
 public class GpFileObjFactory {
     private static Logger log = Logger.getLogger(GpFileObjFactory.class);
-        
+
+//    experimental code, not tested for production server
+//    static public GpFilePath getUserHomeDir(final ServerConfiguration.Context userContext) throws Exception {
+//        if (userContext == null) {
+//            throw new IllegalArgumentException("userContext == null");
+//        }
+//        if (userContext.getUserId() == null) {
+//            throw new IllegalArgumentException("userContext.userId == null");
+//        }
+//        
+//        final File serverFile = ServerConfiguration.instance().getUserDir(userContext);
+//        final File relativeFile = new File("users/"+userContext.getUserId());
+//
+//        final VirtualFilePath homeDir = new VirtualFilePath();
+//        homeDir.setServerFile(serverFile);
+//        homeDir.setRelativeFile(relativeFile);
+//        homeDir.setKind("directory");
+//        homeDir.setIsDirectory(true);
+//
+//        return homeDir;
+//    }
+
     /**
      * Get the root user upload directory for the given user.
      * 
@@ -191,11 +212,10 @@ public class GpFileObjFactory {
             GpFilePath serverFileObj = ServerFileObjFactory.getServerFile(serverFile);
             return serverFileObj;
         }
-        //TODO: include /jobResults 
-        //if ("/jobResults".equals(servletPath)) {
-        //    JobResultFile jobResultFile = new JobResultFile(pathInfo);
-        //    return jobResultFile;
-        //}
+        if ("/jobResults".equals(servletPath)) {
+            JobResultFile jobResultFile = new JobResultFile(pathInfo);
+            return jobResultFile;
+        }
         
         //special-case for legacy web upload and tasklib paths
         //TODO: implement this properly, in most cases the String literal '<GenePatternURL>' is passed in rather than the actual GenePatternURL
