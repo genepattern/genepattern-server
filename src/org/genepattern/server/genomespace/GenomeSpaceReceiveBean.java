@@ -1,14 +1,21 @@
 package org.genepattern.server.genomespace;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.SortedSet;
 
 import javax.faces.model.SelectItem;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.Logger;
 import org.genepattern.server.dm.GpFilePath;
@@ -16,17 +23,23 @@ import org.genepattern.server.webapp.jsf.RunTaskBean;
 import org.genepattern.server.webapp.jsf.UIBeanHelper;
 import org.genepattern.server.webapp.uploads.UploadFilesBean;
 import org.genepattern.server.webapp.uploads.UploadFilesBean.DirectoryInfoWrapper;
+import org.genepattern.webservice.ParameterInfo;
 import org.genepattern.webservice.TaskInfo;
+import org.genepattern.webservice.TaskInfoCache;
 
 public class GenomeSpaceReceiveBean {
     private static Logger log = Logger.getLogger(GenomeSpaceReceiveBean.class);
     
     private UploadFilesBean uploadBean = null;
     private GenomeSpaceBean genomeSpaceBean = null;
-    private List<GSReceivedFileWrapper> receivedFiles = null;
+    private List<GpFilePath> receivedFiles = null;
+    private List<SelectItem> validModules = null;
+    private boolean redirected = false;
     private String oldRequestString = null;
     
     public String getRefreshPage() throws IOException {
+        boolean skip = redirected;
+        
         HttpServletRequest request = UIBeanHelper.getRequest();
         String queryString = request.getQueryString();
         if (queryString != null && queryString.length() > 0) {
@@ -38,8 +51,8 @@ public class GenomeSpaceReceiveBean {
             cleanBean();
         }
         
-        List<GSReceivedFileWrapper> files = getReceivedFiles();
-        if (files.size() < 1) {
+        List<GpFilePath> files = getReceivedFiles();
+        if (files.size() < 1 && !skip) {
             UIBeanHelper.getResponse().sendRedirect("/gp/");
         }
 
@@ -49,10 +62,15 @@ public class GenomeSpaceReceiveBean {
     
     private void cleanBean() {
         receivedFiles = null;
+        redirected = false;
     }
     
-    private List<GSReceivedFileWrapper> parseParameters() {
-        List<GSReceivedFileWrapper> received = new ArrayList<GSReceivedFileWrapper>();
+    public List<SelectItem> getValidModules() {
+        return validModules;
+    }
+    
+    private List<GpFilePath> parseParameters() {
+        List<GpFilePath> received = new ArrayList<GpFilePath>();
         HttpServletRequest request = UIBeanHelper.getRequest();
         String filesString = request.getParameter("files");
         
@@ -66,8 +84,7 @@ public class GenomeSpaceReceiveBean {
             for (String param : fileParams) {
                 try {
                     GpFilePath file = genomeSpaceBean.getFile(param);
-                    GSReceivedFileWrapper wrapped = new GSReceivedFileWrapper(file);
-                    if (file != null) received.add(wrapped);
+                    if (file != null) received.add(file);
                     }
                 catch (Throwable t) {
                     log.error("Error getting GenomeSpace file: " + param);
@@ -78,21 +95,32 @@ public class GenomeSpaceReceiveBean {
     }
     
     private void populateSelectItems() {
-        for (GSReceivedFileWrapper i : receivedFiles) {
-            for (String format : ((GenomeSpaceFile) i.getFile()).getConversions()) {
-                SortedSet<TaskInfo> infos = getKindToModules().get(format);
-                List<SelectItem> items = new ArrayList<SelectItem>();
-                if (infos != null) {
-                    for (TaskInfo j : infos) {
-                        SelectItem item = new SelectItem();
-                        item.setLabel(j.getName());
-                        item.setValue(j.getLsid());
-                        items.add(item);
-                    }
-                }
-                i.setModuleSelects(format, items);
+        validModules = new ArrayList<SelectItem>();
+        Set<TaskInfo> minimalModuleSet = null;
+        
+        for (GpFilePath i : receivedFiles) {                                            // For every received file
+            Set<TaskInfo> fileSuperSet = new HashSet<TaskInfo>();                       // Create a superset of all sets for all conversions of the file
+            
+            for (String format : (((GenomeSpaceFile) i).getConversions())) {            // For every convertible format
+                
+                Set<TaskInfo> infos = getKindToModules().get(format);                   // Get the set of TaskInfos for the format
+                if (infos == null) { infos = new HashSet<TaskInfo>(); }                 // Protect against null sets
+                fileSuperSet.addAll(infos);                                             // Union the set for this conversion with the super set
             }
+            
+            if (minimalModuleSet == null) { minimalModuleSet = fileSuperSet; }          // Get the intersection of the supersets of all files
+            else { minimalModuleSet.retainAll(fileSuperSet); }
         }
+        
+        if (minimalModuleSet == null) { return; }                                       // Protect against nulls
+        
+        for (TaskInfo info : minimalModuleSet) {                                        // For all TaskInfos in the final set, make a select list
+            SelectItem item = new SelectItem();
+            item.setLabel(info.getName());
+            item.setValue(info.getLsid());
+            validModules.add(item);
+        }
+        Collections.sort(validModules, new SelectItemComparator());
     }
     
     private void blankCurrentTaskInfo() {
@@ -100,7 +128,7 @@ public class GenomeSpaceReceiveBean {
         genomeSpaceBean.setSelectedModule("");
     }
     
-    public List<GSReceivedFileWrapper> getReceivedFiles() {
+    public List<GpFilePath> getReceivedFiles() {
         if (receivedFiles == null) {
             receivedFiles = parseParameters();
             populateSelectItems();
@@ -166,33 +194,28 @@ public class GenomeSpaceReceiveBean {
         return uploadBean.getKindToTaskInfo();
     }
 
-    public String loadTask() {
+    public void loadTask() throws UnsupportedEncodingException, Exception {
         HttpServletRequest request = UIBeanHelper.getRequest();
+        HttpServletResponse response = UIBeanHelper.getResponse();
         String lsid = request.getParameter("module");
         lsid = UIBeanHelper.decode(lsid);
-        request.setAttribute("lsid", lsid);
+        TaskInfo module = TaskInfoCache.instance().getTask(lsid);
         
-        for (Object i : request.getParameterMap().keySet()) {
-            String parameter = (String) i;
-            if (parameter.endsWith(":source")) {
-                String attribute = UIBeanHelper.decode(request.getParameter(parameter));
-                request.setAttribute("outputFileSource", attribute);
+        String redirectURL = "/gp/pages/index.jsf?lsid=" + lsid;
+        
+        for (GpFilePath file : receivedFiles) {
+            ParameterInfo selectedParam = null;
+            String url = URLEncoder.encode(file.getUrl().toString(), "UTF-8");
+            List<ParameterInfo> relevantParams = module._getKindToParameterInfoMap().get(file.getKind());
+            if (relevantParams.size() > 0) {
+                selectedParam = relevantParams.get(0);
             }
-            if (parameter.endsWith(":name")) {
-                String attribute = UIBeanHelper.decode(request.getParameter(parameter));
-                request.setAttribute("outputFileName", attribute);
-            }
-            if (parameter.endsWith(":path")) {
-                String attribute = UIBeanHelper.decode(request.getParameter(parameter));
-                request.setAttribute("downloadPath", attribute);
-            }
+            redirectURL += "&" + selectedParam.getName() + "=" + url;
         }
         
-        //cleanBean();
-        RunTaskBean runTaskBean = (RunTaskBean) UIBeanHelper.getManagedBean("#{runTaskBean}");
-        assert runTaskBean != null;
-        runTaskBean.setTask(lsid);
-        return "run task";
+        // Redirect to the correct task
+        response.sendRedirect(redirectURL);
+        redirected = true;
     }
     
     public String prepareSaveFile() {
@@ -223,28 +246,11 @@ public class GenomeSpaceReceiveBean {
         return "home";
     }
     
-    public class GSReceivedFileWrapper {
-        private GpFilePath file = null;
-        public Map<String, List<SelectItem>> moduleSelects = new HashMap<String, List<SelectItem>>();
-        
-        public GSReceivedFileWrapper(GpFilePath file) {
-            this.file = file;
+    public class SelectItemComparator implements Comparator<SelectItem> {
+
+        public int compare(SelectItem o1, SelectItem o2) {
+            return o1.getLabel().toLowerCase().compareTo(o2.getLabel().toLowerCase());
         }
         
-        public GpFilePath getFile() {
-            return file;
-        }
-        
-        public Map<String, List<SelectItem>> getModuleSelects() {
-            return moduleSelects;
-        }
-        
-        public List<SelectItem> getModuleSelects(String extension) {
-            return moduleSelects.get(extension);
-        }
-        
-        public void setModuleSelects(String extension, List<SelectItem> moduleSelects) {
-            this.moduleSelects.put(extension, moduleSelects);
-        }
     }
 }
