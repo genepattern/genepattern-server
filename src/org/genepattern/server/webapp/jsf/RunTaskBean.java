@@ -433,12 +433,10 @@ public class RunTaskBean {
                                         String jobNumber = value.substring(0, index);
                                         String filename = value.substring(index + 1);
 
-                                        // reloadValues.put(inputParameterName,
-                                        // UIBeanHelper.getServer() +
-                                        // "/jobResults/" + jobNumber + "/" +
-                                        // UIBeanHelper.encode(filename));
-                                        reloadValues.put(inputParameterName, UIBeanHelper.getServer() + "/jobResults/" + jobNumber + "/" + filename);
-
+                                        //if necessary, encode the job result filename into a proper url
+                                        String encodedFilename = filename.replaceAll(" ", "%20");
+                                        String urlValue = UIBeanHelper.getServer() + "/jobResults/" + jobNumber + "/" + encodedFilename;
+                                        reloadValues.put(inputParameterName, urlValue);
                                     }
                                 }
                             }
