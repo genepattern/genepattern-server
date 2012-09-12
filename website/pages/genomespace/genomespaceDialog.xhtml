@@ -27,7 +27,6 @@ use, misuse, or functionality.
                 /* <![CDATA[ */
 				var saveTreeSelected = null;
 				function handleSaveClick(node) {
-					console.log(node);
 					jq(saveTreeSelected).removeClass("saveTreeSelected");
 					jq(node).addClass("saveTreeSelected");
 					saveTreeSelected = node;
@@ -92,6 +91,7 @@ use, misuse, or functionality.
 					});
 					
 					// Hide the expand/collapse arows
+					jq("#saveTree .jstree-closed").removeClass("jstree-closed").addClass("jstree-open");
 					jq("#saveTree .jstree-open > ins").hide();
 					jq("#saveTree .jstree-closed > ins").hide();
 				});

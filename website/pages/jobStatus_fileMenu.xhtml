@@ -64,12 +64,7 @@
                         </tr>
                         <tr>
                             <td>
-                                <t:selectOneMenu id="saveToGenomepace" onclick="JavaScript:setDropdownFocus()">
-                                    <f:selectItems value="#{genomeSpaceBean.allDirectorySelects}" />
-                                </t:selectOneMenu>
-                                <h:commandLink value="Save" action="#{genomeSpaceBean.sendFileToGenomeSpace}" immediate="true">
-                                    <f:param name="fileToSave" value="#{outputFile.value}" />
-                                </h:commandLink>
+                                <h:outputText><a href="JavaScript:jq('#genomeSpaceSaveDialog').dialog('open');">Save to GenomeSpace</a></h:outputText>
                             </td>
                         </tr>
                     </h:outputText>
