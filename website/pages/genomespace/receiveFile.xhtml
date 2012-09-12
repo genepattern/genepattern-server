@@ -27,37 +27,28 @@
 			<t:div rendered="#{genomeSpaceBean.loggedIn and genomeSpaceBean.genomeSpaceEnabled and genomeSpaceReceiveBean.correctUser}">
 	        	<h2>GenomeSpace has sent you a file</h2>
 				<t:dataList var="file" value="#{genomeSpaceReceiveBean.receivedFiles}" rowIndexVar="index">
-					<t:div style="text-indent:50px;"><strong>#{file.file.name}</strong>
-					<h:outputText rendered="#{file.file.converted}"> <em>Converted to #{file.file.kind}</em></h:outputText>
-					<ol style="margin-left:50px;">
-						<h:form>
-							<li style="text-indent:10px;">Save a Copy: 
-								<t:selectOneMenu value="#{genomeSpaceReceiveBean.rootUploadDirectory}" id="uploadDirectory">
-									<f:selectItems value="#{genomeSpaceReceiveBean.uploadDirectories}" />
-								</t:selectOneMenu>
-								<h:inputHidden id="path" value="#{file.file.url}"/>
-								<h:commandButton value="Submit" action="#{genomeSpaceReceiveBean.prepareSaveFile}" immediate="true">
-								</h:commandButton>
-							</li>
-						</h:form>
-						<t:dataList value="#{file.file.conversions}" var="format">
-							<h:form>
-								<li style="text-indent:10px;">Send to Module as #{format}:
-									<t:selectOneMenu id="module" forceId="true">
-										<f:selectItems value="#{file.moduleSelects[format]}" />
-									</t:selectOneMenu>
-									<h:inputHidden id="source" value="GenomeSpace"/>
-									<h:inputHidden id="name" value="#{file.file.name}"/>
-									<h:inputHidden id="path" value="#{file.file.url}"/>
-									<h:inputHidden id="format" value="#{format}"/>
-									<h:commandButton value="Submit" action="#{genomeSpaceReceiveBean.loadTask}" immediate="true">
-									</h:commandButton>
-								</li>
-							</h:form>
-						</t:dataList>
-					</ol>
+					<t:div style="text-indent:50px;"><strong>#{file.name}</strong>
+					<h:outputText rendered="#{file.converted}"> <em>Converted to #{file.kind}</em></h:outputText>
+					<h:form>
+						Save a Copy: 
+						<t:selectOneMenu value="#{genomeSpaceReceiveBean.rootUploadDirectory}" id="uploadDirectory">
+							<f:selectItems value="#{genomeSpaceReceiveBean.uploadDirectories}" />
+						</t:selectOneMenu>
+						<h:inputHidden id="path" value="#{file.url}"/>
+						<h:commandButton value="Submit" action="#{genomeSpaceReceiveBean.prepareSaveFile}" immediate="true">
+						</h:commandButton>
+					</h:form>
+					<br/>
 				</t:div>
 				</t:dataList>
+				<h:form>
+					Send to Module:
+					<t:selectOneMenu id="module" forceId="true">
+						<f:selectItems value="#{genomeSpaceReceiveBean.validModules}" />
+					</t:selectOneMenu>
+					<h:commandButton value="Submit" action="#{genomeSpaceReceiveBean.loadTask}" immediate="true">
+					</h:commandButton>
+				</h:form>
 				<t:div style="text-indent:50px;" rendered="#{empty genomeSpaceReceiveBean.receivedFiles}">
 					<strong>No files were received</strong>
 				</t:div>
