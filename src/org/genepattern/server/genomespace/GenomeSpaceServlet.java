@@ -33,11 +33,11 @@ public class GenomeSpaceServlet extends HttpServlet {
             loadTreeLevel(request, response);
         }
         if (SAVE_TREE.equals(action)) {
-            loadTreeLevel(request, response);
+            loadSaveLevel(request, response);
         }
         else {
             // Default to tree if unknown
-            loadSaveLevel(request, response);
+            loadTreeLevel(request, response);
         }
     }
     
@@ -59,6 +59,13 @@ public class GenomeSpaceServlet extends HttpServlet {
         if (url == null) {
             tree = bean.getFileTree();
             tree = new ArrayList<GenomeSpaceFile>(tree.get(0).getChildFiles());
+            for (GenomeSpaceFile file : tree) {
+                if (!file.getName().contains("Shared ") && !file.getName().equals("Public")) {
+                    tree = new ArrayList<GenomeSpaceFile>();
+                    tree.add(file);
+                    continue;
+                }
+            }
         }
         else {
             tree = new ArrayList<GenomeSpaceFile>(bean.getDirectory(url).getChildFiles());            

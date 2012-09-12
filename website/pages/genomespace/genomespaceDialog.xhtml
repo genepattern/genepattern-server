@@ -1,0 +1,123 @@
+<!-- /*
+The Broad Institute
+SOFTWARE COPYRIGHT NOTICE AGREEMENT
+This software and its documentation are copyright (2003-2011) by the
+Broad Institute/Massachusetts Institute of Technology. All rights are
+reserved.
+This software is supplied without any warranty or guaranteed support
+whatsoever. Neither the Broad Institute nor MIT can be responsible for its
+use, misuse, or functionality.
+*/ -->
+ <!DOCTYPE html PUBLIC "-/W3C/DTD XHTML 1.0 Transitional/EN" "http:/www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" 
+		xmlns:ui="http://java.sun.com/jsf/facelets" 
+		xmlns:h="http://java.sun.com/jsf/html" 
+		xmlns:f="http://java.sun.com/jsf/core" 
+		xmlns:t="http://myfaces.apache.org/tomahawk" 
+		xmlns:rich="http://richfaces.org/rich" 
+		xmlns:c="http://java.sun.com/jstl/core">
+    <ui:composition>
+        <ui:define name="headText">
+        	<style>
+        		.saveTreeSelected {
+        			background-color: #9999CC;
+        		}
+			</style>
+            <script type="text/javascript" language="javascript">	
+                /* <![CDATA[ */
+				var saveTreeSelected = null;
+				function handleSaveClick(node) {
+					console.log(node);
+					jq(saveTreeSelected).removeClass("saveTreeSelected");
+					jq(node).addClass("saveTreeSelected");
+					saveTreeSelected = node;
+					return false;
+				}
+                /* ]]> */
+            </script>
+			<script src="#{facesContext.externalContext.requestContextPath}/js/jquery/jquery.cookie.js" type="text/javascript" />
+			<script src="#{facesContext.externalContext.requestContextPath}/js/jquery/jquery.jstree.js" type="text/javascript" />
+			<link href="/gp/js/themes/default/style.css" rel="stylesheet" type="text/css" />
+        </ui:define>
+
+        <div id="genomeSpaceSaveDialog">
+			<div id="saveTree"></div>
+		    <script type="text/javascript">
+		        jq("#saveTree").jstree({
+		            core:{
+		                "html_titles": true
+		            },
+		
+		            "json_data":{
+						// "data": #{genomeSpaceBean.treeJSON},	
+		                "ajax": {
+							"url": function(node) {
+								if (node === -1) {
+									return "/gp/GenomeSpace/saveTree";
+								}
+								var gsURL = jq(node).find("a").attr("href");
+								return {}; //"/gp/GenomeSpace/saveTree?dir=" + encodeURIComponent(gsURL);
+							},
+							"data": function(node) {
+								return {
+									id: node.attr ? node.attr("id") : 0
+								};
+							}
+						}
+		            },
+		            plugins:[ "themes", "json_data", "cookies" ]
+		        });
+				jq("#saveTree").bind("load_node.jstree", function(event, data) {
+					var iterate = null;
+					
+					// Handle the case of the initial load
+					if (data["args"][0] === -1) {
+						iterate = jq(this).find("li");
+					}
+					else {
+						iterate = jq(data["args"][0]).find("li");
+					}
+					
+					iterate.each(function(index) {
+						
+						var node = iterate.get(index);
+						var name = jq(node).find("a:first").attr("name");
+						
+						// Add the id to the node
+						jq(node).attr("id", name);
+
+						// Check for the case of empty directories
+						var link = jq(node).find("a:first").attr("href");
+						if (link === "#") return;
+					});
+					
+					// Hide the expand/collapse arows
+					jq("#saveTree .jstree-open > ins").hide();
+					jq("#saveTree .jstree-closed > ins").hide();
+				});
+		    </script>
+        </div>
+		<script type="text/javascript">
+			jq("#saveTree .jstree-open > ins").hide();
+			jq("#saveTree .jstree-closed > ins").hide();
+			
+			jq("#genomeSpaceSaveDialog").dialog({
+				width: 500,
+				autoOpen: false,
+				title: "Select GenomeSpace Directory in Which to Save",
+				buttons: [
+					{
+						text: "Select", 
+						click: function() {}
+					},
+					{
+						text: "Cancel", 
+						click: function() {
+							jq("#genomeSpaceSaveDialog").dialog("close");
+						}
+					}
+				]
+			});
+		</script>
+    </ui:composition>
+</html>
