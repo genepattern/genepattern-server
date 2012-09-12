@@ -11,6 +11,7 @@ public class TreeJSON extends JSONArray {
     public static Logger log = Logger.getLogger(TreeJSON.class);
     
     public static final String EMPTY = "EMPTY_DIRECTORY";
+    public static final String SAVE_TREE = "SAVE_TREE";
     
     public static final String DATA = "data";
     public static final String STATE = "state";
@@ -21,23 +22,28 @@ public class TreeJSON extends JSONArray {
     public static final String ATTR = "attr";
     
     public TreeJSON(List<GenomeSpaceFile> files) {
-        try {
-            
-            for (GenomeSpaceFile gsf: files) {
-                JSONObject fj = makeFileJSON(gsf);
-                this.put(fj);
-            }
-        }
-        catch (Exception e) {
-            log.error("Unable to attach file array to TreeJSON Object: " + files);
-        }
+        this(files, "");
     }
     
-    public TreeJSON(String code) {
+    public TreeJSON(List<GenomeSpaceFile> files, String code) {
         try {
             if (code.equals(EMPTY)) {
                 JSONObject fj = makeEmptyDirectory();
                 this.put(fj);
+            }
+            else if (code.equals(SAVE_TREE)) {
+                for (GenomeSpaceFile gsf: files) {
+                    if (gsf.isDirectory()) {
+                        JSONObject fj = makeFileJSON(gsf, true);
+                        this.put(fj);
+                    }
+                }
+            }
+            else {
+                for (GenomeSpaceFile gsf: files) {
+                    JSONObject fj = makeFileJSON(gsf);
+                    this.put(fj);
+                }
             }
         }
         catch (Exception e) {
@@ -50,8 +56,11 @@ public class TreeJSON extends JSONArray {
         object.put(DATA, "<em>Empty Directory</em>");
         return object;
     }
-    
     public static JSONObject makeFileJSON(GenomeSpaceFile file) throws Exception {
+        return makeFileJSON(file, false);
+    }
+    
+    public static JSONObject makeFileJSON(GenomeSpaceFile file, boolean dirOnly) throws Exception {
         JSONObject object = new JSONObject();
         
         JSONObject data = new JSONObject();
@@ -67,8 +76,10 @@ public class TreeJSON extends JSONArray {
         if (file.isDirectory()) {
             JSONArray children = new JSONArray();
             for (GenomeSpaceFile child : file.getChildFiles()) {
-                JSONObject childJSON = makeFileJSON(child);
-                children.put(childJSON);
+                if (child.isDirectory() || !dirOnly) {
+                    JSONObject childJSON = makeFileJSON(child, dirOnly);
+                    children.put(childJSON);
+                }
             }
             object.put(CHILDREN, children);
         }  

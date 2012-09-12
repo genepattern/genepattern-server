@@ -2,8 +2,6 @@ package org.genepattern.server.genomespace;
 
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.io.UnsupportedEncodingException;
-import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -24,6 +22,7 @@ public class GenomeSpaceServlet extends HttpServlet {
     public static Logger log = Logger.getLogger(GenomeSpaceServlet.class);
     
     public static final String TREE = "/tree";
+    public static final String SAVE_TREE = "/saveTree";
     
     @Override
     public void doGet(HttpServletRequest request, HttpServletResponse response) {
@@ -33,9 +32,12 @@ public class GenomeSpaceServlet extends HttpServlet {
         if (TREE.equals(action)) {
             loadTreeLevel(request, response);
         }
+        if (SAVE_TREE.equals(action)) {
+            loadTreeLevel(request, response);
+        }
         else {
             // Default to tree if unknown
-            loadTreeLevel(request, response);
+            loadSaveLevel(request, response);
         }
     }
     
@@ -47,6 +49,29 @@ public class GenomeSpaceServlet extends HttpServlet {
     @Override
     public void doPut(HttpServletRequest request, HttpServletResponse response) {
         doGet(request, response);
+    }
+    
+    private void loadSaveLevel(HttpServletRequest request, HttpServletResponse response) {
+        GenomeSpaceBean bean = getGSBean(request, response);
+        String url = request.getParameter("dir");
+        
+        List<GenomeSpaceFile> tree = null;
+        if (url == null) {
+            tree = bean.getFileTree();
+            tree = new ArrayList<GenomeSpaceFile>(tree.get(0).getChildFiles());
+        }
+        else {
+            tree = new ArrayList<GenomeSpaceFile>(bean.getDirectory(url).getChildFiles());            
+        }
+        
+        TreeJSON json = null;
+        if (!tree.isEmpty()) {
+            json = new TreeJSON(tree, TreeJSON.SAVE_TREE);
+        }
+        else {
+            json = new TreeJSON(null, TreeJSON.EMPTY);
+        }
+        this.write(response, json);
     }
     
     private void loadTreeLevel(HttpServletRequest request, HttpServletResponse response) {
@@ -67,7 +92,7 @@ public class GenomeSpaceServlet extends HttpServlet {
             json = new TreeJSON(tree);
         }
         else {
-            json = new TreeJSON(TreeJSON.EMPTY);
+            json = new TreeJSON(null, TreeJSON.EMPTY);
         }
         this.write(response, json);
     }
