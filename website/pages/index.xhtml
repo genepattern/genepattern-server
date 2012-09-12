@@ -47,6 +47,7 @@
 		<link class="component" href="/gp/a4j/a4j/s/3_3_3.Finalcss/tree.xcss/DATB/eAF7sqpgb-jyGdIAFrMEaw__" rel="stylesheet" type="text/css" />
 		<script type="text/javascript">window.RICH_FACES_EXTENDED_SKINNING_ON=true;</script>
 		<script src="/gp/a4j/a4j/g/3_3_3.Finalorg/richfaces/renderkit/html/scripts/skinning.js" type="text/javascript"></script>
+		<link href="/gp/css/jquery-ui.css" type="text/css" rel="stylesheet" />
 		<link href="/gp/css/style.css" rel="stylesheet" type="text/css" />
 		<link href="/gp/css/jobSharing.css" rel="stylesheet" type="text/css" />
 		<link href="/gp/css/protocols.css" rel="stylesheet" type="text/css" />
@@ -328,19 +329,42 @@ function showFileInput(id) {
 	background-image: none;
 	border-color: #dfdfb9;
 }
+
+#rightTabs {
+	width: 280px;
+	background-color: #EBEBCE;
+	border: 0px;
+}
+
+#rightTabs .ui-tabs-selected {
+	background-color: #DFDFB9;
+}
+
 </style>
 		<h:outputText>
-			<rich:tabPanel width="280" switchType="ajax" selectedTab="#{uploadFilesBean.selectedTab}">
-				<rich:tab label="Recent Jobs" id="recentJobs" immediate="true">
+			<div id="rightTabs">
+				<ul>
+					<li><a href="#recentJobs">Recent Jobs</a></li>
+					<li><a href="#uploads">Uploads</a></li>
+					<h:outputText rendered="#{genomeSpaceBean.loggedIn}">
+						<li><a href="#genomeSpace">GenomeSpace</a></li>
+					</h:outputText>
+				</ul>
+				<div id="recentJobs">
 					<ui:include src="/pages/recentJobs.xhtml" />
-				</rich:tab>
-				<rich:tab label="Uploads" id="uploads" immediate="true">
+				</div>
+				<div id="uploads">
 					<ui:include src="/pages/uploads/uploadedFiles.xhtml" />
-				</rich:tab>
-				<rich:tab label="GenomeSpace" rendered="#{genomeSpaceBean.loggedIn}" id="genomeSpace">
-					<ui:include src="/pages/genomespace/genomespaceFiles.xhtml" />
-				</rich:tab>
-			</rich:tabPanel>
+				</div>
+				<h:outputText rendered="#{genomeSpaceBean.loggedIn}">
+					<div id="genomeSpace">
+						<ui:include src="/pages/genomespace/genomespaceFiles.xhtml" />
+					</div>
+				</h:outputText>
+			</div>
+			<script type="text/javascript">
+				jq("#rightTabs").tabs();
+			</script>
 		</h:outputText></td>
 	</ui:define>
 
