@@ -23,6 +23,7 @@ public class GenomeSpaceServlet extends HttpServlet {
     
     public static final String TREE = "/tree";
     public static final String SAVE_TREE = "/saveTree";
+    public static final String SAVE_FILE = "/saveFile";
     
     @Override
     public void doGet(HttpServletRequest request, HttpServletResponse response) {
@@ -34,6 +35,9 @@ public class GenomeSpaceServlet extends HttpServlet {
         }
         if (SAVE_TREE.equals(action)) {
             loadSaveLevel(request, response);
+        }
+        if (SAVE_FILE.equals(action)) {
+            saveFile(request, response);
         }
         else {
             // Default to tree if unknown
@@ -49,6 +53,20 @@ public class GenomeSpaceServlet extends HttpServlet {
     @Override
     public void doPut(HttpServletRequest request, HttpServletResponse response) {
         doGet(request, response);
+    }
+    
+    private void saveFile(HttpServletRequest request, HttpServletResponse response) {
+        GenomeSpaceBean bean = getGSBean(request, response);
+        String directoryURL = request.getParameter("directory");
+        String fileURL = request.getParameter("file");
+
+        if (directoryURL == null || fileURL == null) {
+            log.error("No file or directory provided when saving file to GenomeSpace");
+        }
+        
+        bean.sendFileToGenomeSpace(directoryURL, fileURL);
+        
+        this.write(response, "OK");
     }
     
     private void loadSaveLevel(HttpServletRequest request, HttpServletResponse response) {
