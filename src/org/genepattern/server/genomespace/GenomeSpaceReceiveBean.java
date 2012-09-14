@@ -6,7 +6,6 @@ import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -18,8 +17,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.Logger;
+import org.genepattern.server.dm.ExternalFile;
 import org.genepattern.server.dm.GpFilePath;
-import org.genepattern.server.webapp.jsf.RunTaskBean;
 import org.genepattern.server.webapp.jsf.UIBeanHelper;
 import org.genepattern.server.webapp.uploads.UploadFilesBean;
 import org.genepattern.server.webapp.uploads.UploadFilesBean.DirectoryInfoWrapper;
@@ -83,9 +82,12 @@ public class GenomeSpaceReceiveBean {
             String[] fileParams = filesString.split(",");
             for (String param : fileParams) {
                 try {
-                    GpFilePath file = genomeSpaceBean.getFile(param);
+                    GpFilePath file = null;
+                    if (param.contains("genomespace.org")) file = genomeSpaceBean.getFile(param);
+                    else file = new ExternalFile(param);
+                        
                     if (file != null) received.add(file);
-                    }
+                }
                 catch (Throwable t) {
                     log.error("Error getting GenomeSpace file: " + param);
                 }
@@ -101,7 +103,15 @@ public class GenomeSpaceReceiveBean {
         for (GpFilePath i : receivedFiles) {                                            // For every received file
             Set<TaskInfo> fileSuperSet = new HashSet<TaskInfo>();                       // Create a superset of all sets for all conversions of the file
             
-            for (String format : (((GenomeSpaceFile) i).getConversions())) {            // For every convertible format
+            Set<String> conversions = null;
+            if (i instanceof GenomeSpaceFile) {
+                conversions = ((GenomeSpaceFile) i).getConversions();
+            }
+            else {
+                conversions = new HashSet<String>();
+                conversions.add(i.getExtension());
+            }
+            for (String format : conversions) {                                         // For every convertible format
                 
                 Set<TaskInfo> infos = getKindToModules().get(format);                   // Get the set of TaskInfos for the format
                 if (infos == null) { infos = new HashSet<TaskInfo>(); }                 // Protect against null sets
@@ -218,7 +228,7 @@ public class GenomeSpaceReceiveBean {
         redirected = true;
     }
     
-    public String prepareSaveFile() {
+    public String prepareSaveFile() throws IOException {
         HttpServletRequest request = UIBeanHelper.getRequest();
         String directoryPath = null;
         String fileUrl = null;
@@ -242,7 +252,6 @@ public class GenomeSpaceReceiveBean {
         GenomeSpaceBean genomeSpaceBean = (GenomeSpaceBean) UIBeanHelper.getManagedBean("#{genomeSpaceBean}");
         genomeSpaceBean.saveFileToUploads(fileUrl, directoryPath);
 
-        //cleanBean();
         return "home";
     }
     

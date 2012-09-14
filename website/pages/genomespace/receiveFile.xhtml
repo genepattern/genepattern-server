@@ -28,7 +28,7 @@
 	        	<h2>GenomeSpace has sent you a file</h2>
 				<t:dataList var="file" value="#{genomeSpaceReceiveBean.receivedFiles}" rowIndexVar="index">
 					<t:div style="text-indent:50px;"><strong>#{file.name}</strong>
-					<h:outputText rendered="#{file.converted}"> <em>Converted to #{file.kind}</em></h:outputText>
+					<h:outputText rendered="#{file.kind != file.extension}"> <em>Converted to #{file.kind}</em></h:outputText>
 					<h:form>
 						Save a Copy: 
 						<t:selectOneMenu value="#{genomeSpaceReceiveBean.rootUploadDirectory}" id="uploadDirectory">
