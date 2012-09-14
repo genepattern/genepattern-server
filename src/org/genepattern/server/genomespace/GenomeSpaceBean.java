@@ -170,7 +170,7 @@ public class GenomeSpaceBean {
                 return LOGIN_FAIL_NAVIGATION_KEY;
             }
         } 
-        catch (GenomeSpaceException e) {
+        catch (Throwable e) {
             this.loginFailed = true;
             this.setMessageToUser(e.getMessage());
             return LOGIN_FAIL_NAVIGATION_KEY;
