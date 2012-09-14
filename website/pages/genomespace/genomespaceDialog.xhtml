@@ -135,9 +135,9 @@ use, misuse, or functionality.
 					            url: "/gp/GenomeSpace/saveFile?directory=" + escape(directory) + String.fromCharCode(38) + "file=" + escape(file),
 					            data: {},
 					            success: function(response) {
-					                console.log(response);
+									window.location.replace(window.location.href);
 					            },
-					            dataType: "json"
+					            dataType: "text"
 					        });
 							
 							jq("#genomeSpaceSaveDialog").dialog("close"); 			// Close the dialog
