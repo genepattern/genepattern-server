@@ -26,6 +26,7 @@ import org.genepattern.server.UserAccountManager;
 import org.genepattern.server.auth.AuthenticationException;
 import org.genepattern.server.config.ServerConfiguration;
 import org.genepattern.server.config.ServerConfiguration.Context;
+import org.genepattern.server.dm.ExternalFile;
 import org.genepattern.server.dm.GpFileObjFactory;
 import org.genepattern.server.dm.GpFilePath;
 import org.genepattern.server.dm.jobresult.JobResultFile;
@@ -885,9 +886,7 @@ public class GenomeSpaceBean {
         HttpSession httpSession = UIBeanHelper.getSession();
         Object gsSessionObject = httpSession.getAttribute(GenomeSpaceLoginManager.GS_SESSION_KEY);
         
-        GenomeSpaceFile file = (GenomeSpaceFile) GenomeSpaceFileManager.createFile(gsSessionObject, fileUrl);
         GpFilePath directory = null;
-        
         UploadFilesBean uploadBean = (UploadFilesBean) UIBeanHelper.getManagedBean("#{uploadFilesBean}");
         for (DirectoryInfoWrapper i : uploadBean.getDirectories()) {
             if (i.getPath().equals(directoryPath)) {
@@ -896,16 +895,28 @@ public class GenomeSpaceBean {
             }
         }
         
+        GpFilePath file = null;
+        String name = null;
+        if (fileUrl.contains("genomespace.org")) {
+            file = (GenomeSpaceFile) GenomeSpaceFileManager.createFile(gsSessionObject, fileUrl);
+
+            
+            
+            // Append a new file extension on if the downloaded kind of different than the base
+            name = file.getName();
+            if (((GenomeSpaceFile) file).converted) {
+                name += "." + file.getKind();
+            }
+        }
+        else {
+            file = new ExternalFile(fileUrl);
+            name = file.getName();
+        }
+        
         if (file == null || directory == null) {
             UIBeanHelper.setErrorMessage("Unable to save GenomeSpace file to uploads directory");
             log.error("Unable to get directory or file to save GenomeSpace file to uploads: " + file + " " + directory);
             return;
-        }
-        
-        // Append a new file extension on if the downloaded kind of different than the base
-        String name = file.getName();
-        if (file.converted) {
-            name += "." + file.getKind();
         }
         
         // Download the file
