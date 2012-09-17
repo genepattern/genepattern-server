@@ -139,16 +139,20 @@ public class GenomeSpaceBean {
     public boolean getLoading() {
         if (loading == null) {
             final HttpSession httpSession = UIBeanHelper.getSession();
-            loading = true;
+            setLoading(true);
             new Thread() {
                 public void run() {
                     getFileTree(httpSession);
-                    loading = false;
+                    setLoading(false);
                 }
             }.start();
         }
         
         return loading;
+    }
+    
+    private synchronized void setLoading(Boolean loaded) {
+        this.loading = loaded;
     }
     
     /**
