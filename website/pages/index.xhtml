@@ -331,7 +331,7 @@ function showFileInput(id) {
 }
 
 #rightTabs {
-	width: 280px;
+	min-width: 280px;
 	background-color: #EBEBCE;
 	border: 0px;
 	background: transparent;
@@ -378,7 +378,7 @@ function showFileInput(id) {
 			<ui:include src="runTaskForm.xhtml" />
 		</t:div>
 
-		<h:outputText rendered="#{genomeSpaceBean.loggedIn}">
+		<h:outputText rendered="#{genomeSpaceBean.loggedIn and not genomeSpaceBean.loading}">
 			<ui:include src="/pages/genomespace/genomespaceDialog.xhtml" />
 		</h:outputText>
 
@@ -441,16 +441,18 @@ function showFileInput(id) {
 	            	<ui:param name="aFile" value="#{aFile}"/>
 	            </ui:include>
 			</t:dataList>
-			<t:dataList var="file" value="#{genomeSpaceBean.allFiles}" rowIndexVar="fileIndex">
-				<ui:include src="genomespace/fileMenu.xhtml">
-           			<ui:param name="file" value="#{file}"/>
-           		</ui:include>
-           	</t:dataList>
-           	<t:dataList var="file" value="#{genomeSpaceBean.allDirectories}" rowIndexVar="fileIndex">
-				<ui:include src="genomespace/fileMenu.xhtml">
-           			<ui:param name="file" value="#{file}"/>
-           		</ui:include>
-           	</t:dataList>
+			<h:outputText rendered="#{genomeSpaceBean.loggedIn and not genomeSpaceBean.loading}">
+				<t:dataList var="file" value="#{genomeSpaceBean.allFiles}" rowIndexVar="fileIndex">
+					<ui:include src="genomespace/fileMenu.xhtml">
+	           			<ui:param name="file" value="#{file}"/>
+	           		</ui:include>
+	           	</t:dataList>
+	           	<t:dataList var="file" value="#{genomeSpaceBean.allDirectories}" rowIndexVar="fileIndex">
+					<ui:include src="genomespace/fileMenu.xhtml">
+	           			<ui:param name="file" value="#{file}"/>
+	           		</ui:include>
+	           	</t:dataList>
+           	</h:outputText>
 		</h:form>
 	</ui:define>
 

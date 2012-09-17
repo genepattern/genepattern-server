@@ -29,7 +29,6 @@ import org.genepattern.server.config.ServerConfiguration.Context;
 import org.genepattern.server.dm.ExternalFile;
 import org.genepattern.server.dm.GpFileObjFactory;
 import org.genepattern.server.dm.GpFilePath;
-import org.genepattern.server.dm.jobresult.JobResultFile;
 import org.genepattern.server.dm.userupload.UserUploadManager;
 import org.genepattern.server.webapp.LoginManager;
 import org.genepattern.server.webapp.jsf.UIBeanHelper;
@@ -58,6 +57,8 @@ public class GenomeSpaceBean {
     public static String REG_FAIL_NAVIGATION_KEY = "genomeSpaceRegFailed";
     
     private boolean genomeSpaceEnabled = false;
+    private Boolean loggedIn = null;
+    private Boolean loading = null;
     private boolean loginFailed = false;
     private boolean tokenExpired = false;
     private String genomeSpaceUsername = null;
@@ -85,6 +86,8 @@ public class GenomeSpaceBean {
      * Called when the user logs out of GenomeSpace.
      */
     public void clearSessionParameters() {
+        loggedIn = null;
+        loading = null;
         loginFailed = false;
         genomeSpaceUsername = null;
         kindToModules = null;
@@ -129,6 +132,25 @@ public class GenomeSpaceBean {
         fileTree = null;
         allFiles = null;
         allDirectories = null;
+    }
+    
+    /**
+     * Used to determine if the file tree is still loading
+     * @return
+     */
+    public boolean getLoading() {
+        if (loading == null) {
+            final HttpSession httpSession = UIBeanHelper.getSession();
+            loading = true;
+            new Thread() {
+                public void run() {
+                    getFileTree(httpSession);
+                    loading = false;
+                }
+            }.start();
+        }
+        
+        return loading;
     }
     
     /**
@@ -186,9 +208,14 @@ public class GenomeSpaceBean {
         if (!genomeSpaceEnabled) {
             return false;
         }
-        HttpSession httpSession = UIBeanHelper.getSession();
-        Object gsSessionObj = httpSession.getAttribute(GenomeSpaceLoginManager.GS_SESSION_KEY);
-        return GenomeSpaceClientFactory.getGenomeSpaceClient().isLoggedIn(gsSessionObj);
+        
+        if (loggedIn == null) {
+            HttpSession httpSession = UIBeanHelper.getSession();
+            Object gsSessionObj = httpSession.getAttribute(GenomeSpaceLoginManager.GS_SESSION_KEY);
+            loggedIn = GenomeSpaceClientFactory.getGenomeSpaceClient().isLoggedIn(gsSessionObj);
+        }
+        
+        return loggedIn;
     }
     
     /**
@@ -510,8 +537,7 @@ public class GenomeSpaceBean {
      * the root GenomeSpace directory the most fundamental displayed node.
      * @return
      */
-    private List<GenomeSpaceFile> constructFileTree() {
-        HttpSession httpSession = UIBeanHelper.getSession();
+    private List<GenomeSpaceFile> constructFileTree(HttpSession httpSession) {
         Object gsSessionObject = httpSession.getAttribute(GenomeSpaceLoginManager.GS_SESSION_KEY);
         if (gsSessionObject == null) {
             log.error("GenomeSpace session is null in GenomeSpaceBean.constructFileTree()");
@@ -528,11 +554,16 @@ public class GenomeSpaceBean {
      * Returns a copy of the GenomeSpace file tree, initializing it lazily if it has not already been built.
      * @return
      */
-    public List<GenomeSpaceFile> getFileTree() {
+    public List<GenomeSpaceFile> getFileTree(HttpSession httpSession) {
         if (fileTree == null) {
-            fileTree = constructFileTree();
+            fileTree = constructFileTree(httpSession);
         }
         return fileTree;
+    }
+    
+    public List<GenomeSpaceFile> getFileTree() {
+        HttpSession httpSession = UIBeanHelper.getSession();
+        return getFileTree(httpSession);
     }
     
     /**
