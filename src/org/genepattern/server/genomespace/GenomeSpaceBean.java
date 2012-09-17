@@ -86,8 +86,6 @@ public class GenomeSpaceBean {
      * Called when the user logs out of GenomeSpace.
      */
     public void clearSessionParameters() {
-        loggedIn = null;
-        loading = null;
         loginFailed = false;
         genomeSpaceUsername = null;
         kindToModules = null;
@@ -178,9 +176,9 @@ public class GenomeSpaceBean {
         }
         
         try {
-            boolean loginSuccess = GenomeSpaceLoginManager.loginFromUsername(env, genomeSpaceUsername, genomeSpacePassword, UIBeanHelper.getSession());
+            loggedIn = GenomeSpaceLoginManager.loginFromUsername(env, genomeSpaceUsername, genomeSpacePassword, UIBeanHelper.getSession());
             
-            if (loginSuccess) {
+            if (loggedIn) {
                 this.setMessageToUser("Signed in to GenomeSpace as " + genomeSpaceUsername);
                 loginFailed = false;
                 tokenExpired = false;
@@ -235,6 +233,7 @@ public class GenomeSpaceBean {
         httpSession.setAttribute(GenomeSpaceLoginManager.GS_USER_KEY, null);
         httpSession.setAttribute(GenomeSpaceLoginManager.GS_SESSION_KEY, null);
         clearSessionParameters();
+        loggedIn = null;
         setMessageToUser("Logged out of GenomeSpace.");
        
         return HOME_NAVIGATION_KEY;
