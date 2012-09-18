@@ -291,11 +291,25 @@ public class StartupServlet extends HttpServlet {
     public void destroy() {
         log.info("StartupServlet: destroy called");
 
-        CommandManagerFactory.stopJobQueue();
+        try {
+            log.info("stopping job queue ...");
+            CommandManagerFactory.stopJobQueue();
+            log.info("done!");
+        }
+        catch (Throwable t) {
+            log.error("Error stopping job queue: "+t.getLocalizedMessage(), t);
+        }
 
         String dbVendor = System.getProperty("database.vendor", "HSQL");
         if (dbVendor.equals("HSQL")) {
-            HsqlDbUtil.shutdownDatabase();
+            try {
+                log.info("stopping HSQLDB ...");
+                HsqlDbUtil.shutdownDatabase();
+                log.info("done!");
+            }
+            catch (Throwable t) {
+                log.error("Error stopoping HSQLDB: "+t.getLocalizedMessage(), t);
+            }
         }
 
         for (Enumeration<Thread> eThreads = vThreads.elements(); eThreads.hasMoreElements();) {
