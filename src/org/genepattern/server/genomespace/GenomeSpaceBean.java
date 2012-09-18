@@ -142,7 +142,12 @@ public class GenomeSpaceBean {
             setLoading(true);
             new Thread() {
                 public void run() {
-                    getFileTree(httpSession);
+                    try {
+                        getFileTree(httpSession);
+                    }
+                    catch (Throwable t) {
+                        log.error("ERROR: " + t.getMessage());
+                    }
                     setLoading(false);
                 }
             }.start();
