@@ -82,11 +82,11 @@ use, misuse, or functionality.
 				<div id="tree"></div>
 			    <script type="text/javascript">
 			        jq("#tree").jstree({
-			            core:{
+			            core: {
 			                "html_titles": true
 			            },
 			
-			            "json_data":{
+			            "json_data": {
 							// "data": #{genomeSpaceBean.treeJSON},	
 			                "ajax": {
 								"url": function(node) {
@@ -103,7 +103,10 @@ use, misuse, or functionality.
 								}
 							}
 			            },
-			            plugins:[ "themes", "json_data", "cookies" ]
+						"cookies": {
+							"save_opened": "genomespaceTab"
+						},
+			            plugins: [ "themes", "json_data", "cookies" ]
 			        });
 					jq("#tree").bind("load_node.jstree", function(event, data) {
 						var iterate = null;
