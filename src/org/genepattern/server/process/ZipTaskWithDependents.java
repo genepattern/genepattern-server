@@ -58,7 +58,11 @@ public class ZipTaskWithDependents extends ZipTask {
         return packagedTasks;
     }
 
-    public File packageTask(TaskInfo taskInfo, String userID) throws Exception {
+    public File packageTask(final TaskInfo taskInfo, final String userID) throws Exception {
+        return packageTask(new Vector(), taskInfo, userID);
+    }
+    
+    public File packageTask(final Vector vIncludedLSIDs, final TaskInfo taskInfo, final String userID) throws Exception {
         TaskInfoAttributes tia = taskInfo.giveTaskInfoAttributes();
         String serializedModel = (String) tia.get(GPConstants.SERIALIZED_MODEL);
         if (serializedModel != null && serializedModel.trim().length() > 0) {
@@ -74,7 +78,7 @@ public class ZipTaskWithDependents extends ZipTask {
             try {
                 // find dependent tasks (if a pipeline) and add them to the zip
                 // file as zip files
-                zipDependentTasks(zos, taskInfo, userID);
+                zipDependentTasks(vIncludedLSIDs, zos, taskInfo, userID);
                 zos.finish();
                 zos.close();
                 return zipFile;
@@ -90,7 +94,7 @@ public class ZipTaskWithDependents extends ZipTask {
         }
     }
 
-    public void zipDependentTasks(ZipOutputStream zos, TaskInfo taskInfo, String userID) throws Exception {
+    public void zipDependentTasks(Vector vIncludedLSIDs, ZipOutputStream zos, TaskInfo taskInfo, String userID) throws Exception {
         File tmpDir = new File(System.getProperty("java.io.tmpdir"), taskInfo.getName() + "_dep_" + System.currentTimeMillis());
         try {
             tmpDir.mkdir();
@@ -159,7 +163,6 @@ public class ZipTaskWithDependents extends ZipTask {
                 }
                 // done validating, now actually do the zipping
                 taskNum = 0;
-                Vector vIncludedLSIDs = new Vector();
                 for (Enumeration eTasks = vTasks.elements(); eTasks.hasMoreElements(); taskNum++) {
                     JobSubmission jobSubmission = (JobSubmission) eTasks.nextElement();
                     String taskLsid = jobSubmission.getLSID();
@@ -169,7 +172,7 @@ public class ZipTaskWithDependents extends ZipTask {
                     }
                     vIncludedLSIDs.add(taskLsid);
                     TaskInfo depti = GenePatternAnalysisTask.getTaskInfo(taskLsid, userID);
-                    File dependent = packageTask(depti, userID);
+                    File dependent = packageTask(vIncludedLSIDs, depti, userID);
                     dependent.deleteOnExit();
                     String comment = taskLsid;
                     zipTaskFile(zos, dependent, comment);
