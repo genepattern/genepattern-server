@@ -32,165 +32,153 @@ import org.genepattern.webservice.TaskInfoAttributes;
 
 public class ZipTaskWithDependents extends ZipTask {
 
-	public ZipTaskWithDependents() {
-	}
+    public ZipTaskWithDependents() {
+    }
 
-	public File packageTask(String name, String userID) throws Exception {
+    public File packageTask(String name, String userID) throws Exception {
+        if (name == null || name.length() == 0) {
+            throw new Exception("Must specify task name as name argument to this page");
+        }
 
-		if (name == null || name.length() == 0) {
-			throw new Exception(
-					"Must specify task name as name argument to this page");
-		}
+        TaskInfo taskInfo = null;
+        try {
+            taskInfo = GenePatternAnalysisTask.getTaskInfo(name, userID);
+        } 
+        catch (OmnigeneException e) {
+            //this is a new task, no taskID exists do nothing
+            throw new Exception("no such task: " + name);
+        }
+        File packagedTasks;
+        try {
+            packagedTasks = packageTask(taskInfo, userID);
+        } 
+        catch (MissingTaskException e) {
+            throw e;
+        }
+        return packagedTasks;
+    }
 
-		TaskInfo taskInfo = null;
-		try {
-			taskInfo = GenePatternAnalysisTask.getTaskInfo(name, userID);
-		} catch (OmnigeneException e) {
-			//this is a new task, no taskID exists
-			// do nothing
-			throw new Exception("no such task: " + name);
-		}
-		File packagedTasks;
-		try {
-			packagedTasks = packageTask(taskInfo, userID);
-		}catch (MissingTaskException e) {
-			throw e;
-		}
-		return packagedTasks;
-	}
+    public File packageTask(TaskInfo taskInfo, String userID) throws Exception {
+        TaskInfoAttributes tia = taskInfo.giveTaskInfoAttributes();
+        String serializedModel = (String) tia.get(GPConstants.SERIALIZED_MODEL);
+        if (serializedModel != null && serializedModel.trim().length() > 0) {
+            String name = taskInfo.getName();
+            // use an LSID-unique name so that different versions of same named
+            // task don't collide within zip file
+            String suffix = "_"
+                    + Integer.toString(Math.abs(tia.get(GPConstants.LSID)
+                            .hashCode()), 36); // [a-z,0-9]
+            // create zip file
+            File zipFile = File.createTempFile(name + suffix, ".zip");
+            ZipOutputStream zos = new ZipOutputStream(new FileOutputStream(zipFile));
+            try {
+                // find dependent tasks (if a pipeline) and add them to the zip
+                // file as zip files
+                zipDependentTasks(zos, taskInfo, userID);
+                zos.finish();
+                zos.close();
+                return zipFile;
+            } 
+            catch (MissingTaskException e) {
+                zos.close();
+                zipFile.delete();
+                throw e;
+            }
+        } 
+        else {
+            return super.packageTask(taskInfo, userID);
+        }
+    }
 
-	public File packageTask(TaskInfo taskInfo, String userID) throws Exception {
-		
-		TaskInfoAttributes tia = taskInfo.giveTaskInfoAttributes();
-		String serializedModel = (String) tia.get(GPConstants.SERIALIZED_MODEL);
-		if (serializedModel != null && serializedModel.trim().length() > 0) {
-			String name = taskInfo.getName();
-			// use an LSID-unique name so that different versions of same named
-			// task don't collide within zip file
-			String suffix = "_"
-					+ Integer.toString(Math.abs(tia.get(GPConstants.LSID)
-							.hashCode()), 36); // [a-z,0-9]
-			// create zip file
-			File zipFile = File.createTempFile(name + suffix, ".zip");
-			ZipOutputStream zos = new ZipOutputStream(new FileOutputStream(
-					zipFile));
-			try {
-				// find dependent tasks (if a pipeline) and add them to the zip
-				// file as zip files
-				zipDependentTasks(zos, taskInfo, userID);
-				zos.finish();
-				zos.close();
-				return zipFile;
-			} catch (MissingTaskException e) {
-				zos.close();
-				zipFile.delete();
-				throw e;
-			}
-		} else {
-			return super.packageTask(taskInfo, userID);
-		}
-	}
+    public void zipDependentTasks(ZipOutputStream zos, TaskInfo taskInfo, String userID) throws Exception {
+        File tmpDir = new File(System.getProperty("java.io.tmpdir"), taskInfo.getName() + "_dep_" + System.currentTimeMillis());
+        try {
+            tmpDir.mkdir();
+            File parent = super.packageTask(taskInfo, userID);
+            zipTaskFile(zos, parent);
+            parent.delete();
 
-	public void zipDependentTasks(ZipOutputStream zos, TaskInfo taskInfo,
-			String userID) throws Exception {
+            String serializedModel = (String) taskInfo.getTaskInfoAttributes().get(GPConstants.SERIALIZED_MODEL);
+            if (serializedModel != null && serializedModel.trim().length() > 0) {
+                PipelineModel model = null;
+                try {
+                    model = PipelineModel.toPipelineModel(serializedModel);
+                }
+                catch (Exception e) {
+                    e.printStackTrace();
+                    return;
+                }
 
-		File tmpDir = new File(System.getProperty("java.io.tmpdir"), taskInfo
-				.getName()
-				+ "_dep_" + System.currentTimeMillis());
-		try {
-			tmpDir.mkdir();
-			File parent = super.packageTask(taskInfo, userID);
-			zipTaskFile(zos, parent);
-			parent.delete();
+                Vector vTasks = model.getTasks();
+                int taskNum = 0;
+                //String message = "";
 
-			String serializedModel = (String) taskInfo.getTaskInfoAttributes()
-					.get(GPConstants.SERIALIZED_MODEL);
-			if (serializedModel != null && serializedModel.trim().length() > 0) {
+                Map<Integer, MissingTaskError> errors = new HashMap<Integer, MissingTaskError>();
+                MissingTaskError error;
+                // validate availability of all dependent tasks
+                for (Enumeration eTasks = vTasks.elements(); eTasks.hasMoreElements(); taskNum++) {
+                    JobSubmission jobSubmission = (JobSubmission) eTasks.nextElement();
+                    String taskLsid = jobSubmission.getLSID();
 
-				PipelineModel model = null;
-				try {
-					model = PipelineModel.toPipelineModel(serializedModel);
-				} catch (Exception e) {
-					e.printStackTrace();
-					return;
-				}
+                    TaskInfo depti = GenePatternAnalysisTask.getTaskInfo(taskLsid, userID);
+                    if (depti == null) {
+                        /*message = message + taskInfo.getName()
+                        		+ " refers to task # " + (taskNum + 1) + " "
+                        		+ jobSubmission.getName();*/
+                        depti = GenePatternAnalysisTask.getTaskInfo(jobSubmission.getName(), userID);
+                        error = new MissingTaskError(taskInfo.getName(), jobSubmission.getName(), jobSubmission.getLSID());
 
-				Vector vTasks = model.getTasks();
-				int taskNum = 0;
-				//String message = "";
-				
-				Map<Integer, MissingTaskError> errors = new HashMap<Integer, MissingTaskError>();
-				MissingTaskError error;
-				// validate availability of all dependent tasks
-				for (Enumeration eTasks = vTasks.elements(); eTasks
-						.hasMoreElements(); taskNum++) {
-					JobSubmission jobSubmission = (JobSubmission) eTasks
-							.nextElement();
-					String taskLsid = jobSubmission.getLSID();
-					
-					TaskInfo depti = GenePatternAnalysisTask.getTaskInfo(
-							taskLsid, userID);
-					if (depti == null) {
-						/*message = message + taskInfo.getName()
-								+ " refers to task # " + (taskNum + 1) + " "
-								+ jobSubmission.getName();*/
-						depti = GenePatternAnalysisTask.getTaskInfo(
-								jobSubmission.getName(), userID);
-						error = new MissingTaskError(taskInfo.getName(), jobSubmission.getName(), jobSubmission.getLSID());
-						
-						if (depti != null) {			
-							LSID available = new LSID(depti
-									.giveTaskInfoAttributes().get(
-											GPConstants.LSID));
-							LSID requested = new LSID(taskLsid);
-							error.setAvailableVersion(available.getVersion());
-							if (available.isSimilar(requested)) {
-								/*message = message + " version "
-										+ requested.getVersion()
-										+ " but version "
-										+ available.getVersion()
-										+ " is available.\n";*/
-								error.setErrorType(MissingTaskError.errorTypes[1]);
-									
-							} else {
-								//message = message + " (" + taskLsid + ").\n";
-								error.setErrorType(MissingTaskError.errorTypes[2]);
-							}
-						} else {
-							/*message = message + " which does not exist " + " ("
-									+ taskLsid + ").\n";*/
-							error.setErrorType(MissingTaskError.errorTypes[0]);
-						}
-						errors.put(new Integer(taskNum), error);
-					}
-				}
-				//if (message.length() > 0)
-				if (errors.size()>0)
-					throw new MissingTaskException(errors);
-
-				// done validating, now actually do the zipping
-				taskNum = 0;
-				Vector vIncludedLSIDs = new Vector();
-				for (Enumeration eTasks = vTasks.elements(); eTasks
-						.hasMoreElements(); taskNum++) {
-					JobSubmission jobSubmission = (JobSubmission) eTasks
-							.nextElement();
-					String taskLsid = jobSubmission.getLSID();
-					// don't include the same LSID more than once
-					if (vIncludedLSIDs.contains(taskLsid))
-						continue;
-					vIncludedLSIDs.add(taskLsid);
-					TaskInfo depti = GenePatternAnalysisTask.getTaskInfo(
-							taskLsid, userID);
-					File dependent = packageTask(depti, userID);
-					dependent.deleteOnExit();
-					String comment = taskLsid;
-					zipTaskFile(zos, dependent, comment);
-					dependent.delete();
-				}
-			}
-		} finally {
-			tmpDir.delete();
-		}
-	}
+                        if (depti != null) {
+                            LSID available = new LSID(depti.giveTaskInfoAttributes().get(GPConstants.LSID));
+                            LSID requested = new LSID(taskLsid);
+                            error.setAvailableVersion(available.getVersion());
+                            if (available.isSimilar(requested)) {
+                                /*message = message + " version "
+                                		+ requested.getVersion()
+                                		+ " but version "
+                                		+ available.getVersion()
+                                		+ " is available.\n";*/
+                                error.setErrorType(MissingTaskError.errorTypes[1]);
+                            }
+                            else {
+                                //message = message + " (" + taskLsid + ").\n";
+                                error.setErrorType(MissingTaskError.errorTypes[2]);
+                            }
+                        }
+                        else {
+                            /*message = message + " which does not exist " + " ("
+                            		+ taskLsid + ").\n";*/
+                            error.setErrorType(MissingTaskError.errorTypes[0]);
+                        }
+                        errors.put(new Integer(taskNum), error);
+                    }
+                }
+                //if (message.length() > 0)
+                if (errors.size() > 0) {
+                    throw new MissingTaskException(errors);
+                }
+                // done validating, now actually do the zipping
+                taskNum = 0;
+                Vector vIncludedLSIDs = new Vector();
+                for (Enumeration eTasks = vTasks.elements(); eTasks.hasMoreElements(); taskNum++) {
+                    JobSubmission jobSubmission = (JobSubmission) eTasks.nextElement();
+                    String taskLsid = jobSubmission.getLSID();
+                    // don't include the same LSID more than once
+                    if (vIncludedLSIDs.contains(taskLsid)) {
+                        continue;
+                    }
+                    vIncludedLSIDs.add(taskLsid);
+                    TaskInfo depti = GenePatternAnalysisTask.getTaskInfo(taskLsid, userID);
+                    File dependent = packageTask(depti, userID);
+                    dependent.deleteOnExit();
+                    String comment = taskLsid;
+                    zipTaskFile(zos, dependent, comment);
+                    dependent.delete();
+                }
+            }
+        }
+        finally {
+            tmpDir.delete();
+        }
+    }
 }
