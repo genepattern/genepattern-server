@@ -70,6 +70,7 @@ public class GenomeSpaceOpenID extends HttpServlet {
         int idx = getProviderURL().lastIndexOf("identityServer");
         if (idx < 0) { return null; }
         String gsUrl = getProviderURL().substring(0, idx) + "identityServer/openIdProvider?_action=logout";
+        gsUrl += "&logout_return_to=" + ServerConfiguration.instance().getGenePatternURL();
         log.debug("Getting the OpenID logout URL.  URL is: " + gsUrl);
         return gsUrl;
     }
