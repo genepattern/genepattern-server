@@ -1117,7 +1117,19 @@ public class AnalysisDAO extends BaseDAO {
                 task.setLsid(null);
             }
 
-            getSession().update(task); // Not neccessary ?
+            // Not neccessary ?
+            Object mergedTaskObj = getSession().merge(task);
+            if (mergedTaskObj != task) {
+                //we are here most likely as a result of importing a pipeline, which has a nested pipeline which includes
+                //a duplicate module
+                String errorMessage = "Duplicate installation of task";
+                if (mergedTaskObj instanceof TaskMaster) {
+                    TaskMaster mergedTask = (TaskMaster) mergedTaskObj;
+                    errorMessage +=  mergedTask.getTaskName() + ", lsid=" + mergedTask.getLsid();
+                    task = mergedTask;
+                }
+                log.error(errorMessage);
+            }
 
             if (oldLSID != null) {
                 // delete the old LSID record
@@ -1132,7 +1144,14 @@ public class AnalysisDAO extends BaseDAO {
                 lsidHibernate.setLsid(lsid.toString());
                 lsidHibernate.setLsidNoVersion(lsid.toStringNoVersion());
                 lsidHibernate.setVersion(lsid.getVersion());
-                getSession().save(lsidHibernate);
+                Object mergedLsidHibernate = getSession().merge(lsidHibernate);
+                if (mergedLsidHibernate != lsidHibernate) {
+                    String errorMessage = "Duplicate installation of task, lsid="+lsid.toString();
+                    if (mergedLsidHibernate instanceof Lsid) {
+                        lsidHibernate = (Lsid) mergedLsidHibernate;
+                    }
+                    log.error(errorMessage);
+                }
             }
             getSession().flush();
             getSession().clear();
