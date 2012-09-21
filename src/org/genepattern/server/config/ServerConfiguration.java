@@ -67,6 +67,14 @@ public class ServerConfiguration {
             return context;
         }
         
+        public static Context getContextForJob(JobInfo jobInfo, TaskInfo taskInfo) {
+            Context context = getContextForJob(jobInfo);
+            if (taskInfo != null) {
+                context.setTaskInfo(taskInfo);
+            }
+            return context;
+        }
+        
         public void setCheckSystemProperties(boolean b) {
             this.checkSystemProperties = b;
         }
