@@ -147,6 +147,7 @@ import org.genepattern.server.genomespace.GenomeSpaceClient;
 import org.genepattern.server.genomespace.GenomeSpaceClientFactory;
 import org.genepattern.server.genomespace.GenomeSpaceException;
 import org.genepattern.server.genomespace.GenomeSpaceFileManager;
+import org.genepattern.server.licensemanager.LicenseManager;
 import org.genepattern.server.plugin.PluginManagerLegacy;
 import org.genepattern.server.user.UsageLog;
 import org.genepattern.server.util.JobResultsFilenameFilter;
@@ -642,7 +643,21 @@ public class GenePatternAnalysisTask {
             return;
         }
         
-        ServerConfiguration.Context jobContext = ServerConfiguration.Context.getContextForJob(jobInfo);
+        String taskName = "";
+        TaskInfo taskInfo = null;
+        int taskId = jobInfo.getTaskID();
+        try {
+            taskInfo = JobInfoManager.getTaskInfo(taskId);
+        }
+        catch (TaskIDNotFoundException e) {
+            throw e;
+        }
+        taskName = taskInfo.getName();
+        if (log.isDebugEnabled()) {
+            log.debug("taskName=" + taskName);
+        }
+        
+        ServerConfiguration.Context jobContext = ServerConfiguration.Context.getContextForJob(jobInfo, taskInfo);
         //is disk space available
         boolean allowNewJob = ServerConfiguration.instance().getGPBooleanProperty(jobContext, "allow.new.job", true);
         if (!allowNewJob) {
@@ -668,7 +683,22 @@ public class GenePatternAnalysisTask {
         catch (JobSubmissionException e) {
             throw new JobDispatchException("Error getting job directory for jobId="+jobId, e);
         }
-
+        
+        //does the task have an EULA
+        boolean requiresEULA=false;
+        try {
+            requiresEULA = LicenseManager.instance().requiresEULA(jobContext);
+        }
+        catch (Throwable t) {
+            String message="Unexpected error checking for EULA for job #"+jobInfo.getJobNumber()+": "+t.getLocalizedMessage();
+            log.error(message, t);
+            throw new JobDispatchException(message);
+        }
+        if (requiresEULA) {
+            throw new JobDispatchException("The "+taskInfo.getName()+" module requires an End-user license agreement. "+
+                    "There is no record of agreement for userId="+jobInfo.getUserId());
+        }
+        
         // is the job owner an admin?
         final boolean isAdmin;
         if (jobInfo.getUserId() != null) {
@@ -681,19 +711,6 @@ public class GenePatternAnalysisTask {
         INPUT_FILE_MODE inputFileMode = getInputFileMode();
         boolean allowInputFilePaths = ServerConfiguration.instance().getAllowInputFilePaths(jobContext);
 
-        String taskName = "";
-        TaskInfo taskInfo = null;
-        int taskId = jobInfo.getTaskID();
-        try {
-            taskInfo = JobInfoManager.getTaskInfo(taskId);
-        }
-        catch (TaskIDNotFoundException e) {
-            throw e;
-        }
-        taskName = taskInfo.getName();
-        if (log.isDebugEnabled()) {
-            log.debug("taskName=" + taskName);
-        }
         JOB_TYPE jobType = JOB_TYPE.JOB;
         JobInfoWrapper jobInfoWrapper = null;
         Map<String,URL> inputLinkMap = new HashMap<String,URL>();
