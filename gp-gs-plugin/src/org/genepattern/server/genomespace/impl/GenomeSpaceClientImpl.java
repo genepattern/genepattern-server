@@ -228,7 +228,7 @@ public class GenomeSpaceClientImpl implements GenomeSpaceClient {
     }
     
     /**
-     * Constructs a recursive representation as a directory as a GenomeSpaceFile
+     * Constructs a representation of a directory as a GenomeSpaceFile
      * @param dmClient
      * @param dir
      * @param metadata
@@ -250,7 +250,7 @@ public class GenomeSpaceClientImpl implements GenomeSpaceClient {
         directoryFile.setChildFiles(new HashSet<GenomeSpaceFile>());
         
         for (GSFileMetadata i : dir.findDirectories()) {
-            GenomeSpaceFile aFile = (GenomeSpaceFile) buildDirectory(gsSessionObject, dmClient.list(i), i); // (GenomeSpaceFile) GenomeSpaceFileManager.createFile(gsSession, i.getUrl(), i);
+            GenomeSpaceFile aFile = (GenomeSpaceFile) GenomeSpaceFileManager.createFile(gsSession, i.getUrl(), i);
             aFile.setKind(GenomeSpaceFile.DIRECTORY_KIND);
             directoryFile.getChildFilesNoLoad().add(aFile);
         }
