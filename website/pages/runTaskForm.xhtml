@@ -227,9 +227,9 @@ use, misuse, or functionality.
                             <td colspan="2" class="maintasknav2">
                                 <h:outputText rendered="#{runTaskBean.allowNewJob}">
                                     <h:outputText rendered="#{not runTaskBean.pipelineWithMissingTasks}">
-                                        <input id="cmd2" name="cmd2" value="Run" type="submit"/>
+                                        <input id="cmd2" name="cmd2" value="Run" type="submit"/><input id="reset2" name="reset2" value="Reset" onclick="document.location='#{facesContext.externalContext.requestContextPath}/pages/index.jsf?lsid=#{runTaskBean.encodedLsid}'" type="button"/>&#160;&#160;
                                     </h:outputText>
-                                </h:outputText><input id="reset2" name="reset2" value="Reset" onclick="document.location='#{facesContext.externalContext.requestContextPath}/pages/index.jsf?lsid=#{runTaskBean.encodedLsid}'" type="button"/>&#160;&#160;
+                                </h:outputText>
                                 <h:outputText rendered="#{runTaskBean.pipeline}">
                                     <a href="#{facesContext.externalContext.requestContextPath}/viewPipeline.jsp?name=#{runTaskBean.lsid}">properties</a>&#160;|&#160;<a onclick="exportPipeline('#{runTaskBean.lsid}', '#{runTaskBean.name}');" href="#">export</a>&#160;|&#160;
                                     <h:outputText rendered="#{runTaskBean.editAllowed}">
