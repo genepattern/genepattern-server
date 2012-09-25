@@ -109,7 +109,8 @@ public class GenomeSpaceServlet extends HttpServlet {
             tree = new ArrayList<GenomeSpaceFile>(tree.get(0).getChildFiles());
         }
         else {
-            tree = new ArrayList<GenomeSpaceFile>(bean.getDirectory(url).getChildFiles());            
+            GenomeSpaceFile dir = bean.getDirectory(url);
+            tree = new ArrayList<GenomeSpaceFile>(dir.getChildFiles());            
         }
         
         TreeJSON json = null;

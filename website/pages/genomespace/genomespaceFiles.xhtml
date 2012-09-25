@@ -15,51 +15,25 @@ use, misuse, or functionality.
 		xmlns:f="http://java.sun.com/jsf/core" 
 		xmlns:t="http://myfaces.apache.org/tomahawk" 
 		xmlns:rich="http://richfaces.org/rich" 
-		xmlns:c="http://java.sun.com/jstl/core">
+		xmlns:c="http://java.sun.com/jstl/core"
+		xmlns:a4j="https://ajax4jsf.dev.java.net/ajax">
     <ui:composition>
         <ui:define name="headText">
             <script type="text/javascript" language="javascript">	
                 /* <![CDATA[ */
-                var jobIdToChildJobs = new Object();
-                
-                function addChildJob(jobNumber, childJobId) {
-                	var rowIds = jobIdToChildJobs[jobNumber];
-                	if(rowIds == null) {
-                		rowIds = new Array();
-                        jobIdToChildJobs[jobNumber] = rowIds;
-                	}
-                	rowIds[rowIds.length] = childJobId;
-                }
-                
-                function toggleJobVisibility(jobNo) {
-                	var d = pt(jobNo + "_div");
-                 	var downArrow = pt(jobNo + "_expanded_img");
-                   	var rightArrow = pt(jobNo + "_collapsed_img");
-                   	var style = "none";
-                   	if(d.style.display == "inline") {
-                		d.style.display = "none";
-                      	downArrow.style.display = "none";
-                		rightArrow.style.display = "inline";
-                		// pt("expansion_state_" + jobNo).value = "false";
-                	} else {
-                		style = "inline";
-                      	d.style.display = "inline";
-                      	downArrow.style.display = "inline";
-                		rightArrow.style.display = "none";
-                		// pt("expansion_state_" + jobNo).value = "true";
-                	} 
-                	
-                	var childJobs = jobIdToChildJobs[jobNo];
-                	if(childJobs!=null) {
-                		for(var i=0; i<childJobs.length; i++) {
-                			pt(childJobs[i]).style.display = style;
-                		}
-                	}
-                }
-				
 				function handleTreeClick(node) {
 					jq(node).parent().find("ins:first").trigger("click");
 					return false;
+				}
+				
+				function showCorrectArrows() {
+					jq.each(jq("#genomeSpace .menuArrow").parent(), function(index, value) {
+						var fileID = jq(value).attr("id");
+						var menuID = "#menuDiv_" + fileID;
+						if (jq(menuID).length > 0) {	// Check to see if the file menu exists
+							jq(value).find("img").show();
+						}
+					});
 				}
                 /* ]]> */
             </script>
@@ -73,6 +47,7 @@ use, misuse, or functionality.
         		<strong>Logged in as: #{genomeSpaceBean.username} &nbsp;&nbsp;&nbsp;</strong>  
 				<h:commandButton value="Refresh" action="#{genomeSpaceBean.forceFileRefresh}" />
         	</div>
+			<a4j:commandButton action="#{genomeSpaceBean.blankFileCache}" style="display:none;" value="Refresh Menus" reRender="genomeSpaceMenus" oncomplete="showCorrectArrows();" />
 			<t:div rendered="#{genomeSpaceBean.loading}">
 				<br /><br />
 				<strong>Still Loading GenomeSpace Files.<br />
@@ -140,7 +115,11 @@ use, misuse, or functionality.
 							arrow.setAttribute("onmouseover", "MM_swapImage('Image_" + name + "','','/gp/images/smallOptions2.gif',2);");
 							arrow.setAttribute("onmouseout", "MM_swapImgRestore();");
 							jq(node).find("a:first").after(arrow);
+							jq(arrow).hide();
 						});
+						
+						// Load the new file menus
+						jq("input[type=button][value='Refresh Menus']").trigger("click");
 					});
 			    </script>
 			</t:div>

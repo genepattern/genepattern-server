@@ -17,7 +17,8 @@
 	xmlns:f="http://java.sun.com/jsf/core"
 	xmlns:t="http://myfaces.apache.org/tomahawk"
 	xmlns:c="http://java.sun.com/jstl/core"
-	xmlns:rich="http://richfaces.org/rich">
+	xmlns:rich="http://richfaces.org/rich"
+	xmlns:a4j="https://ajax4jsf.dev.java.net/ajax">
 <ui:composition template="/templates/common.xhtml">
 	<ui:define name="headText">
 		<link class="component" href="/gp/a4j/a4j/s/3_3_3.Finalorg/richfaces/renderkit/html/css/basic_classes.xcss" rel="stylesheet" type="text/css" />
@@ -426,7 +427,7 @@ function showFileInput(id) {
 			</table>
 			</div>
 		</h:form>
-		<h:form>
+		<h:form id="menuForm" forceId="true">
 			<f:param />
 			<t:dataList var="jobInfo" value="#{jobsBean.recentJobs}" rowIndexVar="jobIndex">
 				<ui:include src="jobsMenu.xhtml">
@@ -449,18 +450,20 @@ function showFileInput(id) {
 	            	<ui:param name="aFile" value="#{aFile}"/>
 	            </ui:include>
 			</t:dataList>
-			<h:outputText rendered="#{genomeSpaceBean.loggedIn and not genomeSpaceBean.loading}">
-				<t:dataList var="file" value="#{genomeSpaceBean.allFiles}" rowIndexVar="fileIndex">
-					<ui:include src="genomespace/fileMenu.xhtml">
-	           			<ui:param name="file" value="#{file}"/>
-	           		</ui:include>
-	           	</t:dataList>
-	           	<t:dataList var="file" value="#{genomeSpaceBean.allDirectories}" rowIndexVar="fileIndex">
-					<ui:include src="genomespace/fileMenu.xhtml">
-	           			<ui:param name="file" value="#{file}"/>
-	           		</ui:include>
-	           	</t:dataList>
-           	</h:outputText>
+			<t:div id="genomeSpaceMenus" forceId="true">
+				<h:outputText rendered="#{genomeSpaceBean.loggedIn and not genomeSpaceBean.loading}">
+					<t:dataList var="file" value="#{genomeSpaceBean.allFiles}" rowIndexVar="fileIndex">
+						<ui:include src="genomespace/fileMenu.xhtml">
+		           			<ui:param name="file" value="#{file}"/>
+		           		</ui:include>
+		           	</t:dataList>
+		           	<t:dataList var="file" value="#{genomeSpaceBean.allDirectories}" rowIndexVar="fileIndex">
+						<ui:include src="genomespace/fileMenu.xhtml">
+		           			<ui:param name="file" value="#{file}"/>
+		           		</ui:include>
+		           	</t:dataList>
+	           	</h:outputText>
+           	</t:div>
 		</h:form>
 	</ui:define>
 

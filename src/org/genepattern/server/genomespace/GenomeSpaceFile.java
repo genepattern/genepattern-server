@@ -92,7 +92,7 @@ public class GenomeSpaceFile extends GpFilePath {
      */
     public Set<GenomeSpaceFile> getChildFilesNoLoad() {
         if (childFiles == null) return new HashSet<GenomeSpaceFile>();
-        return childFiles;
+        else return childFiles;
     }
     
     /**

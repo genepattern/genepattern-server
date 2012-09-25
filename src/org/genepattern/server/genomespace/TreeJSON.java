@@ -76,7 +76,7 @@ public class TreeJSON extends JSONArray {
         
         if (file.isDirectory()) {
             JSONArray children = new JSONArray();
-            for (GenomeSpaceFile child : file.getChildFiles()) {
+            for (GenomeSpaceFile child : file.getChildFilesNoLoad()) {
                 if (child.isDirectory() || !dirOnly) {
                     JSONObject childJSON = makeFileJSON(child, dirOnly);
                     children.put(childJSON);

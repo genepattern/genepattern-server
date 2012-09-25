@@ -81,6 +81,11 @@ public class GenomeSpaceBean {
         log.info("GenomeSpaceEnabled = " + genomeSpaceEnabled + " for " + UIBeanHelper.getUserId());
     }
     
+    public synchronized void blankFileCache() {
+        allFiles = null;
+        allDirectories = null;
+    }
+    
     /**
      * Clears all the GenomeSpace session parameters kept in memory by the bean.
      * Called when the user logs out of GenomeSpace.
@@ -138,26 +143,46 @@ public class GenomeSpaceBean {
      */
     public boolean getLoading() {
         if (loading == null) {
-            final HttpSession httpSession = UIBeanHelper.getSession();
-            setLoading(true);
-            new Thread() {
-                public void run() {
-                    try {
-                        getFileTree(httpSession);
-                    }
-                    catch (Throwable t) {
-                        log.error("ERROR: " + t.getMessage());
-                    }
-                    setLoading(false);
-                }
-            }.start();
+            setLoading(false);
         }
+//            final HttpSession httpSession = UIBeanHelper.getSession();
+//            setLoading(true);
+//            new Thread() {
+//                public void run() {
+//                    try {
+//                        getFileTree(httpSession);
+//                    }
+//                    catch (Throwable t) {
+//                        log.error("ERROR: " + t.getMessage());
+//                    }
+//                    setLoading(false);
+//                }
+//            }.start();
+//        }
         
         return loading;
     }
     
     private synchronized void setLoading(Boolean loaded) {
         this.loading = loaded;
+    }
+    
+    /**
+     * Returns the set of child files for the given directory URL 
+     * (passed into the request as the "directory" parameter)
+     * @return Child files of the requested directory
+     */
+    public Set<GenomeSpaceFile> getFilesRequested() {
+        String dirUrl = UIBeanHelper.getRequest().getParameter("directory");
+        GenomeSpaceFile directory = null;
+        if (dirUrl != null) {
+            directory = getDirectory(dirUrl);
+        }
+        else {
+            directory = getFileTree().get(0);
+        }
+        
+        return directory.getChildFiles();
     }
     
     /**
@@ -448,7 +473,7 @@ public class GenomeSpaceBean {
      * Constructs the list of files if necessary
      * @return
      */
-    public List<GenomeSpaceFile> getAllFiles() {
+    public synchronized List<GenomeSpaceFile> getAllFiles() {
         if (isLoggedIn() && allFiles == null) {
             allFiles = new ArrayList<GenomeSpaceFile>();
             // Get the children of the dummy node, which should contain only one child: the GenomeSpace root directory
@@ -492,7 +517,7 @@ public class GenomeSpaceBean {
      * Constructs the list of directories if necessary
      * @return
      */
-    public List<GenomeSpaceFile> getAllDirectories() {
+    public synchronized List<GenomeSpaceFile> getAllDirectories() {
         if (isLoggedIn() && allDirectories == null) {
             // Get the children of the dummy node, which should contain only one child: the GenomeSpace root directory
             // Since this is of type Set you cannot just get the first child, you have it iterate over the set
@@ -643,25 +668,29 @@ public class GenomeSpaceBean {
      * @return
      */
     public GenomeSpaceFile getDirectory(URL url) {
-//        HttpSession httpSession = UIBeanHelper.getSession();
-//        Object gsSession = httpSession.getAttribute(GenomeSpaceLoginManager.GS_SESSION_KEY);
-//        
-//        GenomeSpaceFile file = GenomeSpaceFileManager.createFile(gsSession, url);
-//        file.setKind(GenomeSpaceFile.DIRECTORY_KIND);
-//        return file;
-        for (GenomeSpaceFile i : getAllDirectories()) {
-            URL iUrl;
-            try {
-                iUrl = i.getUrl();
+        // First trial, if the directory is already in the cached list
+        // Second trial, clear the cached list, rebuild and try again
+        int ran = 0;
+        while (ran < 2) {
+            for (GenomeSpaceFile i : getAllDirectories()) {
+                URL iUrl;
+                try {
+                    iUrl = i.getUrl();
+                }
+                catch (Exception e) {
+                    log.error("Error getting url in getDirectory() from " + i.getName());
+                    continue;
+                }
+                if (url.equals(iUrl)) {
+                    return i;
+                }
             }
-            catch (Exception e) {
-                log.error("Error getting url in getDirectory() from " + i.getName());
-                continue;
-            }
-            if (url.equals(iUrl)) {
-                return i;
+            ran++;
+            if (ran == 1) {
+                allDirectories = null;
             }
         }
+
         log.info("Unable to find the GenomeSpace directory in the directory list: " + url);
         return null;
     }
