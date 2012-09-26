@@ -380,11 +380,9 @@ function showFileInput(id) {
 		<div id="errorMessageDiv" style="display: none;">
 		<div id="errorMessage" />
 		</div>
-		<t:div rendered="#{!empty runTaskBean.lsid and !runTaskBean.requiresEULA}">
-			<ui:include src="runTaskForm.xhtml" />
-		</t:div>
-        <t:div rendered="#{!empty runTaskBean.lsid and runTaskBean.requiresEULA}">
-            <ui:include src="eulaTaskForm.xhtml" />
+
+        <t:div>
+            <ui:include src="runTaskFormWrapper.xhtml" />
         </t:div>
 
 		<h:outputText rendered="#{genomeSpaceBean.loggedIn and not genomeSpaceBean.loading}">

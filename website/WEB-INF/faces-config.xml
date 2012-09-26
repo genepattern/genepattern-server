@@ -132,6 +132,11 @@
   <managed-bean-scope>request</managed-bean-scope>
  </managed-bean>
  <managed-bean>
+  <managed-bean-name>eulaTaskBean</managed-bean-name>
+  <managed-bean-class>org.genepattern.server.webapp.jsf.EulaTaskBean</managed-bean-class>
+  <managed-bean-scope>request</managed-bean-scope>
+ </managed-bean>
+ <managed-bean>
   <managed-bean-name>taskCatalogBean</managed-bean-name>
   <managed-bean-class>org.genepattern.server.webapp.jsf.TaskCatalogBean</managed-bean-class>
   <managed-bean-scope>request</managed-bean-scope>
@@ -281,11 +286,17 @@
  </navigation-rule>
  
  
-    
+     
  <navigation-rule>
   <from-view-id>*</from-view-id>
    
-  
+  <!-- always redirect after accepting EULA, TODO: this isn't fully implemented yet -->
+  <navigation-case>
+   <from-outcom>acceptEula</from-outcom>
+   <to-view-id>/pages/index.xhtml</to-view-id>
+   <redirect/>
+  </navigation-case>
+
   <navigation-case>
    <from-outcome>registerServer</from-outcome>
    <to-view-id>/pages/registerServer.xhtml</to-view-id>

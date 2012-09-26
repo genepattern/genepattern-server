@@ -35,6 +35,7 @@ import org.genepattern.server.config.ServerConfiguration;
 import org.genepattern.server.config.ServerConfiguration.Context;
 import org.genepattern.server.genepattern.GenePatternAnalysisTask;
 import org.genepattern.server.genomespace.GenomeSpaceBean;
+import org.genepattern.server.licensemanager.EULAInfo;
 import org.genepattern.server.licensemanager.LicenseManager;
 import org.genepattern.server.user.UserDAO;
 import org.genepattern.server.webapp.uploads.UploadFilesBean;
@@ -85,11 +86,20 @@ public class RunTaskBean {
      * The current user has not yet agreed to.  
      */
     private boolean requiresEULA = false;
+    private List<EULAInfo> promptForEulas;
     private void initEULA(final String currentUser, final TaskInfo currentTask) {
         //final String currentUser = UIBeanHelper.getUserId();
         Context taskContext = Context.getContextForUser(currentUser);
         taskContext.setTaskInfo(currentTask);
-        requiresEULA = LicenseManager.instance().requiresEULA(taskContext);
+
+        //requiresEULA = LicenseManager.instance().requiresEULA(taskContext);
+        promptForEulas = LicenseManager.instance().getPendingEULAForModule(taskContext);
+        if (promptForEulas == null || promptForEulas.size()==0) {
+            requiresEULA=false;
+        }
+        else {
+            requiresEULA=true;
+        }        
     }
     static class EULAObj {
     }
@@ -113,11 +123,21 @@ public class RunTaskBean {
      * which require agreement by the current end user.
      * @return
      */
-    public List<EULAObj> getPromptForEULAs() {
-        //TODO: implement this method
-        log.error("Not yet implemented!");
-        return Collections.emptyList();
+    public List<EULAInfo> getPromptForEULAs() {
+        if (promptForEulas==null) {
+            log.error("promptForEulas not initialized!");
+            return Collections.emptyList();
+        }
+        return promptForEulas;
     }
+    
+    public void acceptEulas() {
+        log.error("yes, I accept all EULA for this task: "+lsid);
+    }
+//    public String acceptEulas() {
+//        log.error("yes, I accept all EULA for this task: "+lsid);
+//        return "error";
+//    }
     //---- end support for licensed modules
     
     /**

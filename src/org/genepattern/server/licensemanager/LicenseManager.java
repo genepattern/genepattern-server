@@ -2,7 +2,9 @@ package org.genepattern.server.licensemanager;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.apache.log4j.Logger;
 import org.genepattern.server.config.ServerConfiguration.Context;
@@ -22,8 +24,12 @@ public class LicenseManager {
     }
     
     /**
-     * Implement a run-time check, before starting a job, verify that the current user
-     * has permission to run the job.
+     * Implement a run-time check, before starting a job, verify that there are
+     * no EULA which the current user has not yet agreed to.
+     * 
+     * Returns true, if,
+     *     1) the module requires no EULAs, or
+     *     2) the current user has agreed to all EULAs for the module.
      * 
      * @param jobContext
      * @return true if there is no record of EULA for the current user.
@@ -43,7 +49,7 @@ public class LicenseManager {
      * @param taskContext, must have a valid taskInfo object
      * @return
      */
-    public List<EULAInfo> getAllLicensesForModule(final Context taskContext) {
+    public List<EULAInfo> getAllEULAForModule(final Context taskContext) {
         return getEULAs(taskContext, true);
     }
 
@@ -57,8 +63,39 @@ public class LicenseManager {
      * @param taskContext
      * @return
      */
-    public List<EULAInfo> getLicensesWhichRequireAgreement(final Context taskContext) {
+    public List<EULAInfo> getPendingEULAForModule(final Context taskContext) {
         return getEULAs(taskContext, false);
+    }
+    
+    /**
+     * Record current user agreement to the End-user license agreement.
+     * 
+     *     TODO: when the taskInfo is a pipeline, make sure to accept all agreements.
+     * 
+     * @param taskContext, must have a valid taskInfo and userId
+     */
+    public void recordLicenseAgreement(final Context taskContext) {
+        if (taskContext == null) {
+            throw new IllegalArgumentException("taskContext==null");
+        }
+        TaskInfo taskInfo = taskContext.getTaskInfo();
+        if (taskInfo==null) {
+            throw new IllegalArgumentException("taskInfo==null");
+        }
+        if (taskInfo.getLsid()==null || taskInfo.getLsid().length()==0) {
+            throw new IllegalArgumentException("taskInfo not set");
+        }
+        if (taskContext.getUserId()==null) {
+            throw new IllegalArgumentException("userId==null");
+        }
+        if (taskContext.getUserId().length()==0) {
+            throw new IllegalArgumentException("userId not set");
+        }
+
+        //TODO: implement this method
+        log.debug("recording EULA for user="+taskContext.getUserId()+", lsid="+taskContext.getTaskInfo().getLsid());
+        log.error("Not yet implemented!");
+        recordLicenseAgreement_impl(taskContext.getUserId(), taskContext.getTaskInfo().getLsid());
     }
 
     /**
@@ -102,12 +139,27 @@ public class LicenseManager {
     }
 
     private boolean hasUserAgreed(String userId, EULAInfo eula) {
-        //TODO: implement this method
-        if ("admin".equals(userId)) {
-            //for debugging only ...
-            return true;
+        if (userId == null) {
+            throw new IllegalArgumentException("userId==null");
         }
-        return false;
+        if (userId.length()==0) {
+            throw new IllegalArgumentException("userId is not set");
+        }
+        if (eula == null) {
+            throw new IllegalArgumentException("eula==null");
+        }
+        
+        //TODO: implement the method, properly, current using stub which records to the current session
+        //      all agreement info is lost on server restart
+        return hasUserAgreed_impl(userId, eula);
+        
+        //old stub, delete this
+        //TODO: implement this method
+        //if ("admin".equals(userId)) {
+        //    //for debugging only ...
+        //    return true;
+        //}
+        //return false;
     }
     
     /**
@@ -142,5 +194,22 @@ public class LicenseManager {
             log.error("This method is not yet implemented for pipelines");
         }
         return eulaObjs;
+    }
+    
+    
+    //------ the following is prototype code, should be re-factored into a factory pattern before releasing
+    // 1st draft, record agreement to local session only
+    //     Each user will have to accept the EULA after a server restart
+    //    Note: this is not thread-safe.
+    
+    Set<String> acceptedEulas = new HashSet<String>();
+    private void recordLicenseAgreement_impl(String userId, String lsid) {
+        String uniq_key = lsid+"_"+userId;
+        acceptedEulas.add(uniq_key);
+    }
+    private boolean hasUserAgreed_impl(String userId, EULAInfo eula) {
+        String lsid=eula.getModuleLsid();
+        String uniq_key = lsid+"_"+userId;
+        return acceptedEulas.contains(uniq_key);
     }
 }

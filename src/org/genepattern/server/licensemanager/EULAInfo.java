@@ -29,6 +29,9 @@ public class EULAInfo {
     public void setModuleLsid(String lsid) {
         this.moduleLsid=lsid;
     }
+    public String getModuleLsid() {
+        return this.moduleLsid;
+    }
     
     public String getLink() {
         //http://gpbroad.broadinstitute.org:8080/gp/getTaskDoc.jsp?name=urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00044:9&file=ComparativeMarkerSelection.pdf

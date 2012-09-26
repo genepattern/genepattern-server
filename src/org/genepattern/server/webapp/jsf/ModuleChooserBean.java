@@ -109,6 +109,10 @@ public class ModuleChooserBean implements java.io.Serializable {
         if (runTaskBean != null) {
             runTaskBean.setTask(selectedModule);
         }
+        EulaTaskBean eulaTaskBean = (EulaTaskBean) UIBeanHelper.getManagedBean("#{eulaTaskBean}");
+        if (eulaTaskBean != null && runTaskBean != null) {
+            eulaTaskBean.setSelectedModule(selectedModule);
+        }
     }
 
     public void moduleClicked(ActionEvent event) {
