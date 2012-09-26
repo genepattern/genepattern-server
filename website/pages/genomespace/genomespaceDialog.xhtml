@@ -31,7 +31,7 @@ use, misuse, or functionality.
 				function openSaveDialog(node) {
 					var menuId = jq(node).closest(".popupMenu").attr("id");		// Get id of the file menu
 					var arrowId = menuId.replace("menuDiv_", "Image_");			// Get the id of the relevant arrow
-					var fileLink = jq("#" + arrowId).prev();					// Get the link to the file
+					var fileLink = jq("[id='" + arrowId + "']").prev();					// Get the link to the file
 					fileURL = fileLink.attr("href");							// Set the URL of the file
 
 					jq('#genomeSpaceSaveDialog').dialog('open');
