@@ -44,7 +44,11 @@ public class EulaTaskBean {
     }
     
     /**
-     * Check to see if we need to prompt for EULA.
+     * Check to see if we need to prompt the currentUser for an EULA for the current module.
+     * Note: this covers the following cases:
+     *     1) module has no EULA
+     *     2) module has one or more EULA, but current user has already agreed to all of them
+     *     3) module has one or more EULA which the current user has not yet agreed to
      * @return true, if the GUI should prompt the current user to accept one or more EULA.
      */
     public boolean isPrompt() {
@@ -67,11 +71,12 @@ public class EulaTaskBean {
         return taskInfo;
     }
 
+    /**
+     * @see #prompt for documentation.
+     */
     private boolean isRequiresEULA() {
-        boolean requiresEULA = false;
-        
-        final String lsid = getLsid();
-        
+        log.debug("checking for EULA, userId="+currentUser+", lsid="+lsid);
+        boolean requiresEULA = false; 
         TaskInfo taskInfo = null;
         taskInfo = initTaskInfo(currentUser, lsid);
         if (taskInfo != null) {
@@ -85,6 +90,8 @@ public class EulaTaskBean {
                 requiresEULA=true;
             }
         }
+        
+        log.debug("requiresEULA="+requiresEULA);
         return requiresEULA;
     }
 
@@ -120,6 +127,7 @@ public class EulaTaskBean {
     
     //use the LicenseManager to record EULA
     private static void recordEULA(final String currentUser, final String lsid) {
+        log.debug("recordEULA, userId="+currentUser+", lsid="+lsid);
         Context taskContext=Context.getContextForUser(currentUser);
         TaskInfo taskInfo = null;
         taskInfo = initTaskInfo(currentUser, lsid);
