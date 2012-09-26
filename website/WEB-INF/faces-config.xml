@@ -292,7 +292,7 @@
    
   <!-- always redirect after accepting EULA, TODO: this isn't fully implemented yet -->
   <navigation-case>
-   <from-outcom>acceptEula</from-outcom>
+   <from-outcome>acceptEula</from-outcome>
    <to-view-id>/pages/index.xhtml</to-view-id>
    <redirect/>
   </navigation-case>
