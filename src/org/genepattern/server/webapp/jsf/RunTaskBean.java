@@ -18,7 +18,6 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -35,8 +34,6 @@ import org.genepattern.server.config.ServerConfiguration;
 import org.genepattern.server.config.ServerConfiguration.Context;
 import org.genepattern.server.genepattern.GenePatternAnalysisTask;
 import org.genepattern.server.genomespace.GenomeSpaceBean;
-import org.genepattern.server.licensemanager.EULAInfo;
-import org.genepattern.server.licensemanager.LicenseManager;
 import org.genepattern.server.user.UserDAO;
 import org.genepattern.server.webapp.uploads.UploadFilesBean;
 import org.genepattern.server.webservice.server.dao.AnalysisDAO;
@@ -79,66 +76,6 @@ public class RunTaskBean {
     private String splashPage;
 
     private boolean showParameterDescriptions;
-    
-    //support for licensed modules
-    /** 
-     * Set this to true iff the current task (module or pipeline) has at least one EULA which 
-     * The current user has not yet agreed to.  
-     */
-    private boolean requiresEULA = false;
-    private List<EULAInfo> promptForEulas;
-    private void initEULA(final String currentUser, final TaskInfo currentTask) {
-        //final String currentUser = UIBeanHelper.getUserId();
-        Context taskContext = Context.getContextForUser(currentUser);
-        taskContext.setTaskInfo(currentTask);
-
-        //requiresEULA = LicenseManager.instance().requiresEULA(taskContext);
-        promptForEulas = LicenseManager.instance().getPendingEULAForModule(taskContext);
-        if (promptForEulas == null || promptForEulas.size()==0) {
-            requiresEULA=false;
-        }
-        else {
-            requiresEULA=true;
-        }        
-    }
-    static class EULAObj {
-    }
-    
-    public boolean isRequiresEULA() {
-        return requiresEULA;
-    }
-
-    /**
-     * Get the list of all End-user license agreements for this task (module or pipeline).
-     * @return
-     */
-    public List<EULAObj> getAllEULAs() {
-        //TODO: implement this method
-        log.error("Not yet implemented!");
-        return Collections.emptyList();
-    }
-
-    /**
-     * Get the list of all End-user license agreements for this task (module or pipeline),
-     * which require agreement by the current end user.
-     * @return
-     */
-    public List<EULAInfo> getPromptForEULAs() {
-        if (promptForEulas==null) {
-            log.error("promptForEulas not initialized!");
-            return Collections.emptyList();
-        }
-        return promptForEulas;
-    }
-    
-    public void acceptEulas() {
-        log.error("yes, I accept all EULA for this task: "+lsid);
-    }
-//    public String acceptEulas() {
-//        log.error("yes, I accept all EULA for this task: "+lsid);
-//        return "error";
-//    }
-    //---- end support for licensed modules
     
     /**
      * True if current request included an 'lsid' parameter which could not be
@@ -620,16 +557,6 @@ public class RunTaskBean {
             }
             catch (PipelineModelException e) {
                 log.error("Error checking for missing tasks for lsid=" + lsid + ", userId=" + userId, e);
-            }
-        }
-        
-        final String currentUser = UIBeanHelper.getUserId();
-        if (taskInfo != null) {
-            try {
-                initEULA(currentUser, taskInfo);
-            }
-            catch (Throwable t) {
-                log.error("Error initializing license information for user="+currentUser+", task="+taskInfo.getName()+", lsid="+taskInfo.getLsid());
             }
         }
     }

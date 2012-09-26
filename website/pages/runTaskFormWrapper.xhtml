@@ -13,7 +13,7 @@ use, misuse, or functionality.
     <ui:composition>
         <ui:include src="eulaTaskForm.xhtml" />
     
-        <t:div rendered="#{!empty runTaskBean.lsid and !runTaskBean.requiresEULA}">
+        <t:div rendered="#{!empty runTaskBean.lsid and !eulaTaskBean.prompt}">
             <ui:include src="runTaskForm.xhtml" />
         </t:div>
 
