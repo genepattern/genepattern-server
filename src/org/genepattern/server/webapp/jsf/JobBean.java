@@ -307,6 +307,12 @@ public class JobBean {
             assert runTaskBean != null;
             UIBeanHelper.getRequest().setAttribute("reloadJob", String.valueOf(reloadJob.getJobNumber()));
             runTaskBean.setTask(reloadJob.getTaskLSID());
+
+            EulaTaskBean eulaTaskBean = (EulaTaskBean) UIBeanHelper.getManagedBean("#{eulaTaskBean}");
+            if (eulaTaskBean != null && reloadJob != null) {
+                eulaTaskBean.setReloadJobParam(""+reloadJob.getJobNumber());
+                eulaTaskBean.setSelectedModule(reloadJob.getTaskLSID());
+            }            
         }
         catch (Throwable t) {
             log.error("Error reloading job.", t);

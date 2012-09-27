@@ -21,20 +21,22 @@ lsid is: #{eulaTaskBean.lsid}
 <!-- Accept the EULA by POSTing to a servlet (standard HTTP rather than JSF) -->
 <form name="eula" action="/gp/eula" method="GET">
 Do you accept the license agreement?
-    <input type="hidden" name="accept" value="yes"/>
-    <input type="hidden" name="lsid" value="#{eulaTaskBean.lsid}"/>
+    <input type="hidden" name="lsid" value="#{eulaTaskBean.lsid}" />
+    <input type="hidden" name="initialQueryString" value="#{eulaTaskBean.initialQueryString}" />
+    <input type="hidden" name="reloadJob" value="#{eulaTaskBean.reloadJobParam}" />
 <p>
     <input type="submit" value="OK"></input>
 </p>
 </form>
-</h:outputText><h:form id="v0" rendered="#{eulaTaskBean.prompt}">
+</h:outputText><h:form rendered="#{eulaTaskBean.prompt}">
 <p></p>
 <p>[for demo/debugging, JSF commandButton to accept the license]</p>
 <p>Click 'OK' to agree with the End-user license agreement for this module.</p>
     <input type="hidden" name="lsid" value="#{eulaTaskBean.lsid}" />
-    <h:commandButton value="OK" actionListener="#{eulaTaskBean.acceptOk}">
+    <h:commandButton value="OK" actionListener="#{eulaTaskBean.acceptOk}" >
+        <f:attribute name="lsidAttr" value="#{eulaTaskBean.lsid}" />
     </h:commandButton>
-
+<p></p>
 <p>[for demo/debugging, JSF commandLink to accept the license]</p>
     <h:commandLink value="Link to accept" actionListener="#{eulaTaskBean.acceptClicked}">
         <f:param name="lsid" value="#{eulaTaskBean.lsid}"/>

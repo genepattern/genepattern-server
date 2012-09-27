@@ -12,6 +12,7 @@ import org.genepattern.server.config.ServerConfiguration.Context;
 import org.genepattern.server.licensemanager.EULAInfo;
 import org.genepattern.server.licensemanager.LicenseManager;
 import org.genepattern.server.webservice.server.local.LocalAdminClient;
+import org.genepattern.util.GPConstants;
 import org.genepattern.webservice.TaskInfo;
 
 /**
@@ -25,33 +26,66 @@ public class EulaTaskBean {
     private String currentUser=null;
     private String lsid;
     private boolean prompt=false;
+    private boolean accepted=false;
+    private String reloadJobParam="";
 
     public EulaTaskBean() {
         this.currentUser = UIBeanHelper.getUserId();
     }
     
+    //callback from ModuleChooserBean#setSelectedModule, JobBean#reload
     public void setSelectedModule(String selectedModule) {
+        log.debug("selectedModuel="+selectedModule);
         this.lsid=selectedModule;
         this.prompt=isRequiresEULA();
-    }
-    
-    public void setLsid(final String lsid) {
-        this.lsid = lsid;
     }
     
     public String getLsid() {
         return lsid;
     }
     
+    //helper method, when reloading a job from a URL, e.g.
+    //    /gp/pages/index.jsf?lsid=urn:lsid:8080.gp-trunk-dev.120.0.0.1:genepatternmodules:303:2&reloadJob=7767
+    public String getInitialQueryString() {
+        HttpServletRequest request = UIBeanHelper.getRequest();
+        String qs = request.getQueryString();
+        if (qs == null) {
+            qs="";
+        }
+        log.debug("queryString="+qs);
+        return qs;
+    }
+    
+    //helper method, when reloading a job from the job menu
+    public String getReloadJobParam() {
+        return reloadJobParam;
+    }
+    
+    public void setReloadJobParam(final String str) {
+        log.debug("reloadJobParam="+str);
+        this.reloadJobParam=str;
+    }
+    
     /**
      * Check to see if we need to prompt the currentUser for an EULA for the current module.
      * Note: this covers the following cases:
-     *     1) module has no EULA
-     *     2) module has one or more EULA, but current user has already agreed to all of them
-     *     3) module has one or more EULA which the current user has not yet agreed to
+     *     1) module has no EULA (return false)
+     *     2) module has one or more EULA, but current user has already agreed to all of them (return false)
+     *     3) module has one or more EULA which the current user has not yet agreed to (return true)
      * @return true, if the GUI should prompt the current user to accept one or more EULA.
      */
     public boolean isPrompt() {
+        Object obj = UIBeanHelper.getRequest().getSession().getAttribute(GPConstants.LSID);
+        if (obj instanceof String) {
+            String taskNameOrLsid = (String) obj;
+            if (taskNameOrLsid != lsid) {
+                setSelectedModule(taskNameOrLsid);
+            }
+        }
+
+        if (prompt) {
+            return !accepted;
+        }
         return prompt;
     }
     
@@ -106,7 +140,7 @@ public class EulaTaskBean {
     public void acceptOk(ActionEvent event) {
         log.debug("acceptOk");
         Map<String,String> params = FacesContext.getCurrentInstance().getExternalContext().getRequestParameterMap();
-        final String lsid=params.get("lsid");
+        final String lsid=params.get("lsid"); 
         recordEULA(currentUser, lsid);
     }
 
@@ -126,12 +160,13 @@ public class EulaTaskBean {
     }
     
     //use the LicenseManager to record EULA
-    private static void recordEULA(final String currentUser, final String lsid) {
-        log.debug("recordEULA, userId="+currentUser+", lsid="+lsid);
-        Context taskContext=Context.getContextForUser(currentUser);
+    private void recordEULA(final String _userId, final String _lsid) {
+        log.debug("recordEULA, userId="+_userId+", lsid="+_lsid);
+        Context taskContext=Context.getContextForUser(_userId);
         TaskInfo taskInfo = null;
-        taskInfo = initTaskInfo(currentUser, lsid);
+        taskInfo = initTaskInfo(_userId, _lsid);
         taskContext.setTaskInfo(taskInfo);
         LicenseManager.instance().recordLicenseAgreement(taskContext);
+        accepted=true;
     }
 }
