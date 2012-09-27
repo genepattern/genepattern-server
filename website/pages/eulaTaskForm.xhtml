@@ -14,14 +14,18 @@ use, misuse, or functionality.
 <p>
 You must agree to the End-user license agreement before you can run this module or pipeline.
 </p>
+<t:dataList var="eula" value="#{eulaTaskBean.eulas}">
+    Terms:
+    <textarea>#{eula.content}</textarea>
+</t:dataList>
 <p>
-lsid is: #{eulaTaskBean.lsid}
+lsid is: #{eulaTaskBean.currentLsid}
 </p>
 </h:outputText><h:outputText rendered="#{eulaTaskBean.prompt}" escape="false">
 <!-- Accept the EULA by POSTing to a servlet (standard HTTP rather than JSF) -->
 <form name="eula" action="/gp/eula" method="GET">
 Do you accept the license agreement?
-    <input type="hidden" name="lsid" value="#{eulaTaskBean.lsid}" />
+    <input type="hidden" name="lsid" value="#{eulaTaskBean.currentLsid}" />
     <input type="hidden" name="initialQueryString" value="#{eulaTaskBean.initialQueryString}" />
     <input type="hidden" name="reloadJob" value="#{eulaTaskBean.reloadJobParam}" />
 <p>
@@ -32,14 +36,14 @@ Do you accept the license agreement?
 <p></p>
 <p>[for demo/debugging, JSF commandButton to accept the license]</p>
 <p>Click 'OK' to agree with the End-user license agreement for this module.</p>
-    <input type="hidden" name="lsid" value="#{eulaTaskBean.lsid}" />
+    <input type="hidden" name="lsid" value="#{eulaTaskBean.currentLsid}" />
     <h:commandButton value="OK" actionListener="#{eulaTaskBean.acceptOk}" >
-        <f:attribute name="lsidAttr" value="#{eulaTaskBean.lsid}" />
+        <f:attribute name="lsidAttr" value="#{eulaTaskBean.currentLsid}" />
     </h:commandButton>
 <p></p>
 <p>[for demo/debugging, JSF commandLink to accept the license]</p>
     <h:commandLink value="Link to accept" actionListener="#{eulaTaskBean.acceptClicked}">
-        <f:param name="lsid" value="#{eulaTaskBean.lsid}"/>
+        <f:param name="lsid" value="#{eulaTaskBean.currentLsid}"/>
     </h:commandLink>
 </h:form>
 </ui:composition>

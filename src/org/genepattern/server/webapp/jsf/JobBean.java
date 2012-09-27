@@ -311,7 +311,7 @@ public class JobBean {
             EulaTaskBean eulaTaskBean = (EulaTaskBean) UIBeanHelper.getManagedBean("#{eulaTaskBean}");
             if (eulaTaskBean != null && reloadJob != null) {
                 eulaTaskBean.setReloadJobParam(""+reloadJob.getJobNumber());
-                eulaTaskBean.setSelectedModule(reloadJob.getTaskLSID());
+                eulaTaskBean.setCurrentLsid(reloadJob.getTaskLSID());
             }            
         }
         catch (Throwable t) {

@@ -111,7 +111,7 @@ public class ModuleChooserBean implements java.io.Serializable {
         }
         EulaTaskBean eulaTaskBean = (EulaTaskBean) UIBeanHelper.getManagedBean("#{eulaTaskBean}");
         if (eulaTaskBean != null && runTaskBean != null) {
-            eulaTaskBean.setSelectedModule(selectedModule);
+            eulaTaskBean.setCurrentLsid(selectedModule);
         }
     }
 

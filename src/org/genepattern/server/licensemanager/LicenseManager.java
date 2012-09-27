@@ -35,7 +35,7 @@ public class LicenseManager {
      * @return true if there is no record of EULA for the current user.
      */
     public boolean requiresEULA(Context jobContext) {
-        final List<EULAInfo> notYetAgreed = getEULAs(jobContext,false);
+        final List<EulaInfo> notYetAgreed = getEULAs(jobContext,false);
         if (notYetAgreed.size()>0) {
             return true;
         }
@@ -49,7 +49,7 @@ public class LicenseManager {
      * @param taskContext, must have a valid taskInfo object
      * @return
      */
-    public List<EULAInfo> getAllEULAForModule(final Context taskContext) {
+    public List<EulaInfo> getAllEULAForModule(final Context taskContext) {
         return getEULAs(taskContext, true);
     }
 
@@ -63,7 +63,7 @@ public class LicenseManager {
      * @param taskContext
      * @return
      */
-    public List<EULAInfo> getPendingEULAForModule(final Context taskContext) {
+    public List<EulaInfo> getPendingEULAForModule(final Context taskContext) {
         return getEULAs(taskContext, false);
     }
     
@@ -105,7 +105,7 @@ public class LicenseManager {
      * @param includeAll
      * @return
      */
-    private List<EULAInfo> getEULAs(final Context taskContext, final boolean includeAll) {
+    private List<EulaInfo> getEULAs(final Context taskContext, final boolean includeAll) {
         if (taskContext == null) {
             throw new IllegalArgumentException("taskContext==null");
         }
@@ -116,7 +116,7 @@ public class LicenseManager {
         if (taskInfo.getLsid()==null || taskInfo.getLsid().length()==0) {
             throw new IllegalArgumentException("taskInfo not set");
         }
-        List<EULAInfo> eulaObjs = getEULAObjs(taskInfo);
+        List<EulaInfo> eulaObjs = getEULAObjs(taskInfo);
         if (includeAll) {
             return eulaObjs;
         }
@@ -128,8 +128,8 @@ public class LicenseManager {
         if (taskContext.getUserId().length()==0) {
             throw new IllegalArgumentException("userId not set");
         }
-        List<EULAInfo> notYetAgreed = new ArrayList<EULAInfo>();
-        for(EULAInfo eulaObj : eulaObjs) {
+        List<EulaInfo> notYetAgreed = new ArrayList<EulaInfo>();
+        for(EulaInfo eulaObj : eulaObjs) {
             boolean hasAgreed = hasUserAgreed(taskContext.getUserId(), eulaObj);
             if (!hasAgreed) {
                 notYetAgreed.add( eulaObj );
@@ -138,7 +138,7 @@ public class LicenseManager {
         return notYetAgreed;
     }
 
-    private boolean hasUserAgreed(String userId, EULAInfo eula) {
+    private boolean hasUserAgreed(String userId, EulaInfo eula) {
         if (userId == null) {
             throw new IllegalArgumentException("userId==null");
         }
@@ -167,13 +167,13 @@ public class LicenseManager {
      * @param taskInfo
      * @return
      */
-    private List<EULAInfo> getEULAObjs(TaskInfo taskInfo) {
+    private List<EulaInfo> getEULAObjs(TaskInfo taskInfo) {
         if (taskInfo==null) {
             log.error("taskInfo==null");
             return Collections.emptyList();
         }
 
-        List<EULAInfo> eulaObjs = new ArrayList<EULAInfo>();
+        List<EulaInfo> eulaObjs = new ArrayList<EulaInfo>();
         Object licenseObj = taskInfo.getAttributes().get("license");
         if (licenseObj != null) {
             String licenseStr;
@@ -183,8 +183,9 @@ public class LicenseManager {
             else {
                 licenseStr = licenseObj.toString();
             }
-            EULAInfo eula = new EULAInfo();
+            EulaInfo eula = new EulaInfo();
             eula.setModuleLsid(taskInfo.getLsid());
+            eula.setModuleName(taskInfo.getName());
             eula.setLicense(licenseStr);
             eulaObjs.add(eula);
         }
@@ -207,7 +208,7 @@ public class LicenseManager {
         String uniq_key = lsid+"_"+userId;
         acceptedEulas.add(uniq_key);
     }
-    private boolean hasUserAgreed_impl(String userId, EULAInfo eula) {
+    private boolean hasUserAgreed_impl(String userId, EulaInfo eula) {
         String lsid=eula.getModuleLsid();
         String uniq_key = lsid+"_"+userId;
         return acceptedEulas.contains(uniq_key);

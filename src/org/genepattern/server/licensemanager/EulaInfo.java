@@ -1,5 +1,7 @@
 package org.genepattern.server.licensemanager;
 
+import java.io.File;
+
 /**
  * Data representation of a single End-user license agreement 'form' for a module.
  * 
@@ -14,12 +16,14 @@ package org.genepattern.server.licensemanager;
  * @author pcarr
  *
  */
-public class EULAInfo {
+public class EulaInfo {
     private String ID;
     private String content;
 
     //the lsid of the module which requires the EULA
     private String moduleLsid;
+    //the name of the module which requires the EULA
+    private String moduleName;
     //the value of the license= property in the manifest for the module
     private String license;
     
@@ -32,18 +36,25 @@ public class EULAInfo {
     public String getModuleLsid() {
         return this.moduleLsid;
     }
+    public void setModuleName(final String name) {
+        this.moduleName=name;
+    }
+    public String getModuleName() {
+        return moduleName;
+    }
     
     public String getLink() {
         //http://gpbroad.broadinstitute.org:8080/gp/getTaskDoc.jsp?name=urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00044:9&file=ComparativeMarkerSelection.pdf
-        String rel="getTaskDoc?name="+moduleLsid+"&file="+license;
+        String rel="/gp/getTaskDoc?name="+moduleLsid+"&file="+license;
         return rel;
     }
     
-    public String getContext() {
+    public String getContent() {
         final String NL = "\n";
         final String content=
                 "To view the license agreement, click this link: "+NL+
                 "    <a href=\""+getLink()+"\"></a>";
         return content; 
     }
+    
 }
