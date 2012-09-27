@@ -27,8 +27,9 @@ import org.genepattern.webservice.TaskInfo;
  * 
  * <pre>
    Example HTTP requests:
-       POST /gp/eula?accept=yes&lsid=<lsid>
-       POST /gp/eula?accept=yes&lsid=<lsid>&p1=<val1>&p2=<val2> 
+       GET /gp/eula?lsid=<lsid>
+       GET /gp/eula?lsid=<lsid>&initalQueryString=<query>
+       GET /gp/eula?lsid=<lsid>&reloadJob=<jobno>
  * </pre>
  *     
  * @author pcarr
@@ -58,11 +59,9 @@ public class EulaServlet  extends HttpServlet implements Servlet {
     private void process(HttpServletRequest request, HttpServletResponse resp, boolean redirect) 
     throws IOException
     {
-        String acceptParam=null;
         String currentUser=null;
         String lsid=null;
         try {
-            acceptParam=request.getParameter("accept");
             currentUser = getUserIdFromSession(request);
             lsid=request.getParameter("lsid");
             recordEULA(currentUser,lsid);
@@ -75,7 +74,18 @@ public class EulaServlet  extends HttpServlet implements Servlet {
         }
         
         //success, how to handle redirect?
-        String redirectTo=request.getContextPath() + "/pages/index.jsf?lsid=" + UIBeanHelper.encode(lsid);
+        String redirectTo=request.getContextPath() + "/pages/index.jsf";
+        String initialQueryString=request.getParameter("initialQueryString");
+        if (initialQueryString != null && initialQueryString.length() != 0) {
+            redirectTo += "?"+initialQueryString;
+        }
+        else {
+            redirectTo += "?lsid=" + UIBeanHelper.encode(lsid);
+            String reloadJob=request.getParameter("reloadJob");
+            if (reloadJob != null && reloadJob.length() != 0) {
+                redirectTo += "&reloadJob="+reloadJob;
+            }
+        }
         resp.sendRedirect(redirectTo);
         return;
     }
