@@ -14,23 +14,21 @@ use, misuse, or functionality.
 <p>
 You must agree to the End-user license agreement before you can run this module or pipeline.
 </p>
-<t:dataList var="eula" value="#{eulaTaskBean.eulas}">
-    Terms:
-    <textarea>#{eula.content}</textarea>
-</t:dataList>
 <p>
-lsid is: #{eulaTaskBean.currentLsid}
+currentLsid is: #{eulaTaskBean.currentLsid}
 </p>
+<t:dataList var="eula" value="#{eulaTaskBean.eulas}">
+    <p>module: #{eula.taskName} (lsid=#{eula.lsid})</p>
+    <p><textarea cols="80" rows="20">#{eula.content}</textarea></p>
+</t:dataList>
 </h:outputText><h:outputText rendered="#{eulaTaskBean.prompt}" escape="false">
 <!-- Accept the EULA by POSTing to a servlet (standard HTTP rather than JSF) -->
 <form name="eula" action="/gp/eula" method="GET">
-Do you accept the license agreement?
     <input type="hidden" name="lsid" value="#{eulaTaskBean.currentLsid}" />
     <input type="hidden" name="initialQueryString" value="#{eulaTaskBean.initialQueryString}" />
     <input type="hidden" name="reloadJob" value="#{eulaTaskBean.reloadJobParam}" />
-<p>
-    <input type="submit" value="OK"></input>
-</p>
+<p>Do you accept the license agreement?</p>
+<p><input type="submit" value="OK"></input></p>
 </form>
 </h:outputText><h:form rendered="#{eulaTaskBean.prompt}">
 <p></p>

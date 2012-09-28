@@ -12,6 +12,7 @@ import javax.servlet.http.HttpServletRequest;
 import org.apache.log4j.Logger;
 import org.genepattern.server.config.ServerConfiguration.Context;
 import org.genepattern.server.licensemanager.EulaInfo;
+import org.genepattern.server.licensemanager.EulaInfo.EulaInitException;
 import org.genepattern.server.licensemanager.LicenseManager;
 import org.genepattern.server.webservice.server.local.LocalAdminClient;
 import org.genepattern.util.GPConstants;
@@ -33,7 +34,7 @@ public class EulaTaskBean {
      * @author pcarr
      */
     static public class EulaInfoBean {
-        static EulaInfoBean from(EulaInfo eulaInfoObj) {
+        static EulaInfoBean from(EulaInfo eulaInfoObj) throws EulaInitException {
             EulaInfoBean eulaInfo = new EulaInfoBean();
             eulaInfo.setLsid(eulaInfoObj.getModuleLsid());
             eulaInfo.setTaskName(eulaInfoObj.getModuleName());
@@ -229,8 +230,24 @@ public class EulaTaskBean {
                     eulas.clear();
                 }
                 for(EulaInfo eulaInfoObj : promptForEulas) {
-                    EulaInfoBean eulaInfoBean = EulaInfoBean.from(eulaInfoObj);
-                    eulas.add(eulaInfoBean);
+                    try {
+                        EulaInfoBean eulaInfoBean = EulaInfoBean.from(eulaInfoObj);
+                        eulas.add(eulaInfoBean);
+                    }
+                    catch (EulaInitException e) {
+                        String message="Error initializing EULA info";
+                        if (eulaInfoObj != null) {
+                            message += ", moduleName="+eulaInfoObj.getModuleName();
+                            message += ", lsid="+eulaInfoObj.getModuleLsid();
+                        }
+                        //TODO: should propagate a message back to the end user
+                        //   The message is: 'An error occurred getting the End-user license agreement for this module,
+                        //                    You will not be able to run it until it has been resolved.
+                        //                    <moduleName> (lsid)'
+                        //Note: by swallowing the exception, the EULA is not displayed
+                        //    this will cause a runtime error, because the user has not had a chance to accept the agreement
+                        log.error(message, e);
+                    }
                 }
             }
         }
