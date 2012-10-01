@@ -27,7 +27,7 @@ public class TestRecordEulaToDb extends TestCase {
      * followed by another check (should be true).
      */
     @Test
-    public void integrationTest() {
+    public void testIntegration() {
         String userId="test";
         String lsid="urn:lsid:8080.gp-trunk-dev.120.0.0.1:genepatternmodules:303:5";
         EulaInfo eula = new EulaInfo();
