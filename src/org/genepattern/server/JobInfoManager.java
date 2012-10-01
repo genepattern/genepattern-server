@@ -73,6 +73,7 @@ public class JobInfoManager {
             isPipelineCache.put(taskInfo.getID(), isPipeline);
         }
         catch (Throwable t) {
+            t.printStackTrace();
             log.error(t);
         }
         return isPipeline;
