@@ -15,7 +15,7 @@ import org.genepattern.webservice.TaskInfo;
  */
 public class GetEulaFromTaskImpl01 implements GetEulaFromTask {
 
-    @Override
+    //Override
     public List<EulaInfo> getEulasFromTask(TaskInfo taskInfo) {
         Object licenseObj = taskInfo.getAttributes().get("license");
         if (licenseObj != null) {

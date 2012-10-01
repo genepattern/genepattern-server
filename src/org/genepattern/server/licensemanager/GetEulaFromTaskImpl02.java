@@ -19,7 +19,7 @@ import org.genepattern.webservice.TaskInfo;
 public class GetEulaFromTaskImpl02 implements GetEulaFromTask {
     public static Logger log = Logger.getLogger(GetEulaFromTaskImpl02.class);
 
-    @Override
+    //Override
     public List<EulaInfo> getEulasFromTask(final TaskInfo taskInfo) {
         String moduleLsid = taskInfo.getLsid();
         List<File> licenseFiles = getTaskLicenses(moduleLsid);
