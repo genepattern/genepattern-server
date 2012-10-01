@@ -2,9 +2,7 @@ package org.genepattern.server.licensemanager;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import org.apache.log4j.Logger;
 import org.genepattern.server.config.ServerConfiguration.Context;
@@ -21,6 +19,14 @@ public class LicenseManager {
     }
     static public LicenseManager instance() {
         return Singleton.INSTANCE;
+    }
+
+    //factory method for getting the method for recording the EULA
+    private static RecordEula getRecordEula(EulaInfo eulaInfo) {
+        //TODO: implement this method to 
+        //    a) save record to GP DB, 
+        //    b) optionally, remote record to external web service
+        return RecordEulaStub.instance();
     }
     
     /**
@@ -92,10 +98,19 @@ public class LicenseManager {
             throw new IllegalArgumentException("userId not set");
         }
 
-        //TODO: implement this method
         log.debug("recording EULA for user="+taskContext.getUserId()+", lsid="+taskContext.getTaskInfo().getLsid());
-        log.error("Not yet implemented!");
-        recordLicenseAgreement_impl(taskContext.getUserId(), taskContext.getTaskInfo().getLsid());
+        
+        List<EulaInfo> eulaInfos = getEULAObjs(taskInfo);
+        for(EulaInfo eulaInfo : eulaInfos) {
+            try {
+                RecordEula recordEula = getRecordEula(eulaInfo);
+                recordEula.recordLicenseAgreement(taskContext.getUserId(), eulaInfo.getModuleLsid());
+            }
+            catch (Exception e) {
+                //TODO: report back to end user
+                log.error("Error recording EULA for userId="+taskContext.getUserId()+", module="+eulaInfo.getModuleName()+", lsid="+eulaInfo.getModuleLsid());
+            }
+        }
     }
 
     /**
@@ -128,38 +143,24 @@ public class LicenseManager {
         if (taskContext.getUserId().length()==0) {
             throw new IllegalArgumentException("userId not set");
         }
+        
         List<EulaInfo> notYetAgreed = new ArrayList<EulaInfo>();
         for(EulaInfo eulaObj : eulaObjs) {
-            boolean hasAgreed = hasUserAgreed(taskContext.getUserId(), eulaObj);
+            //boolean hasAgreed = hasUserAgreed(taskContext.getUserId(), eulaObj);
+            boolean hasAgreed = false;
+            try {
+                RecordEula recordEula = getRecordEula(eulaObj);
+                hasAgreed = recordEula.hasUserAgreed(taskContext.getUserId(), eulaObj);
+            }
+            catch (Exception e) {
+                //TODO: report error back to end-user
+                log.error(e);
+            }
             if (!hasAgreed) {
                 notYetAgreed.add( eulaObj );
             }
         }
         return notYetAgreed;
-    }
-
-    private boolean hasUserAgreed(String userId, EulaInfo eula) {
-        if (userId == null) {
-            throw new IllegalArgumentException("userId==null");
-        }
-        if (userId.length()==0) {
-            throw new IllegalArgumentException("userId is not set");
-        }
-        if (eula == null) {
-            throw new IllegalArgumentException("eula==null");
-        }
-        
-        //TODO: implement the method, properly, current using stub which records to the current session
-        //      all agreement info is lost on server restart
-        return hasUserAgreed_impl(userId, eula);
-        
-        //old stub, delete this
-        //TODO: implement this method
-        //if ("admin".equals(userId)) {
-        //    //for debugging only ...
-        //    return true;
-        //}
-        //return false;
     }
     
     /**
@@ -197,20 +198,19 @@ public class LicenseManager {
         return eulaObjs;
     }
     
-    
     //------ the following is prototype code, should be re-factored into a factory pattern before releasing
     // 1st draft, record agreement to local session only
     //     Each user will have to accept the EULA after a server restart
     //    Note: this is not thread-safe.
     
-    Set<String> acceptedEulas = new HashSet<String>();
-    private void recordLicenseAgreement_impl(String userId, String lsid) {
-        String uniq_key = lsid+"_"+userId;
-        acceptedEulas.add(uniq_key);
-    }
-    private boolean hasUserAgreed_impl(String userId, EulaInfo eula) {
-        String lsid=eula.getModuleLsid();
-        String uniq_key = lsid+"_"+userId;
-        return acceptedEulas.contains(uniq_key);
-    }
+//    Set<String> acceptedEulas = new HashSet<String>();
+//    private void recordLicenseAgreement_impl(String userId, String lsid) {
+//        String uniq_key = lsid+"_"+userId;
+//        acceptedEulas.add(uniq_key);
+//    }
+//    private boolean hasUserAgreed_impl(String userId, EulaInfo eula) {
+//        String lsid=eula.getModuleLsid();
+//        String uniq_key = lsid+"_"+userId;
+//        return acceptedEulas.contains(uniq_key);
+//    }
 }
