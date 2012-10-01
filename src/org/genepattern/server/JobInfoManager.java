@@ -73,8 +73,11 @@ public class JobInfoManager {
             isPipelineCache.put(taskInfo.getID(), isPipeline);
         }
         catch (Throwable t) {
-            t.printStackTrace();
-            log.error(t);
+            String msg = "Error in isPipeline";
+            msg+=", jobInfo.taskName="+jobInfo.getTaskName();
+            msg+=", jobInfo.taskLSID="+jobInfo.getTaskLSID();
+            msg+=", jobInfo.taskID="+jobInfo.getTaskID();
+            log.error(msg, t);
         }
         return isPipeline;
     }
