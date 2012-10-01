@@ -103,7 +103,7 @@
 		</taskdef> 
 	    <findbugs home="${basedir}/findbugs" output="xml" outputFile="findbugs.xml" >
 		    <sourcePath path="${basedir}/src" />
-		    <class location="${genepattern.build}/${full-jarname}" />
+		    <class location="${build}/${full-jarname}" />
     	</findbugs>
     </target>
 
