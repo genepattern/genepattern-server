@@ -3,6 +3,12 @@ package org.genepattern.server.licensemanager;
 import java.util.HashSet;
 import java.util.Set;
 
+/**
+ * For debugging and prototyping, this implementation tracks eula to an
+ * in-memory Set. All license agreement info will be lost on server shutdown.
+ * 
+ * @author pcarr
+ */
 public class RecordEulaStub implements RecordEula {
     static public class Singleton {
         private static final RecordEulaStub INSTANCE = new RecordEulaStub();
@@ -29,5 +35,4 @@ public class RecordEulaStub implements RecordEula {
         String uniq_key = lsid+"_"+userId;
         return acceptedEulas.contains(uniq_key);
     }
-
 }

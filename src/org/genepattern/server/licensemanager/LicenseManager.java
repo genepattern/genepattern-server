@@ -6,6 +6,7 @@ import java.util.List;
 
 import org.apache.log4j.Logger;
 import org.genepattern.server.config.ServerConfiguration.Context;
+import org.genepattern.server.licensemanager.dao.RecordEulaToDb;
 import org.genepattern.webservice.TaskInfo;
 
 public class LicenseManager {
@@ -23,10 +24,10 @@ public class LicenseManager {
 
     //factory method for getting the method for recording the EULA
     private static RecordEula getRecordEula(EulaInfo eulaInfo) {
-        //TODO: implement this method to 
-        //    a) save record to GP DB, 
-        //    b) optionally, remote record to external web service
-        return RecordEulaStub.instance();
+        //for debugging, the RecordEulaStub can be used
+        //return RecordEulaStub.instance(); 
+        //TODO: if necessary, remote record to external web service
+        return new RecordEulaToDb();
     }
     
     /**
@@ -146,15 +147,16 @@ public class LicenseManager {
         
         List<EulaInfo> notYetAgreed = new ArrayList<EulaInfo>();
         for(EulaInfo eulaObj : eulaObjs) {
-            //boolean hasAgreed = hasUserAgreed(taskContext.getUserId(), eulaObj);
             boolean hasAgreed = false;
+            final String userId=taskContext.getUserId();
+            final String lsid=eulaObj.getModuleLsid();
             try {
                 RecordEula recordEula = getRecordEula(eulaObj);
                 hasAgreed = recordEula.hasUserAgreed(taskContext.getUserId(), eulaObj);
             }
-            catch (Exception e) {
+            catch (Throwable t) {
                 //TODO: report error back to end-user
-                log.error(e);
+                log.error("Error recording eula, userId="+userId+", lsid="+lsid, t);
             }
             if (!hasAgreed) {
                 notYetAgreed.add( eulaObj );
@@ -198,19 +200,4 @@ public class LicenseManager {
         return eulaObjs;
     }
     
-    //------ the following is prototype code, should be re-factored into a factory pattern before releasing
-    // 1st draft, record agreement to local session only
-    //     Each user will have to accept the EULA after a server restart
-    //    Note: this is not thread-safe.
-    
-//    Set<String> acceptedEulas = new HashSet<String>();
-//    private void recordLicenseAgreement_impl(String userId, String lsid) {
-//        String uniq_key = lsid+"_"+userId;
-//        acceptedEulas.add(uniq_key);
-//    }
-//    private boolean hasUserAgreed_impl(String userId, EulaInfo eula) {
-//        String lsid=eula.getModuleLsid();
-//        String uniq_key = lsid+"_"+userId;
-//        return acceptedEulas.contains(uniq_key);
-//    }
 }
