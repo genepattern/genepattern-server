@@ -11,9 +11,9 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.apache.log4j.Logger;
 import org.genepattern.server.config.ServerConfiguration.Context;
-import org.genepattern.server.licensemanager.EulaInfo;
-import org.genepattern.server.licensemanager.EulaInfo.EulaInitException;
-import org.genepattern.server.licensemanager.LicenseManager;
+import org.genepattern.server.eula.EulaInfo;
+import org.genepattern.server.eula.EulaManager;
+import org.genepattern.server.eula.EulaInfo.EulaInitException;
 import org.genepattern.server.webservice.server.local.LocalAdminClient;
 import org.genepattern.util.GPConstants;
 import org.genepattern.webservice.TaskInfo;
@@ -231,7 +231,7 @@ public class EulaTaskBean {
         if (taskInfo != null) {
             Context taskContext = Context.getContextForUser(currentUser);
             taskContext.setTaskInfo(taskInfo);
-            List<EulaInfo> promptForEulas = LicenseManager.instance().getPendingEULAForModule(taskContext);
+            List<EulaInfo> promptForEulas = EulaManager.instance().getPendingEULAForModule(taskContext);
             if (promptForEulas == null || promptForEulas.size()==0) {
                 requiresEULA=false;
                 this.eulas=Collections.emptyList();
@@ -301,14 +301,13 @@ public class EulaTaskBean {
         recordEULA(currentUser, lsid);
     }
     
-    //use the LicenseManager to record EULA
     private void recordEULA(final String _userId, final String _lsid) {
         log.debug("recordEULA, userId="+_userId+", lsid="+_lsid);
         Context taskContext=Context.getContextForUser(_userId);
         TaskInfo taskInfo = null;
         taskInfo = initTaskInfo(_userId, _lsid);
         taskContext.setTaskInfo(taskInfo);
-        LicenseManager.instance().recordLicenseAgreement(taskContext);
+        EulaManager.instance().recordLicenseAgreement(taskContext);
         accepted=true;
     }
 }

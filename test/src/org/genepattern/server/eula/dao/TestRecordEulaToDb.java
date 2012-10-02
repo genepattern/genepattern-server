@@ -1,8 +1,9 @@
-package org.genepattern.server.licensemanager.dao;
+package org.genepattern.server.eula.dao;
 
 import org.genepattern.junitutil.DbUtil;
-import org.genepattern.server.licensemanager.EulaInfo;
-import org.genepattern.server.licensemanager.RecordEula;
+import org.genepattern.server.eula.EulaInfo;
+import org.genepattern.server.eula.RecordEula;
+import org.genepattern.server.eula.dao.RecordEulaToDb;
 import org.junit.Assert;
 import org.junit.Test;
 

@@ -12,7 +12,7 @@ import javax.servlet.http.HttpSession;
 
 import org.apache.log4j.Logger;
 import org.genepattern.server.config.ServerConfiguration.Context;
-import org.genepattern.server.licensemanager.LicenseManager;
+import org.genepattern.server.eula.EulaManager;
 import org.genepattern.server.webapp.jsf.UIBeanHelper;
 import org.genepattern.server.webservice.server.local.LocalAdminClient;
 import org.genepattern.util.GPConstants;
@@ -122,7 +122,7 @@ public class EulaServlet  extends HttpServlet implements Servlet {
         TaskInfo taskInfo = null;
         taskInfo = initTaskInfo(currentUser, lsid);
         taskContext.setTaskInfo(taskInfo);
-        LicenseManager.instance().recordLicenseAgreement(taskContext);
+        EulaManager.instance().recordLicenseAgreement(taskContext);
     }
 
 }

@@ -134,6 +134,7 @@ import org.genepattern.server.domain.AnalysisJob;
 import org.genepattern.server.domain.AnalysisJobDAO;
 import org.genepattern.server.domain.JobStatus;
 import org.genepattern.server.domain.JobStatusDAO;
+import org.genepattern.server.eula.EulaManager;
 import org.genepattern.server.executor.AnalysisJobScheduler;
 import org.genepattern.server.executor.CommandExecutor;
 import org.genepattern.server.executor.CommandExecutorNotFoundException;
@@ -147,7 +148,6 @@ import org.genepattern.server.genomespace.GenomeSpaceClient;
 import org.genepattern.server.genomespace.GenomeSpaceClientFactory;
 import org.genepattern.server.genomespace.GenomeSpaceException;
 import org.genepattern.server.genomespace.GenomeSpaceFileManager;
-import org.genepattern.server.licensemanager.LicenseManager;
 import org.genepattern.server.plugin.PluginManagerLegacy;
 import org.genepattern.server.user.UsageLog;
 import org.genepattern.server.util.JobResultsFilenameFilter;
@@ -687,7 +687,7 @@ public class GenePatternAnalysisTask {
         //does the task have an EULA
         boolean requiresEULA=false;
         try {
-            requiresEULA = LicenseManager.instance().requiresEULA(jobContext);
+            requiresEULA = EulaManager.instance().requiresEULA(jobContext);
         }
         catch (Throwable t) {
             String message="Unexpected error checking for EULA for job #"+jobInfo.getJobNumber()+": "+t.getLocalizedMessage();
