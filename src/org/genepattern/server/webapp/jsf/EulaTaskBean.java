@@ -84,6 +84,8 @@ public class EulaTaskBean {
     private String currentUser=null;
     //the lsid of the job that the current user wants to run (can be a module or a pipeline)
     private String currentLsid=null;
+     //the name of the job that the current user wants to run (can be a module or a pipeline)
+    private String currentTaskName=null;
     //instantiated, when necessary, from the currentLsid
     private TaskInfo currentTaskInfo=null;
     //if true, it means we need to display the EULA agreement form, otherwise skip ahead to the job submit form
@@ -115,6 +117,7 @@ public class EulaTaskBean {
         }
         if (this.currentTaskInfo!=null) {
             this.prompt=initEulaInfo(currentTaskInfo);
+            this.currentTaskName=currentTaskInfo.getName();
         }
         else {
             this.prompt=false;
@@ -132,7 +135,19 @@ public class EulaTaskBean {
     public String getCurrentLsid() {
         return currentLsid;
     }
-    
+
+    /**
+     * Get the name of the module (or pipeline) that the current user wants to run.
+     * This may or may not be the same lsid as that which requires EULA.
+     *
+     * We use this to display the header information.
+     *
+     * @return
+     */
+    public String getCurrentTaskName() {
+        return currentTaskName;
+    }
+
     /**
      * Check to see if we need to prompt the currentUser for an EULA for the current module.
      * Note: this covers the following cases:
