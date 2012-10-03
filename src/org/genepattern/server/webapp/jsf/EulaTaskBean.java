@@ -1,5 +1,6 @@
 package org.genepattern.server.webapp.jsf;
 
+import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -16,6 +17,7 @@ import org.genepattern.server.eula.EulaManager;
 import org.genepattern.server.eula.EulaInfo.EulaInitException;
 import org.genepattern.server.webservice.server.local.LocalAdminClient;
 import org.genepattern.util.GPConstants;
+import org.genepattern.util.LSID;
 import org.genepattern.webservice.TaskInfo;
 
 /**
@@ -84,6 +86,8 @@ public class EulaTaskBean {
     private String currentUser=null;
     //the lsid of the job that the current user wants to run (can be a module or a pipeline)
     private String currentLsid=null;
+    //
+    private String currentLsidVersion=null;
      //the name of the job that the current user wants to run (can be a module or a pipeline)
     private String currentTaskName=null;
     //instantiated, when necessary, from the currentLsid
@@ -107,10 +111,19 @@ public class EulaTaskBean {
     //  #{eulaTaskBean.initialQueryString}
     public void setCurrentLsid(final String currentLsid) {
         log.debug("currentLsid="+currentLsid);
-        this.currentLsid=currentLsid; 
+        this.currentLsid=currentLsid;
+        this.currentLsidVersion="";
         if (currentLsid != null && currentLsid.length() != 0) {
-            //if necessary, init currentTaskInfo
+            //if necessary, init currentLsidVersion and currentTaskInfo
             if (currentTaskInfo == null || !currentLsid.equals( currentTaskInfo.getLsid() )) {
+                log.debug("initializing currentLsidVersion, currentLsid="+currentLsid);
+                try {
+                    LSID tmpLsid = new LSID(currentLsid);
+                    this.currentLsidVersion=tmpLsid.getVersion();
+                }
+                catch (MalformedURLException e) {
+                    log.error("Unexpected error getting version from lsid string, currentLsid="+currentLsid,e);
+                } 
                 log.debug("initializing currentTaskInfo, currentLsid="+currentLsid);
                 currentTaskInfo = initTaskInfo(currentUser, currentLsid);
             }
@@ -134,6 +147,14 @@ public class EulaTaskBean {
      */
     public String getCurrentLsid() {
         return currentLsid;
+    }
+    
+    /**
+     * Get the version (from the lsid) from the module (or pipeline) that the current user wants to run.
+     * @return
+     */
+    public String getCurrentLsidVersion() {
+        return currentLsidVersion;
     }
 
     /**
