@@ -801,4 +801,10 @@ input.error, select.error {
 {
     width: 100%;
 }
+
+.license-agree-text
+{
+    font-size: 13px;
+}
+
 /*End CSS for license UI
