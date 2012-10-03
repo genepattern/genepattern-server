@@ -62,10 +62,6 @@ public class EulaRecord {
         return dateRecorded;
     }
 
-//    public void setDateRecorded(Date dateRecorded) {
-//        this.dateRecorded = dateRecorded;
-//    }
-
 }
 
 
