@@ -9,17 +9,29 @@ whatsoever. Neither the Broad Institute nor MIT can be responsible for its
 use, misuse, or functionality.
 */
 --><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml" xmlns:ui="http://java.sun.com/jsf/facelets" xmlns:h="http://java.sun.com/jsf/html" xmlns:f="http://java.sun.com/jsf/core" xmlns:t="http://myfaces.apache.org/tomahawk" xmlns:a4j="https://ajax4jsf.dev.java.net/ajax" xmlns:c="http://java.sun.com/jsp/jstl/core">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:ui="http://java.sun.com/jsf/facelets" xmlns:h="http://java.sun.com/jsf/html" xmlns:f="http://java.sun.com/jsf/core" xmlns:t="http://myfaces.apache.org/tomahawk" xmlns:a4j="https://ajax4jsf.dev.java.net/ajax" xmlns:c="http://java.sun.com/jsp/jstl/core" xmlns:fn="http://java.sun.com/jsp/jstl/functions">
 <ui:composition>
 <h:outputText rendered="#{eulaTaskBean.prompt}">
-<h5>
-    You must agree to the following End-User license agreement before you can run #{eulaTaskBean.currentTaskName}.
-</h5>
 
-<t:dataList var="eula" value="#{eulaTaskBean.eulas}">
-    <p class="barhead-task">#{eula.taskName}</p>
-    <p><textarea rows="20" class="license-content">#{eula.content}</textarea></p>
-</t:dataList>
+    <div class="barhead-task">#{eulaTaskBean.currentTaskName}</div>
+    <div class="license-lsid"> LSID:#{eulaTaskBean.currentLsid}</div>
+
+    <h6 class="license-center">
+        You must agree to the following End-User license agreement before you can run #{eulaTaskBean.currentTaskName}.
+    </h6>
+
+    <h:outputText rendered="#{ fn:length(eulaTaskBean.eulas) == 1}">
+        <t:dataList var="eula" value="#{eulaTaskBean.eulas}">
+            <p><textarea rows="20" class="license-content">#{eula.content}</textarea></p>
+        </t:dataList>
+    </h:outputText>
+
+    <h:outputText rendered="#{ fn:length(eulaTaskBean.eulas) > 1}">
+        <t:dataList var="eula" value="#{eulaTaskBean.eulas}">
+            <p class="barhead-license-task">#{eula.taskName}</p>
+            <p><textarea rows="20" class="license-content">#{eula.content}</textarea></p>
+        </t:dataList>
+    </h:outputText>
 </h:outputText>
 
 <h:outputText rendered="#{eulaTaskBean.prompt}" escape="false">

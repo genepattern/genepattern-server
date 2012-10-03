@@ -797,6 +797,18 @@ input.error, select.error {
     text-align: center;
 }
 
+.barhead-license-task {
+	font-weight: bold;
+	font-size: 11px;
+	color: #333366;
+	background-color: #CCCC99;
+	text-indent: 6px;
+	height: 19px;
+	width: 100%;
+	line-height: 20px;
+	vertical-align: top;
+}
+
 .license-content
 {
     width: 100%;
@@ -804,7 +816,14 @@ input.error, select.error {
 
 .license-agree-text
 {
-    font-size: 13px;
+    font-size: 11px;
+    font-weight: bold;
+    color: #333366;
 }
 
+.license-lsid
+{
+    font-size: 9px;
+    text-align: right;
+}
 /*End CSS for license UI
