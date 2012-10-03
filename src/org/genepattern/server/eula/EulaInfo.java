@@ -2,10 +2,12 @@ package org.genepattern.server.eula;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.MalformedURLException;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
 import org.genepattern.server.webservice.server.DirectoryManager;
+import org.genepattern.util.LSID;
 
 /**
  * Data representation of a single End-user license agreement 'form' for a module.
@@ -37,19 +39,32 @@ public class EulaInfo {
 
     //the lsid of the module which requires the EULA
     private String moduleLsid;
+    //the version of the module which requires the EULA, derived from moduleLsid
+    private String moduleLsidVersion;
     //the name of the module which requires the EULA
     private String moduleName;
     //the value of the license= property in the manifest for the module
     private String license;
     
-    public void setLicense(String license) {
+    public void setLicense(final String license) {
         this.license=license;
     }
-    public void setModuleLsid(String lsid) {
-        this.moduleLsid=lsid;
+    public void setModuleLsid(final String lsid) {
+        this.moduleLsid=lsid; 
+        //automatically init lsidVersion
+        try {
+            LSID tmpLsid = new LSID(lsid);
+            this.moduleLsidVersion=tmpLsid.getVersion();
+        }
+        catch (MalformedURLException e) {
+            log.error("Error computing lsidVersion from lsid string, lsid="+lsid, e);
+        } 
     }
     public String getModuleLsid() {
         return this.moduleLsid;
+    }
+    public String getModuleLsidVersion() {
+        return this.moduleLsidVersion;
     }
     public void setModuleName(final String name) {
         this.moduleName=name;
