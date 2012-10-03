@@ -35,16 +35,6 @@ public class EulaManager {
         return new RecordEulaToDb();
     }
     
-    //factory method for getting the method for getting the EULA from the TaskInfo
-    private static GetEulaFromTask getGetEulaFromTask() {
-        //method 1: license= in manifest
-        //return new GetEulaFromTaskImpl01();
-        //method 2: support file named '*license*' in tasklib
-        //return new GetEulaFromTaskImpl02();
-        //method 3: recursive call for licenses for all included files
-        return new GetEulaFromTaskImpl03();
-    }
-    
     /**
      * Implement a run-time check, before starting a job, verify that there are
      * no EULA which the current user has not yet agreed to.
@@ -193,7 +183,7 @@ public class EulaManager {
         }
         
         //proposed interface, does this module have an EULA?
-        GetEulaFromTask getEulaFromTask = getGetEulaFromTask();
+        GetEulaFromTask getEulaFromTask = new GetEulaFromTaskRecursive();
         List<EulaInfo> eulaObjs = getEulaFromTask.getEulasFromTask(taskInfo);
         return eulaObjs;
     }
