@@ -10,7 +10,7 @@
     <property name="connection.provider_class">org.hibernate.connection.C3P0ConnectionProvider</property>
 
     <!--  auto-create ddl -->
-    <property name="hbm2ddl.auto">update</property> 
+    <!--  property name="hbm2ddl.auto">update</property --> 
 
     <!-- HSQL setup (the default).  These values can be overriden in genepattern.properties  -->
     <property name="hibernate.connection.driver_class">org.hsqldb.jdbcDriver</property>

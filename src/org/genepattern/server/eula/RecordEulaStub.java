@@ -1,11 +1,12 @@
 package org.genepattern.server.eula;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
- * For debugging and prototyping, this implementation tracks eula to an
- * in-memory Set. All license agreement info will be lost on server shutdown.
+ * For debugging and prototyping, this implementation records eula to an
+ * in-memory Map. All license agreement info will be lost on server shutdown.
  * 
  * @author pcarr
  */
@@ -20,19 +21,25 @@ public class RecordEulaStub implements RecordEula {
         return Singleton.INSTANCE;
     } 
 
-    private Set<String> acceptedEulas = new HashSet<String>();
+    private Map<String,Date> acceptedEulas = new HashMap<String,Date>();
     
     private RecordEulaStub() {
         //force singleton
     }
-    public void recordLicenseAgreement(String userId, String lsid) throws Exception {
-        String uniq_key = lsid+"_"+userId;
-        acceptedEulas.add(uniq_key);
+    public void recordLicenseAgreement(final String userId, final String lsid) throws Exception {
+        final String uniq_key = lsid+"_"+userId;
+        acceptedEulas.put(uniq_key, new Date());
     }
 
-    public boolean hasUserAgreed(String userId, EulaInfo eula) throws Exception {
-        String lsid=eula.getModuleLsid();
-        String uniq_key = lsid+"_"+userId;
-        return acceptedEulas.contains(uniq_key);
+    public boolean hasUserAgreed(final String userId, final EulaInfo eula) throws Exception {
+        final String lsid=eula.getModuleLsid();
+        final String uniq_key = lsid+"_"+userId;
+        return acceptedEulas.containsKey(uniq_key);
+    }
+
+    public Date getUserAgreementDate(final String userId, final EulaInfo eula) throws Exception {
+        final String lsid=eula.getModuleLsid();
+        final String uniq_key = lsid+"_"+userId;
+        return acceptedEulas.get(uniq_key);
     }
 }

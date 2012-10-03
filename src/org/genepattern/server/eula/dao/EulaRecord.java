@@ -29,9 +29,10 @@ public class EulaRecord {
     @Column(name = "lsid")
     private String lsid;
     
-    //the Date that the user agreed 
+    //the Date that the user agreed
+    // initialized in this class, which is good enough
     @Column(name = "date_recorded")
-    private Date dateRecorded;
+    private Date dateRecorded = new Date();
 
     public long getId() {
         return id;
@@ -61,9 +62,9 @@ public class EulaRecord {
         return dateRecorded;
     }
 
-    public void setDateRecorded(Date dateRecorded) {
-        this.dateRecorded = dateRecorded;
-    }
+//    public void setDateRecorded(Date dateRecorded) {
+//        this.dateRecorded = dateRecorded;
+//    }
 
 }
 

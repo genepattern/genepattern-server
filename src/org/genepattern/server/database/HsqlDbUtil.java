@@ -209,6 +209,12 @@ public class HsqlDbUtil {
             }
         });
         String expectedSchemaVersion = ServerProperties.instance().getProperty("GenePatternVersion");
+        //for junit testing, if the property is not in ServerProperties, check System properties
+        if ("$GENEPATTERN_VERSION$".equals(expectedSchemaVersion)) {
+            log.info("expectedSchemaVersion="+expectedSchemaVersion+" (from ServerProperties)");
+            expectedSchemaVersion = System.getProperty("GenePatternVersion", expectedSchemaVersion);
+            log.info("expectedSchemaVersion="+expectedSchemaVersion+" (from System.getProperty)");
+        }
         String dbSchemaVersion = (String) System.getProperty("dbSchemaVersion");
         for (int f = 0; f < schemaFiles.length; f++) {
             File schemaFile = schemaFiles[f];

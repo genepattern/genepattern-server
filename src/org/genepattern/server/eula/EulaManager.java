@@ -9,6 +9,11 @@ import org.genepattern.server.config.ServerConfiguration.Context;
 import org.genepattern.server.eula.dao.RecordEulaToDb;
 import org.genepattern.webservice.TaskInfo;
 
+/**
+ * Methods for managing End-user license agreements (EULA) for GenePattern modules.
+ * 
+ * @author pcarr
+ */
 public class EulaManager {
     public static Logger log = Logger.getLogger(EulaManager.class);
 
