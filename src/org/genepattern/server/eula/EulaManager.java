@@ -40,7 +40,9 @@ public class EulaManager {
         //method 1: license= in manifest
         //return new GetEulaFromTaskImpl01();
         //method 2: support file named '*license*' in tasklib
-        return new GetEulaFromTaskImpl02();
+        //return new GetEulaFromTaskImpl02();
+        //method 3: recursive call for licenses for all included files
+        return new GetEulaFromTaskImpl03();
     }
     
     /**
@@ -89,8 +91,7 @@ public class EulaManager {
     
     /**
      * Record current user agreement to the End-user license agreement.
-     * 
-     *     TODO: when the taskInfo is a pipeline, make sure to accept all agreements.
+     * When the taskInfo is a pipeline, accept all agreements.
      * 
      * @param taskContext, must have a valid taskInfo and userId
      */
@@ -179,9 +180,8 @@ public class EulaManager {
     }
     
     /**
-     * Implement the rule representing a module which requires an end-user license agreement.
-     * 
-     * TODO: this method is not recursive. It won't work with pipelines which contain license modules.
+     * Get the list of EulaInfo for the given task, can be a module or pipeline.
+     * When it is a pipeline, recursively get all required licenses.
      * 
      * @param taskInfo
      * @return
@@ -195,12 +195,7 @@ public class EulaManager {
         //proposed interface, does this module have an EULA?
         GetEulaFromTask getEulaFromTask = getGetEulaFromTask();
         List<EulaInfo> eulaObjs = getEulaFromTask.getEulasFromTask(taskInfo);
-        
-        if (taskInfo.isPipeline()) {
-            //TODO: implement for pipelines
-            log.error("This method is not yet implemented for pipelines");
-        }
         return eulaObjs;
     }
-
+    
 }
