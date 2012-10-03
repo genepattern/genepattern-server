@@ -14,7 +14,7 @@ use, misuse, or functionality.
 <h:outputText rendered="#{eulaTaskBean.prompt}">
 
     <div class="barhead-task">#{eulaTaskBean.currentTaskName}</div>
-    <div class="license-lsid"> LSID:#{eulaTaskBean.currentLsid}</div>
+    <div class="license-lsid"> LSID=#{eulaTaskBean.currentLsid}</div>
 
     <h6 class="license-center">
         You must agree to the following End-User license agreement before you can run #{eulaTaskBean.currentTaskName}.
@@ -42,7 +42,14 @@ use, misuse, or functionality.
         <input type="hidden" name="initialQueryString" value="#{eulaTaskBean.initialQueryString}" />
         <input type="hidden" name="reloadJob" value="#{eulaTaskBean.reloadJobParam}" />
 
-        <p class="license-agree-text">Do you accept the license agreement?</p>
+        <h:outputText rendered="#{ fn:length(eulaTaskBean.eulas) == 1}">
+            <p class="license-agree-text">Do you accept the license agreement?</p>
+        </h:outputText>
+
+        <h:outputText rendered="#{ fn:length(eulaTaskBean.eulas) > 1}">
+            <p class="license-agree-text">Do you accept all the license agreements?</p>
+        </h:outputText>
+
         <span>
             <input type="submit" value="OK"></input>
             <input type="button" onclick="document.location='#{facesContext.externalContext.requestContextPath}/pages/index.jsf'" value="Cancel"/>
