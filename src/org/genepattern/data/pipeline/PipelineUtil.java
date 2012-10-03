@@ -58,7 +58,7 @@ public class PipelineUtil {
         return getPipelineModel(taskInfo);
     }
 
-    private static PipelineModel getPipelineModel(TaskInfo taskInfo) 
+    static public PipelineModel getPipelineModel(TaskInfo taskInfo) 
     throws TaskIDNotFoundException, PipelineModelException
     {
         if (taskInfo == null) {
