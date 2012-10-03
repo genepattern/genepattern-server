@@ -25,10 +25,10 @@ a:active {
 
 .topband {
 	position:absolute;
-	left:0px; 
-	top:0px; 
-	width:100%; 
-	height:48px; 
+	left:0px;
+	top:0px;
+	width:100%;
+	height:48px;
 	z-index:1;
 	font-size: 10px;
 	font-weight: bold;
@@ -493,7 +493,7 @@ a:active {
 	width: 100%;
 	height: 25px;
 	text-align: right;
-	
+
 }
 .loginsettings a{
 	color: #000099;
@@ -624,7 +624,7 @@ a:active {
 	line-height: 11px;
 }
 .smalltype4 td{
-	background-color: #f1f1fd;	
+	background-color: #f1f1fd;
 }
 
 .smalltype5 {
@@ -676,7 +676,7 @@ a:active {
 	border-bottom-color: #CCCCCC;
 	border-bottom-width: 1px;
 }
-	
+
 h1 {
 	font-family: Verdana, Arial, Helvetica, sans-serif;
 	color: #666633;
@@ -768,9 +768,9 @@ h6 {
 	line-height: 13px;
 }
 input.error, select.error {
-	border: 1px solid red; 
-	background-color: #FFFCE2;  
-	background-position: right; 
+	border: 1px solid red;
+	background-color: #FFFCE2;
+	background-position: right;
 	background-repeat: no-repeat;
 }
 .server_error_message {
@@ -791,5 +791,14 @@ input.error, select.error {
 	font-weight: bold;
 }
 
+/*CSS for license UI */
+.license-center
+{
+    text-align: center;
+}
 
-
+.license-content
+{
+    width: 100%;
+}
+/*End CSS for license UI
