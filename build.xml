@@ -3,6 +3,8 @@
         <!ENTITY release_targets SYSTEM "./releaseTargets.xml">
         ]>
 <project basedir="." default="targets" name="genepattern">
+	<import file="test/build.xml"/>
+	
     <description>JAR deployment for genepattern</description>
     <property name="java.target" value="1.5" />
     <property location="lib" name="lib_compile" />
@@ -95,7 +97,7 @@
         </ant>
     </target>
     
-    <target name="findbugs" depends="init,compile,common" description="Findbugs Test">
+    <target name="findbugs" depends="init, compile, common" description="Findbugs Test">
     	<taskdef name="findbugs" classname="edu.umd.cs.findbugs.anttask.FindBugsTask">
     		<classpath>
         		<pathelement location="${basedir}/lib/findbugs-ant.jar"/>
@@ -106,6 +108,14 @@
 		    <class location="${build}/${full-jarname}" />
     	</findbugs>
     </target>
+    
+    <target name="junit" depends="init,compile" description="Run JUnit Tests">
+    	<echo message="Running JUnit Tests"/>
+    	<antcall target="compile-test"/>
+    	<antcall target="test-gp-library"/>
+    	<antcall target="test-taskintegrator"/>
+    	<antcall target="test-admin"/>
+  	</target>
 
     <target name="compile" depends="init" description="Compiles all the source.">
         <javac debug="true" classpathref="library.classpath" destdir="${genepattern.build}" srcdir="${src}" compiler="javac1.5" source="${java.target}" target="${java.target}" excludes="org/genepattern/server/analysis/*,org/genepattern/server/handler/*,org/genepattern/jaxb/**" />
