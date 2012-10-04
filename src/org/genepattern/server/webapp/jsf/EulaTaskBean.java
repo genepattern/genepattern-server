@@ -39,6 +39,7 @@ public class EulaTaskBean {
         static EulaInfoBean from(EulaInfo eulaInfoObj) throws EulaInitException {
             EulaInfoBean eulaInfo = new EulaInfoBean();
             eulaInfo.setLsid(eulaInfoObj.getModuleLsid());
+            eulaInfo.setLsidVersion(eulaInfoObj.getModuleLsidVersion());
             eulaInfo.setTaskName(eulaInfoObj.getModuleName());
             eulaInfo.setContent(eulaInfoObj.getContent());
             eulaInfo.setLink(eulaInfoObj.getLink());
@@ -46,6 +47,7 @@ public class EulaTaskBean {
         }
 
         private String lsid;
+        private String lsidVersion;
         private String taskName;
         private String content;
         private String link;
@@ -53,15 +55,22 @@ public class EulaTaskBean {
         public String getLsid() {
             return lsid;
         }
-        public void setLsid(String lsid) {
+        public void setLsid(final String lsid) {
             this.lsid = lsid;
+        }
+        
+        public String getLsidVersion() {
+            return lsidVersion;            
+        }
+        public void setLsidVersion(final String lsidVersion) {
+            this.lsidVersion = lsidVersion;
         }
 
         public String getTaskName() {
             return taskName;
         }
 
-        public void setTaskName(String taskName) {
+        public void setTaskName(final String taskName) {
             this.taskName = taskName;
         }
 
@@ -69,7 +78,7 @@ public class EulaTaskBean {
             return content;
         }
 
-        public void setContent(String content) {
+        public void setContent(final String content) {
             this.content = content;
         }
 
@@ -77,7 +86,7 @@ public class EulaTaskBean {
             return link;
         }
 
-        public void setLink(String link) {
+        public void setLink(final String link) {
             this.link = link;
         }
     }
