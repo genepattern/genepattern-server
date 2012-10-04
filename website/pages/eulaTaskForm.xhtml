@@ -20,17 +20,23 @@ use, misuse, or functionality.
 
     <div class="license-lsid"> LSID=#{eulaTaskBean.currentLsid}</div>
 
-    <h5 class="license-center">
-        You must agree to the following End-User license agreement before you can run #{eulaTaskBean.currentTaskName}.
-    </h5>
-
     <h:outputText rendered="#{ fn:length(eulaTaskBean.eulas) == 1}">
+
+        <h5 class="license-center">
+            You must agree to the following End-User license agreement before you can run #{eulaTaskBean.currentTaskName}.
+        </h5>
+
         <t:dataList var="eula" value="#{eulaTaskBean.eulas}">
             <p><textarea rows="20" class="license-content">#{eula.content}</textarea></p>
         </t:dataList>
     </h:outputText>
 
     <h:outputText rendered="#{ fn:length(eulaTaskBean.eulas) > 1}">
+
+        <h5 class="license-center">
+            You must agree to the following End-User license agreements before you can run #{eulaTaskBean.currentTaskName}.
+        </h5>
+
         <t:dataList var="eula" value="#{eulaTaskBean.eulas}">
             <p class="barhead-license-task">#{eula.taskName}</p>
             <p><textarea rows="20" class="license-content">#{eula.content}</textarea></p>
