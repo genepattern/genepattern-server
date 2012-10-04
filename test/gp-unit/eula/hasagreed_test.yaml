@@ -1,0 +1,13 @@
+name: testHasAgreed
+description: When the user has already agreed to the EULA for a licensed module, the job should run.
+# user 'test' has agreed to v. 3 of the testLicenseAgreement module
+module: urn:lsid:9090.gpdev.gpint01:genepatternmodules:812:3
+params:
+    message: "This job should run"
+assertions: 
+    numFiles: 1
+    files: 
+        "stdout.txt":
+            diff: "expected/stdout.txt"
+            # diff: "/Broad/dev/gp-trunk/test/gp-unit/eula/expected/stdout.txt"
+    

@@ -1,0 +1,6 @@
+gp.user=test
+gp.password=test
+gp.host=127.0.0.1
+gp.url=http://127.0.0.1:8080
+gp.host=gpdev.broadinstitute.org
+gpunit.testfolder=./

@@ -1,0 +1,9 @@
+name: testNetYetAgreed
+description: When the user has not agreed to the EULA for a licensed module, the job should fail.
+# user 'test' has not agreed to v. 1 of the testLicenseAgreement module
+module: urn:lsid:9090.gpdev.gpint01:genepatternmodules:812:1
+params:
+    message: "This job should fail"
+assertions: 
+    jobStatus: error
+    
