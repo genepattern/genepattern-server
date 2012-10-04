@@ -9,5 +9,4 @@ assertions:
     files: 
         "stdout.txt":
             diff: "expected/stdout.txt"
-            # diff: "/Broad/dev/gp-trunk/test/gp-unit/eula/expected/stdout.txt"
     
