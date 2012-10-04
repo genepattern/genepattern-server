@@ -13,12 +13,16 @@ use, misuse, or functionality.
 <ui:composition>
 <h:outputText rendered="#{eulaTaskBean.prompt}">
 
-    <div class="barhead-task">#{eulaTaskBean.currentTaskName}</div>
+    <div class="barhead-task">
+        <span>#{eulaTaskBean.currentTaskName} </span>
+        <span class="license-version"> version #{eulaTaskBean.currentLsidVersion} </span>
+    </div>
+
     <div class="license-lsid"> LSID=#{eulaTaskBean.currentLsid}</div>
 
-    <h6 class="license-center">
+    <h5 class="license-center">
         You must agree to the following End-User license agreement before you can run #{eulaTaskBean.currentTaskName}.
-    </h6>
+    </h5>
 
     <h:outputText rendered="#{ fn:length(eulaTaskBean.eulas) == 1}">
         <t:dataList var="eula" value="#{eulaTaskBean.eulas}">
