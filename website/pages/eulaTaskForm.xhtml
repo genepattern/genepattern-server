@@ -38,7 +38,10 @@ use, misuse, or functionality.
         </h5>
 
         <t:dataList var="eula" value="#{eulaTaskBean.eulas}">
-            <p class="barhead-license-task">#{eula.taskName}</p>
+            <div class="barhead-license-task">
+                #{eula.taskName}
+                <span class="license-version"> version #{eula.lsidVersion} </span>
+            </div>
             <p><textarea rows="20" class="license-content">#{eula.content}</textarea></p>
         </t:dataList>
     </h:outputText>
@@ -67,5 +70,21 @@ use, misuse, or functionality.
     </form>
 </div>
 </h:outputText>
+
+<h:form rendered="false">
+<p></p>
+<p>[for demo/debugging, JSF commandButton to accept the license]</p>
+<p>Click 'OK' to agree with the End-user license agreement for this module.</p>
+    <input type="hidden" name="lsid" value="#{eulaTaskBean.currentLsid}" />
+    <h:commandButton value="OK" actionListener="#{eulaTaskBean.acceptOk}" >
+        <f:attribute name="lsidAttr" value="#{eulaTaskBean.currentLsid}" />
+    </h:commandButton>
+<p></p>
+<p>[for demo/debugging, JSF commandLink to accept the license]</p>
+    <h:commandLink value="Link to accept" actionListener="#{eulaTaskBean.acceptClicked}">
+        <f:param name="lsid" value="#{eulaTaskBean.currentLsid}"/>
+    </h:commandLink>
+</h:form>
+
 </ui:composition>
 </html>
