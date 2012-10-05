@@ -23,7 +23,7 @@ use, misuse, or functionality.
     <h:outputText rendered="#{ fn:length(eulaTaskBean.eulas) == 1}">
 
         <h5 class="license-center">
-            You must agree to the following End-User license agreement before you can run #{eulaTaskBean.currentTaskName}.
+            You must agree below to the following End-User license agreement before you can run #{eulaTaskBean.currentTaskName}.
         </h5>
 
         <t:dataList var="eula" value="#{eulaTaskBean.eulas}">
@@ -34,7 +34,7 @@ use, misuse, or functionality.
     <h:outputText rendered="#{ fn:length(eulaTaskBean.eulas) > 1}">
 
         <h5 class="license-center">
-            You must agree to the following End-User license agreements before you can run #{eulaTaskBean.currentTaskName}.
+            You must below agree to the following End-User license agreements before you can run #{eulaTaskBean.currentTaskName}.
         </h5>
 
         <t:dataList var="eula" value="#{eulaTaskBean.eulas}">
