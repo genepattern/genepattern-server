@@ -3,8 +3,7 @@ package org.genepattern.server.eula;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.SortedMap;
-import java.util.TreeMap;
+import java.util.SortedSet;
 
 import org.apache.log4j.Logger;
 import org.genepattern.server.config.ServerConfiguration.Context;
@@ -186,22 +185,10 @@ public class EulaManager {
             return Collections.emptyList();
         }
         
-        //proposed interface, does this module have an EULA?
-        GetEulaFromTask getEulaFromTask = new GetEulaFromTaskRecursive();
-        List<EulaInfo> eulaObjs = getEulaFromTask.getEulasFromTask(taskInfo);
-        
-        
-        //TODO: instead of removing duplicates and sorting after-the-fact,
-        //    modify the getEulasFromTask method to return a SortedSet
-        //remove duplicates from the list
-        SortedMap<String,EulaInfo> deduped = new TreeMap<String,EulaInfo>();
-        for(EulaInfo eulaInfo : eulaObjs) {
-            deduped.put(eulaInfo.getModuleLsid(), eulaInfo);
-        }
-
-        //sort the list
-        List<EulaInfo> list = new ArrayList<EulaInfo>(deduped.values());
-        Collections.sort(list, EulaInfo.defaultComparator(taskInfo));
+        GetEulaFromTaskRecursive getEulaFromTask = new GetEulaFromTaskRecursive();
+        SortedSet<EulaInfo> eulaObjs = getEulaFromTask.getEulasFromTask(taskInfo);
+        //TODO: is this the best way to return the sortedset as a list?
+        List<EulaInfo> list = new ArrayList<EulaInfo>(eulaObjs);
         return list;
     }
     

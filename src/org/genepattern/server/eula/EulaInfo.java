@@ -53,13 +53,17 @@ public class EulaInfo {
                     return -1;
                 }
                 
-                //currentTask is always first
-                if (arg0.getModuleLsid().equals( currentTaskInfo.getLsid() )) {
+                //currentTask is always first, 
+                //    but allow the currentTask to have more than one license ...
+                boolean arg0_isCurrent=arg0.getModuleLsid().equals( currentTaskInfo.getLsid() );
+                boolean arg1_isCurrent=arg1.getModuleLsid().equals( currentTaskInfo.getLsid() );
+                if (arg0_isCurrent && !arg1_isCurrent) {
                     return -1;
                 }
-                if (arg1.getModuleLsid().equals( currentTaskInfo.getLsid() )) {
+                else if (arg1_isCurrent && !arg0_isCurrent) {
                     return 1;
-                } 
+                }
+                //    ... which is why we continue, if arg0 == arg1 == currentTask
                 
                 //name check
                 int i = arg0.getModuleName().compareTo(arg1.getModuleName());
@@ -75,6 +79,21 @@ public class EulaInfo {
                     log.error("LSID not set in EulaInfo, using faulty string comparison method instead");
                     i = arg0.getModuleLsid().compareTo(arg1.getModuleLsid());
                 }
+                if (i != 0) {
+                    return i;
+                }
+                //finally, license check
+                //    to allow for multiple license files on the same module
+                if (arg0.license != null) {
+                    i = arg0.license.compareTo(arg1.license);
+                }
+                else {
+                    if (arg1.license == null) {
+                        return 0;
+                    }
+                    return 1;
+                }
+
                 return i;
             }
         };
@@ -197,4 +216,36 @@ public class EulaInfo {
         return "";
     }
     
+    private static boolean strCmp(String arg0, String arg1) {
+        if (arg0 == null && arg1 == null) {
+            return true;
+        }
+        if (arg0 == null) {
+            return false;
+        }
+        return arg0.equals(arg1);                         
+    }
+
+    /**
+     * Implement equals based on moduleLsid and license
+     */
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (!(obj instanceof EulaInfo)) {
+            return false;
+        }
+        
+        EulaInfo eulaInfo = (EulaInfo) obj;
+        return strCmp(moduleLsid, eulaInfo.moduleLsid) && strCmp(license, eulaInfo.license);
+    }
+    /**
+     * Implement hashCode based on moduleLsid and license
+     */
+    public int hashCode() {
+        String key = "lsid="+moduleLsid+", license="+license;
+        return key.hashCode();
+    }
+
 }

@@ -3,6 +3,8 @@ package org.genepattern.server.eula;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
 import org.apache.log4j.Logger;
 import org.genepattern.data.pipeline.JobSubmission;
@@ -17,7 +19,7 @@ import org.genepattern.webservice.TaskInfo;
  * 
  * @author pcarr
  */
-public class GetEulaFromTaskRecursive implements GetEulaFromTask {
+public class GetEulaFromTaskRecursive {
     private static Logger log = Logger.getLogger(GetEulaFromTaskRecursive.class);
 
     //factory method, which manifests the rule for getting the EULA from the TaskInfo
@@ -28,16 +30,15 @@ public class GetEulaFromTaskRecursive implements GetEulaFromTask {
         return new GetEulaAsSupportFile();
     }
   
-    public List<EulaInfo> getEulasFromTask(TaskInfo taskInfo) {
-        List<EulaInfo> eulas = appendEulaInfo(null, null, taskInfo);
+    public SortedSet<EulaInfo> getEulasFromTask(TaskInfo taskInfo) {
+        SortedSet<EulaInfo> eulas = appendEulaInfo(null, null, taskInfo);
         return eulas;
     }
     
     //recursive implementation
-    //TODO: don't return duplicates
-    private List<EulaInfo> appendEulaInfo(List<EulaInfo> eulas, GetEulaFromTask getEulaFromTask, TaskInfo taskInfo) {
+    private SortedSet<EulaInfo> appendEulaInfo(SortedSet<EulaInfo> eulas, GetEulaFromTask getEulaFromTask, TaskInfo taskInfo) {
         if (eulas==null) {
-            eulas=new ArrayList<EulaInfo>();
+            eulas=new TreeSet<EulaInfo>(EulaInfo.defaultComparator(taskInfo));
         }
         if (getEulaFromTask==null) {
             //TODO: customize the rule for checking if a single task (module or pipeline) requires an EULA
