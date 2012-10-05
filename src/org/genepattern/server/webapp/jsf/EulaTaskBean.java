@@ -298,45 +298,4 @@ public class EulaTaskBean {
         return requiresEULA;
     }
 
-    // The JSF Bean methods for accepting EULA. 
-    // We are using a custom servlet instead. If we ever want to use JSF actions, use this code:
-//    /**
-//     * When the 'OK' button is clicked to accept the EULA.
-//     * The lsid is set with a hidden input parameter in a standard web form.
-//     * <pre>
-//       <input type="hidden" name="lsid" value="#{eulaTaskBean.lsid}" />
-//     * </pre>
-//     * @param event
-//     */
-//    public void acceptOk(ActionEvent event) {
-//        log.debug("acceptOk");
-//        Map<String,String> params = FacesContext.getCurrentInstance().getExternalContext().getRequestParameterMap();
-//        final String lsid=params.get("lsid"); 
-//        recordEULA(currentUser, lsid);
-//    }
-//
-//    /**
-//     * When the 'OK' link is clicked to accept the EULA.
-//     * The lsid is set with a f:param nested in the h:commandLink tag.
-//     * <pre>
-//       <f:param name="lsid" value="#{eulaTaskBean.lsid}"/>
-//     * </pre>
-//     * @param event
-//     */
-//    public void acceptClicked(ActionEvent event) {
-//        log.debug("acceptClicked");
-//        HttpServletRequest request = UIBeanHelper.getRequest();
-//        String lsid = request.getParameter("lsid");
-//        recordEULA(currentUser, lsid);
-//    }
-//    
-//    private void recordEULA(final String _userId, final String _lsid) {
-//        log.debug("recordEULA, userId="+_userId+", lsid="+_lsid);
-//        Context taskContext=Context.getContextForUser(_userId);
-//        TaskInfo taskInfo = null;
-//        taskInfo = initTaskInfo(_userId, _lsid);
-//        taskContext.setTaskInfo(taskInfo);
-//        EulaManager.instance().recordLicenseAgreement(taskContext);
-//        accepted=true;
-//    }
 }
