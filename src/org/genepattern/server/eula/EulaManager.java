@@ -3,6 +3,8 @@ package org.genepattern.server.eula;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.SortedMap;
+import java.util.TreeMap;
 
 import org.apache.log4j.Logger;
 import org.genepattern.server.config.ServerConfiguration.Context;
@@ -47,7 +49,7 @@ public class EulaManager {
      * @return true if there is no record of EULA for the current user.
      */
     public boolean requiresEULA(Context jobContext) {
-        final List<EulaInfo> notYetAgreed = getEULAs(jobContext,false);
+        final List<EulaInfo> notYetAgreed = getEulaInfos(jobContext,false);
         if (notYetAgreed.size()>0) {
             return true;
         }
@@ -62,7 +64,8 @@ public class EulaManager {
      * @return
      */
     public List<EulaInfo> getAllEULAForModule(final Context taskContext) {
-        return getEULAs(taskContext, true);
+        List<EulaInfo> eulaInfos = getEulaInfos(taskContext, true);
+        return eulaInfos;
     }
 
     /**
@@ -76,7 +79,8 @@ public class EulaManager {
      * @return
      */
     public List<EulaInfo> getPendingEULAForModule(final Context taskContext) {
-        return getEULAs(taskContext, false);
+        List<EulaInfo> eulaInfos = getEulaInfos(taskContext, false);
+        return eulaInfos;
     }
     
     /**
@@ -105,7 +109,7 @@ public class EulaManager {
 
         log.debug("recording EULA for user="+taskContext.getUserId()+", lsid="+taskContext.getTaskInfo().getLsid());
         
-        List<EulaInfo> eulaInfos = getEULAObjs(taskInfo);
+        List<EulaInfo> eulaInfos = getEulaInfosFromTaskInfo(taskInfo);
         for(EulaInfo eulaInfo : eulaInfos) {
             try {
                 RecordEula recordEula = getRecordEula(eulaInfo);
@@ -125,7 +129,7 @@ public class EulaManager {
      * @param includeAll
      * @return
      */
-    private List<EulaInfo> getEULAs(final Context taskContext, final boolean includeAll) {
+    private List<EulaInfo> getEulaInfos(final Context taskContext, final boolean includeAll) {
         if (taskContext == null) {
             throw new IllegalArgumentException("taskContext==null");
         }
@@ -136,7 +140,7 @@ public class EulaManager {
         if (taskInfo.getLsid()==null || taskInfo.getLsid().length()==0) {
             throw new IllegalArgumentException("taskInfo not set");
         }
-        List<EulaInfo> eulaObjs = getEULAObjs(taskInfo);
+        List<EulaInfo> eulaObjs = getEulaInfosFromTaskInfo(taskInfo);
         if (includeAll) {
             return eulaObjs;
         }
@@ -176,7 +180,7 @@ public class EulaManager {
      * @param taskInfo
      * @return
      */
-    private List<EulaInfo> getEULAObjs(TaskInfo taskInfo) {
+    private List<EulaInfo> getEulaInfosFromTaskInfo(TaskInfo taskInfo) {
         if (taskInfo==null) {
             log.error("taskInfo==null");
             return Collections.emptyList();
@@ -185,7 +189,20 @@ public class EulaManager {
         //proposed interface, does this module have an EULA?
         GetEulaFromTask getEulaFromTask = new GetEulaFromTaskRecursive();
         List<EulaInfo> eulaObjs = getEulaFromTask.getEulasFromTask(taskInfo);
-        return eulaObjs;
+        
+        
+        //TODO: instead of removing duplicates and sorting after-the-fact,
+        //    modify the getEulasFromTask method to return a SortedSet
+        //remove duplicates from the list
+        SortedMap<String,EulaInfo> deduped = new TreeMap<String,EulaInfo>();
+        for(EulaInfo eulaInfo : eulaObjs) {
+            deduped.put(eulaInfo.getModuleLsid(), eulaInfo);
+        }
+
+        //sort the list
+        List<EulaInfo> list = new ArrayList<EulaInfo>(deduped.values());
+        Collections.sort(list, EulaInfo.defaultComparator(taskInfo));
+        return list;
     }
     
 }

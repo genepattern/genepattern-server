@@ -3,11 +3,13 @@ package org.genepattern.server.eula;
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.util.Comparator;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
 import org.genepattern.server.webservice.server.DirectoryManager;
 import org.genepattern.util.LSID;
+import org.genepattern.webservice.TaskInfo;
 
 /**
  * Data representation of a single End-user license agreement 'form' for a module.
@@ -33,11 +35,56 @@ public class EulaInfo {
             super(message,t);
         }
     }
+    
+    public static Comparator<EulaInfo> defaultComparator(final TaskInfo currentTaskInfo) {
+        return new Comparator<EulaInfo>() {
+
+            // @Override
+            public int compare(EulaInfo arg0, EulaInfo arg1) {
+                //null check
+                if (arg0 == null) {
+                    if (arg1 == null) {
+                        return 0;
+                    }
+                    //null is always the last item
+                    return 1;
+                }
+                if (arg1 == null) {
+                    return -1;
+                }
+                
+                //currentTask is always first
+                if (arg0.getModuleLsid().equals( currentTaskInfo.getLsid() )) {
+                    return -1;
+                }
+                if (arg1.getModuleLsid().equals( currentTaskInfo.getLsid() )) {
+                    return 1;
+                } 
+                
+                //name check
+                int i = arg0.getModuleName().compareTo(arg1.getModuleName());
+                if (i != 0) {
+                    return i;
+                }
+                //LSID check
+                if (arg0.getLsid() != null && arg1.getLsid() != null) {
+                    i = arg0.getLsid().compareTo(arg1.getLsid());
+                }
+                else {
+                    //ERROR
+                    log.error("LSID not set in EulaInfo, using faulty string comparison method instead");
+                    i = arg0.getModuleLsid().compareTo(arg1.getModuleLsid());
+                }
+                return i;
+            }
+        };
+    }
 
     private String ID;
     private String content;
 
-    //the lsid of the module which requires the EULA
+    private LSID theLsid;
+    //the String representation of the lsid of the module which requires the EULA
     private String moduleLsid;
     //the version of the module which requires the EULA, derived from moduleLsid
     private String moduleLsidVersion;
@@ -53,8 +100,8 @@ public class EulaInfo {
         this.moduleLsid=lsid; 
         //automatically init lsidVersion
         try {
-            LSID tmpLsid = new LSID(lsid);
-            this.moduleLsidVersion=tmpLsid.getVersion();
+            theLsid = new LSID(lsid);
+            this.moduleLsidVersion=theLsid.getVersion();
         }
         catch (MalformedURLException e) {
             log.error("Error computing lsidVersion from lsid string, lsid="+lsid, e);
@@ -71,6 +118,10 @@ public class EulaInfo {
     }
     public String getModuleName() {
         return moduleName;
+    }
+    //it's easier to hang on to the LSID instance for sorting by LSID
+    public LSID getLsid() {
+        return theLsid;
     }
     
     public String getLink() {

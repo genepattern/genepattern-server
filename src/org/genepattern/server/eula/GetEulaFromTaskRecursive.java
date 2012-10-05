@@ -34,6 +34,7 @@ public class GetEulaFromTaskRecursive implements GetEulaFromTask {
     }
     
     //recursive implementation
+    //TODO: don't return duplicates
     private List<EulaInfo> appendEulaInfo(List<EulaInfo> eulas, GetEulaFromTask getEulaFromTask, TaskInfo taskInfo) {
         if (eulas==null) {
             eulas=new ArrayList<EulaInfo>();
@@ -43,6 +44,7 @@ public class GetEulaFromTaskRecursive implements GetEulaFromTask {
             getEulaFromTask = getGetEulaFromTask();
         }
         List<EulaInfo> eulaObjs = getEulaFromTask.getEulasFromTask(taskInfo);
+        //TODO: this is the part of the code where we add the duplicates
         eulas.addAll(eulaObjs);
         
         if (taskInfo.isPipeline()) {
