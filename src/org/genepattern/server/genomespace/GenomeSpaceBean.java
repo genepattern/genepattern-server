@@ -56,6 +56,9 @@ public class GenomeSpaceBean {
     public static String LOGIN_FAIL_NAVIGATION_KEY = "genomeSpaceLoginFailed";
     public static String REG_FAIL_NAVIGATION_KEY = "genomeSpaceRegFailed";
     
+    public static final String GENOMESPACE_REQUEST = "/gp/pages/genomespace/receiveFile.jsf";
+    public static final String GENOMESPACE_OPENID = "/gp/GenomeSpaceOpenID";
+    
     private boolean genomeSpaceEnabled = false;
     private Boolean loggedIn = null;
     private Boolean loading = null;
@@ -110,6 +113,20 @@ public class GenomeSpaceBean {
     public String getClearErrors() {
         clearSessionParameters();
         return "";
+    }
+    
+    public String getReferAndForward() throws IOException {
+        HttpServletRequest request = UIBeanHelper.getRequest();
+        HttpServletResponse response = UIBeanHelper.getResponse();
+        
+        String referrer = LoginManager.getReferrer(request);
+        
+        if (referrer != null && referrer.contains(GENOMESPACE_REQUEST)){
+            response.sendRedirect(GENOMESPACE_OPENID);
+            request.getSession().setAttribute("origin", referrer);
+        }
+
+        return "OK";
     }
     
     /**
