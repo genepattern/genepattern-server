@@ -131,7 +131,7 @@ function hideComboBox() {
 	setTimeout("document.getElementById('comboBoxChoices').style.display = 'none';", 500);
 	
 	// Clear selection
-	choicesBox.childNodes[comboBoxSelect].style.backgroundColor = "#DFDFB9";
+	// choicesBox.childNodes[comboBoxSelect].style.backgroundColor = "#DFDFB9";
 	comboBoxSelect = 0;
 }
 
@@ -140,7 +140,7 @@ function showComboBox() {
 	choicesBox.style.display = "block";
 	
 	// Clear selection
-	//choicesBox.childNodes[comboBoxSelect].style.backgroundColor = "#DFDFB9";
+	// choicesBox.childNodes[comboBoxSelect].style.backgroundColor = "#DFDFB9";
 	comboBoxSelect = 0;
 }
 
