@@ -111,9 +111,15 @@ public class EulaInfo {
     private String moduleName;
     //the value of the license= property in the manifest for the module
     private String license;
+    //the path to the license file, must be in ascii-format
+    private File licenseFile;
     
     public void setLicense(final String license) {
         this.license=license;
+    }
+    public void setLicenseFile(final File licenseFile) {
+        this.license=licenseFile.getName();
+        this.licenseFile=licenseFile;
     }
     public void setModuleLsid(final String lsid) {
         this.moduleLsid=lsid; 
@@ -155,15 +161,16 @@ public class EulaInfo {
             this.content = initContent();
         }
         return this.content;
-        //final String NL = "\n";
-        //final String content=
-        //        "To view the license agreement, click this link: "+NL+
-        //        "    <a href=\""+getLink()+"\"></a>";
-        //return content; 
     }
     
     private boolean inited_content = false;
     private String initContent() throws EulaInitException {
+        if (licenseFile == null) {
+            licenseFile=initLicenseFile();
+        }
+        return initContentFromLicenseFile(licenseFile);
+    }
+    private File initLicenseFile() throws EulaInitException {
         if (license==null) {
             throw new EulaInitException("license==null");
         }
@@ -191,7 +198,16 @@ public class EulaInfo {
         if (!licenseFile.canRead()) {
             throw new EulaInitException("can't read license file: "+licenseFile.getPath());
         }
-        
+        return licenseFile;
+    }
+
+    private String initContentFromLicenseFile(File licenseFile) throws EulaInitException {
+        if (!licenseFile.exists()) {
+            throw new EulaInitException("licenseFile doesn't exist: "+licenseFile.getPath());
+        }
+        if (!licenseFile.canRead()) {
+            throw new EulaInitException("can't read license file: "+licenseFile.getPath());
+        }
         //TODO: for future development: check to see if the licenseFile is a meta file, e.g. licenseInfo.yaml
         //      which should be parsed into a license object
         
@@ -205,7 +221,7 @@ public class EulaInfo {
      * @param file
      * @return
      */
-    private String fileToString(File file) {
+    static public String fileToString(File file) {
         try {
             final String str = FileUtils.readFileToString(file);
             return str;
@@ -240,6 +256,7 @@ public class EulaInfo {
         EulaInfo eulaInfo = (EulaInfo) obj;
         return strCmp(moduleLsid, eulaInfo.moduleLsid) && strCmp(license, eulaInfo.license);
     }
+
     /**
      * Implement hashCode based on moduleLsid and license
      */
