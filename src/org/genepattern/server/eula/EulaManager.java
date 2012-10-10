@@ -18,12 +18,10 @@ import org.genepattern.webservice.TaskInfo;
 public class EulaManager {
     public static Logger log = Logger.getLogger(EulaManager.class);
 
-    static public class Singleton {
+    static private class Singleton {
         private static final EulaManager INSTANCE = new EulaManager();
-        public static EulaManager instance() {
-            return INSTANCE;
-        }
     }
+
     static public EulaManager instance() {
         return Singleton.INSTANCE;
     }
