@@ -22,27 +22,39 @@ import org.genepattern.webservice.TaskInfo;
 public class GetEulaFromTaskRecursive {
     private static Logger log = Logger.getLogger(GetEulaFromTaskRecursive.class);
 
-    //factory method, which manifests the rule for getting the EULA from the TaskInfo
-    private static GetEulaFromTask getGetEulaFromTask() {
-        //option 1: license= in manifest
-        //return new GetEulaFromTaskImpl01();
-        //option 2: support file named '*license*' in tasklib
-        return new GetEulaAsSupportFile();
+//    //TODO: use Strategy pattern for this method
+//    private GetEulaFromTask getGetEulaFromTask() {
+//        //allow for dependency injection, via setGetEulaFromTask
+//        if (getEulaFromTask != null) {
+//            return getEulaFromTask;
+//        }
+//        
+//        //otherwise, hard-coded rule        
+//        //option 1: license= in manifest
+//        //return new GetEulaFromTaskImpl01();
+//        //option 2: support file named '*license*' in tasklib
+//        return new GetEulaAsSupportFile();
+//    }
+    
+    private GetEulaFromTask getEulaFromTask = null;
+    public void setGetEulaFromTask(GetEulaFromTask impl) {
+        this.getEulaFromTask=impl;
     }
   
     public SortedSet<EulaInfo> getEulasFromTask(TaskInfo taskInfo) {
-        SortedSet<EulaInfo> eulas = appendEulaInfo(null, null, taskInfo);
+        SortedSet<EulaInfo> eulas = appendEulaInfo(null, taskInfo);
         return eulas;
     }
     
     //recursive implementation
-    private SortedSet<EulaInfo> appendEulaInfo(SortedSet<EulaInfo> eulas, GetEulaFromTask getEulaFromTask, TaskInfo taskInfo) {
+    private SortedSet<EulaInfo> appendEulaInfo(SortedSet<EulaInfo> eulas, TaskInfo taskInfo) {
         if (eulas==null) {
             eulas=new TreeSet<EulaInfo>(EulaInfo.defaultComparator(taskInfo));
         }
         if (getEulaFromTask==null) {
-            //TODO: customize the rule for checking if a single task (module or pipeline) requires an EULA
-            getEulaFromTask = getGetEulaFromTask();
+            //TODO: should throw exception, instead return empty set
+            log.error("Initialization error, getEulaFromTask==null");
+            return new TreeSet<EulaInfo>();
         }
         List<EulaInfo> eulaObjs = getEulaFromTask.getEulasFromTask(taskInfo);
         //TODO: this is the part of the code where we add the duplicates
@@ -51,7 +63,7 @@ public class GetEulaFromTaskRecursive {
         if (taskInfo.isPipeline()) {
             List<TaskInfo> children = getChildren(taskInfo);
             for(TaskInfo child : children) {
-                appendEulaInfo(eulas, getEulaFromTask, child);
+                appendEulaInfo(eulas, child);
             }
         }
         return eulas; 

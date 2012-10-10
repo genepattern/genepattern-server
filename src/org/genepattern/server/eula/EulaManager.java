@@ -28,6 +28,25 @@ public class EulaManager {
         return Singleton.INSTANCE;
     }
 
+    //TODO: use Strategy pattern for this method
+    private GetEulaFromTask getEulaFromTask = null;
+    public void setGetEulaFromTask(GetEulaFromTask impl) {
+        this.getEulaFromTask=impl;
+    }
+    private GetEulaFromTask getGetEulaFromTask() {
+        //allow for dependency injection, via setGetEulaFromTask
+        if (getEulaFromTask != null) {
+            return getEulaFromTask;
+        }
+        
+        //otherwise, hard-coded rule        
+        //option 1: license= in manifest
+        //return new GetEulaFromTaskImpl01();
+        //option 2: support file named '*license*' in tasklib
+        return new GetEulaAsSupportFile();
+    }
+
+    //TODO: use Strategy pattern for this method
     //factory method for getting the method for recording the EULA
     private static RecordEula getRecordEula(EulaInfo eulaInfo) {
         //for debugging, the RecordEulaStub can be used
@@ -186,6 +205,8 @@ public class EulaManager {
         }
         
         GetEulaFromTaskRecursive getEulaFromTask = new GetEulaFromTaskRecursive();
+        GetEulaFromTask impl = getGetEulaFromTask();
+        getEulaFromTask.setGetEulaFromTask(impl);
         SortedSet<EulaInfo> eulaObjs = getEulaFromTask.getEulasFromTask(taskInfo);
         //TODO: is this the best way to return the sortedset as a list?
         List<EulaInfo> list = new ArrayList<EulaInfo>(eulaObjs);
