@@ -122,7 +122,7 @@ public class EulaServlet  extends HttpServlet implements Servlet {
         TaskInfo taskInfo = null;
         taskInfo = initTaskInfo(currentUser, lsid);
         taskContext.setTaskInfo(taskInfo);
-        EulaManager.instance().recordLicenseAgreement(taskContext);
+        EulaManager.instance().recordEula(taskContext);
     }
 
 }

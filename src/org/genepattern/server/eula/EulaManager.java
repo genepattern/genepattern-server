@@ -43,6 +43,16 @@ public class EulaManager {
         //option 2: support file named '*license*' in tasklib
         return new GetEulaAsSupportFile();
     }
+    
+    private GetTaskStrategy getTaskStrategy = null;
+    /**
+     * Optionally configure the strategy for initializing a TaskInfo from a task lsid.
+     * 
+     * @param impl, a class which implements this interface, can be null.
+     */
+    public void setGetTaskStrategy(GetTaskStrategy impl) {
+        this.getTaskStrategy=impl;
+    }
 
     //TODO: use Strategy pattern for this method
     //factory method for getting the method for recording the EULA
@@ -61,11 +71,11 @@ public class EulaManager {
      *     1) the module requires no EULAs, or
      *     2) the current user has agreed to all EULAs for the module.
      * 
-     * @param jobContext
+     * @param taskContext, must have a valid user and taskInfo
      * @return true if there is no record of EULA for the current user.
      */
-    public boolean requiresEULA(Context jobContext) {
-        final List<EulaInfo> notYetAgreed = getEulaInfos(jobContext,false);
+    public boolean requiresEula(Context taskContext) {
+        final List<EulaInfo> notYetAgreed = getEulaInfos(taskContext,false);
         if (notYetAgreed.size()>0) {
             return true;
         }
@@ -79,7 +89,7 @@ public class EulaManager {
      * @param taskContext, must have a valid taskInfo object
      * @return
      */
-    public List<EulaInfo> getAllEULAForModule(final Context taskContext) {
+    public List<EulaInfo> getAllEulaForModule(final Context taskContext) {
         List<EulaInfo> eulaInfos = getEulaInfos(taskContext, true);
         return eulaInfos;
     }
@@ -94,18 +104,22 @@ public class EulaManager {
      * @param taskContext
      * @return
      */
-    public List<EulaInfo> getPendingEULAForModule(final Context taskContext) {
+    public List<EulaInfo> getPendingEulaForModule(final Context taskContext) {
         List<EulaInfo> eulaInfos = getEulaInfos(taskContext, false);
         return eulaInfos;
     }
     
     /**
-     * Record current user agreement to the End-user license agreement.
+     * In response to user acceptance by clicking the 'Ok' button in the GUI,
+     * store a local record that the user has agreed.
+     * 
      * When the taskInfo is a pipeline, accept all agreements.
+     * 
+     * This also, optionally, schedules remote recording of the eula.
      * 
      * @param taskContext, must have a valid taskInfo and userId
      */
-    public void recordLicenseAgreement(final Context taskContext) {
+    public void recordEula(final Context taskContext) {
         if (taskContext == null) {
             throw new IllegalArgumentException("taskContext==null");
         }
@@ -205,6 +219,7 @@ public class EulaManager {
         GetEulaFromTaskRecursive getEulaFromTask = new GetEulaFromTaskRecursive();
         GetEulaFromTask impl = getGetEulaFromTask();
         getEulaFromTask.setGetEulaFromTask(impl);
+        getEulaFromTask.setGetTaskStrategy(getTaskStrategy);
         SortedSet<EulaInfo> eulaObjs = getEulaFromTask.getEulasFromTask(taskInfo);
         //TODO: is this the best way to return the sortedset as a list?
         List<EulaInfo> list = new ArrayList<EulaInfo>(eulaObjs);

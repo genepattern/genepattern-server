@@ -687,7 +687,7 @@ public class GenePatternAnalysisTask {
         //does the task have an EULA
         boolean requiresEULA=false;
         try {
-            requiresEULA = EulaManager.instance().requiresEULA(jobContext);
+            requiresEULA = EulaManager.instance().requiresEula(jobContext);
         }
         catch (Throwable t) {
             String message="Unexpected error checking for EULA for job #"+jobInfo.getJobNumber()+": "+t.getLocalizedMessage();

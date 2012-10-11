@@ -28,7 +28,7 @@ public class EulaTaskBean {
     private static Logger log = Logger.getLogger(EulaTaskBean.class);
     
     /**
-     * Use this class as an intermediary between the license manager and the JSF gui.
+     * Use this class as an intermediary between the eula manager and the JSF gui.
      * 
      * @author pcarr
      */
@@ -258,7 +258,7 @@ public class EulaTaskBean {
         if (taskInfo != null) {
             Context taskContext = Context.getContextForUser(currentUser);
             taskContext.setTaskInfo(taskInfo);
-            List<EulaInfo> promptForEulas = EulaManager.instance().getPendingEULAForModule(taskContext);
+            List<EulaInfo> promptForEulas = EulaManager.instance().getPendingEulaForModule(taskContext);
             if (promptForEulas == null || promptForEulas.size()==0) {
                 requiresEULA=false;
                 this.eulas=Collections.emptyList();
