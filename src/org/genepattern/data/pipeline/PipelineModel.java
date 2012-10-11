@@ -540,17 +540,25 @@ public class PipelineModel implements Serializable {
             try {
                 // taskInfo = GenePatternAnalysisTask.getTaskInfo(
                 // (lsid.length() > 0 ? lsid : taskName), getUserID());
-                taskInfo = getAdminClient().getTask((lsid.length() > 0 ? lsid : taskName));
-
-            } catch (Throwable t) {
-
-            } // old pipelines don't have hsqldb.jar on classpath
+                //taskInfo = getAdminClient().getTask((lsid.length() > 0 ? lsid : taskName));
+                String arg;
+                if (lsid.length() > 0) {
+                    arg=lsid;
+                }
+                else {
+                    arg=taskName;
+                }
+                IAdminClient adminClient=getAdminClient();
+                taskInfo = adminClient.getTask(arg);
+            } 
+            catch (Throwable t) {
+                //log.error(t);
+            } 
+            // old pipelines don't have hsqldb.jar on classpath
             if (taskInfo == null) {
-                // System.out.println("No such task: " + (lsid.length() > 0 ?
-                // lsid : taskName));
-                // throw new Exception("No such task: " + (lsid.length() > 0 ?
-                // lsid : taskName));
-
+                System.out.println("No such task: " + (lsid.length() > 0 ? lsid : taskName));
+                // throw new Exception("No such task: " + (lsid.length() > 0 ? lsid : taskName));
+                //log.error("No such task: " + (lsid.length() > 0 ? lsid : taskName));
             }
         }
         job.setTaskInfo(taskInfo);
