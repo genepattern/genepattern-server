@@ -205,9 +205,6 @@ public class GetEulaFromTaskRecursive {
             throw new IllegalArgumentException("taskInfo is null");
         }
         TaskInfoAttributes tia = taskInfo.giveTaskInfoAttributes();
-        if (tia == null) {
-            throw new PipelineModelException("taskInfo.giveTaskInfoAttributes is null for taskInfo.ID="+taskInfo.getID()+", taskInfo.name="+taskInfo.getName());
-        }
         String serializedModel = (String) tia.get(GPConstants.SERIALIZED_MODEL);
         if (serializedModel == null || serializedModel.length() == 0) {
             throw new PipelineModelException("Missing "+GPConstants.SERIALIZED_MODEL+" for taskInfo.ID="+taskInfo.getID()+", taskInfo.name="+taskInfo.getName());
@@ -217,14 +214,11 @@ public class GetEulaFromTaskRecursive {
             StringReader stringReader = new StringReader(serializedModel);
             inputXmlSource=new InputSource(stringReader);
             model = PipelineModel.toPipelineModel(inputXmlSource, verify, adminClient);
+            model.setLsid(taskInfo.getLsid());
         } 
         catch (Throwable t) {
             throw new PipelineModelException(t);
         }
-        if (model == null) {
-            throw new PipelineModelException("pipeline model is null for taskInfo.ID="+taskInfo.getID()+", taskInfo.name="+taskInfo.getName());
-        }
-        model.setLsid(taskInfo.getLsid());
         return model;
     }
 
