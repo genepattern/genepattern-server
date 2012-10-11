@@ -25,7 +25,7 @@ import org.genepattern.webservice.TaskInfo;
  * @author pcarr
  *
  */
-public class EulaInfo {
+public class EulaInfo implements Comparable<EulaInfo> {
     private static Logger log = Logger.getLogger(EulaInfo.class);
     public static class EulaInitException extends Exception {
         public EulaInitException(String message) {
@@ -263,6 +263,21 @@ public class EulaInfo {
     public int hashCode() {
         String key = "lsid="+moduleLsid+", license="+license;
         return key.hashCode();
+    }
+    
+    /**
+     * Implement compare to based on name, lsid, and lsid version
+     */
+    public int compareTo(EulaInfo eulaInfo) {
+        int i=moduleName.compareTo(eulaInfo.moduleName);
+        if (i != 0) {
+            return i;
+        }
+        i=theLsid.compareTo(eulaInfo.theLsid);
+        if (i != 0) {
+            return i;
+        }
+        return license.compareTo(eulaInfo.license);
     }
 
 }
