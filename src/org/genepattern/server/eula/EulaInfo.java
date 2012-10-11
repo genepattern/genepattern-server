@@ -269,11 +269,7 @@ public class EulaInfo implements Comparable<EulaInfo> {
      * Implement compare to based on name, lsid, and lsid version
      */
     public int compareTo(EulaInfo eulaInfo) {
-        int i=moduleName.compareTo(eulaInfo.moduleName);
-        if (i != 0) {
-            return i;
-        }
-        i=theLsid.compareTo(eulaInfo.theLsid);
+        int i=theLsid.compareTo(eulaInfo.theLsid);
         if (i != 0) {
             return i;
         }
