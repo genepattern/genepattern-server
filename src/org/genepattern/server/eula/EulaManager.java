@@ -124,9 +124,13 @@ public class EulaManager {
      * 
      * This also, optionally, schedules remote recording of the eula.
      * 
-     * @param taskContext, must have a valid taskInfo and userId
+     * @param taskContext, must not be null, and
+     *     must have a non-null and valid taskInfo, and
+     *     must have a non-null and valid userId
+     *     
+     * @throws IllegalArgumentException if the taskContext is not initialized properly.
      */
-    public void recordEula(final Context taskContext) {
+    public void recordEula(final Context taskContext) throws IllegalArgumentException {
         if (taskContext == null) {
             throw new IllegalArgumentException("taskContext==null");
         }
@@ -214,15 +218,10 @@ public class EulaManager {
      * Get the list of EulaInfo for the given task, can be a module or pipeline.
      * When it is a pipeline, recursively get all required licenses.
      * 
-     * @param taskInfo
+     * @param taskInfo, must not be null
      * @return
      */
-    private List<EulaInfo> getEulaInfosFromTaskInfo(TaskInfo taskInfo) {
-        if (taskInfo==null) {
-            log.error("taskInfo==null");
-            return Collections.emptyList();
-        }
-        
+    private List<EulaInfo> getEulaInfosFromTaskInfo(final TaskInfo taskInfo) { 
         GetEulaFromTaskRecursive getEulaFromTask = new GetEulaFromTaskRecursive();
         GetEulaFromTask impl = getGetEulaFromTask();
         getEulaFromTask.setGetEulaFromTask(impl);
