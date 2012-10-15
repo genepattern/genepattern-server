@@ -54,9 +54,16 @@ public class EulaManager {
         this.getTaskStrategy=impl;
     }
 
-    //TODO: use Strategy pattern for this method
+
+    private RecordEula recordEulaStrategy = null;
+    public void setRecordEulaStrategy(final RecordEula impl) {
+        this.recordEulaStrategy=impl;
+    }
     //factory method for getting the method for recording the EULA
-    private static RecordEula getRecordEula(EulaInfo eulaInfo) {
+    private RecordEula getRecordEula(EulaInfo eulaInfo) {
+        if (recordEulaStrategy != null) {
+            return recordEulaStrategy;
+        }
         //for debugging, the RecordEulaStub can be used
         //return RecordEulaStub.instance(); 
         //TODO: if necessary, remote record to external web service
@@ -221,7 +228,7 @@ public class EulaManager {
         getEulaFromTask.setGetEulaFromTask(impl);
         getEulaFromTask.setGetTaskStrategy(getTaskStrategy);
         SortedSet<EulaInfo> eulaObjs = getEulaFromTask.getEulasFromTask(taskInfo);
-        //TODO: is this the best way to return the sortedset as a list?
+        //return the sortedset as a list
         List<EulaInfo> list = new ArrayList<EulaInfo>(eulaObjs);
         return list;
     }

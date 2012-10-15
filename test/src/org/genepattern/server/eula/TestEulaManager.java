@@ -181,7 +181,7 @@ public class TestEulaManager {
      * when there are more than one license file for a single module.
      */
     @Test
-    public void testMulipleEulaFromModule() {
+    public void testMultipleEulaFromModule() {
         final String filename="testLicenseAgreement_v3.zip";
         final File gpLicense=getSourceFile("gp_server_license.txt");
         final File exampleLicense=getSourceFile("example_license.txt");
@@ -281,6 +281,144 @@ public class TestEulaManager {
                 "urn:lsid:9090.gpdev.gpint01:genepatternmodules:816:1",   "1", exampleLicenseContent);
         assertEulaInfo(eulas, i++, "testLicenseModuleB", 
                 "urn:lsid:9090.gpdev.gpint01:genepatternmodules:816:1",   "1", gpLicenseContent);
+    }
+    
+    @Test
+    public void testRequiresEulaWithNoEula() {
+        final String filename="testLicenseAgreement_v3.zip";
+        TaskInfo taskInfo = initTaskInfoFromZip(filename);
+        GetEulaFromTaskStub stub = new GetEulaFromTaskStub();
+        EulaManager.instance().setGetEulaFromTask(stub);
+        EulaManager.instance().setRecordEulaStrategy(RecordEulaStub.instance());
+        
+        final String userId="gp_user";
+        Context taskContext=Context.getContextForUser(userId);
+        taskContext.setTaskInfo(taskInfo);
+        boolean requiresEula=EulaManager.instance().requiresEula(taskContext);
+        Assert.assertFalse("the module requires no eula", requiresEula);
+    }
+    
+    @Test
+    public void testRequiresEula() {
+        final String filename="testLicenseAgreement_v3.zip";
+        TaskInfo taskInfo = initTaskInfoFromZip(filename);
+        File licenseFile=getSourceFile("gp_server_license.txt");
+        GetEulaFromTaskStub stub = new GetEulaFromTaskStub();
+        stub.addLicenseFile(taskInfo, licenseFile);
+        EulaManager.instance().setGetEulaFromTask(stub);
+        EulaManager.instance().setRecordEulaStrategy(RecordEulaStub.instance());
+        
+        final String userId="gp_user";
+        Context taskContext=Context.getContextForUser(userId);
+        taskContext.setTaskInfo(taskInfo);
+        boolean requiresEula=EulaManager.instance().requiresEula(taskContext);
+        Assert.assertTrue("Expecting to requireEula for a module which has a Eula and a user which has not yet agreed", requiresEula);
+    }
+
+    /**
+     * Basic test-case for EulaManager recordEula.
+     */
+    @Test
+    public void testRecordEula() {
+        final String filename="testLicenseAgreement_v3.zip";
+        TaskInfo taskInfo = initTaskInfoFromZip(filename);
+        File licenseFile=getSourceFile("gp_server_license.txt");
+        GetEulaFromTaskStub stub = new GetEulaFromTaskStub();
+        stub.addLicenseFile(taskInfo, licenseFile);
+        EulaManager.instance().setGetEulaFromTask(stub);
+        
+        EulaManager.instance().setRecordEulaStrategy(RecordEulaStub.instance());
+
+        final String userId="gp_user";
+        Context taskContext=Context.getContextForUser(userId);
+        taskContext.setTaskInfo(taskInfo);
+        EulaManager.instance().recordEula(taskContext);
+    }
+    
+    @Test
+    public void testRequiresEulaAlreadyAgreed() {
+        final String filename="testLicenseAgreement_v3.zip";
+        TaskInfo taskInfo = initTaskInfoFromZip(filename);
+        File licenseFile=getSourceFile("gp_server_license.txt");
+        GetEulaFromTaskStub stub = new GetEulaFromTaskStub();
+        stub.addLicenseFile(taskInfo, licenseFile);
+        EulaManager.instance().setGetEulaFromTask(stub);
+        EulaManager.instance().setRecordEulaStrategy(RecordEulaStub.instance());
+        
+        final String userId="gp_user";
+        Context taskContext=Context.getContextForUser(userId);
+        taskContext.setTaskInfo(taskInfo);
+        EulaManager.instance().recordEula(taskContext);
+        boolean requiresEula=EulaManager.instance().requiresEula(taskContext);
+        Assert.assertFalse("the user has already agreed", requiresEula);
+    }
+
+    /**
+     * Test EulaManager#getPendingEulaForModule, for a module which has no EULA.
+     */
+    @Test
+    public void testGetPendingNoEula() {
+        final String filename="testLicenseAgreement_v3.zip";
+        TaskInfo taskInfo = initTaskInfoFromZip(filename);
+        //File licenseFile=getSourceFile("gp_server_license.txt");
+        GetEulaFromTaskStub stub = new GetEulaFromTaskStub();
+        //stub.addLicenseFile(taskInfo, licenseFile);
+        EulaManager.instance().setGetEulaFromTask(stub);
+        EulaManager.instance().setRecordEulaStrategy(RecordEulaStub.instance());
+        
+        final String userId="gp_user";
+        Context taskContext=Context.getContextForUser(userId);
+        taskContext.setTaskInfo(taskInfo);
+        List<EulaInfo> eulas=EulaManager.instance().getPendingEulaForModule(taskContext);
+        
+        //should be empty, for a module which has no eula
+        Assert.assertEquals("pendingEulaForModule should be empty for a module which has no eulas", 0, eulas.size());
+    }
+    
+    /**
+     * Test EulaManager#getPendingEulaForModule, for a module with one EULA,
+     *     and the currentUser has not yet agreed.
+     */
+    @Test
+    public void testGetPendingNotYetAgreed() {
+        final String filename="testLicenseAgreement_v3.zip";
+        TaskInfo taskInfo = initTaskInfoFromZip(filename);
+        File licenseFile=getSourceFile("gp_server_license.txt");
+        GetEulaFromTaskStub stub = new GetEulaFromTaskStub();
+        stub.addLicenseFile(taskInfo, licenseFile);
+        EulaManager.instance().setGetEulaFromTask(stub);
+        EulaManager.instance().setRecordEulaStrategy(RecordEulaStub.instance());
+        
+        final String userId="gp_user_two";
+        Context taskContext=Context.getContextForUser(userId);
+        taskContext.setTaskInfo(taskInfo);
+        List<EulaInfo> eulas=EulaManager.instance().getPendingEulaForModule(taskContext);
+        
+        //should be
+        Assert.assertEquals("pendingEulaForModule.size should be 1 for a module which has one eula", 1, eulas.size());
+    }
+    
+    /**
+     * Test EulaManager#getPendingEulaForModule, for a module with one EULA,
+     *     and the current user has agreed.
+     */
+    @Test
+    public void testGetPendingAlreadyAgreed() {
+        final String filename="testLicenseAgreement_v3.zip";
+        TaskInfo taskInfo = initTaskInfoFromZip(filename);
+        File licenseFile=getSourceFile("gp_server_license.txt");
+        GetEulaFromTaskStub stub = new GetEulaFromTaskStub();
+        stub.addLicenseFile(taskInfo, licenseFile);
+        EulaManager.instance().setGetEulaFromTask(stub);
+        EulaManager.instance().setRecordEulaStrategy(RecordEulaStub.instance());
+        
+        final String userId="gp_user_three";
+        Context taskContext=Context.getContextForUser(userId);
+        taskContext.setTaskInfo(taskInfo);
+        EulaManager.instance().recordEula(taskContext);
+        List<EulaInfo> eulas=EulaManager.instance().getPendingEulaForModule(taskContext);
+
+        Assert.assertEquals("pendingEulaForModule.size should be 0 if the current user has already agreed", 0, eulas.size());
     }
     
     /**
