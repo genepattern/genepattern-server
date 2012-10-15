@@ -1,7 +1,6 @@
 package org.genepattern.server.eula;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.SortedSet;
 
