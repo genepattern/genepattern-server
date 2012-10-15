@@ -38,7 +38,8 @@ public class GetEulaFromTaskRecursive {
         public MyAdminClient(final GetTaskStrategy getTaskStrategy) {
             this.myGetTaskStrategy=getTaskStrategy;
         }
-        
+        ///CLOVER:OFF  
+        //    --> disable clover report for most of this method, we only need to implement one method in the IAdminClient interface
         //@Override
         public List<String> getVersions(LSID lsid) {
             log.error("Not implemented!");
@@ -86,7 +87,7 @@ public class GetEulaFromTaskRecursive {
             log.error("Not implemented!");
             return null;
         }
-
+        ///CLOVER:ON
         //@Override
         public TaskInfo getTask(final String lsid) throws WebServiceException {
             if (myGetTaskStrategy != null) {
@@ -97,7 +98,7 @@ public class GetEulaFromTaskRecursive {
             TaskInfo taskInfo=TaskInfoCache.instance().getTask(lsid);
             return taskInfo;
         }
-
+        ///CLOVER:OFF
         //@Override
         public SuiteInfo getSuite(String lsid) throws WebServiceException {
             log.error("Not implemented!");
@@ -115,6 +116,7 @@ public class GetEulaFromTaskRecursive {
             log.error("Not implemented!");
             return null;
         }
+        ///CLOVER:ON
     }
     
     private GetEulaFromTask getEulaFromTask = null;
