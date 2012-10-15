@@ -5,6 +5,7 @@ import java.util.Date;
 import org.genepattern.junitutil.DbUtil;
 import org.genepattern.server.UserAccountManager;
 import org.genepattern.server.auth.AuthenticationException;
+import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.eula.EulaInfo;
 import org.genepattern.server.eula.RecordEula;
 import org.genepattern.server.eula.dao.RecordEulaToDb;
@@ -32,22 +33,28 @@ public class TestRecordEulaToDb {
 
     //add the user to the DB
     private static String addUser(final String gp_username) {
+        final boolean isInTransaction = HibernateUtil.isInTransaction();
+        final boolean userExists=UserAccountManager.instance().userExists(gp_username);
         final String gp_email=null; //can be null
         final String gp_password=null; //can be null
-        try {
-            if (!UserAccountManager.instance().userExists(gp_username)) {
+        
+        if (!userExists) {
+            try {
                 UserAccountManager.instance().createUser(gp_username, gp_password, gp_email);
-            } 
-            return gp_username;
-        }
-        catch (AuthenticationException e) {
-            Assert.fail("Failed to add user to db, gp_username="+gp_username+": "+e.getLocalizedMessage());
-        }
-        catch (Throwable t) {
-            Assert.fail("Failed to add user to db, gp_username="+gp_username+": "+t.getLocalizedMessage());
-        }
-        //shouldn't be here, because the test should fail
-        return null;
+                if (!isInTransaction) {
+                    HibernateUtil.commitTransaction();
+                }
+            }
+            catch (AuthenticationException e) {
+                Assert.fail("Failed to add user to db, gp_username="+gp_username+": "+e.getLocalizedMessage());
+            }
+            finally {
+                if (!isInTransaction) {
+                    HibernateUtil.closeCurrentSession();
+                }
+            }
+        } 
+        return gp_username;
     }
 
     private static EulaInfo init(final String lsid) {
@@ -166,6 +173,142 @@ public class TestRecordEulaToDb {
         assertDateEquals("expected userAgreementDate ("+expectedDate+") doesn't match actual ("+actualDate+")", expectedDate, actualDate);
     }
 
+    @Test
+    public void testGetDateRecorded_NullEula() {
+        final EulaInfo eula = null;
+        final String userId="gp_user";
+        final RecordEula recorder = new RecordEulaToDb();
+        
+        //Date actualDate=null;
+        try {
+            //actualDate = 
+                recorder.getUserAgreementDate(userId, eula);
+            Assert.fail("Expecting IllegalArgumentException, when eula==null");
+        }
+        catch (IllegalArgumentException e) {
+            //expected
+        }
+        catch (Exception e) {
+            Assert.fail("Unexpected exception in getUserAgreementDate: "+e.getLocalizedMessage());
+        }
+    }
+    
+    @Test
+    public void testGetDateRecorded_DefaultLsid() {
+        final EulaInfo eula = new EulaInfo();
+        eula.setLicense("license.txt");
+        final String userId="gp_user";
+        final RecordEula recorder = new RecordEulaToDb();
+        //Date actualDate=null;
+        try {
+            //actualDate = 
+                recorder.getUserAgreementDate(userId, eula);
+            Assert.fail("Expecting IllegalArgumentException, when eula has default lsid");
+        }
+        catch (IllegalArgumentException e) {
+            //expected
+        }
+        catch (Exception e) {
+            Assert.fail("Unexpected exception in getUserAgreementDate: "+e.getLocalizedMessage());
+        }
+    }
+    
+    @Test
+    public void testGetDateRecorded_NullLsid() {
+        final EulaInfo eula = new EulaInfo();
+        eula.setModuleLsid(null);
+        eula.setLicense("license.txt");
+        final String userId="gp_user";
+        final RecordEula recorder = new RecordEulaToDb();
+        //Date actualDate=null;
+        try {
+            //actualDate = 
+                recorder.getUserAgreementDate(userId, eula);
+            Assert.fail("Expecting IllegalArgumentException, when eula.lsid==null");
+        }
+        catch (IllegalArgumentException e) {
+            //expected
+        }
+        catch (Exception e) {
+            Assert.fail("Unexpected exception in getUserAgreementDate: "+e.getLocalizedMessage());
+        }
+    }
+
+    @Test
+    public void testGetDateRecorded_LsidNotSet() {
+        final EulaInfo eula = new EulaInfo();
+        eula.setModuleLsid("");  //set to the empty string
+        eula.setLicense("license.txt");
+        final String userId="gp_user";
+        final RecordEula recorder = new RecordEulaToDb();
+        //Date actualDate=null;
+        try {
+            //actualDate = 
+                recorder.getUserAgreementDate(userId, eula);
+            Assert.fail("Expecting IllegalArgumentException, when eula.lsid==\"\" (empty string)");
+        }
+        catch (IllegalArgumentException e) {
+            //expected
+        }
+        catch (Exception e) {
+            Assert.fail("Unexpected exception in getUserAgreementDate: "+e.getLocalizedMessage());
+        }
+    }
+    
+    @Test
+    public void testGetDateRecorded_NullUserId() {
+        final EulaInfo eula = init("urn:lsid:8080.gp-trunk-dev.120.0.0.1:genepatternmodules:303:5");
+        final String userId=null;
+        final RecordEula recorder = new RecordEulaToDb();
+        //Date actualDate=null;
+        try {
+            //actualDate = 
+                recorder.getUserAgreementDate(userId, eula);
+            Assert.fail("Expecting IllegalArgumentException, when userId==null");
+        }
+        catch (IllegalArgumentException e) {
+            //expected
+        }
+        catch (Exception e) {
+            Assert.fail("Unexpected exception in getUserAgreementDate: "+e.getLocalizedMessage());
+        }
+    }
+
+    @Test
+    public void testGetDateRecorded_UserIdNotSet() {
+        final EulaInfo eula = init("urn:lsid:8080.gp-trunk-dev.120.0.0.1:genepatternmodules:303:5");
+        final String userId="";
+        final RecordEula recorder = new RecordEulaToDb();
+        //Date actualDate=null;
+        try {
+            //actualDate = 
+                recorder.getUserAgreementDate(userId, eula);
+            Assert.fail("Expecting IllegalArgumentException, when userId==\"\" (empty string)");
+        }
+        catch (IllegalArgumentException e) {
+            //expected
+        }
+        catch (Exception e) {
+            Assert.fail("Unexpected exception in getUserAgreementDate: "+e.getLocalizedMessage());
+        }
+    }
+    
+    @Test
+    public void testGetDateRecorded_UserNotInDb() {
+        final EulaInfo eula = init("urn:lsid:8080.gp-trunk-dev.120.0.0.1:genepatternmodules:303:5");
+        final String userId="not_registered";
+        final RecordEula recorder = new RecordEulaToDb();
+        Date actualDate=null;
+        try {
+            actualDate = recorder.getUserAgreementDate(userId, eula);
+        }
+        catch (Throwable t) {
+            //expected
+            Assert.fail("Unexpected exception in getUserAgreementDate: "+t.getLocalizedMessage());
+        }
+        Assert.assertNull("userAgreementDate should be null, when the userId is not for a registered GP user account", actualDate);
+    }
+
     /**
      * Saving the same record twice should have no effect.
      */
@@ -207,6 +350,72 @@ public class TestRecordEulaToDb {
         }
         catch (Throwable t) {
             Assert.fail("Failed in 2nd call to hasUserAgreed: "+t.getLocalizedMessage());
+        }
+    }
+
+    /**
+     * Start the hibernate transaction before calling recordEula method.
+     */
+    @Test
+    public void testRecordEulaInTransaction() {
+        final String userId=addUser("test_03");
+        final EulaInfo eula = init("urn:lsid:8080.gp-trunk-dev.120.0.0.1:genepatternmodules:303:5");
+
+        RecordEula recorder = new RecordEulaToDb();
+        HibernateUtil.beginTransaction();
+        boolean agreed = false;
+        try {
+            recorder.hasUserAgreed(userId, eula);
+        }
+        catch (Exception e) {
+            Assert.fail("Unexpected exception in first call to hasUserAgreed: "+e.getLocalizedMessage());
+        }
+        Assert.assertFalse("hasUserAgreed", agreed);
+        HibernateUtil.closeCurrentSession();
+
+        HibernateUtil.beginTransaction();
+        try {
+            recorder.recordLicenseAgreement(userId, eula.getModuleLsid());
+        }
+        catch (Exception e) {
+            Assert.fail("Unexpected exception in first call to recordLicenseAgreement: "+e.getLocalizedMessage());
+        }
+        HibernateUtil.rollbackTransaction();
+
+        agreed = false;
+        try {
+            recorder.hasUserAgreed(userId, eula);
+        }
+        catch (Exception e) {
+            Assert.fail("Unexpected exception in second call to hasUserAgreed: "+e.getLocalizedMessage());
+        }
+        Assert.assertFalse("hasUserAgreed, after rollback", agreed);
+        HibernateUtil.closeCurrentSession();
+    }
+
+    /**
+     * Should fail when the user_is is not in the DB.
+     */
+    @Test
+    public void testRecordEulaInvalidUser() {
+        final String userId="bogus"; //not in db
+        final EulaInfo eula = init("urn:lsid:8080.gp-trunk-dev.120.0.0.1:genepatternmodules:303:5");
+        RecordEula recorder = new RecordEulaToDb();
+        boolean agreed = false;
+        try {
+            recorder.hasUserAgreed(userId, eula);
+        }
+        catch (Exception e) {
+            Assert.fail("Unexpected exception in first call to hasUserAgreed: "+e.getLocalizedMessage());
+        }
+        Assert.assertFalse("hasUserAgreed", agreed);
+        
+        try {
+            recorder.recordLicenseAgreement(userId, eula.getModuleLsid());
+            Assert.fail("recordLicenseAgreement should throw Exception when the userId is not in the DB");
+        }
+        catch (Exception e) {
+            //expected
         }
     }
     
