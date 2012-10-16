@@ -1,0 +1,25 @@
+# example config file, for no-op test-case
+#
+default.properties: 
+    # by default, the EulaManager is enabled; it can be turned off globally by setting this property to false
+    # Note: this property was added in GP 3.4.2 so that we can release to production before a full integration test
+    #     of the EulaManager
+    #org.genepattern.server.eula.EulaManager.enabled: false
+#
+# Note: the yaml parser for a GP config file requires at least one 'executors' entry
+#
+executors:
+    # default executor for all jobs, it is included in GenePattern
+    RuntimeExec: 
+        classname: org.genepattern.server.executor.RuntimeCommandExecutor
+
+# override default.properties and executor->default.properties based on taskname or lsid
+#module.properties:
+#    testLicenseAgreement:
+#        org.genepattern.server.eula.EulaManager.enabled: false
+
+#group.properties:
+        
+#user.properties:
+#    gp_user:
+#        org.genepattern.server.eula.EulaManager.enabled: false

@@ -258,7 +258,7 @@ public class EulaTaskBean {
         if (taskInfo != null) {
             Context taskContext = Context.getContextForUser(currentUser);
             taskContext.setTaskInfo(taskInfo);
-            List<EulaInfo> promptForEulas = EulaManager.instance().getPendingEulaForModule(taskContext);
+            List<EulaInfo> promptForEulas = EulaManager.instance(taskContext).getPendingEulaForModule(taskContext);
             if (promptForEulas == null || promptForEulas.size()==0) {
                 requiresEULA=false;
                 this.eulas=Collections.emptyList();

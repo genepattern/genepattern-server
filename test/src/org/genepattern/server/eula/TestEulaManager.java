@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.log4j.Logger;
+import org.genepattern.junitutil.FileUtil;
 import org.genepattern.server.TaskUtil;
 import org.genepattern.server.config.ServerConfiguration.Context;
 import org.genepattern.webservice.TaskInfo;
@@ -16,37 +17,24 @@ public class TestEulaManager {
     final static public Logger log = Logger.getLogger(TestEulaManager.class);
 
     /**
-     * Helper class which returns the parent File of this source file.
-     * @return
-     */
-    private static File getSourceDir() {
-        String cname = TestEulaManager.class.getCanonicalName();
-        int idx = cname.lastIndexOf('.');
-        String dname = cname.substring(0, idx);
-        dname = dname.replace('.', '/');
-        File sourceDir = new File("test/src/" + dname);
-        return sourceDir;
-    }
-    
-    /**
      * Get a File object, from the name of a file which is in the same directory as this source file.
+     * 
+     * @deprecated, use FileUtil#getSourceFile instead.
+     * 
      * @param filename
      * @return
      */
     private static File getSourceFile(String filename) {
-        File p = getSourceDir();
-        return new File(p, filename);
+        return FileUtil.getSourceFile(TestEulaManager.class, filename);
     }
 
     /**
      * Initialize a TaskInfo from a zip file.
      * 
-     * TODO: Implement this for pipelines which include modules.
-     * 
      * @param filename
      * @return
      */
-    private static TaskInfo initTaskInfoFromZip(final String filename) {
+    protected static TaskInfo initTaskInfoFromZip(final String filename) {
         //the name of a zip file, relative to this source file
         File zipfile = getSourceFile(filename);
         return initTaskInfoFromZipfile(zipfile);
@@ -154,12 +142,14 @@ public class TestEulaManager {
         File licenseFile=getSourceFile("gp_server_license.txt");
         GetEulaFromTaskStub stub = new GetEulaFromTaskStub();
         stub.addLicenseFile(taskInfo, licenseFile);
-        EulaManager.instance().setGetEulaFromTask(stub);
 
         final String userId="gp_user";
         Context taskContext=Context.getContextForUser(userId);
         taskContext.setTaskInfo(taskInfo);
-        List<EulaInfo> eulas=EulaManager.instance().getAllEulaForModule(taskContext);
+
+        EulaManager.instance(taskContext).setGetEulaFromTask(stub);
+
+        List<EulaInfo> eulas=EulaManager.instance(taskContext).getAllEulaForModule(taskContext);
         Assert.assertNotNull("eulas==null", eulas);
         Assert.assertEquals("Expecting one EulaInfo", 1, eulas.size());
         EulaInfo eula = eulas.get(0);
@@ -189,12 +179,14 @@ public class TestEulaManager {
         GetEulaFromTaskStub stub = new GetEulaFromTaskStub();
         stub.addLicenseFile(taskInfo, gpLicense);
         stub.addLicenseFile(taskInfo, exampleLicense);
-        EulaManager.instance().setGetEulaFromTask(stub);
         
         final String userId="gp_user";
         Context taskContext=Context.getContextForUser(userId);
         taskContext.setTaskInfo(taskInfo);
-        List<EulaInfo> eulas=EulaManager.instance().getAllEulaForModule(taskContext);
+
+        EulaManager.instance(taskContext).setGetEulaFromTask(stub);
+
+        List<EulaInfo> eulas=EulaManager.instance(taskContext).getAllEulaForModule(taskContext);
         Assert.assertNotNull("eulas==null", eulas);
         Assert.assertEquals("eulas.size", 2, eulas.size());
         
@@ -229,7 +221,6 @@ public class TestEulaManager {
         stub.addLicenseFile(taskInfos.get(0), exampleLicenseFile);
         //add an extra license file to the last taskInfo
         //stub.addLicenseFile(taskInfos.get( taskInfos.size()-1 ), gpLicenseFile);
-        EulaManager.instance().setGetEulaFromTask(stub);
         GetTaskStrategy myTaskInfoCache = new GetTaskStrategy() {
             //@Override
             public TaskInfo getTaskInfo(final String lsid) {
@@ -245,7 +236,6 @@ public class TestEulaManager {
                 return null;
             }
         };
-        EulaManager.instance().setGetTaskStrategy(myTaskInfoCache);
         
         TaskInfo lastEulaTask = myTaskInfoCache.getTaskInfo("urn:lsid:9090.gpdev.gpint01:genepatternmodules:816:1");
         stub.addLicenseFile(lastEulaTask, exampleLicenseFile);
@@ -253,7 +243,10 @@ public class TestEulaManager {
         final String userId="gp_user";
         Context taskContext=Context.getContextForUser(userId);
         taskContext.setTaskInfo(pipelineTask);
-        List<EulaInfo> eulas=EulaManager.instance().getAllEulaForModule(taskContext);
+        
+        EulaManager.instance(taskContext).setGetTaskStrategy(myTaskInfoCache);
+        EulaManager.instance(taskContext).setGetEulaFromTask(stub);
+        List<EulaInfo> eulas=EulaManager.instance(taskContext).getAllEulaForModule(taskContext);
         Assert.assertNotNull("eulas==null", eulas);
         Assert.assertEquals("eulas.size", 10, eulas.size());
         
@@ -288,13 +281,13 @@ public class TestEulaManager {
         final String filename="testLicenseAgreement_v3.zip";
         TaskInfo taskInfo = initTaskInfoFromZip(filename);
         GetEulaFromTaskStub stub = new GetEulaFromTaskStub();
-        EulaManager.instance().setGetEulaFromTask(stub);
-        EulaManager.instance().setRecordEulaStrategy(RecordEulaStub.instance());
         
         final String userId="gp_user";
         Context taskContext=Context.getContextForUser(userId);
         taskContext.setTaskInfo(taskInfo);
-        boolean requiresEula=EulaManager.instance().requiresEula(taskContext);
+        EulaManager.instance(taskContext).setGetEulaFromTask(stub);
+        EulaManager.instance(taskContext).setRecordEulaStrategy(RecordEulaStub.instance());
+        boolean requiresEula=EulaManager.instance(taskContext).requiresEula(taskContext);
         Assert.assertFalse("the module requires no eula", requiresEula);
     }
     
@@ -305,13 +298,13 @@ public class TestEulaManager {
         File licenseFile=getSourceFile("gp_server_license.txt");
         GetEulaFromTaskStub stub = new GetEulaFromTaskStub();
         stub.addLicenseFile(taskInfo, licenseFile);
-        EulaManager.instance().setGetEulaFromTask(stub);
-        EulaManager.instance().setRecordEulaStrategy(RecordEulaStub.instance());
         
         final String userId="gp_user";
         Context taskContext=Context.getContextForUser(userId);
         taskContext.setTaskInfo(taskInfo);
-        boolean requiresEula=EulaManager.instance().requiresEula(taskContext);
+        EulaManager.instance(taskContext).setGetEulaFromTask(stub);
+        EulaManager.instance(taskContext).setRecordEulaStrategy(RecordEulaStub.instance());
+        boolean requiresEula=EulaManager.instance(taskContext).requiresEula(taskContext);
         Assert.assertTrue("Expecting to requireEula for a module which has a Eula and a user which has not yet agreed", requiresEula);
     }
 
@@ -319,7 +312,7 @@ public class TestEulaManager {
     public void testRequiresEula_NullTaskContext() {
         Context taskContext=null;        
         try { 
-            EulaManager.instance().requiresEula(taskContext);
+            EulaManager.instance(taskContext).requiresEula(taskContext);
             Assert.fail("Expecting IllegalArgumentException, when taskContext==null");
         }
         catch (IllegalArgumentException e) {
@@ -330,14 +323,14 @@ public class TestEulaManager {
     @Test
     public void testRequiresEula_NullTaskInfo() {
         GetEulaFromTaskStub stub = new GetEulaFromTaskStub();
-        EulaManager.instance().setGetEulaFromTask(stub);
-        EulaManager.instance().setRecordEulaStrategy(RecordEulaStub.instance());
         
         final String userId="gp_user";
         Context taskContext=Context.getContextForUser(userId);
+        EulaManager.instance(taskContext).setGetEulaFromTask(stub);
+        EulaManager.instance(taskContext).setRecordEulaStrategy(RecordEulaStub.instance());
         
         try { 
-            EulaManager.instance().requiresEula(taskContext);
+            EulaManager.instance(taskContext).requiresEula(taskContext);
             Assert.fail("Expecting IllegalArgumentException, when taskContext.taskInfo==null");
         }
         catch (IllegalArgumentException e) {
@@ -351,15 +344,15 @@ public class TestEulaManager {
         TaskInfo taskInfo = initTaskInfoFromZip(filename);
         taskInfo.getTaskInfoAttributes().put("LSID", null);
         GetEulaFromTaskStub stub = new GetEulaFromTaskStub();
-        EulaManager.instance().setGetEulaFromTask(stub);
-        EulaManager.instance().setRecordEulaStrategy(RecordEulaStub.instance());
         
         final String userId="gp_user";
         Context taskContext=Context.getContextForUser(userId);
         taskContext.setTaskInfo(taskInfo);
+        EulaManager.instance(taskContext).setGetEulaFromTask(stub);
+        EulaManager.instance(taskContext).setRecordEulaStrategy(RecordEulaStub.instance());
         
         try { 
-            EulaManager.instance().requiresEula(taskContext);
+            EulaManager.instance(taskContext).requiresEula(taskContext);
             Assert.fail("Expecting IllegalArgumentException, when taskContext.taskInfo==null");
         }
         catch (IllegalArgumentException e) {
@@ -373,15 +366,15 @@ public class TestEulaManager {
         TaskInfo taskInfo = initTaskInfoFromZip(filename);
         taskInfo.getTaskInfoAttributes().put("LSID", "");
         GetEulaFromTaskStub stub = new GetEulaFromTaskStub();
-        EulaManager.instance().setGetEulaFromTask(stub);
-        EulaManager.instance().setRecordEulaStrategy(RecordEulaStub.instance());
         
         final String userId="gp_user";
         Context taskContext=Context.getContextForUser(userId);
         taskContext.setTaskInfo(taskInfo);
+        EulaManager.instance(taskContext).setGetEulaFromTask(stub);
+        EulaManager.instance(taskContext).setRecordEulaStrategy(RecordEulaStub.instance());
         
         try { 
-            EulaManager.instance().requiresEula(taskContext);
+            EulaManager.instance(taskContext).requiresEula(taskContext);
             Assert.fail("Expecting IllegalArgumentException, when taskContext.taskInfo==\"\" (empty string)");
         }
         catch (IllegalArgumentException e) {
@@ -396,15 +389,15 @@ public class TestEulaManager {
         File licenseFile=getSourceFile("gp_server_license.txt");
         GetEulaFromTaskStub stub = new GetEulaFromTaskStub();
         stub.addLicenseFile(taskInfo, licenseFile);
-        EulaManager.instance().setGetEulaFromTask(stub);
-        EulaManager.instance().setRecordEulaStrategy(RecordEulaStub.instance());
         
         final String userId=null;
         Context taskContext=Context.getContextForUser(userId);
         taskContext.setTaskInfo(taskInfo);
+        EulaManager.instance(taskContext).setGetEulaFromTask(stub);
+        EulaManager.instance(taskContext).setRecordEulaStrategy(RecordEulaStub.instance());
 
         try { 
-            EulaManager.instance().requiresEula(taskContext);
+            EulaManager.instance(taskContext).requiresEula(taskContext);
             Assert.fail("Expecting IllegalArgumentException, when taskContext.userId==null");
         }
         catch (IllegalArgumentException e) {
@@ -419,15 +412,15 @@ public class TestEulaManager {
         File licenseFile=getSourceFile("gp_server_license.txt");
         GetEulaFromTaskStub stub = new GetEulaFromTaskStub();
         stub.addLicenseFile(taskInfo, licenseFile);
-        EulaManager.instance().setGetEulaFromTask(stub);
-        EulaManager.instance().setRecordEulaStrategy(RecordEulaStub.instance());
         
         final String userId="";
         Context taskContext=Context.getContextForUser(userId);
         taskContext.setTaskInfo(taskInfo);
+        EulaManager.instance(taskContext).setGetEulaFromTask(stub);
+        EulaManager.instance(taskContext).setRecordEulaStrategy(RecordEulaStub.instance());
 
         try { 
-            EulaManager.instance().requiresEula(taskContext);
+            EulaManager.instance(taskContext).requiresEula(taskContext);
             Assert.fail("Expecting IllegalArgumentException, when taskContext.userId==null");
         }
         catch (IllegalArgumentException e) {
@@ -445,14 +438,13 @@ public class TestEulaManager {
         File licenseFile=getSourceFile("gp_server_license.txt");
         GetEulaFromTaskStub stub = new GetEulaFromTaskStub();
         stub.addLicenseFile(taskInfo, licenseFile);
-        EulaManager.instance().setGetEulaFromTask(stub);
-        
-        EulaManager.instance().setRecordEulaStrategy(RecordEulaStub.instance());
 
         final String userId="gp_user";
         Context taskContext=Context.getContextForUser(userId);
         taskContext.setTaskInfo(taskInfo);
-        EulaManager.instance().recordEula(taskContext);
+        EulaManager.instance(taskContext).setGetEulaFromTask(stub);
+        EulaManager.instance(taskContext).setRecordEulaStrategy(RecordEulaStub.instance());
+        EulaManager.instance(taskContext).recordEula(taskContext);
     }
     
     @Test
@@ -462,12 +454,12 @@ public class TestEulaManager {
         File licenseFile=getSourceFile("gp_server_license.txt");
         GetEulaFromTaskStub stub = new GetEulaFromTaskStub();
         stub.addLicenseFile(taskInfo, licenseFile);
-        EulaManager.instance().setGetEulaFromTask(stub); 
-        EulaManager.instance().setRecordEulaStrategy(RecordEulaStub.instance());
 
         Context taskContext=null; 
+        EulaManager.instance(taskContext).setGetEulaFromTask(stub); 
+        EulaManager.instance(taskContext).setRecordEulaStrategy(RecordEulaStub.instance());
         try { 
-            EulaManager.instance().recordEula(taskContext);
+            EulaManager.instance(taskContext).recordEula(taskContext);
             Assert.fail("Expecting IllegalArgumentException, when taskContext==null");
         }
         catch (IllegalArgumentException e) {
@@ -482,14 +474,14 @@ public class TestEulaManager {
         File licenseFile=getSourceFile("gp_server_license.txt");
         GetEulaFromTaskStub stub = new GetEulaFromTaskStub();
         stub.addLicenseFile(taskInfo, licenseFile);
-        EulaManager.instance().setGetEulaFromTask(stub); 
-        EulaManager.instance().setRecordEulaStrategy(RecordEulaStub.instance());
 
         final String userId="gp_user";
         Context taskContext=Context.getContextForUser(userId);
         taskContext.setTaskInfo(null);
+        EulaManager.instance(taskContext).setGetEulaFromTask(stub); 
+        EulaManager.instance(taskContext).setRecordEulaStrategy(RecordEulaStub.instance());
         try { 
-            EulaManager.instance().recordEula(taskContext);
+            EulaManager.instance(taskContext).recordEula(taskContext);
             Assert.fail("Expecting IllegalArgumentException, when taskContext.taskInfo==null");
         }
         catch (IllegalArgumentException e) {
@@ -504,15 +496,15 @@ public class TestEulaManager {
         File licenseFile=getSourceFile("gp_server_license.txt");
         GetEulaFromTaskStub stub = new GetEulaFromTaskStub();
         stub.addLicenseFile(taskInfo, licenseFile);
-        EulaManager.instance().setGetEulaFromTask(stub); 
-        EulaManager.instance().setRecordEulaStrategy(RecordEulaStub.instance());
 
         final String userId="gp_user";
         Context taskContext=Context.getContextForUser(userId);
         taskInfo.getAttributes().put("LSID", null);
         taskContext.setTaskInfo(taskInfo);
+        EulaManager.instance(taskContext).setGetEulaFromTask(stub); 
+        EulaManager.instance(taskContext).setRecordEulaStrategy(RecordEulaStub.instance());
         try { 
-            EulaManager.instance().recordEula(taskContext);
+            EulaManager.instance(taskContext).recordEula(taskContext);
             Assert.fail("Expecting IllegalArgumentException, when taskContext.taskInfo.lsid==null");
         }
         catch (IllegalArgumentException e) {
@@ -527,15 +519,15 @@ public class TestEulaManager {
         File licenseFile=getSourceFile("gp_server_license.txt");
         GetEulaFromTaskStub stub = new GetEulaFromTaskStub();
         stub.addLicenseFile(taskInfo, licenseFile);
-        EulaManager.instance().setGetEulaFromTask(stub); 
-        EulaManager.instance().setRecordEulaStrategy(RecordEulaStub.instance());
 
         final String userId="gp_user";
         Context taskContext=Context.getContextForUser(userId);
         taskInfo.getAttributes().put("LSID", "");
         taskContext.setTaskInfo(taskInfo);
+        EulaManager.instance(taskContext).setGetEulaFromTask(stub); 
+        EulaManager.instance(taskContext).setRecordEulaStrategy(RecordEulaStub.instance());
         try { 
-            EulaManager.instance().recordEula(taskContext);
+            EulaManager.instance(taskContext).recordEula(taskContext);
             Assert.fail("Expecting IllegalArgumentException, when taskContext.taskInfo.lsid==\"\" (empty string)");
         }
         catch (IllegalArgumentException e) {
@@ -550,15 +542,14 @@ public class TestEulaManager {
         File licenseFile=getSourceFile("gp_server_license.txt");
         GetEulaFromTaskStub stub = new GetEulaFromTaskStub();
         stub.addLicenseFile(taskInfo, licenseFile);
-        EulaManager.instance().setGetEulaFromTask(stub);
-        
-        EulaManager.instance().setRecordEulaStrategy(RecordEulaStub.instance());
 
         final String userId=null;
         Context taskContext=Context.getContextForUser(userId);
         taskContext.setTaskInfo(taskInfo);
+        EulaManager.instance(taskContext).setGetEulaFromTask(stub);        
+        EulaManager.instance(taskContext).setRecordEulaStrategy(RecordEulaStub.instance());
         try { 
-            EulaManager.instance().recordEula(taskContext);
+            EulaManager.instance(taskContext).recordEula(taskContext);
             Assert.fail("Expecting IllegalArgumentException, when taskContext.userId==null");
         }
         catch (IllegalArgumentException e) {
@@ -573,15 +564,14 @@ public class TestEulaManager {
         File licenseFile=getSourceFile("gp_server_license.txt");
         GetEulaFromTaskStub stub = new GetEulaFromTaskStub();
         stub.addLicenseFile(taskInfo, licenseFile);
-        EulaManager.instance().setGetEulaFromTask(stub);
-        
-        EulaManager.instance().setRecordEulaStrategy(RecordEulaStub.instance());
 
         final String userId="";
         Context taskContext=Context.getContextForUser(userId);
         taskContext.setTaskInfo(taskInfo);
+        EulaManager.instance(taskContext).setGetEulaFromTask(stub);        
+        EulaManager.instance(taskContext).setRecordEulaStrategy(RecordEulaStub.instance());
         try { 
-            EulaManager.instance().recordEula(taskContext);
+            EulaManager.instance(taskContext).recordEula(taskContext);
             Assert.fail("Expecting IllegalArgumentException, when taskContext.userId==\"\" (empty string)");
         }
         catch (IllegalArgumentException e) {
@@ -596,14 +586,14 @@ public class TestEulaManager {
         File licenseFile=getSourceFile("gp_server_license.txt");
         GetEulaFromTaskStub stub = new GetEulaFromTaskStub();
         stub.addLicenseFile(taskInfo, licenseFile);
-        EulaManager.instance().setGetEulaFromTask(stub);
-        EulaManager.instance().setRecordEulaStrategy(RecordEulaStub.instance());
         
         final String userId="gp_user";
         Context taskContext=Context.getContextForUser(userId);
         taskContext.setTaskInfo(taskInfo);
-        EulaManager.instance().recordEula(taskContext);
-        boolean requiresEula=EulaManager.instance().requiresEula(taskContext);
+        EulaManager.instance(taskContext).setGetEulaFromTask(stub);
+        EulaManager.instance(taskContext).setRecordEulaStrategy(RecordEulaStub.instance());
+        EulaManager.instance(taskContext).recordEula(taskContext);
+        boolean requiresEula=EulaManager.instance(taskContext).requiresEula(taskContext);
         Assert.assertFalse("the user has already agreed", requiresEula);
     }
 
@@ -614,16 +604,14 @@ public class TestEulaManager {
     public void testGetPendingNoEula() {
         final String filename="testLicenseAgreement_v3.zip";
         TaskInfo taskInfo = initTaskInfoFromZip(filename);
-        //File licenseFile=getSourceFile("gp_server_license.txt");
         GetEulaFromTaskStub stub = new GetEulaFromTaskStub();
-        //stub.addLicenseFile(taskInfo, licenseFile);
-        EulaManager.instance().setGetEulaFromTask(stub);
-        EulaManager.instance().setRecordEulaStrategy(RecordEulaStub.instance());
         
         final String userId="gp_user";
         Context taskContext=Context.getContextForUser(userId);
         taskContext.setTaskInfo(taskInfo);
-        List<EulaInfo> eulas=EulaManager.instance().getPendingEulaForModule(taskContext);
+        EulaManager.instance(taskContext).setGetEulaFromTask(stub);
+        EulaManager.instance(taskContext).setRecordEulaStrategy(RecordEulaStub.instance());
+        List<EulaInfo> eulas=EulaManager.instance(taskContext).getPendingEulaForModule(taskContext);
         
         //should be empty, for a module which has no eula
         Assert.assertEquals("pendingEulaForModule should be empty for a module which has no eulas", 0, eulas.size());
@@ -640,15 +628,14 @@ public class TestEulaManager {
         File licenseFile=getSourceFile("gp_server_license.txt");
         GetEulaFromTaskStub stub = new GetEulaFromTaskStub();
         stub.addLicenseFile(taskInfo, licenseFile);
-        EulaManager.instance().setGetEulaFromTask(stub);
-        EulaManager.instance().setRecordEulaStrategy(RecordEulaStub.instance());
         
         final String userId="gp_user_two";
         Context taskContext=Context.getContextForUser(userId);
         taskContext.setTaskInfo(taskInfo);
-        List<EulaInfo> eulas=EulaManager.instance().getPendingEulaForModule(taskContext);
+        EulaManager.instance(taskContext).setGetEulaFromTask(stub);
+        EulaManager.instance(taskContext).setRecordEulaStrategy(RecordEulaStub.instance());
+        List<EulaInfo> eulas=EulaManager.instance(taskContext).getPendingEulaForModule(taskContext);
         
-        //should be
         Assert.assertEquals("pendingEulaForModule.size should be 1 for a module which has one eula", 1, eulas.size());
     }
     
@@ -663,14 +650,14 @@ public class TestEulaManager {
         File licenseFile=getSourceFile("gp_server_license.txt");
         GetEulaFromTaskStub stub = new GetEulaFromTaskStub();
         stub.addLicenseFile(taskInfo, licenseFile);
-        EulaManager.instance().setGetEulaFromTask(stub);
-        EulaManager.instance().setRecordEulaStrategy(RecordEulaStub.instance());
         
         final String userId="gp_user_three";
         Context taskContext=Context.getContextForUser(userId);
         taskContext.setTaskInfo(taskInfo);
-        EulaManager.instance().recordEula(taskContext);
-        List<EulaInfo> eulas=EulaManager.instance().getPendingEulaForModule(taskContext);
+        EulaManager.instance(taskContext).setGetEulaFromTask(stub);
+        EulaManager.instance(taskContext).setRecordEulaStrategy(RecordEulaStub.instance());
+        EulaManager.instance(taskContext).recordEula(taskContext);
+        List<EulaInfo> eulas=EulaManager.instance(taskContext).getPendingEulaForModule(taskContext);
 
         Assert.assertEquals("pendingEulaForModule.size should be 0 if the current user has already agreed", 0, eulas.size());
     }
