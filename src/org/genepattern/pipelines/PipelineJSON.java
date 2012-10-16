@@ -8,11 +8,15 @@
 
 package org.genepattern.pipelines;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.log4j.Logger;
 import org.genepattern.data.pipeline.PipelineModel;
+import org.genepattern.server.config.ServerConfiguration.Context;
+import org.genepattern.server.eula.EulaInfo;
+import org.genepattern.server.eula.EulaManager;
 import org.genepattern.webservice.TaskInfo;
 import org.genepattern.webservice.TaskInfoCache;
 import org.json.JSONArray;
@@ -29,6 +33,7 @@ public class PipelineJSON extends JSONObject {
     public static final String VERSION = "pipelineVersion";
     public static final String VERSION_COMMENT = "pipelineVersionComment";
     public static final String DOCUMENTATION = "pipelineDocumentation";
+    public static final String LICENSE = "pipelineLicense";
     public static final String LSID = "pipelineLsid";
     public static final String FILES = "pipelineFiles";
     
@@ -46,6 +51,7 @@ public class PipelineJSON extends JSONObject {
             this.put(VERSION, object.get(VERSION));
             this.put(VERSION_COMMENT, object.get(VERSION_COMMENT));
             this.put(DOCUMENTATION, object.get(DOCUMENTATION));
+            this.put(LICENSE, object.get(LICENSE));
             this.put(LSID, object.get(LSID));
             this.put(FILES, object.get(FILES));
         }
@@ -63,6 +69,7 @@ public class PipelineJSON extends JSONObject {
             this.put(VERSION, extractVersion(pipeline.getLsid()));
             this.put(VERSION_COMMENT, pipeline.getVersion());
             this.put(DOCUMENTATION, getDocumentation(pipeline, info));
+            this.put(LICENSE, getLicense(pipeline, info));
             this.put(LSID, pipeline.getLsid());
         }
         catch (JSONException e) {
@@ -80,6 +87,10 @@ public class PipelineJSON extends JSONObject {
     
     public String getDocumentation() throws JSONException {
         return this.getString(DOCUMENTATION);
+    }
+    
+    public String getLicense() throws JSONException {
+        return this.getString(LICENSE);
     }
     
     public String getAuthor() throws JSONException {
@@ -125,6 +136,16 @@ public class PipelineJSON extends JSONObject {
         else {
             return docList.get(0);
         }
+    }
+    
+    private String getLicense(PipelineModel pipeline, TaskInfo info) {
+        Context taskContext = Context.getContextForUser("");    // User doesn't matter, a module will always have the same license
+        taskContext.setTaskInfo(info);
+        List<EulaInfo> eulaList = EulaManager.instance(taskContext).getAllEulaForModule(taskContext);
+        if (eulaList.size() < 1) return "";
+        EulaInfo eula = eulaList.get(0);
+        File licenseFile = eula.getLicenseFile();
+        return licenseFile.getName();
     }
     
     private String extractVersion(String lsid) {
