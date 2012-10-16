@@ -7,6 +7,7 @@ import java.util.Collections;
 import java.util.List;
 
 import org.apache.log4j.Logger;
+import org.genepattern.server.eula.EulaInfo.EulaInitException;
 import org.genepattern.server.webservice.server.DirectoryManager;
 import org.genepattern.webservice.TaskInfo;
 
@@ -33,7 +34,12 @@ public class GetEulaAsSupportFile implements GetEulaFromTask {
 
     private EulaInfo initEulaInfo(final TaskInfo taskInfo, final File licenseFile) {
         EulaInfo eula = new EulaInfo();
-        eula.setModuleLsid(taskInfo.getLsid());
+        try {
+            eula.setModuleLsid(taskInfo.getLsid());
+        }
+        catch (EulaInitException e) {
+            log.error("Invalid taskInfo.lsid="+taskInfo.getLsid(),e);
+        }
         eula.setModuleName(taskInfo.getName());
         //TODO: save abs path, so we don't need to do a new 'ls' to get the content
         eula.setLicense(licenseFile.getName());

@@ -7,6 +7,7 @@ import org.genepattern.server.UserAccountManager;
 import org.genepattern.server.auth.AuthenticationException;
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.eula.EulaInfo;
+import org.genepattern.server.eula.EulaInfo.EulaInitException;
 import org.genepattern.server.eula.RecordEula;
 import org.genepattern.server.eula.dao.RecordEulaToDb;
 import org.junit.Assert;
@@ -59,7 +60,12 @@ public class TestRecordEulaToDb {
 
     private static EulaInfo init(final String lsid) {
         EulaInfo eula = new EulaInfo();
-        eula.setModuleLsid(lsid);
+        try {
+            eula.setModuleLsid(lsid);
+        }
+        catch (EulaInitException e) {
+            Assert.fail(e.getLocalizedMessage());
+        }
         eula.setLicense("license.txt");
         return eula;
     }
@@ -216,7 +222,7 @@ public class TestRecordEulaToDb {
     @Test
     public void testGetDateRecorded_NullLsid() {
         final EulaInfo eula = new EulaInfo();
-        eula.setModuleLsid(null);
+        //TODO: eula.setModuleLsid(null);
         eula.setLicense("license.txt");
         final String userId="gp_user";
         final RecordEula recorder = new RecordEulaToDb();
@@ -237,7 +243,6 @@ public class TestRecordEulaToDb {
     @Test
     public void testGetDateRecorded_LsidNotSet() {
         final EulaInfo eula = new EulaInfo();
-        eula.setModuleLsid("");  //set to the empty string
         eula.setLicense("license.txt");
         final String userId="gp_user";
         final RecordEula recorder = new RecordEulaToDb();
@@ -245,13 +250,25 @@ public class TestRecordEulaToDb {
         try {
             //actualDate = 
                 recorder.getUserAgreementDate(userId, eula);
-            Assert.fail("Expecting IllegalArgumentException, when eula.lsid==\"\" (empty string)");
+            Assert.fail("Expecting IllegalArgumentException, when eula.lsid has not been set");
         }
         catch (IllegalArgumentException e) {
             //expected
         }
         catch (Exception e) {
             Assert.fail("Unexpected exception in getUserAgreementDate: "+e.getLocalizedMessage());
+        }
+    }
+    
+    @Test
+    public void testGetDateRecorded_InvalidLsid() {
+        final EulaInfo eula = new EulaInfo();
+        try {
+            eula.setModuleLsid("testLicenseAgreement");  //it's not an LSID
+            Assert.fail("eula.setModuleLsid(\"testLicenseAgreement\") should throw EulaInitException. It's not a valid LSID");
+        }
+        catch (EulaInitException e) {
+            //expected
         }
     }
     

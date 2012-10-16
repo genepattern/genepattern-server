@@ -126,15 +126,16 @@ public class EulaInfo implements Comparable<EulaInfo> {
         this.license=licenseFile.getName();
         this.licenseFile=licenseFile;
     }
-    public void setModuleLsid(final String lsid) {
-        this.moduleLsid=lsid; 
-        //automatically init lsidVersion
+    public void setModuleLsid(final String lsid) throws EulaInitException {
         try {
             theLsid = new LSID(lsid);
+            this.moduleLsid=lsid; 
+            //automatically initialize lsidVersion
             this.moduleLsidVersion=theLsid.getVersion();
         }
         catch (MalformedURLException e) {
             log.error("Error computing lsidVersion from lsid string, lsid="+lsid, e);
+            throw new EulaInitException("Invalid moduleLsid="+lsid,e);
         } 
     }
     public String getModuleLsid() {

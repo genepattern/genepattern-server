@@ -9,6 +9,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
+import org.genepattern.server.eula.EulaInfo.EulaInitException;
 import org.genepattern.webservice.TaskInfo;
 
 /**
@@ -37,7 +38,13 @@ public class GetEulaFromTaskStub implements GetEulaFromTask {
             infos = new TreeSet<EulaInfo>();
             lookupTable.put(moduleLsid, infos);
         }
-        EulaInfo eula = initEulaInfo(taskInfo, license);
+        EulaInfo eula=null;
+        try {
+            eula = initEulaInfo(taskInfo, license);
+        }
+        catch (EulaInitException e) {
+            throw new IllegalArgumentException(e.getLocalizedMessage());
+        }
         infos.add(eula);
     }
 
@@ -47,7 +54,7 @@ public class GetEulaFromTaskStub implements GetEulaFromTask {
         }
     }
     
-    private EulaInfo initEulaInfo(final TaskInfo taskInfo, final File licenseFile) {
+    private EulaInfo initEulaInfo(final TaskInfo taskInfo, final File licenseFile) throws EulaInitException {
         EulaInfo eula = new EulaInfo();
         eula.setModuleLsid(taskInfo.getLsid());
         eula.setModuleName(taskInfo.getName());
