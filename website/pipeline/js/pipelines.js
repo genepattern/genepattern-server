@@ -36,6 +36,7 @@ var editor = {
         pipelineVersion: "0",
         pipelineVersionComment: "",
         pipelineDocumentation: "",
+        pipelineLicense: "",
         pipelineLsid: ""
 	},
 
@@ -174,6 +175,11 @@ var editor = {
     filenameExists: function(name) {
         // Check documentation
         if (name === editor.workspace["pipelineDocumentation"]) {
+            return true;
+        }
+        
+        // Check license
+        if (name === editor.workspace["pipelineLicense"]) {
             return true;
         }
 
@@ -504,6 +510,7 @@ var editor = {
             pipelineVersion: "0",
             pipelineVersionComment: "",
             pipelineDocumentation: "",
+            pipelineLicense: "",
             pipelineLsid: ""
         };
 
@@ -922,6 +929,9 @@ var editor = {
         if (save["Documentation"] !== "") {
             this.workspace["pipelineDocumentation"] = save["Documentation"];
         }
+        if (save["License"] !== "") {
+            this.workspace["pipelineLicense"] = save["License"];
+        }
         editor._setPipelineName();
 
         // Redisplay pipeline editor
@@ -941,6 +951,7 @@ var editor = {
         transport["pipelineVersion"] = this.workspace["pipelineVersion"];
         transport["pipelineVersionComment"] = this.workspace["pipelineVersionComment"];
         transport["pipelineDocumentation"] = this.workspace["pipelineDocumentation"];
+        transport["pipelineLicense"] = this.workspace["pipelineLicense"];
         transport["pipelineLsid"] = this.workspace["pipelineLsid"];
         transport["pipelineFiles"] = this.workspace["files"];
         return transport;
@@ -1003,6 +1014,7 @@ var editor = {
         this.workspace["pipelineVersion"] = pipeline["pipelineVersion"];
         this.workspace["pipelineVersionComment"] = pipeline["pipelineVersionComment"];
         this.workspace["pipelineDocumentation"] = pipeline["pipelineDocumentation"];
+        this.workspace["pipelineLicense"] = pipeline["pipelineLicense"];
         this.workspace["pipelineLsid"] = pipeline["pipelineLsid"];
         editor._setPipelineName();
     },
@@ -2467,8 +2479,8 @@ var properties = {
             // The upload is disabled due to a pipe being connected to this input, display edit button
             properties._showDeletePipeButton($(label), labelText);
         }
-        else if (!pwr && labelText === "Documentation") {
-            properties._createDocButton($(label))
+        else if (!pwr && (labelText === "Documentation" || labelText === "License")) {
+            properties._createDocButton(labelText, $(label))
         }
 
         // If the value has been previously set, attach the value div
@@ -2898,9 +2910,9 @@ var properties = {
         }
     },
 
-    _createDocButton: function(parent) {
+    _createDocButton: function(label, parent) {
         var docButton = document.createElement("button");
-        docButton.innerHTML = "Attach Documentation";
+        docButton.innerHTML = "Attach " + label;
         $(docButton).button();
 
         $(docButton).click(function() {
@@ -2917,7 +2929,7 @@ var properties = {
                 $(".fileUploadValue")[0].innerHTML = "<strong>Current Value:</strong> " + filename;
 
                 // Add to the hidden field
-                $("input[type='hidden'][name='Documentation']").val(filename);
+                $("input[type='hidden'][name='" + label + "']").val(filename);
 
                 // Tear down the dialog
                 $(".ui-dialog-buttonpane button:contains('Cancel')").trigger("click");
@@ -2950,6 +2962,7 @@ var properties = {
         
         this._addTextBox("Version Comment", editor.workspace["pipelineVersionComment"], false, false);
         this._addFileUpload("Documentation", editor.workspace["pipelineDocumentation"], false, false, false);
+        this._addFileUpload("License", editor.workspace["pipelineLicense"], false, false, false);
         this._addPWRDisplayButton();
         this._addSpacerDiv();
         
