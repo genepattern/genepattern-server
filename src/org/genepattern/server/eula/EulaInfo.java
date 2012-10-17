@@ -25,7 +25,8 @@ import org.genepattern.webservice.TaskInfo;
  *
  */
 public class EulaInfo implements Comparable<EulaInfo> {
-    private static Logger log = Logger.getLogger(EulaInfo.class);
+    final static private Logger log = Logger.getLogger(EulaInfo.class);
+
     public static class EulaInitException extends Exception {
         public EulaInitException(String message) {
             super(message);

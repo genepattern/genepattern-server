@@ -16,7 +16,7 @@ import org.hibernate.Session;
  * @author pcarr
  */
 public class RecordEulaToDb implements RecordEula {
-    private static Logger log = Logger.getLogger(RecordEulaToDb.class);
+    final static private Logger log = Logger.getLogger(RecordEulaToDb.class);
 
     public boolean hasUserAgreed(String userId, EulaInfo eula) throws Exception {
         Date userAgreementDate = getUserAgreementDate(userId, eula);

@@ -15,7 +15,7 @@ import org.genepattern.server.webservice.server.DirectoryManager;
  * @author pcarr
  */
 public class LibdirLegacy implements LibdirStrategy {
-    private static Logger log = Logger.getLogger(LibdirLegacy.class);
+    final static private Logger log = Logger.getLogger(LibdirLegacy.class);
 
     //@Override
     public File getLibdir(final String moduleLsid) throws EulaInitException {

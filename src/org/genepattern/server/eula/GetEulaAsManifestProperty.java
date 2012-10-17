@@ -20,7 +20,7 @@ import org.genepattern.webservice.TaskInfo;
  * @author pcarr
  */
 public class GetEulaAsManifestProperty implements GetEulaFromTask {
-    public static Logger log = Logger.getLogger(GetEulaAsManifestProperty.class);
+    final static private Logger log = Logger.getLogger(GetEulaAsManifestProperty.class);
     final static public String DELIM=",";
 
     //Override

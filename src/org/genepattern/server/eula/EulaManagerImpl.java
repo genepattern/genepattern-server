@@ -15,7 +15,7 @@ import org.genepattern.webservice.TaskInfo;
  * @author pcarr
  */
 public class EulaManagerImpl implements IEulaManager {
-    public static Logger log = Logger.getLogger(EulaManagerImpl.class);
+    final static private Logger log = Logger.getLogger(EulaManagerImpl.class);
 
     private GetEulaFromTask getEulaFromTask = null;
     /**

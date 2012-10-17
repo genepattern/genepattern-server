@@ -18,7 +18,7 @@ import org.genepattern.webservice.TaskInfo;
  * @author pcarr
  */
 public class GetEulaAsSupportFile implements GetEulaFromTask {
-    public static Logger log = Logger.getLogger(GetEulaAsSupportFile.class);
+    final static private Logger log = Logger.getLogger(GetEulaAsSupportFile.class);
 
     //Override
     public List<EulaInfo> getEulasFromTask(final TaskInfo taskInfo) {
