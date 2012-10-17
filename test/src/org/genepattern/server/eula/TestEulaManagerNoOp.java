@@ -1,6 +1,7 @@
 package org.genepattern.server.eula;
 
 import java.io.File;
+import java.util.Collections;
 import java.util.List;
 
 import junit.framework.Assert;
@@ -8,6 +9,7 @@ import junit.framework.Assert;
 import org.genepattern.junitutil.FileUtil;
 import org.genepattern.server.config.ServerConfiguration;
 import org.genepattern.server.config.ServerConfiguration.Context;
+import org.genepattern.webservice.TaskInfo;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -84,6 +86,32 @@ public class TestEulaManagerNoOp {
         final Context taskContext=null;
         boolean requiresEula=eulaMgr.requiresEula(taskContext);
         Assert.assertFalse("eulaMgr.requiresEula should always return false when eula manager is not enabled", requiresEula);
+    }
+
+    @Test
+    public void testGetEula() {
+        final IEulaManager eulaMgr=new EulaManagerNoOp();
+        final TaskInfo taskInfo=null;
+        final List<EulaInfo> eulas=eulaMgr.getEulas(taskInfo);
+        Assert.assertEquals("eulaMgr.getEulas should always return an empty list when eula manager is not enabled", 0, eulas.size());
+    }
+
+    @Test
+    public void testSetEula() {
+        final IEulaManager eulaMgr=new EulaManagerNoOp();
+        final TaskInfo taskInfo=null;
+        final EulaInfo eula=null;
+        eulaMgr.setEula(eula, taskInfo);
+        //nothing to test
+    }
+
+    @Test
+    public void testSetEulas() {
+        final IEulaManager eulaMgr=new EulaManagerNoOp();
+        final TaskInfo taskInfo=null;
+        final List<EulaInfo> eulas=Collections.emptyList();
+        eulaMgr.setEulas(eulas, taskInfo);
+        //nothing to test
     }
 
     @Test

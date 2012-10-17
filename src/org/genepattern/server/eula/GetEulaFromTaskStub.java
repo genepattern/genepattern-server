@@ -20,15 +20,24 @@ import org.genepattern.webservice.TaskInfo;
  */
 public class GetEulaFromTaskStub implements GetEulaFromTask {
     private Map<String, Set<EulaInfo>> lookupTable;
+
+    /**
+     * Helper method for initializing a EulaInfo for the given taskInfo and licenseFile.
+     * 
+     * @param taskInfo, must be non-null and have a valid lsid
+     * @param licenseFile, must be readable from the current working directory. This same exact path is used when reading the content.
+     * @return
+     * @throws EulaInitException
+     */
+    final static public EulaInfo initEulaInfo(final TaskInfo taskInfo, final File licenseFile) throws EulaInitException {
+        EulaInfo eula = new EulaInfo();
+        eula.setModuleLsid(taskInfo.getLsid());
+        eula.setModuleName(taskInfo.getName());
+        eula.setLicenseFile(licenseFile);
+        return eula;
+    }
     
-    public void addLicenseFile(final TaskInfo taskInfo, final File license) { 
-        if (taskInfo == null) {
-            throw new IllegalArgumentException("taskInfo==null");
-        }
-        final String moduleLsid = taskInfo.getLsid();
-        if (moduleLsid == null || moduleLsid.length()==0) {
-            throw new IllegalArgumentException("taskInfo.lsid not set");
-        }
+    private void addEulaInfo(final String moduleLsid, final EulaInfo eula) {
         //lazy-init
         if (lookupTable == null) {
             lookupTable = new HashMap<String, Set<EulaInfo>>();
@@ -38,30 +47,9 @@ public class GetEulaFromTaskStub implements GetEulaFromTask {
             infos = new TreeSet<EulaInfo>();
             lookupTable.put(moduleLsid, infos);
         }
-        EulaInfo eula=null;
-        try {
-            eula = initEulaInfo(taskInfo, license);
-        }
-        catch (EulaInitException e) {
-            throw new IllegalArgumentException(e.getLocalizedMessage());
-        }
-        infos.add(eula);
-    }
-
-    public void addLicenseFiles(final TaskInfo taskInfo, final Set<File> licenses) {
-        for(final File license : licenses) {
-            addLicenseFile(taskInfo, license);
-        }
+        infos.add(eula); 
     }
     
-    private EulaInfo initEulaInfo(final TaskInfo taskInfo, final File licenseFile) throws EulaInitException {
-        EulaInfo eula = new EulaInfo();
-        eula.setModuleLsid(taskInfo.getLsid());
-        eula.setModuleName(taskInfo.getName());
-        eula.setLicenseFile(licenseFile);
-        return eula;
-    }
-
     public List<EulaInfo> getEulasFromTask(final TaskInfo taskInfo) {
         if (lookupTable==null) {
             return Collections.emptyList();
@@ -80,6 +68,33 @@ public class GetEulaFromTaskStub implements GetEulaFromTask {
             return Collections.emptyList();
         }
         return new ArrayList<EulaInfo>(eulas);
+    }
+
+    //Override
+    public void setEula(EulaInfo eula, TaskInfo taskInfo) throws IllegalArgumentException {
+        List<EulaInfo> eulas=new ArrayList<EulaInfo>();
+        if (eula!=null) {
+            eulas.add(eula);
+        }
+        setEulas(eulas, taskInfo);
+    }
+
+    //Override
+    public void setEulas(List<EulaInfo> eulas, TaskInfo taskInfo) throws IllegalArgumentException {
+        if (taskInfo==null) {
+            throw new IllegalArgumentException("taskInfo==null");
+        }
+        final String lsid=taskInfo.getLsid();
+        if (lsid==null) {
+            throw new IllegalArgumentException("taskInfo.lsid==null");
+        }
+        if (lsid.length()==0) {
+            throw new IllegalArgumentException("taskInfo.lsid is not set");
+        }
+        
+        for(EulaInfo eula : eulas) {
+            addEulaInfo(lsid, eula);
+        } 
     }
 
 }

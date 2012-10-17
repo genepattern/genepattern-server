@@ -81,4 +81,14 @@ public class GetEulaAsSupportFile implements GetEulaFromTask {
         return rval; 
     }
 
+    //Override
+    public void setEula(EulaInfo eula, TaskInfo taskInfo) {
+        // ignore, it's up to the calling method to save the file into the correct location 
+    }
+
+    //Override
+    public void setEulas(List<EulaInfo> eulas, TaskInfo taskInfo) {
+        // ignore, it's up to the calling method to save the file into the correct location 
+    }
+
 }

@@ -4,6 +4,7 @@ import java.util.Collections;
 import java.util.List;
 
 import org.genepattern.server.config.ServerConfiguration.Context;
+import org.genepattern.webservice.TaskInfo;
 
 /**
  * When the server is configured to ignore all EULA info.
@@ -21,6 +22,18 @@ public class EulaManagerNoOp implements IEulaManager {
     }
 
     public void setRecordEulaStrategy(RecordEula impl) {
+        //ignore
+    }
+
+    public List<EulaInfo> getEulas(TaskInfo taskInfo) {
+        return Collections.emptyList();
+    }
+
+    public void setEula(EulaInfo eula, TaskInfo taskInfo) {
+        //ignore
+    }
+
+    public void setEulas(List<EulaInfo> eulas, TaskInfo taskInfo) {
         //ignore
     }
 

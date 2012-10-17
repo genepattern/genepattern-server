@@ -9,6 +9,7 @@ import org.apache.log4j.Logger;
 import org.genepattern.junitutil.FileUtil;
 import org.genepattern.server.TaskUtil;
 import org.genepattern.server.config.ServerConfiguration.Context;
+import org.genepattern.server.eula.EulaInfo.EulaInitException;
 import org.genepattern.webservice.TaskInfo;
 import org.junit.Assert;
 import org.junit.Test;
@@ -98,7 +99,7 @@ public class TestEulaManager {
         }
         return taskInfos;
     }
-
+    
     /**
      * Make sure we can initialize a TaskInfo from the zip file for a module.
      * The zip file is created by exporting the module from the GP server.
@@ -141,7 +142,15 @@ public class TestEulaManager {
         Assert.assertNotNull("taskInfo==null", taskInfo);
         File licenseFile=getSourceFile("gp_server_license.txt");
         GetEulaFromTaskStub stub = new GetEulaFromTaskStub();
-        stub.addLicenseFile(taskInfo, licenseFile);
+        //stub.addLicenseFile(taskInfo, licenseFile);
+        try {
+            EulaInfo eulaIn=GetEulaFromTaskStub.initEulaInfo(taskInfo, licenseFile);
+            stub.setEula(eulaIn, taskInfo);
+        }
+        catch (EulaInitException e) {
+            Assert.fail(""+e.getLocalizedMessage());
+        }
+
 
         final String userId="gp_user";
         Context taskContext=Context.getContextForUser(userId);
@@ -177,8 +186,8 @@ public class TestEulaManager {
         final File exampleLicense=getSourceFile("example_license.txt");
         TaskInfo taskInfo = initTaskInfoFromZip(filename);
         GetEulaFromTaskStub stub = new GetEulaFromTaskStub();
-        stub.addLicenseFile(taskInfo, gpLicense);
-        stub.addLicenseFile(taskInfo, exampleLicense);
+        addLicenseFile(stub, taskInfo, gpLicense);
+        addLicenseFile(stub, taskInfo, exampleLicense);
         
         final String userId="gp_user";
         Context taskContext=Context.getContextForUser(userId);
@@ -215,10 +224,10 @@ public class TestEulaManager {
         //hand-code license agreements, instead of extracting from the zip file
         GetEulaFromTaskStub stub = new GetEulaFromTaskStub();
         for(TaskInfo taskInfo : taskInfos) {
-            stub.addLicenseFile(taskInfo, gpLicenseFile);
+            addLicenseFile(stub, taskInfo, gpLicenseFile);
         }
         //add an extra license file to the first taskInfo
-        stub.addLicenseFile(taskInfos.get(0), exampleLicenseFile);
+        addLicenseFile(stub, taskInfos.get(0), exampleLicenseFile);
         //add an extra license file to the last taskInfo
         //stub.addLicenseFile(taskInfos.get( taskInfos.size()-1 ), gpLicenseFile);
         GetTaskStrategy myTaskInfoCache = new GetTaskStrategy() {
@@ -238,7 +247,7 @@ public class TestEulaManager {
         };
         
         TaskInfo lastEulaTask = myTaskInfoCache.getTaskInfo("urn:lsid:9090.gpdev.gpint01:genepatternmodules:816:1");
-        stub.addLicenseFile(lastEulaTask, exampleLicenseFile);
+        addLicenseFile(stub, lastEulaTask, exampleLicenseFile);
 
         final String userId="gp_user";
         Context taskContext=Context.getContextForUser(userId);
@@ -297,7 +306,7 @@ public class TestEulaManager {
         TaskInfo taskInfo = initTaskInfoFromZip(filename);
         File licenseFile=getSourceFile("gp_server_license.txt");
         GetEulaFromTaskStub stub = new GetEulaFromTaskStub();
-        stub.addLicenseFile(taskInfo, licenseFile);
+        addLicenseFile(stub, taskInfo, licenseFile);
         
         final String userId="gp_user";
         Context taskContext=Context.getContextForUser(userId);
@@ -388,7 +397,7 @@ public class TestEulaManager {
         TaskInfo taskInfo = initTaskInfoFromZip(filename);
         File licenseFile=getSourceFile("gp_server_license.txt");
         GetEulaFromTaskStub stub = new GetEulaFromTaskStub();
-        stub.addLicenseFile(taskInfo, licenseFile);
+        addLicenseFile(stub, taskInfo, licenseFile);
         
         final String userId=null;
         Context taskContext=Context.getContextForUser(userId);
@@ -411,7 +420,7 @@ public class TestEulaManager {
         TaskInfo taskInfo = initTaskInfoFromZip(filename);
         File licenseFile=getSourceFile("gp_server_license.txt");
         GetEulaFromTaskStub stub = new GetEulaFromTaskStub();
-        stub.addLicenseFile(taskInfo, licenseFile);
+        addLicenseFile(stub, taskInfo, licenseFile);
         
         final String userId="";
         Context taskContext=Context.getContextForUser(userId);
@@ -437,7 +446,7 @@ public class TestEulaManager {
         TaskInfo taskInfo = initTaskInfoFromZip(filename);
         File licenseFile=getSourceFile("gp_server_license.txt");
         GetEulaFromTaskStub stub = new GetEulaFromTaskStub();
-        stub.addLicenseFile(taskInfo, licenseFile);
+        addLicenseFile(stub, taskInfo, licenseFile);
 
         final String userId="gp_user";
         Context taskContext=Context.getContextForUser(userId);
@@ -453,7 +462,7 @@ public class TestEulaManager {
         TaskInfo taskInfo = initTaskInfoFromZip(filename);
         File licenseFile=getSourceFile("gp_server_license.txt");
         GetEulaFromTaskStub stub = new GetEulaFromTaskStub();
-        stub.addLicenseFile(taskInfo, licenseFile);
+        addLicenseFile(stub, taskInfo, licenseFile);
 
         Context taskContext=null; 
         EulaManager.instance(taskContext).setGetEulaFromTask(stub); 
@@ -473,7 +482,7 @@ public class TestEulaManager {
         TaskInfo taskInfo = initTaskInfoFromZip(filename);
         File licenseFile=getSourceFile("gp_server_license.txt");
         GetEulaFromTaskStub stub = new GetEulaFromTaskStub();
-        stub.addLicenseFile(taskInfo, licenseFile);
+        addLicenseFile(stub, taskInfo, licenseFile);
 
         final String userId="gp_user";
         Context taskContext=Context.getContextForUser(userId);
@@ -495,7 +504,7 @@ public class TestEulaManager {
         TaskInfo taskInfo = initTaskInfoFromZip(filename);
         File licenseFile=getSourceFile("gp_server_license.txt");
         GetEulaFromTaskStub stub = new GetEulaFromTaskStub();
-        stub.addLicenseFile(taskInfo, licenseFile);
+        addLicenseFile(stub, taskInfo, licenseFile);
 
         final String userId="gp_user";
         Context taskContext=Context.getContextForUser(userId);
@@ -518,7 +527,7 @@ public class TestEulaManager {
         TaskInfo taskInfo = initTaskInfoFromZip(filename);
         File licenseFile=getSourceFile("gp_server_license.txt");
         GetEulaFromTaskStub stub = new GetEulaFromTaskStub();
-        stub.addLicenseFile(taskInfo, licenseFile);
+        addLicenseFile(stub, taskInfo, licenseFile);
 
         final String userId="gp_user";
         Context taskContext=Context.getContextForUser(userId);
@@ -541,7 +550,7 @@ public class TestEulaManager {
         TaskInfo taskInfo = initTaskInfoFromZip(filename);
         File licenseFile=getSourceFile("gp_server_license.txt");
         GetEulaFromTaskStub stub = new GetEulaFromTaskStub();
-        stub.addLicenseFile(taskInfo, licenseFile);
+        addLicenseFile(stub, taskInfo, licenseFile);
 
         final String userId=null;
         Context taskContext=Context.getContextForUser(userId);
@@ -563,7 +572,7 @@ public class TestEulaManager {
         TaskInfo taskInfo = initTaskInfoFromZip(filename);
         File licenseFile=getSourceFile("gp_server_license.txt");
         GetEulaFromTaskStub stub = new GetEulaFromTaskStub();
-        stub.addLicenseFile(taskInfo, licenseFile);
+        addLicenseFile(stub, taskInfo, licenseFile);
 
         final String userId="";
         Context taskContext=Context.getContextForUser(userId);
@@ -585,7 +594,7 @@ public class TestEulaManager {
         TaskInfo taskInfo = initTaskInfoFromZip(filename);
         File licenseFile=getSourceFile("gp_server_license.txt");
         GetEulaFromTaskStub stub = new GetEulaFromTaskStub();
-        stub.addLicenseFile(taskInfo, licenseFile);
+        addLicenseFile(stub, taskInfo, licenseFile);
         
         final String userId="gp_user";
         Context taskContext=Context.getContextForUser(userId);
@@ -627,7 +636,7 @@ public class TestEulaManager {
         TaskInfo taskInfo = initTaskInfoFromZip(filename);
         File licenseFile=getSourceFile("gp_server_license.txt");
         GetEulaFromTaskStub stub = new GetEulaFromTaskStub();
-        stub.addLicenseFile(taskInfo, licenseFile);
+        addLicenseFile(stub, taskInfo, licenseFile);
         
         final String userId="gp_user_two";
         Context taskContext=Context.getContextForUser(userId);
@@ -649,7 +658,7 @@ public class TestEulaManager {
         TaskInfo taskInfo = initTaskInfoFromZip(filename);
         File licenseFile=getSourceFile("gp_server_license.txt");
         GetEulaFromTaskStub stub = new GetEulaFromTaskStub();
-        stub.addLicenseFile(taskInfo, licenseFile);
+        addLicenseFile(stub, taskInfo, licenseFile);
         
         final String userId="gp_user_three";
         Context taskContext=Context.getContextForUser(userId);
@@ -661,7 +670,23 @@ public class TestEulaManager {
 
         Assert.assertEquals("pendingEulaForModule.size should be 0 if the current user has already agreed", 0, eulas.size());
     }
-    
+
+    /**
+     * Helper method for initializing a EulaInfo to add to a task.
+     * @param stub
+     * @param taskInfo, must have a valid LSID
+     * @param licenseFile, the path to this file must be valid when reading the content of the file.
+     */
+    private static void addLicenseFile(final GetEulaFromTaskStub stub, TaskInfo taskInfo, File licenseFile) {
+        try {
+            EulaInfo eulaIn=GetEulaFromTaskStub.initEulaInfo(taskInfo, licenseFile);
+            stub.setEula(eulaIn, taskInfo);
+        }
+        catch (EulaInitException e) {
+            Assert.fail(""+e.getLocalizedMessage());
+        }
+    }
+
     /**
      * Helper method for comparing the ith element from a list of EulaInfo, with expected values, provided as arguments to this method.
      * 
@@ -677,6 +702,7 @@ public class TestEulaManager {
         final String pre="eula["+i+"].";
         assertEulaInfo(pre, eula, expectedName, expectedLsid, expectedVersion, expectedContent);
     }
+
     static private void assertEulaInfo(final String pre, final EulaInfo eula, final String expectedName, final String expectedLsid, final String expectedVersion, final String expectedContent) {
         Assert.assertEquals(pre+"moduleName", expectedName, eula.getModuleName());
         Assert.assertEquals(pre+"moduleLsid", expectedLsid, eula.getModuleLsid());

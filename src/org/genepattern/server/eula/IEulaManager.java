@@ -3,6 +3,7 @@ package org.genepattern.server.eula;
 import java.util.List;
 
 import org.genepattern.server.config.ServerConfiguration.Context;
+import org.genepattern.webservice.TaskInfo;
 
 /**
  * Methods for managing End-user license agreements (EULA) for GenePattern modules and pipelines.
@@ -47,13 +48,47 @@ public interface IEulaManager {
     boolean requiresEula(Context taskContext);
 
     /**
+     * For an individual module or task, get the list of zero or more End-user license agreements (EULA)
+     * attached to the task.
+     * 
+     * @param taskInfo
+     * @return the list of EulaInfo, it will be empty if the task has not attached EULA.
+     */
+    List<EulaInfo> getEulas(TaskInfo taskInfo);
+    
+    /**
+     * For an individual module or task, set the End-user license agreement (EULA) for the task.
+     * Can be null, which means, 'this module (or pipeline) has no EULA'.
+     * 
+     * This method may make changes to the TaskInfo arg. Make sure to persist those changes to the DB
+     * after you call this method.
+
+     * @param eula
+     * @param taskInfo
+     */
+    void setEula(EulaInfo eula, TaskInfo taskInfo);
+
+    /**
+     * For an individual module or task, set the list of zero or more End-user license agreements (EULA)
+     * attached to the task.
+     * 
+     * This method may make changes to the TaskInfo arg. Make sure to persist those changes to the DB
+     * after you call this method.
+     * 
+     * @param eulas
+     * @param taskInfo
+     */
+    void setEulas(List<EulaInfo> eulas, TaskInfo taskInfo);
+    
+
+    /**
      * Get the list of all End-user license agreements for the given module or pipeline.
      * This list includes all EULA, even if the current user has already agreed to them.
      * 
      * @param taskContext, must have a valid taskInfo object
      * @return
      */
-    List<EulaInfo> getAllEulaForModule(final Context taskContext);
+    List<EulaInfo> getAllEulaForModule(Context taskContext);
 
     /**
      * Get the list of End-user license agreements for the given module or pipeline, for
@@ -65,7 +100,7 @@ public interface IEulaManager {
      * @param taskContext
      * @return
      */
-    List<EulaInfo> getPendingEulaForModule(final Context taskContext);
+    List<EulaInfo> getPendingEulaForModule(Context taskContext);
 
     /**
      * In response to user acceptance by clicking the 'Ok' button in the GUI,

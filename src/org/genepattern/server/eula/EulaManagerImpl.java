@@ -17,14 +17,14 @@ import org.genepattern.webservice.TaskInfo;
 public class EulaManagerImpl implements IEulaManager {
     public static Logger log = Logger.getLogger(EulaManagerImpl.class);
 
-    //TODO: use Strategy pattern for this method
     private GetEulaFromTask getEulaFromTask = null;
-    /* (non-Javadoc)
-     * @see org.genepattern.server.eula.IEulaManager#setGetEulaFromTask(org.genepattern.server.eula.GetEulaFromTask)
+    /**
+     * @see IEulaManager#setGetEulaFromTask(org.genepattern.server.eula.GetEulaFromTask)
      */
     public void setGetEulaFromTask(GetEulaFromTask impl) {
         this.getEulaFromTask=impl;
     }
+
     private GetEulaFromTask getGetEulaFromTask() {
         //allow for dependency injection, via setGetEulaFromTask
         if (getEulaFromTask != null) {
@@ -33,14 +33,14 @@ public class EulaManagerImpl implements IEulaManager {
         
         //otherwise, hard-coded rule        
         //option 1: license= in manifest
-        //return new GetEulaFromTaskImpl01();
+        return new GetEulaAsManifestProperty();
         //option 2: support file named '*license*' in tasklib
-        return new GetEulaAsSupportFile();
+        //return new GetEulaAsSupportFile();
     }
     
     private GetTaskStrategy getTaskStrategy = null;
-    /* (non-Javadoc)
-     * @see org.genepattern.server.eula.IEulaManager#setGetTaskStrategy(org.genepattern.server.eula.GetTaskStrategy)
+    /**
+     * @see IEulaManager#setGetTaskStrategy(org.genepattern.server.eula.GetTaskStrategy)
      */
     public void setGetTaskStrategy(GetTaskStrategy impl) {
         this.getTaskStrategy=impl;
@@ -48,12 +48,13 @@ public class EulaManagerImpl implements IEulaManager {
 
 
     private RecordEula recordEulaStrategy = null;
-    /* (non-Javadoc)
-     * @see org.genepattern.server.eula.IEulaManager#setRecordEulaStrategy(org.genepattern.server.eula.RecordEula)
+    /**
+     * @see IEulaManager#setRecordEulaStrategy(org.genepattern.server.eula.RecordEula)
      */
     public void setRecordEulaStrategy(final RecordEula impl) {
         this.recordEulaStrategy=impl;
     }
+
     //factory method for getting the method for recording the EULA
     private RecordEula getRecordEula(EulaInfo eulaInfo) {
         if (recordEulaStrategy != null) {
@@ -65,8 +66,8 @@ public class EulaManagerImpl implements IEulaManager {
         return new RecordEulaToDb();
     }
     
-    /* (non-Javadoc)
-     * @see org.genepattern.server.eula.IEulaManager#requiresEula(org.genepattern.server.config.ServerConfiguration.Context)
+    /**
+     * @see IEulaManager#requiresEula(org.genepattern.server.config.ServerConfiguration.Context)
      */
     public boolean requiresEula(Context taskContext) {
         final List<EulaInfo> notYetAgreed = getEulaInfos(taskContext,false);
@@ -75,16 +76,40 @@ public class EulaManagerImpl implements IEulaManager {
         }
         return false;
     }
-    
-    /* (non-Javadoc)
-     * @see org.genepattern.server.eula.IEulaManager#getAllEulaForModule(org.genepattern.server.config.ServerConfiguration.Context)
+
+    /**
+     * @see IEulaManager#getEulas(TaskInfo)
+     */
+    public List<EulaInfo> getEulas(final TaskInfo taskInfo) {
+        GetEulaFromTask impl = getGetEulaFromTask();
+        return impl.getEulasFromTask(taskInfo);
+    }
+
+    /**
+     * @see IEulaManager#setEula(EulaInfo, TaskInfo)
+     */
+    public void setEula(final EulaInfo eula, final TaskInfo taskInfo) {
+        GetEulaFromTask impl = getGetEulaFromTask();
+        impl.setEula(eula, taskInfo);
+    }
+
+    /**
+     * @see IEulaManager#setEulas(List, TaskInfo)
+     */
+    public void setEulas(final List<EulaInfo> eulas, final TaskInfo taskInfo) {
+        GetEulaFromTask impl = getGetEulaFromTask();
+        impl.setEulas(eulas, taskInfo);
+    }
+
+    /**
+     * @see IEulaManager#getAllEulaForModule(org.genepattern.server.config.ServerConfiguration.Context)
      */
     public List<EulaInfo> getAllEulaForModule(final Context taskContext) {
         List<EulaInfo> eulaInfos = getEulaInfos(taskContext, true);
         return eulaInfos;
     }
 
-    /* (non-Javadoc)
+    /**
      * @see org.genepattern.server.eula.IEulaManager#getPendingEulaForModule(org.genepattern.server.config.ServerConfiguration.Context)
      */
     public List<EulaInfo> getPendingEulaForModule(final Context taskContext) {
@@ -92,7 +117,7 @@ public class EulaManagerImpl implements IEulaManager {
         return eulaInfos;
     }
     
-    /* (non-Javadoc)
+    /**
      * @see org.genepattern.server.eula.IEulaManager#recordEula(org.genepattern.server.config.ServerConfiguration.Context)
      */
     public void recordEula(final Context taskContext) throws IllegalArgumentException {
@@ -195,6 +220,5 @@ public class EulaManagerImpl implements IEulaManager {
         //return the sortedset as a list
         List<EulaInfo> list = new ArrayList<EulaInfo>(eulaObjs);
         return list;
-    }
-    
+    }    
 }

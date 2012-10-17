@@ -7,7 +7,6 @@ import java.util.Comparator;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
-import org.genepattern.server.webservice.server.DirectoryManager;
 import org.genepattern.util.LSID;
 import org.genepattern.webservice.TaskInfo;
 
@@ -34,6 +33,19 @@ public class EulaInfo implements Comparable<EulaInfo> {
         public EulaInitException(String message, Throwable t) {
             super(message,t);
         }
+    }
+    
+    private static LibdirStrategy libdirImpl = null;
+
+    public static void setLibdirStrategy(LibdirStrategy m) {
+        libdirImpl=m;
+    }
+
+    private static LibdirStrategy getLibdirStrategy() {
+        if (libdirImpl==null) {
+            libdirImpl = new LibdirLegacy();
+        }
+        return libdirImpl;
     }
     
     public static Comparator<EulaInfo> defaultComparator(final TaskInfo currentTaskInfo) {
@@ -182,22 +194,7 @@ public class EulaInfo implements Comparable<EulaInfo> {
         }
         
         //need path to tasklib
-        File tasklibDir = null;
-        //TODO: implement safer method, e.g. File tasklibDir = DirectoryManager.getTaskLibDirFromCache(moduleLsid);
-        //    getLibDir automatically creates a directory on the file system; it's possible to cause problems if there is bogus input
-        try {
-            String path = DirectoryManager.getLibDir(moduleLsid);
-            if (path != null) {
-                tasklibDir = new File(path);
-            }
-        }
-        catch (Throwable t) {
-            log.error("Error getting libdir for moduleLsid="+moduleLsid+": "+t.getLocalizedMessage(), t);
-            throw new EulaInitException("Error getting libdir for moduleLsid="+moduleLsid+": "+t.getLocalizedMessage());
-        }
-        if (tasklibDir == null) {
-            throw new EulaInitException("tasklibDir==null");
-        }
+        File tasklibDir=getLibdirStrategy().getLibdir(moduleLsid);
         File licenseFile = new File(tasklibDir, license);
         if (!licenseFile.exists()) {
             throw new EulaInitException("licenseFile doesn't exist: "+licenseFile.getPath());

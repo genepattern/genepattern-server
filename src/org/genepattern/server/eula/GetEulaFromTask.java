@@ -31,4 +31,29 @@ public interface GetEulaFromTask {
      * @return
      */
     List<EulaInfo> getEulasFromTask(TaskInfo taskInfo);
+    
+    /**
+     * For an individual module or task, set the End-user license agreement (EULA) for the task.
+     * Can be null, which means, 'this module (or pipeline) has no EULA'.
+     * 
+     * This method may make changes to the TaskInfo arg. Make sure to persist those changes to the DB
+     * after you call this method.
+
+     * @param eula
+     * @param taskInfo
+     */
+    void setEula(EulaInfo eula, TaskInfo taskInfo);
+
+    /**
+     * For an individual module or task, set the list of zero or more End-user license agreements (EULA)
+     * attached to the task.
+     * 
+     * This method may make changes to the TaskInfo arg. Make sure to persist those changes to the DB
+     * after you call this method.
+     * 
+     * @param eulas
+     * @param taskInfo
+     */
+    void setEulas(List<EulaInfo> eulas, TaskInfo taskInfo);
+
 }
