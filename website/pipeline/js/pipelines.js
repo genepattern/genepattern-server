@@ -2480,7 +2480,7 @@ var properties = {
             properties._showDeletePipeButton($(label), labelText);
         }
         else if (!pwr && (labelText === "Documentation" || labelText === "License")) {
-            properties._createDocButton(labelText, $(label))
+            properties._createPipelineFileButton(labelText, $(label))
         }
 
         // If the value has been previously set, attach the value div
@@ -2910,7 +2910,7 @@ var properties = {
         }
     },
 
-    _createDocButton: function(label, parent) {
+    _createPipelineFileButton: function(label, parent) {
         var docButton = document.createElement("button");
         docButton.innerHTML = "Attach " + label;
         $(docButton).button();
@@ -2918,6 +2918,21 @@ var properties = {
         $(docButton).click(function() {
             // Trigger the attach file dialog
             $("#attachFile").trigger("click");
+            
+            // For licenses, ensure that the license if a txt file
+            if (label === "License") {
+	            var oldFunction = $("#uploadInput").data('events')["change"][0].handler; // Get the old change function
+	            $("#uploadInput").off("change"); 		// Remove the normal click
+	            $("#uploadInput").change(function() {	// Add the new function
+	            	if ($("#uploadInput").get(0).value.match(/.txt$/) === null) {
+	            		editor.showDialog("Incorrect File Type", "Only Text (.txt) files are supported for licenses.  Please select a text file.");
+	            	}
+	            	else {
+	            		oldFunction();
+	            	}
+	            });
+            }
+            
             // Remove the normal click event
             $(".ui-dialog-buttonpane button:contains('OK')").off("click");
             // Add the new doc click event
