@@ -212,7 +212,7 @@ public class EulaInfo implements Comparable<EulaInfo> {
         if (!licenseFile.canRead()) {
             throw new EulaInitException("can't read license file: "+licenseFile.getPath());
         }
-        //TODO: for future development: check to see if the licenseFile is a meta file, e.g. licenseInfo.yaml
+        //TODO: for future development: check to see if the licenseFile is a meta file, e.g. .eulaInfo.yaml
         //      which should be parsed into a license object
         
         //otherwise, default case, read the file into a string

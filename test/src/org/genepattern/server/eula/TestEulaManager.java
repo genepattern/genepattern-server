@@ -697,13 +697,13 @@ public class TestEulaManager {
      * @param expectedVersion, the expected version (e.g. "3")
      * @param expectedContent, the expected content of the license file, as a String
      */
-    static private void assertEulaInfo(List<EulaInfo> eulas, final int i, final String expectedName, final String expectedLsid, final String expectedVersion, final String expectedContent) {
+    static public void assertEulaInfo(List<EulaInfo> eulas, final int i, final String expectedName, final String expectedLsid, final String expectedVersion, final String expectedContent) {
         final EulaInfo eula=eulas.get(i);
         final String pre="eula["+i+"].";
         assertEulaInfo(pre, eula, expectedName, expectedLsid, expectedVersion, expectedContent);
     }
 
-    static private void assertEulaInfo(final String pre, final EulaInfo eula, final String expectedName, final String expectedLsid, final String expectedVersion, final String expectedContent) {
+    static public void assertEulaInfo(final String pre, final EulaInfo eula, final String expectedName, final String expectedLsid, final String expectedVersion, final String expectedContent) {
         Assert.assertEquals(pre+"moduleName", expectedName, eula.getModuleName());
         Assert.assertEquals(pre+"moduleLsid", expectedLsid, eula.getModuleLsid());
         Assert.assertEquals(pre+"moduleLsidVersion", expectedVersion, eula.getModuleLsidVersion());

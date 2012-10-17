@@ -1,6 +1,7 @@
 package org.genepattern.server.eula;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.List;
 
 import junit.framework.Assert;
@@ -50,26 +51,54 @@ public class TestGetEulaAsManifestProperty {
             Assert.fail(""+e.getLocalizedMessage());
         }
 
+        final String userId="gp_user";
+        Context taskContext=Context.getContextForUser(userId);
+        taskContext.setTaskInfo(taskInfo);
+        
+        final List<EulaInfo> eulas=stub.getEulasFromTask(taskInfo);
+        Assert.assertNotNull("eulas==null", eulas);
+        Assert.assertEquals("Expecting one EulaInfo", 1, eulas.size());
+        final String expectedContent=EulaInfo.fileToString(licenseFile);
+        TestEulaManager.assertEulaInfo(eulas, 0, "testLicenseAgreement", "urn:lsid:9090.gpdev.gpint01:genepatternmodules:812:3", "3", expectedContent);
+    }
+
+    /**
+     * Allow for the possibility of multiple EULA declared in the same manifest file.
+     */
+    @Test
+    public void testGetTwoEulaFromOneModule() {
+        TaskInfo taskInfo=new TaskInfo();
+        taskInfo.setName("testLicenseAgreement");
+        taskInfo.giveTaskInfoAttributes().put("LSID", "urn:lsid:9090.gpdev.gpint01:genepatternmodules:812:3");
+        
+        File gpLicenseFile=FileUtil.getSourceFile(TestGetEulaAsManifestProperty.class, "gp_server_license.txt");
+        File exampleLicenseFile=FileUtil.getSourceFile(TestGetEulaAsManifestProperty.class, "example_license.txt");
+
+        GetEulaAsManifestProperty stub = new GetEulaAsManifestProperty();
+        try {
+            EulaInfo eulaIn0=GetEulaFromTaskStub.initEulaInfo(taskInfo, gpLicenseFile);
+            EulaInfo eulaIn1=GetEulaFromTaskStub.initEulaInfo(taskInfo, exampleLicenseFile);
+            List<EulaInfo> eulasIn=new ArrayList<EulaInfo>();
+            eulasIn.add(eulaIn0);
+            eulasIn.add(eulaIn1);
+            stub.setEulas(eulasIn, taskInfo);
+        }
+        catch (EulaInitException e) {
+            Assert.fail(""+e.getLocalizedMessage());
+        }
 
         final String userId="gp_user";
         Context taskContext=Context.getContextForUser(userId);
         taskContext.setTaskInfo(taskInfo);
         
-        List<EulaInfo> eulas=stub.getEulasFromTask(taskInfo);
+        final List<EulaInfo> eulas=stub.getEulasFromTask(taskInfo);
         Assert.assertNotNull("eulas==null", eulas);
-        Assert.assertEquals("Expecting one EulaInfo", 1, eulas.size());
-        EulaInfo eula = eulas.get(0);
-        Assert.assertEquals("eula.moduleName", "testLicenseAgreement", eula.getModuleName());
-        Assert.assertEquals("eula.moduleLsid", "urn:lsid:9090.gpdev.gpint01:genepatternmodules:812:3", eula.getModuleLsid());
-        Assert.assertEquals("eula.moduleLsidVersion", "3", eula.getModuleLsidVersion());
-
-        final String expectedContent=EulaInfo.fileToString(licenseFile);
-        try {
-            Assert.assertEquals("eula.content", expectedContent, eula.getContent());
-        }
-        catch (EulaInfo.EulaInitException e) {
-            Assert.fail("EulaInfo.EulaInitException thrown in eula.getContent(): "+e.getLocalizedMessage());
-        }
+        Assert.assertEquals("Expecting two EulaInfo", 2, eulas.size());
+        final String gpLicenseContent=EulaInfo.fileToString(gpLicenseFile);
+        final String exampleLicenseContent=EulaInfo.fileToString(exampleLicenseFile);
+        
+        TestEulaManager.assertEulaInfo(eulas, 0, "testLicenseAgreement", "urn:lsid:9090.gpdev.gpint01:genepatternmodules:812:3", "3", gpLicenseContent);
+        TestEulaManager.assertEulaInfo(eulas, 1, "testLicenseAgreement", "urn:lsid:9090.gpdev.gpint01:genepatternmodules:812:3", "3", exampleLicenseContent);
     }
 
 }
