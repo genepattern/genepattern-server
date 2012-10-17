@@ -193,6 +193,7 @@ public class EulaInfo implements Comparable<EulaInfo> {
         }
         catch (Throwable t) {
             log.error("Error getting libdir for moduleLsid="+moduleLsid+": "+t.getLocalizedMessage(), t);
+            throw new EulaInitException("Error getting libdir for moduleLsid="+moduleLsid+": "+t.getLocalizedMessage());
         }
         if (tasklibDir == null) {
             throw new EulaInitException("tasklibDir==null");
