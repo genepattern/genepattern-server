@@ -686,3 +686,21 @@ table.deloptions
 {
     font-size: 12px;
 }
+
+#licenseDiv
+{
+    font-size: 11px;
+    margin-right: 4px;
+}
+
+#licenseDiv button
+{
+    margin-right: 3px;
+}
+
+#licenseDiv span
+{
+    font-size: 8px;
+	font-weight: bold;
+	padding:0 3px 1px 3px;
+}

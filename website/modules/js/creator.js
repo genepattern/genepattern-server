@@ -70,7 +70,7 @@ function setDirty(value)
     }
     else
     {
-        $(window).unbind('beforeunload');   
+        $(window).unbind('beforeunload');
     }
 }
 
@@ -200,13 +200,13 @@ function saveModule()
 
     if(organization !== undefined && organization !== "")
     {
-        author = author + ";" + organization;           
+        author = author + ";" + organization;
     }
 
     var privacy = $('select[name="privacy"] option:selected').val();
     var quality = $('select[name="quality"] option:selected').val();
     var language = $('select[name="language"] option:selected').val();
-    var lang_version = $('input[name="lang_version"]').val();    
+    var lang_version = $('input[name="lang_version"]').val();
     var os = $('input[name=os]:checked').val();
     var tasktype = $("select[name='category'] option:selected").val();
     var cpu = $("select[name='cpu'] option:selected").val();
@@ -472,7 +472,7 @@ function addtocommandline(flag, name, prevflag, prevname)
 
     var cmdline= $("#commandtextarea textarea").val();
     var decodedPrevText = $('<div/>').html(prevtext).text();
-   
+
     var decodedText = $('<div/>').html(text).text();
 
     $('#commandlist').children().each(function()
@@ -489,7 +489,7 @@ function addtocommandline(flag, name, prevflag, prevname)
                 $(this).remove();
             }
             found = true;
-            cmdline = cmdline.replace(decodedPrevText, decodedText);                            
+            cmdline = cmdline.replace(decodedPrevText, decodedText);
             $("#commandtextarea textarea").val(cmdline);
 
         }
@@ -517,10 +517,10 @@ function updateparameter(parameter, updateCmdLine)
     if(typeof(updateCmdLine)==='undefined') updateCmdLine = true;
     var pelement = parameter.find("input[name='p_name']");
     var felement = parameter.find("input[name='p_flag']");
-    
+
     var pelementval = pelement.val().replace(/ /g, ".");
     pelement.val(pelementval);
-    
+
     var pname_newval = pelement.val();
     var pflag_newval = felement.val();
     if(parameter.find("input[name='p_prefix']").attr('checked'))
@@ -615,7 +615,7 @@ function changeParameterType(element)
                         $(this).append(table);
 
                         table.find("tbody").sortable();
-                        
+
                         var result = choices.split(';');
                         if(result == null || result == "" || result.length < 0)
                         {
@@ -675,7 +675,7 @@ function changeParameterType(element)
                     },
                     close: function()
                     {
-                        $( this ).dialog( "destroy" );                        
+                        $( this ).dialog( "destroy" );
                         $("#editchoicedialog").find( "table" ).remove();
                     },
                     buttons: {
@@ -699,7 +699,7 @@ function changeParameterType(element)
 
                                     if(dvalue == undefined || dvalue == null|| dvalue == "")
                                     {
-                                        choicelist += value;    
+                                        choicelist += value;
                                     }
                                     else
                                     {
@@ -814,9 +814,9 @@ function updatemodulecategories()
 
                 for(i=0;i < result.length;i++)
                 {
-                    mcat.append($("<option>" + result[i] + "</option>"));                        
+                    mcat.append($("<option>" + result[i] + "</option>"));
                 }
-                mcat.multiselect("refresh");                
+                mcat.multiselect("refresh");
             }
         },
         dataType: "json"
@@ -849,7 +849,7 @@ function updatefileformats()
                 }
 
                 var result = unique_fileformatlist;
-                
+
                 var mcat = $("select[name='mod_fileformat']");
 
                 for(i=0;i < result.length;i++)
@@ -890,7 +890,7 @@ function addsectioncollapseimages()
     var imagecollapse = $("<img class='imgcollapse' src='styles/images/section_collapsearrow.png' alt='some_text' width='11' height='11'/>");
     var imageexpand = $("<img class='imgexpand' src='styles/images/section_expandarrow.png' alt='some_text' width='11' height='11'/>");
 
-    $(".heading").prepend(imageexpand);    
+    $(".heading").prepend(imageexpand);
     $(".heading").prepend(imagecollapse);
 
     $(".heading").children(".imgcollapse").toggle();
@@ -936,7 +936,7 @@ function loadModuleInfo(module)
             var organization = results[1];
 
             $('input[name="author"]').val(author);
-            $('input[name="organization"]').val(organization);            
+            $('input[name="organization"]').val(organization);
         }
         else
         {
@@ -1082,7 +1082,7 @@ function loadModuleInfo(module)
                 {   //remove from delete file list
                     var index = jQuery.inArray(selectedVal, module_editor.filesToDelete);
                     module_editor.filesToDelete.splice(index,1);
-                }                
+                }
             });
 
             currentFilesDiv.append(checkbox);
@@ -1158,7 +1158,7 @@ function loadParameterInfo(parameters)
             newParameter.find("select[name='p_type']").multiselect("refresh");
             changeParameterType(newParameter.find("select[name='p_type']"));
         }
-        
+
         if(type == "DIRECTORY")
         {
             newParameter.find("select[name='p_type']").val("Directory");
@@ -1171,7 +1171,7 @@ function loadParameterInfo(parameters)
             newParameter.find("select[name='p_type']").val("Input File");
             newParameter.find("select[name='p_type']").multiselect("refresh");
             changeParameterType(newParameter.find("select[name='p_type']"));
-            
+
             var pfileformatlist = pfileformat.split(";");
             newParameter.find("select[name='fileformat']").val(pfileformatlist);
             newParameter.find("select[name='fileformat']").data("fileformats", pfileformatlist);
@@ -1251,7 +1251,7 @@ function getParametersJSON()
         var pname = $(this).find("input[name='p_name']").val();
         var description = $(this).find("textarea[name='p_description']").val();
         var type = $(this).find("select[name='p_type'] option:selected").val();
-        var default_val = $(this).find("input[name='p_defaultvalue']").val(); 
+        var default_val = $(this).find("input[name='p_defaultvalue']").val();
         var optional = $(this).find('input[name="p_optional"]').is(':checked') ? "on" : "";
         var fileformatlist = "";
         var value = "";
@@ -1336,7 +1336,7 @@ function getParametersJSON()
         {
             var keyName = keys[k];
             parameter[keyName] =  otherAttrs[keyName];
-            console.log("\nsaving other parameter attributes: " + keyName + "=" + otherAttrs[keyName]);            
+            console.log("\nsaving other parameter attributes: " + keyName + "=" + otherAttrs[keyName]);
         }
 
         parameters.push(parameter);
@@ -1459,7 +1459,7 @@ jQuery(document).ready(function() {
         $(this).next(".hcontent").slideToggle(340);
         $(this).children(".imgcollapse:first").toggle();
         $(this).children(".imgexpand:first").toggle();
-        
+
         //visibilty has changed to the opposite
         $(this).next(".hcontent").data("visible", !visible);
     });
@@ -1493,7 +1493,7 @@ jQuery(document).ready(function() {
     ,	south__minHeight:		40
     ,	west__size:			    360
     ,	east__size:				300
-    ,	south__size:		    34        
+    ,	south__size:		    34
     ,	center__minWidth:		100
     ,	useStateCookie:			true
     });
@@ -1599,7 +1599,7 @@ jQuery(document).ready(function() {
 
     $("#addcategory").button().click(function()
     {
-       $( "#addmodcategorydialog" ).dialog("open");           
+       $( "#addmodcategorydialog" ).dialog("open");
     });
 
 
@@ -1612,7 +1612,7 @@ jQuery(document).ready(function() {
                         var fileformat = $("#newfileformat").val();
                         fileformat = trim(fileformat);
 
-                        $("#newfileformat").val("");                        
+                        $("#newfileformat").val("");
                         if(fileformat != "")
                         {
                             var newfileformat = $("<option value='" + fileformat + "'>" + fileformat + "</option>");
@@ -1656,7 +1656,7 @@ jQuery(document).ready(function() {
 
     $("#addfileformat").button().click(function()
     {
-       $( "#addfileformatdialog" ).dialog("open");           
+       $( "#addfileformatdialog" ).dialog("open");
     });
 
     $("#viewparameter").button().click(function()
@@ -1688,7 +1688,7 @@ jQuery(document).ready(function() {
                         cur.push($(this).text());
                     });
 
-                    //Reorder the parameters in the command line                    
+                    //Reorder the parameters in the command line
                     if(prev !== cur)
                     {
                         var cmdline = $("#commandtextarea textarea").val();
@@ -1755,10 +1755,32 @@ jQuery(document).ready(function() {
         {
             cmdlinetext = "<perl>" + cmdlinetext;
         }
-       
+
 
         $("#commandtextarea textarea").data("type", "<" + type +">");
         $("#commandtextarea textarea").val(cmdlinetext);
+    });
+
+    $(".licensefile").change(function()
+    {
+        var delbutton = $("<button>x</button>&nbsp;");
+        delbutton.button().click(function()
+        {
+            //remove display of uploaded license file
+            $(this).parents("#licenseDiv").remove();
+
+            //show the button to upload a new file
+            $(".licensefile").parents("span").show();
+        });
+
+        var licenseDiv = $("<div id='licenseDiv' class='clear'>" + this.files[0].name
+                + " (" + bytesToSize(this.files[0].size) + ")" +"</div>");
+        licenseDiv.prepend(delbutton);
+
+        //hide the button to upload a new file
+        $(this).parents("span").hide();
+
+        $(this).parents("td").append(licenseDiv);
     });
 
     $(".supportfile").live("change", function()
