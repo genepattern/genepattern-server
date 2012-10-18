@@ -18,6 +18,7 @@ var module_editor = {
     lsid: "",
     uploadedfiles: [],
     supportfileinputs: [],
+    licensefile: "",    
     filesToDelete: [],
     otherModAttrs: {}
 };
