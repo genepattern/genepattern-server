@@ -86,6 +86,16 @@ var editor = {
         };
 	},
 	
+	removeFile: function(filename) {
+		for (var i = 0; i < editor.workspace["files"].length; i++) {
+			var filepath = editor.workspace["files"][i];
+			if (filepath.indexOf("/" + filename) + filename.length + 1 >= filepath.length) { // If the filepath ends with the filename
+				editor.workspace["files"].splice(i, 1);
+				return;
+			}
+		}
+	},
+	
 	pwrCount: function() {
 		var count = 0;
         for (var i in editor.workspace) {
@@ -926,12 +936,8 @@ var editor = {
         this.workspace["pipelineAuthor"] = save["Author"];
         this.workspace["pipelinePrivacy"] = save["Privacy"];
         this.workspace["pipelineVersionComment"] = save["Version Comment"];
-        if (save["Documentation"] !== "") {
-            this.workspace["pipelineDocumentation"] = save["Documentation"];
-        }
-        if (save["License"] !== "") {
-            this.workspace["pipelineLicense"] = save["License"];
-        }
+        this.workspace["pipelineDocumentation"] = save["Documentation"];
+        this.workspace["pipelineLicense"] = save["License"];
         editor._setPipelineName();
 
         // Redisplay pipeline editor
@@ -2479,7 +2485,7 @@ var properties = {
             // The upload is disabled due to a pipe being connected to this input, display edit button
             properties._showDeletePipeButton($(label), labelText);
         }
-        else if (!pwr && (labelText === "Documentation" || labelText === "License")) {
+        else if (!pwr && (properties.current == "Pipeline")) {
             properties._createPipelineFileButton(labelText, $(label))
         }
 
@@ -2487,11 +2493,27 @@ var properties = {
         var valueDiv = document.createElement("div");
         valueDiv.setAttribute("class", "fileUploadValue");
         if (value !== undefined && value !== null && value !== "" && value !== properties.PROMPT_WHEN_RUN) {
-            valueDiv.innerHTML = "<strong>Current Value:</strong> " + properties._encodeToHTML(value.toString());
+        	if (properties.current == "Pipeline") {
+        		var deleteImage = $("<img src='images/delete.gif' style='height: 9px;' class='deleteFile' name='" + labelText + "' />")
+        		$(valueDiv).append(deleteImage);
+        		$(valueDiv).append(" ");
+        	}
+        	
+            valueDiv.innerHTML += "<strong>Current Value:</strong> " + properties._encodeToHTML(value.toString());
         }
         label.appendChild(valueDiv);
 
         $("#" + this.inputDiv).append(label);
+        
+        $(".deleteFile[name='" + labelText + "']").click(function(event) {
+        	var reallyDelete = confirm("Are you sure you want to delete this file?");
+        	if (reallyDelete) {
+        		var filename = $("input.propertyValue[type='hidden'][name='" + labelText + "']").val();
+				$("input.propertyValue[type='hidden'][name='" + labelText + "']").val("");
+				properties.saveToModel();
+				editor.removeFile(filename);
+        	}
+		});
 
         if (description !== null && description !== false && typeof(description) === "string") {
             var desc = document.createElement("div");
@@ -2941,7 +2963,6 @@ var properties = {
                 var path = $("#hiddenFilePath").val();
                 var parts = path.split("/");
                 var filename = parts[parts.length - 1];
-                $(".fileUploadValue")[0].innerHTML = "<strong>Current Value:</strong> " + filename;
 
                 // Add to the hidden field
                 $("input[type='hidden'][name='" + label + "']").val(filename);
