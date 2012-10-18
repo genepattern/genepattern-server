@@ -88,8 +88,6 @@ public class ModuleJSON extends JSONObject {
                     this.put(keyName, object.get(keyName));
                 }
             }
-
-            log.error("object is: " + object);           
         }
         catch (JSONException e) {
             log.error(e);
