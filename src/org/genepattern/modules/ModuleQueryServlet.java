@@ -532,11 +532,11 @@ public class ModuleQueryServlet extends HttpServlet
             }
 
 
-            String licenseFileName = (String)moduleObject.get(ModuleJSON.LICENSE);
-
-            if( licenseFileName != null
-                    && !licenseFileName.equals(""))
+            if( moduleObject.get(ModuleJSON.LICENSE) != null
+                    && !moduleObject.get(ModuleJSON.LICENSE).equals(""))
             {
+                String licenseFileName = (String)moduleObject.get(ModuleJSON.LICENSE);
+
                 File licenseFile = new File(taskLibDir, licenseFileName);
                 if(!licenseFile.exists())
                 {

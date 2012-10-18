@@ -1415,7 +1415,8 @@ function uploadSupportFiles()
 
 
     // all support files have been uploaded now save the module
-    if (module_editor.supportfileinputs.length && module_editor.licensefile == "")
+    if (module_editor.supportfileinputs.length == 0 
+            && module_editor.licensefile == "")
     {
         saveModule();
     }
