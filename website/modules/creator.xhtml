@@ -20,7 +20,7 @@
 	<link type="text/css" rel="stylesheet" href="styles/layout-default-latest.css" />
     <link  type="text/css" rel="stylesheet" media="screen" href="styles/jquery.multiselect.css" />
     <link  type="text/css" rel="stylesheet" media="screen" href="styles/themes/base/jquery.ui.all.css" />
-    <link type="text/css" rel="stylesheet"  href="styles/header_style.css"  />        
+    <link type="text/css" rel="stylesheet"  href="styles/header_style.css"  />
     <link type="text/css" rel="stylesheet"  href="../css/style.css"  />
     <link  type="text/css" rel="stylesheet" media="screen" href="styles/creator.css" />
     <link href="../skin/favicon.ico" rel="shortcut icon" />
@@ -64,7 +64,7 @@
             }
             else
             {
-                self.location = "/gp/addTask.jsp"; 
+                self.location = "/gp/addTask.jsp";
             }
         </script>
     <![endif]-->
@@ -160,7 +160,7 @@
                         Description:
                     </td>
                     <td colspan="3">
-                        <textarea class="det_textarea" cols="1" rows="2" name="description"></textarea>                  
+                        <textarea class="det_textarea" cols="1" rows="2" name="description"></textarea>
                         <a href='createhelp.jsp#Description' target='help'>
                             <img src="styles/images/help_small.gif" width="12" height="12" alt="help" class="helpbutton" />
                         </a>
@@ -183,6 +183,17 @@
                     </td>
                     <td colspan="3">
                          <input type="text" name="organization" size="70"/>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        License:
+                    </td>
+                    <td colspan="3">
+                        <span class="btn btn-success fileinput-button">
+                            <span><i class="icon-plus"></i><img src="styles/images/file_add.gif" width="16" height="16" alt="help" class="helpbutton" />Add File</span>
+                            <input  name="licensefile" type="file" class="licensefile"/>
+                        </span>
                     </td>
                 </tr>
                 <tr>
