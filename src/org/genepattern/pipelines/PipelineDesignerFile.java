@@ -93,6 +93,12 @@ public class PipelineDesignerFile extends File {
                 toYaml += "        " + "name: " + files.doc.getName() + "\n";
                 counter++;
             }
+            if (files.license != null) {
+                toYaml += "    " + counter + ":\n";
+                toYaml += "        " + "type: license\n";
+                toYaml += "        " + "name: " + files.license.getName() + "\n";
+                counter++;
+            }
             for (File file : files.inputFiles) {
                 toYaml += "    " + counter + ":\n";
                 toYaml += "        " + "type: file\n";

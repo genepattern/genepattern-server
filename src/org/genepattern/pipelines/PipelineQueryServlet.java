@@ -46,6 +46,9 @@ import org.apache.log4j.Logger;
 import org.genepattern.data.pipeline.JobSubmission;
 import org.genepattern.data.pipeline.PipelineModel;
 import org.genepattern.server.config.ServerConfiguration;
+import org.genepattern.server.config.ServerConfiguration.Context;
+import org.genepattern.server.eula.EulaInfo;
+import org.genepattern.server.eula.EulaManager;
 import org.genepattern.server.genepattern.TaskInstallationException;
 import org.genepattern.server.webapp.PipelineCreationHelper;
 import org.genepattern.server.webservice.server.DirectoryManager;
@@ -658,8 +661,7 @@ public class PipelineQueryServlet extends HttpServlet {
             // Existing pipeline being saved
             if (pipelineObject.getLsid().length() > 0) { 
                 TaskInfo oldInfo = TaskInfoCache.instance().getTask(pipelineObject.getLsid());
-                newDir = this.copySupportFiles(oldInfo.getName(), pipelineObject.getName(), oldInfo.getLsid(), newLsid, username);
-                
+                newDir = this.copySupportFiles(oldInfo.getName(), pipelineObject.getName(), oldInfo.getLsid(), newLsid, username); 
             }
             else { // New pipeline being saved
                 newDir = new File(DirectoryManager.getTaskLibDir(pipelineObject.getName() + "." + GPConstants.TASK_TYPE_PIPELINE, newLsid, username));
@@ -670,6 +672,16 @@ public class PipelineQueryServlet extends HttpServlet {
             FileCollection verifiedFiles = extractVerifiedFiles(newDir, pipelineObject, filesObject);
             purgeUnnecessaryFiles(newDir, verifiedFiles.getInternal());
             
+            // Set the documentation and license files
+            if (verifiedFiles.license != null) {
+                TaskInfo taskInfo = TaskInfoCache.instance().getTask(newLsid);
+                EulaInfo license = EulaManager.initEulaInfo(taskInfo, verifiedFiles.license);
+                Context taskContext = Context.getContextForUser("");    // User doesn't matter, a module will always have the same license
+                taskContext.setTaskInfo(taskInfo);
+                EulaManager.instance(taskContext).setEula(license, taskInfo);
+            }
+            // TODO: Set documentation file once there's a way
+            
             PipelineDesignerFile pdFile = new PipelineDesignerFile(newDir);
             pdFile.write(modulesList, verifiedFiles);
         }
@@ -678,7 +690,7 @@ public class PipelineQueryServlet extends HttpServlet {
             sendError(response, "Unable to save uploaded files for the pipeline: "+t.getLocalizedMessage());
             return;
         }
-        
+
         // Respond to the client
         ResponseJSON message = new ResponseJSON();
         message.addMessage("Pipeline Saved");
@@ -738,6 +750,12 @@ public class PipelineQueryServlet extends HttpServlet {
             String doc = pipelineObject.getDocumentation();
             if (!"".equals(doc) && doc != null) {
                 verified.doc = new File (dir, doc);
+            }
+            
+            // Handle license files
+            String license = pipelineObject.getLicense();
+            if (!"".equals(license) && license != null) {
+                verified.license = new File (dir, license);
             }
             
             // Handle module input files
@@ -935,6 +953,7 @@ public class PipelineQueryServlet extends HttpServlet {
     
     public class FileCollection {
         public File doc = null;
+        public File license = null;
         public List<File> inputFiles = new ArrayList<File>();
         public List<String> urls = new ArrayList<String>();
         public Map<Object, Map<String, String>> positions = new HashMap<Object, Map<String, String>>(); 
@@ -943,6 +962,9 @@ public class PipelineQueryServlet extends HttpServlet {
             List<File> toReturn = new ArrayList<File>();
             if (doc != null) {
                 toReturn.add(doc);
+            }
+            if (license != null) {
+                toReturn.add(license);
             }
             toReturn.addAll(inputFiles);
             return toReturn;
