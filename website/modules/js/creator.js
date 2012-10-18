@@ -224,6 +224,12 @@ function saveModule()
         throw("A command line must be specified");
     }
 
+    var licenseFile = $('input[name="licensefile"]').val();
+    if(licenseFile == null || licenseFile == undefined)
+    {
+        licenseFile = "";
+    }
+
     var lsid = module_editor.lsid;
     var supportFiles = module_editor.uploadedfiles;
     var version = $('input[name="comment"]').val();
@@ -234,7 +240,7 @@ function saveModule()
         "author": author, "privacy": privacy, "quality": quality,
         "language": language, "JVMLevel": lang_version, "cpuType": cpu, "taskType": tasktype, "version": version,
         "os": os, "commandLine": commandLine, "LSID": lsid, "supportFiles": supportFiles,
-        "filesToDelete": filesToDelete, "fileFormat": fileFormats};
+        "filesToDelete": filesToDelete, "fileFormat": fileFormats, "license":licenseFile};
 
     //add other remaining attributes
     var keys = Object.keys(module_editor.otherModAttrs);
@@ -1036,6 +1042,16 @@ function loadModuleInfo(module)
         $("select[name='mod_fileformat']").multiselect("refresh");
     }
 
+    if(module["license"] !== undefined)
+    {
+        var license = module["license"];
+        var licenseFileURL = "<a href=\"/gp/getFile.jsp?task=" + module_editor.lsid + "&file=" + encodeURI(license) + "\" target=\"new\">" + htmlEncode(license) + "</a> ";
+
+        $("#licenseDiv").empty();
+        $("#licenseDiv").append(licenseFileURL);
+
+    }
+
     //store remaining task info attributes
     var keys = Object.keys(module);
     for(k =0; k < keys.length; k++)
@@ -1046,7 +1062,8 @@ function loadModuleInfo(module)
                 && keyName != "os" && keyName != "name" && keyName != "author" && keyName != "JVMLevel"
                 && keyName != "LSID" && keyName != "lsidVersions" && keyName != "cpuType"
                 && keyName != "privacy" && keyName != "language" && keyName != "version"
-                && keyName != "supportFiles" && keyName != "taskType" && keyName != "quality")
+                && keyName != "supportFiles" && keyName != "taskType"
+                && keyName != "quality" && keyName != "license")
         {
             module_editor.otherModAttrs[keyName] = module[keyName];
         }
@@ -1383,13 +1400,22 @@ function saveAndUpload(runModule)
 
 function uploadSupportFiles()
 {
+    if (module_editor.licensefile != "")
+    {
+        uploadFile(module_editor.licensefile);
+        module_editor.licensefile = "";
+    }
+
     if (module_editor.supportfileinputs.length)
     {
         var nextFile = module_editor.supportfileinputs.shift();
 
         uploadFile(nextFile);
     }
-    else // all support files have been uploaded now save the module
+
+
+    // all support files have been uploaded now save the module
+    if (module_editor.supportfileinputs.length && module_editor.licensefile == "")
     {
         saveModule();
     }
@@ -1767,20 +1793,23 @@ jQuery(document).ready(function() {
         delbutton.button().click(function()
         {
             //remove display of uploaded license file
-            $(this).parents("#licenseDiv").remove();
+            $("#licenseFileNameDiv").remove();
 
             //show the button to upload a new file
             $(".licensefile").parents("span").show();
         });
 
-        var licenseDiv = $("<div id='licenseDiv' class='clear'>" + this.files[0].name
+        var licenseFileNameDiv = $("<div id='licenseFileNameDiv' class='clear'>" + this.files[0].name
                 + " (" + bytesToSize(this.files[0].size) + ")" +"</div>");
-        licenseDiv.prepend(delbutton);
+        licenseFileNameDiv.prepend(delbutton);
 
         //hide the button to upload a new file
         $(this).parents("span").hide();
 
-        $(this).parents("td").append(licenseDiv);
+        $("#licenseDiv").append(licenseFileNameDiv);
+
+	    //add to list of support files
+	    module_editor.licensefile = this.files[0];
     });
 
     $(".supportfile").live("change", function()

@@ -18,6 +18,7 @@ import org.genepattern.server.webservice.server.Status;
 import org.genepattern.server.webservice.server.DirectoryManager;
 import org.genepattern.server.webservice.server.local.LocalTaskIntegratorClient;
 import org.genepattern.server.TaskLSIDNotFoundException;
+import org.genepattern.server.eula.EulaManager;
 import org.genepattern.server.webapp.jsf.AuthorizationHelper;
 import org.genepattern.util.GPConstants;
 import org.genepattern.util.LSID;
@@ -42,7 +43,7 @@ import java.io.*;
 /**
  * based on PipelineQueryServer class in the org.genepattern.pipelines class
  */
-public class ModuleQueryServlet extends HttpServlet 
+public class ModuleQueryServlet extends HttpServlet
 {
     public static Logger log = Logger.getLogger(ModuleQueryServlet.class);
 
@@ -52,18 +53,18 @@ public class ModuleQueryServlet extends HttpServlet
     public static final String SAVE = "/save";
     public static final String LOAD = "/load";
 
-    
+
 
     public void doGet(HttpServletRequest request, HttpServletResponse response)
     {
 		String action = request.getPathInfo();
 
 		// Route to the appropriate action, returning an error if unknown
-		if (MODULE_CATEGORIES.equals(action)) 
+		if (MODULE_CATEGORIES.equals(action))
         {
             getModuleCategories(response);
         }
-        if (OUTPUT_FILE_FORMATS.equals(action)) 
+        if (OUTPUT_FILE_FORMATS.equals(action))
         {
             getOutputFileFormats(response);
         }
@@ -137,7 +138,7 @@ public class ModuleQueryServlet extends HttpServlet
                 return rval;
             }
         });
-        
+
         for (TaskInfo ti : TaskInfoCache.instance().getAllTasks()) {
             String taskType = ti.getTaskInfoAttributes().get("taskType");
             if (taskType == null || taskType.trim().length() == 0) {
@@ -149,7 +150,7 @@ public class ModuleQueryServlet extends HttpServlet
         }
         return Collections.unmodifiableSortedSet(categories);
     }
-    
+
     public void getModuleCategories(HttpServletResponse response)
     {
         SortedSet<String> categories = null;
@@ -306,7 +307,7 @@ public class ModuleQueryServlet extends HttpServlet
                         ServerConfiguration.Context userContext = ServerConfiguration.Context.getContextForUser(username);
                         File fileTempDir = ServerConfiguration.instance().getTemporaryUploadDir(userContext);
                         File uploadedFile = new File(fileTempDir, i.getName());
-                        
+
                         transferUpload(i, uploadedFile);
 
                         // Return a success response
@@ -418,7 +419,7 @@ public class ModuleQueryServlet extends HttpServlet
 
                     if(parameterJSON.getFileFormats() != null)
                     {
-                        attributes.put(GPConstants.FILE_FORMAT, parameterJSON.getFileFormats());        
+                        attributes.put(GPConstants.FILE_FORMAT, parameterJSON.getFileFormats());
                     }
                 }
                 else if(parameterJSON.getType().equalsIgnoreCase("integer"))
@@ -442,14 +443,14 @@ public class ModuleQueryServlet extends HttpServlet
                     //then this must be a text input
                     attributes.put(GPConstants.PARAM_INFO_TYPE[0], GPConstants.PARAM_INFO_TYPE_TEXT);
                 }
-                
+
                 if(parameterJSON.isOptional())
                 {
                     attributes.put(GPConstants.PARAM_INFO_OPTIONAL[0], "on");
                 }
                 else
                 {
-                    attributes.put(GPConstants.PARAM_INFO_OPTIONAL[0], "");    
+                    attributes.put(GPConstants.PARAM_INFO_OPTIONAL[0], "");
                 }
 
                 attributes.put(GPConstants.PARAM_INFO_PREFIX[0], parameterJSON.getPrefix());
@@ -530,10 +531,24 @@ public class ModuleQueryServlet extends HttpServlet
                 return;
             }
 
+
+            String licenseFileName = (String)moduleObject.get(ModuleJSON.LICENSE);
+
+            if( licenseFileName != null
+                    && !licenseFileName.equals(""))
+            {
+                File licenseFile = new File(taskLibDir, licenseFileName);
+                if(!licenseFile.exists())
+                {
+                    throw new Exception("\nUnable to find license file: " + licenseFile.getAbsolutePath());    
+                }
+                EulaManager.initEulaInfo(taskInfo, licenseFile);
+            }
+            
             ResponseJSON message = new ResponseJSON();
             message.addMessage("Module Saved");
             message.addChild("lsid", newLsid);
-            message.addChild("lsidVersions", new JSONArray(getModuleVersions(newLsid)));            
+            message.addChild("lsidVersions", new JSONArray(getModuleVersions(newLsid)));
             this.write(response, message);
         }
         catch(Exception e)
@@ -666,7 +681,7 @@ public class ModuleQueryServlet extends HttpServlet
 
             LocalTaskIntegratorClient taskIntegratorClient = new LocalTaskIntegratorClient(username);
             File[] allFiles = taskIntegratorClient.getAllFiles(taskInfo);
-            
+
             ModuleJSON moduleObject = new ModuleJSON(taskInfo, allFiles);
             moduleObject.put("lsidVersions", new JSONArray(getModuleVersions(lsid)));
 
@@ -678,7 +693,7 @@ public class ModuleQueryServlet extends HttpServlet
         }
         catch(Exception e)
         {
-            e.printStackTrace();            
+            e.printStackTrace();
             log.error(e);
 
             String message = "";

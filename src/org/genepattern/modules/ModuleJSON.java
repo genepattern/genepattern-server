@@ -46,6 +46,7 @@ public class ModuleJSON extends JSONObject {
     public static final String FILEFORMAT = "fileFormat";    
     public static final String SUPPORTFILES = "supportFiles";
     public static final String FILESTODELETE = "filesToDelete";
+    public static final String LICENSE = "license";
 
 
     public static final String KEY = "module";
@@ -76,6 +77,7 @@ public class ModuleJSON extends JSONObject {
             this.put(SUPPORTFILES, object.get(SUPPORTFILES));
             this.put(FILESTODELETE, object.get(FILESTODELETE));
             this.put(FILEFORMAT, object.get(FILEFORMAT));
+	        this.put(LICENSE, object.get(LICENSE));
 
             Iterator<String> kIter = object.keys();
             while(kIter.hasNext())
@@ -86,6 +88,8 @@ public class ModuleJSON extends JSONObject {
                     this.put(keyName, object.get(keyName));
                 }
             }
+
+            log.error("object is: " + object);           
         }
         catch (JSONException e) {
             log.error(e);
