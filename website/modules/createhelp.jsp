@@ -188,7 +188,10 @@ Enter the author&apos;s affiliation (company or academic institution).  If you s
 with others, they will know how to give the author credit and whom to contact with questions, suggestions,
 or enhancement ideas.<br><br>
 
-ConsensusClustering example: <span class="example">Broad Institute</span>
+<a name="License"></a><h4>License</h4>
+Upload a text file containing the End-User license agreement. Users will be prompted to accept this license
+before running the module. <br>
+
 <a name="VersionComment"></a><h4>Version Comment</h4>
 Enter a brief description of the changes that you have made to the module. When GenePattern clients display a drop-down list of versions, the comments for each version are visible in the drop-down list.
 <br><br>
