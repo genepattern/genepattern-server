@@ -141,7 +141,7 @@ public class PipelineJSON extends JSONObject {
     private String getLicense(PipelineModel pipeline, TaskInfo info) {
         Context taskContext = Context.getContextForUser("");    // User doesn't matter, a module will always have the same license
         taskContext.setTaskInfo(info);
-        List<EulaInfo> eulaList = EulaManager.instance(taskContext).getAllEulaForModule(taskContext);
+        List<EulaInfo> eulaList = EulaManager.instance(taskContext).getEulas(info);
         if (eulaList.size() < 1) return "";
         EulaInfo eula = eulaList.get(0);
         File licenseFile = eula.getLicenseFile();
