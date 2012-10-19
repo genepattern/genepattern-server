@@ -674,6 +674,24 @@ public class ModuleQueryServlet extends HttpServlet
             LocalTaskIntegratorClient taskIntegratorClient = new LocalTaskIntegratorClient(username);
             File[] allFiles = taskIntegratorClient.getAllFiles(taskInfo);
 
+            //Exclude license from list of support files
+            if(taskInfo.getTaskInfoAttributes() != null
+                    && taskInfo.getTaskInfoAttributes().get("license") != null
+                    && !taskInfo.getTaskInfoAttributes().get("license").equals(""))
+            {
+                String licenseFileName = taskInfo.getTaskInfoAttributes().get("license");
+                ArrayList<File> supportFiles = new ArrayList();
+                for(File file : allFiles)
+                {
+                    if(!file.getName().equals(licenseFileName))
+                    {
+                        supportFiles.add(file);
+                    }
+                }
+
+                allFiles = supportFiles.toArray(new File[0]);
+            }
+
             ModuleJSON moduleObject = new ModuleJSON(taskInfo, allFiles);
             moduleObject.put("lsidVersions", new JSONArray(getModuleVersions(lsid)));
 

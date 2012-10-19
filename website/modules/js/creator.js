@@ -17,7 +17,7 @@ var saving = false;
 var module_editor = {
     lsid: "",
     uploadedfiles: [],
-    supportfileinputs: [],
+    filestoupload: [],
     licensefile: "",
     filesToDelete: [],
     otherModAttrs: {}
@@ -225,7 +225,7 @@ function saveModule()
         throw("A command line must be specified");
     }
 
-    var licenseFile = $('input[name="licensefile"]').val();
+    var licenseFile = module_editor.licensefile["name"];
     if(licenseFile == null || licenseFile == undefined)
     {
         licenseFile = "";
@@ -1389,36 +1389,27 @@ function saveAndUpload(runModule)
 
     run = runModule;
     //if no support files need to be upload then skip upload file step
-    if(module_editor.supportfileinputs.length == 0 && module_editor.license == "")
+    if(module_editor.filestoupload.length == 0 && module_editor.license == "")
     {
         saveModule();
     }
     else
     {
-        uploadSupportFiles();
+        uploadAllFiles();
     }
 }
 
-function uploadSupportFiles()
+function uploadAllFiles()
 {
-    // all support files have been uploaded now save the module
-    if (module_editor.supportfileinputs.length == 0
-            && module_editor.licensefile == "")
+    if (module_editor.filestoupload.length)
     {
-        saveModule();
-    }
-
-    if(module_editor.licensefile != "")
-    {
-        uploadFile(module_editor.licensefile);
-        module_editor.licensefile = "";
-    }
-
-    if (module_editor.supportfileinputs.length)
-    {
-        var nextFile = module_editor.supportfileinputs.shift();
+        var nextFile = module_editor.filestoupload.shift();
 
         uploadFile(nextFile);
+    }
+    else
+    {
+        saveModule();
     }
 }
 
@@ -1816,8 +1807,10 @@ jQuery(document).ready(function() {
 
         $("#licenseDiv").append(licenseFileNameDiv);
 
-	    //add to list of support files
 	    module_editor.licensefile = this.files[0];
+
+        //add to list of files to upload files
+        module_editor.filestoupload.push(this.files[0]);
     });
 
     $(".supportfile").live("change", function()
@@ -1825,7 +1818,7 @@ jQuery(document).ready(function() {
         addToSupportFileList(this.files[0]);
 
         //add a new file input field
-        $(this).attr('name', "name" + module_editor.supportfileinputs.length);
+        $(this).attr('name', "name" + module_editor.filestoupload.length);
         var parent = $(this).parent();
         parent.append('<input type="file" class="supportfile">');
         $(this).detach();
@@ -1966,9 +1959,9 @@ function addToSupportFileList(file)
     delbutton.button().click(function()
     {
         var index = -1;
-        for(i=0;i<module_editor.supportfileinputs.length;i++)
+        for(i=0;i<module_editor.filestoupload.length;i++)
         {
-            var value1 = module_editor.supportfileinputs[i].name;
+            var value1 = module_editor.filestoupload[i].name;
             var value2 = $(this).parent().data("fname");
             if(value1 === value2)
             {
@@ -1983,7 +1976,7 @@ function addToSupportFileList(file)
             return;
         }
 
-        module_editor.supportfileinputs.splice(index,1);
+        module_editor.filestoupload.splice(index,1);
         $(this).parent().remove();
     });
 
@@ -1992,7 +1985,7 @@ function addToSupportFileList(file)
 
     $("#supportfileslist").append(sfilelist);
 
-    module_editor.supportfileinputs.push(file);
+    module_editor.filestoupload.push(file);
 }
 
 function handleFiles(files)
@@ -2019,7 +2012,7 @@ function uploadFile(file)
         var response = $.parseJSON(this.responseText);
         module_editor.uploadedfiles.push(response.location);
 
-        uploadSupportFiles();
+        uploadAllFiles();
     };
     xhr.onerror = function() {
         result.textContent = this.responseText;
