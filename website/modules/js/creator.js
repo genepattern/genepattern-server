@@ -1819,6 +1819,12 @@ jQuery(document).ready(function() {
             return;
         }
 
+        if(this.files[0].size > 1024 * 1024 * 1024)
+        {
+            alert("ERROR: License file cannot be > 1GB");
+            return;
+        }
+        
         var delbutton = $("<button>x</button>&nbsp;");
         delbutton.button().click(function()
         {
