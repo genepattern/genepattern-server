@@ -1401,6 +1401,13 @@ function saveAndUpload(runModule)
 
 function uploadSupportFiles()
 {
+    // all support files have been uploaded now save the module
+    if (module_editor.supportfileinputs.length == 0
+            && module_editor.licensefile == "")
+    {
+        saveModule();
+    }
+    
     if (module_editor.licensefile != "")
     {
         uploadFile(module_editor.licensefile);
@@ -1412,14 +1419,6 @@ function uploadSupportFiles()
         var nextFile = module_editor.supportfileinputs.shift();
 
         uploadFile(nextFile);
-    }
-
-
-    // all support files have been uploaded now save the module
-    if (module_editor.supportfileinputs.length == 0 
-            && module_editor.licensefile == "")
-    {
-        saveModule();
     }
 }
 
