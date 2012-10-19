@@ -18,7 +18,7 @@ var module_editor = {
     lsid: "",
     uploadedfiles: [],
     supportfileinputs: [],
-    licensefile: "",    
+    licensefile: "",
     filesToDelete: [],
     otherModAttrs: {}
 };
@@ -139,7 +139,7 @@ function abortSave(errorMessage)
         modal: true,
         title: "Module Save Error",
         buttons: {
-            Ok: function() {
+            OK: function() {
                 $( this ).dialog( "close" );
                 throw(errorMessage);
             }
@@ -276,7 +276,7 @@ function saveModule()
                     modal: true,
                     title: "Module Save Error",
                     buttons: {
-                        Ok: function() {
+                        OK: function() {
                             $( this ).dialog( "close" );
                             throw(error);
                         }
@@ -305,7 +305,7 @@ function saveModule()
                         modal: true,
                         title: "Module Saved",
                         buttons: {
-                            Ok: function() {
+                            OK: function() {
                                 $( this ).dialog( "close" );
                                 module_editor.lsid = newLsid;
                                 module_editor.uploadedfiles = [];
@@ -1043,7 +1043,7 @@ function loadModuleInfo(module)
         $("select[name='mod_fileformat']").multiselect("refresh");
     }
 
-    if(module["license"] !== undefined)
+    if(module["license"] !== undefined && module["license"] !== "")
     {
         var license = module["license"];
         var licenseFileURL = "<a href=\"/gp/getFile.jsp?task=" + module_editor.lsid + "&file=" + encodeURI(license) + "\" target=\"new\">" + htmlEncode(license) + "</a> ";
@@ -1389,7 +1389,7 @@ function saveAndUpload(runModule)
 
     run = runModule;
     //if no support files need to be upload then skip upload file step
-    if(module_editor.supportfileinputs.length == 0)
+    if(module_editor.supportfileinputs.length == 0 && module_editor.license == "")
     {
         saveModule();
     }
@@ -1407,8 +1407,8 @@ function uploadSupportFiles()
     {
         saveModule();
     }
-    
-    if (module_editor.licensefile != "")
+
+    if(module_editor.licensefile != "")
     {
         uploadFile(module_editor.licensefile);
         module_editor.licensefile = "";
@@ -1790,6 +1790,13 @@ jQuery(document).ready(function() {
 
     $(".licensefile").change(function()
     {
+
+        if(this.files[0].type != "text/plain")
+        {
+            alert("ERROR: License file must be a text file");
+            return;
+        }
+
         var delbutton = $("<button>x</button>&nbsp;");
         delbutton.button().click(function()
         {
