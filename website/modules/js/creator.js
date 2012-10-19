@@ -1046,10 +1046,41 @@ function loadModuleInfo(module)
     if(module["license"] !== undefined && module["license"] !== "")
     {
         var license = module["license"];
-        var licenseFileURL = "<a href=\"/gp/getFile.jsp?task=" + module_editor.lsid + "&file=" + encodeURI(license) + "\" target=\"new\">" + htmlEncode(license) + "</a> ";
+        var currentLicenseDiv = $("<div class='clear' id='currentLicenseDiv'></div>");
 
-        $("#licenseDiv").empty();
-        $("#licenseDiv").append(licenseFileURL);
+        var checkbox = $('<input type="checkbox" name="currentlicensefile" value="' +
+            license + '" />').click(function()
+        {
+            //name of license
+            var selectedVal = $(this).val();
+
+            if($(this).is(':checked'))
+            {
+                module_editor.licensefile = "";
+                module_editor.filesToDelete.push(selectedVal);
+
+                //show div which allows uploading of new license file
+                $("#licenseDiv").show();
+            }
+            else
+            {
+                module_editor.licensefile = selectedVal;
+                var index = jQuery.inArray(selectedVal, module_editor.filesToDelete);
+                module_editor.filesToDelete.splice(index,1);
+
+                //hide div which allows uploading of new license file
+                $("#licenseDiv").hide();
+
+            }
+        });
+
+        currentLicenseDiv.append(checkbox);
+        var licenseFileURL = "<a href=\"/gp/getFile.jsp?task=" + module_editor.lsid + "&file=" + encodeURI(license) + "\" target=\"new\">" + htmlEncode(license) + "</a> ";
+        currentLicenseDiv.append(licenseFileURL);
+        currentLicenseDiv.append("(Check to delete)");
+
+        $("#licenseDiv").hide();
+        $("#mainLicenseDiv").append(currentLicenseDiv);
 
     }
 
@@ -1073,7 +1104,7 @@ function loadModuleInfo(module)
     var supportFilesList = module["supportFiles"];
     if(supportFilesList !== undefined && supportFilesList != null &&  supportFilesList != "")
     {
-        var currentFilesDiv = $("<div id=currentfiles><div>");
+        var currentFilesDiv = $("<div id='currentfiles'><div>");
         currentFilesDiv.append("Current Files (Check to delete): ");
 
         $("#supportfilecontent").prepend(currentFilesDiv);
@@ -1784,7 +1815,7 @@ jQuery(document).ready(function() {
 
         if(this.files[0].type != "text/plain")
         {
-            alert("ERROR: License file must be a text file");
+            alert("License file must be a text file");
             return;
         }
 
