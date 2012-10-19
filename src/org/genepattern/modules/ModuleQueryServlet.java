@@ -388,6 +388,12 @@ public class ModuleQueryServlet extends HttpServlet
                 privacy = GPConstants.ACCESS_PUBLIC;
             }
 
+            if(moduleObject.get(ModuleJSON.LICENSE) != null
+                    && !moduleObject.get(ModuleJSON.LICENSE).equals(""))
+            {
+                tia.put("license", moduleObject.get(ModuleJSON.LICENSE));
+            }
+
             //--------------------------Parameter Information---------------------------------------------
             ParametersJSON[] parameters = ParametersJSON.extract(moduleJSON);
             ParameterInfo[] pInfo = new ParameterInfo[parameters.length];
@@ -531,20 +537,6 @@ public class ModuleQueryServlet extends HttpServlet
                 return;
             }
 
-
-            if( moduleObject.get(ModuleJSON.LICENSE) != null
-                    && !moduleObject.get(ModuleJSON.LICENSE).equals(""))
-            {
-                String licenseFileName = (String)moduleObject.get(ModuleJSON.LICENSE);
-
-                File licenseFile = new File(taskLibDir, licenseFileName);
-                if(!licenseFile.exists())
-                {
-                    throw new Exception("\nUnable to find license file: " + licenseFile.getAbsolutePath());    
-                }
-                EulaManager.initEulaInfo(taskInfo, licenseFile);
-            }
-            
             ResponseJSON message = new ResponseJSON();
             message.addMessage("Module Saved");
             message.addChild("lsid", newLsid);
