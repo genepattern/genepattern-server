@@ -369,10 +369,10 @@ public class ModuleQueryServlet extends HttpServlet
             {
                 String key = infoKeys.next();
 
-                //omit module name and description from taskinfoattributes
+                //omit module name, description, license, and support files from taskinfoattributes
                 if(!key.equals(ModuleJSON.NAME) && !key.equals(ModuleJSON.DESCRIPTION)
                         && !key.equals(ModuleJSON.SUPPORTFILES) && !key.equals(ModuleJSON.FILESTODELETE)
-                        && !key.equals(ModuleJSON.FILEFORMAT))
+                        && !key.equals(ModuleJSON.FILEFORMAT) && !key.equals(ModuleJSON.LICENSE))
                 {
                     tia.put(key, moduleObject.get(key));
                 }
