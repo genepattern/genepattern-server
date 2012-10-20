@@ -232,7 +232,8 @@ import org.genepattern.webservice.WebServiceException;
  */
 
 public class GenePatternAnalysisTask {
-    public static Logger log = Logger.getLogger(GenePatternAnalysisTask.class);
+    final static private Logger log = Logger.getLogger(GenePatternAnalysisTask.class);
+
     protected static final String CLASSPATH = "classpath";
     protected static final String OUTPUT_FILENAME = "output_filename";
     protected static final String ORIGINAL_PATH = "originalPath";
@@ -690,7 +691,7 @@ public class GenePatternAnalysisTask {
             requiresEULA = EulaManager.instance(jobContext).requiresEula(jobContext);
         }
         catch (Throwable t) {
-            String message="Unexpected error checking for EULA for job #"+jobInfo.getJobNumber()+": "+t.getLocalizedMessage();
+            String message="Unexpected error checking for EULA for job #"+jobInfo.getJobNumber()+", task="+jobInfo.getTaskName()+": "+t.getLocalizedMessage();
             log.error(message, t);
             throw new JobDispatchException(message);
         }
