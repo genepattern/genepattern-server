@@ -20,7 +20,6 @@ import org.genepattern.util.LSID;
 import org.genepattern.webservice.SuiteInfo;
 import org.genepattern.webservice.TaskInfo;
 import org.genepattern.webservice.TaskInfoAttributes;
-import org.genepattern.webservice.TaskInfoCache;
 import org.genepattern.webservice.WebServiceException;
 import org.xml.sax.InputSource;
 
@@ -93,10 +92,8 @@ public class GetEulaFromTaskRecursive {
             if (myGetTaskStrategy != null) {
                 return myGetTaskStrategy.getTaskInfo(lsid);
             }
-            
-            //otherwise, use the default strategy
-            TaskInfo taskInfo=TaskInfoCache.instance().getTask(lsid);
-            return taskInfo;
+            //otherwise error
+            throw new WebServiceException("myGetTaskStrategy is not initialized");
         }
         ///CLOVER:OFF
         //@Override
@@ -130,6 +127,9 @@ public class GetEulaFromTaskRecursive {
     }
 
     private IAdminClient getAdminClient() {
+        if (getTaskStrategy==null) {
+            getTaskStrategy=new GetTaskStrategyDefault();
+        }
         MyAdminClient adminClient=new MyAdminClient(getTaskStrategy);
         return adminClient;
     }
