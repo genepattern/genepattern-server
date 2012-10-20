@@ -20,6 +20,7 @@ import java.util.Vector;
 
 import org.genepattern.data.pipeline.JobSubmission;
 import org.genepattern.data.pipeline.PipelineModel;
+import org.genepattern.server.eula.GetEulaAsManifestProperty;
 import org.genepattern.util.GPConstants;
 import org.genepattern.webservice.ParameterInfo;
 import org.genepattern.webservice.TaskInfo;
@@ -138,6 +139,9 @@ public abstract class AbstractPipelineCodeGenerator {
         tia.put(GPConstants.JVM_LEVEL, "1.5");
         tia.put(GPConstants.VERSION, model.getVersion());
         tia.put(GPConstants.LSID, model.getLsid());
+        if (model.getLicense() != null && model.getLicense().length()>0) {
+            tia.put(GetEulaAsManifestProperty.LICENSE, model.getLicense());
+        }
         return tia;
     }
 

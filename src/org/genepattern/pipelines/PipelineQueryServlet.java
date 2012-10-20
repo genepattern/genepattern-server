@@ -628,8 +628,12 @@ public class PipelineQueryServlet extends HttpServlet {
             PipelineCreationHelper controller = null;
             try {
                 model = new PipelineModel();
-                model.setUserID(username);
-    
+                model.setUserID(username); 
+                // if there is a license, add it to the model
+                String license = pipelineObject.getLicense();
+                if (license != null && license.length() > 0) {
+                    model.setLicense(license);
+                } 
                 setPipelineInfo(model, pipelineObject);
     
                 controller = new PipelineCreationHelper(model);
@@ -672,14 +676,15 @@ public class PipelineQueryServlet extends HttpServlet {
             FileCollection verifiedFiles = extractVerifiedFiles(newDir, pipelineObject, filesObject);
             purgeUnnecessaryFiles(newDir, verifiedFiles.getInternal());
             
+            // TODO: delete this section,
             // Set the documentation and license files
-            if (verifiedFiles.license != null) {
-                TaskInfo taskInfo = TaskInfoCache.instance().getTask(newLsid);
-                EulaInfo license = EulaManager.initEulaInfo(taskInfo, verifiedFiles.license);
-                Context taskContext = Context.getContextForUser("");    // User doesn't matter, a module will always have the same license
-                taskContext.setTaskInfo(taskInfo);
-                EulaManager.instance(taskContext).setEula(license, taskInfo);
-            }
+            //if (verifiedFiles.license != null) {
+                //TaskInfo taskInfo = TaskInfoCache.instance().getTask(newLsid);
+                //EulaInfo license = EulaManager.initEulaInfo(taskInfo, verifiedFiles.license);
+                //Context taskContext = Context.getContextForUser("");    // User doesn't matter, a module will always have the same license
+                //taskContext.setTaskInfo(taskInfo);
+                //EulaManager.instance(taskContext).setEula(license, taskInfo);
+            //}
             // TODO: Set documentation file once there's a way
             
             PipelineDesignerFile pdFile = new PipelineDesignerFile(newDir);

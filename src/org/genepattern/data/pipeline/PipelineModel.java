@@ -35,6 +35,7 @@ import java.util.Vector;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
+import org.apache.log4j.Logger;
 import org.genepattern.server.webservice.server.local.IAdminClient;
 import org.genepattern.server.webservice.server.local.LocalAdminClient;
 import org.genepattern.util.GPConstants;
@@ -52,6 +53,8 @@ import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
 public class PipelineModel implements Serializable {
+    final static private Logger log = Logger.getLogger(PipelineModel.class);
+
     public static final String INHERIT_TASKNAME = "inheritTaskname";
     public static final String INHERIT_FILENAME = "inheritFilename";
     public static final String RUNTIME_PARAM = "runTimePrompt";
@@ -72,6 +75,7 @@ public class PipelineModel implements Serializable {
     protected String userID = "";
     protected String version = null;
     protected String lsid = "";
+    protected String license = null;
     protected IAdminClient adminClient = null;
 
     private IAdminClient getAdminClient() {
@@ -212,6 +216,14 @@ public class PipelineModel implements Serializable {
         if (lsid == null)
             lsid = "";
         this.lsid = lsid;
+    }
+    
+    public String getLicense() {
+        return license;
+    }
+    
+    public void setLicense(final String license) {
+        this.license=license;
     }
 
     public void addTask(JobSubmission jobSubmission) {
@@ -537,11 +549,12 @@ public class PipelineModel implements Serializable {
 
         ParameterInfo[] formalParameters = null;
         if (taskInfo == null) {
+            String arg="";
             try {
                 // taskInfo = GenePatternAnalysisTask.getTaskInfo(
                 // (lsid.length() > 0 ? lsid : taskName), getUserID());
                 //taskInfo = getAdminClient().getTask((lsid.length() > 0 ? lsid : taskName));
-                String arg;
+                //String arg;
                 if (lsid.length() > 0) {
                     arg=lsid;
                 }
@@ -552,7 +565,7 @@ public class PipelineModel implements Serializable {
                 taskInfo = adminClient.getTask(arg);
             } 
             catch (Throwable t) {
-                //log.error(t);
+                log.error("Error getting TaskInfo from task="+arg, t);
             } 
             // old pipelines don't have hsqldb.jar on classpath
             if (taskInfo == null) {

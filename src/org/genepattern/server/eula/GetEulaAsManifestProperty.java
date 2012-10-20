@@ -21,6 +21,9 @@ import org.genepattern.webservice.TaskInfo;
  */
 public class GetEulaAsManifestProperty implements GetEulaFromTask {
     final static private Logger log = Logger.getLogger(GetEulaAsManifestProperty.class);
+    /** the name name of the property in the manifest file */
+    final static public String LICENSE="license";
+    /** delimiter for a list of license in the manifest */
     final static public String DELIM=",";
 
     //Override
@@ -71,12 +74,11 @@ public class GetEulaAsManifestProperty implements GetEulaFromTask {
             throw new IllegalArgumentException("taskInfo==null");
         }
         
-        //null EulaInfo means, this task has no attached EULA
         log.debug("eula is null, remove license property from manifest");
-        taskInfo.giveTaskInfoAttributes().remove("license");
-        
         List<EulaInfo> eulas=new ArrayList<EulaInfo>();
-        eulas.add(eula);
+        if (eula != null) {
+            eulas.add(eula);
+        }
         setEulas(eulas,taskInfo);
     }
 
@@ -101,5 +103,8 @@ public class GetEulaAsManifestProperty implements GetEulaFromTask {
         }
         String licenseVal=buf.toString();
         taskInfo.giveTaskInfoAttributes().put("license", licenseVal); 
+        
+        //save to manifest file
+        //save to DB
     }
 }
