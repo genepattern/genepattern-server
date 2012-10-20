@@ -36,7 +36,15 @@ public class GetEulaFromTaskStub implements GetEulaFromTask {
         eula.setLicenseFile(licenseFile);
         return eula;
     }
-    
+
+    //reset back to zero
+    private void clearEulaInfo(final String moduleLsid) {
+        if (lookupTable==null) {
+            //ignore
+            return;
+        }
+        lookupTable.remove(moduleLsid);
+    }
     private void addEulaInfo(final String moduleLsid, final EulaInfo eula) {
         //lazy-init
         if (lookupTable == null) {
@@ -72,7 +80,7 @@ public class GetEulaFromTaskStub implements GetEulaFromTask {
 
     //Override
     public void setEula(EulaInfo eula, TaskInfo taskInfo) throws IllegalArgumentException {
-        List<EulaInfo> eulas=new ArrayList<EulaInfo>();
+        List<EulaInfo> eulas=new ArrayList<EulaInfo>(); 
         if (eula!=null) {
             eulas.add(eula);
         }
@@ -91,7 +99,7 @@ public class GetEulaFromTaskStub implements GetEulaFromTask {
         if (lsid.length()==0) {
             throw new IllegalArgumentException("taskInfo.lsid is not set");
         }
-        
+        clearEulaInfo(lsid);
         for(EulaInfo eula : eulas) {
             addEulaInfo(lsid, eula);
         } 
