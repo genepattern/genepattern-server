@@ -130,9 +130,8 @@ public class EulaInfo implements Comparable<EulaInfo> {
     public void setLicense(final String license) {
         this.license=license;
     }
-    
-    public File getLicenseFile() {
-        return licenseFile;
+    public String getLicense() {
+        return this.license;
     }
     
     public void setLicenseFile(final File licenseFile) {

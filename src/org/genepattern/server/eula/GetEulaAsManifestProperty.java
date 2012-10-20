@@ -88,7 +88,6 @@ public class GetEulaAsManifestProperty implements GetEulaFromTask {
             throw new IllegalArgumentException("taskInfo==null");
         }
         
-        //String licenseVal="";
         StringBuffer buf = new StringBuffer();
         int i=0;
         for(EulaInfo eula : eulas) {
@@ -97,9 +96,8 @@ public class GetEulaAsManifestProperty implements GetEulaFromTask {
                 buf.append(DELIM);
                 //licenseVal+=DELIM;
             }
-            String s=eula.getLicenseFile().getName();
+            String s=eula.getLicense();
             buf.append(s);
-            //licenseVal+=s;
         }
         String licenseVal=buf.toString();
         taskInfo.giveTaskInfoAttributes().put("license", licenseVal); 

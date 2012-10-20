@@ -13,12 +13,15 @@ package org.genepattern.modules;
 
 import org.genepattern.webservice.*;
 import org.genepattern.server.config.ServerConfiguration;
+import org.genepattern.server.config.ServerConfiguration.Context;
+import org.genepattern.server.eula.EulaInfo;
+import org.genepattern.server.eula.EulaManager;
+import org.genepattern.server.eula.GetEulaAsManifestProperty;
 import org.genepattern.server.genepattern.GenePatternAnalysisTask;
 import org.genepattern.server.webservice.server.Status;
 import org.genepattern.server.webservice.server.DirectoryManager;
 import org.genepattern.server.webservice.server.local.LocalTaskIntegratorClient;
 import org.genepattern.server.TaskLSIDNotFoundException;
-import org.genepattern.server.eula.EulaManager;
 import org.genepattern.server.webapp.jsf.AuthorizationHelper;
 import org.genepattern.util.GPConstants;
 import org.genepattern.util.LSID;
@@ -291,6 +294,7 @@ public class ModuleQueryServlet extends HttpServlet
            sendError(response, "No GenePattern session found.  Please log in.");
            return;
         }
+        ServerConfiguration.Context userContext = ServerConfiguration.Context.getContextForUser(username);
 
 	    RequestContext reqContext = new ServletRequestContext(request);
         if (FileUploadBase.isMultipartContent(reqContext)) {
@@ -304,7 +308,6 @@ public class ModuleQueryServlet extends HttpServlet
                     if (!i.isFormField()) {
                         // Store in a temp directory until the module is saved
 
-                        ServerConfiguration.Context userContext = ServerConfiguration.Context.getContextForUser(username);
                         File fileTempDir = ServerConfiguration.instance().getTemporaryUploadDir(userContext);
                         File uploadedFile = new File(fileTempDir, i.getName());
 
@@ -372,7 +375,7 @@ public class ModuleQueryServlet extends HttpServlet
                 //omit module name, description, license, and support files from taskinfoattributes
                 if(!key.equals(ModuleJSON.NAME) && !key.equals(ModuleJSON.DESCRIPTION)
                         && !key.equals(ModuleJSON.SUPPORTFILES) && !key.equals(ModuleJSON.FILESTODELETE)
-                        && !key.equals(ModuleJSON.FILEFORMAT) && !key.equals(ModuleJSON.LICENSE))
+                        && !key.equals(ModuleJSON.FILEFORMAT))
                 {
                     tia.put(key, moduleObject.get(key));
                 }
@@ -388,10 +391,14 @@ public class ModuleQueryServlet extends HttpServlet
                 privacy = GPConstants.ACCESS_PUBLIC;
             }
 
-            if(moduleObject.get(ModuleJSON.LICENSE) != null
-                    && !moduleObject.get(ModuleJSON.LICENSE).equals(""))
-            {
-                tia.put("license", moduleObject.get(ModuleJSON.LICENSE));
+            //handle license file(s)
+            //TODO: refactor into the EulaManager 
+            if (moduleObject.get(ModuleJSON.LICENSE) == null
+                    || moduleObject.get(ModuleJSON.LICENSE).equals("")) {
+                tia.remove(GetEulaAsManifestProperty.LICENSE);
+            }
+            else {
+                tia.put(GetEulaAsManifestProperty.LICENSE, moduleObject.get(ModuleJSON.LICENSE));
             }
 
             //--------------------------Parameter Information---------------------------------------------
@@ -646,6 +653,7 @@ public class ModuleQueryServlet extends HttpServlet
 	        sendError(response, "No GenePattern session found.  Please log in.");
 	        return;
 	    }
+	    Context taskContext=Context.getContextForUser(username);
 
 	    String lsid = request.getParameter("lsid");
 
@@ -657,6 +665,7 @@ public class ModuleQueryServlet extends HttpServlet
         try
         {
             TaskInfo taskInfo = getTaskInfo(lsid);
+            taskContext.setTaskInfo(taskInfo);
 
             //check if user is allowed to edit the module
             boolean createModuleAllowed = AuthorizationHelper.createModule(username);
@@ -675,12 +684,19 @@ public class ModuleQueryServlet extends HttpServlet
             File[] allFiles = taskIntegratorClient.getAllFiles(taskInfo);
 
             //Exclude license from list of support files
-            if(taskInfo.getTaskInfoAttributes() != null
-                    && taskInfo.getTaskInfoAttributes().get("license") != null
-                    && !taskInfo.getTaskInfoAttributes().get("license").equals(""))
-            {
-                String licenseFileName = taskInfo.getTaskInfoAttributes().get("license");
-                ArrayList<File> supportFiles = new ArrayList();
+            String licenseFileName=null;
+            List<EulaInfo> eulas=EulaManager.instance(taskContext).getEulas(taskInfo);
+            if (eulas==null) {
+                log.error("IEulaManager#getEulas==null");
+            }
+            else if (eulas.size()>1) {
+                log.error("module has more than one eula, num eulas="+eulas.size());
+            }
+            if (eulas!=null && eulas.size()>0) {
+                licenseFileName=eulas.get(0).getLicense();
+            }
+            if (licenseFileName != null) {
+                ArrayList<File> supportFiles = new ArrayList<File>();
                 for(File file : allFiles)
                 {
                     if(!file.getName().equals(licenseFileName))

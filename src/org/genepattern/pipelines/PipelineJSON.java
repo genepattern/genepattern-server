@@ -8,7 +8,6 @@
 
 package org.genepattern.pipelines;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -144,8 +143,7 @@ public class PipelineJSON extends JSONObject {
         List<EulaInfo> eulaList = EulaManager.instance(taskContext).getEulas(info);
         if (eulaList.size() < 1) return "";
         EulaInfo eula = eulaList.get(0);
-        File licenseFile = eula.getLicenseFile();
-        return licenseFile.getName();
+        return eula.getLicense();
     }
     
     private String extractVersion(String lsid) {
