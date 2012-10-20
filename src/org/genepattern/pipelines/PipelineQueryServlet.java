@@ -676,15 +676,6 @@ public class PipelineQueryServlet extends HttpServlet {
             FileCollection verifiedFiles = extractVerifiedFiles(newDir, pipelineObject, filesObject);
             purgeUnnecessaryFiles(newDir, verifiedFiles.getInternal());
             
-            // TODO: delete this section,
-            // Set the documentation and license files
-            //if (verifiedFiles.license != null) {
-                //TaskInfo taskInfo = TaskInfoCache.instance().getTask(newLsid);
-                //EulaInfo license = EulaManager.initEulaInfo(taskInfo, verifiedFiles.license);
-                //Context taskContext = Context.getContextForUser("");    // User doesn't matter, a module will always have the same license
-                //taskContext.setTaskInfo(taskInfo);
-                //EulaManager.instance(taskContext).setEula(license, taskInfo);
-            //}
             // TODO: Set documentation file once there's a way
             
             PipelineDesignerFile pdFile = new PipelineDesignerFile(newDir);
