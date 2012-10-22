@@ -67,8 +67,8 @@ public class PipelineJSON extends JSONObject {
             this.put(PRIVACY, pipeline.isPrivate() ? PRIVATE : PUBLIC);
             this.put(VERSION, extractVersion(pipeline.getLsid()));
             this.put(VERSION_COMMENT, pipeline.getVersion());
-            this.put(DOCUMENTATION, getDocumentation(pipeline, info));
             this.put(LICENSE, getLicense(pipeline, info));
+            this.put(DOCUMENTATION, getDocumentation(pipeline, info));
             this.put(LSID, pipeline.getLsid());
         }
         catch (JSONException e) {
@@ -127,13 +127,19 @@ public class PipelineJSON extends JSONObject {
         return files;
     }
     
-    private String getDocumentation(PipelineModel pipeline, TaskInfo info) {
+    private String getDocumentation(PipelineModel pipeline, TaskInfo info) throws JSONException {
         List<String> docList = TaskInfoCache.instance().getDocFilenames(info.getID(), pipeline.getLsid());
         if (docList.size() < 1) {
             return "";
         }
         else {
-            return docList.get(0);
+            String doc = docList.get(0);
+            if (doc.equals(this.get(LICENSE))) {
+                return "";
+            }
+            else {
+                return doc;
+            }
         }
     }
     
