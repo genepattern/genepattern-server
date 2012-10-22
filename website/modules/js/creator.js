@@ -1824,7 +1824,13 @@ jQuery(document).ready(function() {
             alert("ERROR: License file cannot be > 1GB");
             return;
         }
-        
+
+        if(this.files[0].name == "manifest")
+        {
+            alert("You are not allowed to upload files with file name 'manifest'. Please re-name your file and try again.");
+            return;
+        }
+
         var delbutton = $("<button>x</button>&nbsp;");
         delbutton.button().click(function()
         {
