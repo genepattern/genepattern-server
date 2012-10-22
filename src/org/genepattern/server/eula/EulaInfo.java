@@ -139,6 +139,13 @@ public class EulaInfo implements Comparable<EulaInfo> {
         this.licenseFile=licenseFile;
     }
     public void setModuleLsid(final String lsid) throws EulaInitException {
+        //Note: LSID constructor does not check for null or empty arg
+        if (lsid==null) {
+            throw new EulaInitException("lsid==null");
+        }
+        if (lsid.length()==0) {
+            throw new EulaInitException("lsid not set");
+        }
         try {
             theLsid = new LSID(lsid);
             this.moduleLsid=lsid; 
