@@ -12,6 +12,7 @@
 
 <%@ page import="org.genepattern.server.webapp.jsf.AuthorizationHelper" %>
 <link href="<%=request.getContextPath()%>/css/style.css" rel="stylesheet" type="text/css" />
+<link href="/gp/css/menu.css" type="text/css" rel="stylesheet" />
 <script type="text/javascript" language="javascript">
   var contextRoot = "<%=request.getContextPath()%>/";
   <% String username = (String) request.getAttribute("userid"); %>
@@ -20,8 +21,11 @@
   var createPublicSuiteAllowed = <%= AuthorizationHelper.createSuite(username) %>;
   var createPrivatePipelineAllowed = <%= AuthorizationHelper.createPipeline(username) %>;
   var createPrivateSuiteAllowed = <%= AuthorizationHelper.createSuite(username) %>;
-
+  var adminServerAllowed = false;
+  var genomeSpaceLoggedIn = false;
+  var userLoggedIn = !("${requestScope.userID}" === "null" || "${requestScope.userID}" === "");
 </script>
-<script language="JavaScript" src="<%=request.getContextPath()%>/js/mainMenu.js"></script>
-<script language="JavaScript" src="<%=request.getContextPath()%>/js/mm_menu.js"></script>
-<script language="JavaScript1.2">MM_preloadImages('<%=request.getContextPath()%>/images/searchicon-1-over.gif','<%=request.getContextPath()%>/images/menuicon-over.gif');</script>
+<script src="/gp/js/jquery/jquery-1.7.1.js" type="text/javascript"></script>
+<script src="/gp/js/jquery/jquery-ui-1.8.16.js" type="text/javascript"></script>
+<script src="/gp/js/jquery/ddsmoothmenu.js" type="text/javascript"></script>
+<script src="/gp/js/menu.js" type="text/javascript"></script>
