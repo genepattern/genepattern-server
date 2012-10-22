@@ -12,6 +12,8 @@
 
 package org.genepattern.server.webapp.jsf;
 
+import static org.genepattern.server.webapp.jsf.UIBeanHelper.getRequest;
+
 import java.io.File;
 import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
@@ -66,6 +68,7 @@ public class RunTaskBean {
     private boolean allowNewJob = true;
     private boolean allowInputFilePaths = false;
     private boolean allowBatchProcess = false;
+    private boolean versionPrompt = false;
 
     /**
      * True if current user is allowed to edit the current module.
@@ -114,6 +117,14 @@ public class RunTaskBean {
         allowNewJob = ServerConfiguration.instance().getGPBooleanProperty(userContext, "allow.new.job", true);
         allowInputFilePaths = ServerConfiguration.instance().getAllowInputFilePaths(userContext);
         allowBatchProcess = ServerConfiguration.instance().getGPBooleanProperty(userContext, "allow.batch.process", false);
+    }
+    
+    public boolean getVersionPrompt() {
+        return this.versionPrompt;
+    }
+    
+    public void setVersionPrompt(boolean prompt) {
+        this.versionPrompt = prompt;
     }
 
     public void changeVersion(ActionEvent event) {
@@ -188,6 +199,16 @@ public class RunTaskBean {
 
     public List<String> getVersions() {
         return versions;
+    }
+    
+    public boolean isHighestVersion() {
+        boolean highest = true;
+        for (String i : versions) {
+            if (version.compareTo(i) < 0) {
+                highest = false;
+            }
+        }
+        return highest;
     }
 
     public boolean isAllowNewJob() {

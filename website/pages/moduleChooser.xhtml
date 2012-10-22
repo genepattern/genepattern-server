@@ -31,6 +31,7 @@
           						<div style="" id="#{module.shortName}">
           							<h:commandLink value="#{module.name}" actionListener="#{moduleChooserBean.moduleClicked}" style="white-space: nowrap;">
                   						<f:param name="task" value="#{module.selectedLsid}"/>
+                  						<f:param name="promptForLatestVersion" value="true"/>
                 					</h:commandLink>
 								</div>
           					</t:dataList>
@@ -94,6 +95,7 @@
               &#160;
                 <h:commandLink value="#{module.shortName}" actionListener="#{moduleChooserBean.moduleClicked}" style="white-space: nowrap;">
                   <f:param name="task" value="#{module.selectedLsid}"/>
+                  <f:param name="promptForLatestVersion" value="true"/>
                 </h:commandLink>
                 <br></br>
              </span>

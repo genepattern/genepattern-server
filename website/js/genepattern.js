@@ -111,4 +111,45 @@ function ajaxEmailResponse( req ) {
 		else
 			return results[1];
 	}
+    
+// Requires jQuery & jQuery UI
+function showDialog(title, message, button) {
+    var alert = document.createElement("div");
+
+    if (typeof(message)=='string') {
+        alert.innerHTML = message;;
+    }
+    else {
+        alert.appendChild(message);
+    }
+
+    if (button === undefined || button === null) {
+        button = { "OK": function(event) {
+            jq(this).dialog("close");
+            if (event.preventDefault) event.preventDefault();
+            if (event.stopPropagation) event.stopPropagation();
+        }};
+    }
+
+    jq(alert).dialog({
+        modal: true,
+        dialogClass: "top-dialog",
+        width: 400,
+        title: title,
+        buttons: button,
+        close: function() {
+            jq(this).dialog("destroy");
+            jq(this).remove();
+        }
+    });
+
+    // Fix z-index for dialog
+    var z = parseInt(jq(alert).parent().css("z-index"));
+    if (z < 10000) {
+        z += 9000;
+        jq(".top-dialog").css("z-index", z);
+    }
+    
+    return alert;
+}
    
