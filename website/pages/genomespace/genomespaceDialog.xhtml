@@ -135,12 +135,16 @@ use, misuse, or functionality.
 					            url: "/gp/GenomeSpace/saveFile?directory=" + escape(directory) + String.fromCharCode(38) + "file=" + escape(file),
 					            data: {},
 					            success: function(response) {
+									jq("#genomeSpaceSaveDialog").dialog("close"); 			// Close the dialog
+									jq("#saveTree").html("");
 									window.location.replace(window.location.href);
 					            },
 					            dataType: "text"
 					        });
 							
-							jq("#genomeSpaceSaveDialog").dialog("close"); 			// Close the dialog
+							// Set the dialog in the uploading state
+							jq("#saveTree").html('<div><h4><img src="/gp/images/runningJob.gif"></img> Uploading to GenomeSpace...</h4></div>');
+							jq(".ui-dialog-buttonpane").hide();
 						}
 					},
 					{
