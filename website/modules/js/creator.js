@@ -230,6 +230,33 @@ function saveModule()
     {
         licenseFile = "";
     }
+    else
+    {
+        //automatically include plugin that checks that the GP version is >= 3.4.2
+
+        var patchLSID = "urn:lsid:broad.mit.edu:cancer.software.genepattern.server.patch:000015:1";
+        var patchURL = "http://www.broad.mit.edu/webservices/gpModuleRepository/download/prod/patch/?file=/GenePattern_3_4_2/broad.mit.edu:cancer.software.genepattern.server.patch/00015/1/GenePattern_3_4_2.zip";
+
+        //first check if module has other plugins, if so then append to existing list of plugins
+        if(module_editor.otherModAttrs["requiredPatchLSIDs"] != undefined
+            && module_editor.otherModAttrs["requiredPatchLSIDs"] != null
+            && module_editor.otherModAttrs["requiredPatchURLs"] != undefined
+            && module_editor.otherModAttrs["requiredPatchURLs"] != null)
+        {
+            //if plugin is not already defined then add it
+            if(module_editor.otherModAttrs["requiredPatchLSIDs"].indexOf(patchLSID) == -1 &&
+                module_editor.otherModAttrs["requiredPatchURLs"].indexOf(patchURL) == -1)
+            {
+                module_editor.otherModAttrs["requiredPatchLSIDs"] = module_editor.otherModAttrs["requiredPatchLSIDs"] + "," + patchLSID;
+                module_editor.otherModAttrs["requiredPatchURLs"] = module_editor.otherModAttrs["requiredPatchURLs"] + "," + patchURL;
+            }
+        }
+        else
+        {
+            module_editor.otherModAttrs["requiredPatchLSIDs"] = patchLSID;
+            module_editor.otherModAttrs["requiredPatchURLs"] = patchURL;
+        }
+    }
 
     var lsid = module_editor.lsid;
     var supportFiles = module_editor.uploadedfiles;
