@@ -94,7 +94,7 @@ public class GenomeSpaceServlet extends HttpServlet {
             json = new TreeJSON(tree, TreeJSON.SAVE_TREE);
         }
         else {
-            json = new TreeJSON(null, TreeJSON.EMPTY);
+            json = new TreeJSON(new ArrayList<GenomeSpaceFile>(), TreeJSON.SAVE_TREE);
         }
         this.write(response, json);
     }
