@@ -22,6 +22,10 @@ use, misuse, or functionality.
         		.saveTreeSelected {
         			background-color: #9999CC;
         		}
+				
+				#saveTree .jstree-leaf a ins {
+					background-image: url('/gp/images/iconFolder.gif');
+				}
 			</style>
             <script type="text/javascript" language="javascript">	
                 /* <![CDATA[ */
@@ -68,7 +72,7 @@ use, misuse, or functionality.
 									return "/gp/GenomeSpace/saveTree";
 								}
 								var gsURL = jq(node).find("a").attr("href");
-								return {}; //"/gp/GenomeSpace/saveTree?dir=" + encodeURIComponent(gsURL);
+								return "/gp/GenomeSpace/saveTree?dir=" + encodeURIComponent(gsURL);
 							},
 							"data": function(node) {
 								return {
@@ -102,11 +106,7 @@ use, misuse, or functionality.
 						var link = jq(node).find("a:first").attr("href");
 						if (link === "#") return;
 					});
-					
-					// Hide the expand/collapse arows
-					jq("#saveTree .jstree-closed").removeClass("jstree-closed").addClass("jstree-open");
-					jq("#saveTree .jstree-open > ins").hide();
-					jq("#saveTree .jstree-closed > ins").hide();
+
 					jq("#genomeSpaceSaveDialog").parent().find(".ui-button:first").button("disable");
 				});
 		    </script>
