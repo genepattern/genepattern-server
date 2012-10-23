@@ -234,8 +234,8 @@ function saveModule()
     {
         //automatically include plugin that checks that the GP version is >= 3.4.2
 
-        var patchLSID = "urn:lsid:broad.mit.edu:cancer.software.genepattern.server.patch:000015:1";
-        var patchURL = "http://www.broad.mit.edu/webservices/gpModuleRepository/download/prod/patch/?file=/GenePattern_3_4_2/broad.mit.edu:cancer.software.genepattern.server.patch/00015/1/GenePattern_3_4_2.zip";
+        var patchLSID = "urn:lsid:broad.mit.edu:cancer.software.genepattern.server.patch:GenePattern_3_4_2:2";
+        var patchURL = "http://www.broad.mit.edu/webservices/gpModuleRepository/download/prod/patch/?file=/GenePattern_3_4_2/broad.mit.edu:cancer.software.genepattern.server.patch/GenePattern_3_4_2/2/GenePattern_3_4_2.zip";
 
         //first check if module has other plugins, if so then append to existing list of plugins
         if(module_editor.otherModAttrs["requiredPatchLSIDs"] != undefined
