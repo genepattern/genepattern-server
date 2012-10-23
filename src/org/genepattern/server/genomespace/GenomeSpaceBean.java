@@ -258,12 +258,21 @@ public class GenomeSpaceBean {
             return false;
         }
         
-        if (loggedIn == null) {
+        if (loggedIn != null && loggedIn) {
+            return true;
+        }
+        else {
             HttpSession httpSession = UIBeanHelper.getSession();
             Object gsSessionObj = httpSession.getAttribute(GenomeSpaceLoginManager.GS_SESSION_KEY);
-            loggedIn = GenomeSpaceClientFactory.getGenomeSpaceClient().isLoggedIn(gsSessionObj);
+            
+            if (gsSessionObj == null) {
+                return false;
+            }
+            else {
+                loggedIn = GenomeSpaceClientFactory.getGenomeSpaceClient().isLoggedIn(gsSessionObj);
+            }
         }
-        
+
         return loggedIn;
     }
     
