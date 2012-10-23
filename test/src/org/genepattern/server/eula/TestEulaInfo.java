@@ -14,6 +14,7 @@ public class TestEulaInfo {
     @Test
     public void testSetModuleLsid() {
         final String lsidIn="urn:lsid:9090.gpdev.gpint01:genepatternmodules:812:3";
+        final String nameIn="testLicenseAgreement";
         EulaInfo eula=new EulaInfo();
         try {
             eula.setModuleLsid(lsidIn);
@@ -21,9 +22,11 @@ public class TestEulaInfo {
         catch (EulaInitException e) {
             Assert.fail(e.getLocalizedMessage());
         }
+        eula.setModuleName(nameIn);
         Assert.assertEquals("eula.lsid.toString", lsidIn, eula.getLsid().toString());
         Assert.assertEquals("eula.moduleLsid", lsidIn, eula.getModuleLsid());
         Assert.assertEquals("eula.moduleLsidVersion", "3", eula.getModuleLsidVersion()); 
+        Assert.assertEquals("eula.moduleName", nameIn, eula.getModuleName());
     }
     
     @Test

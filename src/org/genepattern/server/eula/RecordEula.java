@@ -20,11 +20,11 @@ public interface RecordEula {
      * for example, when the 'Ok' button is clicked in the GUI.
      * 
      * @param userId, the user who accepted the agreement.
-     * @param lsid, the lsid of the module which requires the agreement.
+     * @param eula, the End-user license agreement for the module or pipeline.
      * 
      * @throws Exception
      */
-    void recordLicenseAgreement(String userId, String lsid) throws Exception;
+    void recordLicenseAgreement(String userId, EulaInfo eula) throws Exception;
     
     /**
      * This method is called before showing the module in a job submit form, and 

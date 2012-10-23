@@ -26,7 +26,11 @@ public class RecordEulaStub implements RecordEula {
     private RecordEulaStub() {
         //force singleton
     }
-    public void recordLicenseAgreement(final String userId, final String lsid) throws Exception {
+    public void recordLicenseAgreement(final String userId, final EulaInfo eula) throws Exception {
+        if (eula==null) {
+            throw new IllegalArgumentException("eula==null");
+        }
+        final String lsid = eula.getModuleLsid();
         final String uniq_key = lsid+"_"+userId;
         acceptedEulas.put(uniq_key, new Date());
     }

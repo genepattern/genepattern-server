@@ -23,13 +23,17 @@ public class RecordEulaToDb implements RecordEula {
         return userAgreementDate != null;
     } 
 
-    public void recordLicenseAgreement(final String userId, final String lsid) 
+    public void recordLicenseAgreement(final String userId, final EulaInfo eula) 
     throws Exception
     { 
+        if (eula==null) {
+            throw new IllegalArgumentException("eula==null");
+        }
         final boolean isInTransaction = HibernateUtil.isInTransaction();
 
         try {
             HibernateUtil.beginTransaction();
+            final String lsid=eula.getModuleLsid();
             Date userAgreementDate = getUserAgreementDate(userId, lsid);
             if (userAgreementDate != null) {
                 log.warn("Found duplicate record, userId="+userId+", lsid="+lsid+", date="+userAgreementDate);

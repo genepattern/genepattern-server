@@ -114,8 +114,8 @@ public class TestPostToBroad {
 
     @Test
     public void testNullEula() {
-        post.setEulaInfo(null);
         try {
+            post.setEulaInfo(null);
             post.postRemoteRecord();
             Assert.fail("eula==null, should throw IllegalArgumentException");
         }

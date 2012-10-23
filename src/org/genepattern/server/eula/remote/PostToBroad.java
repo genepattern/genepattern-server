@@ -76,7 +76,9 @@ public class PostToBroad {
     private String gpUrl=null;
     private String gp_user_id=null;
     private String email=null;
-    private EulaInfo eula=null;
+    private String task_name=null;
+    private String task_lsid=null;
+    //private EulaInfo eula=null;
     
     public void setRemoteUrl(final String url) {
         this.remoteUrl=url;
@@ -89,19 +91,33 @@ public class PostToBroad {
     public void setGpUserId(final String gpUserId) {
         this.gp_user_id=gpUserId;
     }
+
     public void setEmail(final String email) {
         this.email=email;
     }
+
     public void setEulaInfo(final EulaInfo eulaInfo) {
-        this.eula=eulaInfo;
+        if (eulaInfo==null) {
+            throw new IllegalArgumentException("eulaInfo==null");
+        }
+        this.task_name=eulaInfo.getModuleName();
+        this.task_lsid=eulaInfo.getModuleLsid();
+    }
+
+    public void setTaskName(final String taskName) {
+        this.task_name=taskName;
+    }
+
+    public void setTaskLsid(final String taskLsid) {
+        this.task_lsid=taskLsid;
     }
     
     private String getJson() throws JSONException {
         Map<String,String> map=new HashMap<String,String>();
         map.put("gp_user_id", gp_user_id);
-        map.put("task_lsid", eula.getModuleLsid());
-        if (isSet(eula.getModuleName())) {
-            map.put("task_name", eula.getModuleName());
+        map.put("task_lsid", task_lsid);
+        if (isSet(task_name)) {
+            map.put("task_name", task_name);
         }
         if (isSet(email)) {
             map.put("email", email);
@@ -132,11 +148,8 @@ public class PostToBroad {
         if (!isSet(gp_user_id)) {
             throw new IllegalArgumentException("gp_user_id not set");
         }
-        if (eula==null) {
-            throw new IllegalArgumentException("eula==null");
-        }
-        if (!isSet(eula.getModuleLsid())) {
-            throw new IllegalArgumentException("eula.moduleLsid not set");
+        if (!isSet(task_lsid)) {
+            throw new IllegalArgumentException("task_lsid not set");
         }
         if (!isSet(gpUrl)) {
             gpUrl=ServerConfiguration.instance().getGenePatternURL().toString();

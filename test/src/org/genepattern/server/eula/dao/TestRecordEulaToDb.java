@@ -119,7 +119,7 @@ public class TestRecordEulaToDb {
         }
 
         try {
-            recorder.recordLicenseAgreement(userId, eula.getModuleLsid());
+            recorder.recordLicenseAgreement(userId, eula);
         }
         catch (Exception e) {
             Assert.fail(""+e.getLocalizedMessage());
@@ -154,7 +154,7 @@ public class TestRecordEulaToDb {
         
         Date expectedDate=new Date(); //plus or minus a few ticks
         try {
-            recorder.recordLicenseAgreement(userId, eula.getModuleLsid());
+            recorder.recordLicenseAgreement(userId, eula);
         }
         catch (Throwable t) {
             Assert.fail("failed to record EULA: "+t.getLocalizedMessage());
@@ -343,7 +343,7 @@ public class TestRecordEulaToDb {
             Assert.fail("Failed in 1st call to hasUserAgreed: "+t.getLocalizedMessage());
         }
         try {
-            recorder.recordLicenseAgreement(userId, eula.getModuleLsid());
+            recorder.recordLicenseAgreement(userId, eula);
         }
         catch (Throwable t) {
             Assert.fail("Failed in 1st call to recordLicenseAgreement: "+t.getLocalizedMessage());
@@ -356,7 +356,7 @@ public class TestRecordEulaToDb {
             Assert.fail("Failed in 2nd call to hasUserAgreed: "+t.getLocalizedMessage());
         }
         try {
-            recorder.recordLicenseAgreement(userId, eula.getModuleLsid());
+            recorder.recordLicenseAgreement(userId, eula);
         }
         catch (Throwable t) {
             Assert.fail("Failed in 2nd (unnecessary) call to recordLicenseAgreement: "+t.getLocalizedMessage());
@@ -392,7 +392,7 @@ public class TestRecordEulaToDb {
 
         HibernateUtil.beginTransaction();
         try {
-            recorder.recordLicenseAgreement(userId, eula.getModuleLsid());
+            recorder.recordLicenseAgreement(userId, eula);
         }
         catch (Exception e) {
             Assert.fail("Unexpected exception in first call to recordLicenseAgreement: "+e.getLocalizedMessage());
@@ -428,7 +428,7 @@ public class TestRecordEulaToDb {
         Assert.assertFalse("hasUserAgreed", agreed);
         
         try {
-            recorder.recordLicenseAgreement(userId, eula.getModuleLsid());
+            recorder.recordLicenseAgreement(userId, eula);
             Assert.fail("recordLicenseAgreement should throw Exception when the userId is not in the DB");
         }
         catch (Exception e) {

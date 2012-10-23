@@ -63,7 +63,10 @@ public class EulaManagerImpl implements IEulaManager {
         //for debugging, the RecordEulaStub can be used
         //return RecordEulaStub.instance(); 
         //TODO: if necessary, remote record to external web service
-        return new RecordEulaToDb();
+        //option 1: local record, only
+        //return new RecordEulaToDb();
+        //option 2: local and remote record
+        return new RecordEulaDefault();
     }
     
     /**
@@ -144,7 +147,7 @@ public class EulaManagerImpl implements IEulaManager {
         for(EulaInfo eulaInfo : eulaInfos) {
             try {
                 RecordEula recordEula = getRecordEula(eulaInfo);
-                recordEula.recordLicenseAgreement(taskContext.getUserId(), eulaInfo.getModuleLsid());
+                recordEula.recordLicenseAgreement(taskContext.getUserId(), eulaInfo);
             }
             catch (Exception e) {
                 //TODO: report back to end user
