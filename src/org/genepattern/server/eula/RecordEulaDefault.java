@@ -14,7 +14,6 @@ public class RecordEulaDefault implements RecordEula {
     
     public RecordEulaDefault() {
         local=new RecordEulaToDb();
-        //remote=new RecordEulaToRemoteServer();
         remote=new RecordEulaToRemoteServerAsync();
     }
 
@@ -27,7 +26,6 @@ public class RecordEulaDefault implements RecordEula {
 
         //2) then post remote record
         remote.recordLicenseAgreement(userId, eula);
-        //RemoteRecordService.instance().post(userId, eula);
     }
 
     //@Override
