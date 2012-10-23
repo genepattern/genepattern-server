@@ -38,7 +38,8 @@ public class RecordEulaToRemoteServer implements RecordEula {
         if (eula==null) {
             throw new IllegalArgumentException("eula==null");
         }
-        //synchronous implementation
+        
+        //TODO: update status in local DB, something like 'add row to remote_eula { <user>, <lsid>, <remote_url>, <status=NOT_YET_RECORDED> }'
         PostToBroad action = new PostToBroad();
         action.setGpUserId(userId);
         action.setEulaInfo(eula);
@@ -50,8 +51,10 @@ public class RecordEulaToRemoteServer implements RecordEula {
         try {
             action.postRemoteRecord();
             log.debug("success");
+            //TODO: save status to local DB, something like 'delete from remote_eula { <user>, <lsid>, <remote_url> }'
         }
         catch (Throwable t) {
+            //TODO: save status to local DB, something like 'update remote_eula { <user>, <lsid>, <remote_url>, <date>, <status=ERROR>, <status_msg=> }'
             log.error("failed to record remote EULA for userId,lsid="+userId+","+eula.getModuleLsid(), t);
         }
     }
