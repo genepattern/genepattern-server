@@ -23,8 +23,8 @@ use, misuse, or functionality.
             	var moduleBaseLsid = "#{runTaskBean.lsidNoVersion}";
             	var highestVersion = #{runTaskBean.highestVersion};
                 if (versionPrompt) if (!highestVersion) {
-                	showDialog("Not Latest Version", 
-                			   "The version of the module you have chosen is not the latest version available on this server.  Would you like to use the latest version?", {
+                	showDialog("New Version Available", 
+                			   "The version of " + #{runTaskBean.name} + " you have chosen is not the latest version available on this server.  Would you like to use the latest version?", {
                         	   "Use Latest Version": function() {
                         		   self.location="/gp/pages/index.jsf?lsid=" + moduleBaseLsid;
                         	   },
