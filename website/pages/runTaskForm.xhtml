@@ -24,7 +24,7 @@ use, misuse, or functionality.
             	var highestVersion = #{runTaskBean.highestVersion};
                 if (versionPrompt) if (!highestVersion) {
                 	showDialog("New Version Available", 
-                			   "The version of " + #{runTaskBean.name} + " you have chosen is not the latest version available on this server.  Would you like to use the latest version?", {
+                			   "The version of " + "#{runTaskBean.name}" + " you have chosen is not the latest version available on this server.  Would you like to use the latest version?", {
                         	   "Use Latest Version": function() {
                         		   self.location="/gp/pages/index.jsf?lsid=" + moduleBaseLsid;
                         	   },
