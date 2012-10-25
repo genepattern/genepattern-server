@@ -140,6 +140,10 @@ public class RunTaskBean {
             log.error("Bad LSID:" + lsid, e);
         }
     }
+    
+    public boolean isHasDoc() {
+        return documentationFilenames.length > 0;
+    }
 
     public String[] getDocumentationFilenames() {
         return documentationFilenames;

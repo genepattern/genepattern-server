@@ -115,18 +115,20 @@ use, misuse, or functionality.
                                 </h:outputText>
                             </h:outputText>&#160;&#160;
                             <h:outputText rendered="#{runTaskBean.pipeline}">
-                                <a href="#{facesContext.externalContext.requestContextPath}/viewPipeline.jsp?name=#{runTaskBean.lsid}">properties</a>&#160;|&#160;<a onclick="exportPipeline('#{runTaskBean.lsid}', '#{runTaskBean.name}');" href="#">export</a>&#160;|&#160;
+                                <a href="#{facesContext.externalContext.requestContextPath}/viewPipeline.jsp?name=#{runTaskBean.lsid}">properties</a>&#160;|&#160;<a onclick="exportPipeline('#{runTaskBean.lsid}', '#{runTaskBean.name}');" href="#">export</a>
                                 <h:outputText rendered="#{runTaskBean.editAllowed}">
-                                    <a href="#{facesContext.externalContext.requestContextPath}/pipeline/index.jsf?lsid=#{runTaskBean.lsid}">edit</a>&#160;|&#160;
+                                    &#160;|&#160;<a href="#{facesContext.externalContext.requestContextPath}/pipeline/index.jsf?lsid=#{runTaskBean.lsid}">edit</a>
                                 </h:outputText>
                             </h:outputText>
                             <h:outputText rendered="#{!runTaskBean.pipeline}">
-                                <a href="#{facesContext.externalContext.requestContextPath}/addTask.jsp?name=#{runTaskBean.lsid}&#38;view=1">properties</a>&#160;|&#160;<a href="#{facesContext.externalContext.requestContextPath}/makeZip.jsp?name=#{runTaskBean.lsid}">export</a>&#160;|&#160;
+                                <a href="#{facesContext.externalContext.requestContextPath}/addTask.jsp?name=#{runTaskBean.lsid}&#38;view=1">properties</a>&#160;|&#160;<a href="#{facesContext.externalContext.requestContextPath}/makeZip.jsp?name=#{runTaskBean.lsid}">export</a>
                                 <h:panelGroup rendered="#{runTaskBean.editAllowed}">
-                                    <a href="#{facesContext.externalContext.requestContextPath}/modules/creator.jsf?lsid=#{runTaskBean.lsid}">edit</a>&#160;|&#160;
+                                    &#160;|&#160;<a href="#{facesContext.externalContext.requestContextPath}/modules/creator.jsf?lsid=#{runTaskBean.lsid}">edit</a>
                                 </h:panelGroup>
                             </h:outputText>
-                            <a target="_blank" href="#{facesContext.externalContext.requestContextPath}/getTaskDoc.jsp?name=#{runTaskBean.lsid}">help</a>
+                            <h:outputText rendered="#{runTaskBean.hasDoc}">
+                            	&#160;|&#160;<a target="_blank" href="#{facesContext.externalContext.requestContextPath}/getTaskDoc.jsp?name=#{runTaskBean.lsid}">documentation</a>
+                            </h:outputText>
                         </td>
                     </tr>
                     <!-- Loop through parameters -->
@@ -248,18 +250,20 @@ use, misuse, or functionality.
                                     </h:outputText>
                                 </h:outputText>
                                 <h:outputText rendered="#{runTaskBean.pipeline}">
-                                    <a href="#{facesContext.externalContext.requestContextPath}/viewPipeline.jsp?name=#{runTaskBean.lsid}">properties</a>&#160;|&#160;<a onclick="exportPipeline('#{runTaskBean.lsid}', '#{runTaskBean.name}');" href="#">export</a>&#160;|&#160;
+                                    <a href="#{facesContext.externalContext.requestContextPath}/viewPipeline.jsp?name=#{runTaskBean.lsid}">properties</a>&#160;|&#160;<a onclick="exportPipeline('#{runTaskBean.lsid}', '#{runTaskBean.name}');" href="#">export</a>
                                     <h:outputText rendered="#{runTaskBean.editAllowed}">
-                                        <a href="#{facesContext.externalContext.requestContextPath}/pipeline/index.jsf?lsid=#{runTaskBean.lsid}">edit</a>&#160;|&#160;
+                                        &#160;|&#160;<a href="#{facesContext.externalContext.requestContextPath}/pipeline/index.jsf?lsid=#{runTaskBean.lsid}">edit</a>
                                     </h:outputText>
                                 </h:outputText>
                                 <h:outputText rendered="#{!runTaskBean.pipeline}">
-                                    <a href="#{facesContext.externalContext.requestContextPath}/addTask.jsp?name=#{runTaskBean.lsid}&#38;view=1">properties</a>&#160;|&#160;<a href="#{facesContext.externalContext.requestContextPath}/makeZip.jsp?name=#{runTaskBean.lsid}">export</a>&#160;|&#160;
+                                    <a href="#{facesContext.externalContext.requestContextPath}/addTask.jsp?name=#{runTaskBean.lsid}&#38;view=1">properties</a>&#160;|&#160;<a href="#{facesContext.externalContext.requestContextPath}/makeZip.jsp?name=#{runTaskBean.lsid}">export</a>
                                     <h:panelGroup rendered="#{runTaskBean.editAllowed}">
-                                        <a href="#{facesContext.externalContext.requestContextPath}/modules/creator.jsf?lsid=#{runTaskBean.lsid}">edit</a>&#160;|&#160;
+                                        &#160;|&#160;<a href="#{facesContext.externalContext.requestContextPath}/modules/creator.jsf?lsid=#{runTaskBean.lsid}">edit</a>
                                     </h:panelGroup>
                                 </h:outputText>
-                                <a target="_blank" href="#{facesContext.externalContext.requestContextPath}/getTaskDoc.jsp?name=#{runTaskBean.lsid}">help</a>
+                                <h:outputText rendered="#{runTaskBean.hasDoc}">
+                            		&#160;|&#160;<a target="_blank" href="#{facesContext.externalContext.requestContextPath}/getTaskDoc.jsp?name=#{runTaskBean.lsid}">documentation</a>
+                            	</h:outputText>
                             </td>
                         </tr>
                     </h:outputText>
