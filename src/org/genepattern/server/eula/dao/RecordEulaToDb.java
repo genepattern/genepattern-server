@@ -73,7 +73,16 @@ public class RecordEulaToDb implements RecordEula {
         }
         return getUserAgreementDate(userId, eula.getModuleLsid());
     }
+    
     private Date getUserAgreementDate(final String userId, final String lsid) throws Exception {
+        EulaRecord eulaRecord = getEulaRecord(userId, lsid);
+        if (eulaRecord != null) {
+            return eulaRecord.getDateRecorded();
+        }
+        return null;
+    }
+    
+    private EulaRecord getEulaRecord(final String userId, final String lsid) throws Exception {
         if (lsid==null || lsid.length()==0) {
             throw new IllegalArgumentException("eula.lsid not set");
         }
@@ -109,7 +118,7 @@ public class RecordEulaToDb implements RecordEula {
                 //special-case, more than one record
                 log.error("Found multiple records in DB: "+records.size()+ "; userId="+userId+", lsid="+lsid+", Using first record");
             }
-            return records.get(0).getDateRecorded();
+            return records.get(0);
         }
         catch (Throwable t) {
             String errorMessage="DB error checking for eula record; userId="+userId+", lsid="+lsid;
@@ -122,4 +131,5 @@ public class RecordEulaToDb implements RecordEula {
             }
         }
     }
+
 }
