@@ -10,8 +10,8 @@ import javax.servlet.http.HttpServletRequest;
 import org.apache.log4j.Logger;
 import org.genepattern.server.config.ServerConfiguration.Context;
 import org.genepattern.server.eula.EulaInfo;
-import org.genepattern.server.eula.EulaInfo.EulaInitException;
 import org.genepattern.server.eula.EulaManager;
+import org.genepattern.server.eula.InitException;
 import org.genepattern.server.webservice.server.local.LocalAdminClient;
 import org.genepattern.util.GPConstants;
 import org.genepattern.util.LSID;
@@ -33,7 +33,7 @@ public class EulaTaskBean {
      * @author pcarr
      */
     static public class EulaInfoBean {
-        static EulaInfoBean from(EulaInfo eulaInfoObj) throws EulaInitException {
+        static EulaInfoBean from(EulaInfo eulaInfoObj) throws InitException {
             EulaInfoBean eulaInfo = new EulaInfoBean();
             eulaInfo.setLsid(eulaInfoObj.getModuleLsid());
             eulaInfo.setLsidVersion(eulaInfoObj.getModuleLsidVersion());
@@ -276,7 +276,7 @@ public class EulaTaskBean {
                         EulaInfoBean eulaInfoBean = EulaInfoBean.from(eulaInfoObj);
                         eulas.add(eulaInfoBean);
                     }
-                    catch (EulaInitException e) {
+                    catch (InitException e) {
                         String message="Error initializing EULA info";
                         if (eulaInfoObj != null) {
                             message += ", moduleName="+eulaInfoObj.getModuleName();
