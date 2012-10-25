@@ -139,8 +139,11 @@ public abstract class AbstractPipelineCodeGenerator {
         tia.put(GPConstants.JVM_LEVEL, "1.5");
         tia.put(GPConstants.VERSION, model.getVersion());
         tia.put(GPConstants.LSID, model.getLsid());
-        if (model.getLicense() != null && model.getLicense().length()>0) {
+        if (model.getLicense() != null && model.getLicense().length() > 0) {
             tia.put(GetEulaAsManifestProperty.LICENSE, model.getLicense());
+        }
+        if (model.getDocumentation() != null && model.getDocumentation().length() > 0) {
+            tia.put(GPConstants.TASK_DOC, model.getDocumentation());
         }
         return tia;
     }

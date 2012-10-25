@@ -20,6 +20,7 @@ import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.domain.TaskMaster;
 import org.genepattern.server.genepattern.GenePatternAnalysisTask;
 import org.genepattern.server.webservice.server.DirectoryManager;
+import org.genepattern.util.GPConstants;
 import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
@@ -31,7 +32,7 @@ import org.hibernate.StatelessSession;
  */
 public class TaskInfoCache {
     private static Logger log = Logger.getLogger(TaskInfoCache.class);
-
+    
     public static TaskInfoCache instance() {
         return Singleton.taskInfoCache;
     }
@@ -297,6 +298,16 @@ public class TaskInfoCache {
         return taskInfoArray;        
     }
     
+    private List<String> getDeclaredDoc(String lsid) {
+        TaskInfo info = this.getTask(lsid);
+        String doc = info.getTaskInfoAttributes().get(GPConstants.TASK_DOC);
+        if (doc == null) return null;
+        
+        List<String> docList = new ArrayList<String>();
+        docList.add(doc);
+        return docList;
+    }
+    
     /**
      * Get the documentation files for the given task.
      * The list of doc file names is cached, for modules with at least one doc file.
@@ -323,15 +334,19 @@ public class TaskInfoCache {
             return Collections.unmodifiableList(docFilenames);
         }
         
-        docFilenames = this.listDocFilenames(lsid);
+        docFilenames = this.getDeclaredDoc(lsid);
         
+        if (docFilenames == null) {
+            docFilenames = this.listDocFilenames(lsid);
+        }
+
         //don't cache empty lists, see javadoc for details
         if (enableCache && docFilenames != null && docFilenames.size() > 0) {
             taskDocFilenameCache.put(taskId, docFilenames);
         }
         
         if (docFilenames == null) {
-            log.error("unexpected null value in getDocFilenames for taskId="+taskId+", lsid="+lsid);
+            log.warn("unexpected null value in getDocFilenames for taskId="+taskId+", lsid="+lsid);
             docFilenames = Collections.emptyList();
         }
         

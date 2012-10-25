@@ -46,9 +46,6 @@ import org.apache.log4j.Logger;
 import org.genepattern.data.pipeline.JobSubmission;
 import org.genepattern.data.pipeline.PipelineModel;
 import org.genepattern.server.config.ServerConfiguration;
-import org.genepattern.server.config.ServerConfiguration.Context;
-import org.genepattern.server.eula.EulaInfo;
-import org.genepattern.server.eula.EulaManager;
 import org.genepattern.server.genepattern.TaskInstallationException;
 import org.genepattern.server.webapp.PipelineCreationHelper;
 import org.genepattern.server.webservice.server.DirectoryManager;
@@ -629,11 +626,19 @@ public class PipelineQueryServlet extends HttpServlet {
             try {
                 model = new PipelineModel();
                 model.setUserID(username); 
+                
                 // if there is a license, add it to the model
                 String license = pipelineObject.getLicense();
                 if (license != null && license.length() > 0) {
                     model.setLicense(license);
                 } 
+                
+                // if there is doc, add it to the model
+                String doc = pipelineObject.getDocumentation();
+                if (doc != null && doc.length() > 0) {
+                    model.setDocumentation(doc);
+                }
+                
                 setPipelineInfo(model, pipelineObject);
     
                 controller = new PipelineCreationHelper(model);
@@ -675,8 +680,6 @@ public class PipelineQueryServlet extends HttpServlet {
             // Create verified files list and purge unnecessary files
             FileCollection verifiedFiles = extractVerifiedFiles(newDir, pipelineObject, filesObject);
             purgeUnnecessaryFiles(newDir, verifiedFiles.getInternal());
-            
-            // TODO: Set documentation file once there's a way
             
             PipelineDesignerFile pdFile = new PipelineDesignerFile(newDir);
             pdFile.write(modulesList, verifiedFiles);

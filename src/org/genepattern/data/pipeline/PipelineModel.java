@@ -53,6 +53,7 @@ import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
 public class PipelineModel implements Serializable {
+    private static final long serialVersionUID = -3326360558619455159L;
     final static private Logger log = Logger.getLogger(PipelineModel.class);
 
     public static final String INHERIT_TASKNAME = "inheritTaskname";
@@ -76,6 +77,7 @@ public class PipelineModel implements Serializable {
     protected String version = null;
     protected String lsid = "";
     protected String license = null;
+    protected String documentation = null;
     protected IAdminClient adminClient = null;
 
     private IAdminClient getAdminClient() {
@@ -223,7 +225,15 @@ public class PipelineModel implements Serializable {
     }
     
     public void setLicense(final String license) {
-        this.license=license;
+        this.license = license;
+    }
+    
+    public String getDocumentation() {
+        return documentation;
+    }
+    
+    public void setDocumentation(final String documentation) {
+        this.documentation = documentation;
     }
 
     public void addTask(JobSubmission jobSubmission) {
