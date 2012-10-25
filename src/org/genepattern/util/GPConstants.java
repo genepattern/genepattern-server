@@ -90,6 +90,10 @@ public class GPConstants {
 
     public static final String REQUIRED_PATCH_LSIDS = "requiredPatchLSIDs";
 
+    public static final String LICENSE = "license";
+
+    public static final String TASK_DOC = "taskDoc";
+
     public static final String REQUIRED_PATCH_URLS = "requiredPatchURLs";
 
     public static final String INSTALLED_PATCH_LSIDS = "installedPatchLSIDs";
@@ -182,7 +186,7 @@ public class GPConstants {
      */
     public static final String[] TASK_INFO_ATTRIBUTES = { COMMAND_LINE, TASK_TYPE, CPU_TYPE, OS, JVM_LEVEL, LANGUAGE,
 	    VERSION, AUTHOR, USERID, PRIVACY, QUALITY, PIPELINE_SCRIPT, LSID, SERIALIZED_MODEL, FILE_FORMAT,
-	    REQUIRED_PATCH_LSIDS, REQUIRED_PATCH_URLS };
+	    REQUIRED_PATCH_LSIDS, REQUIRED_PATCH_URLS, LICENSE , TASK_DOC};
 
     public static final char PARAM_INFO_SPACER = '_'; // replace this
 
