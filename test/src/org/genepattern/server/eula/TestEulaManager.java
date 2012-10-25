@@ -9,7 +9,7 @@ import org.apache.log4j.Logger;
 import org.genepattern.junitutil.FileUtil;
 import org.genepattern.server.TaskUtil;
 import org.genepattern.server.config.ServerConfiguration.Context;
-import org.genepattern.server.eula.EulaInfo.EulaInitException;
+import org.genepattern.server.eula.InitException;
 import org.genepattern.webservice.TaskInfo;
 import org.junit.Assert;
 import org.junit.Test;
@@ -147,7 +147,7 @@ public class TestEulaManager {
             EulaInfo eulaIn=GetEulaFromTaskStub.initEulaInfo(taskInfo, licenseFile);
             stub.setEula(eulaIn, taskInfo);
         }
-        catch (EulaInitException e) {
+        catch (InitException e) {
             Assert.fail(""+e.getLocalizedMessage());
         }
 
@@ -170,7 +170,7 @@ public class TestEulaManager {
         try {
             Assert.assertEquals("eula.content", expectedContent, eula.getContent());
         }
-        catch (EulaInfo.EulaInitException e) {
+        catch (InitException e) {
             Assert.fail("EulaInfo.EulaInitException thrown in eula.getContent(): "+e.getLocalizedMessage());
         }
     }
@@ -686,7 +686,7 @@ public class TestEulaManager {
         try {
             eula=EulaManager.initEulaInfo(taskInfo, licenseFile);
         }
-        catch (EulaInitException e) {
+        catch (InitException e) {
             Assert.fail(""+e.getLocalizedMessage());
         } 
         EulaManager.instance(taskContext).setEula(eula, taskInfo);
@@ -724,7 +724,7 @@ public class TestEulaManager {
                 eulaInfos.add(eulaInfo);
             }
         }
-        catch (EulaInitException e) {
+        catch (InitException e) {
             Assert.fail(""+e.getLocalizedMessage());
         }
         stub.setEulas(eulaInfos, taskInfo);
@@ -753,7 +753,7 @@ public class TestEulaManager {
         try {
             Assert.assertEquals(pre+"content", expectedContent, eula.getContent());
         }
-        catch (EulaInfo.EulaInitException e) {
+        catch (InitException e) {
             Assert.fail(pre+"conent, error getting content: "+e.getLocalizedMessage());
         }
     }

@@ -2,7 +2,6 @@ package org.genepattern.server.eula;
 
 import java.io.File;
 
-import org.genepattern.server.eula.EulaInfo.EulaInitException;
 
 /**
  * This interface was created so that I can implement alternate ways to get the <libdir> for a 
@@ -24,6 +23,6 @@ public interface LibdirStrategy {
      * @return the path on the file system where the given task is installed. E.g.
      *     /Applications/GenePatternServer/taskLib/ComparativeMarkerSelection.4.12
      */
-    File getLibdir(String moduleLsid) throws EulaInitException;
+    File getLibdir(String moduleLsid) throws InitException;
 }
 

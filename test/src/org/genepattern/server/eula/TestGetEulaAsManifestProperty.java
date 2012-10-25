@@ -8,7 +8,7 @@ import junit.framework.Assert;
 
 import org.genepattern.junitutil.FileUtil;
 import org.genepattern.server.config.ServerConfiguration.Context;
-import org.genepattern.server.eula.EulaInfo.EulaInitException;
+import org.genepattern.server.eula.InitException;
 import org.genepattern.webservice.TaskInfo;
 import org.junit.After;
 import org.junit.Before;
@@ -47,7 +47,7 @@ public class TestGetEulaAsManifestProperty {
             EulaInfo eulaIn=GetEulaFromTaskStub.initEulaInfo(taskInfo, licenseFile);
             stub.setEula(eulaIn, taskInfo);
         }
-        catch (EulaInitException e) {
+        catch (InitException e) {
             Assert.fail(""+e.getLocalizedMessage());
         }
 
@@ -83,7 +83,7 @@ public class TestGetEulaAsManifestProperty {
             eulasIn.add(eulaIn1);
             stub.setEulas(eulasIn, taskInfo);
         }
-        catch (EulaInitException e) {
+        catch (InitException e) {
             Assert.fail(""+e.getLocalizedMessage());
         }
 

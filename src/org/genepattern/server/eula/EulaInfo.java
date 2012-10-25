@@ -27,15 +27,6 @@ import org.genepattern.webservice.TaskInfo;
 public class EulaInfo implements Comparable<EulaInfo> {
     final static private Logger log = Logger.getLogger(EulaInfo.class);
 
-    public static class EulaInitException extends Exception {
-        public EulaInitException(String message) {
-            super(message);
-        }
-        public EulaInitException(String message, Throwable t) {
-            super(message,t);
-        }
-    }
-    
     private static LibdirStrategy libdirImpl = null;
 
     public static void setLibdirStrategy(LibdirStrategy m) {
@@ -138,13 +129,13 @@ public class EulaInfo implements Comparable<EulaInfo> {
         this.license=licenseFile.getName();
         this.licenseFile=licenseFile;
     }
-    public void setModuleLsid(final String lsid) throws EulaInitException {
+    public void setModuleLsid(final String lsid) throws InitException {
         //Note: LSID constructor does not check for null or empty arg
         if (lsid==null) {
-            throw new EulaInitException("lsid==null");
+            throw new InitException("lsid==null");
         }
         if (lsid.length()==0) {
-            throw new EulaInitException("lsid not set");
+            throw new InitException("lsid not set");
         }
         try {
             theLsid = new LSID(lsid);
@@ -154,7 +145,7 @@ public class EulaInfo implements Comparable<EulaInfo> {
         }
         catch (MalformedURLException e) {
             log.error("Error computing lsidVersion from lsid string, lsid="+lsid, e);
-            throw new EulaInitException("Invalid moduleLsid="+lsid,e);
+            throw new InitException("Invalid moduleLsid="+lsid,e);
         } 
     }
     public String getModuleLsid() {
@@ -180,7 +171,7 @@ public class EulaInfo implements Comparable<EulaInfo> {
         return rel;
     }
     
-    public String getContent() throws EulaInitException {
+    public String getContent() throws InitException {
         if (!inited_content) {
             inited_content=true;
             this.content = initContent();
@@ -189,35 +180,35 @@ public class EulaInfo implements Comparable<EulaInfo> {
     }
     
     private boolean inited_content = false;
-    private String initContent() throws EulaInitException {
+    private String initContent() throws InitException {
         if (licenseFile == null) {
             licenseFile=initLicenseFile();
         }
         return initContentFromLicenseFile(licenseFile);
     }
-    private File initLicenseFile() throws EulaInitException {
+    private File initLicenseFile() throws InitException {
         if (license==null) {
-            throw new EulaInitException("license==null");
+            throw new InitException("license==null");
         }
         
         //need path to tasklib
         File tasklibDir=getLibdirStrategy().getLibdir(moduleLsid);
         File licenseFile = new File(tasklibDir, license);
         if (!licenseFile.exists()) {
-            throw new EulaInitException("licenseFile doesn't exist: "+licenseFile.getPath());
+            throw new InitException("licenseFile doesn't exist: "+licenseFile.getPath());
         }
         if (!licenseFile.canRead()) {
-            throw new EulaInitException("can't read license file: "+licenseFile.getPath());
+            throw new InitException("can't read license file: "+licenseFile.getPath());
         }
         return licenseFile;
     }
 
-    private String initContentFromLicenseFile(File licenseFile) throws EulaInitException {
+    private String initContentFromLicenseFile(File licenseFile) throws InitException {
         if (!licenseFile.exists()) {
-            throw new EulaInitException("licenseFile doesn't exist: "+licenseFile.getPath());
+            throw new InitException("licenseFile doesn't exist: "+licenseFile.getPath());
         }
         if (!licenseFile.canRead()) {
-            throw new EulaInitException("can't read license file: "+licenseFile.getPath());
+            throw new InitException("can't read license file: "+licenseFile.getPath());
         }
         //TODO: for future development: check to see if the licenseFile is a meta file, e.g. .eulaInfo.yaml
         //      which should be parsed into a license object

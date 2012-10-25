@@ -5,7 +5,7 @@ import java.util.Collections;
 import java.util.List;
 
 import org.apache.log4j.Logger;
-import org.genepattern.server.eula.EulaInfo.EulaInitException;
+import org.genepattern.server.eula.InitException;
 import org.genepattern.webservice.TaskInfo;
 
 /**
@@ -47,7 +47,7 @@ public class GetEulaAsManifestProperty implements GetEulaFromTask {
             try {
                 eula.setModuleLsid(taskInfo.getLsid());
             }
-            catch (EulaInitException e) {
+            catch (InitException e) {
                 log.error("Invalid taskInfo.lsid="+taskInfo.getLsid(),e);
             }
             eula.setModuleName(taskInfo.getName());

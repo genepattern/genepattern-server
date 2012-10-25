@@ -2,7 +2,7 @@ package org.genepattern.server.eula;
 
 import java.io.File;
 
-import org.genepattern.server.eula.EulaInfo.EulaInitException;
+import org.genepattern.server.eula.InitException;
 
 public class LibdirStub implements LibdirStrategy {
     private File libdir=new File("."); //default to current working directory
@@ -11,7 +11,7 @@ public class LibdirStub implements LibdirStrategy {
     }
 
     //@Override
-    public File getLibdir(final String moduleLsid) throws EulaInitException {
+    public File getLibdir(final String moduleLsid) throws InitException {
         return libdir;
     }
 }

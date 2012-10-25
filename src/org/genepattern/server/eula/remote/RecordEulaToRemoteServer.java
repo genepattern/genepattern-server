@@ -1,11 +1,14 @@
 package org.genepattern.server.eula.remote;
 
+import java.io.IOException;
 import java.util.Date;
 
 import org.apache.log4j.Logger;
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.eula.EulaInfo;
 import org.genepattern.server.eula.RecordEula;
+import org.genepattern.server.eula.InitException;
+import org.genepattern.server.eula.remote.PostToBroad.PostException;
 import org.genepattern.server.user.User;
 import org.genepattern.server.user.UserDAO;
 
@@ -32,14 +35,27 @@ public class RecordEulaToRemoteServer implements RecordEula {
         }
         return "";
     }
+    
+    private void beforePost() {
+        //TODO: if necessary, add row to remote_eula_queue { <user>, <lsid>, <remote_url>, <date_added=now>, <status=NOT_YET_RECORDED> }'
+    }
+    
+    private void afterPost(final boolean success, final String errorMessage) {
+        if (success) {
+           //TODO: save status to local DB, something like 'delete from remote_eula_queue { <user>, <lsid>, <remote_url> }'
+        }
+        //TODO: add logging event to DB, something like 'insert into remote_eula_log { <user>, <lsid>, <remote_url>, <date>, <status>, <message> }'
+    }
 
     //@Override
-    public void recordLicenseAgreement(final String userId, final EulaInfo eula) throws Exception {
+    public void recordLicenseAgreement(final String userId, final EulaInfo eula) {
         if (eula==null) {
             throw new IllegalArgumentException("eula==null");
         }
         
-        //TODO: update status in local DB, something like 'add row to remote_eula { <user>, <lsid>, <remote_url>, <status=NOT_YET_RECORDED> }'
+        
+        beforePost();
+        
         PostToBroad action = new PostToBroad();
         action.setGpUserId(userId);
         action.setEulaInfo(eula);
@@ -48,15 +64,33 @@ public class RecordEulaToRemoteServer implements RecordEula {
             action.setEmail(email);
         }
         //Note: gpUrl is initialized in PostToBroad
+        
+        boolean success=false;
+        String errorMessage=null;
         try {
-            action.postRemoteRecord();
+            action.doPost();
+            success=true;
             log.debug("success");
-            //TODO: save status to local DB, something like 'delete from remote_eula { <user>, <lsid>, <remote_url> }'
+         }
+        catch (InitException e) {
+            errorMessage=e.getLocalizedMessage();
+            log.error(e);
         }
-        catch (Throwable t) {
+        catch (IOException e) {
+            errorMessage=e.getLocalizedMessage();
+            log.error(e);
+        }
+        catch (PostException e) {
+            errorMessage=e.getLocalizedMessage();
+            log.error(e);
+            //also, record this to the DB
+        }
+        //catch (Throwable t) {
             //TODO: save status to local DB, something like 'update remote_eula { <user>, <lsid>, <remote_url>, <date>, <status=ERROR>, <status_msg=> }'
-            log.error("failed to record remote EULA for userId,lsid="+userId+","+eula.getModuleLsid(), t);
-        }
+            //log.error("failed to record remote EULA for userId,lsid="+userId+","+eula.getModuleLsid(), t);
+        //}
+        
+        afterPost(success, errorMessage);
     }
 
     //@Override

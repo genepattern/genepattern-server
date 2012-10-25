@@ -2,7 +2,7 @@ package org.genepattern.server.eula;
 
 import junit.framework.Assert;
 
-import org.genepattern.server.eula.EulaInfo.EulaInitException;
+import org.genepattern.server.eula.InitException;
 import org.junit.Test;
 
 /**
@@ -19,7 +19,7 @@ public class TestEulaInfo {
         try {
             eula.setModuleLsid(lsidIn);
         }
-        catch (EulaInitException e) {
+        catch (InitException e) {
             Assert.fail(e.getLocalizedMessage());
         }
         eula.setModuleName(nameIn);
@@ -36,7 +36,7 @@ public class TestEulaInfo {
             eula.setModuleLsid(null);
             Assert.fail("setModuleLsid(null) should throw exception");
         }
-        catch (EulaInitException e) {
+        catch (InitException e) {
             //expected
         }
     }
@@ -48,7 +48,7 @@ public class TestEulaInfo {
             eula.setModuleLsid("");
             Assert.fail("setModuleLsid(\"\") should throw exception");
         }
-        catch (EulaInitException e) {
+        catch (InitException e) {
             //expected
         }
     }
@@ -60,7 +60,7 @@ public class TestEulaInfo {
             eula.setModuleLsid("this is not an lsid");
             Assert.fail("setModuleLsid(\"\") should throw exception");
         }
-        catch (EulaInitException e) {
+        catch (InitException e) {
             //expected
         }
     }

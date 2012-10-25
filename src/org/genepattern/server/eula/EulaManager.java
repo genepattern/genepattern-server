@@ -4,7 +4,7 @@ import java.io.File;
 
 import org.genepattern.server.config.ServerConfiguration;
 import org.genepattern.server.config.ServerConfiguration.Context;
-import org.genepattern.server.eula.EulaInfo.EulaInitException;
+import org.genepattern.server.eula.InitException;
 import org.genepattern.webservice.TaskInfo;
 
 public class EulaManager {
@@ -36,12 +36,12 @@ public class EulaManager {
      * @return
      * @throws EulaInitException if the taskInfo is null, or has an invalid LSID
      */
-    final static public EulaInfo initEulaInfo(final TaskInfo taskInfo, final File licenseFile) throws EulaInitException {
+    final static public EulaInfo initEulaInfo(final TaskInfo taskInfo, final File licenseFile) throws InitException {
         if (taskInfo==null) {
-            throw new EulaInitException("taskInfo==null");
+            throw new InitException("taskInfo==null");
         }
         if (licenseFile==null) {
-            throw new EulaInitException("licenseFile==null");
+            throw new InitException("licenseFile==null");
         }
         EulaInfo eula = new EulaInfo();
         eula.setModuleLsid(taskInfo.getLsid());

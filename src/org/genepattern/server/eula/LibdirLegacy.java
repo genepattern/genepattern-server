@@ -3,7 +3,7 @@ package org.genepattern.server.eula;
 import java.io.File;
 
 import org.apache.log4j.Logger;
-import org.genepattern.server.eula.EulaInfo.EulaInitException;
+import org.genepattern.server.eula.InitException;
 import org.genepattern.server.webservice.server.DirectoryManager;
 
 /**
@@ -18,7 +18,7 @@ public class LibdirLegacy implements LibdirStrategy {
     final static private Logger log = Logger.getLogger(LibdirLegacy.class);
 
     //@Override
-    public File getLibdir(final String moduleLsid) throws EulaInitException {
+    public File getLibdir(final String moduleLsid) throws InitException {
         File tasklibDir = null;
         //TODO: implement safer method, e.g. File tasklibDir = DirectoryManager.getTaskLibDirFromCache(moduleLsid);
         //    getLibDir automatically creates a directory on the file system; it's possible to cause problems if there is bogus input
@@ -30,7 +30,7 @@ public class LibdirLegacy implements LibdirStrategy {
         }
         catch (Throwable t) {
             log.error("Error getting libdir for moduleLsid="+moduleLsid+": "+t.getLocalizedMessage(), t);
-            throw new EulaInitException("Error getting libdir for moduleLsid="+moduleLsid+": "+t.getLocalizedMessage());
+            throw new InitException("Error getting libdir for moduleLsid="+moduleLsid+": "+t.getLocalizedMessage());
         }
         return tasklibDir;
     }

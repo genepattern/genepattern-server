@@ -9,7 +9,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
-import org.genepattern.server.eula.EulaInfo.EulaInitException;
+import org.genepattern.server.eula.InitException;
 import org.genepattern.webservice.TaskInfo;
 
 /**
@@ -29,7 +29,7 @@ public class GetEulaFromTaskStub implements GetEulaFromTask {
      * @return
      * @throws EulaInitException
      */
-    final static public EulaInfo initEulaInfo(final TaskInfo taskInfo, final File licenseFile) throws EulaInitException {
+    final static public EulaInfo initEulaInfo(final TaskInfo taskInfo, final File licenseFile) throws InitException {
         EulaInfo eula = new EulaInfo();
         eula.setModuleLsid(taskInfo.getLsid());
         eula.setModuleName(taskInfo.getName());

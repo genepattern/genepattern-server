@@ -1,8 +1,10 @@
 package org.genepattern.server.eula.remote;
 
+import java.io.IOException;
+
 import org.genepattern.server.eula.EulaInfo;
-import org.genepattern.server.eula.EulaInfo.EulaInitException;
-import org.genepattern.server.eula.remote.PostToBroad.MyException;
+import org.genepattern.server.eula.InitException;
+import org.genepattern.server.eula.remote.PostToBroad.PostException;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.Assert;
@@ -17,7 +19,7 @@ public class TestPostToBroad {
     
 
     @Before
-    public void setUp() throws EulaInitException {
+    public void setUp() throws InitException {
         eulaInfo=new EulaInfo();
         eulaInfo.setModuleLsid(lsidIn);
         eulaInfo.setModuleName(nameIn);
@@ -30,7 +32,7 @@ public class TestPostToBroad {
     @Test
     public void integrationTest() {
         try {
-            post.postRemoteRecord();
+            post.doPost();
         }
         catch (Throwable t) {
             Assert.fail(""+t.getLocalizedMessage());
@@ -42,10 +44,10 @@ public class TestPostToBroad {
     public void testNullRemoteUrl() {
         post.setRemoteUrl(null);
         try {
-            post.postRemoteRecord();
-            Assert.fail("user==null, should throw IllegalArgumentException");
+            post.doPost();
+            Assert.fail("user==null, should throw InitException");
         }
-        catch (IllegalArgumentException e) {
+        catch (InitException e) {
             //expected
         }
         catch (Throwable t) {
@@ -57,10 +59,10 @@ public class TestPostToBroad {
     public void testRemoteUrl_NotSet() {
         post.setRemoteUrl("");
         try {
-            post.postRemoteRecord();
-            Assert.fail("user==null, should throw IllegalArgumentException");
+            post.doPost();
+            Assert.fail("user==null, should throw InitException");
         }
-        catch (IllegalArgumentException e) {
+        catch (InitException e) {
             //expected
         }
         catch (Throwable t) {
@@ -73,7 +75,7 @@ public class TestPostToBroad {
         //a bogus url, not a valid URL
         post.setRemoteUrl("<RemoteServer>");
         try {
-            post.postRemoteRecord();
+            post.doPost();
             Assert.fail("user==null, should throw IllegalArgumentException");
         }
         catch (IllegalArgumentException e) {
@@ -89,11 +91,30 @@ public class TestPostToBroad {
         //should cause a connection error, because this is a valid URL to a host which is not running
         post.setRemoteUrl("http://127.0.0.1:10000");
         try {
-            post.postRemoteRecord();
-            Assert.fail("user==null, should throw IllegalArgumentException");
+            post.doPost();
+            Assert.fail("user==null, should throw IOException");
         }
-        catch (MyException e) {
+        catch (IOException e) {
             //expected
+        }
+        catch (Throwable t) {
+            Assert.fail("unexpected exception thrown: "+t.getLocalizedMessage());
+        }
+    }
+    
+    @Test
+    public void testRemoteException() {
+        //should cause a connection error, because the Google server doesn't know 
+        //how to handle this POST
+        post.setRemoteUrl("http://www.google.com");
+        try {
+            post.doPost();
+            Assert.fail("user==null, should throw IOException");
+        }
+        catch (PostException e) {
+            //expected
+            Assert.assertTrue("Expecting a 4xx status code", 400<=e.getStatusCode() && e.getStatusCode()<500);
+            Assert.assertEquals("", "Method Not Allowed", e.getReason());
         }
         catch (Throwable t) {
             Assert.fail("unexpected exception thrown: "+t.getLocalizedMessage());
@@ -102,12 +123,22 @@ public class TestPostToBroad {
 
     @Test
     public void testNullUserId() {
-        post.setGpUserId(null);
         try {
-            post.postRemoteRecord();
-            Assert.fail("user==null, should throw IllegalArgumentException");
+            post.setGpUserId(null);
+            Assert.fail("userId==null, should throw IllegalArgumentException");
         }
-        catch (Throwable t) {
+        catch (IllegalArgumentException e) {
+            //expected
+        }
+    }
+
+    @Test
+    public void testUserId_NotSet() {
+        try {
+            post.setGpUserId("");
+            Assert.fail("userId==\"\", should throw IllegalArgumentException");
+        }
+        catch (IllegalArgumentException e) {
             //expected
         }
     }
@@ -116,11 +147,11 @@ public class TestPostToBroad {
     public void testNullEula() {
         try {
             post.setEulaInfo(null);
-            post.postRemoteRecord();
             Assert.fail("eula==null, should throw IllegalArgumentException");
         }
-        catch (Throwable t) {
+        catch (IllegalArgumentException e) {
             //expected
         }
     }
+    
 }

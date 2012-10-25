@@ -6,6 +6,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.http.HttpResponse;
+
+import org.genepattern.server.eula.InitException;
 import org.apache.http.StatusLine;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpPost;
@@ -52,9 +54,30 @@ ruby > response = RestClient.post
 public class PostToBroad {
     final static private Logger log = Logger.getLogger(PostToBroad.class);
 
-    static class MyException extends Exception {
-        public MyException(String s) {
-            super(s);
+    /**
+     * The remote server responded with an HTTP response code indicating that it failed to 
+     * record the eula.
+     * 
+     * Use the following response codes to indicate success: 200, 201, or 422.
+     * 
+     * @author pcarr
+     */
+    static class PostException extends Exception {
+        private int statusCode;
+        private String reason;
+
+        public PostException(StatusLine status) {
+            super("HTTP "+status.getStatusCode()+": "+status.getReasonPhrase());
+            this.statusCode=status.getStatusCode();
+            this.reason=status.getReasonPhrase();
+        }
+        
+        public int getStatusCode() {
+            return statusCode;
+        }
+
+        public String getReason() {
+            return reason;
         }
     }
     
@@ -68,56 +91,70 @@ public class PostToBroad {
         return true;
     }
 
-    //the URL of the remote server, to where we record the eula agreements, 
-    //    by default it is hosted at the Broad Institute
     private String remoteUrl="http://vgpweb01.broadinstitute.org:3000/eulas";
-
-    //the URL if this gp server, it's stored as a column in the remote DB
     private String gpUrl=null;
     private String gp_user_id=null;
     private String email=null;
-    private String task_name=null;
-    private String task_lsid=null;
-    //private EulaInfo eula=null;
+    private EulaInfo eula=null;
     
+    /**
+     * The URL of the service to where we POST the eula agreement.
+     * By default, it is hosted at the Broad Institute.
+     * 
+     * @param url
+     */
     public void setRemoteUrl(final String url) {
         this.remoteUrl=url;
     }
     
+    /**
+     * the URL off this gp server, it's stored as a column in the remote DB
+     * @param url
+     */
     public void setGpUrl(final String url) {
         this.gpUrl=url;
     }
 
+    /**
+     * The GenePattern userId of the user who accepted the EULA.
+     * 
+     * @param gpUserId
+     */
     public void setGpUserId(final String gpUserId) {
+        if (!isSet(gpUserId)) {
+            throw new IllegalArgumentException("userId not set: "+gpUserId);
+        }
         this.gp_user_id=gpUserId;
     }
 
+    /**
+     * Optionally, set the email address of the user who accepted the EULA.
+     * 
+     * @param email
+     */
     public void setEmail(final String email) {
         this.email=email;
     }
 
+    /**
+     * The eula details, which must include a valid moduleLsid.
+     * Optionally, send the moduleName.
+     * 
+     * @param eulaInfo
+     */
     public void setEulaInfo(final EulaInfo eulaInfo) {
         if (eulaInfo==null) {
             throw new IllegalArgumentException("eulaInfo==null");
         }
-        this.task_name=eulaInfo.getModuleName();
-        this.task_lsid=eulaInfo.getModuleLsid();
-    }
-
-    public void setTaskName(final String taskName) {
-        this.task_name=taskName;
-    }
-
-    public void setTaskLsid(final String taskLsid) {
-        this.task_lsid=taskLsid;
+        this.eula=eulaInfo;
     }
     
     private String getJson() throws JSONException {
         Map<String,String> map=new HashMap<String,String>();
         map.put("gp_user_id", gp_user_id);
-        map.put("task_lsid", task_lsid);
-        if (isSet(task_name)) {
-            map.put("task_name", task_name);
+        map.put("task_lsid", eula.getModuleLsid());
+        if (isSet(eula.getModuleName())) {
+            map.put("task_name", eula.getModuleName());
         }
         if (isSet(email)) {
             map.put("email", email);
@@ -134,22 +171,21 @@ public class PostToBroad {
     }
     
     /**
-     * Use Apache HttpComponents library (http://hc.apache.org/).
+     * POST the eula to the remote server. Use Apache HttpComponents library (http://hc.apache.org/).
      * 
-     * @throws Exception when,
-     *      a) initialization errors, in GP server code, before making POST to remote server, or
-     *      b) IOExceptions thrown during the POST
-     *      c) anything other than a 2xx or 422 (duplicate) response code after the POST
+     * @throws InitException, when there are initialization errors in the GP server before POSTing to remote server
+     * @throws IOException, when there are IO errors during the POST to the remote server
+     * @throws PostException, if the remote server returns an error
      */
-    public void postRemoteRecord() throws IllegalArgumentException, MyException {  
+    public void doPost() throws InitException, IOException, PostException {  
         if (!isSet(remoteUrl)) {
-            throw new IllegalArgumentException("remoteUrl not set");
+            throw new InitException("remoteUrl not set");
         }
         if (!isSet(gp_user_id)) {
-            throw new IllegalArgumentException("gp_user_id not set");
+            throw new InitException("gp_user_id not set");
         }
-        if (!isSet(task_lsid)) {
-            throw new IllegalArgumentException("task_lsid not set");
+        if (!isSet(eula.getModuleLsid())) {
+            throw new InitException("task_lsid not set");
         }
         if (!isSet(gpUrl)) {
             gpUrl=ServerConfiguration.instance().getGenePatternURL().toString();
@@ -160,7 +196,7 @@ public class PostToBroad {
         }
         catch (JSONException e) {
             log.error(e);
-            throw new MyException("Internal error formatting json for record: "+e.getLocalizedMessage());
+            throw new InitException("Internal error saving to json: "+e.getLocalizedMessage());
         }
         StringEntity entity=null; 
         try {
@@ -168,7 +204,7 @@ public class PostToBroad {
         }
         catch (UnsupportedEncodingException e) {
             log.error(e);
-            throw new MyException("Internal error intializing entity for record: "+e.getLocalizedMessage());
+            throw new InitException("Internal error intializing entity for POST: "+e.getLocalizedMessage());
         }
         entity.setContentType("application/json");
         HttpPost httppost = new HttpPost(remoteUrl);
@@ -182,7 +218,7 @@ public class PostToBroad {
         }
         catch (IOException e) {
             log.error(e);
-            throw new MyException(": "+e.getLocalizedMessage());
+            throw e;
         }
         StatusLine status=response.getStatusLine();
         final int code=status.getStatusCode();
@@ -196,6 +232,7 @@ public class PostToBroad {
             return;
         }
         log.debug("remote server error: "+code+": "+status.getReasonPhrase());
-        throw new MyException("remote server error: "+code+": "+status.getReasonPhrase());
+        PostException e = new PostException(status);
+        throw e;
     }
 }

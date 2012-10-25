@@ -7,7 +7,7 @@ import org.genepattern.server.UserAccountManager;
 import org.genepattern.server.auth.AuthenticationException;
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.eula.EulaInfo;
-import org.genepattern.server.eula.EulaInfo.EulaInitException;
+import org.genepattern.server.eula.InitException;
 import org.genepattern.server.eula.RecordEula;
 import org.genepattern.server.eula.dao.RecordEulaToDb;
 import org.junit.Assert;
@@ -63,7 +63,7 @@ public class TestRecordEulaToDb {
         try {
             eula.setModuleLsid(lsid);
         }
-        catch (EulaInitException e) {
+        catch (InitException e) {
             Assert.fail(e.getLocalizedMessage());
         }
         eula.setLicense("license.txt");
@@ -265,9 +265,9 @@ public class TestRecordEulaToDb {
         final EulaInfo eula = new EulaInfo();
         try {
             eula.setModuleLsid("testLicenseAgreement");  //it's not an LSID
-            Assert.fail("eula.setModuleLsid(\"testLicenseAgreement\") should throw EulaInitException. It's not a valid LSID");
+            Assert.fail("eula.setModuleLsid(\"testLicenseAgreement\") should throw InitException. It's not a valid LSID");
         }
-        catch (EulaInitException e) {
+        catch (InitException e) {
             //expected
         }
     }
