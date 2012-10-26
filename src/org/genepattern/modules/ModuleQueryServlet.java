@@ -343,6 +343,13 @@ public class ModuleQueryServlet extends HttpServlet
 
     private void addLicensePlugin(TaskInfoAttributes tia)
     {
+        //TODO: remove these lines, they are here for debugging
+        boolean ignore=true;  
+        if (ignore) {
+            log.error("addLicensePlugin not implemented");
+            return;
+        }
+        
         String patchLSID = "urn:lsid:broad.mit.edu:cancer.software.genepattern.server.patch:GenePattern_3_4_2:2";
         String patchURL = "http://www.broad.mit.edu/webservices/gpModuleRepository/download/prod/patch/?file=/GenePattern_3_4_2/broad.mit.edu:cancer.software.genepattern.server.patch/GenePattern_3_4_2/2/GenePattern_3_4_2.zip";
 
@@ -372,6 +379,13 @@ public class ModuleQueryServlet extends HttpServlet
 
     private void removeLicensePlugin(TaskInfoAttributes tia)
     {
+        //TODO: remove these lines, they are here for debugging
+        boolean ignore=true;  
+        if (ignore) {
+            log.error("removeLicensePlugin not implemented");
+            return;
+        }
+
         String patchLSID = "urn:lsid:broad.mit.edu:cancer.software.genepattern.server.patch:GenePattern_3_4_2:2";
         String patchURL = "http://www.broad.mit.edu/webservices/gpModuleRepository/download/prod/patch/?file=/GenePattern_3_4_2/broad.mit.edu:cancer.software.genepattern.server.patch/GenePattern_3_4_2/2/GenePattern_3_4_2.zip";
 
