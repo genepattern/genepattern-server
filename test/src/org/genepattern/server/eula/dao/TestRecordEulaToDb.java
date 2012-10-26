@@ -1,6 +1,7 @@
 package org.genepattern.server.eula.dao;
 
 import java.util.Date;
+import java.util.List;
 
 import org.genepattern.junitutil.DbUtil;
 import org.genepattern.server.UserAccountManager;
@@ -101,7 +102,7 @@ public class TestRecordEulaToDb {
 
     /**
      * Integration test which covers the basic usage scenario. An initial check
-     * for record of eula (should be false), following by record of euls (should update db),
+     * for record of eula (should be false), following by record of eula (should update db),
      * followed by another check (should be true).
      */
     @Test
@@ -436,4 +437,198 @@ public class TestRecordEulaToDb {
         }
     }
     
+    
+    //remote record tests
+    @Test
+    public void testAddToRemoteQueue() {
+        final String remoteUrl="http://vgpweb01.broadinstitute.org:3000/eulas";
+        final EulaInfo eula = init("urn:lsid:8080.gp-trunk-dev.120.0.0.1:genepatternmodules:303:5");
+        //warning: can't use the same user id as another test, because we are running against the same DB for all tests
+        final String userId=addUser("test_05");
+        RecordEulaToDb recorder = new RecordEulaToDb();
+        try {
+            recorder.recordLicenseAgreement(userId, eula);
+        }
+        catch (Throwable t) {
+            Assert.fail("Error setting up test: "+t.getLocalizedMessage());
+        }
+        
+
+        List<EulaRemoteQueue> entries=null;
+        Date expectedDate=new Date(); //plus or minus a few ticks
+        try {
+            recorder.addToRemoteQueue(userId, eula, remoteUrl);
+            entries=recorder.getQueueEntries(userId, eula, remoteUrl);
+        }
+        catch (Exception e) {
+            Assert.fail(""+e.getLocalizedMessage());
+        }
+        
+        Assert.assertNotNull("entries", entries);
+        Assert.assertEquals("num entries", 1, entries.size());
+        EulaRemoteQueue rval = entries.get(0);
+        Assert.assertEquals("rval[0].remoteUrl", remoteUrl, rval.getRemoteUrl());
+        Assert.assertEquals("rval[0].recorded", false, rval.getRecorded());
+        assertDateEquals("rval[0].date", expectedDate, rval.getDateRecorded());
+        Assert.assertEquals("rval[0].numAttempts", 0, rval.getNumAttempts());
+        
+        //what happens when we try to add the same entry?
+        try {
+            recorder.addToRemoteQueue(userId, eula, remoteUrl);
+            entries=recorder.getQueueEntries(userId, eula, remoteUrl);
+        }
+        catch (Exception e) {
+            Assert.fail(""+e.getLocalizedMessage());
+        }
+        rval = entries.get(0);
+        Assert.assertEquals("rval[0].remoteUrl", remoteUrl, rval.getRemoteUrl());
+        Assert.assertEquals("rval[0].recorded", false, rval.getRecorded());
+        assertDateEquals("rval[0].date", expectedDate, rval.getDateRecorded());
+        Assert.assertEquals("rval[0].numAttempts", 0, rval.getNumAttempts());
+    }
+    
+    @Test
+    public void testRemoveFromRemoteQueue() {
+        final String remoteUrl="http://vgpweb01.broadinstitute.org:3000/eulas";
+        final EulaInfo eula = init("urn:lsid:8080.gp-trunk-dev.120.0.0.1:genepatternmodules:303:5");
+        //warning: can't use the same user id as another test, because we are running against the same DB for all tests
+        final String userId=addUser("test_06");
+        List<EulaRemoteQueue> entries=null;
+        RecordEulaToDb recorder = new RecordEulaToDb();
+        try {
+            recorder.recordLicenseAgreement(userId, eula);
+            recorder.addToRemoteQueue(userId, eula, remoteUrl);
+            entries=recorder.getQueueEntries(userId, eula, remoteUrl);
+        }
+        catch (Throwable t) {
+            Assert.fail("Error setting up test: "+t.getLocalizedMessage());
+        }
+        
+        Assert.assertEquals("expecting 1 record initially", 1, entries.size());
+        
+        //now remove the record
+        try {
+            recorder.removeFromQueue(userId, eula, remoteUrl);
+        }
+        catch (Exception e) {
+            Assert.fail(""+e.getLocalizedMessage());
+        }
+        
+        try {
+            entries=recorder.getQueueEntries(userId, eula, remoteUrl);
+        }
+        catch (Exception e) {
+            Assert.fail("error validating test results: "+e.getLocalizedMessage());
+        }
+        
+        Assert.assertEquals("expecting 0 entries after removing record from queue", 0, entries.size());
+    }
+    
+    /**
+     * should throw an exception if there is no entry in the 'eula_record' table.
+     */
+    @Test
+    public void testAddToRemoteQueue_UserHasNotAgreed() {
+        final EulaInfo eula = init("urn:lsid:8080.gp-trunk-dev.120.0.0.1:genepatternmodules:303:5");
+        //user_04 hasn't agreed
+        final String userId=addUser("test_04");
+        final String remoteUrl="http://vgpweb01.broadinstitute.org:3000/eulas";
+        
+        List<EulaRemoteQueue> entries=null;
+        RecordEulaToDb recorder = new RecordEulaToDb();
+        try {
+            recorder.addToRemoteQueue(userId, eula, remoteUrl);
+            Assert.fail("addToQueue should throw an exception, if the user has not agreed");
+        }
+        catch (Exception e) {
+            //expected
+        }
+    }
+    
+    @Test
+    public void testUpdateRemoteQueue() {
+        final String remoteUrl="http://vgpweb01.broadinstitute.org:3000/eulas";
+        final EulaInfo eula = init("urn:lsid:8080.gp-trunk-dev.120.0.0.1:genepatternmodules:303:5");
+        //warning: can't use the same user id as another test, because we are running against the same DB for all tests
+        final String userId=addUser("test_07");
+        List<EulaRemoteQueue> entries=null;
+        RecordEulaToDb recorder = new RecordEulaToDb();
+        try {
+            recorder.recordLicenseAgreement(userId, eula);
+            recorder.addToRemoteQueue(userId, eula, remoteUrl);
+            entries=recorder.getQueueEntries(userId, eula, remoteUrl);
+        }
+        catch (Throwable t) {
+            Assert.fail("Error setting up test: "+t.getLocalizedMessage());
+        }
+        
+        Assert.assertEquals("expecting 1 record initially", 1, entries.size());
+        
+        //for debugging, to force the matter, let's wait a bit
+        //try {
+        //    Thread.sleep(5000);
+        //}
+        //catch (InterruptedException e) {
+        //    Assert.fail("test thread interrupted");
+        //    Thread.currentThread().interrupt();
+        //}
+
+        //now update the record
+        Date expectedDate=new Date();
+        try {
+            //first, a failed attempt
+            recorder.updateRemoteQueue(userId, eula, remoteUrl, false);
+        }
+        catch (Exception e) {
+            Assert.fail(""+e.getLocalizedMessage());
+        }
+        
+        try {
+            entries=recorder.getQueueEntries(userId, eula, remoteUrl);
+        }
+        catch (Exception e) {
+            Assert.fail("error validating test results: "+e.getLocalizedMessage());
+        }
+
+        Assert.assertEquals("expecting 1 entry after updating record int queue", 1, entries.size());
+        EulaRemoteQueue rval=entries.get(0);
+        Assert.assertEquals("rval[0].remoteUrl", remoteUrl, rval.getRemoteUrl());
+        Assert.assertEquals("rval[0].recorded", false, rval.getRecorded());
+        assertDateEquals("rval[0].date", expectedDate, rval.getDateRecorded());
+        Assert.assertEquals("rval[0].numAttempts", 1, rval.getNumAttempts());
+        
+        
+        //for debugging, to force the matter, let's wait a bit
+        //try {
+        //    Thread.sleep(5000);
+        //}
+        //catch (InterruptedException e) {
+        //    Assert.fail("test thread interrupted");
+        //    Thread.currentThread().interrupt();
+        //}
+
+        //now a successful attempt
+        expectedDate=new Date();
+        try {
+            //first, a failed attempt
+            recorder.updateRemoteQueue(userId, eula, remoteUrl, true);
+        }
+        catch (Exception e) {
+            Assert.fail(""+e.getLocalizedMessage());
+        }
+        
+        try {
+            entries=recorder.getQueueEntries(userId, eula, remoteUrl);
+        }
+        catch (Exception e) {
+            Assert.fail("error validating test results: "+e.getLocalizedMessage());
+        }
+
+        Assert.assertEquals("expecting 1 entry after updating record int queue", 1, entries.size());
+        rval=entries.get(0);
+        Assert.assertEquals("rval[0].remoteUrl", remoteUrl, rval.getRemoteUrl());
+        Assert.assertEquals("rval[0].recorded", true, rval.getRecorded());
+        assertDateEquals("rval[0].date", expectedDate, rval.getDateRecorded());
+        Assert.assertEquals("rval[0].numAttempts", 1, rval.getNumAttempts());
+    }
 }

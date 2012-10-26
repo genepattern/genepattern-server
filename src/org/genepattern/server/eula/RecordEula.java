@@ -49,4 +49,18 @@ public interface RecordEula {
      * @throws Exception
      */
     Date getUserAgreementDate(String userId, EulaInfo eula) throws Exception;
+    
+    
+    //helper methods for logging status of POST to remote server
+    /**
+     * This method is optionally called after successful call to recordLicenseAgreement,
+     * it means 'schedule POST callback to remote server'.
+     * @param userId
+     * @param eula
+     */
+    void addToRemoteQueue(String userId, EulaInfo eula, String remoteUrl) throws Exception;
+    
+    /**
+     * This method is optionally called after successful POST to 
+     */
 }

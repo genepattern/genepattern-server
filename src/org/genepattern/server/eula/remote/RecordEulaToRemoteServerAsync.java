@@ -113,4 +113,10 @@ public class RecordEulaToRemoteServerAsync implements RecordEula {
         throw new Exception("Not implemented!");
     }
 
+    //@Override
+    public void addToRemoteQueue(final String userId, final EulaInfo eula, final String remoteUrl) throws Exception {
+        // TODO Auto-generated method stub
+        throw new Exception("Not implemented!"); 
+    }
+
 }

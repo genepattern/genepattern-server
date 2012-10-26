@@ -46,4 +46,9 @@ public class RecordEulaStub implements RecordEula {
         final String uniq_key = lsid+"_"+userId;
         return acceptedEulas.get(uniq_key);
     }
+
+    public void addToRemoteQueue(final String userId, final EulaInfo eula, final String remoteUrl) throws Exception {
+        // TODO Auto-generated method stub
+        throw new Exception("Not implemented!"); 
+    }
 }

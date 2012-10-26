@@ -6,7 +6,6 @@ import java.util.SortedSet;
 
 import org.apache.log4j.Logger;
 import org.genepattern.server.config.ServerConfiguration.Context;
-import org.genepattern.server.eula.dao.RecordEulaToDb;
 import org.genepattern.webservice.TaskInfo;
 
 /**

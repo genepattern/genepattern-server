@@ -8,6 +8,7 @@ import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.eula.EulaInfo;
 import org.genepattern.server.eula.RecordEula;
 import org.genepattern.server.eula.InitException;
+import org.genepattern.server.eula.dao.RecordEulaToDb;
 import org.genepattern.server.eula.remote.PostToBroad.PostException;
 import org.genepattern.server.user.User;
 import org.genepattern.server.user.UserDAO;
@@ -36,15 +37,23 @@ public class RecordEulaToRemoteServer implements RecordEula {
         return "";
     }
     
-    private void beforePost() {
-        //TODO: if necessary, add row to remote_eula_queue { <user>, <lsid>, <remote_url>, <date_added=now>, <status=NOT_YET_RECORDED> }'
+    private void beforePost(final String userId, EulaInfo eula) {
+        //don't do anything before, we updated the DB when recording locally
+        log.debug("about to POST eula for userId="+userId+", lsid="+eula.getModuleLsid());
     }
     
-    private void afterPost(final boolean success, final String errorMessage) {
-        if (success) {
-           //TODO: save status to local DB, something like 'delete from remote_eula_queue { <user>, <lsid>, <remote_url> }'
+    private void afterPost(final String userId, final EulaInfo eula, final boolean success, final String errorMessage) {
+        log.debug("afterPost, userId="+userId+", lsid="+eula.getModuleLsid()+", success="+success);
+        try {
+            new RecordEulaToDb().updateRemoteQueue(userId, eula, PostToBroad.DEFAULT_URL, success);
+            //TODO: add logging event to DB, something like 'insert into remote_eula_log { <user>, <lsid>, <remote_url>, <date>, <status>, <message> }'
         }
-        //TODO: add logging event to DB, something like 'insert into remote_eula_log { <user>, <lsid>, <remote_url>, <date>, <status>, <message> }'
+        catch (Throwable t) {
+            log.error("error after POST, userId="+userId+", lsid="+eula.getModuleLsid()+", success="+success, t);
+        }
+        
+        //Note: at the moment, we keep all records in the queue, we could delete records from the queue with the following
+        // new RecordEulaToDb().removeFromQueue(userId, eula, PostToBroad.DEFAULT_URL);
     }
 
     //@Override
@@ -54,7 +63,7 @@ public class RecordEulaToRemoteServer implements RecordEula {
         }
         
         
-        beforePost();
+        beforePost(userId, eula);
         
         PostToBroad action = new PostToBroad();
         action.setGpUserId(userId);
@@ -85,12 +94,8 @@ public class RecordEulaToRemoteServer implements RecordEula {
             log.error(e);
             //also, record this to the DB
         }
-        //catch (Throwable t) {
-            //TODO: save status to local DB, something like 'update remote_eula { <user>, <lsid>, <remote_url>, <date>, <status=ERROR>, <status_msg=> }'
-            //log.error("failed to record remote EULA for userId,lsid="+userId+","+eula.getModuleLsid(), t);
-        //}
         
-        afterPost(success, errorMessage);
+        afterPost(userId, eula, success, errorMessage);
     }
 
     //@Override
@@ -101,6 +106,12 @@ public class RecordEulaToRemoteServer implements RecordEula {
     //@Override
     public Date getUserAgreementDate(final String userId, final EulaInfo eula) throws Exception {
         throw new Exception("Not implemented!");
+    }
+
+    //@Override
+    public void addToRemoteQueue(final String userId, final EulaInfo eula, final String remoteUrl) throws Exception {
+        // TODO Auto-generated method stub
+        throw new Exception("Not implemented!"); 
     }
 
 }

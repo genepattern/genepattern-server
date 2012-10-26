@@ -53,6 +53,7 @@ ruby > response = RestClient.post
  */
 public class PostToBroad {
     final static private Logger log = Logger.getLogger(PostToBroad.class);
+    final static public String DEFAULT_URL="http://vgpweb01.broadinstitute.org:3000/eulas";
 
     /**
      * The remote server responded with an HTTP response code indicating that it failed to 
@@ -91,7 +92,7 @@ public class PostToBroad {
         return true;
     }
 
-    private String remoteUrl="http://vgpweb01.broadinstitute.org:3000/eulas";
+    private String remoteUrl=DEFAULT_URL;
     private String gpUrl=null;
     private String gp_user_id=null;
     private String email=null;
