@@ -60,11 +60,11 @@ public class EulaRemoteQueue {
     }
 
     public Date getDateRecorded() {
-        return dateRecorded;
+        return new Date(dateRecorded.getTime());
     }
 
     public void setDateRecorded(final Date date) {
-        this.dateRecorded = date;
+        this.dateRecorded = new Date(date.getTime());
     }
 
     public int getNumAttempts() {
