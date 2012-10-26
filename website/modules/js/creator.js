@@ -225,37 +225,10 @@ function saveModule()
         throw("A command line must be specified");
     }
 
-    var licenseFile = module_editor.licensefile["name"];
+    var licenseFile = module_editor.licensefile;
     if(licenseFile == null || licenseFile == undefined)
     {
         licenseFile = "";
-    }
-    else
-    {
-        //automatically include plugin that checks that the GP version is >= 3.4.2
-
-        var patchLSID = "urn:lsid:broad.mit.edu:cancer.software.genepattern.server.patch:GenePattern_3_4_2:2";
-        var patchURL = "http://www.broad.mit.edu/webservices/gpModuleRepository/download/prod/patch/?file=/GenePattern_3_4_2/broad.mit.edu:cancer.software.genepattern.server.patch/GenePattern_3_4_2/2/GenePattern_3_4_2.zip";
-
-        //first check if module has other plugins, if so then append to existing list of plugins
-        if(module_editor.otherModAttrs["requiredPatchLSIDs"] != undefined
-            && module_editor.otherModAttrs["requiredPatchLSIDs"] != null
-            && module_editor.otherModAttrs["requiredPatchURLs"] != undefined
-            && module_editor.otherModAttrs["requiredPatchURLs"] != null)
-        {
-            //if plugin is not already defined then add it
-            if(module_editor.otherModAttrs["requiredPatchLSIDs"].indexOf(patchLSID) == -1 &&
-                module_editor.otherModAttrs["requiredPatchURLs"].indexOf(patchURL) == -1)
-            {
-                module_editor.otherModAttrs["requiredPatchLSIDs"] = module_editor.otherModAttrs["requiredPatchLSIDs"] + "," + patchLSID;
-                module_editor.otherModAttrs["requiredPatchURLs"] = module_editor.otherModAttrs["requiredPatchURLs"] + "," + patchURL;
-            }
-        }
-        else
-        {
-            module_editor.otherModAttrs["requiredPatchLSIDs"] = patchLSID;
-            module_editor.otherModAttrs["requiredPatchURLs"] = patchURL;
-        }
     }
 
     var lsid = module_editor.lsid;
@@ -1073,6 +1046,7 @@ function loadModuleInfo(module)
     if(module["license"] !== undefined && module["license"] !== "")
     {
         var license = module["license"];
+        module_editor.licensefile = license;
         var currentLicenseDiv = $("<div class='clear' id='currentLicenseDiv'></div>");
 
         var checkbox = $('<input type="checkbox" name="currentlicensefile" value="' +
@@ -1877,7 +1851,7 @@ jQuery(document).ready(function() {
 
         $("#licenseDiv").append(licenseFileNameDiv);
 
-	    module_editor.licensefile = this.files[0];
+	    module_editor.licensefile = this.files[0].name;
 
         //add to list of files to upload files
         module_editor.filestoupload.push(this.files[0]);

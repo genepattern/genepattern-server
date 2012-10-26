@@ -341,6 +341,63 @@ public class ModuleQueryServlet extends HttpServlet
         }
 	}
 
+    private void addLicensePlugin(TaskInfoAttributes tia)
+    {
+        String patchLSID = "urn:lsid:broad.mit.edu:cancer.software.genepattern.server.patch:GenePattern_3_4_2:2";
+        String patchURL = "http://www.broad.mit.edu/webservices/gpModuleRepository/download/prod/patch/?file=/GenePattern_3_4_2/broad.mit.edu:cancer.software.genepattern.server.patch/GenePattern_3_4_2/2/GenePattern_3_4_2.zip";
+
+        //add plugin to check the GP version is >= 3.4.2
+
+        //check if there are other plugins defined
+        if(tia.get("requiredPatchLSIDs") != null
+                && !tia.get("requiredPatchLSIDs").equals("")
+           && tia.get("requiredPatchURLs") != null
+                && !tia.get("requiredPatchURLs").equals(""))
+        {
+            if(!tia.get("requiredPatchLSIDs").contains(patchLSID))
+            {
+                tia.put("requiredPatchLSIDs", patchLSID + "," + tia.get("requiredPatchLSIDs"));
+            }
+            if(!tia.get("requiredPatchURLs").contains(patchURL))
+            {
+                tia.put("requiredPatchURLs", patchURL + "," + tia.get("requiredPatchURLs"));
+            }
+        }
+        else
+        {
+            tia.put("requiredPatchLSIDs", patchLSID);
+            tia.put("requiredPatchURLs", patchURL);
+        }
+    }
+
+    private void removeLicensePlugin(TaskInfoAttributes tia)
+    {
+        String patchLSID = "urn:lsid:broad.mit.edu:cancer.software.genepattern.server.patch:GenePattern_3_4_2:2";
+        String patchURL = "http://www.broad.mit.edu/webservices/gpModuleRepository/download/prod/patch/?file=/GenePattern_3_4_2/broad.mit.edu:cancer.software.genepattern.server.patch/GenePattern_3_4_2/2/GenePattern_3_4_2.zip";
+
+        //remove plugin to check the GP version is >= 3.4.2
+
+        if(tia.get("requiredPatchLSIDs") != null
+                && !tia.get("requiredPatchLSIDs").equals("")
+           && tia.get("requiredPatchURLs") != null
+                && !tia.get("requiredPatchURLs").equals(""))
+        {
+            if(tia.get("requiredPatchLSIDs").contains(patchLSID))
+            {
+                tia.put("requiredPatchLSIDs", tia.get("requiredPatchLSIDs").replace(patchLSID, ""));
+            }
+
+            if(tia.get("requiredPatchURLs").contains(patchURL))
+            {
+                tia.put("requiredPatchURLs", tia.get("requiredPatchURLs").replace(patchURL, ""));
+            }
+
+            //remove any empty fields in comma separated list
+            tia.put("requiredPatchLSIDs", tia.get("requiredPatchLSIDs").replaceAll(",,", ","));
+            tia.put("requiredPatchURLs", tia.get("requiredPatchURLs").replaceAll(",,", ","));
+        }
+    }
+
     public void saveModule(HttpServletRequest request, HttpServletResponse response)
     {
 	    String username = (String) request.getSession().getAttribute("userid");
@@ -396,9 +453,11 @@ public class ModuleQueryServlet extends HttpServlet
             if (moduleObject.get(ModuleJSON.LICENSE) == null
                     || moduleObject.get(ModuleJSON.LICENSE).equals("")) {
                 tia.remove(GetEulaAsManifestProperty.LICENSE);
+                removeLicensePlugin(tia);
             }
             else {
                 tia.put(GetEulaAsManifestProperty.LICENSE, moduleObject.get(ModuleJSON.LICENSE));
+                addLicensePlugin(tia);
             }
 
             //--------------------------Parameter Information---------------------------------------------
