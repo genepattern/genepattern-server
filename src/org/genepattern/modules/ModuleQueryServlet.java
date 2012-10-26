@@ -344,12 +344,12 @@ public class ModuleQueryServlet extends HttpServlet
     private void addLicensePlugin(TaskInfoAttributes tia)
     {
         //TODO: remove these lines, they are here for debugging
-        boolean ignore=true;  
+        boolean ignore=true;
         if (ignore) {
             log.error("addLicensePlugin not implemented");
             return;
         }
-        
+
         String patchLSID = "urn:lsid:broad.mit.edu:cancer.software.genepattern.server.patch:GenePattern_3_4_2:2";
         String patchURL = "http://www.broad.mit.edu/webservices/gpModuleRepository/download/prod/patch/?file=/GenePattern_3_4_2/broad.mit.edu:cancer.software.genepattern.server.patch/GenePattern_3_4_2/2/GenePattern_3_4_2.zip";
 
@@ -380,7 +380,7 @@ public class ModuleQueryServlet extends HttpServlet
     private void removeLicensePlugin(TaskInfoAttributes tia)
     {
         //TODO: remove these lines, they are here for debugging
-        boolean ignore=true;  
+        boolean ignore=true;
         if (ignore) {
             log.error("removeLicensePlugin not implemented");
             return;
@@ -398,17 +398,19 @@ public class ModuleQueryServlet extends HttpServlet
         {
             if(tia.get("requiredPatchLSIDs").contains(patchLSID))
             {
+                //handle cases where there is one plugin or multiple plugins
+                tia.put("requiredPatchLSIDs", tia.get("requiredPatchLSIDs").replace(patchLSID + ",", ""));
+                tia.put("requiredPatchLSIDs", tia.get("requiredPatchLSIDs").replace("," + patchLSID, ""));
                 tia.put("requiredPatchLSIDs", tia.get("requiredPatchLSIDs").replace(patchLSID, ""));
             }
 
             if(tia.get("requiredPatchURLs").contains(patchURL))
-            {
+            {                
+                //handle cases where there is one plugin or multiple plugins
+                tia.put("requiredPatchURLs", tia.get("requiredPatchURLs").replace(patchURL + ",", ""));
+                tia.put("requiredPatchURLs", tia.get("requiredPatchURLs").replace("," + patchURL, ""));
                 tia.put("requiredPatchURLs", tia.get("requiredPatchURLs").replace(patchURL, ""));
             }
-
-            //remove any empty fields in comma separated list
-            tia.put("requiredPatchLSIDs", tia.get("requiredPatchLSIDs").replaceAll(",,", ","));
-            tia.put("requiredPatchURLs", tia.get("requiredPatchURLs").replaceAll(",,", ","));
         }
     }
 
