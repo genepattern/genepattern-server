@@ -1398,10 +1398,6 @@ function getParametersJSON()
 
 function saveAndUpload(runModule)
 {
-    //$("html").addClass('busy').bind('click',function(){
-    //    return false;
-    //});
-
     if(saving)
     {
         return;
@@ -1421,7 +1417,7 @@ function saveAndUpload(runModule)
 
     run = runModule;
     //if no support files need to be upload then skip upload file step
-    if(module_editor.filestoupload.length == 0 && module_editor.license == "")
+    if(module_editor.filestoupload.length == 0)
     {
         saveModule();
     }
@@ -1826,21 +1822,30 @@ jQuery(document).ready(function() {
             return;
         }
 
-        if(this.files[0].name == "manifest")
-        {
-            alert("You are not allowed to upload files with file name 'manifest'. Please re-name your file and try again.");
-            return;
-        }
+        //add to list of files to upload files
+        addFileToUpload(this.files[0]);
 
+        //create button to delete uploaded license file
         var delbutton = $("<button>x</button>&nbsp;");
+
+        //add a property so that we can later retrieve
+        // the file this delete button is attached to
+        delbutton.data("fname", this.files[0].name);
         delbutton.button().click(function()
         {
+            //remove the license file from the list of files to upload
+            removeFileToUpload($(this).data("fname"));
+
+            module_editor.licensefile = "";
+
             //remove display of uploaded license file
             $("#licenseFileNameDiv").remove();
 
             //show the button to upload a new file
             $(".licensefile").parents("span").show();
         });
+
+        module_editor.licensefile = this.files[0].name;
 
         var licenseFileNameDiv = $("<div id='licenseFileNameDiv' class='clear'>" + this.files[0].name
                 + " (" + bytesToSize(this.files[0].size) + ")" +"</div>");
@@ -1851,10 +1856,6 @@ jQuery(document).ready(function() {
 
         $("#licenseDiv").append(licenseFileNameDiv);
 
-	    module_editor.licensefile = this.files[0].name;
-
-        //add to list of files to upload files
-        module_editor.filestoupload.push(this.files[0]);
     });
 
     $(".supportfile").live("change", function()
@@ -1974,6 +1975,51 @@ function drop(evt)
         handleFiles(files);
 }
 
+function addFileToUpload(file)
+{
+    if(file.name == "manifest")
+    {
+        alert("You are not allowed to upload files with file name 'manifest'. Please re-name your file and try again.");
+        throw("You are not allowed to upload files with file name 'manifest'. Please re-name your file and try again.");
+
+    }
+
+    for(i=0;i<module_editor.filestoupload.length;i++)
+    {
+        var upLoadFile = module_editor.filestoupload[i].name;
+        if(upLoadFile === file.name)
+        {
+            alert("ERROR: The file " + file.name + " has already been specified for upload. Please remove the file first.")
+            throw("ERROR: The file " + file.name + " has already been specified for upload. Please remove the file first.")
+        }
+    }
+
+    //if you make it here then this is a new file to upload
+    module_editor.filestoupload.push(file);
+}
+
+function removeFileToUpload(fileName)
+{
+    var index = -1;
+    for(var i=0;i<module_editor.filestoupload.length;i++)
+    {
+        var value = module_editor.filestoupload[i].name;
+        if(value === fileName)
+        {
+            index = i;
+        }
+    }
+
+    if(index == -1)
+    {
+        //do nothing, unable to find file in support listing
+        alert("An error occurred while removing file: File not found");
+        return;
+    }
+
+    module_editor.filestoupload.splice(index,1);
+}
+
 function addToSupportFileList(file)
 {
     if(file.name == "manifest")
@@ -1982,19 +2028,9 @@ function addToSupportFileList(file)
         return;
     }
 
+    addFileToUpload(file);
+
     setDirty(true);
-
-    //check for duplicate files
-    $("#supportfileslist").children().each(function()
-    {
-        var supportFileName = $(this).data("fname");
-
-        if(file.name === supportFileName)
-        {
-            //trigger click of delete button if file already uploaded
-            $(this).find("button").trigger("click");
-        }
-    });
 
     var sfilelist = $("<li>" + file.name + " (" + bytesToSize(file.size) + ")" + "</li>");
     sfilelist.data("fname", file.name);
@@ -2002,34 +2038,15 @@ function addToSupportFileList(file)
     var delbutton = $("<button>x</button>&nbsp;");
     delbutton.button().click(function()
     {
-        var index = -1;
-        for(i=0;i<module_editor.filestoupload.length;i++)
-        {
-            var value1 = module_editor.filestoupload[i].name;
-            var value2 = $(this).parent().data("fname");
-            if(value1 === value2)
-            {
-                index = i;
-            }
-        }
+        var selectedFileObj = $(this).parent().data("fname");
 
-        if(index == -1)
-        {
-            //do nothing, unable to find file in support listing
-            alert("An error occurred while removing file: File not found");
-            return;
-        }
-
-        module_editor.filestoupload.splice(index,1);
+        removeFileToUpload(selectedFileObj);
         $(this).parent().remove();
     });
 
     sfilelist.prepend(delbutton);
 
-
     $("#supportfileslist").append(sfilelist);
-
-    module_editor.filestoupload.push(file);
 }
 
 function handleFiles(files)
