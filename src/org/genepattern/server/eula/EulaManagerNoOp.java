@@ -13,18 +13,6 @@ import org.genepattern.webservice.TaskInfo;
  */
 public class EulaManagerNoOp implements IEulaManager {
 
-    public void setGetEulaFromTask(GetEulaFromTask impl) {
-        //ignore
-    }
-
-    public void setGetTaskStrategy(GetTaskStrategy impl) {
-        //ignore
-    }
-
-    public void setRecordEulaStrategy(RecordEula impl) {
-        //ignore
-    }
-
     public List<EulaInfo> getEulas(TaskInfo taskInfo) {
         return Collections.emptyList();
     }
