@@ -59,27 +59,6 @@ public class TestEulaManagerNoOp {
         }
     }
     
-//    @Test
-//    public void testSetGetEulaFromTask() {
-//        final IEulaManager eulaMgr=new EulaManagerNoOp();
-//        GetEulaFromTask getEulaFromTask=null;
-//        eulaMgr.setGetEulaFromTask(getEulaFromTask);
-//    }
-    
-//    @Test
-//    public void testSetGetTaskStrategy() {
-//        final IEulaManager eulaMgr=new EulaManagerNoOp();
-//        GetTaskStrategy getTaskStrategy=null;
-//        eulaMgr.setGetTaskStrategy(getTaskStrategy);
-//    }
-
-//    @Test
-//    public void testSetRecordEulaStrategy() {
-//        final IEulaManager eulaMgr=new EulaManagerNoOp();
-//        RecordEula recordEula=null;
-//        eulaMgr.setRecordEulaStrategy(recordEula);
-//    }
-    
     @Test
     public void testRequiresEula() {
         final IEulaManager eulaMgr=new EulaManagerNoOp();
