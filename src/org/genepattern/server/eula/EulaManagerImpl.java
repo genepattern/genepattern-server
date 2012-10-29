@@ -17,8 +17,14 @@ public class EulaManagerImpl implements IEulaManager {
     final static private Logger log = Logger.getLogger(EulaManagerImpl.class);
 
     private GetEulaFromTask getEulaFromTask = null;
+    private GetTaskStrategy getTaskStrategy = null;
+    private RecordEula recordEulaStrategy = null;
+
     /**
-     * @see IEulaManager#setGetEulaFromTask(org.genepattern.server.eula.GetEulaFromTask)
+     * Optionally set the strategy for getting the list (if any) of EULA
+     * which are required for a particular module or pipeline.
+     * 
+     * @param impl, an object which implements the GetEulaFromTask interface, can be null.
      */
     public void setGetEulaFromTask(GetEulaFromTask impl) {
         this.getEulaFromTask=impl;
@@ -37,18 +43,19 @@ public class EulaManagerImpl implements IEulaManager {
         //return new GetEulaAsSupportFile();
     }
     
-    private GetTaskStrategy getTaskStrategy = null;
     /**
-     * @see IEulaManager#setGetTaskStrategy(org.genepattern.server.eula.GetTaskStrategy)
+     * Optionally set the strategy for initializing a TaskInfo from a task lsid.
+     * 
+     * @param impl, an object which implements this interface, can be null.
      */
     public void setGetTaskStrategy(GetTaskStrategy impl) {
         this.getTaskStrategy=impl;
     }
 
-
-    private RecordEula recordEulaStrategy = null;
     /**
-     * @see IEulaManager#setRecordEulaStrategy(org.genepattern.server.eula.RecordEula)
+     * Optionally set the strategy for recording user agreement to the local database.
+     * 
+     * @param impl, an object which implements the RecordEula interface, can be null.
      */
     public void setRecordEulaStrategy(final RecordEula impl) {
         this.recordEulaStrategy=impl;

@@ -11,29 +11,6 @@ import org.genepattern.webservice.TaskInfo;
  * @author pcarr
  */
 public interface IEulaManager {
-
-    /**
-     * Optionally set the strategy for getting the list (if any) of EULA
-     * which are required for a particular module or pipeline.
-     * 
-     * @param impl, an object which implements the GetEulaFromTask interface, can be null.
-     */
-    void setGetEulaFromTask(GetEulaFromTask impl);
-
-    /**
-     * Optionally set the strategy for initializing a TaskInfo from a task lsid.
-     * 
-     * @param impl, an object which implements this interface, can be null.
-     */
-    void setGetTaskStrategy(GetTaskStrategy impl);
-
-    /**
-     * Optionally set the strategy for recording user agreement to the local database.
-     * 
-     * @param impl, an object which implements the RecordEula interface, can be null.
-     */
-    void setRecordEulaStrategy(final RecordEula impl);
-
     /**
      * Implement a run-time check, before starting a job, verify that there are
      * no EULA which the current user has not yet agreed to.

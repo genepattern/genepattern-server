@@ -38,7 +38,7 @@ public class TestGetEulaAsManifestProperty {
     @Test
     public void testGetEulaFromModule() {
         final String filename="testLicenseAgreement_v3.zip";
-        TaskInfo taskInfo = TestEulaManager.initTaskInfoFromZip(filename);
+        TaskInfo taskInfo = TestEulaManagerImpl.initTaskInfoFromZip(filename);
         Assert.assertNotNull("taskInfo==null", taskInfo);
         File licenseFile=FileUtil.getSourceFile(TestGetEulaAsManifestProperty.class, "gp_server_license.txt");
 
@@ -59,7 +59,7 @@ public class TestGetEulaAsManifestProperty {
         Assert.assertNotNull("eulas==null", eulas);
         Assert.assertEquals("Expecting one EulaInfo", 1, eulas.size());
         final String expectedContent=EulaInfo.fileToString(licenseFile);
-        TestEulaManager.assertEulaInfo(eulas, 0, "testLicenseAgreement", "urn:lsid:9090.gpdev.gpint01:genepatternmodules:812:3", "3", expectedContent);
+        TestEulaManagerImpl.assertEulaInfo(eulas, 0, "testLicenseAgreement", "urn:lsid:9090.gpdev.gpint01:genepatternmodules:812:3", "3", expectedContent);
     }
 
     /**
@@ -97,8 +97,8 @@ public class TestGetEulaAsManifestProperty {
         final String gpLicenseContent=EulaInfo.fileToString(gpLicenseFile);
         final String exampleLicenseContent=EulaInfo.fileToString(exampleLicenseFile);
         
-        TestEulaManager.assertEulaInfo(eulas, 0, "testLicenseAgreement", "urn:lsid:9090.gpdev.gpint01:genepatternmodules:812:3", "3", gpLicenseContent);
-        TestEulaManager.assertEulaInfo(eulas, 1, "testLicenseAgreement", "urn:lsid:9090.gpdev.gpint01:genepatternmodules:812:3", "3", exampleLicenseContent);
+        TestEulaManagerImpl.assertEulaInfo(eulas, 0, "testLicenseAgreement", "urn:lsid:9090.gpdev.gpint01:genepatternmodules:812:3", "3", gpLicenseContent);
+        TestEulaManagerImpl.assertEulaInfo(eulas, 1, "testLicenseAgreement", "urn:lsid:9090.gpdev.gpint01:genepatternmodules:812:3", "3", exampleLicenseContent);
     }
 
 }

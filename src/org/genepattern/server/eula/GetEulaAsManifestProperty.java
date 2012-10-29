@@ -62,8 +62,12 @@ public class GetEulaAsManifestProperty implements GetEulaFromTask {
     private static List<String> getLicenseFilenames(String licenseVal) {
         List<String> list=new ArrayList<String>();
         String[] items=licenseVal.split(DELIM);
-        for(String s : items) {
-            list.add(s.trim());
+        for(String item : items) {
+            //ignore empty string
+            String licenseItem=item.trim();
+            if (licenseItem.length()>0) {
+                list.add(licenseItem);
+            }
         }
         return list;
     }
