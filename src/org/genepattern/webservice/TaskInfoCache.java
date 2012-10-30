@@ -301,7 +301,7 @@ public class TaskInfoCache {
     private List<String> getDeclaredDoc(String lsid) {
         TaskInfo info = this.getTask(lsid);
         String doc = info.getTaskInfoAttributes().get(GPConstants.TASK_DOC);
-        if (doc == null) return null;
+        if (doc == null || "".equals(doc)) return null;
         
         List<String> docList = new ArrayList<String>();
         docList.add(doc);
