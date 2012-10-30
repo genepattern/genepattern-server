@@ -77,7 +77,7 @@ public class CommandManagerProperties {
         return value.getValue();
     }
 
-    public CommandProperties.Value getValue(ServerConfiguration.Context context, String key) {
+    public CommandProperties.Value getValue(final ServerConfiguration.Context context, final String key) {
         CommandProperties.Value rval = null;
         // 0) initialize from system properties and legacy properties files
         //    only if specified by the context
@@ -86,6 +86,11 @@ public class CommandManagerProperties {
         // 1) replace with default properties set in the job_configuration yaml file ...
         if (this.rootProps.getDefaultProperties().containsKey(key)) {
             rval = this.rootProps.getDefaultValue(key);
+        }
+        
+        if (context==null) {
+            log.error("context==null");
+            return rval;
         }
         
         // 2) replace with executor default properties ...
@@ -100,6 +105,12 @@ public class CommandManagerProperties {
         }
         
         // 3) replace with top level module properties ...
+        //    use either or both of context.jobInfo and context.taskInfo, when both are set, jobInfo takes precedence
+        if (context.getJobInfo() == null && context.getTaskInfo() != null) {
+            if (this.rootProps.getModuleProperties(context.getTaskInfo()).containsKey(key)) {
+                rval = this.rootProps.getModuleProperties(context.getTaskInfo()).get(key);
+            }
+        }
         if (context.getJobInfo() != null) {
             if (this.rootProps.getModuleProperties(context.getJobInfo()).containsKey(key)) {
                 rval = this.rootProps.getModuleProperties(context.getJobInfo()).get(key);
@@ -121,6 +132,11 @@ public class CommandManagerProperties {
                         if (groupPropObj.getDefaultProperties().containsKey(key)) {
                             rval = groupPropObj.getDefaultValue(key);
                         }
+                        if (context.getTaskInfo() != null) {
+                            if (groupPropObj.getModuleProperties(context.getTaskInfo()).containsKey(key)) {
+                                rval = groupPropObj.getModuleProperties(context.getTaskInfo()).get(key);
+                            }
+                        }
                         if (context.getJobInfo() != null) {
                             if (groupPropObj.getModuleProperties(context.getJobInfo()).containsKey(key)) {
                                 rval = groupPropObj.getModuleProperties(context.getJobInfo()).get(key);
@@ -137,6 +153,11 @@ public class CommandManagerProperties {
                             PropObj groupPropObj = entry.getValue();
                             if (groupPropObj.getDefaultProperties().containsKey(key)) {
                                 rval = groupPropObj.getDefaultProperties().get(key);
+                            }
+                            if (context.getJobInfo() == null && context.getTaskInfo() != null) {
+                                if(groupPropObj.getModuleProperties(context.getTaskInfo()).containsKey(key)) {
+                                    rval = groupPropObj.getModuleProperties(context.getTaskInfo()).get(key);
+                                } 
                             }
                             if (context.getJobInfo() != null) {
                                 if(groupPropObj.getModuleProperties(context.getJobInfo()).containsKey(key)) {
@@ -155,6 +176,11 @@ public class CommandManagerProperties {
             if (userPropObj != null) {
                 if (userPropObj.getDefaultProperties().containsKey(key)) {
                     rval = userPropObj.getDefaultValue(key);
+                }
+                if (context.getJobInfo() == null && context.getTaskInfo() != null) {
+                    if (userPropObj.getModuleProperties(context.getTaskInfo()).containsKey(key)) {
+                        rval = userPropObj.getModuleProperties(context.getTaskInfo()).get(key);
+                    }
                 }
                 if (context.getJobInfo() != null) {
                     if (userPropObj.getModuleProperties(context.getJobInfo()).containsKey(key)) {

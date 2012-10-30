@@ -109,6 +109,11 @@ public class ServerProperties {
     }
 
     public String getProperty(Context context, String key) {
+        if (context==null) {
+            log.error("context==null");
+            //initialize, so that we use the default values
+            context=new Context();
+        }
         String rval = null;
         if (context.getCheckSystemProperties()) {
             rval = System.getProperty(key);            

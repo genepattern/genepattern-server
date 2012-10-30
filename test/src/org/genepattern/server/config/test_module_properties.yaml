@@ -1,0 +1,82 @@
+#
+# test cases for custom 'module.properties' 
+#
+default.properties: 
+    executor: RuntimeExec
+    test.prop: DEFAULT_VALUE
+
+#  config.yaml file must have at least one executor    
+executors:
+    RuntimeExec: 
+        classname: org.genepattern.server.executor.RuntimeCommandExecutor
+        configuration.properties:
+            test.prop: BY_EXEC_CONFIG
+        default.properties:
+            test.prop: BY_EXEC_DEFAULT
+
+module.properties:
+    # 1) by taskName
+    ComparativeMarkerSelection:
+        test.prop: TASK_NAME_VALUE
+    # 2) by taskLsid (no version)
+    urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00044: 
+        test.prop: TASK_LSID_NO_VERSION_VALUE
+    # 3) by taskLsid (version), with custom properties
+    urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00044:4: 
+        test.prop: TASK_LSID_VALUE
+    ConvertLineEndings:
+        test.prop: CONVERTLINEENDINGS_VALUE
+
+user.properties:
+    # userA is in the broadgroup and the admin group
+    userA: 
+        module.properties:
+            "urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00044:4":
+                test.prop: USERA_TASK_LSID_VALUE
+    # userC is only in the broadgroup
+    userC:
+        module.properties:
+            "urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00044:4":
+                test.prop: USERC_TASK_LSID_VALUE
+    
+    userD:
+        test.prop: USERD_VALUE
+    userE:
+        module.properties:
+            # by taskName
+            ComparativeMarkerSelection:
+                test.prop: USERE_TASK_NAME_VALUE
+            # by taskLsid (no version)
+            "urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00044":
+                test.prop: USERE_TASK_LSID_NO_VERSION_VALUE
+            # by taskLsid (version)
+            "urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00044:4":
+                test.prop: USERE_LSID_VALUE
+# when there are identical group properties set, the last group 
+# in the group.properties takes precedence
+group.properties:
+    # '*' means, match all groups
+    "*":
+        all.groups.prop: ALL_GROUPS_VALUE
+        module.properties:
+            AllGroupsModule:
+                all.groups.prop: ALLGROUPS_MODULE_VALUE
+    admingroup:
+        test.prop: ADMINGROUP_VALUE
+        all.groups.prop: ADMINGROUP_VALUE
+        module.properties:
+            AllGroupsModule:
+                all.groups.prop: ADMINGROUP_MODULE_VALUE
+    broadgroup:
+        test.prop: BROADGROUP_VALUE
+        module.properties:
+            # by taskName
+            ComparativeMarkerSelection:
+                test.prop: BROADGROUP_TASK_NAME_VALUE
+            # by taskLsid (no version)
+            "urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00044":
+                test.prop: BROADGROUP_TASK_LSID_NO_VERSION_VALUE
+            # by taskLsid (version)
+            "urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00044:4":
+                test.prop: BROADGROUP_LSID_VALUE
+        

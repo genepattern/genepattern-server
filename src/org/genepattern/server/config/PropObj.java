@@ -9,6 +9,7 @@ import org.genepattern.server.domain.Lsid;
 import org.genepattern.server.executor.CommandProperties;
 import org.genepattern.server.executor.ConfigurationException;
 import org.genepattern.webservice.JobInfo;
+import org.genepattern.webservice.TaskInfo;
 
 /**
  * Helper class for managing default properties and module specific properties loaded from the configuration file. 
@@ -109,9 +110,24 @@ public class PropObj {
     }
 
     public CommandProperties getModuleProperties(JobInfo jobInfo) {
+        if (jobInfo==null) {
+            log.error("jobInfo==null");
+            return new CommandProperties();
+        }
+        return getModuleProperties(jobInfo.getTaskName(), jobInfo.getTaskLSID());
+    }
+
+    public CommandProperties getModuleProperties(final TaskInfo taskInfo) {
+        if (taskInfo==null) {
+            log.error("taskInfo==null");
+            return new CommandProperties();
+        }
+        return getModuleProperties(taskInfo.getName(), taskInfo.getLsid());
+    }
+    
+    private CommandProperties getModuleProperties(final String taskName, final String taskLsid) {
         CommandProperties props = new CommandProperties();
         //1. override default by taskName
-        String taskName = jobInfo.getTaskName();
         if (taskName != null) {
             CommandProperties taskNameProps = this.modulePropertiesMap.get(taskName);
             if (taskNameProps != null) {
@@ -119,10 +135,9 @@ public class PropObj {
             }
         }
         //2. override by lsid, no version
-        String taskLsid = jobInfo.getTaskLSID();
         Lsid lsid = null;
         if (taskLsid != null) {
-            lsid = new Lsid(jobInfo.getTaskLSID());
+            lsid = new Lsid(taskLsid);
             CommandProperties lsidNoVersionProps = this.modulePropertiesMap.get(lsid.getLsidNoVersion());
             if (lsidNoVersionProps != null) {
                 props.putAll(lsidNoVersionProps);
