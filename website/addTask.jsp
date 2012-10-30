@@ -89,7 +89,7 @@ if (taskName != null && taskName.length() == 0) taskName = null;
 
 if ((taskName == null) && (!createModuleAllowed)){
 	response.sendRedirect("pages/notPermitted.jsf" );
-	return;	
+	return;
 }
 
 Vector errors = (Vector) request.getAttribute("errors");
@@ -331,7 +331,7 @@ function addNewFileType(name, desc){
 		if (pia != null) {
 			for (int pNum = 0; pNum < pia.length; pNum++) {
 				HashMap pAttributes = pia[pNum].getAttributes();
-				
+
 				fileFormat = (String)pAttributes.get(GPConstants.FILE_FORMAT);
 				if (fileFormat != null && fileFormat.length() > 0) {
 				 	String [] fileFormats = fileFormat.split(GPConstants.PARAM_INFO_CHOICE_DELIMITER);
@@ -397,7 +397,7 @@ function addNewFileType(name, desc){
 	GPConstants.PARAM_INFO_ATTRIBUTES[FILE_FORMAT_PARAM_OFFSET][GPConstants.PARAM_INFO_CHOICE_TYPES_OFFSET] = fileFormats;
 
 	i = 0;
-	
+
 	//GPConstants.PARAM_INFO_ATTRIBUTES[DOMAIN_PARAM_OFFSET][GPConstants.PARAM_INFO_CHOICE_TYPES_OFFSET] = domains;
 
 	if (tia != null) {
@@ -461,10 +461,10 @@ function addNewFileType(name, desc){
 		  value="<%= taskInfo != null ? taskInfo.getName() : "" %>" xonblur="onTaskNameLostFocus(this)"> * (required, no spaces)<a href='modules/createhelp.jsp#Name_brief' target='help'><img border='0' src='images/help2.jpg'/></a><% } else { %><%= taskInfo.getName() %><% } %>
 		&nbsp;&nbsp;&nbsp;&nbsp;
 
-		
-		
+
+
 		<% if (taskInfo != null && !viewOnly && errors == null) { %>
-		  <div title="Delete <%=taskInfo.getName() %> " style="display:inline"> 
+		  <div title="Delete <%=taskInfo.getName() %> " style="display:inline">
 		  		  <input type="button" value="<%= DELETE %>..." name="<%= DELETE %>" class="little"
 		   onclick="if (window.confirm('Really delete the ' + document.forms['task'].<%= GPConstants.NAME %>.value + ' task?')) { window.location='saveTask.jsp?delete=1&<%= GPConstants.NAME %>=' + document.forms['task'].<%= GPConstants.NAME %>.value + '&<%= GPConstants.LSID %>=' + document.forms['task'].<%= GPConstants.LSID %>.value; }">
 		  </div>
@@ -480,9 +480,9 @@ function addNewFileType(name, desc){
 		 		</div>
 		 <%	}
 		 } %>
-		 
-		 
-		 
+
+
+
 		 &nbsp;&nbsp;&nbsp;
 	</td>
   </tr>
@@ -533,6 +533,22 @@ function addNewFileType(name, desc){
 	</td>
   </tr>
 
+  <tr class="taskperameter">
+    <td valign="top">
+        License:
+    </td>
+    <td>
+        <%
+            if(taskInfo != null && tia != null
+                    && tia.get(GPConstants.LICENSE) != null
+                    && !tia.get(GPConstants.LICENSE).equals(""))
+            {
+        %>      <a href="getFile.jsp?task=<%=(String)taskInfo.giveTaskInfoAttributes().get(GPConstants.LSID) %>&file=<%=URLEncoder.encode(tia.get(GPConstants.LICENSE))%>" target="new"><%=StringUtils.htmlEncode(tia.get(GPConstants.LICENSE)) %></a>
+        <%
+            }
+        %>
+    </td>
+  </tr>
   <tr class="taskperameter" title="Readiness for use by others">
   <td valign="top">Quality&nbsp;level:</td>
   <td ><%= createSelection(tia, GPConstants.QUALITY, qualities, "", viewOnly) %>
@@ -639,7 +655,7 @@ function addNewFileType(name, desc){
 	   <td>
 		<table>
 		<tr>
-		
+
 		<td valign="top">
 	<%
 			attributeValue = (tia != null ? tia.get(GPConstants.FILE_FORMAT) : "");
@@ -682,7 +698,7 @@ function addNewFileType(name, desc){
 			//if (attributeValue == null) attributeValue = "";
 	%>
 	  <% //if (!viewOnly) { %>
-		
+
 	<%
 		/*{
 			String[] taskDomains = attributeValue.split(GPConstants.PARAM_INFO_CHOICE_DELIMITER);
