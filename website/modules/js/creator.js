@@ -18,8 +18,9 @@ var module_editor = {
     lsid: "",
     uploadedfiles: [],
     filestoupload: [],
-    licensefile: "",
     filesToDelete: [],
+    currentUploadedFiles: [],
+    licensefile: "",
     otherModAttrs: {}
 };
 
@@ -1047,6 +1048,10 @@ function loadModuleInfo(module)
     {
         var license = module["license"];
         module_editor.licensefile = license;
+
+        //keep track of files that are already part of this module
+        module_editor.currentUploadedFiles.push(license);
+
         var currentLicenseDiv = $("<div class='clear' id='currentLicenseDiv'></div>");
 
         var checkbox = $('<input type="checkbox" name="currentlicensefile" value="' +
@@ -1065,10 +1070,17 @@ function loadModuleInfo(module)
             }
             else
             {
-                module_editor.licensefile = selectedVal;
-                var index = jQuery.inArray(selectedVal, module_editor.filesToDelete);
-                module_editor.filesToDelete.splice(index,1);
+                //check the attribute in case deleting from file list fails
+                this.setAttribute("checked", "checked"); //For IE
+                this.checked = true;
 
+                //remove from delete file list
+                removeFileToDelete(selectedVal);
+                this.setAttribute("checked", ""); // For IE
+                this.removeAttribute("checked");
+                this.checked = false;
+
+                module_editor.licensefile = selectedVal;
                 //hide div which allows uploading of new license file
                 $("#licenseDiv").hide();
 
@@ -1119,6 +1131,9 @@ function loadModuleInfo(module)
             {
                 continue;
             }
+
+            module_editor.currentUploadedFiles.push(supportFilesList[s]);
+
             var checkbox = $('<input type="checkbox" name="currentfiles" value="' +
             supportFilesList[s] + '" />').click(function()
             {
@@ -1129,9 +1144,16 @@ function loadModuleInfo(module)
                     module_editor.filesToDelete.push(selectedVal);
                 }
                 else
-                {   //remove from delete file list
-                    var index = jQuery.inArray(selectedVal, module_editor.filesToDelete);
-                    module_editor.filesToDelete.splice(index,1);
+                {
+                    //check the attribute in case deleting from the file list fails
+                    this.setAttribute("checked", "checked");
+                    this.checked = true;
+                    //remove from delete file list
+                    removeFileToDelete(selectedVal);
+
+                    this.setAttribute("checked", ""); // For IE
+                    this.removeAttribute("checked");
+                    this.checked = false;
                 }
             });
 
@@ -1812,7 +1834,7 @@ jQuery(document).ready(function() {
 
         if(this.files[0].type != "text/plain")
         {
-            alert("License file must be a text file");
+            alert("ERROR: License file must be a text file");
             return;
         }
 
@@ -1828,7 +1850,7 @@ jQuery(document).ready(function() {
         //create button to delete uploaded license file
         var delbutton = $("<button>x</button>&nbsp;");
 
-        //add a property so that we can later retrieve
+        //add a data property so that we can later retrieve
         // the file this delete button is attached to
         delbutton.data("fname", this.files[0].name);
         delbutton.button().click(function()
@@ -1981,7 +2003,6 @@ function addFileToUpload(file)
     {
         alert("You are not allowed to upload files with file name 'manifest'. Please re-name your file and try again.");
         throw("You are not allowed to upload files with file name 'manifest'. Please re-name your file and try again.");
-
     }
 
     for(i=0;i<module_editor.filestoupload.length;i++)
@@ -1991,6 +2012,24 @@ function addFileToUpload(file)
         {
             alert("ERROR: The file " + file.name + " has already been specified for upload. Please remove the file first.")
             throw("ERROR: The file " + file.name + " has already been specified for upload. Please remove the file first.")
+        }
+    }
+
+    //Now check if the file is in the list of current files in the module
+    for(i=0;i<module_editor.currentUploadedFiles.length;i++)
+    {
+        console.log("current files: " + module_editor.currentUploadedFiles[i]);
+        if(module_editor.currentUploadedFiles[i] == file.name)
+        {
+            //check if file was marked for deletion
+            var index = jQuery.inArray(file.name, module_editor.filesToDelete);
+            if(index == -1)
+            {
+                alert("ERROR: The file " + file.name + " already exists in the module. " +
+                      "Please remove the file first.");
+                throw("ERROR: The file " + file.name + " already exists in the module. " +
+                      "Please remove the file first.");
+            }
         }
     }
 
@@ -2018,6 +2057,33 @@ function removeFileToUpload(fileName)
     }
 
     module_editor.filestoupload.splice(index,1);
+}
+
+//removes file from list of files to delete when the module is save
+function removeFileToDelete(fileName)
+{
+    //check if file was re-uploaded as a new file
+    var index = -1;
+    for(var i=0;i<module_editor.filestoupload.length;i++)
+    {
+        var value = module_editor.filestoupload[i].name;
+        if(value === fileName)
+        {
+            index = i;
+        }
+    }
+
+    //file was not re-uploaded so it is ok to leave it in the module
+    if(index == -1)
+    {
+         var fIndex = jQuery.inArray(fileName, module_editor.filesToDelete);
+         module_editor.filesToDelete.splice(fIndex,1);
+    }
+    else
+    {
+        alert("ERROR: The file " + fileName + " was specified for upload. Please remove the file from upload and try again.")
+        throw("ERROR: The file " + fileName + " was specified for upload. Please remove the file from upload and try again.")
+    }
 }
 
 function addToSupportFileList(file)
