@@ -34,7 +34,7 @@ public class CommandManagerFactoryTest extends TestCase {
             //String args = System.getProperty("HSQL.args", " -port 9001  -database.0 file:../resources/GenePatternDB -dbname.0 xdb");
             System.setProperty("HSQL.args", " -port 9001  -database.0 file:testdb/GenePatternDB -dbname.0 xdb");
             System.setProperty("hibernate.connection.url", "jdbc:hsqldb:hsql://127.0.0.1:9001/xdb");
-            System.setProperty("GenePatternVersion", "3.3.3");
+            System.setProperty("GenePatternVersion", "3.4.3");
 
             File resourceDir = new File("resources");
             String pathToResourceDir = resourceDir.getAbsolutePath();
@@ -177,7 +177,7 @@ public class CommandManagerFactoryTest extends TestCase {
         Map<String,CommandExecutor> map = cmdMgr.getCommandExecutorsMap();
         assertNotNull("Expecting non-null cmdMgr.commandExecutorsMap", map);
         int numExecutors = map.size();
-        assertEquals("Number of executors", 3, numExecutors);
+        assertEquals("Number of executors", 4, numExecutors);
 
         JobInfo jobInfo = new JobInfo();
         jobInfo.setTaskName("SNPFileSorter");
@@ -579,7 +579,7 @@ public class CommandManagerFactoryTest extends TestCase {
         userContext = Context.getContextForUser("userD");
         assertEquals("user override", "userD_val", ServerConfiguration.instance().getGPProperty(userContext, "default.prop"));
     }
-
+    
     /**
      * Test getProperty.
      */
