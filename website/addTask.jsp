@@ -547,6 +547,7 @@ function addNewFileType(name, desc){
         <%
             }
         %>
+        <a href='modules/createhelp.jsp#License_brief' target='help'><img border='0' src='images/help2.jpg'/></a>
     </td>
   </tr>
   <tr class="taskperameter" title="Readiness for use by others">
