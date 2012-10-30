@@ -129,6 +129,30 @@ public abstract class AbstractPipelineCodeGenerator {
     public TaskInfoAttributes getTaskInfoAttributes() {
         return getTaskInfoAttributes(model);
     }
+    
+    /**
+     * Add plugin to check the GP version is >= 3.4.2
+     * @param tia
+     */
+    private static void addLicensePlugin(TaskInfoAttributes tia) {
+        String patchLSID = "urn:lsid:broad.mit.edu:cancer.software.genepattern.server.patch:GenePattern_3_4_2:2";
+        String patchURL = "http://www.broad.mit.edu/webservices/gpModuleRepository/download/prod/patch/?file=/GenePattern_3_4_2/broad.mit.edu:cancer.software.genepattern.server.patch/GenePattern_3_4_2/2/GenePattern_3_4_2.zip";
+
+        //check if there are other plugins defined
+        if (tia.get("requiredPatchLSIDs") != null && !tia.get("requiredPatchLSIDs").equals("") 
+                && tia.get("requiredPatchURLs") != null && !tia.get("requiredPatchURLs").equals("")) {
+            if (!tia.get("requiredPatchLSIDs").contains(patchLSID)) {
+                tia.put("requiredPatchLSIDs", patchLSID + "," + tia.get("requiredPatchLSIDs"));
+            }
+            if (!tia.get("requiredPatchURLs").contains(patchURL)) {
+                tia.put("requiredPatchURLs", patchURL + "," + tia.get("requiredPatchURLs"));
+            }
+        }
+        else {
+            tia.put("requiredPatchLSIDs", patchLSID);
+            tia.put("requiredPatchURLs", patchURL);
+        }
+    }
 
     public static TaskInfoAttributes getTaskInfoAttributes(PipelineModel model) {
         TaskInfoAttributes tia = getCommonTaskInfoAttributes(model);
@@ -141,6 +165,7 @@ public abstract class AbstractPipelineCodeGenerator {
         tia.put(GPConstants.LSID, model.getLsid());
         if (model.getLicense() != null && model.getLicense().length() > 0) {
             tia.put(GetEulaAsManifestProperty.LICENSE, model.getLicense());
+            addLicensePlugin(tia);
         }
         if (model.getDocumentation() != null && model.getDocumentation().length() > 0) {
             tia.put(GPConstants.TASK_DOC, model.getDocumentation());
