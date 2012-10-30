@@ -106,12 +106,18 @@ a:active {
 
 
 .content {
-	position:absolute;
-	left:0px;
-	right:0px;
-	top:71px;
+	position: absolute;
+	left: 0px;
+	right: 0px;
+	top: 0px;
 	width: 100%;
 	z-index:2;
+	height: 100%;
+}
+
+#content > table {
+	height: 100%;
+	padding-top: 71px;
 }
 
 
@@ -513,6 +519,7 @@ a:active {
 
 
 .footer {
+	height: 30px;
 	font-size: 10px;
 	line-height: 16px;
 	font-weight: normal;
