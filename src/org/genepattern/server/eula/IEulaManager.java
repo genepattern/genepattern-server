@@ -19,7 +19,10 @@ public interface IEulaManager {
      *     1) the module requires no EULAs, or
      *     2) the current user has agreed to all EULAs for the module.
      * 
-     * @param taskContext, must have a valid user and taskInfo
+     * @param taskContext, must not be null, and
+     *     must have a non-null and valid taskInfo, and
+     *     must have a non-null and valid userId
+     * 
      * @return true if there is no record of EULA for the current user.
      */
     boolean requiresEula(Context taskContext);
@@ -62,7 +65,10 @@ public interface IEulaManager {
      * Get the list of all End-user license agreements for the given module or pipeline.
      * This list includes all EULA, even if the current user has already agreed to them.
      * 
-     * @param taskContext, must have a valid taskInfo object
+     * @param taskContext, must not be null, and
+     *     must have a non-null and valid taskInfo, and
+     *     must have a non-null and valid userId
+     * 
      * @return
      */
     List<EulaInfo> getAllEulaForModule(Context taskContext);
@@ -74,7 +80,10 @@ public interface IEulaManager {
      * Use this list as the basis for prompting the current user for agreement before
      * going to the job submit form for the task.
      * 
-     * @param taskContext
+     * @param taskContext, must not be null, and
+     *     must have a non-null and valid taskInfo, and
+     *     must have a non-null and valid userId
+     * 
      * @return
      */
     List<EulaInfo> getPendingEulaForModule(Context taskContext);
