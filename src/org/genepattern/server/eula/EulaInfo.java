@@ -9,6 +9,7 @@ import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
 import org.genepattern.util.LSID;
 import org.genepattern.webservice.TaskInfo;
+import org.genepattern.server.webapp.HtmlEncoder;
 
 /**
  * Data representation of a single End-user license agreement 'form' for a module.
@@ -167,7 +168,8 @@ public class EulaInfo implements Comparable<EulaInfo> {
     
     public String getLink() {
         //http://gpbroad.broadinstitute.org:8080/gp/getTaskDoc.jsp?name=urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00044:9&file=ComparativeMarkerSelection.pdf
-        String rel="/gp/getTaskDoc.jsp?name="+moduleLsid+"&file="+license;
+        String htmlEncodedLicense = HtmlEncoder.htmlEncode(license);
+        String rel="/gp/getTaskDoc.jsp?name="+moduleLsid+"&file="+htmlEncodedLicense;
         return rel;
     }
     
