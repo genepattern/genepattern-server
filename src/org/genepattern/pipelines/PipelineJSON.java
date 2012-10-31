@@ -59,7 +59,7 @@ public class PipelineJSON extends JSONObject {
         }
     }
 
-    public PipelineJSON(PipelineModel pipeline, TaskInfo info) {
+    public PipelineJSON(String username, PipelineModel pipeline, TaskInfo info) {
         try {
             this.put(NAME, pipeline.getName());
             this.put(DESCRIPTION, pipeline.getDescription());
@@ -67,7 +67,7 @@ public class PipelineJSON extends JSONObject {
             this.put(PRIVACY, pipeline.isPrivate() ? PRIVATE : PUBLIC);
             this.put(VERSION, extractVersion(pipeline.getLsid()));
             this.put(VERSION_COMMENT, pipeline.getVersion());
-            this.put(LICENSE, getLicense(pipeline, info));
+            this.put(LICENSE, getLicense(username, pipeline, info));
             this.put(DOCUMENTATION, getDocumentation(pipeline, info));
             this.put(LSID, pipeline.getLsid());
         }
@@ -142,10 +142,9 @@ public class PipelineJSON extends JSONObject {
             }
         }
     }
-    
-    private String getLicense(PipelineModel pipeline, TaskInfo info) {
-        // TODO: this is not true 'User doesn't matter, a module will always have the same license'
-        Context taskContext = Context.getContextForUser("");    
+
+    private String getLicense(String username, PipelineModel pipeline, TaskInfo info) {
+        Context taskContext = Context.getContextForUser(username);
         taskContext.setTaskInfo(info);
         List<EulaInfo> eulaList = EulaManager.instance(taskContext).getEulas(info);
         if (eulaList.size() < 1) return "";

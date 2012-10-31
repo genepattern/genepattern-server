@@ -278,7 +278,7 @@ public class PipelineQueryServlet extends HttpServlet {
         }
 
         ResponseJSON responseObject = new ResponseJSON();
-        PipelineJSON pipelineObject = new PipelineJSON(pipeline, info);
+        PipelineJSON pipelineObject = new PipelineJSON(username, pipeline, info);
         ResponseJSON modulesObject = createModuleList(pipeline);
         ResponseJSON pipesObject = PipeJSON.createPipeList(pipeline.getTasks());
         ResponseJSON filesObject = createFileList(pipeline);
