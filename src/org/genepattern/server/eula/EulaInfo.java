@@ -167,7 +167,7 @@ public class EulaInfo implements Comparable<EulaInfo> {
     
     public String getLink() {
         //http://gpbroad.broadinstitute.org:8080/gp/getTaskDoc.jsp?name=urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00044:9&file=ComparativeMarkerSelection.pdf
-        String rel="/gp/getTaskDoc?name="+moduleLsid+"&file="+license;
+        String rel="/gp/getTaskDoc.jsp?name="+moduleLsid+"&file="+license;
         return rel;
     }
     
