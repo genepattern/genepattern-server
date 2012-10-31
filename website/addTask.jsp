@@ -42,9 +42,11 @@
          java.util.Set,
          java.util.TreeSet,
          java.util.TreeMap,
-         java.util.Vector"
+         java.util.Vector,
+         org.genepattern.server.config.ServerConfiguration,
+         org.genepattern.server.eula.EulaManager,
+         org.genepattern.server.eula.EulaInfo"
 	session="false" contentType="text/html" language="Java" %>
-
 <%
 String ua = request.getHeader( "User-Agent" );
 boolean isMSIE = ( ua != null && ua.indexOf( "MSIE" ) != -1 );
@@ -539,12 +541,15 @@ function addNewFileType(name, desc){
     </td>
     <td>
         <%
-            if(taskInfo != null && tia != null
-                    && tia.get(GPConstants.LICENSE) != null
-                    && !tia.get(GPConstants.LICENSE).equals(""))
+            ServerConfiguration.Context taskContext = ServerConfiguration.Context.getContextForUser(userID);
+            if(taskContext != null)
             {
-        %>      <a href="getFile.jsp?task=<%=(String)taskInfo.giveTaskInfoAttributes().get(GPConstants.LSID) %>&file=<%=URLEncoder.encode(tia.get(GPConstants.LICENSE))%>" target="new"><%=StringUtils.htmlEncode(tia.get(GPConstants.LICENSE)) %></a>
+                List<EulaInfo> eulas= EulaManager.instance(taskContext).getEulas(taskInfo);
+                if(eulas != null && eulas.size() != 0)
+                {
+        %>          <a href="<%=eulas.get(0).getLink()%>" target="new"><%=eulas.get(0).getLicense() %></a>
         <%
+                }
             }
         %>
         <a href='modules/createhelp.jsp#License_brief' target='help'><img border='0' src='images/help2.jpg'/></a>
