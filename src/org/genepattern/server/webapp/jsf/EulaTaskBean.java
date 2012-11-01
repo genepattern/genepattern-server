@@ -187,7 +187,7 @@ public class EulaTaskBean {
         Object obj = UIBeanHelper.getRequest().getSession().getAttribute(GPConstants.LSID);
         if (obj instanceof String) {
             String taskNameOrLsid = (String) obj;
-            if (currentLsid != null && !currentLsid.equals(taskNameOrLsid)) {
+            if (taskNameOrLsid.equals(currentLsid)) {
                 setCurrentLsid(taskNameOrLsid);
             }
         }
