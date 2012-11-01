@@ -30,7 +30,14 @@
 		 org.genepattern.util.LSIDUtil,
 		 java.io.File,
 		 java.util.Map,
-		 java.util.HashMap,org.genepattern.server.webapp.jsf.AuthorizationHelper,java.util.*,java.util.Collection,java.util.Iterator"
+		 java.util.HashMap,
+		 org.genepattern.server.webapp.jsf.AuthorizationHelper,
+		 java.util.*,
+		 java.util.Collection,
+		 java.util.Iterator,
+		 org.genepattern.server.eula.EulaManager,
+		 org.genepattern.server.eula.EulaInfo,
+		 org.genepattern.server.config.ServerConfiguration"
 	session="true" contentType="text/html" language="Java" %>
 <%
 response.setHeader("Cache-Control", "no-store"); // HTTP 1.1 cache control
@@ -191,8 +198,20 @@ if (docFiles != null){
 
 	}
 }
-out.print("<br>");
 
+out.println("<br>License: ");
+ServerConfiguration.Context taskContext = ServerConfiguration.Context.getContextForUser(userID);
+if(taskContext != null)
+{
+    List<EulaInfo> eulas= EulaManager.instance(taskContext).getEulas(task);
+    if(eulas != null && eulas.size() != 0)
+    {
+        out.println("<a href='" + eulas.get(0).getLink() + "' target='new'>" + eulas.get(0).getLicense() + "</a>");
+    }
+}
+%>
+
+<%
 //XXXXXXXXXXX
 
 try {
