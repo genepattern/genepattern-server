@@ -1,0 +1,90 @@
+# example config file, for alternate license
+#
+default.properties: 
+    # not necessary, because it's enabled by default
+    org.genepattern.server.eula.EulaManager.enabled: true
+#
+# Note: the yaml parser for a GP config file requires at least one 'executors' entry
+#
+executors:
+    # default executor for all jobs, it is included in GenePattern
+    RuntimeExec: 
+        classname: org.genepattern.server.executor.RuntimeCommandExecutor
+        
+#
+# examples
+#
+
+# 1) site-license
+#    a) for all modules matching the taskName
+#    b) for all modules matching the base lsid (no version)
+#    c) for a specific version of the module
+
+# 2) disable license for all members of a group
+# 3) disable license for a specific user
+
+# override default.properties and executor->default.properties based on taskname or lsid
+module.properties:
+    # example of a 'site-license' for a module, by disabling the EulaManager
+    # site-license, by lsid
+    "urn:lsid:9090.gpdev.gpint01:genepatternmodules:812:3":
+        org.genepattern.server.eula.EulaManager.enabled: false
+    # site-license, by lsid, no version (all versions of a particular module)
+    #"urn:lsid:9090.gpdev.gpint01:genepatternmodules:812":
+    #    org.genepattern.server.eula.EulaManager.enabled: false
+    # site-license, by module name (all versions of all modules with the given name)
+    #"testLicenseAgreement":
+    #    org.genepattern.server.eula.EulaManager.enabled: false
+
+    # 1) by taskName
+    ComparativeMarkerSelection:
+        org.genepattern.server.eula.EulaManager.enabled: false
+    # 2) by taskLsid (no version)
+    urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00044: 
+        org.genepattern.server.eula.EulaManager.enabled: false
+    # 3) by taskLsid (version), with custom properties
+    urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00044:4: 
+        org.genepattern.server.eula.EulaManager.enabled: false
+    ConvertLineEndings:
+        org.genepattern.server.eula.EulaManager.enabled: false
+
+user.properties:
+    # userA is in the broadgroup and the admin group
+    userA: 
+        module.properties:
+            "urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00044:4":
+                org.genepattern.server.eula.EulaManager.enabled: false
+    # userC is only in the broadgroup
+    userC:
+        module.properties:
+            "urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00044:4":
+                org.genepattern.server.eula.EulaManager.enabled: false
+    
+    userD:
+        test.prop: USERD_VALUE
+    userE:
+        module.properties:
+            # by taskName
+            ComparativeMarkerSelection:
+                org.genepattern.server.eula.EulaManager.enabled: false
+            # by taskLsid (no version)
+            "urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00044":
+                org.genepattern.server.eula.EulaManager.enabled: false
+            # by taskLsid (version)
+            "urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00044:4":
+                org.genepattern.server.eula.EulaManager.enabled: false
+# when there are identical group properties set, the last group 
+# in the group.properties takes precedence
+group.properties:
+    broadgroup:
+        org.genepattern.server.eula.EulaManager.enabled: false
+        module.properties:
+            # by taskName
+            ComparativeMarkerSelection:
+                org.genepattern.server.eula.EulaManager.enabled: false
+            # by taskLsid (no version)
+            "urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00044":
+                org.genepattern.server.eula.EulaManager.enabled: false
+            # by taskLsid (version)
+            "urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00044:4":
+                org.genepattern.server.eula.EulaManager.enabled: false
