@@ -209,6 +209,7 @@ if(taskContext != null)
         out.println("<a href='" + eulas.get(0).getLink() + "' target='new'>" + eulas.get(0).getLicense() + "</a>");
     }
 }
+out.println("<br>");        
 %>
 
 <%
