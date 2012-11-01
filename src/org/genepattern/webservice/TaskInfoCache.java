@@ -16,8 +16,11 @@ import org.apache.log4j.Logger;
 import org.genepattern.server.TaskIDNotFoundException;
 import org.genepattern.server.TaskLSIDNotFoundException;
 import org.genepattern.server.config.ServerConfiguration;
+import org.genepattern.server.config.ServerConfiguration.Context;
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.domain.TaskMaster;
+import org.genepattern.server.eula.EulaInfo;
+import org.genepattern.server.eula.EulaManager;
 import org.genepattern.server.genepattern.GenePatternAnalysisTask;
 import org.genepattern.server.webservice.server.DirectoryManager;
 import org.genepattern.util.GPConstants;
@@ -142,11 +145,25 @@ public class TaskInfoCache {
             return null;
         }
         
-        File[] docFiles = taskLibDir.listFiles(isDocFilenameFilter);
-        boolean hasDoc = docFiles != null && docFiles.length > 0;
+        List<File> docFiles = new ArrayList<File>(Arrays.asList(taskLibDir.listFiles(isDocFilenameFilter)));
+        
+        // Filter out the license files
+        List<EulaInfo> infos = EulaManager.instance(new Context()).getEulas(TaskInfoCache.instance().getTask(lsid));
+        if (infos.size() > 0) {
+            for (File file : docFiles) {
+                 for (EulaInfo info : infos) {
+                     if (file.getName().equals(info.getLicense())) {
+                         docFiles.remove(file);
+                     }
+                 }
+            }
+        }
+        
+        
+        boolean hasDoc = docFiles != null && docFiles.size() > 0;
         if (hasDoc) {
             // put version.txt last, all others alphabetically
-            Arrays.sort(docFiles, docFilenameComparator);
+            Collections.sort(docFiles, docFilenameComparator);
         }
         if (docFiles == null) {
             return docFilenames;
