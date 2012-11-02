@@ -1,0 +1,32 @@
+# example config file, for alternate license
+#
+default.properties: 
+    # not necessary, because it's enabled by default
+    org.genepattern.server.eula.EulaManager.enabled: true
+#
+# Note: the yaml parser for a GP config file requires at least one 'executors' entry
+#
+executors:
+    # default executor for all jobs, it is included in GenePattern
+    RuntimeExec: 
+        classname: org.genepattern.server.executor.RuntimeCommandExecutor
+        
+#
+# examples
+#
+
+# 1) site-license
+#    a) for all modules matching the taskName
+#    b) for all modules matching the base lsid (no version)
+#    c) for a specific version of the module
+
+# 2) disable license for all members of a group
+# 3) disable license for a specific user
+
+# override default.properties and executor->default.properties based on taskname or lsid
+
+user.properties:
+    gp_test_user: 
+        module.properties:
+            "urn:lsid:9090.gpdev.gpint01:genepatternmodules:812:3":
+                org.genepattern.server.eula.EulaManager.enabled: false

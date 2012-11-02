@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.genepattern.junitutil.FileUtil;
 import org.genepattern.server.config.ServerConfiguration;
+import org.genepattern.server.config.TestServerConfigurationModuleProps;
 import org.genepattern.server.config.ServerConfiguration.Context;
 import org.genepattern.webservice.TaskInfo;
 import org.junit.After;
@@ -27,9 +28,6 @@ public class TestEulaManagerSiteLicense {
     
     @Before
     public void setUp() {
-        //load a 'config.yaml' file from the directory which contains this source file
-        loadConfigFile("config_EulaManager.site-license.yaml");
-        
         File zipfile=FileUtil.getSourceFile(TestEulaManagerSiteLicense.class, "testLicenseAgreement_v3.zip");
         taskInfo = TestEulaManagerImpl.initTaskInfoFromZipfile(zipfile);
         
@@ -57,6 +55,8 @@ public class TestEulaManagerSiteLicense {
         //load a 'config.yaml' file from the directory which contains this source file
         File configFile=FileUtil.getSourceFile(TestEulaManagerSiteLicense.class, filename);
         String configFilepath=configFile.getAbsolutePath();
+        File resourceDir = FileUtil.getSourceDir(TestEulaManagerSiteLicense.class);
+        System.setProperty("genepattern.properties", resourceDir.getAbsolutePath());
         System.setProperty("config.file", configFilepath);
         ServerConfiguration.instance().reloadConfiguration(configFilepath);
     }
@@ -67,10 +67,32 @@ public class TestEulaManagerSiteLicense {
      */
     @Test
     public void testGetEulaSiteLicense() {
+        //load a 'config.yaml' file from the directory which contains this source file
+        loadConfigFile("config_EulaManager.site-license.yaml");
+        
         List<EulaInfo> eulas=EulaManager.instance(altContext).getAllEulaForModule(altContext);
         Assert.assertEquals("eula manager is disabled for this module", 0, eulas.size());
-        
         Assert.assertEquals("eula manager is disabled for this module, should have 0 licenses", 0, EulaManager.instance(altContext).getEulas(taskInfo).size());
+    }
+    
+    @Test
+    public void testGetEulaGroupLicense() {
+        //load a 'config.yaml' file from the directory which contains this source file
+        loadConfigFile("config_EulaManager.group-license.yaml");
+        
+        List<EulaInfo> eulas=EulaManager.instance(altContext).getAllEulaForModule(altContext);
+        Assert.assertEquals("eula manager is disabled for this module & group", 0, eulas.size());
+        Assert.assertEquals("eula manager is disabled for this module & group, should have 0 licenses", 0, EulaManager.instance(altContext).getEulas(taskInfo).size());
+    }
+    
+    @Test
+    public void testGetEulaUserLicense() {
+        //load a 'config.yaml' file from the directory which contains this source file
+        loadConfigFile("config_EulaManager.user-license.yaml");
+        
+        List<EulaInfo> eulas=EulaManager.instance(altContext).getAllEulaForModule(altContext);
+        Assert.assertEquals("eula manager is disabled for this module & user", 0, eulas.size());
+        Assert.assertEquals("eula manager is disabled for this module & user, should have 0 licenses", 0, EulaManager.instance(altContext).getEulas(taskInfo).size());
     }
 
 }

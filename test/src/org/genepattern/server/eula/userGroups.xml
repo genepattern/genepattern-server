@@ -1,0 +1,9 @@
+<!-- map of users to groups -->
+
+<userGroups>
+
+<group name="broadgroup">
+    <user name="gp_test_user" />
+</group>
+
+</userGroups>
