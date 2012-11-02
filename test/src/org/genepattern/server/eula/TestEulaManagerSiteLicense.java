@@ -5,7 +5,6 @@ import java.util.List;
 
 import org.genepattern.junitutil.FileUtil;
 import org.genepattern.server.config.ServerConfiguration;
-import org.genepattern.server.config.TestServerConfigurationModuleProps;
 import org.genepattern.server.config.ServerConfiguration.Context;
 import org.genepattern.webservice.TaskInfo;
 import org.junit.After;
