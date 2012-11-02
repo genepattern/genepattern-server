@@ -34,9 +34,6 @@
 <!-- begin content area. this area contains three columns in an adjustable table, including tasks & pipeline, the center working space, and recent jobs. -->
 <div id="content" class="content">
 <table width="100%" border="0" cellspacing="0" cellpadding="0">
-	<tr>
-
-	</tr>
 	<!-- main content area.  -->
 	<tr>
 		<td valign="top" class="maincontent" id="maincontent">
