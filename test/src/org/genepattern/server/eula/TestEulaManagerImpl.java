@@ -49,7 +49,7 @@ public class TestEulaManagerImpl {
         return initTaskInfoFromZipfile(zipfile);
     }
 
-    private static TaskInfo initTaskInfoFromZipfile(final File zipfile) {
+    public static TaskInfo initTaskInfoFromZipfile(final File zipfile) {
         TaskInfo taskInfo = null;
         try {
             taskInfo = TaskUtil.getTaskInfoFromZip(zipfile);
