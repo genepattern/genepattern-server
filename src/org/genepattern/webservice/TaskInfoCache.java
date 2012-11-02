@@ -146,17 +146,23 @@ public class TaskInfoCache {
         }
         
         List<File> docFiles = new ArrayList<File>(Arrays.asList(taskLibDir.listFiles(isDocFilenameFilter)));
+        List<File> approvedDocFiles = new ArrayList<File>();
         
         // Filter out the license files
         List<EulaInfo> infos = EulaManager.instance(new Context()).getEulas(TaskInfoCache.instance().getTask(lsid));
         if (infos.size() > 0) {
             for (File file : docFiles) {
+                boolean approved = true;
                  for (EulaInfo info : infos) {
                      if (file.getName().equals(info.getLicense())) {
-                         docFiles.remove(file);
+                         approved = false;
                      }
                  }
+                 if (approved) {
+                     approvedDocFiles.add(file);
+                 }
             }
+            docFiles = approvedDocFiles;
         }
         
         
