@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+#
+# extract the stdout from the lsf file into a new file
+input_file=$1
+output_file=$2
+
+sed -e '1,/The output, if any/d' -e'/PS/,$d' "$input_file" > "$output_file"

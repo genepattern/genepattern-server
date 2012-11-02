@@ -1,0 +1,46 @@
+#!/usr/bin/env bash
+#
+# wrapper script which runs bsub via ssh to a remote host
+#
+# I wrote this so that I can submit LSF jobs from gpint01 from my GP server running on my MacBook.
+#
+
+# This command line works when run from a bash shell on gpint01:
+# 
+# bsub -J 7 -o .lsf.out -e stderr.txt -q genepattern -P gptest -R 'rusage[mem=2]' -M 2\
+#     "java -cp /xchip/gpdev/users/pcarr/servers/gp-3.2-oracle/taskLib/javaEchoSleeper.5.3341/EchoSleeper.jar org.genepattern.testmodule.EchoSleeper\
+#     0 'Hello, it'\''s my world!' false 0 >> 'stdout.txt'"
+
+remote_host="gpint01";
+remote_bsub_wrapper="/xchip/gpdev/users/pcarr/scripts/wrap_bsub"
+# TODO: configure dotkit_list from genepattern
+dotkit_list="LSF\ Java-1.6";
+
+quote_arg() {
+    arg="$1";
+
+    # escape single quote (') characters
+    #arg=${arg//\'/\'\\\'\'}
+    # escape all '!' in $1
+    #q_arg=`echo $q_arg | sed 's,!,\!,g'`
+    # escape all '$' in $q_arg
+    #q_arg=`echo $q_arg | sed 's,$,\$,g'`
+    # escape all '"' in $q_arg
+    #arg=`echo $q_arg | sed 's,",\",g'`
+
+    # wrap each arg in double quotes
+    echo "\"$arg\"";
+}
+
+arg_list="";
+for x in "$@"
+do
+    arg=$(quote_arg "$x");
+    arg_list="$arg_list $arg "
+done
+
+echo -E "bsub $arg_list" > ".lsf.wrap_bsub";
+
+wd=`pwd`;
+#exec -- ssh "$remote_host" "$remote_bsub_wrapper" "$wd" "$dotkit_list" "$arg_list";
+exec -- ssh "$remote_host" "$remote_bsub_wrapper" "$wd" "$dotkit_list";
