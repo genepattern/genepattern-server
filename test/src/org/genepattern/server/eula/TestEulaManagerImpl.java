@@ -367,7 +367,7 @@ public class TestEulaManagerImpl {
         taskContext.setTaskInfo(taskInfo);
         eulaMgr.setGetEulaFromTask(stub);
         eulaMgr.setRecordEulaStrategy(RecordEulaStub.instance());
-        boolean requiresEula=EulaManager.instance(taskContext).requiresEula(taskContext);
+        boolean requiresEula=eulaMgr.requiresEula(taskContext);
         Assert.assertFalse("the module requires no eula", requiresEula);
     }
     
@@ -392,7 +392,7 @@ public class TestEulaManagerImpl {
     public void testRequiresEula_NullTaskContext() {
         Context taskContext=null;        
         try { 
-            EulaManager.instance(taskContext).requiresEula(taskContext);
+            eulaMgr.requiresEula(taskContext);
             Assert.fail("Expecting IllegalArgumentException, when taskContext==null");
         }
         catch (IllegalArgumentException e) {
@@ -410,7 +410,7 @@ public class TestEulaManagerImpl {
         eulaMgr.setRecordEulaStrategy(RecordEulaStub.instance());
         
         try { 
-            EulaManager.instance(taskContext).requiresEula(taskContext);
+            eulaMgr.requiresEula(taskContext);
             Assert.fail("Expecting IllegalArgumentException, when taskContext.taskInfo==null");
         }
         catch (IllegalArgumentException e) {
@@ -432,7 +432,7 @@ public class TestEulaManagerImpl {
         eulaMgr.setRecordEulaStrategy(RecordEulaStub.instance());
         
         try { 
-            EulaManager.instance(taskContext).requiresEula(taskContext);
+            eulaMgr.requiresEula(taskContext);
             Assert.fail("Expecting IllegalArgumentException, when taskContext.taskInfo==null");
         }
         catch (IllegalArgumentException e) {
@@ -454,7 +454,7 @@ public class TestEulaManagerImpl {
         eulaMgr.setRecordEulaStrategy(RecordEulaStub.instance());
         
         try { 
-            EulaManager.instance(taskContext).requiresEula(taskContext);
+            eulaMgr.requiresEula(taskContext);
             Assert.fail("Expecting IllegalArgumentException, when taskContext.taskInfo==\"\" (empty string)");
         }
         catch (IllegalArgumentException e) {
@@ -524,7 +524,7 @@ public class TestEulaManagerImpl {
         taskContext.setTaskInfo(taskInfo);
         eulaMgr.setGetEulaFromTask(stub);
         eulaMgr.setRecordEulaStrategy(RecordEulaStub.instance());
-        EulaManager.instance(taskContext).recordEula(taskContext);
+        eulaMgr.recordEula(taskContext);
     }
     
     @Test
@@ -584,7 +584,7 @@ public class TestEulaManagerImpl {
         eulaMgr.setGetEulaFromTask(stub);
         eulaMgr.setRecordEulaStrategy(RecordEulaStub.instance());
         try { 
-            EulaManager.instance(taskContext).recordEula(taskContext);
+            eulaMgr.recordEula(taskContext);
             Assert.fail("Expecting IllegalArgumentException, when taskContext.taskInfo.lsid==null");
         }
         catch (IllegalArgumentException e) {
@@ -607,7 +607,7 @@ public class TestEulaManagerImpl {
         eulaMgr.setGetEulaFromTask(stub);
         eulaMgr.setRecordEulaStrategy(RecordEulaStub.instance());
         try { 
-            EulaManager.instance(taskContext).recordEula(taskContext);
+            eulaMgr.recordEula(taskContext);
             Assert.fail("Expecting IllegalArgumentException, when taskContext.taskInfo.lsid==\"\" (empty string)");
         }
         catch (IllegalArgumentException e) {
@@ -651,7 +651,7 @@ public class TestEulaManagerImpl {
         eulaMgr.setGetEulaFromTask(stub);
         eulaMgr.setRecordEulaStrategy(RecordEulaStub.instance());
         try { 
-            EulaManager.instance(taskContext).recordEula(taskContext);
+            eulaMgr.recordEula(taskContext);
             Assert.fail("Expecting IllegalArgumentException, when taskContext.userId==\"\" (empty string)");
         }
         catch (IllegalArgumentException e) {
@@ -672,8 +672,8 @@ public class TestEulaManagerImpl {
         taskContext.setTaskInfo(taskInfo);
         eulaMgr.setGetEulaFromTask(stub);
         eulaMgr.setRecordEulaStrategy(RecordEulaStub.instance());
-        EulaManager.instance(taskContext).recordEula(taskContext);
-        boolean requiresEula=EulaManager.instance(taskContext).requiresEula(taskContext);
+        eulaMgr.recordEula(taskContext);
+        boolean requiresEula=eulaMgr.requiresEula(taskContext);
         Assert.assertFalse("the user has already agreed", requiresEula);
     }
 
@@ -691,7 +691,7 @@ public class TestEulaManagerImpl {
         taskContext.setTaskInfo(taskInfo);
         eulaMgr.setGetEulaFromTask(stub);
         eulaMgr.setRecordEulaStrategy(RecordEulaStub.instance());
-        List<EulaInfo> eulas=EulaManager.instance(taskContext).getPendingEulaForModule(taskContext);
+        List<EulaInfo> eulas=eulaMgr.getPendingEulaForModule(taskContext);
         
         //should be empty, for a module which has no eula
         Assert.assertEquals("pendingEulaForModule should be empty for a module which has no eulas", 0, eulas.size());
@@ -736,8 +736,8 @@ public class TestEulaManagerImpl {
         taskContext.setTaskInfo(taskInfo);
         eulaMgr.setGetEulaFromTask(stub);
         eulaMgr.setRecordEulaStrategy(RecordEulaStub.instance());
-        EulaManager.instance(taskContext).recordEula(taskContext);
-        List<EulaInfo> eulas=EulaManager.instance(taskContext).getPendingEulaForModule(taskContext);
+        eulaMgr.recordEula(taskContext);
+        List<EulaInfo> eulas=eulaMgr.getPendingEulaForModule(taskContext);
 
         Assert.assertEquals("pendingEulaForModule.size should be 0 if the current user has already agreed", 0, eulas.size());
     }
