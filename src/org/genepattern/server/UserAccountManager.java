@@ -49,6 +49,9 @@ public class UserAccountManager {
     private boolean passwordRequired = true;
     private boolean createAccountAllowed = true;
     private boolean showRegistrationLink = true;
+    
+    //this property is optionally (when set) used in the default goup membership class, XmlGroupMembership
+    private File userGroups=null;
 
     /**
      * private constructor requires call to {@link #instance()}.
@@ -76,6 +79,19 @@ public class UserAccountManager {
      */
     public boolean isPasswordRequired() {
         return passwordRequired;
+    }
+
+    /**
+     * Optionally set a non-default location for the users and groups file.
+     * You must call refreshUsersAndGroups before this change takes effect.
+     * 
+     * Note: this only has effect if you are using the default (XmlGroupMembership) implementation
+     * of the IGroupMembershipPlugin interface.
+     * 
+     * @param userGroups
+     */
+    public void setUserGroups(final File userGroups) {
+        this.userGroups=userGroups;
     }
 
     /**
@@ -371,7 +387,12 @@ public class UserAccountManager {
     
     private void loadGroupMembership(String customGroupMembershipClass) {
         if (customGroupMembershipClass == null) {
-            this.groupMembership = new XmlGroupMembership();                
+            if (userGroups != null) {
+                this.groupMembership = new XmlGroupMembership(userGroups); 
+            }
+            else {
+                this.groupMembership = new XmlGroupMembership(); 
+            }
         }
         else {
             try {
