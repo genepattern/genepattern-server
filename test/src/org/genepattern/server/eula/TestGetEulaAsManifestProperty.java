@@ -7,6 +7,7 @@ import java.util.List;
 import junit.framework.Assert;
 
 import org.genepattern.junitutil.FileUtil;
+import org.genepattern.junitutil.TaskUtil;
 import org.genepattern.server.config.ServerConfiguration.Context;
 import org.genepattern.server.eula.InitException;
 import org.genepattern.webservice.TaskInfo;
@@ -38,7 +39,7 @@ public class TestGetEulaAsManifestProperty {
     @Test
     public void testGetEulaFromModule() {
         final String filename="testLicenseAgreement_v3.zip";
-        TaskInfo taskInfo = TestEulaManagerImpl.initTaskInfoFromZip(filename);
+        TaskInfo taskInfo = TaskUtil.getTaskInfoFromZip(this.getClass(), filename);
         Assert.assertNotNull("taskInfo==null", taskInfo);
         File licenseFile=FileUtil.getSourceFile(TestGetEulaAsManifestProperty.class, "gp_server_license.txt");
 

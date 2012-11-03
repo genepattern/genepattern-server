@@ -1,12 +1,11 @@
 package org.genepattern.server.eula;
 
-import java.io.File;
 import java.util.Collections;
 import java.util.List;
 
 import junit.framework.Assert;
 
-import org.genepattern.junitutil.FileUtil;
+import org.genepattern.junitutil.ConfigUtil;
 import org.genepattern.server.config.ServerConfiguration;
 import org.genepattern.server.config.ServerConfiguration.Context;
 import org.genepattern.webservice.TaskInfo;
@@ -20,24 +19,16 @@ import org.junit.Test;
  * @author pcarr
  */
 public class TestEulaManagerNoOp {
-    private static String configFilename="config_EulaManager.disabled.yaml";
     
     @Before
     public void setUp() {
-        //load a 'config.yaml' file from the directory which contains this source file
-        File configFile=FileUtil.getSourceFile(TestEulaManagerNoOp.class, configFilename);
-        String configFilepath=configFile.getAbsolutePath();
-        System.setProperty("config.file", configFilepath);
-        ServerConfiguration.instance().reloadConfiguration(configFilepath);
+        ConfigUtil.loadConfigFile(this.getClass(), "config_EulaManager.disabled.yaml");
     }
     
     @After
     public void tearDown() {
         //revert back to a 'default' config.file
-        File configFile=FileUtil.getSourceFile(TestEulaManagerNoOp.class, "config.yaml");
-        String configFilepath=configFile.getAbsolutePath();
-        System.setProperty("config.file", configFilepath);
-        ServerConfiguration.instance().reloadConfiguration(configFilepath);
+        ConfigUtil.loadConfigFile(null);
     }
     
     @Test

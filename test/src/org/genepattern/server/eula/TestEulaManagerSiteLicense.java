@@ -3,7 +3,10 @@ package org.genepattern.server.eula;
 import java.io.File;
 import java.util.List;
 
+import org.genepattern.junitutil.ConfigUtil;
 import org.genepattern.junitutil.FileUtil;
+import org.genepattern.junitutil.TaskUtil;
+import org.genepattern.server.UserAccountManager;
 import org.genepattern.server.config.ServerConfiguration;
 import org.genepattern.server.config.ServerConfiguration.Context;
 import org.genepattern.webservice.TaskInfo;
@@ -22,14 +25,20 @@ import org.junit.Test;
  */
 public class TestEulaManagerSiteLicense {
     private TaskInfo taskInfo=null;
-    private Context stdContext;
-    private Context altContext;
+    private Context stdContext=null;
+    private Context altContext=null;
+    
+    //to deal with system properties that should be undone after the test
+    private String initGpProperties=null;
+    private String initConfigFile=null;
     
     @Before
     public void setUp() {
-        File zipfile=FileUtil.getSourceFile(TestEulaManagerSiteLicense.class, "testLicenseAgreement_v3.zip");
-        taskInfo = TestEulaManagerImpl.initTaskInfoFromZipfile(zipfile);
-        
+        //load custom userGroups file
+        ConfigUtil.setUserGroups(this.getClass(), "userGroups.xml");
+
+        //initialize taskInfo
+        taskInfo = TaskUtil.getTaskInfoFromZip(this.getClass(), "testLicenseAgreement_v3.zip");         
         //prove that we loaded the expected module
         Assert.assertNotNull("taskInfo==null", taskInfo);
         Assert.assertEquals("taskName", "testLicenseAgreement", taskInfo.getName());
@@ -43,22 +52,36 @@ public class TestEulaManagerSiteLicense {
     
     @After
     public void tearDown() {
-        //revert back to a 'default' config.file
-        File configFile=FileUtil.getSourceFile(TestEulaManagerNoOp.class, "config.yaml");
-        String configFilepath=configFile.getAbsolutePath();
-        System.setProperty("config.file", configFilepath);
-        ServerConfiguration.instance().reloadConfiguration(configFilepath);
+        UserAccountManager.instance().setUserGroups(null);
+        UserAccountManager.instance().refreshUsersAndGroups();
+
+//        //revert back to a 'default' config.file
+//        File configFile=FileUtil.getSourceFile(TestEulaManagerSiteLicense.class, "config.yaml");
+//        String configFilepath=configFile.getAbsolutePath();
+//        System.setProperty("config.file", configFilepath);
+//        ServerConfiguration.instance().reloadConfiguration(configFilepath);
+        
+        //System.getProperties().remove("genepattern.properties");
+        System.getProperties().remove("config.file");
+        ServerConfiguration.instance().reloadConfiguration();
+        
+//        if (initGpProperties != null) {
+//            System.setProperty("genepattern.properties", initGpProperties);
+//        }
+//        if (initConfigFile != null) {
+//            System.setProperty("config.file", initConfigFile);
+//        }
     }
     
-    private void loadConfigFile(final String filename) {
-        //load a 'config.yaml' file from the directory which contains this source file
-        File configFile=FileUtil.getSourceFile(TestEulaManagerSiteLicense.class, filename);
-        String configFilepath=configFile.getAbsolutePath();
-        File resourceDir = FileUtil.getSourceDir(TestEulaManagerSiteLicense.class);
-        System.setProperty("genepattern.properties", resourceDir.getAbsolutePath());
-        System.setProperty("config.file", configFilepath);
-        ServerConfiguration.instance().reloadConfiguration(configFilepath);
-    }
+//    private void loadConfigFile(final String filename) {
+//        //load a 'config.yaml' file from the directory which contains this source file
+//        File configFile=FileUtil.getSourceFile(TestEulaManagerSiteLicense.class, filename);
+//        String configFilepath=configFile.getAbsolutePath();
+//        File resourceDir = FileUtil.getSourceDir(TestEulaManagerSiteLicense.class);
+//        System.setProperty("genepattern.properties", resourceDir.getAbsolutePath());
+//        System.setProperty("config.file", configFilepath);
+//        ServerConfiguration.instance().reloadConfiguration(configFilepath);
+//    }
     
     
     /**
@@ -67,7 +90,7 @@ public class TestEulaManagerSiteLicense {
     @Test
     public void testGetEulaSiteLicense() {
         //load a 'config.yaml' file from the directory which contains this source file
-        loadConfigFile("config_EulaManager.site-license.yaml");
+        ConfigUtil.loadConfigFile(this.getClass(), "config_EulaManager.site-license.yaml");
         
         List<EulaInfo> eulas=EulaManager.instance(altContext).getAllEulaForModule(altContext);
         Assert.assertEquals("eula manager is disabled for this module", 0, eulas.size());
@@ -77,7 +100,7 @@ public class TestEulaManagerSiteLicense {
     @Test
     public void testGetEulaGroupLicense() {
         //load a 'config.yaml' file from the directory which contains this source file
-        loadConfigFile("config_EulaManager.group-license.yaml");
+        ConfigUtil.loadConfigFile(this.getClass(), "config_EulaManager.group-license.yaml");
         
         List<EulaInfo> eulas=EulaManager.instance(altContext).getAllEulaForModule(altContext);
         Assert.assertEquals("eula manager is disabled for this module & group", 0, eulas.size());
@@ -87,7 +110,7 @@ public class TestEulaManagerSiteLicense {
     @Test
     public void testGetEulaUserLicense() {
         //load a 'config.yaml' file from the directory which contains this source file
-        loadConfigFile("config_EulaManager.user-license.yaml");
+        ConfigUtil.loadConfigFile(this.getClass(), "config_EulaManager.user-license.yaml");
         
         List<EulaInfo> eulas=EulaManager.instance(altContext).getAllEulaForModule(altContext);
         Assert.assertEquals("eula manager is disabled for this module & user", 0, eulas.size());

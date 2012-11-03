@@ -1,13 +1,12 @@
 package org.genepattern.server.eula;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.log4j.Logger;
 import org.genepattern.junitutil.FileUtil;
-import org.genepattern.server.TaskUtil;
+import org.genepattern.junitutil.TaskUtil;
 import org.genepattern.server.config.ServerConfiguration.Context;
 import org.genepattern.server.eula.InitException;
 import org.genepattern.webservice.TaskInfo;
@@ -42,27 +41,13 @@ public class TestEulaManagerImpl {
      * 
      * @param filename
      * @return
+     * 
+     * @deprecated - use {@link TaskUtil#getTaskInfoFromZip(File)} instead
      */
-    protected static TaskInfo initTaskInfoFromZip(final String filename) {
-        //the name of a zip file, relative to this source file
-        File zipfile = getSourceFile(filename);
-        return initTaskInfoFromZipfile(zipfile);
+    private TaskInfo initTaskInfoFromZip(final String filename) {
+        return TaskUtil.getTaskInfoFromZip(this.getClass(), filename);
     }
 
-    public static TaskInfo initTaskInfoFromZipfile(final File zipfile) {
-        TaskInfo taskInfo = null;
-        try {
-            taskInfo = TaskUtil.getTaskInfoFromZip(zipfile);
-        }
-        catch (IOException e) {
-            Assert.fail("Error getting taskInfo from zipFile="+zipfile+". Error: "+e.getLocalizedMessage());
-        }
-        catch (Throwable t) {
-            Assert.fail("Error getting taskInfo from zipFile="+zipfile+". Error: "+t.getLocalizedMessage());
-        }
-        return taskInfo;
-    }
-    
     private static List<TaskInfo> initTaskInfosFromZip(final String filename) {
         List<TaskInfo> taskInfos = new ArrayList<TaskInfo>();
         //the name of a zip file, relative to this source file
