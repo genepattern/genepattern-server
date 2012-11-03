@@ -71,4 +71,14 @@ public class DbUtil {
         }
     }
 
+    public static void shutdownDb() {
+        try {
+            //log.info("stopping HSQLDB ...");
+            HsqlDbUtil.shutdownDatabase();
+            //log.info("done!");
+        }
+        catch (Throwable t) {
+            //log.error("Error stopoping HSQLDB: "+t.getLocalizedMessage(), t);
+        }
+    }
 }
