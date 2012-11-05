@@ -80,6 +80,9 @@ public class TestLsfErrorCheckerImpl
         LsfErrorStatus status = errorCheck.getStatus();
         Assert.assertNotNull(status);
 
+        //check that the lsf exit code is 1
+        Assert.assertEquals(status.getExitCode(), 1);
+
         String expectedMessage = getMessage(expectedMessageFile);
         Assert.assertNotNull(expectedMessage);
 
