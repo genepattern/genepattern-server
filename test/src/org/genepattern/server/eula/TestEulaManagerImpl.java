@@ -8,7 +8,6 @@ import org.apache.log4j.Logger;
 import org.genepattern.junitutil.FileUtil;
 import org.genepattern.junitutil.TaskUtil;
 import org.genepattern.server.config.ServerConfiguration.Context;
-import org.genepattern.server.eula.InitException;
 import org.genepattern.webservice.TaskInfo;
 import org.junit.Assert;
 import org.junit.Before;
@@ -462,7 +461,7 @@ public class TestEulaManagerImpl {
         eulaMgr.setRecordEulaStrategy(RecordEulaStub.instance());
 
         try { 
-            EulaManager.instance(taskContext).requiresEula(taskContext);
+            eulaMgr.requiresEula(taskContext);
             Assert.fail("Expecting IllegalArgumentException, when taskContext.userId==null");
         }
         catch (IllegalArgumentException e) {
@@ -485,7 +484,7 @@ public class TestEulaManagerImpl {
         eulaMgr.setRecordEulaStrategy(RecordEulaStub.instance());
 
         try { 
-            EulaManager.instance(taskContext).requiresEula(taskContext);
+            eulaMgr.requiresEula(taskContext);
             Assert.fail("Expecting IllegalArgumentException, when taskContext.userId==null");
         }
         catch (IllegalArgumentException e) {
@@ -524,7 +523,7 @@ public class TestEulaManagerImpl {
         eulaMgr.setGetEulaFromTask(stub);
         eulaMgr.setRecordEulaStrategy(RecordEulaStub.instance());
         try { 
-            EulaManager.instance(taskContext).recordEula(taskContext);
+            eulaMgr.recordEula(taskContext);
             Assert.fail("Expecting IllegalArgumentException, when taskContext==null");
         }
         catch (IllegalArgumentException e) {
@@ -546,7 +545,7 @@ public class TestEulaManagerImpl {
         eulaMgr.setGetEulaFromTask(stub);
         eulaMgr.setRecordEulaStrategy(RecordEulaStub.instance());
         try { 
-            EulaManager.instance(taskContext).recordEula(taskContext);
+            eulaMgr.recordEula(taskContext);
             Assert.fail("Expecting IllegalArgumentException, when taskContext.taskInfo==null");
         }
         catch (IllegalArgumentException e) {
@@ -614,7 +613,7 @@ public class TestEulaManagerImpl {
         eulaMgr.setGetEulaFromTask(stub);
         eulaMgr.setRecordEulaStrategy(RecordEulaStub.instance());
         try { 
-            EulaManager.instance(taskContext).recordEula(taskContext);
+            eulaMgr.recordEula(taskContext);
             Assert.fail("Expecting IllegalArgumentException, when taskContext.userId==null");
         }
         catch (IllegalArgumentException e) {
