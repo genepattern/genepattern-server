@@ -1,0 +1,37 @@
+Sender: LSF System <lsf@node1459>
+Subject: Job 6284289: <23478> Exited
+
+Job <23478> was submitted from host <gpint01> by user <gpdev> in cluster <cromwell>.
+Job was executed on host(s) <node1459>, in queue <genepattern>, as user <gpdev> in cluster <cromwell>.
+</home/unix/gpdev> was used as the home directory.
+</xchip/gpdev/servers/genepatterntest/jobResults/23478> was used as the working directory.
+Started at Fri Nov  2 11:00:20 2012
+Results reported at Fri Nov  2 11:07:57 2012
+
+Your job looked like:
+
+------------------------------------------------------------
+# LSBATCH: User input
+'/broad/software/free/Linux/redhat_5_x86_64/pkgs/r_2.14.0/bin/Rscript' '--no-save --quiet --slave --no-restore' '/xchip/gpdev/servers/genepatterntest/taskLib/InsertGenomicLocations.0.9.3411/liftOver.R' '--args' '/xchip/gpdev/servers/genepatterntest/jobResults/23477/all.filelist_0.tangentResult_1.splitcol.txt' './' 'all.filelist_0.tangentResult_1.splitcol' '/xchip/gpdev/servers/genepatterntest/taskLib/InsertGenomicLocations.0.9.3411/' 'genome=hg19' >> 'stdout.txt'
+------------------------------------------------------------
+
+TERM_MEMLIMIT: job killed after reaching LSF memory usage limit.
+Exited with exit code 1.
+
+Resource usage summary:
+
+    CPU time   :    471.52 sec.
+    Max Memory :     21266 MB
+    Max Swap   :     21341 MB
+
+    Max Processes  :         3
+    Max Threads    :         4
+
+The output (if any) follows:
+
+
+
+PS:
+
+Read file </xchip/gpdev/servers/genepatterntest/jobResults/23478/stderr.txt> for stderr output of this job.
+

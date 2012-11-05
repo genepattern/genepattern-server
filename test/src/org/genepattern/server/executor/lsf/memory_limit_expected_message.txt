@@ -1,0 +1,16 @@
+TERM_MEMLIMIT: job killed after reaching LSF memory usage limit.
+Exited with exit code 1.
+
+Resource usage summary:
+
+    CPU time   :    471.52 sec.
+    Max Memory :     21266 MB
+    Max Swap   :     21341 MB
+
+    Max Processes  :         3
+    Max Threads    :         4
+
+The output (if any) follows:
+
+
+
