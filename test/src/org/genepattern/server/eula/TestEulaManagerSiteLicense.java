@@ -1,10 +1,8 @@
 package org.genepattern.server.eula;
 
-import java.io.File;
 import java.util.List;
 
 import org.genepattern.junitutil.ConfigUtil;
-import org.genepattern.junitutil.FileUtil;
 import org.genepattern.junitutil.TaskUtil;
 import org.genepattern.server.UserAccountManager;
 import org.genepattern.server.config.ServerConfiguration;
@@ -27,10 +25,6 @@ public class TestEulaManagerSiteLicense {
     private TaskInfo taskInfo=null;
     private Context stdContext=null;
     private Context altContext=null;
-    
-    //to deal with system properties that should be undone after the test
-    private String initGpProperties=null;
-    private String initConfigFile=null;
     
     @Before
     public void setUp() {
@@ -55,35 +49,11 @@ public class TestEulaManagerSiteLicense {
         UserAccountManager.instance().setUserGroups(null);
         UserAccountManager.instance().refreshUsersAndGroups();
 
-//        //revert back to a 'default' config.file
-//        File configFile=FileUtil.getSourceFile(TestEulaManagerSiteLicense.class, "config.yaml");
-//        String configFilepath=configFile.getAbsolutePath();
-//        System.setProperty("config.file", configFilepath);
-//        ServerConfiguration.instance().reloadConfiguration(configFilepath);
-        
-        //System.getProperties().remove("genepattern.properties");
+        //revert back to a 'default' config.file
         System.getProperties().remove("config.file");
         ServerConfiguration.instance().reloadConfiguration();
-        
-//        if (initGpProperties != null) {
-//            System.setProperty("genepattern.properties", initGpProperties);
-//        }
-//        if (initConfigFile != null) {
-//            System.setProperty("config.file", initConfigFile);
-//        }
-    }
-    
-//    private void loadConfigFile(final String filename) {
-//        //load a 'config.yaml' file from the directory which contains this source file
-//        File configFile=FileUtil.getSourceFile(TestEulaManagerSiteLicense.class, filename);
-//        String configFilepath=configFile.getAbsolutePath();
-//        File resourceDir = FileUtil.getSourceDir(TestEulaManagerSiteLicense.class);
-//        System.setProperty("genepattern.properties", resourceDir.getAbsolutePath());
-//        System.setProperty("config.file", configFilepath);
-//        ServerConfiguration.instance().reloadConfiguration(configFilepath);
-//    }
-    
-    
+    } 
+
     /**
      * test-case for a module with a site-license, by module lsid.
      */
