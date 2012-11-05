@@ -3,7 +3,11 @@ package org.genepattern.junitutil;
 import java.io.File;
 import java.io.FilenameFilter;
 
+import org.genepattern.server.UserAccountManager;
+import org.genepattern.server.auth.AuthenticationException;
+import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.database.HsqlDbUtil;
+import org.junit.Assert;
 
 public class DbUtil {
     private static boolean isDbInitialized = false;
@@ -81,4 +85,30 @@ public class DbUtil {
             //log.error("Error stopoping HSQLDB: "+t.getLocalizedMessage(), t);
         }
     }
+    
+    static public String addUserToDb(final String gp_username) {
+        final boolean isInTransaction = HibernateUtil.isInTransaction();
+        final boolean userExists=UserAccountManager.instance().userExists(gp_username);
+        final String gp_email=null; //can be null
+        final String gp_password=null; //can be null
+        
+        if (!userExists) {
+            try {
+                UserAccountManager.instance().createUser(gp_username, gp_password, gp_email);
+                if (!isInTransaction) {
+                    HibernateUtil.commitTransaction();
+                }
+            }
+            catch (AuthenticationException e) {
+                Assert.fail("Failed to add user to db, gp_username="+gp_username+": "+e.getLocalizedMessage());
+            }
+            finally {
+                if (!isInTransaction) {
+                    HibernateUtil.closeCurrentSession();
+                }
+            }
+        } 
+        return gp_username;
+    }
+
 }
