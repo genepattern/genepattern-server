@@ -32,6 +32,7 @@ public class ConfigUtil {
     static public void loadConfigFile(final File configFile) {
         if (configFile==null) {
             System.getProperties().remove("config.file");
+            ServerConfiguration.instance().reloadConfiguration();
             return;
         }
         if (!configFile.canRead()) {
