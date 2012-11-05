@@ -57,7 +57,7 @@ default.properties:
     # use this remoteUrl from within the Broad firewall
     #org.genepattern.server.eula.EulaManager.remoteUrl: "http://vgpweb01.broadinstitute.org:3000/eulas"
     # use this remoteUrl from outside the Broad firewall
-    #org.genepattern.server.eula.EulaManager.remoteUrl: "http://http://eulas.genepattern.org/eulas"
+    #org.genepattern.server.eula.EulaManager.remoteUrl: "http://eulas.genepattern.org/eulas"
 
 
 executors:
