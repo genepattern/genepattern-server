@@ -48,6 +48,17 @@ default.properties:
     genomeSpaceEnabled: false
     genomeSpaceUrl: https://identity.genomespace.org:8444/identityServer/xrd.jsp
     genomeSpaceEnvironment: prod
+    
+    # 
+    # for End-user license agreements
+    #
+    # set this to true, to enable the EulaManager
+    org.genepattern.server.eula.EulaManager.enabled: false
+    # use this remoteUrl from within the Broad firewall
+    #org.genepattern.server.eula.EulaManager.remoteUrl: "http://vgpweb01.broadinstitute.org:3000/eulas"
+    # use this remoteUrl from outside the Broad filewall
+    #org.genepattern.server.eula.EulaManager.remoteUrl: "http://http://eulas.genepattern.org/eulas"
+
 
 executors:
     # default executor for all jobs, it is included in GenePattern
