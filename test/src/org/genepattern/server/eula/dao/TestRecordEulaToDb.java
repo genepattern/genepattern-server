@@ -1,20 +1,21 @@
 package org.genepattern.server.eula.dao;
 
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.genepattern.junitutil.DbUtil;
-import org.genepattern.server.UserAccountManager;
-import org.genepattern.server.auth.AuthenticationException;
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.eula.EulaInfo;
 import org.genepattern.server.eula.InitException;
 import org.genepattern.server.eula.RecordEula;
 import org.genepattern.server.eula.dao.RecordEulaToDb;
+
+import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
-
 
 /**
  * Test cases for recording EULA to DB via Hibernate calls.
@@ -29,34 +30,13 @@ public class TestRecordEulaToDb {
         DbUtil.initDb();
         
         //add two users
-        addUser("admin");
-        addUser("gp_user");
+        DbUtil.addUserToDb("admin");
+        DbUtil.addUserToDb("gp_user");
     }
-
-    //add the user to the DB
-    private static String addUser(final String gp_username) {
-        final boolean isInTransaction = HibernateUtil.isInTransaction();
-        final boolean userExists=UserAccountManager.instance().userExists(gp_username);
-        final String gp_email=null; //can be null
-        final String gp_password=null; //can be null
-        
-        if (!userExists) {
-            try {
-                UserAccountManager.instance().createUser(gp_username, gp_password, gp_email);
-                if (!isInTransaction) {
-                    HibernateUtil.commitTransaction();
-                }
-            }
-            catch (AuthenticationException e) {
-                Assert.fail("Failed to add user to db, gp_username="+gp_username+": "+e.getLocalizedMessage());
-            }
-            finally {
-                if (!isInTransaction) {
-                    HibernateUtil.closeCurrentSession();
-                }
-            }
-        } 
-        return gp_username;
+    
+    @AfterClass
+    static public void afterClass() throws Exception {
+        DbUtil.shutdownDb();
     }
 
     private static EulaInfo init(final String lsid) {
@@ -69,6 +49,18 @@ public class TestRecordEulaToDb {
         }
         eula.setLicense("license.txt");
         return eula;
+    }
+    
+    private static void record(final String userId, final EulaInfo eula) {
+        //warning: can't use the same user id as another test, because we are running against the same DB for all tests
+        DbUtil.addUserToDb(userId);
+        RecordEulaToDb recorder = new RecordEulaToDb();
+        try {
+            recorder.recordLicenseAgreement(userId, eula);
+        }
+        catch (Throwable t) {
+            Assert.fail("Error setting up test: "+t.getLocalizedMessage());
+        }
     }
     
     /**
@@ -108,7 +100,7 @@ public class TestRecordEulaToDb {
     @Test
     public void testIntegration() {
         final EulaInfo eula = init("urn:lsid:8080.gp-trunk-dev.120.0.0.1:genepatternmodules:303:5");
-        final String userId=addUser("test_01");
+        final String userId=DbUtil.addUserToDb("test_01");
 
         RecordEula recorder = new RecordEulaToDb();
         try {
@@ -141,7 +133,7 @@ public class TestRecordEulaToDb {
     @Test
     public void testDateRecorded() {
         final EulaInfo eula = init("urn:lsid:8080.gp-trunk-dev.120.0.0.1:genepatternmodules:303:5");
-        final String userId=addUser("test_02");
+        final String userId=DbUtil.addUserToDb("test_02");
         final RecordEula recorder = new RecordEulaToDb();
         
         Date actualDate=null;
@@ -334,7 +326,7 @@ public class TestRecordEulaToDb {
     public void testIdempotency() {
         final EulaInfo eula = init("urn:lsid:8080.gp-trunk-dev.120.0.0.1:genepatternmodules:303:5");
         //warning: can't use the same user id as another test, because we are running against the same DB for all tests
-        final String userId=addUser("test_03");
+        final String userId=DbUtil.addUserToDb("test_03");
         RecordEula recorder = new RecordEulaToDb();
         try {
             boolean agreed = recorder.hasUserAgreed(userId, eula);
@@ -376,7 +368,7 @@ public class TestRecordEulaToDb {
      */
     @Test
     public void testRecordEulaInTransaction() {
-        final String userId=addUser("test_03");
+        final String userId=DbUtil.addUserToDb("test_04");
         final EulaInfo eula = init("urn:lsid:8080.gp-trunk-dev.120.0.0.1:genepatternmodules:303:5");
 
         RecordEula recorder = new RecordEulaToDb();
@@ -441,10 +433,9 @@ public class TestRecordEulaToDb {
     //remote record tests
     @Test
     public void testAddToRemoteQueue() {
-        final String remoteUrl="http://vgpweb01.broadinstitute.org:3000/eulas";
         final EulaInfo eula = init("urn:lsid:8080.gp-trunk-dev.120.0.0.1:genepatternmodules:303:5");
         //warning: can't use the same user id as another test, because we are running against the same DB for all tests
-        final String userId=addUser("test_05");
+        final String userId=DbUtil.addUserToDb("test_05");
         RecordEulaToDb recorder = new RecordEulaToDb();
         try {
             recorder.recordLicenseAgreement(userId, eula);
@@ -454,6 +445,7 @@ public class TestRecordEulaToDb {
         }
         
 
+        final String remoteUrl="http://vgpweb01.broadinstitute.org:3000/eulas";
         List<EulaRemoteQueue> entries=null;
         Date expectedDate=new Date(); //plus or minus a few ticks
         try {
@@ -486,13 +478,66 @@ public class TestRecordEulaToDb {
         assertDateEquals("rval[0].date", expectedDate, rval.getDateRecorded());
         Assert.assertEquals("rval[0].numAttempts", 0, rval.getNumAttempts());
     }
+ 
+    /**
+     * Test case, for POSTing a single eula to two different remoteUrl.
+     */
+    @Test
+    public void testAddToRemoteQueue_twoRemoteUrls() {
+        final EulaInfo eula = init("urn:lsid:8080.gp-trunk-dev.120.0.0.1:genepatternmodules:303:5");
+        //warning: can't use the same user id as another test, because we are running against the same DB for all tests
+        final String userId=DbUtil.addUserToDb("test_06");
+        RecordEulaToDb recorder = new RecordEulaToDb();
+        try {
+            recorder.recordLicenseAgreement(userId, eula);
+        }
+        catch (Throwable t) {
+            Assert.fail("Error setting up test: "+t.getLocalizedMessage());
+        }
+        
+
+        final String remoteUrl_1="http://vgpweb01.broadinstitute.org:3000/eulas";
+        final String remoteUrl_2="http://localhost:3000/eulas";
+        List<EulaRemoteQueue> entries=null;
+        Date expectedDate=new Date(); //plus or minus a few ticks
+        try {
+            recorder.addToRemoteQueue(userId, eula, remoteUrl_1);
+            recorder.addToRemoteQueue(userId, eula, remoteUrl_2); 
+            entries=recorder.getQueueEntries(userId, eula);
+        }
+        catch (Exception e) {
+            Assert.fail(""+e.getLocalizedMessage());
+        }
+        
+        Assert.assertNotNull("entries", entries);
+        Assert.assertEquals("num entries", 2, entries.size());
+        
+        //TODO: gotta be a better way to compare resuls when you are not sure of the order
+        Map<String,EulaRemoteQueue> results=new HashMap<String,EulaRemoteQueue>();
+        for(EulaRemoteQueue entry : entries) {
+            results.put(entry.getRemoteUrl(), entry);
+        }
+        
+        
+        EulaRemoteQueue rval = results.get("http://vgpweb01.broadinstitute.org:3000/eulas");
+        Assert.assertEquals("rval[0].remoteUrl", remoteUrl_1, rval.getRemoteUrl());
+        Assert.assertEquals("rval[0].recorded", false, rval.getRecorded());
+        assertDateEquals("rval[0].date", expectedDate, rval.getDateRecorded());
+        Assert.assertEquals("rval[0].numAttempts", 0, rval.getNumAttempts()); 
+
+        rval = results.get("http://localhost:3000/eulas");
+        Assert.assertEquals("rval[1].remoteUrl", remoteUrl_2, rval.getRemoteUrl());
+        Assert.assertEquals("rval[1].recorded", false, rval.getRecorded());
+        assertDateEquals("rval[1].date", expectedDate, rval.getDateRecorded());
+        Assert.assertEquals("rval[1].numAttempts", 0, rval.getNumAttempts()); 
+    }
     
     @Test
     public void testRemoveFromRemoteQueue() {
         final String remoteUrl="http://vgpweb01.broadinstitute.org:3000/eulas";
         final EulaInfo eula = init("urn:lsid:8080.gp-trunk-dev.120.0.0.1:genepatternmodules:303:5");
         //warning: can't use the same user id as another test, because we are running against the same DB for all tests
-        final String userId=addUser("test_06");
+        final String userId=DbUtil.addUserToDb("test_07");
         List<EulaRemoteQueue> entries=null;
         RecordEulaToDb recorder = new RecordEulaToDb();
         try {
@@ -531,7 +576,7 @@ public class TestRecordEulaToDb {
     public void testAddToRemoteQueue_UserHasNotAgreed() {
         final EulaInfo eula = init("urn:lsid:8080.gp-trunk-dev.120.0.0.1:genepatternmodules:303:5");
         //user_04 hasn't agreed
-        final String userId=addUser("test_04");
+        final String userId=DbUtil.addUserToDb("test_08");
         final String remoteUrl="http://vgpweb01.broadinstitute.org:3000/eulas";
         
         List<EulaRemoteQueue> entries=null;
@@ -547,14 +592,14 @@ public class TestRecordEulaToDb {
     
     @Test
     public void testUpdateRemoteQueue() {
-        final String remoteUrl="http://vgpweb01.broadinstitute.org:3000/eulas";
         final EulaInfo eula = init("urn:lsid:8080.gp-trunk-dev.120.0.0.1:genepatternmodules:303:5");
         //warning: can't use the same user id as another test, because we are running against the same DB for all tests
-        final String userId=addUser("test_07");
+        final String userId="test_09";
+        record(userId, eula);
+        final String remoteUrl="http://vgpweb01.broadinstitute.org:3000/eulas";
         List<EulaRemoteQueue> entries=null;
         RecordEulaToDb recorder = new RecordEulaToDb();
         try {
-            recorder.recordLicenseAgreement(userId, eula);
             recorder.addToRemoteQueue(userId, eula, remoteUrl);
             entries=recorder.getQueueEntries(userId, eula, remoteUrl);
         }
@@ -596,7 +641,6 @@ public class TestRecordEulaToDb {
         Assert.assertEquals("rval[0].recorded", false, rval.getRecorded());
         assertDateEquals("rval[0].date", expectedDate, rval.getDateRecorded());
         Assert.assertEquals("rval[0].numAttempts", 1, rval.getNumAttempts());
-        
         
         //for debugging, to force the matter, let's wait a bit
         //try {

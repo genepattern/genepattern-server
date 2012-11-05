@@ -9,7 +9,7 @@ create table eula_remote_queue (
     recorded boolean default false not null,
     num_attempts integer default 0 not null,
     date_recorded timestamp default now not null,
-    primary key (eula_record_id),
+    primary key (eula_record_id, remote_url),
     unique (eula_record_id, remote_url),
     constraint erq_fk FOREIGN KEY (eula_record_id) references eula_record(id)
 );

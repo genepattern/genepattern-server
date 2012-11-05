@@ -15,6 +15,11 @@ import org.genepattern.server.user.UserDAO;
 
 public class RecordEulaToRemoteServer implements RecordEula {
     final static private Logger log = Logger.getLogger(RecordEulaToRemoteServer.class);
+    private String remoteUrl;
+    
+    public RecordEulaToRemoteServer(final String remoteUrl) {
+        this.remoteUrl=remoteUrl;
+    }
 
     private String getEmail(final String userId) {
         //HACK: requires active local DB, with valid users 
@@ -39,21 +44,21 @@ public class RecordEulaToRemoteServer implements RecordEula {
     
     private void beforePost(final String userId, EulaInfo eula) {
         //don't do anything before, we updated the DB when recording locally
-        log.debug("about to POST eula for userId="+userId+", lsid="+eula.getModuleLsid());
+        log.debug("about to POST eula for userId="+userId+", lsid="+eula.getModuleLsid()+", remoteUrl="+remoteUrl);
     }
     
     private void afterPost(final String userId, final EulaInfo eula, final boolean success, final String errorMessage) {
-        log.debug("afterPost, userId="+userId+", lsid="+eula.getModuleLsid()+", success="+success);
+        log.debug("afterPost, userId="+userId+", lsid="+eula.getModuleLsid()+", remoteUrl="+remoteUrl+", success="+success);
         try {
-            new RecordEulaToDb().updateRemoteQueue(userId, eula, PostToBroad.DEFAULT_URL, success);
+            new RecordEulaToDb().updateRemoteQueue(userId, eula, remoteUrl, success);
             //TODO: add logging event to DB, something like 'insert into remote_eula_log { <user>, <lsid>, <remote_url>, <date>, <status>, <message> }'
         }
         catch (Throwable t) {
-            log.error("error after POST, userId="+userId+", lsid="+eula.getModuleLsid()+", success="+success, t);
+            log.error("error after POST, userId="+userId+", lsid="+eula.getModuleLsid()+", remoteUrl="+remoteUrl+", success="+success, t);
         }
         
         //Note: at the moment, we keep all records in the queue, we could delete records from the queue with the following
-        // new RecordEulaToDb().removeFromQueue(userId, eula, PostToBroad.DEFAULT_URL);
+        // new RecordEulaToDb().removeFromQueue(userId, eula, remoteUrl);
     }
 
     //@Override
@@ -72,6 +77,7 @@ public class RecordEulaToRemoteServer implements RecordEula {
         if (email != null) {
             action.setEmail(email);
         }
+        action.setRemoteUrl(remoteUrl);
         //Note: gpUrl is initialized in PostToBroad
         
         boolean success=false;

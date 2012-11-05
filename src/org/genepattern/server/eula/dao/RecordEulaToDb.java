@@ -142,9 +142,8 @@ public class RecordEulaToDb implements RecordEula {
             if (eulaRecord==null) {
                 return null;
             }  
-            EulaRemoteQueue entry = new EulaRemoteQueue();
-            entry.setEulaRecordId(eulaRecord.getId());
-            entry.setRemoteUrl(remoteUrl);
+            EulaRemoteQueue.Key key = new EulaRemoteQueue.Key(eulaRecord.getId(), remoteUrl);
+            EulaRemoteQueue entry = new EulaRemoteQueue(key);
             return entry;
         }
         finally {
@@ -198,7 +197,47 @@ public class RecordEulaToDb implements RecordEula {
             }
         }
     }
-    
+
+    public List<EulaRemoteQueue> getQueueEntries(final String userId, final EulaInfo eulaInfo) throws Exception {
+        if (userId==null) {
+            throw new IllegalArgumentException("userId==null");
+        }
+        if (userId.length()==0) {
+            throw new IllegalArgumentException("userId not set");
+        }
+        log.debug("getQueueEntries, userId="+userId+", lsid="+eulaInfo.getModuleLsid());
+        boolean inTransaction = HibernateUtil.isInTransaction();
+        log.debug("inTransaction="+inTransaction);
+        try {
+            HibernateUtil.beginTransaction();
+            EulaRecord eulaRecord=getEulaRecord(userId, eulaInfo.getModuleLsid());
+            String hql = "from "+EulaRemoteQueue.class.getName()+" q where q.eulaRecordId = :eulaRecordId";
+            Session session = HibernateUtil.getSession();
+            Query query = session.createQuery(hql);
+            query.setLong("eulaRecordId", eulaRecord.getId());
+            List<EulaRemoteQueue> records = query.list();
+            if (records == null) {
+                log.error("Unexpected result: records == null; userId="+userId+", lsid="+eulaInfo.getModuleLsid());
+                return null;
+            }
+            if (records.size()==0) {
+                log.debug("No record in DB");
+                return Collections.emptyList();
+            } 
+            return records;
+        }
+        catch (Throwable t) {
+            String errorMessage="DB error checking for eula record; userId="+userId+", lsid="+eulaInfo.getModuleLsid();
+            log.error(errorMessage, t);
+            throw new Exception(errorMessage+"; "+t.getLocalizedMessage());
+        }
+        finally {
+            if (!inTransaction) {
+                HibernateUtil.closeCurrentSession();
+            }
+        }
+    }
+            
     public List<EulaRemoteQueue> getQueueEntries(final String userId, final EulaInfo eulaInfo, final String remoteUrl) throws Exception {
         if (userId==null) {
             throw new IllegalArgumentException("userId==null");
@@ -239,8 +278,7 @@ public class RecordEulaToDb implements RecordEula {
             if (!inTransaction) {
                 HibernateUtil.closeCurrentSession();
             }
-        }
-        
+        } 
     }
     
     public void updateRemoteQueue(final String userId, final EulaInfo eulaInfo, final String remoteUrl, final boolean success) throws Exception {

@@ -15,6 +15,8 @@ import java.util.Date;
  */
 public interface RecordEula {
     
+    //TODO: void recordLicenseAgreement(Context context, EulaInfo eula) throws Exception;
+
     /**
      * This method is called when a user accepts the End-user license agreement for a module;
      * for example, when the 'Ok' button is clicked in the GUI.

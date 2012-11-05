@@ -1,13 +1,11 @@
 package org.genepattern.server.eula.remote;
 
-import java.util.Date;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
 
 import org.apache.log4j.Logger;
 import org.genepattern.server.eula.EulaInfo;
-import org.genepattern.server.eula.RecordEula;
 
 /**
  * POST eula to remote server, asynchronously, by using a background thread.
@@ -20,7 +18,7 @@ import org.genepattern.server.eula.RecordEula;
  * @author pcarr
  *
  */
-public class RecordEulaToRemoteServerAsync implements RecordEula {
+public class RecordEulaToRemoteServerAsync  {
     final static private Logger log = Logger.getLogger(RecordEulaToRemoteServerAsync.class);
 
     final private ExecutorService getExec() {
@@ -54,20 +52,18 @@ public class RecordEulaToRemoteServerAsync implements RecordEula {
         }
     } 
 
-    //@Override
-    public void recordLicenseAgreement(final String userId, final EulaInfo eula) throws Exception {
+    public void recordLicenseAgreement(final String userId, final EulaInfo eula, final String remoteUrl) throws Exception {
         log.debug("asynchronous POST to recordLicenseAgreement ..."); 
-        // (original implementation) runAsNewThread(userId, eula);
-        runWithExecutor(userId, eula);
+        runWithExecutor(userId, eula, remoteUrl);
     }
 
-    private void runWithExecutor(final String userId, final EulaInfo eula) {
+    private void runWithExecutor(final String userId, final EulaInfo eula, final String remoteUrl) {
         ExecutorService exec=getExec();
         Runnable r = new Runnable() {
             //@Override
             public void run() {
                 log.debug("running thread...");
-                RecordEulaToRemoteServer record = new RecordEulaToRemoteServer();
+                RecordEulaToRemoteServer record = new RecordEulaToRemoteServer(remoteUrl);
                 try {
                     record.recordLicenseAgreement(userId, eula);
                 }
@@ -78,45 +74,6 @@ public class RecordEulaToRemoteServerAsync implements RecordEula {
         };
         log.debug("submitting thread...");
         exec.submit(r);
-    }
-
-//
-//    The original implementation, created a new Thread for each POST
-//
-//    private void runAsNewThread(final String userId, final EulaInfo eula) {
-//        //create a new thread for each POST
-//        Runnable r = new Runnable() {
-//            //@Override
-//            public void run() {
-//                log.debug("running thread...");
-//                RecordEulaToRemoteServer record = new RecordEulaToRemoteServer();
-//                try {
-//                    record.recordLicenseAgreement(userId, eula);
-//                }
-//                catch (Exception e) {
-//                    //ignore
-//                }
-//            }
-//        };        
-//        Thread t = new Thread(r);
-//        log.debug("starting thread...");
-//        t.start();
-//    }
-
-    //@Override
-    public boolean hasUserAgreed(final String userId, final EulaInfo eula) throws Exception {
-        throw new Exception("Not implemented!");
-    }
-
-    //@Override
-    public Date getUserAgreementDate(final String userId, final EulaInfo eula) throws Exception {
-        throw new Exception("Not implemented!");
-    }
-
-    //@Override
-    public void addToRemoteQueue(final String userId, final EulaInfo eula, final String remoteUrl) throws Exception {
-        // TODO Auto-generated method stub
-        throw new Exception("Not implemented!"); 
     }
 
 }

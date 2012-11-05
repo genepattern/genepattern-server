@@ -1,10 +1,14 @@
 package org.genepattern.server.eula.remote;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 
 import org.genepattern.server.eula.InitException;
@@ -226,10 +230,32 @@ public class PostToBroad {
         log.debug("status="+code);
         if (code==200 || code==201) {
             log.debug("success");
+            
+            //TODO: relocate this code
+            HttpEntity responseEntity=response.getEntity();
+            InputStream isContent=responseEntity.getContent();
+            BufferedReader rd = new BufferedReader(new InputStreamReader(isContent));
+            String line = "";
+            while ((line = rd.readLine()) != null) {
+                System.out.println(line);
+            }
+ //       } 
+//        catch (IOException e) {
+//            e.printStackTrace();
+//        }
             return;
         }
         if (code==422) {
             log.debug("duplicate entry, good enough");
+
+            //TODO: relocate this code
+            HttpEntity responseEntity=response.getEntity();
+            InputStream isContent=responseEntity.getContent();
+            BufferedReader rd = new BufferedReader(new InputStreamReader(isContent));
+            String line = "";
+            while ((line = rd.readLine()) != null) {
+                System.out.println(line);
+            }
             return;
         }
         log.debug("remote server error: "+code+": "+status.getReasonPhrase());
