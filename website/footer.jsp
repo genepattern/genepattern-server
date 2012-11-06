@@ -1,7 +1,7 @@
 <%--
  The Broad Institute
  SOFTWARE COPYRIGHT NOTICE AGREEMENT
- This software and its documentation are copyright (2003-2011) by the
+ This software and its documentation are copyright (2003-2012) by the
  Broad Institute/Massachusetts Institute of Technology. All rights are
  reserved.
  
@@ -20,7 +20,7 @@
                 </td>
 
                 <td>
-                  <div align="right">&copy;2003-2011&nbsp;<a href="http://www.broadinstitute.org" target="_blank">Broad Institute, MIT</a>
+                  <div align="right">&copy;2003-2012&nbsp;<a href="http://www.broadinstitute.org" target="_blank">Broad Institute, MIT</a>
                   </div>
                   <td width="10">&nbsp;</td>
                   <td width="27"><a href="http://www.broadinstitute.org" target="_blank"><img src="<%=request.getContextPath()%>/images/broad-symbol.gif" alt="Broad Institute" border="0" height="30" width="27" /></a>
