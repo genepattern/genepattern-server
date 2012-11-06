@@ -68,10 +68,6 @@ public class EulaManagerImpl implements IEulaManager {
         }
         //for debugging, the RecordEulaStub can be used
         //return RecordEulaStub.instance(); 
-        //TODO: if necessary, remote record to external web service
-        //option 1: local record, only
-        //return new RecordEulaToDb();
-        //option 2: local and remote record
         return new RecordEulaDefault();
     }
     
