@@ -1,17 +1,11 @@
 package org.genepattern.server.eula.remote;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
-
-import org.genepattern.server.eula.InitException;
 import org.apache.http.StatusLine;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpPost;
@@ -19,15 +13,19 @@ import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.protocol.HTTP;
 import org.apache.log4j.Logger;
-import org.genepattern.server.config.ServerConfiguration;
 import org.genepattern.server.eula.EulaInfo;
+import org.genepattern.server.eula.InitException;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 /**
  * Remote record of EULA by posting to the Broad server. Here is the draft spec for the remote service.
+ * 
+ * Public url: http://gpeulas.broadinstitute.org/eulas/
+ * Private url: http://vgweb01.broadinstitute.org:3000/eulas/ (behind firewall)
+ * 
 <pre>
-HTTP POST http://vgpweb01.broadinstitute.org:3000/eulas/
+HTTP POST http://vgweb01.broadinstitute.org:3000/eulas/
     { "eula"=>{
           "gp_user_id" => "<user>",       //required
           "task_lsid" => "<lsid>",        //required 
@@ -57,8 +55,7 @@ ruby > response = RestClient.post
  */
 public class PostToBroad {
     final static private Logger log = Logger.getLogger(PostToBroad.class);
-    final static public String DEFAULT_URL="http://vgpweb01.broadinstitute.org:3000/eulas";
-
+    
     /**
      * The remote server responded with an HTTP response code indicating that it failed to 
      * record the eula.
@@ -96,7 +93,7 @@ public class PostToBroad {
         return true;
     }
 
-    private String remoteUrl=DEFAULT_URL;
+    private String remoteUrl=null;
     private String gpUrl=null;
     private String gp_user_id=null;
     private String email=null;
@@ -113,7 +110,7 @@ public class PostToBroad {
     }
     
     /**
-     * the URL off this gp server, it's stored as a column in the remote DB
+     * the URL of this gp server, it's stored as a column in the remote DB
      * @param url
      */
     public void setGpUrl(final String url) {
@@ -165,7 +162,7 @@ public class PostToBroad {
             map.put("email", email);
         }
         if (!isSet(gpUrl)) {
-            log.error("gpUrl is not initialized");
+            log.error("gp_url is not initialized");
         }
         else {
             map.put("gp_url", gpUrl);
@@ -193,7 +190,7 @@ public class PostToBroad {
             throw new InitException("task_lsid not set");
         }
         if (!isSet(gpUrl)) {
-            gpUrl=ServerConfiguration.instance().getGenePatternURL().toString();
+            throw new InitException("gp_url is not set");
         }
         String json=null;
         try {
@@ -230,32 +227,10 @@ public class PostToBroad {
         log.debug("status="+code);
         if (code==200 || code==201) {
             log.debug("success");
-            
-            //TODO: relocate this code
-            HttpEntity responseEntity=response.getEntity();
-            InputStream isContent=responseEntity.getContent();
-            BufferedReader rd = new BufferedReader(new InputStreamReader(isContent));
-            String line = "";
-            while ((line = rd.readLine()) != null) {
-                System.out.println(line);
-            }
- //       } 
-//        catch (IOException e) {
-//            e.printStackTrace();
-//        }
             return;
         }
         if (code==422) {
             log.debug("duplicate entry, good enough");
-
-            //TODO: relocate this code
-            HttpEntity responseEntity=response.getEntity();
-            InputStream isContent=responseEntity.getContent();
-            BufferedReader rd = new BufferedReader(new InputStreamReader(isContent));
-            String line = "";
-            while ((line = rd.readLine()) != null) {
-                System.out.println(line);
-            }
             return;
         }
         log.debug("remote server error: "+code+": "+status.getReasonPhrase());

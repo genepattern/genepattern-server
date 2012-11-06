@@ -9,9 +9,10 @@ import org.genepattern.server.config.ServerConfiguration;
 import org.genepattern.server.config.ServerConfiguration.Context;
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.eula.dao.RecordEulaToDb;
-import org.genepattern.server.eula.remote.PostToBroad;
 import org.genepattern.server.eula.remote.RecordEulaToRemoteServerAsync;
 import org.genepattern.server.executor.CommandProperties.Value;
+import org.genepattern.server.user.User;
+import org.genepattern.server.user.UserDAO;
 import org.genepattern.util.GPConstants;
 import org.genepattern.webservice.TaskInfo;
 
@@ -19,35 +20,64 @@ import org.genepattern.webservice.TaskInfo;
 /**
  * The default method for recording EULA in the local GP server.
  * 
- * It saves a local record, and adds an entry to the queue, for remote record.
- * This is done in a single transaction, so that if we are not able to add the record to the remote queue,
+ * It saves a local record, and adds an entry to the local db table, 'eula_remote_queue'.
+ * This is done in a single transaction, so that if we are not able to add the entry to the 'eula_remote_queue',
  * the entire transaction will fail.
  * 
- * Note: the actual remote POST is done asynchronously in a different thread.
- * Note: the following configuration properties control remote POST
+ * The actual remote POST is done asynchronously in a different thread.
+ * 
+ * The following configuration properties control remote POST
  *     # if there is no setting, use the default value, compiled in the source code
  *     # set the remoteUrl
- *     org.genepattern.server.eula.EulaManager.remoteUrl: http://vgpweb01.broadinstitute.org:3000/eulas
+ *     org.genepattern.server.eula.EulaManager.remoteUrl: "http://vgpweb01.broadinstitute.org:3000/eulas"
  *     # if the remoteUrl is an empty list, it means don't POST
  *     org.genepattern.server.eula.EulaManager.remoteUrl: []
  *     # can be a list, which means post to more than one remote URL
- *     org.genepattern.server.eula.EulaManager.remoteUrl: [ http://vgpweb01.broadinstitute.org:3000/eulas, <other> ]     
+ *     org.genepattern.server.eula.EulaManager.remoteUrl: [ "http://vgpweb01.broadinstitute.org:3000/eulas", "http://eulas.genepattern.org/eulas" ]     
  * 
  * @author pcarr
  *
  */
 public class RecordEulaDefault implements RecordEula {
     final static private Logger log = Logger.getLogger(RecordEulaDefault.class);
+    /** the name of the property to use in the config.yaml file */
     final static public String PROP_REMOTE_URL="org.genepattern.server.eula.EulaManager.remoteUrl";
+    /** the default value for the remoteUrl */
+    final static public String REMOTE_URL_DEFAULT="http://http://eulas.genepattern.org/eulas";
+    /** the default remoteUrl, on,y accessible from behind the Broad's firewall. */
+    final static public String REMOTE_URL_PRIVATE="http://vgpweb01.broadinstitute.org:3000/eulas";
     
-    private RecordEulaToDb local;
-    private RecordEulaToRemoteServerAsync remote;
+    private RecordEula local;
     
     public RecordEulaDefault() {
         local=new RecordEulaToDb();
-        remote=new RecordEulaToRemoteServerAsync();
     }
     
+    public RecordEulaDefault(RecordEula localDb) {
+        this.local=localDb;
+    }
+    
+    private User getUser(final String userId) {
+        //TODO: this method requires active local DB, with valid users 
+        final boolean inTransaction=HibernateUtil.isInTransaction();
+        try {
+            UserDAO dao=new UserDAO();
+            User user=dao.findById(userId);
+            return user;
+        }
+        catch (Throwable t) {
+            log.error("Error getting User instance for userId="+userId, t);
+        }
+        finally {
+            if (!inTransaction) {
+                HibernateUtil.closeCurrentSession();
+            }
+        }
+        
+        //TODO: should deal with this
+        return null;
+    }
+
     private Context getContextForEula(final String userId, final EulaInfo eula) {
         Context eulaContext=ServerConfiguration.Context.getContextForUser(userId);
         TaskInfo taskInfo = new TaskInfo();
@@ -62,7 +92,8 @@ public class RecordEulaDefault implements RecordEula {
         Value val=ServerConfiguration.instance().getValue(eulaContext, PROP_REMOTE_URL);
         if (val==null) {
             List<String> rval=new ArrayList<String>();
-            rval.add(PostToBroad.DEFAULT_URL);
+            //TODO: as soon as the REMOTE_URL_DEFAULT service is available, change to use it
+            rval.add(REMOTE_URL_PRIVATE);
             return rval;
         }
         return val.getValues();
@@ -105,31 +136,36 @@ public class RecordEulaDefault implements RecordEula {
         }
 
         //2) schedule asynchronous POST of remote record to each remoteUrl
+        // need a valid User object
+        User user = getUser(userId);
+        RecordEulaToRemoteServerAsync remote=new RecordEulaToRemoteServerAsync(local);
         for (String remoteUrl : remoteUrls) {
-            remote.recordLicenseAgreement(userId, eula, remoteUrl);
+            remote.postToRemoteUrl(user, eula, remoteUrl);
         }
     }
 
     //@Override
     public boolean hasUserAgreed(final String userId, final EulaInfo eula) throws Exception {
-        //delegate to local record
+        log.debug("delegating to local.hasUserAgreed");
         return local.hasUserAgreed(userId, eula);
     }
 
     //@Override
     public Date getUserAgreementDate(final String userId, final EulaInfo eula) throws Exception {
-        //delegate to local record
+        log.debug("delegating to local.getUserAgreementDate");
         return local.getUserAgreementDate(userId, eula);
     }
 
     //@Override
     public void addToRemoteQueue(final String userId, final EulaInfo eula, final String remoteUrl) throws Exception {
-        throw new Exception("Not implemented!");
+        log.debug("delegating to local.addToRemoteQueue");
+        local.addToRemoteQueue(userId, eula, remoteUrl);
     }
-    
-    public void updateRemoteQueue(final String userId, final EulaInfo eula, final String remoteUrl, boolean success, int statusCode, String statusMessage) {
-        //1) update eula_remote_queue table
-        //2) insert into eula_remote_log table
+
+    //@Override
+    public void updateRemoteQueue(String userId, EulaInfo eula, String remoteUrl, boolean success) throws Exception {
+        log.debug("delegating to local.updateRemoteQueue");
+        local.updateRemoteQueue(userId, eula, remoteUrl, success);
     }
 
 }

@@ -281,6 +281,7 @@ public class RecordEulaToDb implements RecordEula {
         } 
     }
     
+    //@Override
     public void updateRemoteQueue(final String userId, final EulaInfo eulaInfo, final String remoteUrl, final boolean success) throws Exception {
         final boolean inTransaction = HibernateUtil.isInTransaction();
         HibernateUtil.beginTransaction();

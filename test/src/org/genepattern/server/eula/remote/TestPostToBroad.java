@@ -4,6 +4,7 @@ import java.io.IOException;
 
 import org.genepattern.server.eula.EulaInfo;
 import org.genepattern.server.eula.InitException;
+import org.genepattern.server.eula.RecordEulaDefault;
 import org.genepattern.server.eula.remote.PostToBroad.PostException;
 import org.junit.Before;
 import org.junit.Test;
@@ -16,7 +17,7 @@ public class TestPostToBroad {
     final String email="junit_user@broadinstitute.org";
     final String lsidIn="urn:lsid:9090.gpdev.gpint01:genepatternmodules:812:3";
     final String nameIn="testLicenseAgreement";
-    
+    final String gpUrl="http://127.0.0.1:8080/gp/";
 
     @Before
     public void setUp() throws InitException {
@@ -24,6 +25,8 @@ public class TestPostToBroad {
         eulaInfo.setModuleLsid(lsidIn);
         eulaInfo.setModuleName(nameIn);
         post=new PostToBroad();
+        post.setRemoteUrl(RecordEulaDefault.REMOTE_URL_PRIVATE);
+        post.setGpUrl(gpUrl);
         post.setGpUserId(userid);
         post.setEulaInfo(eulaInfo);
         post.setEmail(email);

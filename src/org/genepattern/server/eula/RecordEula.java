@@ -65,4 +65,6 @@ public interface RecordEula {
     /**
      * This method is optionally called after successful POST to 
      */
+    void updateRemoteQueue(String userId, EulaInfo eula, String remoteUrl, boolean success) throws Exception;
+
 }

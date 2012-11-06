@@ -4,6 +4,8 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.genepattern.server.eula.dao.EulaRemoteQueue;
+
 /**
  * For debugging and prototyping, this implementation records eula to an
  * in-memory Map. All license agreement info will be lost on server shutdown.
@@ -22,6 +24,7 @@ public class RecordEulaStub implements RecordEula {
     } 
 
     private Map<String,Date> acceptedEulas = new HashMap<String,Date>();
+    private Map<EulaRemoteQueue.Key,EulaRemoteQueue> remoteRecordQueue = new HashMap<EulaRemoteQueue.Key,EulaRemoteQueue>();
     
     private RecordEulaStub() {
         //force singleton
@@ -47,8 +50,23 @@ public class RecordEulaStub implements RecordEula {
         return acceptedEulas.get(uniq_key);
     }
 
-    public void addToRemoteQueue(final String userId, final EulaInfo eula, final String remoteUrl) throws Exception {
-        // TODO Auto-generated method stub
-        throw new Exception("Not implemented!"); 
+    public void addToRemoteQueue(final String userId, final EulaInfo eula, final String remoteUrl) throws Exception {        
+        EulaRemoteQueue.Key key = new EulaRemoteQueue.Key(eula.hashCode(), remoteUrl);
+        EulaRemoteQueue val = new EulaRemoteQueue(key);
+        remoteRecordQueue.put(key, val);
+    }
+
+    //@Override
+    public void updateRemoteQueue(String userId, EulaInfo eula, String remoteUrl, boolean success) throws Exception {
+        EulaRemoteQueue.Key key = new EulaRemoteQueue.Key(eula.hashCode(), remoteUrl);
+        EulaRemoteQueue val = remoteRecordQueue.get(key);
+        if (val == null) {
+            throw new Exception("couldn't find entry in DB");
+        }
+        if (val != null) {
+            val.setRecorded(success);
+            val.setDateRecorded(new Date());
+            remoteRecordQueue.put(key, val);
+        }
     }
 }

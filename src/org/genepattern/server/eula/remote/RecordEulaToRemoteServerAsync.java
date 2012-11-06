@@ -6,6 +6,8 @@ import java.util.concurrent.ThreadFactory;
 
 import org.apache.log4j.Logger;
 import org.genepattern.server.eula.EulaInfo;
+import org.genepattern.server.eula.RecordEula;
+import org.genepattern.server.user.User;
 
 /**
  * POST eula to remote server, asynchronously, by using a background thread.
@@ -52,20 +54,44 @@ public class RecordEulaToRemoteServerAsync  {
         }
     } 
 
-    public void recordLicenseAgreement(final String userId, final EulaInfo eula, final String remoteUrl) throws Exception {
-        log.debug("asynchronous POST to recordLicenseAgreement ..."); 
-        runWithExecutor(userId, eula, remoteUrl);
+    //if null, use the default value
+    private RecordEula callback;
+    public RecordEulaToRemoteServerAsync() {
+    }
+    /**
+     * Optionally initialize with a custom callback to record status back to the local GP DB.
+     * @param callback
+     */
+    public RecordEulaToRemoteServerAsync(final RecordEula callback) {
+        this.callback=callback;
     }
 
-    private void runWithExecutor(final String userId, final EulaInfo eula, final String remoteUrl) {
+    /**
+     * Do an asynchronous POST to the remote server. Record status (success or failure) on the local GP server.
+     * 
+     * @param userId, the GP user who agreed to the EULA
+     * @param eula, the EULA to which the user agreed
+     * @param remoteUrl, the remote server to which to POST the record
+     * 
+     * @throws Exception
+     */
+    public void postToRemoteUrl(final User gpUser, final EulaInfo eula, final String remoteUrl) throws Exception {
+        log.debug("asynchronous POST to recordLicenseAgreement ..."); 
+        runWithExecutor(gpUser, eula, remoteUrl);
+    }
+
+    private void runWithExecutor(final User gpUser, final EulaInfo eula, final String remoteUrl) {
         ExecutorService exec=getExec();
         Runnable r = new Runnable() {
             //@Override
             public void run() {
                 log.debug("running thread...");
                 RecordEulaToRemoteServer record = new RecordEulaToRemoteServer(remoteUrl);
+                if (callback != null) {
+                    record.setRecordEula(callback);
+                }
                 try {
-                    record.recordLicenseAgreement(userId, eula);
+                    record.postToRemoteUrl(gpUser, eula);
                 }
                 catch (Exception e) {
                     //ignore
