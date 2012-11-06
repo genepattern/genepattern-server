@@ -8619,7 +8619,7 @@ http://localhost:$GENEPATTERN_PORT$/gp/installFrame.jsp]]></string>
 						<string><![CDATA[gp-help@broadinstitute.org]]></string>
 					</property>
 					<property name="copyright">
-						<string><![CDATA[2003-2011]]></string>
+						<string><![CDATA[2003-2012]]></string>
 					</property>
 				</object>
 			</property>
