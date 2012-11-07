@@ -36,9 +36,9 @@ To evaluate an existing Classification And Regression Trees (CART) classifier, r
   <br />
   Example file: <a href="ftp://ftp.broadinstitute.org/pub/genepattern/datasets/all_aml/all_aml_test.gct">all_aml_test.gct</a>.
  </li>
-  <li><a href="ClsFiles.html">CLS file</a> that identifies the class of each sample in the gene expression data as 'unknown'. 
+  <li><a href="ClsFiles.html">CLS file</a> that arbitrarily assigns the class of each sample in the gene expression data to one of the classes in the training set. 
   <br />
-  Example file: <a href="ftp://ftp.broadinstitute.org/pub/genepattern/datasets/protocols/all_aml_test_unknown.cls">all_aml_test_unknown.cls</a>.
+  Example file: <a href="ftp://ftp.broadinstitute.org/pub/genepattern/datasets/protocols/all_aml_test_classify_CART.cls">all_aml_test_classify_CART.cls</a>.
   </li>
 </ul>
 <table width="100%" border="0" cellpadding="0" cellspacing="0">
@@ -64,7 +64,7 @@ To evaluate an existing Classification And Regression Trees (CART) classifier, r
   <ul>
        <li><a href="/gp/pages/index.jsf?lsid=CART" onclick="return openModuleWindow(this, event);"
         >Open CART</a></li>
-       <li><a href="/gp/pages/index.jsf?lsid=CART&saved.model.filename=ftp://ftp.broadinstitute.org/pub/genepattern/datasets/protocols/all_aml_train.cart.model&test.data.filename=ftp://ftp.broadinstitute.org/pub/genepattern/datasets/all_aml/all_aml_test.gct&test.cls.filename=ftp://ftp.broadinstitute.org/pub/genepattern/datasets/protocols/all_aml_test_unknown.cls"         
+       <li><a href="/gp/pages/index.jsf?lsid=CART&saved.model.filename=ftp://ftp.broadinstitute.org/pub/genepattern/datasets/protocols/all_aml_train.cart.model&test.data.filename=ftp://ftp.broadinstitute.org/pub/genepattern/datasets/all_aml/all_aml_test.gct&test.cls.filename=ftp://ftp.broadinstitute.org/pub/genepattern/datasets/protocols/all_aml_test_classify_CART.cls"         
            onclick="return openModuleWindow(this, event);"
         >Open CART with example data</a></li>       
   </ul>
