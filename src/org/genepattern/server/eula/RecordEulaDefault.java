@@ -43,7 +43,7 @@ public class RecordEulaDefault implements RecordEula {
     /** the name of the property to use in the config.yaml file */
     final static public String PROP_REMOTE_URL="org.genepattern.server.eula.EulaManager.remoteUrl";
     /** the default value for the remoteUrl */
-    final static public String REMOTE_URL_DEFAULT="http://http://eulas.genepattern.org/eulas";
+    final static public String REMOTE_URL_DEFAULT="http://eulas.genepattern.org/eulas";
     /** the default remoteUrl, on,y accessible from behind the Broad's firewall. */
     final static public String REMOTE_URL_PRIVATE="http://vgpweb01.broadinstitute.org:3000/eulas";
     
@@ -91,9 +91,10 @@ public class RecordEulaDefault implements RecordEula {
         Context eulaContext=getContextForEula(userId, eula);
         Value val=ServerConfiguration.instance().getValue(eulaContext, PROP_REMOTE_URL);
         if (val==null) {
+            // null means, use the default value
+            //    as opposed to an empty list, which means, don't post
             List<String> rval=new ArrayList<String>();
-            //TODO: as soon as the REMOTE_URL_DEFAULT service is available, change to use it
-            rval.add(REMOTE_URL_PRIVATE);
+            rval.add(REMOTE_URL_DEFAULT);
             return rval;
         }
         return val.getValues();

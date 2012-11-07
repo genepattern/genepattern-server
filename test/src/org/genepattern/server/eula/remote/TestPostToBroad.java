@@ -25,7 +25,7 @@ public class TestPostToBroad {
         eulaInfo.setModuleLsid(lsidIn);
         eulaInfo.setModuleName(nameIn);
         post=new PostToBroad();
-        post.setRemoteUrl(RecordEulaDefault.REMOTE_URL_PRIVATE);
+        post.setRemoteUrl(RecordEulaDefault.REMOTE_URL_DEFAULT);
         post.setGpUrl(gpUrl);
         post.setGpUserId(userid);
         post.setEulaInfo(eulaInfo);
