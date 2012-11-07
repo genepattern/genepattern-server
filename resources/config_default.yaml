@@ -50,14 +50,15 @@ default.properties:
     genomeSpaceEnvironment: prod
     
     # 
-    # for End-user license agreements
+    # for per-module End-user license agreements (EULA)
     #
     # set this to true, to enable the EulaManager
     org.genepattern.server.eula.EulaManager.enabled: false
-    # use this remoteUrl from within the Broad firewall
-    #org.genepattern.server.eula.EulaManager.remoteUrl: "http://vgpweb01.broadinstitute.org:3000/eulas"
-    # use this remoteUrl from outside the Broad firewall
+    # set the list of 0 or more remoteUrls for recording each EULA
+    # this is the default value, so it's not necessary to set
     #org.genepattern.server.eula.EulaManager.remoteUrl: "http://eulas.genepattern.org/eulas"
+    # an empty list means, don't POST
+    #org.genepattern.server.eula.EulaManager.remoteUrl: []
 
 
 executors:
