@@ -94,7 +94,7 @@ use, misuse, or functionality.
                         </tr>
                     </t:dataList>
 					
-					<t:dataList value="#{file.conversions}" var="format">
+					<t:dataList value="#{file.conversionsWithKind}" var="format">
 						<h:outputText rendered="#{not empty genomeSpaceBean.kindToModules[format] and not file.directory}">
 							<tr>
 	                            <td>

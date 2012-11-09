@@ -55,6 +55,17 @@ public class GenomeSpaceFile extends GpFilePath {
     public Set<String> getConversions() {
         return conversions;
     }
+    
+    /**
+     * Returns a list of all possible conversion types and the file's basic kind
+     * @return
+     */
+    public Set<String> getConversionsWithKind() {
+        Set<String> union = new HashSet<String>();
+        union.add(this.getKind());
+        union.addAll(conversions);
+        return union;
+    }
 
     /**
      * Sets the list of all possible file format types that this 
