@@ -71,7 +71,7 @@ function pm_showMenu(id, pos, horizOffset, vertOffset) {
         menuTop = Math.max(f_scrollTop(), menuTop);
       }
       //make sure the top of the menu is not out of the display area
-      menuTop = Math.max(0, menuTop);
+      menuTop = Math.max(71, menuTop);
       style.top = menuTop + "px";
    }
    style.visibility = "visible";
