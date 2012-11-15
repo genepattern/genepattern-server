@@ -96,7 +96,7 @@ public class ParametersJSON extends JSONObject {
             this.put(PREFIX, pAttrs.get(GPConstants.PARAM_INFO_PREFIX[0]));
             this.put(OPTIONAL, pAttrs.get(GPConstants.PARAM_INFO_OPTIONAL[0]));
             this.put(FLAG, pAttrs.get(FLAG));
-            this.put(VALUE, pAttrs.get(VALUE));
+            this.put(VALUE, pInfo.getValue());
 
 
             Set keys = pAttrs.keySet();
