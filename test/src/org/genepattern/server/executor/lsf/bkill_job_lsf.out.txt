@@ -1,0 +1,37 @@
+Sender: LSF System <lsf@node1449>
+Subject: Job 6303001: <612921> Exited
+
+Job <612921> was submitted from host <vgpprod01> by user <gpprod> in cluster <cromwell>.
+Job was executed on host(s) <node1449>, in queue <genepattern>, as user <gpprod> in cluster <cromwell>.
+</home/unix/gpprod> was used as the home directory.
+</xchip/gpprod/servers/genepattern/jobResults/612921> was used as the working directory.
+Started at Fri Nov  2 14:03:14 2012
+Results reported at Fri Nov  2 14:03:39 2012
+
+Your job looked like:
+
+------------------------------------------------------------
+# LSBATCH: User input
+'/broad/software/free/Linux/redhat_5_x86_64/pkgs/sun-java-jdk_1.6.0-21_x86_64/bin/java' '-Xmx8g' '-cp' '/xchip/gpprod/servers/genepattern/taskLib/ARACNE.2.854/aracne-java.jar:/xchip/gpprod/servers/genepattern/taskLib/ARACNE.2.854/aracne-main.jar:/xchip/gpprod/servers/genepattern/taskLib/ARACNE.2.854/commons-cli.jar:/xchip/gpprod/servers/genepattern/taskLib/ARACNE.2.854/commons-logging-1.0.3.jar:/xchip/gpprod/servers/genepattern/taskLib/ARACNE.2.854/workbook-0.9.jar:/xchip/gpprod/servers/genepattern/taskLib/ARACNE.2.854/log4j-1.2.8.jar:/xchip/gpprod/servers/genepattern/taskLib/ARACNE.2.854/collections-generic-4.0.jar:/xchip/gpprod/servers/genepattern/taskLib/ARACNE.2.854/commons-math-1.0.jar:/xchip/gpprod/servers/genepattern/taskLib/ARACNE.2.854/gp-modules.jar' 'org.genepattern.modules.aracne.ARACNE' '-i' '/xchip/gpprod/servers/genepattern/temp/danokin_run3666671362101977625.tmp/Ms_Heps_TNF_0_2_48.gct' '-o' 'Ms_Heps_TNF_0_2_48-ARACNE_output.adj' '-h' '-s' '-l' '-k' '-t' '0' '-p' '1' '-e' '1' '-f' '0' '0' >> 'stdout.txt'
+------------------------------------------------------------
+
+TERM_OWNER: job killed by owner.
+Exited with exit code 130.
+
+Resource usage summary:
+
+    CPU time   :     32.56 sec.
+    Max Memory :        10 MB
+    Max Swap   :        38 MB
+
+    Max Processes  :         1
+    Max Threads    :         1
+
+The output (if any) follows:
+
+
+
+PS:
+
+Read file </xchip/gpprod/servers/genepattern/jobResults/612921/stderr.txt> for stderr output of this job.
+

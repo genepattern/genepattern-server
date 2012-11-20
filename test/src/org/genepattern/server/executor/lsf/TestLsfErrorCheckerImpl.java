@@ -70,20 +70,33 @@ public class TestLsfErrorCheckerImpl
      * Make sure we can detect an out of memory error from LSF
      */
     @Test
-    public void testOutOfMemoryError() {
-        final File lsfFile= getLsfLogFile("memory_limit_lsf.out.txt");
-        Assert.assertNotNull(lsfFile);
+    public void testOutOfMemoryError()
+    {
+        validateLsfLogResults("memory_limit_lsf.out.txt", "memory_limit_expected_message.txt", 1);        
+    }
 
-        final String expectedMessageFile="memory_limit_expected_message.txt";
+    /**
+     * Make sure we can detect an out of memory error from LSF
+     */
+    @Test
+    public void testJobAbortByAdmin()
+    {
+        validateLsfLogResults("bkill_job_lsf.out.txt", "bkill_job_lsf_expected_message.txt", 130);
+    }
+
+    private void validateLsfLogResults(String logFileName, String expectedMessageFileName, int exitCode)
+    {
+        final File lsfFile= getLsfLogFile(logFileName);
+        Assert.assertNotNull(lsfFile);
 
         LsfErrorCheckerImpl errorCheck = new LsfErrorCheckerImpl(lsfFile.getAbsolutePath());
         LsfErrorStatus status = errorCheck.getStatus();
         Assert.assertNotNull(status);
 
         //check that the lsf exit code is 1
-        Assert.assertEquals(status.getExitCode(), 1);
+        Assert.assertEquals(status.getExitCode(), exitCode);
 
-        String expectedMessage = getMessage(expectedMessageFile);
+        String expectedMessage = getMessage(expectedMessageFileName);
         Assert.assertNotNull(expectedMessage);
 
         Assert.assertEquals(expectedMessage,status.getErrorMessage());

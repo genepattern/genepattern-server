@@ -1,0 +1,16 @@
+TERM_OWNER: job killed by owner.
+Exited with exit code 130.
+
+Resource usage summary:
+
+    CPU time   :     32.56 sec.
+    Max Memory :        10 MB
+    Max Swap   :        38 MB
+
+    Max Processes  :         1
+    Max Threads    :         1
+
+The output (if any) follows:
+
+
+
