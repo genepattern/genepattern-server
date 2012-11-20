@@ -7,6 +7,7 @@ import java.util.List;
 import org.apache.log4j.Logger;
 import org.genepattern.junitutil.FileUtil;
 import org.genepattern.junitutil.TaskUtil;
+import org.genepattern.server.TaskLSIDNotFoundException;
 import org.genepattern.server.config.ServerConfiguration.Context;
 import org.genepattern.webservice.TaskInfo;
 import org.junit.Assert;
@@ -31,7 +32,7 @@ public class TestEulaManagerImpl {
      * @param filename
      * @return
      */
-    private static File getSourceFile(String filename) {
+    public static File getSourceFile(String filename) {
         return FileUtil.getSourceFile(TestEulaManagerImpl.class, filename);
     }
 
@@ -47,51 +48,6 @@ public class TestEulaManagerImpl {
         return TaskUtil.getTaskInfoFromZip(this.getClass(), filename);
     }
 
-    private static List<TaskInfo> initTaskInfosFromZip(final String filename) {
-        List<TaskInfo> taskInfos = new ArrayList<TaskInfo>();
-        //the name of a zip file, relative to this source file
-        File zipFile = getSourceFile(filename);
-        
-        TaskInfo taskInfo = null;
-        try {
-            taskInfo = TaskUtil.getTaskInfoFromZip(zipFile);
-            taskInfos.add(taskInfo);
-            return taskInfos;
-        }
-        catch (Throwable t) {
-            //must be a pipeline with modules
-        }
-
-        ZipWalker zipWalker = new ZipWalker(zipFile);
-        try {
-            zipWalker.walk();
-        }
-        catch (Exception e) {
-            //TODO: Need to hold onto this, and fail the test after we attempt to clean up
-        }
-        List<File> nestedZips = zipWalker.getNestedZips();
-        for(File nestedZip : nestedZips) {
-            TaskInfo nestedTask=null;
-            try {
-                nestedTask = TaskUtil.getTaskInfoFromZip(nestedZip);
-                taskInfos.add(nestedTask);
-            }
-            catch (Throwable t) {
-                //ignore zip entries
-            }
-            finally {
-                //delete the tmp file
-            }
-        }
-        try {
-            zipWalker.deleteTmpFiles();
-        }
-        catch (Exception e) {
-            Assert.fail(e.getLocalizedMessage());
-        }
-        return taskInfos;
-    }
-    
     /**
      * Helper method for initializing a EulaInfo to add to a task.
      * @param stub
@@ -172,7 +128,7 @@ public class TestEulaManagerImpl {
     @Test
     public void testGetPipelineTaskInfosFromZip() {
         final String filename="testPipelineWithLicensedModules_Dupe_ModuleName_v3.zip";
-        List<TaskInfo> taskInfos = initTaskInfosFromZip(filename); 
+        List<TaskInfo> taskInfos = TaskUtil.getTaskInfosFromZipPipeline(this.getClass(), filename); 
         Assert.assertNotNull("taskInfos==null", taskInfos);
         Assert.assertEquals("expected number of taskInfos nested in zip file", 8, taskInfos.size());
         
@@ -270,7 +226,7 @@ public class TestEulaManagerImpl {
     @Test
     public void testGetEulaFromPipeline() {
         final String filename="testPipelineWithLicensedModules_Dupe_ModuleName_v3.zip";
-        final List<TaskInfo> taskInfos = initTaskInfosFromZip(filename); 
+        final List<TaskInfo> taskInfos = TaskUtil.getTaskInfosFromZipPipeline(this.getClass(), filename); 
         final TaskInfo pipelineTask=taskInfos.get(0);
         final File gpLicenseFile=getSourceFile("gp_server_license.txt");
         final File exampleLicenseFile=getSourceFile("example_license.txt");
@@ -290,14 +246,16 @@ public class TestEulaManagerImpl {
             public TaskInfo getTaskInfo(final String lsid) {
                 //quick and dirty implementation
                 if (lsid==null) {
-                    return null;
+                    throw new IllegalArgumentException("lsid==null");
+                    //return null;
                 }
                 for(TaskInfo taskInfo : taskInfos) {
                     if (lsid.equals(taskInfo.getLsid())) {
                         return taskInfo;
                     }
                 }
-                return null;
+                throw new TaskLSIDNotFoundException(lsid);
+                //return null;
             }
         };
         
@@ -748,6 +706,41 @@ public class TestEulaManagerImpl {
         eulaMgr.setEula(null, taskInfo);
         eulas=eulaMgr.getEulas(taskInfo);
         Assert.assertEquals("eulas.size should be 0", 0, eulas.size());
+    }
+
+    /**
+     * Test-case for getting eula for a pipeline, when some (or all) of the included modules 
+     * are not installed on the server.
+     */
+    @Test
+    public void testGetPendingMissingTasks() {
+        final String filename="Golub.Slonim.1999.Nature.all.aml.pipeline_v2.zip";
+        final List<TaskInfo> taskInfos = TaskUtil.getTaskInfosFromZipPipeline(this.getClass(), filename); 
+        
+        final String userId="gp_user";
+        Context taskContext=Context.getContextForUser(userId);
+        //assume the first entry is the pipeline
+        taskContext.setTaskInfo(taskInfos.get(0));
+        
+        eulaMgr.setGetTaskStrategy(new GetTaskStrategy() {
+
+            //@Override
+            public TaskInfo getTaskInfo(final String lsid) {
+                if (lsid==null) {
+                    throw new IllegalArgumentException("lsid==null");
+                }
+                if (lsid.equals(taskInfos.get(0).getLsid())) {
+                    return taskInfos.get(0);
+                }
+                //simulate taskinfocache method call, when the module is not installed on the server
+                throw new TaskLSIDNotFoundException(lsid);
+            }
+        });
+        
+        List<EulaInfo> eulas=eulaMgr.getPendingEulaForModule(taskContext);
+        
+        Assert.assertEquals("golub pipeline v2 has no eulas", 0, eulas.size());
+
     }
     
 }

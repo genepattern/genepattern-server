@@ -181,7 +181,14 @@ public class GetEulaFromTaskRecursive {
         List<TaskInfo> children = new ArrayList<TaskInfo>();
         for(JobSubmission jobSubmission : pipelineModel.getTasks()) {
             TaskInfo child=jobSubmission.getTaskInfo();
-            children.add(child);
+            //can return null, if the task is not installed on the server
+            //    ignore the null children
+            if (child == null) {
+                log.debug("jobSubmission.taskInfo is null, task is not installed on server, lsid="+jobSubmission.getLSID());
+            }
+            if (child != null) {
+                children.add(child);
+            }
         }
         return children;
     }
