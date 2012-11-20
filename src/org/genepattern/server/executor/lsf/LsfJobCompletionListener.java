@@ -105,21 +105,37 @@ public class LsfJobCompletionListener implements JobCompletionListener {
         final File jobDir = new File(job.getWorkingDirectory());
         final File stdoutFile = getStdoutFile(job);            
         final File stderrFile = getStderrFile(job);
-        final String errorMessage = null;
 
         //must run this in a new thread because this callback is run from within a hibernate transaction
         //and the GenePatternAnalyisTask.handleJobCompletion closes that transaction
         //See the comments in GenePatternAnalysisTask to see why the transaction must be closed, it is
-        //    related to Oracle CLOBs.
+        //related to Oracle CLOBs.
         FutureTask<Integer> future =
             new FutureTask<Integer>(new Callable<Integer>() {
               public Integer call() throws Exception {
                   //TODO: get the exit code from the lsf job and send it along to genepattern
                   int exitValue = 0;
-                  String lsfJobStatus = job.getStatus();
+                  String errorMessage = null;
+
+                  String lsfJobStatus = job.getStatus();                  
                   if (!("DONE".equalsIgnoreCase(lsfJobStatus))) {
                       //job did not complete as expected, flag as error
                       exitValue = -1;
+
+                      try
+                      {
+                            LsfErrorCheckerImpl errorCheck = new LsfErrorCheckerImpl(job.getOutputFilename());
+                            LsfErrorStatus status = errorCheck.getStatus();
+                            if(status != null)
+                            {
+                                errorMessage = status.getErrorMessage();
+                            }
+                      }
+                      catch(Exception e)
+                      {
+                            log.error(e);
+                            //log and ignore any errors in getting info about the Lsf error and continue
+                      }
                   }
                   GenePatternAnalysisTask.handleJobCompletion(gpJobId, exitValue, errorMessage, jobDir, stdoutFile, stderrFile);
                   return exitValue;

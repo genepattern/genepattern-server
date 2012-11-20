@@ -13,7 +13,7 @@ import java.io.IOException;
  */
 public class LsfErrorCheckerImpl implements ILsfErrorChecker
 {
-    LsfErrorStatus errorStatus;
+    LsfErrorStatus errorStatus = null;
 
     LsfErrorCheckerImpl(String lsfLogFileName)
     {
