@@ -12,6 +12,7 @@ import org.genepattern.server.config.ServerConfiguration.Context;
 import org.genepattern.server.eula.EulaInfo;
 import org.genepattern.server.eula.EulaManager;
 import org.genepattern.server.eula.InitException;
+import org.genepattern.server.webservice.server.local.IAdminClient;
 import org.genepattern.server.webservice.server.local.LocalAdminClient;
 import org.genepattern.util.GPConstants;
 import org.genepattern.util.LSID;
@@ -108,41 +109,70 @@ public class EulaTaskBean {
     //helper method, needed to restore the 'reloadJob=<jobId>' request parameter,
     //    when we have to prompt for EULA before reloading a job
     private String reloadJobParam="";
-
+    
     public EulaTaskBean() {
+        //TODO: remove dependency on UIBeanHelper
         this.currentUser = UIBeanHelper.getUserId();
+    }
+
+    /**
+     * Must call this before calling setCurrentLsid.
+     * @param userId
+     */
+    public void setCurrentUser(final String userId) {
+        this.currentUser=userId;
     }
     
     //callback from ModuleChooserBean#setSelectedModule, JobBean#reload
     //  #{eulaTaskBean.initialQueryString}
-    public void setCurrentLsid(final String currentLsid) {
-        log.debug("currentLsid="+currentLsid);
-        this.currentLsid=currentLsid;
+    public void setCurrentLsid(final String newCurrentLsid) {
+        log.debug("currentLsid="+newCurrentLsid);
+        this.currentLsid="";
         this.currentLsidVersion="";
-        if (currentLsid != null && currentLsid.length() != 0) {
-            //if necessary, init currentLsidVersion and currentTaskInfo
-            if (currentTaskInfo == null || !currentLsid.equals( currentTaskInfo.getLsid() )) {
-                log.debug("initializing currentLsidVersion, currentLsid="+currentLsid);
-                try {
-                    LSID tmpLsid = new LSID(currentLsid);
-                    this.currentLsidVersion=tmpLsid.getVersion();
-                }
-                catch (MalformedURLException e) {
-                    log.error("Unexpected error getting version from lsid string, currentLsid="+currentLsid,e);
-                } 
-                log.debug("initializing currentTaskInfo, currentLsid="+currentLsid);
-                currentTaskInfo = initTaskInfo(currentUser, currentLsid);
-            }
+
+        //if necessary, init currentTaskInfo
+        if (newCurrentLsid != null && newCurrentLsid.length() != 0) {
+            log.debug("initializing currentTaskInfo, currentLsid="+newCurrentLsid);
+            currentTaskInfo = initTaskInfo(currentUser, newCurrentLsid);
         }
         if (this.currentTaskInfo!=null) {
             this.prompt=initEulaInfo(currentTaskInfo);
             this.currentTaskName=currentTaskInfo.getName();
+            this.currentLsid=currentTaskInfo.getLsid();
+            try {
+                log.debug("initializing currentLsidVersion, currentLsid="+currentTaskInfo.getLsid());
+                LSID tmpLsid = new LSID(currentTaskInfo.getLsid());
+                this.currentLsidVersion=tmpLsid.getVersion();
+            }
+            catch (MalformedURLException e) {
+                log.error("Unexpected error getting version from lsid string, currentLsid="+currentTaskInfo.getLsid(),e);
+            }
         }
         else {
             this.prompt=false;
         }
     }
     
+    //TODO: refactor by adding a TaskInfo setter, which requires modifying existing JSF beans and pages
+    //    in several different places
+    private IAdminClient _adminClient=null;
+    private IAdminClient getAdminClient() {
+        if (_adminClient != null) {
+            return _adminClient;
+        }
+        return new LocalAdminClient(currentUser);
+    }
+
+    /**
+     * for jUnit testing, set an IAdminClient instance, to use instead of the default LocalAdminClient,
+     * which has DB dependencies.
+     * 
+     * @param adminClient
+     */
+    public void setAdminClient(IAdminClient adminClient) {
+        this._adminClient = adminClient;
+    }
+
     /**
      * Get the lsid for the module (or pipeline) that the current user wants to run.
      * This may or may not be the same lsid as that which requires EULA.
@@ -152,6 +182,7 @@ public class EulaTaskBean {
      * @return
      */
     public String getCurrentLsid() {
+        
         return currentLsid;
     }
     
@@ -233,14 +264,17 @@ public class EulaTaskBean {
         return reloadJobParam;
     }
 
-    private static TaskInfo initTaskInfo(final String currentUser, final String lsid) {
-        //TODO: this code is duplicated in RunTaskBean, 
+    private TaskInfo initTaskInfo(final String currentUser, final String lsid) {
+        //TODO: a TaskInfo is also initialized in RunTaskBean, 
         //      should find a way to share the same instance of the TaskInfo per page request
         TaskInfo taskInfo = null;
         if (lsid != null && lsid.length()>0) {
             try {
-                final LocalAdminClient lac = new LocalAdminClient(currentUser);
-                taskInfo = lac.getTask(lsid);
+                IAdminClient adminClient = getAdminClient();
+                taskInfo = adminClient.getTask(lsid);
+                
+                //final LocalAdminClient lac = new LocalAdminClient(currentUser);
+                //taskInfo = lac.getTask(lsid);
             }
             catch (Throwable t) {
                 log.error("Error initializing taskInfo for lsid=" + lsid, t);
