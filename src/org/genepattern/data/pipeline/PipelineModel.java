@@ -575,13 +575,11 @@ public class PipelineModel implements Serializable {
                 taskInfo = adminClient.getTask(arg);
             } 
             catch (Throwable t) {
-                log.error("Error getting TaskInfo from task="+arg, t);
+                log.debug("Error getting TaskInfo from task="+arg, t);
             } 
             // old pipelines don't have hsqldb.jar on classpath
             if (taskInfo == null) {
-                System.out.println("No such task: " + (lsid.length() > 0 ? lsid : taskName));
-                // throw new Exception("No such task: " + (lsid.length() > 0 ? lsid : taskName));
-                //log.error("No such task: " + (lsid.length() > 0 ? lsid : taskName));
+                log.error("No such task: " + (lsid.length() > 0 ? lsid : taskName));
             }
         }
         job.setTaskInfo(taskInfo);
