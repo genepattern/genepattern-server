@@ -696,7 +696,7 @@ public class GenePatternAnalysisTask {
             throw new JobDispatchException(message);
         }
         if (requiresEULA) {
-            throw new JobDispatchException("The "+taskInfo.getName()+" module requires an End-user license agreement. "+
+            throw new JobDispatchException(taskInfo.getName()+" requires an End-user license agreement. "+
                     "There is no record of agreement for userId="+jobInfo.getUserId());
         }
         
