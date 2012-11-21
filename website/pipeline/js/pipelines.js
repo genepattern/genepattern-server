@@ -2961,8 +2961,7 @@ var properties = {
             $(".ui-dialog-buttonpane button:contains('OK')").click(function() {
                 // Add the file to the UI
                 var path = $("#hiddenFilePath").val();
-                var parts = path.split("/");
-                var filename = parts[parts.length - 1];
+                var filename = path.replace(/^.*(\\|\/|\:)/, '');
 
                 // Add to the hidden field
                 $("input[type='hidden'][name='" + label + "']").val(filename);
