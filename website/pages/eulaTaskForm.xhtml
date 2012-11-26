@@ -27,7 +27,7 @@ use, misuse, or functionality.
         </h5>
 
         <t:dataList var="eula" value="#{eulaTaskBean.eulas}">
-            <p><textarea rows="20" class="license-content">#{eula.content}</textarea></p>
+            <p><textarea rows="20" class="license-content" readonly="readonly">#{eula.content}</textarea></p>
         </t:dataList>
     </h:outputText>
 
@@ -42,7 +42,7 @@ use, misuse, or functionality.
                 #{eula.taskName}
                 <span class="license-version"> version #{eula.lsidVersion} </span>
             </div>
-            <p><textarea rows="20" class="license-content">#{eula.content}</textarea></p>
+            <p><textarea rows="20" class="license-content" readonly="readonly">#{eula.content}</textarea></p>
         </t:dataList>
     </h:outputText>
 </h:outputText>
