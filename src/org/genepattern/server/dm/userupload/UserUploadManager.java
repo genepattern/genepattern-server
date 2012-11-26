@@ -55,7 +55,7 @@ public class UserUploadManager {
         try {
             UserUploadDao dao = new UserUploadDao();
             UserUpload fromDb = dao.selectUserUpload(userContext.getUserId(), uploadFilePath);
-            if (initMetaData) {
+            if (initMetaData && fromDb != null) {
                 initMetadata(uploadFilePath, fromDb);
             }
             if (!isInTransaction) {
