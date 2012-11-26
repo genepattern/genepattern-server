@@ -133,6 +133,7 @@ public class LsfJobCompletionListener implements JobCompletionListener {
                       }
                       catch(Exception e)
                       {
+                            log.error("Error writing lsf error to stderr:\n"); 
                             log.error(e);
                             //log and ignore any errors in getting info about the Lsf error and continue
                       }
