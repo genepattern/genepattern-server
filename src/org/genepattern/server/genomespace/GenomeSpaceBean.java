@@ -1028,7 +1028,7 @@ public class GenomeSpaceBean {
             Context context = UIBeanHelper.getUserContext();
             File relativeFile = new File(directory.getRelativeFile(), name);
             GpFilePath asUploadFile = UserUploadManager.getUploadFileObj(context, relativeFile, true);
-            UserUploadManager.createUploadFile(context, asUploadFile, 1);
+            UserUploadManager.createUploadFile(context, asUploadFile, 1, true);
             UserUploadManager.updateUploadFile(context, asUploadFile, 1, 1);
         }
         catch (Exception e) {

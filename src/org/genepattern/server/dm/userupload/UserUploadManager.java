@@ -117,10 +117,29 @@ public class UserUploadManager {
      * @throws Exception if a duplicate entry for the file is found in the database
      */
     static public UserUpload createUploadFile(Context userContext, GpFilePath gpFileObj, int numParts) throws Exception {
+        return createUploadFile(userContext, gpFileObj, numParts, false);
+    }
+    
+    /**
+     * Add a record of the user upload file into the database. 
+     * 
+     * Iff the current thread is not already in a DB transaction, this method will commit the transaction. 
+     * Otherwise, it is up to the calling method to commit or rollback the transaction.
+     * 
+     * @param userContext, requires a valid userId,
+     * @param gpFilePath, a GpFilePath to the upload file
+     * @param numParts, the number of parts this file is broken up into, based on the jumploader applet.
+     * @param modDuplicate, whether an existing duplicate entry is updated or if an error is thrown
+     * @throws Exception if a duplicate entry for the file is found in the database and modDuplicate is false
+     */
+    static public UserUpload createUploadFile(Context userContext, GpFilePath gpFileObj, int numParts, boolean modDuplicate) throws Exception {
         boolean inTransaction = HibernateUtil.isInTransaction();
         
         UserUploadDao dao = new UserUploadDao();
         UserUpload uu = dao.selectUserUpload(userContext.getUserId(), gpFileObj);
+        if (uu != null && !modDuplicate) {
+            throw new Exception("Duplicate entry found in the database for file: " + gpFileObj.getRelativePath()); 
+        }
         uu = UserUpload.initFromGpFileObj(userContext.getUserId(), uu, gpFileObj);
         uu.setNumParts(numParts);
 
@@ -133,9 +152,10 @@ public class UserUploadManager {
         }
         catch (RuntimeException e) {
             HibernateUtil.rollbackTransaction();
-            throw new Exception("Duplicate entry found in the database for file: " + gpFileObj.getRelativePath());
+            throw new Exception("Runtime exception creating upload file: " + gpFileObj.getRelativePath());
         }
     }
+      
 
     /**
      * Update the record of the user upload file in the database.
