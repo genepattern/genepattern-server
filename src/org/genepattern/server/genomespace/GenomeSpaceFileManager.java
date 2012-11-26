@@ -8,9 +8,11 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLDecoder;
+import java.net.URLEncoder;
 import java.util.Date;
 import java.util.Set;
 
+import org.apache.commons.httpclient.util.URIUtil;
 import org.apache.log4j.Logger;
 import org.genepattern.util.SemanticUtil;
 
@@ -56,6 +58,7 @@ public class GenomeSpaceFileManager {
      */
     public static GenomeSpaceFile createFile(Object gsSession, String url, Object metadata) {
         try {
+            url = url.replaceAll(" ", "%20");
             return createFile(gsSession, new URL(url), null);
         }
         catch (MalformedURLException e) {

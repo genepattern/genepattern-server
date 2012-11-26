@@ -72,6 +72,7 @@ public class GenomeSpaceReceiveBean {
         List<GpFilePath> received = new ArrayList<GpFilePath>();
         HttpServletRequest request = UIBeanHelper.getRequest();
         String filesString = request.getParameter("files");
+        filesString = filesString.replaceAll("%2520", "%20");
         
         if (!initGenomeSpaceBean()) {
             log.error("Unable to acquire reference to GenomeSpaceBean in GenomeSpaceReceiveBean.parseParameters()");
