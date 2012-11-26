@@ -11,7 +11,6 @@ import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
 
 import org.apache.log4j.Logger;
-import org.genepattern.server.config.ServerConfiguration.Context;
 import org.genepattern.server.dm.GpFilePath;
 import org.genepattern.util.SemanticUtil;
 
@@ -20,9 +19,13 @@ import org.genepattern.util.SemanticUtil;
 public class UserUpload {
     private static Logger log = Logger.getLogger(UserUpload.class);
 
-    static public UserUpload initFromGpFileObj(Context userContext, GpFilePath fileObj) {
-        UserUpload uf = new UserUpload();
-        uf.setUserId(userContext.getUserId());
+    static public UserUpload initFromGpFileObj(String userid, UserUpload uf, GpFilePath fileObj) {
+        if (uf == null) {
+            uf = new UserUpload();
+            uf.setUserId(userid);
+        }
+        
+        uf.numPartsRecd = 0;
         uf.setPath(fileObj.getRelativePath());
         uf.init(fileObj.getServerFile());
         return uf;

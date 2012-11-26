@@ -117,14 +117,15 @@ public class UserUploadManager {
      * @throws Exception if a duplicate entry for the file is found in the database
      */
     static public UserUpload createUploadFile(Context userContext, GpFilePath gpFileObj, int numParts) throws Exception {
-        UserUpload uu = UserUpload.initFromGpFileObj(userContext, gpFileObj);
-        uu.setNumParts(numParts);
-        
         boolean inTransaction = HibernateUtil.isInTransaction();
         
         UserUploadDao dao = new UserUploadDao();
+        UserUpload uu = dao.selectUserUpload(userContext.getUserId(), gpFileObj);
+        uu = UserUpload.initFromGpFileObj(userContext.getUserId(), uu, gpFileObj);
+        uu.setNumParts(numParts);
+
         try {
-            dao.save( uu );
+            dao.saveOrUpdate( uu );
             if (!inTransaction) {
                 HibernateUtil.commitTransaction();
             }
