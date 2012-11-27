@@ -47,7 +47,7 @@ var Menu = {
 	                <li><a href=\"/gp/pages/manageSuite.jsf\">Suites</a>\
 	                    <ul>\
 	                        <li class=\"createPrivateSuiteAllowed\"><a href=\"/gp/pages/createSuite.jsf\">New Suite</a></li>\
-	                        <li class=\"createPublicSuiteAllowed\"><a href=\"/gp/\">Install From Repository</a></li>\
+	                        <li class=\"createPublicSuiteAllowed\"><a href=\"/gp/pages/suiteCatalog.jsf\">Install From Repository</a></li>\
 	                        <li><a href=\"/gp/pages/importTask.jsf?suite=1\">Install From ZIP</a></li>\
 	                        <li><a href=\"/gp/pages/manageSuite.jsf\">Manage</a></li>\
 	                    </ul>\
