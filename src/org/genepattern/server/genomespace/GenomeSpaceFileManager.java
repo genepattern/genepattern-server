@@ -81,6 +81,10 @@ public class GenomeSpaceFileManager {
             //return null;
         }
         
+        if (gsSession == null) {
+            log.error("ERROR: null gsSession passed into GenomeSpaceFileManager.createFile()");
+        }
+        
         try {
             GenomeSpaceFile file = new GenomeSpaceFile(gsSession);
             String filename = extractFilename(url);

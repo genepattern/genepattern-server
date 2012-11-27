@@ -35,6 +35,7 @@ import org.genepattern.server.webapp.jsf.UIBeanHelper;
 import org.genepattern.server.webapp.uploads.UploadFilesBean;
 import org.genepattern.server.webapp.uploads.UploadFilesBean.DirectoryInfoWrapper;
 import org.genepattern.server.webservice.server.dao.AdminDAO;
+import org.genepattern.util.GPConstants;
 import org.genepattern.util.SemanticUtil;
 import org.genepattern.webservice.ParameterInfo;
 import org.genepattern.webservice.TaskInfo;
@@ -599,14 +600,40 @@ public class GenomeSpaceBean {
     private List<GenomeSpaceFile> constructFileTree(HttpSession httpSession) {
         Object gsSessionObject = httpSession.getAttribute(GenomeSpaceLoginManager.GS_SESSION_KEY);
         if (gsSessionObject == null) {
-            log.error("GenomeSpace session is null in GenomeSpaceBean.constructFileTree()");
-            return null;
+            log.error("ERROR: Null gsSession found in constructFileTree()");
+            gsSessionObject = GenomeSpaceBean.forceGsSession(httpSession);
         }
         GenomeSpaceFile data = GenomeSpaceClientFactory.getGenomeSpaceClient().buildFileTree(gsSessionObject);
         List<GenomeSpaceFile> rootList = new ArrayList<GenomeSpaceFile>();
         rootList.add(data);
         
         return rootList;
+    }
+    
+    /**
+     * Called to force the GenomeSpace Session to be attached to the GenePattern Session
+     */
+    public static Object forceGsSession(HttpSession gpSession) {
+        String username = (String) gpSession.getAttribute(GPConstants.USERID);
+        boolean loggedIn = false;
+        try {
+            loggedIn = GenomeSpaceLoginManager.loginFromDatabase(username, gpSession);
+        }
+        catch (GenomeSpaceException e) {
+            loggedIn = false;
+            log.error("ERROR: Exception forcing a login to GenomeSpace");
+        }
+        if (loggedIn) {
+            Object gsSession = gpSession.getAttribute(GenomeSpaceLoginManager.GS_SESSION_KEY);
+            if (gsSession == null) {
+                log.error("ERROR: GenomeSpace session is still null");
+            }
+            return gsSession;
+        }
+        else {
+            log.error("ERROR: Unable to force GenomeSpace login");
+            return null;
+        }
     }
     
     /**
@@ -657,6 +684,10 @@ public class GenomeSpaceBean {
     public GenomeSpaceFile getFile(URL url) {
         HttpSession httpSession = UIBeanHelper.getSession();
         Object gsSession = httpSession.getAttribute(GenomeSpaceLoginManager.GS_SESSION_KEY);
+        if (gsSession == null) {
+            log.error("ERROR: Null gsSession found in GenomeSpaceBean.getFile()");
+            gsSession = GenomeSpaceBean.forceGsSession(httpSession);
+        }
         url = encodeURLIfNecessary(url);
         return GenomeSpaceFileManager.createFile(gsSession, url);
     }
@@ -979,6 +1010,10 @@ public class GenomeSpaceBean {
     public void saveFileToUploads(String fileUrl, String directoryPath) {
         HttpSession httpSession = UIBeanHelper.getSession();
         Object gsSessionObject = httpSession.getAttribute(GenomeSpaceLoginManager.GS_SESSION_KEY);
+        if (gsSessionObject == null) {
+            log.error("ERROR: Null gsSession found in saveFileToUploads()");
+            gsSessionObject = GenomeSpaceBean.forceGsSession(httpSession);
+        }
         
         GpFilePath directory = null;
         UploadFilesBean uploadBean = (UploadFilesBean) UIBeanHelper.getManagedBean("#{uploadFilesBean}");

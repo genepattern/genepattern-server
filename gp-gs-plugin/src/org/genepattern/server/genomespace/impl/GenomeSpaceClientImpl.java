@@ -507,6 +507,17 @@ public class GenomeSpaceClientImpl implements GenomeSpaceClient {
             formatType = file.getExtension();
         }
         
+        // If converting to the file's base type, simply return the URL
+        if (formatType.equals(file.getExtension())) {
+            try {
+                return file.getUrl();
+            }
+            catch (Exception e) {
+                log.error("Unable to get base URL in getConvertedURL(): " + file);
+                throw new GenomeSpaceException("Unable to get base URL in getConvertedURL(): " + file);
+            }
+        }
+        
         // Find the correct GSDataFormat object
         GSDataFormat format = null;
         for (GSDataFormat i : metadata.getAvailableDataFormats()) {

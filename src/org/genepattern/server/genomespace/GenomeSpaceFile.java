@@ -44,6 +44,9 @@ public class GenomeSpaceFile extends GpFilePath {
     Object gsSession = null;
     
     public GenomeSpaceFile(Object gsSession) {
+        if (gsSession == null) {
+            log.error("ERROR: null gsSession passed into GenomeSpaceFile constructor");
+        }
         this.gsSession = gsSession;
     }
     
@@ -82,6 +85,9 @@ public class GenomeSpaceFile extends GpFilePath {
      */
     public Set<GenomeSpaceFile> getChildFiles() {
         if (this.isDirectory() && childFiles == null) {
+            if (gsSession == null) {
+                log.error("ERROR: Null gsSession found in getChildFiles()");
+            }
             try {
                 GenomeSpaceFile file = GenomeSpaceClientFactory.getGenomeSpaceClient().buildDirectory(gsSession, metadata);
                 childFiles = file.getChildFilesNoLoad();
