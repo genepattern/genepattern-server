@@ -1,5 +1,7 @@
 package org.genepattern.server.executor.lsf;
 
+import org.apache.log4j.Logger;
+
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
@@ -13,6 +15,8 @@ import java.io.IOException;
  */
 public class LsfErrorCheckerImpl implements ILsfErrorChecker
 {
+    private static Logger log = Logger.getLogger(LsfErrorCheckerImpl.class);
+
     LsfErrorStatus errorStatus = null;
 
     LsfErrorCheckerImpl(String lsfLogFileName)
@@ -63,7 +67,7 @@ public class LsfErrorCheckerImpl implements ILsfErrorChecker
         }
         catch(IOException io)
         {
-           io.printStackTrace();
+           log.error(io);
         }
         finally
         {
