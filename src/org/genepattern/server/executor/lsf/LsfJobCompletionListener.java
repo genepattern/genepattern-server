@@ -124,7 +124,8 @@ public class LsfJobCompletionListener implements JobCompletionListener {
 
                       try
                       {
-                            LsfErrorCheckerImpl errorCheck = new LsfErrorCheckerImpl(job.getOutputFilename());
+                            File lsfJobOutputFile = new File(jobDir, job.getOutputFilename());
+                            LsfErrorCheckerImpl errorCheck = new LsfErrorCheckerImpl(lsfJobOutputFile);
                             LsfErrorStatus status = errorCheck.getStatus();
                             if(status != null)
                             {
