@@ -985,7 +985,8 @@ public class GenomeSpaceBean {
         InputStream is = null;
         FileOutputStream fos = null;
         try {
-            is = GenomeSpaceClientFactory.getGenomeSpaceClient().getInputStream(getUsername(), url);
+            String gpUsername = UIBeanHelper.getUserId();
+            is = GenomeSpaceClientFactory.getGenomeSpaceClient().getInputStream(gpUsername, url);
             fos = new FileOutputStream(destinationFile);
             byte[] buf = new byte[100000];
             int j;

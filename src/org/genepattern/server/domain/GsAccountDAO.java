@@ -11,7 +11,20 @@ public class GsAccountDAO extends BaseDAO {
     private static Logger log = Logger.getLogger(GsAccountDAO.class);
     
     public GsAccount getByGPUserId(String gpUserid) {
-        return (GsAccount) HibernateUtil.getSession().get(GsAccount.class, gpUserid);
+        Query query = HibernateUtil.getSession().createQuery("from org.genepattern.server.domain.GsAccount where GP_USERID = :gpUserId");
+        query.setString("gpUserId", gpUserid);
+        List<GsAccount> accountList = query.list();
+        
+        if (accountList.size() > 1) {
+            log.error("DATABASE ERROR: Multiple GS users associated with GP Account: " + gpUserid);
+        }
+        if (accountList.size() == 0) {
+            log.debug("No Accounts found for GP USERID: " + gpUserid);
+            return null;
+        }
+        
+        return accountList.get(0);
+        //return (GsAccount) HibernateUtil.getSession().get(GsAccount.class, gpUserid);
     }
     
     public GsAccount getByGSUserId(String gsUserId) {
