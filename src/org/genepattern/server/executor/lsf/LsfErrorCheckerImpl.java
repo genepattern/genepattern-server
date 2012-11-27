@@ -5,6 +5,7 @@ import org.apache.log4j.Logger;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.File;
 
 /**
  * Created by IntelliJ IDEA.
@@ -19,12 +20,12 @@ public class LsfErrorCheckerImpl implements ILsfErrorChecker
 
     LsfErrorStatus errorStatus = null;
 
-    LsfErrorCheckerImpl(String lsfLogFileName)
+    LsfErrorCheckerImpl(File lsfLogFile)
     {
 	    BufferedReader reader = null;
         try
         {
-            reader = new BufferedReader(new FileReader(lsfLogFileName));
+            reader = new BufferedReader(new FileReader(lsfLogFile));
             StringBuffer message = new StringBuffer();
             int exitCode = -1;
 
