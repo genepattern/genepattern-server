@@ -31,6 +31,18 @@ public interface IEulaManager {
      * For an individual module or task, get the list of zero or more End-user license agreements (EULA)
      * attached to the task.
      * 
+     * This returns the default license for the module or pipeline. When there is no license, it will return an be an empty list.
+     * 
+     * Note: Even when the license manager has been disabled, this method will return the default license.
+     * In other words, disabling the license manager will have no effect on the return value for this method.
+     * The license manager can be disabled in several ways,
+     *     1) globally, presumably for debugging
+     *     2) site license,
+     *     3) group license 
+     *     
+     * Don't use this method from the EulaTaskBean, because it will not have the desired result when the license is disabled.
+     * Instead use getAllEulaForModule or getPendingEulaForModule.
+     * 
      * @param taskInfo
      * @return the list of EulaInfo, it will be empty if the task has not attached EULA.
      */
