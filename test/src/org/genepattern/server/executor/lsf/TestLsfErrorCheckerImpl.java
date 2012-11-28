@@ -89,7 +89,7 @@ public class TestLsfErrorCheckerImpl
         final File lsfFile= getLsfLogFile(logFileName);
         Assert.assertNotNull(lsfFile);
 
-        LsfErrorCheckerImpl errorCheck = new LsfErrorCheckerImpl(lsfFile.getAbsolutePath());
+        LsfErrorCheckerImpl errorCheck = new LsfErrorCheckerImpl(lsfFile);
         LsfErrorStatus status = errorCheck.getStatus();
         Assert.assertNotNull(status);
 
