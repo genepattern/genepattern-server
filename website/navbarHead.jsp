@@ -21,7 +21,7 @@
   var createPublicSuiteAllowed = <%= AuthorizationHelper.createSuite(username) %>;
   var createPrivatePipelineAllowed = <%= AuthorizationHelper.createPipeline(username) %>;
   var createPrivateSuiteAllowed = <%= AuthorizationHelper.createSuite(username) %>;
-  var adminServerAllowed = false;
+  var adminServerAllowed = <%= AuthorizationHelper.adminServer(username) %>;
   var genomeSpaceLoggedIn = false;
   var userLoggedIn = !("${requestScope.userID}" === "null" || "${requestScope.userID}" === "");
 </script>
