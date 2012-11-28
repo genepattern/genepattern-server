@@ -12,9 +12,25 @@ import org.genepattern.webservice.TaskInfo;
  *
  */
 public class EulaManagerNoOp implements IEulaManager {
+    
+    private GetEulaFromTask getEulaFromTask = null;
 
     public List<EulaInfo> getEulas(TaskInfo taskInfo) {
-        return Collections.emptyList();
+        GetEulaFromTask impl = getGetEulaFromTask();
+        return impl.getEulasFromTask(taskInfo);
+    }
+    
+    private GetEulaFromTask getGetEulaFromTask() {
+        //allow for dependency injection, via setGetEulaFromTask
+        if (getEulaFromTask != null) {
+            return getEulaFromTask;
+        }
+        
+        //otherwise, hard-coded rule        
+        //option 1: license= in manifest
+        return new GetEulaAsManifestProperty();
+        //option 2: support file named '*license*' in tasklib
+        //return new GetEulaAsSupportFile();
     }
 
     public void setEula(EulaInfo eula, TaskInfo taskInfo) {

@@ -6,6 +6,7 @@ import java.util.List;
 import junit.framework.Assert;
 
 import org.genepattern.junitutil.ConfigUtil;
+import org.genepattern.junitutil.TaskUtil;
 import org.genepattern.server.config.ServerConfiguration;
 import org.genepattern.server.config.ServerConfiguration.Context;
 import org.genepattern.webservice.TaskInfo;
@@ -61,9 +62,9 @@ public class TestEulaManagerNoOp {
     @Test
     public void testGetEula() {
         final IEulaManager eulaMgr=new EulaManagerNoOp();
-        final TaskInfo taskInfo=null;
+        TaskInfo taskInfo = TaskUtil.getTaskInfoFromZip(this.getClass(), "testLicenseAgreement_v3.zip");
         final List<EulaInfo> eulas=eulaMgr.getEulas(taskInfo);
-        Assert.assertEquals("eulaMgr.getEulas should always return an empty list when eula manager is not enabled", 0, eulas.size());
+        Assert.assertEquals("eulaMgr.getEulas should return one associated license", 1, eulas.size());
     }
 
     @Test
