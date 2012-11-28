@@ -687,20 +687,18 @@ table.deloptions
     font-size: 12px;
 }
 
-#licenseDiv
+
+#currentLicenseDiv span
 {
-    font-size: 11px;
-    margin-right: 4px;
+    font-size: 65%;
 }
 
-#licenseDiv button
+#licenseFileNameDiv span
+{
+    font-size: 65%;
+}
+
+#mainLicenseDiv button
 {
     margin-right: 3px;
-}
-
-#licenseDiv span
-{
-    font-size: 8px;
-	font-weight: bold;
-	padding:0 3px 1px 3px;
 }

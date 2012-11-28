@@ -81,7 +81,7 @@ function isDirty()
     return dirty;
 }
 
-function bytesToSize(bytes, precision)
+function bytesToSize(bytes)
 {
     var kilobyte = 1024;
     var megabyte = kilobyte * 1024;
@@ -92,42 +92,22 @@ function bytesToSize(bytes, precision)
         return bytes + ' B';
 
     } else if ((bytes >= kilobyte) && (bytes < megabyte)) {
-        return (bytes / kilobyte).toFixed(precision) + ' KB';
+        return (bytes / kilobyte).toFixed() + ' KB';
 
     } else if ((bytes >= megabyte) && (bytes < gigabyte)) {
-        return (bytes / megabyte).toFixed(precision) + ' MB';
+        return (bytes / megabyte).toFixed() + ' MB';
 
     } else if ((bytes >= gigabyte) && (bytes < terabyte)) {
-        return (bytes / gigabyte).toFixed(precision) + ' GB';
+        return (bytes / gigabyte).toFixed() + ' GB';
 
     } else if (bytes >= terabyte) {
-        return (bytes / terabyte).toFixed(precision) + ' TB';
+        return (bytes / terabyte).toFixed() + ' TB';
 
     } else {
         return bytes + ' B';
     }
 }
 
-
-/*function bytesToSize(bytes, precision) {
-    var sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
-    var posttxt = 0;
-    if (bytes == 0)
-    {
-        return 'n/a';
-    }
-
-    if (bytes < 1024)
-    {
-        return Number(bytes) + " " + sizes[posttxt];
-    }
-
-    while( bytes >= 1024 ) {
-        posttxt++;
-        bytes = bytes / 1024;
-    }
-    return Number(bytes).toFixed(precision) + " " + sizes[posttxt];
-} */
 
 function abortSave(errorMessage)
 {
@@ -1054,43 +1034,31 @@ function loadModuleInfo(module)
 
         var currentLicenseDiv = $("<div class='clear' id='currentLicenseDiv'></div>");
 
-        var checkbox = $('<input type="checkbox" name="currentlicensefile" value="' +
-            license + '" />').click(function()
+        var delbutton = $('<button value="' + license + '">x</button>&nbsp;');
+        delbutton.button().click(function()
         {
-            //name of license
-            var selectedVal = $(this).val();
+            //set this so that module will update version when save button is clicked
+            setDirty(true);
 
-            if($(this).is(':checked'))
+            var fileName = $(this).val();
+
+            var confirmed = confirm("Are you sure you want to delete the license file: " + fileName);
+            if(confirmed)
             {
                 module_editor.licensefile = "";
-                module_editor.filesToDelete.push(selectedVal);
 
-                //show div which allows uploading of new license file
+                module_editor.filesToDelete.push(fileName);
+
+                //remove display of uploaded license file
+                $("#currentLicenseDiv").remove();
+
                 $("#licenseDiv").show();
-            }
-            else
-            {
-                //check the attribute in case deleting from file list fails
-                this.setAttribute("checked", "checked"); //For IE
-                this.checked = true;
-
-                //remove from delete file list
-                removeFileToDelete(selectedVal);
-                this.setAttribute("checked", ""); // For IE
-                this.removeAttribute("checked");
-                this.checked = false;
-
-                module_editor.licensefile = selectedVal;
-                //hide div which allows uploading of new license file
-                $("#licenseDiv").hide();
-
             }
         });
 
-        currentLicenseDiv.append(checkbox);
+        currentLicenseDiv.append(delbutton);
         var licenseFileURL = "<a href=\"/gp/getFile.jsp?task=" + module_editor.lsid + "&file=" + encodeURI(license) + "\" target=\"new\">" + htmlEncode(license) + "</a> ";
         currentLicenseDiv.append(licenseFileURL);
-        currentLicenseDiv.append("(Check to delete)");
 
         $("#licenseDiv").hide();
         $("#mainLicenseDiv").append(currentLicenseDiv);
@@ -1847,16 +1815,13 @@ jQuery(document).ready(function() {
         //add to list of files to upload files
         addFileToUpload(this.files[0]);
 
-        //create button to delete uploaded license file
-        var delbutton = $("<button>x</button>&nbsp;");
 
-        //add a data property so that we can later retrieve
-        // the file this delete button is attached to
-        delbutton.data("fname", this.files[0].name);
+        var delbutton = $('<button value="' + this.files[0].name + '">x</button>&nbsp;');
+
         delbutton.button().click(function()
         {
             //remove the license file from the list of files to upload
-            removeFileToUpload($(this).data("fname"));
+            removeFileToUpload($(this).val());
 
             module_editor.licensefile = "";
 
@@ -2025,9 +1990,9 @@ function addFileToUpload(file)
             var index = jQuery.inArray(file.name, module_editor.filesToDelete);
             if(index == -1)
             {
-                alert("ERROR: The file " + file.name + " already exists in the module. " +
+                alert("ERROR: The file" + file.name + " already exists in the module. " +
                       "Please remove the file first.");
-                throw("ERROR: The file " + file.name + " already exists in the module. " +
+                throw("ERROR: The file" + file.name + " already exists in the module. " +
                       "Please remove the file first.");
             }
         }
@@ -2059,7 +2024,6 @@ function removeFileToUpload(fileName)
     module_editor.filestoupload.splice(index,1);
 }
 
-//removes file from list of files to delete when the module is save
 function removeFileToDelete(fileName)
 {
     //check if file was re-uploaded as a new file
