@@ -31,7 +31,7 @@ public interface IEulaManager {
      * For an individual module or task, get the list of zero or more End-user license agreements (EULA)
      * attached to the task.
      * 
-     * This returns the default license for the module or pipeline. When there is no license, it will return an be an empty list.
+     * This returns the default license for the module or pipeline. When there is no license, it will return an empty list.
      * 
      * Note: Even when the license manager has been disabled, this method will return the default license.
      * In other words, disabling the license manager will have no effect on the return value for this method.
