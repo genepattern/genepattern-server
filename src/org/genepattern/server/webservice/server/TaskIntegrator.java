@@ -1,7 +1,7 @@
 /*
  The Broad Institute
  SOFTWARE COPYRIGHT NOTICE AGREEMENT
- This software and its documentation are copyright (2003-2011) by the
+ This software and its documentation are copyright (2003-2012) by the
  Broad Institute/Massachusetts Institute of Technology. All rights are
  reserved.
 
@@ -34,7 +34,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Vector;
 import java.util.zip.ZipEntry;
@@ -369,42 +368,9 @@ public class TaskIntegrator {
             throw new WebServiceException("while getting doc filenames", e);
         }
     }
-    
-    /**
-     * Gets the files that belong to the given task or suite that are considered to be documentation files. Returned as
-     * an array of DataHandlers.
-     * 
-     * @param lsid
-     *                The LSID
-     * @return The docFiles
-     * @exception WebServiceException
-     *                    If an error occurs
-     */
-    private DataHandler[] getDocFiles(Integer taskId, String lsid) throws WebServiceException {
-        List<String> docFilenames = TaskInfoCache.instance().getDocFilenames(taskId, lsid);
-
-        File taskLibDir = null;
-        try {
-            String libDir = DirectoryManager.getLibDir(lsid);
-            taskLibDir = new File(libDir);
-        } 
-        catch (Exception e) {
-            log.error(e);
-            throw new WebServiceException(e);
-        }
-        
-        DataHandler[] dh = new DataHandler[docFilenames.size()];
-        int i=0;
-        for(String docFilename : docFilenames) {
-            File f = new File(taskLibDir, docFilename);
-            dh[i] = new DataHandler(new FileDataSource(f));
-            ++i;
-        }
-        return dh;
-    }
 
     /**
-     * Gets the an array of the last mofification times of the given files that belong to the given task
+     * Gets the an array of the last modification times of the given files that belong to the given task
      * 
      * @param lsid
      *                The LSID
