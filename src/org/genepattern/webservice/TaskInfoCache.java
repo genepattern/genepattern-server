@@ -321,13 +321,33 @@ public class TaskInfoCache {
         return taskInfoArray;        
     }
     
+    /**
+     * Get the list of declared documentation files for this module.
+     * 
+     * Special cases:
+     *     1) if null is returned, it means there is no 'taskDoc=' field in the manifest.
+     *     2) if an empty list is returned, it means there is a 'taskDoc=' field in the manifest, but it's value is an empty string
+     *     
+     * @param lsid
+     * @return
+     */
     private List<String> getDeclaredDoc(String lsid) {
-        TaskInfo info = this.getTask(lsid);
-        String doc = info.getTaskInfoAttributes().get(GPConstants.TASK_DOC);
-        if (doc == null || "".equals(doc)) return null;
-        
+        TaskInfo info = getTask(lsid);
+        boolean hasDeclaredDoc=info.getTaskInfoAttributes().containsKey(GPConstants.TASK_DOC);
+        if (!hasDeclaredDoc) {
+            log.debug("no declared doc for task, lsid="+lsid);
+            return null;
+        }
+        String taskDoc = info.getTaskInfoAttributes().get(GPConstants.TASK_DOC);
+        if (taskDoc.trim().length()==0) {
+            log.debug("taskDoc=<whitespace>");
+            taskDoc="";
+        }
+        if (taskDoc.length()==0) {
+            return Collections.emptyList();
+        }        
         List<String> docList = new ArrayList<String>();
-        docList.add(doc);
+        docList.add(taskDoc);
         return docList;
     }
     
