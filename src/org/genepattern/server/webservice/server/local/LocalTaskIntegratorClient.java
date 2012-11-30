@@ -119,6 +119,13 @@ public class LocalTaskIntegratorClient extends TaskIntegrator implements Status 
      */
     private DataHandler[] getDocFiles(Integer taskId, String lsid) throws WebServiceException {
         List<String> docFilenames = TaskInfoCache.instance().getDocFilenames(taskId, lsid);
+        if (docFilenames==null) {
+            log.error("Unexpected null list in getDocFilenames(taskId="+taskId+", lsid="+lsid+")");
+            return new DataHandler[0];
+        }
+        if (docFilenames.size()==0) {
+            return new DataHandler[0];
+        }
 
         File taskLibDir = null;
         try {
