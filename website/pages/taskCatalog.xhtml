@@ -196,8 +196,9 @@
 
 								<tr>
 									<td valign="top" colspan="2"><b>#{t.description}</b> <br />
-									<br /><!--  
-									<a href="#{t.documentationUrl}" target="_new">documentation</a>&#160;|&#160;--><a
+									<br />
+                                    <h:outputText rendered="#{!empty t.documentationUrl}">
+									<a href="#{t.documentationUrl}" target="_new">documentation</a>&#160;|</h:outputText>&#160;<a
 										href="#{t.url}">download zip</a></td>
 								</tr>
 								<tr class="settingperameter">
