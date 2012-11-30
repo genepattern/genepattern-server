@@ -27,6 +27,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Vector;
 
+import org.apache.log4j.Logger;
 import org.genepattern.server.genepattern.GenePatternAnalysisTask;
 import org.genepattern.server.genepattern.TaskInstallationException;
 import org.genepattern.server.webservice.server.Status;
@@ -37,6 +38,7 @@ import org.genepattern.webservice.TaskInfo;
 import org.genepattern.webservice.TaskInfoAttributes;
 
 public class InstallTask {
+    final static private Logger log = Logger.getLogger(InstallTask.class);
 
     // DEBUG settings:
     protected static final String REPOSITORY_ROOT = "/gp2";
@@ -150,36 +152,102 @@ public class InstallTask {
         // everything that remains is a TaskInfoAttribute
         module = new TaskInfoAttributes(props);
 
-        // now that we know the module name, try to load the existing task of
-        // the same name
+        // now that we know the module name, try to load the existing task of the same name
         LSID l = null;
         try {
             lsid = module.get(GPConstants.LSID);
             l = new LSID(lsid);
             lsidVersion = l.getVersion();
-            taskInfo = GenePatternAnalysisTask.getTaskInfo(l
-                    .toStringNoVersion(), userID);
+            taskInfo = GenePatternAnalysisTask.getTaskInfo(l.toStringNoVersion(), userID);
             if (taskInfo != null) {
                 tia = taskInfo.giveTaskInfoAttributes();
             }
-        } catch (OmnigeneException oe) {
-        } catch (MalformedURLException mue) {
+        } 
+        catch (OmnigeneException oe) {
+            log.error(oe);
+        } 
+        catch (MalformedURLException mue) {
+            log.error(mue);
         }
 
+        docFileURLs = initDocFileURLs(supportFiles);
+        module.put(STATE, isAlreadyInstalled() ? (isNewer() ? UPDATED : UPTODATE) : NEW);
+        module.put(REFRESHABLE, isAlreadyInstalled() ? (isNewer() ? YES : NO) : YES);
+        module.put(LSID_VERSION, lsidVersion);
+    }
+    
+    /**
+     * Get the filename from the url for the support file
+     * 
+     * @param supportFileUrl
+     * @return
+     */
+    private String getSupportFilenameFromUrl(final String supportFileUrl) {
+        String supportFilename="";
+        int idx=supportFileUrl.lastIndexOf("/");
+        ++idx; //start after that match
+        if (idx>0 && supportFileUrl.length()>idx) {
+            supportFilename=supportFileUrl.substring(idx);
+        }
+        return supportFilename;
+    }
+
+    /**
+     * Get the list (can be empty) of support files for the module.
+     * 
+     * Note: even though this returns a list, we are only using the first item from the list
+     * in the GUI.
+     * 
+     * @param supportFileUrls
+     * @return an array of zero or more URLs to the documentation files for the module.
+     */
+    private String[] initDocFileURLs(final String[] supportFileUrls) {
         // figure out which support files are documentation files
         Vector vSupportFiles = new Vector();
-        for (int i = 0; supportFiles != null && i < supportFiles.length; i++) {
-            if (GenePatternAnalysisTask.isDocFile(supportFiles[i])
-                    && !supportFiles[i].equals("version.txt")) {
-                vSupportFiles.add(supportFiles[i]);
-            }
+        //check for declared license file (license=)
+        final String licenseFilename=module.containsKey(GPConstants.LICENSE) ? module.get(GPConstants.LICENSE) : null;        
+        //check for declared documentation file (taskDoc=)
+        String taskDoc=module.containsKey(GPConstants.TASK_DOC) ? module.get(GPConstants.TASK_DOC) : null;
+        if (taskDoc != null) {
+            //don't allow space characters at beginning or end of taskDoc file
+            taskDoc=taskDoc.trim();
         }
-        docFileURLs = (String[]) vSupportFiles.toArray(new String[0]);
-        module.put(STATE, isAlreadyInstalled() ? (isNewer() ? UPDATED
-                : UPTODATE) : NEW);
-        module.put(REFRESHABLE, isAlreadyInstalled() ? (isNewer() ? YES : NO)
-                : YES);
-        module.put(LSID_VERSION, lsidVersion);
+        if (taskDoc != null && taskDoc.length()==0) {
+            //by definition, when the module declares that it has zero doc files
+            //    e.g. taskDoc=
+            //vSupportFiles should be an empty list
+        }
+        else { 
+            //go through the list of support files, looking for doc files
+            for(final String supportFileUrl : supportFileUrls) {
+                //get the filename from the url for the support file
+                String supportFilename=getSupportFilenameFromUrl(supportFileUrl);
+                boolean isDocFile=false;
+                boolean isLicense=supportFilename.equals(licenseFilename);
+                if (isLicense) {
+                    //by definition, it can't be a doc file if it's a license file, so do nothing
+             
+                    //Note: we can break this with a manual edit to the manifest
+                    if (taskDoc != null && supportFilename.equals(taskDoc)) {
+                        //tie goes to the license file
+                        log.error("taskDoc= and licence= are both set to the same file: "+supportFilename+", for lsid="+lsid);
+                    }
+                }
+                //the new way, the module has declared doc file
+                else if (taskDoc != null) {
+                    isDocFile=supportFilename.equals(taskDoc);
+                }
+                else {
+                    //the old way
+                    isDocFile=GenePatternAnalysisTask.isDocFile(supportFileUrl);
+                } 
+                boolean isVersionTxt="version.txt".equals(supportFileUrl); //I don't think this line does anything, pcarr
+                if (isDocFile) {
+                    vSupportFiles.add(supportFileUrl);
+                }
+            }
+        } 
+        return (String[]) vSupportFiles.toArray(new String[0]);
     }
 
     // convert a column name (eg. taskType) to a human-readable form (eg. "task
