@@ -515,13 +515,18 @@ div.iconSpace {
 .moduleFileItem {
     height: 20px;
     font-weight: normal;
-    padding-left: 10px;
+    padding-left: 15px;
     padding-top: 3px;
 }
 
 .outputFileItem {
     text-align: right;
     padding-right: 10px;
+    padding-bottom: 3px;
+}
+
+.outputFileItem input {
+    width: 145px;
 }
 
 .draggedModule {
