@@ -325,11 +325,13 @@ var editor = {
     extractFilename: function(path) {
         // Handle chrome upload paths
         if (path.indexOf("\\") > -1) {
+            //noinspection JSDuplicatedDeclaration
             var parts = path.split("\\");
             return parts[parts.length -1]
         }
 
         // Handle URLs
+        //noinspection JSDuplicatedDeclaration
         var parts = path.split("/");
         var endPart = parts[parts.length -1];
         if (endPart.indexOf("=") < 0) { return endPart; }
@@ -429,7 +431,7 @@ var editor = {
         var alert = document.createElement("div");
 
         if (typeof(message)=='string') {
-            alert.innerHTML = message;;
+            alert.innerHTML = message;
         }
         else {
             alert.appendChild(message);
@@ -468,7 +470,7 @@ var editor = {
     showOverlay: function() {
     	// Init the overlay if not already created
     	if ($('#propertiesOverlay').length == 0) {
-    		var $overlay = $('<div id="propertiesOverlay" class="ui-widget-overlay properties-overlay"></div>').appendTo('body');
+    		$('<div id="propertiesOverlay" class="ui-widget-overlay properties-overlay"></div>').appendTo('body');
         	$('.ui-widget-overlay').width($(document).width());
             $('.ui-widget-overlay').height($(document).height());
 
@@ -783,7 +785,6 @@ var editor = {
                 if ($(module.ui).position().left === $(selected.ui).position().left) {
                 	if ($(module.ui).position().top > $(selected.ui).position().top) {
                 		selected = module;
-                		continue;
                 	}
                 }
             }
@@ -811,7 +812,6 @@ var editor = {
                 if ($(module.ui).position().left === $(selected.ui).position().left) {
                 	if ($(module.ui).position().top > $(selected.ui).position().top) {
                 		selected = module;
-                		continue;
                 	}
                 }
             }
@@ -1059,7 +1059,7 @@ var editor = {
     },
 
     _loadModules: function(modules) {
-        var givenAlert = false;
+//        var givenAlert = false;
 
         var i = 0;
         while (modules[i.toString()] !== undefined) {
@@ -1087,16 +1087,16 @@ var editor = {
                 throw "Stop Loading";
 
                 // Old handling of modules that are not installed
-                added = this._addBlackBoxModule(library._createBlackBoxModule(module.name, module.lsid), module.id, module.top, module.left);
-                if (!givenAlert) {
-                    editor.showDialog("Problem Loading Pipeline", "Unable to load one or more of the modules in the pipeline.  " +
-                        "You may view what the Pipeline Designer could load of the pipeline, but will be unable to save this pipeline.");
-                    $("#saveButton").button("disable");
-                    $("#runButton").button("disable");
-                    givenAlert = true;
-                }
-                i++;
-                continue;
+//                added = this._addBlackBoxModule(library._createBlackBoxModule(module.name, module.lsid), module.id, module.top, module.left);
+//                if (!givenAlert) {
+//                    editor.showDialog("Problem Loading Pipeline", "Unable to load one or more of the modules in the pipeline.  " +
+//                        "You may view what the Pipeline Designer could load of the pipeline, but will be unable to save this pipeline.");
+//                    $("#saveButton").button("disable");
+//                    $("#runButton").button("disable");
+//                    givenAlert = true;
+//                }
+//                i++;
+//                continue;
             }
 
             // Set the correct properties for the module
@@ -1124,8 +1124,8 @@ var editor = {
                 inputModule.addInput(inputId);
             }
 
-            var outputPort = outputModule.getPortByPointer(outputId);
-            var inputPort = inputModule.getPortByPointer(inputId);
+            var outputPort = outputModule.getOutputByPointer(outputId);
+            var inputPort = inputModule.getInputByPointer(inputId);
 
             // Mark the input param as used
             inputModule.getInputByName(inputId).makeUsed(inputPort);
@@ -1532,7 +1532,7 @@ var library = {
     },
 
     isODF: function(type) {
-        if (type === "Actual Peaks" ||
+        return type === "Actual Peaks" ||
             type === "Actual Peaks to EM-matched Peaks" ||
             type === "Comparative Marker Selection" ||
             type === "Dataset" ||
@@ -1546,12 +1546,7 @@ var library = {
             type === "Spectra Similarity" ||
             type === "Spectrum Area Change" ||
             type === "Spectrum Peaks" ||
-            type === "Spectrum Peaks Locate") {
-            return true;
-        }
-        else {
-            return false;
-        }
+            type === "Spectrum Peaks Locate";
     },
 
     _addFileButton: function() {
@@ -2004,7 +1999,7 @@ var library = {
             inputs: []
         };
         var module = new Module(moduleJSON);
-        module.blackbox = true;
+        module.blackBox = true;
         return module;
     },
 
@@ -2077,7 +2072,7 @@ var library = {
 
             $(pipelineList).selectable();
             $("#loadPipeline").button();
-            $("#loadPipeline").click(function(event) {
+            $("#loadPipeline").click(function() {
             	if (editor.workspace["dirty"]) {
             		var buttons = { "Yes, Load the Pipeline": function() {
                     	$(this).dialog("close");
@@ -2332,6 +2327,7 @@ var properties = {
 
         var select = document.createElement("select");
         for (var i = 0; i < moduleArray.length; i++) {
+            //noinspection JSDuplicatedDeclaration
             var option = document.createElement("option");
             option.setAttribute("value", id + "|" + moduleArray[i].lsid);
             if (moduleArray[i].version == version) {
@@ -2353,6 +2349,7 @@ var properties = {
 
         // Handle the case of an empty select
         if (select.children.length === 0) {
+            //noinspection JSDuplicatedDeclaration
             var option = document.createElement("option");
             option.innerHTML = "No Version";
             select.appendChild(option);
@@ -2363,7 +2360,7 @@ var properties = {
 
         // If this is a module
         if (moduleOrLsid instanceof Module) {
-        	$(select).focus(function(event) {
+        	$(select).focus(function() {
         		if ($(this).data("oldValue") === undefined || $(this).data("oldValue") === null) {
         			var oldValue = $(this).val();
                     $(this).data("oldValue", oldValue);
@@ -2505,7 +2502,7 @@ var properties = {
         valueDiv.setAttribute("class", "fileUploadValue");
         if (value !== undefined && value !== null && value !== "" && value !== properties.PROMPT_WHEN_RUN) {
         	if (properties.current == "Pipeline") {
-        		var deleteImage = $("<img src='images/delete.gif' style='height: 9px;' class='deleteFile' name='" + labelText + "' />")
+        		var deleteImage = $("<img src='images/delete.gif' style='height: 9px;' class='deleteFile' name='" + labelText + "' />");
         		$(valueDiv).append(deleteImage);
         		$(valueDiv).append(" ");
         	}
@@ -2516,7 +2513,7 @@ var properties = {
 
         $("#" + this.inputDiv).append(label);
         
-        $(".deleteFile[name='" + labelText + "']").click(function(event) {
+        $(".deleteFile[name='" + labelText + "']").click(function() {
         	var reallyDelete = confirm("Are you sure you want to delete this file?");
         	if (reallyDelete) {
         		var filename = $("input.propertyValue[type='hidden'][name='" + labelText + "']").val();
@@ -2828,10 +2825,8 @@ var properties = {
 
     _addFileInput: function(input) {
         var required = input.required ? "*" : "";
-        var displayValue = input.promptWhenRun ? properties.PROMPT_WHEN_RUN : input.value;
         var disabled = false;
         if (input.port !== null && input.port.pipes.length > 0) {
-            displayValue = input.port.pipes[0].outputPort.pointer;
             disabled = true;
         }
         if (input.promptWhenRun !== null) {
@@ -2910,7 +2905,7 @@ var properties = {
 
         // Attach the module buttons to the editor
         var iconDiv = module.createIconSpace(module.ui, module.id);
-        module._createButtons(iconDiv, module.id);
+        module._createButtons(iconDiv);
         $("#" + this.subtitleDiv)[0].appendChild(iconDiv);
 
         this._setVersionDropdown(module);
@@ -3138,15 +3133,13 @@ function Module(moduleJSON) {
 	this.type = "module";
 	this.ui = null;
     this.alerts = {};
-    this.expanded = this.outputs.length > 0 || moduleJSON.type === "visualizer" ? false : true;
     this.blackBox = false;
 
     this.getCorrectOutput = function(port) {
         if (port.isMaster()) {
             var pointer = $(this.ui).find("input[type=text]").val();
-            if (this.hasPortByPointer(pointer)) {
-                // TODO: FIXME to avoid conflicts with input names
-                return this.getPortByPointer(pointer);
+            if (this.hasOutputByPointer(pointer)) {
+                return this.getOutputByPointer(pointer);
             }
             else {
                 return this.addOutput(pointer);
@@ -3192,7 +3185,7 @@ function Module(moduleJSON) {
             if (input.name === pointer) {
                 return i;
             }
-        };
+        }
 
         editor.log("ERROR: Finding input param in Module._getInputIndex()");
         return null;
@@ -3201,11 +3194,13 @@ function Module(moduleJSON) {
     this.calculatePosition = function(isOutput, pointer) {
         var LINE_HEIGHT = 22.8;
         if (isOutput) {
+            //noinspection JSDuplicatedDeclaration
             var position = LINE_HEIGHT + 13 + (this.fileInputs.length * LINE_HEIGHT) + 9;
                 position += this.outputEnds.length * (LINE_HEIGHT + 3);
             return position;
         }
         else {
+            //noinspection JSDuplicatedDeclaration
             var position = LINE_HEIGHT + 13;
             position += this._getInputIndex(pointer) * LINE_HEIGHT;
             return position;
@@ -3362,7 +3357,9 @@ function Module(moduleJSON) {
         var showAlertDisplay = false;
 
         // Mark the error flag if there is a missing required param
+        //noinspection JSDuplicatedDeclaration
         for (var i = 0; i < this.inputs.length; i++) {
+            //noinspection JSDuplicatedDeclaration
             var input = this.inputs[i];
             if (input.required && input.value === "" && !input.used && input.promptWhenRun === null) {
                 showAlertDisplay = true;
@@ -3377,13 +3374,15 @@ function Module(moduleJSON) {
         }
 
         // Display black box warning
-        if (this.blackbox) {
+        if (this.blackBox) {
             showAlertDisplay = true;
             this.alerts[this.name] = new Alert("Missing Module", "WARNING", "GenePattern is unable to load this module.  You will be unable to change settings on this module or otherwise work with it.");
         }
 
         // Check for incompatible kinds
+        //noinspection JSDuplicatedDeclaration
         for (var i = 0; i < this.inputEnds.length; i++) {
+            //noinspection JSDuplicatedDeclaration
             var input = this.inputEnds[i];
             if (input.isConnected() && !input.param.isCompatible(input.pipes[0].outputPort)) {
                 showAlertDisplay = true;
@@ -3400,15 +3399,17 @@ function Module(moduleJSON) {
         }
     };
 
-    this.hasPortByPointer = function(pointer) {
-        //noinspection JSDuplicatedDeclaration
+    this.hasInputByPointer = function(pointer) {
         for (var i = 0; i < this.inputEnds.length; i++) {
             if (pointer == this.inputEnds[i].pointer) {
                 return true;
             }
         }
 
-        //noinspection JSDuplicatedDeclaration
+        return false;
+    };
+
+    this.hasOutputByPointer = function(pointer) {
         for (var i = 0; i < this.outputEnds.length; i++) {
             if (pointer == this.outputEnds[i].pointer) {
                 return true;
@@ -3418,23 +3419,43 @@ function Module(moduleJSON) {
         return false;
     };
 
-    this.getPortByPointer = function (pointer) {
-        //noinspection JSDuplicatedDeclaration
+    this.hasPortByPointer = function(pointer) {
+        return this.hasInputByPointer(pointer) || this.hasOutputByPointer(pointer);
+    };
+
+    this.getInputByPointer = function (pointer) {
         for (var i = 0; i < this.inputEnds.length; i++) {
             if (pointer == this.inputEnds[i].pointer) {
                 return this.inputEnds[i];
             }
         }
 
-        //noinspection JSDuplicatedDeclaration
+        editor.log("WARNING: Unable to find input port with pointer: " + pointer + " in module " + this.id);
+        return null;
+    };
+
+    this.getOutputByPointer = function (pointer) {
         for (var i = 0; i < this.outputEnds.length; i++) {
             if (pointer == this.outputEnds[i].pointer) {
                 return this.outputEnds[i];
             }
         }
 
+        editor.log("WARNING: Unable to find output port with pointer: " + pointer + " in module " + this.id);
+        return null;
+    };
+
+    this.getPortByPointer = function (pointer) {
+        var port = null;
+
+        port = this.getInputByPointer(pointer);
+        if (port !== null) return port;
+
+        port = this.getOutputByPointer(pointer);
+        if (port !== null) return port;
+
         // Handle the case of BlackBox Modules
-        if (this.blackbox) {
+        if (this.blackBox) {
             var index = this.inputEnds.length;
             var param = library._createBlackBoxParam(this, pointer);
             this.inputEnds[index] = new Input(this, param);
@@ -3463,7 +3484,7 @@ function Module(moduleJSON) {
         editor.log("Unable to find port with id: " + id + " in module " + this.id);
     };
 
-	this._createButtons = function (appendTo, baseId) {
+	this._createButtons = function (appendTo) {
         var docButton = document.createElement("button");
         docButton.setAttribute("id", "doc_" + this.id);
         docButton.setAttribute("class", "saveLoadButton");
@@ -3562,6 +3583,7 @@ function Module(moduleJSON) {
         // Make a list of params to highlight
         var highlight = [];
 
+        //noinspection JSDuplicatedDeclaration
         for (var i in this.alerts) {
             var item = document.createElement("div");
             item.appendChild(this.alerts[i].getIcon());
@@ -3573,18 +3595,14 @@ function Module(moduleJSON) {
         }
 
         if (show === undefined) {
-            if (alertDiv.is(":visible")) {
-                show = false;
-            }
-            else {
-                show = true;
-            }
+            show = !alertDiv.is(":visible");
         }
 
         if (show) {
             alertDiv.show();
 
             $(".propertyValue").parent().removeClass("alertParam");
+            //noinspection JSDuplicatedDeclaration
             for (var i = 0; i < highlight.length; i++) {
                 var name = highlight[i].name + (highlight[i].required ? "*" : "");
                 $(".propertyValue[name='" + name + "']").parent().addClass("alertParam");
@@ -3688,7 +3706,7 @@ function Module(moduleJSON) {
             comboSelect.appendChild(outputOption);
         }
 
-        $(comboSelect).change(function(event) {
+        $(comboSelect).change(function() {
             $(comboText).val($(comboSelect).val());
         });
 
@@ -3747,7 +3765,7 @@ function Module(moduleJSON) {
         }
 
         // Clicking the div triggers displaying properties
-        $(this.ui).click(function (event) {
+        $(this.ui).click(function () {
             // Hack for FireFox executing this event before properties save
             properties.saveToModel();
 
@@ -3883,10 +3901,6 @@ function Module(moduleJSON) {
         }
     };
 
-    this.hasFileInputs = function() {
-        return this.fileInputs.length > 0;
-    };
-
 	this._removePipes = function() {
         while (this.inputEnds.length > 0) {
             this.inputEnds[0].removePipes();
@@ -3895,7 +3909,9 @@ function Module(moduleJSON) {
 
         while (this.outputEnds.length > 0) {
             this.outputEnds[0].removePipes();
-            this.outputEnds[0].remove();
+            if (this.outputEnds[0] && this.outputEnds[0].isMaster()) {
+                this.outputEnds[0].remove();
+            }
         }
     };
 
@@ -3973,7 +3989,8 @@ function Visualizer(moduleJSON) {
 
 /**
  * Class representing an available file for use in the editor
- * @param moduleJSON - A JSON representation of the module
+ * @param name - The name of the file
+ * @param path - The path to the file
  */
 function File(name, path) {
     this._fixFileName = function(filename) {
@@ -4124,7 +4141,9 @@ function InputParam(module, paramJSON) {
                 return true;
             }
 
+            //noinspection JSDuplicatedDeclaration
             for (var i = 0; i < this.kinds.length; i++) {
+                //noinspection JSDuplicatedDeclaration
                 var kind = this.kinds[i];
                 if (kind === extension) {
                     return true;
@@ -4133,7 +4152,9 @@ function InputParam(module, paramJSON) {
             return false;
         }
 
+        //noinspection JSDuplicatedDeclaration
         for (var i = 0; i < this.kinds.length; i++) {
+            //noinspection JSDuplicatedDeclaration
             var kind = this.kinds[i];
             if (kind === outputPort.pointer) {
                 return true;
@@ -4250,6 +4271,7 @@ function Port(module, pointer, param, id) {
         if (this.isOutput()) {
             var newPosition = this.module.calculatePosition(true, pointer);
             this.position = this.module.shiftOutputsDown(newPosition);      // Calculate position
+            //noinspection JSDuplicatedDeclaration
             var posArray = [1, 0, 1, 0, 0, this.position];              // Get the correct position array
 
             this.endpoint = jsPlumb.addEndpoint(this.module.id.toString(), baseStyle, {
@@ -4263,6 +4285,7 @@ function Port(module, pointer, param, id) {
         }
         else {
             this.position = this.module.calculatePosition(false, pointer);     // Calculate position
+            //noinspection JSDuplicatedDeclaration
             var posArray = [0, 0, -1, 0, 0, this.position];                    // Get the correct position array
 
             this.endpoint = jsPlumb.addEndpoint(this.module.id.toString(), baseStyle, {
@@ -4437,7 +4460,6 @@ function Port(module, pointer, param, id) {
     this.removePipes = function() {
         while (this.pipes.length > 0) {
             this.pipes[0].remove();
-            this.pipes.shift();
         }
     };
 
