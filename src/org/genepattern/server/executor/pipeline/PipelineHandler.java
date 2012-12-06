@@ -320,9 +320,6 @@ public class PipelineHandler {
             
             //otherwise, start any jobs which are ready
             Set<JobInfo> jobsToRun=graph.getJobsToRun();
-            if (jobsToRun==null) {
-                log.error("jobsToRun==null");
-            }
             if (jobsToRun.size()>0) {
                 try {
                     HibernateUtil.beginTransaction();
