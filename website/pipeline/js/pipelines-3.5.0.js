@@ -4124,8 +4124,7 @@ function InputParam(module, paramJSON) {
     };
 
     this.isCompatible = function(outputPort) {
-        // TODO: Fix me
-        if (outputPort.master) {
+        if (outputPort.isAdvanced()) {
             return true;
         }
         
@@ -4455,6 +4454,14 @@ function Port(module, pointer, param, id) {
 
     this.isMaster = function() {
         return this.master;
+    };
+
+    this.isAdvanced = function() {
+        for (var i = 0; i < this.module.outputs.length; i++) {
+            var kind = this.module.outputs[i];
+            if (this.pointer == kind) return false;
+        }
+        return true;
     };
 
     this.removePipes = function() {
