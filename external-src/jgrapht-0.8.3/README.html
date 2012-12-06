@@ -1,0 +1,655 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<html>
+<!--
+/* ==========================================
+ * JGraphT : a free Java graph-theory library
+ * ==========================================
+ *
+ * Project Info:  http://jgrapht.sourceforge.net/
+ * Project Creator:  Barak Naveh (http://sourceforge.net/users/barak_naveh)
+ *
+ * (C) Copyright 2003-2010, by Barak Naveh and Contributors.
+ *
+ * This library is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation; either version 2.1 of the License, or
+ * (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+ * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public
+ * License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this library; if not, write to the Free Software Foundation, Inc.,
+ * 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
+ */
+/* ~~~~~~~~~~~
+ * README.html
+ * ~~~~~~~~~~~
+ * (C) Copyright 2003-2006, by Barak Naveh and Contributors.
+ *
+ * Original Author:  Barak Naveh
+ * Contributor(s):   John V. Sichi
+ *
+ * $Id: README.html 756 2012-01-19 23:21:17Z perfecthash $
+ *
+ * Changes
+ * ~~~~~~~
+ * 28-Jul-2003 : Initial revision (BN);
+ * 05-Aug-2003 : Version 0.4.1 notes (BN);
+ * 14-Aug-2003 : Version 0.5.0 notes (BN);
+ * 27-Aug-2003 : Upgrading versions (BN);
+ * 06-Nov-2003 : Version 0.5.1 notes (BN);
+ * 10-Feb-2004 : Version 0.5.2 notes (BN);
+ * 16-Jul-2005 : Version 0.6.0 notes (JVS);
+ * 03-Jul-2006 : Version 0.7.0 notes (JVS);
+ * 20-Mar-2007 : Version 0.7.1 notes (JVS);
+ * 29-Sep-2007 : Version 0.7.2 notes (JVS);
+ * 27-Jan-2008 : Version 0.7.3 notes (JVS);
+ * 28-Sep-2008 : Version 0.8.0 notes (JVS);
+ * 03-Jul-2009 : Version 0.8.1 notes (JVS);
+ * 27-Jul-2010 : Version 0.8.2 notes (JVS);
+ * 19-Jan-2012 : Version 0.8.3 notes (JVS);
+ *
+ */
+-->
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="Author" content="Barak Naveh">
+  <meta name="keywords" content=
+  "JGraphT, graph, theory, graph-theory, free, java, LGPL, open-source">
+
+  <title>JGraphT Release Notes</title>
+  <style type="text/css">
+  <!--
+  body {
+  font-family:Verdana;
+  text-align:left;
+  color:#000011;
+  background-color:#FAFBFF;
+  }
+  a {
+  COLOR: #336699; 
+  TEXT-DECORATION: underline;
+  }
+  a:visited {
+  color: #663366; 
+  TEXT-DECORATION: underline;
+  }
+  a:hover {
+  color: #FF9900; 
+  TEXT-DECORATION: underline;
+  }
+  code {
+  font-family:Courier New;
+  font-size:medium;
+  }
+
+  ul {
+  list-style:disc;
+  }
+  li {
+  list-style:disc;
+  margin-left:1em;
+  margin-right:1em;
+  line-height: 150%;
+  }
+
+  ol {
+  list-style:decimal;
+  }
+
+  p {
+  margin-left:1em;
+  margin-right:1em;
+  line-height: 140%;
+  }
+
+  h1 {
+  background-color:#7AA1E6;
+  border-left:1px solid #245BCB; 
+  border-right:1px solid #245BCB; 
+  border-top:1px solid #245BCB; 
+  border-bottom:1px solid #245BCB; 
+  color:#FFFFFF;
+  text-align:center;
+  }
+
+  h2 {
+  border-left:0px solid Black; 
+  border-right:0px solid Black; 
+  border-top:0px solid Black; 
+  border-bottom:2px solid #7AA1E6; 
+  margin-top:50;
+  color:#25507C;
+  }
+
+  h3 {
+  border-left:0px solid Black; 
+  border-right:0px solid Black; 
+  border-top:0px solid Black; 
+  border-bottom:2px solid #7AA1E6; 
+  margin-top:30;
+  color:#25507C;
+  }
+
+  table {
+  border-collapse: collapse;
+  }
+
+  //-->
+  </style>
+</head>
+
+<body>
+  <h1><font size="2"><br></font><font size="7"><font color=
+  "#CC3399">J</font>Graph<font color="#FFCC00">T</font></font>  0.8.3<br>
+  <font size="3"> </font></h1> 
+
+  <p>Released: January, 2012</p>
+
+  <p>Written by Barak Naveh (<a href=
+  "mailto:barak_naveh@users.sourceforge.net">barak_naveh@users.sourceforge.net</a>)
+  and Contributors.</p>
+
+  <p>(C) Copyright 2003-2012, by Barak Naveh and Contributors. All rights
+  reserved.</p>
+
+  <p>Please address all contributions, suggestions, and inquiries to the
+  current project administrator, <a
+  href="mailto:perfecthash@users.sf.net">John Sichi</a>.</p>
+
+  <h2>Introduction</h2>
+
+  <p>JGraphT is a free Java class library that provides mathematical
+  graph-theory objects and algorithms. It runs on Java 2 Platform
+  (requires JDK 1.6 or later).</p>
+
+  <p>JGraphT is licensed under the terms of the GNU Lesser General Public
+  License (LGPL). A copy of the <a href="license-LGPL.txt">license</a> is
+  included in the download.</p>
+
+  <p>Please note that JGraphT is distributed WITHOUT ANY WARRANTY; without even
+  the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+  Please refer to the license for details.</p>
+
+  <h2>Contents</h2>
+
+  <table border="1" cellspacing="0" cellpadding="5" style=
+  "border-collapse: collapse; margin-left:1em;" bordercolor="#7AA1E6" bgcolor="#FFFFFF">
+    <tr>
+      <td valign="top"><b><code>jgrapht-jdk1.6.jar</code></b></td>
+
+      <td>the compiled JGraphT library for JRE 1.6</td>
+    </tr>
+
+    <tr>
+      <td valign="top"><b><code>README.html</code></b></td>
+
+      <td>this file</td>
+    </tr>
+
+    <tr>
+      <td valign="top"><b><code>licence-LGPL.txt</code></b></td>
+
+      <td>GNU Lesser General Public License</td>
+    </tr>
+
+    <tr>
+      <td valign="top"><b><code>javadoc/</code></b></td>
+
+      <td>Javadoc documentation</td>
+    </tr>
+
+    <tr>
+      <td valign="top"><b><code>lib/</code></b></td>
+
+      <td>
+        libraries required for build:
+
+        <ul compact>
+          <li><code>junit.jar</code></li>
+
+          <li><code>jgraph.jar</code></li>
+
+          <li><code>TGGraphLayout.jar</code></li>
+        </ul>
+      </td>
+    </tr>
+
+    <tr>
+      <td valign="top"><b><code>src/</code></b></td>
+
+      <td>source code</td>
+    </tr>
+
+    <tr>
+      <td valign="top"><code><b>testsrc/</b></code></td>
+
+      <td>source code of unit tests</td>
+    </tr>
+
+    <tr>
+      <td valign="top"><code><b>META-INF/MANIFEST.MF</b></code></td>
+      <td>meta information for use as an OSGi plug-in (e.g. within an Eclipse RCP application)</td>
+    </tr>
+    <tr>
+      <td valign="top"><code><b>build.properties</b></code></td>
+      <td>describes content of OSGi plug-in export</td>
+    </tr>
+
+    <tr>
+      <td valign="top"><code><b>build.xml</b></code></td>
+
+      <td>ant buildfile</td>
+    </tr>
+
+  </table>
+
+  <h2>Getting Started</h2>
+
+  <p>The package <code>org.jgrapht.demo</code> includes small demo
+  applications to help you get started. If you spawn your own demo app and
+  think others can use it, please send it to us and we will add it to that
+  package.</p>
+
+  <h2>Upgrading Versions</h2>
+
+  <p>To help upgrading, JGraphT maintains a one-version-backwards
+  compatibility. While this compatibility is not a hard promise, it is generally
+  respected. (This policy was not followed for the jump from 0.6.0 to 0.7.0
+  due to the pervasive changes required for generics.) You can upgrade via:</p>
+
+  <ul>
+    <li>
+      <p><b>The safe way</b> : compile your app with the JGraphT
+      version that immediately follows your existing version and
+      follow the deprecation notes, if they exist, and modify your
+      application accordingly. Then move to the next version, and on,
+      until you're current.</p>
+    </li>
+
+    <li>
+      <p><b>The fast way</b> : go to the latest JGraphT right away - if it
+      works, you're done.</p>
+    </li>
+  </ul>
+
+  <p>Reading the <a href="#history">change history</a> is always
+  recommended.</p>
+
+  <h2>Documentation</h2>
+
+  <p>A local copy of the Javadoc HTML files is included in this distribution.
+  The latest version of these files is also available on-line at <a href=
+  "http://www.jgrapht.org/javadoc">http://www.jgrapht.org/javadoc</a>.</p>
+
+  <h2>Dependencies</h2>
+
+  <ul>
+    <li>JGraphT requires JDK 1.6 or later to build.<br>
+    &nbsp;</li>
+
+    <li>JUnit is a unit testing framework. You need JUnit only if you want to
+    run the unit tests. The <code>junit.jar</code> runtime file is included in
+    this distribution. JUnit is licensed under the terms of the IBM Common
+    Public License. You can find out more about JUnit and/or download the
+    latest version from <a href=
+    "http://www.junit.org">http://www.junit.org</a>. The JUnit tests included
+    with JGraphT have been created using JUnit 3.8.1.<br>
+    &nbsp;</li>
+
+    <li>XMLUnit extends JUnit with XML capabilities. You need XMLUnit
+    only if you want to run the unit tests. The
+    <code>xmlunit-1.0.jar</code> runtime file is included in this
+    distribution. XMLUnit is licensed under the terms of the BSD
+    License. You can find out more about XMLUnit and/or download the
+    latest version from <a href=
+    "http://xmlunit.sourceforge.net">http://xmlunit.sourceforge.net</a>.</li>
+
+    <li>JGraph is a graph visualization and editing component. You
+    need JGraph only if you want to create graph visualizations using
+    the JGraphT-to-JGraph adapter. The <code>jgraph.jar</code> runtime
+    file of JGraph is included in this distribution (file
+    lib/lib-readme.txt has version information). JGraph is licensed
+    under the terms of the GNU Lesser General Public License
+    (LGPL). You can find more about JGraph and/or download the latest
+    version from <a href=
+    "http://sourceforge.net/projects/jgraph">http://www.sourceforge.net/projects/jgraph</a>.<br>&nbsp;</li>
+
+    <li>Touchgraph is a graph visualization and layout component. You
+    need Touchgraph only if you want to create graph visualizations
+    using the JGraphT-to-Touchgraph converter. The
+    <code>TGGraphLayout.jar</code> runtime file of Touchgraph is included
+    in this distribution (file lib/lib-readme.txt has version
+    information). Touchgraph is licensed under the terms of an Apache-style
+    License. You can find more about Touchgraph
+    and/or download the latest version from <a href=
+    "http://sourceforge.net/projects/touchgraph">http://sourceforge.net/projects/touchgraph</a>.</li>
+  </ul>
+
+  <h2>Online Resources</h2>
+
+  <p>The JGraphT website is at: <a href=
+  "http://www.jgrapht.org">http://www.jgrapht.org</a>. You can
+  use this site to:</p>
+
+  <ul>
+    <li><b>Obtain the latest version</b> : latest version and all previous
+    versions of JGraphT are available online.</li>
+
+    <li><b>Report bugs</b> : if you have any comments, suggestions or bugs you
+    want to report.</li>
+
+    <li><b>Get support</b> : if you have questions or need help with
+    JGraphT.</li>
+  </ul>
+
+  <p>There is also a <a href="http://wiki.jgrapht.org">wiki</a> set up
+  for everyone in the JGraphT community to share information about the
+  project.</p>
+
+  <h2>Your Improvements</h2>
+
+  <p>If you add improvements to JGraphT please send them to us. We will add them
+  to the next release so that everyone can enjoy them. You might also benefit
+  from it: others may fix bugs in your source files or may continue to enhance
+  them.</p>
+
+  <h2><a name="history"></a>History</h2>
+
+  <p>Changes to JGraphT in each version:</p>
+
+  <ul>
+    <li><b>version 0.8.3</b> (20-Jan-2012): fix regression in
+    DOTExporter inadvertently introduced by 0.8.2 changes.  Add 
+    GridGraphGenerator, contributed by Assaf Mizrachi.
+    Return coloring from ChromaticNumber, contributed by Harshal Vora.
+    Fix bugs in KSP, contributed by Guillaume Boulmier; note that
+    these bugfixes worsen the running time.  Fix an object identity
+    bug in CycleDetector, contributed by Matt Sarjent.
+    Add StoerWagnerMinimumCut, contributed by Robby McKilliam.
+    Fix MANIFEST.MF, spotted by Olly.  Make
+    FloydWarshallShortestPaths.getShortestPaths unidirectional,
+    contributed by Yuriy Nakonechnyy.</li>
+
+    <li><b>version 0.8.2</b> (27-Nov-2010): Clean up
+    FibonacciHeapNode constructor, as suggested by Johan
+    Henriksson.  Optimize and enhance FloydWarshallShortestPaths,
+    contributed by Soren Davidsen.  Optimize ChromaticNumber,
+    pointed out by gpaschos@netscape.net.  Add unit test for 
+    FloydWarshallShortestPaths for bug noticed by
+    Andrea Pagani.  Add vertex factory validation to
+    RandomGraphGenerator to prevent a confusing problem
+    encountered by Andrea Pagani.  Add KruskalMinimumSpanningTree and
+    UnionFind, contributed by Tom Conerly.  Add attributes to
+    DOTExporter, based on suggestion from Chris Lott.  Fix
+    inefficient assertion in TopologicalOrderIterator, spotted by 
+    Peter Lawrey.  Fix induced subgraph bug with addition of edge
+    to underlying graph, contributed by Michele Mancioppi.
+    Make getEdgeWeight delegate to DefaultWeightedEdge.getWeight,
+    spotted by Michael Lindig.  Add maven support,
+    contributed by Adrian Marte.</li>
+
+    <li><b>version 0.8.1</b> (3-Jul-2009): Enhanced GmlExporter with
+    customized labels and ID's, contributed by Trevor Harmon.  Added
+    new algorithms HamiltonianCycle, ChromaticNumber and
+    EulerianCircuit, plus new generators HyperCubeGraphGenerator,
+    StarGraphGenerator, and CompleteBipartiteGraphGenerator, all
+    contributed by Andrew Newell.  Fix bug with vertices which are
+    equals but not identity-same in graphs allowing loops, spotted by
+    Michael Michaud.  Fix bug in EquivalenceIsomorphismInspector,
+    reported by Tim Engler.  Add toString for shortest paths wrapper,
+    spotted by Achim Beutel.  Add FloydWarshallShortestPaths,
+    contributed by Tom Larkworthy.  Enhance DijskstraShortestPath to
+    support GraphPath interface.  Add GraphUnion (with directed and
+    undirected variants), contributed by Ilya Razenshteyn.</li>
+
+    <li><b>version 0.8.0</b> (Sept-2008): Moved to JDK 1.6.  Fixed
+    problem with RandomGraphGenerator reported by Mario Rossi.  Added
+    CompleteGraphGenerator, contributed by Tim Shearouse.  Fixed
+    FibonacciHeap performance problem reported by Jason Lenderman.
+    Made DotExporter reject illegal vertex ID's, contributed by Holger
+    Brandl.  Fixed bogus assertion for topological sort over empty
+    graph, spotted by Harris Lin.  Added scale-free graph generator
+    and EdmondsKarpMaximumFlow, contributed by Ilya Razenshteyn.
+    Added DirectedAcyclicGraph, contributed by Peter Giles.  Added
+    protected getWeight accessor to DefaultWeightedEdge, likewise
+    getSource and getTarget on DefaultEdge.  Optimized iterators to
+    skip calling event firing routines when there are no listeners,
+    and used ArrayDeque in a number of places, per suggestion from
+    Ross Judson.  Improvements to StrongConnectivityInspector and OSGi
+    bundle support contributed by Christian Soltenborn.</li>
+
+    <li><b>version 0.7.3</b> (Jan-2008): Patch to
+    JGraphModelAdapter.removeVertex provided by Hookahey.  Added
+    ParanoidGraph.  Removed obsolete ArrayUtil (spotted by Boente).
+    Added GraphPath, and used it to fix mistake in 0.7.2
+    (k-shortest-paths was returning a private data structure,
+    as discovered by numerous users).  Fixed
+    EdgeReversedGraph.getAllEdges (spotted by
+    neumanns@users.sf.net).  Fixed incorrect assertion in
+    TopologicalOrderIterator constructor.  Enabled assertions
+    in JUnit tests.  Fixed NPE in BellmanFordShortestPath.getCost.
+    Fixed a few problems spotted by findbugs.</li>
+
+    <li><b>version 0.7.2</b> (Sept-2007): Added
+    TransitiveClosure, contributed by Vinayak Borkar.  Added
+    biconnectivity/cutpoint inspection, k-shortest-paths, and masked
+    subgraphs, all contributed by Guillaume Boulmier.  Made some
+    Graphs helper methods even more generic, as suggested by JongSoo.
+    Test and fixes for (Directed)NeighborIndex submitted by Andrew
+    Berman.  Added AsUnweighted(Directed)Graph and AsWeightedGraph,
+    contributed by Lucas Scharenbroich.  Dropped support for retroweaver.</li>
+
+    <li><b>version 0.7.1</b> (March-2007): Fixed some bugs in
+    CycleDetector reported by Khanh Vu, and added more testcases for
+    it.  Fixed bugs in DepthFirstIterator reported by Welson Sun, and
+    added WHITE/GRAY/BLACK states and vertexFinished listener event.
+    Exposed Subgraph.getBase(), and parameterized Subgraph on graph
+    type (per suggestion from Aaron Harnly).  Added EdgeReversedView.
+    Added GmlExporter (contributed by Dimitrios Michail), plus
+    DOTExporter and GraphMLExporter (both contributed by Trevor
+    Harmon).  Enhanced TopologicalOrderIterator to take an optional
+    Queue parameter for tie-breaking (per suggestion from JongSoo
+    Park).  Fixed some documentation errors reported by Guillaume
+    Boulmier.</li>
+
+    <li><b>version 0.7.0</b> (July-2006) : Upgraded to JDK 1.5
+    (generics support added by Christian Hammer with help from Hartmut
+    Benz and John Sichi).  Added (Directed)NeighborIndex and
+    MatrixExporter, contributed by Charles Fry.  Added BellmanFord,
+    contributed by Guillaume Boulmier of France Telecom.  Removed
+    never-used LabeledElement.  Renamed package from org._3pq.jgrapht
+    to org.jgrapht.  Made various breaking change to interfaces; edge
+    collections are now Sets, not Lists.  Added Touchgraph converter,
+    contributed by Carl Anderson</li>
+
+    <li><b>version 0.6.0</b> (July-2005) : Upgraded to JDK 1.4, taking
+    advantage of its new linked hash set/map containers to make
+    edge/vertex set order-deterministic. Added support for custom edge
+    lists.  Fixed various serialization and Subgraph issues. Added to
+    <code>JGraphModelAdapter</code> support for JGraph's "dangling"
+    edges; its constructors have slightly changed and now forbid
+    <code>null</code> values. Improved interface to
+    <code>DijskstraShortestPath</code>, and added radius support to
+    <code>ClosestFirstIterator</code>.  Added new
+    <code>StrongConnectivityInspector</code> algorithm (contributed by
+    Christian Soltenborn) and <code>TopologicalOrderIterator</code>
+    (contributed by Marden Neubert).  Deleted deprecated
+    <code>TraverseUtils</code>.  Upgraded to JGraph 5.6.1.1.</li>
+
+    <li><b>version 0.5.3</b> (June-2004) : Removed Subgraph verification of
+    element's identity to base graph, upgraded to JGraph 4.0, Added the
+    VisioExporter which was contributed by Avner Linder, minor bug fixes and
+    improvements.</li>
+
+    <li><b>version 0.5.2</b> (March-2004) : Serialization improvements, fixes
+    to subgraphs and listenable graphs, added support for JGraph-&gt;JGraphT
+    change propagation for JGraph adapter (contributed by Erik Postma),
+    upgraded to JGraph 3.1, various bug fixes and improvements.</li>
+
+    <li><b>version 0.5.1</b> (November-2003) : Semantics of Graph.clone() has
+    changed, please check the documentation if you're using it. Added
+    Dijkstra's shortest path, vertex cover approximations, new graph generation
+    framework, upgraded to JGraph 3.0, various bug fixes and API
+    improvements.</li>
+
+    <li><b>version 0.5.0</b> (14-Aug-2003) : a new connectivity inspector
+    added, edge API refactored to be simpler, an improved ant build, an
+    improved event model, all known bugs were fixed, documentation
+    clarifications, other small improvements. API of 0.5.0 is not 100% backward
+    compatible with 0.4.1 but upgrade is simple and straightforward.</li>
+
+    <li><b>version 0.4.1</b> (05-Aug-2003) : A new adapter to JGraph that
+    provides graph visualizations, new depth-first and breadth-first iteration
+    algorithms, various bug fixes and refactoring, moved unit-tests to a
+    separate folder hierarchy and added more unit-tests.</li>
+
+    <li><b>version 0.4.0</b> (July-2003) : Initial public release.</li>
+  </ul>
+
+  <h2>Contributors</h2>
+
+  <p>JGraphT wouldn't be the library it is today without the source
+  contributions and suggestions made by the authors:</p>
+
+  <ul>
+    <li><a href="http://sourceforge.net/users/barak_naveh/">Barak Naveh</a> 
+        (project founder)</li>
+
+    <li><a href="http://sourceforge.net/users/perfecthash/">John V
+    Sichi</a> (current project administrator)</li>
+
+    <li><a href="http://sourceforge.net/users/liviu_aurelian/">Liviu
+    Rau</a></li>
+
+    <li><a href="http://www.bluemarsh.com/personal/index.html">Nathan
+    Fiedler</a></li>
+
+    <li><a href="http://sourceforge.net/users/behrisch/">Michael
+    Behrisch</a></li>
+
+    <li><a href="http://sourceforge.net/users/linda_buisman/">Linda
+    Buisman</a></li>
+
+    <li>Erik Postma</li>
+
+    <li>Mikael Hansen</li>
+
+    <li>Avner Linder</li>
+
+    <li>Marden Neubert</li>
+
+    <li><a href="http://sourceforge.net/users/csoltenborn/">Christian
+    Soltenborn</a></li>
+
+    <li><a href="http://sourceforge.net/users/hammerc/">Christian
+    Hammer</a></li>
+
+    <li>Ewgenij Proschak</li>
+
+    <li><a href="http://sourceforge.net/users/ivins/">Hartmut
+    Benz</a></li>
+
+    <li><a href="http://frogcircus.org/">Charles
+    Fry</a></li>
+
+    <li>Guillaume Boulmier</li>
+
+    <li>Carl Anderson</li>
+
+    <li>Khanh Vu</li>
+
+    <li>Aaron Harnly</li>
+
+    <li>Dimitrios Michail</li>
+
+    <li>Welson Sun</li>
+
+    <li>Trevor Harmon</li>
+
+    <li>David Black-Schaffer</li>
+
+    <li>Vinayak Borkar</li>
+
+    <li>Andrew Berman</li>
+
+    <li>Lucas Scharenbroich</li>
+
+    <li>Hookahey</li>
+
+    <li>Tim Shearouse</li>
+
+    <li>Holger Brandl</li>
+
+    <li>Ilya Razenshteyn</li>
+
+    <li>Peter Giles</li>
+
+    <li>Andrew Newell</li>
+
+    <li>Tim Engler</li>
+
+    <li>Tom Larkworthy</li>
+
+    <li>Soren Davidsen</li>
+
+    <li>Andrea Pagani</li>
+
+    <li>Tom Conerly</li>
+
+    <li>Michele Mancioppi</li>
+
+    <li>Adrian Marte</li>
+
+    <li>Assaf Mizrachi</li>
+
+    <li>Harshal Vora</li>
+
+    <li>Matt Sarjent</li>
+
+    <li>Robby McKilliam</li>
+
+    <li>Yuriy Nakonechnyy</li>
+
+  </ul>
+
+  <p>(if we have missed your name on this list, please email us to get it
+  fixed).</p>
+
+  <p dir="ltr">Other people have also helped in different ways: reporting bugs,
+  requesting features, commenting, and by merely asking very good questions.
+  Many thanks to all of you.</p>
+
+  <p>Regards,<br>
+  <a href="mailto:barak_naveh@users.sourceforge.net">Barak Naveh</a><br>
+  JGraphT Project Creator<br><br>
+  <a href="mailto:perfecthash@users.sourceforge.net">John Sichi</a><br>
+  JGraphT Project Administrator</p>
+
+  <p> </p>
+  <hr noshade size="2" style=
+  "background-color:#7AA1E6;color:#7AA1E6;border-width: thin none none;">
+
+  <table border="0" cellpadding="0" cellspacing="0" style=
+  "border-collapse: collapse" width="100%">
+    <tr>
+      <td width="10%" align="left"><a href=
+      "http://validator.w3.org/check/referer"><img src=
+      "http://www.w3.org/Icons/valid-html401" border="0" alt="Valid HTML 4.01!"
+      height="31" width="88"></a></td>
+
+      <td width="80%" align="center"><small>© Copyright 2003-2008, by Barak
+      Naveh and Contributors. All rights reserved.</small></td>
+
+      <td width="10%" align="right">
+<a href="http://sourceforge.net/projects/jgrapht"><img src="http://sflogo.sourceforge.net/sflogo.php?group_id=86459&type=12" width="120" height="30" border="0" alt="Get JGraphT at SourceForge.net. Fast, secure and Free Open Source software downloads" /></a>
+</td>
+    </tr>
+  </table><br>
+</body>
+</html>
