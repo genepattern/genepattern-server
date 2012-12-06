@@ -26,7 +26,6 @@ import java.util.Vector;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
-import org.apache.log4j.Logger;
 import org.genepattern.server.webservice.server.DirectoryManager;
 import org.genepattern.server.genepattern.GenePatternAnalysisTask;
 import org.genepattern.util.GPConstants;
@@ -37,153 +36,11 @@ import org.genepattern.webservice.TaskInfoAttributes;
 import org.genepattern.util.KeySortedProperties;
 
 public class ZipTask extends CommandLineAction {
-    private static Logger log = Logger.getLogger(ZipTask.class);
 
     public ZipTask() {
     }
-    
-    public Properties getManifestProps(final String name, final TaskInfo taskInfo) throws Exception {
-        Properties props=getManifestPropsFromTask(name, taskInfo);
-        
-        //for debugging
-        if (log.isDebugEnabled()) {
-            Properties legacyProps=getManifestPropsLegacy(name, taskInfo);
-            compareProperties(legacyProps,props);
-        }
-        return props;
-    }
 
-    private boolean compareProperties(final Properties props, final Properties props2) {
-        return compareProperties(props, props2, log);
-    }
-
-    /**
-     * Helper class for debugging, it compares two Properties instances, and logs their differences.
-     * 
-     * Note: could be a good candidate for refactoring into a helper class,
-     *     or replacing with a different implementation.
-     *     
-     * @param props
-     * @param props2
-     * @param log
-     * @return
-     */
-    public static boolean compareProperties(final Properties props, final Properties props2, final Logger log) {
-        boolean diff=false;
-        //for debugging
-        int s1=props.size();
-        int s2=props2.size();
-        if (s1 != s2) {
-            diff=true;
-        }
-        
-        log.debug("origProps.size="+s1+", newProps.size="+s2);
-        //diff properties
-        for(final Map.Entry<?,?> entry : props.entrySet()) {
-            String key1= (String) entry.getKey();
-            String val1= (String) entry.getValue();
-            if (!props2.containsKey(key1)) {
-                log.debug("props2 missing key: "+key1);
-            }
-            else {
-                boolean pdiff=false;
-                String val2=props2.getProperty(key1);
-                if (val1==null) {
-                    pdiff=val2 != null;
-                }
-                else {
-                    pdiff=!val1.equals(val2);
-                }
-                if (pdiff) {
-                    diff=true;
-                    log.debug("props2 has different value, key="+key1+", val1="+val1+", val2="+val2);
-                }
-            }
-        }
-        for(final Map.Entry<?,?> entry : props2.entrySet()) {
-            if (!props.containsKey(entry.getKey())) {
-                diff=true;
-                log.debug("props2 has a key which is not in props, key="+entry.getKey());
-            }
-        }
-        return diff;
-    }
-
-    /**
-     * Updated implementation, circa GP 3.5.1, to correct bugs related to declarative documentation files
-     * via the taskDoc properties in the manifest.
-     * 
-     * The properties are generated from two sources,
-     *     1) the ParameterInfoArray, and
-     *     2) the TaskInfoArray
-     * 
-     * @param name
-     * @param taskInfo
-     * @return
-     * @throws Exception
-     */
-    private Properties getManifestPropsFromTask(String name, TaskInfo taskInfo) throws Exception {
-        TaskInfoAttributes tia = taskInfo.giveTaskInfoAttributes();
-        if (tia == null) {
-            throw new Exception(
-                    "Sorry, "
-                    + name
-                    + " is not a GenePattern analysis task and cannot be packaged.");
-        }
-        ParameterInfo[] parameterInfo = taskInfo.getParameterInfoArray();
-        Properties props = new Properties();
-        int i;
-        String key;
-        String value;
-
-        props.setProperty(GPConstants.NAME, taskInfo.getName());
-        if (taskInfo.getDescription() != null) {
-            props.setProperty(GPConstants.DESCRIPTION, taskInfo.getDescription());
-        }
-
-        if (parameterInfo != null) {
-            int i2;
-            for (i = 0; i < parameterInfo.length; i++) {
-                i2 = i + 1;
-                props.setProperty("p" + i2 + "_name", parameterInfo[i].getName());
-                if (parameterInfo[i].getDescription() != null)
-                    props.setProperty("p" + i2 + "_description", parameterInfo[i].getDescription());
-                if (parameterInfo[i].getValue() != null) {
-                    props.setProperty("p" + i2 + "_value", parameterInfo[i].getValue());
-                }
-                HashMap attributes = parameterInfo[i].getAttributes();
-                if (attributes != null) {
-                    for (Iterator eAttributes = attributes.keySet().iterator(); eAttributes.hasNext();) {
-                        key = (String) eAttributes.next();
-                        value = (String) attributes.get(key);
-                        if (value == null) {
-                            value = "";
-                        }
-                        props.setProperty("p" + i2 + "_" + key, value);
-                    }
-                }
-            }
-        }
-        
-        for(Object nextKeyObj : tia.keySet()) {
-            Object nextValObj = tia.get(nextKeyObj);
-            props.setProperty(""+nextKeyObj, ""+nextValObj);
-        }
-        return props;
-    }
-
-    /**
-     * This is the default implementation on GP 3.5.0 and earlier.
-     * 
-     * It's confusing because it can inject properties into the exported manifest
-     * which aren't in the TaskInfo stored in the DB for the module.
-     * 
-     * @param name
-     * @param taskInfo
-     * @return
-     * @throws Exception
-     */
-    private Properties getManifestPropsLegacy(String name, TaskInfo taskInfo) throws Exception {
+    public Properties getManifestProps(String name, TaskInfo taskInfo) throws Exception {
         TaskInfoAttributes tia = taskInfo.giveTaskInfoAttributes();
         if (tia == null) {
             throw new Exception(
