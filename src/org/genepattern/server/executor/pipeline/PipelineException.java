@@ -5,6 +5,10 @@ package org.genepattern.server.executor.pipeline;
  * @author pcarr
  */
 public class PipelineException extends Exception {
+    public PipelineException(String message) {
+        super(message);
+    }
+
     public PipelineException(String message, Exception e) {
         super(message, e);
     }

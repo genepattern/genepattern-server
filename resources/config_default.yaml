@@ -59,6 +59,11 @@ default.properties:
     #org.genepattern.server.eula.EulaManager.remoteUrl: "http://eulas.genepattern.org/eulas"
     # an empty list means, don't POST
     #org.genepattern.server.eula.EulaManager.remoteUrl: []
+    
+    #
+    # for experimental features with pipeline execution
+    #
+    org.genepattern.server.executor.pipeline.parallelExec: false
 
 
 executors:

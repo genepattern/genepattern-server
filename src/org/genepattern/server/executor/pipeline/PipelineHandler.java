@@ -15,6 +15,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.Vector;
 
 import org.apache.log4j.Logger;
@@ -77,6 +78,7 @@ public class PipelineHandler {
         final boolean isInTransaction = HibernateUtil.isInTransaction(); //for debugging
         log.debug("isInTranscation="+isInTransaction);
         final boolean isScatterStep = isScatterStep(pipelineJobInfo);
+        final boolean isParallelExec = isParallelExec(pipelineJobInfo);
         try {
             HibernateUtil.beginTransaction();
             List<JobInfo> addedJobs = runPipeline(pipelineJobInfo, stopAfterTask, isScatterStep);
@@ -84,7 +86,7 @@ public class PipelineHandler {
             AnalysisJobScheduler.setJobStatus(pipelineJobInfo.getJobNumber(), JobStatus.JOB_PROCESSING); 
 
             //add job records to the job_queue
-            if (!isScatterStep) {
+            if (!isScatterStep && !isParallelExec) {
                 //for standard pipelines, set the status of the first job to PENDING, the rest to WAITING
                 JobQueue.Status status = JobQueue.Status.PENDING;
                 for(final JobInfo jobInfo : addedJobs) {
@@ -92,11 +94,23 @@ public class PipelineHandler {
                     status = JobQueue.Status.WAITING;
                 }
             }
-            else {
+            else if (isScatterStep) {
                 //for scatter-gather pipelines, set the status of all jobs to PENDING
                 for(final JobInfo jobInfo : addedJobs) {
                     JobQueueUtil.addJobToQueue( jobInfo,  JobQueue.Status.PENDING);
                 }
+            }
+            else if (isParallelExec) {
+                //start all of the jobs which have no dependencies on upstream jobs
+                PipelineGraph graph = PipelineGraph.getDependencyGraph(pipelineJobInfo, addedJobs);
+                Set<JobInfo> jobsToRun = graph.getJobsToRun();
+                for(JobInfo jobToRun : jobsToRun) {
+                    log.debug("adding job to queue, jobId="+jobToRun.getJobNumber()+", "+jobToRun.getTaskName());
+                    JobQueueUtil.addJobToQueue( jobToRun,  JobQueue.Status.PENDING);
+                } 
+            }
+            else {
+                log.error("server config error: shouldn't be here!");
             }
             HibernateUtil.commitTransaction();
         }
@@ -153,6 +167,10 @@ public class PipelineHandler {
      * @param jobInfo - the job which is about to run
      */
     public static void prepareNextStep(int parentJobId, JobInfo jobInfo) throws PipelineException { 
+        if (jobInfo==null) {
+            throw new PipelineException("jobInfo==null");
+        }
+        log.debug("prepareNextStep(parentJobId="+parentJobId+", jobId="+jobInfo.getJobNumber()+", taskName="+jobInfo.getTaskName());
         try {
             AnalysisDAO dao = new AnalysisDAO();
             boolean updated = setInheritedParams(dao, parentJobId, jobInfo);
@@ -215,6 +233,25 @@ public class PipelineHandler {
         }
     }
     
+//    private static List<JobInfo> getChildJobInfos(final JobInfo pipelineJobInfo) {
+//        final int parentJobId = pipelineJobInfo.getJobNumber();
+//        boolean inTransaction = HibernateUtil.isInTransaction();
+//        try {
+//            AnalysisDAO dao = new AnalysisDAO();
+//            JobInfo[] all = dao.getChildren(parentJobId);
+//            List<JobInfo> childJobs = new ArrayList<JobInfo>();
+//            for(JobInfo jobInfo : all) {
+//                childJobs.add(jobInfo);
+//            }
+//            return childJobs;
+//        }
+//        finally {
+//            if (!inTransaction) {
+//                HibernateUtil.closeCurrentSession();
+//            }
+//        }
+//    }
+
     /**
      * Called when a step in a pipeline job has completed, put the next job on the queue.
      * Check for and handle pipeline termination.
@@ -230,11 +267,15 @@ public class PipelineHandler {
             log.error("Invalid jobNumber: "+childJobNumber);
         }
         JobInfo childJobInfo = null;
+        JobInfo pipelineJobInfo=null;
         int parentJobNumber = -1;
         try {
             AnalysisDAO ds = new AnalysisDAO();
             childJobInfo = ds.getJobInfo(childJobNumber);
             parentJobNumber = childJobInfo._getParentJobNumber();
+            if (parentJobNumber >= 0) {
+                pipelineJobInfo = ds.getJobInfo(parentJobNumber);
+            }
         }
         finally {
             HibernateUtil.closeCurrentSession();
@@ -244,6 +285,84 @@ public class PipelineHandler {
             log.error("Invalid parentJobNumber: "+parentJobNumber);
             return false;
         }
+        
+        final boolean isParallelExec = isParallelExec(pipelineJobInfo);
+        if (isParallelExec) {
+            return handleJobCompletionParallel(pipelineJobInfo, childJobInfo);
+        }
+        else {
+            return handleJobCompletionOld(pipelineJobInfo, childJobInfo);
+        }
+    }
+
+    //TODO: this method must be made thread-safe
+    private static boolean handleJobCompletionParallel(final JobInfo pipelineJobInfo, final JobInfo childJobInfo) {
+        boolean addedJobs=false;
+        if (pipelineJobInfo==null) {
+            throw new IllegalArgumentException("pipelineJobInfo==null");
+        }
+        if (childJobInfo==null) {
+            throw new IllegalArgumentException("childJobInfo==null");
+        }
+        final int parentJobNumber=pipelineJobInfo.getJobNumber();
+        final int childJobNumber=childJobInfo.getJobNumber();
+        
+        if (JobStatus.FINISHED.equals(childJobInfo.getStatus())) { 
+            //rebuild the graph for the pipeline
+            PipelineGraph graph = PipelineGraph.getDependencyGraph(pipelineJobInfo);
+            
+            boolean allStepsComplete=graph.allStepsComplete();
+            if (allStepsComplete) {
+                //it's the last step in the pipeline, update its status, and notify downstream jobs
+                handlePipelineJobCompletion(parentJobNumber, 0);
+                return false;
+            }
+            
+            //otherwise, start any jobs which are ready
+            Set<JobInfo> jobsToRun=graph.getJobsToRun();
+            if (jobsToRun==null) {
+                log.error("jobsToRun==null");
+            }
+            if (jobsToRun.size()>0) {
+                try {
+                    HibernateUtil.beginTransaction();
+                    for(JobInfo jobToRun : jobsToRun) {
+                        log.debug("adding job to queue, jobId="+jobToRun.getJobNumber()+", "+jobToRun.getTaskName());
+                        try {
+                            JobQueueUtil.addJobToQueue( jobToRun,  JobQueue.Status.PENDING);
+                            addedJobs=true;
+                        }
+                        catch (Throwable t) {
+                            //TODO: handle exception
+                            log.error(t);
+                        }
+                    }
+                    HibernateUtil.commitTransaction();
+                }
+                finally {
+                    HibernateUtil.closeCurrentSession();
+                }
+            }
+            return addedJobs;
+        }
+        else {
+            //TODO: in some cases, we don't want to kill the parent pipeline or its child jobs
+            //handle an error in a pipeline step
+            terminatePipelineSteps(parentJobNumber);
+            handlePipelineJobCompletion(parentJobNumber, -1, "Pipeline terminated because of an error in child job [id: "+childJobNumber+"]");
+        }
+        return false;
+    }
+
+    private static boolean handleJobCompletionOld(final JobInfo pipelineJobInfo, final JobInfo childJobInfo) {
+        if (pipelineJobInfo==null) {
+            throw new IllegalArgumentException("pipelineJobInfo==null");
+        }
+        if (childJobInfo==null) {
+            throw new IllegalArgumentException("childJobInfo==null");
+        }
+        final int parentJobNumber=pipelineJobInfo.getJobNumber();
+        final int childJobNumber=childJobInfo.getJobNumber();
         
         //change from the 3.3.3 implementation to support for parallel execution of scattered jobs
         // a) in scatter pipelines, more than one step in a pipeline gets started; we can't automatically flag the parent
@@ -592,6 +711,20 @@ public class PipelineHandler {
             return true;
         }
         return false;
+    }
+
+    /**
+     * Experimental feature, circa GP 3.5.1, when enabled, run steps in parallel, which don't have other dependencies.
+     * 
+     * @param jobInfo
+     * @return true, if child jobs should run in parallel
+     * 
+     * @deprecated
+     */
+    private static boolean isParallelExec(final JobInfo jobInfo) {
+        Context jobContext=ServerConfiguration.Context.getContextForJob(jobInfo);
+        boolean rval=ServerConfiguration.instance().getGPBooleanProperty(jobContext, "org.genepattern.server.executor.pipeline.parallelExec", false);
+        return rval;
     }
 
     /**
@@ -987,6 +1120,10 @@ public class PipelineHandler {
      * @return true iff an input param was modified
      */
     private static boolean setInheritedParams(AnalysisDAO dao, int parentJobId, JobInfo currentStep) { 
+        if (currentStep==null) {
+            throw new IllegalArgumentException("currentStep == null");
+        }
+        log.debug("setInheritedParams(parentJobId="+parentJobId+", currentStep="+currentStep.getJobNumber()+", task="+currentStep.getTaskName());
         List<ParameterInfo> inheritedInputParams = getInheritedInputParams(currentStep);
         if (inheritedInputParams.size() == 0) {
             return false;
@@ -1027,6 +1164,7 @@ public class PipelineHandler {
                 isInheritTaskName = attributes.get(PipelineModel.INHERIT_TASKNAME) != null;
             }
             if (isInheritTaskName) {
+                log.debug("isInheritTaskName, jobId="+currentStep.getJobNumber()+", "+currentStep.getTaskName()+"."+param.getName()+"="+param.getValue());
                 inputParams.add(param);
             }
         }
@@ -1042,10 +1180,13 @@ public class PipelineHandler {
      * @return
      */
     private static String getInheritedFilename(AnalysisDAO dao, JobInfo[] childJobs, ParameterInfo inputParam) {
+        log.debug("getInheritedFilename for inputParam="+inputParam.getName());
         // these params must be removed so that the soap lib doesn't try to send the file as an attachment
         HashMap attributes = inputParam.getAttributes();
         final String taskStr = (String) attributes.get(PipelineModel.INHERIT_TASKNAME);
         final String fileStr = (String) attributes.get(PipelineModel.INHERIT_FILENAME);
+        log.debug("taskStr="+taskStr);
+        log.debug("fileStr="+fileStr);
         attributes.remove("TYPE");
 
         //taskStr holds the current step number in the pipeline
@@ -1060,11 +1201,20 @@ public class PipelineHandler {
         if (stepNum < 0 || stepNum >= childJobs.length) {
             log.error("Invalid stepNum: stepNum="+stepNum+", childJobs.length="+childJobs.length);
             return "";
-        }        
+        }
+        
+        log.debug("stepNum="+stepNum);
         JobInfo fromJob = childJobs[stepNum];
+        if (fromJob==null) {
+            log.debug("fromJob==null");
+        }
+        else {
+            log.debug("fromJob.id="+fromJob.getJobNumber()+", "+fromJob.getTaskName());
+        }
         String fileName = null;
         try {
             fileName = getOutputFileName(dao, fromJob, fileStr);
+            log.debug("outputFileName="+fileName);
             if (fileName == null || fileName.trim().length() == 0) {
                 //return an empty string if no output filename is found
                 return "";
@@ -1089,6 +1239,10 @@ public class PipelineHandler {
     private static String getOutputFileName(AnalysisDAO dao, JobInfo fromJob, String fileStr)
     throws ServerConfiguration.Exception, FileNotFoundException 
     {
+        if (fromJob==null) {
+            throw new IllegalArgumentException("fromJob==null");
+        }
+        log.debug("getOutputFileName, fromJob="+fromJob.getJobNumber()+"."+fromJob.getTaskName()+", fileStr="+fileStr);
         //special-case: use 'stdout' from previous job
         if ("stdout".equals(fileStr)) {
             //use STDOUT from Job
