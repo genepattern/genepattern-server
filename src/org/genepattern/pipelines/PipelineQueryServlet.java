@@ -635,9 +635,11 @@ public class PipelineQueryServlet extends HttpServlet {
                 
                 // if there is doc, add it to the model
                 String doc = pipelineObject.getDocumentation();
-                if (doc != null && doc.length() > 0) {
-                    model.setDocumentation(doc);
+                if (doc == null) {
+                    // if there is no declared doc, use an empty string
+                    doc = "";
                 }
+                model.setDocumentation(doc);
                 
                 setPipelineInfo(model, pipelineObject);
     
