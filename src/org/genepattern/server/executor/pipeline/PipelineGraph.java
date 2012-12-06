@@ -317,11 +317,6 @@ public class PipelineGraph {
         String toStepId = jobLookup.get("jobId="+toJobId);
         MyVertex toStepVertex=new MyVertex(toStepId, toJobInfo);
         Set<MyEdge> edges = jobGraph.incomingEdgesOf(toStepVertex);
-        for(MyEdge incoming : edges) {
-            final String fromStepId=incoming.getFrom().getStepId();
-            final String fromJobId=jobLookup.get("stepId="+fromStepId);
-            log.debug("    fromStepId="+fromStepId+", fromJobId="+fromJobId);
-        }
         if (edges==null || edges.size()==0) {
             return Collections.emptySet();
         }
@@ -330,6 +325,7 @@ public class PipelineGraph {
             MyVertex from = edge.getFrom();
             String fromStepId=from.getStepId();
             String fromJobId=jobLookup.get("stepId="+fromStepId);
+            log.debug("    fromStepId="+fromStepId+", fromJobId="+fromJobId);
             if (fromJobId==null) {
                 log.error("fromJobId==null, for stepId="+fromStepId);
             }
