@@ -126,6 +126,12 @@ public class GenomeSpaceBean {
             response.sendRedirect(GENOMESPACE_OPENID);
             request.getSession().setAttribute("origin", referrer);
         }
+        else if (referrer != null) {
+            // LoginManager#getReferrer was implemented under the assumption that
+            // a redirect to the referrer should happen immediately
+            // if this is not the case, then undo the change made to the session
+            request.getSession().setAttribute("origin", referrer);
+        }
 
         return "OK";
     }
