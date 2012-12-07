@@ -249,8 +249,8 @@ public class PipelineGraph {
         Set<JobInfo> jobsToRun=new HashSet<JobInfo>();
         for(MyVertex v : jobGraph.vertexSet()) {
             JobInfo toJobInfo=v.getJobInfo();
-            if (isFinished(toJobInfo)) {
-                //the target job is already complete, don't start it again
+            if (!isPending(toJobInfo)) {
+                //the target job has already been started, don't start it again
             }
             else {
                 boolean isReady=true;
@@ -286,6 +286,24 @@ public class PipelineGraph {
         }
         //all jobs are finished
         return true;
+    }
+    
+    /**
+     * Yet another implementation of the rule for determining if a job
+     * is waiting to be added to the queue.
+     * 
+     * @param jobInfo
+     * @return true, if the job has not yet been added to the queue,
+     *     presumably because it is waiting for an upstream step.
+     */
+    private static boolean isPending(final JobInfo jobInfo) {
+        if (jobInfo==null) {
+            throw new IllegalArgumentException("jobInfo==null");
+        }
+        if (jobInfo.getStatus()==null || jobInfo.getStatus().length()==0) {
+            throw new IllegalArgumentException("jobInfo.status not set");
+        }
+        return JobStatus.PENDING.equals(jobInfo.getStatus());
     }
 
     /**
