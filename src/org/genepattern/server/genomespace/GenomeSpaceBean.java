@@ -121,16 +121,14 @@ public class GenomeSpaceBean {
         HttpServletResponse response = UIBeanHelper.getResponse();
         
         String referrer = LoginManager.getReferrer(request);
+        if (referrer != null) {
+            // LoginManager#getReferrer removes the 'origin' attribute from the session
+            // calling that method from this bean should not do that, so put it back
+            request.getSession().setAttribute("origin", referrer);
+        }
         
         if (referrer != null && referrer.contains(GENOMESPACE_REQUEST)){
             response.sendRedirect(GENOMESPACE_OPENID);
-            request.getSession().setAttribute("origin", referrer);
-        }
-        else if (referrer != null) {
-            // LoginManager#getReferrer was implemented under the assumption that
-            // a redirect to the referrer should happen immediately
-            // if this is not the case, then undo the change made to the session
-            request.getSession().setAttribute("origin", referrer);
         }
 
         return "OK";
