@@ -121,10 +121,14 @@ public class GenomeSpaceBean {
         HttpServletResponse response = UIBeanHelper.getResponse();
         
         String referrer = LoginManager.getReferrer(request);
+        if (referrer != null) {
+            // LoginManager#getReferrer removes the 'origin' attribute from the session
+            // calling that method from this bean should not do that, so put it back
+            request.getSession().setAttribute("origin", referrer);
+        }
         
         if (referrer != null && referrer.contains(GENOMESPACE_REQUEST)){
             response.sendRedirect(GENOMESPACE_OPENID);
-            request.getSession().setAttribute("origin", referrer);
         }
 
         return "OK";
