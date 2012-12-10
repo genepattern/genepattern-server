@@ -24,11 +24,11 @@ public class GenomeSpaceClientFactory {
     public static Logger log = Logger.getLogger(GenomeSpaceClientFactory.class);
 
     static public boolean isGenomeSpaceEnabled(Context context) {
-        return ServerConfiguration.instance().getGPBooleanProperty(context, "genomeSpaceEnabled", false);
+        return ServerConfiguration.instance().getGPBooleanProperty(context, "genomeSpaceEnabled", true);
     }
     
     static public String getGenomeSpaceEnvironment(Context context) {
-        return ServerConfiguration.instance().getGPProperty(context, "genomeSpaceEnvironment", "test");
+        return ServerConfiguration.instance().getGPProperty(context, "genomeSpaceEnvironment", "prod");
     }
 
     /**

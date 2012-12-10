@@ -60,7 +60,7 @@ public class GenomeSpaceBean {
     public static final String GENOMESPACE_REQUEST = "/gp/pages/genomespace/receiveFile.jsf";
     public static final String GENOMESPACE_OPENID = "/gp/GenomeSpaceOpenID";
     
-    private boolean genomeSpaceEnabled = false;
+    private boolean genomeSpaceEnabled = true;
     private Boolean loggedIn = null;
     private Boolean loading = null;
     private boolean loginFailed = false;
