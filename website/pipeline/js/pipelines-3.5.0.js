@@ -1118,7 +1118,7 @@ var editor = {
             inputId = $('<div/>').html(inputId).text();
 
             if (!outputModule.hasPortByPointer(outputId)) {
-                outputModule.addOutputPort(outputId);
+                outputModule.addOutput(outputId);
             }
             if (!inputModule.hasPortByPointer(inputId)) {
                 inputModule.addInput(inputId);
