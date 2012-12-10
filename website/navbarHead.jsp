@@ -5,7 +5,6 @@
   ~
   ~ This software is supplied without any warranty or guaranteed support whatsoever. The Broad Institute is not responsible for its use, misuse, or functionality.
   --%>
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
 <%@ page import="org.genepattern.server.webapp.jsf.AuthorizationHelper" %>
 <link href="<%=request.getContextPath()%>/css/style.css" rel="stylesheet" type="text/css" />
 <link href="/gp/css/menu.css" type="text/css" rel="stylesheet" />
@@ -18,6 +17,7 @@
   var createPrivatePipelineAllowed = <%= AuthorizationHelper.createPipeline(username) %>;
   var createPrivateSuiteAllowed = <%= AuthorizationHelper.createSuite(username) %>;
   var adminServerAllowed = <%= AuthorizationHelper.adminServer(username) %>;
+  var genomeSpaceEnabled = false;
   var genomeSpaceLoggedIn = false;
   var userLoggedIn = !("${requestScope.userID}" === "null" || "${requestScope.userID}" === "");
 </script>

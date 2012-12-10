@@ -11,7 +11,7 @@
  * @requires jQuery, jQuery UI, ddsmoothmenu
  * 				Also requires that the createTaskAllowed, createPublicPipelineAllowed, 
  * 				createPrivatePipelineAllowed, createPublicSuiteAllowed, createPrivateSuiteAllowed, 
- * 				adminServerAllowed and genomeSpaceLoggedIn variables are set.
+ * 				adminServerAllowed genomeSpaceEnabled and genomeSpaceLoggedIn variables are set.
  */
 var Menu = {
 	jquery: null,
@@ -33,7 +33,7 @@ var Menu = {
 	buildNavMenu: function() {
 		Menu.ensureJQuery();
 		var menu = this.jquery( // Begin creation of navband HTML
-			"<div id=\"navband1\" class=\"navband1 ddsmoothmenu\" style=\"white-space: nowrap;\">\
+			"<div id=\"navband1\" class=\"navband1 ddsmoothmenu\" style=\"white-space: nowrap; display:none;\">\
 	            <ul>\
 	                <li><a href=\"/gp/pages/index.jsf\">Modules &#38; Pipelines</a>\
 	                    <ul>\
@@ -89,7 +89,8 @@ var Menu = {
 	                        <li><a href=\"/gp/pages/about.jsf\">About</a></li>\
 	                    </ul>\
 	                </li>\
-	                <li><a href=\"/gp/pages/index.jsf\"><img src=\"/gp/pages/genomespace/genomespace_icon.gif\" class=\"genomeSpaceIcon\" alt=\"GenomeSpace\"></img>GenomeSpace</a>\
+	                <li class=\"genomeSpaceMenu\">\
+	                	<a href=\"/gp/pages/index.jsf\"><img src=\"/gp/pages/genomespace/genomespace_icon.gif\" class=\"genomeSpaceIcon\" alt=\"GenomeSpace\"></img>GenomeSpace</a>\
 	                    <ul>\
 	                        <li class=\"genomeSpaceLoggedOut\"><a href=\"/gp/pages/genomespace/signon.jsf\">Login</a></li>\
 	                        <li class=\"genomeSpaceLoggedIn\"><a href=\"/gp/pages/genomespace/signon.jsf\">Logout</a></li>\
@@ -120,5 +121,7 @@ var Menu = {
 	    if (!adminServerAllowed) this.jquery(".adminServerAllowed").hide();
 	    if (!genomeSpaceLoggedIn) this.jquery(".genomeSpaceLoggedIn").hide();
 	    if (genomeSpaceLoggedIn) this.jquery(".genomeSpaceLoggedOut").hide();
+	    if (!genomeSpaceEnabled) this.jquery(".genomeSpaceMenu").hide();
+	    this.jquery("#navband1").show();
 	}
 };
