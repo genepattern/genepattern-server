@@ -142,5 +142,6 @@
 	<classpathentry kind="lib" path="website/WEB-INF/lib/jackson-jaxrs-1.9.2.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/jackson-mapper-asl-1.9.2.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/jackson-xc-1.9.2.jar"/>
+	<classpathentry kind="lib" path="website/WEB-INF/lib/jgrapht-jdk1.6.jar"/>
 	<classpathentry kind="output" path="website/WEB-INF/classes"/>
 </classpath>
