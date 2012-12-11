@@ -3942,10 +3942,13 @@ function Module(moduleJSON) {
         // Add the div to the editor then add ports
         $("#" + editor.div)[0].appendChild(this.ui);
         this._addInputPorts();
-        this._createMasterOutput();
-
-        // Create the combobox widget
-        $("#masterComboText_" + this.id).combobox($("#masterComboSelect_" + this.id));
+        
+        if (!this.isVisualizer()) {
+        	this._createMasterOutput();
+        	
+        	// Create the combobox widget
+            $("#masterComboText_" + this.id).combobox($("#masterComboSelect_" + this.id));
+        }
 
         jsPlumb.draggable(this.ui);
         this._addDragEvents();
