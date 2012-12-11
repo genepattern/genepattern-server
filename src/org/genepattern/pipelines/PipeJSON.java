@@ -68,7 +68,7 @@ public class PipeJSON extends JSONObject {
     }
     
     @SuppressWarnings("unchecked")
-    public static ResponseJSON createPipeList(Vector<JobSubmission> jobs) {
+    public static ResponseJSON createPipeList(Vector<JobSubmission> jobs, PipelineQueryServlet servlet) {
         ResponseJSON listObject = new ResponseJSON();
         Integer moduleCounter = 0;
         Integer pipeCounter = 0;
@@ -78,6 +78,9 @@ public class PipeJSON extends JSONObject {
             for (ParameterInfo j : params) {
                 String selector = (String) j.getAttributes().get("inheritFilename");
                 String moduleId = (String) j.getAttributes().get("inheritTaskname");
+                
+                // Translate manifest representation to dsl
+                selector = servlet.manifestToDsl(selector);
                 
                 if (selector != null && moduleId != null) {
                     PipeJSON pipe = new PipeJSON(moduleId, selector, moduleCounter.toString(), j.getName());

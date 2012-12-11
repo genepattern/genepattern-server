@@ -74,6 +74,20 @@ public class PipelineQueryServlet extends HttpServlet {
 	public static final String LOAD = "/load";         // path for calling the REST-like load call
 	public static final String UPLOAD = "/upload";     // path for calling the REST-like upload call
 	
+	public static final String DSL_FIRST = "1st Output";
+	public static final String DSL_SECOND = "2nd Output";
+	public static final String DSL_THIRD = "3rd Output";
+	public static final String DSL_FOURTH = "4th Output";
+	public static final String DSL_SCATTER = "Scatter Each Output";
+	public static final String DSL_GATHER = "File List of All Outputs";
+	
+	public static final String MANIFEST_FIRST = "1";
+    public static final String MANIFEST_SECOND = "2";
+    public static final String MANIFEST_THIRD = "3";
+    public static final String MANIFEST_FOURTH = "4";
+    public static final String MANIFEST_SCATTER = "?scatter&filter=*";
+    public static final String MANIFEST_GATHER = "?filelist&filter=*";
+	
 	@Override
 	public void doGet(HttpServletRequest request, HttpServletResponse response) {
 		String action = request.getPathInfo();
@@ -280,7 +294,7 @@ public class PipelineQueryServlet extends HttpServlet {
         ResponseJSON responseObject = new ResponseJSON();
         PipelineJSON pipelineObject = new PipelineJSON(username, pipeline, info);
         ResponseJSON modulesObject = createModuleList(pipeline);
-        ResponseJSON pipesObject = PipeJSON.createPipeList(pipeline.getTasks());
+        ResponseJSON pipesObject = PipeJSON.createPipeList(pipeline.getTasks(), this);
         ResponseJSON filesObject = createFileList(pipeline);
         
         responseObject.addChild(PipelineJSON.KEY, pipelineObject);
@@ -532,6 +546,9 @@ public class PipelineQueryServlet extends HttpServlet {
             // Unescape the value
             value = StringEscapeUtils.unescapeHtml(value);
             
+            // Translate dsl to manifest
+            value = dslToManifest(value);
+            
             // Find the index of input and output
             Integer outputIndex = findIndexWithId(outputId, modulesList);
             Integer inputIndex = findIndexWithId(inputId, modulesList);
@@ -548,6 +565,38 @@ public class PipelineQueryServlet extends HttpServlet {
             }
         }
     }
+	
+	/**
+	 * Transforms the representation of a selection in the manifest to its representation in the 
+	 * Pipeline Designer's domain specific language (DSL)
+	 * @param manifest representation
+	 * @return dsl representation
+	 */
+	protected String manifestToDsl(String manifest) {
+	    if (MANIFEST_FIRST.equals(manifest)) return DSL_FIRST;
+	    else if (MANIFEST_SECOND.equals(manifest)) return DSL_SECOND;
+	    else if (MANIFEST_THIRD.equals(manifest)) return DSL_THIRD;
+	    else if (MANIFEST_FOURTH.equals(manifest)) return DSL_FOURTH;
+	    else if (MANIFEST_SCATTER.equals(manifest)) return DSL_SCATTER;
+	    else if (MANIFEST_GATHER.equals(manifest)) return DSL_GATHER;
+	    else return manifest;
+    }
+	
+	/**
+     * Transforms the representation of a selection in the Pipeline Designer's domain specific 
+     * language (DSL) to its representation in the manifest
+     * @param dsl representation
+     * @return manifest representation
+     */
+	private String dslToManifest(String dsl) {
+	    if (DSL_FIRST.equals(dsl)) return MANIFEST_FIRST;
+        else if (DSL_SECOND.equals(dsl)) return MANIFEST_SECOND;
+        else if (DSL_THIRD.equals(dsl)) return MANIFEST_THIRD;
+        else if (DSL_FOURTH.equals(dsl)) return MANIFEST_FOURTH;
+        else if (DSL_SCATTER.equals(dsl)) return MANIFEST_SCATTER;
+        else if (DSL_GATHER.equals(dsl)) return MANIFEST_GATHER;
+        else return dsl;
+	}
 	
 	/**
 	 * Handle the call to save a pipeline
