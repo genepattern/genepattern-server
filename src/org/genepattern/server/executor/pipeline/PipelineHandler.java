@@ -974,7 +974,6 @@ public class PipelineHandler {
         List<List<String>> row = new ArrayList<List<String>>();
         int jobCount = -1;
         List<Integer> jobCounts = new ArrayList<Integer>();
-        List<List<String>> table = new ArrayList<List<String>>();
         for(Entry<ParameterInfo, List<String>> entry : scatterParamMap.entrySet()) {
             List<String> values = new ArrayList<String>();
             row.add(values);
@@ -995,12 +994,10 @@ public class PipelineHandler {
             }
         }
 
-        //don't create a scatter job if there are no input values
+        //don't create a scatter jobs if there are no matching input parameters
         if (jobCount <= 0) {
-            //TODO: should we allow empty batch steps?
-            //     as currently implemented, a batch job with zero steps will get stuck in a permanent processing state, 
-            //     because it waits for all of its sub-steps to complete
-            throw new IllegalArgumentException("No batch jobs to submit");
+            log.warn("No batch jobs to submit, for pipeline jobId="+pipelineJobInfo.getJobNumber()+", task="+pipelineJobInfo.getTaskName());
+            return Collections.emptyList();
         }
         
         log.debug("\tsubmitting "+jobCount+" scatter jobs...");
