@@ -3832,6 +3832,9 @@ function Module(moduleJSON) {
         // Remove output div
         var div = $(this.ui).find(".outputFileItem[name='" + pointer + "']");
         div.remove();
+        
+        // Force connections to endpoints to appear in new position
+        jsPlumb.repaintEverything();
     };
 
     this.addOutput = function(pointer) {
@@ -3860,6 +3863,9 @@ function Module(moduleJSON) {
             var output = this.outputEnds[i];
             lastPosition = output.reposition(lastPosition);
         }
+        
+        // Force connections to endpoints to appear in new position
+        jsPlumb.repaintEverything();
 
         // Return the top endpoint position, newly opened
         return lastPosition;
