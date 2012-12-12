@@ -1465,9 +1465,12 @@ public class GenePatternAnalysisTask {
         try {
             int job_status = task.get(jobDispatchTimeout, TimeUnit.MILLISECONDS);
             try {
-                HibernateUtil.beginTransaction();
-                AnalysisJobScheduler.setJobStatus(jobInfo.getJobNumber(), job_status);
-                HibernateUtil.commitTransaction();
+                if (!isPipeline) {
+                    //pipeline handler sets the status for the pipeline job
+                    HibernateUtil.beginTransaction();
+                    AnalysisJobScheduler.setJobStatus(jobInfo.getJobNumber(), job_status);
+                    HibernateUtil.commitTransaction();
+                }
                 if (isPipeline) {
                     CommandManagerFactory.getCommandManager().wakeupJobQueue();
                 }

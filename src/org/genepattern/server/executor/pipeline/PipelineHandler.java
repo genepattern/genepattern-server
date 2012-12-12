@@ -34,6 +34,7 @@ import org.genepattern.server.domain.AnalysisJob;
 import org.genepattern.server.domain.JobStatus;
 import org.genepattern.server.executor.AnalysisJobScheduler;
 import org.genepattern.server.executor.CommandExecutorException;
+import org.genepattern.server.executor.CommandManagerFactory;
 import org.genepattern.server.executor.JobSubmissionException;
 import org.genepattern.server.executor.JobTerminationException;
 import org.genepattern.server.genepattern.GenePatternAnalysisTask;
@@ -79,9 +80,11 @@ public class PipelineHandler {
         log.debug("isInTranscation="+isInTransaction);
         final boolean isScatterStep = isScatterStep(pipelineJobInfo);
         final boolean isParallelExec = isParallelExec(pipelineJobInfo);
+        int numAddedJobs=-1;
         try {
             HibernateUtil.beginTransaction();
             List<JobInfo> addedJobs = runPipeline(pipelineJobInfo, stopAfterTask, isScatterStep);
+            numAddedJobs = addedJobs.size();
             //set the parent pipeline's status to PROCESSING 
             AnalysisJobScheduler.setJobStatus(pipelineJobInfo.getJobNumber(), JobStatus.JOB_PROCESSING); 
 
@@ -118,6 +121,22 @@ public class PipelineHandler {
             HibernateUtil.rollbackTransaction();
             throw new CommandExecutorException("Error starting pipeline: "+t.getLocalizedMessage(), t);
         }
+        
+        //special-case: a pipeline with zero steps
+        if (numAddedJobs==0) {
+            log.warn("no jobs added to pipeline: "+pipelineJobInfo.getJobNumber()+": "+pipelineJobInfo.getTaskName());
+            AnalysisJobScheduler.setJobStatus(pipelineJobInfo.getJobNumber(), JobStatus.JOB_FINISHED);
+            int parentParentJobId = pipelineJobInfo._getParentJobNumber();
+            if (parentParentJobId >= 0) {
+                //special-case: a nested pipeline with zero steps, make sure to notify the parent pipeline that this step has completed
+                boolean wakeupJobQueue = PipelineHandler.handleJobCompletion(pipelineJobInfo.getJobNumber());
+                if (wakeupJobQueue) {
+                    //if the pipeline has more steps, wake up the job queue
+                    CommandManagerFactory.getCommandManager().wakeupJobQueue();
+                }
+            }
+        }
+
     }
     
     public static void terminatePipeline(JobInfo jobInfo) {
@@ -262,36 +281,37 @@ public class PipelineHandler {
      * @param completionDate
      * @return
      */
-    public static boolean handleJobCompletion(int childJobNumber) {
-        if (childJobNumber < 0) {
-            log.error("Invalid jobNumber: "+childJobNumber);
+    public static boolean handleJobCompletion(int completedJobId) {
+        if (completedJobId < 0) {
+            log.error("Invalid jobNumber: "+completedJobId);
         }
-        JobInfo childJobInfo = null;
-        JobInfo pipelineJobInfo=null;
-        int parentJobNumber = -1;
+        JobInfo completedJobInfo = null;
+        JobInfo parentJobInfo=null;
+        int parentJobId = -1;
         try {
             AnalysisDAO ds = new AnalysisDAO();
-            childJobInfo = ds.getJobInfo(childJobNumber);
-            parentJobNumber = childJobInfo._getParentJobNumber();
-            if (parentJobNumber >= 0) {
-                pipelineJobInfo = ds.getJobInfo(parentJobNumber);
+            completedJobInfo = ds.getJobInfo(completedJobId);
+            parentJobId = completedJobInfo._getParentJobNumber();
+            if (parentJobId >= 0) {
+                parentJobInfo = ds.getJobInfo(parentJobId);
             }
         }
         finally {
             HibernateUtil.closeCurrentSession();
         }
-
-        if (parentJobNumber < 0) {
-            log.error("Invalid parentJobNumber: "+parentJobNumber);
+        return handleJobCompletion(parentJobInfo, completedJobInfo);
+    }
+    
+    private static boolean handleJobCompletion(JobInfo parentJobInfo, JobInfo completedJobInfo) {
+        if (parentJobInfo == null) {
             return false;
         }
-        
-        final boolean isParallelExec = isParallelExec(pipelineJobInfo);
+        final boolean isParallelExec = isParallelExec(parentJobInfo);
         if (isParallelExec) {
-            return handleJobCompletionParallel(pipelineJobInfo, childJobInfo);
+            return handleJobCompletionParallel(parentJobInfo, completedJobInfo);
         }
         else {
-            return handleJobCompletionOld(pipelineJobInfo, childJobInfo);
+            return handleJobCompletionOld(parentJobInfo, completedJobInfo);
         }
     }
 
