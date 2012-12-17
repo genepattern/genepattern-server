@@ -98,10 +98,6 @@ var editor = {
         };
 	},
 
-    escapeForCSS: function(name) {
-        return name.replace(".", "\\\\.");
-    },
-	
 	removeFile: function(filename) {
 		for (var i = 0; i < editor.workspace["files"].length; i++) {
 			var filepath = editor.workspace["files"][i];
@@ -3446,9 +3442,7 @@ function Module(moduleJSON) {
     };
 
     this.getPortByPointer = function (pointer) {
-        var port = null;
-
-        port = this.getInputByPointer(pointer);
+        var port = this.getInputByPointer(pointer);
         if (port !== null) return port;
 
         port = this.getOutputByPointer(pointer);
@@ -4406,6 +4400,7 @@ function Port(module, pointer, param, id) {
                 var selected = $("#dialogText").val();
                 var oldSelection = port.pointer;
                 var oldInputs = [];
+                //noinspection JSDuplicatedDeclaration
                 for (var i = 0; i < port.pipes.length; i++) {
                     var pipe = port.pipes[i];
                     oldInputs.push(pipe.inputPort);
@@ -4416,7 +4411,9 @@ function Port(module, pointer, param, id) {
 
                 // Delete old selection if new
                 if (oldSelection !== selected) {
+                    //noinspection JSDuplicatedDeclaration
                     for (var i = 0; i < oldInputs.length; i++) {
+                        //noinspection JSDuplicatedDeclaration
                         var input = oldInputs[i];
                         input.removePipes();
                     }
@@ -4425,6 +4422,7 @@ function Port(module, pointer, param, id) {
 
                 // Check if that selection already exists
                 var exists = null;
+                //noinspection JSDuplicatedDeclaration
                 for (var i = 0; i < port.module.outputEnds.length; i++) {
                     var outputEnd = port.module.outputEnds[i];
                     if (outputEnd.pointer === selected) {
@@ -4434,7 +4432,9 @@ function Port(module, pointer, param, id) {
 
                 // If so, add to existing selection
                 if (exists !== null) {
+                    //noinspection JSDuplicatedDeclaration
                     for (var i = 0; i < oldInputs.length; i++) {
+                        //noinspection JSDuplicatedDeclaration
                         var input = oldInputs[i];
                         editor.loading = true;
                         editor.addPipe(input, exists);
@@ -4445,7 +4445,9 @@ function Port(module, pointer, param, id) {
                 // Otherwise, add new selection
                 else {
                     var output = port.module.addOutput(selected);
+                    //noinspection JSDuplicatedDeclaration
                     for (var i = 0; i < oldInputs.length; i++) {
+                        //noinspection JSDuplicatedDeclaration
                         var input = oldInputs[i];
                         editor.loading = true;
                         editor.addPipe(input, output);
@@ -4489,6 +4491,7 @@ function Port(module, pointer, param, id) {
         dropdownList.push("File List of All Outputs");
         dialogText.setAttribute("value", port.pointer);
 
+        //noinspection JSDuplicatedDeclaration
         for (var i = 0; i < dropdownList.length; i++) {
             var output = dropdownList[i];
             var outputOption = document.createElement("option");
