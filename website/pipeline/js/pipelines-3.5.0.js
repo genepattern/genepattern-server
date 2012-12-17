@@ -4317,75 +4317,212 @@ function Port(module, pointer, param, id) {
             properties.displayModule(port.module);
             properties.show();
 
-            // If already set or output, don't do anything
-            if (port.param === null || port.param === undefined) {
-                return;
-            }
-
-            var buttons = null;
-            if (port.isConnected()) {
-                buttons = {
-                    "Remove Connection": function(event) {
-                        $(this).dialog("close");
-                        $(".editPipeButton[name='" + port.param.name + (port.param.required ? "*" : "") + "']").trigger("click");
-                        if (event.preventDefault) event.preventDefault();
-                        if (event.stopPropagation) event.stopPropagation();
-                    }
-                };
-            }
-            else if (port.param.isPWR()) {
-                buttons = {
-                    "Remove Prompt When Run": function(event) {
-                        $(this).dialog("close");
-                        $(".propertyCheckBox[name='" + port.param.name + (port.param.required ? "*" : "") + "']").trigger("click");
-                        if (event.preventDefault) event.preventDefault();
-                        if (event.stopPropagation) event.stopPropagation();
-                    }
-                };
+            // Call the appropriate function when port is clicked
+            if (port.isOutput()) {
+                port.outputClick(port);
             }
             else {
-                buttons = {
-                    "Prompt When Run": function(event) {
-                        $(this).dialog("close");
-
-                        $(".propertyCheckBox[name='" + port.param.name + (port.param.required ? "*" : "") + "']").trigger("click");
-
-                        if (event.preventDefault) event.preventDefault();
-                        if (event.stopPropagation) event.stopPropagation();
-                    },
-                    "Attach File": function(event) {
-                        $(this).dialog("close");
-
-                        // Trigger the attach file dialog
-                        $("#attachFile").trigger("click");
-                        // Add the new doc click event
-                        $(".ui-dialog-buttonpane button:contains('OK')").click(function() {
-                            var file = editor.getLastFile();
-                            editor.addPipe(port, file.outputEnds[0]);
-                        });
-
-                        if (event.preventDefault) event.preventDefault();
-                        if (event.stopPropagation) event.stopPropagation();
-                    }
-                };
+                port.inputClick(port);
             }
-
-            var dialog = editor.showDialog("Choose Action", "Choose an action for this input parameter below.", buttons);
-            
-            // Hack to make the dialog look as requested
-            $(dialog).dialog({
-            	width: "230px",
-            	height: "100px",
-            	position: "center"
-            });
-            $(dialog).parent().find(".ui-dialog-buttonpane").css("border-width", "0 0 0 0");
-            $(dialog).hide();
         });
 
         // Add optional class if necessary
         if (!this.isOutput() && !this.isRequired()) {
             $(this.endpoint.canvas).addClass("optionalPort");
         }
+    };
+    
+    this.inputClick = function(port) {
+        var buttons = null;
+        if (port.isConnected()) {
+            buttons = {
+                "Remove Connection": function(event) {
+                    $(this).dialog("close");
+                    $(".editPipeButton[name='" + port.param.name + (port.param.required ? "*" : "") + "']").trigger("click");
+                    if (event.preventDefault) event.preventDefault();
+                    if (event.stopPropagation) event.stopPropagation();
+                }
+            };
+        }
+        else if (port.param.isPWR()) {
+            buttons = {
+                "Remove Prompt When Run": function(event) {
+                    $(this).dialog("close");
+                    $(".propertyCheckBox[name='" + port.param.name + (port.param.required ? "*" : "") + "']").trigger("click");
+                    if (event.preventDefault) event.preventDefault();
+                    if (event.stopPropagation) event.stopPropagation();
+                }
+            };
+        }
+        else {
+            buttons = {
+                "Prompt When Run": function(event) {
+                    $(this).dialog("close");
+
+                    $(".propertyCheckBox[name='" + port.param.name + (port.param.required ? "*" : "") + "']").trigger("click");
+
+                    if (event.preventDefault) event.preventDefault();
+                    if (event.stopPropagation) event.stopPropagation();
+                },
+                "Attach File": function(event) {
+                    $(this).dialog("close");
+
+                    // Trigger the attach file dialog
+                    $("#attachFile").trigger("click");
+                    // Add the new doc click event
+                    $(".ui-dialog-buttonpane button:contains('OK')").click(function() {
+                        var file = editor.getLastFile();
+                        editor.addPipe(port, file.outputEnds[0]);
+                    });
+
+                    if (event.preventDefault) event.preventDefault();
+                    if (event.stopPropagation) event.stopPropagation();
+                }
+            };
+        }
+
+        var dialog = editor.showDialog("Choose Action", "Choose an action for this input parameter below.", buttons);
+
+        // Hack to make the dialog look as requested
+        $(dialog).dialog({
+            width: "230px",
+            height: "100px",
+            position: "center"
+        });
+        $(dialog).parent().find(".ui-dialog-buttonpane").css("border-width", "0 0 0 0");
+        $(dialog).hide();
+    };
+    
+    this.outputClick = function(port) {
+        // File outputs cannot be changed
+        if (port.module.isFile()) return;
+
+        // Master outputs should have different functionality
+        if (port.isMaster()) return;
+
+        var buttons = {
+            "OK": function(event) {
+                // Get selected output
+                var selected = $("#dialogText").val();
+                var oldSelection = port.pointer;
+                var oldInputs = [];
+                for (var i = 0; i < port.pipes.length; i++) {
+                    var pipe = port.pipes[i];
+                    oldInputs.push(pipe.inputPort);
+                }
+
+                // Close the dialog
+                $(this).dialog("close");
+
+                // Delete old selection if new
+                if (oldSelection !== selected) {
+                    for (var i = 0; i < oldInputs.length; i++) {
+                        var input = oldInputs[i];
+                        input.removePipes();
+                    }
+                } // Otherwise, do nothing
+                else { return; }
+
+                // Check if that selection already exists
+                var exists = null;
+                for (var i = 0; i < port.module.outputEnds.length; i++) {
+                    var outputEnd = port.module.outputEnds[i];
+                    if (outputEnd.pointer === selected) {
+                        exists = outputEnd;
+                    }
+                }
+
+                // If so, add to existing selection
+                if (exists !== null) {
+                    for (var i = 0; i < oldInputs.length; i++) {
+                        var input = oldInputs[i];
+                        editor.loading = true;
+                        editor.addPipe(input, exists);
+                        editor.loading = false;
+                        input.module.checkForWarnings();
+                    }
+                }
+                // Otherwise, add new selection
+                else {
+                    var output = port.module.addOutput(selected);
+                    for (var i = 0; i < oldInputs.length; i++) {
+                        var input = oldInputs[i];
+                        editor.loading = true;
+                        editor.addPipe(input, output);
+                        editor.loading = false;
+                        input.module.checkForWarnings();
+                    }
+                }
+
+                if (event.preventDefault) event.preventDefault();
+                if (event.stopPropagation) event.stopPropagation();
+            },
+            "Cancel": function(event) {
+                $(this).dialog("close");
+                if (event.preventDefault) event.preventDefault();
+                if (event.stopPropagation) event.stopPropagation();
+            }};
+
+        var dialogDiv = document.createElement("div");
+        $(dialogDiv).text("Choose a new output selection below");
+        $(dialogDiv).append(document.createElement("br"));
+
+        var dialogText = document.createElement("input");
+        dialogText.setAttribute("id", "dialogText");
+        dialogText.setAttribute("type", "text");
+        $(dialogDiv).append(dialogText);
+
+        var dialogSelect = document.createElement("select");
+        dialogSelect.setAttribute("id", "dialogSelect");
+        $(dialogDiv).append(dialogSelect);
+
+        var dropdownList = [];
+        var outputs = port.module.outputs;
+        $(outputs).each(function(i) {
+            dropdownList.push(outputs[i]);
+        });
+        dropdownList.push("1st Output");
+        dropdownList.push("2nd Output");
+        dropdownList.push("3rd Output");
+        dropdownList.push("4th Output");
+        dropdownList.push("Scatter Each Output");
+        dropdownList.push("File List of All Outputs");
+        dialogText.setAttribute("value", port.pointer);
+
+        for (var i = 0; i < dropdownList.length; i++) {
+            var output = dropdownList[i];
+            var outputOption = document.createElement("option");
+            outputOption.setAttribute("class", "outputOption");
+            if (output == port.pointer) {
+                outputOption.setAttribute("selected", "true");
+            }
+            if (library.isODF(output)) {
+                output += " (odf)";
+            }
+            outputOption.innerHTML = output;
+            dialogSelect.appendChild(outputOption);
+        }
+
+        // Add Remove All Connections button
+        $(dialogDiv).append(document.createElement("br"));
+        var removeAllButton = document.createElement("button");
+        $(removeAllButton).text("Remove All Connections");
+        $(removeAllButton).button();
+        $(dialogDiv).append(removeAllButton);
+        $(removeAllButton).click(function(event) {
+            var dialog = $(this).parent().parent();
+            $(dialog).dialog("close");
+
+            port.removePipes();
+
+            if (event.preventDefault) event.preventDefault();
+            if (event.stopPropagation) event.stopPropagation();
+        });
+
+        editor.showDialog("Change Selection", dialogDiv, buttons);
+
+        // Create the combobox widget
+        $("#dialogText").combobox($("#dialogSelect"));
     };
 
     this.updateIcon = function() {
