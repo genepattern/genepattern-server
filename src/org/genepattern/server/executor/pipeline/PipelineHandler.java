@@ -697,9 +697,23 @@ public class PipelineHandler {
         //for each step, if it has a batch input parameter, expand into a bunch of child steps
         Map<ParameterInfo,List<String>> scatterParamMap = new HashMap<ParameterInfo, List<String>>();
         for(ParameterInfo p : params) {
-            List<String> scatterParamValues = getScatterParamValues(p);
-            if (scatterParamValues != null && scatterParamValues.size() > 0) {
-                scatterParamMap.put(p, scatterParamValues);
+            boolean doScatter=false;
+            doScatter=p.getValue().contains("?scatter"); //Note: must be first parameter in query string
+            if (doScatter) {
+                List<String> scatterParamValues = getScatterParamValues(p);
+                if (scatterParamValues != null && scatterParamValues.size() > 0) {
+                    scatterParamMap.put(p, scatterParamValues);
+                }
+                else { 
+                    //special-case, if it's a scatter-param, and failOnEmpty is set, throw an error if no files match the selection rule
+                    boolean isFailOnEmpty = isFailOnEmpty(p);
+                    if (isFailOnEmpty) {
+                        String errorMessage="No matching output files for scatter job, "+
+                                "jobId="+pipelineJobInfo.getJobNumber()+", "+pipelineJobInfo.getTaskName()+" "+
+                                p.getName()+"="+p.getValue();
+                        throw new JobSubmissionException(errorMessage);
+                    }
+                } 
             }
         }
         
@@ -716,17 +730,11 @@ public class PipelineHandler {
         // look for pipelines with a scatter-param
         ParameterInfo[] params = jobInfo.getParameterInfoArray();
         for(ParameterInfo param : params) {
-            if (isScatterParam(param)) {
+            if (isScatterParam_beforeStartPipeline(param)) {
                 return true;
             }
         }
         
-        //TODO: remove this special-case, which is required only for prototype Cufflinks pipeline
-        //    instead, add a flag directly to the pipeline manifest (see PipelineModel.java)
-        //    in which case, isScatterParam will return true for any scatter input parameter
-        if (jobInfo.getTaskName().toLowerCase().startsWith("scatter")) {
-            return true;
-        }
         return false;
     }
 
@@ -757,15 +765,43 @@ public class PipelineHandler {
      * rule: a parameter is a scatter-input-parameter if the value of the INHERIT_FILENAME starts with '&scatter'.
      * rule: [not yet implemented] a parameter is a scatter-input parameter if the value of the IS_SCATTER_PARAM is true
      * 
+     * Warning: because the Pipeline Engine modifies the ParameterInfo attributes at runtime, this method will incorrectly
+     *     return false after the initial scatter job has been started.
+     * 
      * @param param
      * @return
      */
-    private static boolean isScatterParam(final ParameterInfo param) {
+    private static boolean isScatterParam_beforeStartPipeline(final ParameterInfo param) {
         HashMap attributes = param.getAttributes();
         final String taskStr = (String) attributes.get(PipelineModel.INHERIT_TASKNAME);
         final String fileStr = (String) attributes.get(PipelineModel.INHERIT_FILENAME);
         
         if (taskStr != null && fileStr != null && fileStr.startsWith("?scatter")) {
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Determine if this scatter input parameter should cause the pipeline to fail
+     * if there are no matching input parameters.
+     * (failOnEmpty)
+     * @param param
+     * @return
+     */
+    private static boolean isFailOnEmpty(final ParameterInfo param) {
+        if (param==null) {
+            return false;
+        }
+        if (param.getValue()==null) {
+            return false;
+        }
+        int idx=param.getValue().lastIndexOf("&failOnEmpty");
+        if (idx>=0) {
+            return true;
+        }
+        idx=param.getValue().lastIndexOf("?failOnEmpty");
+        if (idx>=0) {
             return true;
         }
         return false;
@@ -894,8 +930,15 @@ public class PipelineHandler {
         //parse the query string, for optional filter pattern
         FileFilter fileFilter = null;
         if (queryString != null && queryString.startsWith("?scatter")) {
-            if (queryString.startsWith("?scatter&filter=")) {
-                String filter = queryString.substring( "?scatter&filter=".length() );
+            //get the optional filter param
+            int idx0=queryString.indexOf("filter=");
+            if (idx0>=0) {
+                idx0+="filter=".length();
+                int idx1=queryString.indexOf("&", idx0);
+                if (idx1<idx0) {
+                    idx1=queryString.length();
+                }
+                String filter=queryString.substring(idx0, idx1);
                 fileFilter = createFilterFromPattern(filter);
             }
         }
@@ -996,6 +1039,7 @@ public class PipelineHandler {
 
         //don't create a scatter jobs if there are no matching input parameters
         if (jobCount <= 0) {
+            // 
             log.warn("No batch jobs to submit, for pipeline jobId="+pipelineJobInfo.getJobNumber()+", task="+pipelineJobInfo.getTaskName());
             return Collections.emptyList();
         }
