@@ -27,7 +27,6 @@
     </script>
   </ui:define>
     <ui:define name="headText">
-      <script type="text/javascript" src="#{facesContext.externalContext.requestContextPath}/js/suite.js"/>
       <script type="text/javascript" src="#{facesContext.externalContext.requestContextPath}/js/collapsiblePanel.js"/>
     </ui:define>
 
@@ -86,7 +85,8 @@
             			<tr>
             				<td><t:outputText value="#{f}"/></td>
             				<td>
-            					<h:commandLink actionListener="#{manageSuiteBean.deleteSupportFile}" onclick="if (!confirmDeleteSupportFile()) return false">
+            					<h:commandLink actionListener="#{manageSuiteBean.deleteSupportFile}" 
+										onclick="if (!confirm('Are you sure you want to delete this support file?')) return false">
                                		<t:outputText value="delete"/>
                                		<f:param name="supportFileKey" value="#{f}"/>
                                	</h:commandLink>
