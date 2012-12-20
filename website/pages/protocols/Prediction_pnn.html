@@ -1,208 +1,236 @@
+<!--
+  ~ Copyright 2012 The Broad Institute, Inc.
+  ~ SOFTWARE COPYRIGHT NOTICE
+  ~ This software and its documentation are the copyright of the Broad Institute, Inc. All rights are reserved.
+  ~
+  ~ This software is supplied without any warranty or guaranteed support whatsoever. The Broad Institute is not responsible for its use, misuse, or functionality.
+  -->
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
-<head>
-<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1" />
-<META HTTP-EQUIV="CACHE-CONTROL" CONTENT="NO-CACHE"/>
-<title>PNN Class Prediction</title>
-	<link href="../../css/protocolsWindow.css" rel="stylesheet" type="text/css" />
-    <script type="text/javascript" src="../../js/protocol.js"></script>
-</head>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1" />
+        <META HTTP-EQUIV="CACHE-CONTROL" CONTENT="NO-CACHE" />
+        <title>PNN Class Prediction</title>
+        <link href="../../css/protocolsWindow.css" rel="stylesheet" type="text/css" />
+        <script type="text/javascript" src="../../js/protocol.js"></script>
+    </head>
 
-<body>
+    <body>
 
-<h1>PNN Class Prediction</h1>
-<table width="100%" border="0" cellpadding="0" cellspacing="0">
-  <tr>
-    <td align="left">
-      <a href="protocols.html">protocols</a>
-    </td>
-  </tr>
-</table>
+        <h1>PNN Class Prediction</h1>
+        <table width="100%" border="0" cellpadding="0" cellspacing="0">
+            <tr>
+                <td align="left">
+                    <a href="protocols.html">protocols</a>
+                </td>
+            </tr>
+        </table>
 
-<p>
-To build and test classifiers using the Probabilistic Neural Network (PNN) class prediction method:</p>
-<ul>
-<li>First use the PNNXValidationOptimization module to determine the best parameter settings for the PNN class prediction method. 
-<li>Then use the PNN module to build PNN classifiers, test previously generated PNN classifiers, or classify unknown samples using previously generated PNN classifiers.
-</ul>
-<div class="steps">
-<h2>Before you begin</h2>
+        <p>
+            To build and test classifiers using the Probabilistic Neural Network (PNN) class prediction method:</p>
+        <ul>
+            <li>First use the PNNXValidationOptimization module to determine the best parameter settings for the PNN class prediction method.
+            <li>Then use the PNN module to build PNN classifiers, test previously generated PNN classifiers, or classify unknown samples using previously generated PNN classifiers.
+        </ul>
+        <div class="steps">
+            <h2>Before you begin</h2>
 
-<p>Generally, you use one data set to train the classifier and the other to test it. Each gene expression data set consists of two files:</p>
-<ul>
-  <li><a href="GctResFiles.html">GCT or RES file</a> that contains gene expression data. 
-  <br />
-  Example file (training data): <a href="ftp://ftp.broadinstitute.org/pub/genepattern/datasets/all_aml/all_aml_train.gct">all_aml_train.gct</a>.
-  <br />
-  Example file (test data): <a href="ftp://ftp.broadinstitute.org/pub/genepattern/datasets/all_aml/all_aml_test.gct">all_aml_test.gct</a>.
- </li>
-  <li><a href="ClsFiles.html">CLS file</a> that identifies the class of each sample in the gene expression data. 
-  <br />
-  Example file (training data): <a href="ftp://ftp.broadinstitute.org/pub/genepattern/datasets/all_aml/all_aml_train.cls">all_aml_train.cls</a>.
-  <br />
-  Example file (test data): <a href="ftp://ftp.broadinstitute.org/pub/genepattern/datasets/all_aml/all_aml_test.cls">all_aml_test.cls</a>.
-  </li>
-</ul>
-<table width="100%" border="0" cellpadding="0" cellspacing="0">
-  <tr>
-    <td align="right">learn more:<br>
-    <a href="http://www.broadinstitute.org/cancer/software/genepattern/tutorial/gp_fileformats.html#gct">file formats</a>
-    </td>
-  </tr>
-</table>
+            <p>Generally, you use one data set to train the classifier and the other to test it. Each gene expression data set consists of two files:</p>
+            <ul>
+                <li><a href="GctResFiles.html">GCT or RES file</a> that contains gene expression data.
+                    <br />
+                    Example file (training data): <a href="ftp://ftp.broadinstitute.org/pub/genepattern/datasets/all_aml/all_aml_train.gct">all_aml_train.gct</a>.
+                    <br />
+                    Example file (test data): <a href="ftp://ftp.broadinstitute.org/pub/genepattern/datasets/all_aml/all_aml_test.gct">all_aml_test.gct</a>.
+                </li>
+                <li><a href="ClsFiles.html">CLS file</a> that identifies the class of each sample in the gene expression data.
+                    <br />
+                    Example file (training data): <a href="ftp://ftp.broadinstitute.org/pub/genepattern/datasets/all_aml/all_aml_train.cls">all_aml_train.cls</a>.
+                    <br />
+                    Example file (test data): <a href="ftp://ftp.broadinstitute.org/pub/genepattern/datasets/all_aml/all_aml_test.cls">all_aml_test.cls</a>.
+                </li>
+            </ul>
+            <table width="100%" border="0" cellpadding="0" cellspacing="0">
+                <tr>
+                    <td align="right">learn more:<br>
+                        <a href="http://www.broadinstitute.org/cancer/software/genepattern/tutorial/gp_fileformats.html#gct">file formats</a>
+                    </td>
+                </tr>
+            </table>
 
-</div>
-<div class="steps">
-  <h2>Step 1: PreprocessDataset</h2>
-  <p>Preprocess gene expression training data to remove platform noise and genes that have little variation. Note: If preprocessing the data removes relevant biological information, skip this step.</p>
-  <p>Do not preprocess the gene expression test data. The test data should contain all of the genes present in the training data. </p>
+        </div>
+        <div class="steps">
+            <h2>Step 1: PreprocessDataset</h2>
 
-  <div class="gpLinks">
-  <ul>
-    <li><a href="/gp/pages/index.jsf?lsid=PreprocessDataset" 
-           onclick="return openModuleWindow(this, event);"
-        >Open module</a> in the GenePattern window.</li>
-    <li><a href="/gp/pages/index.jsf?lsid=PreprocessDataset&input.filename=ftp://ftp.broadinstitute.org/pub/genepattern/datasets/all_aml/all_aml_train.gct" 
-           onclick="return openModuleWindow(this, event);"
-        >Open module with example training data</a>.</li>
-  </ul>
-  </div>
-      <h5>Considerations</h5>
-  <ul>
-      <li>PreprocessDataset can preprocess the data in one or more ways (in this order):
-  <ol>
-    <li>Set threshold and ceiling values. Any value lower/higer than the threshold/ceiling
-      value is reset to the threshold/ceiling value. </li>
-    <li>Convert each expression value to the log base 2 of the value. </li>
-    <li>Remove genes (rows) if a given number of its sample values are less than
-      a given threshold. </li>
-    <li>Remove genes (rows) that do not have a minimum fold change or expression
-      variation. </li>
-    <li>Discretize or normalize the data. </li>
-  </ol></li>
-<li>When using ratios to compare gene expression between samples, 
-      convert values to log base 2 of the value to
-      bring up- and down-regulated genes to the same scale. 
-      For example, ratios of 2 and .5 indicating two-fold changes for up- and
-      down-regulated expression, respectively, are converted to +1 and -1. </li>
-    <li>If you did not generate the expression data, 
-      check whether preprocessing steps have already been taken before 
-      running the PreprocessDataset module. </li>
-  </ul>
+            <p>Preprocess gene expression training data to remove platform noise and genes that have little variation. Note: If preprocessing the data removes relevant biological information, skip this step.</p>
 
-<table width="100%" border="0" cellpadding="0" cellspacing="0">
-  <tr>
-    <td align="right">learn more:<br>
-    <a href="/gp/getTaskDoc.jsp?name=PreprocessDataset">PreprocessDataset</a>
-     </td>
-  </tr>
-</table>
-</div>
+            <p>Do not preprocess the gene expression test data. The test data should contain all of the genes present in the training data. </p>
 
-<div class="steps">
-  <h2>Step 2: PNNXValidationOptimization</h2>
+            <div class="gpLinks">
+                <ul>
+                    <li><a href="/gp/pages/index.jsf?lsid=PreprocessDataset"
+                           onclick="return openModuleWindow(this, event);"
+                            >Open module</a> in the GenePattern window.
+                    </li>
+                    <li><a href="/gp/pages/index.jsf?lsid=PreprocessDataset&input.filename=ftp://ftp.broadinstitute.org/pub/genepattern/datasets/all_aml/all_aml_train.gct"
+                           onclick="return openModuleWindow(this, event);"
+                            >Open module with example training data</a>.
+                    </li>
+                </ul>
+            </div>
+            <h5>Considerations</h5>
+            <ul>
+                <li>PreprocessDataset can preprocess the data in one or more ways (in this order):
+                    <ol>
+                        <li>Set threshold and ceiling values. Any value lower/higer than the threshold/ceiling
+                            value is reset to the threshold/ceiling value.
+                        </li>
+                        <li>Convert each expression value to the log base 2 of the value.</li>
+                        <li>Remove genes (rows) if a given number of its sample values are less than
+                            a given threshold.
+                        </li>
+                        <li>Remove genes (rows) that do not have a minimum fold change or expression
+                            variation.
+                        </li>
+                        <li>Discretize or normalize the data.</li>
+                    </ol>
+                </li>
+                <li>When using ratios to compare gene expression between samples,
+                    convert values to log base 2 of the value to
+                    bring up- and down-regulated genes to the same scale.
+                    For example, ratios of 2 and .5 indicating two-fold changes for up- and
+                    down-regulated expression, respectively, are converted to +1 and -1.
+                </li>
+                <li>If you did not generate the expression data,
+                    check whether preprocessing steps have already been taken before
+                    running the PreprocessDataset module.
+                </li>
+            </ul>
 
-  <p>PNNXValidationOptimization runs PNN class prediction iteratively against a known data set. For each iteration, it leaves one sample out, builds the classifier using the remaining samples, and then tests the classifier on the sample left out. After testing various parameter settings, PNNXValidationOptimization creates an analysis result file (*.xvopt.odf) that contains 
-      the recommended parameter values. The result file is a binary (machine-readable) file that cannot be viewed, but can be used as input to the PNN module.</p>  
-      
-       <h5>Considerations  </h5>
-  <ul>
-    <li>Use the <i>num features</i> parameter to specify a range of values to
-      try. The module automatically selects the best parameter settings. You
-      do not need to run it multiple times. </li>
-    <li>To experiment with alternative parameter settings, use the
-      PNN module rather than the PNNXValidationOptimization module. </li>
-  </ul>
+            <table width="100%" border="0" cellpadding="0" cellspacing="0">
+                <tr>
+                    <td align="right">learn more:<br>
+                        <a href="/gp/getTaskDoc.jsp?name=PreprocessDataset">PreprocessDataset</a>
+                    </td>
+                </tr>
+            </table>
+        </div>
 
-  
-<table width="100%" border="0" cellpadding="0" cellspacing="0">
-  <tr>
-    <td align="right">learn more:<br>
-    <a href="http://www.broadinstitute.org/webservices/gpModuleRepository/download/prod/module/?file=/PNNXValidationOptimization/broad.mit.edu:cancer.software.genepattern.module.analysis/00058/0/PNNXValidationOptimization.pdf">PNNXValidationOptimization</a>
-<!--
-    <a href="/gp/getTaskDoc.jsp?name=PNNXValidationOptimization">PNNXValidationOptimization</a>
--->
-    </td>
-  </tr>
-</table>  
+        <div class="steps">
+            <h2>Step 2: PNNXValidationOptimization</h2>
 
-</div>
+            <p>PNNXValidationOptimization runs PNN class prediction iteratively against a known data set. For each iteration, it leaves one sample out, builds the classifier using the remaining samples, and then tests the classifier on the sample left out. After testing various parameter settings, PNNXValidationOptimization creates an analysis result file (*.xvopt.odf) that contains
+                the recommended parameter values. The result file is a binary (machine-readable) file that cannot be viewed, but can be used as input to the PNN module.</p>
 
-<div class="steps">
-  <h2>Step 3: PNN</h2>
-
-  <p>The PNN module builds and/or tests a classifer by running the PNN class prediction method:
-  </p>
-  <ul>
-    <li>To build a classifier, specify the training data set. The module
-      creates a classifier (*.model). </li>
-    <li>To test a previously built classifier, specify the classifier (*.model) and
-      the test data set. The module creates a
-      prediction results file (*.pred.odf) that assesses the accuracy of the predictor. </li>
-    <li>To build and test a classifier, specify both the training and test
-      data sets. The module creates a classifier and a prediction results file. </li>
-      </ul>
-
- <table width="100%" border="0" cellpadding="0" cellspacing="0">
-  <tr>
-    <td align="right">learn more:<br>
-    <a href="http://www.broadinstitute.org/webservices/gpModuleRepository/download/prod/module/?file=/PNN/broad.mit.edu:cancer.software.genepattern.module.analysis/00059/0/PNN.pdf">PNN</a>
-    <!-- 
-    <a href="/gp/getTaskDoc.jsp?name=PNN">PNN</a>
--->
-    </td>
-  </tr>
-</table>  
-
-</div>
-
-<div class="steps">
-  <h2>Step 4: View results</h2>
-    <p>To view the prediction results file (*.pred.odf), use the PredictionResultsViewer module.
-      For each sample, the viewer lists the actual class, predicted class, and prediction error rates.
-  </p>
-  <p>The classifier (*.model) is a binary (machine-readable) file. It cannot be viewed, but can be used as input to the PNN module.
-
-  <h5>Considerations</h5>
-  <ul>
-    <li>The PredictionResultsViewer provides an absolute error rate (incorrect
-      cases/total cases) and an ROC error rate (fraction of true positives
-      versus the fraction of false positives). Use the ROC error rate for comparing
-      results across data sets. </li>
-  </ul>
-
-<table width="100%" border="0" cellpadding="0" cellspacing="0">
-  <tr>
-    <td align="right">learn more:<br>
-    <a href="/gp/getTaskDoc.jsp?name=PredictionResultsViewer">PredictionResultsViewer</a>
-    </td>
-  </tr>
-</table> 
-  </div>
+            <h5>Considerations </h5>
+            <ul>
+                <li>Use the <i>num features</i> parameter to specify a range of values to
+                    try. The module automatically selects the best parameter settings. You
+                    do not need to run it multiple times.
+                </li>
+                <li>To experiment with alternative parameter settings, use the
+                    PNN module rather than the PNNXValidationOptimization module.
+                </li>
+            </ul>
 
 
-<div class="steps">
-  <h2>Step 5: Determine the class of an unknown sample</h2>
-  <p>To classify unknown samples using the PNN module:
-  <ul>
-  <li>Use the <i>saved model filename</i> parameter to specify a previously
-    generated classifier (*.model file).
-   <li>Use the <i>test filename</i> parameter to specify an expression data set
-    that contains the unknown samples.
-   <li>The <i>test class filename</i> is a required parameter that specifies the
-      class of each sample in the expression data set. For the unknown samples,
-      create a class file that assigns some class (for example, "unknown") to each
-      sample.</li>
-     </ul>
-    <p>The module uses the classifier to predict the class 
-    of each unknown sample and creates a prediction results file. Use the PredictionResultsViewer module to view the prediction results (*.pred.odf) file:
-    <ul>
-        <li>The viewer lists each sample with its actual and predicted class. </li>
-        <li>Ignore the actual class, which was unknown.</li>
-        <li>Ignore the error rates, which are evaluating the class predictor against "known" data.</li>
-  </ul>
+            <table width="100%" border="0" cellpadding="0" cellspacing="0">
+                <tr>
+                    <td align="right">learn more:<br>
+                        <a href="http://www.broadinstitute.org/webservices/gpModuleRepository/download/prod/module/?file=/PNNXValidationOptimization/broad.mit.edu:cancer.software.genepattern.module.analysis/00058/0/PNNXValidationOptimization.pdf">PNNXValidationOptimization</a>
+                        <!--
+                            <a href="/gp/getTaskDoc.jsp?name=PNNXValidationOptimization">PNNXValidationOptimization</a>
+                        -->
+                    </td>
+                </tr>
+            </table>
 
-  </div>
+        </div>
 
-</body>
+        <div class="steps">
+            <h2>Step 3: PNN</h2>
+
+            <p>The PNN module builds and/or tests a classifer by running the PNN class prediction method:
+            </p>
+            <ul>
+                <li>To build a classifier, specify the training data set. The module
+                    creates a classifier (*.model).
+                </li>
+                <li>To test a previously built classifier, specify the classifier (*.model) and
+                    the test data set. The module creates a
+                    prediction results file (*.pred.odf) that assesses the accuracy of the predictor.
+                </li>
+                <li>To build and test a classifier, specify both the training and test
+                    data sets. The module creates a classifier and a prediction results file.
+                </li>
+            </ul>
+
+            <table width="100%" border="0" cellpadding="0" cellspacing="0">
+                <tr>
+                    <td align="right">learn more:<br>
+                        <a href="http://www.broadinstitute.org/webservices/gpModuleRepository/download/prod/module/?file=/PNN/broad.mit.edu:cancer.software.genepattern.module.analysis/00059/0/PNN.pdf">PNN</a>
+                        <!--
+                            <a href="/gp/getTaskDoc.jsp?name=PNN">PNN</a>
+                        -->
+                    </td>
+                </tr>
+            </table>
+
+        </div>
+
+        <div class="steps">
+            <h2>Step 4: View results</h2>
+
+            <p>To view the prediction results file (*.pred.odf), use the PredictionResultsViewer module.
+                For each sample, the viewer lists the actual class, predicted class, and prediction error rates.
+            </p>
+
+            <p>The classifier (*.model) is a binary (machine-readable) file. It cannot be viewed, but can be used as input to the PNN module.
+
+            <h5>Considerations</h5>
+            <ul>
+                <li>The PredictionResultsViewer provides an absolute error rate (incorrect
+                    cases/total cases) and an ROC error rate (fraction of true positives
+                    versus the fraction of false positives). Use the ROC error rate for comparing
+                    results across data sets.
+                </li>
+            </ul>
+
+            <table width="100%" border="0" cellpadding="0" cellspacing="0">
+                <tr>
+                    <td align="right">learn more:<br>
+                        <a href="/gp/getTaskDoc.jsp?name=PredictionResultsViewer">PredictionResultsViewer</a>
+                    </td>
+                </tr>
+            </table>
+        </div>
+
+
+        <div class="steps">
+            <h2>Step 5: Determine the class of an unknown sample</h2>
+
+            <p>To classify unknown samples using the PNN module:
+            <ul>
+                <li>Use the <i>saved model filename</i> parameter to specify a previously
+                    generated classifier (*.model file).
+                <li>Use the <i>test filename</i> parameter to specify an expression data set
+                    that contains the unknown samples.
+                <li>The <i>test class filename</i> is a required parameter that specifies the
+                    class of each sample in the expression data set. For the unknown samples,
+                    create a class file that assigns some class (for example, "unknown") to each
+                    sample.
+                </li>
+            </ul>
+            <p>The module uses the classifier to predict the class
+                of each unknown sample and creates a prediction results file. Use the PredictionResultsViewer module to view the prediction results (*.pred.odf) file:
+            <ul>
+                <li>The viewer lists each sample with its actual and predicted class.</li>
+                <li>Ignore the actual class, which was unknown.</li>
+                <li>Ignore the error rates, which are evaluating the class predictor against "known" data.</li>
+            </ul>
+
+        </div>
+
+    </body>
 </html>

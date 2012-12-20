@@ -1,32 +1,42 @@
+<!--
+  ~ Copyright 2012 The Broad Institute, Inc.
+  ~ SOFTWARE COPYRIGHT NOTICE
+  ~ This software and its documentation are the copyright of the Broad Institute, Inc. All rights are reserved.
+  ~
+  ~ This software is supplied without any warranty or guaranteed support whatsoever. The Broad Institute is not responsible for its use, misuse, or functionality.
+  -->
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
-<head>
-<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1" />
-<META HTTP-EQUIV="CACHE-CONTROL" CONTENT="NO-CACHE"/>
-<title>CLS Files</title>
-	<link href="../../css/protocols.css" rel="stylesheet" type="text/css" />
-	<link href="../../css/protocolsWindow.css" rel="stylesheet" type="text/css" />
-    <script type="text/javascript" src="../../js/protocol.js"></script>
-</head>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1" />
+        <META HTTP-EQUIV="CACHE-CONTROL" CONTENT="NO-CACHE" />
+        <title>CLS Files</title>
+        <link href="../../css/protocols.css" rel="stylesheet" type="text/css" />
+        <link href="../../css/protocolsWindow.css" rel="stylesheet" type="text/css" />
+        <script type="text/javascript" src="../../js/protocol.js"></script>
+    </head>
 
-<body>
-<h1>CLS Files</h1>
+    <body>
+        <h1>CLS Files</h1>
 
-<p>
-A CLS file is a spaces-delimited text file that defines the class of each sample in the expression data file: </p>
+        <p>
+            A CLS file is a spaces-delimited text file that defines the class of each sample in the expression data file: </p>
 
-<ul>
-<li>The first line of the CLS file contains three values: the number of samples, the number of classes, 
-and the version number of file format (always 1). </li>
-<li>The second line begins with a pound sign (#) followed by a name for each class. </li> 
-<li>The last line contains a class label for each sample. The number and order of the labels 
-must match the number and order of the samples in the expression data set. 
-The class labels are sequential numbers (0, 1, ...) automatically 
-assigned to each class listed in the second line. </li>
-</ul>
+        <ul>
+            <li>The first line of the CLS file contains three values: the number of samples, the number of classes,
+                and the version number of file format (always 1).
+            </li>
+            <li>The second line begins with a pound sign (#) followed by a name for each class.</li>
+            <li>The last line contains a class label for each sample. The number and order of the labels
+                must match the number and order of the samples in the expression data set.
+                The class labels are sequential numbers (0, 1, ...) automatically
+                assigned to each class listed in the second line.
+            </li>
+        </ul>
 
-<p>Use any text editor to create the CLS file. See <a href="http://www.broadinstitute.org/cancer/software/genepattern/tutorial/gp_fileformats.html">File Formats</a> 
-for complete descriptions of all GenePattern file formats. </p>
+        <p>Use any text editor to create the CLS file. See <a href="http://www.broadinstitute.org/cancer/software/genepattern/tutorial/gp_fileformats.html">File Formats</a>
+            for complete descriptions of all GenePattern file formats. </p>
 
-</body>
+    </body>
 </html>

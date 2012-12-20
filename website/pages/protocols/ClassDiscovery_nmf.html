@@ -1,186 +1,213 @@
+<!--
+  ~ Copyright 2012 The Broad Institute, Inc.
+  ~ SOFTWARE COPYRIGHT NOTICE
+  ~ This software and its documentation are the copyright of the Broad Institute, Inc. All rights are reserved.
+  ~
+  ~ This software is supplied without any warranty or guaranteed support whatsoever. The Broad Institute is not responsible for its use, misuse, or functionality.
+  -->
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
-<head>
-<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1" />
-<META HTTP-EQUIV="CACHE-CONTROL" CONTENT="NO-CACHE"/>
-<title>NMF Clustering</title>
-	<link href="../../css/protocolsWindow.css" rel="stylesheet" type="text/css" />
-    <script type="text/javascript" src="../../js/protocol.js"></script>
-</head>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1" />
+        <META HTTP-EQUIV="CACHE-CONTROL" CONTENT="NO-CACHE" />
+        <title>NMF Clustering</title>
+        <link href="../../css/protocolsWindow.css" rel="stylesheet" type="text/css" />
+        <script type="text/javascript" src="../../js/protocol.js"></script>
+    </head>
 
-<body>
+    <body>
 
-<h1>NMF Clustering</h1>
-<table width="100%" border="0" cellpadding="0" cellspacing="0">
-  <tr>
-    <td align="left">
-      <a href="protocols.html">protocols</a>
-    </td>
-  </tr>
-</table>
+        <h1>NMF Clustering</h1>
+        <table width="100%" border="0" cellpadding="0" cellspacing="0">
+            <tr>
+                <td align="left">
+                    <a href="protocols.html">protocols</a>
+                </td>
+            </tr>
+        </table>
 
-<p>
-Non-negative matrix factorization (NMF) finds a small number of metagenes, each defined
-      as a positive linear combination of the genes in the expression data. It then 
-      groups samples into clusters based on the gene expression pattern of these metagenes.  </p>
-      <div class="steps">
-<h2>Before you begin</h2>
-<p>Gene expression data must be in a <a href="GctResFiles.html">GCT or RES file</a>. 
-<br />
-Example file: <a href="ftp://ftp.broadinstitute.org/pub/genepattern/datasets/all_aml/all_aml_test.gct">all_aml_test.gct</a>.</p>
+        <p>
+            Non-negative matrix factorization (NMF) finds a small number of metagenes, each defined
+            as a positive linear combination of the genes in the expression data. It then
+            groups samples into clusters based on the gene expression pattern of these metagenes. </p>
 
-<p>The gene expression data must contain only positive values. If your data contains negative values, see the
-      <a href="/gp/getTaskDoc.jsp?name=NMFConsensus">NMFConsensus documentation</a> for instructions.</p>
-      <table width="100%" border="0" cellpadding="0" cellspacing="0">
-  <tr>
-    <td align="right">learn more:<br />
-    <a href="http://www.broadinstitute.org/cancer/software/genepattern/tutorial/gp_fileformats.html#gct">file formats</a>
-    </td>
-  </tr>
-</table>
+        <div class="steps">
+            <h2>Before you begin</h2>
 
-</div>
-<div class="steps">
-  <h2>Step 1: PreprocessDataset</h2>
-  <p>Preprocess gene expression data 
-      to remove platform noise and genes that have little variation.
-Although researchers generally preprocess data before clustering if doing so removes relevant biological information, skip this step. </p>
-  <div class="gpLinks">
-  <ul>
-    <li><a href="/gp/pages/index.jsf?lsid=PreprocessDataset" 
-           onclick="return openModuleWindow(this, event);"
-        >Open module</a> in the GenePattern window.</li>
-    <li><a href="/gp/pages/index.jsf?lsid=PreprocessDataset&input.filename=ftp://ftp.broadinstitute.org/pub/genepattern/datasets/all_aml/all_aml_test.gct" 
-           onclick="return openModuleWindow(this, event);"
-        >Open module with example data</a> in the GenePattern window.</li>
-  </ul>
-  </div>
-    <h5>Considerations</h5>
-  <ul>
-    <li>PreprocessDataset can preprocess the data in one or more ways (in this order):
-  <ol>
-    <li>Set threshold and ceiling values. Any value lower/higer than the threshold/ceiling
-      value is reset to the threshold/ceiling value. </li>
-    <li>Convert each expression value to the log base 2 of the value. </li>
-    <li>Remove genes (rows) if a given number of its sample values are less than
-      a given threshold. </li>
-    <li>Remove genes (rows) that do not have a minimum fold change or expression
-      variation. </li>
-    <li>Discretize or normalize the data. </li>
-  </ol></li>
-    <li>When using ratios to compare gene expression between samples, 
-      convert values to log base 2 of the value to
-      bring up- and down-regulated genes to the same scale. 
-      For example, ratios of 2 and .5 indicating two-fold changes for up- and
-      down-regulated expression, respectively, are converted to +1 and -1. </li>
-    <li>If you did not generate the expression data, 
-      check whether preprocessing steps have already been taken before 
-      running the PreprocessDataset module. </li>
-  </ul>
+            <p>Gene expression data must be in a <a href="GctResFiles.html">GCT or RES file</a>.
+                <br />
+                Example file: <a href="ftp://ftp.broadinstitute.org/pub/genepattern/datasets/all_aml/all_aml_test.gct">all_aml_test.gct</a>.</p>
 
-<table width="100%" border="0" cellpadding="0" cellspacing="0">
-  <tr>
-    <td align="right">learn more:<br />
-    <a href="/gp/getTaskDoc.jsp?name=PreprocessDataset">PreprocessDataset</a>
-    </td>
-  </tr>
-</table>
-</div>
+            <p>The gene expression data must contain only positive values. If your data contains negative values, see the
+                <a href="/gp/getTaskDoc.jsp?name=NMFConsensus">NMFConsensus documentation</a> for instructions.</p>
+            <table width="100%" border="0" cellpadding="0" cellspacing="0">
+                <tr>
+                    <td align="right">learn more:<br />
+                        <a href="http://www.broadinstitute.org/cancer/software/genepattern/tutorial/gp_fileformats.html#gct">file formats</a>
+                    </td>
+                </tr>
+            </table>
+
+        </div>
+        <div class="steps">
+            <h2>Step 1: PreprocessDataset</h2>
+
+            <p>Preprocess gene expression data
+                to remove platform noise and genes that have little variation.
+                Although researchers generally preprocess data before clustering if doing so removes relevant biological information, skip this step. </p>
+
+            <div class="gpLinks">
+                <ul>
+                    <li><a href="/gp/pages/index.jsf?lsid=PreprocessDataset"
+                           onclick="return openModuleWindow(this, event);"
+                            >Open module</a> in the GenePattern window.
+                    </li>
+                    <li><a href="/gp/pages/index.jsf?lsid=PreprocessDataset&input.filename=ftp://ftp.broadinstitute.org/pub/genepattern/datasets/all_aml/all_aml_test.gct"
+                           onclick="return openModuleWindow(this, event);"
+                            >Open module with example data</a> in the GenePattern window.
+                    </li>
+                </ul>
+            </div>
+            <h5>Considerations</h5>
+            <ul>
+                <li>PreprocessDataset can preprocess the data in one or more ways (in this order):
+                    <ol>
+                        <li>Set threshold and ceiling values. Any value lower/higer than the threshold/ceiling
+                            value is reset to the threshold/ceiling value.
+                        </li>
+                        <li>Convert each expression value to the log base 2 of the value.</li>
+                        <li>Remove genes (rows) if a given number of its sample values are less than
+                            a given threshold.
+                        </li>
+                        <li>Remove genes (rows) that do not have a minimum fold change or expression
+                            variation.
+                        </li>
+                        <li>Discretize or normalize the data.</li>
+                    </ol>
+                </li>
+                <li>When using ratios to compare gene expression between samples,
+                    convert values to log base 2 of the value to
+                    bring up- and down-regulated genes to the same scale.
+                    For example, ratios of 2 and .5 indicating two-fold changes for up- and
+                    down-regulated expression, respectively, are converted to +1 and -1.
+                </li>
+                <li>If you did not generate the expression data,
+                    check whether preprocessing steps have already been taken before
+                    running the PreprocessDataset module.
+                </li>
+            </ul>
+
+            <table width="100%" border="0" cellpadding="0" cellspacing="0">
+                <tr>
+                    <td align="right">learn more:<br />
+                        <a href="/gp/getTaskDoc.jsp?name=PreprocessDataset">PreprocessDataset</a>
+                    </td>
+                </tr>
+            </table>
+        </div>
 
 
-<div class="steps">
-  <h2>Step 2: NMFConsensus</h2>
+        <div class="steps">
+            <h2>Step 2: NMFConsensus</h2>
 
-  <p>NMFConsensus uses the basic principle of dimensionality reduction via non-negative matrix factorization (NMF) to 
-   find a small number of metagenes, each defined
-      as a positive linear combination of the genes in the expression data. It then 
-      groups samples into clusters based on the gene expression pattern of the samples 
-      as positive linear combinations of these metagenes.
-      NMFConsensus repeatedly runs the clustering algorithm against perturbations of the 
-      gene expression data and creates a consensus matrix to assesses the stability of the 
-      resulting clusters.</p>
-      
-      <p><b>3-4 hours:</b> Running this example on the GenePattern public server takes several hours. The results are provided here for your convenience: 
-      <a href="ftp://ftp.broadinstitute.org/pub/genepattern/datasets/protocols/NMFConsensus_Results.zip">NMFConsensus_Results.zip</a>.
-  
-  <div class="gpLinks">
-  <ul>
-  <li><a href="/gp/pages/index.jsf?lsid=NMFConsensus" 
-         onclick="return openModuleWindow(this, event);"
-    >Open NMFConsensus</a></li>
-  <li><a href="/gp/pages/index.jsf?lsid=NMFConsensus&dataset.filename=ftp://ftp.broadinstitute.org/pub/genepattern/datasets/protocols/all_aml_test.preprocessed.gct" 
-         onclick="return openModuleWindow(this, event);"
-    >Open NMFConsensus with example data</a></li>
-  </ul>
-  </div>
-  <h5>Considerations</h5>
-  <ul>
-    <li>Non-negative matrix factorization (NMF) requires positive gene expression
-      values. To run NMF on data that contains negative values (Kim &amp; Tidor,
-      2003):
-      <ol>
-        <li>Create one dataset with all negative numbers zeroed. </li>
-        <li>Create another dataset with all positive numbers zeroed and the signs
-          of all negative numbers removed. </li>
-        <li>Merge the two (eg. by concatenation), resulting in a dataset twice
-          as large as the original, but with positive values only and zeros,
-          hence appropriate for NMF. </li>
-      </ol>
-      <p>To do this in MATLAB, execute the following statement:    <br/>
-        anew=[max(a,0);-min(a,0)];<br/>
-        where a is the original data.
-      </p>
-    </li>
-    <li>NMFConsensus groups samples into <i>k</i> classes based on <i>k</i> metagenes. 
-      Use the <i>k initial</i> and <i>k final</i> parameters to 
-      specify the desired number of classes (by default, 2-5). NMFConsensus builds
-      a separate consensus matrix for each set of classes. </li>
-    <li> This module executes an R version of NMFConsensus, which is slow and
-      is intended for exploratory use. A faster MATLAB version of NMFConsensus
-      is available on the <a href="http://www.broadinstitute.org/cgi-bin/cancer/publications/pub_paper.cgi?mode=view&paper_id=89">Broad Institute web site</a>. </li>
-  </ul>
+            <p>NMFConsensus uses the basic principle of dimensionality reduction via non-negative matrix factorization (NMF) to
+                find a small number of metagenes, each defined
+                as a positive linear combination of the genes in the expression data. It then
+                groups samples into clusters based on the gene expression pattern of the samples
+                as positive linear combinations of these metagenes.
+                NMFConsensus repeatedly runs the clustering algorithm against perturbations of the
+                gene expression data and creates a consensus matrix to assesses the stability of the
+                resulting clusters.</p>
 
-<table width="100%" border="0" cellpadding="0" cellspacing="0">
-  <tr>
-    <td align="right">learn more:<br />
-    <a href="/gp/getTaskDoc.jsp?name=NMFConsensus">NMFConsensus</a>
-    </td>
-  </tr>
-</table>  
-</div>
+            <p><b>3-4 hours:</b> Running this example on the GenePattern public server takes several hours. The results are provided here for your convenience:
+                <a href="ftp://ftp.broadinstitute.org/pub/genepattern/datasets/protocols/NMFConsensus_Results.zip">NMFConsensus_Results.zip</a>.
 
-<div class="steps">
-  <h2>Step 3: View results</h2>
-  <p>Plots of the results are written to .pdf files. 
-     Cluster membership results are written to GCT files. 
-     View the result files by clicking on them. 
-     <ul>
-     <li>For an overview of the results, click *.consensus.all.k.plot.pdf. 
-     A consensus matrix where all values are dark blue (0) or dark red (1) corresponds to perfect consensus. For example: <a href="ftp://ftp.broadinstitute.org/pub/genepattern/datasets/protocols/all_aml_test.preprocessed.consensus.all.k.plot.pdf">all_aml_test.preprocessed.consensus.all.k.plot.pdf</a>.</li>
-     
-     <li>For a complete listing of cluster membership, click *.membership.gct.</li>
-     </ul>
-  </p>
-  
-    <h5>Considerations</h5>
-  <ul>
-    <li>For more about the plots and their interpretation, see Brunet et al., 2004. </li>
-  </ul>
+            <div class="gpLinks">
+                <ul>
+                    <li><a href="/gp/pages/index.jsf?lsid=NMFConsensus"
+                           onclick="return openModuleWindow(this, event);"
+                            >Open NMFConsensus</a></li>
+                    <li><a href="/gp/pages/index.jsf?lsid=NMFConsensus&dataset.filename=ftp://ftp.broadinstitute.org/pub/genepattern/datasets/protocols/all_aml_test.preprocessed.gct"
+                           onclick="return openModuleWindow(this, event);"
+                            >Open NMFConsensus with example data</a></li>
+                </ul>
+            </div>
+            <h5>Considerations</h5>
+            <ul>
+                <li>Non-negative matrix factorization (NMF) requires positive gene expression
+                    values. To run NMF on data that contains negative values (Kim &amp; Tidor,
+                    2003):
+                    <ol>
+                        <li>Create one dataset with all negative numbers zeroed.</li>
+                        <li>Create another dataset with all positive numbers zeroed and the signs
+                            of all negative numbers removed.
+                        </li>
+                        <li>Merge the two (eg. by concatenation), resulting in a dataset twice
+                            as large as the original, but with positive values only and zeros,
+                            hence appropriate for NMF.
+                        </li>
+                    </ol>
+                    <p>To do this in MATLAB, execute the following statement: <br />
+                        anew=[max(a,0);-min(a,0)];<br />
+                        where a is the original data.
+                    </p>
+                </li>
+                <li>NMFConsensus groups samples into <i>k</i> classes based on <i>k</i> metagenes.
+                    Use the <i>k initial</i> and <i>k final</i> parameters to
+                    specify the desired number of classes (by default, 2-5). NMFConsensus builds
+                    a separate consensus matrix for each set of classes.
+                </li>
+                <li> This module executes an R version of NMFConsensus, which is slow and
+                    is intended for exploratory use. A faster MATLAB version of NMFConsensus
+                    is available on the <a href="http://www.broadinstitute.org/cgi-bin/cancer/publications/pub_paper.cgi?mode=view&paper_id=89">Broad Institute web site</a>.
+                </li>
+            </ul>
 
-      
-<table width="100%" border="0" cellpadding="0" cellspacing="0">
-  <tr>
-    <td align="right">learn more:<br />
-    <a href="/gp/getTaskDoc.jsp?name=NMFConsensus">NMFConsensus</a>
-    </td>
-  </tr>
-</table>  
-  
-  </div>
+            <table width="100%" border="0" cellpadding="0" cellspacing="0">
+                <tr>
+                    <td align="right">learn more:<br />
+                        <a href="/gp/getTaskDoc.jsp?name=NMFConsensus">NMFConsensus</a>
+                    </td>
+                </tr>
+            </table>
+        </div>
 
-<h2>References</h2>
-<p>Brunet, J-P., Tamayo, P., Golub, T.R., and Mesirov, J.P. 2004. Metagenes and molecular pattern discovery using
-matrix factorization. <i>Proc. Natl. Acad. Sci. USA</i> 101(12):4164Â–4169.</p>
+        <div class="steps">
+            <h2>Step 3: View results</h2>
 
-</body>
+            <p>Plots of the results are written to .pdf files.
+                Cluster membership results are written to GCT files.
+                View the result files by clicking on them.
+            <ul>
+                <li>For an overview of the results, click *.consensus.all.k.plot.pdf.
+                    A consensus matrix where all values are dark blue (0) or dark red (1) corresponds to perfect consensus. For example: <a href="ftp://ftp.broadinstitute.org/pub/genepattern/datasets/protocols/all_aml_test.preprocessed.consensus.all.k.plot.pdf">all_aml_test.preprocessed.consensus.all.k.plot.pdf</a>.
+                </li>
+
+                <li>For a complete listing of cluster membership, click *.membership.gct.</li>
+            </ul>
+            </p>
+
+            <h5>Considerations</h5>
+            <ul>
+                <li>For more about the plots and their interpretation, see Brunet et al., 2004.</li>
+            </ul>
+
+
+            <table width="100%" border="0" cellpadding="0" cellspacing="0">
+                <tr>
+                    <td align="right">learn more:<br />
+                        <a href="/gp/getTaskDoc.jsp?name=NMFConsensus">NMFConsensus</a>
+                    </td>
+                </tr>
+            </table>
+
+        </div>
+
+        <h2>References</h2>
+
+        <p>Brunet, J-P., Tamayo, P., Golub, T.R., and Mesirov, J.P. 2004. Metagenes and molecular pattern discovery using
+            matrix factorization. <i>Proc. Natl. Acad. Sci. USA</i> 101(12):4164–4169.</p>
+
+    </body>
 </html>

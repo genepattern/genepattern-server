@@ -1,146 +1,168 @@
+<!--
+  ~ Copyright 2012 The Broad Institute, Inc.
+  ~ SOFTWARE COPYRIGHT NOTICE
+  ~ This software and its documentation are the copyright of the Broad Institute, Inc. All rights are reserved.
+  ~
+  ~ This software is supplied without any warranty or guaranteed support whatsoever. The Broad Institute is not responsible for its use, misuse, or functionality.
+  -->
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
-<head>
-<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1" />
-<META HTTP-EQUIV="CACHE-CONTROL" CONTENT="NO-CACHE"/>
-<title>K-means Clustering</title>
-	<link href="../../css/protocolsWindow.css" rel="stylesheet" type="text/css" />
-    <script type="text/javascript" src="../../js/protocol.js"></script>
-</head>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1" />
+        <META HTTP-EQUIV="CACHE-CONTROL" CONTENT="NO-CACHE" />
+        <title>K-means Clustering</title>
+        <link href="../../css/protocolsWindow.css" rel="stylesheet" type="text/css" />
+        <script type="text/javascript" src="../../js/protocol.js"></script>
+    </head>
 
-<body>
+    <body>
 
-<h1>K-means Clustering</h1>
-<table width="100%" border="0" cellpadding="0" cellspacing="0">
-  <tr>
-    <td align="left">
-      <a href="protocols.html">protocols</a>
-    </td>
-  </tr>
-</table>
+        <h1>K-means Clustering</h1>
+        <table width="100%" border="0" cellpadding="0" cellspacing="0">
+            <tr>
+                <td align="left">
+                    <a href="protocols.html">protocols</a>
+                </td>
+            </tr>
+        </table>
 
-<p>
-Cluster genes and/or samples into a specified number of clusters. The result is <i>k</i> clusters, each centered around a randomly selected data point. </p>
-<div class="steps">
-<h2>Before you begin</h2>
-<p>Gene expression data must be in a <a href="GctResFiles.html">GCT or RES file</a>. 
-<br />
-Example file: <a href="ftp://ftp.broadinstitute.org/pub/genepattern/datasets/all_aml/all_aml_test.gct">all_aml_test.gct</a>.</p>
-<table width="100%" border="0" cellpadding="0" cellspacing="0">
-  <tr>
-    <td align="right">learn more:<br />
-    <a href="http://www.broadinstitute.org/cancer/software/genepattern/tutorial/gp_fileformats.html#gct">file formats</a>
-    </td>
-  </tr>
-</table>
-</div>
-<div class="steps">
-  <h2>Step 1: PreprocessDataset</h2>
-  <p>Preprocess gene expression data 
-      to remove platform noise and genes that have little variation.
-Although researchers generally preprocess data before clustering if doing so removes relevant biological information, skip this step. </p>
-  <div class="gpLinks">
-  <ul>
-    <li><a href="/gp/pages/index.jsf?lsid=PreprocessDataset" 
-           onclick="return openModuleWindow(this, event);"
-        >Open module</a> in the GenePattern window.</li>
-    <li><a href="/gp/pages/index.jsf?lsid=PreprocessDataset&input.filename=ftp://ftp.broadinstitute.org/pub/genepattern/datasets/all_aml/all_aml_test.gct" 
-           onclick="return openModuleWindow(this, event);"
-        >Open module with example data</a> in the GenePattern window.</li>
-  </ul>
-  </div>
-    <h5>Considerations</h5>
-  <ul>
-    <li>PreprocessDataset can preprocess the data in one or more ways (in this order):
-  <ol>
-    <li>Set threshold and ceiling values. Any value lower/higer than the threshold/ceiling
-      value is reset to the threshold/ceiling value. </li>
-    <li>Convert each expression value to the log base 2 of the value. </li>
-    <li>Remove genes (rows) if a given number of its sample values are less than
-      a given threshold. </li>
-    <li>Remove genes (rows) that do not have a minimum fold change or expression
-      variation. </li>
-    <li>Discretize or normalize the data. </li>
-  </ol></li>
-    <li>When using ratios to compare gene expression between samples, 
-      convert values to log base 2 of the value to
-      bring up- and down-regulated genes to the same scale. 
-      For example, ratios of 2 and .5 indicating two-fold changes for up- and
-      down-regulated expression, respectively, are converted to +1 and -1. </li>
-    <li>If you did not generate the expression data, 
-      check whether preprocessing steps have already been taken before 
-      running the PreprocessDataset module. </li>
-  </ul>
+        <p>
+            Cluster genes and/or samples into a specified number of clusters. The result is <i>k</i> clusters, each centered around a randomly selected data point. </p>
 
-<table width="100%" border="0" cellpadding="0" cellspacing="0">
-  <tr>
-    <td align="right">learn more:<br />
-    <a href="/gp/getTaskDoc.jsp?name=PreprocessDataset">PreprocessDataset</a>
-    </td>
-  </tr>
-</table>
-</div>
+        <div class="steps">
+            <h2>Before you begin</h2>
+
+            <p>Gene expression data must be in a <a href="GctResFiles.html">GCT or RES file</a>.
+                <br />
+                Example file: <a href="ftp://ftp.broadinstitute.org/pub/genepattern/datasets/all_aml/all_aml_test.gct">all_aml_test.gct</a>.</p>
+            <table width="100%" border="0" cellpadding="0" cellspacing="0">
+                <tr>
+                    <td align="right">learn more:<br />
+                        <a href="http://www.broadinstitute.org/cancer/software/genepattern/tutorial/gp_fileformats.html#gct">file formats</a>
+                    </td>
+                </tr>
+            </table>
+        </div>
+        <div class="steps">
+            <h2>Step 1: PreprocessDataset</h2>
+
+            <p>Preprocess gene expression data
+                to remove platform noise and genes that have little variation.
+                Although researchers generally preprocess data before clustering if doing so removes relevant biological information, skip this step. </p>
+
+            <div class="gpLinks">
+                <ul>
+                    <li><a href="/gp/pages/index.jsf?lsid=PreprocessDataset"
+                           onclick="return openModuleWindow(this, event);"
+                            >Open module</a> in the GenePattern window.
+                    </li>
+                    <li><a href="/gp/pages/index.jsf?lsid=PreprocessDataset&input.filename=ftp://ftp.broadinstitute.org/pub/genepattern/datasets/all_aml/all_aml_test.gct"
+                           onclick="return openModuleWindow(this, event);"
+                            >Open module with example data</a> in the GenePattern window.
+                    </li>
+                </ul>
+            </div>
+            <h5>Considerations</h5>
+            <ul>
+                <li>PreprocessDataset can preprocess the data in one or more ways (in this order):
+                    <ol>
+                        <li>Set threshold and ceiling values. Any value lower/higer than the threshold/ceiling
+                            value is reset to the threshold/ceiling value.
+                        </li>
+                        <li>Convert each expression value to the log base 2 of the value.</li>
+                        <li>Remove genes (rows) if a given number of its sample values are less than
+                            a given threshold.
+                        </li>
+                        <li>Remove genes (rows) that do not have a minimum fold change or expression
+                            variation.
+                        </li>
+                        <li>Discretize or normalize the data.</li>
+                    </ol>
+                </li>
+                <li>When using ratios to compare gene expression between samples,
+                    convert values to log base 2 of the value to
+                    bring up- and down-regulated genes to the same scale.
+                    For example, ratios of 2 and .5 indicating two-fold changes for up- and
+                    down-regulated expression, respectively, are converted to +1 and -1.
+                </li>
+                <li>If you did not generate the expression data,
+                    check whether preprocessing steps have already been taken before
+                    running the PreprocessDataset module.
+                </li>
+            </ul>
+
+            <table width="100%" border="0" cellpadding="0" cellspacing="0">
+                <tr>
+                    <td align="right">learn more:<br />
+                        <a href="/gp/getTaskDoc.jsp?name=PreprocessDataset">PreprocessDataset</a>
+                    </td>
+                </tr>
+            </table>
+        </div>
 
 
-<div class="steps">
-  <h2>Step 2: KMeansClustering</h2>
+        <div class="steps">
+            <h2>Step 2: KMeansClustering</h2>
 
-  <p>Run k-means clustering on genes (rows) or samples (columns). The module creates  
-      a GCT file for each cluster and a GCT file that organizes all of the expression data by cluster.  </p>
-  
-  <div class="gpLinks">
-  <ul>
-    <li><a href="/gp/pages/index.jsf?lsid=KMeansClustering"
-           onclick="return openModuleWindow(this, event);"
-        >Open KMeansClustering</a></li>
-    <li><a href="/gp/pages/index.jsf?lsid=KMeansClustering&input.filename=ftp://ftp.broadinstitute.org/pub/genepattern/datasets/protocols/all_aml_test.preprocessed.gct&number.of.clusters=2"
-           onclick="return openModuleWindow(this, event);"
-        >Open KMeansClustering with example data</a></li>
-  </ul>
-  </div>
+            <p>Run k-means clustering on genes (rows) or samples (columns). The module creates
+                a GCT file for each cluster and a GCT file that organizes all of the expression data by cluster. </p>
 
-<table width="100%" border="0" cellpadding="0" cellspacing="0">
-  <tr>
-    <td align="right">learn more:<br />
-    <a href="/gp/getTaskDoc.jsp?name=KMeansClustering">KMeansClustering</a>
-    </td>
-  </tr>
-</table>  
-</div>
+            <div class="gpLinks">
+                <ul>
+                    <li><a href="/gp/pages/index.jsf?lsid=KMeansClustering"
+                           onclick="return openModuleWindow(this, event);"
+                            >Open KMeansClustering</a></li>
+                    <li><a href="/gp/pages/index.jsf?lsid=KMeansClustering&input.filename=ftp://ftp.broadinstitute.org/pub/genepattern/datasets/protocols/all_aml_test.preprocessed.gct&number.of.clusters=2"
+                           onclick="return openModuleWindow(this, event);"
+                            >Open KMeansClustering with example data</a></li>
+                </ul>
+            </div>
 
-<div class="steps">
-  <h2>Step 3: HeatMapViewer</h2>
-  <p>For an overview of the results, use a heatmap to display 
-      the expression data organized by cluster.  
-      
-  </p>
-  <div class="gpLinks">
-  <ul>
-    <li><a href="/gp/pages/index.jsf?lsid=HeatMapViewer"
-           onclick="return openModuleWindow(this, event);"
-        >Open HeatMapViewer</a></li>
-    <li><a href="/gp/pages/index.jsf?lsid=HeatMapViewer&dataset=ftp://ftp.broadinstitute.org/pub/genepattern/datasets/protocols/all_aml_test.preprocessed_KMcluster_output.gct"
-           onclick="return openModuleWindow(this, event);"
-        >Open HeatMapViewer with example data</a></li>
-  </ul>
-  </div>
-    <h5>Considerations</h5>
-  <ul>
-    <li>The HeatMapViewer 
-      displays gene expression data as a heat map, which makes it easier to see patterns in the numeric data. 
-      Gene names are row labels and sample names are column labels.
-    </li>
-  </ul>
+            <table width="100%" border="0" cellpadding="0" cellspacing="0">
+                <tr>
+                    <td align="right">learn more:<br />
+                        <a href="/gp/getTaskDoc.jsp?name=KMeansClustering">KMeansClustering</a>
+                    </td>
+                </tr>
+            </table>
+        </div>
 
-<table width="100%" border="0" cellpadding="0" cellspacing="0">
-  <tr>
-    <td align="right">learn more:<br />
-    <a href="/gp/getTaskDoc.jsp?name=HeatMapViewer">HeatMapViewer</a>
-    </td>
-  </tr>
-</table>  
-  
-  </div>
+        <div class="steps">
+            <h2>Step 3: HeatMapViewer</h2>
 
-</body>
+            <p>For an overview of the results, use a heatmap to display
+                the expression data organized by cluster.
+
+            </p>
+
+            <div class="gpLinks">
+                <ul>
+                    <li><a href="/gp/pages/index.jsf?lsid=HeatMapViewer"
+                           onclick="return openModuleWindow(this, event);"
+                            >Open HeatMapViewer</a></li>
+                    <li><a href="/gp/pages/index.jsf?lsid=HeatMapViewer&dataset=ftp://ftp.broadinstitute.org/pub/genepattern/datasets/protocols/all_aml_test.preprocessed_KMcluster_output.gct"
+                           onclick="return openModuleWindow(this, event);"
+                            >Open HeatMapViewer with example data</a></li>
+                </ul>
+            </div>
+            <h5>Considerations</h5>
+            <ul>
+                <li>The HeatMapViewer
+                    displays gene expression data as a heat map, which makes it easier to see patterns in the numeric data.
+                    Gene names are row labels and sample names are column labels.
+                </li>
+            </ul>
+
+            <table width="100%" border="0" cellpadding="0" cellspacing="0">
+                <tr>
+                    <td align="right">learn more:<br />
+                        <a href="/gp/getTaskDoc.jsp?name=HeatMapViewer">HeatMapViewer</a>
+                    </td>
+                </tr>
+            </table>
+
+        </div>
+
+    </body>
 </html>

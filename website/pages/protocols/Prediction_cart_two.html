@@ -1,141 +1,159 @@
+<!--
+  ~ Copyright 2012 The Broad Institute, Inc.
+  ~ SOFTWARE COPYRIGHT NOTICE
+  ~ This software and its documentation are the copyright of the Broad Institute, Inc. All rights are reserved.
+  ~
+  ~ This software is supplied without any warranty or guaranteed support whatsoever. The Broad Institute is not responsible for its use, misuse, or functionality.
+  -->
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
-<head>
-	<META HTTP-EQUIV="CACHE-CONTROL" CONTENT="NO-CACHE"/>
-<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1" />
-<title>CART Class Prediction: Two Data Sets</title>
-	<link href="../../css/protocolsWindow.css" rel="stylesheet" type="text/css" />
-    <script type="text/javascript" src="../../js/protocol.js"></script>
-</head>
+    <head>
+        <META HTTP-EQUIV="CACHE-CONTROL" CONTENT="NO-CACHE" />
+        <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1" />
+        <title>CART Class Prediction: Two Data Sets</title>
+        <link href="../../css/protocolsWindow.css" rel="stylesheet" type="text/css" />
+        <script type="text/javascript" src="../../js/protocol.js"></script>
+    </head>
 
-<body>
+    <body>
 
-<h1>CART Class Prediction: Two Data Sets</h1>
-<table width="100%" border="0" cellpadding="0" cellspacing="0">
-  <tr>
-    <td align="left">
-      <a href="protocols.html">protocols</a>
-    </td>
-  </tr>
-</table>
+        <h1>CART Class Prediction: Two Data Sets</h1>
+        <table width="100%" border="0" cellpadding="0" cellspacing="0">
+            <tr>
+                <td align="left">
+                    <a href="protocols.html">protocols</a>
+                </td>
+            </tr>
+        </table>
 
-<p>
-Use the CART module to build classifiers using the <b>C</b>lassification <b>A</b>nd <b>R</b>egression <b>T</b>rees (CART) class prediction method, test previously generated CART classifiers, or classify unknown samples using previously generated CART classifiers.</p>
-<div class="steps">
-<h2>Before you begin</h2>
+        <p>
+            Use the CART module to build classifiers using the <b>C</b>lassification <b>A</b>nd <b>R</b>egression <b>T</b>rees (CART) class prediction method, test previously generated CART classifiers, or classify unknown samples using previously generated CART classifiers.</p>
 
-<p>Use one data set to train the classifier and the other to test it. Each gene expression data set consists of two files:</p>
-<ul>
-  <li><a href="GctResFiles.html">GCT or RES file</a> that contains gene expression data. 
-  <br />
-  Example file (training data): <a href="ftp://ftp.broadinstitute.org/pub/genepattern/datasets/all_aml/all_aml_train.gct">all_aml_train.gct</a>.
-  <br />
-  Example file (test data): <a href="ftp://ftp.broadinstitute.org/pub/genepattern/datasets/all_aml/all_aml_test.gct">all_aml_test.gct</a>.
- </li>
-  <li><a href="ClsFiles.html">CLS file</a> that identifies the class of each sample in the gene expression data. 
-  <br />
-  Example file (training data): <a href="ftp://ftp.broadinstitute.org/pub/genepattern/datasets/all_aml/all_aml_train.cls">all_aml_train.cls</a>.
-  <br />
-  Example file (test data): <a href="ftp://ftp.broadinstitute.org/pub/genepattern/datasets/all_aml/all_aml_test.cls">all_aml_test.cls</a>.
-  </li>
-</ul>
-<p>The data sets must contain the same genes or CART displays an error message.</p>
-<table width="100%" border="0" cellpadding="0" cellspacing="0">
-  <tr>
-    <td align="right">learn more:<br>
-    <a href="http://www.broadinstitute.org/cancer/software/genepattern/tutorial/gp_fileformats.html#gct">file formats</a>
-    </td>
-  </tr>
-</table>
+        <div class="steps">
+            <h2>Before you begin</h2>
 
-</div>
+            <p>Use one data set to train the classifier and the other to test it. Each gene expression data set consists of two files:</p>
+            <ul>
+                <li><a href="GctResFiles.html">GCT or RES file</a> that contains gene expression data.
+                    <br />
+                    Example file (training data): <a href="ftp://ftp.broadinstitute.org/pub/genepattern/datasets/all_aml/all_aml_train.gct">all_aml_train.gct</a>.
+                    <br />
+                    Example file (test data): <a href="ftp://ftp.broadinstitute.org/pub/genepattern/datasets/all_aml/all_aml_test.gct">all_aml_test.gct</a>.
+                </li>
+                <li><a href="ClsFiles.html">CLS file</a> that identifies the class of each sample in the gene expression data.
+                    <br />
+                    Example file (training data): <a href="ftp://ftp.broadinstitute.org/pub/genepattern/datasets/all_aml/all_aml_train.cls">all_aml_train.cls</a>.
+                    <br />
+                    Example file (test data): <a href="ftp://ftp.broadinstitute.org/pub/genepattern/datasets/all_aml/all_aml_test.cls">all_aml_test.cls</a>.
+                </li>
+            </ul>
+            <p>The data sets must contain the same genes or CART displays an error message.</p>
+            <table width="100%" border="0" cellpadding="0" cellspacing="0">
+                <tr>
+                    <td align="right">learn more:<br>
+                        <a href="http://www.broadinstitute.org/cancer/software/genepattern/tutorial/gp_fileformats.html#gct">file formats</a>
+                    </td>
+                </tr>
+            </table>
 
-<div class="steps">
-  <h2>Step 1: CART</h2>
+        </div>
 
-  <p>The CART module builds and/or tests a classifer by running the CART class prediction method:
-  </p>
-  <ul>
-    <li>To build a classifier, specify the training data set. The module
-      creates a classifier (*.cart.model). </li>
-    <li>To test a previously built classifier, specify the classifier (*.cart.model) and
-      the test data set. The module creates a
-      prediction results file (*.pred.odf) that assesses the accuracy of the predictor. </li>
-    <li>To build and test a classifier, specify both the training and test
-      data sets. The module creates a classifier and a prediction results file. </li>
-      </ul>
-  
-  <div class="gpLinks">
-  <ul>
-      <li><a href="/gp/pages/index.jsf?lsid=CART" onclick="return openModuleWindow(this, event);"
-        >Open CART</a></li>
-       <li><a href="/gp/pages/index.jsf?lsid=CART&train.data.filename=ftp://ftp.broadinstitute.org/pub/genepattern/datasets/all_aml/all_aml_train.gct&train.cls.filename=ftp://ftp.broadinstitute.org/pub/genepattern/datasets/all_aml/all_aml_train.cls&test.data.filename=ftp://ftp.broadinstitute.org/pub/genepattern/datasets/all_aml/all_aml_test.gct&test.cls.filename=ftp://ftp.broadinstitute.org/pub/genepattern/datasets/all_aml/all_aml_test.cls" 
-           onclick="return openModuleWindow(this, event);"
-        >Open CART with example data</a></li>
-  </ul>
-  </div>
-<table width="100%" border="0" cellpadding="0" cellspacing="0">
-  <tr>
-    <td align="right">learn more:<br>
-    <a href="/gp/getTaskDoc.jsp?name=CART">CART</a>
-    </td>
-  </tr>
-</table>  
-</div>
+        <div class="steps">
+            <h2>Step 1: CART</h2>
 
-<div class="steps">
-  <h2>Step 2: View results</h2>
-<p>To view the prediction results file (*.pred.odf), use the PredictionResultsViewer module. 
-     The viewer lists each sample, its actual class, its predicted class, and prediction error rates. 
-     <p>The classifier (*.cart.model) is a binary (machine-readable) file. However, a matching pdf (*.tree.pdf) file shows the classification tree. To view the pdf file, click it.
-  <div class="gpLinks">
-  <ul>
-    <li><a href="/gp/pages/index.jsf?lsid=PredictionResultsViewer"
-           onclick="return openModuleWindow(this, event);"
-        >Open PredictionResultsViewer</a></li>
-    <li><a href="/gp/pages/index.jsf?lsid=PredictionResultsViewer&prediction.results.file=ftp://ftp.broadinstitute.org/pub/genepattern/datasets/protocols/all_aml_test.cart.pred.odf"
-           onclick="return openModuleWindow(this, event);"
-        >Open PredictionResultsViewer with example data</a></li>
-  </ul>
-  </div>
-    <h5>Considerations  </h5>
-    <ul>
-  <li>The PredictionResultsViewer provides an absolute error rate (incorrect cases/total cases) and an
-      ROC error rate (fraction of true positives 
-      versus the fraction of false positives). Use the ROC error rate for comparing results across data sets.
-  </li></ul>
+            <p>The CART module builds and/or tests a classifer by running the CART class prediction method:
+            </p>
+            <ul>
+                <li>To build a classifier, specify the training data set. The module
+                    creates a classifier (*.cart.model).
+                </li>
+                <li>To test a previously built classifier, specify the classifier (*.cart.model) and
+                    the test data set. The module creates a
+                    prediction results file (*.pred.odf) that assesses the accuracy of the predictor.
+                </li>
+                <li>To build and test a classifier, specify both the training and test
+                    data sets. The module creates a classifier and a prediction results file.
+                </li>
+            </ul>
 
-<table width="100%" border="0" cellpadding="0" cellspacing="0">
-  <tr>
-    <td align="right">learn more:<br>
-    <a href="/gp/getTaskDoc.jsp?name=PredictionResultsViewer">PredictionResultsViewer</a>
-    </td>
-  </tr>
-</table> 
-  </div>
+            <div class="gpLinks">
+                <ul>
+                    <li><a href="/gp/pages/index.jsf?lsid=CART" onclick="return openModuleWindow(this, event);"
+                            >Open CART</a></li>
+                    <li><a href="/gp/pages/index.jsf?lsid=CART&train.data.filename=ftp://ftp.broadinstitute.org/pub/genepattern/datasets/all_aml/all_aml_train.gct&train.cls.filename=ftp://ftp.broadinstitute.org/pub/genepattern/datasets/all_aml/all_aml_train.cls&test.data.filename=ftp://ftp.broadinstitute.org/pub/genepattern/datasets/all_aml/all_aml_test.gct&test.cls.filename=ftp://ftp.broadinstitute.org/pub/genepattern/datasets/all_aml/all_aml_test.cls"
+                           onclick="return openModuleWindow(this, event);"
+                            >Open CART with example data</a></li>
+                </ul>
+            </div>
+            <table width="100%" border="0" cellpadding="0" cellspacing="0">
+                <tr>
+                    <td align="right">learn more:<br>
+                        <a href="/gp/getTaskDoc.jsp?name=CART">CART</a>
+                    </td>
+                </tr>
+            </table>
+        </div>
 
-<div class="steps">
-  <h2>Step 3: Determine the class of an unknown sample</h2>
-  <p>To classify unknown samples using the CART module:
-  <ul>
-  <li>Use the <i>saved model filename</i> parameter to specify a previously
-    generated classifier (*.cart.model file).
-   <li>Use the <i>test filename</i> parameter to specify an expression data set
-    that contains the unknown samples.
-   <li>The <i>test class filename</i> is a required parameter that specifies the
-      class of each sample in the expression data set. For the unknown samples,
-      create a class file that assigns some class (for example, "unknown") to each
-      sample.</li>
-     </ul>
-    <p>The module uses the classifier to predict the class 
-    of each unknown sample and creates a prediction results file. Use the PredictionResultsViewer module to view the prediction results (*.pred.odf) file:
-    <ul>
-        <li>The viewer lists each sample with its actual and predicted class. </li>
-        <li>Ignore the actual class, which was unknown.</li>
-        <li>Ignore the error rates, which are evaluating the class predictor against "known" data.</li>
-  </ul>
+        <div class="steps">
+            <h2>Step 2: View results</h2>
 
-  </div>
+            <p>To view the prediction results file (*.pred.odf), use the PredictionResultsViewer module.
+                The viewer lists each sample, its actual class, its predicted class, and prediction error rates.
 
-</body>
+            <p>The classifier (*.cart.model) is a binary (machine-readable) file. However, a matching pdf (*.tree.pdf) file shows the classification tree. To view the pdf file, click it.
+
+            <div class="gpLinks">
+                <ul>
+                    <li><a href="/gp/pages/index.jsf?lsid=PredictionResultsViewer"
+                           onclick="return openModuleWindow(this, event);"
+                            >Open PredictionResultsViewer</a></li>
+                    <li><a href="/gp/pages/index.jsf?lsid=PredictionResultsViewer&prediction.results.file=ftp://ftp.broadinstitute.org/pub/genepattern/datasets/protocols/all_aml_test.cart.pred.odf"
+                           onclick="return openModuleWindow(this, event);"
+                            >Open PredictionResultsViewer with example data</a></li>
+                </ul>
+            </div>
+            <h5>Considerations </h5>
+            <ul>
+                <li>The PredictionResultsViewer provides an absolute error rate (incorrect cases/total cases) and an
+                    ROC error rate (fraction of true positives
+                    versus the fraction of false positives). Use the ROC error rate for comparing results across data sets.
+                </li>
+            </ul>
+
+            <table width="100%" border="0" cellpadding="0" cellspacing="0">
+                <tr>
+                    <td align="right">learn more:<br>
+                        <a href="/gp/getTaskDoc.jsp?name=PredictionResultsViewer">PredictionResultsViewer</a>
+                    </td>
+                </tr>
+            </table>
+        </div>
+
+        <div class="steps">
+            <h2>Step 3: Determine the class of an unknown sample</h2>
+
+            <p>To classify unknown samples using the CART module:
+            <ul>
+                <li>Use the <i>saved model filename</i> parameter to specify a previously
+                    generated classifier (*.cart.model file).
+                <li>Use the <i>test filename</i> parameter to specify an expression data set
+                    that contains the unknown samples.
+                <li>The <i>test class filename</i> is a required parameter that specifies the
+                    class of each sample in the expression data set. For the unknown samples,
+                    create a class file that assigns some class (for example, "unknown") to each
+                    sample.
+                </li>
+            </ul>
+            <p>The module uses the classifier to predict the class
+                of each unknown sample and creates a prediction results file. Use the PredictionResultsViewer module to view the prediction results (*.pred.odf) file:
+            <ul>
+                <li>The viewer lists each sample with its actual and predicted class.</li>
+                <li>Ignore the actual class, which was unknown.</li>
+                <li>Ignore the error rates, which are evaluating the class predictor against "known" data.</li>
+            </ul>
+
+        </div>
+
+    </body>
 </html>

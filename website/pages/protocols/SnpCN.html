@@ -1,225 +1,251 @@
+<!--
+  ~ Copyright 2012 The Broad Institute, Inc.
+  ~ SOFTWARE COPYRIGHT NOTICE
+  ~ This software and its documentation are the copyright of the Broad Institute, Inc. All rights are reserved.
+  ~
+  ~ This software is supplied without any warranty or guaranteed support whatsoever. The Broad Institute is not responsible for its use, misuse, or functionality.
+  -->
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
-<head>
-<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1" />
-<title>SNP Copy Number Estimation</title>
-	<link href="../../css/protocolsWindow.css" rel="stylesheet" type="text/css" />
-    <script type="text/javascript" src="../../js/protocol.js"></script>
-</head>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1" />
+        <title>SNP Copy Number Estimation</title>
+        <link href="../../css/protocolsWindow.css" rel="stylesheet" type="text/css" />
+        <script type="text/javascript" src="../../js/protocol.js"></script>
+    </head>
 
-<body>
+    <body>
 
-<h1>SNP Copy Number and Loss of Heterozygosity Estimation</h1>
-<table width="100%" border="0" cellpadding="0" cellspacing="0">
-  <tr>
-    <td align="left">
-      <a href="protocols.html">protocols</a>
-    </td>
-  </tr>
-</table>
+        <h1>SNP Copy Number and Loss of Heterozygosity Estimation</h1>
+        <table width="100%" border="0" cellpadding="0" cellspacing="0">
+            <tr>
+                <td align="left">
+                    <a href="protocols.html">protocols</a>
+                </td>
+            </tr>
+        </table>
 
-<p>
-Compute SNP copy number and loss of heterozygosity (LOH) based on 
-Affymetrix SNP chip data for paired target/normal samples. 
-In cancer genomics, copy number change is one of the hallmarks of the genetic instability common 
-    to most human cancers and LOH of tumor suppressor genes is a crucial step in the development of 
-sporadic and hereditary cancer (Monti, 2005).
+        <p>
+            Compute SNP copy number and loss of heterozygosity (LOH) based on
+            Affymetrix SNP chip data for paired target/normal samples.
+            In cancer genomics, copy number change is one of the hallmarks of the genetic instability common
+            to most human cancers and LOH of tumor suppressor genes is a crucial step in the development of
+            sporadic and hereditary cancer (Monti, 2005).
 
-</p>
+        </p>
 
-<div class="steps">
-  <h2>Before You Begin</h2>
-  
-  <ul>
-<li>CEL files from the Affymetrix 500K Array Chip Set (250K Sty, 250K NSP) or 
-     100K Array Chip Set (50K Xba, 50K Hind).    
-     <br />Example file: <a href="ftp://ftp.broadinstitute.org/pub/genepattern/datasets/gistic/GISTIC_Hind_subset.zip">GISTIC_Hind_subset.zip</a>.</li>
-<li>Optionally, for each CEL file, a TXT file containing the genotype calls for the SNP array. 
-<br />Example file: <a href="ftp://ftp.broadinstitute.org/pub/genepattern/datasets/gistic/GISTIC_Hind_subset.zip">GISTIC_Hind_subset.zip</a>.</li>
-<li>A tab-delmited text file (<a href="http://www.broadinstitute.org/cancer/software/genepattern/tutorial/gp_fileformats.html#snpsample">sample information file</a> format) that describes the SNP array. The array must include target/normal paired samples for copy number and LOH determination. 
-<br />Example file: <a href="ftp://ftp.broadinstitute.org/pub/genepattern/datasets/gistic/sample_info_subset.txt">sample_info_subset.txt</a>.</li>
-</li>
-</ul>
-  
+        <div class="steps">
+            <h2>Before You Begin</h2>
 
-<table width="100%" border="0" cellpadding="0" cellspacing="0">
-  <tr>
-    <td align="right">learn more:<br />
-    <a href="http://www.broadinstitute.org/cancer/software/genepattern/tutorial/gp_fileformats.html">file formats</a>
-    </td>
-  </tr>
-</table>
-</div>
+            <ul>
+                <li>CEL files from the Affymetrix 500K Array Chip Set (250K Sty, 250K NSP) or
+                    100K Array Chip Set (50K Xba, 50K Hind).
+                    <br />Example file: <a href="ftp://ftp.broadinstitute.org/pub/genepattern/datasets/gistic/GISTIC_Hind_subset.zip">GISTIC_Hind_subset.zip</a>.
+                </li>
+                <li>Optionally, for each CEL file, a TXT file containing the genotype calls for the SNP array.
+                    <br />Example file: <a href="ftp://ftp.broadinstitute.org/pub/genepattern/datasets/gistic/GISTIC_Hind_subset.zip">GISTIC_Hind_subset.zip</a>.
+                </li>
+                <li>A tab-delmited text file (<a href="http://www.broadinstitute.org/cancer/software/genepattern/tutorial/gp_fileformats.html#snpsample">sample information file</a> format) that describes the SNP array. The array must include target/normal paired samples for copy number and LOH determination.
+                    <br />Example file: <a href="ftp://ftp.broadinstitute.org/pub/genepattern/datasets/gistic/sample_info_subset.txt">sample_info_subset.txt</a>.
+                </li>
+                </li>
+            </ul>
 
 
+            <table width="100%" border="0" cellpadding="0" cellspacing="0">
+                <tr>
+                    <td align="right">learn more:<br />
+                        <a href="http://www.broadinstitute.org/cancer/software/genepattern/tutorial/gp_fileformats.html">file formats</a>
+                    </td>
+                </tr>
+            </table>
+        </div>
 
-<div class="steps">
-  <h2>Step 1: SNPFileCreator</h2>
-    <p>SNPFileCreator converts the CEL files from an array into a GenePattern .snp file.
-     Raw data for the probes in each SNP probe set are converted to a
-    single intensity value per SNP using one of four modeling algorithms:
-    Average Difference, PM/MM Difference Model (dChip, the default), Median Probe, or Trimmed Mean.
-  </p>
-  
-   
-  <p><b>20-30 minutes:</b> Processing this example on the GenePattern public server takes time. 
-  The example source data and resulting SNP file are provided here for your convenience: 
-  <a href="ftp://ftp.broadinstitute.org/pub/genepattern/datasets/gistic/GISTIC_Hind_subset.zip">GISTIC_Hind_subset.zip</a>, <a href="ftp://ftp.broadinstitute.org/pub/genepattern/datasets/protocols/GISTIC_Hind_subset.snp">GISTIC_Hind_subset.snp</a>.
 
-  <div class="gpLinks">
-  <ul>
-    <li><a href="/gp/pages/index.jsf?lsid=SNPFileCreator" 
-           onclick="return openModuleWindow(this, event);"
-        >Open SNPFileCreator (v. 1) module</a> in the GenePattern window.</li>
-    <li><a href="/gp/pages/index.jsf?lsid=urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00086:1&zip.filename=ftp://ftp.broadinstitute.org/pub/genepattern/datasets/gistic/GISTIC_Hind_subset.zip&output.file=GISTIC_Hind_subset.snp" 
-           onclick="return openModuleWindow(this, event);"
-        >Open SNPFileCreator (v. 1) with example data</a></li>
-        <li>&nbsp;</li>
-   <li><b>Warning:</b> Processing this example on a <a class="notGpLinks" href="http://www.broadinstitute.org/genepattern/tutorial/gp_concepts.html#_GenePattern_Server">local GenePattern server</a> is likely to generate an <a class="notGpLinks" href="http://www.broadinstitute.org/cancer/software/genepattern/doc/messages/index.html#memory">OutOfMemoryError</a>.
-   </li>
-  </ul>
-  </div>
-    <h5>Considerations</h5>
-  <ul>
-   <li>SNPFileCreator accepts CEL files from the 500K Array Chip Set (250K Sty, 250K NSP) or 
-     100K Array Chip Set (50K Xba, 50K Hind). Each chip set uses two unique high density arrays 
-     to genotype over 500,000 and 100,000 SNPs in one experiment, respectively.
-     The module converts the CEL files for one array into a .snp file. 
-     To create a .snp file for a chip set,
-     use the MergeRows module to combine the .snp files for the two arrays.</li>
-  <li>SNPFileCreator can transfer the CEL files to the GenePattern server for processing or 
-     read the files from a network directory. Due to the size of the files, best practice is to
-     store the CEL files in a network directory and process them from that directory.</li>
-  <li>SNPFileCreator writes the generated .snp file to a network directory or to the 
-     GenePattern server. Typically, writing the file to the GenePattern server provides 
-     greater flexibility and makes the file available for use in GenePattern pipelines.</li>
-  <li>SNPFileCreator creates a .snp file in one of two formats: 
-     Non Allele-Specific (default) or Allele-Specific.
-     For each sample, the Non Allele-Specific format contains an intensity value 
-     and a genotype call; the Allele-Specific format contains an
-     intensity value for allele A, intensity value for allele B, and genotype call. 
-     All GenePattern modules accept the Non Allele-Specific format; many do not yet accept the Allele-Specific format.</li>
-  <li>SNPFileCreator uses the Human Genome of May 2004 (hg17) to include 
-     Chromosome and Physical Location columns in the .snp file. By default, it sorts the SNPs
-     by chromosome and physical location, as required by the SnpViewer module.</li>
-     </ul>
+        <div class="steps">
+            <h2>Step 1: SNPFileCreator</h2>
 
-  <table width="100%" border="0" cellpadding="0" cellspacing="0">
-  <tr>
-    <td align="right">learn more:<br />
-    <a href="/gp/getTaskDoc.jsp?name=SNPFileCreator">SNPFileCreator</a>
-    </td>
-  </tr>
-</table>
-</div>
+            <p>SNPFileCreator converts the CEL files from an array into a GenePattern .snp file.
+                Raw data for the probes in each SNP probe set are converted to a
+                single intensity value per SNP using one of four modeling algorithms:
+                Average Difference, PM/MM Difference Model (dChip, the default), Median Probe, or Trimmed Mean.
+            </p>
 
-<div class="steps">
-  <h2>Step 2: XChromosomeCorrect</h2>
-  <p>For gender-specific samples, run the XChromosomeCorrect module to correct intensity values for SNPs on the X chromosome.
-     For each sample from a male donor, the module doubles the intensity value for SNPs on the X chromosome.</p>
-     <p>The sample information file must 
-     include a column labeled Gender that contains a value of M or F for each sample.</p>
-  <div class="gpLinks">
-  <ul>
-    <li><a href="/gp/pages/index.jsf?lsid=XChromosomeCorrect" onclick="return openModuleWindow(this, event);"
-        >Open XChromosomeCorrect module</a></li>
-    <li><a href="/gp/pages/index.jsf?lsid=XChromosomeCorrect&snp.filename=ftp://ftp.broadinstitute.org/pub/genepattern/datasets/protocols/GISTIC_Hind_subset.snp&sample.info.filename=ftp://ftp.broadinstitute.org/pub/genepattern/datasets/gistic/sample_info_subset.txt" onclick="return openModuleWindow(this, event);"
-        >Open XChromosomeCorrect with example data</a></li>
-  </ul>
-  </div>
 
-  <table width="100%" border="0" cellpadding="0" cellspacing="0">
-  <tr>
-    <td align="right">learn more:<br />
-    <a href="/gp/getTaskDoc.jsp?name=XChromosomeCorrect">XChromosomeCorrect</a>
-    </td>
-  </tr>
-</table>
+            <p><b>20-30 minutes:</b> Processing this example on the GenePattern public server takes time.
+                The example source data and resulting SNP file are provided here for your convenience:
+                <a href="ftp://ftp.broadinstitute.org/pub/genepattern/datasets/gistic/GISTIC_Hind_subset.zip">GISTIC_Hind_subset.zip</a>, <a href="ftp://ftp.broadinstitute.org/pub/genepattern/datasets/protocols/GISTIC_Hind_subset.snp">GISTIC_Hind_subset.snp</a>.
 
-</div>
+            <div class="gpLinks">
+                <ul>
+                    <li><a href="/gp/pages/index.jsf?lsid=SNPFileCreator"
+                           onclick="return openModuleWindow(this, event);"
+                            >Open SNPFileCreator (v. 1) module</a> in the GenePattern window.
+                    </li>
+                    <li><a href="/gp/pages/index.jsf?lsid=urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00086:1&zip.filename=ftp://ftp.broadinstitute.org/pub/genepattern/datasets/gistic/GISTIC_Hind_subset.zip&output.file=GISTIC_Hind_subset.snp"
+                           onclick="return openModuleWindow(this, event);"
+                            >Open SNPFileCreator (v. 1) with example data</a></li>
+                    <li>&nbsp;</li>
+                    <li><b>Warning:</b> Processing this example on a <a class="notGpLinks" href="http://www.broadinstitute.org/genepattern/tutorial/gp_concepts.html#_GenePattern_Server">local GenePattern server</a> is likely to generate an <a class="notGpLinks" href="http://www.broadinstitute.org/cancer/software/genepattern/doc/messages/index.html#memory">OutOfMemoryError</a>.
+                    </li>
+                </ul>
+            </div>
+            <h5>Considerations</h5>
+            <ul>
+                <li>SNPFileCreator accepts CEL files from the 500K Array Chip Set (250K Sty, 250K NSP) or
+                    100K Array Chip Set (50K Xba, 50K Hind). Each chip set uses two unique high density arrays
+                    to genotype over 500,000 and 100,000 SNPs in one experiment, respectively.
+                    The module converts the CEL files for one array into a .snp file.
+                    To create a .snp file for a chip set,
+                    use the MergeRows module to combine the .snp files for the two arrays.
+                </li>
+                <li>SNPFileCreator can transfer the CEL files to the GenePattern server for processing or
+                    read the files from a network directory. Due to the size of the files, best practice is to
+                    store the CEL files in a network directory and process them from that directory.
+                </li>
+                <li>SNPFileCreator writes the generated .snp file to a network directory or to the
+                    GenePattern server. Typically, writing the file to the GenePattern server provides
+                    greater flexibility and makes the file available for use in GenePattern pipelines.
+                </li>
+                <li>SNPFileCreator creates a .snp file in one of two formats:
+                    Non Allele-Specific (default) or Allele-Specific.
+                    For each sample, the Non Allele-Specific format contains an intensity value
+                    and a genotype call; the Allele-Specific format contains an
+                    intensity value for allele A, intensity value for allele B, and genotype call.
+                    All GenePattern modules accept the Non Allele-Specific format; many do not yet accept the Allele-Specific format.
+                </li>
+                <li>SNPFileCreator uses the Human Genome of May 2004 (hg17) to include
+                    Chromosome and Physical Location columns in the .snp file. By default, it sorts the SNPs
+                    by chromosome and physical location, as required by the SnpViewer module.
+                </li>
+            </ul>
 
-<div class="steps">
-  <h2>Step 3: CopyNumberDivideByNormals</h2>
-    <p>CopyNumberDivideByNormals computes the raw copy number of each target SNP by dividing its intensity value 
-     by the mean intensity value of all normal SNPs. This calculation is referred to as 
-     copy number normalization or normalization with respect to normals.</p>
-  </p>
-  <p>CopyNumberDivideByNormals creates one of two files:
-  <ul>
-  <li>.cn (default) does not include genotype calls.
-  <li>.xcn includes genetype calls. The SnpViewer module requires genotype calls to detect and display LOH.
-  </ul>
-  <div class="gpLinks">
-  <ul>
-    <li><a href="/gp/pages/index.jsf?lsid=CopyNumberDivideByNormals" onclick="return openModuleWindow(this, event);"
-        >Open CopyNumberDivideByNormals module</a></li>
-            <li><a href="/gp/pages/index.jsf?lsid=CopyNumberDivideByNormals&snp.file=ftp://ftp.broadinstitute.org/pub/genepattern/datasets/protocols/GISTIC_Hind_subset.xcorrected.snp&sample.info.file=ftp://ftp.broadinstitute.org/pub/genepattern/datasets/gistic/sample_info_subset.txt&include.genotype.calls=xcn" onclick="return openModuleWindow(this, event);"
-        >Open with example data and create .xcn file</a></li>
+            <table width="100%" border="0" cellpadding="0" cellspacing="0">
+                <tr>
+                    <td align="right">learn more:<br />
+                        <a href="/gp/getTaskDoc.jsp?name=SNPFileCreator">SNPFileCreator</a>
+                    </td>
+                </tr>
+            </table>
+        </div>
 
-  </ul>
-  </div>
-    <table width="100%" border="0" cellpadding="0" cellspacing="0">
-  <tr>
-    <td align="right">learn more:<br />
-    <a href="/gp/getTaskDoc.jsp?name=CopyNumberDivideByNormals">CopyNumberDivideByNormals</a>
-    </td>
-  </tr>
-</table>
+        <div class="steps">
+            <h2>Step 2: XChromosomeCorrect</h2>
 
-</div>
+            <p>For gender-specific samples, run the XChromosomeCorrect module to correct intensity values for SNPs on the X chromosome.
+                For each sample from a male donor, the module doubles the intensity value for SNPs on the X chromosome.</p>
 
-<div class="steps">
-  <h2>Step 4: SnpViewer</h2>
-  <p>SnpViewer displays SNP copy number and loss of heterozygosity (LOH) data using heat maps. 
-By default, the viewer displays all chromosomes. To zoom in on a chromosome, select it from the 
-    Chromosome drop-down list in the viewer tool bar. To zoom in on a region of the chromosome, 
-    select the <i>zoom in</i> tool and click on the heat map.</p>
+            <p>The sample information file must
+                include a column labeled Gender that contains a value of M or F for each sample.</p>
 
-   <div class="gpLinks">
-  <ul>
-    <li><a href="/gp/pages/index.jsf?lsid=SnpViewer" onclick="return openModuleWindow(this, event);"
-        >Open SnpViewer module</a></li>
-     <li><a href="/gp/pages/index.jsf?lsid=SnpViewer&dataset.filename=ftp://ftp.broadinstitute.org/pub/genepattern/datasets/protocols/GISTIC_Hind_subset.xcorrected.xcn&sample.info.filename=ftp://ftp.broadinstitute.org/pub/genepattern/datasets/gistic/sample_info_subset.txt&sample.list.filename=ftp://ftp.broadinstitute.org/pub/genepattern/datasets/gistic/sample_list_subset.txt" onclick="return openModuleWindow(this, event);"
-        >Open SnpViewer module with example data</a></li>
+            <div class="gpLinks">
+                <ul>
+                    <li><a href="/gp/pages/index.jsf?lsid=XChromosomeCorrect" onclick="return openModuleWindow(this, event);"
+                            >Open XChromosomeCorrect module</a></li>
+                    <li><a href="/gp/pages/index.jsf?lsid=XChromosomeCorrect&snp.filename=ftp://ftp.broadinstitute.org/pub/genepattern/datasets/protocols/GISTIC_Hind_subset.snp&sample.info.filename=ftp://ftp.broadinstitute.org/pub/genepattern/datasets/gistic/sample_info_subset.txt" onclick="return openModuleWindow(this, event);"
+                            >Open XChromosomeCorrect with example data</a></li>
+                </ul>
+            </div>
 
-  </ul>
-  </div>
-   <h5>Considerations</h5>
-  <ul>
-  <li>To view a .xcn or .cn file that is on your local drive, run the SnpViewer without specifying 
-    any parameters. When the viewer starts, use the File menu to load the file into the viewer. 
-    If you specify a local file as a parameter to the SNPViewer module, 
-    GenePattern copies the file to the GenePattern server, which can be time consuming for a large
-    .xcn or .cn file.</li>
-  <li>To detect and display LOH calls, the 
-    SnpViewer module requires genotype calls (.xcn file format). The LOH calls are: </p>
-    <ul>
-    <li>Loss: AB in normal and A or B in target.</li>
-    <li>Retained: AB in both normal and target or No Call in normal and AB in target.</li>
-    <li>Conflict: A or B in normal and AB in target.</li>
-    <li>Non-informative/no call: A or B in normal or No Call in normal or target.</li>
-    </ul>
-    </li>
-  <li>By default, the viewer displays all chromosomes. To zoom in on a chromosome, select it from the 
-    Chromosome drop-down list in the viewer tool bar. To zoom in on a region of the chromosome, 
-    select the <i>zoom in</i> tool and click on the heat map.</li>
-  <li>To sort samples by copy number amplification or deletion: zoom in on a chromosome; select the 
-    <i>define a region of interest</i> tool; in the heat map, click the start of the region of interest and
-    then the end of that region; a red bar to the left of the heat map defines the region of interest; 
-    right-click the red bar and select <i>sort of amplification</i> or <i>sort of deletion</i>.</li>
-    </ul>
- 
-    <table width="100%" border="0" cellpadding="0" cellspacing="0">
-  <tr>
-    <td align="right">learn more:<br />
-    <a href="/gp/getTaskDoc.jsp?name=SnpViewer">SnpViewer</a>
-    </td>
-  </tr>
-</table>
-</div>
-<h2>Reference</h2>
-<p>Monti, S. 2005. Class slides: SNP microarrays and high-density genotyping. 
-http://www.chip.org/teaching/hst950/slides/class6.pdf.</p>
+            <table width="100%" border="0" cellpadding="0" cellspacing="0">
+                <tr>
+                    <td align="right">learn more:<br />
+                        <a href="/gp/getTaskDoc.jsp?name=XChromosomeCorrect">XChromosomeCorrect</a>
+                    </td>
+                </tr>
+            </table>
 
-</body>
+        </div>
+
+        <div class="steps">
+            <h2>Step 3: CopyNumberDivideByNormals</h2>
+
+            <p>CopyNumberDivideByNormals computes the raw copy number of each target SNP by dividing its intensity value
+                by the mean intensity value of all normal SNPs. This calculation is referred to as
+                copy number normalization or normalization with respect to normals.</p>
+            </p>
+            <p>CopyNumberDivideByNormals creates one of two files:
+            <ul>
+                <li>.cn (default) does not include genotype calls.
+                <li>.xcn includes genetype calls. The SnpViewer module requires genotype calls to detect and display LOH.
+            </ul>
+            <div class="gpLinks">
+                <ul>
+                    <li><a href="/gp/pages/index.jsf?lsid=CopyNumberDivideByNormals" onclick="return openModuleWindow(this, event);"
+                            >Open CopyNumberDivideByNormals module</a></li>
+                    <li><a href="/gp/pages/index.jsf?lsid=CopyNumberDivideByNormals&snp.file=ftp://ftp.broadinstitute.org/pub/genepattern/datasets/protocols/GISTIC_Hind_subset.xcorrected.snp&sample.info.file=ftp://ftp.broadinstitute.org/pub/genepattern/datasets/gistic/sample_info_subset.txt&include.genotype.calls=xcn" onclick="return openModuleWindow(this, event);"
+                            >Open with example data and create .xcn file</a></li>
+
+                </ul>
+            </div>
+            <table width="100%" border="0" cellpadding="0" cellspacing="0">
+                <tr>
+                    <td align="right">learn more:<br />
+                        <a href="/gp/getTaskDoc.jsp?name=CopyNumberDivideByNormals">CopyNumberDivideByNormals</a>
+                    </td>
+                </tr>
+            </table>
+
+        </div>
+
+        <div class="steps">
+            <h2>Step 4: SnpViewer</h2>
+
+            <p>SnpViewer displays SNP copy number and loss of heterozygosity (LOH) data using heat maps.
+                By default, the viewer displays all chromosomes. To zoom in on a chromosome, select it from the
+                Chromosome drop-down list in the viewer tool bar. To zoom in on a region of the chromosome,
+                select the <i>zoom in</i> tool and click on the heat map.</p>
+
+            <div class="gpLinks">
+                <ul>
+                    <li><a href="/gp/pages/index.jsf?lsid=SnpViewer" onclick="return openModuleWindow(this, event);"
+                            >Open SnpViewer module</a></li>
+                    <li><a href="/gp/pages/index.jsf?lsid=SnpViewer&dataset.filename=ftp://ftp.broadinstitute.org/pub/genepattern/datasets/protocols/GISTIC_Hind_subset.xcorrected.xcn&sample.info.filename=ftp://ftp.broadinstitute.org/pub/genepattern/datasets/gistic/sample_info_subset.txt&sample.list.filename=ftp://ftp.broadinstitute.org/pub/genepattern/datasets/gistic/sample_list_subset.txt" onclick="return openModuleWindow(this, event);"
+                            >Open SnpViewer module with example data</a></li>
+
+                </ul>
+            </div>
+            <h5>Considerations</h5>
+            <ul>
+                <li>To view a .xcn or .cn file that is on your local drive, run the SnpViewer without specifying
+                    any parameters. When the viewer starts, use the File menu to load the file into the viewer.
+                    If you specify a local file as a parameter to the SNPViewer module,
+                    GenePattern copies the file to the GenePattern server, which can be time consuming for a large
+                    .xcn or .cn file.
+                </li>
+                <li>To detect and display LOH calls, the
+                    SnpViewer module requires genotype calls (.xcn file format). The LOH calls are: </p>
+                    <ul>
+                        <li>Loss: AB in normal and A or B in target.</li>
+                        <li>Retained: AB in both normal and target or No Call in normal and AB in target.</li>
+                        <li>Conflict: A or B in normal and AB in target.</li>
+                        <li>Non-informative/no call: A or B in normal or No Call in normal or target.</li>
+                    </ul>
+                </li>
+                <li>By default, the viewer displays all chromosomes. To zoom in on a chromosome, select it from the
+                    Chromosome drop-down list in the viewer tool bar. To zoom in on a region of the chromosome,
+                    select the <i>zoom in</i> tool and click on the heat map.
+                </li>
+                <li>To sort samples by copy number amplification or deletion: zoom in on a chromosome; select the
+                    <i>define a region of interest</i> tool; in the heat map, click the start of the region of interest and
+                    then the end of that region; a red bar to the left of the heat map defines the region of interest;
+                    right-click the red bar and select <i>sort of amplification</i> or <i>sort of deletion</i>.
+                </li>
+            </ul>
+
+            <table width="100%" border="0" cellpadding="0" cellspacing="0">
+                <tr>
+                    <td align="right">learn more:<br />
+                        <a href="/gp/getTaskDoc.jsp?name=SnpViewer">SnpViewer</a>
+                    </td>
+                </tr>
+            </table>
+        </div>
+        <h2>Reference</h2>
+
+        <p>Monti, S. 2005. Class slides: SNP microarrays and high-density genotyping.
+            http://www.chip.org/teaching/hst950/slides/class6.pdf.</p>
+
+    </body>
 </html>

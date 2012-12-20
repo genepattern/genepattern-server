@@ -1,82 +1,101 @@
+<!--
+  ~ Copyright 2012 The Broad Institute, Inc.
+  ~ SOFTWARE COPYRIGHT NOTICE
+  ~ This software and its documentation are the copyright of the Broad Institute, Inc. All rights are reserved.
+  ~
+  ~ This software is supplied without any warranty or guaranteed support whatsoever. The Broad Institute is not responsible for its use, misuse, or functionality.
+  -->
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
-<head>
-<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1" />
-<META HTTP-EQUIV="CACHE-CONTROL" CONTENT="NO-CACHE"/>
-<title>Class Prediction</title>
-	<link href="../../css/protocolsWindow.css" rel="stylesheet" type="text/css" />
-    <script type="text/javascript" src="../../js/protocol.js"></script>
-</head>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1" />
+        <META HTTP-EQUIV="CACHE-CONTROL" CONTENT="NO-CACHE" />
+        <title>Class Prediction</title>
+        <link href="../../css/protocolsWindow.css" rel="stylesheet" type="text/css" />
+        <script type="text/javascript" src="../../js/protocol.js"></script>
+    </head>
 
-<body>
+    <body>
 
-<h1>Class Prediction</h1>
-<table width="100%" border="0" cellpadding="0" cellspacing="0">
-  <tr>
-    <td align="left">
-      <a href="protocols.html">protocols</a>
-    </td>
-  </tr>
-</table>
+        <h1>Class Prediction</h1>
+        <table width="100%" border="0" cellpadding="0" cellspacing="0">
+            <tr>
+                <td align="left">
+                    <a href="protocols.html">protocols</a>
+                </td>
+            </tr>
+        </table>
 
-<p>Using a data set that contains known samples, create a model
-(also referred to as a <i>class predictor</i> or <i>classifier</i>) 
-that can be used to predict the class of a previously unknown sample. 
-</p>
+        <p>Using a data set that contains known samples, create a model
+            (also referred to as a <i>class predictor</i> or <i>classifier</i>)
+            that can be used to predict the class of a previously unknown sample.
+        </p>
 
-<div class="steps">
-<h2>Click the desired algorithm</h2>
+        <div class="steps">
+            <h2>Click the desired algorithm</h2>
 
-  <ul>
-    <li><b><a href="Prediction_cart.html">CART</a></b> (Breiman et al., 1984) 
-        builds <b>C</b>lassification <b>A</b>nd <b>R</b>egression <b>T</b>rees. 
-        It works by recursively splitting the 
-        feature space into a set of non-overlapping regions and then predicting 
-        the most likely value of the dependent variable within each region. A 
-        classification (or regression) tree represents the set of nested if-then conditions 
-        used to predict a categorical dependent (or continuous dependent) variable 
-        based on the observed values of the feature variables. CART is vulnerable to 
-        overfitting and therefore not commonly used with microarray data.</li>
-        
-    <li><b><a href="Prediction_knn.html">K-nearest-neighbors (KNN)</a></b> classifies an unknown sample by assigning
-      it the phenotype label most frequently represented among the k nearest
-      known samples (Golub and Slonim et al., 1999). In GenePattern, an analyst can
-      select a weighting factor for the 'votes' of the nearest neighbors. For example, one 
-      might weight the votes by the reciprocal of the distance between neighbors. </li>
-    <li><b><a href="Prediction_pnn.html">Probabilistic Neural Network (PNN)</a></b> calculates the probability
-      that an unknown sample belongs to a given set of known phenotype classes
-      (Lu et al., 2005; Specht, 1990). The contribution of each known sample
-      to the phenotype class of the unknown sample follows a Gaussian distribution.
-      PNN can be considered as a Gaussian-weighted KNN classifier - known samples
-      close to the unknown sample have a greater influence on the predicted class
-      of the unknown sample. <br /><br />
-      <b>PNN is not on the GenePattern public server.</b> The PNN modules require the Windows operating system. To use PNN, install the GenePattern server and the PNN modules on a Windows machine.</li>
-    <li><b><a href="Prediction_svm.html">Support Vector Machines (SVM)</a></b> is designed for multiple class classification
-      (Rifkin et al., 2003). The algorithm creates a binary SVM classifier for
-      each class by computing a maximal margin hyperplane that separates the
-      given class from all other classes; that is, the hyperplane with maximal
-      distance to the nearest data point. The binary classifiers are then combined
-      into a multiclass classfier. For an unknown sample, the assigned class
-      is the one with the largest margin. </li>
-    <li><b><a href="Prediction_wv.html">Weighted Voting</a></b> (Slonim et al., 2000) classifies an unknown sample
-      using a simple weighted voting scheme. Each gene in the classifier 'votes'
-      for the phenotype class of the unknown sample. A gene's vote is weighted
-      by how closely its expression correlates with the differentiation between
-      phenotype classes in the training data set. </li>
-  </ul>
+            <ul>
+                <li><b><a href="Prediction_cart.html">CART</a></b> (Breiman et al., 1984)
+                    builds <b>C</b>lassification <b>A</b>nd <b>R</b>egression <b>T</b>rees.
+                    It works by recursively splitting the
+                    feature space into a set of non-overlapping regions and then predicting
+                    the most likely value of the dependent variable within each region. A
+                    classification (or regression) tree represents the set of nested if-then conditions
+                    used to predict a categorical dependent (or continuous dependent) variable
+                    based on the observed values of the feature variables. CART is vulnerable to
+                    overfitting and therefore not commonly used with microarray data.
+                </li>
 
-</div>
+                <li><b><a href="Prediction_knn.html">K-nearest-neighbors (KNN)</a></b> classifies an unknown sample by assigning
+                    it the phenotype label most frequently represented among the k nearest
+                    known samples (Golub and Slonim et al., 1999). In GenePattern, an analyst can
+                    select a weighting factor for the 'votes' of the nearest neighbors. For example, one
+                    might weight the votes by the reciprocal of the distance between neighbors.
+                </li>
+                <li><b><a href="Prediction_pnn.html">Probabilistic Neural Network (PNN)</a></b> calculates the probability
+                    that an unknown sample belongs to a given set of known phenotype classes
+                    (Lu et al., 2005; Specht, 1990). The contribution of each known sample
+                    to the phenotype class of the unknown sample follows a Gaussian distribution.
+                    PNN can be considered as a Gaussian-weighted KNN classifier - known samples
+                    close to the unknown sample have a greater influence on the predicted class
+                    of the unknown sample. <br /><br />
+                    <b>PNN is not on the GenePattern public server.</b> The PNN modules require the Windows operating system. To use PNN, install the GenePattern server and the PNN modules on a Windows machine.
+                </li>
+                <li><b><a href="Prediction_svm.html">Support Vector Machines (SVM)</a></b> is designed for multiple class classification
+                    (Rifkin et al., 2003). The algorithm creates a binary SVM classifier for
+                    each class by computing a maximal margin hyperplane that separates the
+                    given class from all other classes; that is, the hyperplane with maximal
+                    distance to the nearest data point. The binary classifiers are then combined
+                    into a multiclass classfier. For an unknown sample, the assigned class
+                    is the one with the largest margin.
+                </li>
+                <li><b><a href="Prediction_wv.html">Weighted Voting</a></b> (Slonim et al., 2000) classifies an unknown sample
+                    using a simple weighted voting scheme. Each gene in the classifier 'votes'
+                    for the phenotype class of the unknown sample. A gene's vote is weighted
+                    by how closely its expression correlates with the differentiation between
+                    phenotype classes in the training data set.
+                </li>
+            </ul>
+
+        </div>
 
 
-<h2>References</h2>
-<p>Breiman, L., Friedman, J. H., Olshen, R. A., &amp; Stone, C. J. 1984.
-Classification and regression trees. Wadsworth &amp; Brooks/Cole Advanced
-Books &amp; Software, Monterey, CA.</p>
-<p>Golub, T.R., Slonim, D.K., Tamayo, P., Huard, C., Gaasenbeek, M., Mesirov, J.P., Coller, H., Loh, M., Downing, J.R., Caligiuri, M.A., Bloomfield, C.D., and Lander, E.S. 1999. Molecular Classification of Cancer: Class Discovery and Class Prediction by Gene Expression. Science 286:531-537.</p>
-<p>Lu, J., Getz, G., Miska, E.A., Alvarez-Saavedra, E., Lamb, J., Peck, D., Sweet-Cordero, A., Ebert, B.L., Mak, R.H., Ferrando, A.A, Downing, J.R., Jacks, T., Horvitz, H.R., Golub, T.R. 2005. MicroRNA expression profiles classify human cancers. Nature 435:834-838.</p>
-<p>Rifkin, R., Mukherjee, S., Tamayo, P., Ramaswamy, S., Yeang, C-H, Angelo, M., Reich, M., Poggio, T., Lander, E.S., Golub, T.R., Mesirov, J.P. 2003. An Analytical Method for Multiclass Molecular Cancer Classification. SIAM Review 45(4):706-723.</p>
-<p>Slonim, D.K., Tamayo, P., Mesirov, J.P., Golub, T.R., Lander, E.S. 2000. Class prediction and discovery using gene expression data. In Proceedings of the Fourth Annual International Conference on Computational Molecular Biology (RECOMB). ACM Press, New York. pp. 263-272.</p>
-<p>Specht, D. F. 1990. Probabilistic Neural Networks. Neural Networks 3(1):109-118. Elsevier Science Ltd., St. Louis.</p>
+        <h2>References</h2>
 
-</body>
+        <p>Breiman, L., Friedman, J. H., Olshen, R. A., &amp; Stone, C. J. 1984.
+            Classification and regression trees. Wadsworth &amp; Brooks/Cole Advanced
+            Books &amp; Software, Monterey, CA.</p>
+
+        <p>Golub, T.R., Slonim, D.K., Tamayo, P., Huard, C., Gaasenbeek, M., Mesirov, J.P., Coller, H., Loh, M., Downing, J.R., Caligiuri, M.A., Bloomfield, C.D., and Lander, E.S. 1999. Molecular Classification of Cancer: Class Discovery and Class Prediction by Gene Expression. Science 286:531-537.</p>
+
+        <p>Lu, J., Getz, G., Miska, E.A., Alvarez-Saavedra, E., Lamb, J., Peck, D., Sweet-Cordero, A., Ebert, B.L., Mak, R.H., Ferrando, A.A, Downing, J.R., Jacks, T., Horvitz, H.R., Golub, T.R. 2005. MicroRNA expression profiles classify human cancers. Nature 435:834-838.</p>
+
+        <p>Rifkin, R., Mukherjee, S., Tamayo, P., Ramaswamy, S., Yeang, C-H, Angelo, M., Reich, M., Poggio, T., Lander, E.S., Golub, T.R., Mesirov, J.P. 2003. An Analytical Method for Multiclass Molecular Cancer Classification. SIAM Review 45(4):706-723.</p>
+
+        <p>Slonim, D.K., Tamayo, P., Mesirov, J.P., Golub, T.R., Lander, E.S. 2000. Class prediction and discovery using gene expression data. In Proceedings of the Fourth Annual International Conference on Computational Molecular Biology (RECOMB). ACM Press, New York. pp. 263-272.</p>
+
+        <p>Specht, D. F. 1990. Probabilistic Neural Networks. Neural Networks 3(1):109-118. Elsevier Science Ltd., St. Louis.</p>
+
+    </body>
 </html>

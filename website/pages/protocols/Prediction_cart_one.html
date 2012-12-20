@@ -1,172 +1,194 @@
+<!--
+  ~ Copyright 2012 The Broad Institute, Inc.
+  ~ SOFTWARE COPYRIGHT NOTICE
+  ~ This software and its documentation are the copyright of the Broad Institute, Inc. All rights are reserved.
+  ~
+  ~ This software is supplied without any warranty or guaranteed support whatsoever. The Broad Institute is not responsible for its use, misuse, or functionality.
+  -->
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
-<head>
-<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1" />
-<META HTTP-EQUIV="CACHE-CONTROL" CONTENT="NO-CACHE"/>
-<title>CART Class Prediction: One Data Set</title>
-	<link href="../../css/protocolsWindow.css" rel="stylesheet" type="text/css" />
-    <script type="text/javascript" src="../../js/protocol.js"></script>
-</head>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1" />
+        <META HTTP-EQUIV="CACHE-CONTROL" CONTENT="NO-CACHE" />
+        <title>CART Class Prediction: One Data Set</title>
+        <link href="../../css/protocolsWindow.css" rel="stylesheet" type="text/css" />
+        <script type="text/javascript" src="../../js/protocol.js"></script>
+    </head>
 
-<body>
+    <body>
 
-<h1>CART Class Prediction: One Data Set</h1>
-<table width="100%" border="0" cellpadding="0" cellspacing="0">
-  <tr>
-    <td align="left">
-      <a href="protocols.html">protocols</a>
-    </td>
-  </tr>
-</table>
+        <h1>CART Class Prediction: One Data Set</h1>
+        <table width="100%" border="0" cellpadding="0" cellspacing="0">
+            <tr>
+                <td align="left">
+                    <a href="protocols.html">protocols</a>
+                </td>
+            </tr>
+        </table>
 
-<p>
-Use the CARTXValidation module to 
-build and test classifiers using the <b>C</b>lassification <b>A</b>nd <b>R</b>egression <b>T</b>rees (CART) class prediction method and one gene expression data set.</p>
-<div class="steps">
-<h2>Before you begin</h2>
+        <p>
+            Use the CARTXValidation module to
+            build and test classifiers using the <b>C</b>lassification <b>A</b>nd <b>R</b>egression <b>T</b>rees (CART) class prediction method and one gene expression data set.</p>
 
-<p>A gene expression data set consists of two files:</p>
-<ul>
-  <li><a href="GctResFiles.html">GCT or RES file</a> that contains gene expression data. 
-  <br />
-  Example file: <a href="ftp://ftp.broadinstitute.org/pub/genepattern/datasets/all_aml/all_aml_test.gct">all_aml_test.gct</a>.
- </li>
-  <li><a href="ClsFiles.html">CLS file</a> that identifies the class of each sample in the gene expression data. 
-  <br />
-  Example file: <a href="ftp://ftp.broadinstitute.org/pub/genepattern/datasets/all_aml/all_aml_test.cls">all_aml_test.cls</a>.
-  </li>
-</ul>
-<table width="100%" border="0" cellpadding="0" cellspacing="0">
-  <tr>
-    <td align="right">learn more:<br>
-    <a href="http://www.broadinstitute.org/cancer/software/genepattern/tutorial/gp_fileformats.html#gct">file formats</a>
-    </td>
-  </tr>
-</table>
-</div>
+        <div class="steps">
+            <h2>Before you begin</h2>
 
-<div class="steps">
-  <h2>Step 1: PreprocessDataset</h2>
-  <p>Preprocess gene expression data 
-      to remove platform noise and genes that have little variation.
-Note: If preprocessing the data removes relevant biological information, skip this step.</p>
-  <div class="gpLinks">
-  <ul>
-    <li><a href="/gp/pages/index.jsf?lsid=PreprocessDataset" 
-           onclick="return openModuleWindow(this, event);"
-        >Open module</a> in the GenePattern window.</li>
-    <li><a href="/gp/pages/index.jsf?lsid=PreprocessDataset&input.filename=ftp://ftp.broadinstitute.org/pub/genepattern/datasets/all_aml/all_aml_test.gct" 
-           onclick="return openModuleWindow(this, event);"
-        >Open module with example data</a> in the GenePattern window.</li>
-  </ul>
-  </div>
-    <h5>Considerations</h5>
-  <ul>
-      <li>PreprocessDataset can preprocess the data in one or more ways (in this order):
-  <ol>
-    <li>Set threshold and ceiling values. Any value lower/higer than the threshold/ceiling
-      value is reset to the threshold/ceiling value. </li>
-    <li>Convert each expression value to the log base 2 of the value. </li>
-    <li>Remove genes (rows) if a given number of its sample values are less than
-      a given threshold. </li>
-    <li>Remove genes (rows) that do not have a minimum fold change or expression
-      variation. </li>
-    <li>Discretize or normalize the data. </li>
-  </ol></li>
-<li>When using ratios to compare gene expression between samples, 
-      convert values to log base 2 of the value to
-      bring up- and down-regulated genes to the same scale. 
-      For example, ratios of 2 and .5 indicating two-fold changes for up- and
-      down-regulated expression, respectively, are converted to +1 and -1. </li>
-    <li>If you did not generate the expression data, 
-      check whether preprocessing steps have already been taken before 
-      running the PreprocessDataset module. </li>
-  </ul>
+            <p>A gene expression data set consists of two files:</p>
+            <ul>
+                <li><a href="GctResFiles.html">GCT or RES file</a> that contains gene expression data.
+                    <br />
+                    Example file: <a href="ftp://ftp.broadinstitute.org/pub/genepattern/datasets/all_aml/all_aml_test.gct">all_aml_test.gct</a>.
+                </li>
+                <li><a href="ClsFiles.html">CLS file</a> that identifies the class of each sample in the gene expression data.
+                    <br />
+                    Example file: <a href="ftp://ftp.broadinstitute.org/pub/genepattern/datasets/all_aml/all_aml_test.cls">all_aml_test.cls</a>.
+                </li>
+            </ul>
+            <table width="100%" border="0" cellpadding="0" cellspacing="0">
+                <tr>
+                    <td align="right">learn more:<br>
+                        <a href="http://www.broadinstitute.org/cancer/software/genepattern/tutorial/gp_fileformats.html#gct">file formats</a>
+                    </td>
+                </tr>
+            </table>
+        </div>
 
-<table width="100%" border="0" cellpadding="0" cellspacing="0">
-  <tr>
-    <td align="right">learn more:<br>
-    <a href="/gp/getTaskDoc.jsp?name=PreprocessDataset">PreprocessDataset</a>
-     </td>
-  </tr>
-</table>
-</div>
+        <div class="steps">
+            <h2>Step 1: PreprocessDataset</h2>
+
+            <p>Preprocess gene expression data
+                to remove platform noise and genes that have little variation.
+                Note: If preprocessing the data removes relevant biological information, skip this step.</p>
+
+            <div class="gpLinks">
+                <ul>
+                    <li><a href="/gp/pages/index.jsf?lsid=PreprocessDataset"
+                           onclick="return openModuleWindow(this, event);"
+                            >Open module</a> in the GenePattern window.
+                    </li>
+                    <li><a href="/gp/pages/index.jsf?lsid=PreprocessDataset&input.filename=ftp://ftp.broadinstitute.org/pub/genepattern/datasets/all_aml/all_aml_test.gct"
+                           onclick="return openModuleWindow(this, event);"
+                            >Open module with example data</a> in the GenePattern window.
+                    </li>
+                </ul>
+            </div>
+            <h5>Considerations</h5>
+            <ul>
+                <li>PreprocessDataset can preprocess the data in one or more ways (in this order):
+                    <ol>
+                        <li>Set threshold and ceiling values. Any value lower/higer than the threshold/ceiling
+                            value is reset to the threshold/ceiling value.
+                        </li>
+                        <li>Convert each expression value to the log base 2 of the value.</li>
+                        <li>Remove genes (rows) if a given number of its sample values are less than
+                            a given threshold.
+                        </li>
+                        <li>Remove genes (rows) that do not have a minimum fold change or expression
+                            variation.
+                        </li>
+                        <li>Discretize or normalize the data.</li>
+                    </ol>
+                </li>
+                <li>When using ratios to compare gene expression between samples,
+                    convert values to log base 2 of the value to
+                    bring up- and down-regulated genes to the same scale.
+                    For example, ratios of 2 and .5 indicating two-fold changes for up- and
+                    down-regulated expression, respectively, are converted to +1 and -1.
+                </li>
+                <li>If you did not generate the expression data,
+                    check whether preprocessing steps have already been taken before
+                    running the PreprocessDataset module.
+                </li>
+            </ul>
+
+            <table width="100%" border="0" cellpadding="0" cellspacing="0">
+                <tr>
+                    <td align="right">learn more:<br>
+                        <a href="/gp/getTaskDoc.jsp?name=PreprocessDataset">PreprocessDataset</a>
+                    </td>
+                </tr>
+            </table>
+        </div>
 
 
-<div class="steps">
-  <h2>Step 2: CARTXValidation</h2>
+        <div class="steps">
+            <h2>Step 2: CARTXValidation</h2>
 
-  <p>CARTXValidation runs the CART class prediction method iteratively against the known data set. For each iteration, it leaves one sample
-      out, builds the classifier using the remaining samples, and then tests
-      the classifier on the sample left out. It creates a
-      prediction results file that assesses the accuracy of the classifiers. 
-  </p>
-  
-  <div class="gpLinks">
-  <ul>
-    <li><a href="/gp/pages/index.jsf?lsid=CARTXValidation"
-           onclick="return openModuleWindow(this, event);"
-        >Open CARTXValidation</a></li>
-    <li><a href="/gp/pages/index.jsf?lsid=CARTXValidation&data.filename=ftp://ftp.broadinstitute.org/pub/genepattern/datasets/protocols/all_aml_test.preprocessed.gct&cls.filename=ftp://ftp.broadinstitute.org/pub/genepattern/datasets/all_aml/all_aml_test.cls"
-           onclick="return openModuleWindow(this, event);"
-        >Open CARTXValidation with example data</a></li>
-  </ul>
-  </div>
-<table width="100%" border="0" cellpadding="0" cellspacing="0">
-  <tr>
-    <td align="right">learn more:<br>
-    <a href="/gp/getTaskDoc.jsp?name=CARTXValidation">CARTXValidation</a>
-    </td>
-  </tr>
-</table>  
-</div>
+            <p>CARTXValidation runs the CART class prediction method iteratively against the known data set. For each iteration, it leaves one sample
+                out, builds the classifier using the remaining samples, and then tests
+                the classifier on the sample left out. It creates a
+                prediction results file that assesses the accuracy of the classifiers.
+            </p>
 
-<div class="steps">
-  <h2>Step 3: PredictionResultsViewer</h2>
-  <p>Display the prediction results file (*.pred.odf).
-  The viewer lists each sample, its actual class, its predicted class, and prediction error rates.
-      Prediction error rates are averaged across all iterations.
-  </p>
-  <div class="gpLinks">
-  <ul>
-    <li><a href="/gp/pages/index.jsf?lsid=PredictionResultsViewer"
-           onclick="return openModuleWindow(this, event);"
-        >Open the PredictionResultsViewer</a></li>
-    <li><a href="/gp/pages/index.jsf?lsid=PredictionResultsViewer&prediction.results.file=ftp://ftp.broadinstitute.org/pub/genepattern/datasets/protocols/all_aml_test.preprocessed.cartx.pred.odf"
-           onclick="return openModuleWindow(this, event);"
-        >Open the PredictionResultsViewer with example data</a></li>
- </ul>
-  </div>
-    <h5>Considerations</h5>
-  <ul>
-    <li>The PredictionResultsViewer provides an absolute error rate (incorrect cases/total cases) and an
-      ROC error rate (fraction of true positives 
-      versus the fraction of false positives). Use the ROC error rate for comparing results across data sets.
-    </li>
-  </ul>
+            <div class="gpLinks">
+                <ul>
+                    <li><a href="/gp/pages/index.jsf?lsid=CARTXValidation"
+                           onclick="return openModuleWindow(this, event);"
+                            >Open CARTXValidation</a></li>
+                    <li><a href="/gp/pages/index.jsf?lsid=CARTXValidation&data.filename=ftp://ftp.broadinstitute.org/pub/genepattern/datasets/protocols/all_aml_test.preprocessed.gct&cls.filename=ftp://ftp.broadinstitute.org/pub/genepattern/datasets/all_aml/all_aml_test.cls"
+                           onclick="return openModuleWindow(this, event);"
+                            >Open CARTXValidation with example data</a></li>
+                </ul>
+            </div>
+            <table width="100%" border="0" cellpadding="0" cellspacing="0">
+                <tr>
+                    <td align="right">learn more:<br>
+                        <a href="/gp/getTaskDoc.jsp?name=CARTXValidation">CARTXValidation</a>
+                    </td>
+                </tr>
+            </table>
+        </div>
 
-<table width="100%" border="0" cellpadding="0" cellspacing="0">
-  <tr>
-    <td align="right">learn more:<br>
-    <a href="/gp/getTaskDoc.jsp?name=PredictionResultsViewer">PredictionResultsViewer</a>
-    </td>
-  </tr>
-</table>  
-  
-  </div>
+        <div class="steps">
+            <h2>Step 3: PredictionResultsViewer</h2>
 
-  <div class="steps">
+            <p>Display the prediction results file (*.pred.odf).
+                The viewer lists each sample, its actual class, its predicted class, and prediction error rates.
+                Prediction error rates are averaged across all iterations.
+            </p>
 
-<h2>Building a classifier (model) file</h2>
-<p>CARTXValidation does not save the classifiers that it generates. Typically, an analyst builds a classifier using one data set and tests the classifier using a second data set. It is rare to build a classifier (model) file using one data set without having a second data set available for testing; however, it is possible. To build a classifier (model) file using one data set, run the CART module: specify the one data set as the training data set.</p> 
-<table width="100%" border="0" cellpadding="0" cellspacing="0">
-  <tr>
-    <td align="right">learn more:<br>
-    <a href="/gp/getTaskDoc.jsp?name=CART">CART</a>
-    </td>
-  </tr>
-</table>  
-</div>
+            <div class="gpLinks">
+                <ul>
+                    <li><a href="/gp/pages/index.jsf?lsid=PredictionResultsViewer"
+                           onclick="return openModuleWindow(this, event);"
+                            >Open the PredictionResultsViewer</a></li>
+                    <li><a href="/gp/pages/index.jsf?lsid=PredictionResultsViewer&prediction.results.file=ftp://ftp.broadinstitute.org/pub/genepattern/datasets/protocols/all_aml_test.preprocessed.cartx.pred.odf"
+                           onclick="return openModuleWindow(this, event);"
+                            >Open the PredictionResultsViewer with example data</a></li>
+                </ul>
+            </div>
+            <h5>Considerations</h5>
+            <ul>
+                <li>The PredictionResultsViewer provides an absolute error rate (incorrect cases/total cases) and an
+                    ROC error rate (fraction of true positives
+                    versus the fraction of false positives). Use the ROC error rate for comparing results across data sets.
+                </li>
+            </ul>
 
-</body>
+            <table width="100%" border="0" cellpadding="0" cellspacing="0">
+                <tr>
+                    <td align="right">learn more:<br>
+                        <a href="/gp/getTaskDoc.jsp?name=PredictionResultsViewer">PredictionResultsViewer</a>
+                    </td>
+                </tr>
+            </table>
+
+        </div>
+
+        <div class="steps">
+
+            <h2>Building a classifier (model) file</h2>
+
+            <p>CARTXValidation does not save the classifiers that it generates. Typically, an analyst builds a classifier using one data set and tests the classifier using a second data set. It is rare to build a classifier (model) file using one data set without having a second data set available for testing; however, it is possible. To build a classifier (model) file using one data set, run the CART module: specify the one data set as the training data set.</p>
+            <table width="100%" border="0" cellpadding="0" cellspacing="0">
+                <tr>
+                    <td align="right">learn more:<br>
+                        <a href="/gp/getTaskDoc.jsp?name=CART">CART</a>
+                    </td>
+                </tr>
+            </table>
+        </div>
+
+    </body>
 </html>

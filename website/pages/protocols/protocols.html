@@ -1,108 +1,109 @@
-<!-- /*
- The Broad Institute
- SOFTWARE COPYRIGHT NOTICE AGREEMENT
- This software and its documentation are copyright (2003-2012) by the
- Broad Institute/Massachusetts Institute of Technology. All rights are
- reserved.
- 
- This software is supplied without any warranty or guaranteed support
- whatsoever. Neither the Broad Institute nor MIT can be responsible for its
- use, misuse, or functionality.
- */ -->
+<!--
+  ~ Copyright 2012 The Broad Institute, Inc.
+  ~ SOFTWARE COPYRIGHT NOTICE
+  ~ This software and its documentation are the copyright of the Broad Institute, Inc. All rights are reserved.
+  ~
+  ~ This software is supplied without any warranty or guaranteed support whatsoever. The Broad Institute is not responsible for its use, misuse, or functionality.
+  -->
 
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
       xmlns:ui="http://java.sun.com/jsf/facelets">
-<head>
-  <meta http-equiv="Content-Type" content="text/xhtml; charset=ISO-8859-1" />
-  <META HTTP-EQUIV="CACHE-CONTROL" CONTENT="NO-CACHE"/>
-  <title>GenePattern - Protocols</title>
-  <link href="/gp/css/protocols.css" rel="stylesheet" type="text/css" />
-  <link href="/gp/css/protocolsWindow.css" rel="stylesheet" type="text/css" />
-  <script type="text/javascript" src="/gp/js/protocol.js"></script>
-</head>
+    <head>
+        <meta http-equiv="Content-Type" content="text/xhtml; charset=ISO-8859-1" />
+        <META HTTP-EQUIV="CACHE-CONTROL" CONTENT="NO-CACHE" />
+        <title>GenePattern - Protocols</title>
+        <link href="/gp/css/protocols.css" rel="stylesheet" type="text/css" />
+        <link href="/gp/css/protocolsWindow.css" rel="stylesheet" type="text/css" />
+        <script type="text/javascript" src="/gp/js/protocol.js"></script>
+    </head>
 
-<body 
-  style="background-color: #e3e3fd; width: 100%; height: 100%;  position: fixed; margin: 0;"
-  onload="self.name='protocol'"
->
+    <body style="background-color: #e3e3fd; width: 100%; height: 100%;  position: fixed; margin: 0;" onload="self.name='protocol'">
 
-<h1>Protocols for running common analyses in GenePattern</h1>
+        <h1>Protocols for running common analyses in GenePattern</h1>
 
-<div style="padding-top: 24px; margin-right: 24px;">
+        <div style="padding-top: 24px; margin-right: 24px;">
 
 
-  <div class="protocol_list_item">
-    <div class="protocol_list_img">
-      <a href="/gp/pages/protocols/RunAnalysis.html"  onclick="return openProtocolWindow(this, event);"
-      ><img src="/gp/images/RunAnalysis.jpg" alt="" style="border:0px;"/>
-      </a>
-    </div>
-    <div class="protocol_list_block">
-      <a class="protocolLink" href="/gp/pages/protocols/RunAnalysis.html"  onclick="return openProtocolWindow(this, event);"
-      ><b>Run an Analysis in GenePattern</b></a>
-      <br />
-      Learn how to run an analysis in GenePattern by preprocessing gene expression data 
-      and visualizing the resulting data as a heat map.
-    </div>
-  </div>
+            <div class="protocol_list_item">
+                <div class="protocol_list_img">
+                    <a href="/gp/pages/protocols/RunAnalysis.html" onclick="return openProtocolWindow(this, event);">
+                        <img src="/gp/images/RunAnalysis.jpg" alt="" style="border:0px;" />
+                    </a>
+                </div>
+                <div class="protocol_list_block">
+                    <a class="protocolLink" href="/gp/pages/protocols/RunAnalysis.html" onclick="return openProtocolWindow(this, event);"
+                            ><b>Run an Analysis in GenePattern</b></a>
+                    <br />
+                    Learn how to run an analysis in GenePattern by preprocessing gene expression data
+                    and visualizing the resulting data as a heat map.
+                </div>
+            </div>
 
-  <div class="protocol_list_item">
-    <a class="protocolLink" 
-         href="/gp/pages/protocols/DiffExp.html" 
-         onclick="return openProtocolWindow(this, event);"
-    ><div class="protocol_list_img">
-      <img src="/gp/images/DiffExp.jpg" alt="" style="border:0px;"/>
-    </div>
-    <div class="protocol_list_block">
-      <b>Differential Expression Analysis</b></a>
-      <br />
-      Find genes that are significantly differentially expressed between classes of samples.
-    </div>
-  </div>
-  <div class="protocol_list_item">
-    <a class="protocolLink" 
-         href="/gp/pages/protocols/ClassDiscovery.html" 
-         onclick="return openProtocolWindow(this, event);" 
-    ><div class="protocol_list_img">
-      <img src="/gp/images/Cluster.jpg" style="border:0px;"/>
-    </div>
-    <div class="protocol_list_block">
-      <b>Clustering</b></a>
-      <br />
-      Group genes and/or samples by similar expression profiles.
-    </div>
-  </div>
-  <div class="protocol_list_item">
-    <a class="protocolLink" 
-         href="/gp/pages/protocols/Prediction.html" 
-         onclick="return openProtocolWindow(this, event);" 
-    ><div class="protocol_list_img">
-      <img src="/gp/images/Prediction.jpg" style="border:0px;"/>
-    </div>
-    <div class="protocol_list_block">
-      <b>Prediction</b></a>
-      <br />
-      Create a model, also referred to as a classifier or class predictor, that
-      correctly classifies unlabeled samples into known classes.
-    </div>
-  </div>
-  <div class="protocol_list_item">
-    <a class="protocolLink" 
-         href="/gp/pages/protocols/SnpCN.html" 
-         onclick="return openProtocolWindow(this, event);" 
-    ><div class="protocol_list_img">
-      <img src="/gp/images/CopyNumber.jpg" style="border:0px;"/>
-    </div>
-    <div class="protocol_list_block">
-      <b>SNP Copy Number and Loss of Heterozygosity Determination</b></a>
-      <br />
-      Compute SNP copy number (CN) and loss of heterozygosity (LOH) based on 
-      Affymetrix SNP chip data for paired target/normal samples.
-    </div>
-  </div>
-</div>
-</div>
-  
-</body>
+            <div class="protocol_list_item">
+                <a class="protocolLink"
+                   href="/gp/pages/protocols/DiffExp.html"
+                   onclick="return openProtocolWindow(this, event);"
+                        >
+                    <div class="protocol_list_img">
+                        <img src="/gp/images/DiffExp.jpg" alt="" style="border:0px;" />
+                    </div>
+                    <div class="protocol_list_block">
+                        <b>Differential Expression Analysis</b>
+                </a>
+                <br />
+                Find genes that are significantly differentially expressed between classes of samples.
+            </div>
+        </div>
+        <div class="protocol_list_item">
+            <a class="protocolLink"
+               href="/gp/pages/protocols/ClassDiscovery.html"
+               onclick="return openProtocolWindow(this, event);"
+                    >
+                <div class="protocol_list_img">
+                    <img src="/gp/images/Cluster.jpg" style="border:0px;" />
+                </div>
+                <div class="protocol_list_block">
+                    <b>Clustering</b>
+            </a>
+            <br />
+            Group genes and/or samples by similar expression profiles.
+        </div>
+        </div>
+        <div class="protocol_list_item">
+            <a class="protocolLink"
+               href="/gp/pages/protocols/Prediction.html"
+               onclick="return openProtocolWindow(this, event);"
+                    >
+                <div class="protocol_list_img">
+                    <img src="/gp/images/Prediction.jpg" style="border:0px;" />
+                </div>
+                <div class="protocol_list_block">
+                    <b>Prediction</b>
+            </a>
+            <br />
+            Create a model, also referred to as a classifier or class predictor, that
+            correctly classifies unlabeled samples into known classes.
+        </div>
+        </div>
+        <div class="protocol_list_item">
+            <a class="protocolLink"
+               href="/gp/pages/protocols/SnpCN.html"
+               onclick="return openProtocolWindow(this, event);"
+                    >
+                <div class="protocol_list_img">
+                    <img src="/gp/images/CopyNumber.jpg" style="border:0px;" />
+                </div>
+                <div class="protocol_list_block">
+                    <b>SNP Copy Number and Loss of Heterozygosity Determination</b>
+            </a>
+            <br />
+            Compute SNP copy number (CN) and loss of heterozygosity (LOH) based on
+            Affymetrix SNP chip data for paired target/normal samples.
+        </div>
+        </div>
+        </div>
+        </div>
+
+    </body>
 </html>

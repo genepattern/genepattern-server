@@ -1,72 +1,92 @@
+<!--
+  ~ Copyright 2012 The Broad Institute, Inc.
+  ~ SOFTWARE COPYRIGHT NOTICE
+  ~ This software and its documentation are the copyright of the Broad Institute, Inc. All rights are reserved.
+  ~
+  ~ This software is supplied without any warranty or guaranteed support whatsoever. The Broad Institute is not responsible for its use, misuse, or functionality.
+  -->
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
-<head>
-<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1" />
-<META HTTP-EQUIV="CACHE-CONTROL" CONTENT="NO-CACHE"/>
-<title>Weighted Voting Class Prediction</title>
-	<link href="../../css/protocolsWindow.css" rel="stylesheet" type="text/css" />
-    <script type="text/javascript" src="../../js/protocol.js"></script>
-</head>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1" />
+        <META HTTP-EQUIV="CACHE-CONTROL" CONTENT="NO-CACHE" />
+        <title>Weighted Voting Class Prediction</title>
+        <link href="../../css/protocolsWindow.css" rel="stylesheet" type="text/css" />
+        <script type="text/javascript" src="../../js/protocol.js"></script>
+    </head>
 
-<body>
+    <body>
 
-<h1>Weighted Voting Class Prediction</h1>
-<table width="100%" border="0" cellpadding="0" cellspacing="0">
-  <tr>
-    <td align="left">
-      <a href="protocols.html">protocols</a>
-    </td>
-  </tr>
-</table>
+        <h1>Weighted Voting Class Prediction</h1>
+        <table width="100%" border="0" cellpadding="0" cellspacing="0">
+            <tr>
+                <td align="left">
+                    <a href="protocols.html">protocols</a>
+                </td>
+            </tr>
+        </table>
 
-<p>
-Build and evaluate class predictors (classifiers) using the 
-weighted voting class prediction method. </p>
-<div class="steps">
-<h2>What would you like to do?</h2>
+        <p>
+            Build and evaluate class predictors (classifiers) using the
+            weighted voting class prediction method. </p>
 
-<ul>
-<li><a href="#build">Build and evaluate a classifier</a></li>
-<li><a href="#evaluate">Evaluate an existing classifier</a></li>
-<li><a href="#classify">Classify an unknown sample using an existing classifier</a></li>
-</ul>
+        <div class="steps">
+            <h2>What would you like to do?</h2>
 
-<a name="build"></a><h3>Build and evaluate a classifier</h3>
+            <ul>
+                <li><a href="#build">Build and evaluate a classifier</a></li>
+                <li><a href="#evaluate">Evaluate an existing classifier</a></li>
+                <li><a href="#classify">Classify an unknown sample using an existing classifier</a></li>
+            </ul>
 
-<p>Build and evaluate class predictors (classifiers) using the 
-weighted voting class prediction method. How many gene expression data sets do you have?</p>
+            <a name="build"></a>
 
-<ul>
-    <li><b>Two data sets.</b> Click <a href="Prediction_wv_two.html">here</a> to 
-    build a classifier against one data set and evaluate it against the other.</li>        
-<li><b>One large data set.</b> If you have one large data set, use the 
-<a class="gpWindow" href="/gp/pages/index.jsf?lsid=SplitDatasetTrainTest" onclick="return openModuleWindow(this, event);"
->SplitDatasetTrainTest</a> 
-module to split it into two data sets. Then, click <a href="Prediction_wv_two.html">here</a> to 
-    build a classifier against one data set and evaluate it against the other.</li>
-<li><b>One data set.</b>  If you have one smaller data set that cannot easily be split, click <a href="Prediction_wv_one.html">here</a> to 
-    build and evaluate classifiers using cross-validation.</li>
-      </ul>
+            <h3>Build and evaluate a classifier</h3>
 
-<a name="evaluate"></a><h3>Evaluate an existing classifier</h3>
+            <p>Build and evaluate class predictors (classifiers) using the
+                weighted voting class prediction method. How many gene expression data sets do you have?</p>
 
-<p>To evaluate an existing weighted voting classifier, you must have built the classifier using the WeightedVoting module. Do you have a classifier (*.model) file?</p>
-<ul>
-<li><b>Yes.</b> Click <a href="Prediction_wv_evaluate.html">here</a> to 
-    evaluate your existing classifier.</li>
-<li><b>No.</b> Use the <a href="#build">build and evaluate a classifier</a> instructions above to build a classifier.</li>
-</ul>
+            <ul>
+                <li><b>Two data sets.</b> Click <a href="Prediction_wv_two.html">here</a> to
+                    build a classifier against one data set and evaluate it against the other.
+                </li>
+                <li><b>One large data set.</b> If you have one large data set, use the
+                    <a class="gpWindow" href="/gp/pages/index.jsf?lsid=SplitDatasetTrainTest" onclick="return openModuleWindow(this, event);"
+                            >SplitDatasetTrainTest</a>
+                    module to split it into two data sets. Then, click <a href="Prediction_wv_two.html">here</a> to
+                    build a classifier against one data set and evaluate it against the other.
+                </li>
+                <li><b>One data set.</b> If you have one smaller data set that cannot easily be split, click <a href="Prediction_wv_one.html">here</a> to
+                    build and evaluate classifiers using cross-validation.
+                </li>
+            </ul>
 
-<a name="classify"></a><h3>Classify an unknown sample using an existing classifier</h3>
+            <a name="evaluate"></a>
 
-<p>To classify an unknown sample, you must have built a weighted voting classifier using the WeightedVoting module. Do you have a classifier (*.model) file?</p>
-<ul>
-<li><b>Yes.</b> Click <a href="Prediction_wv_classify.html">here</a> to 
-    classify an unknown sample using your existing classifier.</li>
-<li><b>No.</b> Use the <a href="#build">build and evaluate a classifier</a> instructions above to build a classifier.</li>
-</ul>
-      
-</div>
+            <h3>Evaluate an existing classifier</h3>
 
-</body>
+            <p>To evaluate an existing weighted voting classifier, you must have built the classifier using the WeightedVoting module. Do you have a classifier (*.model) file?</p>
+            <ul>
+                <li><b>Yes.</b> Click <a href="Prediction_wv_evaluate.html">here</a> to
+                    evaluate your existing classifier.
+                </li>
+                <li><b>No.</b> Use the <a href="#build">build and evaluate a classifier</a> instructions above to build a classifier.</li>
+            </ul>
+
+            <a name="classify"></a>
+
+            <h3>Classify an unknown sample using an existing classifier</h3>
+
+            <p>To classify an unknown sample, you must have built a weighted voting classifier using the WeightedVoting module. Do you have a classifier (*.model) file?</p>
+            <ul>
+                <li><b>Yes.</b> Click <a href="Prediction_wv_classify.html">here</a> to
+                    classify an unknown sample using your existing classifier.
+                </li>
+                <li><b>No.</b> Use the <a href="#build">build and evaluate a classifier</a> instructions above to build a classifier.</li>
+            </ul>
+
+        </div>
+
+    </body>
 </html>
