@@ -1,97 +1,92 @@
+<!--
+  ~ Copyright 2012 The Broad Institute, Inc.
+  ~ SOFTWARE COPYRIGHT NOTICE
+  ~ This software and its documentation are the copyright of the Broad Institute, Inc. All rights are reserved.
+  ~
+  ~ This software is supplied without any warranty or guaranteed support whatsoever. The Broad Institute is not responsible for its use, misuse, or functionality.
+  -->
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 
-<!-- /*
- The Broad Institute
- SOFTWARE COPYRIGHT NOTICE AGREEMENT
- This software and its documentation are copyright (2003-2012) by the
- Broad Institute/Massachusetts Institute of Technology. All rights are
- reserved.
- 
- This software is supplied without any warranty or guaranteed support
- whatsoever. Neither the Broad Institute nor MIT can be responsible for its
- use, misuse, or functionality.
- */ -->
-
 <html xmlns="http://www.w3.org/1999/xhtml"
-	xmlns:ui="http://java.sun.com/jsf/facelets"
-	xmlns:h="http://java.sun.com/jsf/html"
-	xmlns:f="http://java.sun.com/jsf/core"
-	xmlns:t="http://myfaces.apache.org/tomahawk">
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:t="http://myfaces.apache.org/tomahawk">
 
 
-<ui:composition template="/templates/common.xhtml">
-	<ui:define name="validationInit">
-		<script type="text/javascript" language="javascript"> 
-      /* <![CDATA[ */
-      function onLoad()
-      {
-        var objForm = document.forms["loginForm"];
-        objForm.username.required = 1;
-        objForm.username.err = "Username is required";
-        objForm.password.required = 1;
-        objForm.password.err = "Password is required";
-      }
-       /* ]]> */
+    <ui:composition template="/templates/common.xhtml">
+        <ui:define name="validationInit">
+            <script type="text/javascript" language="javascript">
+                /* <![CDATA[ */
+                function onLoad() {
+                    var objForm = document.forms["loginForm"];
+                    objForm.username.required = 1;
+                    objForm.username.err = "Username is required";
+                    objForm.password.required = 1;
+                    objForm.password.err = "Password is required";
+                }
+                /* ]]> */
 
-    </script>
-    </ui:define>
-	<ui:define name="pageTitle">GenomeSpace Sign in</ui:define>
-	<ui:define name="body">
-	
-	  <!--  login page if not logged in -->
-		<h:outputText rendered="#{not genomeSpaceBean.loggedIn}">
-		
-		
-		<h:form onsubmit="return validateForm(this);"  id="loginForm">
-			<table width="330">
-				<tr>
-					<td><span style="font-weight: bold;"> Sign in to
+            </script>
+        </ui:define>
+        <ui:define name="pageTitle">GenomeSpace Sign in</ui:define>
+        <ui:define name="body">
+
+            <!--  login page if not logged in -->
+            <h:outputText rendered="#{not genomeSpaceBean.loggedIn}">
+
+
+                <h:form onsubmit="return validateForm(this);" id="loginForm">
+                    <table width="330">
+                        <tr>
+                            <td><span style="font-weight: bold;"> Sign in to
 					</span></td>
-					<td align="right"><img src="./genomespacelogo.png"/>  
-		</td>
-				</tr>
-			</table>
+                            <td align="right"><img src="./genomespacelogo.png" />
+                            </td>
+                        </tr>
+                    </table>
 
-			<h:outputText
-				value="Your GenomeSpace session has expired.  Please log in again."
-				style="color: red; font-weight: bold;"
-				rendered="#{genomeSpaceBean.tokenExpired}" />
+                    <h:outputText
+                            value="Your GenomeSpace session has expired.  Please log in again."
+                            style="color: red; font-weight: bold;"
+                            rendered="#{genomeSpaceBean.tokenExpired}" />
 
-			<h:outputText
-				value="Username and password do not match."
-				style="color: red; font-weight: bold;"
-				rendered="#{genomeSpaceBean.loginFailed}" />
-						
-
-			<h:panelGrid columns="2">
-				<h:outputLabel value="Username:" for="username"></h:outputLabel>
-				<t:inputText size="50" value="" id="username" required="true" requiredMessage="Username is required" >
-                  <f:attribute name="forceId" value="true"/>
-                </t:inputText>
-				
-				<h:outputLabel value="Password:" for="password"></h:outputLabel>
-				<t:inputSecret size="50" value="" id="password" required="true" requiredMessage="Password is required">
-                  <f:attribute name="forceId" value="true"/>
-				</t:inputSecret>
-			</h:panelGrid>
-			<h:commandButton id="signIn" action="#{genomeSpaceBean.submitLogin}" value="Sign in" />
-			<br />
-			
-
-		</h:form>
-		</h:outputText>
-		  <!--  logout page if logged in -->
-		<h:outputText rendered="#{genomeSpaceBean.loggedIn}">
-		<h:form id="logoutForm">
-		<img src="./genomespacelogo.png"/>  <br/>
-		You are logged into GenomeSpace as: <strong>#{genomeSpaceBean.username}</strong>&#160;&#160;&#160;&#160;
-				<h:commandButton id="signOut" action="#{genomeSpaceBean.submitLogout}" value="Log out of GenomeSpace" />
-	
-		</h:form>
-		</h:outputText>
-		#{genomeSpaceBean.clearErrors}
-	</ui:define>
+                    <h:outputText
+                            value="Username and password do not match."
+                            style="color: red; font-weight: bold;"
+                            rendered="#{genomeSpaceBean.loginFailed}" />
 
 
-</ui:composition>
+                    <h:panelGrid columns="2">
+                        <h:outputLabel value="Username:" for="username"></h:outputLabel>
+                        <t:inputText size="50" value="" id="username" required="true" requiredMessage="Username is required">
+                            <f:attribute name="forceId" value="true" />
+                        </t:inputText>
+
+                        <h:outputLabel value="Password:" for="password"></h:outputLabel>
+                        <t:inputSecret size="50" value="" id="password" required="true" requiredMessage="Password is required">
+                            <f:attribute name="forceId" value="true" />
+                        </t:inputSecret>
+                    </h:panelGrid>
+                    <h:commandButton id="signIn" action="#{genomeSpaceBean.submitLogin}" value="Sign in" />
+                    <br />
+
+
+                </h:form>
+            </h:outputText>
+            <!--  logout page if logged in -->
+            <h:outputText rendered="#{genomeSpaceBean.loggedIn}">
+                <h:form id="logoutForm">
+                    <img src="./genomespacelogo.png" /> <br />
+                    You are logged into GenomeSpace as: <strong>#{genomeSpaceBean.username}</strong>&#160;&#160;&#160;&#160;
+                    <h:commandButton id="signOut" action="#{genomeSpaceBean.submitLogout}" value="Log out of GenomeSpace" />
+
+                </h:form>
+            </h:outputText>
+            #{genomeSpaceBean.clearErrors}
+        </ui:define>
+
+
+    </ui:composition>
 </html>

@@ -1,84 +1,84 @@
+<!--
+  ~ Copyright 2012 The Broad Institute, Inc.
+  ~ SOFTWARE COPYRIGHT NOTICE
+  ~ This software and its documentation are the copyright of the Broad Institute, Inc. All rights are reserved.
+  ~
+  ~ This software is supplied without any warranty or guaranteed support whatsoever. The Broad Institute is not responsible for its use, misuse, or functionality.
+  -->
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 
-<!-- /*
- The Broad Institute
- SOFTWARE COPYRIGHT NOTICE AGREEMENT
- This software and its documentation are copyright (2003-2012) by the
- Broad Institute/Massachusetts Institute of Technology. All rights are
- reserved.
- 
- This software is supplied without any warranty or guaranteed support
- whatsoever. Neither the Broad Institute nor MIT can be responsible for its
- use, misuse, or functionality.
- */ -->
-
 <html xmlns="http://www.w3.org/1999/xhtml"
-	xmlns:ui="http://java.sun.com/jsf/facelets"
-	xmlns:h="http://java.sun.com/jsf/html"
-    xmlns:a4j="http://richfaces.org/a4j"
-	xmlns:f="http://java.sun.com/jsf/core"
-	xmlns:t="http://myfaces.apache.org/tomahawk"
-	xmlns:c="http://java.sun.com/jstl/core" charset="UTF-8">
-	<head>
-		<title>GenePattern | Upload</title>
-		<script src="../../js/genepattern.js" />
-		<script language="JavaScript">
-			var dirName = gup("dirName");
-			function decode(str) {
-    			return unescape(str.replace(/\+/g, " "));
-			}
-			
-			function addDirName() {
-				if (dirName != null) if (dirName.length > 0)
-					document.write(" - " + decode(dirName));
-			}
-			
-			var oldMessage = null;
-			function uploaderFileStatusChanged(uploader, file) {
-				if (file.getStatus() == file.STATUS_FAILED) {
-					var alertPanel = document.getElementById("alertPanel");
-					var closeSpan = document.getElementById("closeSpan");
-					oldMessage = alertPanel.innerHTML;
-					alertPanel.innerHTML = file.getError().getMessage() + closeSpan.innerHTML;
-					alertPanel.style.background = "#EE9999";
-					alertPanel.style.padding = "10px";
-				}
-			}
-			
-			function closeError() {
-				var alertPanel = document.getElementById("alertPanel");
-				var closeSpan = document.getElementById("closeSpan");
-				alertPanel.style.background = "#FFFFFF";
-				alertPanel.style.padding = "5px";
-				alertPanel.innerHTML = oldMessage;
-			}
-		
-		    window.onbeforeunload = confirmExit;
-		    function confirmExit() {
-			    var jumploader = document.getElementById("jumpLoaderApplet");
-			    var uploading = jumploader.getUploader().getStatus() == 1;
-			    if (!uploading) { return; }
-		  	    return "You have attempted to leave this page.  This will interrupt any uploads that are ongoing. Are you sure you want to leave?";
-		    }
-		</script>
-	</head>
-	<body>
-		<h2 style="font-family: Verdana, Arial, Helvetica, sans-serif;color: #336;font-weight: bold;font-size: 18px;line-height: 20px;">Upload to GenePattern<script language="JavaScript">addDirName();</script></h2>
-		<div id="alertPanel">
-			<div style="font-family: Verdana, Arial, Helvetica, sans-serif;font-size: 11px;line-height: 14px;"><strong>Note:</strong> This window must remain open for the upload to complete.  New files will not show up in the main window until the page has been <a style="text-decoration:none;font-weight: bolder;color: #009;" href="JavaScript:window.opener.location.reload(true);">refreshed</a>.</div>
-		</div>
-		<span id="closeSpan" style="display:none;"> [<a href="JavaScript:closeError()">Close</a>]</span>
-		<applet id="jumpLoaderApplet" name="jumpLoaderApplet"
-				code="jmaster.jumploader.app.JumpLoaderApplet.class"
-				archive="/gp/downloads/jl_core_z.jar"
-				width="600"
-				height="300" 
-				mayscript="true">
-			<param name="uc_uploadUrl" value="/gp/UploadReceiver"/>
-			<param name="uc_partitionLength" value="#{uploadFilesBean.partitionLength}"/>
-			<param name="uc_maxFileLength" value="#{uploadFilesBean.maxUploadSize}"/>
-			<param name="ac_fireUploaderFileStatusChanged" value="true"/>
-			<param name="gc_loggingLevel" value="ERROR"/>
-		</applet>
-	</body>
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:a4j="http://richfaces.org/a4j"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:t="http://myfaces.apache.org/tomahawk"
+      xmlns:c="http://java.sun.com/jstl/core" charset="UTF-8">
+    <head>
+        <title>GenePattern | Upload</title>
+        <script type="text/javascript" language="javascript" src="../../js/genepattern.js" />
+        <script type="text/javascript" language="javascript">
+            var dirName = gup("dirName");
+            function decode(str) {
+                return unescape(str.replace(/\+/g, " "));
+            }
+
+            function addDirName() {
+                if (dirName != null) if (dirName.length > 0)
+                    document.write(" - " + decode(dirName));
+            }
+
+            var oldMessage = null;
+            function uploaderFileStatusChanged(uploader, file) {
+                if (file.getStatus() == file.STATUS_FAILED) {
+                    var alertPanel = document.getElementById("alertPanel");
+                    var closeSpan = document.getElementById("closeSpan");
+                    oldMessage = alertPanel.innerHTML;
+                    alertPanel.innerHTML = file.getError().getMessage() + closeSpan.innerHTML;
+                    alertPanel.style.background = "#EE9999";
+                    alertPanel.style.padding = "10px";
+                }
+            }
+
+            function closeError() {
+                var alertPanel = document.getElementById("alertPanel");
+                var closeSpan = document.getElementById("closeSpan");
+                alertPanel.style.background = "#FFFFFF";
+                alertPanel.style.padding = "5px";
+                alertPanel.innerHTML = oldMessage;
+            }
+
+            window.onbeforeunload = confirmExit;
+            function confirmExit() {
+                var jumploader = document.getElementById("jumpLoaderApplet");
+                var uploading = jumploader.getUploader().getStatus() == 1;
+                if (!uploading) {
+                    return;
+                }
+                return "You have attempted to leave this page.  This will interrupt any uploads that are ongoing. Are you sure you want to leave?";
+            }
+        </script>
+    </head>
+    <body>
+        <h2 style="font-family: Verdana, Arial, Helvetica, sans-serif;color: #336;font-weight: bold;font-size: 18px;line-height: 20px;">Upload to GenePattern
+            <script language="JavaScript">addDirName();</script>
+        </h2>
+        <div id="alertPanel">
+            <div style="font-family: Verdana, Arial, Helvetica, sans-serif;font-size: 11px;line-height: 14px;"><strong>Note:</strong> This window must remain open for the upload to complete. New files will not show up in the main window until the page has been <a style="text-decoration:none;font-weight: bolder;color: #009;" href="JavaScript:window.opener.location.reload(true);">refreshed</a>.</div>
+        </div>
+        <span id="closeSpan" style="display:none;"> [<a href="JavaScript:closeError()">Close</a>]</span>
+        <applet id="jumpLoaderApplet" name="jumpLoaderApplet"
+                code="jmaster.jumploader.app.JumpLoaderApplet.class"
+                archive="/gp/downloads/jl_core_z.jar"
+                width="600"
+                height="300"
+                mayscript="true">
+            <param name="uc_uploadUrl" value="/gp/UploadReceiver" />
+            <param name="uc_partitionLength" value="#{uploadFilesBean.partitionLength}" />
+            <param name="uc_maxFileLength" value="#{uploadFilesBean.maxUploadSize}" />
+            <param name="ac_fireUploaderFileStatusChanged" value="true" />
+            <param name="gc_loggingLevel" value="ERROR" />
+        </applet>
+    </body>
 </html>

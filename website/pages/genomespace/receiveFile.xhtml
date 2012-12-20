@@ -7,52 +7,52 @@
   -->
 
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml" 
-		xmlns:ui="http://java.sun.com/jsf/facelets" 
-		xmlns:h="http://java.sun.com/jsf/html" 
-		xmlns:f="http://java.sun.com/jsf/core" 
-		xmlns:t="http://myfaces.apache.org/tomahawk"
-		xmlns:c="http://java.sun.com/jstl/core">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:t="http://myfaces.apache.org/tomahawk"
+      xmlns:c="http://java.sun.com/jstl/core">
     <ui:composition template="/templates/common.xhtml">
         <ui:define name="pageTitle">
             Receive GenomeSpace File #{genomeSpaceReceiveBean.refreshPage}
         </ui:define>
         <ui:define name="body">
             <t:div rendered="#{not genomeSpaceBean.loggedIn or not genomeSpaceBean.genomeSpaceEnabled or not genomeSpaceReceiveBean.correctUser}">
-				<h2>Unable to access to the GenomeSpace landing page.</h2><br/>
-				<h:outputText rendered="#{not genomeSpaceBean.genomeSpaceEnabled}"><em>GenomeSpace is not enabled.</em><br/></h:outputText>
-				<h:outputText rendered="#{not genomeSpaceBean.loggedIn}"><em>Not logged in to GenomeSpace.</em><br/></h:outputText>
-				<h:outputText rendered="#{not genomeSpaceReceiveBean.correctUser}"><em>Logged in as an incorrect user.  Please sign out and sign in again.</em><br/></h:outputText>
-			</t:div>
-			<t:div rendered="#{genomeSpaceBean.loggedIn and genomeSpaceBean.genomeSpaceEnabled and genomeSpaceReceiveBean.correctUser}">
-	        	<h2>GenomeSpace has sent you a file</h2>
-				<t:dataList var="file" value="#{genomeSpaceReceiveBean.receivedFiles}" rowIndexVar="index">
-					<t:div style="text-indent:50px;"><strong>#{file.name}</strong>
-					<h:outputText rendered="#{file.kind != file.extension}"> <em>Converted to #{file.kind}</em></h:outputText>
-					<h:form>
-						Save a Copy: 
-						<t:selectOneMenu value="#{genomeSpaceReceiveBean.rootUploadDirectory}" id="uploadDirectory">
-							<f:selectItems value="#{genomeSpaceReceiveBean.uploadDirectories}" />
-						</t:selectOneMenu>
-						<h:inputHidden id="path" value="#{file.url}"/>
-						<h:commandButton value="Submit" action="#{genomeSpaceReceiveBean.prepareSaveFile}" immediate="true">
-						</h:commandButton>
-					</h:form>
-					<br/>
-				</t:div>
-				</t:dataList>
-				<h:form>
-					Send to Module:
-					<t:selectOneMenu id="module" forceId="true">
-						<f:selectItems value="#{genomeSpaceReceiveBean.validModules}" />
-					</t:selectOneMenu>
-					<h:commandButton value="Submit" action="#{genomeSpaceReceiveBean.loadTask}" immediate="true">
-					</h:commandButton>
-				</h:form>
-				<t:div style="text-indent:50px;" rendered="#{empty genomeSpaceReceiveBean.receivedFiles}">
-					<strong>No files were received</strong>
-				</t:div>
-			</t:div>
+                <h2>Unable to access to the GenomeSpace landing page.</h2><br />
+                <h:outputText rendered="#{not genomeSpaceBean.genomeSpaceEnabled}"><em>GenomeSpace is not enabled.</em><br /></h:outputText>
+                <h:outputText rendered="#{not genomeSpaceBean.loggedIn}"><em>Not logged in to GenomeSpace.</em><br /></h:outputText>
+                <h:outputText rendered="#{not genomeSpaceReceiveBean.correctUser}"><em>Logged in as an incorrect user. Please sign out and sign in again.</em><br /></h:outputText>
+            </t:div>
+            <t:div rendered="#{genomeSpaceBean.loggedIn and genomeSpaceBean.genomeSpaceEnabled and genomeSpaceReceiveBean.correctUser}">
+                <h2>GenomeSpace has sent you a file</h2>
+                <t:dataList var="file" value="#{genomeSpaceReceiveBean.receivedFiles}" rowIndexVar="index">
+                    <t:div style="text-indent:50px;"><strong>#{file.name}</strong>
+                        <h:outputText rendered="#{file.kind != file.extension}"> <em>Converted to #{file.kind}</em></h:outputText>
+                        <h:form>
+                            Save a Copy:
+                            <t:selectOneMenu value="#{genomeSpaceReceiveBean.rootUploadDirectory}" id="uploadDirectory">
+                                <f:selectItems value="#{genomeSpaceReceiveBean.uploadDirectories}" />
+                            </t:selectOneMenu>
+                            <h:inputHidden id="path" value="#{file.url}" />
+                            <h:commandButton value="Submit" action="#{genomeSpaceReceiveBean.prepareSaveFile}" immediate="true">
+                            </h:commandButton>
+                        </h:form>
+                        <br />
+                    </t:div>
+                </t:dataList>
+                <h:form>
+                    Send to Module:
+                    <t:selectOneMenu id="module" forceId="true">
+                        <f:selectItems value="#{genomeSpaceReceiveBean.validModules}" />
+                    </t:selectOneMenu>
+                    <h:commandButton value="Submit" action="#{genomeSpaceReceiveBean.loadTask}" immediate="true">
+                    </h:commandButton>
+                </h:form>
+                <t:div style="text-indent:50px;" rendered="#{empty genomeSpaceReceiveBean.receivedFiles}">
+                    <strong>No files were received</strong>
+                </t:div>
+            </t:div>
         </ui:define>
     </ui:composition>
 </html>

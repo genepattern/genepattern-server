@@ -1,14 +1,10 @@
-<!-- /*
- The Broad Institute
- SOFTWARE COPYRIGHT NOTICE AGREEMENT
- This software and its documentation are copyright (2003-2012) by the
- Broad Institute/Massachusetts Institute of Technology. All rights are
- reserved.
- 
- This software is supplied without any warranty or guaranteed support
- whatsoever. Neither the Broad Institute nor MIT can be responsible for its
- use, misuse, or functionality.
- */ -->
+<!--
+  ~ Copyright 2012 The Broad Institute, Inc.
+  ~ SOFTWARE COPYRIGHT NOTICE
+  ~ This software and its documentation are the copyright of the Broad Institute, Inc. All rights are reserved.
+  ~
+  ~ This software is supplied without any warranty or guaranteed support whatsoever. The Broad Institute is not responsible for its use, misuse, or functionality.
+  -->
 
 <!DOCTYPE html PUBLIC "-/W3C/DTD XHTML 1.0 Transitional/EN" "http:/www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
@@ -19,130 +15,131 @@
       xmlns:rich="http://richfaces.org/rich"
       xmlns:c="http://java.sun.com/jstl/core">
 
-<ui:composition>
-<ui:define name="headText">
+    <ui:composition>
+        <ui:define name="headText">
 
-<script type="text/javascript" language="javascript">	
-/* <![CDATA[ */
-var jobIdToChildJobs = new Object();
+            <script type="text/javascript" language="javascript">
+                /* <![CDATA[ */
+                var jobIdToChildJobs = new Object();
 
-function addChildJob(jobNumber, childJobId) {
-	var rowIds = jobIdToChildJobs[jobNumber];
-	if(rowIds == null) {
-		rowIds = new Array();
-        jobIdToChildJobs[jobNumber] = rowIds;
-	}
-	rowIds[rowIds.length] = childJobId;
-}
+                function addChildJob(jobNumber, childJobId) {
+                    var rowIds = jobIdToChildJobs[jobNumber];
+                    if (rowIds == null) {
+                        rowIds = new Array();
+                        jobIdToChildJobs[jobNumber] = rowIds;
+                    }
+                    rowIds[rowIds.length] = childJobId;
+                }
 
-function toggleJobVisibility(jobNo) {
-	var d = pt(jobNo + "_div");
- 	var downArrow = pt(jobNo + "_expanded_img");
-   	var rightArrow = pt(jobNo + "_collapsed_img");
-   	var style = "none";
-   	if(d.style.display == "inline") {
-		d.style.display = "none";
-      	downArrow.style.display = "none";
-		rightArrow.style.display = "inline";
-		// pt("expansion_state_" + jobNo).value = "false";
-	} else {
-		style = "inline";
-      	d.style.display = "inline";
-      	downArrow.style.display = "inline";
-		rightArrow.style.display = "none";
-		// pt("expansion_state_" + jobNo).value = "true";
-	} 
-	
-	var childJobs = jobIdToChildJobs[jobNo];
-	if(childJobs!=null) {
-		for(var i=0; i<childJobs.length; i++) {
-			pt(childJobs[i]).style.display = style;
-		}
-	}
-}
-/* ]]> */
-</script>
-</ui:define>   
+                function toggleJobVisibility(jobNo) {
+                    var d = pt(jobNo + "_div");
+                    var downArrow = pt(jobNo + "_expanded_img");
+                    var rightArrow = pt(jobNo + "_collapsed_img");
+                    var style = "none";
+                    if (d.style.display == "inline") {
+                        d.style.display = "none";
+                        downArrow.style.display = "none";
+                        rightArrow.style.display = "inline";
+                        // pt("expansion_state_" + jobNo).value = "false";
+                    } else {
+                        style = "inline";
+                        d.style.display = "inline";
+                        downArrow.style.display = "inline";
+                        rightArrow.style.display = "none";
+                        // pt("expansion_state_" + jobNo).value = "true";
+                    }
 
-<h:form>    
-  <table width="100%" border="0" cellspacing="0" cellpadding="0">
-    
-      <tr>
-      	<td height="6" colspan="6">
-        	<t:graphicImage value="/images/spacer.gif" width="1" height="6"/>
-      	</td>
-      </tr>
-  	  <tr>
-  	  	  <td>
-  	  	  	  <rich:tree value="#{uploadFilesBean.fileTree}" var="aFile" switchType="ajax" adviseNodeOpened="#{uploadFilesBean.openTreeNode}" nodeFace="#{aFile.type}">
-			  	  <rich:treeNode type="file" icon="/images/iconLeaf.gif" iconLeaf="/images/iconLeaf.gif">
-				  	  <h:outputText rendered="#{aFile.partial}">(Uploading) </h:outputText>
-	      		  	  <h:outputLink rendered="#{not aFile.partial}" value="#{aFile.url}">#{aFile.filename}</h:outputLink>
-    	  		  	  <h:outputText rendered="#{aFile.partial}">#{aFile.filename}</h:outputText>
-		
-				  	  <!-- Image for popup menu -->
-				  	  	  <img src="/gp/images/smallOptions.gif" id="Image_#{aFile.encodedPath}" name="Image_#{aFile.encodedPath}" 
-				  	  	  	onclick="pm_showMenu('menuDiv_#{aFile.encodedPath}', Position.cumulativeOffset(this), 50, 50);" 
-  	           				onmouseover="MM_swapImage('Image_#{aFile.encodedPath}','','/gp/images/smallOptions2.gif',2)" 
-    	       				onmouseout="MM_swapImgRestore(); "/>
-      			  	  <br />
-      			  	  <h:outputText>#{aFile.formattedModified}; #{aFile.formattedLength}</h:outputText>
-      			  	  
-	  			  	  <br />
-			  	  </rich:treeNode>
-			  	  <rich:treeNode type="directory" icon="/images/iconFolder.gif" iconLeaf="/images/iconFolder.gif" changeExpandListener="#{uploadFilesBean.updateExpand}">
-    	  		  	  <h:outputLink value="#{aFile.url}" onclick="JavaScript:return false;">#{aFile.filename}</h:outputLink>
-		
-				  	  <!-- Image for popup menu -->
-	      			  	  <t:graphicImage value="/images/smallOptions.gif"
-    	       				name="Image_#{aFile.encodedPath}"
-       	       				onclick="pm_showMenu('menuDiv_#{aFile.encodedPath}', Position.cumulativeOffset(this), 50, 50);" 
-  	           				onmouseover="MM_swapImage('Image_#{aFile.encodedPath}','','/gp/images/smallOptions2.gif',2)" 
-    	       				onmouseout="MM_swapImgRestore();" />
-      			  	  <br />
-      			  	  <h:outputText>#{aFile.formattedModified}</h:outputText>
-	  			  	  <br />
-			  	  </rich:treeNode>
-		  	  </rich:tree>
-  			  <h:outputText rendered="#{empty uploadFilesBean.files and empty uploadFilesBean.directories}">
-   		  		  No uploaded/input files to display
-      		  </h:outputText>
-  		  </td>
-  	  </tr>
-      <tr>
-          <td colspan="6">
-              <img src="#{facesContext.externalContext.requestContextPath}/images/divider-pix2.gif" width="100%" height="1" vspace="5"/>
-          </td>
-      </tr>
-  </table>
-  </h:form>
-  <p>
-    <br/>
-  </p>
-  <script language="JavaScript">
-  	var uploadWindow = null;
-  
-  	function openUploadWindow(dirName) {
-  		if (uploadWindow == null) {
-  			uploadWindow = window.open('','#{uploadFilesBean.uploadWindowName}','width=620,height=400,status=no,menubar=no,location=no,toolbar=no,scrollbars=no');
-  			var currentLoc = uploadWindow.location + "";
-  			if (currentLoc.indexOf("/gp/pages/uploads/jumploader.jsf?dirName=" + dirName) == -1) {
-  				uploadWindow.location = "/gp/pages/uploads/jumploader.jsf?dirName=" + dirName;
-  	  		}
-  			uploadWindow.focus();
-  		}
-  		else if (uploadWindow.closed) {
-  			uploadWindow = window.open('','#{uploadFilesBean.uploadWindowName}','width=620,height=400,status=no,menubar=no,location=no,toolbar=no,scrollbars=no');
-  			var currentLoc = uploadWindow.location + "";
-  			if (currentLoc.indexOf("/gp/pages/uploads/jumploader.jsf?dirName=" + dirName) == -1) {
-  				uploadWindow.location = "/gp/pages/uploads/jumploader.jsf?dirName=" + dirName;
-  	  		}
-  			uploadWindow.focus();
-  		}
-  		else {
-  			uploadWindow.focus();
-  		}
-  	}
-  </script>
-  </ui:composition>
+                    var childJobs = jobIdToChildJobs[jobNo];
+                    if (childJobs != null) {
+                        for (var i = 0; i < childJobs.length; i++) {
+                            pt(childJobs[i]).style.display = style;
+                        }
+                    }
+                }
+                /* ]]> */
+            </script>
+        </ui:define>
+
+        <h:form>
+            <table width="100%" border="0" cellspacing="0" cellpadding="0">
+
+                <tr>
+                    <td height="6" colspan="6">
+                        <t:graphicImage value="/images/spacer.gif" width="1" height="6" />
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <rich:tree value="#{uploadFilesBean.fileTree}" var="aFile" switchType="ajax" adviseNodeOpened="#{uploadFilesBean.openTreeNode}" nodeFace="#{aFile.type}">
+                            <rich:treeNode type="file" icon="/images/iconLeaf.gif" iconLeaf="/images/iconLeaf.gif">
+                                <h:outputText rendered="#{aFile.partial}">(Uploading) </h:outputText>
+                                <h:outputLink rendered="#{not aFile.partial}" value="#{aFile.url}">#{aFile.filename}</h:outputLink>
+                                <h:outputText rendered="#{aFile.partial}">#{aFile.filename}</h:outputText>
+
+                                <!-- Image for popup menu -->
+                                <img src="/gp/images/smallOptions.gif" id="Image_#{aFile.encodedPath}" name="Image_#{aFile.encodedPath}"
+                                     onclick="pm_showMenu('menuDiv_#{aFile.encodedPath}', Position.cumulativeOffset(this), 50, 50);"
+                                     onmouseover="MM_swapImage('Image_#{aFile.encodedPath}','','/gp/images/smallOptions2.gif',2)"
+                                     onmouseout="MM_swapImgRestore(); " />
+                                <br />
+                                <h:outputText>#{aFile.formattedModified}; #{aFile.formattedLength}</h:outputText>
+
+                                <br />
+                            </rich:treeNode>
+                            <rich:treeNode type="directory" icon="/images/iconFolder.gif" iconLeaf="/images/iconFolder.gif" changeExpandListener="#{uploadFilesBean.updateExpand}">
+                                <h:outputLink value="#{aFile.url}" onclick="JavaScript:return false;">#{aFile.filename}</h:outputLink>
+
+                                <!-- Image for popup menu -->
+                                <t:graphicImage value="/images/smallOptions.gif"
+                                                name="Image_#{aFile.encodedPath}"
+                                                onclick="pm_showMenu('menuDiv_#{aFile.encodedPath}', Position.cumulativeOffset(this), 50, 50);"
+                                                onmouseover="MM_swapImage('Image_#{aFile.encodedPath}','','/gp/images/smallOptions2.gif',2)"
+                                                onmouseout="MM_swapImgRestore();" />
+                                <br />
+                                <h:outputText>#{aFile.formattedModified}</h:outputText>
+                                <br />
+                            </rich:treeNode>
+                        </rich:tree>
+                        <h:outputText rendered="#{empty uploadFilesBean.files and empty uploadFilesBean.directories}">
+                            No uploaded/input files to display
+                        </h:outputText>
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="6">
+                        <img src="#{facesContext.externalContext.requestContextPath}/images/divider-pix2.gif" width="100%" height="1" vspace="5" />
+                    </td>
+                </tr>
+            </table>
+        </h:form>
+
+        <p>
+            <br />
+        </p>
+        <script type="text/javascript" language="javascript">
+            var uploadWindow = null;
+
+            function openUploadWindow(dirName) {
+                if (uploadWindow == null) {
+                    uploadWindow = window.open('', '#{uploadFilesBean.uploadWindowName}', 'width=620,height=400,status=no,menubar=no,location=no,toolbar=no,scrollbars=no');
+                    var currentLoc = uploadWindow.location + "";
+                    if (currentLoc.indexOf("/gp/pages/uploads/jumploader.jsf?dirName=" + dirName) == -1) {
+                        uploadWindow.location = "/gp/pages/uploads/jumploader.jsf?dirName=" + dirName;
+                    }
+                    uploadWindow.focus();
+                }
+                else if (uploadWindow.closed) {
+                    uploadWindow = window.open('', '#{uploadFilesBean.uploadWindowName}', 'width=620,height=400,status=no,menubar=no,location=no,toolbar=no,scrollbars=no');
+                    var currentLoc = uploadWindow.location + "";
+                    if (currentLoc.indexOf("/gp/pages/uploads/jumploader.jsf?dirName=" + dirName) == -1) {
+                        uploadWindow.location = "/gp/pages/uploads/jumploader.jsf?dirName=" + dirName;
+                    }
+                    uploadWindow.focus();
+                }
+                else {
+                    uploadWindow.focus();
+                }
+            }
+        </script>
+    </ui:composition>
 </html>

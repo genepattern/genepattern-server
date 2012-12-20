@@ -1,160 +1,161 @@
-<!-- /*
-The Broad Institute
-SOFTWARE COPYRIGHT NOTICE AGREEMENT
-This software and its documentation are copyright (2003-2012) by the
-Broad Institute/Massachusetts Institute of Technology. All rights are
-reserved.
-This software is supplied without any warranty or guaranteed support
-whatsoever. Neither the Broad Institute nor MIT can be responsible for its
-use, misuse, or functionality.
-*/ -->
- <!DOCTYPE html PUBLIC "-/W3C/DTD XHTML 1.0 Transitional/EN" "http:/www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml" 
-		xmlns:ui="http://java.sun.com/jsf/facelets" 
-		xmlns:h="http://java.sun.com/jsf/html" 
-		xmlns:f="http://java.sun.com/jsf/core" 
-		xmlns:t="http://myfaces.apache.org/tomahawk" 
-		xmlns:rich="http://richfaces.org/rich" 
-		xmlns:c="http://java.sun.com/jstl/core">
+<!--
+  ~ Copyright 2012 The Broad Institute, Inc.
+  ~ SOFTWARE COPYRIGHT NOTICE
+  ~ This software and its documentation are the copyright of the Broad Institute, Inc. All rights are reserved.
+  ~
+  ~ This software is supplied without any warranty or guaranteed support whatsoever. The Broad Institute is not responsible for its use, misuse, or functionality.
+  -->
+<!DOCTYPE html PUBLIC "-/W3C/DTD XHTML 1.0 Transitional/EN" "http:/www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:t="http://myfaces.apache.org/tomahawk"
+      xmlns:rich="http://richfaces.org/rich"
+      xmlns:c="http://java.sun.com/jstl/core">
     <ui:composition>
         <ui:define name="headText">
-        	<style>
-        		.saveTreeSelected {
-        			background-color: #9999CC;
-        		}
-				
-				#saveTree .jstree-leaf a ins {
-					background-image: url('/gp/images/iconFolder.gif');
-				}
-			</style>
-            <script type="text/javascript" language="javascript">	
-                /* <![CDATA[ */
-				var saveTreeSelected = null;
-				var fileURL = null;
-				
-				function openSaveDialog(node) {
-					var menuId = jq(node).closest(".popupMenu").attr("id");		// Get id of the file menu
-					var arrowId = menuId.replace("menuDiv_", "Image_");			// Get the id of the relevant arrow
-					var fileLink = jq("[id='" + arrowId + "']").prev();			// Get the link to the file
-					fileURL = fileLink.attr("href");							// Set the URL of the file
+            <style>
+                .saveTreeSelected {
+                    background-color: #9999CC;
+                }
 
-					jq('#genomeSpaceSaveDialog').dialog('open');
-					return false;
-				}
-				
-				function handleSaveClick(node) {
-					jq(saveTreeSelected).removeClass("saveTreeSelected");
-					jq(node).addClass("saveTreeSelected");
-					saveTreeSelected = node;
-					jq("#genomeSpaceSaveDialog").parent().find(".ui-button:first").button("enable");
-					return false;
-				}
+                #saveTree .jstree-leaf a ins {
+                    background-image: url('/gp/images/iconFolder.gif');
+                }
+            </style>
+            <script type="text/javascript" language="javascript">
+                /* <![CDATA[ */
+                var saveTreeSelected = null;
+                var fileURL = null;
+
+                function openSaveDialog(node) {
+                    var menuId = jq(node).closest(".popupMenu").attr("id");		// Get id of the file menu
+                    var arrowId = menuId.replace("menuDiv_", "Image_");			// Get the id of the relevant arrow
+                    var fileLink = jq("[id='" + arrowId + "']").prev();			// Get the link to the file
+                    fileURL = fileLink.attr("href");							// Set the URL of the file
+
+                    jq('#genomeSpaceSaveDialog').dialog('open');
+                    return false;
+                }
+
+                function handleSaveClick(node) {
+                    jq(saveTreeSelected).removeClass("saveTreeSelected");
+                    jq(node).addClass("saveTreeSelected");
+                    saveTreeSelected = node;
+                    jq("#genomeSpaceSaveDialog").parent().find(".ui-button:first").button("enable");
+                    return false;
+                }
                 /* ]]> */
             </script>
-			<script src="#{facesContext.externalContext.requestContextPath}/js/jquery/jquery.cookie.js" type="text/javascript" />
-			<script src="#{facesContext.externalContext.requestContextPath}/js/jquery/jquery.jstree.js" type="text/javascript" />
-			<link href="/gp/js/themes/default/style.css" rel="stylesheet" type="text/css" />
+            <script src="#{facesContext.externalContext.requestContextPath}/js/jquery/jquery.cookie.js" type="text/javascript" />
+            <script src="#{facesContext.externalContext.requestContextPath}/js/jquery/jquery.jstree.js" type="text/javascript" />
+            <link href="/gp/js/themes/default/style.css" rel="stylesheet" type="text/css" />
         </ui:define>
 
         <div id="genomeSpaceSaveDialog">
-			<div id="saveTree"></div>
-		    <script type="text/javascript">
-		        jq("#saveTree").jstree({
-		            core:{
-		                "html_titles": true
-		            },
-		
-		            "json_data":{
-						// "data": #{genomeSpaceBean.treeJSON},	
-		                "ajax": {
-							"url": function(node) {
-								if (node === -1) {
-									return "/gp/GenomeSpace/saveTree";
-								}
-								var gsURL = jq(node).find("a").attr("href");
-								return "/gp/GenomeSpace/saveTree?dir=" + encodeURIComponent(gsURL);
-							},
-							"data": function(node) {
-								return {
-									id: node.attr ? node.attr("id") : 0
-								};
-							}
-						}
-		            },
-		            plugins:[ "themes", "json_data", "cookies" ]
-		        });
-				jq("#saveTree").bind("load_node.jstree", function(event, data) {
-					var iterate = null;
-					
-					// Handle the case of the initial load
-					if (data["args"][0] === -1) {
-						iterate = jq(this).find("li");
-					}
-					else {
-						iterate = jq(data["args"][0]).find("li");
-					}
-					
-					iterate.each(function(index) {
-						
-						var node = iterate.get(index);
-						var name = jq(node).find("a:first").attr("name");
-						
-						// Add the id to the node
-						jq(node).attr("id", name);
+            <div id="saveTree"></div>
+            <script type="text/javascript">
+                jq("#saveTree").jstree({
+                    core:{
+                        "html_titles":true
+                    },
 
-						// Check for the case of empty directories
-						var link = jq(node).find("a:first").attr("href");
-						if (link === "#") return;
-					});
+                    "json_data":{
+                        // "data": #{genomeSpaceBean.treeJSON},
+                        "ajax":{
+                            "url":function (node) {
+                                if (node === -1) {
+                                    return "/gp/GenomeSpace/saveTree";
+                                }
+                                var gsURL = jq(node).find("a").attr("href");
+                                return "/gp/GenomeSpace/saveTree?dir=" + encodeURIComponent(gsURL);
+                            },
+                            "data":function (node) {
+                                return {
+                                    id:node.attr ? node.attr("id") : 0
+                                };
+                            }
+                        }
+                    },
+                    plugins:[ "themes", "json_data", "cookies" ]
+                });
+                jq("#saveTree").bind("load_node.jstree", function (event, data) {
+                    var iterate = null;
 
-					jq("#genomeSpaceSaveDialog").parent().find(".ui-button:first").button("disable");
-				});
-		    </script>
+                    // Handle the case of the initial load
+                    if (data["args"][0] === -1) {
+                        iterate = jq(this).find("li");
+                    }
+                    else {
+                        iterate = jq(data["args"][0]).find("li");
+                    }
+
+                    iterate.each(function (index) {
+
+                        var node = iterate.get(index);
+                        var name = jq(node).find("a:first").attr("name");
+
+                        // Add the id to the node
+                        jq(node).attr("id", name);
+
+                        // Check for the case of empty directories
+                        var link = jq(node).find("a:first").attr("href");
+                        if (link === "#") return;
+                    });
+
+                    jq("#genomeSpaceSaveDialog").parent().find(".ui-button:first").button("disable");
+                });
+            </script>
         </div>
-		<script type="text/javascript">
-			jq("#saveTree .jstree-open > ins").hide();
-			jq("#saveTree .jstree-closed > ins").hide();
-			
-			jq("#genomeSpaceSaveDialog").dialog({
-				width: 500,
-				autoOpen: false,
-				title: "Select GenomeSpace Directory in Which to Save",
-				buttons: [
-					{
-						text: "Select", 
-						click: function() {
-							if (saveTreeSelected === null) { return; }				// Prevent submitting if no directory is selected
-							if (fileURL === null) { return; }						// Prevent submitting if no file is selected
-							
-							var directory = jq(saveTreeSelected).attr("href");		// Get the URL of the directory to save to
-							var file = fileURL;										// Get the URL of the file to save
-							
-							jq.ajax({
-					            type: "POST",
-								// The String.fromCharCode(38) is a hack to include the ampersand because JSF won't let it be directly included
-					            url: "/gp/GenomeSpace/saveFile?directory=" + escape(directory) + String.fromCharCode(38) + "file=" + escape(file),
-					            data: {},
-					            success: function(response) {
-									jq("#genomeSpaceSaveDialog").dialog("close"); 			// Close the dialog
-									jq("#saveTree").html("");
-									window.location.replace(window.location.href);
-					            },
-					            dataType: "text"
-					        });
-							
-							// Set the dialog in the uploading state
-							jq("#saveTree").html('<div><h4><img src="/gp/images/runningJob.gif"></img> Uploading to GenomeSpace...</h4></div>');
-							jq(".ui-dialog-buttonpane").hide();
-						}
-					},
-					{
-						text: "Cancel", 
-						click: function() {
-							jq("#genomeSpaceSaveDialog").dialog("close");
-						}
-					}
-				]
-			});
-		</script>
+        <script type="text/javascript">
+            jq("#saveTree .jstree-open > ins").hide();
+            jq("#saveTree .jstree-closed > ins").hide();
+
+            jq("#genomeSpaceSaveDialog").dialog({
+                width:500,
+                autoOpen:false,
+                title:"Select GenomeSpace Directory in Which to Save",
+                buttons:[
+                    {
+                        text:"Select",
+                        click:function () {
+                            if (saveTreeSelected === null) {
+                                return;
+                            }				// Prevent submitting if no directory is selected
+                            if (fileURL === null) {
+                                return;
+                            }						// Prevent submitting if no file is selected
+
+                            var directory = jq(saveTreeSelected).attr("href");		// Get the URL of the directory to save to
+                            var file = fileURL;										// Get the URL of the file to save
+
+                            jq.ajax({
+                                type:"POST",
+                                // The String.fromCharCode(38) is a hack to include the ampersand because JSF won't let it be directly included
+                                url:"/gp/GenomeSpace/saveFile?directory=" + escape(directory) + String.fromCharCode(38) + "file=" + escape(file),
+                                data:{},
+                                success:function (response) {
+                                    jq("#genomeSpaceSaveDialog").dialog("close"); 			// Close the dialog
+                                    jq("#saveTree").html("");
+                                    window.location.replace(window.location.href);
+                                },
+                                dataType:"text"
+                            });
+
+                            // Set the dialog in the uploading state
+                            jq("#saveTree").html('<div><h4><img src="/gp/images/runningJob.gif"></img> Uploading to GenomeSpace...</h4></div>');
+                            jq(".ui-dialog-buttonpane").hide();
+                        }
+                    },
+                    {
+                        text:"Cancel",
+                        click:function () {
+                            jq("#genomeSpaceSaveDialog").dialog("close");
+                        }
+                    }
+                ]
+            });
+        </script>
     </ui:composition>
 </html>

@@ -1,143 +1,145 @@
-<!-- /*
-The Broad Institute
-SOFTWARE COPYRIGHT NOTICE AGREEMENT
-This software and its documentation are copyright (2003-2012) by the
-Broad Institute/Massachusetts Institute of Technology. All rights are
-reserved.
-This software is supplied without any warranty or guaranteed support
-whatsoever. Neither the Broad Institute nor MIT can be responsible for its
-use, misuse, or functionality.
-*/ -->
- <!DOCTYPE html PUBLIC "-/W3C/DTD XHTML 1.0 Transitional/EN" "http:/www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml" 
-		xmlns:ui="http://java.sun.com/jsf/facelets" 
-		xmlns:h="http://java.sun.com/jsf/html" 
-		xmlns:f="http://java.sun.com/jsf/core" 
-		xmlns:t="http://myfaces.apache.org/tomahawk" 
-		xmlns:rich="http://richfaces.org/rich" 
-		xmlns:c="http://java.sun.com/jstl/core"
-		xmlns:a4j="https://ajax4jsf.dev.java.net/ajax">
+<!--
+  ~ Copyright 2012 The Broad Institute, Inc.
+  ~ SOFTWARE COPYRIGHT NOTICE
+  ~ This software and its documentation are the copyright of the Broad Institute, Inc. All rights are reserved.
+  ~
+  ~ This software is supplied without any warranty or guaranteed support whatsoever. The Broad Institute is not responsible for its use, misuse, or functionality.
+  -->
+<!DOCTYPE html PUBLIC "-/W3C/DTD XHTML 1.0 Transitional/EN" "http:/www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:t="http://myfaces.apache.org/tomahawk"
+      xmlns:rich="http://richfaces.org/rich"
+      xmlns:c="http://java.sun.com/jstl/core"
+      xmlns:a4j="https://ajax4jsf.dev.java.net/ajax">
     <ui:composition>
         <ui:define name="headText">
-            <script type="text/javascript" language="javascript">	
+            <script type="text/javascript" language="javascript">
                 /* <![CDATA[ */
-				function handleTreeClick(node) {
-					jq(node).parent().find("ins:first").trigger("click");
-					return false;
-				}
-				
-				function showCorrectArrows() {
-					jq.each(jq("#genomeSpace .menuArrow").parent(), function(index, value) {
-						var fileID = jq(value).attr("id");
-						var menuID = "#menuDiv_" + fileID;
-						if (jq(menuID).length > 0) {	// Check to see if the file menu exists
-							jq(value).find("img").show();
-						}
-					});
-				}
+                function handleTreeClick(node) {
+                    jq(node).parent().find("ins:first").trigger("click");
+                    return false;
+                }
+
+                function showCorrectArrows() {
+                    jq.each(jq("#genomeSpace .menuArrow").parent(), function (index, value) {
+                        var fileID = jq(value).attr("id");
+                        var menuID = "#menuDiv_" + fileID;
+                        if (jq(menuID).length > 0) {    // Check to see if the file menu exists
+                            jq(value).find("img").show();
+                        }
+                    });
+                }
                 /* ]]> */
             </script>
-			<script src="#{facesContext.externalContext.requestContextPath}/js/jquery/jquery.cookie.js" type="text/javascript" />
-			<script src="#{facesContext.externalContext.requestContextPath}/js/jquery/jquery.jstree.js" type="text/javascript" />
-			<link href="/gp/js/themes/default/style.css" rel="stylesheet" type="text/css" />
+            <script src="#{facesContext.externalContext.requestContextPath}/js/jquery/jquery.cookie.js" type="text/javascript" />
+            <script src="#{facesContext.externalContext.requestContextPath}/js/jquery/jquery.jstree.js" type="text/javascript" />
+            <link href="/gp/js/themes/default/style.css" rel="stylesheet" type="text/css" />
         </ui:define>
 
         <h:form>
-        	<div style="text-align:right">
-        		<strong>Logged in as: #{genomeSpaceBean.username} &nbsp;&nbsp;&nbsp;</strong>  
-				<h:commandButton value="Refresh" action="#{genomeSpaceBean.forceFileRefresh}" />
-        	</div>
-			<a4j:commandButton action="#{genomeSpaceBean.blankFileCache}" style="display:none;" value="Refresh Menus" reRender="genomeSpaceMenus" oncomplete="showCorrectArrows();" />
-			<t:div rendered="#{genomeSpaceBean.loading}">
-				<br /><br />
-				<strong>Still Loading GenomeSpace Files.<br />
-				Please wait a few seconds and <a href="#" onclick="JavaScript:window.location.replace(window.location.href)">reload</a>.</strong>
-			</t:div>
-			<t:div rendered="#{not genomeSpaceBean.loading}">
-				<div id="tree"></div>
-			    <script type="text/javascript">
-			        jq("#tree").jstree({
-			            core: {
-			                "html_titles": true
-			            },
-			
-			            "json_data": {
-							// "data": #{genomeSpaceBean.treeJSON},	
-			                "ajax": {
-								"url": function(node) {
-									if (node === -1) {
-										return "/gp/GenomeSpace/tree";
-									}
-									var gsURL = jq(node).find("a").attr("href");
-									return "/gp/GenomeSpace/tree?dir=" + encodeURIComponent(gsURL)
-								},
-								"data": function(node) {
-									return {
-										id: node.attr ? node.attr("id") : 0
-									};
-								}
-							}
-			            },
-						"cookies": {
-							"save_opened": "genomespaceTab"
-						},
-			            plugins: [ "themes", "json_data", "cookies" ]
-			        });
-					jq("#tree").bind("load_node.jstree", function(event, data) {
-						var iterate = null;
-						
-						// Handle the case of the initial load
-						if (data["args"][0] === -1) {
-							iterate = jq(this).find("li");
-						}
-						else {
-							iterate = jq(data["args"][0]).find("li");
-						}
-						
-						iterate.each(function(index) {
-							
-							var node = iterate.get(index);
-							var name = jq(node).find("a:first").attr("name");
-							
-							// Add the id to the node
-							jq(node).attr("id", name);
-	
-							// Check for the case of empty directories
-							var link = jq(node).find("a:first").attr("href");
-							if (link === "#") return;
-							
-							// Append menu arrow
-							var arrow = document.createElement("img");
-							arrow.setAttribute("class", "menuArrow");
-							arrow.setAttribute("src", "/gp/images/smallOptions.gif");
-							arrow.setAttribute("alt", "menu");
-							arrow.setAttribute("onclick", "pm_showMenu('menuDiv_" + name + "', Position.cumulativeOffset(this), 50, 50);");
-							arrow.setAttribute("onmouseover", "MM_swapImage('Image_" + name + "','','/gp/images/smallOptions2.gif',2);");
-							arrow.setAttribute("onmouseout", "MM_swapImgRestore();");
-							jq(node).find("a:first").after(arrow);
-							jq(arrow).hide();
-						});
-						
-						// Load the new file menus
-						jq("input[type=button][value='Refresh Menus']").trigger("click");
-					});
-			    </script>
-			</t:div>
+            <div style="text-align:right">
+                <strong>Logged in as: #{genomeSpaceBean.username} &nbsp;&nbsp;&nbsp;</strong>
+                <h:commandButton value="Refresh" action="#{genomeSpaceBean.forceFileRefresh}" />
+            </div>
+            <a4j:commandButton action="#{genomeSpaceBean.blankFileCache}" style="display:none;" value="Refresh Menus" reRender="genomeSpaceMenus" oncomplete="showCorrectArrows();" />
+            <t:div rendered="#{genomeSpaceBean.loading}">
+                <br /><br />
+                <strong>Still Loading GenomeSpace Files.<br />
+                    Please wait a few seconds and <a href="#" onclick="JavaScript:window.location.replace(window.location.href)">reload</a>.</strong>
+            </t:div>
+            <t:div rendered="#{not genomeSpaceBean.loading}">
+                <div id="tree"></div>
+                <script type="text/javascript">
+                    jq("#tree").jstree({
+                        core:{
+                            "html_titles":true
+                        },
+
+                        "json_data":{
+                            // "data": #{genomeSpaceBean.treeJSON},
+                            "ajax":{
+                                "url":function (node) {
+                                    if (node === -1) {
+                                        return "/gp/GenomeSpace/tree";
+                                    }
+                                    var gsURL = jq(node).find("a").attr("href");
+                                    return "/gp/GenomeSpace/tree?dir=" + encodeURIComponent(gsURL)
+                                },
+                                "data":function (node) {
+                                    return {
+                                        id:node.attr ? node.attr("id") : 0
+                                    };
+                                }
+                            }
+                        },
+                        "cookies":{
+                            "save_opened":"genomespaceTab"
+                        },
+                        plugins:[ "themes", "json_data", "cookies" ]
+                    });
+                    jq("#tree").bind("load_node.jstree", function (event, data) {
+                        var iterate = null;
+
+                        // Handle the case of the initial load
+                        if (data["args"][0] === -1) {
+                            iterate = jq(this).find("li");
+                        }
+                        else {
+                            iterate = jq(data["args"][0]).find("li");
+                        }
+
+                        iterate.each(function (index) {
+
+                            var node = iterate.get(index);
+                            var name = jq(node).find("a:first").attr("name");
+
+                            // Add the id to the node
+                            jq(node).attr("id", name);
+
+                            // Check for the case of empty directories
+                            var link = jq(node).find("a:first").attr("href");
+                            if (link === "#") return;
+
+                            // Append menu arrow
+                            var arrow = document.createElement("img");
+                            arrow.setAttribute("class", "menuArrow");
+                            arrow.setAttribute("src", "/gp/images/smallOptions.gif");
+                            arrow.setAttribute("alt", "menu");
+                            arrow.setAttribute("onclick", "pm_showMenu('menuDiv_" + name + "', Position.cumulativeOffset(this), 50, 50);");
+                            arrow.setAttribute("onmouseover", "MM_swapImage('Image_" + name + "','','/gp/images/smallOptions2.gif',2);");
+                            arrow.setAttribute("onmouseout", "MM_swapImgRestore();");
+                            jq(node).find("a:first").after(arrow);
+                            jq(arrow).hide();
+                        });
+
+                        // Load the new file menus
+                        jq("input[type=button][value='Refresh Menus']").trigger("click");
+                    });
+                </script>
+            </t:div>
         </h:form>
+
         <p>
-            <br/>
+            <br />
         </p>
+
         <p>
-            <br/>
+            <br />
         </p>
+
         <p>
             &nbsp;
         </p>
+
         <p>
-            <br/>
+            <br />
         </p>
+
         <p>
-            <br/>
+            <br />
         </p>
     </ui:composition>
 </html>
