@@ -1,171 +1,167 @@
 <%--
-  The Broad Institute
-  SOFTWARE COPYRIGHT NOTICE AGREEMENT
-  This software and its documentation are copyright (2003-2012) by the
-  Broad Institute/Massachusetts Institute of Technology. All rights are
-  reserved.
-
-  This software is supplied without any warranty or guaranteed support
-  whatsoever. Neither the Broad Institute nor MIT can be responsible for its
-  use, misuse, or functionality.
---%>
+  ~ Copyright 2012 The Broad Institute, Inc.
+  ~ SOFTWARE COPYRIGHT NOTICE
+  ~ This software and its documentation are the copyright of the Broad Institute, Inc. All rights are reserved.
+  ~
+  ~ This software is supplied without any warranty or guaranteed support whatsoever. The Broad Institute is not responsible for its use, misuse, or functionality.
+  --%>
 
 
 <%@ page import="java.io.File,
-		 java.io.FileInputStream,
-		 java.io.FilenameFilter,
-		 java.io.FileOutputStream,
-		 java.io.FileWriter,
-		 java.io.IOException,
-		 java.lang.reflect.Constructor,
-		 java.net.URLEncoder,
-		 java.text.SimpleDateFormat,
-		 java.util.Arrays,
-		 java.util.Comparator,
-		 java.util.Date,
-		 java.util.HashMap,
-		 java.util.TreeMap,
-		 java.util.Vector,
-		 java.util.Properties,
-		 java.nio.channels.FileChannel,
-		 java.util.List,
-		 java.util.Iterator,		
-		 java.util.Enumeration,
-		 org.apache.commons.fileupload.DiskFileUpload,
-             org.apache.commons.fileupload.FileItem,
-             org.apache.commons.fileupload.FileUpload,
-		 org.genepattern.webservice.TaskInfo,
-		 org.genepattern.webservice.TaskInfoAttributes,
-		 org.genepattern.webservice.ParameterInfo,
- 		 org.genepattern.util.StringUtils,
-		 org.genepattern.server.util.AccessManager,
-		 org.genepattern.server.genepattern.GenePatternAnalysisTask,
-		 org.genepattern.server.webservice.server.local.*,
-		 org.genepattern.server.genepattern.TaskInstallationException,
-		 org.genepattern.util.GPConstants,
-		 org.genepattern.webservice.OmnigeneException, 
-		 org.genepattern.webservice.WebServiceException, 
-		 org.genepattern.webservice.WebServiceErrorMessageException, 
-		 org.genepattern.server.webservice.*,
-		 org.genepattern.server.webapp.*,
-		 org.genepattern.data.pipeline.PipelineModel,
-		 org.genepattern.server.webservice.server.DirectoryManager,
-		 org.genepattern.util.LSID"
-	session="false" contentType="text/html" language="Java" %><%
+                 java.io.FileInputStream,
+                 java.io.FilenameFilter,
+                 java.io.FileOutputStream,
+                 java.io.FileWriter,
+                 java.io.IOException,
+                 java.lang.reflect.Constructor,
+                 java.net.URLEncoder,
+                 java.text.SimpleDateFormat,
+                 java.util.Arrays,
+                 java.util.Comparator,
+                 java.util.Date,
+                 java.util.HashMap,
+                 java.util.TreeMap,
+                 java.util.Vector,
+                 java.util.Properties,
+                 java.nio.channels.FileChannel,
+                 java.util.List,
+                 java.util.Iterator,
+                 java.util.Enumeration,
+                 org.apache.commons.fileupload.DiskFileUpload,
+                 org.apache.commons.fileupload.FileItem,
+                 org.apache.commons.fileupload.FileUpload,
+                 org.genepattern.webservice.TaskInfo,
+                 org.genepattern.webservice.TaskInfoAttributes,
+                 org.genepattern.webservice.ParameterInfo,
+                 org.genepattern.util.StringUtils,
+                 org.genepattern.server.util.AccessManager,
+                 org.genepattern.server.genepattern.GenePatternAnalysisTask,
+                 org.genepattern.server.webservice.server.local.*,
+                 org.genepattern.server.genepattern.TaskInstallationException,
+                 org.genepattern.util.GPConstants,
+                 org.genepattern.webservice.OmnigeneException,
+                 org.genepattern.webservice.WebServiceException,
+                 org.genepattern.webservice.WebServiceErrorMessageException,
+                 org.genepattern.server.webservice.*,
+                 org.genepattern.server.webapp.*,
+                 org.genepattern.data.pipeline.PipelineModel,
+                 org.genepattern.server.webservice.server.DirectoryManager,
+                 org.genepattern.util.LSID"
+         session="false" contentType="text/html" language="Java" %>
+<%
 
 
+    String userID = (String) request.getAttribute("userID"); // will force login if necessary
 
-String userID= (String)request.getAttribute("userID"); // will force login if necessary
-
-LocalTaskIntegratorClient taskIntegratorClient = new LocalTaskIntegratorClient(userID, out);
+    LocalTaskIntegratorClient taskIntegratorClient = new LocalTaskIntegratorClient(userID, out);
 %>
 <%
-int i;
-StringBuffer log = null;
+    int i;
+    StringBuffer log = null;
 
-String logFilename = System.getProperty("taskLog", null);
+    String logFilename = System.getProperty("taskLog", null);
 //com.jspsmart.upload.Request requestParameters = null;
-Properties requestParameters = new Properties();
-HashMap requestMultiValueParameters = new HashMap();
-HashMap  requestFiles = new HashMap();
+    Properties requestParameters = new Properties();
+    HashMap requestMultiValueParameters = new HashMap();
+    HashMap requestFiles = new HashMap();
 
 
-StringBuffer sbAttachments = new StringBuffer();
-TaskInfo previousTask = null;
-String taskName = null;
-String forward = null;
-DiskFileUpload fub = new DiskFileUpload();
-boolean isEncodedPost = FileUpload.isMultipartContent(request);
-int fileCount = 0;
+    StringBuffer sbAttachments = new StringBuffer();
+    TaskInfo previousTask = null;
+    String taskName = null;
+    String forward = null;
+    DiskFileUpload fub = new DiskFileUpload();
+    boolean isEncodedPost = FileUpload.isMultipartContent(request);
+    int fileCount = 0;
 
-if (isEncodedPost){
-List rParams = fub.parseRequest(request);
-for (Iterator iter = rParams.iterator(); iter.hasNext();) {
-    FileItem fi = (FileItem) iter.next();
+    if (isEncodedPost) {
+        List rParams = fub.parseRequest(request);
+        for (Iterator iter = rParams.iterator(); iter.hasNext(); ) {
+            FileItem fi = (FileItem) iter.next();
 
-    if (fi.isFormField()) {
-		// check for multiple values and append if true
-		String val = requestParameters.getProperty(fi.getFieldName());
-		if ( val != null) {
- 			val = val + GPConstants.PARAM_INFO_CHOICE_DELIMITER + fi.getString();
-	   		requestParameters.put(fi.getFieldName(), val);
+            if (fi.isFormField()) {
+                // check for multiple values and append if true
+                String val = requestParameters.getProperty(fi.getFieldName());
+                if (val != null) {
+                    val = val + GPConstants.PARAM_INFO_CHOICE_DELIMITER + fi.getString();
+                    requestParameters.put(fi.getFieldName(), val);
 
-		}else {
-	   		requestParameters.put(fi.getFieldName(), fi.getString());
-		}
+                } else {
+                    requestParameters.put(fi.getFieldName(), fi.getString());
+                }
 
+            } else {
+                // it is the file
+                fileCount++;
+                String name = fi.getName();
+                // strip out paths on IE -- BUG 1819
+                int idx = name.lastIndexOf('/');
+                if (idx >= 0) {
+                    name = name.substring(idx + 1);
+                }
+                idx = name.lastIndexOf('\\');
+                if (idx >= 0) {
+                    name = name.substring(idx + 1);
+                }
+
+                if (name == null || name.equals("")) {
+                    continue;
+                }
+                File aFile = new File(System.getProperty("java.io.tmpdir"), name);
+                requestFiles.put(fi.getFieldName(), aFile);
+                fi.write(aFile);
+            }
+        }
     } else {
-        // it is the file
-        fileCount++;
-        String name = fi.getName();
-        // strip out paths on IE -- BUG 1819
-        int idx =  name.lastIndexOf('/');
-        if (idx >=0) {
-            name = name.substring(idx+1);
+        for (Enumeration en = request.getParameterNames(); en.hasMoreElements(); ) {
+            String pname = (String) en.nextElement();
+            String val = request.getParameter(pname);
+
+            requestParameters.put(pname, val);
+
         }
-        idx =  name.lastIndexOf('\\');
-        if (idx >=0) {
-            name = name.substring(idx+1);
-        }
-        
-        if (name == null || name.equals("")) {
-            continue;
-        }
-        File aFile = new File(System.getProperty("java.io.tmpdir"), name);
-        requestFiles.put(fi.getFieldName(), aFile);
-        fi.write(aFile);
     }
- }
-} else {
-	for (Enumeration en = request.getParameterNames(); en.hasMoreElements(); ){
-		String pname = (String)en.nextElement();
-		String val = request.getParameter(pname);
 
-		requestParameters.put(pname, val);
-
-	}
-}
-
-taskName = requestParameters.getProperty(GPConstants.NAME);
-if (taskName == null ) taskName = requestParameters.getProperty(GPConstants.NAME);
+    taskName = requestParameters.getProperty(GPConstants.NAME);
+    if (taskName == null) taskName = requestParameters.getProperty(GPConstants.NAME);
 
 // save the file attachments, if any, before installing the task, so that it is immediately ready to run
-String lsid = requestParameters.getProperty(GPConstants.LSID);
-if (lsid == null ) lsid = requestParameters.getProperty(GPConstants.LSID);
-String attachmentDir = null;
-File dir = null;
+    String lsid = requestParameters.getProperty(GPConstants.LSID);
+    if (lsid == null) lsid = requestParameters.getProperty(GPConstants.LSID);
+    String attachmentDir = null;
+    File dir = null;
 
 // delete task
-if (requestParameters.getProperty("delete") != null || requestParameters.getProperty("delete") != null) {
-	try {
-		taskIntegratorClient.deleteTask(lsid);
+    if (requestParameters.getProperty("delete") != null || requestParameters.getProperty("delete") != null) {
+        try {
+            taskIntegratorClient.deleteTask(lsid);
 %>
-		<html>
-	<head>
-		<title>Saved GenePattern module</title>
-	</head>
-	<body>
-		<jsp:include page="navbarHead.jsp"/>
-		<jsp:include page="navbar.jsp"/>
-		<%= taskName %> has been deleted.  Any running jobs using that module have been stopped.<br>
-<%
+<html>
+    <head>
+        <title>Saved GenePattern module</title>
+    </head>
+    <body>
+        <jsp:include page="navbarHead.jsp" />
+        <jsp:include page="navbar.jsp" />
+            <%= taskName %> has been deleted. Any running jobs using that module have been stopped.<br>
+            <%
 	} catch (Throwable t) { 
 %>
-		<html>
-	<head>
-		<title>Saved GenePattern module</title>
-	</head>
-	<body>
-	<jsp:include page="navbarHead.jsp"/>
-		<jsp:include page="navbar.jsp"/>
-<%
-		out.println(t + " while attempting to delete " + taskName);
-	} finally {
-%>	
-		<jsp:include page="footer.jsp"/>
-		</body>
-		</html>
-<%
+        <html>
+            <head>
+                <title>Saved GenePattern module</title>
+            </head>
+            <body>
+                <jsp:include page="navbarHead.jsp" />
+                <jsp:include page="navbar.jsp" />
+                <%
+                    out.println(t + " while attempting to delete " + taskName);
+                } finally {
+                %>
+                <jsp:include page="footer.jsp" />
+            </body>
+        </html>
+            <%
 	}
 	return;
 }
@@ -199,35 +195,35 @@ if ((requestParameters.getProperty("deleteFiles") != null || requestParameters.g
 					response.sendRedirect(forward + "?" + GPConstants.NAME + "=" + lsid);
 					return;
 				} else { %>
-					<html>
-	<head>
-		<title>Saved GenePattern module</title>
-	</head>
-	<body>
-	<jsp:include page="navbarHead.jsp"/>
-					<jsp:include page="navbar.jsp"/>
-					Unable to delete <%= filename %> from <%= taskName %> support files.<br>
-					<jsp:include page="footer.jsp"/>
-					</body>
-					</html>
-<% 				
+        <html>
+            <head>
+                <title>Saved GenePattern module</title>
+            </head>
+            <body>
+                <jsp:include page="navbarHead.jsp" />
+                <jsp:include page="navbar.jsp" />
+                Unable to delete <%= filename %> from <%= taskName %> support files.<br>
+                <jsp:include page="footer.jsp" />
+            </body>
+        </html>
+            <%
 					return;
 				}
 			} catch (Throwable t) { 
-%>	
-				<html>
-	<head>
-		<title>Saved GenePattern module</title>
-	</head>
-	<body>
-	<jsp:include page="navbarHead.jsp"/>
-				<jsp:include page="navbar.jsp"/>
-				<%= t %> while attempting to delete <%= filename %>
-				<br>
-				<jsp:include page="footer.jsp"/>
-				</body>
-				</html>
-<%
+%>
+        <html>
+            <head>
+                <title>Saved GenePattern module</title>
+            </head>
+            <body>
+                <jsp:include page="navbarHead.jsp" />
+                <jsp:include page="navbar.jsp" />
+                <%= t %> while attempting to delete <%= filename %>
+                <br>
+                <jsp:include page="footer.jsp" />
+            </body>
+        </html>
+            <%
 				return;
 			}
 		}
@@ -255,49 +251,55 @@ if (requestParameters.getProperty("clone") != null) {
         }
         if(vProblems != null && vProblems.size() > 0) {
 %>
-<html>
-    <head>
-        <title>Saved GenePattern module</title>
-    </head>
-    <body>
-    <jsp:include page="navbarHead.jsp"/>
-    <jsp:include page="navbar.jsp"/>
-    There are some problems with the <%= cloneName %> module that need to be fixed:<br><ul>
-<%  
-    for (Enumeration eProblems = vProblems.elements(); eProblems.hasMoreElements(); ) {
-%>
-        <li><%= StringUtils.htmlEncode((String)eProblems.nextElement()) %></li>
-<%
-    }
-%>
-    </ul><a href="javascript:history.back()">back</a>
-<%
+        <html>
+            <head>
+                <title>Saved GenePattern module</title>
+            </head>
+            <body>
+                <jsp:include page="navbarHead.jsp" />
+                <jsp:include page="navbar.jsp" />
+                There are some problems with the <%= cloneName %> module that need to be fixed:<br>
+                <ul>
+                    <%
+                        for (Enumeration eProblems = vProblems.elements(); eProblems.hasMoreElements(); ) {
+                    %>
+                    <li><%= StringUtils.htmlEncode((String) eProblems.nextElement()) %>
+                    </li>
+                    <%
+                        }
+                    %>
+                </ul>
+                <a href="javascript:history.back()">back</a>
+                    <%
                 return;
         }
     }
 %>
-	<html>
-	<head>
-		<title>Saved GenePattern module</title>
-	</head>
-	<body>
-	<jsp:include page="navbarHead.jsp"/>
-	<jsp:include page="navbar.jsp"/>
-	Cloned <%= taskName %> as <%= cloneName %>.<br>
-	<a href="addTask.jsp?<%= GPConstants.NAME%>=<%=lsid %>">edit <%= cloneName %></a><br>
-	<script language="javascript">
-	<% if("1".equals(requestParameters.getProperty("pipeline"))) {
-		%> window.location = "viewPipeline.jsp?<%= GPConstants.NAME %>=<%= lsid %>"; <%
-	} else { %>
-		window.location = "addTask.jsp?view=1&<%= GPConstants.NAME %>=<%= lsid %>";
-	<%}
-	%>
-	
-	</script>
-	<jsp:include page="footer.jsp"/>
-	</body>
-	</html>
-<%
+                <html>
+                    <head>
+                        <title>Saved GenePattern module</title>
+                    </head>
+                    <body>
+                        <jsp:include page="navbarHead.jsp" />
+                        <jsp:include page="navbar.jsp" />
+                        Cloned <%= taskName %> as <%= cloneName %>.<br>
+                        <a href="addTask.jsp?<%= GPConstants.NAME%>=<%=lsid %>">edit <%= cloneName %>
+                        </a><br>
+                        <script language="javascript">
+                            <% if("1".equals(requestParameters.getProperty("pipeline"))) {
+               %>
+                            window.location = "viewPipeline.jsp?<%= GPConstants.NAME %>=<%= lsid %>";
+                            <%
+           } else { %>
+                            window.location = "addTask.jsp?view=1&<%= GPConstants.NAME %>=<%= lsid %>";
+                            <%}
+           %>
+
+                        </script>
+                        <jsp:include page="footer.jsp" />
+                    </body>
+                </html>
+                    <%
 	return;
 } // end if requestParameters.getProperty("clone")
 
@@ -549,24 +551,26 @@ timeMS dateTime loginId moduleType moduleName  manifest supportFilesChanges URLT
 		return;
 	}
 %>
-    <html>
-	<head>
-		<title>Saved GenePattern module</title>
-	</head>
-	<body>
-	<jsp:include page="navbarHead.jsp"/>
-    <jsp:include page="navbar.jsp" />
-    Installation of your <a href="addTask.jsp?<%= GPConstants.NAME %>=<%= URLEncoder.encode(lsid, "UTF-8") %>"><%= taskName %></a> module (version <%= new LSID(lsid).getVersion() %>) is complete.<br><br>
-
-    
-<hr><a href='<%= request.getContextPath() %>/pages/index.jsf?lsid=<%= URLEncoder.encode(lsid, "UTF-8") %>'>Run <%= taskName %></a>
-</h4>
+                <html>
+                    <head>
+                        <title>Saved GenePattern module</title>
+                    </head>
+                    <body>
+                        <jsp:include page="navbarHead.jsp" />
+                        <jsp:include page="navbar.jsp" />
+                        Installation of your <a href="addTask.jsp?<%= GPConstants.NAME %>=<%= URLEncoder.encode(lsid, "UTF-8") %>"><%= taskName %>
+                    </a> module (version <%= new LSID(lsid).getVersion() %>) is complete.<br><br>
 
 
+                        <hr>
+                        <a href='<%= request.getContextPath() %>/pages/index.jsf?lsid=<%= URLEncoder.encode(lsid, "UTF-8") %>'>Run <%= taskName %>
+                        </a>
+                        </h4>
 
-	<br>
-	
-<jsp:include page="footer.jsp"/>
-</body>
-</html>
+
+                        <br>
+
+                        <jsp:include page="footer.jsp" />
+                    </body>
+                </html>
 

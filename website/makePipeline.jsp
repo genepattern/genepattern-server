@@ -1,170 +1,164 @@
 <%--
-  The Broad Institute
-  SOFTWARE COPYRIGHT NOTICE AGREEMENT
-  This software and its documentation are copyright (2003-2012) by the
-  Broad Institute/Massachusetts Institute of Technology. All rights are
-  reserved.
-
-  This software is supplied without any warranty or guaranteed support
-  whatsoever. Neither the Broad Institute nor MIT can be responsible for its
-  use, misuse, or functionality.
---%>
+  ~ Copyright 2012 The Broad Institute, Inc.
+  ~ SOFTWARE COPYRIGHT NOTICE
+  ~ This software and its documentation are the copyright of the Broad Institute, Inc. All rights are reserved.
+  ~
+  ~ This software is supplied without any warranty or guaranteed support whatsoever. The Broad Institute is not responsible for its use, misuse, or functionality.
+  --%>
 
 
 <%@ page import="org.genepattern.server.webapp.*,
-		 org.genepattern.data.pipeline.*,
-		 java.io.File,
-		 java.io.FilenameFilter,
-		 java.io.FileInputStream,
-		 java.io.FileOutputStream,
-		 java.io.FileWriter,
-		 java.io.InputStream,
-		 java.io.IOException,
-		 java.lang.reflect.Constructor,
-		 java.net.URLEncoder,
-		 java.util.ArrayList,
-		 java.util.Collection,
-		 java.util.Enumeration,
-		 java.util.HashMap,
-		 java.util.Properties,
-		 java.util.Hashtable,
-		 java.util.Iterator,
-		 java.util.List,
-		 java.util.Map,
-		 java.util.StringTokenizer,
-		 java.util.TreeMap,
-		 java.util.Vector,
-		 java.nio.channels.FileChannel,
-		 org.genepattern.webservice.ParameterFormatConverter,
-		 org.genepattern.webservice.ParameterInfo,
-		 org.genepattern.webservice.TaskInfo,
-		 org.genepattern.webservice.TaskInfoAttributes,
-		 org.genepattern.server.util.AccessManager,
-		 org.genepattern.server.genepattern.GenePatternAnalysisTask,
-		 org.genepattern.server.webservice.server.local.*,
-		 org.genepattern.server.genepattern.TaskInstallationException,
-		 org.genepattern.server.webservice.server.local.IAdminClient,
-		 org.genepattern.server.webservice.server.local.LocalAdminClient,
-		 org.genepattern.server.webservice.server.DirectoryManager,
- 	 	 org.genepattern.data.pipeline.*,
-		 org.genepattern.util.GPConstants,
- 		 org.genepattern.util.StringUtils,
-		 org.genepattern.codegenerator.*,
- 		 org.apache.commons.fileupload.DiskFileUpload,
-             org.apache.commons.fileupload.FileItem,
-             org.apache.commons.fileupload.FileUpload,
-		 java.io.StringWriter"
+                 org.genepattern.data.pipeline.*,
+                 java.io.File,
+                 java.io.FilenameFilter,
+                 java.io.FileInputStream,
+                 java.io.FileOutputStream,
+                 java.io.FileWriter,
+                 java.io.InputStream,
+                 java.io.IOException,
+                 java.lang.reflect.Constructor,
+                 java.net.URLEncoder,
+                 java.util.ArrayList,
+                 java.util.Collection,
+                 java.util.Enumeration,
+                 java.util.HashMap,
+                 java.util.Properties,
+                 java.util.Hashtable,
+                 java.util.Iterator,
+                 java.util.List,
+                 java.util.Map,
+                 java.util.StringTokenizer,
+                 java.util.TreeMap,
+                 java.util.Vector,
+                 java.nio.channels.FileChannel,
+                 org.genepattern.webservice.ParameterFormatConverter,
+                 org.genepattern.webservice.ParameterInfo,
+                 org.genepattern.webservice.TaskInfo,
+                 org.genepattern.webservice.TaskInfoAttributes,
+                 org.genepattern.server.util.AccessManager,
+                 org.genepattern.server.genepattern.GenePatternAnalysisTask,
+                 org.genepattern.server.webservice.server.local.*,
+                 org.genepattern.server.genepattern.TaskInstallationException,
+                 org.genepattern.server.webservice.server.local.IAdminClient,
+                 org.genepattern.server.webservice.server.local.LocalAdminClient,
+                 org.genepattern.server.webservice.server.DirectoryManager,
+                 org.genepattern.data.pipeline.*,
+                 org.genepattern.util.GPConstants,
+                 org.genepattern.util.StringUtils,
+                 org.genepattern.codegenerator.*,
+                 org.apache.commons.fileupload.DiskFileUpload,
+                 org.apache.commons.fileupload.FileItem,
+                 org.apache.commons.fileupload.FileUpload,
+                 java.io.StringWriter"
 
-	session="false" contentType="text/html" language="Java" %>
+         session="false" contentType="text/html" language="Java" %>
 <%
-	response.setHeader("Cache-Control", "no-store"); // HTTP 1.1 cache control
-	response.setHeader("Pragma", "no-cache");		 // HTTP 1.0 cache control
-	response.setDateHeader("Expires", 0);
+    response.setHeader("Cache-Control", "no-store"); // HTTP 1.1 cache control
+    response.setHeader("Pragma", "no-cache");         // HTTP 1.0 cache control
+    response.setDateHeader("Expires", 0);
 
-   Properties requestParameters = new Properties();
-	HashMap  requestFiles = new HashMap();
-        DiskFileUpload fub = new DiskFileUpload();
-        boolean isEncodedPost = FileUpload.isMultipartContent(request);
-        List rParams = fub.parseRequest(request);
-	  int fileCount = 0;
-try {
-        for (Iterator iter = rParams.iterator(); iter.hasNext();) {
+    Properties requestParameters = new Properties();
+    HashMap requestFiles = new HashMap();
+    DiskFileUpload fub = new DiskFileUpload();
+    boolean isEncodedPost = FileUpload.isMultipartContent(request);
+    List rParams = fub.parseRequest(request);
+    int fileCount = 0;
+    try {
+        for (Iterator iter = rParams.iterator(); iter.hasNext(); ) {
             FileItem fi = (FileItem) iter.next();
 
             if (fi.isFormField()) {
-           		requestParameters.put(fi.getFieldName(), fi.getString());
-				//System.out.println("TestP " +  fi.getFieldName()+" = "+ fi.getString());
+                requestParameters.put(fi.getFieldName(), fi.getString());
+                //System.out.println("TestP " +  fi.getFieldName()+" = "+ fi.getString());
 
             } else {
-				//System.out.println("-- TestP " +  fi.getFieldName());
+                //System.out.println("-- TestP " +  fi.getFieldName());
 
 
                 // it is the file
                 fileCount++;
                 String name = fi.getName();
-		
+
                 if (name == null || name.equals("")) {
                     continue;
-                } 
-				// strip out paths on IE -- BUG 1819
-				int idx =  name.lastIndexOf('/');
-				if (idx >=0) name = name.substring(idx+1);
-				idx =  name.lastIndexOf('\\');
-				if (idx >=0) name = name.substring(idx+1);
+                }
+                // strip out paths on IE -- BUG 1819
+                int idx = name.lastIndexOf('/');
+                if (idx >= 0) name = name.substring(idx + 1);
+                idx = name.lastIndexOf('\\');
+                if (idx >= 0) name = name.substring(idx + 1);
 
-		
 
                 File aFile = new File(System.getProperty("java.io.tmpdir"), name);
                 requestFiles.put(fi.getFieldName(), aFile);
 
                 fi.write(aFile);
 
-           }
+            }
         }
-} catch (Exception eee){
-	eee.printStackTrace();
-}
+    } catch (Exception eee) {
+        eee.printStackTrace();
+    }
 
-String userID = null;
-boolean bRun = false;
-boolean bClone = false;
-boolean bDelete = false;
+    String userID = null;
+    boolean bRun = false;
+    boolean bClone = false;
+    boolean bDelete = false;
 
-try {
-	// Initialization
-	userID = requestParameters.getProperty(GPConstants.USERID);
+    try {
+        // Initialization
+        userID = requestParameters.getProperty(GPConstants.USERID);
 
-	String RUN = "run";
-	String CLONE = "clone";
+        String RUN = "run";
+        String CLONE = "clone";
 
-	boolean DEBUG = false; // (requestParameters.getProperty("debug") != null);
+        boolean DEBUG = false; // (requestParameters.getProperty("debug") != null);
 
-	if (DEBUG) {
-		System.out.println("\n\nMAKEPIPELINE Request parameters:<br>");
-		System.out.println(requestParameters);
-		System.out.println(requestFiles);
-	}
+        if (DEBUG) {
+            System.out.println("\n\nMAKEPIPELINE Request parameters:<br>");
+            System.out.println(requestParameters);
+            System.out.println(requestFiles);
+        }
 
-	bRun = requestParameters.getProperty("cmd").equals(RUN);
-	bClone = requestParameters.getProperty("cmd").equals(CLONE);
-	bDelete = requestParameters.getProperty("delete") != null;
-
-
-
-	String pipelineName = requestParameters.getProperty("pipeline_name");
+        bRun = requestParameters.getProperty("cmd").equals(RUN);
+        bClone = requestParameters.getProperty("cmd").equals(CLONE);
+        bDelete = requestParameters.getProperty("delete") != null;
 
 
-	if (bDelete) {
-		try {
-			TaskInfo taskInfo = GenePatternAnalysisTask.getTaskInfo(requestParameters.getProperty("changePipeline"), userID);
-			String lsid = (String)taskInfo.getTaskInfoAttributes().get(GPConstants.LSID);
-			String attachmentDir = DirectoryManager.getTaskLibDir(requestParameters.getProperty("pipeline_name"), lsid, userID); // + "." + GPConstants.TASK_TYPE_PIPELINE);
-			File dir = new File(attachmentDir);
-			try {
-				GenePatternAnalysisTask.deleteTask(lsid);
-			} catch (Exception oe) {
-				// ignore, probably already deleted
-			}
+        String pipelineName = requestParameters.getProperty("pipeline_name");
 
-			// clear out the directory
-			File[] oldFiles = dir.listFiles();
-			for (int i=0; oldFiles != null && i < oldFiles.length; i++) {
-				oldFiles[i].delete();
-			}
-			dir.delete();
+
+        if (bDelete) {
+            try {
+                TaskInfo taskInfo = GenePatternAnalysisTask.getTaskInfo(requestParameters.getProperty("changePipeline"), userID);
+                String lsid = (String) taskInfo.getTaskInfoAttributes().get(GPConstants.LSID);
+                String attachmentDir = DirectoryManager.getTaskLibDir(requestParameters.getProperty("pipeline_name"), lsid, userID); // + "." + GPConstants.TASK_TYPE_PIPELINE);
+                File dir = new File(attachmentDir);
+                try {
+                    GenePatternAnalysisTask.deleteTask(lsid);
+                } catch (Exception oe) {
+                    // ignore, probably already deleted
+                }
+
+                // clear out the directory
+                File[] oldFiles = dir.listFiles();
+                for (int i = 0; oldFiles != null && i < oldFiles.length; i++) {
+                    oldFiles[i].delete();
+                }
+                dir.delete();
 %>
-			<html>
-			<head>
-			<link href="skin/stylesheet.css" rel="stylesheet" type="text/css">
-			<link href="skin/favicon.ico" rel="shortcut icon">
-			<title>Delete pipeline</title>
-			<jsp:include page="navbarHead.jsp"/>
-			</head>
-			<body>
+<html>
+    <head>
+        <link href="skin/stylesheet.css" rel="stylesheet" type="text/css">
+        <link href="skin/favicon.ico" rel="shortcut icon">
+        <title>Delete pipeline</title>
+        <jsp:include page="navbarHead.jsp" />
+    </head>
+    <body>
 
-			<jsp:include page="navbar.jsp"/>
-			Stopped and deleted <%= taskInfo.getName() %> along with its support files.<br><br>
-<%
+        <jsp:include page="navbar.jsp" />
+        Stopped and deleted <%= taskInfo.getName() %> along with its support files.<br><br>
+            <%
 		} catch (Throwable t) {
 			out.println(t + " while attempting to delete " + pipelineName);
 		}
@@ -179,19 +173,19 @@ try {
 
 	if (!bRun && (pipelineName == null || pipelineName.trim().length() == 0)) {
 %>
-		<html>
-		<head>
-		<link href="skin/stylesheet.css" rel="stylesheet" type="text/css">
-		<link href="skin/favicon.ico" rel="shortcut icon">
-		<title>Delete pipeline</title>
-		<jsp:include page="navbarHead.jsp"/>
+        <html>
+            <head>
+                <link href="skin/stylesheet.css" rel="stylesheet" type="text/css">
+                <link href="skin/favicon.ico" rel="shortcut icon">
+                <title>Delete pipeline</title>
+                <jsp:include page="navbarHead.jsp" />
 
-		</head>
-		<body>
-		<jsp:include page="navbar.jsp"/>
-		Error: pipeline must be named.
-		<a href="javascript:window.close()">back</a>
-<%
+            </head>
+            <body>
+                <jsp:include page="navbar.jsp" />
+                Error: pipeline must be named.
+                <a href="javascript:window.close()">back</a>
+                    <%
 		return;
 	}
 
@@ -446,192 +440,191 @@ try {
 
 	if ((!bRun && !bClone) || vProblems.size() > 0) {
 %>
-		<html>
-		<head>
-		<link href="skin/stylesheet.css" rel="stylesheet" type="text/css">
-		<link href="skin/favicon.ico" rel="shortcut icon">
-		<title><%= pipelineName %> - saved</title>
-		<script language="Javascript">window.focus();</script>
-		<jsp:include page="navbarHead.jsp"/>
-		</head>
-		<body>
-		<jsp:include page="navbar.jsp"/>
-<%
-	}
-	if (controller == null)
-	    controller = new PipelineCreationHelper(model);
+                <html>
+                    <head>
+                        <link href="skin/stylesheet.css" rel="stylesheet" type="text/css">
+                        <link href="skin/favicon.ico" rel="shortcut icon">
+                        <title><%= pipelineName %> - saved</title>
+                        <script language="Javascript">window.focus();</script>
+                        <jsp:include page="navbarHead.jsp" />
+                    </head>
+                    <body>
+                        <jsp:include page="navbar.jsp" />
+                        <%
+                            }
+                            if (controller == null)
+                                controller = new PipelineCreationHelper(model);
 
-	//lsid = null;
-	if (vProblems.size() == 0) {
-		String oldLSID = origLSID;
+                            //lsid = null;
+                            if (vProblems.size() == 0) {
+                                String oldLSID = origLSID;
 
-		if (bClone) {
-			model.setName(requestParameters.getProperty("cloneName"));
-			// TODO: change URLs that are task-relative to point to the new task
-			String oldUser = model.getUserID();
-			String requestUserID = (String)request.getAttribute("userID");
-			if (oldUser.length() > 0 && !oldUser.equals(requestUserID)) {
-				oldUser = " (" + oldUser + ")";
-			} else {
-				oldUser = "";
-			}
-			model.setUserID(requestUserID + oldUser);
-			model.setLsid("");
-		}
-
-
-		if (!bRun) {
-			// save the task to the database
-			try {
+                                if (bClone) {
+                                    model.setName(requestParameters.getProperty("cloneName"));
+                                    // TODO: change URLs that are task-relative to point to the new task
+                                    String oldUser = model.getUserID();
+                                    String requestUserID = (String) request.getAttribute("userID");
+                                    if (oldUser.length() > 0 && !oldUser.equals(requestUserID)) {
+                                        oldUser = " (" + oldUser + ")";
+                                    } else {
+                                        oldUser = "";
+                                    }
+                                    model.setUserID(requestUserID + oldUser);
+                                    model.setLsid("");
+                                }
 
 
-				lsid = controller.generateTask(); ///  MP 3
-				model.setLsid(lsid);
-
-	 			if (bClone || !"".equals(oldLSID)) {
-	 				// TODO: change URLs that are task-relative to point to the new task
-					//System.out.println("copying support files from " + oldLSID + " to " + lsid);
-		 			copySupportFiles(modelName, model.getName(), oldLSID, lsid, userID);
-	 			}
-			} catch (TaskInstallationException tie) {
-				vProblems.addAll(tie.getErrors());
-			}
-		}
-
-		// save uploaded files as part of pipeline definition
-		if (fileCount > 0) {
-			String attachmentDir = null;
-			File dir = null;
-			String attachmentName = null;
-
-			if (!isTemp) {
-
-				attachmentDir = DirectoryManager.getTaskLibDir(modelName, lsid, userID);
-				// bug 1555 // attachmentDir = DirectoryManager.getTaskLibDir(modelName + "." + GPConstants.TASK_TYPE_PIPELINE, lsid, userID);
-				dir = new File(attachmentDir);
-				dir.mkdir();
-			} else {
-				model.setLsid("");
-				dir = tmpDir;
-			}
-			File attachedFile = null;
-			for (Iterator iter = requestFiles.keySet().iterator(); iter.hasNext(); ){
-				key = (String)iter.next();
-				attachedFile = (File)requestFiles.get(key);
-
-				if (!attachedFile.exists()) continue;
-				try {
-					attachmentName = attachedFile.getName();
-					if (attachmentName.trim().length() == 0) continue;
-					String fieldName = key;
-					String fullName = attachedFile.getCanonicalPath();
-					if (DEBUG) System.out.println("makePipeline: " + fieldName + " -> " + fullName);
-					if (fullName.startsWith("http:") || fullName.startsWith("https:") || fullName.startsWith("ftp:") || fullName.startsWith("file:")) {
-						// don't bother trying to save a file that is a URL, retrieve it at execution time instead
-						htFilenames.put(fieldName, fullName); // map between form field name and filesystem name
-						continue;
-					}
-
-					htFilenames.put(fieldName, "<GenePatternURL>getFile.jsp?task=" + URLEncoder.encode(lsid) + "&file=" + URLEncoder.encode(attachmentName)); // map between form field name and filesystem name
+                                if (!bRun) {
+                                    // save the task to the database
+                                    try {
 
 
-					if (dir != tmpDir){
-					File attachment = new File(dir, attachedFile.getName());
-					if (attachment.exists()) attachment.delete();
+                                        lsid = controller.generateTask(); ///  MP 3
+                                        model.setLsid(lsid);
 
-					FileChannel inChannel = null, outChannel = null;
-					try	{
-						inChannel = new FileInputStream(attachedFile).getChannel();
-						outChannel = new FileOutputStream(attachment).getChannel();
-						outChannel.transferFrom(inChannel, 0, inChannel.size());
-					} finally {
-						if (inChannel != null) 	inChannel.close();
-						if (outChannel != null)	outChannel.close();
-					}
+                                        if (bClone || !"".equals(oldLSID)) {
+                                            // TODO: change URLs that are task-relative to point to the new task
+                                            //System.out.println("copying support files from " + oldLSID + " to " + lsid);
+                                            copySupportFiles(modelName, model.getName(), oldLSID, lsid, userID);
+                                        }
+                                    } catch (TaskInstallationException tie) {
+                                        vProblems.addAll(tie.getErrors());
+                                    }
+                                }
 
-					}
+                                // save uploaded files as part of pipeline definition
+                                if (fileCount > 0) {
+                                    String attachmentDir = null;
+                                    File dir = null;
+                                    String attachmentName = null;
 
+                                    if (!isTemp) {
 
-				} catch (IOException sue) {
-				    	throw new Exception("error saving " + attachmentName  + ": " + sue.getMessage());
-				}
-			}
-		}
+                                        attachmentDir = DirectoryManager.getTaskLibDir(modelName, lsid, userID);
+                                        // bug 1555 // attachmentDir = DirectoryManager.getTaskLibDir(modelName + "." + GPConstants.TASK_TYPE_PIPELINE, lsid, userID);
+                                        dir = new File(attachmentDir);
+                                        dir.mkdir();
+                                    } else {
+                                        model.setLsid("");
+                                        dir = tmpDir;
+                                    }
+                                    File attachedFile = null;
+                                    for (Iterator iter = requestFiles.keySet().iterator(); iter.hasNext(); ) {
+                                        key = (String) iter.next();
+                                        attachedFile = (File) requestFiles.get(key);
 
-		// run immediately, without saving?
-		if (bRun) {
-            vProblems.add("run immediately no longer allowed!");
-		}
-	}
+                                        if (!attachedFile.exists()) continue;
+                                        try {
+                                            attachmentName = attachedFile.getName();
+                                            if (attachmentName.trim().length() == 0) continue;
+                                            String fieldName = key;
+                                            String fullName = attachedFile.getCanonicalPath();
+                                            if (DEBUG) System.out.println("makePipeline: " + fieldName + " -> " + fullName);
+                                            if (fullName.startsWith("http:") || fullName.startsWith("https:") || fullName.startsWith("ftp:") || fullName.startsWith("file:")) {
+                                                // don't bother trying to save a file that is a URL, retrieve it at execution time instead
+                                                htFilenames.put(fieldName, fullName); // map between form field name and filesystem name
+                                                continue;
+                                            }
 
-	if (vProblems.size() > 0) {
-%>
-		There are some problems with the <%= model.getName() %> pipeline description that need to be fixed:<br>
-		<ul>
-<%
-    		for (Enumeration eProblems = vProblems.elements(); eProblems.hasMoreElements(); ) {
-%>
-			<li><%= StringUtils.htmlEncode((String)eProblems.nextElement()) %></li>
-<%
-		}
-%>
-		</ul>
-		<a href="javascript:history.back()">back</a><br>
-		<script language="javascript">
-			window.opener.focus();
-			window.toolbar.visibility = false;
-			window.personalbar.visibility = false;
-			window.menubar.visibility = false;
-			window.locationbar.visibility = false;
-			window.focus();
-		</script>
-<%
-		return;
-	} else {
-		// delete the legacy R file for the pipeline, if it exists
-
-		pipelineName = model.getName();
-		// bug 1555 // pipelineName = model.getName() + "." + GPConstants.TASK_TYPE_PIPELINE;
-
-		String dir = DirectoryManager.getTaskLibDir(pipelineName, lsid, userID);
-      	out.println(model.getName() + " version " + new org.genepattern.util.LSID(model.getLsid()).getVersion()  + " has been saved.<br><br>");
-		new File(dir, model.getName() + ".r").delete();
-		if (requestParameters.getProperty("cmd").equals(CLONE)) {
-			response.sendRedirect("pipeline/index.jsf?lsid=" + lsid);
-			return;
-		}
-
-		if (requestParameters.getProperty("autoSave").length() > 0) {
-			out.println("<script language=\"Javascript\">window.close();</script>");
-		}
-
-		out.println("&nbsp;&nbsp;<a href='" + request.getContextPath() + "/pages/index.jsf?lsid=" + lsid + "'>Continue to Modules & Pipeline Start.</a>");
-		out.println("<br />");
+                                            htFilenames.put(fieldName, "<GenePatternURL>getFile.jsp?task=" + URLEncoder.encode(lsid) + "&file=" + URLEncoder.encode(attachmentName)); // map between form field name and filesystem name
 
 
+                                            if (dir != tmpDir) {
+                                                File attachment = new File(dir, attachedFile.getName());
+                                                if (attachment.exists()) attachment.delete();
+
+                                                FileChannel inChannel = null, outChannel = null;
+                                                try {
+                                                    inChannel = new FileInputStream(attachedFile).getChannel();
+                                                    outChannel = new FileOutputStream(attachment).getChannel();
+                                                    outChannel.transferFrom(inChannel, 0, inChannel.size());
+                                                } finally {
+                                                    if (inChannel != null) inChannel.close();
+                                                    if (outChannel != null) outChannel.close();
+                                                }
+
+                                            }
 
 
+                                        } catch (IOException sue) {
+                                            throw new Exception("error saving " + attachmentName + ": " + sue.getMessage());
+                                        }
+                                    }
+                                }
 
-	}
-} catch (Exception e) {
-%>
-	makePipeline failed: <br>
-	<%= e.getMessage() %><br>
+                                // run immediately, without saving?
+                                if (bRun) {
+                                    vProblems.add("run immediately no longer allowed!");
+                                }
+                            }
+
+                            if (vProblems.size() > 0) {
+                        %>
+                        There are some problems with the <%= model.getName() %> pipeline description that need to be fixed:<br>
+                        <ul>
+                            <%
+                                for (Enumeration eProblems = vProblems.elements(); eProblems.hasMoreElements(); ) {
+                            %>
+                            <li><%= StringUtils.htmlEncode((String) eProblems.nextElement()) %>
+                            </li>
+                            <%
+                                }
+                            %>
+                        </ul>
+                        <a href="javascript:history.back()">back</a><br>
+                        <script language="javascript">
+                            window.opener.focus();
+                            window.toolbar.visibility = false;
+                            window.personalbar.visibility = false;
+                            window.menubar.visibility = false;
+                            window.locationbar.visibility = false;
+                            window.focus();
+                        </script>
+                        <%
+                                return;
+                            } else {
+                                // delete the legacy R file for the pipeline, if it exists
+
+                                pipelineName = model.getName();
+                                // bug 1555 // pipelineName = model.getName() + "." + GPConstants.TASK_TYPE_PIPELINE;
+
+                                String dir = DirectoryManager.getTaskLibDir(pipelineName, lsid, userID);
+                                out.println(model.getName() + " version " + new org.genepattern.util.LSID(model.getLsid()).getVersion() + " has been saved.<br><br>");
+                                new File(dir, model.getName() + ".r").delete();
+                                if (requestParameters.getProperty("cmd").equals(CLONE)) {
+                                    response.sendRedirect("pipeline/index.jsf?lsid=" + lsid);
+                                    return;
+                                }
+
+                                if (requestParameters.getProperty("autoSave").length() > 0) {
+                                    out.println("<script language=\"Javascript\">window.close();</script>");
+                                }
+
+                                out.println("&nbsp;&nbsp;<a href='" + request.getContextPath() + "/pages/index.jsf?lsid=" + lsid + "'>Continue to Modules & Pipeline Start.</a>");
+                                out.println("<br />");
+
+
+                            }
+                        } catch (Exception e) {
+                        %>
+                        makePipeline failed: <br>
+                        <%= e.getMessage() %><br>
 	<pre>
 	<% e.printStackTrace(); %>
-	</pre><br>
-	<a href="javascript:history.back()">back</a><br>
-<%
-} finally {
-	if (!bClone) {
-%>
-		<jsp:include page="footer.jsp"/>
-		</body>
-		</html>
-<%
+	</pre>
+                        <br>
+                        <a href="javascript:history.back()">back</a><br>
+                        <%
+                        } finally {
+                            if (!bClone) {
+                        %>
+                        <jsp:include page="footer.jsp" />
+                    </body>
+                </html>
+                    <%
 	}
 } %>
-<%! void copySupportFiles(String oldTaskName, String newTaskName, String oldLSID, String newLSID, String userID) throws Exception {
+                    <%! void copySupportFiles(String oldTaskName, String newTaskName, String oldLSID, String newLSID, String userID) throws Exception {
 	//copySupportFiles(modelName, model.getName(), oldLSID, lsid, userID);
 	//DirectoryManager.getTaskLibDir(modelName + "." + GPConstants.TASK_TYPE_PIPELINE, lsid, userID);
 

@@ -1,5 +1,13 @@
 <%@ page
         import="org.genepattern.server.webservice.server.DirectoryManager, java.io.BufferedInputStream, java.io.File, java.io.FileInputStream, java.io.InputStream, java.io.OutputStream" %>
+<%--
+  ~ Copyright 2012 The Broad Institute, Inc.
+  ~ SOFTWARE COPYRIGHT NOTICE
+  ~ This software and its documentation are the copyright of the Broad Institute, Inc. All rights are reserved.
+  ~
+  ~ This software is supplied without any warranty or guaranteed support whatsoever. The Broad Institute is not responsible for its use, misuse, or functionality.
+  --%>
+
 <%
 
     String filename = request.getParameter("filename");
@@ -10,20 +18,20 @@
         return;
     }
 
-    File pl =  new File("temp/","parking");	
+    File pl = new File("temp/", "parking");
     if (!pl.exists()) {
         out.println("no such file: " + filename);
         return;
     }
     String userdirname = "user_" + uid;
 
-    File ud  = new File(pl, userdirname);
+    File ud = new File(pl, userdirname);
     if (!ud.exists()) {
         out.println("no such file: " + filename);
         return;
     }
 
-    File in  = new File(ud, filename);
+    File in = new File(ud, filename);
     if (!in.exists()) {
         out.println("no such file: " + filename);
         return;
@@ -46,12 +54,12 @@
         }
     } finally {
         if (os != null) {
-          //  os.close();
+            //  os.close();
         }
         if (is != null) {
             is.close();
         }
     }
     out.clear();
-    out = pageContext.pushBody(); 
+    out = pageContext.pushBody();
 %>

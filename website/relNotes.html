@@ -1,105 +1,135 @@
+<!--
+  ~ Copyright 2012 The Broad Institute, Inc.
+  ~ SOFTWARE COPYRIGHT NOTICE
+  ~ This software and its documentation are the copyright of the Broad Institute, Inc. All rights are reserved.
+  ~
+  ~ This software is supplied without any warranty or guaranteed support whatsoever. The Broad Institute is not responsible for its use, misuse, or functionality.
+  -->
+
 <html>
-<head>
-<title>GenePattern 1.4 Release Notes</title>
-</head>
-<body>
-<h2>GenePattern 1.4 Release Notes</h2>
-<h3>New in release 1.4</h3>
+    <head>
+        <title>GenePattern 1.4 Release Notes</title>
+    </head>
+    <body>
+        <h2>GenePattern 1.4 Release Notes</h2>
 
-<h4>Graphical Client</h4>
-<ul>
-	<li><b>File Navigation Aids</b></li>
-	<ul>
-		<li><b>Send To.</b> You no longer need to click and drag files to
-		input boxes. After selecting a module to run, right-click any file and
-		choose Send To to send that file to the analysis.</li>
-		<li><b>Extended sorting.</b> Sort files and results by name,
-		type, or creation time.</li>
-		<li><b>Default application hooks.</b> You can open a file with
-		its default application.</li>
-		<li><b>Improved local saving</b> Save job results directly to a
-		project directory or local drive.</li>
-		<li><b>Navigate to file location.</b> Go directly to a file's
-		location in Explorer/Finder.</li>
-		<li><b>Module suggestion.</b> Right-click on any file and choose
-		Modules to see all modules that can accept that type of file.</li>
-	</ul>
-	<p />
-	<li><b>History List.</b> Selecting the History menu will show you
-	all analyses and visualizers you have run. Select any choice in this
-	list to re-run that analysis/visualizer.</li>
-	<ul>
-	</ul>
-	<p />
-	<li><b>Job handling</b></li>
-	<ul>
-		<li><b>Clear all jobs.</b> Clear all jobs in the results window
-		by selecting Results->Delete All Jobs.</li>
-		<li><b>Terminate a running job</b> by right-clicking on the
-		analysis name in the Results window and choosing Terminate Job.</li>
-		<li><b>Complete job results.</b> The job results you see will be
-		those you have created in any environment (Web, programming, etc.),
-		not only the Graphical Environment.</li>
-	</ul>
-	<p />
-	<li><b>Parameter Descriptions.</b> Users can either show or hide
-	parameter descriptions.</li>
+        <h3>New in release 1.4</h3>
 
-	<p />
-	<li><b>View Code.</b> For Java, MATLAB, or R programmers:
-	right-click the name of an analysis in the Results window and choose
-	View Code to view the code that will execute that analysis. You can cut
-	and paste this into your development environment.</li>
-	<p />
-	<li><b>Server Operations</b></li>
-	<ul>
-		<li><b>Switch servers without restart.</b> Users can change which
-		server their client is connected to without having to restart.</li>
-		<li><b>Delete jobs.</b> Delete a job completely from the server.</li>
-		<li><b>Delete output files</b>. Delete output files from the
-		server.</li>
-	</ul>
-</ul>
-<p />
-<h4>Web Client</h4>
-<ul>
-	<li><b>Recent results links.</b> Links to results of recent
-	analyses are available on the run module/pipeline pages.</li>
-	<p />
-	<li><b>Firewall configuration.</b> GenePattern can be configured
-	to install modules through an authenticating proxy.</li>
-	<p />
-	<li><b>User access control.</b> Users can specify which other
-	computers can connect to their GenePattern server and can set the
-	server to run in single-user mode, prohibiting other users from
-	connecting to a local GenePattern server.
-	<p />
-	<li><b>Execution and Results History</b>
-	<ul>
-		<li>Last executed modules are displayed at top of module lists.</li>
-		<li>Most recent results links are available on run module/pipeline
-		pages.</li>
-	</ul>
-	<p />
-	<li><b>Miscellaneous</b></li>
-	<ul>
-		<li>The "Prompt when run" parameter works for pipelines.</li>
-		<li>The Web Client is compatible with Safari, Mozilla, Firefox on
-		Macintosh.</li>
-		<li>User can run pipelines and modules directly from the view
-		pages.</li>
-	</ul>
-	<p />
-</ul>
-<p />
-<h3>Known Issues</h3>
-<ul>
-	<li><b>Java Programming Language.</b> Package structure has
-	changed to org.genepattern.</li>
-</ul>
+        <h4>Graphical Client</h4>
+        <ul>
+            <li><b>File Navigation Aids</b></li>
+            <ul>
+                <li><b>Send To.</b> You no longer need to click and drag files to
+                    input boxes. After selecting a module to run, right-click any file and
+                    choose Send To to send that file to the analysis.
+                </li>
+                <li><b>Extended sorting.</b> Sort files and results by name,
+                    type, or creation time.
+                </li>
+                <li><b>Default application hooks.</b> You can open a file with
+                    its default application.
+                </li>
+                <li><b>Improved local saving</b> Save job results directly to a
+                    project directory or local drive.
+                </li>
+                <li><b>Navigate to file location.</b> Go directly to a file's
+                    location in Explorer/Finder.
+                </li>
+                <li><b>Module suggestion.</b> Right-click on any file and choose
+                    Modules to see all modules that can accept that type of file.
+                </li>
+            </ul>
+            <p />
+            <li><b>History List.</b> Selecting the History menu will show you
+                all analyses and visualizers you have run. Select any choice in this
+                list to re-run that analysis/visualizer.
+            </li>
+            <ul>
+            </ul>
+            <p />
+            <li><b>Job handling</b></li>
+            <ul>
+                <li><b>Clear all jobs.</b> Clear all jobs in the results window
+                    by selecting Results->Delete All Jobs.
+                </li>
+                <li><b>Terminate a running job</b> by right-clicking on the
+                    analysis name in the Results window and choosing Terminate Job.
+                </li>
+                <li><b>Complete job results.</b> The job results you see will be
+                    those you have created in any environment (Web, programming, etc.),
+                    not only the Graphical Environment.
+                </li>
+            </ul>
+            <p />
+            <li><b>Parameter Descriptions.</b> Users can either show or hide
+                parameter descriptions.
+            </li>
 
-<!-- End of topic text -->
+            <p />
+            <li><b>View Code.</b> For Java, MATLAB, or R programmers:
+                right-click the name of an analysis in the Results window and choose
+                View Code to view the code that will execute that analysis. You can cut
+                and paste this into your development environment.
+            </li>
+            <p />
+            <li><b>Server Operations</b></li>
+            <ul>
+                <li><b>Switch servers without restart.</b> Users can change which
+                    server their client is connected to without having to restart.
+                </li>
+                <li><b>Delete jobs.</b> Delete a job completely from the server.</li>
+                <li><b>Delete output files</b>. Delete output files from the
+                    server.
+                </li>
+            </ul>
+        </ul>
+        <p />
+        <h4>Web Client</h4>
+        <ul>
+            <li><b>Recent results links.</b> Links to results of recent
+                analyses are available on the run module/pipeline pages.
+            </li>
+            <p />
+            <li><b>Firewall configuration.</b> GenePattern can be configured
+                to install modules through an authenticating proxy.
+            </li>
+            <p />
+            <li><b>User access control.</b> Users can specify which other
+                computers can connect to their GenePattern server and can set the
+                server to run in single-user mode, prohibiting other users from
+                connecting to a local GenePattern server.
+                <p />
+            <li><b>Execution and Results History</b>
+                <ul>
+                    <li>Last executed modules are displayed at top of module lists.</li>
+                    <li>Most recent results links are available on run module/pipeline
+                        pages.
+                    </li>
+                </ul>
+                <p />
+            <li><b>Miscellaneous</b></li>
+            <ul>
+                <li>The "Prompt when run" parameter works for pipelines.</li>
+                <li>The Web Client is compatible with Safari, Mozilla, Firefox on
+                    Macintosh.
+                </li>
+                <li>User can run pipelines and modules directly from the view
+                    pages.
+                </li>
+            </ul>
+            <p />
+        </ul>
+        <p />
+
+        <h3>Known Issues</h3>
+        <ul>
+            <li><b>Java Programming Language.</b> Package structure has
+                changed to org.genepattern.
+            </li>
+        </ul>
+
+        <!-- End of topic text -->
 
 
-</body>
+    </body>
 </html>

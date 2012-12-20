@@ -1,14 +1,10 @@
 <%--
- The Broad Institute
- SOFTWARE COPYRIGHT NOTICE AGREEMENT
- This software and its documentation are copyright (2003-2012) by the
- Broad Institute/Massachusetts Institute of Technology. All rights are
- reserved.
- 
- This software is supplied without any warranty or guaranteed support
- whatsoever. Neither the Broad Institute nor MIT can be responsible for its
- use, misuse, or functionality.
---%>
+  ~ Copyright 2012 The Broad Institute, Inc.
+  ~ SOFTWARE COPYRIGHT NOTICE
+  ~ This software and its documentation are the copyright of the Broad Institute, Inc. All rights are reserved.
+  ~
+  ~ This software is supplied without any warranty or guaranteed support whatsoever. The Broad Institute is not responsible for its use, misuse, or functionality.
+  --%>
 
 <%@ page import="
 		 org.apache.commons.fileupload.DiskFileUpload,
@@ -16,7 +12,7 @@
                  org.apache.commons.fileupload.FileUpload,
                  org.genepattern.util.StringUtils,
                  java.io.File,
-		     java.net.*,
+                 java.net.*,
                  java.util.Enumeration,
                  java.util.HashMap,
                  java.util.Iterator,
