@@ -1,212 +1,214 @@
+<!--
+  ~ Copyright 2012 The Broad Institute, Inc.
+  ~ SOFTWARE COPYRIGHT NOTICE
+  ~ This software and its documentation are the copyright of the Broad Institute, Inc. All rights are reserved.
+  ~
+  ~ This software is supplied without any warranty or guaranteed support whatsoever. The Broad Institute is not responsible for its use, misuse, or functionality.
+  -->
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 
-<!-- /*
- The Broad Institute
- SOFTWARE COPYRIGHT NOTICE AGREEMENT
- This software and its documentation are copyright (2003-2012) by the
- Broad Institute/Massachusetts Institute of Technology. All rights are
- reserved.
- 
- This software is supplied without any warranty or guaranteed support
- whatsoever. Neither the Broad Institute nor MIT can be responsible for its
- use, misuse, or functionality.
- */ -->
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:a4j="http://richfaces.org/a4j"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:t="http://myfaces.apache.org/tomahawk"
+      xmlns:c="http://java.sun.com/jstl/core">
+    <f:view contentType="text/html">
+        <head>
+            <!-- created by rebecca fagan, fagandesign -->
+            <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
+            <meta http-equiv="refresh" content="#{session.maxInactiveInterval}" />
 
-<html xmlns="http://www.w3.org/1999/xhtml" 
-    xmlns:ui="http://java.sun.com/jsf/facelets" 
-    xmlns:h="http://java.sun.com/jsf/html" 
-    xmlns:a4j="http://richfaces.org/a4j"
-    xmlns:f="http://java.sun.com/jsf/core" 
-    xmlns:t="http://myfaces.apache.org/tomahawk" 
-    xmlns:c="http://java.sun.com/jstl/core">
-<f:view contentType="text/html">
-  <head>
-    <!-- created by rebecca fagan, fagandesign -->
-    <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1"/>
-	<meta http-equiv="refresh" content="#{session.maxInactiveInterval}" />
-	
-    <title>
-      <ui:insert name="pageTitle">GenePattern </ui:insert>
-    </title>
-    <link href="#{facesContext.externalContext.requestContextPath}/css/style.css" rel="stylesheet" type="text/css"/>
-    <link href="#{facesContext.externalContext.requestContextPath}/css/jobSharing.css" rel="stylesheet" type="text/css"/>
-    <link href="#{facesContext.externalContext.requestContextPath}/css/protocols.css" rel="stylesheet" type="text/css"/>
-    <link href="#{facesContext.externalContext.requestContextPath}/css/style-jobresults.css" rel="stylesheet" type="text/css"/>
-    <link href="#{facesContext.externalContext.requestContextPath}/css/popupMenu.css" rel="stylesheet" type="text/css"/>
-    <link href="#{facesContext.externalContext.requestContextPath}/css/style-jobresults.css" rel="stylesheet" type="text/css"/>
-    <link href="#{facesContext.externalContext.requestContextPath}/skin/favicon.ico" rel="shortcut icon"/>
-    <link href="/gp/css/menu.css" type="text/css" rel="stylesheet" />
+            <title>
+                <ui:insert name="pageTitle">GenePattern </ui:insert>
+            </title>
+            <link href="#{facesContext.externalContext.requestContextPath}/css/style.css" rel="stylesheet" type="text/css" />
+            <link href="#{facesContext.externalContext.requestContextPath}/css/jobSharing.css" rel="stylesheet" type="text/css" />
+            <link href="#{facesContext.externalContext.requestContextPath}/css/protocols.css" rel="stylesheet" type="text/css" />
+            <link href="#{facesContext.externalContext.requestContextPath}/css/style-jobresults.css" rel="stylesheet" type="text/css" />
+            <link href="#{facesContext.externalContext.requestContextPath}/css/popupMenu.css" rel="stylesheet" type="text/css" />
+            <link href="#{facesContext.externalContext.requestContextPath}/css/style-jobresults.css" rel="stylesheet" type="text/css" />
+            <link href="#{facesContext.externalContext.requestContextPath}/skin/favicon.ico" rel="shortcut icon" />
+            <link href="/gp/css/menu.css" type="text/css" rel="stylesheet" />
 
-    <script type="text/javascript" language="javascript">
-      var contextRoot = '#{facesContext.externalContext.requestContextPath}';
-      var createTaskAllowed = #{authorizationBean.createModuleAllowed};
-      var createPublicPipelineAllowed = #{authorizationBean.createPublicPipelineAllowed};
-      var createPrivatePipelineAllowed = #{authorizationBean.createPrivatePipelineAllowed};
-      var createPublicSuiteAllowed = #{authorizationBean.createPublicSuiteAllowed};
-      var createPrivateSuiteAllowed = #{authorizationBean.createPrivateSuiteAllowed};
-      var adminServerAllowed = #{authorizationBean.adminServerAllowed};
-      var genomeSpaceEnabled = #{genomeSpaceBean.genomeSpaceEnabled};
-      var genomeSpaceLoggedIn = #{genomeSpaceBean.loggedIn};
-      var userLoggedIn = !("${requestScope.userID}" === "null" || "${requestScope.userID}" === "");
-     </script>
+            <script type="text/javascript" language="javascript">
+                var contextRoot = '#{facesContext.externalContext.requestContextPath}';
+                var createTaskAllowed = #{authorizationBean.createModuleAllowed};
+                var createPublicPipelineAllowed = #{authorizationBean.createPublicPipelineAllowed};
+                var createPrivatePipelineAllowed = #{authorizationBean.createPrivatePipelineAllowed};
+                var createPublicSuiteAllowed = #{authorizationBean.createPublicSuiteAllowed};
+                var createPrivateSuiteAllowed = #{authorizationBean.createPrivateSuiteAllowed};
+                var adminServerAllowed = #{authorizationBean.adminServerAllowed};
+                var genomeSpaceEnabled = #{genomeSpaceBean.genomeSpaceEnabled};
+                var genomeSpaceLoggedIn = #{genomeSpaceBean.loggedIn};
+                var userLoggedIn = !("${requestScope.userID}" === "null" || "${requestScope.userID}" === "");
+            </script>
 
-    <script type="text/javascript" src="#{facesContext.externalContext.requestContextPath}/js/prototype.js"/>
-    <script type="text/javascript" src="#{facesContext.externalContext.requestContextPath}/js/genepattern.js"/>
-    <script type="text/javascript" src="#{facesContext.externalContext.requestContextPath}/js/mm_menu.js"/>
-    <script type="text/javascript" src="#{facesContext.externalContext.requestContextPath}/js/popupMenu.js"/>
-    <script type="text/javascript" src="#{facesContext.externalContext.requestContextPath}/js/jsval.js"/>
-    <script type="text/javascript" src="#{facesContext.externalContext.requestContextPath}/js/protocol.js"/>
-    
-    <script src="/gp/js/jquery/jquery-1.7.1.js" type="text/javascript" />
- 	<script src="/gp/js/jquery/jquery-ui-1.8.16.js" type="text/javascript" />
-    <script src="/gp/js/jquery/ddsmoothmenu.js" type="text/javascript" />
-    <script src="/gp/js/menu.js" type="text/javascript" />
-    <script type="text/javascript" language="javascript">
-      /* <![CDATA[ */
-      /* Function to support "jsval" based validation.  See registerUser.xhtml for an example.*/
-      function validateForm(objForm) {
-        var strErrorClass = "error";
-        var errMessages = getValidationErrors(objForm, strErrorClass);
-        if(errMessages.length == 0) {
-          return true;
-        }
-        else {
-          var d = pt("errorMessageDiv");
-          var t = pt("errorMessageContent");
-          d.style.display = "";
+            <script type="text/javascript" src="#{facesContext.externalContext.requestContextPath}/js/prototype.js" />
+            <script type="text/javascript" src="#{facesContext.externalContext.requestContextPath}/js/genepattern.js" />
+            <script type="text/javascript" src="#{facesContext.externalContext.requestContextPath}/js/mm_menu.js" />
+            <script type="text/javascript" src="#{facesContext.externalContext.requestContextPath}/js/popupMenu.js" />
+            <script type="text/javascript" src="#{facesContext.externalContext.requestContextPath}/js/jsval.js" />
+            <script type="text/javascript" src="#{facesContext.externalContext.requestContextPath}/js/protocol.js" />
 
-          var messageString = "<ul style=\"font-weight:bold; color:red;\">";
-          for(var i=0; i<errMessages.length; i++) {
-            messageString += "<li/>" +  errMessages[i];
-          }
-          messageString += "</ul>";
-          Element.update('errorMessageContent', messageString);
-          return false;
-        }
-      }
-       /* ]]> */
+            <script src="/gp/js/jquery/jquery-1.7.1.js" type="text/javascript" />
+            <script src="/gp/js/jquery/jquery-ui-1.8.16.js" type="text/javascript" />
+            <script src="/gp/js/jquery/ddsmoothmenu.js" type="text/javascript" />
+            <script src="/gp/js/menu.js" type="text/javascript" />
+            <script type="text/javascript" language="javascript">
+                /* <![CDATA[ */
+                /* Function to support "jsval" based validation.  See registerUser.xhtml for an example.*/
+                function validateForm(objForm) {
+                    var strErrorClass = "error";
+                    var errMessages = getValidationErrors(objForm, strErrorClass);
+                    if (errMessages.length == 0) {
+                        return true;
+                    }
+                    else {
+                        var d = pt("errorMessageDiv");
+                        var t = pt("errorMessageContent");
+                        d.style.display = "";
 
-      </script>
+                        var messageString = "<ul style=\"font-weight:bold; color:red;\">";
+                        for (var i = 0; i < errMessages.length; i++) {
+                            messageString += "<li/>" + errMessages[i];
+                        }
+                        messageString += "</ul>";
+                        Element.update('errorMessageContent', messageString);
+                        return false;
+                    }
+                }
+                /* ]]> */
 
-    <!-- Use this insert to override the "onLoad" initialization method.  This function is triggered from the body onload event.  -->
-    <ui:insert name="validationInit">
-      <script type="text/javascript" language="javascript"> function onLoad(){}  </script>
-    </ui:insert>
+            </script>
 
-    <ui:insert name="headText"/>
+            <!-- Use this insert to override the "onLoad" initialization method.  This function is triggered from the body onload event.  -->
+            <ui:insert name="validationInit">
+                <script type="text/javascript" language="javascript"> function onLoad() {
+                }  </script>
+            </ui:insert>
 
-  </head>
-  <body onload="pm_registerClickHandler(); onLoad();">
-    <script language="JavaScript1.2" type="text/javascript">
-        var agt = navigator.userAgent.toLowerCase();
-        var isSafari2 = agt.indexOf("safari/4") != -1;
-        var x = isSafari2 ? -10 : 0;
-        var y =  isSafari2 ? 8 : 18;
-    </script>
+            <ui:insert name="headText" />
 
-    <!-- User settings area -->
-    <a4j:outputPanel id="systemMessageLink">    
-    <t:div rendered="#{!empty requestScope.userID}">
-      <table height="30" border="0" cellpadding="0" cellspacing="0" class="loginsettings">
-        <tr valign="top">
-          <td>
-            <h:form id="showSystemMessageForm" rendered="#{!systemMessageBean.isOpen}" style="display: inline;" >
-            <a4j:commandLink value="System Message" actionListener="#{systemMessageBean.show}" style="color: red;" reRender="systemMessage, systemMessageLink" />
-            <h:outputText value=" | " />
-            </h:form>
-            <h:outputLink value="#{facesContext.externalContext.requestContextPath}/pages/accountInfo.jsf">
-			My Settings </h:outputLink> | <h:form style="display: inline;">
-              <h:outputLink id="logoutLink" value="#{facesContext.externalContext.request.contextPath}/logout"> Sign out </h:outputLink>
-            </h:form> &#160;${requestScope.userID}&#160;&#160;&#160;</td>
-        </tr>
-      </table>
-    </t:div>
-    </a4j:outputPanel>
+        </head>
+        <body onload="pm_registerClickHandler(); onLoad();">
+            <script language="JavaScript1.2" type="text/javascript">
+                var agt = navigator.userAgent.toLowerCase();
+                var isSafari2 = agt.indexOf("safari/4") != -1;
+                var x = isSafari2 ? -10 : 0;
+                var y = isSafari2 ? 8 : 18;
+            </script>
 
-    <!-- top band with the logo -->
-    <div id="topband" class="topband">
-      <h:outputLink value="#{facesContext.externalContext.requestContextPath}/pages/index.jsf" target="_top">
-        <t:graphicImage value="/images/GP-logo.gif" alt="GenePattern" width="229" height="48" style="border: 0;"/>
-      </h:outputLink>
-    </div>
-    <!-- horizontal navigation band -->
-    <script type="text/javascript">
-    	if (userLoggedIn) {
-    		Menu.buildNavMenu();
-    	}
-    	
-    	// Stub out old embeded javascript calls
-    	function MM_swapImage() { return true; }
-    	function MM_swapImgRestore() { return true; }
-    </script>
+            <!-- User settings area -->
+            <a4j:outputPanel id="systemMessageLink">
+                <t:div rendered="#{!empty requestScope.userID}">
+                    <table height="30" border="0" cellpadding="0" cellspacing="0" class="loginsettings">
+                        <tr valign="top">
+                            <td>
+                                <h:form id="showSystemMessageForm" rendered="#{!systemMessageBean.isOpen}" style="display: inline;">
+                                    <a4j:commandLink value="System Message" actionListener="#{systemMessageBean.show}" style="color: red;" reRender="systemMessage, systemMessageLink" />
+                                    <h:outputText value=" | " />
+                                </h:form>
+                                <h:outputLink value="#{facesContext.externalContext.requestContextPath}/pages/accountInfo.jsf">
+                                    My Settings </h:outputLink> | <h:form style="display: inline;">
+                                <h:outputLink id="logoutLink" value="#{facesContext.externalContext.request.contextPath}/logout"> Sign out </h:outputLink>
+                            </h:form> &#160;${requestScope.userID}&#160;&#160;&#160;</td>
+                        </tr>
+                    </table>
+                </t:div>
+            </a4j:outputPanel>
 
-    <!--  Main content area -->
-    <div id="content" class="content">
-      <table width="100%" border="0" cellspacing="0" cellpadding="0">
-        <tr>
-          <td>
-            <!-- Spacer used to maintain a minimum height -->
-            <img src="#{facesContext.externalContext.requestContextPath}/images/spacer.gif" width="0" height="440"/>
-          </td>
+            <!-- top band with the logo -->
+            <div id="topband" class="topband">
+                <h:outputLink value="#{facesContext.externalContext.requestContextPath}/pages/index.jsf" target="_top">
+                    <t:graphicImage value="/images/GP-logo.gif" alt="GenePattern" width="229" height="48" style="border: 0;" />
+                </h:outputLink>
+            </div>
+            <!-- horizontal navigation band -->
+            <script type="text/javascript">
+                if (userLoggedIn) {
+                    Menu.buildNavMenu();
+                }
 
-          <ui:insert name="leftPanel"/>
+                // Stub out old embeded javascript calls
+                function MM_swapImage() {
+                    return true;
+                }
+                function MM_swapImgRestore() {
+                    return true;
+                }
+            </script>
 
-          <td valign="top" class="maincontent" id="maincontent">
-            <!-- Spacer used to maintain a minimum width, min-width style is not supported on all browsers (IE7, Opera9) -->
-            <img src="#{facesContext.externalContext.requestContextPath}/images/spacer.gif" width="570" height="0"/>
+            <!--  Main content area -->
+            <div id="content" class="content">
+                <table width="100%" border="0" cellspacing="0" cellpadding="0">
+                    <tr>
+                        <td>
+                            <!-- Spacer used to maintain a minimum height -->
+                            <img src="#{facesContext.externalContext.requestContextPath}/images/spacer.gif" width="0" height="440" />
+                        </td>
 
-            <!-- Include System Alert Message  -->
-            <t:div id="systemAlertMessage" rendered="#{systemMessageBean.systemMessage != null}">
-                <ui:include src="../pages/systemMessage.xhtml" />
-            </t:div>
+                        <ui:insert name="leftPanel" />
 
-            <!-- JSF (Server side) errors or messages -->
-		    <ui:include src="../pages/messages.xhtml" />
-		    <h:outputText rendered="#{!empty facesContext.maximumSeverity}"><br /></h:outputText>
+                        <td valign="top" class="maincontent" id="maincontent">
+                            <!-- Spacer used to maintain a minimum width, min-width style is not supported on all browsers (IE7, Opera9) -->
+                            <img src="#{facesContext.externalContext.requestContextPath}/images/spacer.gif" width="570" height="0" />
 
-		    <!-- Javascript validation errors.  The JSF and Javascript error blockss will not
-		         be visible at the same time (if JS validation fails, the form submit will not
-		         occur and thus JSF validation will not be run) -->
-		    <div id="errorMessageDiv" style="display:none;">
+                            <!-- Include System Alert Message  -->
+                            <t:div id="systemAlertMessage" rendered="#{systemMessageBean.systemMessage != null}">
+                                <ui:include src="../pages/systemMessage.xhtml" />
+                            </t:div>
+
+                            <!-- JSF (Server side) errors or messages -->
+                            <ui:include src="../pages/messages.xhtml" />
+                            <h:outputText rendered="#{!empty facesContext.maximumSeverity}"><br /></h:outputText>
+
+                            <!-- Javascript validation errors.  The JSF and Javascript error blockss will not
+                        be visible at the same time (if JS validation fails, the form submit will not
+                        occur and thus JSF validation will not be run) -->
+                            <div id="errorMessageDiv" style="display:none;">
               <span id="errorMessageHeader" style="font-weight:bold">
                 Please correct the following errors before proceeding:
               </span>
-              <div id="errorMessageContent"/>
+
+                                <div id="errorMessageContent" />
+                            </div>
+
+                            <!-- Main content body -->
+                            <ui:insert name="body" />
+                        </td>
+
+                        <ui:insert name="rightPanel" />
+                    </tr>
+
+                    <tr>
+                        <td colspan="4" class="footer">
+                            <table width="100%" border="0" cellspacing="0" cellpadding="0">
+                                <tr>
+                                    <td>
+                                        <h:outputLink value="#{facesContext.externalContext.requestContextPath}/pages/about.jsf">About GenePattern</h:outputLink>&#160;|&#160;<h:outputLink value="#{facesContext.externalContext.requestContextPath}/pages/contactUs.jsf">Contact Us</h:outputLink>
+                                    </td>
+                                    <td>
+                                        <div align="right">&#169;2003-2012&#160; <h:outputLink value="http://www.broadinstitute.org" target="_blank">Broad Institute, MIT</h:outputLink>
+                                        </div>
+                                    </td>
+                                    <td width="10">&#160;</td>
+                                    <td width="27">
+                                        <h:outputLink value="http://www.broadinstitute.org" target="_blank">
+                                            <t:graphicImage value="/images/broad-symbol.gif" alt="Broad Institute" width="27" height="30" style="border: 0;" />
+                                        </h:outputLink>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                </table>
             </div>
 
-		    <!-- Main content body -->
-     		<ui:insert name="body" />
-           </td>
+            <ui:insert name="popupMenus" />
 
-          <ui:insert name="rightPanel"/>
-        </tr>
-
-        <tr>
-          <td colspan="4" class="footer">
-            <table width="100%" border="0" cellspacing="0" cellpadding="0">
-              <tr>
-                <td>
-                  <h:outputLink value="#{facesContext.externalContext.requestContextPath}/pages/about.jsf">About GenePattern</h:outputLink>&#160;|&#160;<h:outputLink value="#{facesContext.externalContext.requestContextPath}/pages/contactUs.jsf">Contact Us</h:outputLink>
-                </td>
-                <td>
-                  <div align="right">&#169;2003-2012&#160; <h:outputLink value="http://www.broadinstitute.org" target="_blank">Broad Institute, MIT</h:outputLink>
-                  </div>
-                </td>
-                <td width="10">&#160;</td>
-                <td width="27">
-                  <h:outputLink value="http://www.broadinstitute.org" target="_blank">
-                    <t:graphicImage value="/images/broad-symbol.gif" alt="Broad Institute" width="27" height="30" style="border: 0;" />
-                  </h:outputLink>
-                </td>
-              </tr>
-            </table>
-          </td>
-        </tr>
-      </table>
-    </div>
-
-    <ui:insert name="popupMenus"/>
-
-  </body>
-  </f:view>
+        </body>
+    </f:view>
 </html>
