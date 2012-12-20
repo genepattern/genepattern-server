@@ -69,18 +69,18 @@
 
         function setShowExecutionLogs(cb, jobNumber) {
             var action = cb.checked ? 'showExecutionLogs' : 'hideExecutionLogs';
-            var opt = {
-                    method:    'post',
-                    postBody:  '',
-                    onSuccess:  function(response) {
-                                    location.reload();
-                                },
-                    onFailure: function(t) {
-                        cb.checked = false;
-                        alert('Error ' + t.status + ': Problem with Show Execution Logs checkbox');
-                    }
-            } 
-            new  Ajax.Request('/gp/jobResults/'+jobNumber+'/'+action,opt);
+            var request = jq.ajax({
+				type: "POST",
+				url: '/gp/jobResults/'+jobNumber+'/'+action,
+				dataType: "json",
+				success: function(data, textStatus, jqXHR) {
+					location.reload();
+				},
+				error: function(data, textStatus, jqXHR) {
+					cb.checked = false;
+                    alert('Error ' + jqXHR.status + ': Problem with Show Execution Logs checkbox');
+				}
+			});
         }
 		
 		/* <![CDATA[ */	
