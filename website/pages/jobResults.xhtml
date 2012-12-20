@@ -1,540 +1,536 @@
+<!--
+  ~ Copyright 2012 The Broad Institute, Inc.
+  ~ SOFTWARE COPYRIGHT NOTICE
+  ~ This software and its documentation are the copyright of the Broad Institute, Inc. All rights are reserved.
+  ~
+  ~ This software is supplied without any warranty or guaranteed support whatsoever. The Broad Institute is not responsible for its use, misuse, or functionality.
+  -->
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 
-<!-- /*
- The Broad Institute
- SOFTWARE COPYRIGHT NOTICE AGREEMENT
- This software and its documentation are copyright (2003-2012) by the
- Broad Institute/Massachusetts Institute of Technology. All rights are
- reserved.
- 
- This software is supplied without any warranty or guaranteed support
- whatsoever. Neither the Broad Institute nor MIT can be responsible for its
- use, misuse, or functionality.
- */ -->
-
 <html xmlns="http://www.w3.org/1999/xhtml"
-	xmlns:ui="http://java.sun.com/jsf/facelets"
-	xmlns:h="http://java.sun.com/jsf/html"
-    xmlns:a4j="http://richfaces.org/a4j"
-	xmlns:f="http://java.sun.com/jsf/core"
-	xmlns:t="http://myfaces.apache.org/tomahawk"
-	xmlns:c="http://java.sun.com/jstl/core" charset="UTF-8">
-<ui:composition template="/templates/common.xhtml">
-	<ui:define name="pageTitle">
-		GenePattern | Job Results
-	</ui:define>
-	<ui:define name="headText">
-		<link href="#{facesContext.externalContext.requestContextPath}/css/GP_DK.css" rel="stylesheet" type="text/css" />
-		<link href="/gp/css/jquery-ui.css" type="text/css" rel="stylesheet" />
-		<script type="text/javascript">
-			var jq = jQuery.noConflict();
-		</script>
-		<script type="text/javascript" language="javascript">
-/* <![CDATA[ */
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:a4j="http://richfaces.org/a4j"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:t="http://myfaces.apache.org/tomahawk"
+      xmlns:c="http://java.sun.com/jstl/core" charset="UTF-8">
+    <ui:composition template="/templates/common.xhtml">
+        <ui:define name="pageTitle">
+            GenePattern | Job Results
+        </ui:define>
+        <ui:define name="headText">
+            <link href="#{facesContext.externalContext.requestContextPath}/css/GP_DK.css" rel="stylesheet" type="text/css" />
+            <link href="/gp/css/jquery-ui.css" type="text/css" rel="stylesheet" />
+            <script type="text/javascript">
+                var jq = jQuery.noConflict();
+            </script>
+            <script type="text/javascript" language="javascript">
+                /* <![CDATA[ */
 
-    function getContext() {
-      return '#{facesContext.externalContext.requestContextPath}';
-    }
+                function getContext() {
+                    return '#{facesContext.externalContext.requestContextPath}';
+                }
 
-    var jobNumbers = new Array();
-    var fileRows = new Object();
+                var jobNumbers = new Array();
+                var fileRows = new Object();
 
-	function addFileRow(jobNumber, fileRowId) {
-      var rowIds = fileRows[jobNumber];
-      if(rowIds == null) {
-        rowIds = new Array();
-        fileRows[jobNumber] = rowIds;
-      }
-      rowIds[rowIds.length] = fileRowId;
-    }
+                function addFileRow(jobNumber, fileRowId) {
+                    var rowIds = fileRows[jobNumber];
+                    if (rowIds == null) {
+                        rowIds = new Array();
+                        fileRows[jobNumber] = rowIds;
+                    }
+                    rowIds[rowIds.length] = fileRowId;
+                }
 
 
-	function toggleJob(jobNumber) {
-		var table = document.getElementById('jobTable');
-		var image = document.getElementById('jobToggleImage'+jobNumber);
-		var open = image.src.indexOf('/gp/images/triangle_black_run.gif') != -1;
-		var newDisplay =  open ? 'none' : '';
-		var newImageSrc = open ? '/gp/images/triangle_black.gif' : '/gp/images/triangle_black_run.gif';
-		document.getElementById('expansion_state_'+jobNumber).value = (!open ? 'true' : 'false');
-		image.src = newImageSrc;
-		for (var i = 0; i < table.rows.length; i++) {
-			if (table.rows[i].id == 'jobRow' + jobNumber) {
-				i++;
-				while (i < table.rows.length && table.rows[i].id.indexOf("jobRow") == -1) {
-					table.rows[i++].style.display = newDisplay;
-				}
-				break;
-			}
-		}
-	}
-	
-	function toggleAll() {
-		var table = document.getElementById('jobTable');
-		var image = document.getElementById('jobToggleAllImage');
-		var open = image.src.indexOf('/gp/images/triangle_black_run.gif') != -1;
-		var newDisplay = open ? 'none' : '';
-		var newImageSrc = open ? '/gp/images/triangle_black.gif' : '/gp/images/triangle_black_run.gif';
-		image.src = newImageSrc;
-		// start on 4th row
-		for (var i = 3; i < table.rows.length; i++) {
-			if (table.rows[i].id.indexOf("jobRow") != -1) {
-			    var jobNumber = table.rows[i].id.substring('jobRow'.length);
-				document.getElementById('jobToggleImage'+jobNumber).src = newImageSrc;
-				document.getElementById('expansion_state_'+jobNumber).value = (!open ? 'true' : 'false');
-			} else {
-				table.rows[i].style.display = newDisplay;
-			}
-		}
-	}
+                function toggleJob(jobNumber) {
+                    var table = document.getElementById('jobTable');
+                    var image = document.getElementById('jobToggleImage' + jobNumber);
+                    var open = image.src.indexOf('/gp/images/triangle_black_run.gif') != -1;
+                    var newDisplay = open ? 'none' : '';
+                    var newImageSrc = open ? '/gp/images/triangle_black.gif' : '/gp/images/triangle_black_run.gif';
+                    document.getElementById('expansion_state_' + jobNumber).value = (!open ? 'true' : 'false');
+                    image.src = newImageSrc;
+                    for (var i = 0; i < table.rows.length; i++) {
+                        if (table.rows[i].id == 'jobRow' + jobNumber) {
+                            i++;
+                            while (i < table.rows.length && table.rows[i].id.indexOf("jobRow") == -1) {
+                                table.rows[i++].style.display = newDisplay;
+                            }
+                            break;
+                        }
+                    }
+                }
 
-    function toggleJobCheckboxes(jobNo)
-    {
-      var jobCheckboxDiv = pt("cb_job_" + jobNo);
-      var jobCheckbox = jobCheckboxDiv.getElementsByTagName("input")[0];
-      var isChecked = jobCheckbox.checked;
-      var rowIds = fileRows[jobNo];
-      if(rowIds != null) {
-        for(var i=0; i<rowIds.length; i++) {
-          var row = document.getElementById(rowIds[i]);
-          var elements = row.getElementsByTagName("input");
-          for(var j=0; j<elements.length; j++) {
-            if(elements[j].type == "checkbox") {
-               elements[j].checked = isChecked;
-            }
-          }
-        }
-      }
-    }
+                function toggleAll() {
+                    var table = document.getElementById('jobTable');
+                    var image = document.getElementById('jobToggleAllImage');
+                    var open = image.src.indexOf('/gp/images/triangle_black_run.gif') != -1;
+                    var newDisplay = open ? 'none' : '';
+                    var newImageSrc = open ? '/gp/images/triangle_black.gif' : '/gp/images/triangle_black_run.gif';
+                    image.src = newImageSrc;
+                    // start on 4th row
+                    for (var i = 3; i < table.rows.length; i++) {
+                        if (table.rows[i].id.indexOf("jobRow") != -1) {
+                            var jobNumber = table.rows[i].id.substring('jobRow'.length);
+                            document.getElementById('jobToggleImage' + jobNumber).src = newImageSrc;
+                            document.getElementById('expansion_state_' + jobNumber).value = (!open ? 'true' : 'false');
+                        } else {
+                            table.rows[i].style.display = newDisplay;
+                        }
+                    }
+                }
 
-    function toggleAllCheckboxes(maincheckbox)
-    {
-      var isChecked = maincheckbox.checked;
-      for(var i=0; i<jobNumbers.length; i++) {
-        var jobNo = jobNumbers[i];
-        var jobCheckboxDiv = pt("cb_job_" + jobNo);
-        var jobCheckbox = jobCheckboxDiv.getElementsByTagName("input")[0];
-        jobCheckbox.checked = isChecked;
-        toggleJobCheckboxes(jobNumbers[i]);
-      }
-    }
+                function toggleJobCheckboxes(jobNo) {
+                    var jobCheckboxDiv = pt("cb_job_" + jobNo);
+                    var jobCheckbox = jobCheckboxDiv.getElementsByTagName("input")[0];
+                    var isChecked = jobCheckbox.checked;
+                    var rowIds = fileRows[jobNo];
+                    if (rowIds != null) {
+                        for (var i = 0; i < rowIds.length; i++) {
+                            var row = document.getElementById(rowIds[i]);
+                            var elements = row.getElementsByTagName("input");
+                            for (var j = 0; j < elements.length; j++) {
+                                if (elements[j].type == "checkbox") {
+                                    elements[j].checked = isChecked;
+                                }
+                            }
+                        }
+                    }
+                }
 
-    function toggleVisibility(jobNo) {
-      var hiddenField = pt("expansion_state_" + jobNo);
-      if(hiddenField.value == "false")
-      {
-        showCategory(jobNo);
-       }
-      else
-      {
-        hideCategory(jobNo);
-      }
-    }
+                function toggleAllCheckboxes(maincheckbox) {
+                    var isChecked = maincheckbox.checked;
+                    for (var i = 0; i < jobNumbers.length; i++) {
+                        var jobNo = jobNumbers[i];
+                        var jobCheckboxDiv = pt("cb_job_" + jobNo);
+                        var jobCheckbox = jobCheckboxDiv.getElementsByTagName("input")[0];
+                        jobCheckbox.checked = isChecked;
+                        toggleJobCheckboxes(jobNumbers[i]);
+                    }
+                }
 
-    function hideCategory( jobNo ) {
-      pt("expansion_state_" + jobNo).value = "false";
+                function toggleVisibility(jobNo) {
+                    var hiddenField = pt("expansion_state_" + jobNo);
+                    if (hiddenField.value == "false") {
+                        showCategory(jobNo);
+                    }
+                    else {
+                        hideCategory(jobNo);
+                    }
+                }
 
-      var downArrow = document.getElementById(jobNo + "_expanded_img");
-      var rightArrow = document.getElementById(jobNo + "_collapsed_img");
-      downArrow.style.display ="none";
-      rightArrow.style.display ="inline"
+                function hideCategory(jobNo) {
+                    pt("expansion_state_" + jobNo).value = "false";
 
-      var rowIds = fileRows[jobNo];
-      if(rowIds != null) {
-        for(var i=0; i<rowIds.length; i++) {
-          row = document.getElementById(rowIds[i]);
-          if(row != null) row.style.display="none";
-        }
-      }
-    }
+                    var downArrow = document.getElementById(jobNo + "_expanded_img");
+                    var rightArrow = document.getElementById(jobNo + "_collapsed_img");
+                    downArrow.style.display = "none";
+                    rightArrow.style.display = "inline"
 
-    function showCategory( jobNo ) {
-      pt("expansion_state_" + jobNo).value = "true";
+                    var rowIds = fileRows[jobNo];
+                    if (rowIds != null) {
+                        for (var i = 0; i < rowIds.length; i++) {
+                            row = document.getElementById(rowIds[i]);
+                            if (row != null) row.style.display = "none";
+                        }
+                    }
+                }
 
-      var downArrow = document.getElementById(jobNo + "_expanded_img");
-      var rightArrow = document.getElementById(jobNo + "_collapsed_img");
-      downArrow.style.display ="inline";
-      rightArrow.style.display ="none"
+                function showCategory(jobNo) {
+                    pt("expansion_state_" + jobNo).value = "true";
 
-      var rowIds = fileRows[jobNo];
-      for(var i=0; i<rowIds.length; i++)
-      {
-        row = document.getElementById(rowIds[i]);
-        if(row != null) row.style.display="";
-      }
-    }
+                    var downArrow = document.getElementById(jobNo + "_expanded_img");
+                    var rightArrow = document.getElementById(jobNo + "_collapsed_img");
+                    downArrow.style.display = "inline";
+                    rightArrow.style.display = "none"
 
-    function openAll() {
-      for(property in fileRows) {
-        showCategory(property);
-      }
-      var header_two_row = document.getElementById("header_two");
-      header_two_row.style.display="";
-    }
+                    var rowIds = fileRows[jobNo];
+                    for (var i = 0; i < rowIds.length; i++) {
+                        row = document.getElementById(rowIds[i]);
+                        if (row != null) row.style.display = "";
+                    }
+                }
 
-    function closeAll() {
-      for(property in fileRows) {
-        hideCategory(property);
-      }
-      var header_two_row = document.getElementById("header_two");
-      header_two_row.style.display="none";
-    }
+                function openAll() {
+                    for (property in fileRows) {
+                        showCategory(property);
+                    }
+                    var header_two_row = document.getElementById("header_two");
+                    header_two_row.style.display = "";
+                }
 
-	function confirmDelete() {
-		var jobs = document.getElementsByClassName("jobResult", "jobsForm");
-       	var files = document.getElementsByClassName("jobFile", "jobsForm");
-       	var numJobsChecked = 0;
-       	for(var i = 0, length = jobs.length; i < length && numJobsChecked < 2; i++) {
-       		if(jobs[i].checked) {
-       			numJobsChecked++;
-       		}
-       	}
+                function closeAll() {
+                    for (property in fileRows) {
+                        hideCategory(property);
+                    }
+                    var header_two_row = document.getElementById("header_two");
+                    header_two_row.style.display = "none";
+                }
 
-       	var numFilesChecked = 0;
-       	for(var i = 0, length = files.length; i < length && numFilesChecked < 2; i++) {
-       		if(files[i].checked) {
-       			numFilesChecked++;
-       		}
-       	}
-       	if(numJobsChecked==0 && numFilesChecked==0) {
-       		return alert("No jobs or files selected.");
-       	}
-       	var jobString = "";
-       	if(numJobsChecked == 1) {
-       		jobString = " job";
-       	} else if(numJobsChecked > 1) {
-       		jobString = " jobs";
-       	}
+                function confirmDelete() {
+                    var jobs = document.getElementsByClassName("jobResult", "jobsForm");
+                    var files = document.getElementsByClassName("jobFile", "jobsForm");
+                    var numJobsChecked = 0;
+                    for (var i = 0, length = jobs.length; i < length && numJobsChecked < 2; i++) {
+                        if (jobs[i].checked) {
+                            numJobsChecked++;
+                        }
+                    }
 
-       	var fileString = "";
-       	if(numJobsChecked > 0) {
-       		fileString = " and";
-       	}
+                    var numFilesChecked = 0;
+                    for (var i = 0, length = files.length; i < length && numFilesChecked < 2; i++) {
+                        if (files[i].checked) {
+                            numFilesChecked++;
+                        }
+                    }
+                    if (numJobsChecked == 0 && numFilesChecked == 0) {
+                        return alert("No jobs or files selected.");
+                    }
+                    var jobString = "";
+                    if (numJobsChecked == 1) {
+                        jobString = " job";
+                    } else if (numJobsChecked > 1) {
+                        jobString = " jobs";
+                    }
 
-       	if(numFilesChecked==1) {
-      		fileString += " file";
-       	} else if(numFilesChecked > 1) {
-       		fileString += " files";
-       	}
-		return confirm('Are you sure you want to delete the selected' + jobString + fileString + '?');
-	}
-    
-    function menuClick(jobNumber, id) {
-    	pm_showMenu('menuDiv_'+jobNumber, Position.cumulativeOffset(document.getElementById(id)), 50, 50);
-    }
+                    var fileString = "";
+                    if (numJobsChecked > 0) {
+                        fileString = " and";
+                    }
 
-/* ]]> */
+                    if (numFilesChecked == 1) {
+                        fileString += " file";
+                    } else if (numFilesChecked > 1) {
+                        fileString += " files";
+                    }
+                    return confirm('Are you sure you want to delete the selected' + jobString + fileString + '?');
+                }
 
-	</script>
-	</ui:define>
+                function menuClick(jobNumber, id) {
+                    pm_showMenu('menuDiv_' + jobNumber, Position.cumulativeOffset(document.getElementById(id)), 50, 50);
+                }
 
-	
-	<ui:define name="body">
-    <div class="jobResults">
-    	<h:form id="jobsForm">
-		<table class="title" cellpadding="0" cellspacing="0" border="0">
-			<tr>
-				<td width="200px" class="title">Job Results</td>
-				<td width="170px" style="white-space: nowrap;"><font style="padding-right: 5px;">show: </font> 
-		    		<h:selectOneMenu value="#{jobResultsFilterBean.jobFilter}" onchange="this.form.submit();">
-	            		<f:selectItems value="#{jobResultsFilterBean.jobFilterMenu}" />
-	        		</h:selectOneMenu>
-				</td>
-	    		<td style="padding-left: 5px">
-	        		<h:selectBooleanCheckbox value="#{jobsBean.showExecutionLogs}" onclick="this.form.submit();" />Show Execution Logs
-			    </td>
-			</tr>
-		</table>
-	    
-	    
-	    <div class="reminders">
-	    <!--  
-	      <font color="#FF0000">*</font>Click<span class="file"><img src="/gp/images/smallOptions.gif" alt="" /></span> for more options. 
-	      <font color="#FF0000">*</font>Click <font color="#0066ff">job ID</font> for job status report. 
-	      <font color="#FF0000">*</font>Click <font color="#0066ff">file name</font> to open the file in a new browser window. 
-	      <font color="#FF0000">*</font>Click <font color="#0066ff">Edit</font> to edit Share options. 
-	      <font color="#FF0000">*</font>Click <img src="/gp/images/delete.gif" /> to delete selected jobs.
-	    -->
-	    </div>
+                /* ]]> */
 
-		<table class="summary" cellpadding="0" cellspacing="0" id="jobTable">
-			<tr class="summaryTitle">
-		        <td class="center header">
-		        	<h:commandLink action="#{jobsBean.sortJobsByStatus}" title="Sort job results by status">Status
-			          	<h:outputText escape="false" rendered="#{jobsBean.jobSortColumn == 'status' and jobsBean.jobSortAscending}">&#9650;</h:outputText>
-			          	<h:outputText escape="false" rendered="#{jobsBean.jobSortColumn == 'status' and not jobsBean.jobSortAscending}">&#9660;</h:outputText>
-			          	<h:outputText escape="false" rendered="#{jobsBean.jobSortColumn != 'status'}">&#160;</h:outputText>
-			        </h:commandLink>
-		        </td>
-		        
-		        <td class="right header">
-			        <h:commandLink action="#{jobsBean.sortJobsById}" title="Sort job results by job number (#{jobsBean.jobSortAscending ? 'high to low' : 'low to high'})">Job
-			          	<h:outputText escape="false" rendered="#{jobsBean.jobSortColumn == 'jobNumber' and jobsBean.jobSortAscending}">&#9650;</h:outputText>
-			          	<h:outputText escape="false" rendered="#{jobsBean.jobSortColumn == 'jobNumber' and not jobsBean.jobSortAscending}">&#9660;</h:outputText>
-			          	<h:outputText escape="false" rendered="#{jobsBean.jobSortColumn != 'jobNumber'}">&#160;</h:outputText>
-			        </h:commandLink>
-		        </td>
-		        
-		        <td class="center"><div><h:commandLink action="#{jobsBean.delete}" onclick="if (!confirmDelete()) return false">delete</h:commandLink></div></td>
-		        
-		        <td class="header"><a href="javascript:toggleAll()"><img src="/gp/images/triangle_black_run.gif" id="jobToggleAllImage" title="toggle visibility of all jobs"/></a>
-			        <h:commandLink action="#{jobsBean.sortJobsByModule}" title="Sort job results by module name">Module Name
-			          	<h:outputText escape="false" rendered="#{jobsBean.jobSortColumn == 'taskName' and jobsBean.jobSortAscending}">&#9650;</h:outputText>
-			          	<h:outputText escape="false" rendered="#{jobsBean.jobSortColumn == 'taskName' and not jobsBean.jobSortAscending}">&#9660;</h:outputText>
-			        	<h:outputText escape="false" rendered="#{jobsBean.jobSortColumn != 'taskName'}">&#160;</h:outputText>
-					</h:commandLink>
-		        </td>
-		        
-		        <td class="right header">Total Size</td>
-		
-		        
-		        <td class="header">
-		        	<h:commandLink action="#{jobsBean.sortJobsByDateSubmitted}" title="Sort job results by date submitted">Submit Date
-          				<h:outputText escape="false" rendered="#{jobsBean.jobSortColumn == 'dateSubmitted' and jobsBean.jobSortAscending}">&#9650;</h:outputText>
-          				<h:outputText escape="false" rendered="#{jobsBean.jobSortColumn == 'dateSubmitted' and not jobsBean.jobSortAscending}">&#9660;</h:outputText>
-          				<h:outputText escape="false" rendered="#{jobsBean.jobSortColumn != 'dateSubmitted'}">&#160;</h:outputText>
-					</h:commandLink>
-				</td>
-				
-				<td class="header">
-		        	<h:commandLink action="#{jobsBean.sortJobsByDateCompleted}" title="Sort job results by date completed">Complete Date
-          				<h:outputText escape="false" rendered="#{jobsBean.jobSortColumn == 'dateCompleted' and jobsBean.jobSortAscending}">&#9650;</h:outputText>
-          				<h:outputText escape="false" rendered="#{jobsBean.jobSortColumn == 'dateCompleted' and not jobsBean.jobSortAscending}">&#9660;</h:outputText>
-          				<h:outputText escape="false" rendered="#{jobsBean.jobSortColumn != 'dateCompleted'}">&#160;</h:outputText>
-					</h:commandLink>
-		        </td>
-		        
-		        <td>Job Owner</td>
-		        
-		        <td>Your Access</td>
-		        
-		        <td>Sharing</td>
-		    </tr>
-		
-		    <tr class="summaryTitle">
-		        <td class="center"></td>
-		        
-		        <td class="right"></td>
-		        
-		        <td class="center"><input type="checkbox" onclick="toggleAllCheckboxes(this);" /></td>
-		        
-		        <td class="file header"><img src="/gp/images/arrow2.gif" />
-		        	<h:commandLink action="#{jobsBean.sortFilesByName}" title="Sort output files by name">File  
-			          	<h:outputText escape="false" rendered="#{jobsBean.fileSortColumn == 'name' and jobsBean.fileSortAscending}">&#9650;</h:outputText>
-			          	<h:outputText escape="false" rendered="#{jobsBean.fileSortColumn == 'name' and not jobsBean.fileSortAscending}">&#9660;</h:outputText>
-			        	<h:outputText escape="false" rendered="#{jobsBean.fileSortColumn != 'name'}">&#160;</h:outputText>
-			        </h:commandLink>
-		        </td>
-		        
-		        <td class="right header"><img src="/gp/images/arrow2.gif" />
-			        <h:commandLink action="#{jobsBean.sortFilesBySize}" title="Sort output files by size">File Size
-			          	<h:outputText escape="false" rendered="#{jobsBean.fileSortColumn == 'size' and jobsBean.fileSortAscending}">&#9650;</h:outputText>
-			          	<h:outputText escape="false" rendered="#{jobsBean.fileSortColumn == 'size' and not jobsBean.fileSortAscending}">&#9660;</h:outputText>
-			          	<h:outputText escape="false" rendered="#{jobsBean.fileSortColumn != 'size'}">&#160;</h:outputText>
-			        </h:commandLink>
-          		</td>
-		        
-		        <td></td>
-		        
-		        <td class="file header"><img src="/gp/images/arrow2.gif" />
-		        	<h:commandLink action="#{jobsBean.sortFilesByDateCompleted}" title="Sort output files by last modification date">File Output Date
-			          	<h:outputText escape="false" rendered="#{jobsBean.fileSortColumn == 'lastModified' and jobsBean.fileSortAscending}">&#9650;</h:outputText>
-			          	<h:outputText escape="false" rendered="#{jobsBean.fileSortColumn == 'lastModified' and not jobsBean.fileSortAscending}">&#9660;</h:outputText>
-			          	<h:outputText escape="false" rendered="#{jobsBean.fileSortColumn != 'lastModified'}">&#160;</h:outputText>
-			        </h:commandLink>
-		        </td>
-		
-		        
-		        <td></td>
-		        
-		        <td></td>
-		        
-		        <td></td>
-		    </tr>
-		    <tr class="white" height="5px"><td colspan="19"></td></tr>
-			<!--  Loop through paged jobs -->
-		    <t:dataList var="rootJobWrapper" value="#{jobsBean.pagedJobs}" rowIndexVar="jobIndex">
-		    <tr class="brown" id="jobRow#{rootJobWrapper.jobNumber}">
-			    <td class="center">
-                    <h:outputText rendered="#{rootJobWrapper.status == 'pending'}">Pending</h:outputText>
-			    	<h:outputText rendered="#{rootJobWrapper.status == 'error'}">
-			    		<img src="/gp/images/error.gif" alt="#{rootJobWrapper.status}" />
-			    	</h:outputText>
-			    	<h:outputText rendered="#{rootJobWrapper.status == 'finished'}">
-			    		<img src="/gp/images/complete.gif" alt="#{rootJobWrapper.status}" />
-			    	</h:outputText>
-			    	<h:outputText rendered="#{rootJobWrapper.status == 'processing'}">
-			    		<img src="/gp/images/run.gif" alt="#{rootJobWrapper.status}" />
-			    	</h:outputText>			    	
-			    </td>
-	        
-		        <td class="right">
-			        <h:outputLink styleClass="ID" style="color:#0066FF;" value="/gp/jobResults/#{rootJobWrapper.jobNumber}">#{rootJobWrapper.jobNumber}</h:outputLink>
-			        <!--  Hidden field to hold the expansion state.  -->
-		        	<input type="hidden" id="expansion_state_#{rootJobWrapper.jobNumber}" name="expansion_state_#{rootJobWrapper.jobNumber}" value="#{rootJobWrapper.expanded}"/>
-		        </td>
-		
-		        
-		        <td class="center">
-		        	<h:outputText rendered="#{rootJobWrapper.deleteAllowed}" escape="false">
-		        		<script type="text/javascript" language="javascript">
-		          			jobNumbers[ jobNumbers.length ] = '#{rootJobWrapper.jobNumber}';
-		        		</script>
-		        	</h:outputText>
-		        	<h:outputText rendered="#{rootJobWrapper.level == 0 and rootJobWrapper.deleteAllowed}" >
-				        <div id="cb_job_#{rootJobWrapper.jobNumber}" align="center">
-				           <h:outputText rendered="#{rootJobWrapper.selected}">
-				            <input type="checkbox" class="jobResult" name="selectedJobs" value="#{rootJobWrapper.jobNumber}"
-				                   onclick="toggleJobCheckboxes('#{rootJobWrapper.jobNumber}');" checked="checked"/>
-				          </h:outputText>
-				          <h:outputText rendered="#{!rootJobWrapper.selected}">
-				            <input type="checkbox" class="jobResult" name="selectedJobs" value="#{rootJobWrapper.jobNumber}"
-				                   onclick="toggleJobCheckboxes('#{rootJobWrapper.jobNumber}');"/>
-				          </h:outputText>
-				        </div>
-			        </h:outputText>
-		        
-		        </td>
-		        
-		        <td>
-		        	<a style="color: black; text-decoration: none;" href="javascript:toggleJob(#{rootJobWrapper.jobNumber})"><img id="jobToggleImage#{rootJobWrapper.jobNumber}" src="/gp/images/triangle_black_run.gif" border="0"  title="toggle visibility of this job"/><strong>#{rootJobWrapper.truncatedTaskName}</strong></a>
+            </script>
+        </ui:define>
+
+
+        <ui:define name="body">
+            <div class="jobResults">
+                <h:form id="jobsForm">
+                    <table class="title" cellpadding="0" cellspacing="0" border="0">
+                        <tr>
+                            <td width="200px" class="title">Job Results</td>
+                            <td width="170px" style="white-space: nowrap;"><font style="padding-right: 5px;">show: </font>
+                                <h:selectOneMenu value="#{jobResultsFilterBean.jobFilter}" onchange="this.form.submit();">
+                                    <f:selectItems value="#{jobResultsFilterBean.jobFilterMenu}" />
+                                </h:selectOneMenu>
+                            </td>
+                            <td style="padding-left: 5px">
+                                <h:selectBooleanCheckbox value="#{jobsBean.showExecutionLogs}" onclick="this.form.submit();" />Show Execution Logs
+                            </td>
+                        </tr>
+                    </table>
+
+
+                    <div class="reminders">
+                        <!--
+                <font color="#FF0000">*</font>Click<span class="file"><img src="/gp/images/smallOptions.gif" alt="" /></span> for more options.
+                <font color="#FF0000">*</font>Click <font color="#0066ff">job ID</font> for job status report.
+                <font color="#FF0000">*</font>Click <font color="#0066ff">file name</font> to open the file in a new browser window.
+                <font color="#FF0000">*</font>Click <font color="#0066ff">Edit</font> to edit Share options.
+                <font color="#FF0000">*</font>Click <img src="/gp/images/delete.gif" /> to delete selected jobs.
+              -->
+                    </div>
+
+                    <table class="summary" cellpadding="0" cellspacing="0" id="jobTable">
+                        <tr class="summaryTitle">
+                            <td class="center header">
+                                <h:commandLink action="#{jobsBean.sortJobsByStatus}" title="Sort job results by status">Status
+                                    <h:outputText escape="false" rendered="#{jobsBean.jobSortColumn == 'status' and jobsBean.jobSortAscending}">&#9650;</h:outputText>
+                                    <h:outputText escape="false" rendered="#{jobsBean.jobSortColumn == 'status' and not jobsBean.jobSortAscending}">&#9660;</h:outputText>
+                                    <h:outputText escape="false" rendered="#{jobsBean.jobSortColumn != 'status'}">&#160;</h:outputText>
+                                </h:commandLink>
+                            </td>
+
+                            <td class="right header">
+                                <h:commandLink action="#{jobsBean.sortJobsById}" title="Sort job results by job number (#{jobsBean.jobSortAscending ? 'high to low' : 'low to high'})">Job
+                                    <h:outputText escape="false" rendered="#{jobsBean.jobSortColumn == 'jobNumber' and jobsBean.jobSortAscending}">&#9650;</h:outputText>
+                                    <h:outputText escape="false" rendered="#{jobsBean.jobSortColumn == 'jobNumber' and not jobsBean.jobSortAscending}">&#9660;</h:outputText>
+                                    <h:outputText escape="false" rendered="#{jobsBean.jobSortColumn != 'jobNumber'}">&#160;</h:outputText>
+                                </h:commandLink>
+                            </td>
+
+                            <td class="center">
+                                <div><h:commandLink action="#{jobsBean.delete}" onclick="if (!confirmDelete()) return false">delete</h:commandLink></div>
+                            </td>
+
+                            <td class="header"><a href="javascript:toggleAll()"><img src="/gp/images/triangle_black_run.gif" id="jobToggleAllImage" title="toggle visibility of all jobs" /></a>
+                                <h:commandLink action="#{jobsBean.sortJobsByModule}" title="Sort job results by module name">Module Name
+                                    <h:outputText escape="false" rendered="#{jobsBean.jobSortColumn == 'taskName' and jobsBean.jobSortAscending}">&#9650;</h:outputText>
+                                    <h:outputText escape="false" rendered="#{jobsBean.jobSortColumn == 'taskName' and not jobsBean.jobSortAscending}">&#9660;</h:outputText>
+                                    <h:outputText escape="false" rendered="#{jobsBean.jobSortColumn != 'taskName'}">&#160;</h:outputText>
+                                </h:commandLink>
+                            </td>
+
+                            <td class="right header">Total Size</td>
+
+
+                            <td class="header">
+                                <h:commandLink action="#{jobsBean.sortJobsByDateSubmitted}" title="Sort job results by date submitted">Submit Date
+                                    <h:outputText escape="false" rendered="#{jobsBean.jobSortColumn == 'dateSubmitted' and jobsBean.jobSortAscending}">&#9650;</h:outputText>
+                                    <h:outputText escape="false" rendered="#{jobsBean.jobSortColumn == 'dateSubmitted' and not jobsBean.jobSortAscending}">&#9660;</h:outputText>
+                                    <h:outputText escape="false" rendered="#{jobsBean.jobSortColumn != 'dateSubmitted'}">&#160;</h:outputText>
+                                </h:commandLink>
+                            </td>
+
+                            <td class="header">
+                                <h:commandLink action="#{jobsBean.sortJobsByDateCompleted}" title="Sort job results by date completed">Complete Date
+                                    <h:outputText escape="false" rendered="#{jobsBean.jobSortColumn == 'dateCompleted' and jobsBean.jobSortAscending}">&#9650;</h:outputText>
+                                    <h:outputText escape="false" rendered="#{jobsBean.jobSortColumn == 'dateCompleted' and not jobsBean.jobSortAscending}">&#9660;</h:outputText>
+                                    <h:outputText escape="false" rendered="#{jobsBean.jobSortColumn != 'dateCompleted'}">&#160;</h:outputText>
+                                </h:commandLink>
+                            </td>
+
+                            <td>Job Owner</td>
+
+                            <td>Your Access</td>
+
+                            <td>Sharing</td>
+                        </tr>
+
+                        <tr class="summaryTitle">
+                            <td class="center"></td>
+
+                            <td class="right"></td>
+
+                            <td class="center"><input type="checkbox" onclick="toggleAllCheckboxes(this);" /></td>
+
+                            <td class="file header"><img src="/gp/images/arrow2.gif" />
+                                <h:commandLink action="#{jobsBean.sortFilesByName}" title="Sort output files by name">File
+                                    <h:outputText escape="false" rendered="#{jobsBean.fileSortColumn == 'name' and jobsBean.fileSortAscending}">&#9650;</h:outputText>
+                                    <h:outputText escape="false" rendered="#{jobsBean.fileSortColumn == 'name' and not jobsBean.fileSortAscending}">&#9660;</h:outputText>
+                                    <h:outputText escape="false" rendered="#{jobsBean.fileSortColumn != 'name'}">&#160;</h:outputText>
+                                </h:commandLink>
+                            </td>
+
+                            <td class="right header"><img src="/gp/images/arrow2.gif" />
+                                <h:commandLink action="#{jobsBean.sortFilesBySize}" title="Sort output files by size">File Size
+                                    <h:outputText escape="false" rendered="#{jobsBean.fileSortColumn == 'size' and jobsBean.fileSortAscending}">&#9650;</h:outputText>
+                                    <h:outputText escape="false" rendered="#{jobsBean.fileSortColumn == 'size' and not jobsBean.fileSortAscending}">&#9660;</h:outputText>
+                                    <h:outputText escape="false" rendered="#{jobsBean.fileSortColumn != 'size'}">&#160;</h:outputText>
+                                </h:commandLink>
+                            </td>
+
+                            <td></td>
+
+                            <td class="file header"><img src="/gp/images/arrow2.gif" />
+                                <h:commandLink action="#{jobsBean.sortFilesByDateCompleted}" title="Sort output files by last modification date">File Output Date
+                                    <h:outputText escape="false" rendered="#{jobsBean.fileSortColumn == 'lastModified' and jobsBean.fileSortAscending}">&#9650;</h:outputText>
+                                    <h:outputText escape="false" rendered="#{jobsBean.fileSortColumn == 'lastModified' and not jobsBean.fileSortAscending}">&#9660;</h:outputText>
+                                    <h:outputText escape="false" rendered="#{jobsBean.fileSortColumn != 'lastModified'}">&#160;</h:outputText>
+                                </h:commandLink>
+                            </td>
+
+
+                            <td></td>
+
+                            <td></td>
+
+                            <td></td>
+                        </tr>
+                        <tr class="white" height="5px">
+                            <td colspan="19"></td>
+                        </tr>
+                        <!--  Loop through paged jobs -->
+                        <t:dataList var="rootJobWrapper" value="#{jobsBean.pagedJobs}" rowIndexVar="jobIndex">
+                            <tr class="brown" id="jobRow#{rootJobWrapper.jobNumber}">
+                                <td class="center">
+                                    <h:outputText rendered="#{rootJobWrapper.status == 'pending'}">Pending</h:outputText>
+                                    <h:outputText rendered="#{rootJobWrapper.status == 'error'}">
+                                        <img src="/gp/images/error.gif" alt="#{rootJobWrapper.status}" />
+                                    </h:outputText>
+                                    <h:outputText rendered="#{rootJobWrapper.status == 'finished'}">
+                                        <img src="/gp/images/complete.gif" alt="#{rootJobWrapper.status}" />
+                                    </h:outputText>
+                                    <h:outputText rendered="#{rootJobWrapper.status == 'processing'}">
+                                        <img src="/gp/images/run.gif" alt="#{rootJobWrapper.status}" />
+                                    </h:outputText>
+                                </td>
+
+                                <td class="right">
+                                    <h:outputLink styleClass="ID" style="color:#0066FF;" value="/gp/jobResults/#{rootJobWrapper.jobNumber}">#{rootJobWrapper.jobNumber}</h:outputLink>
+                                    <!--  Hidden field to hold the expansion state.  -->
+                                    <input type="hidden" id="expansion_state_#{rootJobWrapper.jobNumber}" name="expansion_state_#{rootJobWrapper.jobNumber}" value="#{rootJobWrapper.expanded}" />
+                                </td>
+
+
+                                <td class="center">
+                                    <h:outputText rendered="#{rootJobWrapper.deleteAllowed}" escape="false">
+                                        <script type="text/javascript" language="javascript">
+                                            jobNumbers[ jobNumbers.length ] = '#{rootJobWrapper.jobNumber}';
+                                        </script>
+                                    </h:outputText>
+                                    <h:outputText rendered="#{rootJobWrapper.level == 0 and rootJobWrapper.deleteAllowed}">
+                                        <div id="cb_job_#{rootJobWrapper.jobNumber}" align="center">
+                                            <h:outputText rendered="#{rootJobWrapper.selected}">
+                                                <input type="checkbox" class="jobResult" name="selectedJobs" value="#{rootJobWrapper.jobNumber}"
+                                                       onclick="toggleJobCheckboxes('#{rootJobWrapper.jobNumber}');" checked="checked" />
+                                            </h:outputText>
+                                            <h:outputText rendered="#{!rootJobWrapper.selected}">
+                                                <input type="checkbox" class="jobResult" name="selectedJobs" value="#{rootJobWrapper.jobNumber}"
+                                                       onclick="toggleJobCheckboxes('#{rootJobWrapper.jobNumber}');" />
+                                            </h:outputText>
+                                        </div>
+                                    </h:outputText>
+
+                                </td>
+
+                                <td>
+                                    <a style="color: black; text-decoration: none;" href="javascript:toggleJob(#{rootJobWrapper.jobNumber})"><img id="jobToggleImage#{rootJobWrapper.jobNumber}" src="/gp/images/triangle_black_run.gif" border="0" title="toggle visibility of this job" /><strong>#{rootJobWrapper.truncatedTaskName}</strong></a>
 		        	<span class="file">
 		        		
 			        		<img src="/gp/images/smallOptions.gif"
-				             name="Image2_#{rootJobWrapper.jobNumber}" border="0" align="top" id="Image2_#{rootJobWrapper.jobNumber}"
-				             onclick="menuClick(#{rootJobWrapper.jobNumber},'Image2_#{rootJobWrapper.jobNumber}')"
-				             onmouseover="MM_swapImage('Image2_#{rootJobWrapper.jobNumber}','','/gp/images/smallOptions2.gif',1)"
-				             onmouseout="MM_swapImgRestore();"/>
+                                 name="Image2_#{rootJobWrapper.jobNumber}" border="0" align="top" id="Image2_#{rootJobWrapper.jobNumber}"
+                                 onclick="menuClick(#{rootJobWrapper.jobNumber},'Image2_#{rootJobWrapper.jobNumber}')"
+                                 onmouseover="MM_swapImage('Image2_#{rootJobWrapper.jobNumber}','','/gp/images/smallOptions2.gif',1)"
+                                 onmouseout="MM_swapImgRestore();" />
 
 		        	</span>
-		        </td>
-		        
-		        <td class="right" style="white-space: nowrap;">#{rootJobWrapper.formattedSize}</td>
-		        
-		        <td style="white-space: nowrap;"><h:outputText value="#{rootJobWrapper.dateSubmitted}" converter="gp" /></td>
-		        
-		        <td style="white-space: nowrap;"><span class="submit"><h:outputText value="#{rootJobWrapper.dateCompleted}" converter="gp" /></span></td>
-		        
-		        <td>#{rootJobWrapper.userId}</td>
-		
-		        
-		        <td style="white-space: nowrap;">
-		        	<h:outputText rendered="#{rootJobWrapper.deleteAllowed}">Read, Write</h:outputText>
-        			<h:outputText rendered="#{not rootJobWrapper.deleteAllowed}">Read</h:outputText>
-        		</td>
-		        
-		        <td class="center" style="white-space: nowrap;">#{rootJobWrapper.permissionsLabel}
-		        	<h:outputText rendered="#{rootJobWrapper.permissionsLabel != 'Private'}">
-			        		<img id="permissionsImage#{rootJobWrapper.jobNumber}" src="/gp/images/smallLockOpen.gif" alt="Shared" border="0" />
-			        </h:outputText>
-			        <h:outputText rendered="#{rootJobWrapper.permissionsLabel == 'Private'}">
-			        	<img id="permissionsImage#{rootJobWrapper.jobNumber}" src="/gp/images/smallLock.gif" alt="Private" border="0" />
-			        </h:outputText>
-		        </td>
-		    </tr>	
-		    <!--  Loop through outputfiles -->	
-			<ui:include src="jobResultsFiles.xhtml">
-	            <ui:param name="jobWrapper" value="#{rootJobWrapper}" />
-	        </ui:include>
-			<!--  Loop through children -->
-			<t:dataList var="childJob" value="#{rootJobWrapper.descendantJobs}" rowIndexVar="index2">
-			<tr class="brown">
-		        <td class="center">
-                    <h:outputText rendered="#{childJob.status == 'pending'}">Pending</h:outputText>
-			    	<h:outputText rendered="#{childJob.status == 'error'}">
-			    		<img src="/gp/images/error.gif" alt="#{childJob.status}" />
-			    	</h:outputText>
-			    	<h:outputText rendered="#{childJob.status == 'finished'}">
-			    		<img src="/gp/images/complete.gif" alt="#{childJob.status}" />
-			    	</h:outputText>
-			    	<h:outputText rendered="#{childJob.status == 'processing'}">
-			    		<img src="/gp/images/run.gif" alt="#{childJob.status}" />
-			    	</h:outputText>			    	
-			    </td>
-		        
-		        <td class="right">
-                    <h:outputText>#{childJob.jobNumber}</h:outputText>
-		        </td>
-		        
-		        <td class="center">&nbsp;</td>
-		
-		        <td class="childJob"><strong><img src="/gp/images/arrow2.gif" alt="" />#{index2+1}. #{childJob.truncatedTaskName}</strong></td>
-		        
-		        <td class="right"></td>
-		        
-				<td style="white-space: nowrap;"><h:outputText value="#{childJob.dateSubmitted}" converter="gp" /></td>
-	        
-	        	<td style="white-space: nowrap;"><span class="submit"><h:outputText value="#{childJob.dateCompleted}" converter="gp" /></span></td>			        
-		        
-		        <td>&nbsp;</td>
-		        
-		        <td>&nbsp;</td>
-		        
-		        <td>&nbsp;</td>
-		
-		    </tr>
-			<ui:include src="jobResultsChildFiles.xhtml">
-	            <ui:param name="jobWrapper" value="#{childJob}" />
-	            <ui:param name="parentJobNumber" value="#{rootJobWrapper.jobNumber}"/>
-	        </ui:include>
-			</t:dataList>
-			</t:dataList>
-		</table>
-		    <t:div style="text-align: center;" rendered="#{jobsBean.pageCount gt 1}">
-		      <h:commandLink rendered="#{jobsBean.pageNumber gt 1}" immediate="true" action="#{jobsBean.goToPage}">
-		        <h:outputText value="Previous"/><f:param name="page" value="#{jobsBean.pageNumber - 1}" /></h:commandLink>
-				<t:dataList var="p" value="#{jobsBean.pages}">
-				  <h:outputText rendered="#{p lt 0}" value=" ... " />
-				  <h:commandLink rendered="#{p gt 0 and p != jobsBean.pageNumber}" action="#{jobsBean.goToPage}">
-		            <f:param name="page" value="#{p}" />
-				    <span style="text-decoration: underline;">#{p}</span>
-		          </h:commandLink>
-		          <h:outputText rendered="#{p == jobsBean.pageNumber}"><span  style="font-weight: bold;">#{p}</span></h:outputText>
-		        </t:dataList> 
-		        <h:commandLink immediate="true" rendered="#{jobsBean.pageCount gt 1 and jobsBean.pageNumber lt jobsBean.pageCount}" action="#{jobsBean.goToPage}">Next
-		          <f:param name="page" value="#{jobsBean.pageNumber + 1}" />
-		        </h:commandLink>
-		        <br clear="all"/>
-		        <h:outputText rendered="#{jobsBean.pageCount gt 1}" value="Page #{jobsBean.pageNumber} of #{jobsBean.pageCount} (#{jobResultsFilterBean.jobCount} jobs)" />
-		    </t:div>
-		</h:form>
-	</div>
-	
-	
-	<!-- Set initial visibility state  -->
-    <script type="text/javascript" language="javascript">
-	    <t:dataList var="jobInfo" value="#{jobsBean.pagedJobs}">
-	    	<h:outputText rendered="#{!jobInfo.expanded}">toggleJob(#{jobInfo.jobNumber});</h:outputText>
-	    </t:dataList>
-    </script>
-    
-	    <h:outputText rendered="#{genomeSpaceBean.loggedIn}">
-			<ui:include src="/pages/genomespace/genomespaceDialog.xhtml" />
-		</h:outputText>
-	
-	</ui:define>
+                                </td>
 
-	<!-- Create menus  -->
-	<ui:define name="popupMenus">
-		<h:form>
-			<t:dataList var="jobInfo" value="#{jobsBean.pagedJobs}">
-				<ui:include src="jobsMenu.xhtml">
-					<ui:param name="job" value="#{jobInfo}" />
-				</ui:include>
-				<t:dataList var="outputFile" value="#{jobInfo.inputFiles}">
-					<ui:include src="jobStatus_fileMenu.xhtml">
-	 				 	<ui:param name="jobOnMenu" value="#{jobInfo}"/>
-	 				 	<ui:param name="isInputFile" value="true"/>
-	 				</ui:include>
-				</t:dataList>
-				<t:dataList var="fileInfo" value="#{jobInfo.allFileInfos}">
-					<ui:include src="jobFileMenu.xhtml">
-						<ui:param name="job" value="#{jobInfo}" />
-						<ui:param name="fileInfo" value="#{fileInfo}" />
-					</ui:include>
-				</t:dataList>
-			</t:dataList>
-		</h:form>
-	</ui:define>
+                                <td class="right" style="white-space: nowrap;">#{rootJobWrapper.formattedSize}</td>
 
-</ui:composition>
+                                <td style="white-space: nowrap;"><h:outputText value="#{rootJobWrapper.dateSubmitted}" converter="gp" /></td>
+
+                                <td style="white-space: nowrap;"><span class="submit"><h:outputText value="#{rootJobWrapper.dateCompleted}" converter="gp" /></span></td>
+
+                                <td>#{rootJobWrapper.userId}</td>
+
+
+                                <td style="white-space: nowrap;">
+                                    <h:outputText rendered="#{rootJobWrapper.deleteAllowed}">Read, Write</h:outputText>
+                                    <h:outputText rendered="#{not rootJobWrapper.deleteAllowed}">Read</h:outputText>
+                                </td>
+
+                                <td class="center" style="white-space: nowrap;">#{rootJobWrapper.permissionsLabel}
+                                    <h:outputText rendered="#{rootJobWrapper.permissionsLabel != 'Private'}">
+                                        <img id="permissionsImage#{rootJobWrapper.jobNumber}" src="/gp/images/smallLockOpen.gif" alt="Shared" border="0" />
+                                    </h:outputText>
+                                    <h:outputText rendered="#{rootJobWrapper.permissionsLabel == 'Private'}">
+                                        <img id="permissionsImage#{rootJobWrapper.jobNumber}" src="/gp/images/smallLock.gif" alt="Private" border="0" />
+                                    </h:outputText>
+                                </td>
+                            </tr>
+                            <!--  Loop through outputfiles -->
+                            <ui:include src="jobResultsFiles.xhtml">
+                                <ui:param name="jobWrapper" value="#{rootJobWrapper}" />
+                            </ui:include>
+                            <!--  Loop through children -->
+                            <t:dataList var="childJob" value="#{rootJobWrapper.descendantJobs}" rowIndexVar="index2">
+                                <tr class="brown">
+                                    <td class="center">
+                                        <h:outputText rendered="#{childJob.status == 'pending'}">Pending</h:outputText>
+                                        <h:outputText rendered="#{childJob.status == 'error'}">
+                                            <img src="/gp/images/error.gif" alt="#{childJob.status}" />
+                                        </h:outputText>
+                                        <h:outputText rendered="#{childJob.status == 'finished'}">
+                                            <img src="/gp/images/complete.gif" alt="#{childJob.status}" />
+                                        </h:outputText>
+                                        <h:outputText rendered="#{childJob.status == 'processing'}">
+                                            <img src="/gp/images/run.gif" alt="#{childJob.status}" />
+                                        </h:outputText>
+                                    </td>
+
+                                    <td class="right">
+                                        <h:outputText>#{childJob.jobNumber}</h:outputText>
+                                    </td>
+
+                                    <td class="center">&nbsp;</td>
+
+                                    <td class="childJob"><strong><img src="/gp/images/arrow2.gif" alt="" />#{index2+1}. #{childJob.truncatedTaskName}</strong></td>
+
+                                    <td class="right"></td>
+
+                                    <td style="white-space: nowrap;"><h:outputText value="#{childJob.dateSubmitted}" converter="gp" /></td>
+
+                                    <td style="white-space: nowrap;"><span class="submit"><h:outputText value="#{childJob.dateCompleted}" converter="gp" /></span></td>
+
+                                    <td>&nbsp;</td>
+
+                                    <td>&nbsp;</td>
+
+                                    <td>&nbsp;</td>
+
+                                </tr>
+                                <ui:include src="jobResultsChildFiles.xhtml">
+                                    <ui:param name="jobWrapper" value="#{childJob}" />
+                                    <ui:param name="parentJobNumber" value="#{rootJobWrapper.jobNumber}" />
+                                </ui:include>
+                            </t:dataList>
+                        </t:dataList>
+                    </table>
+                    <t:div style="text-align: center;" rendered="#{jobsBean.pageCount gt 1}">
+                        <h:commandLink rendered="#{jobsBean.pageNumber gt 1}" immediate="true" action="#{jobsBean.goToPage}">
+                            <h:outputText value="Previous" /><f:param name="page" value="#{jobsBean.pageNumber - 1}" /></h:commandLink>
+                        <t:dataList var="p" value="#{jobsBean.pages}">
+                            <h:outputText rendered="#{p lt 0}" value=" ... " />
+                            <h:commandLink rendered="#{p gt 0 and p != jobsBean.pageNumber}" action="#{jobsBean.goToPage}">
+                                <f:param name="page" value="#{p}" />
+                                <span style="text-decoration: underline;">#{p}</span>
+                            </h:commandLink>
+                            <h:outputText rendered="#{p == jobsBean.pageNumber}"><span style="font-weight: bold;">#{p}</span></h:outputText>
+                        </t:dataList>
+                        <h:commandLink immediate="true" rendered="#{jobsBean.pageCount gt 1 and jobsBean.pageNumber lt jobsBean.pageCount}" action="#{jobsBean.goToPage}">Next
+                            <f:param name="page" value="#{jobsBean.pageNumber + 1}" />
+                        </h:commandLink>
+                        <br clear="all" />
+                        <h:outputText rendered="#{jobsBean.pageCount gt 1}" value="Page #{jobsBean.pageNumber} of #{jobsBean.pageCount} (#{jobResultsFilterBean.jobCount} jobs)" />
+                    </t:div>
+                </h:form>
+            </div>
+
+
+            <!-- Set initial visibility state  -->
+
+            <t:dataList var="jobInfo" value="#{jobsBean.pagedJobs}">
+                <h:outputText rendered="#{!jobInfo.expanded}">
+                    <script type="text/javascript" language="javascript">toggleJob(#{jobInfo.jobNumber});</script>
+                </h:outputText>
+            </t:dataList>
+
+            <h:outputText rendered="#{genomeSpaceBean.loggedIn}">
+                <ui:include src="/pages/genomespace/genomespaceDialog.xhtml" />
+            </h:outputText>
+
+        </ui:define>
+
+        <!-- Create menus  -->
+        <ui:define name="popupMenus">
+            <h:form>
+                <t:dataList var="jobInfo" value="#{jobsBean.pagedJobs}">
+                    <ui:include src="jobsMenu.xhtml">
+                        <ui:param name="job" value="#{jobInfo}" />
+                    </ui:include>
+                    <t:dataList var="outputFile" value="#{jobInfo.inputFiles}">
+                        <ui:include src="jobStatus_fileMenu.xhtml">
+                            <ui:param name="jobOnMenu" value="#{jobInfo}" />
+                            <ui:param name="isInputFile" value="true" />
+                        </ui:include>
+                    </t:dataList>
+                    <t:dataList var="fileInfo" value="#{jobInfo.allFileInfos}">
+                        <ui:include src="jobFileMenu.xhtml">
+                            <ui:param name="job" value="#{jobInfo}" />
+                            <ui:param name="fileInfo" value="#{fileInfo}" />
+                        </ui:include>
+                    </t:dataList>
+                </t:dataList>
+            </h:form>
+        </ui:define>
+
+    </ui:composition>
 </html>

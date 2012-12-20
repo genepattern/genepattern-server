@@ -1,14 +1,10 @@
-<!-- /*
- The Broad Institute
- SOFTWARE COPYRIGHT NOTICE AGREEMENT
- This software and its documentation are copyright (2003-2012) by the
- Broad Institute/Massachusetts Institute of Technology. All rights are
- reserved.
- 
- This software is supplied without any warranty or guaranteed support
- whatsoever. Neither the Broad Institute nor MIT can be responsible for its
- use, misuse, or functionality.
- */ -->
+<!--
+  ~ Copyright 2012 The Broad Institute, Inc.
+  ~ SOFTWARE COPYRIGHT NOTICE
+  ~ This software and its documentation are the copyright of the Broad Institute, Inc. All rights are reserved.
+  ~
+  ~ This software is supplied without any warranty or guaranteed support whatsoever. The Broad Institute is not responsible for its use, misuse, or functionality.
+  -->
 
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
@@ -17,49 +13,51 @@
       xmlns:f="http://java.sun.com/jsf/core"
       xmlns:t="http://myfaces.apache.org/tomahawk"
       xmlns:c="http://java.sun.com/jstl/core">
-<h:form>
-    <table width="100%" border="0" cellpadding="0" cellspacing="0" class="barhead-other">
-      <tr>
-        <td>File Purge Settings </td>
-      </tr>
-    </table>
-    <p/>
-    <table width="100%" border="0" cellpadding="5" cellspacing="0">
-      <tr valign="top">
-        <td>Purge Jobs After: </td>
-        <td>
-        	<h:inputText size="40" value="#{serverSettingsBean.purgeJobsAfter}"/>
-        days</td>
-      </tr>
-      <tr valign="top">
-        <td>Purge Time:</td>
-        <td>
-          <h:inputText size="40" value="#{serverSettingsBean.purgeTime}"/>
-          <h:outputText value=" HH:MM, 24 hour format" />
-        </td>
-      </tr>
-      <tr valign="top">
-        <td>&#160;</td>
-        <td>
-          <h:commandButton value="Save" actionListener="#{serverSettingsBean.savePurgeSettings}"/>
-          &#160;
-	      <h:commandButton value="Restore" actionListener="#{serverSettingsBean.restore}"/>
-        </td>
-      </tr>
-      <tr valign="top" class="settingperameter">
-        <td colspan="2">&#160;</td>
-      </tr>
-      <tr valign="top">
-        <td>&#160;</td>
-        <td>File purge settings define how often and, at what time of day,
-                intermediate result files <br/>
-                created on the server are deleted (purged).
-                To never delete files set the purge frequency <br/>
-                to -1. Note that
-                this could result in large amounts of hard drive space being
-              used over time.</td>
-      </tr>
-    </table>
-    <p/>
-  </h:form>
+    <h:form>
+        <table width="100%" border="0" cellpadding="0" cellspacing="0" class="barhead-other">
+            <tr>
+                <td>File Purge Settings</td>
+            </tr>
+        </table>
+        <p />
+        <table width="100%" border="0" cellpadding="5" cellspacing="0">
+            <tr valign="top">
+                <td>Purge Jobs After:</td>
+                <td>
+                    <h:inputText size="40" value="#{serverSettingsBean.purgeJobsAfter}" />
+                    days
+                </td>
+            </tr>
+            <tr valign="top">
+                <td>Purge Time:</td>
+                <td>
+                    <h:inputText size="40" value="#{serverSettingsBean.purgeTime}" />
+                    <h:outputText value=" HH:MM, 24 hour format" />
+                </td>
+            </tr>
+            <tr valign="top">
+                <td>&#160;</td>
+                <td>
+                    <h:commandButton value="Save" actionListener="#{serverSettingsBean.savePurgeSettings}" />
+                    &#160;
+                    <h:commandButton value="Restore" actionListener="#{serverSettingsBean.restore}" />
+                </td>
+            </tr>
+            <tr valign="top" class="settingperameter">
+                <td colspan="2">&#160;</td>
+            </tr>
+            <tr valign="top">
+                <td>&#160;</td>
+                <td>File purge settings define how often and, at what time of day,
+                    intermediate result files <br />
+                    created on the server are deleted (purged).
+                    To never delete files set the purge frequency <br />
+                    to -1. Note that
+                    this could result in large amounts of hard drive space being
+                    used over time.
+                </td>
+            </tr>
+        </table>
+        <p />
+    </h:form>
 </html>

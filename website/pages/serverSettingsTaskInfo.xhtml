@@ -1,56 +1,51 @@
-<!-- /*
- The Broad Institute
- SOFTWARE COPYRIGHT NOTICE AGREEMENT
- This software and its documentation are copyright (2003-2012) by the
- Broad Institute/Massachusetts Institute of Technology. All rights are
- reserved.
- 
- This software is supplied without any warranty or guaranteed support
- whatsoever. Neither the Broad Institute nor MIT can be responsible for its
- use, misuse, or functionality.
- */
- -->
+<!--
+  ~ Copyright 2012 The Broad Institute, Inc.
+  ~ SOFTWARE COPYRIGHT NOTICE
+  ~ This software and its documentation are the copyright of the Broad Institute, Inc. All rights are reserved.
+  ~
+  ~ This software is supplied without any warranty or guaranteed support whatsoever. The Broad Institute is not responsible for its use, misuse, or functionality.
+  -->
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml" 
-      xmlns:ui="http://java.sun.com/jsf/facelets" 
-      xmlns:h="http://java.sun.com/jsf/html" 
-      xmlns:f="http://java.sun.com/jsf/core" 
-      xmlns:t="http://myfaces.apache.org/tomahawk" 
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:t="http://myfaces.apache.org/tomahawk"
       xmlns:c="http://java.sun.com/jstl/core">
 
     <table width="100%" class="barhead-other">
-      <tr>
-        <td>TaskInfo Cache</td>        
-      </tr>
+        <tr>
+            <td>TaskInfo Cache</td>
+        </tr>
     </table>
-    
+
     <div>
-    <h:form>
-        <h:commandLink immediate="false" action="#{taskInfoBean.clearCache}">Clear TaskInfo Cache</h:commandLink>
-    </h:form>
+        <h:form>
+            <h:commandLink immediate="false" action="#{taskInfoBean.clearCache}">Clear TaskInfo Cache</h:commandLink>
+        </h:form>
     </div>
-    
+
     <h3>All Tasks</h3>
-    <table border="0" cellpadding="0" cellspacing="0" >
-      <thead>
-      <tr class="tableheader-row2">
-        <td align="left">id</td>
-        <td align="left">name</td>
-        <td align="left">lsid (basename)</td>
-        <td align="left">version</td>
-        <td align="left"> public? </td>
-        <td align="left">owner</td>
-      </tr>
-      </thead>
-    <t:dataList var="taskInfoWrapper" value="#{taskInfoBean.taskInfos}">
-      <tr class="admin-row">
-        <td>#{taskInfoWrapper.taskId}</td>
-        <td>#{taskInfoWrapper.taskInfo.name}</td>
-        <td>#{taskInfoWrapper.lsidNoVersion}</td>
-        <td>#{taskInfoWrapper.version}</td>
-        <td style="text-align: center; padding-left: 10px; color: green;"><h:outputText rendered="#{taskInfoWrapper.public}">&#x2713;</h:outputText></td>
-        <td>#{taskInfoWrapper.taskInfo.userId}</td>
-      </tr>
-    </t:dataList>
+    <table border="0" cellpadding="0" cellspacing="0">
+        <thead>
+            <tr class="tableheader-row2">
+                <td align="left">id</td>
+                <td align="left">name</td>
+                <td align="left">lsid (basename)</td>
+                <td align="left">version</td>
+                <td align="left"> public?</td>
+                <td align="left">owner</td>
+            </tr>
+        </thead>
+        <t:dataList var="taskInfoWrapper" value="#{taskInfoBean.taskInfos}">
+            <tr class="admin-row">
+                <td>#{taskInfoWrapper.taskId}</td>
+                <td>#{taskInfoWrapper.taskInfo.name}</td>
+                <td>#{taskInfoWrapper.lsidNoVersion}</td>
+                <td>#{taskInfoWrapper.version}</td>
+                <td style="text-align: center; padding-left: 10px; color: green;"><h:outputText rendered="#{taskInfoWrapper.public}">&#x2713;</h:outputText></td>
+                <td>#{taskInfoWrapper.taskInfo.userId}</td>
+            </tr>
+        </t:dataList>
     </table>
 </html>

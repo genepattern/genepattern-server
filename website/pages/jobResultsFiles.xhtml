@@ -1,14 +1,10 @@
-<!-- /*
- The Broad Institute
- SOFTWARE COPYRIGHT NOTICE AGREEMENT
- This software and its documentation are copyright (2003-2012) by the
- Broad Institute/Massachusetts Institute of Technology. All rights are
- reserved.
- 
- This software is supplied without any warranty or guaranteed support
- whatsoever. Neither the Broad Institute nor MIT can be responsible for its
- use, misuse, or functionality.
- */ -->
+<!--
+  ~ Copyright 2012 The Broad Institute, Inc.
+  ~ SOFTWARE COPYRIGHT NOTICE
+  ~ This software and its documentation are the copyright of the Broad Institute, Inc. All rights are reserved.
+  ~
+  ~ This software is supplied without any warranty or guaranteed support whatsoever. The Broad Institute is not responsible for its use, misuse, or functionality.
+  -->
 
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
@@ -18,134 +14,134 @@
       xmlns:t="http://myfaces.apache.org/tomahawk"
       xmlns:c="http://java.sun.com/jstl/core">
 
-  <!-- File section include for job results page.
-       Inputs:   jobWrapper
-   -->
-	<ui:composition>
-		<t:dataList var="fileInfo" value="#{jobWrapper.directoryInputs}" rowIndexVar="index2">
-			<script type="text/javascript" language="javascript">
-	        	var rowId = 'file_row_' + '#{jobWrapper.jobNumber}_#{index2}';
-	        	addFileRow('#{jobWrapper.jobNumber}', rowId);
-	      	</script>
-	      	<tr class="white" id="file_row_#{jobWrapper.jobNumber}_#{index2}">
-		        <td class="center"></td>
-		        
-		        <td class="right"></td>
-		        
-		        <td class="center"></td>
-		
-		        
-		        <td class="file"><img src="/gp/images/inputFile.gif" /><strong>#{fileInfo.displayName}</strong>: (Directory File Input)       	
-		        </td>
-		        
-		        <td class="right"></td>
-		          
-		        <td></td>
-		        
-		        <td></td>
-		        
-		        <td></td>
-		        
-		        <td></td>
-		        
-		        <td></td>
-		
-		    </tr>
-		</t:dataList>
-		
-		<t:dataList var="fileInfo" value="#{jobWrapper.inputFiles}" rowIndexVar="index3">
-			<script type="text/javascript" language="javascript">
-	        	var rowId = 'file_row_' + '#{jobWrapper.jobNumber}_#{index3}';
-	        	addFileRow('#{jobWrapper.jobNumber}', rowId);
-	      	</script>
-	      	<tr class="white" id="file_row_#{jobWrapper.jobNumber}_#{index3}">
-		        <td class="center"></td>
-		        
-		        <td class="right"></td>
-		        
-		        <td class="center"></td>
-		
-		        
-		        <td class="file"><img src="/gp/images/inputFile.gif" /><strong>#{fileInfo.displayName}:</strong> 
+    <!-- File section include for job results page.
+        Inputs:   jobWrapper
+    -->
+    <ui:composition>
+        <t:dataList var="fileInfo" value="#{jobWrapper.directoryInputs}" rowIndexVar="index2">
+            <script type="text/javascript" language="javascript">
+                var rowId = 'file_row_' + '#{jobWrapper.jobNumber}_#{index2}';
+                addFileRow('#{jobWrapper.jobNumber}', rowId);
+            </script>
+            <tr class="white" id="file_row_#{jobWrapper.jobNumber}_#{index2}">
+                <td class="center"></td>
+
+                <td class="right"></td>
+
+                <td class="center"></td>
+
+
+                <td class="file"><img src="/gp/images/inputFile.gif" /><strong>#{fileInfo.displayName}</strong>: (Directory File Input)
+                </td>
+
+                <td class="right"></td>
+
+                <td></td>
+
+                <td></td>
+
+                <td></td>
+
+                <td></td>
+
+                <td></td>
+
+            </tr>
+        </t:dataList>
+
+        <t:dataList var="fileInfo" value="#{jobWrapper.inputFiles}" rowIndexVar="index3">
+            <script type="text/javascript" language="javascript">
+                var rowId = 'file_row_' + '#{jobWrapper.jobNumber}_#{index3}';
+                addFileRow('#{jobWrapper.jobNumber}', rowId);
+            </script>
+            <tr class="white" id="file_row_#{jobWrapper.jobNumber}_#{index3}">
+                <td class="center"></td>
+
+                <td class="right"></td>
+
+                <td class="center"></td>
+
+
+                <td class="file"><img src="/gp/images/inputFile.gif" /><strong>#{fileInfo.displayName}:</strong>
                     <h:outputLink value="#{fileInfo.link}" style="color:#0066FF;">
                         <h:outputText>#{fileInfo.truncatedDisplayValue}</h:outputText>
                     </h:outputLink>
-		
-		          	<!-- Image for popup menu -->
-		          	<img src="/gp/images/smallOptions.gif"
-		               name="Image_#{fileInfo.valueId}" id="Image_#{fileInfo.valueId}"
-		               border="0" align="top"
-		               onclick="pm_showMenu('menuDiv_#{fileInfo.valueId}', Position.cumulativeOffset(this), 50, 50);"
-		               onmouseover="MM_swapImage('Image_#{fileInfo.valueId}','','/gp/images/smallOptions2.gif',2)"
-		               onmouseout="MM_swapImgRestore();"/>	        	
-		        </td>
-		        
-		        <td class="right"></td>
-		          
-		        <td></td>
-		        
-		        <td></td>
-		        
-		        <td></td>
-		        
-		        <td></td>
-		        
-		        <td></td>
-		
-		    </tr>
-		</t:dataList>
-		
-    	<t:dataList var="fileInfo" value="#{jobWrapper.outputFileParameterInfos}" rowIndexVar="index4">
-    	  <script type="text/javascript" language="javascript">
-	        var rowId = 'file_row_' + '#{jobWrapper.jobNumber}_#{index4}';
-	        addFileRow('#{jobWrapper.jobNumber}', rowId);
-	      </script>
-	    	
-			<tr class="white" id="file_row_#{jobWrapper.jobNumber}_#{index4}">
-		        <td class="center"></td>
-		        
-		        <td class="right"></td>
-		        
-		        <td class="center">
-		        <!-- File selection checkbox, only display if the current user has write access to the parent job -->
-		          	<t:div rendered="#{jobWrapper.deleteAllowed}">
-		            	<t:div rendered="#{fileInfo.selected}">
-		              		<input type="checkbox" class="jobFile" name="selectedFiles" checked="checked" value="#{fileInfo.value}"/>
-		            	</t:div>
-		            	<t:div rendered="#{!fileInfo.selected}">
-		              		<input type="checkbox" class="jobFile" name="selectedFiles" value="#{fileInfo.value}"/>
-		            	</t:div>
-		        	</t:div>
-		        </td>
-		
-		        
-		        <td class="file">
+
+                    <!-- Image for popup menu -->
+                    <img src="/gp/images/smallOptions.gif"
+                         name="Image_#{fileInfo.valueId}" id="Image_#{fileInfo.valueId}"
+                         border="0" align="top"
+                         onclick="pm_showMenu('menuDiv_#{fileInfo.valueId}', Position.cumulativeOffset(this), 50, 50);"
+                         onmouseover="MM_swapImage('Image_#{fileInfo.valueId}','','/gp/images/smallOptions2.gif',2)"
+                         onmouseout="MM_swapImgRestore();" />
+                </td>
+
+                <td class="right"></td>
+
+                <td></td>
+
+                <td></td>
+
+                <td></td>
+
+                <td></td>
+
+                <td></td>
+
+            </tr>
+        </t:dataList>
+
+        <t:dataList var="fileInfo" value="#{jobWrapper.outputFileParameterInfos}" rowIndexVar="index4">
+            <script type="text/javascript" language="javascript">
+                var rowId = 'file_row_' + '#{jobWrapper.jobNumber}_#{index4}';
+                addFileRow('#{jobWrapper.jobNumber}', rowId);
+            </script>
+
+            <tr class="white" id="file_row_#{jobWrapper.jobNumber}_#{index4}">
+                <td class="center"></td>
+
+                <td class="right"></td>
+
+                <td class="center">
+                    <!-- File selection checkbox, only display if the current user has write access to the parent job -->
+                    <t:div rendered="#{jobWrapper.deleteAllowed}">
+                        <t:div rendered="#{fileInfo.selected}">
+                            <input type="checkbox" class="jobFile" name="selectedFiles" checked="checked" value="#{fileInfo.value}" />
+                        </t:div>
+                        <t:div rendered="#{!fileInfo.selected}">
+                            <input type="checkbox" class="jobFile" name="selectedFiles" value="#{fileInfo.value}" />
+                        </t:div>
+                    </t:div>
+                </td>
+
+
+                <td class="file">
                     <h:outputLink value="#{fileInfo.url}" style="color:#0066FF;">
                         <h:outputText><img src="/gp/images/outputFile.gif" />#{fileInfo.truncatedDisplayName}</h:outputText>
                     </h:outputLink>
-		
-		          	<!-- Image for popup menu -->
-		          	<img src="/gp/images/smallOptions.gif"
-		               name="Image_#{fileInfo.valueId}" id="Image_#{fileInfo.valueId}"
-		               border="0" align="top"
-		               onclick="pm_showMenu('menuDiv_#{fileInfo.valueId}', Position.cumulativeOffset(this), 50, 50);"
-		               onmouseover="MM_swapImage('Image_#{fileInfo.valueId}','','/gp/images/smallOptions2.gif',2)"
-		               onmouseout="MM_swapImgRestore();"/>		        	
-		        </td>
-		        
-		        <td class="right">#{fileInfo.formattedSize}</td>
-		          
-		        <td></td>
-		        
-		        <td style="white-space: nowrap;"><span class="submit"><h:outputText value="#{fileInfo.lastModified}" converter="gp" /></span></td>
-		        
-		        <td></td>
-		        
-		        <td></td>
-		        
-		        <td></td>
-		
-		    </tr>
-		</t:dataList>
-  </ui:composition>
+
+                    <!-- Image for popup menu -->
+                    <img src="/gp/images/smallOptions.gif"
+                         name="Image_#{fileInfo.valueId}" id="Image_#{fileInfo.valueId}"
+                         border="0" align="top"
+                         onclick="pm_showMenu('menuDiv_#{fileInfo.valueId}', Position.cumulativeOffset(this), 50, 50);"
+                         onmouseover="MM_swapImage('Image_#{fileInfo.valueId}','','/gp/images/smallOptions2.gif',2)"
+                         onmouseout="MM_swapImgRestore();" />
+                </td>
+
+                <td class="right">#{fileInfo.formattedSize}</td>
+
+                <td></td>
+
+                <td style="white-space: nowrap;"><span class="submit"><h:outputText value="#{fileInfo.lastModified}" converter="gp" /></span></td>
+
+                <td></td>
+
+                <td></td>
+
+                <td></td>
+
+            </tr>
+        </t:dataList>
+    </ui:composition>
 </html>

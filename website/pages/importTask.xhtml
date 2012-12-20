@@ -1,100 +1,102 @@
-<!-- /*
- The Broad Institute
- SOFTWARE COPYRIGHT NOTICE AGREEMENT
- This software and its documentation are copyright (2003-2012) by the
- Broad Institute/Massachusetts Institute of Technology. All rights are
- reserved.
- 
- This software is supplied without any warranty or guaranteed support
- whatsoever. Neither the Broad Institute nor MIT can be responsible for its
- use, misuse, or functionality.
- */ -->
+<!--
+  ~ Copyright 2012 The Broad Institute, Inc.
+  ~ SOFTWARE COPYRIGHT NOTICE
+  ~ This software and its documentation are the copyright of the Broad Institute, Inc. All rights are reserved.
+  ~
+  ~ This software is supplied without any warranty or guaranteed support whatsoever. The Broad Institute is not responsible for its use, misuse, or functionality.
+  -->
 
 <!DOCTYPE html PUBLIC "-/W3C/DTD XHTML 1.0 Transitional/EN" "http:/www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
-	xmlns:ui="http://java.sun.com/jsf/facelets"
-	xmlns:h="http://java.sun.com/jsf/html"
-	xmlns:f="http://java.sun.com/jsf/core"
-	xmlns:t="http://myfaces.apache.org/tomahawk"
-	xmlns:c="http://java.sun.com/jstl/core">
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:t="http://myfaces.apache.org/tomahawk"
+      xmlns:c="http://java.sun.com/jstl/core">
 
-<ui:composition template="/templates/common.xhtml">
-<ui:define name="validationInit">
-    <script type="text/javascript" language="javascript">
-      /* <![CDATA[ */
-      function onLoad()
-      {
-        var e = pt("form1:zipfile");
-        e.required = 1;
-        e.err = "Missing file";
+    <ui:composition template="/templates/common.xhtml">
+        <ui:define name="validationInit">
+            <script type="text/javascript" language="javascript">
+                /* <![CDATA[ */
+                function onLoad() {
+                    var e = pt("form1:zipfile");
+                    e.required = 1;
+                    e.err = "Missing file";
 
-		e = pt("url");
-        e.required = 1;
-        e.err = "Missing URL";
-      }
-       /* ]]> */
+                    e = pt("url");
+                    e.required = 1;
+                    e.err = "Missing URL";
+                }
+                /* ]]> */
 
-    </script>
-    </ui:define>
-	<h:outputText rendered="#{empty param.suite}">
-		<ui:define name="pageTitle">GenePattern - Install Modules &amp; Pipelines</ui:define>
-	</h:outputText>
-	<h:outputText rendered="#{! empty param.suite}">
-		<ui:define name="pageTitle">GenePattern - Install Suites</ui:define>
-	</h:outputText>
-	<ui:define name="body">
+            </script>
+        </ui:define>
+        <h:outputText rendered="#{empty param.suite}">
+            <ui:define name="pageTitle">GenePattern - Install Modules &amp; Pipelines</ui:define>
+        </h:outputText>
+        <h:outputText rendered="#{! empty param.suite}">
+            <ui:define name="pageTitle">GenePattern - Install Suites</ui:define>
+        </h:outputText>
+        <ui:define name="body">
 
 
-		<table width="100%" border="0" cellpadding="0" cellspacing="0"
-			class="barhead-other">
-			<tr><td>
-				<h:outputText rendered="#{empty param.suite}">
-					<h:outputText rendered="#{importBean.createModuleAllowed}">
-						<ui:define name="pageTitle">Install Modules &amp; Pipelines</ui:define>
-					</h:outputText>
-					<h:outputText rendered="#{!importBean.createModuleAllowed}">
-						<ui:define name="pageTitle">Install Pipelines</ui:define>
-					</h:outputText>
-				</h:outputText>
-				<h:outputText rendered="#{! empty param.suite}">
-					<ui:define name="pageTitle">Install Suites</ui:define>
-				</h:outputText>
-			</td></tr>
-		</table>
+            <table width="100%" border="0" cellpadding="0" cellspacing="0"
+                   class="barhead-other">
+                <tr>
+                    <td>
+                        <h:outputText rendered="#{empty param.suite}">
+                            <h:outputText rendered="#{importBean.createModuleAllowed}">
+                                <ui:define name="pageTitle">Install Modules &amp; Pipelines</ui:define>
+                            </h:outputText>
+                            <h:outputText rendered="#{!importBean.createModuleAllowed}">
+                                <ui:define name="pageTitle">Install Pipelines</ui:define>
+                            </h:outputText>
+                        </h:outputText>
+                        <h:outputText rendered="#{! empty param.suite}">
+                            <ui:define name="pageTitle">Install Suites</ui:define>
+                        </h:outputText>
+                    </td>
+                </tr>
+            </table>
 
-		<table width="100%" border="0" cellpadding="10" cellspacing="0">
-			<tr valign="top" class="settingperameter">
-				<td><strong>Install from zip file:</strong></td>
-				<td><h:form id="form1" enctype="multipart/form-data" onsubmit="return validateForm(this);">Please choose a GenePattern
-				zip file to submit to the GenePattern server.
-				<p><strong>GenePattern zip file:</strong>&nbsp; <t:inputFileUpload
-						storage="file" size="60" value="#{importBean.zipFile}" id="zipfile" /></p>
-					<p>Visible to: &nbsp;&nbsp; <t:selectOneRadio
-						value="#{importBean.selectedFilePrivacy}">
-						<f:selectItems value="#{importBean.privacyItems}" />
-					</t:selectOneRadio></p>
-					<h:commandButton action="#{importBean.importFile}"
-						value="Install" />&nbsp;&nbsp;
-				</h:form></td>
-			</tr>
-			<tr valign="top" class="settingperameter">
-				<td><strong>Download the zip file from a website:</strong></td>
-				<td><strong>URL of a GenePattern zip file:</strong><h:form id="form2" onsubmit="return validateForm(this);">  <t:inputText
-					value="#{importBean.url}" size="60" id="url" >
-          <f:attribute name="forceId" value="true" />
-          </t:inputText>
-				<p>Visible to: &nbsp;&nbsp; <t:selectOneRadio
-					value="#{importBean.selectedUrlPrivacy}">
-					<f:selectItems value="#{importBean.privacyItems}" />
-				</t:selectOneRadio></p>
-				<h:commandButton action="#{importBean.importUrl}"
-					value="Install" /></h:form> &nbsp;&nbsp;</td>
-			</tr>
-		</table>
-		<p class="recentjobs-sh">&nbsp;</p>
-		<p>&nbsp;</p>
-		<p>&nbsp;</p>
-		<p>&nbsp;</p>
-	</ui:define>
-</ui:composition>
+            <table width="100%" border="0" cellpadding="10" cellspacing="0">
+                <tr valign="top" class="settingperameter">
+                    <td><strong>Install from zip file:</strong></td>
+                    <td><h:form id="form1" enctype="multipart/form-data" onsubmit="return validateForm(this);">Please choose a GenePattern
+                        zip file to submit to the GenePattern server.
+                        <p><strong>GenePattern zip file:</strong>&nbsp; <t:inputFileUpload
+                                storage="file" size="60" value="#{importBean.zipFile}" id="zipfile" /></p>
+
+                        <p>Visible to: &nbsp;&nbsp; <t:selectOneRadio
+                                value="#{importBean.selectedFilePrivacy}">
+                            <f:selectItems value="#{importBean.privacyItems}" />
+                        </t:selectOneRadio></p>
+                        <h:commandButton action="#{importBean.importFile}"
+                                         value="Install" />&nbsp;&nbsp;
+                    </h:form></td>
+                </tr>
+                <tr valign="top" class="settingperameter">
+                    <td><strong>Download the zip file from a website:</strong></td>
+                    <td><strong>URL of a GenePattern zip file:</strong><h:form id="form2" onsubmit="return validateForm(this);"> <t:inputText
+                            value="#{importBean.url}" size="60" id="url">
+                        <f:attribute name="forceId" value="true" />
+                    </t:inputText>
+
+                        <p>Visible to: &nbsp;&nbsp; <t:selectOneRadio
+                                value="#{importBean.selectedUrlPrivacy}">
+                            <f:selectItems value="#{importBean.privacyItems}" />
+                        </t:selectOneRadio></p>
+                        <h:commandButton action="#{importBean.importUrl}"
+                                         value="Install" /></h:form> &nbsp;&nbsp;</td>
+                </tr>
+            </table>
+            <p class="recentjobs-sh">&nbsp;</p>
+
+            <p>&nbsp;</p>
+
+            <p>&nbsp;</p>
+
+            <p>&nbsp;</p>
+        </ui:define>
+    </ui:composition>
 </html>

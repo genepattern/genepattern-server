@@ -1,137 +1,135 @@
-<!-- /*
- The Broad Institute
- SOFTWARE COPYRIGHT NOTICE AGREEMENT
- This software and its documentation are copyright (2003-2012) by the
- Broad Institute/Massachusetts Institute of Technology. All rights are
- reserved.
- 
- This software is supplied without any warranty or guaranteed support
- whatsoever. Neither the Broad Institute nor MIT can be responsible for its
- use, misuse, or functionality.
- */ -->
+<!--
+  ~ Copyright 2012 The Broad Institute, Inc.
+  ~ SOFTWARE COPYRIGHT NOTICE
+  ~ This software and its documentation are the copyright of the Broad Institute, Inc. All rights are reserved.
+  ~
+  ~ This software is supplied without any warranty or guaranteed support whatsoever. The Broad Institute is not responsible for its use, misuse, or functionality.
+  -->
 
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
-	xmlns:ui="http://java.sun.com/jsf/facelets"
-	xmlns:h="http://java.sun.com/jsf/html"
-	xmlns:f="http://java.sun.com/jsf/core"
-	xmlns:t="http://myfaces.apache.org/tomahawk"
-	xmlns:c="http://java.sun.com/jstl/core">
-<ui:composition>
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:t="http://myfaces.apache.org/tomahawk"
+      xmlns:c="http://java.sun.com/jstl/core">
+    <ui:composition>
 
-<h:outputText rendered="#{moduleChooserBean.noModulesInstalled}">
-  <h2><font color="red">There are no modules installed. Click <a href="#{facesContext.externalContext.requestContextPath}/pages/taskCatalog.jsf">here</a> to install modules from the module repository.</font></h2>
-</h:outputText>
+        <h:outputText rendered="#{moduleChooserBean.noModulesInstalled}">
+            <h2><font color="red">There are no modules installed. Click <a href="#{facesContext.externalContext.requestContextPath}/pages/taskCatalog.jsf">here</a> to install modules from the module repository.</font></h2>
+        </h:outputText>
 
-<h:outputText rendered="#{runTaskBean.invalidLsid}">
-  <h2><font color="red">Requested module is not installed: #{runTaskBean.lsidParam}</font></h2>
-  <font color="red">Click <a href="#{facesContext.externalContext.requestContextPath}/pages/taskCatalog.jsf">here</a> to install modules from the module repository.
-  </font>
-</h:outputText>
-  
-<div class="barhead-other" style="width:100%;">Welcome to GenePattern</div>
+        <h:outputText rendered="#{runTaskBean.invalidLsid}">
+            <h2><font color="red">Requested module is not installed: #{runTaskBean.lsidParam}</font></h2>
+            <font color="red">Click <a href="#{facesContext.externalContext.requestContextPath}/pages/taskCatalog.jsf">here</a> to install modules from the module repository.
+            </font>
+        </h:outputText>
 
-<div id="homeIndent">
+        <div class="barhead-other" style="width:100%;">Welcome to GenePattern</div>
 
-<h2>Analyzing genomic data in GenePattern</h2>
+        <div id="homeIndent">
 
-<p />
+            <h2>Analyzing genomic data in GenePattern</h2>
 
-
-<div class="protocols">
-<h2>what do you want to do? </h2>
-<ul>
-<li>Click a <b>protocol</b> to run an analysis. GenePattern guides you step by step.</li>
-<li>Click <b><a href="http://www.broadinstitute.org/genepattern/desc/quick_start.html">Quick Start</a></b>
-for instructions on how to run any module in GenePattern.</li>
-</ul>
-<h3>Protocols for running common analyses in GenePattern:</h3>
+            <p />
 
 
-  <div class="protocol_list_item">
-    <div class="protocol_list_img">
-      <a href="/gp/pages/protocols/RunAnalysis.html"  onclick="return openProtocolWindow(this, event);"
-      ><img src="/gp/images/RunAnalysis.jpg" alt="" style="border:0px;"/>
-      </a>
-    </div>
-    <div class="protocol_list_block">
-      <a class="protocolLink" href="/gp/pages/protocols/RunAnalysis.html"  onclick="return openProtocolWindow(this, event);"
-      ><b>Run an Analysis in GenePattern</b></a>
-      <br />
-      Learn how to run an analysis in GenePattern by preprocessing gene expression data 
-      and visualizing the resulting data as a heat map.
-    </div>
-  </div>
+            <div class="protocols">
+                <h2>what do you want to do? </h2>
+                <ul>
+                    <li>Click a <b>protocol</b> to run an analysis. GenePattern guides you step by step.</li>
+                    <li>Click <b><a href="http://www.broadinstitute.org/genepattern/desc/quick_start.html">Quick Start</a></b>
+                        for instructions on how to run any module in GenePattern.
+                    </li>
+                </ul>
+                <h3>Protocols for running common analyses in GenePattern:</h3>
 
-  <div class="protocol_list_item">
-    <div class="protocol_list_img">
-      <a href="/gp/pages/protocols/DiffExp.html" onclick="return openProtocolWindow(this, event);"
-      ><img src="/gp/images/DiffExp.jpg" alt="" style="border:0px;"/>
-      </a>
-    </div>
-    <div class="protocol_list_block">
-      <a class="protocolLink" href="/gp/pages/protocols/DiffExp.html" onclick="return openProtocolWindow(this, event);"
-      ><b>Differential Expression Analysis</b></a>
-      <br />
-      Find genes that are significantly differentially expressed between classes of samples.
-    </div>
-  </div>
-  <div class="protocol_list_item">
-    <div class="protocol_list_img">
-      <a href="/gp/pages/protocols/ClassDiscovery.html" onclick="return openProtocolWindow(this, event);" 
-      ><img src="/gp/images/Cluster.jpg" style="border:0px;"/>
-      </a>
-    </div>
-    <div class="protocol_list_block">
-      <a class="protocolLink" href="/gp/pages/protocols/ClassDiscovery.html" onclick="return openProtocolWindow(this, event);" 
-      ><b>Clustering</b></a>
-      <br />
-      Group genes and/or samples by similar expression profiles.
-    </div>
-  </div>
-  <div class="protocol_list_item">
-    <div class="protocol_list_img">
-      <a href="/gp/pages/protocols/Prediction.html" onclick="return openProtocolWindow(this, event);" 
-      ><img src="/gp/images/Prediction.jpg" style="border:0px;"/>
-      </a>
-    </div>
-    <div class="protocol_list_block">
-      <a class="protocolLink" href="/gp/pages/protocols/Prediction.html" onclick="return openProtocolWindow(this, event);" 
-      ><b>Prediction</b></a>
-      <br />
-      Create a model, also referred to as a classifier or class predictor, that
-      correctly classifies unlabeled samples into known classes.
-    </div>
-  </div>
-  <div class="protocol_list_item">
-    <div class="protocol_list_img">
-      <a href="/gp/pages/protocols/SnpCN.html" onclick="return openProtocolWindow(this, event);" 
-      ><img src="/gp/images/CopyNumber.jpg" style="border:0px;"/>
-      </a>
-    </div>
-    <div class="protocol_list_block">
-      <a class="protocolLink" href="/gp/pages/protocols/SnpCN.html" onclick="return openProtocolWindow(this, event);" 
-      ><b>SNP Copy Number and Loss of Heterozygosity Estimation</b></a>
-      <br />
-      Compute SNP copy number (CN) and loss of heterozygosity (LOH) based on 
-      Affymetrix SNP chip data for paired target/normal samples.
-    </div>
-  </div>
-</div>
 
-<div id="seealso">
-  <h4>See also:</h4>
-  <ul>
-    <li>Tutorial 
-      [<a href="http://www.broadinstitute.org/cancer/software/genepattern/tutorial/gp_tutorial.html"><strong>HTML</strong></a> | 
-       <!--  <a><strong>Flash</strong></a> | -->
-       <a href="http://www.broadinstitute.org/cancer/software/genepattern/tutorial/gp_tutorial.pdf"><strong>PDF</strong></a>] &ndash; Hands-on introduction to GenePattern.</li>
-    <li><a href="http://www.broadinstitute.org/cancer/software/genepattern/tutorial/gp_web_client.html"><strong>GenePattern User Guide</strong></a> &ndash; Full description of this web application.</li>
-    <li><a href="#{facesContext.externalContext.requestContextPath}/getTaskDoc.jsp"><strong>Modules</strong></a> &ndash; List of all installed modules with links to their documentation.</li>
-  </ul>
-        
-  </div>
-</div>
+                <div class="protocol_list_item">
+                    <div class="protocol_list_img">
+                        <a href="/gp/pages/protocols/RunAnalysis.html" onclick="return openProtocolWindow(this, event);"
+                                ><img src="/gp/images/RunAnalysis.jpg" alt="" style="border:0px;" />
+                        </a>
+                    </div>
+                    <div class="protocol_list_block">
+                        <a class="protocolLink" href="/gp/pages/protocols/RunAnalysis.html" onclick="return openProtocolWindow(this, event);"
+                                ><b>Run an Analysis in GenePattern</b></a>
+                        <br />
+                        Learn how to run an analysis in GenePattern by preprocessing gene expression data
+                        and visualizing the resulting data as a heat map.
+                    </div>
+                </div>
 
-</ui:composition>
+                <div class="protocol_list_item">
+                    <div class="protocol_list_img">
+                        <a href="/gp/pages/protocols/DiffExp.html" onclick="return openProtocolWindow(this, event);"
+                                ><img src="/gp/images/DiffExp.jpg" alt="" style="border:0px;" />
+                        </a>
+                    </div>
+                    <div class="protocol_list_block">
+                        <a class="protocolLink" href="/gp/pages/protocols/DiffExp.html" onclick="return openProtocolWindow(this, event);"
+                                ><b>Differential Expression Analysis</b></a>
+                        <br />
+                        Find genes that are significantly differentially expressed between classes of samples.
+                    </div>
+                </div>
+                <div class="protocol_list_item">
+                    <div class="protocol_list_img">
+                        <a href="/gp/pages/protocols/ClassDiscovery.html" onclick="return openProtocolWindow(this, event);"
+                                ><img src="/gp/images/Cluster.jpg" style="border:0px;" />
+                        </a>
+                    </div>
+                    <div class="protocol_list_block">
+                        <a class="protocolLink" href="/gp/pages/protocols/ClassDiscovery.html" onclick="return openProtocolWindow(this, event);"
+                                ><b>Clustering</b></a>
+                        <br />
+                        Group genes and/or samples by similar expression profiles.
+                    </div>
+                </div>
+                <div class="protocol_list_item">
+                    <div class="protocol_list_img">
+                        <a href="/gp/pages/protocols/Prediction.html" onclick="return openProtocolWindow(this, event);"
+                                ><img src="/gp/images/Prediction.jpg" style="border:0px;" />
+                        </a>
+                    </div>
+                    <div class="protocol_list_block">
+                        <a class="protocolLink" href="/gp/pages/protocols/Prediction.html" onclick="return openProtocolWindow(this, event);"
+                                ><b>Prediction</b></a>
+                        <br />
+                        Create a model, also referred to as a classifier or class predictor, that
+                        correctly classifies unlabeled samples into known classes.
+                    </div>
+                </div>
+                <div class="protocol_list_item">
+                    <div class="protocol_list_img">
+                        <a href="/gp/pages/protocols/SnpCN.html" onclick="return openProtocolWindow(this, event);"
+                                ><img src="/gp/images/CopyNumber.jpg" style="border:0px;" />
+                        </a>
+                    </div>
+                    <div class="protocol_list_block">
+                        <a class="protocolLink" href="/gp/pages/protocols/SnpCN.html" onclick="return openProtocolWindow(this, event);"
+                                ><b>SNP Copy Number and Loss of Heterozygosity Estimation</b></a>
+                        <br />
+                        Compute SNP copy number (CN) and loss of heterozygosity (LOH) based on
+                        Affymetrix SNP chip data for paired target/normal samples.
+                    </div>
+                </div>
+            </div>
+
+            <div id="seealso">
+                <h4>See also:</h4>
+                <ul>
+                    <li>Tutorial
+                        [<a href="http://www.broadinstitute.org/cancer/software/genepattern/tutorial/gp_tutorial.html"><strong>HTML</strong></a> |
+                        <!--  <a><strong>Flash</strong></a> | -->
+                        <a href="http://www.broadinstitute.org/cancer/software/genepattern/tutorial/gp_tutorial.pdf"><strong>PDF</strong></a>] &ndash; Hands-on introduction to GenePattern.
+                    </li>
+                    <li><a href="http://www.broadinstitute.org/cancer/software/genepattern/tutorial/gp_web_client.html"><strong>GenePattern User Guide</strong></a> &ndash; Full description of this web application.</li>
+                    <li><a href="#{facesContext.externalContext.requestContextPath}/getTaskDoc.jsp"><strong>Modules</strong></a> &ndash; List of all installed modules with links to their documentation.</li>
+                </ul>
+
+            </div>
+        </div>
+
+    </ui:composition>
 </html>

@@ -1,112 +1,120 @@
-<!-- /*
- The Broad Institute
- SOFTWARE COPYRIGHT NOTICE AGREEMENT
- This software and its documentation are copyright (2003-2012) by the
- Broad Institute/Massachusetts Institute of Technology. All rights are
- reserved.
- 
- This software is supplied without any warranty or guaranteed support
- whatsoever. Neither the Broad Institute nor MIT can be responsible for its
- use, misuse, or functionality.
- */
- -->
+<!--
+  ~ Copyright 2012 The Broad Institute, Inc.
+  ~ SOFTWARE COPYRIGHT NOTICE
+  ~ This software and its documentation are the copyright of the Broad Institute, Inc. All rights are reserved.
+  ~
+  ~ This software is supplied without any warranty or guaranteed support whatsoever. The Broad Institute is not responsible for its use, misuse, or functionality.
+  -->
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml" 
-      xmlns:ui="http://java.sun.com/jsf/facelets" 
-      xmlns:h="http://java.sun.com/jsf/html" 
-      xmlns:f="http://java.sun.com/jsf/core" 
-      xmlns:t="http://myfaces.apache.org/tomahawk" 
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:t="http://myfaces.apache.org/tomahawk"
       xmlns:c="http://java.sun.com/jstl/core">
 
-  <h:form>
+    <h:form>
 
-    <table width="100%" class="barhead-other">
-      <tr>
-        <td>Job Configuration</td>        
-      </tr>
-    </table>
-    <table width="100%">
-    </table>
-    <table width="100%" border="0" cellpadding="0" cellspacing="0" >
-      <thead>
-      <tr class="tableheader-row2">
-        <td align="left">CommandManager Actions</td>
-        <td align="left"></td>
-      </tr>
-      </thead> 
-      <tr class="admin-row"><td>
-        <h:commandLink immediate="false" rendered="#{not jobConfigurationBean.suspended}" action="#{jobConfigurationBean.suspendJobQueue}">Suspend internal job queue</h:commandLink>
-        <h:commandLink immediate="false" rendered="#{jobConfigurationBean.suspended}" action="#{jobConfigurationBean.resumeJobQueue}">Resume internal job queue</h:commandLink>
-        </td>
-        <td>
-        <h:outputText rendered="#{not jobConfigurationBean.suspended}">Suspend the internal job queue. When the internal queue is suspended, the server will accept new jobs, but will not start them. Existing RUNNING jobs will continue.</h:outputText>        
-        <h:outputText rendered="#{jobConfigurationBean.suspended}">Resume the internal job queue. The server is accepting job submissions, but will not start them until the internal queue is resumed.</h:outputText>
-        </td>
-      </tr>
-      <tr class="admin-row"><td>
-        <h:commandLink immediate="false" rendered="#{jobConfigurationBean.running}" action="#{jobConfigurationBean.shutdown}">Shut down job execution engine</h:commandLink>
-        <h:commandLink immediate="false" rendered="#{not jobConfigurationBean.running}" action="#{jobConfigurationBean.startup}">Start up job execution engine</h:commandLink>
-        </td> 
-        <td>
-        <h:outputText rendered="#{jobConfigurationBean.running}">Shut down the job execution system, making the same calls as on server shutdown.</h:outputText>
-        <h:outputText rendered="#{not jobConfigurationBean.running}">Start the job execution system, initializing using the same calls as on server startup. This reloads the configuration file.</h:outputText>
-        </td>
-      </tr>
-      <tr class="admin-row"><td>
-        <h:commandLink immediate="false" rendered="true" action="#{jobConfigurationBean.reloadJobConfiguration}">Reload job configuration</h:commandLink>     
-      </td><td></td>
-      </tr>
-    </table>
-		
-    <table width="100%" class="barhead-other">
-      <tr>
-        <td>Command Executors</td>        
-      </tr>
-    </table>
-    <table width="100%" border="0" cellpadding="0" cellspacing="0" >
-      <thead>
-      <tr class="tableheader-row2">
-        <td align="left">id</td>
-        <td align="left">CommandExecutor</td>
-        <td align="left" style="padding-left: 10px; padding-right: 10px;">action</td>
-      </tr>
-      </thead>  
-    <t:dataList var="cmdExecutor" value="#{jobConfigurationBean.commandExecutors}">
-      <tr class="admin-row">
-        <td>#{cmdExecutor.id}</td>
-        <td>#{cmdExecutor.classname}</td>
-        <td> </td>
-      </tr>
-    </t:dataList>
-    </table>
+        <table width="100%" class="barhead-other">
+            <tr>
+                <td>Job Configuration</td>
+            </tr>
+        </table>
+        <table width="100%">
+        </table>
+        <table width="100%" border="0" cellpadding="0" cellspacing="0">
+            <thead>
+                <tr class="tableheader-row2">
+                    <td align="left">CommandManager Actions</td>
+                    <td align="left"></td>
+                </tr>
+            </thead>
+            <tr class="admin-row">
+                <td>
+                    <h:commandLink immediate="false" rendered="#{not jobConfigurationBean.suspended}" action="#{jobConfigurationBean.suspendJobQueue}">Suspend internal job queue</h:commandLink>
+                    <h:commandLink immediate="false" rendered="#{jobConfigurationBean.suspended}" action="#{jobConfigurationBean.resumeJobQueue}">Resume internal job queue</h:commandLink>
+                </td>
+                <td>
+                    <h:outputText rendered="#{not jobConfigurationBean.suspended}">Suspend the internal job queue. When the internal queue is suspended, the server will accept new jobs, but will not start them. Existing RUNNING jobs will continue.</h:outputText>
+                    <h:outputText rendered="#{jobConfigurationBean.suspended}">Resume the internal job queue. The server is accepting job submissions, but will not start them until the internal queue is resumed.</h:outputText>
+                </td>
+            </tr>
+            <tr class="admin-row">
+                <td>
+                    <h:commandLink immediate="false" rendered="#{jobConfigurationBean.running}" action="#{jobConfigurationBean.shutdown}">Shut down job execution engine</h:commandLink>
+                    <h:commandLink immediate="false" rendered="#{not jobConfigurationBean.running}" action="#{jobConfigurationBean.startup}">Start up job execution engine</h:commandLink>
+                </td>
+                <td>
+                    <h:outputText rendered="#{jobConfigurationBean.running}">Shut down the job execution system, making the same calls as on server shutdown.</h:outputText>
+                    <h:outputText rendered="#{not jobConfigurationBean.running}">Start the job execution system, initializing using the same calls as on server startup. This reloads the configuration file.</h:outputText>
+                </td>
+            </tr>
+            <tr class="admin-row">
+                <td>
+                    <h:commandLink immediate="false" rendered="true" action="#{jobConfigurationBean.reloadJobConfiguration}">Reload job configuration</h:commandLink>
+                </td>
+                <td></td>
+            </tr>
+        </table>
 
-    <table width="100%" class="barhead-other">
-      <tr><td>Configuration File</td></tr>
-    </table>
-    <table width="100%" border="0" cellpadding="0" cellspacing="0" >
-      <thead>
-        <tr class="tableheader-row2">
-          <td align="left"></td>
-          <td align="left"></td>
-        </tr>
-      </thead>
-      <tr class="admin-row">
-        <td>configuration file name</td><td>#{jobConfigurationBean.configurationFilepath}</td>
-      </tr>
-      <h:outputText rendered="#{jobConfigurationBean.hasErrors}">
-      <tr>
-        <td colspan="2" class="tableheader-row2"><font color="red">Errors</font></td>
-      </tr>
-      <t:dataList var="error" value="#{jobConfigurationBean.configurationFileErrors}">
-        <tr class="admin-row">
-          <td colspan="2"><font color="red">#{error.localizedMessage}</font></td>
-        </tr>
-      </t:dataList>
-      </h:outputText>
-      
-      <tr class="tableheader-row2"><td colspan="2">Contents</td></tr>
-      <tr><td colspan="2"><pre>#{jobConfigurationBean.configurationFileContent}</pre></td></tr>
-    </table>
-  </h:form>
+        <table width="100%" class="barhead-other">
+            <tr>
+                <td>Command Executors</td>
+            </tr>
+        </table>
+        <table width="100%" border="0" cellpadding="0" cellspacing="0">
+            <thead>
+                <tr class="tableheader-row2">
+                    <td align="left">id</td>
+                    <td align="left">CommandExecutor</td>
+                    <td align="left" style="padding-left: 10px; padding-right: 10px;">action</td>
+                </tr>
+            </thead>
+            <t:dataList var="cmdExecutor" value="#{jobConfigurationBean.commandExecutors}">
+                <tr class="admin-row">
+                    <td>#{cmdExecutor.id}</td>
+                    <td>#{cmdExecutor.classname}</td>
+                    <td></td>
+                </tr>
+            </t:dataList>
+        </table>
+
+        <table width="100%" class="barhead-other">
+            <tr>
+                <td>Configuration File</td>
+            </tr>
+        </table>
+        <table width="100%" border="0" cellpadding="0" cellspacing="0">
+            <thead>
+                <tr class="tableheader-row2">
+                    <td align="left"></td>
+                    <td align="left"></td>
+                </tr>
+            </thead>
+            <tr class="admin-row">
+                <td>configuration file name</td>
+                <td>#{jobConfigurationBean.configurationFilepath}</td>
+            </tr>
+            <h:outputText rendered="#{jobConfigurationBean.hasErrors}">
+                <tr>
+                    <td colspan="2" class="tableheader-row2"><font color="red">Errors</font></td>
+                </tr>
+                <t:dataList var="error" value="#{jobConfigurationBean.configurationFileErrors}">
+                    <tr class="admin-row">
+                        <td colspan="2"><font color="red">#{error.localizedMessage}</font></td>
+                    </tr>
+                </t:dataList>
+            </h:outputText>
+
+            <tr class="tableheader-row2">
+                <td colspan="2">Contents</td>
+            </tr>
+            <tr>
+                <td colspan="2">
+                    <pre>#{jobConfigurationBean.configurationFileContent}</pre>
+                </td>
+            </tr>
+        </table>
+    </h:form>
 
 </html>

@@ -1,14 +1,10 @@
-<!-- /*
- The Broad Institute
- SOFTWARE COPYRIGHT NOTICE AGREEMENT
- This software and its documentation are copyright (2003-20011) by the
- Broad Institute/Massachusetts Institute of Technology. All rights are
- reserved.
- 
- This software is supplied without any warranty or guaranteed support
- whatsoever. Neither the Broad Institute nor MIT can be responsible for its
- use, misuse, or functionality.
- */ -->
+<!--
+  ~ Copyright 2012 The Broad Institute, Inc.
+  ~ SOFTWARE COPYRIGHT NOTICE
+  ~ This software and its documentation are the copyright of the Broad Institute, Inc. All rights are reserved.
+  ~
+  ~ This software is supplied without any warranty or guaranteed support whatsoever. The Broad Institute is not responsible for its use, misuse, or functionality.
+  -->
 
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
@@ -18,31 +14,31 @@
       xmlns:t="http://myfaces.apache.org/tomahawk"
       xmlns:c="http://java.sun.com/jstl/core">
 
-  <!-- File section include for job results page.
-       Inputs:	jobInfo
-       			step
-       			indentLevel
-   -->
-<ui:composition>
-  <table class="indicator" border="0" cellpadding="0" cellspacing="0" id="indicator#{jobInfo.jobNumber}">
-    <tr>
-      <t:dataList var="index" value="#{jobInfo.numStepsInPipeline}" rowIndexVar="rowIndex">
-        <h:outputText rendered="#{jobInfo.children[rowIndex].status == 'Processing'}">
-          <td id="indicatorCell#{jobInfo.children[rowIndex].jobNumber}" class="green"></td>
-        </h:outputText>
-        <h:outputText rendered="#{jobInfo.children[rowIndex].status == 'Error'}">
-          <td id="indicatorCell#{jobInfo.children[rowIndex].jobNumber}" class="red" onclick="#jobTitle#{jobInfo.children[rowIndex].jobNumber}"></td>
-        </h:outputText>
-        <h:outputText rendered="#{jobInfo.children[rowIndex].status == 'Finished'}">
-          <td id="indicatorCell#{jobInfo.children[rowIndex].jobNumber}" class="blue"></td>
-        </h:outputText>
-        <h:outputText rendered="#{jobInfo.children[rowIndex].status != 'Error' and 
+    <!-- File section include for job results page.
+        Inputs:	jobInfo
+                    step
+                    indentLevel
+    -->
+    <ui:composition>
+        <table class="indicator" border="0" cellpadding="0" cellspacing="0" id="indicator#{jobInfo.jobNumber}">
+            <tr>
+                <t:dataList var="index" value="#{jobInfo.numStepsInPipeline}" rowIndexVar="rowIndex">
+                    <h:outputText rendered="#{jobInfo.children[rowIndex].status == 'Processing'}">
+                        <td id="indicatorCell#{jobInfo.children[rowIndex].jobNumber}" class="green"></td>
+                    </h:outputText>
+                    <h:outputText rendered="#{jobInfo.children[rowIndex].status == 'Error'}">
+                        <td id="indicatorCell#{jobInfo.children[rowIndex].jobNumber}" class="red" onclick="#jobTitle#{jobInfo.children[rowIndex].jobNumber}"></td>
+                    </h:outputText>
+                    <h:outputText rendered="#{jobInfo.children[rowIndex].status == 'Finished'}">
+                        <td id="indicatorCell#{jobInfo.children[rowIndex].jobNumber}" class="blue"></td>
+                    </h:outputText>
+                    <h:outputText rendered="#{jobInfo.children[rowIndex].status != 'Error' and
                                   jobInfo.children[rowIndex].status != 'Finished' and
                                   jobInfo.children[rowIndex].status != 'Processing' }">
-          <td id="indicatorCell#{jobInfo.children[rowIndex].jobNumber}" class="grey"></td>
-        </h:outputText>
-      </t:dataList>
-    </tr>
-  </table>
- </ui:composition>
+                        <td id="indicatorCell#{jobInfo.children[rowIndex].jobNumber}" class="grey"></td>
+                    </h:outputText>
+                </t:dataList>
+            </tr>
+        </table>
+    </ui:composition>
 </html>

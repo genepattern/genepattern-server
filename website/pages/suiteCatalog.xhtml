@@ -1,174 +1,172 @@
-<!-- /*
- The Broad Institute
- SOFTWARE COPYRIGHT NOTICE AGREEMENT
- This software and its documentation are copyright (2003-2012) by the
- Broad Institute/Massachusetts Institute of Technology. All rights are
- reserved.
- 
- This software is supplied without any warranty or guaranteed support
- whatsoever. Neither the Broad Institute nor MIT can be responsible for its
- use, misuse, or functionality.
- */ -->
+<!--
+  ~ Copyright 2012 The Broad Institute, Inc.
+  ~ SOFTWARE COPYRIGHT NOTICE
+  ~ This software and its documentation are the copyright of the Broad Institute, Inc. All rights are reserved.
+  ~
+  ~ This software is supplied without any warranty or guaranteed support whatsoever. The Broad Institute is not responsible for its use, misuse, or functionality.
+  -->
 
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
-	xmlns:ui="http://java.sun.com/jsf/facelets"
-	xmlns:h="http://java.sun.com/jsf/html"
-	xmlns:f="http://java.sun.com/jsf/core"
-	xmlns:t="http://myfaces.apache.org/tomahawk"
-	xmlns:c="http://java.sun.com/jstl/core">
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:t="http://myfaces.apache.org/tomahawk"
+      xmlns:c="http://java.sun.com/jstl/core">
 
-<ui:composition template="/templates/common.xhtml">
-	<ui:define name="headText">
-		<script type="text/javascript"
-			src="#{facesContext.externalContext.requestContextPath}/js/prototype.js"></script>
+    <ui:composition template="/templates/common.xhtml">
+        <ui:define name="headText">
+            <script type="text/javascript"
+                    src="#{facesContext.externalContext.requestContextPath}/js/prototype.js"></script>
 
-		<script type="text/javascript" language="javascript">
+            <script type="text/javascript" language="javascript">
 
-/* <![CDATA[ */
-	function toggleAllCheckboxes(node) {
-		var maincheckboxes = document.getElementsByName("installLsid");
+                /* <![CDATA[ */
+                function toggleAllCheckboxes(node) {
+                    var maincheckboxes = document.getElementsByName("installLsid");
 
-	    var isChecked = node.checked;
-	    for (var i=0; i<maincheckboxes.length; i++) {
-	        if(maincheckboxes[i].type == "checkbox" && !maincheckboxes[i].disabled) {
-	          maincheckboxes[i].checked = isChecked;
-	        }
-	    }
-	}
+                    var isChecked = node.checked;
+                    for (var i = 0; i < maincheckboxes.length; i++) {
+                        if (maincheckboxes[i].type == "checkbox" && !maincheckboxes[i].disabled) {
+                            maincheckboxes[i].checked = isChecked;
+                        }
+                    }
+                }
 
-/* ]]> */
-	</script>
-	</ui:define>
-	<ui:define name="pageTitle">GenePattern - Install Suites From Repository</ui:define>
-
-
-	<ui:define name="body">
-		<table width="100%" border="0" cellpadding="0" cellspacing="0"
-			class="barhead-other">
-			<tr>
-				<td>Install Suites From Repository</td>
-			</tr>
-		</table>
-
-		<c:choose>
-			<c:when test="#{suiteCatalogBean.error}">
-				<p>Sorry, the suite repository is not currently available.</p>
-				<p>If you use a web proxy to connect to the internet, please
-				ensure your <a
-					href="#{facesContext.externalContext.requestContextPath}/pages/serverSettings.jsf">web
-				proxy settings</a> are correct</p>
-			</c:when>
-			<c:otherwise>
-				<h:form id="suiteCatalogForm">
-					<h:inputHidden id="suiteCatalogSubmit" value="1" />
-					<table border="0" cellpadding="5" cellspacing="0">
-					    <tr>
-					    <td>
-						<t:dataList var="t" value="#{suiteCatalogBean.states}" >
-								<h:outputText rendered="#{t.selected}">
-									<input type="checkbox" name="state" value="#{t.value}" checked="true">#{t.label}</input>
-								</h:outputText>
-								<h:outputText rendered="#{!t.selected}">
-									<input type="checkbox" name="state" value="#{t.value}">#{t.label}</input>
-								</h:outputText>
-								<br />
-						</t:dataList>
-						</td>
-						</tr>
-
-						<tr>
-							<td><h:commandButton action="#{suiteCatalogBean.filter}"
-								value="Search" /></td>
-
-						</tr>
-
-					</table>
+                /* ]]> */
+            </script>
+        </ui:define>
+        <ui:define name="pageTitle">GenePattern - Install Suites From Repository</ui:define>
 
 
-					<table width="100%" border="0" cellpadding="0" cellspacing="0"
-						class="barhead-task">
-						<tr>
-							<td class="barhead-version">Found
-							#{suiteCatalogBean.numberOfSuites} suites</td>
-						</tr>
-					</table>
+        <ui:define name="body">
+            <table width="100%" border="0" cellpadding="0" cellspacing="0"
+                   class="barhead-other">
+                <tr>
+                    <td>Install Suites From Repository</td>
+                </tr>
+            </table>
 
-					<c:if test="#{suiteCatalogBean.numberOfSuites > 0}">
-						<p><h:commandButton action="#{suiteCatalogBean.install}"
-							value="Install Checked" /></p>
+            <c:choose>
+                <c:when test="#{suiteCatalogBean.error}">
+                    <p>Sorry, the suite repository is not currently available.</p>
 
-						<table width="100%" cellpadding="5" cellspacing="0"
-							class="smalltype">
+                    <p>If you use a web proxy to connect to the internet, please
+                        ensure your <a
+                                href="#{facesContext.externalContext.requestContextPath}/pages/serverSettings.jsf">web
+                            proxy settings</a> are correct</p>
+                </c:when>
+                <c:otherwise>
+                    <h:form id="suiteCatalogForm">
+                        <h:inputHidden id="suiteCatalogSubmit" value="1" />
+                        <table border="0" cellpadding="5" cellspacing="0">
+                            <tr>
+                                <td>
+                                    <t:dataList var="t" value="#{suiteCatalogBean.states}">
+                                        <h:outputText rendered="#{t.selected}">
+                                            <input type="checkbox" name="state" value="#{t.value}" checked="true">#{t.label}</input>
+                                        </h:outputText>
+                                        <h:outputText rendered="#{!t.selected}">
+                                            <input type="checkbox" name="state" value="#{t.value}">#{t.label}</input>
+                                        </h:outputText>
+                                        <br />
+                                    </t:dataList>
+                                </td>
+                            </tr>
 
-							<tr class="tableheader-row2">
-								<td valign="top"><input type="checkbox" name="ALL"
-									value="ALL" checked="checked"
-									onclick="toggleAllCheckboxes(this);" /></td>
-								<td valign="top"><b>name (version)</b></td>
-								<td valign="top"><b>modules</b></td>
-							</tr>
+                            <tr>
+                                <td><h:commandButton action="#{suiteCatalogBean.filter}"
+                                                     value="Search" /></td>
 
-							<t:dataList var="t" value="#{suiteCatalogBean.suites}"
-								rowIndexVar="suiteIndex">
-								<tr>
-									<td rowspan="2" valign="top"><input type="checkbox"
-										id="install#{suiteIndex}" name="installLsid" value="#{t.lsid}"
-										checked="checked" /></td>
-									<td width="60%" valign="top" height="1"><span
-										class="tasks-broad"><strong>#{t.name}</strong><br />
+                            </tr>
+
+                        </table>
+
+
+                        <table width="100%" border="0" cellpadding="0" cellspacing="0"
+                               class="barhead-task">
+                            <tr>
+                                <td class="barhead-version">Found
+                                    #{suiteCatalogBean.numberOfSuites} suites
+                                </td>
+                            </tr>
+                        </table>
+
+                        <c:if test="#{suiteCatalogBean.numberOfSuites > 0}">
+                            <p><h:commandButton action="#{suiteCatalogBean.install}"
+                                                value="Install Checked" /></p>
+
+                            <table width="100%" cellpadding="5" cellspacing="0"
+                                   class="smalltype">
+
+                                <tr class="tableheader-row2">
+                                    <td valign="top"><input type="checkbox" name="ALL"
+                                                            value="ALL" checked="checked"
+                                                            onclick="toggleAllCheckboxes(this);" /></td>
+                                    <td valign="top"><b>name (version)</b></td>
+                                    <td valign="top"><b>modules</b></td>
+                                </tr>
+
+                                <t:dataList var="t" value="#{suiteCatalogBean.suites}"
+                                            rowIndexVar="suiteIndex">
+                                    <tr>
+                                        <td rowspan="2" valign="top"><input type="checkbox"
+                                                                            id="install#{suiteIndex}" name="installLsid" value="#{t.lsid}"
+                                                                            checked="checked" /></td>
+                                        <td width="60%" valign="top" height="1"><span
+                                                class="tasks-broad"><strong>#{t.name}</strong><br />
 									</span> <select name="lsid_version"
-										onchange="javascript:document.forms['suiteCatalogForm'].install#{suiteIndex}.value=this.options[this.selectedIndex].value"
-										class="tasks-broad">
+                                                    onchange="javascript:document.forms['suiteCatalogForm'].install#{suiteIndex}.value=this.options[this.selectedIndex].value"
+                                                    class="tasks-broad">
 
 
-										<option value="#{t.lsid}">#{t.lsidVersion}</option>
+                                            <option value="#{t.lsid}">#{t.lsidVersion}</option>
 
-										<t:dataList var="l" value="#{t.laterVersions}">
-											<option value="#{l.lsid}">#{l.lsidVersion} -
-											#{l.versionComment}</option>
-										</t:dataList>
-									</select> <br />
-									<br />
-									<b>#{t.description}</b>
-									<br />
-									<br />
-									<a href="#{t.url}">download zip</a>
-									</td>
+                                            <t:dataList var="l" value="#{t.laterVersions}">
+                                                <option value="#{l.lsid}">#{l.lsidVersion} -
+                                                    #{l.versionComment}</option>
+                                            </t:dataList>
+                                        </select> <br />
+                                            <br />
+                                            <b>#{t.description}</b>
+                                            <br />
+                                            <br />
+                                            <a href="#{t.url}">download zip</a>
+                                        </td>
 
-									<td valign="top" colspan="4" rowspan="2">
-									<table>
+                                        <td valign="top" colspan="4" rowspan="2">
+                                            <table>
 
-										<tr>
-											<td valign="top" align="left"><t:dataList var="m"
-												value="#{t.moduleInfo}" rowIndexVar="mIndex">
-													#{m.name}<t:outputText value=" (#{m.version})" rendered="#{m.version != null}"/>
-													&#160;<a href="#{m.docUrl}" target="_new">documentation</a>
-												<br />
-											</t:dataList></td>
-										</tr>
-									</table>
-									</td>
-								</tr>
+                                                <tr>
+                                                    <td valign="top" align="left"><t:dataList var="m"
+                                                                                              value="#{t.moduleInfo}" rowIndexVar="mIndex">
+                                                        #{m.name}<t:outputText value=" (#{m.version})" rendered="#{m.version != null}" />
+                                                        &#160;<a href="#{m.docUrl}" target="_new">documentation</a>
+                                                        <br />
+                                                    </t:dataList></td>
+                                                </tr>
+                                            </table>
+                                        </td>
+                                    </tr>
 
-								<!--tr>
-									<td valign="top" colspan="2">
+                                    <!--tr>
+                                             <td valign="top" colspan="2">
 
-									<a href="#{t.url}">download zip</a></td>
-								</tr-->
-								<tr class="settingperameter">
-									<td colspan="4"></td>
-								</tr>
-							</t:dataList>
+                                             <a href="#{t.url}">download zip</a></td>
+                                         </tr-->
+                                    <tr class="settingperameter">
+                                        <td colspan="4"></td>
+                                    </tr>
+                                </t:dataList>
 
-						</table>
-					</c:if>
-				</h:form>
-			</c:otherwise>
-		</c:choose>
+                            </table>
+                        </c:if>
+                    </h:form>
+                </c:otherwise>
+            </c:choose>
 
-	</ui:define>
+        </ui:define>
 
 
-</ui:composition>
+    </ui:composition>
 </html>

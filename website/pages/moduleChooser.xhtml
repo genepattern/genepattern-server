@@ -1,109 +1,106 @@
-<!-- /*
- The Broad Institute
- SOFTWARE COPYRIGHT NOTICE AGREEMENT
- This software and its documentation are copyright (2003-2012) by the
- Broad Institute/Massachusetts Institute of Technology. All rights are
- reserved.
- 
- This software is supplied without any warranty or guaranteed support
- whatsoever. Neither the Broad Institute nor MIT can be responsible for its
- use, misuse, or functionality.
- */ -->
+<!--
+  ~ Copyright 2012 The Broad Institute, Inc.
+  ~ SOFTWARE COPYRIGHT NOTICE
+  ~ This software and its documentation are the copyright of the Broad Institute, Inc. All rights are reserved.
+  ~
+  ~ This software is supplied without any warranty or guaranteed support whatsoever. The Broad Institute is not responsible for its use, misuse, or functionality.
+  -->
 
- <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xmlns:ui="http://java.sun.com/jsf/facelets" xmlns:h="http://java.sun.com/jsf/html" xmlns:f="http://java.sun.com/jsf/core" xmlns:t="http://myfaces.apache.org/tomahawk" xmlns:a4j="https://ajax4jsf.dev.java.net/ajax"
       xmlns:c="http://java.sun.com/jsp/jstl/core">
-<ui:composition>
+    <ui:composition>
 
-  <h:form id="moduleChooserForm">
-    <!-- tasks and pipelines area -->
-    <table width="242" border="0" cellspacing="0" cellpadding="0" class="sidebarhead-bkg">
-      <tr>
-        <td width="100%" >
-          <div class="sidebarhead">Modules &amp; Pipelines<br/>
-          	<div class="viewchoice" id="comboBoxPanel">
-          		<img src="/gp/images/search.gif" style="position: absolute; top: 91px; left: 13px;" />
-          		<input autocomplete="off" type="text" id="moduleComboBox" style="padding-left: 20px; width:195px;" onKeyUp="JavaScript:filterType(event);" onKeyDown="JavaScript:handleSelect(event)" onBlur="JavaScript:hideComboBox();" onFocus="JavaScript:showComboBox();" />
-          		<div id="comboBoxChoices" style="display:none;position:relative;">
-          			<t:dataList var="moduleCategoryGroup" value="#{moduleChooserBean.allTasks}" >
-          				<t:dataList var="category" value="#{moduleCategoryGroup.categories}">
-          					<t:dataList var="module" value="#{category.modules}" >
-          						<div style="" id="#{module.shortName}">
-          							<h:commandLink value="#{module.name}" actionListener="#{moduleChooserBean.moduleClicked}" style="white-space: nowrap;">
-                  						<f:param name="task" value="#{module.selectedLsid}"/>
-                					</h:commandLink>
-								</div>
-          					</t:dataList>
-          				</t:dataList>
-          			</t:dataList>
-          		</div>
-          	</div>
-            <div class="viewchoice" id="viewchoiceRadioPanel">
-              <t:selectOneRadio
-                    value="#{moduleChooserBean.selectedMode}"
-                    styleClass="viewchoice"
-                    id="chooser_mode_selector"
-                    onclick="chooserModeChanged();">
-                <f:selectItems value="#{moduleChooserBean.modes}" />
-              </t:selectOneRadio>
-            </div>
-          </div>
-        </td>
-      </tr>
-      <tr>
-        <td>&#160;&#160;&#160;&#160;
-          <a style="cursor: pointer;" onclick="openAll();">open all</a> | <a style="cursor: pointer;" onclick="closeAll();">close all</a>
-        </td>
-      </tr>
-      <tr>
-        <td height="6" ><img src="#{facesContext.externalContext.requestContextPath}/images/spacer.gif" width="1" height="6" /></td>
-      </tr>
-      </table>
+        <h:form id="moduleChooserForm">
+            <!-- tasks and pipelines area -->
+            <table width="242" border="0" cellspacing="0" cellpadding="0" class="sidebarhead-bkg">
+                <tr>
+                    <td width="100%">
+                        <div class="sidebarhead">Modules &amp; Pipelines<br />
+
+                            <div class="viewchoice" id="comboBoxPanel">
+                                <img src="/gp/images/search.gif" style="position: absolute; top: 91px; left: 13px;" />
+                                <input autocomplete="off" type="text" id="moduleComboBox" style="padding-left: 20px; width:195px;" onKeyUp="JavaScript:filterType(event);" onKeyDown="JavaScript:handleSelect(event)" onBlur="JavaScript:hideComboBox();" onFocus="JavaScript:showComboBox();" />
+
+                                <div id="comboBoxChoices" style="display:none;position:relative;">
+                                    <t:dataList var="moduleCategoryGroup" value="#{moduleChooserBean.allTasks}">
+                                        <t:dataList var="category" value="#{moduleCategoryGroup.categories}">
+                                            <t:dataList var="module" value="#{category.modules}">
+                                                <div style="" id="#{module.shortName}">
+                                                    <h:commandLink value="#{module.name}" actionListener="#{moduleChooserBean.moduleClicked}" style="white-space: nowrap;">
+                                                        <f:param name="task" value="#{module.selectedLsid}" />
+                                                    </h:commandLink>
+                                                </div>
+                                            </t:dataList>
+                                        </t:dataList>
+                                    </t:dataList>
+                                </div>
+                            </div>
+                            <div class="viewchoice" id="viewchoiceRadioPanel">
+                                <t:selectOneRadio
+                                        value="#{moduleChooserBean.selectedMode}"
+                                        styleClass="viewchoice"
+                                        id="chooser_mode_selector"
+                                        onclick="chooserModeChanged();">
+                                    <f:selectItems value="#{moduleChooserBean.modes}" />
+                                </t:selectOneRadio>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td>&#160;&#160;&#160;&#160;
+                        <a style="cursor: pointer;" onclick="openAll();">open all</a> | <a style="cursor: pointer;" onclick="closeAll();">close all</a>
+                    </td>
+                </tr>
+                <tr>
+                    <td height="6"><img src="#{facesContext.externalContext.requestContextPath}/images/spacer.gif" width="1" height="6" /></td>
+                </tr>
+            </table>
 
             <!-- Module Category List  -->
-      <t:dataList var="moduleCategoryGroup" value="#{moduleChooserBean.tasks}" >
+            <t:dataList var="moduleCategoryGroup" value="#{moduleChooserBean.tasks}">
 
-          <!-- Create table for modules and set initial visibility -->
-          <div  id="module_table_#{moduleCategoryGroup.mode}"
-                style="#{moduleChooserBean.selectedMode == moduleCategoryGroup.mode ? 'display: inline;' : 'display: none;'}">
+                <!-- Create table for modules and set initial visibility -->
+                <div id="module_table_#{moduleCategoryGroup.mode}"
+                     style="#{moduleChooserBean.selectedMode == moduleCategoryGroup.mode ? 'display: inline;' : 'display: none;'}">
 
 
+                    <!-- Module List  -->
+                    <t:dataList var="category" value="#{moduleCategoryGroup.categories}">
+                        <div>
 
-         <!-- Module List  -->
-        <t:dataList var="category" value="#{moduleCategoryGroup.categories}">
-           <div>
-
-           <!-- Category header  Clicking on the header hides or shows the panel contents -->
-          <!--     The category.expanded property sets the inital hide/show values -->
+                            <!-- Category header  Clicking on the header hides or shows the panel contents -->
+                            <!--     The category.expanded property sets the inital hide/show values -->
 
           <span class="task-categories" style="cursor: pointer;" onclick="toggleVisibility('#{category.identifier}');">
               &#160;
               <img id="#{category.identifier}_expanded_img" src="#{facesContext.externalContext.requestContextPath}/images/arrow-pipelinetask-down.gif"
-                   width="8" height="8" border="0" style="#{category.expanded == true ? 'display:inline;' : 'display:none;'}"/>
+                   width="8" height="8" border="0" style="#{category.expanded == true ? 'display:inline;' : 'display:none;'}" />
               <img id="#{category.identifier}_collapsed_img" src="#{facesContext.externalContext.requestContextPath}/images/arrow-pipelinetask-right.gif"
-                   width="8" height="8" border="0" style="#{category.expanded  == true ? 'display:none;' : 'display:inline;'}"/>
+                   width="8" height="8" border="0" style="#{category.expanded  == true ? 'display:none;' : 'display:inline;'}" />
               #{category.name}
           </span>
 
-         <div id="#{category.identifier}_panel" class="category_panel" categoryId='#{category.identifier}'
-               style="#{category.expanded == true ? 'display:block;' : 'display:none;'}">
-          <t:dataList var="module" value="#{category.modules}" >
+                            <div id="#{category.identifier}_panel" class="category_panel" categoryId='#{category.identifier}'
+                                 style="#{category.expanded == true ? 'display:block;' : 'display:none;'}">
+                                <t:dataList var="module" value="#{category.modules}">
             <span class="#{module.name == moduleChooserBean.selectedModule ? 'tasks_on' : (module.fromBroad == false ? 'task-mine' : '')}" style="white-space: nowrap;">
               <img src="#{facesContext.externalContext.requestContextPath}/images/spacer.gif" width="15" height="1" />
               <img src="#{facesContext.externalContext.requestContextPath}/images/bullet-task.gif" width="4" height="4" />
               &#160;
                 <h:commandLink value="#{module.shortName}" actionListener="#{moduleChooserBean.moduleClicked}" style="white-space: nowrap;">
-                  <f:param name="task" value="#{module.selectedLsid}"/>
-                  <f:param name="promptForLatestVersion" value="true"/>
+                    <f:param name="task" value="#{module.selectedLsid}" />
+                    <f:param name="promptForLatestVersion" value="true" />
                 </h:commandLink>
                 <br></br>
              </span>
-          </t:dataList>
-          </div>
-          </div>
-        </t:dataList>
-        </div>
-        </t:dataList>
-  </h:form>
-</ui:composition>
+                                </t:dataList>
+                            </div>
+                        </div>
+                    </t:dataList>
+                </div>
+            </t:dataList>
+        </h:form>
+    </ui:composition>
 </html>

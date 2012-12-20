@@ -1,78 +1,75 @@
-<!-- /*
- The Broad Institute
- SOFTWARE COPYRIGHT NOTICE AGREEMENT
- This software and its documentation are copyright (2003-2012) by the
- Broad Institute/Massachusetts Institute of Technology. All rights are
- reserved.
- 
- This software is supplied without any warranty or guaranteed support
- whatsoever. Neither the Broad Institute nor MIT can be responsible for its
- use, misuse, or functionality.
- */
- -->
+<!--
+  ~ Copyright 2012 The Broad Institute, Inc.
+  ~ SOFTWARE COPYRIGHT NOTICE
+  ~ This software and its documentation are the copyright of the Broad Institute, Inc. All rights are reserved.
+  ~
+  ~ This software is supplied without any warranty or guaranteed support whatsoever. The Broad Institute is not responsible for its use, misuse, or functionality.
+  -->
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml" 
-      xmlns:ui="http://java.sun.com/jsf/facelets" 
-      xmlns:h="http://java.sun.com/jsf/html" 
-      xmlns:f="http://java.sun.com/jsf/core" 
-      xmlns:t="http://myfaces.apache.org/tomahawk" 
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:t="http://myfaces.apache.org/tomahawk"
       xmlns:c="http://java.sun.com/jstl/core">
 
-    <table width="100%" border="0" cellpadding="0" cellspacing="0"  class="barhead-other">
-      <tr>
-        <td>Send System Alert Message</td>
-      </tr>
+    <table width="100%" border="0" cellpadding="0" cellspacing="0" class="barhead-other">
+        <tr>
+            <td>Send System Alert Message</td>
+        </tr>
     </table>
     <p>Send a system alert message to all online users.</p>
-    <p>Enter message text and optional start and end dates. 
-       The message will be displayed to all users the next time they load a page. 
-       By checking 'Delete on restart' the message will automatically be deleted the 
-       next time the server starts up.</p>
+
+    <p>Enter message text and optional start and end dates.
+        The message will be displayed to all users the next time they load a page.
+        By checking 'Delete on restart' the message will automatically be deleted the
+        next time the server starts up.</p>
+
     <p>The delete button will clear the message immediately.</p>
-       
+
     <h:form onsubmit="return validateForm(this);" id="changeSystemMessageForm">
-    <table width="100%" border="0" cellpadding="5" cellspacing="0">
-      <tr valign="top">
-	        <td>Message*</td>
-	        <td>
-	        <h:inputTextarea rows="4" cols="60" id="message" 
-	            value="#{systemMessageAdminBean.systemMessage.message}" >
-	        </h:inputTextarea>
-	        </td>
-	  </tr>
-      <tr valign="top">
-            <td>Start Date*</td>
-            <td>
-            <h:inputText value="#{systemMessageAdminBean.systemMessage.startTime}" size="16" >
-                <f:convertDateTime pattern="yyyy-MM-dd HH:mm" timeZone="#{systemMessageAdminBean.timeZone}" />
-            </h:inputText>
-            <h:outputText value=" (e.g. 2003-04-11 23:00)" />
-            </td>
-      </tr>
-      <tr valign="top">
-            <td>End Date</td>
-            <td><h:inputText value="#{systemMessageAdminBean.systemMessage.endTime}" size="16">
-                <f:convertDateTime pattern="yyyy-MM-dd HH:mm" timeZone="#{systemMessageAdminBean.timeZone}" />
-            </h:inputText>
-            </td>
-      </tr>
-      <tr valign="top">
-            <td>Delete on restart</td>
-            <td>
-            <h:selectBooleanCheckbox value="#{systemMessageAdminBean.systemMessage.deleteOnRestart}" >
-            </h:selectBooleanCheckbox>
-            </td>
-      </tr>
-      
-	  <tr valign="top">
-	      <td>&#160;</td>
-	      <td>
-	          <h:commandButton value="Save" actionListener="#{systemMessageAdminBean.save}" />
-	          &#160;
-	          <h:commandButton value="Delete" actionListener="#{systemMessageAdminBean.delete}" />
-	      </td>
-	  </tr>
-    </table>
-    <p/>
-  </h:form>
+        <table width="100%" border="0" cellpadding="5" cellspacing="0">
+            <tr valign="top">
+                <td>Message*</td>
+                <td>
+                    <h:inputTextarea rows="4" cols="60" id="message"
+                                     value="#{systemMessageAdminBean.systemMessage.message}">
+                    </h:inputTextarea>
+                </td>
+            </tr>
+            <tr valign="top">
+                <td>Start Date*</td>
+                <td>
+                    <h:inputText value="#{systemMessageAdminBean.systemMessage.startTime}" size="16">
+                        <f:convertDateTime pattern="yyyy-MM-dd HH:mm" timeZone="#{systemMessageAdminBean.timeZone}" />
+                    </h:inputText>
+                    <h:outputText value=" (e.g. 2003-04-11 23:00)" />
+                </td>
+            </tr>
+            <tr valign="top">
+                <td>End Date</td>
+                <td><h:inputText value="#{systemMessageAdminBean.systemMessage.endTime}" size="16">
+                    <f:convertDateTime pattern="yyyy-MM-dd HH:mm" timeZone="#{systemMessageAdminBean.timeZone}" />
+                </h:inputText>
+                </td>
+            </tr>
+            <tr valign="top">
+                <td>Delete on restart</td>
+                <td>
+                    <h:selectBooleanCheckbox value="#{systemMessageAdminBean.systemMessage.deleteOnRestart}">
+                    </h:selectBooleanCheckbox>
+                </td>
+            </tr>
+
+            <tr valign="top">
+                <td>&#160;</td>
+                <td>
+                    <h:commandButton value="Save" actionListener="#{systemMessageAdminBean.save}" />
+                    &#160;
+                    <h:commandButton value="Delete" actionListener="#{systemMessageAdminBean.delete}" />
+                </td>
+            </tr>
+        </table>
+        <p />
+    </h:form>
 </html>

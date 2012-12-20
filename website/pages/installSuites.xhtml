@@ -1,152 +1,151 @@
-<!-- /*
- The Broad Institute
- SOFTWARE COPYRIGHT NOTICE AGREEMENT
- This software and its documentation are copyright (2003-2012) by the
- Broad Institute/Massachusetts Institute of Technology. All rights are
- reserved.
- 
- This software is supplied without any warranty or guaranteed support
- whatsoever. Neither the Broad Institute nor MIT can be responsible for its
- use, misuse, or functionality.
- */ -->
+<!--
+  ~ Copyright 2012 The Broad Institute, Inc.
+  ~ SOFTWARE COPYRIGHT NOTICE
+  ~ This software and its documentation are the copyright of the Broad Institute, Inc. All rights are reserved.
+  ~
+  ~ This software is supplied without any warranty or guaranteed support whatsoever. The Broad Institute is not responsible for its use, misuse, or functionality.
+  -->
 
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xmlns:ui="http://java.sun.com/jsf/facelets" xmlns:h="http://java.sun.com/jsf/html" xmlns:f="http://java.sun.com/jsf/core" xmlns:t="http://myfaces.apache.org/tomahawk" xmlns:c="http://java.sun.com/jstl/core">
-  <ui:composition template="/templates/common.xhtml">
-    <ui:define name="headText">
-      <script type="text/javascript" src="#{facesContext.externalContext.requestContextPath}/js/prototype.js"/>
-      
-      <script type="text/javascript">
-      
-      /* <![CDATA[ */
-      // Execute a jsf el expression on the server
-      function callManagedBean(elExpression) {            
-        var opt = {
-          method:    'post',
-          postBody:  'el=' + elExpression,
-          onSuccess: receiveResponse,
-          onFailure: function(t) {
-            alert('Error ' + t.status + ' -- ' + t.statusText);
-          }
-        } 
-        new  Ajax.Request('#{facesContext.externalContext.requestContextPath}/anyThingAtAll.ajax',opt);
-      }
+    <ui:composition template="/templates/common.xhtml">
+        <ui:define name="headText">
+            <script type="text/javascript" src="#{facesContext.externalContext.requestContextPath}/js/prototype.js" />
 
-      // The callback function - receive response from server
-      function receiveResponse( req ) {
-        if (req.readyState == 4) {
-          if (req.status == 200) { // only if "OK"
-            update(req.responseText);
-          } 
-          
-        }
-      }
+            <script type="text/javascript">
+
+                /* <![CDATA[ */
+                // Execute a jsf el expression on the server
+                function callManagedBean(elExpression) {
+                    var opt = {
+                        method:'post',
+                        postBody:'el=' + elExpression,
+                        onSuccess:receiveResponse,
+                        onFailure:function (t) {
+                            alert('Error ' + t.status + ' -- ' + t.statusText);
+                        }
+                    }
+                    new Ajax.Request('#{facesContext.externalContext.requestContextPath}/anyThingAtAll.ajax', opt);
+                }
+
+                // The callback function - receive response from server
+                function receiveResponse(req) {
+                    if (req.readyState == 4) {
+                        if (req.status == 200) { // only if "OK"
+                            update(req.responseText);
+                        }
+
+                    }
+                }
 
 
-      var timerID = 0;
-      function startPolling(elExpression, interval) {
-        callManagedBean( elExpression );
-        timerID  = setTimeout("startPolling('" + elExpression + "', " + interval + ")", interval);
-      }
+                var timerID = 0;
+                function startPolling(elExpression, interval) {
+                    callManagedBean(elExpression);
+                    timerID = setTimeout("startPolling('" + elExpression + "', " + interval + ")", interval);
+                }
 
-      function stopPolling() {
-        if(timerID) {
-          clearTimeout(timerID);
-          timerID  = 0;
-        }
-      }
-      
-      /* Update the page from the status objects.  Example jsonString ...
-       * [{"lsid":"urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00030:1","status":true},
-       *  {"lsid":"urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00052:1","status":true},
-       *  {"lsid":"urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00002:1","status":true}]
-       */
-       function update(jsonString)
-       {
-        
-       var complete = true;
-       var objArray = eval('(' + jsonString + ')');
-       
-       for(var i=0; i<objArray.length; i++) {
-         var installStatus = objArray[i];
-         var lsid = installStatus.lsid;
-         var cb = pt("cb_" + lsid);
-         if(installStatus.status == "success") {
-           if(cb != null) {
-             cb.src="#{facesContext.externalContext.requestContextPath}/images/checkbox.gif";
-           }
-         }
-         else if (installStatus.status == "error") {
-           if(cb != null) {
-             cb.src="#{facesContext.externalContext.requestContextPath}/images/red-x.gif";
-           }
-           var errorDivId = "error_" + lsid;
-           Element.show(errorDivId);
-           Element.update(errorDivId, "<p>" + installStatus.message + "</p>");
-        }
-        else if (installStatus.status == "warning") {
-           if(cb != null) {
-             cb.src="#{facesContext.externalContext.requestContextPath}/images/checkbox.gif";
-           }
-           var warningDivId = "warning_" + lsid;
-           Element.show(warningDivId);
-           Element.update(warningDivId, "<p>" + installStatus.message + "</p>");
-        }
-        else {
-        
-          // This suite is not finished (neither succes nor error)
-          complete = false;
-        }
-      }
+                function stopPolling() {
+                    if (timerID) {
+                        clearTimeout(timerID);
+                        timerID = 0;
+                    }
+                }
 
-      if(complete == true) {
-        Element.update("progress_indicator", " complete")
-        stopPolling();
-        var buttonPane = pt("button_pane");
-        if(buttonPane != null) { 
-          Element.show(buttonPane);
-        }
-      }
-    }
-		
-/* ]]> */
-</script>
-    </ui:define>
-    <ui:define name="pageTitle">GenePattern | Installing  Suites</ui:define>
-    <ui:define name="body">
-      <script type="text/javascript">
-        startPolling("suiteInstallBean.installedSuiteString", 500);
-        
-      </script>
+                /* Update the page from the status objects.  Example jsonString ...
+                 * [{"lsid":"urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00030:1","status":true},
+                 *  {"lsid":"urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00052:1","status":true},
+                 *  {"lsid":"urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00002:1","status":true}]
+                 */
+                function update(jsonString) {
 
-      <h:form>
-       
-          <h1>Installing Suites<span id="progress_indicator">...</span></h1>
-       
-        
-        <table>
-          <!--  Loop through suites (SuiteInstallStatus beans) -->
-          <t:dataList var="suite" value="#{suiteInstallBean.suites}">
-            <tr>
-              <td>
-                <b>#{suite.name}</b>
-              </td>
-              <td>
-                <img src="#{facesContext.externalContext.requestContextPath}/images/spacer.gif" width="12" height="12" id="cb_#{suite.lsid}"/>
-              </td>
-            </tr>
-            <tr><td colspan="2" valign="top" id="error_#{suite.lsid}" class="validation-error" style="font-weight:bold;color:red;display:none"></td> </tr>
-            <tr class="taskperameter"><td colspan="2" valign="top" id="warning_#{suite.lsid}" class="validation-warning" style="font-weight:bold;color:orange"></td> </tr>
-          </t:dataList>
-        </table>
-        
-    
-        <div id="button_pane" style="display:none;">
-        	<br />
-        	<br />
-          <t:commandButton value="Done"  action="home"/>&#160;
-        </div>
-      </h:form>
-    </ui:define>
-  </ui:composition>
+                    var complete = true;
+                    var objArray = eval('(' + jsonString + ')');
+
+                    for (var i = 0; i < objArray.length; i++) {
+                        var installStatus = objArray[i];
+                        var lsid = installStatus.lsid;
+                        var cb = pt("cb_" + lsid);
+                        if (installStatus.status == "success") {
+                            if (cb != null) {
+                                cb.src = "#{facesContext.externalContext.requestContextPath}/images/checkbox.gif";
+                            }
+                        }
+                        else if (installStatus.status == "error") {
+                            if (cb != null) {
+                                cb.src = "#{facesContext.externalContext.requestContextPath}/images/red-x.gif";
+                            }
+                            var errorDivId = "error_" + lsid;
+                            Element.show(errorDivId);
+                            Element.update(errorDivId, "<p>" + installStatus.message + "</p>");
+                        }
+                        else if (installStatus.status == "warning") {
+                            if (cb != null) {
+                                cb.src = "#{facesContext.externalContext.requestContextPath}/images/checkbox.gif";
+                            }
+                            var warningDivId = "warning_" + lsid;
+                            Element.show(warningDivId);
+                            Element.update(warningDivId, "<p>" + installStatus.message + "</p>");
+                        }
+                        else {
+
+                            // This suite is not finished (neither succes nor error)
+                            complete = false;
+                        }
+                    }
+
+                    if (complete == true) {
+                        Element.update("progress_indicator", " complete")
+                        stopPolling();
+                        var buttonPane = pt("button_pane");
+                        if (buttonPane != null) {
+                            Element.show(buttonPane);
+                        }
+                    }
+                }
+
+                /* ]]> */
+            </script>
+        </ui:define>
+        <ui:define name="pageTitle">GenePattern | Installing Suites</ui:define>
+        <ui:define name="body">
+            <script type="text/javascript">
+                startPolling("suiteInstallBean.installedSuiteString", 500);
+
+            </script>
+
+            <h:form>
+
+                <h1>Installing Suites<span id="progress_indicator">...</span></h1>
+
+
+                <table>
+                    <!--  Loop through suites (SuiteInstallStatus beans) -->
+                    <t:dataList var="suite" value="#{suiteInstallBean.suites}">
+                        <tr>
+                            <td>
+                                <b>#{suite.name}</b>
+                            </td>
+                            <td>
+                                <img src="#{facesContext.externalContext.requestContextPath}/images/spacer.gif" width="12" height="12" id="cb_#{suite.lsid}" />
+                            </td>
+                        </tr>
+                        <tr>
+                            <td colspan="2" valign="top" id="error_#{suite.lsid}" class="validation-error" style="font-weight:bold;color:red;display:none"></td>
+                        </tr>
+                        <tr class="taskperameter">
+                            <td colspan="2" valign="top" id="warning_#{suite.lsid}" class="validation-warning" style="font-weight:bold;color:orange"></td>
+                        </tr>
+                    </t:dataList>
+                </table>
+
+
+                <div id="button_pane" style="display:none;">
+                    <br />
+                    <br />
+                    <t:commandButton value="Done" action="home" />&#160;
+                </div>
+            </h:form>
+        </ui:define>
+    </ui:composition>
 </html>

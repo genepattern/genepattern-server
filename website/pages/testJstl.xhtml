@@ -1,46 +1,40 @@
-<!-- /*
- The Broad Institute
- SOFTWARE COPYRIGHT NOTICE AGREEMENT
- This software and its documentation are copyright (2003-2012) by the
- Broad Institute/Massachusetts Institute of Technology. All rights are
- reserved.
- 
- This software is supplied without any warranty or guaranteed support
- whatsoever. Neither the Broad Institute nor MIT can be responsible for its
- use, misuse, or functionality.
- */ -->
+<!--
+  ~ Copyright 2012 The Broad Institute, Inc.
+  ~ SOFTWARE COPYRIGHT NOTICE
+  ~ This software and its documentation are the copyright of the Broad Institute, Inc. All rights are reserved.
+  ~
+  ~ This software is supplied without any warranty or guaranteed support whatsoever. The Broad Institute is not responsible for its use, misuse, or functionality.
+  -->
 
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
       xmlns:c="http://java.sun.com/jstl/core"
       xmlns:ui="http://java.sun.com/jsf/facelets">
 
-   
-  <c:if test="#{testBean.boolValue}">
- 	testBean.boolValue == true <br/>
-  </c:if>
-  <c:if test="#{!testBean.boolValue}">
-	testBean.boolValue == false  Shouldn't be here! <br/>
-  </c:if>
-  <c:if test="true">
- 	test = true <br/>
-  </c:if>
-  <c:if test="false">
- 	test = false  Shouldn't be here! <br/>
-  </c:if>
-  
-  <p/>
-  
-  <c:choose>
-    <c:when test="#{testBean.boolValue}">
-       c:choose test successful
-    </c:when>
-    <c:otherwise>
-      c:choose test failed !
-    </c:otherwise>
- </c:choose>
- 
-  
- 	  
-  
+
+    <c:if test="#{testBean.boolValue}">
+        testBean.boolValue == true <br />
+    </c:if>
+    <c:if test="#{!testBean.boolValue}">
+        testBean.boolValue == false Shouldn't be here! <br />
+    </c:if>
+    <c:if test="true">
+        test = true <br />
+    </c:if>
+    <c:if test="false">
+        test = false Shouldn't be here! <br />
+    </c:if>
+
+    <p />
+
+    <c:choose>
+        <c:when test="#{testBean.boolValue}">
+            c:choose test successful
+        </c:when>
+        <c:otherwise>
+            c:choose test failed !
+        </c:otherwise>
+    </c:choose>
+
+
 </html>

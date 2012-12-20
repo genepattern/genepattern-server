@@ -1,29 +1,37 @@
+<!--
+  ~ Copyright 2012 The Broad Institute, Inc.
+  ~ SOFTWARE COPYRIGHT NOTICE
+  ~ This software and its documentation are the copyright of the Broad Institute, Inc. All rights are reserved.
+  ~
+  ~ This software is supplied without any warranty or guaranteed support whatsoever. The Broad Institute is not responsible for its use, misuse, or functionality.
+  -->
+
 <html xmlns="http://www.w3.org/1999/xhtml"
-    xmlns:ui="http://java.sun.com/jsf/facelets"
-    xmlns:h="http://java.sun.com/jsf/html"
-    xmlns:a4j="http://richfaces.org/a4j"
-    xmlns:f="http://java.sun.com/jsf/core"
-    xmlns:t="http://myfaces.apache.org/tomahawk">
-<head>
-</head>
-<body>
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:a4j="http://richfaces.org/a4j"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:t="http://myfaces.apache.org/tomahawk">
+    <head>
+    </head>
+    <body>
 
-<a4j:outputPanel id="systemMessage">
+        <a4j:outputPanel id="systemMessage">
 
-<t:div rendered="#{!empty requestScope.userID and systemMessageBean.enableJavaScriptAlert and systemMessageBean.isNew}">
-<script type="text/javascript" language="javascript">
-window.addEventListener("load",
-    function () {
-        window.alert('#{systemMessageBean.messageAsJavaScriptString}');
-    }, 
-    false);
-</script>
-</t:div>
-<h:form id="systemMessageForm" rendered="#{systemMessageBean.isOpen}" >
-    <h:outputText escape="false" value="#{systemMessageBean.messageAsHtmlString} " style="color: red;" />
-    <a4j:commandLink value=" [hide] " actionListener="#{systemMessageBean.hide}" rendered="#{!empty requestScope.userID}" 
-        reRender="systemMessage, systemMessageLink" />
-</h:form>
-</a4j:outputPanel>
-</body>
+            <t:div rendered="#{!empty requestScope.userID and systemMessageBean.enableJavaScriptAlert and systemMessageBean.isNew}">
+                <script type="text/javascript" language="javascript">
+                    window.addEventListener("load",
+                            function () {
+                                window.alert('#{systemMessageBean.messageAsJavaScriptString}');
+                            },
+                            false);
+                </script>
+            </t:div>
+            <h:form id="systemMessageForm" rendered="#{systemMessageBean.isOpen}">
+                <h:outputText escape="false" value="#{systemMessageBean.messageAsHtmlString} " style="color: red;" />
+                <a4j:commandLink value=" [hide] " actionListener="#{systemMessageBean.hide}" rendered="#{!empty requestScope.userID}"
+                                 reRender="systemMessage, systemMessageLink" />
+            </h:form>
+        </a4j:outputPanel>
+    </body>
 </html>

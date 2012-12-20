@@ -1,99 +1,94 @@
-<!-- /*
- The Broad Institute
- SOFTWARE COPYRIGHT NOTICE AGREEMENT
- This software and its documentation are copyright (2003-2012) by the
- Broad Institute/Massachusetts Institute of Technology. All rights are
- reserved.
- 
- This software is supplied without any warranty or guaranteed support
- whatsoever. Neither the Broad Institute nor MIT can be responsible for its
- use, misuse, or functionality.
- */
- -->
+<!--
+  ~ Copyright 2012 The Broad Institute, Inc.
+  ~ SOFTWARE COPYRIGHT NOTICE
+  ~ This software and its documentation are the copyright of the Broad Institute, Inc. All rights are reserved.
+  ~
+  ~ This software is supplied without any warranty or guaranteed support whatsoever. The Broad Institute is not responsible for its use, misuse, or functionality.
+  -->
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
-	xmlns:ui="http://java.sun.com/jsf/facelets"
-	xmlns:h="http://java.sun.com/jsf/html"
-	xmlns:f="http://java.sun.com/jsf/core"
-	xmlns:t="http://myfaces.apache.org/tomahawk"
-	xmlns:c="http://java.sun.com/jstl/core"
-	xmlns:a4j="http://richfaces.org/a4j"
-	xmlns:rich="http://richfaces.org/rich">
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:t="http://myfaces.apache.org/tomahawk"
+      xmlns:c="http://java.sun.com/jstl/core"
+      xmlns:a4j="http://richfaces.org/a4j"
+      xmlns:rich="http://richfaces.org/rich">
 
-<table width="100%" class="barhead-other">
-	<tr>
-		<td width="50%">User Control Panel</td>
-		<td width="50%">
-			<h:form id="selectuser">
-				<t:inputText id="select_username" value="#{userControlPanelBean.userEntry.user.userId}" />
-				<h:commandButton value="Select User" action="#{userControlPanelBean.selectUser}" immediate="true" />
-			</h:form>
-		</td>
-	</tr>
-</table>
+    <table width="100%" class="barhead-other">
+        <tr>
+            <td width="50%">User Control Panel</td>
+            <td width="50%">
+                <h:form id="selectuser">
+                    <t:inputText id="select_username" value="#{userControlPanelBean.userEntry.user.userId}" />
+                    <h:commandButton value="Select User" action="#{userControlPanelBean.selectUser}" immediate="true" />
+                </h:form>
+            </td>
+        </tr>
+    </table>
 
-<table border="0" cellpadding="0" cellspacing="0" width="600">
-	<thead>
-		<tr class="tableheader-row2">
-			<td align="left">user_id</td>
-			<td align="left">email</td>
-			<td align="left">groups</td>
-			<td align="left" style="padding-left: 10px; padding-right: 10px;">admin?</td>
-			<td align="left">user.dir</td>
-		</tr>
-	</thead>
-	<tr class="admin-row">
-		<td>#{userControlPanelBean.userEntry.user.userId}</td>
-		<td><a href="mailto:#{userEntry.user.email}">#{userControlPanelBean.userEntry.user.email}</a></td>
-		<td><t:dataList var="userGroupId"
-			value="#{userControlPanelBean.userEntry.groups}">
-          		#{userGroupId} <br />
-		</t:dataList></td>
-		<td style="text-align: center; padding-left: 10px; color: green;"><h:outputText
-			rendered="#{userControlPanelBean.userEntry.admin}">&#x2713;</h:outputText></td>
-		<td>#{userControlPanelBean.userEntry.userDir}</td>
-	</tr>
-</table>
+    <table border="0" cellpadding="0" cellspacing="0" width="600">
+        <thead>
+            <tr class="tableheader-row2">
+                <td align="left">user_id</td>
+                <td align="left">email</td>
+                <td align="left">groups</td>
+                <td align="left" style="padding-left: 10px; padding-right: 10px;">admin?</td>
+                <td align="left">user.dir</td>
+            </tr>
+        </thead>
+        <tr class="admin-row">
+            <td>#{userControlPanelBean.userEntry.user.userId}</td>
+            <td><a href="mailto:#{userEntry.user.email}">#{userControlPanelBean.userEntry.user.email}</a></td>
+            <td><t:dataList var="userGroupId"
+                            value="#{userControlPanelBean.userEntry.groups}">
+                #{userGroupId} <br />
+            </t:dataList></td>
+            <td style="text-align: center; padding-left: 10px; color: green;"><h:outputText
+                    rendered="#{userControlPanelBean.userEntry.admin}">&#x2713;</h:outputText></td>
+            <td>#{userControlPanelBean.userEntry.userDir}</td>
+        </tr>
+    </table>
 
-<table width="100%" class="barhead-other">
-	<tr>
-		<td width="50%">Uploaded Files</td>
-		<td width="50%">
-			<h:form>
-				<h:commandButton value="Resync Files" action="#{userControlPanelBean.syncFiles}" immediate="true" />
-			</h:form>
-		</td>
-	</tr>
-</table>
+    <table width="100%" class="barhead-other">
+        <tr>
+            <td width="50%">Uploaded Files</td>
+            <td width="50%">
+                <h:form>
+                    <h:commandButton value="Resync Files" action="#{userControlPanelBean.syncFiles}" immediate="true" />
+                </h:form>
+            </td>
+        </tr>
+    </table>
 
-<h:form id="form_id_00">
-	<table>
-		<thead>
-			<tr class="tableheader-row2">
-				<td align="left">Length</td>
-				<td align="left">Last Modified</td>
-				<td align="left">Name</td>
-				<td align="left">Kind</td>
-				<td align="left">Path</td>
-			</tr>
-		</thead>
+    <h:form id="form_id_00">
+        <table>
+            <thead>
+                <tr class="tableheader-row2">
+                    <td align="left">Length</td>
+                    <td align="left">Last Modified</td>
+                    <td align="left">Name</td>
+                    <td align="left">Kind</td>
+                    <td align="left">Path</td>
+                </tr>
+            </thead>
 
-		<c:forEach var="file" items="#{userControlPanelBean.files}"
-			varStatus="pStatus">
+            <c:forEach var="file" items="#{userControlPanelBean.files}"
+                       varStatus="pStatus">
 
-			<tr class="admin-row">
-				<td nowrap="nowrap"><h:outputText
-					value="#{file.fileLength}" converter="fl" /></td>
-				<td nowrap="nowrap"><h:outputText
-					value="#{file.lastModified}" /></td>
-				<td nowrap="nowrap">
-					<h:outputLink value="#{file.url}">#{file.name}</h:outputLink>
-				</td>
-				<td>#{file.kind}</td>
-				<td>#{file.relativePath}</td>
-			</tr>
-		</c:forEach>
-	</table>
-</h:form>
+                <tr class="admin-row">
+                    <td nowrap="nowrap"><h:outputText
+                            value="#{file.fileLength}" converter="fl" /></td>
+                    <td nowrap="nowrap"><h:outputText
+                            value="#{file.lastModified}" /></td>
+                    <td nowrap="nowrap">
+                        <h:outputLink value="#{file.url}">#{file.name}</h:outputLink>
+                    </td>
+                    <td>#{file.kind}</td>
+                    <td>#{file.relativePath}</td>
+                </tr>
+            </c:forEach>
+        </table>
+    </h:form>
 
 </html>

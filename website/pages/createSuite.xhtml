@@ -1,210 +1,205 @@
-<!-- /*
- The Broad Institute
- SOFTWARE COPYRIGHT NOTICE AGREEMENT
- This software and its documentation are copyright (2003-2012) by the
- Broad Institute/Massachusetts Institute of Technology. All rights are
- reserved.
- 
- This software is supplied without any warranty or guaranteed support
- whatsoever. Neither the Broad Institute nor MIT can be responsible for its
- use, misuse, or functionality.
- */ -->
+<!--
+  ~ Copyright 2012 The Broad Institute, Inc.
+  ~ SOFTWARE COPYRIGHT NOTICE
+  ~ This software and its documentation are the copyright of the Broad Institute, Inc. All rights are reserved.
+  ~
+  ~ This software is supplied without any warranty or guaranteed support whatsoever. The Broad Institute is not responsible for its use, misuse, or functionality.
+  -->
 
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xmlns:ui="http://java.sun.com/jsf/facelets" xmlns:h="http://java.sun.com/jsf/html" xmlns:f="http://java.sun.com/jsf/core" xmlns:t="http://myfaces.apache.org/tomahawk" xmlns:c="http://java.sun.com/jsp/jstl/core" xmlns:a4j="https://ajax4jsf.dev.java.net/ajax">
-  <ui:composition template="/templates/common.xhtml">
-    <ui:define name="pageTitle">#{manageSuiteBean.currentSuite == null ? 'Create' : 'Edit'} GenePattern Suite</ui:define>
-    <ui:define name="validationInit">
-    <script type="text/javascript" language="javascript">
-      /* <![CDATA[ */
-      function onLoad()
-      {
-        var objForm = document.forms["form1"];
-        objForm.nameField.required = 1;
-        objForm.nameField.err = "Missing suite name";
-      }
-       /* ]]> */
-    </script>
-  </ui:define>
-    <ui:define name="headText">
-      <script type="text/javascript" src="#{facesContext.externalContext.requestContextPath}/js/collapsiblePanel.js"/>
-    </ui:define>
+    <ui:composition template="/templates/common.xhtml">
+        <ui:define name="pageTitle">#{manageSuiteBean.currentSuite == null ? 'Create' : 'Edit'} GenePattern Suite</ui:define>
+        <ui:define name="validationInit">
+            <script type="text/javascript" language="javascript">
+                /* <![CDATA[ */
+                function onLoad() {
+                    var objForm = document.forms["form1"];
+                    objForm.nameField.required = 1;
+                    objForm.nameField.err = "Missing suite name";
+                }
+                /* ]]> */
+            </script>
+        </ui:define>
+        <ui:define name="headText">
+            <script type="text/javascript" src="#{facesContext.externalContext.requestContextPath}/js/collapsiblePanel.js" />
+        </ui:define>
 
-    <ui:define name="body">
-      <h:form id="form1" enctype="multipart/form-data" onsubmit="return validateForm(this);">
-      	<f:attribute name="lsid" value="#{manageSuiteBean.currentSuite == null ? '' : manageSuiteBean.currentSuite.lsid}"/>
-        <!--  The category list is used upon submit.  -->
-        <t:saveState value="#{createSuiteBean}"/>
-        <t:saveState value="#{manageSuiteBean}"/>
-        <table width="100%" border="0" cellpadding="0" cellspacing="0" class="barhead-other">
-          <tr>
-            <td>#{manageSuiteBean.currentSuite == null ? 'Create' : 'Edit'} GenePattern Suite</td>
-          </tr>
-        </table>
-        <table width="100%" cellpadding="3" cellspacing="0" cols="2">
-          <tr class="taskperameter">
-            <td valign="top" class="attribute-required">Name:*</td>
-            <td>
-              <t:inputText value="#{createSuiteBean.name}" size="40"  id="nameField" forceId="true" requiredMessage="Missing suite name" required="true"/> &#160;
-            </td>
-          </tr>
-          <tr class="taskperameter">
-            <td>Description:</td>
-            <td width="85%">
-              <t:inputTextarea value="#{createSuiteBean.description}" cols="60"/>
-            </td>
-          </tr>
-          <tr class="taskperameter">
-            <td>Author:</td>
-            <td>
-              <h:inputText value="#{createSuiteBean.author}" size="60"/>
-            </td>
-          </tr>
-          <tr class="taskperameter">
-            <td>Privacy:</td>
-            <td>
-              <h:selectOneMenu id="privacySelect" value="#{createSuiteBean.accessId}">
-					<f:selectItems value="#{createSuiteBean.allowedPrivacies}" />
-              </h:selectOneMenu>
-              <h:message for="privacySelect"/>
-            </td>
-          </tr>
+        <ui:define name="body">
+            <h:form id="form1" enctype="multipart/form-data" onsubmit="return validateForm(this);">
+                <f:attribute name="lsid" value="#{manageSuiteBean.currentSuite == null ? '' : manageSuiteBean.currentSuite.lsid}" />
+                <!--  The category list is used upon submit.  -->
+                <t:saveState value="#{createSuiteBean}" />
+                <t:saveState value="#{manageSuiteBean}" />
+                <table width="100%" border="0" cellpadding="0" cellspacing="0" class="barhead-other">
+                    <tr>
+                        <td>#{manageSuiteBean.currentSuite == null ? 'Create' : 'Edit'} GenePattern Suite</td>
+                    </tr>
+                </table>
+                <table width="100%" cellpadding="3" cellspacing="0" cols="2">
+                    <tr class="taskperameter">
+                        <td valign="top" class="attribute-required">Name:*</td>
+                        <td>
+                            <t:inputText value="#{createSuiteBean.name}" size="40" id="nameField" forceId="true" requiredMessage="Missing suite name" required="true" /> &#160;
+                        </td>
+                    </tr>
+                    <tr class="taskperameter">
+                        <td>Description:</td>
+                        <td width="85%">
+                            <t:inputTextarea value="#{createSuiteBean.description}" cols="60" />
+                        </td>
+                    </tr>
+                    <tr class="taskperameter">
+                        <td>Author:</td>
+                        <td>
+                            <h:inputText value="#{createSuiteBean.author}" size="60" />
+                        </td>
+                    </tr>
+                    <tr class="taskperameter">
+                        <td>Privacy:</td>
+                        <td>
+                            <h:selectOneMenu id="privacySelect" value="#{createSuiteBean.accessId}">
+                                <f:selectItems value="#{createSuiteBean.allowedPrivacies}" />
+                            </h:selectOneMenu>
+                            <h:message for="privacySelect" />
+                        </td>
+                    </tr>
 
-          <tr class="taskperameter">
-            <td>Support Files:<br/>
-            </td>
-            <td>
-			  <t:div rendered="#{manageSuiteBean.supportFiles != null}">
-			  		<table width="100%" border="0" cellpadding="0" cellspacing="0">
-			  			<tr>
-            				<td><t:outputText value="Current Support Files: "/></td>
-            				<td>&#160;</td>
-            			</tr>
+                    <tr class="taskperameter">
+                        <td>Support Files:<br />
+                        </td>
+                        <td>
+                            <t:div rendered="#{manageSuiteBean.supportFiles != null}">
+                                <table width="100%" border="0" cellpadding="0" cellspacing="0">
+                                    <tr>
+                                        <td><t:outputText value="Current Support Files: " /></td>
+                                        <td>&#160;</td>
+                                    </tr>
 
-            			<t:dataList var="f" value="#{manageSuiteBean.supportFiles}">
-            			<tr>
-            				<td><t:outputText value="#{f}"/></td>
-            				<td>
-            					<h:commandLink actionListener="#{manageSuiteBean.deleteSupportFile}" 
-										onclick="if (!confirm('Are you sure you want to delete this support file?')) return false">
-                               		<t:outputText value="delete"/>
-                               		<f:param name="supportFileKey" value="#{f}"/>
-                               	</h:commandLink>
-                            </td>
-            			</tr>
-            			</t:dataList>
-            		</table>
-			  </t:div>
-			  <br/>
-              <br/>
+                                    <t:dataList var="f" value="#{manageSuiteBean.supportFiles}">
+                                        <tr>
+                                            <td><t:outputText value="#{f}" /></td>
+                                            <td>
+                                                <h:commandLink actionListener="#{manageSuiteBean.deleteSupportFile}"
+                                                               onclick="if (!confirm('Are you sure you want to delete this support file?')) return false">
+                                                    <t:outputText value="delete" />
+                                                    <f:param name="supportFileKey" value="#{f}" />
+                                                </h:commandLink>
+                                            </td>
+                                        </tr>
+                                    </t:dataList>
+                                </table>
+                            </t:div>
+                            <br />
+                            <br />
 			  <span class="description">Any documentation or data
 					files you wish to bundle with the suite (pdf, doc, data files,
 					etc.) </span>
-              <br/>
-              <br/>
-              <t:inputFileUpload storage="file" size="60" value="#{createSuiteBean.supportFile1}"/>
-              <br/>
-              <t:inputFileUpload storage="file" size="60" value="#{createSuiteBean.supportFile2}"/>
-              <br/>
-              <t:inputFileUpload storage="file" size="60" value="#{createSuiteBean.supportFile3}"/>
-            </td>
-          </tr>
-          <tr class="smalltype">
-            <td>
-              <a  style="cursor: pointer;" onclick="openAll();">open all</a> | <a  style="cursor: pointer;"  onclick="closeAll();">close all</a>
-            </td>
-            <td>&#160;</td>
-          </tr>
-        </table>
-
-        <!-- Module selection -->
-
-        <table width="100%" border="0" cellspacing="0" cellpadding="5">
-          <tr valign="top">
-
-            <!-- Loop through the columns (hardcoded on the backing bean to 2 columns) -->
-            <t:dataList var="col" value="#{createSuiteBean.categoryColumns}">
-              <td width="50%">
-
-                <!--  Loop through the categories -->
-                <t:dataList var="category" value="#{col}">
-                  <div class="pipeline_item">
-
-                    <!-- Category header  Clicking on the header hides or shows the panel contents -->
-                    <!--     The category.expanded property sets the inital hide/show values -->
-                    <table width="100%" border="0" cellpadding="0" cellspacing="0" class="barhead-task">
-                      <tr style="cursor: pointer;" onclick="toggleVisibility('#{category.identifier}');">
-                        <td width="8" >
-                            <img id="#{category.identifier}_expanded_img" src="#{facesContext.externalContext.requestContextPath}/images/arrow-pipelinetask-down.gif"
-                                 width="8" height="8" border="0"
-                                 style="#{category.expanded == true ? 'display:inline;' : 'display:none;'}"/>
-                            <img id="#{category.identifier}_collapsed_img" src="#{facesContext.externalContext.requestContextPath}/images/arrow-pipelinetask-right.gif"
-                                 width="8" height="8" border="0"
-                                 style="#{category.expanded  == true ? 'display:none;' : 'display:inline;'}"/>
+                            <br />
+                            <br />
+                            <t:inputFileUpload storage="file" size="60" value="#{createSuiteBean.supportFile1}" />
+                            <br />
+                            <t:inputFileUpload storage="file" size="60" value="#{createSuiteBean.supportFile2}" />
+                            <br />
+                            <t:inputFileUpload storage="file" size="60" value="#{createSuiteBean.supportFile3}" />
                         </td>
+                    </tr>
+                    <tr class="smalltype">
                         <td>
-                          #{category.name}
+                            <a style="cursor: pointer;" onclick="openAll();">open all</a> | <a style="cursor: pointer;" onclick="closeAll();">close all</a>
                         </td>
-                      </tr>
-                    </table>
+                        <td>&#160;</td>
+                    </tr>
+                </table>
 
-                    <!--  The module list.  The list is conditionally displayed based on the categories "expanded" property -->
-                    <div id="#{category.identifier}_panel" class="category_panel">
-                    <table border="0" cellpadding="3" cellspacing="0" class="attribute" valign="top">
-                      <tbody>
-                        <!--  Header Row -->
-                        <tr class="tableheader-row2">
-                          <td width="30">
-                            <div align="center">
-                              <h:selectBooleanCheckbox value="" onclick="toggleCheckBoxes(this, '#{category.identifier}_panel');"/>
-                            </div>
-                          </td>
-                          <td>module name</td>
-                          <td>&#160;</td>
-                          <td width="60">
-                            <div align="center">version</div>
-                          </td>
-                        </tr>
-                        <!--  Modules -->
-                        <t:dataList var="module" value="#{category.modules}">
-                          <tr class="taskperameter">
-                            <td valign="top">
-                              <div align="center">
-                                <h:selectBooleanCheckbox value="#{module.selected}" />
-                              </div>
+                <!-- Module selection -->
+
+                <table width="100%" border="0" cellspacing="0" cellpadding="5">
+                    <tr valign="top">
+
+                        <!-- Loop through the columns (hardcoded on the backing bean to 2 columns) -->
+                        <t:dataList var="col" value="#{createSuiteBean.categoryColumns}">
+                            <td width="50%">
+
+                                <!--  Loop through the categories -->
+                                <t:dataList var="category" value="#{col}">
+                                    <div class="pipeline_item">
+
+                                        <!-- Category header  Clicking on the header hides or shows the panel contents -->
+                                        <!--     The category.expanded property sets the inital hide/show values -->
+                                        <table width="100%" border="0" cellpadding="0" cellspacing="0" class="barhead-task">
+                                            <tr style="cursor: pointer;" onclick="toggleVisibility('#{category.identifier}');">
+                                                <td width="8">
+                                                    <img id="#{category.identifier}_expanded_img" src="#{facesContext.externalContext.requestContextPath}/images/arrow-pipelinetask-down.gif"
+                                                         width="8" height="8" border="0"
+                                                         style="#{category.expanded == true ? 'display:inline;' : 'display:none;'}" />
+                                                    <img id="#{category.identifier}_collapsed_img" src="#{facesContext.externalContext.requestContextPath}/images/arrow-pipelinetask-right.gif"
+                                                         width="8" height="8" border="0"
+                                                         style="#{category.expanded  == true ? 'display:none;' : 'display:inline;'}" />
+                                                </td>
+                                                <td>
+                                                    #{category.name}
+                                                </td>
+                                            </tr>
+                                        </table>
+
+                                        <!--  The module list.  The list is conditionally displayed based on the categories "expanded" property -->
+                                        <div id="#{category.identifier}_panel" class="category_panel">
+                                            <table border="0" cellpadding="3" cellspacing="0" class="attribute" valign="top">
+                                                <tbody>
+                                                    <!--  Header Row -->
+                                                    <tr class="tableheader-row2">
+                                                        <td width="30">
+                                                            <div align="center">
+                                                                <h:selectBooleanCheckbox value="" onclick="toggleCheckBoxes(this, '#{category.identifier}_panel');" />
+                                                            </div>
+                                                        </td>
+                                                        <td>module name</td>
+                                                        <td>&#160;</td>
+                                                        <td width="60">
+                                                            <div align="center">version</div>
+                                                        </td>
+                                                    </tr>
+                                                    <!--  Modules -->
+                                                    <t:dataList var="module" value="#{category.modules}">
+                                                        <tr class="taskperameter">
+                                                            <td valign="top">
+                                                                <div align="center">
+                                                                    <h:selectBooleanCheckbox value="#{module.selected}" />
+                                                                </div>
+                                                            </td>
+                                                            <td valign="top">
+                                                                #{module.name}
+                                                            </td>
+                                                            <td valign="top">&#160;</td>
+                                                            <td valign="top" class="description">
+                                                                <div align="center">
+                                                                    <t:selectOneMenu value="#{module.selectedVersion}">
+                                                                        <f:selectItems value="#{module.versionSelectItems}" />
+                                                                    </t:selectOneMenu>
+                                                                </div>
+                                                            </td>
+                                                        </tr>
+                                                    </t:dataList>
+                                                    <tr />
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                    <br />
+                                </t:dataList>
                             </td>
-                            <td valign="top">
-                              #{module.name}
-                            </td>
-                            <td valign="top">&#160;</td>
-                            <td valign="top" class="description">
-                              <div align="center">
-                                <t:selectOneMenu value="#{module.selectedVersion}">
-                                  <f:selectItems value="#{module.versionSelectItems}"/>
-                                </t:selectOneMenu>
-                              </div>
-                            </td>
-                          </tr>
                         </t:dataList>
-                        <tr/>
-                      </tbody>
-                    </table>
-                    </div>
-                  </div>
-                  <br/>
-                </t:dataList>
-              </td>
-            </t:dataList>
-          </tr>
-        </table>
-        <div align="center">
-          <br/>
-          <t:graphicImage value="/images/divider-pix1.gif" width="100%" height="2" vspace="5"/>
-          <h:commandButton action="#{createSuiteBean.save}" value="Save"/>
-          &#160;
-          <h:commandButton action="#{createSuiteBean.clear}" value="Clear" immediate="true" type="reset"/>
-        </div>
-      </h:form>
-    </ui:define>
-  </ui:composition>
+                    </tr>
+                </table>
+                <div align="center">
+                    <br />
+                    <t:graphicImage value="/images/divider-pix1.gif" width="100%" height="2" vspace="5" />
+                    <h:commandButton action="#{createSuiteBean.save}" value="Save" />
+                    &#160;
+                    <h:commandButton action="#{createSuiteBean.clear}" value="Clear" immediate="true" type="reset" />
+                </div>
+            </h:form>
+        </ui:define>
+    </ui:composition>
 </html>

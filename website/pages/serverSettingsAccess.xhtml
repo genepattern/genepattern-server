@@ -1,14 +1,10 @@
-<!-- /*
- The Broad Institute
- SOFTWARE COPYRIGHT NOTICE AGREEMENT
- This software and its documentation are copyright (2003-2012) by the
- Broad Institute/Massachusetts Institute of Technology. All rights are
- reserved.
- 
- This software is supplied without any warranty or guaranteed support
- whatsoever. Neither the Broad Institute nor MIT can be responsible for its
- use, misuse, or functionality.
- */ -->
+<!--
+  ~ Copyright 2012 The Broad Institute, Inc.
+  ~ SOFTWARE COPYRIGHT NOTICE
+  ~ This software and its documentation are the copyright of the Broad Institute, Inc. All rights are reserved.
+  ~
+  ~ This software is supplied without any warranty or guaranteed support whatsoever. The Broad Institute is not responsible for its use, misuse, or functionality.
+  -->
 
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
@@ -17,89 +13,89 @@
       xmlns:f="http://java.sun.com/jsf/core"
       xmlns:t="http://myfaces.apache.org/tomahawk"
       xmlns:c="http://java.sun.com/jstl/core">
-<script type="text/javascript" language="javascript">
-	/* <![CDATA[ */
-	  function showControl(v) {
-	  	var specified= document.getElementsByClassName("specified", "root");
+    <script type="text/javascript" language="javascript">
+        /* <![CDATA[ */
+        function showControl(v) {
+            var specified = document.getElementsByClassName("specified", "root");
 
-		for (var i=0; i<specified.length; i++) {
-			specified[i].style.display=(v == "Specified")? '':'none';
-		}
-		var firstOption = pt("selectClientMode").options[0];
-		var resetOptions = ( v=="Specified" && firstOption!= null && (firstOption.value=="Any" || firstOption.value=="Local") );
+            for (var i = 0; i < specified.length; i++) {
+                specified[i].style.display = (v == "Specified") ? '' : 'none';
+            }
+            var firstOption = pt("selectClientMode").options[0];
+            var resetOptions = ( v == "Specified" && firstOption != null && (firstOption.value == "Any" || firstOption.value == "Local") );
 
-		if (resetOptions) {
-			pt("clientMode").value = "";
-			pt("selectClientMode").options[0] = null;
-			pt("save").disabled=true;
-			pt("remove").disabled=true;
-		}else {
-			pt("save").disabled=false;
-		}
-	  }
-	  /* ]]> */
-  </script>
-  <h:form>
-    <table width="100%" border="0" cellpadding="0" cellspacing="0" class="barhead-other">
-      <tr>
-        <td>Access</td>
-      </tr>
-    </table>
-    <p/>
-    <table id="root" width="100%" border="0" cellpadding="5" cellspacing="0">
-      <tr valign="top">
-        <td width="20%">Allow Clients to connect from:</td>
-        <td width="50%">
-	        <h:selectOneRadio value="#{serverSettingsBean.currentClientMode}" layout="pageDirection" onclick="showControl(this.value);">
-	        	<f:selectItem itemValue="Local" itemLabel="Standalone (local connections only)" />
-	  			<f:selectItem itemValue="Any" itemLabel="Any Computer" />
-				<f:selectItem itemValue="Specified" itemLabel="These Domains (comma delimited list):" />
-			</h:selectOneRadio>
-          <br/>
-        </td>
-        <td width="30%"></td>
-      </tr>
-      <tr valign="top" class="specified" style="#{(serverSettingsBean.currentClientMode eq 'Specified') ? 'display:' : 'display:none;'}">
-        <td width="20%">Allowed ip addresses:</td>
-        <td width="55%" >
-          <t:selectOneListbox id="selectClientMode" style="width:50%" size="3" value="#{serverSettingsBean.specifiedClientMode}" onclick="pt(clientMode).value=this.value">
-            <f:attribute name="forceId" value="true"/>
-  			<f:selectItems value="#{serverSettingsBean.specifiedClientModes}" />
-		  </t:selectOneListbox>
-        </td>
-        <td width="25%">
-        By default, localhost is always allowed to access the server even though it's not shown in the list.
-        </td>
-      </tr>
-      <tr valign="top" class="specified" style="#{(serverSettingsBean.currentClientMode eq 'Specified') ? 'display:' : 'display:none;'}">
-        <td width="20%">Enter an ip address:</td>
-        <td width="55%">
-          <t:inputText id="clientMode" style="width:49%" size="40" value="#{serverSettingsBean.specifiedClientMode}" onkeydown="pt(save).disabled=false; pt(remove).disabled=false" >
-            <f:attribute name="forceId" value="true"/>
-          </t:inputText>
-        </td>
-        <td width="25%">
-        </td>
-      </tr>
-      <tr valign="top">
-        <td>&#160;</td>
-        <td>
-          <t:commandButton id="save" value="Save" actionListener="#{serverSettingsBean.addSpecifiedClientMode}" >
-            <f:attribute name="forceId" value="true"/>
-          </t:commandButton>
-          &#160;
-          <h:commandButton value="Restore" actionListener="#{serverSettingsBean.restore}">
-	      	<f:attribute name="subtype" value="Module" />
-	      </h:commandButton>
-	      &#160;
-	      <t:commandButton id="remove" styleClass="specified" value="Remove" actionListener="#{serverSettingsBean.removeSpecifiedClientMode}"
-          	style="#{(serverSettingsBean.currentClientMode eq 'Specified') ? 'display:' : 'display:none;'}" onkeyup="pt(clientMode).value=''" >
-            <f:attribute name="forceId" value="true"/>
-          </t:commandButton>
-        </td>
-      </tr>
+            if (resetOptions) {
+                pt("clientMode").value = "";
+                pt("selectClientMode").options[0] = null;
+                pt("save").disabled = true;
+                pt("remove").disabled = true;
+            } else {
+                pt("save").disabled = false;
+            }
+        }
+        /* ]]> */
+    </script>
+    <h:form>
+        <table width="100%" border="0" cellpadding="0" cellspacing="0" class="barhead-other">
+            <tr>
+                <td>Access</td>
+            </tr>
+        </table>
+        <p />
+        <table id="root" width="100%" border="0" cellpadding="5" cellspacing="0">
+            <tr valign="top">
+                <td width="20%">Allow Clients to connect from:</td>
+                <td width="50%">
+                    <h:selectOneRadio value="#{serverSettingsBean.currentClientMode}" layout="pageDirection" onclick="showControl(this.value);">
+                        <f:selectItem itemValue="Local" itemLabel="Standalone (local connections only)" />
+                        <f:selectItem itemValue="Any" itemLabel="Any Computer" />
+                        <f:selectItem itemValue="Specified" itemLabel="These Domains (comma delimited list):" />
+                    </h:selectOneRadio>
+                    <br />
+                </td>
+                <td width="30%"></td>
+            </tr>
+            <tr valign="top" class="specified" style="#{(serverSettingsBean.currentClientMode eq 'Specified') ? 'display:' : 'display:none;'}">
+                <td width="20%">Allowed ip addresses:</td>
+                <td width="55%">
+                    <t:selectOneListbox id="selectClientMode" style="width:50%" size="3" value="#{serverSettingsBean.specifiedClientMode}" onclick="pt(clientMode).value=this.value">
+                        <f:attribute name="forceId" value="true" />
+                        <f:selectItems value="#{serverSettingsBean.specifiedClientModes}" />
+                    </t:selectOneListbox>
+                </td>
+                <td width="25%">
+                    By default, localhost is always allowed to access the server even though it's not shown in the list.
+                </td>
+            </tr>
+            <tr valign="top" class="specified" style="#{(serverSettingsBean.currentClientMode eq 'Specified') ? 'display:' : 'display:none;'}">
+                <td width="20%">Enter an ip address:</td>
+                <td width="55%">
+                    <t:inputText id="clientMode" style="width:49%" size="40" value="#{serverSettingsBean.specifiedClientMode}" onkeydown="pt(save).disabled=false; pt(remove).disabled=false">
+                        <f:attribute name="forceId" value="true" />
+                    </t:inputText>
+                </td>
+                <td width="25%">
+                </td>
+            </tr>
+            <tr valign="top">
+                <td>&#160;</td>
+                <td>
+                    <t:commandButton id="save" value="Save" actionListener="#{serverSettingsBean.addSpecifiedClientMode}">
+                        <f:attribute name="forceId" value="true" />
+                    </t:commandButton>
+                    &#160;
+                    <h:commandButton value="Restore" actionListener="#{serverSettingsBean.restore}">
+                        <f:attribute name="subtype" value="Module" />
+                    </h:commandButton>
+                    &#160;
+                    <t:commandButton id="remove" styleClass="specified" value="Remove" actionListener="#{serverSettingsBean.removeSpecifiedClientMode}"
+                                     style="#{(serverSettingsBean.currentClientMode eq 'Specified') ? 'display:' : 'display:none;'}" onkeyup="pt(clientMode).value=''">
+                        <f:attribute name="forceId" value="true" />
+                    </t:commandButton>
+                </td>
+            </tr>
 
-    </table>
-    <p/>
-  </h:form>
+        </table>
+        <p />
+    </h:form>
 </html>

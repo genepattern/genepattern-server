@@ -1,127 +1,123 @@
-<!-- /*
- The Broad Institute
- SOFTWARE COPYRIGHT NOTICE AGREEMENT
- This software and its documentation are copyright (2003-2012) by the
- Broad Institute/Massachusetts Institute of Technology. All rights are
- reserved.
- 
- This software is supplied without any warranty or guaranteed support
- whatsoever. Neither the Broad Institute nor MIT can be responsible for its
- use, misuse, or functionality.
- */ -->
+<!--
+  ~ Copyright 2012 The Broad Institute, Inc.
+  ~ SOFTWARE COPYRIGHT NOTICE
+  ~ This software and its documentation are the copyright of the Broad Institute, Inc. All rights are reserved.
+  ~
+  ~ This software is supplied without any warranty or guaranteed support whatsoever. The Broad Institute is not responsible for its use, misuse, or functionality.
+  -->
 
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xmlns:ui="http://java.sun.com/jsf/facelets" xmlns:h="http://java.sun.com/jsf/html" xmlns:f="http://java.sun.com/jsf/core" xmlns:t="http://myfaces.apache.org/tomahawk" xmlns:c="http://java.sun.com/jsp/jstl/core" xmlns:a4j="https://ajax4jsf.dev.java.net/ajax">
-  <ui:composition template="/templates/common.xhtml">
-    <ui:define name="pageTitle">Contact Us</ui:define>
-    <ui:define name="headText">
-      <style>
-      	.infomessages {
-      		font-family: Verdana, Arial, Helvetica, sans-serif;
-      		font-weight: bold;
-			font-size: 12px;
-      		color: #333366;
-      		padding-left: 100px;
-			width: 100%;
-			line-height: 200px;
+    <ui:composition template="/templates/common.xhtml">
+        <ui:define name="pageTitle">Contact Us</ui:define>
+        <ui:define name="headText">
+            <style>
+                .infomessages {
+                    font-family: Verdana, Arial, Helvetica, sans-serif;
+                    font-weight: bold;
+                    font-size: 12px;
+                    color: #333366;
+                    padding-left: 100px;
+                    width: 100%;
+                    line-height: 200px;
 
-      	}
-      </style>
-	  <script language="JavaScript">
-	  function validate() {
-	      var mail = document.getElementById("ct_form:replyTo").value;
-	      var message = document.getElementById("ct_form:message").value;
-	      if (mail == '') {
-		      document.getElementById("ct_form:replyTo").focus();
-		      alert("Please enter your email.");
-		      return false;
-	      }
-	      if (message == '') {
-	          document.getElementById("ct_form:message").focus();
-	          alert("Please enter a message.");
-	          return false;
-	      }
-	      if (-1 == mail.indexOf("@")) {
-	         document.getElementById("ct_form:replyTo").focus();
-	         alert("Your email must have a '@'.");
-	         return false;
-	      }
-	      if (-1 != mail.indexOf(",")) {
-	         document.getElementById("ct_form:replyTo").focus();
-	         alert("Your email must not have a ',' in it");
-	         return false;
-	      }
-	      if (-1 != mail.indexOf("#")) {
-	         document.getElementById("ct_form:replyTo").focus();
-	         alert("Your email must not have an '#' in it." );
-	         return false;
-	      }
-	      if (-1 != mail.indexOf("!")) {
-	         document.getElementById("ct_form:replyTo").focus();
-	         alert("Your email must not have a '!' in it." );
-	         return false;
-	      }
-	      if (-1 != mail.indexOf(" ")) {
-	         document.getElementById("ct_form:replyTo").focus();
-	         alert("Your email must not have a space in it." );
-	         return false;
-	      }
-	      if (mail.length == (mail.indexOf("@")+1) ) {
-	         document.getElementById("ct_form:replyTo").focus();
-	         alert("Your email must have a domain name after the '@'.");
-	         return false;
-	      }
-	      return true;
-	  }
-	  </script>
-    </ui:define>
-    <ui:define name="body">
+                }
+            </style>
+            <script language="JavaScript">
+                function validate() {
+                    var mail = document.getElementById("ct_form:replyTo").value;
+                    var message = document.getElementById("ct_form:message").value;
+                    if (mail == '') {
+                        document.getElementById("ct_form:replyTo").focus();
+                        alert("Please enter your email.");
+                        return false;
+                    }
+                    if (message == '') {
+                        document.getElementById("ct_form:message").focus();
+                        alert("Please enter a message.");
+                        return false;
+                    }
+                    if (-1 == mail.indexOf("@")) {
+                        document.getElementById("ct_form:replyTo").focus();
+                        alert("Your email must have a '@'.");
+                        return false;
+                    }
+                    if (-1 != mail.indexOf(",")) {
+                        document.getElementById("ct_form:replyTo").focus();
+                        alert("Your email must not have a ',' in it");
+                        return false;
+                    }
+                    if (-1 != mail.indexOf("#")) {
+                        document.getElementById("ct_form:replyTo").focus();
+                        alert("Your email must not have an '#' in it.");
+                        return false;
+                    }
+                    if (-1 != mail.indexOf("!")) {
+                        document.getElementById("ct_form:replyTo").focus();
+                        alert("Your email must not have a '!' in it.");
+                        return false;
+                    }
+                    if (-1 != mail.indexOf(" ")) {
+                        document.getElementById("ct_form:replyTo").focus();
+                        alert("Your email must not have a space in it.");
+                        return false;
+                    }
+                    if (mail.length == (mail.indexOf("@") + 1)) {
+                        document.getElementById("ct_form:replyTo").focus();
+                        alert("Your email must have a domain name after the '@'.");
+                        return false;
+                    }
+                    return true;
+                }
+            </script>
+        </ui:define>
+        <ui:define name="body">
 
-		<table width="100%" border="0" cellpadding="0" cellspacing="0" class="barhead-other">
-	      <tr>
-	        <td>Contact Page</td>
-	      </tr>
-	    </table>
-	    <t:div rendered="#{!contactUsBean.sent}">
+            <table width="100%" border="0" cellpadding="0" cellspacing="0" class="barhead-other">
+                <tr>
+                    <td>Contact Page</td>
+                </tr>
+            </table>
+            <t:div rendered="#{!contactUsBean.sent}">
 
-		<p>Enter your email address and message below, we will contact you as soon as possible.</p>
+                <p>Enter your email address and message below, we will contact you as soon as possible.</p>
 
-		<table width="1%" style="margin-left: 80px;">
-			 <h:form id="ct_form">
-			 <tr>
-			     <td>
-			         <table cellspacing="2" cellpadding="1" width="1%">
-			              <tr>
-			                 <td nowrap="true" valign="top">Return Address:</td>
-			                 <td>
-			                    <h:inputText style="width: 250px" id="replyTo" size="40" required="true" requiredMessage="Return address is required"
-			                    value="#{contactUsBean.replyTo}" validator="#{contactUsBean.validateEmail}"/>
-			                 </td>
-			              </tr>
-			              <tr>
-			                 <td nowrap="true" valign="top">Subject:</td>
-			                 <td>
-			                    <h:inputText style="width: 250px" id="subject" size="40" value="#{contactUsBean.subject}"/>
-			                 </td>
-			              </tr>
-			              <tr>
-			                  <td nowrap="true" valign="top">Message:</td>
-			                  <td>
-			                   	<h:inputTextarea style="width: 350px" rows="5" id="message" required="true" requiredMessage="Message is required" value="#{contactUsBean.message}"/>
-			                  </td>
-			              </tr>
-			              <tr>
-			                  <td colspan="2" align="right">
-			                    <h:commandButton value="Send"  action="#{contactUsBean.send}"/>
-			                  </td>
-			              </tr>
-			          </table>
-			      </td>
-			  </tr>
-			  </h:form>
-		</table>
-		</t:div>
-		<h:outputText styleClass="infomessages" size="40" value="#{contactUsBean.infoMessages}" rendered="#{contactUsBean.sent}"/>
-    </ui:define>
-  </ui:composition>
+                <table width="1%" style="margin-left: 80px;">
+                    <h:form id="ct_form">
+                        <tr>
+                            <td>
+                                <table cellspacing="2" cellpadding="1" width="1%">
+                                    <tr>
+                                        <td nowrap="true" valign="top">Return Address:</td>
+                                        <td>
+                                            <h:inputText style="width: 250px" id="replyTo" size="40" required="true" requiredMessage="Return address is required"
+                                                         value="#{contactUsBean.replyTo}" validator="#{contactUsBean.validateEmail}" />
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td nowrap="true" valign="top">Subject:</td>
+                                        <td>
+                                            <h:inputText style="width: 250px" id="subject" size="40" value="#{contactUsBean.subject}" />
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td nowrap="true" valign="top">Message:</td>
+                                        <td>
+                                            <h:inputTextarea style="width: 350px" rows="5" id="message" required="true" requiredMessage="Message is required" value="#{contactUsBean.message}" />
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td colspan="2" align="right">
+                                            <h:commandButton value="Send" action="#{contactUsBean.send}" />
+                                        </td>
+                                    </tr>
+                                </table>
+                            </td>
+                        </tr>
+                    </h:form>
+                </table>
+            </t:div>
+            <h:outputText styleClass="infomessages" size="40" value="#{contactUsBean.infoMessages}" rendered="#{contactUsBean.sent}" />
+        </ui:define>
+    </ui:composition>
 </html>

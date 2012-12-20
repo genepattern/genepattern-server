@@ -1,14 +1,10 @@
-<!-- /*
- The Broad Institute
- SOFTWARE COPYRIGHT NOTICE AGREEMENT
- This software and its documentation are copyright (2003-2012) by the
- Broad Institute/Massachusetts Institute of Technology. All rights are
- reserved.
- 
- This software is supplied without any warranty or guaranteed support
- whatsoever. Neither the Broad Institute nor MIT can be responsible for its
- use, misuse, or functionality.
- */ -->
+<!--
+  ~ Copyright 2012 The Broad Institute, Inc.
+  ~ SOFTWARE COPYRIGHT NOTICE
+  ~ This software and its documentation are the copyright of the Broad Institute, Inc. All rights are reserved.
+  ~
+  ~ This software is supplied without any warranty or guaranteed support whatsoever. The Broad Institute is not responsible for its use, misuse, or functionality.
+  -->
 
 <!DOCTYPE html PUBLIC "-/W3C/DTD XHTML 1.0 Transitional/EN" "http:/www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
@@ -18,168 +14,173 @@
       xmlns:t="http://myfaces.apache.org/tomahawk"
       xmlns:c="http://java.sun.com/jstl/core">
 
-<ui:composition>
-<ui:define name="headText">
+    <ui:composition>
+        <ui:define name="headText">
 
-<script type="text/javascript" language="javascript">	
-/* <![CDATA[ */
-var jobIdToChildJobs = new Object();
+            <script type="text/javascript" language="javascript">
+                /* <![CDATA[ */
+                var jobIdToChildJobs = new Object();
 
-function addChildJob(jobNumber, childJobId) {
-	var rowIds = jobIdToChildJobs[jobNumber];
-	if(rowIds == null) {
-		rowIds = new Array();
-        jobIdToChildJobs[jobNumber] = rowIds;
-	}
-	rowIds[rowIds.length] = childJobId;
-}
+                function addChildJob(jobNumber, childJobId) {
+                    var rowIds = jobIdToChildJobs[jobNumber];
+                    if (rowIds == null) {
+                        rowIds = new Array();
+                        jobIdToChildJobs[jobNumber] = rowIds;
+                    }
+                    rowIds[rowIds.length] = childJobId;
+                }
 
-function toggleJobVisibility(jobNo) {
-	var d = pt(jobNo + "_div");
- 	var downArrow = pt(jobNo + "_expanded_img");
-   	var rightArrow = pt(jobNo + "_collapsed_img");
-   	var style = "none";
-   	if(d.style.display == "inline") {
-		d.style.display = "none";
-      	downArrow.style.display = "none";
-		rightArrow.style.display = "inline";
-		// pt("expansion_state_" + jobNo).value = "false";
-	} else {
-		style = "inline";
-      	d.style.display = "inline";
-      	downArrow.style.display = "inline";
-		rightArrow.style.display = "none";
-		// $("expansion_state_" + jobNo).value = "true";
-	} 
-	
-	var childJobs = jobIdToChildJobs[jobNo];
-	if(childJobs!=null) {
-		for(var i=0; i<childJobs.length; i++) {
-			pt(childJobs[i]).style.display = style;
-		}
-	}
-}
-/* ]]> */
-</script>
-</ui:define>   
+                function toggleJobVisibility(jobNo) {
+                    var d = pt(jobNo + "_div");
+                    var downArrow = pt(jobNo + "_expanded_img");
+                    var rightArrow = pt(jobNo + "_collapsed_img");
+                    var style = "none";
+                    if (d.style.display == "inline") {
+                        d.style.display = "none";
+                        downArrow.style.display = "none";
+                        rightArrow.style.display = "inline";
+                        // pt("expansion_state_" + jobNo).value = "false";
+                    } else {
+                        style = "inline";
+                        d.style.display = "inline";
+                        downArrow.style.display = "inline";
+                        rightArrow.style.display = "none";
+                        // $("expansion_state_" + jobNo).value = "true";
+                    }
 
-<h:form>    
-  <table width="100%" border="0" cellspacing="0" cellpadding="0">
-    <tr>
-      <td height="6" colspan="6">
-        <t:graphicImage value="/images/spacer.gif" width="1" height="6"/>
-      </td>
-    </tr>
-    <h:outputText rendered="#{empty jobsBean.recentJobs}">
-      <tr>
-        <td>No jobs to display</td>
-      </tr>
-    </h:outputText>
+                    var childJobs = jobIdToChildJobs[jobNo];
+                    if (childJobs != null) {
+                        for (var i = 0; i < childJobs.length; i++) {
+                            pt(childJobs[i]).style.display = style;
+                        }
+                    }
+                }
+                /* ]]> */
+            </script>
+        </ui:define>
 
-      <!-- Loop through jobs -->
-      <t:dataList var="job" value="#{jobsBean.recentJobs}" rowIndexVar="jobIndex">
-      	<!--  <input type="hidden" id="expansion_state_#{job.jobNumber}"
-               name="expansion_state_#{job.jobNumber}" value="#{job.expanded}"/>  -->
-        <tr>
-          <td width="0">
-            <img src="#{facesContext.externalContext.requestContextPath}/images/spacer.gif" width="0" height="1"/>
-          </td>
-          <td valign="top" class="recentjobs-sh"></td>
-          <td width="9">
-            <img src="#{facesContext.externalContext.requestContextPath}/images/spacer.gif" width="9" height="1"/>
-          </td>
-          <td align="right" valign="top" style="cursor:pointer;" onclick="toggleJobVisibility('#{job.jobNumber}');">
-        	<t:div rendered="#{job.level == 0}" style="display:inline; cursor:pointer;">
-          		<img id="#{job.jobNumber}_expanded_img"
-                src="#{facesContext.externalContext.requestContextPath}/images/arrow-pipelinetask-down.gif"
-                width="8" height="8" border="0" style="display:inline;"/>
-          		<img id="#{job.jobNumber}_collapsed_img"
-               src="#{facesContext.externalContext.requestContextPath}/images/arrow-pipelinetask-right.gif"
-               width="8" height="8" border="0" style="display:none;"/>
-        	</t:div>
-      	  </td>
-          
-          <td>
+        <h:form>
+            <table width="100%" border="0" cellspacing="0" cellpadding="0">
+                <tr>
+                    <td height="6" colspan="6">
+                        <t:graphicImage value="/images/spacer.gif" width="1" height="6" />
+                    </td>
+                </tr>
+                <h:outputText rendered="#{empty jobsBean.recentJobs}">
+                    <tr>
+                        <td>No jobs to display</td>
+                    </tr>
+                </h:outputText>
+
+                <!-- Loop through jobs -->
+                <t:dataList var="job" value="#{jobsBean.recentJobs}" rowIndexVar="jobIndex">
+                    <!--  <input type="hidden" id="expansion_state_#{job.jobNumber}"
+                 name="expansion_state_#{job.jobNumber}" value="#{job.expanded}"/>  -->
+                    <tr>
+                        <td width="0">
+                            <img src="#{facesContext.externalContext.requestContextPath}/images/spacer.gif" width="0" height="1" />
+                        </td>
+                        <td valign="top" class="recentjobs-sh"></td>
+                        <td width="9">
+                            <img src="#{facesContext.externalContext.requestContextPath}/images/spacer.gif" width="9" height="1" />
+                        </td>
+                        <td align="right" valign="top" style="cursor:pointer;" onclick="toggleJobVisibility('#{job.jobNumber}');">
+                            <t:div rendered="#{job.level == 0}" style="display:inline; cursor:pointer;">
+                                <img id="#{job.jobNumber}_expanded_img"
+                                     src="#{facesContext.externalContext.requestContextPath}/images/arrow-pipelinetask-down.gif"
+                                     width="8" height="8" border="0" style="display:inline;" />
+                                <img id="#{job.jobNumber}_collapsed_img"
+                                     src="#{facesContext.externalContext.requestContextPath}/images/arrow-pipelinetask-right.gif"
+                                     width="8" height="8" border="0" style="display:none;" />
+                            </t:div>
+                        </td>
+
+                        <td>
           	
             <span class="recentjobs-sh yui-skin-sam" style="white-space: nowrap">
             	<h:outputLink value="/gp/jobResults/#{job.jobNumber}">#{job.taskName}</h:outputLink>
             </span>
-            <!-- Image trigger for jobs menu popup -->
-            <img src="/gp/images/smallOptions.gif"
-                 name="Image2_#{job.jobNumber}" border="0" align="top"
-                 id="Image2_#{job.jobNumber}" onclick="pm_showMenu('menuDiv_#{job.jobNumber}', Position.cumulativeOffset(this), 50, 50);"
-                 onmouseover="MM_swapImage('Image2_#{job.jobNumber}','','/gp/images/smallOptions2.gif',1)"
-                 onmouseout="MM_swapImgRestore();"/>
-            <br/>
-			
-			<div id="#{job.jobNumber}_div" style="#{job.expanded ? 'display:inline;' : 'display:none;'}">
-              <h:outputText>( <h:outputLink value="/gp/jobResults/#{job.jobNumber}">#{job.jobNumber}</h:outputLink> )</h:outputText>
-            <h:outputText value="#{job.dateCompleted}" converter="gp" />
-            <br/>
-            <!--  Loop through output files -->
-            <ui:include src="recentJobsFiles.xhtml">
-              <ui:param name="recentJob" value="#{job}"/>
-            </ui:include>
-			</div>
-          </td>
-          <td width="9">
-			<img src="#{facesContext.externalContext.requestContextPath}/images/spacer.gif" width="9" height="1"/>
-          </td>
-        </tr>
+                            <!-- Image trigger for jobs menu popup -->
+                            <img src="/gp/images/smallOptions.gif"
+                                 name="Image2_#{job.jobNumber}" border="0" align="top"
+                                 id="Image2_#{job.jobNumber}" onclick="pm_showMenu('menuDiv_#{job.jobNumber}', Position.cumulativeOffset(this), 50, 50);"
+                                 onmouseover="MM_swapImage('Image2_#{job.jobNumber}','','/gp/images/smallOptions2.gif',1)"
+                                 onmouseout="MM_swapImgRestore();" />
+                            <br />
 
-        <!-- Now loop through all descendant jobs (pipeline).  Descendants do not get there own menu -->
-        <t:dataList var="descendant" value="#{job.descendantJobs}" rowIndexVar="descIndex">
-        <tr>
-          <script type="text/javascript" language="javascript">
- 	           var childJobId = #{job.jobNumber} + "_child_" + #{descendant.jobNumber};
-	           addChildJob(#{job.jobNumber}, "" + childJobId);
-	      </script>
-          <td width="9">
-            <img src="#{facesContext.externalContext.requestContextPath}/images/spacer.gif" width="9" height="1"/>
-          </td>
-          <td valign="top" class="recentjobs-sh">
-          </td>
-          <td valign="top" class="recentjobs-sh">
-          </td>
-          <td width="9">
-            <img src="#{facesContext.externalContext.requestContextPath}/images/spacer.gif" width="9" height="1"/>
-          </td>
-          <td>
-          <div id="#{job.jobNumber}_child_#{descendant.jobNumber}" style="#{job.expanded ? 'display:inline;' : 'display:none;'}">
-            <font class="recentjobs-sh">
-              #{descendant.taskName}</font>
-            <br/>
-            <!--  show output files -->
-            <ui:include src="recentJobsFiles.xhtml">
-             	<ui:param name="recentJob" value="#{descendant}"/>
-            </ui:include>
-          </div>
-          </td>
-        </tr>
-        </t:dataList>
-		
-		 
-        <tr>
-          <td colspan="6">
-            <img src="#{facesContext.externalContext.requestContextPath}/images/divider-pix2.gif" width="100%" height="1" vspace="5"/>
-          </td>
-        </tr>
-      </t:dataList>
-  </table>
-  </h:form>
-  <p>
-    <br/>
-  </p>
-  <p>
-    <br/>
-  </p>
-  <p>&nbsp;</p>
-  <p>
-    <br/>
-  </p>
-  <p>
-    <br/>
-  </p>
+                            <div id="#{job.jobNumber}_div" style="#{job.expanded ? 'display:inline;' : 'display:none;'}">
+                                <h:outputText>( <h:outputLink value="/gp/jobResults/#{job.jobNumber}">#{job.jobNumber}</h:outputLink> )</h:outputText>
+                                <h:outputText value="#{job.dateCompleted}" converter="gp" />
+                                <br />
+                                <!--  Loop through output files -->
+                                <ui:include src="recentJobsFiles.xhtml">
+                                    <ui:param name="recentJob" value="#{job}" />
+                                </ui:include>
+                            </div>
+                        </td>
+                        <td width="9">
+                            <img src="#{facesContext.externalContext.requestContextPath}/images/spacer.gif" width="9" height="1" />
+                        </td>
+                    </tr>
 
-  </ui:composition>
+                    <!-- Now loop through all descendant jobs (pipeline).  Descendants do not get there own menu -->
+                    <t:dataList var="descendant" value="#{job.descendantJobs}" rowIndexVar="descIndex">
+                        <tr>
+                            <script type="text/javascript" language="javascript">
+                                var childJobId = #{job.jobNumber} +"_child_" + #{descendant.jobNumber};
+                                addChildJob(#{job.jobNumber}, "" + childJobId);
+                            </script>
+                            <td width="9">
+                                <img src="#{facesContext.externalContext.requestContextPath}/images/spacer.gif" width="9" height="1" />
+                            </td>
+                            <td valign="top" class="recentjobs-sh">
+                            </td>
+                            <td valign="top" class="recentjobs-sh">
+                            </td>
+                            <td width="9">
+                                <img src="#{facesContext.externalContext.requestContextPath}/images/spacer.gif" width="9" height="1" />
+                            </td>
+                            <td>
+                                <div id="#{job.jobNumber}_child_#{descendant.jobNumber}" style="#{job.expanded ? 'display:inline;' : 'display:none;'}">
+                                    <font class="recentjobs-sh">
+                                        #{descendant.taskName}</font>
+                                    <br />
+                                    <!--  show output files -->
+                                    <ui:include src="recentJobsFiles.xhtml">
+                                        <ui:param name="recentJob" value="#{descendant}" />
+                                    </ui:include>
+                                </div>
+                            </td>
+                        </tr>
+                    </t:dataList>
+
+
+                    <tr>
+                        <td colspan="6">
+                            <img src="#{facesContext.externalContext.requestContextPath}/images/divider-pix2.gif" width="100%" height="1" vspace="5" />
+                        </td>
+                    </tr>
+                </t:dataList>
+            </table>
+        </h:form>
+
+        <p>
+            <br />
+        </p>
+
+        <p>
+            <br />
+        </p>
+
+        <p>&nbsp;</p>
+
+        <p>
+            <br />
+        </p>
+
+        <p>
+            <br />
+        </p>
+
+    </ui:composition>
 </html>

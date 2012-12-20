@@ -1,80 +1,79 @@
-<!-- /*
- The Broad Institute
- SOFTWARE COPYRIGHT NOTICE AGREEMENT
- This software and its documentation are copyright (2003-2012) by the
- Broad Institute/Massachusetts Institute of Technology. All rights are
- reserved.
- 
- This software is supplied without any warranty or guaranteed support
- whatsoever. Neither the Broad Institute nor MIT can be responsible for its
- use, misuse, or functionality.
- */ -->
+<!--
+  ~ Copyright 2012 The Broad Institute, Inc.
+  ~ SOFTWARE COPYRIGHT NOTICE
+  ~ This software and its documentation are the copyright of the Broad Institute, Inc. All rights are reserved.
+  ~
+  ~ This software is supplied without any warranty or guaranteed support whatsoever. The Broad Institute is not responsible for its use, misuse, or functionality.
+  -->
 
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
-	xmlns:ui="http://java.sun.com/jsf/facelets"
-	xmlns:h="http://java.sun.com/jsf/html"
-	xmlns:f="http://java.sun.com/jsf/core"
-	xmlns:t="http://myfaces.apache.org/tomahawk"
-	xmlns:c="http://java.sun.com/jstl/core">
-<head>
-<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1"/>
-<style type="text/css">
-body {
-	font-family: Verdana, Arial, Helvetica, sans-serif;
-	font-size: 11px;
-	line-height: 14px;
-	color: #000000;
-	text-decoration: none;
-	background-color: #FFFFFF;
-}
-a {
-	color: #000099;
-	text-decoration: none;
-}
-a:hover {
-	color: #6666FF;
-	text-decoration:  none;
-}
-a:active {
-	color: #CCCCFF;
-	text-decoration: none;
-}
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:t="http://myfaces.apache.org/tomahawk"
+      xmlns:c="http://java.sun.com/jstl/core">
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
+        <style type="text/css">
+            body {
+                font-family: Verdana, Arial, Helvetica, sans-serif;
+                font-size: 11px;
+                line-height: 14px;
+                color: #000000;
+                text-decoration: none;
+                background-color: #FFFFFF;
+            }
 
-h2 {
-	font-family: Verdana, Arial, Helvetica, sans-serif;
-	color: #333366;
-	font-weight: bold;
-	font-size: 18px;
-	line-height: 20px;
-}
-</style>
-<script type="text/javascript" src="#{facesContext.externalContext.requestContextPath}/js/prototype.js"/>
+            a {
+                color: #000099;
+                text-decoration: none;
+            }
 
-<script type="text/javascript" language="javascript">
-	/* <![CDATA[ */
-      function sendData(){
-		window.opener.addNewFileType(pt('name').value, pt('name').value);
-		window.close();
-	}
-	/* ]]> */
+            a:hover {
+                color: #6666FF;
+                text-decoration: none;
+            }
 
-</script>
-<title>GenePattern | Add New File Type</title>
-</head>
-<body>
+            a:active {
+                color: #CCCCFF;
+                text-decoration: none;
+            }
 
-<h2>Add New File Type</h2>
+            h2 {
+                font-family: Verdana, Arial, Helvetica, sans-serif;
+                color: #333366;
+                font-weight: bold;
+                font-size: 18px;
+                line-height: 20px;
+            }
+        </style>
+        <script type="text/javascript" src="#{facesContext.externalContext.requestContextPath}/js/prototype.js" />
 
-<form name="data" id="data">
-<table>
-	<tr>
-		<td align="right" style="white-space: nowrap;">File Format:</td>
-		<td><input type="text" name="name" id="name" value="" size="10" /></td>
-	</tr>
-</table>
-<center><input type="button" onclick="window.close()" value="Cancel" /><input type="button" onclick="sendData()" value="Add" /></center>
-</form>
+        <script type="text/javascript" language="javascript">
+            /* <![CDATA[ */
+            function sendData() {
+                window.opener.addNewFileType(pt('name').value, pt('name').value);
+                window.close();
+            }
+            /* ]]> */
 
-</body>
+        </script>
+        <title>GenePattern | Add New File Type</title>
+    </head>
+    <body>
+
+        <h2>Add New File Type</h2>
+
+        <form name="data" id="data">
+            <table>
+                <tr>
+                    <td align="right" style="white-space: nowrap;">File Format:</td>
+                    <td><input type="text" name="name" id="name" value="" size="10" /></td>
+                </tr>
+            </table>
+            <center><input type="button" onclick="window.close()" value="Cancel" /><input type="button" onclick="sendData()" value="Add" /></center>
+        </form>
+
+    </body>
 </html>

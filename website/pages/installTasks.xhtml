@@ -1,150 +1,149 @@
-<!-- /*
- The Broad Institute
- SOFTWARE COPYRIGHT NOTICE AGREEMENT
- This software and its documentation are copyright (2003-2012) by the
- Broad Institute/Massachusetts Institute of Technology. All rights are
- reserved.
- 
- This software is supplied without any warranty or guaranteed support
- whatsoever. Neither the Broad Institute nor MIT can be responsible for its
- use, misuse, or functionality.
- */ -->
+<!--
+  ~ Copyright 2012 The Broad Institute, Inc.
+  ~ SOFTWARE COPYRIGHT NOTICE
+  ~ This software and its documentation are the copyright of the Broad Institute, Inc. All rights are reserved.
+  ~
+  ~ This software is supplied without any warranty or guaranteed support whatsoever. The Broad Institute is not responsible for its use, misuse, or functionality.
+  -->
 
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xmlns:ui="http://java.sun.com/jsf/facelets" xmlns:h="http://java.sun.com/jsf/html" xmlns:f="http://java.sun.com/jsf/core" xmlns:t="http://myfaces.apache.org/tomahawk" xmlns:c="http://java.sun.com/jstl/core">
-  <ui:composition template="/templates/common.xhtml">
-    <ui:define name="headText">
-      <script type="text/javascript" src="#{facesContext.externalContext.requestContextPath}/js/prototype.js"/>
-      
-      <script type="text/javascript">
-      
-      /* <![CDATA[ */
-      // Execute a jsf el expression on the server
-      function callManagedBean(elExpression) {            
-        var opt = {
-          method:    'post',
-          postBody:  'el=' + elExpression,
-          onSuccess: receiveResponse,
-          onFailure: function(t) {
-            alert('Error ' + t.status + ' -- ' + t.statusText);
-          }
-        } 
-        new  Ajax.Request('#{facesContext.externalContext.requestContextPath}/anyThingAtAll.ajax',opt);
-      }
+    <ui:composition template="/templates/common.xhtml">
+        <ui:define name="headText">
+            <script type="text/javascript" src="#{facesContext.externalContext.requestContextPath}/js/prototype.js" />
 
-      // The callback function - receive response from server
-      function receiveResponse( req ) {
-        if (req.readyState == 4) {
-          if (req.status == 200) { // only if "OK"
-            update(req.responseText);
-          } 
-          
-        }
-      }
+            <script type="text/javascript">
+
+                /* <![CDATA[ */
+                // Execute a jsf el expression on the server
+                function callManagedBean(elExpression) {
+                    var opt = {
+                        method:'post',
+                        postBody:'el=' + elExpression,
+                        onSuccess:receiveResponse,
+                        onFailure:function (t) {
+                            alert('Error ' + t.status + ' -- ' + t.statusText);
+                        }
+                    }
+                    new Ajax.Request('#{facesContext.externalContext.requestContextPath}/anyThingAtAll.ajax', opt);
+                }
+
+                // The callback function - receive response from server
+                function receiveResponse(req) {
+                    if (req.readyState == 4) {
+                        if (req.status == 200) { // only if "OK"
+                            update(req.responseText);
+                        }
+
+                    }
+                }
 
 
-      var timerID = 0;
-      function startPolling(elExpression, interval) {
-        callManagedBean( elExpression );
-        timerID  = setTimeout("startPolling('" + elExpression + "', " + interval + ")", interval);
-      }
+                var timerID = 0;
+                function startPolling(elExpression, interval) {
+                    callManagedBean(elExpression);
+                    timerID = setTimeout("startPolling('" + elExpression + "', " + interval + ")", interval);
+                }
 
-      function stopPolling() {
-        if(timerID) {
-          clearTimeout(timerID);
-          timerID  = 0;
-        }
-      }
-      
-      /* Update the page from the status objects.  Example jsonString ...
-       * [{"lsid":"urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00030:1","status":true},
-       *  {"lsid":"urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00052:1","status":true},
-       *  {"lsid":"urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00002:1","status":true}]
-       */
-       function update(jsonString)
-       {
-      // new Insertion.Bottom("progress_indicator", ".");
-       
-       var complete = true;
-       var objArray = eval('(' + jsonString + ')');
-	   for(var i=0; i<objArray.length; i++) {
-         var installStatus = objArray[i];
-         var lsid = installStatus.lsid;
-         var cb = pt("cb_" + lsid);
-         
-         if(installStatus.status == "success") {
-           if(cb != null) {
-     			cb.src="#{facesContext.externalContext.requestContextPath}/images/checkbox.gif";
-           }
-         }
-         else if (installStatus.status == "error") {
-           if(cb != null) {
-             	cb.src="#{facesContext.externalContext.requestContextPath}/images/red-x.gif";
-           }
-           var errorDivId = "error_" + lsid;
-           Element.show(errorDivId);
-           Element.update(errorDivId,installStatus.message);
-        }
-        else {
-          // This task is not finished (neither success nor error)
-          complete = false;
-        }
-        var progressId = "progress_" + lsid;
-        if(installStatus.patch != '') {
-        	Element.show(progressId);
-        	Element.update(progressId, installStatus.patch);
-        } else {
-          	Element.hide(progressId);
-        }
-      }
-  
-      if(complete == true) {
-        Element.update("progress_indicator", "&#160;complete")
-        stopPolling();
-        var buttonPane = pt("button_pane");
-        if(buttonPane != null) { 
-  			Element.show(buttonPane);
-        }
-      }
-    }
-		
-/* ]]> */
-</script>
-    </ui:define>
-    <ui:define name="pageTitle">GenePattern | Installing Modules &amp; Pipelines</ui:define>
-    <ui:define name="body">
-      <script type="text/javascript">
-        startPolling("taskInstallBean.installedTaskString", 500);
-      </script>
+                function stopPolling() {
+                    if (timerID) {
+                        clearTimeout(timerID);
+                        timerID = 0;
+                    }
+                }
 
-      <h:form>
-          <h1>Installing Modules &amp; Pipelines<span id="progress_indicator">...</span></h1>
-        
-      
-        <table border="0" cellpadding="5" cellspacing="0">
-          
-          <!--  Loop through tasks (TaskInstallStatus beans) -->
-          <t:dataList var="task" value="#{taskInstallBean.tasks}">
-            <tr>
-              <td valign="top">
-                <b>#{task.name}</b>
-              </td>
-              <td valign="top">
-                <img src="#{facesContext.externalContext.requestContextPath}/images/spacer.gif" width="12" height="12" id="cb_#{task.lsid}"/>
-              </td>
-            </tr>
-            <tr><td valign="top" colspan="2" id="progress_#{task.lsid}" style="display:none"></td></tr>
-            <tr class="taskperameter"><td colspan="2" valign="top" id="error_#{task.lsid}" class="validation-error" style="font-weight:bold;color:red;"></td></tr>
-          </t:dataList>
-        </table>
-        
+                /* Update the page from the status objects.  Example jsonString ...
+                 * [{"lsid":"urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00030:1","status":true},
+                 *  {"lsid":"urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00052:1","status":true},
+                 *  {"lsid":"urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00002:1","status":true}]
+                 */
+                function update(jsonString) {
+                    // new Insertion.Bottom("progress_indicator", ".");
 
-        <div id="button_pane" style="display:none;">
-       	  <br />
-          <br />
-          <t:commandButton value="Done"  action="home"/>&#160;
-        </div>
-      </h:form>
-    </ui:define>
-  </ui:composition>
+                    var complete = true;
+                    var objArray = eval('(' + jsonString + ')');
+                    for (var i = 0; i < objArray.length; i++) {
+                        var installStatus = objArray[i];
+                        var lsid = installStatus.lsid;
+                        var cb = pt("cb_" + lsid);
+
+                        if (installStatus.status == "success") {
+                            if (cb != null) {
+                                cb.src = "#{facesContext.externalContext.requestContextPath}/images/checkbox.gif";
+                            }
+                        }
+                        else if (installStatus.status == "error") {
+                            if (cb != null) {
+                                cb.src = "#{facesContext.externalContext.requestContextPath}/images/red-x.gif";
+                            }
+                            var errorDivId = "error_" + lsid;
+                            Element.show(errorDivId);
+                            Element.update(errorDivId, installStatus.message);
+                        }
+                        else {
+                            // This task is not finished (neither success nor error)
+                            complete = false;
+                        }
+                        var progressId = "progress_" + lsid;
+                        if (installStatus.patch != '') {
+                            Element.show(progressId);
+                            Element.update(progressId, installStatus.patch);
+                        } else {
+                            Element.hide(progressId);
+                        }
+                    }
+
+                    if (complete == true) {
+                        Element.update("progress_indicator", "&#160;complete")
+                        stopPolling();
+                        var buttonPane = pt("button_pane");
+                        if (buttonPane != null) {
+                            Element.show(buttonPane);
+                        }
+                    }
+                }
+
+                /* ]]> */
+            </script>
+        </ui:define>
+        <ui:define name="pageTitle">GenePattern | Installing Modules &amp; Pipelines</ui:define>
+        <ui:define name="body">
+            <script type="text/javascript">
+                startPolling("taskInstallBean.installedTaskString", 500);
+            </script>
+
+            <h:form>
+                <h1>Installing Modules &amp; Pipelines<span id="progress_indicator">...</span></h1>
+
+
+                <table border="0" cellpadding="5" cellspacing="0">
+
+                    <!--  Loop through tasks (TaskInstallStatus beans) -->
+                    <t:dataList var="task" value="#{taskInstallBean.tasks}">
+                        <tr>
+                            <td valign="top">
+                                <b>#{task.name}</b>
+                            </td>
+                            <td valign="top">
+                                <img src="#{facesContext.externalContext.requestContextPath}/images/spacer.gif" width="12" height="12" id="cb_#{task.lsid}" />
+                            </td>
+                        </tr>
+                        <tr>
+                            <td valign="top" colspan="2" id="progress_#{task.lsid}" style="display:none"></td>
+                        </tr>
+                        <tr class="taskperameter">
+                            <td colspan="2" valign="top" id="error_#{task.lsid}" class="validation-error" style="font-weight:bold;color:red;"></td>
+                        </tr>
+                    </t:dataList>
+                </table>
+
+
+                <div id="button_pane" style="display:none;">
+                    <br />
+                    <br />
+                    <t:commandButton value="Done" action="home" />&#160;
+                </div>
+            </h:form>
+        </ui:define>
+    </ui:composition>
 </html>

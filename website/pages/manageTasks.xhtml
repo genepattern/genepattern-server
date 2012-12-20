@@ -1,14 +1,10 @@
 <!--
- The Broad Institute
- SOFTWARE COPYRIGHT NOTICE AGREEMENT
- This software and its documentation are copyright (2003-2012) by the
- Broad Institute/Massachusetts Institute of Technology. All rights are
- reserved.
- 
- This software is supplied without any warranty or guaranteed support
- whatsoever. Neither the Broad Institute nor MIT can be responsible for its
- use, misuse, or functionality.
- -->
+  ~ Copyright 2012 The Broad Institute, Inc.
+  ~ SOFTWARE COPYRIGHT NOTICE
+  ~ This software and its documentation are the copyright of the Broad Institute, Inc. All rights are reserved.
+  ~
+  ~ This software is supplied without any warranty or guaranteed support whatsoever. The Broad Institute is not responsible for its use, misuse, or functionality.
+  -->
 
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
@@ -18,187 +14,179 @@
       xmlns:t="http://myfaces.apache.org/tomahawk"
       xmlns:c="http://java.sun.com/jstl/core">
 
-  <ui:composition template="/templates/common.xhtml">
-    <ui:define name="pageTitle">
-    	GenePattern | Manage Modules and Pipelines
-    </ui:define>
-    <ui:define name="headText">
-      <link href="#{facesContext.externalContext.requestContextPath}/css/style-jobresults.css" rel="stylesheet" type="text/css"/>
-      <script type="text/javascript" src="#{facesContext.externalContext.requestContextPath}/js/jobResults.js"/>
-      <script type="text/javascript" language="javascript">
+    <ui:composition template="/templates/common.xhtml">
+        <ui:define name="pageTitle">
+            GenePattern | Manage Modules and Pipelines
+        </ui:define>
+        <ui:define name="headText">
+            <link href="#{facesContext.externalContext.requestContextPath}/css/style-jobresults.css" rel="stylesheet" type="text/css" />
+            <script type="text/javascript" src="#{facesContext.externalContext.requestContextPath}/js/jobResults.js" />
+            <script type="text/javascript" language="javascript">
 
-/* <![CDATA[ */
-
-
-    // Toggle the version checkboxes for a particular task
-    function toggleChildrenCheckboxes(node, lsidNoVersion)
-    {
-    	var isChecked = node.checked;
-    	var cbIds = checkboxes[lsidNoVersion]
-    	for (var i=0; i<cbIds.length; i++) {
-    		pt(cbIds[i]).checked = isChecked;
-    	}
-    }
-
-    // Toggle all checkboxes.  This should toggle only task row checkboxes,
-    function toggleAllCheckboxes(node)
-    {
-         var isChecked = node.checked;
-         var taskCheckboxes = document.getElementsByName("selectedTasks");
-	     for (var i=0; i<taskCheckboxes.length; i++)
-	     {
-	         var cb = pt(taskCheckboxes[i]);
-	         if(!cb.disabled)
-	         {
-	          	cb.checked = isChecked;
-	         }
-	      }
-
-         var versionCheckboxes = document.getElementsByName("selectedVersions");
-	     for (var i=0; i<versionCheckboxes.length; i++)
-	     {
-	         var cb = pt(versionCheckboxes[i]);
-	         if(!cb.disabled)
-	         {
-	          	cb.checked = isChecked;
-	         }
-	      }
-    }
+                /* <![CDATA[ */
 
 
+                // Toggle the version checkboxes for a particular task
+                function toggleChildrenCheckboxes(node, lsidNoVersion) {
+                    var isChecked = node.checked;
+                    var cbIds = checkboxes[lsidNoVersion]
+                    for (var i = 0; i < cbIds.length; i++) {
+                        pt(cbIds[i]).checked = isChecked;
+                    }
+                }
 
-    var checkboxes = new Object();
-    var allCheckboxes = new Array();
-    function addVersionCheckbox(lsidNoVersion, cbId)
-    {
-      var cbIds = checkboxes[lsidNoVersion];
-      if(cbIds == null) {
-        cbIds = new Array();
-        checkboxes[lsidNoVersion] = cbIds;
-        allCheckboxes[allCheckboxes.length];
-      }
-      cbIds[cbIds.length] = cbId;
-      allCheckboxes[allCheckboxes.length] = cbId;
-    }
+                // Toggle all checkboxes.  This should toggle only task row checkboxes,
+                function toggleAllCheckboxes(node) {
+                    var isChecked = node.checked;
+                    var taskCheckboxes = document.getElementsByName("selectedTasks");
+                    for (var i = 0; i < taskCheckboxes.length; i++) {
+                        var cb = pt(taskCheckboxes[i]);
+                        if (!cb.disabled) {
+                            cb.checked = isChecked;
+                        }
+                    }
+
+                    var versionCheckboxes = document.getElementsByName("selectedVersions");
+                    for (var i = 0; i < versionCheckboxes.length; i++) {
+                        var cb = pt(versionCheckboxes[i]);
+                        if (!cb.disabled) {
+                            cb.checked = isChecked;
+                        }
+                    }
+                }
 
 
-	function confirmDelete() {
-		return confirm('Are you sure you want to delete the selected module(s)?');
+                var checkboxes = new Object();
+                var allCheckboxes = new Array();
+                function addVersionCheckbox(lsidNoVersion, cbId) {
+                    var cbIds = checkboxes[lsidNoVersion];
+                    if (cbIds == null) {
+                        cbIds = new Array();
+                        checkboxes[lsidNoVersion] = cbIds;
+                        allCheckboxes[allCheckboxes.length];
+                    }
+                    cbIds[cbIds.length] = cbId;
+                    allCheckboxes[allCheckboxes.length] = cbId;
+                }
 
-	}
 
-    /* ]]> */
+                function confirmDelete() {
+                    return confirm('Are you sure you want to delete the selected module(s)?');
 
-	</script>
-    </ui:define>
-    <ui:define name="body">
+                }
 
-      <table width="100%" border="0" cellpadding="0" cellspacing="0" class="barhead-other">
-        <tr>
-          <td>Manage Modules &amp; Pipelines</td>
-        </tr>
-      </table>
-      <h:form >
-      <table width="100%" border="0" cellspacing="0" cellpadding="0">
-        <tr>
-          <td valign="top" class="maintasknav" id="maintasknav" align="left" width="100%">
-            <h:selectBooleanCheckbox  value="#{manageTasksBean.showEveryonesModules}" onclick="this.form.submit();"/>show everyone's modules&#160;&#160;&#160;&#160;
-          </td>
-        </tr>
-      </table>
-      <table border="0" cellpadding="0" cellspacing="0" width="100%">
-        <tbody>
-          <tr class="smalltype">
-            <td valign="top" align="center">
-              <h:commandLink value="delete" actionListener="#{manageTasksBean.delete}" onclick="if (!confirmDelete()) return false"/>
-            </td>
-            <td>&#160;</td>
-            <td>&#160;</td>
-            <td>&#160;</td>
-            <td>&#160;</td>
-          </tr>
-          <tr class="tableheader-row">
-            <td align="center"><input name="checkbox" type="checkbox" onclick="toggleAllCheckboxes(this);" />            </td>
-            <td>version&#160;</td>
-            <td>name&#160;</td>
-            <td>owner&#160;</td>
-            <td>used by&#160;</td>
-          </tr>
+                /* ]]> */
 
-          <!--  Loop through tasklist -->
-        
-          <div align="center" id="mainDiv">
-          <t:dataList var="taskGroup" value="#{manageTasksBean.tasks}">
-            <tr valign="top" class="task-title">
-          	  <td>
-		        <!-- Task select checkbox -->
-		        <div align="center" id="main_#{taskGroup.lsidNoVersion}">
-		        	<t:div rendered="#{!taskGroup.allowed}">
-					  	<input type="checkbox" name="selectedTasks" disabled="true" value="#{taskGroup.lsidNoVersion}"
-					  	       onclick="toggleChildrenCheckboxes(this, '#{taskGroup.lsidNoVersion}');"/>
-					</t:div>
-					<t:div rendered="#{taskGroup.allowed}">
-					  	<input type="checkbox" name="selectedTasks" value="#{taskGroup.lsidNoVersion}"
-					  	       onclick="toggleChildrenCheckboxes(this, '#{taskGroup.lsidNoVersion}');"/>
-					</t:div>
+            </script>
+        </ui:define>
+        <ui:define name="body">
 
-		        </div>
-		      </td>
-		      <td>&#160;</td>
-		      <td colspan="3">
-		      	<h:outputText value="#{taskGroup.name}"/>
-		        <br/>
-		        <h:outputText styleClass="smalltype5" value="#{taskGroup.description}"/>
-		      </td>
-		    </tr>
+            <table width="100%" border="0" cellpadding="0" cellspacing="0" class="barhead-other">
+                <tr>
+                    <td>Manage Modules &amp; Pipelines</td>
+                </tr>
+            </table>
+            <h:form>
+                <table width="100%" border="0" cellspacing="0" cellpadding="0">
+                    <tr>
+                        <td valign="top" class="maintasknav" id="maintasknav" align="left" width="100%">
+                            <h:selectBooleanCheckbox value="#{manageTasksBean.showEveryonesModules}" onclick="this.form.submit();" />show everyone's modules&#160;&#160;&#160;&#160;
+                        </td>
+                    </tr>
+                </table>
+                <table border="0" cellpadding="0" cellspacing="0" width="100%">
+                    <tbody>
+                        <tr class="smalltype">
+                            <td valign="top" align="center">
+                                <h:commandLink value="delete" actionListener="#{manageTasksBean.delete}" onclick="if (!confirmDelete()) return false" />
+                            </td>
+                            <td>&#160;</td>
+                            <td>&#160;</td>
+                            <td>&#160;</td>
+                            <td>&#160;</td>
+                        </tr>
+                        <tr class="tableheader-row">
+                            <td align="center"><input name="checkbox" type="checkbox" onclick="toggleAllCheckboxes(this);" /></td>
+                            <td>version&#160;</td>
+                            <td>name&#160;</td>
+                            <td>owner&#160;</td>
+                            <td>used by&#160;</td>
+                        </tr>
 
-		    <t:dataList var="versionInfo" value="#{taskGroup.indexedVersions}" rowIndexVar="index">
-		    	<tr valign="top" class="smalltype5">
-		            <td align="center">
-					  	<div align="center" name="div_#{taskGroup.lsidNoVersion}">
-					  		<t:div rendered="#{!versionInfo.allowed}">
-					  			<input type="checkbox" name="selectedVersions" disabled="true" value="#{versionInfo.lsid}"/>
-					  		</t:div>
-					  		<t:div rendered="#{versionInfo.allowed}">
-		                        <!-- Generate ID for this rows checkbox and append to the checkbox array for the containing task -->
-		                        <script type="text/javascript" language="javascript">
-                                    var cbId = 'cb_#{taskGroup.lsidNoVersion}' + '_#{index}';
-                                    addVersionCheckbox('#{taskGroup.lsidNoVersion}', cbId);
-                                </script>
-					  			<input type="checkbox" name="selectedVersions" value="#{versionInfo.lsid}" id="cb_#{taskGroup.lsidNoVersion}_#{index}"/>
-					  		</t:div>
-				      	</div>
-		            </td>
-		            <td align="left"><h:outputText rendered="#{taskGroup.pipeline}"><a href="#{facesContext.externalContext.requestContextPath}/viewPipeline.jsp?name=#{versionInfo.lsid}">#{versionInfo.version}</a></h:outputText>
-		            <h:outputText rendered="#{!taskGroup.pipeline}"><a href="#{facesContext.externalContext.requestContextPath}/addTask.jsp?name=#{versionInfo.lsid}">#{versionInfo.version}</a></h:outputText>
-		            </td>
-		            <td>
-		            <h:outputText rendered="#{taskGroup.pipeline}"><a href="#{facesContext.externalContext.requestContextPath}/viewPipeline.jsp?name=#{versionInfo.lsid}">#{versionInfo.reason}</a></h:outputText>
-		            <h:outputText rendered="#{!taskGroup.pipeline}"><a href="#{facesContext.externalContext.requestContextPath}/addTask.jsp?name=#{versionInfo.lsid}">#{versionInfo.reason}</a></h:outputText>
-		            </td>
-					<td>#{versionInfo.owner}</td>
-		            <td><t:dataList var="pipelineName" value="#{versionInfo.pipelineNames}">
-		                  #{pipelineName}<br/>
-		                 </t:dataList>
-		            </td>
+                        <!--  Loop through tasklist -->
 
-		        </tr>
-			 </t:dataList>
+                        <div align="center" id="mainDiv">
+                            <t:dataList var="taskGroup" value="#{manageTasksBean.tasks}">
+                                <tr valign="top" class="task-title">
+                                    <td>
+                                        <!-- Task select checkbox -->
+                                        <div align="center" id="main_#{taskGroup.lsidNoVersion}">
+                                            <t:div rendered="#{!taskGroup.allowed}">
+                                                <input type="checkbox" name="selectedTasks" disabled="true" value="#{taskGroup.lsidNoVersion}"
+                                                       onclick="toggleChildrenCheckboxes(this, '#{taskGroup.lsidNoVersion}');" />
+                                            </t:div>
+                                            <t:div rendered="#{taskGroup.allowed}">
+                                                <input type="checkbox" name="selectedTasks" value="#{taskGroup.lsidNoVersion}"
+                                                       onclick="toggleChildrenCheckboxes(this, '#{taskGroup.lsidNoVersion}');" />
+                                            </t:div>
 
-          </t:dataList>
-          </div>
-       
-          <tr>
-            <td class="smalltype" align="center" valign="top">
-              <h:commandLink actionListener="#{manageTasksBean.delete}" onclick="if (!confirmDelete()) return false">delete</h:commandLink>
-			</td>
-            <td>&#160;</td>
-            <td>&#160;</td>
-            <td>&#160;</td>
-          </tr>
-        </tbody>
-      </table>
-      </h:form>
-    </ui:define>
-  </ui:composition>
+                                        </div>
+                                    </td>
+                                    <td>&#160;</td>
+                                    <td colspan="3">
+                                        <h:outputText value="#{taskGroup.name}" />
+                                        <br />
+                                        <h:outputText styleClass="smalltype5" value="#{taskGroup.description}" />
+                                    </td>
+                                </tr>
+
+                                <t:dataList var="versionInfo" value="#{taskGroup.indexedVersions}" rowIndexVar="index">
+                                    <tr valign="top" class="smalltype5">
+                                        <td align="center">
+                                            <div align="center" name="div_#{taskGroup.lsidNoVersion}">
+                                                <t:div rendered="#{!versionInfo.allowed}">
+                                                    <input type="checkbox" name="selectedVersions" disabled="true" value="#{versionInfo.lsid}" />
+                                                </t:div>
+                                                <t:div rendered="#{versionInfo.allowed}">
+                                                    <!-- Generate ID for this rows checkbox and append to the checkbox array for the containing task -->
+                                                    <script type="text/javascript" language="javascript">
+                                                        var cbId = 'cb_#{taskGroup.lsidNoVersion}' + '_#{index}';
+                                                        addVersionCheckbox('#{taskGroup.lsidNoVersion}', cbId);
+                                                    </script>
+                                                    <input type="checkbox" name="selectedVersions" value="#{versionInfo.lsid}" id="cb_#{taskGroup.lsidNoVersion}_#{index}" />
+                                                </t:div>
+                                            </div>
+                                        </td>
+                                        <td align="left"><h:outputText rendered="#{taskGroup.pipeline}"><a href="#{facesContext.externalContext.requestContextPath}/viewPipeline.jsp?name=#{versionInfo.lsid}">#{versionInfo.version}</a></h:outputText>
+                                            <h:outputText rendered="#{!taskGroup.pipeline}"><a href="#{facesContext.externalContext.requestContextPath}/addTask.jsp?name=#{versionInfo.lsid}">#{versionInfo.version}</a></h:outputText>
+                                        </td>
+                                        <td>
+                                            <h:outputText rendered="#{taskGroup.pipeline}"><a href="#{facesContext.externalContext.requestContextPath}/viewPipeline.jsp?name=#{versionInfo.lsid}">#{versionInfo.reason}</a></h:outputText>
+                                            <h:outputText rendered="#{!taskGroup.pipeline}"><a href="#{facesContext.externalContext.requestContextPath}/addTask.jsp?name=#{versionInfo.lsid}">#{versionInfo.reason}</a></h:outputText>
+                                        </td>
+                                        <td>#{versionInfo.owner}</td>
+                                        <td><t:dataList var="pipelineName" value="#{versionInfo.pipelineNames}">
+                                            #{pipelineName}<br />
+                                        </t:dataList>
+                                        </td>
+
+                                    </tr>
+                                </t:dataList>
+
+                            </t:dataList>
+                        </div>
+
+                        <tr>
+                            <td class="smalltype" align="center" valign="top">
+                                <h:commandLink actionListener="#{manageTasksBean.delete}" onclick="if (!confirmDelete()) return false">delete</h:commandLink>
+                            </td>
+                            <td>&#160;</td>
+                            <td>&#160;</td>
+                            <td>&#160;</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </h:form>
+        </ui:define>
+    </ui:composition>
 </html>
