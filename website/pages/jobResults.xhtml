@@ -84,7 +84,7 @@
                 }
 
                 function toggleJobCheckboxes(jobNo) {
-                    var jobCheckboxDiv = pt("cb_job_" + jobNo);
+                    var jobCheckboxDiv = jq("#cb_job_" + jobNo).get(0);
                     var jobCheckbox = jobCheckboxDiv.getElementsByTagName("input")[0];
                     var isChecked = jobCheckbox.checked;
                     var rowIds = fileRows[jobNo];
@@ -105,7 +105,7 @@
                     var isChecked = maincheckbox.checked;
                     for (var i = 0; i < jobNumbers.length; i++) {
                         var jobNo = jobNumbers[i];
-                        var jobCheckboxDiv = pt("cb_job_" + jobNo);
+                        var jobCheckboxDiv = jq("#cb_job_" + jobNo).get(0);
                         var jobCheckbox = jobCheckboxDiv.getElementsByTagName("input")[0];
                         jobCheckbox.checked = isChecked;
                         toggleJobCheckboxes(jobNumbers[i]);
@@ -113,7 +113,7 @@
                 }
 
                 function toggleVisibility(jobNo) {
-                    var hiddenField = pt("expansion_state_" + jobNo);
+                    var hiddenField = jq("#expansion_state_" + jobNo).get(0);
                     if (hiddenField.value == "false") {
                         showCategory(jobNo);
                     }
@@ -123,7 +123,7 @@
                 }
 
                 function hideCategory(jobNo) {
-                    pt("expansion_state_" + jobNo).value = "false";
+                    jq("#expansion_state_" + jobNo).get(0).value = "false";
 
                     var downArrow = document.getElementById(jobNo + "_expanded_img");
                     var rightArrow = document.getElementById(jobNo + "_collapsed_img");
@@ -140,7 +140,7 @@
                 }
 
                 function showCategory(jobNo) {
-                    pt("expansion_state_" + jobNo).value = "true";
+                    jq("#expansion_state_" + jobNo).get(0).value = "true";
 
                     var downArrow = document.getElementById(jobNo + "_expanded_img");
                     var rightArrow = document.getElementById(jobNo + "_collapsed_img");

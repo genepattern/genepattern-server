@@ -133,7 +133,7 @@
                         window.alert('Please select a language');
                         return false;
                     }
-                    var form = pt('taskForm');
+                    var form = jq('#taskForm').get(0);
 
                     var params = 'language=' + language;
                     for (var i = 0; i < form.elements.length; i++) {
@@ -150,11 +150,11 @@
                 // elementId input parameter id.
                 // value value to set field to.
                 function setInputField(elementId, value) {
-                    var urlInput = pt(elementId + "_url");
+                    var urlInput = jq("#" + elementId + "_url").get(0);
                     urlInput.value = value;
                     jq("#" + elementId + "_div_file").hide();
                     jq("#" + elementId + "_div_url").show();
-                    var urlRadio = pt(elementId + '_cb_url');
+                    var urlRadio = jq("#" + elementId + '_cb_url').get(0);
                     urlRadio.checked = true;
                 }
 
@@ -164,7 +164,7 @@
                 }
 
                 function checkBatch(elementId) {
-                    var inputBatch = pt(elementId + "_batch");
+                    var inputBatch = jq("#" + elementId + "_batch").get(0);
                     inputBatch.checked = true;
                 }
 
@@ -177,7 +177,7 @@
                         var elementId = requiredIds[i];
                         var displayName = requiredNames[i];
 
-                        var e = pt(elementId);
+                        var e = jq("#" + elementId).get(0);
 
                         var type = e.type;
                         var value = null;
@@ -186,10 +186,10 @@
                         if (type == "text" || type == "textarea") {
                             value = e.value;
                         } else if (type == 'file') {
-                            urlInput = pt(elementId + "_url");
-                            if (pt(elementId + "_div_multifile") !== null) {
+                            urlInput = jq("#" + elementId + "_url").get(0);
+                            if (jq("#" + elementId + "_div_multifile").length > 0) {
                             	if (jq("#" + elementId + "_div_multifile").is(":visible")) {
-                                    value = pt(elementId + "_multifile").value;
+                                    value = jq("#" + elementId + "_multifile").get(0).value;
                                 }
                             } else if (jq("#" + elementId + "_div_url").is(":visible")) {
                                 value = urlInput.value;
@@ -215,8 +215,8 @@
                         }
                     }
 
-                    var d = pt("errorMessageDiv");
-                    var t = pt("errorMessageContent");
+                    var d = jq("#errorMessageDiv").get(0);
+                    var t = jq("#errorMessageContent").get(0);
                     if (numErrors > 0) {
                         if (numErrors != 1) {
                         	jq("#errorMessageHeader").text("Please provide values for the following parameters:");
