@@ -53,7 +53,7 @@
         <script type="text/javascript" language="javascript">
             /* <![CDATA[ */
             function sendData() {
-                window.opener.addNewFileType(pt('name').value, pt('name').value);
+                window.opener.addNewFileType(jq('#name').val(), jq('#name').val());
                 window.close();
             }
             /* ]]> */

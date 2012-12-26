@@ -31,27 +31,25 @@
                 }
 
                 function toggleJobVisibility(jobNo) {
-                    var d = pt(jobNo + "_div");
-                    var downArrow = pt(jobNo + "_expanded_img");
-                    var rightArrow = pt(jobNo + "_collapsed_img");
+                    var d = jq("#" + jobNo + "_div").get(0);
+                    var downArrow = jq("#" + jobNo + "_expanded_img").get(0);
+                    var rightArrow = jq("#" + jobNo + "_collapsed_img").get(0);
                     var style = "none";
                     if (d.style.display == "inline") {
                         d.style.display = "none";
                         downArrow.style.display = "none";
                         rightArrow.style.display = "inline";
-                        // pt("expansion_state_" + jobNo).value = "false";
                     } else {
                         style = "inline";
                         d.style.display = "inline";
                         downArrow.style.display = "inline";
                         rightArrow.style.display = "none";
-                        // $("expansion_state_" + jobNo).value = "true";
                     }
 
                     var childJobs = jobIdToChildJobs[jobNo];
                     if (childJobs != null) {
                         for (var i = 0; i < childJobs.length; i++) {
-                            pt(childJobs[i]).style.display = style;
+                            jq("#" + childJobs[i]).get(0).style.display = style;
                         }
                     }
                 }
