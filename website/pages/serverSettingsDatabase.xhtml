@@ -20,7 +20,7 @@
         function changeDb(v) {
             var msg = confirm("Do you really want to change to " + v + "?");
             if (msg) {
-                pt("db").value = "Currently, you are using " + v;
+                jq("#db").val("Currently, you are using " + v);
 
                 var hsql = document.getElementsByClassName("hsql", "maintable");
                 var oracle = document.getElementsByClassName("oracle", "maintable");
