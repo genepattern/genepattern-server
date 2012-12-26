@@ -96,9 +96,12 @@ function sendAjaxRequest(elExpression, parameters, callbackFunction, method,
 // The form parameters as a string.
 
 function getFormParameters(formId) {
-	var form = pt(formId);
-	if (form == null) {
+	var form = jq("#" + formId);
+	if (form.length < 1) {
 		alert("Form " + formId + " not found.");
+	}
+	else {
+		form = form.get(0)
 	}
 	var params = "";
 	for ( var i = 0; i < form.elements.length; i++) {
