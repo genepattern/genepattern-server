@@ -78,17 +78,17 @@
                             if (cb != null) {
                                 cb.src = "#{facesContext.externalContext.requestContextPath}/images/red-x.gif";
                             }
-                            var errorDivId = "error_" + lsid;
-                            Element.show(errorDivId);
-                            Element.update(errorDivId, "<p>" + installStatus.message + "</p>");
+                            var errorDivId = "#error_" + lsid;
+							jq(errorDivId).text(installStatus.message);
+							jq(errorDivId).show();
                         }
                         else if (installStatus.status == "warning") {
                             if (cb != null) {
                                 cb.src = "#{facesContext.externalContext.requestContextPath}/images/checkbox.gif";
                             }
-                            var warningDivId = "warning_" + lsid;
-                            Element.show(warningDivId);
-                            Element.update(warningDivId, "<p>" + installStatus.message + "</p>");
+							var warningDivId = "#warning_" + lsid;
+							jq(warningDivId).text(installStatus.message);
+							jq(warningDivId).show();
                         }
                         else {
 
@@ -98,11 +98,11 @@
                     }
 
                     if (complete == true) {
-                        Element.update("progress_indicator", " complete")
+						jq("#progress_indicator").text("&#160;complete");
                         stopPolling();
                         var buttonPane = pt("button_pane");
                         if (buttonPane != null) {
-                            Element.show(buttonPane);
+							jq(buttonPane).show();
                         }
                     }
                 }

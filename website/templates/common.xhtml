@@ -84,7 +84,7 @@
                             messageString += "<li/>" + errMessages[i];
                         }
                         messageString += "</ul>";
-                        Element.update('errorMessageContent', messageString);
+                        jq("#errorMessageContent").text(messageString);
                         return false;
                     }
                 }

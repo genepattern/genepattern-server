@@ -79,29 +79,30 @@
                             if (cb != null) {
                                 cb.src = "#{facesContext.externalContext.requestContextPath}/images/red-x.gif";
                             }
-                            var errorDivId = "error_" + lsid;
-                            Element.show(errorDivId);
-                            Element.update(errorDivId, installStatus.message);
+                            var errorDivId = "#error_" + lsid;
+							jq(errorDivId).text(installStatus.message);
+							jq(errorDivId).show();
                         }
                         else {
                             // This task is not finished (neither success nor error)
                             complete = false;
                         }
-                        var progressId = "progress_" + lsid;
+                        var progressId = "#progress_" + lsid;
                         if (installStatus.patch != '') {
-                            Element.show(progressId);
-                            Element.update(progressId, installStatus.patch);
-                        } else {
-                            Element.hide(progressId);
+							jq(progressId).text(installStatus.patch);
+							jq(progressId).show();
+                        } 
+						else {
+							jq(progressId).hide();
                         }
                     }
 
                     if (complete == true) {
-                        Element.update("progress_indicator", "&#160;complete")
+						jq("#progress_indicator").text("&#160;complete");
                         stopPolling();
                         var buttonPane = pt("button_pane");
                         if (buttonPane != null) {
-                            Element.show(buttonPane);
+							jq(buttonPane).show();
                         }
                     }
                 }

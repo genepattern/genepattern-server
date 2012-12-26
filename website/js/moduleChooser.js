@@ -78,10 +78,10 @@ function chooserModeChanged() {
 			var panelId = "module_table_" + radioButtons[i].value;
 			var panel = document.getElementById(panelId);
 			if (radioButtons[i].checked && panel != null) {
-				Element.show(panel);
+				jq(panel).show();
 				updateChooserMode(radioButtons[i].value);
 			} else {
-				Element.hide(panel);
+				jq(panel).hide();
 			}
 		}
 	}
