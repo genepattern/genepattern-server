@@ -75,8 +75,8 @@
                         return true;
                     }
                     else {
-                        var d = pt("errorMessageDiv");
-                        var t = pt("errorMessageContent");
+                        var d = jq("#errorMessageDiv").get(0);
+                        var t = jq("#errorMessageContent").get(0);
                         d.style.display = "";
 
                         var messageString = "<ul style=\"font-weight:bold; color:red;\">";
