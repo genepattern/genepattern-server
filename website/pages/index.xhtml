@@ -60,15 +60,18 @@
                 }
 
                 function callManagedBean(elExpression, parameters) {
-                    var opt = {
-                        method:'post',
-                        postBody:parameters + '&el=' + elExpression,
-                        onSuccess:receiveResponse,
-                        onFailure:function (t) {
-                            alert('Error ' + t.status + ' -- ' + t.statusText);
-                        }
-                    }
-                    new Ajax.Request('#{facesContext.externalContext.requestContextPath}/anyThingAtAll.ajax', opt);
+                    jq.ajax({
+						type : "POST",
+						url : '#{facesContext.externalContext.requestContextPath}/anyThingAtAll.ajax',
+						data : parameters + '&el=' + elExpression,
+						dataType : "json",
+						success : function(data, textStatus, jqXHR) {
+							receiveResponse(jqXHR);
+						},
+						error : function(data, textStatus, jqXHR) {
+							alert('Error ' + jqXHR.status + ' -- ' + jqXHR.statusText);
+						}
+					});
                 }
 
                 // The callback function - receive response from server
