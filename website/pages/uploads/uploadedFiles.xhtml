@@ -16,50 +16,6 @@
       xmlns:c="http://java.sun.com/jstl/core">
 
     <ui:composition>
-        <ui:define name="headText">
-
-            <script type="text/javascript" language="javascript">
-                /* <![CDATA[ */
-                var jobIdToChildJobs = new Object();
-
-                function addChildJob(jobNumber, childJobId) {
-                    var rowIds = jobIdToChildJobs[jobNumber];
-                    if (rowIds == null) {
-                        rowIds = new Array();
-                        jobIdToChildJobs[jobNumber] = rowIds;
-                    }
-                    rowIds[rowIds.length] = childJobId;
-                }
-
-                function toggleJobVisibility(jobNo) {
-                    var d = pt(jobNo + "_div");
-                    var downArrow = pt(jobNo + "_expanded_img");
-                    var rightArrow = pt(jobNo + "_collapsed_img");
-                    var style = "none";
-                    if (d.style.display == "inline") {
-                        d.style.display = "none";
-                        downArrow.style.display = "none";
-                        rightArrow.style.display = "inline";
-                        // pt("expansion_state_" + jobNo).value = "false";
-                    } else {
-                        style = "inline";
-                        d.style.display = "inline";
-                        downArrow.style.display = "inline";
-                        rightArrow.style.display = "none";
-                        // pt("expansion_state_" + jobNo).value = "true";
-                    }
-
-                    var childJobs = jobIdToChildJobs[jobNo];
-                    if (childJobs != null) {
-                        for (var i = 0; i < childJobs.length; i++) {
-                            pt(childJobs[i]).style.display = style;
-                        }
-                    }
-                }
-                /* ]]> */
-            </script>
-        </ui:define>
-
         <h:form>
             <table width="100%" border="0" cellspacing="0" cellpadding="0">
 
