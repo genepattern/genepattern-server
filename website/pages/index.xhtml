@@ -105,13 +105,13 @@
                 }
 
                 function closeCode() {
-                    Element.hide(pt('codeDiv'));
+                	jq('#codeDiv').hide();
                 }
 
                 function showCode(code) {
                     var txt = new String(code).escapeHTML() + "<br /><br />";
-                    Element.update('codeDiv', txt);
-                    Element.show(pt('codeDiv'));
+                    jq('#codeDiv').html(text);
+                    jq('#codeDiv').show();
 
                 }
 
@@ -152,8 +152,8 @@
                 function setInputField(elementId, value) {
                     var urlInput = pt(elementId + "_url");
                     urlInput.value = value;
-                    Element.hide(pt(elementId + "_div_file"));
-                    Element.show(pt(elementId + "_div_url"));
+                    jq("#" + elementId + "_div_file").hide();
+                    jq("#" + elementId + "_div_url").show();
                     var urlRadio = pt(elementId + '_cb_url');
                     urlRadio.checked = true;
                 }
@@ -188,10 +188,10 @@
                         } else if (type == 'file') {
                             urlInput = pt(elementId + "_url");
                             if (pt(elementId + "_div_multifile") !== null) {
-                                if (Element.visible(pt(elementId + "_div_multifile"))) {
+                            	if (jq("#" + elementId + "_div_multifile").is(":visible")) {
                                     value = pt(elementId + "_multifile").value;
                                 }
-                            } else if (Element.visible(pt(elementId + "_div_url"))) {
+                            } else if (jq("#" + elementId + "_div_url").is(":visible")) {
                                 value = urlInput.value;
                             } else {
                                 value = e.value;
@@ -219,26 +219,26 @@
                     var t = pt("errorMessageContent");
                     if (numErrors > 0) {
                         if (numErrors != 1) {
-                            Element.update('errorMessageHeader', "Please provide values for the following parameters:");
+                        	jq("#errorMessageHeader").text("Please provide values for the following parameters:");
                         } else {
-                            Element.update('errorMessageHeader', "Please provide a value for the following parameter:");
+                        	jq("#errorMessageHeader").text("Please provide a value for the following parameters:");
                         }
                         d.style.display = "block";
                         messageString += "</ul>";
-                        Element.update('errorMessageContent', messageString);
+                        jq("#errorMessageContent").text(messageString);
                     }
                     return numErrors == 0;
                 }
 
 
                 function showUrlInput(id) {
-                    Element.hide(id + "_div_file");
-                    Element.show(id + "_div_url");
+                	jq("#" + id + "_div_file").hide();
+                	jq("#" + id + "_div_url").show();
                 }
 
                 function showFileInput(id) {
-                    Element.show(id + "_div_file");
-                    Element.hide(id + "_div_url");
+                	jq("#" + id + "_div_file").show();
+                	jq("#" + id + "_div_url").hide();
 
                 }
 
