@@ -19,11 +19,11 @@
             <script type="text/javascript" language="javascript">
                 /* <![CDATA[ */
                 function onLoad() {
-                    var e = pt("form1:zipfile");
+                    var e = jq("#form1\\:zipfile").get(0);
                     e.required = 1;
                     e.err = "Missing file";
 
-                    e = pt("url");
+                    e = jq("#url").get(0);
                     e.required = 1;
                     e.err = "Missing URL";
                 }

@@ -68,7 +68,7 @@
                     for (var i = 0; i < objArray.length; i++) {
                         var installStatus = objArray[i];
                         var lsid = installStatus.lsid;
-                        var cb = pt("cb_" + lsid);
+                        var cb = jq("#cb_" + lsid).get(0);
                         if (installStatus.status == "success") {
                             if (cb != null) {
                                 cb.src = "#{facesContext.externalContext.requestContextPath}/images/checkbox.gif";
@@ -100,7 +100,7 @@
                     if (complete == true) {
 						jq("#progress_indicator").text("&#160;complete");
                         stopPolling();
-                        var buttonPane = pt("button_pane");
+                        var buttonPane = jq("#button_pane").get(0);
                         if (buttonPane != null) {
 							jq(buttonPane).show();
                         }
