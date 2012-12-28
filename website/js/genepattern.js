@@ -1,3 +1,8 @@
+// used to make sure that a jquery id selector is escaped properly
+function escapeJquerySelector(str) {
+	return str.replace(/([ #;&,.+*~\':"!^$[\]()=>|\/@])/g,'\\$1');
+}
+
 // toggleCheckBoxes -- used in combination with a "master" checkbox to toggle
 // the state of a collection of child checkboxes.  Assumes the children and parent
 // share a common container parent    

@@ -186,12 +186,12 @@
                         if (type == "text" || type == "textarea") {
                             value = e.value;
                         } else if (type == 'file') {
-                            urlInput = jq("#" + elementId + "_url").get(0);
-                            if (jq("#" + elementId + "_div_multifile").length > 0) {
-                            	if (jq("#" + elementId + "_div_multifile").is(":visible")) {
-                                    value = jq("#" + elementId + "_multifile").get(0).value;
+                            urlInput = jq("#" + escapeJquerySelector(elementId) + "_url").get(0);
+                            if (jq("#" + escapeJquerySelector(elementId) + "_div_multifile").length > 0) {
+                            	if (jq("#" + escapeJquerySelector(elementId) + "_div_multifile").is(":visible")) {
+                                    value = jq("#" + escapeJquerySelector(elementId) + "_multifile").get(0).value;
                                 }
-                            } else if (jq("#" + elementId + "_div_url").is(":visible")) {
+                            } else if (jq("#" + escapeJquerySelector(elementId) + "_div_url").is(":visible")) {
                                 value = urlInput.value;
                             } else {
                                 value = e.value;
@@ -232,13 +232,13 @@
 
 
                 function showUrlInput(id) {
-                	jq("#" + id + "_div_file").hide();
-                	jq("#" + id + "_div_url").show();
+                	jq("#" + escapeJquerySelector(id) + "_div_file").hide();
+                	jq("#" + escapeJquerySelector(id) + "_div_url").show();
                 }
 
                 function showFileInput(id) {
-                	jq("#" + id + "_div_file").show();
-                	jq("#" + id + "_div_url").hide();
+                	jq("#" + escapeJquerySelector(id) + "_div_file").show();
+                	jq("#" + escapeJquerySelector(id) + "_div_url").hide();
 
                 }
 
