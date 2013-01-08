@@ -98,7 +98,7 @@
                     }
 
                     if (complete == true) {
-						jq("#progress_indicator").text("&#160;complete");
+						jq("#progress_indicator").html("&#160;complete");
                         stopPolling();
                         var buttonPane = jq("#button_pane").get(0);
                         if (buttonPane != null) {
