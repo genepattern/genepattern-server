@@ -1,0 +1,173 @@
+/*CSS partially copied from JQuery File upload plugin  */
+.fileinput-button {
+  position: relative;
+  overflow: hidden;
+  float: left;
+  margin-right: 4px;
+  background-color: red;
+}
+.fileinput-button input {
+  position: absolute;
+  top: 0;
+  right: 0;
+  margin: 0;
+  border: solid transparent;
+  border-width: 0 0 100px 200px;
+  opacity: 0;
+  filter: alpha(opacity=0);
+  direction: ltr;
+  cursor: pointer;
+}
+
+/* Fix for IE 6: */
+*html .fileinput-button {
+  line-height: 22px;
+  margin: 1px -3px 0 0;
+}
+
+/* Fix for IE 7: */
+*+html .fileinput-button {
+  margin: 1px 0 0 0;
+}
+
+.btn{
+    display:inline-block;
+    padding:4px 10px 4px;
+    font-size:13px;
+    line-height:18px;
+    color:#333333;
+    text-align:center;
+    background-color:#fafafa;
+    border:1px solid #ccc;
+    border-bottom-color:#bbb;
+    -webkit-border-radius:4px;
+    -moz-border-radius:4px;
+    border-radius:4px;
+    cursor:pointer;
+    *margin-left:.3em;
+	float:left;
+	}
+
+.btn:first-child{*margin-left:0;
+}
+
+.btn:hover{
+	color:#333333;
+	text-decoration:none;
+	background-color:#e6e6e6;
+	background-position:0 -15px;
+	-webkit-transition:background-position 0.1s linear;
+	-moz-transition:background-position 0.1s linear;
+	-ms-transition:background-position 0.1s linear;
+	-o-transition:background-position 0.1s linear;
+	transition:background-position 0.1s linear;}
+
+.btn.active,.btn:active{
+	background-image:none;
+	-webkit-box-shadow:inset 0 2px 4px rgba(0, 0, 0, 0.15),0 1px 2px rgba(0, 0, 0, 0.05);
+	-moz-box-shadow:inset 0 2px 4px rgba(0, 0, 0, 0.15),0 1px 2px rgba(0, 0, 0, 0.05);
+	box-shadow:inset 0 2px 4px rgba(0, 0, 0, 0.15),0 1px 2px rgba(0, 0, 0, 0.05);
+	background-color:#e6e6e6;
+	background-color:#d9d9d9 \9;
+	color:rgba(0, 0, 0, 0.5);
+	outline:0;
+	}
+
+.btn-primary,.btn-primary:hover,.btn-:hover,.btn-success,.btn-success:hover,.btn-info,.btn-info:hover{
+	text-shadow:0 -1px 0 rgba(0, 0, 0, 0.25);
+	color:#ffffff;
+	}
+
+.btn-success{
+	background-color:#7898c7;
+	background-image:-moz-linear-gradient(top, #94acd2, #7898c7);
+	background-image:-ms-linear-gradient(top, #94acd2, #7898c7);
+	background-image:-webkit-gradient(linear, 0 0, 0 100%, from(#94acd2), to(#7898c7));
+	background-image:-webkit-linear-gradient(top, #94acd2, #7898c7);
+	background-image:-o-linear-gradient(top, #94acd2, #7898c7);
+	background-image:linear-gradient(top, #94acd2, #7898c7);
+	background-repeat:repeat-x;
+	filter:progid:DXImageTransform.Microsoft.gradient(startColorstr='#94acd2', endColorstr='#7898c7', GradientType=0);
+	border-color:#7898c7 #7898c7 #a5c3e6;
+	border-color:rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.25);
+	filter:progid:DXImageTransform.Microsoft.gradient(enabled = false);
+	font-size:11px;
+	}
+
+.btn-success:hover,.btn-success:active,.btn-success.active,.btn-success.disabled,.btn-success[disabled]{background-color:#7898c7;
+}
+/* end of css copied from JQuery file upload plugin*/
+
+#paramsTable
+{
+    width: 100%;
+    height: 100%;
+}
+
+.paramDescription
+{
+    /*display: block;  */
+    border-bottom: 1px solid #7898c7;
+}
+
+#paramsTable td
+{
+    padding: 7px;
+}
+
+#paramsTable td:nth-child(odd)
+{
+    white-space: nowrap;    
+}
+
+#paramsTable input
+{
+    width: 150px;
+}
+
+.module_header
+{
+    clear: both;
+	font-weight: bold;
+	font-size: 14px;
+	color: #333366;
+	background-color: #CCCCFF;
+	text-indent: 6px;
+	height: 21px;
+	width: 100%;
+	line-height: 20px;
+	vertical-align: top;
+}
+
+#showDescriptionDiv
+{
+    float: right;
+}
+
+.submitControlsDiv
+{
+    float: right;
+}
+
+.paramDescription
+{
+    white-space: normal;       
+}
+
+.hidden
+{
+    clear: both;
+    display: none;
+}
+
+.dNd
+{
+    border: 2px solid #DDD;
+    -moz-border-radius: 8px;
+    -webkit-border-radius: 8px;
+}
+
+.highlight
+{
+    background-color: #cddcf1;
+}
