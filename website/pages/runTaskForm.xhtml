@@ -69,7 +69,11 @@
                     <span class="barhead-version">version #{runTaskBean.version} &#160;</span>
                     <!-- Version menu popup icon.  Conditionally render -->
                     <h:outputText rendered="#{!empty runTaskBean.versions}">
-                        <img src="#{facesContext.externalContext.requestContextPath}/images/smallOptions.gif" name="Image_versionPopupMenu" id="Image_versionPopupMenu" border="0" valign="middle" onclick="pm_showMenu('versionPopupMenu', Position.cumulativeOffset(this), 20, 0);" onmouseover="MM_swapImage('Image_versionPopupMenu','','#{facesContext.externalContext.requestContextPath}/images/smallOptions2.gif',2)" onmouseout="MM_swapImgRestore();" />
+                        <img src="#{facesContext.externalContext.requestContextPath}/images/smallOptions.gif" 
+                        	name="Image_versionPopupMenu" id="Image_versionPopupMenu" border="0" valign="middle" 
+                        	onmouseover="MM_swapImage('Image_versionPopupMenu','','#{facesContext.externalContext.requestContextPath}/images/smallOptions2.gif',2)" 
+                        	onmouseout="MM_swapImgRestore();" />
+                        <script type="text/javascript" language="javascript">menuRegistry._create("#Image_versionPopupMenu", "#versionPopupMenu");</script>
                         <br />
                     </h:outputText>
                 </td>

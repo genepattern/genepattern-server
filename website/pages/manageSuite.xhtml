@@ -91,9 +91,10 @@
                                 </h:commandLink>
                                 <img src="#{facesContext.externalContext.requestContextPath}/images/smallOptions.gif"
                                      name="Image_#{suiteInfo.lsid}" id="Image_#{suiteInfo.lsid}"
-                                     border="0" align="top" onclick="pm_showMenu('menuDiv_#{suiteInfo.lsid}', Position.cumulativeOffset(this), 20, 20);"
+                                     border="0" align="top"
                                      onmouseover="MM_swapImage('Image_#{suiteInfo.lsid}','','#{facesContext.externalContext.requestContextPath}/images/smallOptions2.gif',2)"
                                      onmouseout="MM_swapImgRestore();" />
+								<script type="text/javascript" language="javascript">menuRegistry._create("#Image_#{suiteInfo.lsid}", "#menuDiv_#{suiteInfo.lsid}");</script>
                             </td>
                             <td>
                                 <h:outputText value="#{suiteInfo.author}" />&#160;

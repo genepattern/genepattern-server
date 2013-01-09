@@ -29,9 +29,10 @@
                             <t:outputText value="#{manageSuiteBean.currentSuite.name}" id="nameField" forceId="true" />
                             <img src="#{facesContext.externalContext.requestContextPath}/images/smallOptions.gif"
                                  name="Image_#{manageSuiteBean.currentSuite.lsid}" id="Image_#{manageSuiteBean.currentSuite.lsid}"
-                                 border="0" align="top" onclick="pm_showMenu('menuDiv_#{manageSuiteBean.currentSuite.lsid}', Position.cumulativeOffset(this), -20, 0);"
+                                 border="0" align="top"
                                  onmouseover="MM_swapImage('Image_#{manageSuiteBean.currentSuite.lsid}','','#{facesContext.externalContext.requestContextPath}/images/smallOptions2.gif',2)"
                                  onmouseout="MM_swapImgRestore();" />
+							<script type="text/javascript" language="javascript">menuRegistry._create("#Image_#{manageSuiteBean.currentSuite.lsid}", "#menuDiv_#{manageSuiteBean.currentSuite.lsid}");</script>
                         </td>
                     </tr>
                     <tr class="taskperameter">
