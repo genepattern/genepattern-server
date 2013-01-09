@@ -419,11 +419,13 @@
                             <ui:include src="genomespace/fileMenu.xhtml">
                                 <ui:param name="file" value="#{file}" />
                             </ui:include>
+                            <script type="text/javascript" language="javascript">menuRegistry._create("#Image_#{file.formattedId}", "#menuDiv_#{file.formattedId}");</script>
                         </t:dataList>
                         <t:dataList var="file" value="#{genomeSpaceBean.allDirectories}" rowIndexVar="fileIndex">
                             <ui:include src="genomespace/fileMenu.xhtml">
                                 <ui:param name="file" value="#{file}" />
                             </ui:include>
+                            <script type="text/javascript" language="javascript">menuRegistry._create("#Image_#{file.formattedId}", "#menuDiv_#{file.formattedId}");</script>
                         </t:dataList>
                     </h:outputText>
                 </t:div>
