@@ -1,0 +1,41 @@
+<!DOCTYPE html
+        PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+
+    <title>Run Task</title>
+
+    <link  type="text/css" rel="stylesheet" media="screen" href="#{facesContext.externalContext.requestContextPath}/modules/styles/jquery.multiselect.css" />
+    <link  type="text/css" rel="stylesheet" media="screen" href="#{facesContext.externalContext.requestContextPath}/css/runtaskform.css" />
+    <link  type="text/css" rel="stylesheet" media="screen" href="#{facesContext.externalContext.requestContextPath}/modules/styles/themes/base/jquery.ui.all.css" />
+
+    <script type="text/javascript" src="#{facesContext.externalContext.requestContextPath}/js/jquery/jquery-1.7.1.js"></script>
+    <script type="text/javascript" src="#{facesContext.externalContext.requestContextPath}/js/jquery/jquery-ui-1.8.16.js"></script>
+    <script type="text/javascript" src="#{facesContext.externalContext.requestContextPath}/js/runtaskform.js"></script>
+    <script type="text/javascript" src="#{facesContext.externalContext.requestContextPath}/js/jquery/jquery.multiselect.js"></script>
+
+</head>
+<body>
+    <div id="showDescriptionDiv">
+        <input name="toggleDesc" id="toggleDesc" type="checkbox" checked="checked" />
+        <label for="toggleDesc">
+            Show parameter descriptions
+        </label>
+    </div>
+    <div class="module_header" id="taskHeaderDiv"/>
+    <div>
+        * required field
+        <div class="submitControlsDiv">
+            <button class="Reset"> Reset </button>
+            <button class="Run"> Run </button>
+        </div>    
+    </div>
+
+    <div id="paramsListingDiv"/>
+    <div class="submitControlsDiv">
+        <button class="Reset"> Reset </button>
+        <button class="Run"> Run </button>
+    </div>
+</body>
+</html>
