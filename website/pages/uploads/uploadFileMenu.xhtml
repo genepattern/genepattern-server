@@ -8,7 +8,7 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xmlns:ui="http://java.sun.com/jsf/facelets" xmlns:h="http://java.sun.com/jsf/html" xmlns:f="http://java.sun.com/jsf/core" xmlns:t="http://myfaces.apache.org/tomahawk" xmlns:c="http://java.sun.com/jstl/core">
     <ui:composition>
-        <div id="menuDiv_#{aFile.encodedPath}" style="visibility:hidden;" class="popupMenu">
+        <div id="menuDiv_#{aFile.encodedPath}" style="display:none;" class="popupMenu">
             <table>
                 <tbody>
                     <tr>
@@ -46,7 +46,7 @@
                         </tr>
                         <tr>
                             <td>
-                                <t:inputText id="subdirName" rendered="#{aFile.directory}" onfocus="JavaScript:setSubdirFocus()" />
+                                <t:inputText id="subdirName" rendered="#{aFile.directory}" styleClass="subdirName" />
                                 <h:commandLink value="Create" action="#{uploadFilesBean.createSubdirectory}" immediate="true">
                                     <f:param name="parentPath" value="#{aFile.file.relativePath}" />
                                 </h:commandLink>

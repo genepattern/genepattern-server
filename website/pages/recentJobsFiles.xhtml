@@ -29,9 +29,9 @@
                  name="Image_#{p.valueId}"
                  id="Image_#{p.valueId}"
                  border="0" align="top"
-                 onclick="pm_showMenu('menuDiv_#{p.valueId}', Position.cumulativeOffset(this), 50, 50);"
                  onmouseover="MM_swapImage('Image_#{p.valueId}','','/gp/images/smallOptions2.gif',2)"
                  onmouseout="MM_swapImgRestore();" />
+			<script type="text/javascript" language="javascript">menuRegistry._create("#Image_#{p.valueId}", "#menuDiv_#{p.valueId}");</script>
             <br />
         </t:dataList>
         <!--  Loop through output files -->
@@ -43,9 +43,9 @@
                  name="Image_#{p.valueId}"
                  id="Image_#{p.valueId}"
                  border="0" align="top"
-                 onclick="pm_showMenu('menuDiv_#{p.valueId}', Position.cumulativeOffset(this), 50, 50);"
                  onmouseover="MM_swapImage('Image_#{p.valueId}','','/gp/images/smallOptions2.gif',2)"
                  onmouseout="MM_swapImgRestore();" />
+			<script type="text/javascript" language="javascript">menuRegistry._create("#Image_#{p.valueId}", "#menuDiv_#{p.valueId}");</script>
             <br />
         </t:dataList>
     </ui:composition>

@@ -34,9 +34,9 @@
 
                                 <!-- Image for popup menu -->
                                 <img src="/gp/images/smallOptions.gif" id="Image_#{aFile.encodedPath}" name="Image_#{aFile.encodedPath}"
-                                     onclick="pm_showMenu('menuDiv_#{aFile.encodedPath}', Position.cumulativeOffset(this), 50, 50);"
                                      onmouseover="MM_swapImage('Image_#{aFile.encodedPath}','','/gp/images/smallOptions2.gif',2)"
                                      onmouseout="MM_swapImgRestore(); " />
+                                <script type="text/javascript" language="javascript">menuRegistry._create("#Image_#{aFile.encodedPath}", "#menuDiv_#{aFile.encodedPath}");</script>
                                 <br />
                                 <h:outputText>#{aFile.formattedModified}; #{aFile.formattedLength}</h:outputText>
 
@@ -46,11 +46,10 @@
                                 <h:outputLink value="#{aFile.url}" onclick="JavaScript:return false;">#{aFile.filename}</h:outputLink>
 
                                 <!-- Image for popup menu -->
-                                <t:graphicImage value="/images/smallOptions.gif"
-                                                name="Image_#{aFile.encodedPath}"
-                                                onclick="pm_showMenu('menuDiv_#{aFile.encodedPath}', Position.cumulativeOffset(this), 50, 50);"
-                                                onmouseover="MM_swapImage('Image_#{aFile.encodedPath}','','/gp/images/smallOptions2.gif',2)"
-                                                onmouseout="MM_swapImgRestore();" />
+                                <img src="/gp/images/smallOptions.gif" id="Image_#{aFile.encodedPath}" name="Image_#{aFile.encodedPath}"
+                                     onmouseover="MM_swapImage('Image_#{aFile.encodedPath}','','/gp/images/smallOptions2.gif',2)"
+                                     onmouseout="MM_swapImgRestore(); " />
+                                <script type="text/javascript" language="javascript">menuRegistry._create("#Image_#{aFile.encodedPath}", "#menuDiv_#{aFile.encodedPath}");</script>
                                 <br />
                                 <h:outputText>#{aFile.formattedModified}</h:outputText>
                                 <br />

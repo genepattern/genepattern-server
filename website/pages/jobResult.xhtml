@@ -273,13 +273,14 @@
                                    id="jobTable#{jobStatusBean.jobInfo.jobNumber}">
                                 <tr>
                                     <td class="title">#{jobStatusBean.jobInfo.jobNumber}.
-                                        #{jobStatusBean.jobInfo.truncatedTaskName} <img
-                                                src="/gp/images/smallOptions.gif"
+                                        #{jobStatusBean.jobInfo.truncatedTaskName}
+                                        <img src="/gp/images/smallOptions.gif"
                                                 name="Image2_#{jobStatusBean.jobInfo.jobNumber}" border="0"
                                                 align="top" id="Image2_#{jobStatusBean.jobInfo.jobNumber}"
-                                                onclick="pm_showMenu('menuDiv_#{jobStatusBean.jobInfo.jobNumber}', Position.cumulativeOffset(this), 50, 50);"
                                                 onmouseover="MM_swapImage('Image2_#{jobStatusBean.jobInfo.jobNumber}','','/gp/images/smallOptions2.gif',1)"
-                                                onmouseout="MM_swapImgRestore();" /></td>
+                                                onmouseout="MM_swapImgRestore();" />
+                                        <script type="text/javascript" language="javascript">menuRegistry._create("#Image2_#{jobStatusBean.jobInfo.jobNumber}", "#menuDiv_#{jobStatusBean.jobInfo.jobNumber}");</script>
+                                    </td>
                                     <td><h:outputText
                                             rendered="#{not empty jobStatusBean.jobInfo.inputParameters}">
                                         <div class="icon2">

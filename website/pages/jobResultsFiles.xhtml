@@ -71,9 +71,11 @@
                     <img src="/gp/images/smallOptions.gif"
                          name="Image_#{fileInfo.valueId}" id="Image_#{fileInfo.valueId}"
                          border="0" align="top"
-                         onclick="pm_showMenu('menuDiv_#{fileInfo.valueId}', Position.cumulativeOffset(this), 50, 50);"
                          onmouseover="MM_swapImage('Image_#{fileInfo.valueId}','','/gp/images/smallOptions2.gif',2)"
                          onmouseout="MM_swapImgRestore();" />
+					<script type="text/javascript" language="javascript">
+                    	setTimeout(function() { menuRegistry._create("#Image_#{fileInfo.valueId}", "#menuDiv_#{fileInfo.valueId}"); }, 1000);
+                    </script>
                 </td>
 
                 <td class="right"></td>
@@ -124,9 +126,11 @@
                     <img src="/gp/images/smallOptions.gif"
                          name="Image_#{fileInfo.valueId}" id="Image_#{fileInfo.valueId}"
                          border="0" align="top"
-                         onclick="pm_showMenu('menuDiv_#{fileInfo.valueId}', Position.cumulativeOffset(this), 50, 50);"
                          onmouseover="MM_swapImage('Image_#{fileInfo.valueId}','','/gp/images/smallOptions2.gif',2)"
                          onmouseout="MM_swapImgRestore();" />
+					<script type="text/javascript" language="javascript">
+                    	setTimeout(function() { menuRegistry._create("#Image_#{fileInfo.valueId}", "#menuDiv_#{fileInfo.valueId}"); }, 1000);
+                    </script>
                 </td>
 
                 <td class="right">#{fileInfo.formattedSize}</td>

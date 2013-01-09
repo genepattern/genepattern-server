@@ -234,13 +234,7 @@
 
 
                     <div class="reminders">
-                        <!--
-                <font color="#FF0000">*</font>Click<span class="file"><img src="/gp/images/smallOptions.gif" alt="" /></span> for more options.
-                <font color="#FF0000">*</font>Click <font color="#0066ff">job ID</font> for job status report.
-                <font color="#FF0000">*</font>Click <font color="#0066ff">file name</font> to open the file in a new browser window.
-                <font color="#FF0000">*</font>Click <font color="#0066ff">Edit</font> to edit Share options.
-                <font color="#FF0000">*</font>Click <img src="/gp/images/delete.gif" /> to delete selected jobs.
-              -->
+
                     </div>
 
                     <table class="summary" cellpadding="0" cellspacing="0" id="jobTable">
@@ -392,9 +386,11 @@
 		        		
 			        		<img src="/gp/images/smallOptions.gif"
                                  name="Image2_#{rootJobWrapper.jobNumber}" border="0" align="top" id="Image2_#{rootJobWrapper.jobNumber}"
-                                 onclick="menuClick(#{rootJobWrapper.jobNumber},'Image2_#{rootJobWrapper.jobNumber}')"
                                  onmouseover="MM_swapImage('Image2_#{rootJobWrapper.jobNumber}','','/gp/images/smallOptions2.gif',1)"
                                  onmouseout="MM_swapImgRestore();" />
+                             <script type="text/javascript" language="javascript">
+                                 setTimeout(function() { menuRegistry._create("#Image2_#{rootJobWrapper.jobNumber}", "#menuDiv_#{rootJobWrapper.jobNumber}"); }, 1000);
+                             </script>
 
 		        	</span>
                                 </td>

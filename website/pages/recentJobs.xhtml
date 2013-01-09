@@ -101,9 +101,10 @@
                             <!-- Image trigger for jobs menu popup -->
                             <img src="/gp/images/smallOptions.gif"
                                  name="Image2_#{job.jobNumber}" border="0" align="top"
-                                 id="Image2_#{job.jobNumber}" onclick="pm_showMenu('menuDiv_#{job.jobNumber}', Position.cumulativeOffset(this), 50, 50);"
+                                 id="Image2_#{job.jobNumber}"
                                  onmouseover="MM_swapImage('Image2_#{job.jobNumber}','','/gp/images/smallOptions2.gif',1)"
                                  onmouseout="MM_swapImgRestore();" />
+                            <script type="text/javascript" language="javascript">menuRegistry._create("#Image2_#{job.jobNumber}", "#menuDiv_#{job.jobNumber}");</script>
                             <br />
 
                             <div id="#{job.jobNumber}_div" style="#{job.expanded ? 'display:inline;' : 'display:none;'}">
