@@ -63,7 +63,7 @@
                             <t:dataList value="#{genomeSpaceBean.kindToTools[format]}" var="tool">
                                 <tr>
                                     <td>
-                                        <img src="/gp/pages/genomespace/genomespace_icon.gif" height="14px" width="14px" border="0" style="vertical-align:middle" />&#160;
+                                        <!-- <img src="/gp/pages/genomespace/genomespace_icon.gif" height="14px" width="14px" border="0" style="vertical-align:middle" />&#160; -->
                                         <h:commandLink value="Send to #{tool} as #{format}" action="#{genomeSpaceBean.forwardToTool}" immediate="true">
                                             <f:param value="${file.url}" name="file" />
                                             <f:param value="#{tool}" name="tool" />
