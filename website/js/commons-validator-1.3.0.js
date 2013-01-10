@@ -30,27 +30,30 @@ function validateMask(form) {
 	var focusField = null;
 	var i = 0;
 	var fields = new Array();
+	
+	// Check for existing form function
+	if (typeof jcv_retrieveFormName(form) + "_mask" === "function") {
+		var oMasked = eval('new ' + jcv_retrieveFormName(form) + '_mask()');
+		for ( var x in oMasked) {
+			if (!jcv_verifyArrayElement(x, oMasked[x])) {
+				continue;
+			}
+			var field = form[oMasked[x][0]];
+			if (!jcv_isFieldPresent(field)) {
+				continue;
+			}
 
-	var oMasked = eval('new ' + jcv_retrieveFormName(form) + '_mask()');
-	for ( var x in oMasked) {
-		if (!jcv_verifyArrayElement(x, oMasked[x])) {
-			continue;
-		}
-		var field = form[oMasked[x][0]];
-		if (!jcv_isFieldPresent(field)) {
-			continue;
-		}
+			if ((field.type == 'hidden' || field.type == 'text'
+					|| field.type == 'textarea' || field.type == 'file')
+					&& (field.value.length > 0)) {
 
-		if ((field.type == 'hidden' || field.type == 'text'
-				|| field.type == 'textarea' || field.type == 'file')
-				&& (field.value.length > 0)) {
-
-			if (!jcv_matchPattern(field.value, oMasked[x][2]("mask"))) {
-				if (i == 0) {
-					focusField = field;
+				if (!jcv_matchPattern(field.value, oMasked[x][2]("mask"))) {
+					if (i == 0) {
+						focusField = field;
+					}
+					fields[i++] = oMasked[x][1];
+					isValid = false;
 				}
-				fields[i++] = oMasked[x][1];
-				isValid = false;
 			}
 		}
 	}
