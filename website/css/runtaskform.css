@@ -78,7 +78,8 @@
 	color:#ffffff;
 	}
 
-.btn-success{
+.btn-success
+{
 	background-color:#7898c7;
 	background-image:-moz-linear-gradient(top, #94acd2, #7898c7);
 	background-image:-ms-linear-gradient(top, #94acd2, #7898c7);
@@ -92,7 +93,7 @@
 	border-color:rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.25);
 	filter:progid:DXImageTransform.Microsoft.gradient(enabled = false);
 	font-size:11px;
-	}
+}
 
 .btn-success:hover,.btn-success:active,.btn-success.active,.btn-success.disabled,.btn-success[disabled]{background-color:#7898c7;
 }
@@ -170,4 +171,31 @@
 .highlight
 {
     background-color: #cddcf1;
+}
+
+.paramFilesTable
+{
+    text-align:left;
+    width: 100%;
+    border: 2px solid #DDD;
+}
+
+table.paramFilesTable tr:nth-child(odd)
+{
+    background-color: #eee;
+}
+
+table.paramFilesTable th
+{
+    background-color: #999999;
+}
+
+button.urlEntry
+{
+    font-size: 11px;
+}
+
+.urlInput
+{
+    width: 300px;
 }
