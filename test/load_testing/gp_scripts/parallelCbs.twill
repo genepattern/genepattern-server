@@ -1,0 +1,12 @@
+#
+# Run ParallelCBS pipeline, using a server file path
+# Note: this works when connected to the gpbeta server
+#
+runfile login.twill
+
+# Step 1: ParallelCBS
+go /gp/pages/index.jsf?lsid=ParallelCBS
+fv taskForm SplitColumns1.input.file_cb url
+fv taskForm SplitColumns1.input.file_url /xchip/gpdev/shared_data/sqa/TestFiles/CBS/mynah.sorted.hg16.cn 
+submit cmd1
+code 200
