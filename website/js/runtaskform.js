@@ -1,5 +1,8 @@
 var files_to_upload = {};
+var param_file_listing = {};
 var run_task = {};
+//contains json object in parameter to value pairing
+var parameter_and_val_obj = {};
 
 var Request = {
  	parameter: function(name) {
@@ -110,7 +113,6 @@ function loadParameterInfo(parameters)
         parameterName = parameterName.replace(/\./g,' ');
         paramRow.append("<td>" + parameterName + "</td>");
         paramRow.data("pname", parameters[q].name);
-        //paramRow.data("pname", pNameId);
 
         var rowId = "pRow" + (q+1);
         var valueTd = $("<td id='"+ rowId +"'/>");
@@ -129,10 +131,16 @@ function loadParameterInfo(parameters)
                     select.append("<option value='"+rowdata[0] +"'>" + rowdata[1]+ "</option>");
                 }
             }
-
+            
             valueTd.append(select);
             paramRow.append(valueTd);
             paramsTable.append(paramRow);
+
+            select.multiselect({
+                multiple: false,
+                header: false,
+                selectedList: 1
+            });
         }
         else if(parameters[q].type == "java.io.File")
         {
@@ -141,11 +149,16 @@ function loadParameterInfo(parameters)
             valueTd.append("<span class='btn btn-success fileinput-button'>"
                     + "<span><i class='icon-plus'></i>"
                     + "<img src='../css/images/file_add.gif' width='16' height='16'"
-                    + "alt='help' class='helpbutton'/>Upload Files...</span>"
+                    + "alt='Upload File'/>Upload Files...</span>"
                     + "<input class='uploadedinputfile' name='uploadedinputfile' type='file'/></span>");
+            //valueTd.append("<span class='btn btn-success fileinput-button urlButton'>"
+            //                   + "<span><i class='icon-plus'></i>"
+            //                   + "<img src='../css/images/file_add.gif' width='16' height='16'"
+            //                   + "alt='Specify URL'/>Specify URL...</span></span>");
+
             valueTd.append("<button class='urlButton'>"
                                 + "<img src='../css/images/file_add.gif' width='16' height='16'"
-                                + "alt='help' class='helpbutton'/>Specify URL...</button>");
+                                + "alt='Specify URL'/>Specify URL...</button>");
 
             valueTd.append("<span>or drag and drop files here...</span>");
             paramRow.append(valueTd);
@@ -191,11 +204,23 @@ function loadParameterInfo(parameters)
         var enterButton = $("<button>Enter</button>");
         enterButton.button().click(function()
         {
+            var pName = $(this).parents("tr:first").data("pname");
+
             var url = $(this).prev().val();
-            alert('url is: ' + url);
             $(this).parents("td:first").children().show();
 
             $(this).parents("div:first").remove();
+
+            var fileListing = param_file_listing[pName];
+            if(fileListing == null || fileListing == undefined)
+            {
+               fileListing = [];
+            }
+
+            fileListing.push(url);
+            param_file_listing[pName] = fileListing;
+            updateParamFileTable(pName);
+           
         });
         urlDiv.append(enterButton);
 
@@ -239,13 +264,23 @@ jQuery(document).ready(function()
             uploadFileList = [];
         }
 
+        var fileListing = param_file_listing[paramName];
+        if(fileListing == null || fileListing == undefined)
+        {
+            fileListing = [];
+        }
+
         //add newly selected files to table of file listing
         for(var f=0; f < this.files.length; f++)
         {
             uploadFileList.push(this.files[f]);
+            fileListing.push(this.files[f].name);
         }
 
+        // add to list of files to upload and file listing for
+        // the specified parameter
         files_to_upload[paramName] = uploadFileList;
+        param_file_listing[paramName] = fileListing;
         updateParamFileTable(paramName);
     });
 
@@ -315,36 +350,68 @@ function drop(evt)
     var files = evt.dataTransfer.files;
     var count = files.length;
 
-    var tData = $(event.target);
-    //alert(tData.parent().data("pname") + " pname");
+    alert("files in text: " + evt.dataTransfer.getData('Text'));
+    alert("file count: " + count);
+
+    var tData = $(evt.target);            
+    var paramName = tData.parent().data("pname");
     // Only call the handler if 1 or more files was dropped.
     if (count > 0)
-        handleFiles(files, tData.parent().data("pname"), tData);
+    {
+        handleFiles(files, paramName, tData);
+    }
+    else
+    {
+        if(evt.dataTransfer.getData('Text') != null
+                && evt.dataTransfer.getData('Text')  !== undefined
+                && evt.dataTransfer.getData('Text') != "")
+        {
+            //This must be a url and not a file
+            var fileListing = param_file_listing[paramName];
+            if(fileListing == null || fileListing == undefined)
+            {
+                fileListing = [];
+            }
+
+            fileListing.push(evt.dataTransfer.getData('Text'));
+            param_file_listing[paramName] = fileListing;
+            updateParamFileTable(paramName);            
+        }
+    }
 }
 
 function handleFiles(files, paramName)
 {
-    var fileList = files_to_upload[paramName];
-    if(fileList == null || fileList == undefined)
+    var fileUploadsList = files_to_upload[paramName];
+    if(fileUploadsList == null || fileUploadsList == undefined)
     {
-        fileList = [];
-    }
-    for(var i=0;i<files.length;i++)
-    {
-        fileList.push(files[i]);
+        fileUploadsList = [];
     }
 
-    files_to_upload[paramName] = fileList;
+    var fileListing = param_file_listing[paramName];
+    if(fileListing == null || fileListing == undefined)
+    {
+        fileListing = [];
+    }
+
+    for(var i=0;i<files.length;i++)
+    {
+        fileUploadsList.push(files[i]);
+        fileListing.push(files[i].name);
+    }
+
+    files_to_upload[paramName] = fileUploadsList;
+    param_file_listing[paramName] = fileListing;
+
     updateParamFileTable(paramName);
 }
 
 function updateParamFileTable(paramName)
 {
-    var files= files_to_upload[paramName];
+    var files= param_file_listing[paramName];
 
     var idPName = paramName.replace(/\./g,'_');
 
-    alert("files length: " + files.length);
     //remove previous file info data
     $("#" + idPName).prev("tr.fileInfo").remove();
     $("#" + idPName).children().remove();
@@ -357,6 +424,8 @@ function updateParamFileTable(paramName)
         var editLink = $("<a href='#'>Hide Details...</a>");
         editLink.click(function()
         {
+            event.preventDefault();
+            
             var editLinkMode = $(this).text();
             if(editLinkMode == "Show Details...")
             {
@@ -387,19 +456,40 @@ function updateParamFileTable(paramName)
         {
             var fileRow = $("<tr/>");
             var fileTData = $("<td/>");
-            fileRow.append("<td>" + files[i].name + "</td>");
+
+            //check if this is an upload file
+            //if not then it is a url
+            for(var t=0;t<files_to_upload.length;t++)
+            {
+                if(files_to_upload[t].name == file)
+                {
+                    files_to_upload.splice(t, 1);
+                    break;
+                }
+            }
+            fileRow.append("<td>" + files[i] + "</td>");
             var delButton = $("<button>Delete</button>");
-            delButton.data("pfile", files[i].name);
-            delButton.click(function()
+            delButton.data("pfile", files[i]);
+            delButton.button().click(function()
             {
                 var file = $(this).data("pfile");
                 //remove from file listing for specified parameter
-                var index = files_to_upload[paramName].indexOf(file);
+                var index = param_file_listing[paramName].indexOf(file);
                 if(index != -1)
                 {
-                    files_to_upload[paramName].splice(index,1);
+                    param_file_listing[paramName].splice(index,1);
                 }
 
+                //check if this file was in the list of files to upload
+                // and if so remove the file
+                for(var t=0;t<files_to_upload.length;t++)
+                {
+                    if(files_to_upload[t].name == file)
+                    {
+                        files_to_upload.splice(t, 1);
+                        break;
+                    }
+                }
                 updateParamFileTable(paramName);
             });
 
