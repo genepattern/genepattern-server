@@ -176,6 +176,27 @@ public class GpFileObjFactory {
      * @throws Exception
      */
     static public GpFilePath getRequestedGpFileObj(String urlStr) throws Exception { 
+        //special-case for <GenePatternURL> substitution
+        if (urlStr.startsWith("<GenePatternURL>")) {
+            URL url = ServerConfiguration.instance().getGenePatternURL();
+            String gpUrl=url.toString();
+            String path=urlStr.substring("<GenePatternURL>".length());
+            if (gpUrl.endsWith("/")) {
+                
+            }
+            if (path.startsWith("/")) {
+            }
+            urlStr=gpUrl;
+            if (urlStr.endsWith("/") && path.startsWith("/")) {
+                //remove extra slash
+                path=path.substring(1);
+            }
+            else if (!urlStr.endsWith("/") && !path.startsWith("/")) {
+                //insert slash
+                urlStr+="/";
+            }
+            urlStr+=path;
+        }
         //create a uri, which automatically decodes the url
         URI uri = null;
         try {
