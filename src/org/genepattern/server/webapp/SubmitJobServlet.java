@@ -87,7 +87,7 @@ public class SubmitJobServlet extends HttpServlet {
             return;
         }
  
-        final boolean newApi=true;
+        final boolean newApi=false;
         if (runTaskHelper.isBatchJob()) {
             request.getSession().setAttribute(JobBean.DISPLAY_BATCH, runTaskHelper.getBatchJob().getId());
             response.sendRedirect("/gp/jobResults");
