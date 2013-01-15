@@ -260,7 +260,6 @@ public class JobInputApiImpl implements JobInputApi {
 
         private List<GpFilePath> extractFilelist(final Param param) throws Exception {
             List<GpFilePath> filepaths=new ArrayList<GpFilePath>();
-            final String gpUrl=getGpUrl();
             for(ParamValue pval : param.getValues()) {
                 String value=pval.getValue();
                 GpFilePath filepath = GpFileObjFactory.getRequestedGpFileObj(value);
@@ -270,9 +269,7 @@ public class JobInputApiImpl implements JobInputApi {
         }
         
         private String submitJob() throws JobSubmissionException {
-            ParameterInfo[] paramInfos = taskInfo == null ? null : taskInfo.getParameterInfoArray();
-            paramInfos = paramInfos == null ? paramInfos = new ParameterInfo[0] : paramInfos;
-            JobInfo job = submitJob(taskInfo.getID(), paramInfos);
+            JobInfo job = submitJob(taskInfo.getID(), taskInfo.getParameterInfoArray());
             String jobId = "" + job.getJobNumber();
             return jobId;
         }
