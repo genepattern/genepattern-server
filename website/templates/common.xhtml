@@ -24,15 +24,14 @@
             <title>
                 <ui:insert name="pageTitle">GenePattern </ui:insert>
             </title>
-            <link href="/gp/css/jquery-ui-1.9.2.css" type="text/css" rel="stylesheet" />
-            <link href="#{facesContext.externalContext.requestContextPath}/css/style.css" rel="stylesheet" type="text/css" />
-            <link href="#{facesContext.externalContext.requestContextPath}/css/jobSharing.css" rel="stylesheet" type="text/css" />
-            <link href="#{facesContext.externalContext.requestContextPath}/css/protocols.css" rel="stylesheet" type="text/css" />
-            <link href="#{facesContext.externalContext.requestContextPath}/css/style-jobresults.css" rel="stylesheet" type="text/css" />
-            <link href="#{facesContext.externalContext.requestContextPath}/css/popupMenu.css" rel="stylesheet" type="text/css" />
-            <link href="#{facesContext.externalContext.requestContextPath}/css/style-jobresults.css" rel="stylesheet" type="text/css" />
+            <link href="#{facesContext.externalContext.requestContextPath}/css/#{systemMessageBean.skin}/jquery-ui-1.9.2.css" type="text/css" rel="stylesheet" />
+            <link href="#{facesContext.externalContext.requestContextPath}/css/#{systemMessageBean.skin}/style.css" rel="stylesheet" type="text/css" />
+            <link href="#{facesContext.externalContext.requestContextPath}/css/#{systemMessageBean.skin}/jobSharing.css" rel="stylesheet" type="text/css" />
+            <link href="#{facesContext.externalContext.requestContextPath}/css/#{systemMessageBean.skin}/protocols.css" rel="stylesheet" type="text/css" />
+            <link href="#{facesContext.externalContext.requestContextPath}/css/#{systemMessageBean.skin}/style-jobresults.css" rel="stylesheet" type="text/css" />
+            <link href="#{facesContext.externalContext.requestContextPath}/css/#{systemMessageBean.skin}/popupMenu.css" rel="stylesheet" type="text/css" />
+            <link href="#{facesContext.externalContext.requestContextPath}/css/#{systemMessageBean.skin}/menu.css" type="text/css" rel="stylesheet" />
             <link href="#{facesContext.externalContext.requestContextPath}/skin/favicon.ico" rel="shortcut icon" />
-            <link href="/gp/css/menu.css" type="text/css" rel="stylesheet" />
 
             <script type="text/javascript" language="javascript">
                 var contextRoot = '#{facesContext.externalContext.requestContextPath}';

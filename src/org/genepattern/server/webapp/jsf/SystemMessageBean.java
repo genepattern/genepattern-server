@@ -6,6 +6,7 @@ import java.util.Date;
 import javax.faces.event.ActionEvent;
 
 import org.apache.log4j.Logger;
+import org.genepattern.server.config.ServerConfiguration;
 import org.genepattern.server.message.SystemAlertFactory;
 import org.genepattern.server.message.SystemMessage;
 
@@ -135,5 +136,10 @@ public class SystemMessageBean implements Serializable {
     
     public void show(ActionEvent evt) {
         this.isOpen = true;
+    }
+    
+    public String getSkin() {
+        String env = ServerConfiguration.instance().getGPProperty(UIBeanHelper.getUserContext(), "display.skin", ".");
+        return env;
     }
 }

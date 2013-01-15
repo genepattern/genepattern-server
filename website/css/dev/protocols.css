@@ -1,0 +1,60 @@
+#homeIndent{
+	padding: 0px;
+	margin-top: 0px;
+	margin-right: 10px;
+	margin-bottom: 0px;
+	margin-left: 10px;
+}
+
+.protocols {
+	background-color: #EEEEFF;
+	padding: 5px 20px 20px;
+	border: 1px solid #BBBBCC;
+}
+
+.protocols h1 {
+	font-size: 18px;
+	color: #333366;
+	font-weight: bold;
+	margin: 0px;
+	padding: 10px 0px 20px;
+}
+
+.protocol_list {
+	/* margin-left: 40px; */
+    margin-top: 0px;
+	margin-bottom: 0px;
+	margin-left: 0;
+	padding-top: 0px;
+	padding-bottom: 0px;
+}
+
+.protocol_list_item {
+	clear: both;
+}
+
+.protocol_list_img {
+	float: left;
+	padding-right: 12px;
+	padding-bottom: 12px;
+}
+
+.protocol_list_block {
+	/* aligns text to the right of the image, in case there is a lot of text. */
+	padding-left: 72px;
+	padding-bottom: 12px;
+}
+
+/* places the new-win-icon.gif to the right of the link */
+.protocol_list a {
+	font-weight: bold;
+	font-size: 12px;
+    background-image: url(../images/new-win-icon.gif);
+    background-position: right;
+    background-repeat: no-repeat;
+    padding-right: 14px;
+}
+
+.optionsHead {
+	font-size: 12px;
+}
