@@ -31,10 +31,11 @@ if (!window.console)
 function loadModule(taskId)
 {
      $.ajax({
-            type: "POST",
-            url: "/gp/RunTask/load",
+            type: "GET",
+            url: "/gp/rest/RunTask/load",
             data: { "lsid" : taskId },
             success: function(response) {
+
                 var message = response["MESSAGE"];
                 var error = response["ERROR"];
 
@@ -54,6 +55,11 @@ function loadModule(taskId)
                     loadModuleInfo(response["module"]);
                     loadParameterInfo(response["parameters"]);
                 }
+            },
+            error: function(xhr, ajaxOptions, thrownError)
+            {
+                alert("Responsefrom : status=" + xhr.status + " text=" + xhr.responseText);
+                alert(thrownError);
             },
             dataType: "json"
         });
@@ -551,4 +557,6 @@ function uploadFile(file)
     formData.append('myfile', file);
     xhr.send(formData);
 }
+
+
 

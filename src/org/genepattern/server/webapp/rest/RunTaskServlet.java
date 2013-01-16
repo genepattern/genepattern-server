@@ -1,28 +1,27 @@
-package org.genepattern.server.webapp;
+package org.genepattern.server.webapp.rest;
 
 import org.genepattern.util.GPConstants;
 import org.genepattern.util.LSID;
-import org.genepattern.server.config.ServerConfiguration;
 import org.genepattern.server.TaskLSIDNotFoundException;
 import org.genepattern.webservice.TaskInfo;
 import org.genepattern.webservice.TaskInfoCache;
 import org.genepattern.webservice.TaskInfoAttributes;
 import org.genepattern.webservice.ParameterInfo;
-import org.genepattern.modules.ResponseJSON;
 import org.genepattern.modules.ModuleJSON;
 import org.genepattern.modules.ParametersJSON;
-import org.json.JSONArray;
 import org.apache.log4j.Logger;
+import org.json.JSONObject;
+import org.json.JSONArray;
 
-import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
-import java.io.PrintWriter;
+import javax.servlet.http.HttpServlet;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.Comparator;
 import java.util.ArrayList;
+
+import javax.ws.rs.*;
+import javax.ws.rs.core.*;
 
 /**
  * Created by IntelliJ IDEA.
@@ -31,47 +30,25 @@ import java.util.ArrayList;
  * Time: 9:41:34 PM
  * To change this template use File | Settings | File Templates.
  */
-public class RunTaskServlet extends HttpServlet 
+@Path("/RunTask")
+public class RunTaskServlet extends HttpServlet
 {
     public static Logger log = Logger.getLogger(RunTaskServlet.class);
-     public static final String UPLOAD = "/upload";
+    /*public static final String UPLOAD = "/upload";
     public static final String RUN = "/run";
-    public static final String LOAD = "/load";
+    */
 
-    private String lsid = null;
+    /**
+	 * Inject details about the URI for this request
+	 */
+	@Context
+    UriInfo uriInfo;
 
-    public void doGet(HttpServletRequest request, HttpServletResponse response)
-    {
-        String action = request.getPathInfo();
-
-        // Route to the appropriate action, returning an error if unknown
-        if (LOAD.equals(action))
-        {
-            loadModule(request, response);
-        }
-        else if (UPLOAD.equals(action))
-        {
-            //uploadFile(request, response);
-        }
-        else
-        {
-            sendError(response, "Routing error for " + action);
-        }
-    }
-
-    @Override
-	public void doPost(HttpServletRequest request, HttpServletResponse response)
-    {
-		doGet(request, response);
-	}
-
-	@Override
-	public void doPut(HttpServletRequest request, HttpServletResponse response)
-    {
-	    doGet(request, response);
-	}
-
-    public void loadModule(HttpServletRequest request, HttpServletResponse response)
+    @GET
+    //@Path("/load/{lsid}")
+    @Path("/load/")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response loadModule(@QueryParam("lsid") String lsid, @Context HttpServletRequest request)
     {
         try
         {
@@ -79,41 +56,40 @@ public class RunTaskServlet extends HttpServlet
 
             if (username == null)
             {
-                response.sendRedirect("/gp/pages/notFound.jsf");
-                return;
+                throw new Exception("User not logged in");
             }
 
-            String lsid = request.getParameter("lsid");
-
             if (lsid == null) {
-                sendError(response, "No lsid received");
-                return;
+                throw new Exception ("No lsid received");
             }
 
             TaskInfo taskInfo = getTaskInfo(lsid);
 
-            ResponseJSON responseObject = new ResponseJSON();
-
             ModuleJSON moduleObject = new ModuleJSON(taskInfo, null);
             moduleObject.put("lsidVersions", new JSONArray(getModuleVersions(lsid)));
 
-            responseObject.addChild(ModuleJSON.KEY, moduleObject);
+            JSONObject responseObject = new JSONObject();
+            responseObject.put(ModuleJSON.KEY, moduleObject);
 
             JSONArray parametersObject = getParameterList(taskInfo.getParameterInfoArray());
-            responseObject.addChild(ParametersJSON.KEY, parametersObject);
-            this.write(response, responseObject);
+            responseObject.put(ParametersJSON.KEY, parametersObject);
+
+            return Response.ok().entity(responseObject.toString()).build();
         }
         catch(Exception e)
         {
-            e.printStackTrace();
-            log.error(e);
-
-            String message = "";
+            String message = "An error occurred while loading the module with lsid: \"" + lsid + "\"";
             if(e.getMessage() != null)
             {
                 message = e.getMessage();
             }
-            sendError(response, "Error: while loading the module with lsid: " + lsid + " " + message);
+            log.error(message);
+
+            throw new WebApplicationException(
+                Response.status(Response.Status.BAD_REQUEST)
+                    .entity(message)
+                    .build()
+            );
         }
 	}
 
@@ -198,33 +174,4 @@ public class RunTaskServlet extends HttpServlet
 
         return taskInfo;
     }
-
-    private void write(HttpServletResponse response, Object content)
-    {
-        this.write(response, content.toString());
-    }
-
-    private void write(HttpServletResponse response, String content)
-    {
-        PrintWriter writer = null;
-        try {
-            writer = response.getWriter();
-            writer.println(content);
-            writer.flush();
-        }
-        catch (IOException e) {
-            log.error("Error writing to the response in ModuleQueryServlet: " + content);
-            e.printStackTrace();
-        }
-        finally {
-            if (writer != null) writer.close();
-        }
-    }
-    
-    public void sendError(HttpServletResponse response, String message)
-    {
-	    ResponseJSON error = new ResponseJSON();
-	    error.addError("ERROR: " + message);
-	    this.write(response, error);
-	}
 }

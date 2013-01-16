@@ -494,14 +494,36 @@
  </servlet-mapping>
 
 <servlet>
-    <display-name>Module Creator Servlet</display-name>
-    <servlet-name>ModuleCreator</servlet-name>
-    <servlet-class>org.genepattern.modules.ModuleQueryServlet</servlet-class>
-</servlet>
+    <!-- The Jersey Servlet. Bootstraps and enables Jersey code -->
+     <servlet-name>RestService</servlet-name>
+     <servlet-class>com.sun.jersey.spi.container.servlet.ServletContainer </servlet-class>
+     <!-- Include here the packages that have Jersey annotations (@Path, @GET etc.)
+          separated by commas -->
+    <init-param>
+         <param-name>com.sun.jersey.config.property.packages</param-name>
+         <param-value>org.genepattern.server.webapp.rest</param-value>
+     </init-param>
+    <!--<init-param>
+        <param-name>com.sun.jersey.api.json.POJOMappingFeature</param-name>
+        <param-value>true</param-value>
+    </init-param>                     -->
+     <load-on-startup>1</load-on-startup>
+</servlet >
+
+ <servlet-mapping>
+  <servlet-name>RestService</servlet-name>
+  <url-pattern>/rest/*</url-pattern>
+ </servlet-mapping>
+
+ <servlet>
+  <display-name>Module Creator Servlet</display-name>
+  <servlet-name>ModuleCreator</servlet-name>
+  <servlet-class>org.genepattern.modules.ModuleQueryServlet</servlet-class>
+ </servlet>
  <servlet-mapping>
   <servlet-name>ModuleCreator</servlet-name>
   <url-pattern>/ModuleCreator/*</url-pattern>
-</servlet-mapping>
+ </servlet-mapping>
 
  <servlet>
   <display-name>JobConfigurationServlet</display-name>
