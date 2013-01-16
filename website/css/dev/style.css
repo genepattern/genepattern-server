@@ -21,7 +21,17 @@ a:active {
 	text-decoration: none;
 }
 
+#comboBoxChoices {
+	width: 242px;
+}
 
+.rich-tree-node-text {
+	white-space: normal;
+}
+
+#uploads {
+	width: 203px;
+}
 
 .topband {
 	position:absolute;
@@ -727,7 +737,7 @@ h6 {
 }
 .pipeline_item {
 	border-style: solid;
-	border-color: #9999CC;
+	border-color: #3C7CAC;
 	border-width: 2px;
 }
 .pipeline_item2 {

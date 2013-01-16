@@ -12,7 +12,7 @@
 
     border-top-style: solid;
     border-top-width: 2px;
-    border-top-color: #CCCC99;
+    border-top-color: #CCCCCC;
 }
 
 .jobresults-header-2 td 
@@ -28,7 +28,7 @@
 }
 	
 .tableheader-row, .tableheader-row td {
-    background-color: #F5F5E3;
+    background-color: #EEEEEE;
     font-weight: bold;
     line-height: 20px;
 }
@@ -37,7 +37,7 @@
 {
 	border-top-style: solid;
 	border-top-width: 2px;
-	border-top-color: #CCCC99;
+	border-top-color: #CCCCCC;
 	background-color: #FFFFFF;
     white-space: nowrap;
     padding-right: 12px;
@@ -45,7 +45,7 @@
 
 .tableheader-row a
 {
-    color: #666633;
+    color: #002C5C;
 }
 
 .sorting_text {
@@ -57,37 +57,37 @@
  }
 .bluetype {color: #000099}
 .task-titlerow {
-	background-color: #F5F5E3;
+	background-color: #EEEEEE;
 	line-height: 20px;
 }
 .task-titlerow td{
-	background-color: #F5F5E3;
+	background-color: #EEEEEE;
  	border-top-style: solid;
 	border-top-width: 2px;
-	border-top-color: #CCCC99;
+	border-top-color: #CCCCCC;
 	white-space: nowrap;
 	padding-right: 12px;
 }
 .task-titlerow-actions {
-    background-color: #F5F5E3;
+    background-color: #EEEEEE;
     line-height: 20px;
 }
 .task-titlerow-actions td{
-    background-color: #F5F5E3;
+    background-color: #EEEEEE;
 }
 
 .task-title {
-	background-color: #F5F5E3;
+	background-color: #EEEEEE;
 	line-height: 20px;
 	font-weight: bold;
 	text-decoration: none;
 	color: #000000;
 }
 .task-title td{
-	background-color: #F5F5E3;
+	background-color: #EEEEEE;
  	border-top-style: solid;
 	border-top-width: 2px;
-	border-top-color: #CCCC99;
+	border-top-color: #CCCCCC;
 }
 
 .task-title a{
@@ -106,19 +106,19 @@
 }
 
 .pipelinetask-titlerow {
-	background-color: #F5F5E3;
+	background-color: #EEEEEE;
 	line-height: 20px;
 	text-decoration: none;
 	color: #000000;
 }
 .pipelinetask-titlerow td{
-	background-color: #F5F5E3;
+	background-color: #EEEEEE;
  	border-top-style: solid;
 	border-top-width: 1px;
 	border-top-color: #EBEBFB;
 }
 .pipelinetask-title {
-	background-color: #F5F5E3;
+	background-color: #EEEEEE;
 	line-height: 20px;
 	font-weight: bold;
 	text-decoration: none;
