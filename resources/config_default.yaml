@@ -8,7 +8,7 @@
 
 default.properties:
     executor: RuntimeExec
-    java_flags: -Xmx512m
+    java_flags: -Xmx512m -Dhttp.proxyHost=<http.proxyHost> -Dhttp.proxyPort=<http.proxyPort>
     # flag to allow users to input arbitrary network file paths as value to input file input parameters
     #allow.input.file.paths: false
     # flag to enable batch execution of jobs from the run module web page
