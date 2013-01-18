@@ -121,7 +121,10 @@ public class SubmitJobServlet extends HttpServlet {
             Context jobContext=ServerConfiguration.Context.getContextForUser(userID);
             try {
                 JobInputFileUtil fileUtil = new JobInputFileUtil(jobContext);
-                GpFilePath gpFilePath=fileUtil.initUploadFileForInputParam(8, "input.filename", "build.properties");
+                final int idx=8;
+                final String paramName="input.filename";
+                final String fileName="build.properties";
+                GpFilePath gpFilePath=fileUtil.initUploadFileForInputParam(idx, paramName, fileName);
                 
                 File srcFile=new File("../resources/build.properties");
                 File destFile=gpFilePath.getServerFile();
