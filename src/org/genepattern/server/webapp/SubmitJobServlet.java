@@ -108,12 +108,11 @@ public class SubmitJobServlet extends HttpServlet {
             Param param=jobInput.getParams().get(new ParamId("input.filename"));
             if (param != null) {
                 if ("admin".equals(userID)) {
-                    param.addValue(new ParamValue("http://127.0.0.1:8080/gp/users/admin/all_aml%20test.cls"));
                     param.addValue(new ParamValue("http://127.0.0.1:8080/gp/users/admin/all_aml%20test.gct"));
-                    param.addValue(new ParamValue("<GenePatternURL>users/admin/all_aml%20test.cls"));
-                    param.addValue(new ParamValue("<GenePatternURL>users/admin/all_aml%20test.gct"));
-                    param.addValue(new ParamValue("<GenePatternURL>/users/admin/all_aml%20test.cls"));
-                    param.addValue(new ParamValue("<GenePatternURL>/users/admin/all_aml%20test.gct"));
+                    //param.addValue(new ParamValue("<GenePatternURL>users/admin/all_aml%20test.cls"));
+                    //param.addValue(new ParamValue("<GenePatternURL>users/admin/all_aml%20test.gct"));
+                    //param.addValue(new ParamValue("<GenePatternURL>/users/admin/all_aml%20test.cls"));
+                    //param.addValue(new ParamValue("<GenePatternURL>/users/admin/all_aml%20test.gct"));
                 }
             }
             
@@ -121,14 +120,17 @@ public class SubmitJobServlet extends HttpServlet {
             Context jobContext=ServerConfiguration.Context.getContextForUser(userID);
             try {
                 JobInputFileUtil fileUtil = new JobInputFileUtil(jobContext);
-                final int idx=8;
+                final int idx=2;
                 final String paramName="input.filename";
                 final String fileName="build.properties";
                 GpFilePath gpFilePath=fileUtil.initUploadFileForInputParam(idx, paramName, fileName);
                 
+                // this example, copies the build.properties file into your *new* location
                 File srcFile=new File("../resources/build.properties");
                 File destFile=gpFilePath.getServerFile();
                 FileUtils.copyFile(srcFile, destFile);
+                // replace the above lines with a call to writeToFile, e.g.
+                //     writeToFile(uploadedInputStream, gpFilePath.getServerFile().getCanonicalPath());
                 
                 fileUtil.updateUploadsDb(gpFilePath);
                                 
