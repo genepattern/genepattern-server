@@ -1,5 +1,6 @@
 package org.genepattern.server.webapp;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.URLEncoder;
 import java.util.ArrayList;
@@ -13,8 +14,10 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.fileupload.FileUploadException;
+import org.apache.commons.io.FileUtils;
 import org.genepattern.server.config.ServerConfiguration;
 import org.genepattern.server.config.ServerConfiguration.Context;
+import org.genepattern.server.dm.GpFilePath;
 import org.genepattern.server.executor.JobSubmissionException;
 import org.genepattern.server.rest.GpServerException;
 import org.genepattern.server.rest.JobInput;
@@ -22,6 +25,7 @@ import org.genepattern.server.rest.JobInput.Param;
 import org.genepattern.server.rest.JobInput.ParamId;
 import org.genepattern.server.rest.JobInput.ParamValue;
 import org.genepattern.server.rest.JobInputApiImpl;
+import org.genepattern.server.rest.JobInputFileUtil;
 import org.genepattern.server.webapp.jsf.JobBean;
 import org.genepattern.server.webapp.jsf.PageMessages;
 import org.genepattern.util.GPConstants;
@@ -90,7 +94,7 @@ public class SubmitJobServlet extends HttpServlet {
         }
  
         //TODO: set this to true to test the new API from the old job submit form
-        final boolean newApi=false;
+        final boolean newApi=true;
         if (runTaskHelper.isBatchJob()) {
             request.getSession().setAttribute(JobBean.DISPLAY_BATCH, runTaskHelper.getBatchJob().getId());
             response.sendRedirect("/gp/jobResults");
@@ -113,14 +117,31 @@ public class SubmitJobServlet extends HttpServlet {
                 }
             }
             
+            //3) [throwaway code ...] add a web upload file to the list of values
+            Context jobContext=ServerConfiguration.Context.getContextForUser(userID);
+            try {
+                JobInputFileUtil fileUtil = new JobInputFileUtil(jobContext);
+                GpFilePath gpFilePath=fileUtil.initUploadFileForInputParam(8, "input.filename", "build.properties");
+                
+                File srcFile=new File("../resources/build.properties");
+                File destFile=gpFilePath.getServerFile();
+                FileUtils.copyFile(srcFile, destFile);
+                
+                fileUtil.updateUploadsDb(gpFilePath);
+                                
+                param.addValue(new ParamValue(gpFilePath.getUrl().toExternalForm()));
+            }
+            catch (Exception e) {
+                setErrorMessage(request, "Error submitting job: "+e.getLocalizedMessage());
+                redirectToHome(response);
+            }
             JobInputApiImpl impl = new JobInputApiImpl();
             String jobId;
             try {
-                Context jobContext=ServerConfiguration.Context.getContextForUser(userID);
                 jobId = impl.postJob(jobContext, jobInput);
             }
             catch (GpServerException e) {
-                setErrorMessage(request, "Error submitting job");
+                setErrorMessage(request, "Error submitting job: "+e.getLocalizedMessage());
                 redirectToHome(response);
                 return;
             }
