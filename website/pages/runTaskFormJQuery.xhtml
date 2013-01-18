@@ -14,28 +14,34 @@
     <script type="text/javascript" src="#{facesContext.externalContext.requestContextPath}/js/jquery/jquery-ui-1.8.16.js"></script>
     <script type="text/javascript" src="#{facesContext.externalContext.requestContextPath}/js/runtaskform.js"></script>
     <script type="text/javascript" src="#{facesContext.externalContext.requestContextPath}/js/jquery/jquery.multiselect.js"></script>
-
+    <script type="text/javascript" src="#{facesContext.externalContext.requestContextPath}/js/jquery/jquery.blockUI.js"></script>    
 </head>
 <body>
-    <div id="showDescriptionDiv">
-        <input name="toggleDesc" id="toggleDesc" type="checkbox" checked="checked" />
-        <label for="toggleDesc">
-            Show parameter descriptions
-        </label>
-    </div>
-    <div class="module_header" id="taskHeaderDiv"/>
-    <div>
-        * required field
+
+    <div id="fileUploadDiv"></div>
+
+
+    <div id="runTaskSettingsDiv">
+        <div id="showDescriptionDiv">
+            <input name="toggleDesc" id="toggleDesc" type="checkbox" checked="checked" />
+            <label for="toggleDesc">
+                Show parameter descriptions
+            </label>
+        </div>
+        <div class="module_header" id="taskHeaderDiv"></div>
+        <div>
+            * required field
+            <div class="submitControlsDiv">
+                <button class="Reset"> Reset </button>
+                <button class="Run"> Run </button>
+            </div>
+        </div>
+
+        <div id="paramsListingDiv"></div>
         <div class="submitControlsDiv">
             <button class="Reset"> Reset </button>
             <button class="Run"> Run </button>
-        </div>    
-    </div>
-
-    <div id="paramsListingDiv"/>
-    <div class="submitControlsDiv">
-        <button class="Reset"> Reset </button>
-        <button class="Run"> Run </button>
+        </div>
     </div>
 </body>
 </html>

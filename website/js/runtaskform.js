@@ -1,7 +1,16 @@
+//keeps track of number of files that have been successfully uploaded
+var numFilesUploaded;
+
+//contains map of param name to files to upload
 var files_to_upload = {};
-var param_file_listing = {};
-var run_task = {};
-//contains json object in parameter to value pairing
+
+//map of input parameters to a listing of files (local, external urls, internal urls)
+var param_file_listing ={};
+
+//contains info about the current selected task
+var run_task_info = {};
+
+//contains json object with parameter to value pairing
 var parameter_and_val_obj = {};
 
 var Request = {
@@ -67,23 +76,23 @@ function loadModule(taskId)
 
 function loadModuleInfo(module)
 {
-    run_task.lsid = module["LSID"];
-    run_task.name = module["name"];
+    run_task_info.lsid = module["LSID"];
+    run_task_info.name = module["name"];
 
-    if(run_task.lsid == undefined)
+    if(run_task_info.lsid == undefined)
     {
         throw("Unknown task LSID");
         return;
     }
 
-    if(run_task.name == undefined)
+    if(run_task_info.name == undefined)
     {
         throw("Unknown task name");
         return;
     }
 
     var span = $("<span class='.header'/>");
-    span.append(run_task.name);
+    span.append(run_task_info.name);
 
     $("#taskHeaderDiv").append(span);
 
@@ -170,7 +179,7 @@ function loadParameterInfo(parameters)
             paramRow.append(valueTd);
             paramsTable.append(paramRow);
 
-            //switch . with _ since the selector does not work with .
+            //switch . with _ since the jquery selector does not work with .
             var idPName = parameters[q].name.replace(/\./g,'_');
             paramsTable.append("<tr id='" + idPName + "'></tr>");
         }
@@ -220,7 +229,7 @@ function loadParameterInfo(parameters)
             var fileListing = param_file_listing[pName];
             if(fileListing == null || fileListing == undefined)
             {
-               fileListing = [];
+                fileListing = [];
             }
 
             fileListing.push(url);
@@ -292,8 +301,15 @@ jQuery(document).ready(function()
 
     $("button.Reset").click(function()
     {
-        alert("Reset fields");
-        loadModule(run_task.lsid);
+        //TODO: implement Reset function
+        alert("Not Implemented");
+    });
+
+    $("button.Run").click(function()
+    {
+        //alert("Run job");
+        //Submit this job to the server
+        runJob();
     });
 
     //disable default browser behavior of opening files using drag and drop
@@ -320,6 +336,30 @@ jQuery(document).ready(function()
         e.preventDefault();
     }, false);
 });
+
+function runJob()
+{
+    //Step 1: upload all the input files if there are any
+    if(files_to_upload != null && Object.keys(files_to_upload).length > 0)
+    {
+        uploadAllFiles();
+    }
+    else
+    {
+        //Step 2: run the job
+        //TODO: implement job submission
+        submitTask();
+    }
+}
+
+function submitTask()
+{
+    //Change text of blocking div
+    $('#runTaskSettingsDiv').unblock();
+
+    //TODO: add call to run job
+    console.log("submitting task");
+}
 
 function dragEnter(evt)
 {
@@ -364,7 +404,7 @@ function drop(evt)
     // Only call the handler if 1 or more files was dropped.
     if (count > 0)
     {
-        handleFiles(files, paramName, tData);
+        handleFiles(files, paramName);
     }
     else
     {
@@ -381,7 +421,8 @@ function drop(evt)
 
             fileListing.push(evt.dataTransfer.getData('Text'));
             param_file_listing[paramName] = fileListing;
-            updateParamFileTable(paramName);            
+
+            updateParamFileTable(paramName);
         }
     }
 }
@@ -421,7 +462,7 @@ function updateParamFileTable(paramName)
     //remove previous file info data
     $("#" + idPName).prev("tr.fileInfo").remove();
     $("#" + idPName).children().remove();
-    if(files != null && files != undefined)
+    if(files != null && files != undefined && files.length > 0)
     {      
         var fileInfoRow = $("<tr class='fileInfo'></tr>");
         var tData = $("<td/>");
@@ -463,17 +504,15 @@ function updateParamFileTable(paramName)
             var fileRow = $("<tr/>");
             var fileTData = $("<td/>");
 
-            //check if this is an upload file
-            //if not then it is a url
-            for(var t=0;t<files_to_upload.length;t++)
+            //determine if this is a  url
+            if(files[i].indexOf("://") != -1)
             {
-                if(files_to_upload[t].name == file)
-                {
-                    files_to_upload.splice(t, 1);
-                    break;
-                }
+                fileRow.append("<td><a href='" + files[i] + "'> "+ files[i] + "</a></td>");                    
             }
-            fileRow.append("<td>" + files[i] + "</td>");
+            else
+            {
+                fileRow.append("<td>" + files[i] + "</td>");
+            }
             var delButton = $("<button>Delete</button>");
             delButton.data("pfile", files[i]);
             delButton.button().click(function()
@@ -488,11 +527,11 @@ function updateParamFileTable(paramName)
 
                 //check if this file was in the list of files to upload
                 // and if so remove the file
-                for(var t=0;t<files_to_upload.length;t++)
+                for(var t=0;t<files_to_upload[paramName].length;t++)
                 {
-                    if(files_to_upload[t].name == file)
+                    if(files_to_upload[paramName][t].name == file)
                     {
-                        files_to_upload.splice(t, 1);
+                        files_to_upload[paramName].splice(t, 1);
                         break;
                     }
                 }
@@ -513,22 +552,38 @@ function updateParamFileTable(paramName)
 
 function uploadAllFiles()
 {
-    if (module_editor.filestoupload.length)
-    {
-        var nextFile = module_editor.filestoupload.shift();
+    //disable the parameter listing table so that no changes can be made
+    //$("#paramsTable").find("input,button,textarea,select").attr("disabled", "disabled");
 
-        uploadFile(nextFile);
-    }
-    else
+    if (Object.keys(files_to_upload).length > 0)
     {
-        //TODO: add call to run job
+        $('#runTaskSettingsDiv').block({
+            //message: '<h1> Please wait </h1>',
+            overlayCSS: { backgroundColor: '#F8F8F8' }
+        });
+
+        numFilesUploaded = 0;
+        var count =0;
+        for(var paramName in files_to_upload)
+        {
+            for(var f=0; f < files_to_upload[paramName].length; f++)
+            {
+                count++;
+                var nextFile = files_to_upload[paramName][f];
+                var uniqueFileId = "file_" + count;
+                uploadFile(paramName, nextFile, uniqueFileId);
+            }
+        }
     }
 }
 
 // upload file
-function uploadFile(file)
+function uploadFile(paramName, file, fileId)
 {
-    var destinationUrl = "/gp/RunTask/upload";
+    $("#fileUploadDiv").append("<div id='" + fileId + "'/>");
+    $("#"+fileId).before("<div>" + file.name + "</div>");
+    $("#"+fileId).after("<span id='" + fileId + "Percentage'/>");
+    var destinationUrl = "/gp/rest/RunTask/upload";
     // prepare XMLHttpRequest
     var xhr = new XMLHttpRequest();
     xhr.open('POST', destinationUrl);
@@ -536,17 +591,60 @@ function uploadFile(file)
         console.log("on load response: " + this.responseText);
 
         var response = $.parseJSON(this.responseText);
-        module_editor.uploadedfiles.push(response.location);
 
-        uploadAllFiles();
+        //add location to value listing for parameter
+        var valueListing = parameter_and_val_obj[paramName];
+        if(valueListing == undefined || valueListing == null)
+        {
+            valueListing = [];
+        }
+        valueListing.push(response.location);
+        parameter_and_val_obj[paramName] = valueListing;
+
+        numFilesUploaded++;
+
+        var totalFiles = 0;
+
+        for (var p in files_to_upload)
+        {
+            totalFiles += p.length;
+        }
+
+        if(totalFiles == 0)
+        {
+            //something must be wrong
+            alert("An error occurred while transferring files!");
+        }
+
+        if(numFilesUploaded == totalFiles)
+        {
+            submitTask();
+        }
+
     };
     xhr.onerror = function() {
         result.textContent = this.responseText;
-        console.log("response: " + this.responseText);
+        console.log("Error uploading the file " + file.name + " :" + this.responseText);
     };
     xhr.upload.onprogress = function(event) {
         console.log("upload progress");
-        //handleProgress(event);
+        if (event.lengthComputable)
+        {
+
+            var percentComplete = Math.round(event.loaded * 100 / event.total);
+            console.log("percent complete: " + percentComplete);
+
+            $("#"+fileId).progressbar({
+                value: percentComplete
+            });
+
+            $("#"+fileId + "Percentage").empty();             
+            $("#"+fileId + "Percentage").append(percentComplete.toString() + "%");
+        }
+        else
+        {
+            $("#fileUploadDiv").append('Unable to determine progress');
+        }
     }
     xhr.upload.onloadstart = function(event) {
         console.log("onload start support file upload");
@@ -554,8 +652,9 @@ function uploadFile(file)
 
     // prepare FormData
     var formData = new FormData();
-    formData.append('myfile', file);
+    formData.append('ifile', file);
     xhr.send(formData);
+
 }
 
 
