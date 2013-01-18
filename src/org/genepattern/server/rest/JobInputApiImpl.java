@@ -4,6 +4,7 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Date;
@@ -13,10 +14,10 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import org.apache.log4j.Logger;
-import org.genepattern.server.config.ServerConfiguration;
 import org.genepattern.server.config.ServerConfiguration.Context;
 import org.genepattern.server.dm.GpFileObjFactory;
 import org.genepattern.server.dm.GpFilePath;
+import org.genepattern.server.dm.userupload.UserUploadManager;
 import org.genepattern.server.eula.GetTaskStrategy;
 import org.genepattern.server.eula.GetTaskStrategyDefault;
 import org.genepattern.server.executor.JobSubmissionException;
@@ -65,9 +66,12 @@ public class JobInputApiImpl implements JobInputApi {
     }
 
     @Override
-    public String postJob(final String currentUser, final JobInput jobInput) throws GpServerException {
-        if (currentUser==null) {
-            throw new IllegalArgumentException("currentUser==null");
+    public String postJob(final Context jobContext, final JobInput jobInput) throws GpServerException {
+        if (jobContext==null) {
+            throw new IllegalArgumentException("jobContext==null");
+        }
+        if (jobContext.getUserId()==null) {
+            throw new IllegalArgumentException("jobContext.userId==null");
         }
         if (jobInput==null) {
             throw new IllegalArgumentException("jobInput==null");
@@ -76,7 +80,7 @@ public class JobInputApiImpl implements JobInputApi {
             throw new IllegalArgumentException("jobInput.lsid==null");
         }
         try {
-            JobInputApiLegacy jobInputHelper=new JobInputApiLegacy(currentUser, jobInput);
+            JobInputApiLegacy jobInputHelper=new JobInputApiLegacy(jobContext, jobInput);
             if (getTaskStrategy==null) {
                 getTaskStrategy=new GetTaskStrategyDefault();
             }
@@ -87,29 +91,19 @@ public class JobInputApiImpl implements JobInputApi {
             return jobId;
         }
         catch (Throwable t) {
-            String message="Error adding job to queue, currentUser="+currentUser+", lsid="+jobInput.getLsid();
+            String message="Error adding job to queue, currentUser="+jobContext.getUserId()+", lsid="+jobInput.getLsid();
             log.error(message,t);
             throw new GpServerException(message, t);
         }
     }
     
     static class JobInputApiLegacy {
-        private String currentUser;
+        private Context jobContext;
         private JobInput jobInput;
-        //private String lsid;
         private TaskInfo taskInfo;
 
-        public JobInputApiLegacy(final String currentUser, final JobInput jobInput) {
-            if (currentUser==null) {
-                throw new IllegalArgumentException("currentUser==null");
-            }
-            if (jobInput==null) {
-                throw new IllegalArgumentException("jobInput==null");
-            }
-            if (jobInput.getLsid()==null) {
-                throw new IllegalArgumentException("jobInput.lsid=null");
-            }
-            this.currentUser=currentUser;
+        public JobInputApiLegacy(final Context jobContext, final JobInput jobInput) {
+            this.jobContext=jobContext;
             this.jobInput=jobInput;
         }
         
@@ -117,16 +111,9 @@ public class JobInputApiImpl implements JobInputApi {
             return taskInfo;
         }
         
-        //legacy code from RunTaskHelper
         private synchronized void initTaskInfo(final GetTaskStrategy getTaskStrategy) {
             this.taskInfo=getTaskStrategy.getTaskInfo(jobInput.getLsid());
             this.taskInfo.getParameterInfoArray();
-        }
-        
-        private String getGpUrl() {
-            URL url = ServerConfiguration.instance().getGenePatternURL();
-            String rval=url.toString();
-            return rval;
         }
         
         private void initParameterValues() throws Exception {
@@ -183,54 +170,22 @@ public class JobInputApiImpl implements JobInputApi {
         }
         
         private String initFilelist(final Param param) throws Exception {
-            //TODO: need to handle external urls and server file paths
-            
+            //TODO: need to handle server file paths 
             List<GpFilePath> filepaths=extractFilelist(param); 
             //now, create a new filelist file, add it into the user uploads directory for the given job
             GpFilePath filelist=getFilelist(param);
             writeFilelist(filelist.getServerFile(), filepaths, false);
-            
-            //String rval="<GenePatternURL>"+filelist.getRelativeUri().toString();
+            addUploadFileToDb(filelist.getRelativeFile());
+
             return filelist.getUrl().toExternalForm();
         }
 
         private GpFilePath getFilelist(final Param param) throws Exception {
-            Context userContext=ServerConfiguration.Context.getContextForUser(currentUser);
-            GpFilePath inputdir=jobInput.getInputFileDir();
-            if (inputdir==null) {
-                inputdir=jobInput.initInputFileDir(userContext);
-            }
-            String path=inputdir.getRelativePath();
-            if (!path.endsWith("/")) {
-                path+="/";
-            }
-            path+="filelist/"+param.getParamId().getFqName()+".filelist";
-            File uploadFile=new File(path);
-            GpFilePath filelist=GpFileObjFactory.getUserUploadFile(userContext, uploadFile);
-            
-            //if necessary, create the parent directory
-            File serverFile=filelist.getServerFile();
-            File parentDir=serverFile.getParentFile();
-            if (parentDir == null) {
-                throw new Exception("Error initializing input filelist file: parentDir==null, serverFile="+serverFile.getAbsolutePath());
-            }
-            if (!parentDir.exists()) {
-                log.debug("creating input directory: "+parentDir.getAbsolutePath());
-                boolean success=parentDir.mkdirs();
-                if (success) {
-                    log.debug("success");
-                }
-                else {
-                    String message="failed to create input directory: "+parentDir.getAbsolutePath();
-                    log.error(message);
-                    throw new Exception(message);
-                }
-            }
-            if (serverFile.exists()) {
-                log.error("filelist file already exists: "+serverFile.getAbsolutePath());
-                throw new Exception("filelist file already exists: "+serverFile.getPath());
-            }
-            
+            final String paramName=param.getParamId().getFqName();
+            JobInputFileUtil util = new JobInputFileUtil();
+            util.setContext(jobContext);
+            GpFilePath filelist=util.getDistinctPathForFilelist(paramName);
+            //GpFilePath filelist=jobInput.getDistinctPathForFilelist(jobContext, paramName);
             return filelist;
         }
 
@@ -262,10 +217,110 @@ public class JobInputApiImpl implements JobInputApi {
             List<GpFilePath> filepaths=new ArrayList<GpFilePath>();
             for(ParamValue pval : param.getValues()) {
                 String value=pval.getValue();
-                GpFilePath filepath = GpFileObjFactory.getRequestedGpFileObj(value);
-                filepaths.add(filepath);
+                try {
+                    GpFilePath filepath = GpFileObjFactory.getRequestedGpFileObj(value);
+                    filepaths.add(filepath);
+                }
+                catch (Exception e) {
+                    //could be an external url
+                    try {
+                        GpFilePath filepath = getGpFilePathFromExternalUrl(value);
+                        if (filepath != null) {
+                            filepaths.add(filepath);
+                        }
+                    }
+                    catch (Exception ex) {
+                        log.error(ex);
+                        throw ex;
+                    }
+                }
             }
             return filepaths;
+        }
+
+        static public URL initExternalUrl(final String value) {
+            log.debug("intialize external URL for value="+value);
+
+            if (value.startsWith("<GenePatternURL>")) {
+                log.debug("it's a substition for the gp url");
+                return null;
+            }
+            if (value.startsWith(GpFilePath.getGenePatternUrl().toExternalForm())) {
+                log.debug("it's a gp url");
+                return null;
+            }
+
+            URL url=null;
+            try {
+                url=new URL(value);
+            }
+            catch (MalformedURLException e) {
+                log.debug("it's not a url", e);
+                return null;
+            }
+            return url;
+        }
+
+        //Note: this method blocks until the data file has been transferred
+        //TODO: turn this into a task which can be cancelled
+        private GpFilePath getGpFilePathFromExternalUrl(final String value) throws Exception {
+            URL url = initExternalUrl(value);
+            if (url==null) {
+                return null;
+            }
+            
+            GpFilePath gpPath=JobInputFileUtil.getDistinctPathForExternalUrl(jobContext, url);
+            final File parentDir=gpPath.getServerFile().getParentFile();
+            if (!parentDir.exists()) {
+                boolean success=parentDir.mkdirs();
+                if (!success) {
+                    String message="Error creating upload directory for external url: dir="+parentDir.getPath()+", url="+url.toExternalForm();
+                    log.error(message);
+                    throw new Exception(message);
+                }
+            }
+            final File dataFile=gpPath.getServerFile();
+            if (dataFile.exists()) {
+                //do nothing, assume the file has already been transferred
+                log.debug("dataFile already exists: "+dataFile.getPath());
+            }
+            else {
+                //copy the external url into a new file in the user upload folder
+                org.apache.commons.io.FileUtils.copyURLToFile(url, dataFile);
+                
+                //add a record of the file to the DB, so that a link will appear in the Uploads tab
+                addUploadFileToDb(gpPath.getRelativeFile());
+            }
+            return gpPath;
+        }
+
+        /**
+         * For the current user, given a relative path to a file,
+         * add a record in the User Uploads DB for the file,
+         * creating, if necessary, records for all parent directories.
+         * 
+         * @param relativePath
+         */
+        private void addUploadFileToDb(final File relativePath) throws Exception {
+            List<String> dirs=new ArrayList<String>();
+
+            File f=relativePath.getParentFile();
+            while(f!=null) {
+                dirs.add(0, f.getName());
+                f=f.getParentFile();
+            }
+            
+            String parentPath="";
+            for(String dirname : dirs) {
+                parentPath += (dirname+"/");
+                //create a new record for the directory, if necessary
+                GpFilePath gpFilePath = GpFileObjFactory.getUserUploadFile(jobContext, new File(parentPath));
+                UserUploadManager.createUploadFile(jobContext, gpFilePath, 1, true);
+                UserUploadManager.updateUploadFile(jobContext, gpFilePath, 1, 1);
+            }
+            GpFilePath gpFilePath = GpFileObjFactory.getUserUploadFile(jobContext, relativePath);
+            UserUploadManager.createUploadFile(jobContext, gpFilePath, 1, true);
+            UserUploadManager.updateUploadFile(jobContext, gpFilePath, 1, 1);
         }
         
         private String submitJob() throws JobSubmissionException {
@@ -275,7 +330,7 @@ public class JobInputApiImpl implements JobInputApi {
         }
 
         private JobInfo submitJob(final int taskID, final ParameterInfo[] parameters) throws JobSubmissionException {
-            AddNewJobHandler req = new AddNewJobHandler(taskID, currentUser, parameters);
+            AddNewJobHandler req = new AddNewJobHandler(taskID, jobContext.getUserId(), parameters);
             JobInfo jobInfo = req.executeRequest();
             return jobInfo;
         }

@@ -1,16 +1,11 @@
 package org.genepattern.server.rest;
 
-import java.io.File;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.genepattern.server.config.ServerConfiguration;
-import org.genepattern.server.config.ServerConfiguration.Context;
-import org.genepattern.server.dm.GpFileObjFactory;
-import org.genepattern.server.dm.GpFilePath;
+import org.apache.log4j.Logger;
 
 /**
  * Representation of user-supplied input parameters for a new job to be added to the GP server.
@@ -26,6 +21,8 @@ import org.genepattern.server.dm.GpFilePath;
  *
  */
 public class JobInput {
+    //final static private Logger log = Logger.getLogger(JobInput.class);
+
     /**
      * Unique identifier for a step in a pipeline.
      * @author pcarr
@@ -113,41 +110,6 @@ public class JobInput {
             return hashCode;
         }
     }
-//    public static class ParamIdNew {
-//        //can be empty
-//        private List<StepId> parentSteps=null;
-//        private String name;
-//        
-//        
-//        public int hashCode() {
-//            StringBuffer buf=new StringBuffer();
-//            if (parentSteps!=null) {
-//                for(StepId parentStep : parentSteps) {
-//                    if (parentStep.getId()==null) {
-//                        buf.append("null.");
-//                    }
-//                    else {
-//                        buf.append( parentStep.getId() );
-//                        buf.append(".");
-//                    }
-//                }
-//            }
-//            if (name==null) {
-//                buf.append(" null");
-//            }
-//            else {
-//                buf.append(name);
-//            }
-//            return buf.toString().hashCode();
-//        }
-//        
-//        public boolean equals(Object obj) {
-//            if (!(obj instanceof ParamId)) {
-//                return false;
-//            }
-//            return hashCode() == obj.hashCode();
-//        }
-//    }
 
     public static class ParamValue {
         public ParamValue(String val) {
@@ -159,16 +121,6 @@ public class JobInput {
         }
     }
     
-
-//    /**
-//     * The unique id for the job to be added to the server. 
-//     *     In some cases this is set before POSTing, and in other cases it is not set.
-//     */
-//    private String jobId;
-//    public String getJobId() {
-//        return this.jobId;
-//    }
- 
     /**
      * The lsid for a module installed on the GP server.
      */
@@ -203,23 +155,5 @@ public class JobInput {
         }
         param.addValue(new ParamValue(value));
     }
-
-    private GpFilePath inputFileDir;
-    public GpFilePath getInputFileDir() {
-        return inputFileDir;
-    }
-    public void setInputFileDir(final GpFilePath inputFileDir) {
-        this.inputFileDir=inputFileDir;
-    }
-    public GpFilePath initInputFileDir(final String currentUser) throws Exception {
-        Context userContext=ServerConfiguration.Context.getContextForUser(currentUser);
-        return initInputFileDir(userContext);
-    }
-    public GpFilePath initInputFileDir(final Context userContext) throws Exception {
-        //default path for adding new input files (and filelist files) for a job
-        //    Note: circa GP 3.5.1, we don't have a valid job id when we call this method
-        File file=new File("temp/input/"+new Date().getTime()+"/");
-        GpFilePath input=GpFileObjFactory.getUserUploadFile(userContext, file);
-        return input;
-    }
+    
 }

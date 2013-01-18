@@ -13,6 +13,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.fileupload.FileUploadException;
+import org.genepattern.server.config.ServerConfiguration;
+import org.genepattern.server.config.ServerConfiguration.Context;
 import org.genepattern.server.executor.JobSubmissionException;
 import org.genepattern.server.rest.GpServerException;
 import org.genepattern.server.rest.JobInput;
@@ -87,6 +89,7 @@ public class SubmitJobServlet extends HttpServlet {
             return;
         }
  
+        //TODO: set this to true to test the new API from the old job submit form
         final boolean newApi=false;
         if (runTaskHelper.isBatchJob()) {
             request.getSession().setAttribute(JobBean.DISPLAY_BATCH, runTaskHelper.getBatchJob().getId());
@@ -113,7 +116,8 @@ public class SubmitJobServlet extends HttpServlet {
             JobInputApiImpl impl = new JobInputApiImpl();
             String jobId;
             try {
-                jobId = impl.postJob(userID, jobInput);
+                Context jobContext=ServerConfiguration.Context.getContextForUser(userID);
+                jobId = impl.postJob(jobContext, jobInput);
             }
             catch (GpServerException e) {
                 setErrorMessage(request, "Error submitting job");
