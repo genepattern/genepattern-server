@@ -100,6 +100,7 @@ public class JobInputApiImpl implements JobInputApi {
     static class JobInputApiLegacy {
         private Context jobContext;
         private JobInput jobInput;
+        private JobInputFileUtil jobInputFileUtil;
         private TaskInfo taskInfo;
 
         public JobInputApiLegacy(final Context jobContext, final JobInput jobInput) {
@@ -182,10 +183,12 @@ public class JobInputApiImpl implements JobInputApi {
 
         private GpFilePath getFilelist(final Param param) throws Exception {
             final String paramName=param.getParamId().getFqName();
-            JobInputFileUtil util = new JobInputFileUtil();
-            util.setContext(jobContext);
-            GpFilePath filelist=util.getDistinctPathForFilelist(paramName);
-            //GpFilePath filelist=jobInput.getDistinctPathForFilelist(jobContext, paramName);
+            synchronized(this) {
+                if (jobInputFileUtil==null) {
+                    jobInputFileUtil=new JobInputFileUtil(jobContext);
+                }
+            }
+            GpFilePath filelist=jobInputFileUtil.getDistinctPathForFilelist(paramName);
             return filelist;
         }
 

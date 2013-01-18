@@ -34,8 +34,20 @@ public class JobInputFileUtil {
     private String uploadPath; 
     //for getting the currentUser, and optionally current task and current job
     private Context context;
-    
-    public JobInputFileUtil() {
+    /**
+     * The base input directory for a given job.
+     */
+    private GpFilePath inputFileDir;
+
+
+    public JobInputFileUtil(final Context jobContext) throws Exception {
+        this(jobContext, null);
+    }
+
+    public JobInputFileUtil(final Context jobContext, final String relativePath) throws Exception {
+        this.context=jobContext;
+        this.uploadPath=relativePath;
+        this.inputFileDir=initInputFileDir();
     }
     
     public void setContext(Context jobContext) {
@@ -58,12 +70,7 @@ public class JobInputFileUtil {
         }
     }
 
-    /**
-     * The base input directory for a given job.
-     */
-    private GpFilePath inputFileDir;
-
-    public synchronized GpFilePath initInputFileDir() throws Exception {
+    private GpFilePath initInputFileDir() throws Exception {
         if (context==null) {
             throw new IllegalArgumentException("context==null");
         }
@@ -81,21 +88,22 @@ public class JobInputFileUtil {
                 }
             }
             File tmpFile=File.createTempFile("run", null, parentDirFile);
-            tmpFile.delete();
-            boolean success=tmpFile.mkdirs();
+            boolean success=tmpFile.delete();
+            if (!success) {
+                throw new Exception("Unable to create uplodate directory for job, couldn't delete the tmpFile: "+tmpFile.getPath());
+            }
+            success=tmpFile.mkdirs();
             if (!success) {
                 throw new Exception("Unable to create upload directory for job: "+tmpFile.getPath());
             }
             this.uploadPath=DEFAULT_ROOT_PATH+tmpFile.getName()+"/";
         }
-        GpFilePath input=GpFileObjFactory.getUserUploadFile(context, new File(this.uploadPath));
-        return input;
+        GpFilePath gpFilePath=GpFileObjFactory.getUserUploadFile(context, new File(this.uploadPath));
+        return gpFilePath;
     }
 
     public GpFilePath getDistinctPathForFilelist(final String paramName) throws Exception {
-        if (inputFileDir == null) {
-            this.inputFileDir=initInputFileDir();
-        }
+        initInputFileDir();
         File rel=new File(inputFileDir.getRelativeFile(), paramName+".filelist");
         GpFilePath input=GpFileObjFactory.getUserUploadFile(context, rel);
         
@@ -126,9 +134,7 @@ public class JobInputFileUtil {
      * @return
      */
     public GpFilePath getDistinctPathForUploadParam(final Context jobContext, final int idx, final String paramName) throws Exception {
-        if (inputFileDir == null) {
-            this.inputFileDir=initInputFileDir();
-        }
+        initInputFileDir();
         File rel=inputFileDir.getRelativeFile();
         
         //naming convention
