@@ -94,7 +94,7 @@ public class SubmitJobServlet extends HttpServlet {
         }
  
         //TODO: set this to true to test the new API from the old job submit form
-        final boolean newApi=true;
+        final boolean newApi=false;
         if (runTaskHelper.isBatchJob()) {
             request.getSession().setAttribute(JobBean.DISPLAY_BATCH, runTaskHelper.getBatchJob().getId());
             response.sendRedirect("/gp/jobResults");
