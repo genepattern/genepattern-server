@@ -67,7 +67,7 @@ function loadModule(taskId)
             },
             error: function(xhr, ajaxOptions, thrownError)
             {
-                alert("Responsefrom : status=" + xhr.status + " text=" + xhr.responseText);
+                alert("Response from server: status=" + xhr.status + " text=" + xhr.responseText);
                 alert(thrownError);
             },
             dataType: "json"
@@ -115,7 +115,6 @@ function loadParameterInfo(parameters)
     var inputFileRowIds = [];
     for(var q=0; q < parameters.length;q++)
     {
-        var rowCount = q + 1;
         var paramRow = $("<tr/>");
         var parameterName = parameters[q].name;
         
@@ -136,17 +135,46 @@ function loadParameterInfo(parameters)
         if(choicelist !== undefined && choicelist !== null && choicelist.length > 0)
         {
             var choiceResult = choicelist.split(';');
-            var select = $("<select id='"+ rowCount +"'/>");
+            var select = $("<select id='"+ parameters[q].name +"' name='"
+                    + parameters[q].name+ "'/>");
+
             for(var p=0;p<choiceResult.length;p++)
             {
-
+                var value = "";
                 var rowdata = choiceResult[p].split("=");
                 if(rowdata != undefined && rowdata != null && rowdata.length > 1)
                 {
-                    select.append("<option value='"+rowdata[0] +"'>" + rowdata[1]+ "</option>");
+                    value = rowdata[0];
+                    select.append("<option value='"+ value +"'>" + rowdata[1]+ "</option>");
+                }
+                else
+                {
+                    value = choiceResult[p];
+                    select.append("<option value='"+value +"'>" + value + "</option>");
                 }
             }
-            
+
+            select.children("option").each(function()
+            {
+                if($(this).val() == parameters[q].default_value)
+                {
+                    $(this).parent().val(parameters[q].default_value);
+
+                    console.log("default value is : " + parameters[q].default_value);
+                }
+            });
+
+            //initially select the first choice
+            select.change(function ()
+            {
+                var valueList = [];
+                valueList.push($(this).val());
+
+                var paramName = $(this).attr("name");
+                parameter_and_val_obj[paramName] = valueList;
+                console.log("param name: " + paramName);
+            });
+
             valueTd.append(select);
             paramRow.append(valueTd);
             paramsTable.append(paramRow);
@@ -156,6 +184,10 @@ function loadParameterInfo(parameters)
                 header: false,
                 selectedList: 1
             });
+
+            var valueList = [];
+            valueList.push(select.val());
+            parameter_and_val_obj[parameters[q].name] = valueList;
         }
         else if(parameters[q].type == "java.io.File")
         {
@@ -165,7 +197,7 @@ function loadParameterInfo(parameters)
                     + "<span><i class='icon-plus'></i>"
                     + "<img src='../css/images/file_add.gif' width='16' height='16'"
                     + "alt='Upload File'/>Upload Files...</span>"
-                    + "<input class='uploadedinputfile' name='uploadedinputfile' type='file'/></span>");
+                    + "<input class='uploadedinputfile' name='"+ parameters[q].name +"' type='file'/></span>");
             //valueTd.append("<span class='btn btn-success fileinput-button urlButton'>"
             //                   + "<span><i class='icon-plus'></i>"
             //                   + "<img src='../css/images/file_add.gif' width='16' height='16'"
@@ -185,7 +217,25 @@ function loadParameterInfo(parameters)
         }
         else
         {
-            valueTd.append("<input type='text' id='" + rowCount + "'/>");
+            console.log("text default value: " + parameters[q].default_value);
+            var $textField = $("<input type='text' id='" + parameters[q].name
+                        +"' name='" + parameters[q].name + "'/>");
+            $textField.change(function ()
+            {
+                var valueList = [];
+                valueList.push($(this).val());
+
+                var paramName = $(this).attr("name");
+                parameter_and_val_obj[paramName] = valueList;
+                console.log("text field param name: " + paramName);
+            });
+            $textField.val(parameters[q].default_value);
+
+            var textValueList = [];
+            textValueList.push($textField.val());
+            parameter_and_val_obj[parameters[q].name] = textValueList;
+
+            valueTd.append($textField);
             paramRow.append(valueTd);
             paramsTable.append(paramRow);
         }
@@ -193,7 +243,7 @@ function loadParameterInfo(parameters)
         //append parameter description table
         paramsTable.append("<tr class='paramDescription'><td></td><td colspan='3'>" + parameters[q].description +"</td></tr>");
     }
-    $("#paramsListingDiv").append(paramsTable);
+    $("#runTaskForm").append(paramsTable);
 
     //alert("params table: " + paramsTable.html());
     for(var r=0;r<inputFileRowIds.length;r++)
@@ -272,7 +322,7 @@ jQuery(document).ready(function()
 
     $("input[type='file']").live("change", function()
     {
-        var paramName = $(this).parents("tr:first").data("pname");
+        var paramName = $(this).attr("name");
         var uploadFileList = files_to_upload[paramName];
         if(uploadFileList == null || uploadFileList == undefined)
         {
@@ -355,10 +405,44 @@ function runJob()
 function submitTask()
 {
     //Change text of blocking div
-    $('#runTaskSettingsDiv').unblock();
+    $('#runTaskSettingsDiv').block({
+        message: '<h1> Submitting job...</h1>',
+        overlayCSS: { backgroundColor: '#F8F8F8'}
+    });
 
     //TODO: add call to run job
     console.log("submitting task");
+
+    var taskJsonObj =
+    {
+        "lsid" : run_task_info.lsid,
+        "params" : JSON.stringify(parameter_and_val_obj)
+    };
+
+    $.ajax({
+        type: "POST",
+        url: "/gp/rest/RunTask/addJob",
+        contentType: 'application/json',
+        data: JSON.stringify(taskJsonObj),
+        success: function(response) {
+
+            var message = response["MESSAGE"];
+
+            if (message !== undefined && message !== null) {
+                alert(message);
+            }
+
+            console.log("Response text: " + response.text);
+            $('#runTaskSettingsDiv').unblock();
+        },
+        error: function(xhr, ajaxOptions, thrownError)
+        {
+            alert("Response from server: status=" + xhr.status + " text=" + xhr.responseText);
+            alert(thrownError);
+            console.log("Error: " + xhr.responseText);
+        },
+        dataType: "json"
+    });
 }
 
 function dragEnter(evt)
@@ -558,7 +642,7 @@ function uploadAllFiles()
     if (Object.keys(files_to_upload).length > 0)
     {
         $('#runTaskSettingsDiv').block({
-            //message: '<h1> Please wait </h1>',
+            message: '<h1> Please wait... </h1>',
             overlayCSS: { backgroundColor: '#F8F8F8' }
         });
 
@@ -571,7 +655,7 @@ function uploadAllFiles()
                 count++;
                 var nextFile = files_to_upload[paramName][f];
                 var uniqueFileId = "file_" + count;
-                uploadFile(paramName, nextFile, uniqueFileId);
+                uploadFile(paramName, nextFile, count);
             }
         }
     }
@@ -607,7 +691,7 @@ function uploadFile(paramName, file, fileId)
 
         for (var p in files_to_upload)
         {
-            totalFiles += p.length;
+            totalFiles += files_to_upload[p].length;
         }
 
         if(totalFiles == 0)
@@ -615,6 +699,9 @@ function uploadFile(paramName, file, fileId)
             //something must be wrong
             alert("An error occurred while transferring files!");
         }
+
+        console.log("numFilesUploaded: " + numFilesUploaded);
+        console.log("totalFiles: " + totalFiles);
 
         if(numFilesUploaded == totalFiles)
         {
@@ -627,7 +714,6 @@ function uploadFile(paramName, file, fileId)
         console.log("Error uploading the file " + file.name + " :" + this.responseText);
     };
     xhr.upload.onprogress = function(event) {
-        console.log("upload progress");
         if (event.lengthComputable)
         {
 
@@ -653,6 +739,8 @@ function uploadFile(paramName, file, fileId)
     // prepare FormData
     var formData = new FormData();
     formData.append('ifile', file);
+    formData.append('paramName', paramName);
+    formData.append('index', fileId);
     xhr.send(formData);
 
 }

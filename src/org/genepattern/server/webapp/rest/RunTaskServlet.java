@@ -3,6 +3,10 @@ package org.genepattern.server.webapp.rest;
 import org.genepattern.util.GPConstants;
 import org.genepattern.util.LSID;
 import org.genepattern.server.TaskLSIDNotFoundException;
+import org.genepattern.server.dm.GpFilePath;
+import org.genepattern.server.rest.JobInput;
+import org.genepattern.server.rest.JobInputApiImpl;
+import org.genepattern.server.rest.JobInputFileUtil;
 import org.genepattern.server.config.ServerConfiguration;
 import org.genepattern.webservice.TaskInfo;
 import org.genepattern.webservice.TaskInfoCache;
@@ -17,10 +21,7 @@ import org.json.JSONArray;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServlet;
-import java.util.SortedSet;
-import java.util.TreeSet;
-import java.util.Comparator;
-import java.util.ArrayList;
+import java.util.*;
 import java.io.*;
 
 import javax.ws.rs.*;
@@ -106,33 +107,33 @@ public class RunTaskServlet extends HttpServlet
     public Response uploadFile(
         @FormDataParam("ifile") InputStream uploadedInputStream,
         @FormDataParam("ifile") FormDataContentDisposition fileDetail,
+        @FormDataParam("paramName") final String paramName,
+        @FormDataParam("index") final int index,        
         @Context HttpServletRequest request)
     {
         try
         {
             String username = (String) request.getSession().getAttribute("userid");
             if (username == null)
-            {
+            {         
                 throw new Exception("User not logged in");
             }
 
-            ServerConfiguration.Context userContext = ServerConfiguration.Context.getContextForUser(username);
-            File userUploadDir = ServerConfiguration.instance().getUserUploadDir(userContext);
-            File tempDir = File.createTempFile("run", null, userUploadDir);
-            tempDir.delete();
-            tempDir.mkdir();
+            ServerConfiguration.Context jobContext=ServerConfiguration.Context.getContextForUser(username);
 
-            File uploadedFile = new File(tempDir, fileDetail.getFileName());
-            String uploadedFilePath = uploadedFile.getCanonicalPath();
+            JobInputFileUtil fileUtil = new JobInputFileUtil(jobContext);
+            GpFilePath gpFilePath=fileUtil.initUploadFileForInputParam(index, paramName, fileDetail.getFileName());
 
             // save it
-            writeToFile(uploadedInputStream, uploadedFilePath);
+            writeToFile(uploadedInputStream, gpFilePath.getServerFile().getCanonicalPath());
+            fileUtil.updateUploadsDb(gpFilePath);
 
-            String output = "File uploaded to : " + uploadedFilePath;
+            String output = "File uploaded to : " + gpFilePath.getServerFile().getCanonicalPath();
             log.error(output);
 
+            log.error(gpFilePath.getUrl().toExternalForm());
             ResponseJSON result = new ResponseJSON();
-            result.addChild("location", uploadedFile.getCanonicalPath());
+            result.addChild("location",  gpFilePath.getUrl().toExternalForm());
             return Response.ok().entity(result.toString()).build();
         }
         catch(Exception e)
@@ -146,6 +147,67 @@ public class RunTaskServlet extends HttpServlet
 
             throw new WebApplicationException(
                 Response.status(Response.Status.BAD_REQUEST)
+                    .entity(message)
+                    .build()
+            );
+        }
+    }
+
+    @POST
+    @Path("/addJob")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response addJob(
+        JobSubmitInfo jobSubmitInfo,
+        @Context HttpServletRequest request)
+    {
+        try
+        {
+            String username = (String) request.getSession().getAttribute("userid");
+            if (username == null)
+            {
+                throw new Exception("User not logged in");
+            }
+
+            JobInput jobInput = new JobInput();
+            jobInput.setLsid(jobSubmitInfo.getLsid());
+
+            JSONObject parameters = new JSONObject(jobSubmitInfo.getParameters());
+            Iterator<String> paramNames = parameters.keys();
+            while(paramNames.hasNext())
+            {
+                String parameterName = paramNames.next();
+                JSONArray valueList = new JSONArray((String)parameters.get(parameterName));
+                for(int v=0; v<valueList.length();v++)
+                {
+                    jobInput.addValue(parameterName, valueList.getString(v));
+                }
+            }
+
+            ServerConfiguration.Context jobContext=ServerConfiguration.Context.getContextForUser(username);
+
+            JobInputApiImpl impl = new JobInputApiImpl();
+            String jobId = impl.postJob(jobContext, jobInput);
+
+            ResponseJSON result = new ResponseJSON();
+            result.addChild("jobId", jobId);
+
+            return Response.ok(result.toString()).build();
+
+            //JSONObject result = new JSONObject(((String)jobSubmitInfo.getParameters());
+            //String r2 = (String)result.get("input.file");
+            //new JSONArray(r2);
+        }
+        catch(Exception e)
+        {
+            String message = "An error occurred while submitting the job";
+            if(e.getMessage() != null)
+            {
+                message = message + ": " + e.getMessage();
+            }
+            log.error(message);
+
+            throw new WebApplicationException(
+                Response.status(Response.Status.INTERNAL_SERVER_ERROR)
                     .entity(message)
                     .build()
             );
