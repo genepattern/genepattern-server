@@ -185,6 +185,11 @@ function loadParameterInfo(parameters)
                 selectedList: 1
             });
 
+            if(parameters[q].optional.length == 0)
+            {
+                select.addClass("required");
+            }
+
             var valueList = [];
             valueList.push(select.val());
             parameter_and_val_obj[parameters[q].name] = valueList;
@@ -238,6 +243,11 @@ function loadParameterInfo(parameters)
             valueTd.append($textField);
             paramRow.append(valueTd);
             paramsTable.append(paramRow);
+
+            if(parameters[q].optional.length == 0)
+            {
+                $textField.addClass("required");
+            }
         }
 
         //append parameter description table
@@ -306,6 +316,8 @@ function loadParameterInfo(parameters)
 
 jQuery(document).ready(function()
 {
+    $("#runTaskForm").validate();
+
     $("#toggleDesc").click(function()
     {
         //show descriptions
@@ -315,8 +327,11 @@ jQuery(document).ready(function()
     $("button").button();
 
     //$(".submitControlsDiv").clone().appendTo("body");
-    //var lsid = Request.parameter('lsid');
-    var lsid = "urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00044:9";
+    var lsid = Request.parameter('lsid');
+    if(lsid == null || lsid  == "")
+    {
+        lsid = "urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00044:9";
+    }
 
     loadModule(lsid);
 
@@ -404,6 +419,10 @@ function runJob()
 
 function submitTask()
 {
+    if(!$('#runTaskForm').validate().form())
+    {
+        return;
+    }
     //Change text of blocking div
     $('#runTaskSettingsDiv').block({
         message: '<h1> Submitting job...</h1>',
@@ -432,7 +451,11 @@ function submitTask()
                 alert(message);
             }
 
+            window.location.replace("/gp/jobResults/"+response.jobId);
             console.log("Response text: " + response.text);
+        },
+        complete:function()
+        {
             $('#runTaskSettingsDiv').unblock();
         },
         error: function(xhr, ajaxOptions, thrownError)
