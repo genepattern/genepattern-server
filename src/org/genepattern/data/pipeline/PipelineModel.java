@@ -24,6 +24,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -79,6 +80,8 @@ public class PipelineModel implements Serializable {
     protected String license = null;
     protected String documentation = null;
     protected IAdminClient adminClient = null;
+    protected String creationDate = "";
+    protected String gpVersion = "";
 
     private IAdminClient getAdminClient() {
         if (adminClient == null) {
@@ -99,6 +102,22 @@ public class PipelineModel implements Serializable {
     }
 
     public void init() {
+    }
+    
+    public String getCreationDate() {
+        return this.creationDate;
+    }
+    
+    public void setCreationDate(Date date) {
+        this.creationDate = date.toString();
+    }
+    
+    public String getGenePatternVersion() {
+        return this.gpVersion;
+    }
+    
+    public void setGenePatternVersion(String version) {
+        this.gpVersion = version;
     }
 
     /**

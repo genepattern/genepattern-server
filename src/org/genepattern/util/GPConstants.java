@@ -93,6 +93,10 @@ public class GPConstants {
     public static final String LICENSE = "license";
 
     public static final String TASK_DOC = "taskDoc";
+    
+    public static final String CREATION_DATE = "creationDate";
+    
+    public static final String GP_VERSION = "gpVersion";
 
     public static final String REQUIRED_PATCH_URLS = "requiredPatchURLs";
 

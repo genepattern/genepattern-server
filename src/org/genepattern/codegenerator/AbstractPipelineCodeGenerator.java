@@ -163,15 +163,26 @@ public abstract class AbstractPipelineCodeGenerator {
         tia.put(GPConstants.JVM_LEVEL, "1.5");
         tia.put(GPConstants.VERSION, model.getVersion());
         tia.put(GPConstants.LSID, model.getLsid());
+        
         if (model.getLicense() != null && model.getLicense().length() > 0) {
             tia.put(GetEulaAsManifestProperty.LICENSE, model.getLicense());
             addLicensePlugin(tia);
         }
-        String taskDoc=model.getDocumentation();
-        if (taskDoc==null) {
-            taskDoc="";
+        
+        String taskDoc = model.getDocumentation();
+        if (taskDoc == null) {
+            taskDoc = "";
         }
         tia.put(GPConstants.TASK_DOC, taskDoc);
+        
+        String date = model.getCreationDate();
+        if (date == null) { date = ""; }
+        tia.put(GPConstants.CREATION_DATE, date);
+        
+        String gpVersion = model.getGenePatternVersion();
+        if (gpVersion == null) { gpVersion = ""; }
+        tia.put(GPConstants.GP_VERSION, gpVersion);
+        
         return tia;
     }
 

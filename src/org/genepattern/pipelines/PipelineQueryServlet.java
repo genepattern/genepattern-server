@@ -24,6 +24,7 @@ import java.net.MalformedURLException;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -423,7 +424,7 @@ public class PipelineQueryServlet extends HttpServlet {
 	    model.setLsid(lsid);
 	}
 	
-	@SuppressWarnings({ "rawtypes", "unchecked" })
+	@SuppressWarnings("rawtypes")
     private ParameterInfo[] copyModuleParams(ParameterInfo[] taskParams) throws WebServiceException {
         ParameterInfo[] newParams = new ParameterInfo[taskParams.length];
 
@@ -689,6 +690,8 @@ public class PipelineQueryServlet extends HttpServlet {
                     doc = "";
                 }
                 model.setDocumentation(doc);
+                model.setGenePatternVersion(System.getProperty("genepattern.version", "unknown"));
+                model.setCreationDate(new Date());
                 
                 setPipelineInfo(model, pipelineObject);
     
