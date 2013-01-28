@@ -13,6 +13,9 @@ var run_task_info = {};
 //contains json object with parameter to value pairing
 var parameter_and_val_obj = {};
 
+//contains all the file upload requests
+var fileUploadRequests = [];
+
 var Request = {
  	parameter: function(name) {
  		return this.parameters()[name];
@@ -115,7 +118,7 @@ function loadParameterInfo(parameters)
     var inputFileRowIds = [];
     for(var q=0; q < parameters.length;q++)
     {
-        var paramRow = $("<tr/>");
+        var paramRow = $("<tr class='pRow'/>");
         var parameterName = parameters[q].name;
         
         if(parameters[q].optional.length == 0)
@@ -208,9 +211,7 @@ function loadParameterInfo(parameters)
             //                   + "<img src='../css/images/file_add.gif' width='16' height='16'"
             //                   + "alt='Specify URL'/>Specify URL...</span></span>");
 
-            valueTd.append("<button class='urlButton'>"
-                                + "<img src='../css/images/file_add.gif' width='16' height='16'"
-                                + "alt='Specify URL'/>Specify URL...</button>");
+            valueTd.append("<button class='urlButton'>Specify URL...</button>");
 
             valueTd.append("<span>or drag and drop files here...</span>");
             paramRow.append(valueTd);
@@ -270,6 +271,7 @@ function loadParameterInfo(parameters)
 
     $("button.urlButton").button().click(function()
     {
+        event.preventDefault();
         var urlDiv = $("<div/>");
 
         urlDiv.append("Enter url:");
@@ -303,7 +305,7 @@ function loadParameterInfo(parameters)
         cancelButton.button().click(function()
         {
             $(this).parents("td:first").children().show();
-            $(this).parents("div:first").remove();            
+            $(this).parents("div:first").remove();
         });
         urlDiv.append(cancelButton);
 
@@ -316,7 +318,23 @@ function loadParameterInfo(parameters)
 
 jQuery(document).ready(function()
 {
-    $("#runTaskForm").validate();
+    /*jQuery.validator.addMethod("requireInputFile",function(value) {
+    total = parseFloat($('#LHSOPERAND').val()) + parseFloat($('#RHSOPERAND').val());
+    return total == parseFloat($('#TOTAL').val());
+    }, "Amounts do not add up!");
+
+    jQuery.validator.classRuleSettings.checkTotal = { checkTotal: true };
+    */
+    
+    $("#runTaskForm").validate(
+    {
+        /*highlight: function(label) {
+            $(this).closest('tr.pRow').addClass('error');
+        },
+        success: function(label) {
+            $(this).closest('tr.pRow').removeClass('error');
+        } */
+    });
 
     $("#toggleDesc").click(function()
     {
@@ -400,6 +418,16 @@ jQuery(document).ready(function()
     document.body.addEventListener('drop', function(e) {
         e.preventDefault();
     }, false);
+
+    //add action for when cancel upload button is clicked
+    $("#cancelUpload").hide();
+    $("#cancelUpload").button().click(function()
+    {
+        for(var y=0;y<fileUploadRequests.length;y++)
+        {
+            fileUploadRequests[y].abort();
+        }
+    });
 });
 
 function runJob()
@@ -490,6 +518,7 @@ function dragExit(evt)
 
 function dragOver(evt)
 {
+    this.classList.add('highlight');    
     evt.stopPropagation();
     evt.preventDefault();
 }
@@ -503,11 +532,18 @@ function drop(evt)
     var files = evt.dataTransfer.files;
     var count = files.length;
 
-    alert("files in text: " + evt.dataTransfer.getData('Text'));
-    alert("file count: " + count);
+    console.log("files in text: " + evt.dataTransfer.getData('Text'));
+    console.log("file count: " + count);
 
-    var tData = $(evt.target);            
-    var paramName = tData.parent().data("pname");
+    var target = $(evt.target);
+    console.log("tData" + target.html());
+    var paramName = target.parents(".pRow").first().data("pname");
+    if(paramName == undefined)
+    {
+        console.log("Error: Could not find the parameter this file belongs to.");
+        return;
+    }
+
     // Only call the handler if 1 or more files was dropped.
     if (count > 0)
     {
@@ -669,6 +705,7 @@ function uploadAllFiles()
             overlayCSS: { backgroundColor: '#F8F8F8' }
         });
 
+        //$("#cancelUpload").show();
         numFilesUploaded = 0;
         var count =0;
         for(var paramName in files_to_upload)
@@ -677,7 +714,6 @@ function uploadAllFiles()
             {
                 count++;
                 var nextFile = files_to_upload[paramName][f];
-                var uniqueFileId = "file_" + count;
                 uploadFile(paramName, nextFile, count);
             }
         }
@@ -728,6 +764,7 @@ function uploadFile(paramName, file, fileId)
 
         if(numFilesUploaded == totalFiles)
         {
+            //$("#cancelUpload").hide();
             submitTask();
         }
 
@@ -747,7 +784,7 @@ function uploadFile(paramName, file, fileId)
                 value: percentComplete
             });
 
-            $("#"+fileId + "Percentage").empty();             
+            $("#"+fileId + "Percentage").empty();
             $("#"+fileId + "Percentage").append(percentComplete.toString() + "%");
         }
         else
@@ -758,7 +795,9 @@ function uploadFile(paramName, file, fileId)
     xhr.upload.onloadstart = function(event) {
         console.log("onload start support file upload");
     }
-
+   /* xhr.upload.abort = function(event) {
+        console.log("onload cancel event");
+    } */
     // prepare FormData
     var formData = new FormData();
     formData.append('ifile', file);
@@ -766,6 +805,9 @@ function uploadFile(paramName, file, fileId)
     formData.append('index', fileId);
     xhr.send(formData);
 
+    //keep track of all teh upload request so that they can be canceled
+    //using the cancel button
+    //uploadRequests.push(xhr);
 }
 
 
