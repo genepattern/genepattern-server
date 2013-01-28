@@ -256,7 +256,6 @@ function loadParameterInfo(parameters)
     }
     $("#runTaskForm").append(paramsTable);
 
-    //alert("params table: " + paramsTable.html());
     for(var r=0;r<inputFileRowIds.length;r++)
     {
         var dropbox = document.getElementById(inputFileRowIds[r]);
@@ -390,7 +389,6 @@ jQuery(document).ready(function()
 
     $("button.Run").click(function()
     {
-        //alert("Run job");
         //Submit this job to the server
         runJob();
     });
@@ -427,6 +425,12 @@ jQuery(document).ready(function()
         {
             fileUploadRequests[y].abort();
         }
+
+        $("#cancelUpload").hide();
+
+        //Change text of blocking div
+        $('#runTaskSettingsDiv').unblock();
+        $("#fileUploadDiv").empty();
     });
 });
 
@@ -705,7 +709,7 @@ function uploadAllFiles()
             overlayCSS: { backgroundColor: '#F8F8F8' }
         });
 
-        //$("#cancelUpload").show();
+        $("#cancelUpload").show();
         numFilesUploaded = 0;
         var count =0;
         for(var paramName in files_to_upload)
@@ -724,8 +728,13 @@ function uploadAllFiles()
 function uploadFile(paramName, file, fileId)
 {
     $("#fileUploadDiv").append("<div id='" + fileId + "'/>");
-    $("#"+fileId).before("<div>" + file.name + "</div>");
-    $("#"+fileId).after("<span id='" + fileId + "Percentage'/>");
+    $("#"+fileId).before("<p>" + file.name + "</p>");
+    $("#"+fileId).after("<p id='" + fileId + "Percentage'/>");
+    $("#"+fileId).progressbar({
+        value: 0
+    });
+    $("#"+fileId + "Percentage").append("0%");
+
     var destinationUrl = "/gp/rest/RunTask/upload";
     // prepare XMLHttpRequest
     var xhr = new XMLHttpRequest();
@@ -764,7 +773,7 @@ function uploadFile(paramName, file, fileId)
 
         if(numFilesUploaded == totalFiles)
         {
-            //$("#cancelUpload").hide();
+            $("#cancelUpload").hide();
             submitTask();
         }
 
@@ -789,15 +798,14 @@ function uploadFile(paramName, file, fileId)
         }
         else
         {
-            $("#fileUploadDiv").append('Unable to determine progress');
+            $("#fileUploadDiv").append('<p>Unable to determine progress</p>');
         }
     }
+    
     xhr.upload.onloadstart = function(event) {
         console.log("onload start support file upload");
     }
-   /* xhr.upload.abort = function(event) {
-        console.log("onload cancel event");
-    } */
+    
     // prepare FormData
     var formData = new FormData();
     formData.append('ifile', file);
@@ -807,7 +815,7 @@ function uploadFile(paramName, file, fileId)
 
     //keep track of all teh upload request so that they can be canceled
     //using the cancel button
-    //uploadRequests.push(xhr);
+    fileUploadRequests.push(xhr);
 }
 
 
