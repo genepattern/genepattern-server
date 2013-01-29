@@ -143,5 +143,12 @@
 	<classpathentry kind="lib" path="website/WEB-INF/lib/jackson-mapper-asl-1.9.2.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/jackson-xc-1.9.2.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/jgrapht-jdk1.6.jar"/>
+	<classpathentry kind="lib" path="website/WEB-INF/lib/jersey-apache-client-1.11.jar"/>
+	<classpathentry kind="lib" path="website/WEB-INF/lib/jersey-client-1.11.jar"/>
+	<classpathentry kind="lib" path="website/WEB-INF/lib/jersey-core-1.11.jar"/>
+	<classpathentry kind="lib" path="website/WEB-INF/lib/jersey-json-1.11.jar"/>
+	<classpathentry kind="lib" path="website/WEB-INF/lib/jersey-multipart-1.11.jar"/>
+	<classpathentry kind="lib" path="website/WEB-INF/lib/jersey-server-1.11.jar"/>
+	<classpathentry kind="lib" path="website/WEB-INF/lib/jersey-servlet-1.11.jar"/>
 	<classpathentry kind="output" path="website/WEB-INF/classes"/>
 </classpath>
