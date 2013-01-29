@@ -18,39 +18,78 @@
     <script type="text/javascript" src="#{facesContext.externalContext.requestContextPath}/js/runtaskform.js"></script>
 </head>
 <body>
+<div id="submitJob">
+   <!-- <ul>
+        <li><a href="#submitForm">Run Task</a></li>
+        <li><a href="#documentation">Documentation</a></li>
+    </ul>
 
-    <div>
-        <div>
-            <button class="floatRight" id="cancelUpload">
-                Cancel
-            </button>
-        </div>
-        <div id="fileUploadDiv"></div>    
-    </div>
+    <div id="properties"></div>
 
-    <div id="runTaskSettingsDiv">
-        <div id="showDescriptionDiv">
-            <input name="toggleDesc" id="toggleDesc" type="checkbox" checked="checked" />
-            <label for="toggleDesc">
-                Show parameter descriptions
-            </label>
-        </div>
-        <div class="module_header" id="taskHeaderDiv"></div>
+    <div id="documentation"></div>
+    -->
+
+    <div id="submitForm">
         <div>
-            * required field
-            <div class="submitControlsDiv">
-                <button class="Reset"> Reset </button>
-                <button class="Run"> Run </button>
+            <div>
+                <button class="floatRight" id="cancelUpload">
+                    Cancel
+                </button>
+            </div>
+            <div id="fileUploadDiv"></div>
+        </div>
+
+        <div id="runTaskSettingsDiv">
+            <div id="showDescriptionDiv" class="floatRight">
+                <input name="toggleDesc" id="toggleDesc" type="checkbox" checked="checked" />
+                <label for="toggleDesc">
+                    Show parameter descriptions
+                </label>
+            </div>
+
+            <div class="task_header" id="taskHeaderDiv">
+                <span id='task_name' class='module_header '/>
+                <div class="floatRight">
+                    <label for="task_versions">
+                        version
+                    </label>
+                    <select name='task_versions' id='task_versions'/>
+                </div>
+            </div>
+            
+            <div class="clear">
+                <span class="otherControlsDiv">
+                    <button class="Export">Export</button>
+                </span>
+                <span class="submitControlsDiv floatRight">
+                    <button class="Reset"> Reset </button>
+                    <button class="Run"> Run </button>
+                </span>
+            </div>
+
+            <hr/>
+
+            <div>
+                * required field
+            </div>
+
+            <div id="paramsListingDiv">
+                <form id="runTaskForm" action="#"></form>
+            </div>
+
+            <hr/>
+            
+            <div>
+                <span class="floatLeft otherControlsDiv">
+                    <button class="Export">Export</button>
+                </span>
+                <span class="floatRight submitControlsDiv">
+                    <button class="Reset"> Reset </button>
+                    <button class="Run"> Run </button>
+                </span>
             </div>
         </div>
-
-        <div id="paramsListingDiv">
-            <form id="runTaskForm" action="#"></form>
-        </div>
-        <div class="submitControlsDiv">
-            <button class="Reset"> Reset </button>
-            <button class="Run"> Run </button>
-        </div>
     </div>
+</div>
 </body>
 </html>

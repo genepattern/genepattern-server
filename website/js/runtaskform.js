@@ -94,19 +94,47 @@ function loadModuleInfo(module)
         return;
     }
 
-    var span = $("<span class='.header'/>");
-    span.append(run_task_info.name);
+    $("#task_name").prepend(run_task_info.name);
 
-    $("#taskHeaderDiv").append(span);
-
-    /*if(module["lsidVersions"] !== undefined)
+    //add version drop down
+    if(module["lsidVersions"] !== undefined)
     {
-        updateModuleVersions(module["lsidVersions"]);
-        $('select[name="modversion"]').val(module["LSID"]);
-        $('select[name="modversion"]').multiselect("refresh");
+        for(var v =0; v <module["lsidVersions"].length; v++)
+        {
+            var versionnum = module["lsidVersions"][v];
+            var index = versionnum.lastIndexOf(":");
+            if(index == -1)
+            {
+                alert("An error occurred while loading module versions.\nInvalid lsid: " + moduleVersionLsidList[v]);
+            }
+            var version = versionnum.substring(index+1, versionnum.length);
+            var modversion = "<option value='" + versionnum + "'>" + version + "</option>";
+            $('#task_versions').append(modversion);
+            $('#task_versions').multiselect("refresh");
+        }
+
+        $('#task_versions').change(function()
+        {
+            var changeTaskVersion = "index.jsf?lsid=" + $(this).val();
+            window.open(changeTaskVersion, '_self');
+        });
     }
 
-    if(module["description"] !== undefined)
+    //var propertiesLink = "/gp/addTask.jsp?name="+run_task_info.lsid+"&view=1";
+    //$("#properties").load(propertiesLink + " #content");
+
+    $(".Export").click(function()
+    {
+        var exportLink = "/gp/makeZip.jsp?name=" + run_task_info.lsid;
+        window.open(exportLink, '_blank');
+    });
+
+    var docLink = "/gp/getTaskDoc.jsp?name=" + run_task_info.lsid;
+
+    $("#documentation").append('<object id="docPdf" data="'+ docLink + '" type="application/pdf" width="300" height="200">'+
+       'alt : <a href="'+ docLink + '">'+ docLink + '</a> </object>');
+
+    /*if(module["description"] !== undefined)
     {
         $('textarea[name="description"]').val(module["description"]);
     } */
@@ -203,8 +231,7 @@ function loadParameterInfo(parameters)
             valueTd.addClass("dNd");
             valueTd.append("<span class='btn btn-success fileinput-button'>"
                     + "<span><i class='icon-plus'></i>"
-                    + "<img src='../css/images/file_add.gif' width='16' height='16'"
-                    + "alt='Upload File'/>Upload Files...</span>"
+                    + "Upload Files...</span>"
                     + "<input class='uploadedinputfile' name='"+ parameters[q].name +"' type='file'/></span>");
             //valueTd.append("<span class='btn btn-success fileinput-button urlButton'>"
             //                   + "<span><i class='icon-plus'></i>"
@@ -324,6 +351,9 @@ jQuery(document).ready(function()
 
     jQuery.validator.classRuleSettings.checkTotal = { checkTotal: true };
     */
+
+    //Add tabs once properties page is redone
+    //$("#submitJob").tabs();
     
     $("#runTaskForm").validate(
     {
