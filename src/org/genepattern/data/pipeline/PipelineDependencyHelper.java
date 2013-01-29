@@ -143,9 +143,8 @@ public class PipelineDependencyHelper {
         if (!PipelineDependencyHelper.instance().isInitialized(task)) {
             if (task.isPipeline()) {
                 addPipelineToDependencies(task);
+                addTasksFromPipeline(task);
             }
-            
-            addTasksFromPipeline(task);
         }
     }
     
