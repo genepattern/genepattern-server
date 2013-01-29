@@ -109,6 +109,8 @@ public class PipelineDependencyHelper {
                 }
             }
         }
+        
+        pipelineToMissing.remove(task);
     }
     
     public Set<String> getMissingDependencies(TaskInfo task) {
