@@ -26,9 +26,11 @@ import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.Vector;
 
 import javax.servlet.http.HttpServlet;
@@ -45,8 +47,14 @@ import org.apache.commons.fileupload.servlet.ServletRequestContext;
 import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.log4j.Logger;
 import org.genepattern.data.pipeline.JobSubmission;
+import org.genepattern.data.pipeline.PipelineDependencyHelper;
 import org.genepattern.data.pipeline.PipelineModel;
+import org.genepattern.data.pipeline.PipelineModelException;
+import org.genepattern.data.pipeline.PipelineUtil;
+import org.genepattern.server.TaskIDNotFoundException;
+import org.genepattern.server.TaskLSIDNotFoundException;
 import org.genepattern.server.config.ServerConfiguration;
+import org.genepattern.server.executor.pipeline.PipelineException;
 import org.genepattern.server.genepattern.TaskInstallationException;
 import org.genepattern.server.webapp.PipelineCreationHelper;
 import org.genepattern.server.webservice.server.DirectoryManager;
@@ -70,10 +78,11 @@ public class PipelineQueryServlet extends HttpServlet {
 	private static final long serialVersionUID = 8270613493170496154L;
 	public static Logger log = Logger.getLogger(PipelineQueryServlet.class);
 	
-	public static final String LIBRARY = "/library";   // path for calling the REST-like library call
-	public static final String SAVE = "/save";         // path for calling the REST-like save call
-	public static final String LOAD = "/load";         // path for calling the REST-like load call
-	public static final String UPLOAD = "/upload";     // path for calling the REST-like upload call
+	public static final String LIBRARY = "/library";       // path for calling the REST-like library call
+	public static final String SAVE = "/save";             // path for calling the REST-like save call
+	public static final String LOAD = "/load";             // path for calling the REST-like load call
+	public static final String UPLOAD = "/upload";         // path for calling the REST-like upload call
+	public static final String DEPENDENTS = "/dependents"; // path for calling the REST-like dependents call
 	
 	public static final String DSL_FIRST = "1st Output";
 	public static final String DSL_SECOND = "2nd Output";
@@ -106,6 +115,9 @@ public class PipelineQueryServlet extends HttpServlet {
 		else if (UPLOAD.equals(action)) {
 		    uploadFile(request, response);
 		}
+		else if (DEPENDENTS.equals(action)) {
+            updateDependents(request, response);
+        }
 		else {
 		    sendError(response, "Routing error for " + action);
 		}
@@ -186,6 +198,95 @@ public class PipelineQueryServlet extends HttpServlet {
             }
         }
     }
+	
+	public void updateDependents(HttpServletRequest request, HttpServletResponse response) {
+	    // Test the session
+        String username = (String) request.getSession().getAttribute("userid");
+        if (username == null) {
+            sendError(response, "No GenePattern session found.  Please log in.");
+            return;
+        }
+        
+        // Make sure the update object was passed to the server
+        String updates = request.getParameter("updates");
+        if (updates == null) {
+            log.error("Unable to update the dependent pipelines");
+            sendError(response, "Unable to update the dependent pipelines");
+            return;
+        }
+        
+        // Transform the update object string into a JSON object
+        Set<TaskInfo> changed = null;
+        try {
+            JSONObject updateObject = new JSONObject(updates);
+            JSONArray updateListJSON = updateObject.getJSONArray("updateList");
+            String oldLsid = updateObject.getString("oldLsid");
+            String newLsid = updateObject.getString("newLsid");
+            
+            for (int i = 0; i < updateListJSON.length(); i++) {
+                String lsidToUpdate = updateListJSON.getString(i);
+                changed = recursiveDependencyUpdate(lsidToUpdate, oldLsid, newLsid, username);
+            }
+        }
+        catch (Throwable e) {
+            log.error("Unable to read the list of pipelines to update");
+            sendError(response, "Unable to read the list of pipelines to update");
+            return;
+        }
+        
+        // Respond to the client
+        ResponseJSON message = new ResponseJSON();
+        message.addMessage("Pipeline Dependencies Updated");
+        if (changed != null && changed.size() > 0) {
+            message.addChild("changed", makeDependentsObject(username, changed));
+        }
+        this.write(response, message);
+	}
+	
+	public Set<TaskInfo> recursiveDependencyUpdate(String lsidToUpdate, String oldLsid, String newLsid, String username) throws Throwable {
+	    TaskInfo toUpdateTaskInfo = TaskInfoCache.instance().getTask(lsidToUpdate);
+	    TaskInfo newTaskInfo = TaskInfoCache.instance().getTask(newLsid);
+	    PipelineModel toUpdateModel = null;
+	    String newUpdateLsid = null;
+	    Set<TaskInfo> changed = new HashSet<TaskInfo>();
+	    
+	    synchronized(this) {
+    	    try {
+                toUpdateModel = PipelineUtil.getPipelineModel(toUpdateTaskInfo);
+                
+                // Do the changes here
+                for (JobSubmission job : toUpdateModel.getTasks()) {
+                    if (job.getLSID().equals(oldLsid)) {
+                        job.setLSID(newLsid);
+                        job.setTaskInfo(newTaskInfo);
+                    }
+                }
+                
+                // Save the pipeline
+                PipelineCreationHelper controller = new PipelineCreationHelper(toUpdateModel);
+                controller.generateLSID();
+                newUpdateLsid = controller.generateTask();
+                
+                // Copy the files to the new TaskLib
+                copyFilesToNewTaskLib(toUpdateTaskInfo.getLsid(), toUpdateTaskInfo.getName(), new ArrayList<String>(), toUpdateTaskInfo, newUpdateLsid, username);   
+            }
+            catch (Exception e) {
+                throw new PipelineException("Unable to obtain a PipelineModel from the TaskInfo");
+            }
+	    }
+        
+        // Recurse for all pipeline dependent on this one
+        Set<TaskInfo> dependents = toUpdateModel.getDependentPipelines();
+        if (dependents != null) {
+            for (TaskInfo info : dependents) {
+                Set<TaskInfo> called = recursiveDependencyUpdate(info.getLsid(), toUpdateTaskInfo.getLsid(), newUpdateLsid, username);
+                changed.addAll(called);
+            }
+        }
+        
+        changed.add(toUpdateTaskInfo);
+        return changed;
+	}
 
 	/**
 	 * Handles uploading a file from the Pipeline Designer client to the server
@@ -638,7 +739,7 @@ public class PipelineQueryServlet extends HttpServlet {
 	    } 
 	    
 	    try {
-	     // Test that the saved pipeline has not been deleted
+	        // Test that the saved pipeline has not been deleted
     	    String lsid = pipelineObject.getLsid();
     	    if (lsid.length() > 4) { // Test if the lsid is not blank or zero
     	        TaskInfo info = TaskInfoCache.instance().getTask(lsid);
@@ -670,6 +771,8 @@ public class PipelineQueryServlet extends HttpServlet {
         
         // Build up the pipeline model to save
         String newLsid = null;
+        Set<TaskInfo> dependents = null;
+        
         synchronized(this) {
             PipelineModel model = null;
             PipelineCreationHelper controller = null;
@@ -718,18 +821,24 @@ public class PipelineQueryServlet extends HttpServlet {
             }
         }
         
+        TaskInfo oldInfo = null;
+        
+        // Check for dependent pipelines to prompt for update
+        try {
+            if (pipelineObject.getLsid().length() > 0) { 
+                oldInfo = TaskInfoCache.instance().getTask(pipelineObject.getLsid());
+                dependents = PipelineDependencyHelper.instance().getDependentPipelines(oldInfo);
+            }
+        }
+        catch (Exception e) {
+            log.error("Unable to retrieve the old taskInfo based on old lsid for: " + newLsid, e);
+            sendError(response, "Unable to save uploaded files for the pipeline: " + e.getLocalizedMessage());
+            return;
+        }
+
         // Create the new pipeline directory in taskLib and move files
         try {
-            File newDir = null;
-            // Existing pipeline being saved
-            if (pipelineObject.getLsid().length() > 0) { 
-                TaskInfo oldInfo = TaskInfoCache.instance().getTask(pipelineObject.getLsid());
-                newDir = this.copySupportFiles(oldInfo.getName(), pipelineObject.getName(), oldInfo.getLsid(), newLsid, username); 
-            }
-            else { // New pipeline being saved
-                newDir = new File(DirectoryManager.getTaskLibDir(pipelineObject.getName() + "." + GPConstants.TASK_TYPE_PIPELINE, newLsid, username));
-            }
-            this.copyNewFiles(pipelineObject.getFiles(), newDir);
+            File newDir = copyFilesToNewTaskLib(pipelineObject.getLsid(), pipelineObject.getName(), pipelineObject.getFiles(), oldInfo, newLsid, username);
             
             // Create verified files list and purge unnecessary files
             FileCollection verifiedFiles = extractVerifiedFiles(newDir, pipelineObject, filesObject);
@@ -738,9 +847,9 @@ public class PipelineQueryServlet extends HttpServlet {
             PipelineDesignerFile pdFile = new PipelineDesignerFile(newDir);
             pdFile.write(modulesList, verifiedFiles);
         }
-        catch (Throwable t) {
-            log.error("Unable to retrieve the old taskInfo based on old lsid for: " + newLsid, t);
-            sendError(response, "Unable to save uploaded files for the pipeline: "+t.getLocalizedMessage());
+        catch (Throwable e) {
+            log.error("Unable to retrieve the old taskInfo based on old lsid for: " + newLsid, e);
+            sendError(response, "Unable to save uploaded files for the pipeline: " + e.getLocalizedMessage());
             return;
         }
 
@@ -748,8 +857,53 @@ public class PipelineQueryServlet extends HttpServlet {
         ResponseJSON message = new ResponseJSON();
         message.addMessage("Pipeline Saved");
         message.addChild("lsid", newLsid);
+        if (dependents != null && dependents.size() > 0) {
+            message.addChild("dependents", makeDependentsObject(username, dependents));
+        }
         this.write(response, message);
 	}
+	
+	private File copyFilesToNewTaskLib(String oldLsid, String name, List<String> files, TaskInfo oldInfo, String newLsid, String username) throws Throwable {
+	    try {
+            // Create the new pipeline directory in taskLib and move files
+            File newDir = null;
+            // Existing pipeline being saved
+            if (oldLsid.length() > 0) { 
+                newDir = this.copySupportFiles(oldInfo.getName(), name, oldInfo.getLsid(), newLsid, username); 
+            }
+            else { // New pipeline being saved
+                newDir = new File(DirectoryManager.getTaskLibDir(name + "." + GPConstants.TASK_TYPE_PIPELINE, newLsid, username));
+            }
+            this.copyNewFiles(files, newDir);
+
+            return newDir;
+        }
+        catch (Throwable t) {
+            throw t;
+        }
+	}
+	
+	private ResponseJSON makeDependentsObject(String username, Set<TaskInfo> dependents) {
+	    ResponseJSON dependentsObject = new ResponseJSON();
+	    
+	    int count = 0;
+	    for (TaskInfo dependent : dependents) {
+	        if (username.equals(dependent.getUserId())) {
+	            dependentsObject.addChild(count, makeDependentObject(dependent));
+	            count++;
+	        }
+	    }
+	    
+	    return dependentsObject;
+	}
+	
+	private ResponseJSON makeDependentObject(TaskInfo dependent) {
+        ResponseJSON dependentObject = new ResponseJSON();
+        dependentObject.addChild("name", dependent.getName());
+        dependentObject.addChild("lsid", dependent.getLsid());
+        
+        return dependentObject;
+    }
 	
 	private void purgeUnnecessaryFiles(File taskDir, List<File> necessaryFiles) {
 	    for (File file : taskDir.listFiles()) {

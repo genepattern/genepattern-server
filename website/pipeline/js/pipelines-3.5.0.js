@@ -1263,6 +1263,7 @@ var editor = {
 
                 var newLsid = response["lsid"];
                 var newVersion = editor.extractLsidVersion(newLsid);
+                var oldLsid = editor.workspace["pipelineLsid"];
                 
                 // Update the LSID upon successful save
                 if (newLsid !== undefined && newLsid !== null) {
@@ -1279,26 +1280,101 @@ var editor = {
                     return;
                 }
                 
-                // Update the library to include the new module
-                $.getJSON("/gp/PipelineDesigner/library", function(data) {
-                    library.initStructure(data);
-                    properties.redrawDisplay();
-                });
-                
-                if (message !== undefined && message !== null) {
-                    editor.showDialog("Pipeline Saved",
-                        "<div style='text-align: center; font-weight: bold;'>" + message + "<br />Version: " + newVersion + "</div>", {
-                            "Run Pipeline": function() {
-                                editor.runPipeline(newLsid);
-                            },
-                            "Close": function() {
+                // Prompt for updating dependent pipelines
+                var dependents = response["dependents"];
+                if (dependents !== null && dependents !== undefined) {
+                	var dialogString = "<div>The pipeline you just saved is embedded in one or more other pipelines. " + 
+                    "Would you like to automatically generate a new version of them using the new version of this pipeline?</div>";
+	                for (var d in dependents) {
+	                	var selected = dependents[d];
+	                	if (selected !== null) {
+	                		dialogString += "<input type='checkbox' class='updateCheckbox' id='" + selected["lsid"] + "' checked='true' name='" + selected["lsid"] + "'/>" + 
+	                		"<label class='updateLabel' for='" + selected["lsid"] + "'>" + selected["name"] + "</label><br/>";
+	                	}
+	                }
+                	
+                	editor.showDialog("Pipeline Saved",
+                        dialogString, {
+                            "Generate Pipelines": function() {
+                                editor._updateDependentPipelines(oldLsid, newLsid);
                                 $(this).dialog("close");
+                                editor._finishSave(message, newVersion, newLsid);
+                            },
+                            "No Thanks": function() {
+                                $(this).dialog("close");
+                                editor._finishSave(message, newVersion, newLsid);
                             }
                         });
+                	
+                	return;
                 }
+                
+                editor._finishSave(message, newVersion, newLsid);
             },
             dataType: "json"
         });
+	},
+	
+	_updateDependentPipelines: function(oldLsid, newLsid) {
+		var updateList = [];
+		var checkedArray = $(".updateCheckbox[checked=true]");
+		checkedArray.each(function(i) {
+			var checkbox = $(checkedArray.get(i));
+			updateList.push(checkbox.attr("id"));
+		});
+		
+		var bundle = {
+			"updateList": updateList,
+			"oldLsid": oldLsid,
+			"newLsid": newLsid
+		};
+		
+		$.ajax({
+            type: "POST",
+            url: "/gp/PipelineDesigner/dependents",
+            data: { "updates" : JSON.stringify(bundle) },
+            success: function(response) {
+            	var message = response["MESSAGE"];
+                var error = response["ERROR"];
+                
+            	if (error !== undefined && error !== null) {
+                    editor.showDialog("ERROR", "<div style='text-align: center; font-weight: bold;'>" + error + "</div>");
+                    return;
+                }
+            	
+            	var changed = response["changed"];
+            	var dialogString = "<div>The following pipelines have been updated:</div>";
+            	for (var i in changed) {
+            		var selected = changed[i];
+            		if (selected !== null && selected !== undefined) {
+            			dialogString += "<div class='updateCallback'>" + selected["name"] + "</div><br/>";
+            		}
+            	}
+            	
+            	editor.showDialog("Pipeline Saved", dialogString);
+            },
+            dataType: "json"
+		});
+	},
+	
+	_finishSave: function(message, newVersion, newLsid) {
+		// Update the library to include the new module
+        $.getJSON("/gp/PipelineDesigner/library", function(data) {
+            library.initStructure(data);
+            properties.redrawDisplay();
+        });
+        
+        if (message !== undefined && message !== null) {
+            editor.showDialog("Pipeline Saved",
+                "<div style='text-align: center; font-weight: bold;'>" + message + "<br />Version: " + newVersion + "</div>", {
+                    "Run Pipeline": function() {
+                        editor.runPipeline(newLsid);
+                    },
+                    "Close": function() {
+                        $(this).dialog("close");
+                    }
+                });
+        }
 	},
 
     _updateHistoryOnSave: function() {

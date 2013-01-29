@@ -13,6 +13,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 import org.apache.log4j.Logger;
+import org.genepattern.data.pipeline.PipelineDependencyHelper;
 import org.genepattern.server.TaskIDNotFoundException;
 import org.genepattern.server.TaskLSIDNotFoundException;
 import org.genepattern.server.config.ServerConfiguration;
@@ -42,6 +43,7 @@ public class TaskInfoCache {
     private static class Singleton {
         final static TaskInfoCache taskInfoCache = new TaskInfoCache();
         private Singleton() {
+            PipelineDependencyHelper.instance();
         }
     }
     private static TaskInfo taskInfoFromTaskMaster(TaskMaster tm, TaskInfoAttributes taskInfoAttributes) {
@@ -63,10 +65,8 @@ public class TaskInfoCache {
     
     private TaskInfoCache() {
         ServerConfiguration.Context serverContext = ServerConfiguration.Context.getServerContext();
-        enableCache = ServerConfiguration.instance().getGPBooleanProperty(serverContext, "taskInfoCache.enable", false);
-        boolean initializeCache = 
-            enableCache && ServerConfiguration.instance().getGPBooleanProperty(serverContext, "taskInfoCache.initialize", true);
-        if (initializeCache) {
+        enableCache = ServerConfiguration.instance().getGPBooleanProperty(serverContext, "taskInfoCache.enable", true);
+        if (enableCache) {
             initializeCache();
         }
     }
@@ -99,6 +99,8 @@ public class TaskInfoCache {
     }
 
     public void removeFromCache(Integer taskId) {
+        PipelineDependencyHelper.instance().remove(taskId);
+        
         TaskMaster tm = taskMasterCache.get(taskId);
         if (tm != null && tm.getLsid() != null) {
             DirectoryManager.removeTaskLibDirFromCache(tm.getLsid());
@@ -250,6 +252,7 @@ public class TaskInfoCache {
         }
         if (addToCache) {
             addToCache(taskMaster);
+            PipelineDependencyHelper.instance().add(this.getTaskInfoFromTaskMaster(taskMaster, addToCache));
         }
         return taskMaster;
     }
