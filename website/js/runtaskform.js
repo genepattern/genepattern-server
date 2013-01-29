@@ -107,9 +107,15 @@ function loadModuleInfo(module)
             {
                 alert("An error occurred while loading module versions.\nInvalid lsid: " + moduleVersionLsidList[v]);
             }
+
             var version = versionnum.substring(index+1, versionnum.length);
             var modversion = "<option value='" + versionnum + "'>" + version + "</option>";
             $('#task_versions').append(modversion);
+
+            if(module["lsidVersions"][v] == run_task_info.lsid)
+            {
+                $('#task_versions').val(versionnum).attr('selected',true);
+            }
             $('#task_versions').multiselect("refresh");
         }
 
@@ -130,9 +136,6 @@ function loadModuleInfo(module)
     });
 
     var docLink = "/gp/getTaskDoc.jsp?name=" + run_task_info.lsid;
-
-    $("#documentation").append('<object id="docPdf" data="'+ docLink + '" type="application/pdf" width="300" height="200">'+
-       'alt : <a href="'+ docLink + '">'+ docLink + '</a> </object>');
 
     /*if(module["description"] !== undefined)
     {
@@ -373,7 +376,6 @@ jQuery(document).ready(function()
 
     $("button").button();
 
-    //$(".submitControlsDiv").clone().appendTo("body");
     var lsid = Request.parameter('lsid');
     if(lsid == null || lsid  == "")
     {
@@ -694,6 +696,8 @@ function updateParamFileTable(paramName)
             delButton.data("pfile", files[i]);
             delButton.button().click(function()
             {
+                event.preventDefault();
+                
                 var file = $(this).data("pfile");
                 //remove from file listing for specified parameter
                 var index = param_file_listing[paramName].indexOf(file);
@@ -704,12 +708,15 @@ function updateParamFileTable(paramName)
 
                 //check if this file was in the list of files to upload
                 // and if so remove the file
-                for(var t=0;t<files_to_upload[paramName].length;t++)
+                if(files_to_upload[paramName] != undefined)
                 {
-                    if(files_to_upload[paramName][t].name == file)
+                    for(var t=0;t<files_to_upload[paramName].length;t++)
                     {
-                        files_to_upload[paramName].splice(t, 1);
-                        break;
+                        if(files_to_upload[paramName][t].name == file)
+                        {
+                            files_to_upload[paramName].splice(t, 1);
+                            break;
+                        }
                     }
                 }
                 updateParamFileTable(paramName);
