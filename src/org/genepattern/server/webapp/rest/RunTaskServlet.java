@@ -2,7 +2,9 @@ package org.genepattern.server.webapp.rest;
 
 import org.genepattern.util.GPConstants;
 import org.genepattern.util.LSID;
+import org.genepattern.util.LSIDUtil;
 import org.genepattern.server.TaskLSIDNotFoundException;
+import org.genepattern.server.webapp.jsf.AuthorizationHelper;
 import org.genepattern.server.dm.GpFilePath;
 import org.genepattern.server.rest.JobInput;
 import org.genepattern.server.rest.JobInputApiImpl;
@@ -75,12 +77,18 @@ public class RunTaskServlet extends HttpServlet
             ModuleJSON moduleObject = new ModuleJSON(taskInfo, null);
             moduleObject.put("lsidVersions", new JSONArray(getModuleVersions(lsid)));
 
+            //check if user is allowed to edit the module
+            boolean createModuleAllowed = AuthorizationHelper.createModule(username);
+            boolean editable = createModuleAllowed && taskInfo.getUserId().equals(username)
+                    && LSIDUtil.getInstance().isAuthorityMine(taskInfo.getLsid());
+            moduleObject.put("editable", editable);
+
             JSONObject responseObject = new JSONObject();
             responseObject.put(ModuleJSON.KEY, moduleObject);
 
             JSONArray parametersObject = getParameterList(taskInfo.getParameterInfoArray());
             responseObject.put(ParametersJSON.KEY, parametersObject);
-
+            
             return Response.ok().entity(responseObject.toString()).build();
         }
         catch(Exception e)
