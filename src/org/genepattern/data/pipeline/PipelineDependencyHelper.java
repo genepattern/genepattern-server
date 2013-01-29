@@ -7,7 +7,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 import org.apache.log4j.Logger;
-import org.genepattern.server.domain.TaskMaster;
 import org.genepattern.webservice.TaskInfo;
 import org.genepattern.webservice.TaskInfoCache;
 
@@ -23,6 +22,9 @@ public class PipelineDependencyHelper {
     
     // This is a map where given a task, it will return all pipelines it is directly embedded in
     ConcurrentMap<TaskInfo, Set<TaskInfo>> taskToPipelines = new ConcurrentHashMap<TaskInfo, Set<TaskInfo>>();
+    
+ // The map of pipelines to missing task LSIDs in the pipeline
+    ConcurrentMap<TaskInfo, Set<String>> pipelineToMissing = new ConcurrentHashMap<TaskInfo, Set<String>>();
     
     public static PipelineDependencyHelper instance() {
         if (!init) { helper.build(); }
@@ -109,6 +111,32 @@ public class PipelineDependencyHelper {
         }
     }
     
+    public Set<String> getMissingDependencies(TaskInfo task) {
+        Set<String> missing = pipelineToMissing.get(task);
+        if (missing == null) return new HashSet<String>();
+        else return missing;
+    }
+    
+    /**
+     * Returns a set of all recursive dependencies of the given pipeline
+     * Note: This method may need some testing when put into actual use
+     * @param task
+     * @return
+     */
+    public Set<String> getMissingDependenciesRecursive(TaskInfo task) {
+        Set<String> missing = new HashSet<String>();
+        missing.addAll(getMissingDependencies(task));
+        
+        for (TaskInfo info : pipelineToDependencies.get(task)) {
+            if (info.isPipeline()) {
+                missing.addAll(getMissingDependenciesRecursive(info));
+            }
+        }
+        
+        return missing;
+        
+    }
+    
     public void add(TaskInfo task) {
         if (!PipelineDependencyHelper.instance().isInitialized(task)) {
             if (task.isPipeline()) {
@@ -129,6 +157,13 @@ public class PipelineDependencyHelper {
                 TaskInfo dependant = getTaskInfoFromJobSubmission(job);
                 if (dependant != null) {
                     dependencies.add(dependant);
+                }
+                else {
+                    // The dependency was not found, add it to the map of missing dependencies
+                    Set<String> missing = pipelineToMissing.get(task);
+                    if (missing == null) { missing = new HashSet<String>(); }
+                    missing.add(job.getLSID());
+                    pipelineToMissing.put(task, missing);
                 }
             }
         }
