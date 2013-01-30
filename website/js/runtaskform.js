@@ -16,6 +16,10 @@ var parameter_and_val_obj = {};
 //contains all the file upload requests
 var fileUploadRequests = [];
 
+//contains the json of parameters received when loading a module
+//saved so it can reused when for the reset operation
+var parametersJson = null;
+
 var Request = {
  	parameter: function(name) {
  		return this.parameters()[name];
@@ -65,7 +69,8 @@ function loadModule(taskId)
                     && response["parameters"] !== undefined ) 
                 {
                     loadModuleInfo(response["module"]);
-                    loadParameterInfo(response["parameters"]);
+                    parametersJson = response["parameters"];
+                    loadParameterInfo(parametersJson);
                 }
             },
             error: function(xhr, ajaxOptions, thrownError)
@@ -154,7 +159,7 @@ function loadModuleInfo(module)
 
 function loadParameterInfo(parameters)
 {
-    var paramsTable = $("<table id=paramsTable/>");
+    var paramsTable = $("#paramsTable");
     var inputFileRowIds = [];
     for(var q=0; q < parameters.length;q++)
     {
@@ -293,7 +298,6 @@ function loadParameterInfo(parameters)
         //append parameter description table
         paramsTable.append("<tr class='paramDescription'><td></td><td colspan='3'>" + parameters[q].description +"</td></tr>");
     }
-    $("#runTaskForm").append(paramsTable);
 
     for(var r=0;r<inputFileRowIds.length;r++)
     {
@@ -424,8 +428,7 @@ jQuery(document).ready(function()
 
     $("button.Reset").click(function()
     {
-        //TODO: implement Reset function
-        alert("Not Implemented");
+        reset();
     });
 
     $("button.Run").click(function()
@@ -475,12 +478,18 @@ jQuery(document).ready(function()
     });
 });
 
+function reset()
+{
+
+    $("#paramsTable").empty();
+    loadParameterInfo(parametersJson);
+}
+
 function runJob()
 {
     //Step 1: upload all the input files if there are any
     if(files_to_upload != null && Object.keys(files_to_upload).length > 0)
     {
-        console.log("Files to upload: " + files_to_upload.length)
         uploadAllFiles();
     }
     else
