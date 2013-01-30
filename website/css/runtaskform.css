@@ -241,3 +241,13 @@ button.urlButton
     height: 920px;
 }
 
+.otherControlsDiv
+{
+    padding: 3px;
+}
+
+.links
+{
+    margin-left: 2px;
+    margin-right: 2px;
+}

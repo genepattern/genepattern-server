@@ -116,8 +116,16 @@ function loadModuleInfo(module)
             {
                 $('#task_versions').val(versionnum).attr('selected',true);
             }
-            $('#task_versions').multiselect("refresh");
         }
+
+        //disabled until css for multiselect is improved
+        /*$('#task_versions').multiselect(
+        {
+            header: false,
+            multiple: false,
+            selectedList: 1,
+            classes: "multiselect"
+        });*/
 
         $('#task_versions').change(function()
         {
@@ -126,16 +134,17 @@ function loadModuleInfo(module)
         });
     }
 
-    //var propertiesLink = "/gp/addTask.jsp?name="+run_task_info.lsid+"&view=1";
-    //$("#properties").load(propertiesLink + " #content");
-
     $(".Export").click(function()
     {
         var exportLink = "/gp/makeZip.jsp?name=" + run_task_info.lsid;
         window.open(exportLink, '_blank');
     });
 
+    var propertiesLink = "/gp/addTask.jsp?name="+run_task_info.lsid+"&view=1";
+    $(".properties").attr("href", propertiesLink);
+
     var docLink = "/gp/getTaskDoc.jsp?name=" + run_task_info.lsid;
+    $(".documentation").attr("href", docLink);
 
     /*if(module["description"] !== undefined)
     {
@@ -471,12 +480,11 @@ function runJob()
     //Step 1: upload all the input files if there are any
     if(files_to_upload != null && Object.keys(files_to_upload).length > 0)
     {
+        console.log("Files to upload: " + files_to_upload.length)
         uploadAllFiles();
     }
     else
     {
-        //Step 2: run the job
-        //TODO: implement job submission
         submitTask();
     }
 }
@@ -568,8 +576,8 @@ function drop(evt)
     var files = evt.dataTransfer.files;
     var count = files.length;
 
-    console.log("files in text: " + evt.dataTransfer.getData('Text'));
-    console.log("file count: " + count);
+    //console.log("files in text: " + evt.dataTransfer.getData('Text'));
+    //console.log("file count: " + count);
 
     var target = $(evt.target);
     console.log("tData" + target.html());
@@ -591,6 +599,7 @@ function drop(evt)
                 && evt.dataTransfer.getData('Text')  !== undefined
                 && evt.dataTransfer.getData('Text') != "")
         {
+            console.log("A text file was found: " + evt.dataTransfer.getData('Text'));
             //This must be a url and not a file
             var fileListing = param_file_listing[paramName];
             if(fileListing == null || fileListing == undefined)
