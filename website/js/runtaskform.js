@@ -599,7 +599,6 @@ function drop(evt)
                 && evt.dataTransfer.getData('Text')  !== undefined
                 && evt.dataTransfer.getData('Text') != "")
         {
-            console.log("A text file was found: " + evt.dataTransfer.getData('Text'));
             //This must be a url and not a file
             var fileListing = param_file_listing[paramName];
             if(fileListing == null || fileListing == undefined)
@@ -611,6 +610,8 @@ function drop(evt)
             param_file_listing[paramName] = fileListing;
 
             updateParamFileTable(paramName);
+             //add location to value listing for parameter
+            addValueToParameter(paramName, evt.dataTransfer.getData('Text'));
         }
     }
 }
@@ -791,13 +792,7 @@ function uploadFile(paramName, file, fileId)
         var response = $.parseJSON(this.responseText);
 
         //add location to value listing for parameter
-        var valueListing = parameter_and_val_obj[paramName];
-        if(valueListing == undefined || valueListing == null)
-        {
-            valueListing = [];
-        }
-        valueListing.push(response.location);
-        parameter_and_val_obj[paramName] = valueListing;
+        addValueToParameter(paramName, response.location);
 
         numFilesUploaded++;
 
@@ -862,6 +857,18 @@ function uploadFile(paramName, file, fileId)
     //keep track of all teh upload request so that they can be canceled
     //using the cancel button
     fileUploadRequests.push(xhr);
+}
+
+function addValueToParameter(paramName, value)
+{
+    //add location to value listing for parameter
+    var valueListing = parameter_and_val_obj[paramName];
+    if(valueListing == undefined || valueListing == null)
+    {
+        valueListing = [];
+    }
+    valueListing.push(value);
+    parameter_and_val_obj[paramName] = valueListing;
 }
 
 
