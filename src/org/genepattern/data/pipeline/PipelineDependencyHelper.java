@@ -31,7 +31,7 @@ public class PipelineDependencyHelper {
         return helper;
     }
     
-    public void build() {
+    public synchronized void build() {
         TaskInfo[] tasks = TaskInfoCache.instance().getAllTasks();
         pipelineToDependencies = new ConcurrentHashMap<TaskInfo, Set<TaskInfo>>();
         
@@ -74,12 +74,16 @@ public class PipelineDependencyHelper {
         }
     }
     
-    public void remove(Integer taskId) {
-        TaskInfo task = TaskInfoCache.instance().getTask(taskId);
-        remove(task);
+    public synchronized void remove(Integer taskId) {
+        for (TaskInfo info : taskToPipelines.keySet()) {
+            if (taskId.equals(info.getID())) {
+                remove(info);
+                return;
+            }
+        }
     }
     
-    public void remove(TaskInfo task) {
+    public synchronized void remove(TaskInfo task) {
         // Remove from pipelineToDependencies map
         for (TaskInfo key : pipelineToDependencies.keySet()) {
             if (key.getLsid().equals(task.getLsid())) {
@@ -103,11 +107,13 @@ public class PipelineDependencyHelper {
             }
             
             Set<TaskInfo> values = taskToPipelines.get(key);
+            Set<TaskInfo> newValues = new HashSet<TaskInfo>();
             for (TaskInfo value : values) {
-                if (value.getLsid().equals(task.getLsid())) {
-                    values.remove(value);
+                if (!value.getLsid().equals(task.getLsid())) {
+                    newValues.add(value);
                 }
             }
+            taskToPipelines.put(key, newValues);
         }
         
         pipelineToMissing.remove(task);
@@ -139,7 +145,7 @@ public class PipelineDependencyHelper {
         
     }
     
-    public void add(TaskInfo task) {
+    public synchronized void add(TaskInfo task) {
         if (!PipelineDependencyHelper.instance().isInitialized(task)) {
             if (task.isPipeline()) {
                 addPipelineToDependencies(task);

@@ -97,6 +97,7 @@ public class PipelineQueryServlet extends HttpServlet {
 	
 	@Override
 	public void doGet(HttpServletRequest request, HttpServletResponse response) {
+	    PipelineDependencyHelper.instance(); // Make sure instance initialized
 		String action = request.getPathInfo();
 		
 		// Route to the appropriate action, returning an error if unknown
