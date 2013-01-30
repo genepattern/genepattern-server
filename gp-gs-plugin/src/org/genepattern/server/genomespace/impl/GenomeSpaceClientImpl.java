@@ -550,4 +550,17 @@ public class GenomeSpaceClientImpl implements GenomeSpaceClient {
         DataManagerClient dmClient = gsSession.getDataManagerClient();
         return dmClient.getMetadata(gsUrl);
     }
+
+    public String getToken(Object session) throws GenomeSpaceException {
+        GsSession gsSession = null;
+        if (session instanceof GsSession) {
+            gsSession = (GsSession) session;
+        }
+        else {
+            log.error("Object other than GsSession passed into obtainMetadata(): " + session);
+            throw new GenomeSpaceException("Object other than GsSession passed into obtainMetadata(): " + session);
+        }
+        
+        return gsSession.getAuthenticationToken();
+    }
 }

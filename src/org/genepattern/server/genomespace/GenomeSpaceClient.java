@@ -32,5 +32,6 @@ public interface GenomeSpaceClient {
     public URL getSendToToolUrl(Object gsSession, GenomeSpaceFile file, String toolName) throws GenomeSpaceException;
     public URL getConvertedURL(Object gsSessionObject, GenomeSpaceFile file, String format) throws GenomeSpaceException;
     public Object obtainMetadata(Object gsSessionObject, URL gsUrl) throws GenomeSpaceException;
-    public GenomeSpaceFile buildDirectory(Object gsSessionObject, Object metadataObject) throws GenomeSpaceException;;
+    public GenomeSpaceFile buildDirectory(Object gsSessionObject, Object metadataObject) throws GenomeSpaceException;
+    public String getToken(Object session) throws GenomeSpaceException;
 }

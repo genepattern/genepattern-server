@@ -100,6 +100,7 @@ class GenomeSpaceClientSingleton {
             public URL getConvertedURL(Object gsSessionObject, GenomeSpaceFile file, String format) throws GenomeSpaceException { return null; }
             public Object obtainMetadata(Object gsSessionObject, URL gsUrl) throws GenomeSpaceException { return null; }
             public GenomeSpaceFile buildDirectory(Object gsSessionObject, Object metadataObject) throws GenomeSpaceException { return null; }
+            public String getToken(Object session) throws GenomeSpaceException { return null; }
         };
     }
 }
