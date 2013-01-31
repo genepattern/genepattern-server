@@ -139,6 +139,7 @@ function loadModuleInfo(module)
         });
     }
 
+
     $(".Export").click(function()
     {
         var exportLink = "/gp/makeZip.jsp?name=" + run_task_info.lsid;
@@ -149,8 +150,14 @@ function loadModuleInfo(module)
     $(".properties").attr("href", propertiesLink);
 
     var docLink = "/gp/getTaskDoc.jsp?name=" + run_task_info.lsid;
-    $(".documentation").attr("href", docLink);
+    $(".documentation").attr("href", docLink, "_blank");
 
+    if(module["editable"] != undefined && module["editable"])
+    {
+        var editLink = "/gp/modules/creator.jsf?lsid=" + run_task_info.lsid;
+        $(".otherControlsDiv").append("<a href='" + editLink + "' target='_blank'>edit</a>");
+    }
+    
     /*if(module["description"] !== undefined)
     {
         $('textarea[name="description"]').val(module["description"]);
