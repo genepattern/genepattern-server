@@ -60,26 +60,6 @@ public class JobInputFileUtil {
         this.inputFileDir=initInputFileDir();
     }
     
-    public void setContext(Context jobContext) {
-        this.context=jobContext;
-    }
-    public void setUploadPath(final String relativePath) {
-        this.uploadPath=relativePath;
-        //should be a relative path to a directory (always use '/' separator)
-        if (!uploadPath.endsWith("/")) {
-            uploadPath = uploadPath+"/";
-        }
-    }
-    public String getUploadPath() {
-        return uploadPath;
-    }
-    public JobInputFileUtil(final String uploadPath) {
-        this.uploadPath=uploadPath;
-        if (!uploadPath.endsWith("/")) {
-            this.uploadPath = uploadPath+"/";
-        }
-    }
-
     private GpFilePath initInputFileDir() throws Exception {
         if (context==null) {
             throw new IllegalArgumentException("context==null");
@@ -195,12 +175,9 @@ public class JobInputFileUtil {
      * @param gpFilePath
      */
     public void updateUploadsDb(GpFilePath gpFilePath) throws Exception {
-        if (!(gpFilePath instanceof UserUploadFile)) {
-            throw new IllegalArgumentException("Expecting a GpFilePath instance of type UserUploadFile");
-        }
-        addUploadFileToDb(gpFilePath.getRelativeFile());
+        addUploadFileToDb(gpFilePath);
     }
-    
+
     /**
      * For the current user, given a relative path to a file,
      * add a record in the User Uploads DB for the file,
@@ -208,29 +185,31 @@ public class JobInputFileUtil {
      * 
      * @param relativePath
      */
-    private void addUploadFileToDb(final File relativePath) throws Exception {
-            List<String> dirs=new ArrayList<String>();
-
-            File f=relativePath.getParentFile();
-            while(f!=null) {
-                dirs.add(0, f.getName());
-                f=f.getParentFile();
-            }
-            
-            String parentPath="";
-            for(String dirname : dirs) {
-                parentPath += (dirname+"/");
-                //create a new record for the directory, if necessary
-                GpFilePath gpFilePath = GpFileObjFactory.getUserUploadFile(context, new File(parentPath));
-                UserUploadManager.createUploadFile(context, gpFilePath, 1, true);
-                UserUploadManager.updateUploadFile(context, gpFilePath, 1, 1);
-            }
-            GpFilePath gpFilePath = GpFileObjFactory.getUserUploadFile(context, relativePath);
-            UserUploadManager.createUploadFile(context, gpFilePath, 1, true);
-            UserUploadManager.updateUploadFile(context, gpFilePath, 1, 1);
+    private void addUploadFileToDb(final GpFilePath gpFilePath) throws Exception {
+        if (!(gpFilePath instanceof UserUploadFile)) {
+            throw new IllegalArgumentException("Expecting a GpFilePath instance of type UserUploadFile");
         }
 
-    
+        List<String> dirs=new ArrayList<String>();
+
+        File f=gpFilePath.getRelativeFile().getParentFile();
+        while(f!=null) {
+            dirs.add(0, f.getName());
+            f=f.getParentFile();
+        }
+
+        String parentPath="";
+        for(String dirname : dirs) {
+            parentPath += (dirname+"/");
+            //create a new record for the directory, if necessary
+            GpFilePath parent = GpFileObjFactory.getUserUploadFile(context, new File(parentPath));
+            UserUploadManager.createUploadFile(context, parent, 1, true);
+            UserUploadManager.updateUploadFile(context, parent, 1, 1);
+        }
+        UserUploadManager.createUploadFile(context, gpFilePath, 1, true);
+        UserUploadManager.updateUploadFile(context, gpFilePath, 1, 1);
+    }
+
     static public GpFilePath getDistinctPathForExternalUrl(final Context jobContext, final URL url) throws Exception {
         File relPath=new File(DEFAULT_ROOT_PATH+"external/"+url.getHost()+"/"+url.getPath());
         GpFilePath input=GpFileObjFactory.getUserUploadFile(jobContext, relPath);

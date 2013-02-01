@@ -1,11 +1,12 @@
 package org.genepattern.server.rest;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.log4j.Logger;
+//import org.apache.log4j.Logger;
 
 /**
  * Representation of user-supplied input parameters for a new job to be added to the GP server.
@@ -75,6 +76,13 @@ public class JobInput {
         public List<ParamValue> getValues() {
             return values;
         }
+        
+        public int getNumValues() {
+            if (values==null) {
+                return 0;
+            }
+            return values.size();
+        }
     }
 
 
@@ -137,10 +145,25 @@ public class JobInput {
      */
     private Map<ParamId, Param> params;
     public Map<ParamId, Param> getParams() {
-        return params;
+        if (params==null) {
+            //not sure what an unmodifiableMap(null) means
+            return null;
+        }
+        return Collections.unmodifiableMap(params);
     }
     
+    /**
+     * Add a value for the param.
+     * @param name, the parameter name, which is a unique id. Cannot be null.
+     * @param value, the user provided input value, cannot be null.
+     */
     public void addValue(final String name, final String value) {
+        if (name==null) {
+            throw new IllegalArgumentException("name==null");
+        }
+        if (value==null) {
+            throw new IllegalArgumentException("value==null");
+        }
         ParamId id = new ParamId(name);
         Param param;
         if (params==null) {
@@ -154,6 +177,57 @@ public class JobInput {
             params.put(id, param);
         }
         param.addValue(new ParamValue(value));
+    }
+
+    /**
+     * @param id - the unique id is the name of the parameter, as declared in the manifest
+     * @return the Param for the given id, or null of none is found.
+     */
+    public Param getParam(final String id) {
+        if (params==null) {
+            return null;
+        }
+        final ParamId paramId=new ParamId(id);
+        final Param param=params.get(paramId);
+        return param;
+    }
+    
+    public List<ParamValue> getParamValues(final String id) {
+        if (params==null) {
+            return null;
+        }
+        final ParamId paramId=new ParamId(id);
+        final Param param=params.get(paramId);
+        if (param==null) {
+            return null;
+        }
+        return param.getValues();
+    }
+    
+    public boolean hasValue(final String id) {
+        final List<ParamValue> paramValues=getParamValues(id);
+        if (paramValues==null) {
+            return false;
+        }
+        //special-cases:
+        //1) an empty list
+        if (paramValues.size()==0) {
+            return false;
+        }
+        //2) a one-item list, where the item is null
+        if (paramValues.size()==1) {
+            if (paramValues.get(0) == null) {
+                return false;
+            }
+            else if (paramValues.get(0).getValue() == null) {
+                return false;
+            }
+            //3) a one-item list, where the item is the empty string
+            else if (paramValues.get(0).getValue() == "") {
+                return true;
+            }
+        }
+        return true;
     }
     
 }
