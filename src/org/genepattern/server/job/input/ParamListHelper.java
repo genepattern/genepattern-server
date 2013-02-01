@@ -10,7 +10,6 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicReference;
 
 import org.apache.log4j.Logger;
 import org.genepattern.server.config.ServerConfiguration.Context;
@@ -62,8 +61,6 @@ public class ParamListHelper {
     NumValues allowedNumValues;
     ListMode listMode=ListMode.LEGACY;
 
-    //util
-    static private final AtomicReference<JobInputFileUtil> jobInputFileUtilRef= new AtomicReference<JobInputFileUtil>();
 
 
     public ParamListHelper(final Context jobContext, final ParameterInfo pinfo, final Param actualValues) {
@@ -225,11 +222,17 @@ public class ParamListHelper {
         //TODO: need to handle server file paths 
         List<GpFilePath> filepaths=extractFilelist(jobContext); 
         //now, create a new filelist file, add it into the user uploads directory for the given job
-        GpFilePath filelist=getFilelist(jobContext, actualValues);
-        writeFilelist(filelist.getServerFile(), filepaths, false);
-        getJobInputFileUtil(jobContext).updateUploadsDb(filelist);
+        JobInputFileUtil fileUtil = new JobInputFileUtil(jobContext);
+        final int index=-1;
+        final String pname=pinfo.getName();
+        final String filename=".filelist";
+        GpFilePath gpFilePath=fileUtil.initUploadFileForInputParam(index, pname, filename);
 
-        return filelist.getUrl().toExternalForm();
+        //GpFilePath filelist=getFilelist(jobContext);
+        writeFilelist(gpFilePath.getServerFile(), filepaths, false);
+        fileUtil.updateUploadsDb(gpFilePath);
+
+        return gpFilePath.getUrl().toExternalForm();
     }
 
     private void writeFilelist(File output, List<GpFilePath> files, boolean writeTimestamp) throws IOException {
@@ -256,16 +259,9 @@ public class ParamListHelper {
         }
     }
 
-    private static GpFilePath getFilelist(final Context jobContext, final Param param) throws Exception {
-        final String paramName=param.getParamId().getFqName();
-        GpFilePath filelist=getJobInputFileUtil(jobContext).getDistinctPathForFilelist(paramName);
-        return filelist;
-    }
-
     /**
      * If necessary, initialize the filelist data structure.
      */
-
     private List<GpFilePath> extractFilelist(final Context jobContext) throws Exception {
         List<GpFilePath> filepaths=new ArrayList<GpFilePath>();
         for(ParamValue pval : actualValues.getValues()) {
@@ -311,6 +307,8 @@ public class ParamListHelper {
         final File dataFile=gpPath.getServerFile();
         if (dataFile.exists()) {
             //do nothing, assume the file has already been transferred
+            //TODO: should implement a more robust caching mechanism, using HTTP HEAD to see if we need to 
+            //    download a new copy
             log.debug("dataFile already exists: "+dataFile.getPath());
         }
         else {
@@ -318,7 +316,8 @@ public class ParamListHelper {
             org.apache.commons.io.FileUtils.copyURLToFile(url, dataFile);
 
             //add a record of the file to the DB, so that a link will appear in the Uploads tab
-            getJobInputFileUtil(jobContext).updateUploadsDb(gpPath);
+            JobInputFileUtil jobInputFileUtil=new JobInputFileUtil(jobContext);
+            jobInputFileUtil.updateUploadsDb(gpPath);
         }
         return gpPath;
     }
@@ -346,17 +345,19 @@ public class ParamListHelper {
         return url;
     }
 
-    private static JobInputFileUtil getJobInputFileUtil(final Context jobContext) throws Exception {
-        //thread-safe, lazy-init of jobInputFileUtil
-        JobInputFileUtil existingValue=jobInputFileUtilRef.get();
-        if (existingValue != null) {
-            return existingValue;
-        }
-        JobInputFileUtil newValue=new JobInputFileUtil(jobContext);
-        if (jobInputFileUtilRef.compareAndSet(null, newValue)) {
-            return newValue;
-        }
-        return jobInputFileUtilRef.get();
-    }
+    //util
+    //static private final AtomicReference<JobInputFileUtil> jobInputFileUtilRef= new AtomicReference<JobInputFileUtil>();
+//    private static JobInputFileUtil getJobInputFileUtil(final Context jobContext) throws Exception {
+//        //thread-safe, lazy-init of jobInputFileUtil
+//        JobInputFileUtil existingValue=jobInputFileUtilRef.get();
+//        if (existingValue != null) {
+//            return existingValue;
+//        }
+//        JobInputFileUtil newValue=new JobInputFileUtil(jobContext);
+//        if (jobInputFileUtilRef.compareAndSet(null, newValue)) {
+//            return newValue;
+//        }
+//        return jobInputFileUtilRef.get();
+//    }
 
 }

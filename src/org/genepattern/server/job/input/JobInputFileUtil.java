@@ -92,29 +92,6 @@ public class JobInputFileUtil {
         return gpFilePath;
     }
 
-    public GpFilePath getDistinctPathForFilelist(final String paramName) throws Exception {
-        initInputFileDir();
-        File rel=new File(inputFileDir.getRelativeFile(), paramName+".filelist");
-        GpFilePath input=GpFileObjFactory.getUserUploadFile(context, rel);
-        
-        File parentFile=input.getServerFile().getParentFile();
-        if (!parentFile.exists()) {
-            boolean success=parentFile.mkdirs();
-            if (!success) {
-                String message="Can't create upload dir for filelist: "+parentFile.getPath();
-                log.debug(message);
-                throw new Exception(message);
-            }
-        }
-        File serverFile=input.getServerFile();
-        if (serverFile.exists()) {
-            String message="filelist file already exists: "+serverFile.getAbsolutePath();
-            log.error(message);
-            throw new Exception(message);
-        } 
-        return input;
-    }
-
     /**
      * For a given index (into a file list, default first value is 0), and a given input file parameter name,
      * return a gpFilePath object to be used for saving the file into the user uploads tab.
