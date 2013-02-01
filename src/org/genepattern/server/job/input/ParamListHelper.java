@@ -1,13 +1,9 @@
 package org.genepattern.server.job.input;
 
-import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 
@@ -228,41 +224,19 @@ public class ParamListHelper {
         JobInputFileUtil fileUtil = new JobInputFileUtil(jobContext);
         final int index=-1;
         final String pname=pinfo.getName();
-        final String filename=".filelist";
+        final String filename=".list.txt";
         GpFilePath gpFilePath=fileUtil.initUploadFileForInputParam(index, pname, filename);
 
-        //GpFilePath filelist=getFilelist(jobContext);
-        writeFilelist(gpFilePath.getServerFile(), filepaths, false);
+        //write the file list
+        ParamListWriter writer=new ParamListWriter.Default();
+        writer.writeParamList(gpFilePath, filepaths);
+        //writeFilelist(gpFilePath.getServerFile(), filepaths, false);
         fileUtil.updateUploadsDb(gpFilePath);
 
         //return gpFilePath.getUrl().toExternalForm();
         return gpFilePath;
     }
-
-    private void writeFilelist(File output, List<GpFilePath> files, boolean writeTimestamp) throws IOException {
-        final String SEP="\t";
-        FileWriter writer = null;
-        BufferedWriter out = null;
-        try {
-            writer = new FileWriter(output);
-            out = new BufferedWriter(writer);
-            for(GpFilePath filePath : files) {
-                File file = filePath.getServerFile();
-                out.write(file.getAbsolutePath());
-                if (writeTimestamp) {
-                    out.write(SEP); out.write("timestamp="+file.lastModified());
-                    out.write(SEP); out.write(" date="+new Date(file.lastModified())+" ");
-                }
-                out.newLine();
-            }
-        }
-        finally {
-            if (out != null) {
-                out.close();
-            }
-        }
-    }
-
+    
     private List<GpFilePath> getListOfValues(final boolean downloadExternalFiles) throws Exception {
         final List<Record> tmpList=new ArrayList<Record>();
         for(ParamValue pval : actualValues.getValues()) {
