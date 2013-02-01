@@ -248,10 +248,13 @@ public class PipelineQueryServlet extends HttpServlet {
 	    String newUpdateLsid = null;
 	    Set<TaskInfo> changed = new HashSet<TaskInfo>();
 	    
+	    // Get a list of the pipelines dependent on this one (useful for recursion later)
+        Set<TaskInfo> dependents = PipelineDependencyHelper.instance().getDependentPipelines(toUpdateTaskInfo);
+	    
 	    synchronized(this) {
     	    try {
                 toUpdateModel = PipelineUtil.getPipelineModel(toUpdateTaskInfo);
-                
+
                 // Do the changes here
                 for (JobSubmission job : toUpdateModel.getTasks()) {
                     if (job.getLSID().equals(oldLsid)) {
@@ -266,15 +269,15 @@ public class PipelineQueryServlet extends HttpServlet {
                 newUpdateLsid = controller.generateTask();
                 
                 // Copy the files to the new TaskLib
-                copyFilesToNewTaskLib(toUpdateTaskInfo.getLsid(), toUpdateTaskInfo.getName(), new ArrayList<String>(), toUpdateTaskInfo, newUpdateLsid, username);   
+                copyFilesToNewTaskLib(toUpdateTaskInfo.getLsid(), toUpdateTaskInfo.getName(), new ArrayList<String>(), toUpdateTaskInfo, newUpdateLsid, username);
             }
             catch (Exception e) {
                 throw new PipelineException("Unable to obtain a PipelineModel from the TaskInfo");
             }
 	    }
         
-        // Recurse for all pipeline dependent on this one
-        Set<TaskInfo> dependents = toUpdateModel.getDependentPipelines();
+        // Recurse for all pipeline dependent on the old toUpdateTaskInfo
+        //Set<TaskInfo> dependents = toUpdateModel.getDependentPipelines();
         if (dependents != null) {
             for (TaskInfo info : dependents) {
                 Set<TaskInfo> called = recursiveDependencyUpdate(info.getLsid(), toUpdateTaskInfo.getLsid(), newUpdateLsid, username);

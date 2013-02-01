@@ -140,7 +140,13 @@
                 // elementId input parameter id.
                 // value value to set field to.
                 function setInputField(elementId, value) {
-                    var urlInput = jq("#" + escapeJquerySelector(elementId) + "_url").get(0);
+                	var selected = jq("#" + escapeJquerySelector(elementId) + "_url");
+                	if (selected.length < 1) {
+                		elementId = elementId.replace(/\./g, "_");
+                		elementId = elementId.replace(/ /g, "_");
+                		selected = jq("#" + escapeJquerySelector(elementId) + "_url");
+                	}
+                    var urlInput = selected.get(0);
                     urlInput.value = value;
                     jq("#" + escapeJquerySelector(elementId) + "_div_file").hide();
                     jq("#" + escapeJquerySelector(elementId) + "_div_url").show();
