@@ -15,6 +15,7 @@ import org.apache.log4j.Logger;
 import org.genepattern.server.config.ServerConfiguration.Context;
 import org.genepattern.server.dm.GpFileObjFactory;
 import org.genepattern.server.dm.GpFilePath;
+import org.genepattern.server.dm.serverfile.ServerFileObjFactory;
 import org.genepattern.server.job.input.JobInput.Param;
 import org.genepattern.server.job.input.JobInput.ParamValue;
 import org.genepattern.webservice.ParameterInfo;
@@ -60,8 +61,6 @@ public class ParamListHelper {
     //outputs
     NumValues allowedNumValues;
     ListMode listMode=ListMode.LEGACY;
-
-
 
     public ParamListHelper(final Context jobContext, final ParameterInfo pinfo, final Param actualValues) {
         if (jobContext==null) {
@@ -128,8 +127,8 @@ public class ParamListHelper {
      */
     public void validateNumValues() {
         final int numValuesSet=actualValues.getNumValues();
-        //when minNumValues is not set, it means there is no 'numValues' attribute for the parameter, assume it's not a filelist
-        if (allowedNumValues.getMin()==null) {
+        //when allowedNumValues is not set or if minNumValues is not set, it means there is no 'numValues' attribute for the parameter, assume it's not a filelist
+        if (allowedNumValues==null || allowedNumValues.getMin()==null) {
             if (numValuesSet==0) {
                 if (!pinfo.isOptional()) {
                     throw new IllegalArgumentException("Missing required parameter: "+pinfo.getName());
@@ -203,7 +202,8 @@ public class ParamListHelper {
         }
 
         if (createFilelist) {
-            final String filelist=initFilelist();
+            final GpFilePath filelistFile=createFilelist();
+            String filelist=filelistFile.getUrl().toExternalForm();
             pinfo.setValue(filelist);
         }
         else if (numValues==0) {
@@ -217,10 +217,13 @@ public class ParamListHelper {
             log.error("It's not a filelist and numValues="+numValues);
         }
     }
-
-    private String initFilelist() throws Exception {
-        //TODO: need to handle server file paths 
-        List<GpFilePath> filepaths=extractFilelist(jobContext); 
+    
+    //-----------------------------------------------------
+    //helper methods for creating parameter list files ...
+    //-----------------------------------------------------
+    private GpFilePath createFilelist() throws Exception {
+        boolean downloadExternalFiles=true;
+        List<GpFilePath> filepaths=getListOfValues(downloadExternalFiles);
         //now, create a new filelist file, add it into the user uploads directory for the given job
         JobInputFileUtil fileUtil = new JobInputFileUtil(jobContext);
         final int index=-1;
@@ -232,7 +235,8 @@ public class ParamListHelper {
         writeFilelist(gpFilePath.getServerFile(), filepaths, false);
         fileUtil.updateUploadsDb(gpFilePath);
 
-        return gpFilePath.getUrl().toExternalForm();
+        //return gpFilePath.getUrl().toExternalForm();
+        return gpFilePath;
     }
 
     private void writeFilelist(File output, List<GpFilePath> files, boolean writeTimestamp) throws IOException {
@@ -259,42 +263,83 @@ public class ParamListHelper {
         }
     }
 
-    /**
-     * If necessary, initialize the filelist data structure.
-     */
-    private List<GpFilePath> extractFilelist(final Context jobContext) throws Exception {
-        List<GpFilePath> filepaths=new ArrayList<GpFilePath>();
+    private List<GpFilePath> getListOfValues(final boolean downloadExternalFiles) throws Exception {
+        final List<Record> tmpList=new ArrayList<Record>();
         for(ParamValue pval : actualValues.getValues()) {
-            String value=pval.getValue();
-            try {
-                GpFilePath filepath = GpFileObjFactory.getRequestedGpFileObj(value);
-                filepaths.add(filepath);
-            }
-            catch (Exception e) {
-                //could be an external url
-                try {
-                    GpFilePath filepath = getGpFilePathFromExternalUrl(jobContext, value);
-                    if (filepath != null) {
-                        filepaths.add(filepath);
-                    }
-                }
-                catch (Exception ex) {
-                    log.error(ex);
-                    throw ex;
-                }
-            }
+            final Record rec=initFromValue(pval);
+            tmpList.add(rec);
         }
-        return filepaths;
+        
+        //if necessary, download data from external sites
+        if (downloadExternalFiles) {
+            for(final Record rec : tmpList) {
+                if (rec.type.equals(Record.Type.EXTERNAL_URL)) {
+                    copyExternalUrlToUserUploads(rec.gpFilePath, rec.url);
+                }
+            }
+        } 
+
+        final List<GpFilePath> values=new ArrayList<GpFilePath>();
+        for(final Record rec : tmpList) {
+            values.add( rec.gpFilePath );
+        }
+        return values;
     }
-    //Note: this method blocks until the data file has been transferred
-    //TODO: turn this into a task which can be cancelled
-    private static GpFilePath getGpFilePathFromExternalUrl(final Context jobContext, final String value) throws Exception {
-        URL url = initExternalUrl(value);
-        if (url==null) {
-            return null;
+    
+    private Record initFromValue(final ParamValue pval) throws Exception {
+        final String value=pval.getValue();
+        URL externalUrl=initExternalUrl(value);
+        if (externalUrl != null) {
+            //this method does not download the file
+            GpFilePath gpPath=JobInputFileUtil.getDistinctPathForExternalUrl(jobContext, externalUrl);
+            return new Record(Record.Type.EXTERNAL_URL, gpPath, externalUrl);
         }
 
-        GpFilePath gpPath=JobInputFileUtil.getDistinctPathForExternalUrl(jobContext, url);
+        try {
+            GpFilePath gpPath = GpFileObjFactory.getRequestedGpFileObj(value);
+            return new Record(Record.Type.SERVER_URL, gpPath, null);
+        }
+        catch (Exception e) {
+            log.debug("getRequestedGpFileObj("+value+") threw an exception: "+e.getLocalizedMessage(), e);
+            //ignore
+        }
+        
+        //if we are here, it could be a server file path
+        File serverFile=new File(value);
+        GpFilePath gpPath = ServerFileObjFactory.getServerFile(serverFile);
+        return new Record(Record.Type.SERVER_PATH, gpPath, null); 
+    }
+
+    private static class Record {
+        enum Type {
+            SERVER_PATH,
+            EXTERNAL_URL,
+            SERVER_URL
+        }
+        Type type;
+        GpFilePath gpFilePath;
+        URL url; //can be null
+        
+        public Record(final Type type, final GpFilePath gpFilePath, final URL url) {
+            this.type=type;
+            this.gpFilePath=gpFilePath;
+            this.url=url;
+        }
+    }
+    
+    /**
+     * Copy data from an external URL into a file in the GP user's uploads directory.
+     * This mehtod blocks intil the data file has been transferred.
+     * 
+     * TODO: turn this into a task which can be cancelled.
+     * TODO: limit the size of the file which can be transferred
+     * TODO: implement a timeout
+     * 
+     * @param gpPath
+     * @param url
+     * @throws Exception
+     */
+    private void copyExternalUrlToUserUploads(final GpFilePath gpPath, final URL url) throws Exception {
         final File parentDir=gpPath.getServerFile().getParentFile();
         if (!parentDir.exists()) {
             boolean success=parentDir.mkdirs();
@@ -319,9 +364,15 @@ public class ParamListHelper {
             JobInputFileUtil jobInputFileUtil=new JobInputFileUtil(jobContext);
             jobInputFileUtil.updateUploadsDb(gpPath);
         }
-        return gpPath;
     }
 
+    /**
+     * Is the input value an external URL?
+     * 
+     * @param value
+     * 
+     * @return the URL if it's an external url, otherwise return null.
+     */
     static public URL initExternalUrl(final String value) {
         log.debug("intialize external URL for value="+value);
 
@@ -337,6 +388,7 @@ public class ParamListHelper {
         URL url=null;
         try {
             url=new URL(value);
+            //url.getHost()
         }
         catch (MalformedURLException e) {
             log.debug("it's not a url", e);
