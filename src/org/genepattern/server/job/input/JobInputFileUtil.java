@@ -1,4 +1,4 @@
-package org.genepattern.server.rest;
+package org.genepattern.server.job.input;
 
 import java.io.File;
 import java.net.URL;

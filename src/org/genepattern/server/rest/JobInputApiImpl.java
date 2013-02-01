@@ -4,6 +4,7 @@ import org.apache.log4j.Logger;
 import org.genepattern.server.config.ServerConfiguration.Context;
 import org.genepattern.server.eula.GetTaskStrategy;
 import org.genepattern.server.eula.GetTaskStrategyDefault;
+import org.genepattern.server.job.input.JobInput;
 
 /**
  * this class accepts a job submit form from the end user and adds a job to the queue.

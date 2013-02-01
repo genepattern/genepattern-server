@@ -1,8 +1,8 @@
-package org.genepattern.server.job.submit;
+package org.genepattern.server.job.input;
 
-import org.genepattern.server.job.submit.NumValues;
-import org.genepattern.server.job.submit.NumValuesParser;
-import org.genepattern.server.job.submit.NumValuesParserImpl;
+import org.genepattern.server.job.input.NumValues;
+import org.genepattern.server.job.input.NumValuesParser;
+import org.genepattern.server.job.input.NumValuesParserImpl;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;

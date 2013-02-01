@@ -1,6 +1,7 @@
 package org.genepattern.server.rest;
 
 import org.genepattern.server.config.ServerConfiguration.Context;
+import org.genepattern.server.job.input.JobInput;
 
 public interface JobInputApi {
     //String requestJobId() throws Exception;
