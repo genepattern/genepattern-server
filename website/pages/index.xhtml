@@ -140,18 +140,26 @@
                 // elementId input parameter id.
                 // value value to set field to.
                 function setInputField(elementId, value) {
-                	var selected = jq("#" + escapeJquerySelector(elementId) + "_url");
-                	if (selected.length < 1) {
-                		elementId = elementId.replace(/\./g, "_");
-                		elementId = elementId.replace(/ /g, "_");
-                		selected = jq("#" + escapeJquerySelector(elementId) + "_url");
+                	// Try sending to parameter the old way
+                 	var selected = jq("#" + escapeJquerySelector(elementId) + "_url");
+                	if (selected.length > 0) {
+                		var urlInput = selected.get(0);
+                        urlInput.value = value;
+                        jq("#" + escapeJquerySelector(elementId) + "_div_file").hide();
+                        jq("#" + escapeJquerySelector(elementId) + "_div_url").show();
+                        var urlRadio = jq("#" + escapeJquerySelector(elementId) + '_cb_url').get(0);
+                        urlRadio.checked = true;
                 	}
-                    var urlInput = selected.get(0);
-                    urlInput.value = value;
-                    jq("#" + escapeJquerySelector(elementId) + "_div_file").hide();
-                    jq("#" + escapeJquerySelector(elementId) + "_div_url").show();
-                    var urlRadio = jq("#" + escapeJquerySelector(elementId) + '_cb_url').get(0);
-                    urlRadio.checked = true;
+                	else { // If that doesn't work, try the new way
+                		var fileObjListings = param_file_listing[elementId];
+                        if (fileObjListings == null || fileObjListings == undefined) {
+                            fileObjListings = [];
+                        }
+                        fileObjListings.push({"name": value});
+                        param_file_listing[elementId] = fileObjListings;
+            			updateParamFileTable(elementId);
+                	}
+                	jq(document.body).click(); // Hide all menus after a send
                 }
 
                 function preventClose(event) {
@@ -343,7 +351,7 @@
 
             <t:div><ui:include src="eulaTaskForm.xhtml" /></t:div>
             <t:div rendered="#{!empty runTaskBean.lsid and !eulaTaskBean.prompt}">
-                <ui:include src="runTaskForm.xhtml" />
+                <ui:include src="runTaskFormJQuery.xhtml" />
             </t:div>
 
             <h:outputText rendered="#{genomeSpaceBean.loggedIn and not genomeSpaceBean.loading}">
