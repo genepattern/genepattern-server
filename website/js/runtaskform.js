@@ -144,8 +144,18 @@ function loadModuleInfo(module)
     var propertiesLink = "/gp/addTask.jsp?name="+run_task_info.lsid+"&view=1";
     $(".properties").attr("href", propertiesLink);
 
-    var docLink = "/gp/getTaskDoc.jsp?name=" + run_task_info.lsid;
-    $(".documentation").attr("href", docLink, "_blank");
+    //if module has doc specified or if for some reason
+    // the hasDoc field was not set then show the doc link
+    if(module["hasDoc"] == undefined || module["hasDoc"])
+    {
+        var docLink = "/gp/getTaskDoc.jsp?name=" + run_task_info.lsid;
+        $(".documentation").attr("href", docLink, "_blank");
+    }
+    else
+    {
+        //otherwise hide the documentation link
+        $(".documentation").hide();
+    }
 
     if(module["editable"] != undefined && module["editable"])
     {
@@ -722,7 +732,7 @@ function updateParamFileTable(paramName)
             {
                 fileRow.append("<td>" + files[i].name + "</td>");
             }
-            var delButton = $("<button>Delete</button>");
+            var delButton = $("<button>x</button>");
             delButton.data("pfile", files[i].name);
             delButton.button().click(function()
             {

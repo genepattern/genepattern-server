@@ -4,16 +4,15 @@ import org.genepattern.util.GPConstants;
 import org.genepattern.util.LSID;
 import org.genepattern.util.LSIDUtil;
 import org.genepattern.server.TaskLSIDNotFoundException;
+import org.genepattern.server.webservice.server.local.LocalTaskIntegratorClient;
 import org.genepattern.server.webapp.jsf.AuthorizationHelper;
+import org.genepattern.server.webapp.jsf.UIBeanHelper;
 import org.genepattern.server.dm.GpFilePath;
 import org.genepattern.server.job.input.JobInput;
 import org.genepattern.server.job.input.JobInputFileUtil;
 import org.genepattern.server.rest.JobInputApiImpl;
 import org.genepattern.server.config.ServerConfiguration;
-import org.genepattern.webservice.TaskInfo;
-import org.genepattern.webservice.TaskInfoCache;
-import org.genepattern.webservice.TaskInfoAttributes;
-import org.genepattern.webservice.ParameterInfo;
+import org.genepattern.webservice.*;
 import org.genepattern.modules.ModuleJSON;
 import org.genepattern.modules.ParametersJSON;
 import org.genepattern.modules.ResponseJSON;
@@ -82,6 +81,24 @@ public class RunTaskServlet extends HttpServlet
             boolean editable = createModuleAllowed && taskInfo.getUserId().equals(username)
                     && LSIDUtil.getInstance().isAuthorityMine(taskInfo.getLsid());
             moduleObject.put("editable", editable);
+
+            //check if the module has documentation
+            boolean hasDoc = true;
+
+            File[] docFiles = null;
+            try {
+                LocalTaskIntegratorClient taskIntegratorClient = new LocalTaskIntegratorClient(username);
+                docFiles = taskIntegratorClient.getDocFiles(taskInfo);
+
+                if(docFiles == null || docFiles.length == 0)
+                {
+                    hasDoc = false;
+                }
+            }
+            catch (WebServiceException e) {
+                log.error("Error getting doc files.", e);
+            }
+            moduleObject.put("hasDoc", hasDoc);
 
             JSONObject responseObject = new JSONObject();
             responseObject.put(ModuleJSON.KEY, moduleObject);
