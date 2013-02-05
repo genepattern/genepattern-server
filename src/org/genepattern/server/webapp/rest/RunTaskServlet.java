@@ -16,6 +16,7 @@ import org.genepattern.webservice.*;
 import org.genepattern.modules.ModuleJSON;
 import org.genepattern.modules.ParametersJSON;
 import org.genepattern.modules.ResponseJSON;
+import org.genepattern.data.pipeline.PipelineDependencyHelper;
 import org.apache.log4j.Logger;
 import org.json.JSONObject;
 import org.json.JSONArray;
@@ -100,6 +101,18 @@ public class RunTaskServlet extends HttpServlet
             }
             moduleObject.put("hasDoc", hasDoc);
 
+            //if this is a pipeline check if there are any missing dependencies
+            TaskInfoAttributes tia = taskInfo.giveTaskInfoAttributes();
+            String taskType = tia.get(GPConstants.TASK_TYPE);
+            boolean isPipeline = "pipeline".equalsIgnoreCase(taskType);
+            if(isPipeline && PipelineDependencyHelper.instance().getMissingDependenciesRecursive(taskInfo).size() != 0)
+            {
+                moduleObject.put("missing_tasks", true);
+            }
+            else
+            {
+                moduleObject.put("missing_tasks", false);                        
+            }
             JSONObject responseObject = new JSONObject();
             responseObject.put(ModuleJSON.KEY, moduleObject);
 

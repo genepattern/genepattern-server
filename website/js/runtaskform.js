@@ -171,6 +171,22 @@ function loadModuleInfo(module)
             collapsible: true
         });
     }
+
+    //check if there are missing tasks (only applies to pipelines)
+    if(module["missing_tasks"])
+    {
+        $("#missingTasksDiv").append("WARNING: This pipeline requires modules or module " +
+                                     "versions which are not installed on this server.");       
+        var installTasksButton = $("<button> Install missing tasks</button>");
+        installTasksButton.button().click(function()
+        {
+            window.location.replace("/gp/viewPipeline.jsp?name=" + run_task_info.lsid);                    
+        });
+
+        $("#missingTasksDiv").append(installTasksButton);
+
+        $(".submitControlsDiv").hide();
+    }
 }
 
 function loadParameterInfo(parameters)
@@ -732,7 +748,7 @@ function updateParamFileTable(paramName)
             {
                 fileRow.append("<td>" + files[i].name + "</td>");
             }
-            var delButton = $("<button>x</button>");
+            var delButton = $("<button class='delbutton'>x</button>");
             delButton.data("pfile", files[i].name);
             delButton.button().click(function()
             {
