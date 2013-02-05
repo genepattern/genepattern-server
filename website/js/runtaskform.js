@@ -203,7 +203,15 @@ function loadParameterInfo(parameters)
     {
         var paramRow = $("<tr class='pRow'/>");
         var parameterName = parameters[q].name;
-        
+
+        //use the alternate name if there is one (this is usually set for pipelines)
+        if(parameters[q].altName != undefined
+                && parameters[q].altName != null
+                && parameters[q].altName.replace(/ /g, '') != "") //trims spaces
+        {
+            parameterName = parameters[q].altName;
+        }
+
         if(parameters[q].optional.length == 0)
         {
            parameterName += "*";
