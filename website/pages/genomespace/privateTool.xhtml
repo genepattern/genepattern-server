@@ -1,0 +1,135 @@
+<!--
+  ~ Copyright 2012 The Broad Institute, Inc.
+  ~ SOFTWARE COPYRIGHT NOTICE
+  ~ This software and its documentation are the copyright of the Broad Institute, Inc. All rights are reserved.
+  ~
+  ~ This software is supplied without any warranty or guaranteed support whatsoever. The Broad Institute is not responsible for its use, misuse, 
+  ~ or functionality.
+  -->
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:t="http://myfaces.apache.org/tomahawk">
+
+
+    <ui:composition template="/templates/common.xhtml">
+        <ui:define name="pageTitle">Add GenePattern as a Private Tooln</ui:define>
+		
+		<ui:define name="headText">
+			<script type="text/javascript">
+				jq.ajaxSetup({
+					xhrFields: {
+						withCredentials: true
+					},
+					mozBackgroundRequest: true,
+					crossDomain: true
+				});
+				
+				function getSafePath(path){
+					return safePath = path.replace(/ /g, "+");
+				}
+				
+				function gsError(tool, data) {
+					jq("#replyDiv").css("color: #FF0000;");
+					jq("#replyDiv").text("An error occurred trying to add the GenomeSpace tool.");
+				}
+				
+				function atmAddTool(tool, callback){
+					var tooljson = JSON.stringify(tool);
+					jq.ajax({
+						url: "https://atm.genomespace.org/atm/v1.0/webtool/admin/" + getSafePath(tool.name),
+						type: 'POST',
+						context: document.body,
+						async: true,
+						data: tooljson,
+						contentType: 'application/json',
+						dataType: 'json',
+						success: function(data) {
+							callback(tool, data);
+						},
+						error: function(xhr) {
+							gsError(tool, data);
+						}
+					});
+				}
+				
+				function getBaseUrl() {
+					var url = location.href;
+					url = url.replace("privateTool.jsf", "receiveFile.jsf");
+					return url;
+				}
+				
+				function saveCreatePrivateTool(){
+					var descriptor = new Object();
+					descriptor.name = jq('#toolname').val();
+					descriptor.description = "GenePattern at " + location.hostname;
+					descriptor.author = "GenePattern";
+					descriptor.baseUrl = getBaseUrl();
+					descriptor.iconUrl = "images/tools/generic_tool.png"
+					descriptor.help = "http://www.genomespace.org/support/guides/tool-guide/sections/genepattern-GS-capabilities";
+					descriptor.owner = "#{genomeSpaceBean.username}";
+					descriptor.readerGroup = [];
+					
+					var fileParameter = new Array();
+					var aParam = new Object();
+					aParam.name = "files";
+					aParam.nameDelimiters = ",";
+					aParam.required = true;
+					aParam.compositeFilename = true;
+			
+					aParam.formats = [{
+							"name":"cls",
+							"description":"The CLS file format defines phenotype (class or template) labels and associates each sample in the expression data with a label.",
+							"url":"http://www.genomespace.org/datamanager/dataformat/cls",
+							"fileExtension":"cls"
+						},{
+							"name":"gct",
+							"description":"A tab-delimited text file containing gene expression data.  Used by GenePattern.",
+							"url":"http://www.genomespace.org/datamanager/dataformat/gct",
+							"fileExtension":"gct"
+						},{
+							"name":"odf",
+							"description":"GenePattern odf formatted Comparative Marker Selection results",
+							"url":"http://www.genomespace.org/datamanager/dataformat/odf",
+							"fileExtension":"odf"
+						},{
+							"name":"res",
+							"description":"The RES file format is a tab delimited file format that describes an expression dataset.",
+							"url":"http://www.genomespace.org/datamanager/dataformat/res",
+							"fileExtension":"res"}];		
+					fileParameter.push(aParam);
+					descriptor.fileParameter = fileParameter;
+					
+					atmAddTool(descriptor, function(tool, data){
+						jq("#replyDiv").css("color: #000000;");
+						jq("#replyDiv").text("Successfully added " + tool.name + " as a private tool to GenomeSpace. To see this tool log into the GenomeSpace site.");
+					});
+				}
+			</script>
+		</ui:define>
+		
+        <ui:define name="body">
+            <h:outputText rendered="#{genomeSpaceBean.loggedIn}">
+            	<div id="replyDiv" style="font-size: 10pt; width:600px; height:80px;">
+	            	This will add this instance of GenePattern to GenomeSpace as a private tool.
+					This is particularly useful if you are running on your own GenePattern server or a private GenePattern server and want to use it 
+					with GenomeSpace.  After GenePattern is added as a private tool, you will be able to see this GenePattern server when logged into 
+					GenomeSpace, and send files to it from within GenomeSpace.
+				</div>
+            	<h3>Enter Name For Private Tool</h3>
+				<label for="toolname">Name:</label> <input id="toolname" type="text"></input> <button id="createButton">Create Tool</button>
+				<script type="text/javascript">
+					jq("#createButton").button();
+					jq("#createButton").click(function() {
+					    saveCreatePrivateTool();
+					});
+				</script>
+            </h:outputText>
+            #{genomeSpaceBean.clearErrors}
+        </ui:define>
+    </ui:composition>
+</html>
