@@ -70,8 +70,11 @@ function loadModule(taskId)
             },
             error: function(xhr, ajaxOptions, thrownError)
             {
-                alert("Response from server: status=" + xhr.status + " text=" + xhr.responseText);
-                alert(thrownError);
+                console.log("Response from server: status=" + xhr.status + " text=" + xhr.responseText);
+                console.log(thrownError);
+
+                $("#submitJob").empty();
+                $("#submitJob").append("An error occurred while loading the task " + taskId + ": <br/>" + xhr.responseText);
             },
             dataType: "json"
         });
