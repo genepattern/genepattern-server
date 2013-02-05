@@ -160,6 +160,12 @@ function loadModuleInfo(module)
     if(module["editable"] != undefined && module["editable"])
     {
         var editLink = "/gp/modules/creator.jsf?lsid=" + run_task_info.lsid;
+
+        if(module["taskType"] == "pipeline")
+        {
+            editLink = "/gp/pipeline/index.jsf?lsid=" + run_task_info.lsid;
+        }
+
         $(".otherControlsDiv").append("<a href='" + editLink + "' target='_blank'>edit</a>");
     }
     
