@@ -3,10 +3,9 @@ package org.genepattern.server.webapp.rest;
 import org.genepattern.util.GPConstants;
 import org.genepattern.util.LSID;
 import org.genepattern.util.LSIDUtil;
-import org.genepattern.server.TaskLSIDNotFoundException;
 import org.genepattern.server.webservice.server.local.LocalTaskIntegratorClient;
+import org.genepattern.server.webservice.server.local.LocalAdminClient;
 import org.genepattern.server.webapp.jsf.AuthorizationHelper;
-import org.genepattern.server.webapp.jsf.UIBeanHelper;
 import org.genepattern.server.dm.GpFilePath;
 import org.genepattern.server.job.input.JobInput;
 import org.genepattern.server.job.input.JobInputFileUtil;
@@ -72,10 +71,16 @@ public class RunTaskServlet extends HttpServlet
                 throw new Exception ("No lsid received");
             }
 
-            TaskInfo taskInfo = getTaskInfo(lsid);
+            TaskInfo taskInfo = getTaskInfo(lsid, username);
+
+            if(taskInfo == null)
+            {
+                throw new Exception("No task with task id: " + lsid + " found " +
+                        "for user " + username);
+            }
 
             ModuleJSON moduleObject = new ModuleJSON(taskInfo, null);
-            moduleObject.put("lsidVersions", new JSONArray(getModuleVersions(lsid)));
+            moduleObject.put("lsidVersions", new JSONArray(getModuleVersions(taskInfo)));
 
             //check if user is allowed to edit the module
             boolean createModuleAllowed = AuthorizationHelper.createModule(username);
@@ -83,6 +88,9 @@ public class RunTaskServlet extends HttpServlet
                     && LSIDUtil.getInstance().isAuthorityMine(taskInfo.getLsid());
             moduleObject.put("editable", editable);
 
+            //check if the user is allowed to view the module
+            boolean isViewable = true;
+            //taskInfo.
             //check if the module has documentation
             boolean hasDoc = true;
 
@@ -130,11 +138,22 @@ public class RunTaskServlet extends HttpServlet
             }
             log.error(message);
 
-            throw new WebApplicationException(
+            if(message.contains("You do not have the required permissions"))
+            {
+                throw new WebApplicationException(
+                Response.status(Response.Status.FORBIDDEN)
+                    .entity(message)
+                    .build()
+                );
+            }
+            else
+            {
+                throw new WebApplicationException(
                 Response.status(Response.Status.BAD_REQUEST)
                     .entity(message)
                     .build()
-            );
+                );
+            }
         }
 	}
 
@@ -288,9 +307,10 @@ public class RunTaskServlet extends HttpServlet
         return parametersObject;
     }
 
-    private ArrayList getModuleVersions(String taskLSID) throws Exception
+    private ArrayList getModuleVersions(TaskInfo taskInfo) throws Exception
     {
-        String taskNoLSIDVersion = new LSID(taskLSID).toStringNoVersion();
+        LSID taskLSID = new LSID(taskInfo.getLsid());
+        String taskNoLSIDVersion = taskLSID.toStringNoVersion();
 
         ArrayList moduleVersions = new ArrayList();
         TaskInfo[] tasks = TaskInfoCache.instance().getAllTasks();
@@ -309,51 +329,8 @@ public class RunTaskServlet extends HttpServlet
         return moduleVersions;
     }
 
-    private TaskInfo getTaskInfo(String taskLSID) throws Exception
+    private TaskInfo getTaskInfo(String taskLSID, String username) throws WebServiceException
     {
-        TaskInfo taskInfo = null;
-        try
-        {
-            taskInfo = TaskInfoCache.instance().getTask(taskLSID);
-            return taskInfo;
-        }
-        catch(TaskLSIDNotFoundException e)
-        {
-            // do nothing check with lsid
-        }
-
-        String taskNoLSIDVersion = new LSID(taskLSID).toStringNoVersion();
-        SortedSet<String> moduleVersions = new TreeSet<String>(new Comparator<String>() {
-            // sort categories alphabetically, ignoring case
-            public int compare(String arg0, String arg1) {
-                String arg0tl = arg0.toLowerCase();
-                String arg1tl = arg1.toLowerCase();
-                int rval = arg0tl.compareTo(arg1tl);
-                if (rval == 0) {
-                    rval = arg0.compareTo(arg1);
-                }
-                return rval;
-            }
-        });
-
-        TaskInfo[] tasks = TaskInfoCache.instance().getAllTasks();
-        for(int i=0;i<tasks.length;i++)
-        {
-            TaskInfoAttributes tia = tasks[i].giveTaskInfoAttributes();
-            String lsidString = tia.get(GPConstants.LSID);
-            LSID lsid = new LSID(lsidString);
-            String lsidNoVersion = lsid.toStringNoVersion();
-            if(taskNoLSIDVersion.equals(lsidNoVersion))
-            {
-                moduleVersions.add(lsidString);
-            }
-        }
-
-        if(moduleVersions.size() > 0)
-        {
-            taskInfo = TaskInfoCache.instance().getTask(moduleVersions.first());
-        }
-
-        return taskInfo;
+        return new LocalAdminClient(username).getTask(taskLSID);
     }
 }
