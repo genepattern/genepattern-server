@@ -50,6 +50,39 @@ public class ParamListHelper {
         LIST_INCLUDE_EMPTY
     }
 
+	/**
+	 * Helper method for getting the number of allowed values for a given input parameter.
+	 * 
+	 * @param pinfo
+	 * @return 
+	 * @throws IllegalArgumentException if it can't parse the numValues string
+	 */
+    public static NumValues initNumValues(final ParameterInfo pinfo) {
+        final String numValuesStr = (String) pinfo.getAttributes().get("numValues");
+        NumValues numValues=null;
+        NumValuesParser nvParser=new NumValuesParserImpl();
+        try { 
+            numValues=nvParser.parseNumValues(numValuesStr);
+        }
+        catch (Exception e) {
+            String message="Error parsing numValues="+numValuesStr+" for "+pinfo.getName();
+            log.error(message,e);
+            throw new IllegalArgumentException(message);
+        }
+        
+        if (numValues==null) {
+            //special-case, if numValues is null, initialize it based on optional
+            boolean optional=pinfo.isOptional();
+            int min=1;
+            if (optional) {
+                min=0;
+            }
+            numValues=new NumValues(min, 1);
+        }
+        return numValues;
+    }
+    
+
     //inputs
     Context jobContext;
     ParameterInfo pinfo;
