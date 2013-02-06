@@ -58,7 +58,17 @@ public class ParamListHelper {
      * @throws IllegalArgumentException if it can't parse the numValues string
      */
     public static NumValues initNumValues(final ParameterInfo pinfo) {
-        final String numValuesStr = (String) pinfo.getAttributes().get("numValues");
+        if (pinfo==null) {
+            throw new IllegalArgumentException("pinfo==null");
+        }
+        
+        final String numValuesStr;
+        if (pinfo.getAttributes()==null) {
+            numValuesStr=null;
+        }
+        else {
+            numValuesStr = (String) pinfo.getAttributes().get("numValues");
+        }
         NumValues numValues=null;
         
         if (numValuesStr!=null && numValuesStr.trim().length()>0) {
@@ -74,7 +84,7 @@ public class ParamListHelper {
         }
         
         if (numValues==null) {
-            //special-case, if numValues is null, initialize it based on optional
+            //if numValues is null, initialize it based on optional
             boolean optional=pinfo.isOptional();
             int min=1;
             if (optional) {
