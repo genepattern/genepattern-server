@@ -96,6 +96,22 @@ public class TestParamListHelperInitNumValues {
         pinfo.getAttributes().put("numValues", "1..2");
         doTest(false, true, 1, 2);
     }
+    
+    //what about when optional and numValues conflict?
+    //... numValues takes precedence
+    @Test
+    public void optional_NumValues_1() {
+        pinfo.getAttributes().put("optional", "on");
+        pinfo.getAttributes().put("numValues", "1");
+        doTest(false, false, 1, 1);
+    }
+    
+    @Test
+    public void optional_NumValues_4() {
+        pinfo.getAttributes().put("optional", "on");
+        pinfo.getAttributes().put("numValues", "4");
+        doTest(false, true, 4, 4);
+    }
 
     @Test
     public void nullAttributes() {
