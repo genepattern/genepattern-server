@@ -17,6 +17,8 @@ import org.json.JSONArray;
 import org.apache.log4j.Logger;
 import org.genepattern.webservice.ParameterInfo;
 import org.genepattern.util.GPConstants;
+import org.genepattern.server.job.input.ParamListHelper;
+import org.genepattern.server.job.input.NumValues;
 
 import java.util.HashMap;
 import java.util.Iterator;
@@ -109,6 +111,12 @@ public class ParametersJSON extends JSONObject {
                     this.put(keyName, pAttrs.get(keyName));
                 }
             }
+
+            //add min and max values attributes which specifies
+            NumValues numValues = ParamListHelper.initNumValues(pInfo);
+
+            this.put("minValue", numValues.getMin());
+            this.put("maxValue", numValues.getMax());
         }
         catch (Exception e) {
             log.error("Error creating parameter JSON from from ParameterInfo object");

@@ -53,7 +53,6 @@ public class RunTaskServlet extends HttpServlet
     UriInfo uriInfo;
 
     @GET
-    //@Path("/load/{lsid}")
     @Path("/load")
     @Produces(MediaType.APPLICATION_JSON)
     public Response loadModule(@QueryParam("lsid") String lsid, @Context HttpServletRequest request)
@@ -90,7 +89,7 @@ public class RunTaskServlet extends HttpServlet
 
             //check if the user is allowed to view the module
             boolean isViewable = true;
-            //taskInfo.
+
             //check if the module has documentation
             boolean hasDoc = true;
 

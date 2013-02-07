@@ -295,6 +295,13 @@ function loadParameterInfo(parameters)
         {
             inputFileRowIds.push(rowId);
             valueTd.addClass("dNd");
+            var maxValue = "unlimited";
+            if(parameters[q].maxValue != undefined
+                    && parameters[q].maxValue != null)
+            {
+                maxValue = parameters[q].maxValue;
+            }
+            valueTd.append("<p>File limit: " + maxValue + "</p>");
             valueTd.append("<span class='btn btn-success fileinput-button'>"
                     + "<span><i class='icon-plus'></i>"
                     + "Upload Files...</span>"
@@ -372,18 +379,23 @@ function loadParameterInfo(parameters)
         var enterButton = $("<button>Enter</button>");
         enterButton.button().click(function()
         {
-            var pName = $(this).parents("tr:first").data("pname");
+            var paramName = $(this).parents("tr:first").data("pname");
 
             var url = $(this).prev().val();
             $(this).parents("td:first").children().show();
 
             $(this).parents("div:first").remove();
 
-            var fileObjListings = param_file_listing[pName];
+            var fileObjListings = param_file_listing[paramName];
             if(fileObjListings == null || fileObjListings == undefined)
             {
                 fileObjListings = [];
+                param_file_listing[paramName] = fileObjListings;
             }
+
+            //check if max file length will be vialoated
+            var totalFileLength = fileObjListings.length + 1;
+            validateMaxFiles(paramName, totalFileLength);
 
             var fileObj = {
                 name: url
@@ -391,9 +403,7 @@ function loadParameterInfo(parameters)
             fileObjListings.push(fileObj);
                    
             // add to file listing for the specified parameter
-            param_file_listing[pName] = fileObjListings;
-
-            updateParamFileTable(pName);
+            updateParamFileTable(paramName);
            
         });
         urlDiv.append(enterButton);
@@ -460,7 +470,12 @@ jQuery(document).ready(function()
         if(fileObjListings == null || fileObjListings == undefined)
         {
             fileObjListings = [];
+            param_file_listing[paramName] = fileObjListings;
         }
+
+        //check if max file length will be vialoated
+        var totalFileLength = fileObjListings.length + this.files.length;
+        validateMaxFiles(paramName, totalFileLength);
 
         //add newly selected files to table of file listing
         for(var f=0; f < this.files.length; f++)
@@ -473,7 +488,6 @@ jQuery(document).ready(function()
         }
 
         // add to file listing for the specified parameter
-        param_file_listing[paramName] = fileObjListings;
         updateParamFileTable(paramName);
     });
 
@@ -538,7 +552,7 @@ function reset()
 
 function runJob()
 {
-    //Step 1: upload all the input files if there are any
+    //upload all the input files if there are any
     if(!allFilesUploaded())
     {
         uploadAllFiles();
@@ -667,14 +681,16 @@ function drop(evt)
             if(fileObjListings == null || fileObjListings == undefined)
             {
                 fileObjListings = [];
+                param_file_listing[paramName] = fileObjListings;
             }
+
+            var totalFileLength = fileObjListings.length + 1;
+            validateMaxFiles(paramName, totalFileLength);
 
             var fileObj = {
                 name: evt.dataTransfer.getData('Text')
             };
             fileObjListings.push(fileObj);
-
-            param_file_listing[paramName] = fileObjListings;
 
             updateParamFileTable(paramName);
         }
@@ -687,7 +703,12 @@ function handleFiles(files, paramName)
     if(fileObjListings == null || fileObjListings == undefined)
     {
         fileObjListings = [];
+        param_file_listing[paramName] = fileObjListings;
     }
+
+    //check if max file length will be vialoated
+    var totalFileLength = fileObjListings.length + this.files.length;
+    validateMaxFiles(paramName, totalFileLength);
 
     //add newly selected files to table of file listing
     for(var f=0; f < this.files.length; f++)
@@ -700,9 +721,45 @@ function handleFiles(files, paramName)
     }
 
     // add to file listing for the specified parameter
-    param_file_listing[paramName] = fileObjListings;
-
     updateParamFileTable(paramName);
+}
+
+function validateMaxFiles(paramName, numFiles)
+{
+    var paramJSON = null;
+    for(var p=0;p<parametersJson.length; p++)
+    {
+        if(parametersJson[p].name == [paramName])
+        {
+            paramJSON = parametersJson[p];
+        }
+    }
+
+    var maxFilesLimitExceeded = false;
+
+    if(paramJSON != null)
+    {
+        //in this case the max num of files must be unlimited
+        if(paramJSON["maxValue"] != undefined || paramJSON["maxValue"] != null)
+        {
+            var maxValue = parseInt(paramJSON["maxValue"]);
+            if(numFiles > maxValue)
+            {
+                maxFilesLimitExceeded =  true;
+            }
+        }
+    }
+
+    //check that the user did not add more files than allowed
+    if(maxFilesLimitExceeded)
+    {
+        alert("The maximum number of files that can be provided to " +
+                        "this parameter has been reached. Please delete some files " +
+                        "before continuing.");
+        throw new Error("The maximum number of files that can be provided to " +
+                        "this parameter has been reached. Please delete some files " +
+                        "before continuing.");
+    }
 }
 
 function updateParamFileTable(paramName)
@@ -953,6 +1010,4 @@ function allFilesUploaded()
     valueListing.push(value);
     parameter_and_val_obj[paramName] = valueListing;
 } */
-
-
 
