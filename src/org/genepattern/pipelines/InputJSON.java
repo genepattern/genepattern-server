@@ -25,6 +25,7 @@ public class InputJSON extends JSONObject {
     public static final String PROMPT_WHEN_RUN = "promptWhenRun";
     public static final String DEFAULT_VALUE = "defaultValue";
     public static final String CHOICES = "choices";
+    public static final String NUM_VALUES = "numValues";
     
     public static final String VALUE = "value";
     
@@ -38,6 +39,7 @@ public class InputJSON extends JSONObject {
             this.determinePromptWhenRun();
             this.setDefaultValue((String) param.getAttributes().get("default_value"));
             this.buildChoices(param.getValue(), this.getDefaultValue());
+            this.determineNumValues((String) param.getAttributes().get("numValues"));
         }
         catch (JSONException e) {
             log.error("Error parsing JSON and initializing InputJSON from ParameterInfo: " + param.getName());
@@ -55,6 +57,7 @@ public class InputJSON extends JSONObject {
             
             this.setName(param.getName());
             this.setPromptWhenRun(pwrArray);
+            this.determineNumValues((String) param.getAttributes().get("numValues"));
             
             // Hack to fix broken GP 3.3.3 pipelines
             if (param.isInputFile() && param.getValue().contains("<GenePatternURL>") && !param.getValue().contains("<LSID>")) {
@@ -80,9 +83,32 @@ public class InputJSON extends JSONObject {
             }
             
             this.setValue(param.getString(VALUE));
+            this.determineNumValues(param.getString(NUM_VALUES));
         }
         catch (JSONException e) {
             log.error("Error parsing JSON and initializing InputJSON from ParameterInfo: " + param);
+        }
+    }
+    
+    public String getNumValues() throws JSONException {
+        return this.getString(NUM_VALUES);
+    }
+    
+    public void setNumValues(String numValues) throws JSONException {
+        this.put(NUM_VALUES, numValues);
+    }
+    
+    public void determineNumValues(String rawNumValues) throws JSONException {
+        Boolean required = this.getRequired();
+        if (required == null) required = false;
+        if (rawNumValues == null && required) {
+            this.setNumValues("1");
+        }
+        else if (rawNumValues == null && !required) {
+            this.setNumValues("0-1");
+        }
+        else {
+            this.setNumValues(rawNumValues);
         }
     }
     

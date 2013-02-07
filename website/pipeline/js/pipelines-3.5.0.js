@@ -2904,7 +2904,8 @@ var properties = {
         if (input.promptWhenRun !== null) {
             disabled = true;
         }
-        var div = this._addFileUpload(input.name + required, input, input.description, true, disabled);
+        var descWithNumValues = input.description + " | Number of Values: " + input.numValues;
+        var div = this._addFileUpload(input.name + required, input, descWithNumValues, true, disabled);
         div.setAttribute("name", input.module.id); // Used in PWR view
         return div;
     },
@@ -4173,6 +4174,7 @@ function InputParam(module, paramJSON) {
     this.used = false;
     this.port = null;
     this.value = editor.protectAgainstUndefined(this.defaultValue);
+    this.numValues = editor.protectAgainstUndefined(paramJSON.numValues);
 
     this.initPWR = function(pwrJSON) {
         if (pwrJSON !== undefined && pwrJSON !== null) {
