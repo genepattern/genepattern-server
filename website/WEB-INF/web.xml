@@ -493,6 +493,16 @@
   <url-pattern>/GenomeSpace/*</url-pattern>
  </servlet-mapping>
 
+<filter>
+  <filter-name>RestApiFilter</filter-name>
+  <filter-class>org.genepattern.server.webapp.rest.RestApiFilter</filter-class>
+</filter>
+
+<filter-mapping>
+  <filter-name>RestApiFilter</filter-name>
+  <url-pattern>/rest/*</url-pattern>
+</filter-mapping>
+
 <servlet>
     <!-- The Jersey Servlet. Bootstraps and enables Jersey code -->
      <servlet-name>RestService</servlet-name>
@@ -510,7 +520,7 @@
      <load-on-startup>1</load-on-startup>
 </servlet >
 
- <servlet-mapping>
+<servlet-mapping>
   <servlet-name>RestService</servlet-name>
   <url-pattern>/rest/*</url-pattern>
  </servlet-mapping>
