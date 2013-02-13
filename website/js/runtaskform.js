@@ -455,12 +455,16 @@ jQuery(document).ready(function()
     $("button").button();
 
     var lsid = Request.parameter('lsid');
-    if(lsid == null || lsid  == "")
+    if(lsid == undefined || lsid == null || lsid  == "")
     {
-        lsid = "urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00044:9";
+        //lsid = "urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00044:9";
+        //redirect to splash page
+        window.location.replace("/gp/pages/index.jsf");        
     }
-
-    loadModule(lsid);
+    else   
+    {
+        loadModule(lsid);
+    }
 
     $("input[type='file']").live("change", function()
     {
