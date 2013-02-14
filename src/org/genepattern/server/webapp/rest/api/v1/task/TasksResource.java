@@ -1,4 +1,4 @@
-package org.genepattern.server.webapp.rest.api.v1;
+package org.genepattern.server.webapp.rest.api.v1.task;
 
 import java.io.File;
 import java.util.ArrayList;
