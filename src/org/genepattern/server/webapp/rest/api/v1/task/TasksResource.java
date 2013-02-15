@@ -54,7 +54,7 @@ import org.json.JSONObject;
  */
 @Path("/tasks")
 public class TasksResource {
-    public static Logger log = Logger.getLogger(TasksResource.class);
+    final static private Logger log = Logger.getLogger(TasksResource.class);
 
     @Context
     UriInfo uriInfo;
