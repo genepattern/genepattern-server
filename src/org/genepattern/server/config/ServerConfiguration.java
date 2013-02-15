@@ -42,6 +42,7 @@ public class ServerConfiguration {
         private String userId = null;
         private TaskInfo taskInfo = null;
         private JobInfo jobInfo = null;
+        private boolean isAdmin=false;
         
         public static Context getServerContext() {
             Context context = new Context();
@@ -110,6 +111,13 @@ public class ServerConfiguration {
         }
         public JobInfo getJobInfo() {
             return jobInfo;
+        }
+
+        public void setIsAdmin(final boolean b) {
+            this.isAdmin=b;
+        }
+        public boolean isAdmin() {
+            return isAdmin;
         }
     }
 
