@@ -23,12 +23,17 @@ import org.json.JSONObject;
  * RESTful implementation of the /jobs resource.
  * 
  * Example usage, via curl command line:
- * <p>To add a job to the server. This exaple runs the PreprocessDataset module with an ftp input file.</p>
+ * <p>To add a job to the server. This example runs the PreprocessDataset module with an ftp input file.</p>
  * <pre>
  * curl -X POST -u test:test -H "Accept: application/json" -H "Content-type: application/json" 
  *      -d '{"lsid":"urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00020:4", 
  *           "params": [
- *               {"name": "input.filename", "values": ["ftp://ftp.broadinstitute.org/pub/genepattern/datasets/all_aml/all_aml_test.gct"]}]}' 
+ *               {"name": "input.filename", "values": [
+ *                     "ftp://ftp.broadinstitute.org/pub/genepattern/datasets/all_aml/all_aml_test.gct"] },
+ *               {"name": "threshold.and.filter", "values": [
+ *                     "1"] },  
+ *           ]
+ *          }' 
  *      http://127.0.0.1:8080/gp/rest/jobs
  * </pre>
  * 
