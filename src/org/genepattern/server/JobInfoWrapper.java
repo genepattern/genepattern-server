@@ -590,7 +590,7 @@ public class JobInfoWrapper implements Serializable {
     private boolean includeInputFilesInSize = false;
 
     /**
-     * Get the total size of all of the output files for this job, including all descendent jobs.
+     * Get the total size of all of the output files for this job, including all descendant jobs.
      * Note: the size of input files is ignored.
      * @return
      */
