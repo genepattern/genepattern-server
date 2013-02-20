@@ -67,7 +67,7 @@
                 <div id="uploadTree"></div>
                 <script type="text/javascript">
 	                function urlToName(url) {
-	                	if (url === null || url === undefined) { return null; }
+	                	if (url === null || url === undefined || url.indexOf("/gp/") === -1) { return null; }
 	                	url = url.split("/gp/")[1];
 	                	url = url.replace("/", "_");
 	                	url = url.substring(url.indexOf("/") + 1);
@@ -124,6 +124,7 @@
                             var name = jq(node).find("a:first").attr("href");
                             if (name === null || name === undefined) { return; } 
                             name = urlToName(name);
+                            if (name === null || name === undefined) { return; } 
 
                             // Add the id to the node
                             jq(node).attr("id", name);
