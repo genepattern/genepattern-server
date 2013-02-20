@@ -5,96 +5,167 @@
   ~
   ~ This software is supplied without any warranty or guaranteed support whatsoever. The Broad Institute is not responsible for its use, misuse, or functionality.
   -->
-
 <!DOCTYPE html PUBLIC "-/W3C/DTD XHTML 1.0 Transitional/EN" "http:/www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
       xmlns:ui="http://java.sun.com/jsf/facelets"
       xmlns:h="http://java.sun.com/jsf/html"
       xmlns:f="http://java.sun.com/jsf/core"
       xmlns:t="http://myfaces.apache.org/tomahawk"
-      xmlns:rich="http://richfaces.org/rich"
-      xmlns:c="http://java.sun.com/jstl/core">
-
+      xmlns:c="http://java.sun.com/jstl/core"
+      xmlns:a4j="https://ajax4jsf.dev.java.net/ajax">
     <ui:composition>
+        <ui:define name="headText">
+            <script type="text/javascript" language="javascript">
+                /* <![CDATA[ */
+                function handleTreeClick(node) {
+                    jq(node).parent().find("ins:first").trigger("click");
+                    return false;
+                }
+
+                function showCorrectArrows() {
+                    jq.each(jq("#uploads .menuArrow").parent(), function (index, value) {
+                        var fileID = jq(value).attr("id");
+                        var menuID = "#menuDiv_" + fileID;
+                        if (jq(menuID).length > 0) {    // Check to see if the file menu exists
+                            jq(value).find("img").show();
+                        }
+                    });
+                }
+                
+                var uploadWindow = null;
+
+                function openUploadWindow(dirName) {
+                    if (uploadWindow == null) {
+                        uploadWindow = window.open('', '#{uploadFilesBean.uploadWindowName}', 'width=620,height=400,status=no,menubar=no,location=no,toolbar=no,scrollbars=no');
+                        var currentLoc = uploadWindow.location + "";
+                        if (currentLoc.indexOf("/gp/pages/uploads/jumploader.jsf?dirName=" + dirName) == -1) {
+                            uploadWindow.location = "/gp/pages/uploads/jumploader.jsf?dirName=" + dirName;
+                        }
+                        uploadWindow.focus();
+                    }
+                    else if (uploadWindow.closed) {
+                        uploadWindow = window.open('', '#{uploadFilesBean.uploadWindowName}', 'width=620,height=400,status=no,menubar=no,location=no,toolbar=no,scrollbars=no');
+                        var currentLoc = uploadWindow.location + "";
+                        if (currentLoc.indexOf("/gp/pages/uploads/jumploader.jsf?dirName=" + dirName) == -1) {
+                            uploadWindow.location = "/gp/pages/uploads/jumploader.jsf?dirName=" + dirName;
+                        }
+                        uploadWindow.focus();
+                    }
+                    else {
+                        uploadWindow.focus();
+                    }
+                }
+                /* ]]> */
+            </script>
+            <script src="#{facesContext.externalContext.requestContextPath}/js/jquery/jquery.cookie.js" type="text/javascript" />
+            <script src="#{facesContext.externalContext.requestContextPath}/js/jquery/jquery.jstree.js" type="text/javascript" />
+            <link href="/gp/js/themes/default/style.css" rel="stylesheet" type="text/css" />
+        </ui:define>
+
         <h:form>
-            <table width="100%" border="0" cellspacing="0" cellpadding="0">
+            <t:div>
+                <div id="uploadTree"></div>
+                <script type="text/javascript">
+	                function urlToName(url) {
+	                	if (url === null || url === undefined) { return null; }
+	                	url = url.split("/gp/")[1];
+	                	url = url.replace("/", "_");
+	                	url = url.substring(url.indexOf("/") + 1);
+	                	url = url.replace(/[^a-zA-Z0-9]+/g,'_');
+	                	if (url.substring(url.length-1) === "_") {
+	                		url = url.substring(0, url.length-1);
+	                	}
+	                	if (url === "") {
+	                		url = "__";
+	                	}
+	                	return url;
+	                }
+                
+                    jq("#uploadTree").jstree({
+                        core:{
+                            "html_titles":true
+                        },
 
-                <tr>
-                    <td height="6" colspan="6">
-                        <t:graphicImage value="/images/spacer.gif" width="1" height="6" />
-                    </td>
-                </tr>
-                <tr>
-                    <td>
-                        <rich:tree value="#{uploadFilesBean.fileTree}" var="aFile" switchType="ajax" adviseNodeOpened="#{uploadFilesBean.openTreeNode}" nodeFace="#{aFile.type}">
-                            <rich:treeNode type="file" icon="/images/iconLeaf.gif" iconLeaf="/images/iconLeaf.gif">
-                                <h:outputText rendered="#{aFile.partial}">(Uploading) </h:outputText>
-                                <h:outputLink rendered="#{not aFile.partial}" value="#{aFile.url}">#{aFile.filename}</h:outputLink>
-                                <h:outputText rendered="#{aFile.partial}">#{aFile.filename}</h:outputText>
+                        "json_data":{
+                            "ajax":{
+                                "url":function (node) {
+                                    if (node === -1) {
+                                        return "/gp/UploadFileTree/tree";
+                                    }
+                                    var gsURL = jq(node).find("a").attr("href");
+                                    return "/gp/UploadFileTree/tree?dir=" + encodeURIComponent(gsURL)
+                                },
+                                "data":function (node) {
+                                    return {
+                                        id:node.attr ? node.attr("id") : 0
+                                    };
+                                }
+                            }
+                        },
+                        "cookies":{
+                            "save_opened":"uploadsTab"
+                        },
+                        plugins:[ "themes", "json_data", "cookies" ]
+                    });
+                    jq("#uploadTree").bind("load_node.jstree", function (event, data) {
+                        var iterate = null;
 
-                                <!-- Image for popup menu -->
-                                <img src="/gp/images/smallOptions.gif" id="Image_#{aFile.encodedPath}" name="Image_#{aFile.encodedPath}"
-                                     onmouseover="MM_swapImage('Image_#{aFile.encodedPath}','','/gp/images/smallOptions2.gif',2)"
-                                     onmouseout="MM_swapImgRestore(); " />
-                                <script type="text/javascript" language="javascript">menuRegistry._create("#Image_#{aFile.encodedPath}", "#menuDiv_#{aFile.encodedPath}");</script>
-                                <br />
-                                <h:outputText>#{aFile.formattedModified}; #{aFile.formattedLength}</h:outputText>
+                        // Handle the case of the initial load
+                        if (data["args"][0] === -1) {
+                            iterate = jq(this).find("li");
+                        }
+                        else {
+                            iterate = jq(data["args"][0]).find("li");
+                        }
 
-                                <br />
-                            </rich:treeNode>
-                            <rich:treeNode type="directory" icon="/images/iconFolder.gif" iconLeaf="/images/iconFolder.gif" changeExpandListener="#{uploadFilesBean.updateExpand}">
-                                <h:outputLink value="#{aFile.url}" onclick="JavaScript:return false;">#{aFile.filename}</h:outputLink>
+                        iterate.each(function (index) {
 
-                                <!-- Image for popup menu -->
-                                <img src="/gp/images/smallOptions.gif" id="Image_#{aFile.encodedPath}" name="Image_#{aFile.encodedPath}"
-                                     onmouseover="MM_swapImage('Image_#{aFile.encodedPath}','','/gp/images/smallOptions2.gif',2)"
-                                     onmouseout="MM_swapImgRestore(); " />
-                                <script type="text/javascript" language="javascript">menuRegistry._create("#Image_#{aFile.encodedPath}", "#menuDiv_#{aFile.encodedPath}");</script>
-                                <br />
-                                <h:outputText>#{aFile.formattedModified}</h:outputText>
-                                <br />
-                            </rich:treeNode>
-                        </rich:tree>
-                        <h:outputText rendered="#{empty uploadFilesBean.files and empty uploadFilesBean.directories}">
-                            No uploaded/input files to display
-                        </h:outputText>
-                    </td>
-                </tr>
-                <tr>
-                    <td colspan="6">
-                        <img src="#{facesContext.externalContext.requestContextPath}/images/divider-pix2.gif" width="100%" height="1" vspace="5" />
-                    </td>
-                </tr>
-            </table>
+                            var node = iterate.get(index);
+                            var name = jq(node).find("a:first").attr("href");
+                            if (name === null || name === undefined) { return; } 
+                            name = urlToName(name);
+
+                            // Add the id to the node
+                            jq(node).attr("id", name);
+
+                            // Check for the case of empty directories
+                            var link = jq(node).find("a:first").attr("href");
+                            if (link === "#") return;
+
+                            // Append menu arrow
+                            var arrow = document.createElement("img");
+							arrow.setAttribute("id", "Image_" + name);
+                            arrow.setAttribute("class", "menuArrow");
+                            arrow.setAttribute("src", "/gp/images/smallOptions.gif");
+                            arrow.setAttribute("alt", "menu");
+                            arrow.setAttribute("onmouseover", "MM_swapImage('Image_" + name + "','','/gp/images/smallOptions2.gif',2);");
+                            arrow.setAttribute("onmouseout", "MM_swapImgRestore();");
+                            jq(node).find("a:first").after(arrow);
+                            menuRegistry._create("#Image_" + name, "#menuDiv_" + name);
+                        });
+                    });
+                </script>
+            </t:div>
         </h:form>
 
         <p>
             <br />
         </p>
-        <script type="text/javascript" language="javascript">
-            var uploadWindow = null;
 
-            function openUploadWindow(dirName) {
-                if (uploadWindow == null) {
-                    uploadWindow = window.open('', '#{uploadFilesBean.uploadWindowName}', 'width=620,height=400,status=no,menubar=no,location=no,toolbar=no,scrollbars=no');
-                    var currentLoc = uploadWindow.location + "";
-                    if (currentLoc.indexOf("/gp/pages/uploads/jumploader.jsf?dirName=" + dirName) == -1) {
-                        uploadWindow.location = "/gp/pages/uploads/jumploader.jsf?dirName=" + dirName;
-                    }
-                    uploadWindow.focus();
-                }
-                else if (uploadWindow.closed) {
-                    uploadWindow = window.open('', '#{uploadFilesBean.uploadWindowName}', 'width=620,height=400,status=no,menubar=no,location=no,toolbar=no,scrollbars=no');
-                    var currentLoc = uploadWindow.location + "";
-                    if (currentLoc.indexOf("/gp/pages/uploads/jumploader.jsf?dirName=" + dirName) == -1) {
-                        uploadWindow.location = "/gp/pages/uploads/jumploader.jsf?dirName=" + dirName;
-                    }
-                    uploadWindow.focus();
-                }
-                else {
-                    uploadWindow.focus();
-                }
-            }
-        </script>
+        <p>
+            <br />
+        </p>
+
+        <p>
+            &nbsp;
+        </p>
+
+        <p>
+            <br />
+        </p>
+
+        <p>
+            <br />
+        </p>
     </ui:composition>
 </html>

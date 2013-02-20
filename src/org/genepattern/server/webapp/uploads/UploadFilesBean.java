@@ -56,8 +56,6 @@ import org.richfaces.model.TreeRowKey;
      #{file.name}
      #{file.path}
 </pre>
- * 
- * @author pcarr
  */
 public class UploadFilesBean {
     private static Logger log = Logger.getLogger(UploadFilesBean.class);
@@ -160,6 +158,16 @@ public class UploadFilesBean {
         return directories;
     }
     
+    public DirectoryInfoWrapper getDirectory(String url) {
+        for (DirectoryInfoWrapper wrapper : getDirectories()) {
+            if (wrapper.getFullUrl().equals(url)) {
+                return wrapper;
+            }
+        }
+        
+        return null;
+    }
+    
     public boolean openTreeNode(UITree tree) {
         Object key = tree.getRowKey();
         Boolean expanded = getTreeNodesExpanded().get(key.toString());
@@ -198,13 +206,14 @@ public class UploadFilesBean {
         TreeNode<FileInfoWrapper> rootNode = new TreeNodeImpl<FileInfoWrapper>();
         GpFilePath rootFileFacade = new UserUploadFile(null);
         rootFileFacade.setName(UIBeanHelper.getUserId());
-        FileInfoWrapper rootWrapper = new FileInfoWrapper(rootFileFacade);
+        FileInfoWrapper rootWrapper = new DirectoryInfoWrapper(rootFileFacade);
         rootWrapper.setDirectory(true);
         rootWrapper.setRoot(true);
         rootNode.setData(rootWrapper);
 
         // Add component trees
         TreeNode<FileInfoWrapper> uploadFilesTree = getUploadFilesTree();
+        ((DirectoryInfoWrapper) rootWrapper).addChildFile(uploadFilesTree.getData());
         rootNode.addChild(0, uploadFilesTree);
         return rootNode;
     }
@@ -744,6 +753,11 @@ public class UploadFilesBean {
     public class DirectoryInfoWrapper extends FileInfoWrapper {
         private List<FileInfoWrapper> dirFiles = new ArrayList<FileInfoWrapper>();
         private GpDirectoryNode gpDirectory;
+        
+        public DirectoryInfoWrapper(GpFilePath dir) {
+            super(dir);
+            this.setDirectory(true);
+        }
 
         public DirectoryInfoWrapper(final GpDirectoryNode dir) {
             super(dir.getValue());

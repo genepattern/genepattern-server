@@ -484,6 +484,16 @@
  </servlet-mapping>
  
  <servlet>
+    <display-name>UploadFileTree Servlet</display-name>
+    <servlet-name>UploadFileTree</servlet-name>
+    <servlet-class>org.genepattern.server.webapp.uploads.UploadFileServlet</servlet-class>    
+ </servlet>
+ <servlet-mapping>
+  <servlet-name>UploadFileTree</servlet-name>
+  <url-pattern>/UploadFileTree/*</url-pattern>
+ </servlet-mapping>
+ 
+ <servlet>
     <display-name>GenomeSpace Servlet</display-name>
     <servlet-name>GenomeSpace</servlet-name>
     <servlet-class>org.genepattern.server.genomespace.GenomeSpaceServlet</servlet-class>    
