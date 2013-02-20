@@ -195,6 +195,8 @@ function loadModuleInfo(module)
         $("#missingTasksDiv").append(installTasksButton);
 
         $(".submitControlsDiv").hide();
+
+        javascript_abort();
     }
 }
 
@@ -1003,6 +1005,12 @@ function allFilesUploaded()
 
     return true;
 }
+
+function javascript_abort()
+{
+   throw new Error('This is not an error. This is just to abort javascript');
+}
+
 /*function addValueToParameter(paramName, value)
 {
     //add location to value listing for parameter
