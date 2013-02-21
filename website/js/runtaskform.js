@@ -796,7 +796,7 @@ function updateParamFileTable(paramName)
 
         if("#" + idPName)
         var editLink = $("<a href='#'>Hide Details...</a>");
-        editLink.click(function()
+        editLink.click(function(event)
         {
             event.preventDefault();
             
