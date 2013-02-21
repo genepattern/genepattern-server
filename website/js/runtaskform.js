@@ -313,7 +313,7 @@ function loadParameterInfo(parameters)
             //                   + "<img src='../css/images/file_add.gif' width='16' height='16'"
             //                   + "alt='Specify URL'/>Specify URL...</span></span>");
 
-            valueTd.append("<button class='urlButton'>Specify URL...</button>");
+            valueTd.append("<button type='button' class='urlButton'>Specify URL...</button>");
 
             valueTd.append("<span>or drag and drop files here...</span>");
             paramRow.append(valueTd);
@@ -371,7 +371,6 @@ function loadParameterInfo(parameters)
 
     $("button.urlButton").button().click(function()
     {
-        event.preventDefault();
         var urlDiv = $("<div/>");
 
         urlDiv.append("Enter url:");
