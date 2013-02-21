@@ -145,6 +145,12 @@ function loadModuleInfo(module)
     });
 
     var propertiesLink = "/gp/addTask.jsp?name="+run_task_info.lsid+"&view=1";
+
+    if(module["taskType"] == "pipeline")
+    {
+        propertiesLink = "/gp/viewPipeline.jsp?name="+run_task_info.lsid;
+    }
+
     $(".properties").attr("href", propertiesLink);
 
     //if module has doc specified or if for some reason
