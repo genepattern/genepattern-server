@@ -834,12 +834,10 @@ function updateParamFileTable(paramName)
             {
                 fileRow.append("<td>" + files[i].name + "</td>");
             }
-            var delButton = $("<button class='delbutton'>x</button>");
+            var delButton = $("<button type='button' class='delbutton'>x</button>");
             delButton.data("pfile", files[i].name);
             delButton.button().click(function()
             {
-                event.preventDefault();
-                
                 var file = $(this).data("pfile");
 
                 for(var t=0;t<param_file_listing[paramName].length;t++)
