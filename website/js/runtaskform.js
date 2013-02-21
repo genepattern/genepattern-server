@@ -388,6 +388,13 @@ function loadParameterInfo(parameters)
 
             $(this).parents("div:first").remove();
 
+            //check if this is not an empty string and
+            // no non-space characters were entered
+            if($.trim(url) == '')
+            {
+                return;
+            }
+
             var fileObjListings = param_file_listing[paramName];
             if(fileObjListings == null || fileObjListings == undefined)
             {
