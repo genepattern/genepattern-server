@@ -22,5 +22,16 @@ create table job_input_attribute (
 );
 create index idx_job_input_attribute_input_id on job_input_attribute (input_id);
 
+create table job_result (
+    id number(10,0) identity not null, 
+    job_id integer,
+    name varchar2 (511),
+    path varchar2 (511), 
+    log number (1,0) default 0 not null,  
+    unique (job_id, name),
+    CONSTRAINT JR_PK PRIMARY KEY (id),
+);
+create index idx_job_result_job_id on job_result (job_id);
+
 commit;
 
