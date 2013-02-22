@@ -190,8 +190,8 @@ function loadModuleInfo(module)
     //check if there are missing tasks (only applies to pipelines)
     if(module["missing_tasks"])
     {
-        $("#missingTasksDiv").append("WARNING: This pipeline requires modules or module " +
-                                     "versions which are not installed on this server.");       
+        $("#missingTasksDiv").append("<p>WARNING: This pipeline requires modules or module " +
+                                     "versions which are not installed on this server.</p>");       
         var installTasksButton = $("<button> Install missing tasks</button>");
         installTasksButton.button().click(function()
         {
