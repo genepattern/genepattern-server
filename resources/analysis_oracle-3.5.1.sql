@@ -1,6 +1,3 @@
--- update schema version
-insert into PROPS (KEY, VALUE) VALUES ('registeredVersion3.5.1', '3.5.1');
-
 create table job_input (
     id number(10,0) identity not null, 
     job_id integer,
@@ -32,6 +29,9 @@ create table job_result (
     CONSTRAINT JR_PK PRIMARY KEY (id),
 );
 create index idx_job_result_job_id on job_result (job_id);
+
+-- update schema version
+insert into PROPS (KEY, VALUE) VALUES ('registeredVersion3.5.1', '3.5.1');
 
 commit;
 
