@@ -99,12 +99,7 @@ public class InputJSON extends JSONObject {
     }
     
     public void determineNumValues(String rawNumValues) throws JSONException {
-        Boolean required = this.getRequired();
-        if (required == null) required = false;
-        if (rawNumValues == null && required) {
-            this.setNumValues("1");
-        }
-        else if (rawNumValues == null && !required) {
+        if (rawNumValues == null) {
             this.setNumValues("0-1");
         }
         else {
