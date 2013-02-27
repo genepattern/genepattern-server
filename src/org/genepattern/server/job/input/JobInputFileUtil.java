@@ -147,6 +147,25 @@ public class JobInputFileUtil {
         return input;
     }
 
+    public GpFilePath initUploadFileForInputParam(final File relativeFile) throws Exception {
+        if (relativeFile==null) {
+            throw new IllegalArgumentException("relativeFile==null");
+        }
+        GpFilePath input=GpFileObjFactory.getUserUploadFile(context, relativeFile);
+        
+        //if necessary mkdirs to the parent dir
+        File parentDir=input.getServerFile().getParentFile();
+        if (!parentDir.exists()) {
+            boolean success=parentDir.mkdirs();
+            if (!success) {
+                String message="Can't create parent upload dir, parentDir="+parentDir.getPath();
+                log.error(message);
+                throw new Exception(message);
+            }
+        }
+        return input;
+    }
+
     /**
      * Save a record in the GP DB for the newly created user upload file.
      * @param gpFilePath
