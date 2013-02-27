@@ -232,7 +232,15 @@ public class RunTaskServlet extends HttpServlet
             while(paramNames.hasNext())
             {
                 String parameterName = paramNames.next();
-                JSONArray valueList = new JSONArray((String)parameters.get(parameterName));
+                //JSONArray valueList = new JSONArray((String)parameters.get(parameterName));
+                JSONArray valueList;
+                Object val=parameters.get(parameterName);
+                if (val instanceof JSONArray) {
+                    valueList=(JSONArray) val;
+                }
+                else {
+                    valueList = new JSONArray((String)parameters.get(parameterName));
+                }
                 for(int v=0; v<valueList.length();v++)
                 {
                     jobInput.addValue(parameterName, valueList.getString(v));
