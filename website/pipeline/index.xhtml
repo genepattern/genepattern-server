@@ -29,10 +29,9 @@
 		<script src="js/pipelines-3.5.0.js" type="text/javascript" />
 
         <script type="text/javascript" language="javascript">
-            // If Internet Explorer Redirect to the old Pipeline Designer
+            // If Internet Explorer Display Alert
             if (navigator.userAgent.indexOf("MSIE") !== -1) {
-				alert("The new Pipeline Designer doesn't support Internet Explorer.  Forwarding you now to the older unsupported Pipeline Designer.");
-				self.location = "/gp/pipelineDesigner.jsp";
+				alert("The new Pipeline Designer doesn't support Internet Explorer.  Please use either Firefox, Chrome or Safari.");
             }
 			
 			var createTaskAllowed = #{authorizationBean.createModuleAllowed};
