@@ -725,7 +725,7 @@ function handleFiles(files, paramName)
     }
 
     //check if max file length will be vialoated
-    var totalFileLength = fileObjListings.length + this.files.length;
+    var totalFileLength = fileObjListings.length + files.length;
     validateMaxFiles(paramName, totalFileLength);
 
     //add newly selected files to table of file listing
