@@ -27,9 +27,9 @@
                                         <t:dataList var="category" value="#{moduleCategoryGroup.categories}">
                                             <t:dataList var="module" value="#{category.modules}">
                                                 <div style="" id="#{module.shortName}">
-                                                    <h:commandLink value="#{module.name}" actionListener="#{moduleChooserBean.moduleClicked}" style="white-space: nowrap;">
-                                                        <f:param name="task" value="#{module.selectedLsid}" />
-                                                    </h:commandLink>
+                                                    <h:outputLink value="index.jsf?lsid=#{module.name}" style="white-space: nowrap;">
+                                                    	<h:outputText value="#{module.name}" />
+                                                    </h:outputLink>
                                                 </div>
                                             </t:dataList>
                                         </t:dataList>
@@ -89,10 +89,11 @@
               <img src="#{facesContext.externalContext.requestContextPath}/images/spacer.gif" width="15" height="1" />
               <img src="#{facesContext.externalContext.requestContextPath}/images/bullet-task.gif" width="4" height="4" />
               &#160;
-                <h:commandLink value="#{module.shortName}" actionListener="#{moduleChooserBean.moduleClicked}" style="white-space: nowrap;">
-                    <f:param name="task" value="#{module.selectedLsid}" />
+                <h:outputLink value="index.jsf" style="white-space: nowrap;">
+                	<h:outputText value="#{module.name}" />
+                	<f:param name="lsid" value="#{module.name}" />
                     <f:param name="promptForLatestVersion" value="true" />
-                </h:commandLink>
+                </h:outputLink>
                 <br></br>
              </span>
                                 </t:dataList>
