@@ -9,6 +9,7 @@ import java.io.UnsupportedEncodingException;
 import java.util.Enumeration;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.ws.rs.Consumes;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
@@ -17,6 +18,7 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Context;
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
@@ -34,6 +36,7 @@ import com.sun.jersey.multipart.FormDataParam;
  * RESTful implementation of the /data resource.
  * 
  * Notes:
+ *     http://127.0.0.1:8080/gp/rest/application.wadl
  *     http://stackoverflow.com/questions/797834/should-a-restful-put-operation-return-something
  *     http://jersey.576304.n2.nabble.com/Jersey-and-recursive-paths-td5285298.html
  *     http://neopatel.blogspot.com/2011/10/jersey-rest-api-html-documentation.html
@@ -47,16 +50,33 @@ import com.sun.jersey.multipart.FormDataParam;
 public class DataResource {
     final static private Logger log = Logger.getLogger(DataResource.class);
 
-    @POST
-    @Path("/upload/tmp") 
-    public Response postFileToTmp(
-            final @Context HttpServletRequest request,
-            final @QueryParam("path") String path,
-            final @FormDataParam("file") InputStream uploadedInputStream,
-            final @FormDataParam("file") FormDataContentDisposition fileDetail) 
-    {
-            return Response.status(Status.INTERNAL_SERVER_ERROR).entity("Not implemented!").build();
-    }
+//    /**
+//     * Add a new file to the uploads directory of the current user, specifically when you 
+//     * want to use the file as a job input file (in a subsequent call to add a job).
+//     * 
+//     * This will create a new resource each time the method is called.
+//     * 
+//     * @param request
+//     * @param path
+//     * @param uploadedInputStream
+//     * @param fileDetail
+//     * @return
+//     */
+//    @POST
+//    @Consumes(MediaType.MULTIPART_FORM_DATA)
+//    @Path("/upload/job_input") 
+//    public Response postFileToTmp(
+//            final @Context HttpServletRequest request,
+//            final @FormDataParam("file") InputStream uploadedInputStream,
+//            final @FormDataParam("file") FormDataContentDisposition fileDetail) 
+//    {
+//        //for debugging
+//        debugHeaders(request);
+//        
+//        final String filename=fileDetail.getFileName();
+//        
+//        return Response.status(Status.INTERNAL_SERVER_ERROR).entity("Not implemented!").build();
+//    }
 
     /**
      * Add a file to the uploads directory of the current user. Example usage,
