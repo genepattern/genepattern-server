@@ -11,7 +11,6 @@
 <html xmlns="http://www.w3.org/1999/xhtml"
       xmlns:ui="http://java.sun.com/jsf/facelets"
       xmlns:h="http://java.sun.com/jsf/html"
-      xmlns:a4j="http://richfaces.org/a4j"
       xmlns:f="http://java.sun.com/jsf/core"
       xmlns:t="http://myfaces.apache.org/tomahawk"
       xmlns:c="http://java.sun.com/jstl/core">
@@ -108,15 +107,12 @@
             </script>
 
             <!-- User settings area -->
-            <a4j:outputPanel id="systemMessageLink">
+            <t:div id="systemMessageLink">
                 <t:div rendered="#{!empty requestScope.userID}">
                     <table height="30" border="0" cellpadding="0" cellspacing="0" class="loginsettings">
                         <tr valign="top">
                             <td>
-                                <h:form id="showSystemMessageForm" rendered="#{!systemMessageBean.isOpen}" style="display: inline;">
-                                    <a4j:commandLink value="System Message" actionListener="#{systemMessageBean.show}" style="color: red;" reRender="systemMessage, systemMessageLink" />
-                                    <h:outputText value=" | " />
-                                </h:form>
+                            	<span id="showSystemMessageSpan" style="display:none;"><a href="#" onclick="showSystemMessage();" style="color:red">System Message</a> | </span>
                                 <h:outputLink value="#{facesContext.externalContext.requestContextPath}/pages/accountInfo.jsf">
                                     My Settings </h:outputLink> | <h:form style="display: inline;">
                                 <h:outputLink id="logoutLink" value="#{facesContext.externalContext.request.contextPath}/logout"> Sign out </h:outputLink>
@@ -124,7 +120,7 @@
                         </tr>
                     </table>
                 </t:div>
-            </a4j:outputPanel>
+            </t:div>
 
             <!-- top band with the logo -->
             <div id="topband" class="topband">

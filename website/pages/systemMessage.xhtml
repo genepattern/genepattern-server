@@ -9,29 +9,38 @@
 <html xmlns="http://www.w3.org/1999/xhtml"
       xmlns:ui="http://java.sun.com/jsf/facelets"
       xmlns:h="http://java.sun.com/jsf/html"
-      xmlns:a4j="http://richfaces.org/a4j"
       xmlns:f="http://java.sun.com/jsf/core"
       xmlns:t="http://myfaces.apache.org/tomahawk">
     <head>
     </head>
     <body>
 
-        <a4j:outputPanel id="systemMessage">
-
-            <t:div rendered="#{!empty requestScope.userID and systemMessageBean.enableJavaScriptAlert and systemMessageBean.isNew}">
-                <script type="text/javascript" language="javascript">
-                    window.addEventListener("load",
-                            function () {
-                                window.alert('#{systemMessageBean.messageAsJavaScriptString}');
-                            },
-                            false);
-                </script>
+        <t:div forceId="true" id="systemMessage">
+            <t:div id="systemMessageForm"  forceId="true" style="display:none;color: #000000;background-color: #ffcccc; padding-left: 10px; border: 2px solid #cccccc; border-top: 2px solid #cccccc;">
+				<img src="/gp/modules/styles/images/delete.gif" style="float:right;" id="systemMessageClose" />
+                <h:outputText escape="false" value="#{systemMessageBean.messageAsHtmlString} " />
+				<script type="text/javascript" language="javascript">
+					var showMessage = jq.cookie("showSystemMessage");
+					if (showMessage !== "false") {
+						jq("#systemMessageForm").show();
+					}
+					else {
+						jq("#showSystemMessageSpan").show();
+					}
+					jq("#systemMessageClose").click(function() {
+						jq("#systemMessageForm").hide();
+						jq.cookie("showSystemMessage", "false");
+						
+						jq("#showSystemMessageSpan").show();
+					});
+					
+					function showSystemMessage() {
+						jq("#systemMessageForm").show();
+						jq.cookie("showSystemMessage", "true");
+						jq("#showSystemMessageSpan").hide();
+					}
+				</script>
             </t:div>
-            <h:form id="systemMessageForm" rendered="#{systemMessageBean.isOpen}">
-                <h:outputText escape="false" value="#{systemMessageBean.messageAsHtmlString} " style="color: red;" />
-                <a4j:commandLink value=" [hide] " actionListener="#{systemMessageBean.hide}" rendered="#{!empty requestScope.userID}"
-                                 reRender="systemMessage, systemMessageLink" />
-            </h:form>
-        </a4j:outputPanel>
+        </t:div>
     </body>
 </html>
