@@ -175,7 +175,7 @@ function loadModuleInfo(module)
             editLink = "/gp/pipeline/index.jsf?lsid=" + run_task_info.lsid;
         }
 
-        $(".otherControlsDiv").append("<a href='" + editLink + "'>edit</a>");
+        $(".otherControlsDiv").append("<a href='JavaScript:Menu.denyIE(\"" + editLink + "\");'>edit</a>");
     }
     
     if(module["description"] !== undefined

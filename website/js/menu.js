@@ -29,6 +29,27 @@ var Menu = {
 		window.open(url, "_blank");
 		return void(0);
 	},
+	
+	denyIE: function(url) {
+		if (navigator.userAgent.indexOf("MSIE") !== -1) {
+			var alert = document.createElement("div");
+			jq(alert).text("The Pipeline Designer and Module Integrator don't support Internet Explorer.  Please use Firefox, Chrome or Safari.");
+			jq(alert).dialog({
+	            modal: true,
+	            dialogClass: "top-dialog",
+	            width: 400,
+	            title: "Internet Explorer Not Supported",
+	            buttons: "OK",
+	            close: function() {
+	                $(this).dialog("destroy");
+	                $(this).remove();
+	            }
+	        });
+		}
+		else {
+			location.href = url;
+		}
+	},
 
 	buildNavMenu: function() {
 		Menu.ensureJQuery();
@@ -37,8 +58,8 @@ var Menu = {
 	            <ul>\
 	                <li><a href=\"/gp/pages/index.jsf\">Modules &#38; Pipelines</a>\
 	                    <ul>\
-	                        <li class=\"createPrivatePipelineAllowed\"><a href=\"/gp/pipeline/index.jsf\">New Pipeline</a></li>\
-	                        <li class=\"createTaskAllowed\"><a href=\"/gp/modules/creator.jsf\">New Module</a></li>\
+	                        <li class=\"createPrivatePipelineAllowed\"><a href=\"JavaScript:Menu.denyIE('/gp/pipeline/index.jsf');\">New Pipeline</a></li>\
+	                        <li class=\"createTaskAllowed\"><a href=\"JavaScript:Menu.denyIE('/gp/modules/creator.jsf');\">New Module</a></li>\
 	                        <li class=\"createTaskAllowed\"><a href=\"/gp/pages/taskCatalog.jsf\">Install From Repository</a></li>\
 	                        <li><a href=\"/gp/pages/importTask.jsf\">Install From ZIP</a></li>\
 	                        <li><a href=\"/gp/pages/manageTasks.jsf\">Manage</a></li>\
