@@ -516,7 +516,7 @@
 <servlet>
     <!-- The Jersey Servlet. Bootstraps and enables Jersey code -->
      <servlet-name>RestService</servlet-name>
-     <servlet-class>com.sun.jersey.spi.container.servlet.ServletContainer </servlet-class>
+     <servlet-class>com.sun.jersey.spi.container.servlet.ServletContainer</servlet-class>
      <!-- Include here the packages that have Jersey annotations (@Path, @GET etc.)
           separated by commas -->
     <init-param>
