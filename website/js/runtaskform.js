@@ -729,11 +729,11 @@ function handleFiles(files, paramName)
     validateMaxFiles(paramName, totalFileLength);
 
     //add newly selected files to table of file listing
-    for(var f=0; f < this.files.length; f++)
+    for(var f=0; f < files.length; f++)
     {
         var fileObj = {
-            name: this.files[f].name,
-            object: this.files[f]
+            name: files[f].name,
+            object: files[f]
         };
         fileObjListings.push(fileObj);
     }
