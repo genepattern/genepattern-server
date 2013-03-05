@@ -40,19 +40,19 @@ import org.json.JSONObject;
  * Example usage, via curl command line.
    <p>To get the task_info for a given task name:
    <pre>
-   curl -u test:test http://127.0.0.1:8080/gp/rest/tasks/ComparativeMarkerSelection
+   curl -u test:test http://127.0.0.1:8080/gp/rest/v1/tasks/ComparativeMarkerSelection
    </pre>
    <p>Or by task lsid:
    <pre>
-   curl -u test:test http://127.0.0.1:8080/gp/rest/tasks/ComparativeMarkerSelection
+   curl -u test:test http://127.0.0.1:8080/gp/rest/v1/tasks/ComparativeMarkerSelection
    </pre>
-   curl -u test:test http://127.0.0.1:8080/gp/rest/tasks/urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00044:9
+   curl -u test:test http://127.0.0.1:8080/gp/rest/v1/tasks/urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00044:9
    
  * 
  * @author pcarr
  *
  */
-@Path("/tasks")
+@Path("/v1/tasks")
 public class TasksResource {
     final static private Logger log = Logger.getLogger(TasksResource.class);
 
