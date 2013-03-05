@@ -180,13 +180,18 @@
     background-color: #cddcf1;
 }
 
-table.paramFilesTable
+.paramFilesTable
 {
     text-align:left;
     width: 100%;
     border: 2px solid #DDD;
 }
 
+table.paramFilesTable tr td
+{
+    height: 10px;
+    padding: 1px;
+}
 
 table.paramFilesTable tr:nth-child(odd)
 {

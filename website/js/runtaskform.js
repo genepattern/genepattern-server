@@ -856,7 +856,7 @@ function updateParamFileTable(paramName)
             {
                 fileRow.append("<td>" + files[i].name + "</td>");
             }
-            var delButton = $("<button type='button' class='delbutton'>x</button>");
+            var delButton = $("<img src='/gp/images/delete-blue.png'/>");
             delButton.data("pfile", files[i].name);
             delButton.button().click(function()
             {
