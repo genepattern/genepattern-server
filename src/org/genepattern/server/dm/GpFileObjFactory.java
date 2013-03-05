@@ -37,6 +37,85 @@ public class GpFileObjFactory {
 //        return homeDir;
 //    }
 
+//    static public String substituteGpUrl(final String urlStrIn) {
+//        if (urlStrIn==null) {
+//            log.error("Invalid null arg");
+//            return urlStrIn;
+//        }
+//        if (urlStrIn.contains("<GenePatternURL>")) {
+//            final String pattern=Pattern.quote("<GenePatternURL>");
+//            final String gpUrlStr=GpFilePath.getGenePatternUrl().toExternalForm();
+//            return urlStrIn.replaceAll(pattern, gpUrlStr);
+//        }
+//        return urlStrIn;
+//    }
+
+//    static public boolean isGpFile(final String urlStrIn) {
+//        if (urlStrIn.startsWith("<GenePatternURL>")) {
+//            return true;
+//        }
+//        if (urlStrIn.startsWith(GpFilePath.getGenePatternUrl().toExternalForm())) {
+//            return true;
+//        }
+//        return false;
+//    }
+    
+//    /**
+//     * 
+//     * @param urlStr
+//     * @return true, if the given url is to a file on the GP server, as opposed to an external url.
+//     */
+//    static public boolean isGpUrlPath(final String urlStrIn) {
+//        if (urlStrIn==null) {
+//            log.error("Invalid null arg");
+//            return false;
+//        }
+//        if (urlStrIn.length()==0) {
+//            log.error("Invalid empty arg");
+//            return false;
+//        }
+//        
+//        URL gpUrl = ServerConfiguration.instance().getGenePatternURL();
+//
+//        String urlStr;
+//        boolean isGpUrl=false;
+//        if (urlStrIn.startsWith("<GenePatternURL>")) {
+//            //special-case for <GenePatternURL> substitution
+//            isGpUrl=true;
+//            Pattern.quote("<GenePatternURL>");
+//            urlStr=urlStrIn.replaceFirst(Pattern.quote("<GenePatternURL>"), Pattern.quote(gpUrl.toString())); 
+//        }
+//        else {
+//            if (urlStrIn.startsWith(gpUrl.toString())) {
+//                isGpUrl=true;
+//            }
+//            urlStr=urlStrIn;
+//        }
+//        
+//        //check for valid paths
+//        
+//        
+//        
+//        String urlStr;
+//        if (urlStrIn.startsWith("<GenePatternURL>")) {
+//            //URL url = ServerConfiguration.instance().getGenePatternURL();
+//            //String gpUrl=url.toString();
+//            String path=urlStrIn.substring("<GenePatternURL>".length());
+//            urlStr=gpUrl.toString();
+//            //if (urlStr.endsWith("/") && path.startsWith("/")) {
+//            //    //remove extra slash
+//            //    path=path.substring(1);
+//            //}
+//            //else if (!urlStr.endsWith("/") && !path.startsWith("/")) {
+//            //    //insert slash
+//            //    urlStr+="/";
+//            //}
+//            urlStr+=path;
+//        }
+//        
+//        //URL must either be 
+//    }
+//
     /**
      * Get the root user upload directory for the given user.
      * 
