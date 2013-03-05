@@ -181,10 +181,7 @@ function loadModuleInfo(module)
     if(module["description"] !== undefined
             && module["description"] != "")
     {
-        $("#description").append("<div><p>" + module["description"] + "</p></div>");
-        $("#description").accordion({
-            collapsible: true
-        });
+        $("#description").append("<p>" + module["description"] + "</p>");
     }
 
     //check if there are missing tasks (only applies to pipelines)
@@ -466,6 +463,21 @@ jQuery(document).ready(function()
         } */
     });
 
+    $("#mod_description_toggle").click(function()
+    {
+        var descImg = this;        
+        if($("#description").is(":visible"))
+        {
+            descImg.src = descImg.src.replace("arrows-down","arrows");
+        }
+        else
+        {
+            descImg.src = descImg.src.replace("arrows","arrows-down");
+        }
+
+        $("#description").toggle();
+    });
+    
     $("#toggleDesc").click(function()
     {
         //show descriptions
