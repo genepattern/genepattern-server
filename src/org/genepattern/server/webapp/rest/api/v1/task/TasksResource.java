@@ -178,6 +178,15 @@ public class TasksResource {
 
 
     //utilitiy classes, should eventually be migrated to a common helper class used by all the RESTful classes
+    /**
+     * Create a new userContext instance based on the current HTTP request.
+     * This method as the effect of requiring a valid logged in gp user, because a 
+     * RuntimeException will be thrown if the user is not logged in.
+     * 
+     * @param request
+     * @return
+     * @throws WebApplicationException if there is not a current user.
+     */
     public static ServerConfiguration.Context getUserContext(final HttpServletRequest request) {
         final String userId=(String) request.getSession().getAttribute("userid");
         if (userId==null || userId.length()==0) {
