@@ -46,37 +46,113 @@ import com.sun.jersey.multipart.FormDataParam;
  * @author pcarr
  *
  */
-@Path("/data")
+@Path("/v1/data")
 public class DataResource {
     final static private Logger log = Logger.getLogger(DataResource.class);
 
-//    /**
-//     * Add a new file to the uploads directory of the current user, specifically when you 
-//     * want to use the file as a job input file (in a subsequent call to add a job).
-//     * 
-//     * This will create a new resource each time the method is called.
-//     * 
-//     * @param request
-//     * @param path
-//     * @param uploadedInputStream
-//     * @param fileDetail
-//     * @return
-//     */
-//    @POST
-//    @Consumes(MediaType.MULTIPART_FORM_DATA)
-//    @Path("/upload/job_input") 
-//    public Response postFileToTmp(
-//            final @Context HttpServletRequest request,
-//            final @FormDataParam("file") InputStream uploadedInputStream,
-//            final @FormDataParam("file") FormDataContentDisposition fileDetail) 
-//    {
-//        //for debugging
-//        debugHeaders(request);
-//        
-//        final String filename=fileDetail.getFileName();
-//        
-//        return Response.status(Status.INTERNAL_SERVER_ERROR).entity("Not implemented!").build();
-//    }
+    /**
+     * Add a new file to be used as input to a job. Return the URI for the uploaded file in the 'Location'
+     * header of the response.
+     *
+     * TODO: Implement more validation, for example,
+     *     - when the max file size limit for individual file upload is exceeded
+     *     - when the file will cause the current user's disk quota to be exceeded (as configured by the GP server)
+     *     - when the file cannot be written because the OS disk quota is exceeded
+     *     - when the file write operation fails because of a server timeout
+     *     - other system errors, for example, we require access to the GP DB so that we can record the file record
+     * 
+     * Requires authentication with a valid gp user id.
+     * 
+     * Expected response codes:
+     *     ?, this method requires authentication, if there is not a valid gp user logged in, respond with basic authentication request.
+     *     201 - Created, when the file is successfully uploaded.
+     * 
+     * Example usage:
+     * <pre>
+       curl -u test:test -X POST --data-binary @all_aml_test.cls http://127.0.0.1:8080/gp/rest/v1/data/upload/job_input?name=all_aml_test.cls
+     * </pre>
+     * 
+     * @param request
+     * @param filename
+     * @param in
+     * 
+     * @return an HTTP response
+     */
+    @POST
+    @Path("/upload/job_input") 
+    public Response handlePostJobInputInBody(
+            final @Context HttpServletRequest request,
+            final @QueryParam("name") String filename,
+            final InputStream in) 
+    {
+        //for debugging
+        debugHeaders(request);
+
+        //by default create a new directory in the ./tmp dir for the current user
+        //return uri for the file
+        try {
+            final ServerConfiguration.Context userContext=TasksResource.getUserContext(request);        
+            final GpFilePath tmpDir=JobInputFileUtil.createTmpDir(userContext);
+            final String path=tmpDir.getRelativePath() + "/" + filename;
+            GpFilePath gpFilePath=createUserUploadFile(userContext, in, path);
+            String location = ""+gpFilePath.getUrl().toExternalForm(); 
+            return Response.status(201)
+                    .header("Location", location)
+                    .entity(location).build();
+        }
+        catch (Throwable t) {
+            return Response.status(Status.INTERNAL_SERVER_ERROR).entity(t.getLocalizedMessage()).build();
+        }
+    }
+
+    /**
+     * Add a new file to the uploads directory of the current user, specifically when you 
+     * want to use the file as a job input file (in a subsequent call to add a job).
+     * 
+     * This will create a new resource each time the method is called.
+     * 
+     * Example usage:
+     * <pre>
+       curl -X POST --form file=@all_aml_test.cls -u test:test http://127.0.0.1:8080/gp/rest/v1/data/upload/job_input
+       </pre>
+     * The '-X POST' is redundant when using the '--form' option. This will work also.
+     * <pre>
+       curl --form file=@all_aml_test.cls -u test:test http://127.0.0.1:8080/gp/rest/v1/data/upload/job_input
+     * </pre>
+     * 
+     * @param request
+     * @param path
+     * @param uploadedInputStream
+     * @param fileDetail
+     * @return
+     */
+    @POST
+    @Consumes(MediaType.MULTIPART_FORM_DATA)
+    @Path("/upload/job_input_form") 
+    public Response handlePostJobInputMultipartForm(
+            final @Context HttpServletRequest request,
+            final @FormDataParam("file") InputStream in,
+            final @FormDataParam("file") FormDataContentDisposition fileDetail) 
+    {
+        //for debugging
+        debugHeaders(request);
+
+        //by default create a new directory in the ./tmp dir for the current user
+        //return uri for the file
+        try {
+            final ServerConfiguration.Context userContext=TasksResource.getUserContext(request);        
+            final GpFilePath tmpDir=JobInputFileUtil.createTmpDir(userContext);
+            final String path=tmpDir.getRelativePath() + "/" + fileDetail.getFileName();
+            GpFilePath gpFilePath=createUserUploadFile(userContext, in, path);
+            String location = ""+gpFilePath.getUrl().toExternalForm(); 
+            return Response.status(201)
+                    .header("Location", location)
+                    .entity(location).build();
+        }
+        catch (Throwable t) {
+            return Response.status(Status.INTERNAL_SERVER_ERROR).entity(t.getLocalizedMessage()).build();
+        }
+    }
 
     /**
      * Add a file to the uploads directory of the current user. Example usage,
