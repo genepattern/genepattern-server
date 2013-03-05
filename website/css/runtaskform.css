@@ -180,12 +180,13 @@
     background-color: #cddcf1;
 }
 
-.paramFilesTable
+table.paramFilesTable
 {
     text-align:left;
     width: 100%;
     border: 2px solid #DDD;
 }
+
 
 table.paramFilesTable tr:nth-child(odd)
 {
@@ -250,4 +251,10 @@ button.urlButton
 {
     margin-left: 2px;
     margin-right: 2px;
+}
+
+/* styling for name of parameter in run task form */
+.pTitle
+{
+    font-weight: bold;
 }

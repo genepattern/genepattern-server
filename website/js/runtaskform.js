@@ -227,7 +227,7 @@ function loadParameterInfo(parameters)
 
         //replace . with spaces in parameter name
         parameterName = parameterName.replace(/\./g,' ');
-        paramRow.append("<td>" + parameterName + "</td>");
+        paramRow.append("<td class='pTitle'>" + parameterName + "</td>");
         paramRow.data("pname", parameters[q].name);
 
         var rowId = "pRow" + (q+1);
@@ -325,12 +325,13 @@ function loadParameterInfo(parameters)
             valueTd.append("<button type='button' class='urlButton'>"+ addUrlText +"</button>");
 
             valueTd.append("<span>or drag and drop files here...</span>");
-            paramRow.append(valueTd);
-            paramsTable.append(paramRow);
 
             //switch . with _ since the jquery selector does not work with .
             var idPName = parameters[q].name.replace(/\./g,'_');
-            paramsTable.append("<tr id='" + idPName + "'></tr>");
+            valueTd.append("<div id='" + idPName + "'></div>");
+
+            paramRow.append(valueTd);
+            paramsTable.append(paramRow);
         }
         else
         {
@@ -804,15 +805,12 @@ function updateParamFileTable(paramName)
     var idPName = paramName.replace(/\./g,'_');
 
     //remove previous file info data
-    $("#" + idPName).prev("tr.fileInfo").remove();
-    $("#" + idPName).children().remove();
+    $("#" + idPName).empty();
     if(files != null && files != undefined && files.length > 0)
     {
-        var fileInfoRow = $("<tr class='fileInfo'></tr>");
-        var tData = $("<td/>");
+        var pData = $("<p/>");
 
-        if("#" + idPName)
-        var editLink = $("<a href='#'>Hide Details...</a>");
+        var editLink = $("<a href='#'><img src='/gp/images/arrows-down.gif'/>Hide Details...</a>");
         editLink.click(function(event)
         {
             event.preventDefault();
@@ -821,28 +819,29 @@ function updateParamFileTable(paramName)
             if(editLinkMode == "Show Details...")
             {
                 $(this).text("Hide Details...");
-                $("#" + idPName).removeClass("hidden");
+                $(this).prepend("<img src='/gp/images/arrows-down.gif'/>");
+                $("#" + idPName).find(".paramFilesTable").removeClass("hidden");
             }
             else
             {
+                console.log($("#" + idPName).html());
                 $(this).text("Show Details...");
-                $("#" + idPName).addClass("hidden");
+                $(this).prepend("<img src='/gp/images/arrows.gif'/>");
+                console.log($("#" + idPName).html());                                
+                $("#" + idPName).find(".paramFilesTable").addClass("hidden");
             }
         });
 
-        tData.append(editLink);
+        pData.append(editLink);
 
         var selectedFiles = "Selected ";
         selectedFiles += files.length + " files";
 
-        tData.append("(" + selectedFiles + ")");
-        fileInfoRow.append("<td/>");
-        fileInfoRow.append(tData);
-        $("#" + idPName).before(fileInfoRow);
+        pData.append("(" + selectedFiles + ")");
+        $("#" + idPName).append(pData);
 
         if(files.length > 0)
         var table = $("<table class='paramFilesTable'/>");
-        table.append("<tr><th colspan='2'>File Name</th></tr>");
         for(var i=0;i<files.length;i++)
         {
             var fileRow = $("<tr/>");
@@ -879,10 +878,7 @@ function updateParamFileTable(paramName)
             fileRow.append(fileTData);
             table.append(fileRow);
         }
-        var tableData = $("<td/>");
-        tableData.append(table);
-        $("#"+idPName).append("<td/>");
-        $("#"+idPName).append(tableData);
+        $("#"+idPName).append(table);
     }
 }
 
