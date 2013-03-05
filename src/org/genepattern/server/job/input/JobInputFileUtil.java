@@ -34,6 +34,40 @@ public class JobInputFileUtil {
     //Note: can't be 'temp', because of a problem with the existing implementation of the User Uploads tab
     final static public String DEFAULT_ROOT_PATH="tmp/";
 
+    /**
+     * Create a temporary directory in the user's upload directory.
+     * @param context
+     * @return
+     */
+    public static GpFilePath createTmpDir(final Context context) throws Exception {
+        if (context==null) {
+            throw new IllegalArgumentException("context==null");
+        }
+        final File rootPath=new File(DEFAULT_ROOT_PATH);
+        GpFilePath parentDirPath=GpFileObjFactory.getUserUploadFile(context, rootPath);
+        File parentDirFile=parentDirPath.getServerFile();
+        if (!parentDirFile.exists()) {
+            boolean success=parentDirFile.mkdirs();
+            if (!success) {
+                log.error("false return value from mkdirs( "+parentDirFile.getAbsolutePath()+" )");
+                throw new Exception("Unable to create parent upload dir for job: "+parentDirFile.getPath());
+            }
+        }
+        final File tmpFile=File.createTempFile("run", null, parentDirFile);
+        boolean success=tmpFile.delete();
+        if (!success) {
+            throw new Exception("Unable to create uplodate directory for job, couldn't delete the tmpFile: "+tmpFile.getPath());
+        }
+        success=tmpFile.mkdirs();
+        if (!success) {
+            throw new Exception("Unable to create upload directory for job: "+tmpFile.getPath());
+        }
+        final String relativePath=DEFAULT_ROOT_PATH+tmpFile.getName()+"/";
+        final File relativeFile=new File(relativePath);
+        GpFilePath gpFilePath=GpFileObjFactory.getUserUploadFile(context, relativeFile);
+        return gpFilePath;
+    }
+
     //to use instead of a jobId, because we don't have one yet
     private String uploadPath; 
     //for getting the currentUser, and optionally current task and current job
