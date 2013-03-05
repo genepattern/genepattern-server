@@ -66,7 +66,7 @@ var menuRegistry = {
 			var itemDiv = document.createElement("div");
 			
 			// Handle no links: attr is null, item has no link
-			if (itemJSON.attr === undefined || itemJSON.attr === null || jq.isEmptyObject(itemJSON.attr) {
+			if (itemJSON.attr === undefined || itemJSON.attr === null || jq.isEmptyObject(itemJSON.attr)) {
 				jq(itemDiv).text(itemJSON.value);
 				jq(menuDiv).append(itemDiv);
 				continue;
@@ -87,7 +87,7 @@ var menuRegistry = {
 		jq(menuDiv).menu();
 		jq(document.body).append(menuDiv);
 		
-		return "#" + json.id
+		return "#" + json.id;
 	}
 };
 
