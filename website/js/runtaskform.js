@@ -61,7 +61,7 @@ function loadModule(taskId)
                 if (response["module"] !== undefined &&
                     response["module"] !== null
                     && response["parameters"] != undefined
-                    && response["parameters"] !== undefined ) 
+                    && response["parameters"] !== undefined )
                 {
                     loadModuleInfo(response["module"]);
                     parametersJson = response["parameters"];
@@ -177,7 +177,7 @@ function loadModuleInfo(module)
 
         $(".otherControlsDiv").append("<a href='JavaScript:Menu.denyIE(\"" + editLink + "\");'>edit</a>");
     }
-    
+
     if(module["description"] !== undefined
             && module["description"] != "")
     {
@@ -191,11 +191,11 @@ function loadModuleInfo(module)
     if(module["missing_tasks"])
     {
         $("#missingTasksDiv").append("<p>WARNING: This pipeline requires modules or module " +
-                                     "versions which are not installed on this server.</p>");       
+                                     "versions which are not installed on this server.</p>");
         var installTasksButton = $("<button> Install missing tasks</button>");
         installTasksButton.button().click(function()
         {
-            window.location.replace("/gp/viewPipeline.jsp?name=" + run_task_info.lsid);                    
+            window.location.replace("/gp/viewPipeline.jsp?name=" + run_task_info.lsid);
         });
 
         $("#missingTasksDiv").append(installTasksButton);
@@ -303,23 +303,29 @@ function loadParameterInfo(parameters)
         {
             inputFileRowIds.push(rowId);
             valueTd.addClass("dNd");
-            var maxValue = "unlimited";
+
+            var uploadFileText = "Upload Files...";
+            var addUrlText = "Add URLs...";
             if(parameters[q].maxValue != undefined
                     && parameters[q].maxValue != null)
             {
-                maxValue = parameters[q].maxValue;
+                if(parseInt(parameters[q].maxValue) == 1)
+                {
+                    uploadFileText = "Upload File...";
+                    addUrlText = "Add URL...";
+                }
             }
-            valueTd.append("<p>File limit: " + maxValue + "</p>");
+
             valueTd.append("<span class='btn btn-success fileinput-button'>"
                     + "<span><i class='icon-plus'></i>"
-                    + "Upload Files...</span>"
+                    + uploadFileText + "</span>"
                     + "<input class='uploadedinputfile' name='"+ parameters[q].name +"' type='file'/></span>");
             //valueTd.append("<span class='btn btn-success fileinput-button urlButton'>"
             //                   + "<span><i class='icon-plus'></i>"
             //                   + "<img src='../css/images/file_add.gif' width='16' height='16'"
             //                   + "alt='Specify URL'/>Specify URL...</span></span>");
 
-            valueTd.append("<button type='button' class='urlButton'>Specify URL...</button>");
+            valueTd.append("<button type='button' class='urlButton'>"+ addUrlText +"</button>");
 
             valueTd.append("<span>or drag and drop files here...</span>");
             paramRow.append(valueTd);
@@ -415,10 +421,10 @@ function loadParameterInfo(parameters)
                 name: url
             };
             fileObjListings.push(fileObj);
-                   
+
             // add to file listing for the specified parameter
             updateParamFileTable(paramName);
-           
+
         });
         urlDiv.append(enterButton);
 
@@ -449,7 +455,7 @@ jQuery(document).ready(function()
 
     //Add tabs once properties page is redone
     //$("#submitJob").tabs();
-    
+
     $("#runTaskForm").validate(
     {
         /*highlight: function(label) {
@@ -473,9 +479,9 @@ jQuery(document).ready(function()
     {
         //lsid = "urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00044:9";
         //redirect to splash page
-        window.location.replace("/gp/pages/index.jsf");        
+        window.location.replace("/gp/pages/index.jsf");
     }
-    else   
+    else
     {
         loadModule(lsid);
     }
@@ -596,7 +602,6 @@ function submitTask()
         overlayCSS: { backgroundColor: '#F8F8F8'}
     });
 
-    //TODO: add call to run job
     console.log("submitting task");
 
     var taskJsonObj =
@@ -657,7 +662,7 @@ function dragExit(evt)
 
 function dragOver(evt)
 {
-    this.classList.add('highlight');    
+    this.classList.add('highlight');
     evt.stopPropagation();
     evt.preventDefault();
 }
@@ -790,7 +795,7 @@ function updateParamFileTable(paramName)
     $("#" + idPName).prev("tr.fileInfo").remove();
     $("#" + idPName).children().remove();
     if(files != null && files != undefined && files.length > 0)
-    {      
+    {
         var fileInfoRow = $("<tr class='fileInfo'></tr>");
         var tData = $("<td/>");
 
@@ -799,7 +804,7 @@ function updateParamFileTable(paramName)
         editLink.click(function(event)
         {
             event.preventDefault();
-            
+
             var editLinkMode = $(this).text();
             if(editLinkMode == "Show Details...")
             {
@@ -960,11 +965,11 @@ function uploadFile(paramName, file, fileOrder, fileId)
             $("#fileUploadDiv").append('<p>Unable to determine progress</p>');
         }
     }
-    
+
     xhr.upload.onloadstart = function(event) {
         console.log("onload start support file upload");
     }
-    
+
     // prepare FormData
     var formData = new FormData();
     formData.append('ifile', file);
