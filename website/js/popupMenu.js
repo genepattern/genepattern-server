@@ -23,7 +23,71 @@ var menuRegistry = {
 	},
 	
 	_create: function(button, menu) {
+		if (typeof menu !== 'string') {
+			menu = menuRegistry._generate(menu);
+		}
 		setTimeout(function() { new PopupMenu(button, menu); }, 300);
+	},
+	
+	/**
+	 * This accepts a JSON object with the given format:
+	 * {
+	 * 		id: "idOfMenu",
+	 * 		items: [
+	 * 			{
+	 * 				"value": "displayValueOfOption",
+	 * 				"attr": {
+	 * 					"href": "attributes of link",
+	 * 					"onclick": "no link is created if attr is empty array or null"
+	 * 				}
+	 * 			},
+	 * 			"SEPERATOR" // Constant for inserting a seperator into the menu
+	 * 		]
+	 * }
+	 */
+	_generate: function(json) {
+		var menuDiv = document.createElement("div");
+		jq(menuDiv).attr("id", json.id);
+		jq(menuDiv).attr("class", "popupMenu");
+		jq(menuDiv).attr("style", "display:none;");
+		
+		// Create menu items
+		for (var i = 0; i < json.items.length; i++) {
+			var itemJSON = json.items[i];
+			
+			// Handle seperators
+			if (typeof itemJSON == "string") {
+				var seperator = document.createElement("hr");
+				jq(menuDiv).append(seperator);
+				continue;
+			}
+			
+			// Create the item's div
+			var itemDiv = document.createElement("div");
+			
+			// Handle no links: attr is null, item has no link
+			if (itemJSON.attr === undefined || itemJSON.attr === null || jq.isEmptyObject(itemJSON.attr) {
+				jq(itemDiv).text(itemJSON.value);
+				jq(menuDiv).append(itemDiv);
+				continue;
+			}
+			
+			// Handle menu items with links and attributes
+			var itemLink = document.createElement("a");
+			for (var key in itemJSON.attr) {
+				var value = itemJSON.attr[key];
+				jq(itemLink).attr(key, value);
+			}
+			
+			jq(itemLink).text(itemJSON.value);
+			jq(itemDiv).append(itemLink);
+			jq(menuDiv).append(itemDiv);
+		}
+		
+		jq(menuDiv).menu();
+		jq(document.body).append(menuDiv);
+		
+		return "#" + json.id
 	}
 };
 
