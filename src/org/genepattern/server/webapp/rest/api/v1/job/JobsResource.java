@@ -34,13 +34,13 @@ import org.json.JSONObject;
  *                     "1"] },  
  *           ]
  *          }' 
- *      http://127.0.0.1:8080/gp/rest/jobs
+ *      http://127.0.0.1:8080/gp/rest/v1/jobs
  * </pre>
  * 
  * @author pcarr
  *
  */
-@Path("/jobs")
+@Path("/v1/jobs")
 public class JobsResource {
 
     @POST
