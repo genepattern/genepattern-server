@@ -263,3 +263,9 @@ button.urlButton
 {
     font-weight: bold;
 }
+
+img.buttonIcon {
+	padding-right: 5px;
+	margin-left: -5px;
+	vertical-align:top;
+}
