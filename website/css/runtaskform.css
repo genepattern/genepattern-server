@@ -30,7 +30,8 @@
   margin: 1px 0 0 0;
 }
 
-.btn{
+.btn
+{
     display:inline-block;
     padding:4px 10px 4px;
     font-size:13px;
@@ -46,7 +47,8 @@
     cursor:pointer;
     *margin-left:.3em;
 	float:left;
-	}
+    vertical-align: bottom;
+}
 
 .btn:first-child{*margin-left:0;
 }
@@ -206,6 +208,7 @@ table.paramFilesTable th
 button.urlButton
 {
     font-size: 11px;
+    padding: 0;
 }
 
 #paramsTable tr:nth-child(odd)
@@ -217,6 +220,11 @@ button.urlButton
 {
     width: 45%;
     height: 17px;
+}
+
+.fileDiv
+{
+    vertical-align: bottom;
 }
 
 /*tr.error {
@@ -268,4 +276,12 @@ img.buttonIcon {
 	padding-right: 5px;
 	margin-left: -5px;
 	vertical-align:top;
+}
+
+.dNdImg
+{
+    display: inline;
+    vertical-align: bottom;
+    padding-bottom: 2px;
+    height: 29px;
 }

@@ -313,23 +313,27 @@ function loadParameterInfo(parameters)
                 }
             }
 
-            valueTd.append("<span class='btn btn-success fileinput-button'>"
+            var fileDiv = $("<div class='fileDiv'>");
+
+            fileDiv.append("<span class='btn btn-success fileinput-button'>"
                     + "<span><i class='icon-plus'></i>"
                     + uploadFileText + "</span>"
                     + "<input class='uploadedinputfile' name='"+ parameters[q].name +"' type='file'/></span>");
+
             //valueTd.append("<span class='btn btn-success fileinput-button urlButton'>"
             //                   + "<span><i class='icon-plus'></i>"
             //                   + "<img src='../css/images/file_add.gif' width='16' height='16'"
             //                   + "alt='Specify URL'/>Specify URL...</span></span>");
 
-            valueTd.append("<button type='button' class='urlButton'>"+ addUrlText +"</button>");
-
-            valueTd.append("<span>or drag and drop files here...</span>");
+            fileDiv.append("<button type='button' class='urlButton'>"+ addUrlText +"</button>");
+            
+            fileDiv.append("<span>  or  <img class='dNdImg' src='/gp/images/Drag_Drop_icon.gif'/> </span>");
 
             //switch . with _ since the jquery selector does not work with .
             var idPName = parameters[q].name.replace(/\./g,'_');
-            valueTd.append("<div id='" + idPName + "'></div>");
+            fileDiv.append("<div id='" + idPName + "'></div>");
 
+            valueTd.append(fileDiv);
             paramRow.append(valueTd);
             paramsTable.append(paramRow);
         }
