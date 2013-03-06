@@ -107,6 +107,7 @@ public class GenomeSpaceReceiveBean {
             Set<String> conversions = null;
             if (i instanceof GenomeSpaceFile) {
                 conversions = ((GenomeSpaceFile) i).getConversions();
+                conversions.add(i.getExtension());
             }
             else {
                 conversions = new HashSet<String>();
