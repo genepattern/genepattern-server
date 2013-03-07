@@ -205,7 +205,7 @@ public class JobInputFileUtil {
      * @param gpFilePath
      */
     public void updateUploadsDb(GpFilePath gpFilePath) throws Exception {
-        addUploadFileToDb(gpFilePath);
+        _addUploadFileToDb(gpFilePath);
     }
 
     /**
@@ -215,7 +215,39 @@ public class JobInputFileUtil {
      * 
      * @param relativePath
      */
-    private void addUploadFileToDb(final GpFilePath gpFilePath) throws Exception {
+    private void _addUploadFileToDb(final GpFilePath gpFilePath) throws Exception {
+        if (!(gpFilePath instanceof UserUploadFile)) {
+            throw new IllegalArgumentException("Expecting a GpFilePath instance of type UserUploadFile");
+        }
+
+        List<String> dirs=new ArrayList<String>();
+
+        File f=gpFilePath.getRelativeFile().getParentFile();
+        while(f!=null) {
+            dirs.add(0, f.getName());
+            f=f.getParentFile();
+        }
+
+        String parentPath="";
+        for(String dirname : dirs) {
+            parentPath += (dirname+"/");
+            //create a new record for the directory, if necessary
+            GpFilePath parent = GpFileObjFactory.getUserUploadFile(context, new File(parentPath));
+            UserUploadManager.createUploadFile(context, parent, 1, true);
+            UserUploadManager.updateUploadFile(context, parent, 1, 1);
+        }
+        UserUploadManager.createUploadFile(context, gpFilePath, 1, true);
+        UserUploadManager.updateUploadFile(context, gpFilePath, 1, 1);
+    }
+
+    /**
+     * For the current user, given a relative path to a file,
+     * add a record in the User Uploads DB for the file,
+     * creating, if necessary, records for all parent directories.
+     * 
+     * @param relativePath
+     */
+    static public void addUploadFileToDb(final Context context, final GpFilePath gpFilePath) throws Exception {
         if (!(gpFilePath instanceof UserUploadFile)) {
             throw new IllegalArgumentException("Expecting a GpFilePath instance of type UserUploadFile");
         }

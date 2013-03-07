@@ -11,6 +11,7 @@ import java.util.Enumeration;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DefaultValue;
+import javax.ws.rs.HeaderParam;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
@@ -25,10 +26,12 @@ import javax.ws.rs.core.Response.Status;
 import org.apache.commons.io.IOUtils;
 import org.apache.log4j.Logger;
 import org.genepattern.server.config.ServerConfiguration;
+import org.genepattern.server.dm.GpFileObjFactory;
 import org.genepattern.server.dm.GpFilePath;
 import org.genepattern.server.job.input.JobInputFileUtil;
 import org.genepattern.server.webapp.rest.api.v1.task.TasksResource;
 
+import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.core.header.FormDataContentDisposition;
 import com.sun.jersey.multipart.FormDataParam;
 
@@ -42,6 +45,11 @@ import com.sun.jersey.multipart.FormDataParam;
  *     http://neopatel.blogspot.com/2011/10/jersey-rest-api-html-documentation.html
  *     http://jamesaimonetti.com/2012/01/26/curl-stripping-newlines-from-your-csv-or-other-file/
  *     http://marakana.com/s/post/1221/designing_a_beautiful_rest_json_api_video
+ *     
+ *     Interesting comment here, http://weblogs.java.net/blog/ljnelson/archive/2010/04/28/pushing-jersey-limit
+ *         "... we had the requirement to offer up our API via JAX-RS-compliant web services 
+ *          (I don't want to say REST, because I really really really really don't want to go down that rathole; that's what rest-discuss is for)."
+ *      
  * 
  * @author pcarr
  *
@@ -49,13 +57,20 @@ import com.sun.jersey.multipart.FormDataParam;
 @Path("/v1/data")
 public class DataResource {
     final static private Logger log = Logger.getLogger(DataResource.class);
+    
+    final static public String PROP_MAX_FILE_SIZE= DataResource.class.getPackage().getName()+"max_file_size";
+    /**
+     * The default max number of bytes that the upload servlet accepts in the request body.
+     *     1 Gb, 1074000000
+     *     2 Gb, 2147000000
+     */
+    final static public long MAX_FILE_SIZE_DEFAULT=1074000000L;
 
     /**
      * Add a new file to be used as input to a job. Return the URI for the uploaded file in the 'Location'
      * header of the response.
      *
-     * TODO: Implement more validation, for example,
-     *     - when the max file size limit for individual file upload is exceeded
+     * TODO: Implement more validation 
      *     - when the file will cause the current user's disk quota to be exceeded (as configured by the GP server)
      *     - when the file cannot be written because the OS disk quota is exceeded
      *     - when the file write operation fails because of a server timeout
@@ -65,7 +80,12 @@ public class DataResource {
      * 
      * Expected response codes:
      *     ?, this method requires authentication, if there is not a valid gp user logged in, respond with basic authentication request.
-     *     201 - Created, when the file is successfully uploaded.
+     *     
+     *     201 - Created
+     *     
+     *     411 - Length required
+     *     413 - Request entity too large
+     *     500 - Internal server error
      * 
      * Example usage:
      * <pre>
@@ -82,42 +102,43 @@ public class DataResource {
     @Path("/upload/job_input") 
     public Response handlePostJobInputInBody(
             final @Context HttpServletRequest request,
+            final @HeaderParam("Content-Length") String contentLength,
             final @QueryParam("name") String filename,
             final InputStream in) 
     {
-        //for debugging
-        debugHeaders(request);
-
-        //by default create a new directory in the ./tmp dir for the current user
-        //return uri for the file
-        try {
-            final ServerConfiguration.Context userContext=TasksResource.getUserContext(request);        
-            final GpFilePath tmpDir=JobInputFileUtil.createTmpDir(userContext);
-            final String path=tmpDir.getRelativePath() + "/" + filename;
-            GpFilePath gpFilePath=createUserUploadFile(userContext, in, path);
-            String location = ""+gpFilePath.getUrl().toExternalForm(); 
+        try { 
+            final ServerConfiguration.Context userContext=TasksResource.getUserContext(request);
+            final long maxNumBytes=initMaxNumBytes(contentLength, userContext); 
+            final GpFilePath gpFilePath=writeJobInputFile(userContext, in, filename, maxNumBytes);
+            final String location = ""+gpFilePath.getUrl().toExternalForm(); 
             return Response.status(201)
                     .header("Location", location)
                     .entity(location).build();
         }
+        catch (WebApplicationException e) {
+            //propagate these up to the calling method, for standard REST API error handling
+            throw e;
+        }
         catch (Throwable t) {
+            log.error(t);
+            //all others convert to internal server error
             return Response.status(Status.INTERNAL_SERVER_ERROR).entity(t.getLocalizedMessage()).build();
         }
     }
 
     /**
      * Add a new file to the uploads directory of the current user, specifically when you 
-     * want to use the file as a job input file (in a subsequent call to add a job).
+     * want to use the file as a job input file in a subsequent call to add a job.
      * 
-     * This will create a new resource each time the method is called.
+     * This method creates a new resource.
      * 
      * Example usage:
      * <pre>
-       curl -X POST --form file=@all_aml_test.cls -u test:test http://127.0.0.1:8080/gp/rest/v1/data/upload/job_input
+       curl -X POST --form file=@all_aml_test.cls -u test:test http://127.0.0.1:8080/gp/rest/v1/data/upload/job_input_form
        </pre>
      * The '-X POST' is redundant when using the '--form' option. This will work also.
      * <pre>
-       curl --form file=@all_aml_test.cls -u test:test http://127.0.0.1:8080/gp/rest/v1/data/upload/job_input
+       curl --form file=@all_aml_test.cls -u test:test http://127.0.0.1:8080/gp/rest/v1/data/upload/job_input_form
      * </pre>
      * 
      * @param request
@@ -131,20 +152,15 @@ public class DataResource {
     @Path("/upload/job_input_form") 
     public Response handlePostJobInputMultipartForm(
             final @Context HttpServletRequest request,
+            final @HeaderParam("Content-Length") String contentLength,
             final @FormDataParam("file") InputStream in,
             final @FormDataParam("file") FormDataContentDisposition fileDetail) 
     {
-        //for debugging
-        debugHeaders(request);
-
-        //by default create a new directory in the ./tmp dir for the current user
-        //return uri for the file
         try {
             final ServerConfiguration.Context userContext=TasksResource.getUserContext(request);        
-            final GpFilePath tmpDir=JobInputFileUtil.createTmpDir(userContext);
-            final String path=tmpDir.getRelativePath() + "/" + fileDetail.getFileName();
-            GpFilePath gpFilePath=createUserUploadFile(userContext, in, path);
-            String location = ""+gpFilePath.getUrl().toExternalForm(); 
+            final long maxNumBytes=initMaxNumBytes(contentLength, userContext);
+            final GpFilePath gpFilePath=writeJobInputFile(userContext, in, fileDetail.getFileName(), maxNumBytes);
+            final String location = ""+gpFilePath.getUrl().toExternalForm(); 
             return Response.status(201)
                     .header("Location", location)
                     .entity(location).build();
@@ -157,7 +173,7 @@ public class DataResource {
     /**
      * Add a file to the uploads directory of the current user. Example usage,
      * <pre>
-     * curl -X PUT --data-binary @all_aml_test.cls -u test:test http://127.0.0.1:8080/gp/rest/data/upload/tmp/all_aml_test.cls
+     * curl -X PUT --data-binary @all_aml_test.cls -u test:test http://127.0.0.1:8080/gp/rest/v1/data/upload/all_aml/all_aml_test.cls
      * </pre>
      * 
      * @param request
@@ -170,19 +186,16 @@ public class DataResource {
     @Path("/upload/{path:.+}")  //regular expression to match nested paths, e.g. PUT /upload/tmp/a/b/file.txt
     public Response putFile(
             final @Context HttpServletRequest request,
+            final @HeaderParam("Content-Length") String contentLength,
             final @PathParam("path") String path,
             final @DefaultValue("false") @QueryParam("replace") boolean replace,
             final InputStream in) 
     {
-        
-        //for debugging
-        //debugHeaders(request);
-        //debugContent(in);
-        
         try {
-            final ServerConfiguration.Context userContext=TasksResource.getUserContext(request);        
-            GpFilePath gpFilePath=createUserUploadFile(userContext, in, path);
-            String location = ""+gpFilePath.getUrl().toExternalForm(); 
+            final ServerConfiguration.Context userContext=TasksResource.getUserContext(request);  
+            final long maxNumBytes=initMaxNumBytes(contentLength, userContext);
+            final GpFilePath gpFilePath=writeUserUploadFile(userContext, in, path, maxNumBytes);
+            final String location = ""+gpFilePath.getUrl().toExternalForm(); 
             return Response.status(201)
                     .header("Location", location)
                     .entity(location).build();
@@ -191,99 +204,203 @@ public class DataResource {
             return Response.status(Status.INTERNAL_SERVER_ERROR).entity(t.getLocalizedMessage()).build();
         }
     }
-    
-//    @POST
-//    @Path("/upload_a")
-//    @Consumes(MediaType.MULTIPART_FORM_DATA)
-//    public Response uploadFile(
-//        @FormDataParam("file") InputStream uploadedInputStream,
-//        @FormDataParam("file") FormDataContentDisposition fileDetail,
-//        @Context HttpServletRequest request) {
-//
-//        try {
-//        final ServerConfiguration.Context userContext=TasksResource.getUserContext(request);
-//        JobInputFileUtil fileUtil = new JobInputFileUtil(userContext);
-//        
-//        File relativePath = new File(fileDetail.getFileName());
-//        GpFilePath gpFilePath=fileUtil.initUploadFileForInputParam(relativePath);
-//
-//        // save it
-//        writeToFile(uploadedInputStream, gpFilePath.getServerFile().getCanonicalPath());
-//        fileUtil.updateUploadsDb(gpFilePath);
-// 
-//        String location = ""+gpFilePath.getUrl().toExternalForm();
-// 
-//        return Response.status(201)
-//                .header("Location", location)
-//                .entity(location).build();
-//        }
-//        catch (Throwable t) {
-//            throw new WebApplicationException(
-//                Response.status(Response.Status.BAD_REQUEST)
-//                    .entity(t.getLocalizedMessage())
-//                    .build());
-//        }
-// 
-//    }
- 
-//    @POST
-//    @Path("/upload_test")
-//    public Response uploadFileTest(
-//        @Context HttpServletRequest request) 
-//    {
-//        try {
-//            final ServerConfiguration.Context userContext=TasksResource.getUserContext(request);
-//            JobInputFileUtil fileUtil = new JobInputFileUtil(userContext);
-//        
-//            //File relativePath = new File(fileDetail.getFileName());
-//            //GpFilePath gpFilePath=fileUtil.initUploadFileForInputParam(relativePath);
-//
-//            // save it
-//            //writeToFile(uploadedInputStream, gpFilePath.getServerFile().getCanonicalPath());
-//            //fileUtil.updateUploadsDb(gpFilePath);
-// 
-//            //String location = ""+gpFilePath.getUrl().toExternalForm();
-//            
-//            String location="not saved!";
-// 
-//            return Response.status(201)
-//                    .header("Location", location)
-//                    .entity(location).build();
-//        }
-//        catch (Throwable t) {
-//            throw new WebApplicationException(
-//                Response.status(Response.Status.BAD_REQUEST)
-//                    .entity(t.getLocalizedMessage())
-//                    .build());
-//        }
-// 
-//    }
- 
 
-    // save uploaded file to new location
-    private void writeToFile(InputStream uploadedInputStream,
-        String uploadedFileLocation) {
+    /**
+     * Helper method which checks the 'Content-Length' header as well as the maxNumBytes configuration param
+     * for the current user.
+     * 
+     * This allows us to fail early if the 'Content-Length' exceeds maxNumBytes.
+     * But we can't trust the client so we also need to enforce maxNumBytes when streaming the response body into the file system.
+     * 
+     * @param contentLength, as parsed from the HTTP request header
+     * @param userContext
+     * @return
+     * @throws WebApplicationException, HTTP response headers are automatically set when errors occur
+     */
+    private long initMaxNumBytes(final String contentLength, final ServerConfiguration.Context userContext) 
+    throws WebApplicationException
+    {
+        if (contentLength == null) {
+            throw new WebApplicationException(
+                    Response.status(ClientResponse.Status.LENGTH_REQUIRED).build());
+        }
+        long numBytes = -1L;
+        long maxNumBytes = MAX_FILE_SIZE_DEFAULT;
+        numBytes=Long.parseLong(contentLength);
+        maxNumBytes=ServerConfiguration.instance().getGPLongProperty(userContext, PROP_MAX_FILE_SIZE, MAX_FILE_SIZE_DEFAULT);
+        if (numBytes > maxNumBytes) {
+            throw new WebApplicationException(
+                    Response.status(ClientResponse.Status.REQUEST_ENTITY_TOO_LARGE).build());
+        }
+        return maxNumBytes;
+    }
 
+    ////////////////////////////////////////////////////////////////
+    // Helper methods for adding user upload files to GenePattern
+    // TODO: should refactor these methods into an interface
+    ////////////////////////////////////////////////////////////////
+    GpFilePath writeUserUploadFile(final ServerConfiguration.Context userContext, final InputStream in, final String path, final long maxNumBytes) 
+    throws Exception
+    {
+        JobInputFileUtil fileUtil = new JobInputFileUtil(userContext);
+        
+        File relativePath = new File(path);
+        GpFilePath gpFilePath=fileUtil.initUploadFileForInputParam(relativePath);
+        
+        //save it
+        writeBytesToFile(userContext, in, gpFilePath, maxNumBytes);
+        return gpFilePath;
+    }
+
+    /**
+     * This method saves the data file uploaded from the REST client into a 
+     * temporary directory within the user upload folder. It also saves a record
+     * of this into the GP database.
+     * 
+     * @param userContext
+     * @param in
+     * @param path
+     * @return
+     * @throws Exception
+     */
+    GpFilePath writeJobInputFile(final ServerConfiguration.Context userContext, final InputStream in, final String filename, final long maxNumBytes) 
+    throws WebApplicationException
+    {
+        if (userContext==null) {
+            throw new IllegalArgumentException("userContext==null");
+        }
+        if (userContext.getUserId()==null || userContext.getUserId().length()==0) {
+            throw new IllegalArgumentException("userContext.userId not set");
+        }
+        GpFilePath gpFilePath=null;
         try {
-            OutputStream out = new FileOutputStream(new File(
-                    uploadedFileLocation));
+            gpFilePath=createJobInputDir(userContext, filename);
+        }
+        catch (Exception e) {
+            //TODO: figure out how to include more meaningful error message in the response header
+            throw new WebApplicationException(
+                    Response.status(ClientResponse.Status.INTERNAL_SERVER_ERROR).build());
+        }
+
+        // save it
+        writeBytesToFile(userContext, in, gpFilePath, maxNumBytes);
+        return gpFilePath;
+    }
+    
+    private GpFilePath createJobInputDir(final ServerConfiguration.Context userContext, final String filename) 
+    throws Exception
+    {
+        GpFilePath tmpDir=null;
+        try {
+            tmpDir=JobInputFileUtil.createTmpDir(userContext);
+        }
+        catch (Exception e) {
+            String message="Error creating unique parent directory for the job input file: "+filename;
+            log.error(message, e);
+            throw new Exception(message, e);
+        }
+        final String path=tmpDir.getRelativePath() + "/" + filename;
+        File relativeFile=new File(path);
+        GpFilePath job_input_file=null;
+        try {
+            job_input_file=GpFileObjFactory.getUserUploadFile(userContext, relativeFile);
+            return job_input_file;
+        }
+        catch (Exception e) {
+            String message="Error initializing GpFilePath for the job input file: "+filename;
+            log.error(message,e);
+            throw new Exception(message, e);
+        }
+    }
+    
+    final static class MaxFileSizeException extends Exception {
+        public MaxFileSizeException(String m) {
+            super(m);
+        }
+    }
+    final static class WriteToFileException extends Exception {
+        public WriteToFileException(Exception e) {
+            super(e);
+        }
+    }
+    
+    private void writeBytesToFile(final ServerConfiguration.Context userContext, final InputStream in, final GpFilePath gpFilePath, final long maxNumBytes) {
+        // save it
+        boolean success=false;
+        try {
+            writeToFile(in, gpFilePath.getServerFile().getCanonicalPath(), maxNumBytes);
+            success=true;
+        }
+        catch (MaxFileSizeException e) {
+            throw new WebApplicationException(
+                    Response.status(ClientResponse.Status.REQUEST_ENTITY_TOO_LARGE).build());
+        }
+        catch (WriteToFileException e) {
+            throw new WebApplicationException(
+                    Response.status(ClientResponse.Status.INTERNAL_SERVER_ERROR).build());
+        }
+        catch (Throwable t) {
+            throw new WebApplicationException(
+                    Response.status(ClientResponse.Status.INTERNAL_SERVER_ERROR).build());
+        }
+        finally {
+            if (!success) {
+                //delete the local file
+                boolean deleted=gpFilePath.getServerFile().delete();
+                if (!deleted) {
+                    log.error("Didn't delete job_input_file, user="+userContext.getUserId()+", filename="+gpFilePath.getRelativePath());
+                }
+            }
+        }
+        try {
+            JobInputFileUtil.addUploadFileToDb(userContext,gpFilePath);
+        }
+        catch (Throwable t) {
+            log.error("Error saving record of job_input_file to DB, filename="+gpFilePath.getRelativePath(), t);
+            throw new WebApplicationException(
+                    Response.status(ClientResponse.Status.INTERNAL_SERVER_ERROR).build());
+        }
+    }
+    
+    private void writeToFile( final InputStream uploadedInputStream, final String uploadedFileLocation, final long maxNumBytes) 
+    throws MaxFileSizeException, WriteToFileException
+    {
+        final File toFile=new File(uploadedFileLocation);
+        OutputStream out=null;
+        try {
+            out = new FileOutputStream(toFile);
+            long numBytesRead = 0L;
             int read = 0;
             byte[] bytes = new byte[1024];
 
-            out = new FileOutputStream(new File(uploadedFileLocation));
+            out = new FileOutputStream(toFile);
             while ((read = uploadedInputStream.read(bytes)) != -1) {
                 out.write(bytes, 0, read);
+                numBytesRead += read;
+                if (numBytesRead > maxNumBytes) {
+                    log.debug("maxNumBytes reached: "+maxNumBytes);
+                    throw new MaxFileSizeException("maxNumBytes reached: "+maxNumBytes);
+                } 
             }
             out.flush();
             out.close();
-        } catch (IOException e) {
-
-            e.printStackTrace();
+        } 
+        catch (IOException e) {
+            log.error("Error writing to file: "+toFile.getAbsolutePath());
+            throw new WriteToFileException(e);
         }
-
+        finally {
+            if (out != null) {
+                try {
+                    out.close();
+                }
+                catch (IOException e) {
+                    log.error("Error closing output stream in finally clause", e);
+                }
+            }
+        }
     }
 
-    
     ////////////////////////////////////////////////////////////////
     // Helper methods for working with HTTP requests
     // TODO: should refactor into a common utility class
@@ -329,22 +446,4 @@ public class DataResource {
         }
     }
 
-
-    ////////////////////////////////////////////////////////////////
-    // Helper methods for adding user upload files to GenePattern
-    // TODO: should refactor these methods into an interface
-    ////////////////////////////////////////////////////////////////
-    GpFilePath createUserUploadFile(final ServerConfiguration.Context userContext, final InputStream in, final String path) 
-    throws Exception
-    {
-        JobInputFileUtil fileUtil = new JobInputFileUtil(userContext);
-        
-        File relativePath = new File(path);
-        GpFilePath gpFilePath=fileUtil.initUploadFileForInputParam(relativePath);
-
-        // save it
-        writeToFile(in, gpFilePath.getServerFile().getCanonicalPath());
-        fileUtil.updateUploadsDb(gpFilePath);
-        return gpFilePath;
-    }
 }
