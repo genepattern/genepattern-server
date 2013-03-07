@@ -138,7 +138,7 @@ function loadModuleInfo(module)
     }
 
 
-    $(".Export").click(function()
+    /*$(".Export").click(function()
     {
         var exportLink = "/gp/makeZip.jsp?name=" + run_task_info.lsid;
         window.open(exportLink, '_blank');
@@ -149,7 +149,7 @@ function loadModuleInfo(module)
     if(module["taskType"] == "pipeline")
     {
         propertiesLink = "/gp/viewPipeline.jsp?name="+run_task_info.lsid;
-    }
+    } 
 
     $(".properties").attr("href", propertiesLink);
 
@@ -178,10 +178,11 @@ function loadModuleInfo(module)
         $(".otherControlsDiv").append("<a href='JavaScript:Menu.denyIE(\"" + editLink + "\");'>edit</a>");
     }
 
+    */
     if(module["description"] !== undefined
             && module["description"] != "")
     {
-        $("#description").append("<p>" + module["description"] + "</p>");
+        $("#mod_description").append(module["description"]);
     }
 
     //check if there are missing tasks (only applies to pipelines)
@@ -476,19 +477,21 @@ jQuery(document).ready(function()
         } */
     });
 
+    $("#mod_description_hidden").hide();
     $("#mod_description_toggle").click(function()
     {
-        var descImg = this;        
-        if($("#description").is(":visible"))
+        var descImg = this;
+        if($("#mod_description").is(":visible"))
         {
-            descImg.src = descImg.src.replace("arrows-down","arrows");
+            descImg.src = descImg.src.replace("minus","plus");
         }
         else
         {
-            descImg.src = descImg.src.replace("arrows","arrows-down");
+            descImg.src = descImg.src.replace("plus","minus");
         }
 
-        $("#description").toggle();
+        $("#mod_description_hidden").toggle();                                            
+        $("#mod_description").toggle();
     });
     
     $("#toggleDesc").click(function()

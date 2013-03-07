@@ -56,19 +56,22 @@
                     </label>
                     <select name='task_versions' id='task_versions'/>
                 </div>
+            </div>
+            <div id="description_main">
+                <span>
+                    <a href="#">
+                        <img id="mod_description_toggle" src="#{facesContext.externalContext.requestContextPath}/images/minus-sign.png" alt="Toggle icon"/>
+                    </a>
+                </span>
+                <span id="mod_description_hidden">Show Description</span>
+                <span id="mod_description"/>
+            </div>
 
-            </div>
-            <div class='clear'>
-                <p id="description_header">
-                    <img id="mod_description_toggle" src="#{facesContext.externalContext.requestContextPath}/images/arrows-down.gif" alt="Toggle icon"/>
-                    Description
-                </p>
-                <p id="description"/>
-            </div>
+            <hr class="clear"/>
+            
             <div class="clear">
                 <span class="otherControlsDiv">
-                    <a class="properties links">properties</a>
-                    <a class="documentation links">documentation</a>
+                    * required field
                 </span>
                 <span class="submitControlsDiv floatRight">
                     <button class="Reset"><img src="#{facesContext.externalContext.requestContextPath}/images/reset.gif" width="16" height="16" alt="Reset" class="buttonIcon"/> Reset </button>
@@ -77,10 +80,6 @@
             </div>
 
             <hr class="clear"/>
-
-            <div class="clear">
-                * required field
-            </div>
 
             <div id="missingTasksDiv"></div>
             <div id="paramsListingDiv">
@@ -93,8 +92,6 @@
             
             <div>
                 <span class="floatLeft otherControlsDiv">
-                    <a class="properties links">properties</a>
-                    <a class="documentation links">documentation</a>
                 </span>
                 <span class="floatRight submitControlsDiv">
                     <button class="Reset"><img src="#{facesContext.externalContext.requestContextPath}/images/reset.gif" width="16" height="16" alt="Reset" class="buttonIcon"/> Reset </button>

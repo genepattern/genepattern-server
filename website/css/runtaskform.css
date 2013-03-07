@@ -283,5 +283,15 @@ img.buttonIcon {
     display: inline;
     vertical-align: bottom;
     padding-bottom: 2px;
-    height: 29px;
+    /*height: 34px;*/
+}
+
+#mod_description_toggle
+{
+    vertical-align: 2%;    
+}
+
+#description_main
+{
+    padding: 10px 5px 5px 5px;
 }
