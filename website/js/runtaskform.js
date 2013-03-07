@@ -17,7 +17,7 @@ var parametersJson = null;
 
 var Request = {
  	parameter: function(name) {
- 		return this.parameters()[name];
+ 		return unescape(this.parameters()[name]);
  	},
 
  	parameters: function() {
@@ -318,7 +318,7 @@ function loadParameterInfo(parameters)
             fileDiv.append("<span class='btn btn-success fileinput-button'>"
                     + "<span><i class='icon-plus'></i>"
                     + uploadFileText + "</span>"
-                    + "<input class='uploadedinputfile' name='"+ parameters[q].name +"' type='file'/></span>");
+                    + "<input class='uploadedinputfile' id='" + parameters[q].name + "' name='"+ parameters[q].name +"' type='file'/></span>");
 
             //valueTd.append("<span class='btn btn-success fileinput-button urlButton'>"
             //                   + "<span><i class='icon-plus'></i>"
@@ -443,6 +443,14 @@ function loadParameterInfo(parameters)
 
         $(this).parents("td:first").append(urlDiv);
     });
+    
+    // Load parameter values from url
+    for (var param in Request.parameters()) {
+    	var value = Request.parameter(param);
+    	if (value !== undefined && value !== null && param !== "lsid") {
+    		setParameter(param, value);
+    	}
+    }
 }
 
 jQuery(document).ready(function()
@@ -1050,3 +1058,34 @@ function javascript_abort()
     parameter_and_val_obj[paramName] = valueListing;
 } */
 
+function jqEscape(str) {
+	return str.replace(/([;&,\.\+\*\~':"\!\^$%@\[\]\(\)=>\|])/g, '\\$1');
+}
+
+function setParameter(param, value) {
+	var selector = "#" + jqEscape(param);
+	var input = $(selector);
+	
+	// Determine the input type
+	var isText = input.attr("type") === "text";
+	var isDropdown = input.get(0).tagName === "SELECT";
+	var isFile = input.attr("type") === "file";
+	
+	if (isText) {
+		input.val(value);
+		return;
+	}
+	
+	if (isDropdown) {
+		input.find("[value='" + value + "']").attr("selected", "true");
+		input.multiselect("refresh");
+		return;
+	}
+	
+	if (isFile) {
+		setInputField(param, value);
+		return;
+	}
+	
+	throw new Error("Parameter type not recognized for: " + param);
+}
