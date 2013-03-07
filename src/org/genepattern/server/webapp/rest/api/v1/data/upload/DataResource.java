@@ -368,7 +368,6 @@ public class DataResource {
         final File toFile=new File(uploadedFileLocation);
         OutputStream out=null;
         try {
-            out = new FileOutputStream(toFile);
             long numBytesRead = 0L;
             int read = 0;
             byte[] bytes = new byte[1024];
