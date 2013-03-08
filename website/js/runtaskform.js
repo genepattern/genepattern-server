@@ -1129,6 +1129,7 @@ function assignParameter(file, format) {
 	for (var json in parametersJson) {
 		var param = parametersJson[json];
 		if (param === null || param === undefined) return;
+		if (param.TYPE !== "FILE") continue;
 		
 		var formatList = param.fileFormat.split(";");
 		for (var i = 0; i < formatList.length; i++) {

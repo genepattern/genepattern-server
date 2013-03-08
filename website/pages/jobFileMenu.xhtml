@@ -72,9 +72,12 @@
                     <t:dataList value="#{fileInfo.moduleMenuItems}" var="moduleMenuItem">
                         <tr>
                             <td>
-                                <h:commandLink value="#{moduleMenuItem.key}" action="#{jobsBean.loadTask}" immediate="true">
-                                    <f:param name="module" value="#{moduleMenuItem.value}" /><f:param name="jobNumber" value="#{fileInfo.jobNumber}" /><f:param name="name" value="#{fileInfo.name}" />
-                                </h:commandLink>
+								<h:outputLink value="index.jsf" style="white-space: nowrap;">
+				                	<h:outputText value="#{moduleMenuItem.key}" />
+				                	<f:param name="lsid" value="#{moduleMenuItem.value}" />
+				                    <f:param name="_file" value="#{fileInfo.url}" />
+									<f:param name="_format" value="#{fileInfo.kind}" />
+				                </h:outputLink>
                             </td>
                         </tr>
                     </t:dataList>

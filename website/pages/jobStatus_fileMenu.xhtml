@@ -92,12 +92,12 @@
                     <t:dataList var="moduleMenuItem" value="#{outputFile.moduleMenuItems}">
                         <tr>
                             <td>
-                                <h:commandLink value="#{moduleMenuItem.key}" action="#{jobsMenuBean.loadTask}" immediate="true">
-                                    <f:param name="module" value="#{moduleMenuItem.value}" />
-                                    <f:param name="jobNumber" value="#{jobStatusBean.jobInfo.jobNumber}" />
-                                    <f:param name="jobMenuNumber" value="#{jobOnMenu.jobNumber}" />
-                                    <f:param name="name" value="#{outputFile.name}" />
-                                </h:commandLink>
+								<h:outputLink value="/gp/pages/index.jsf" style="white-space: nowrap;">
+				                	<h:outputText value="#{moduleMenuItem.key}" />
+				                	<f:param name="lsid" value="#{moduleMenuItem.value}" />
+				                    <f:param name="_file" value="#{outputFile.url}" />
+									<f:param name="_format" value="#{outputFile.kind}" />
+				                </h:outputLink>
                             </td>
                         </tr>
                     </t:dataList>
