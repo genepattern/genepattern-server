@@ -117,7 +117,7 @@ public class JobsResource {
     ////////////////////////////////////
     // Getting a job
     ////////////////////////////////////
-        /**
+    /**
      * GET a job, by jobId.
      * 
      * Example
@@ -164,11 +164,11 @@ public class JobsResource {
                     .entity("Error creating JSON representation for jobId="+jobId)
                     .build();
         }
-        
-        
-        return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
-                    .entity(content)
-                    .build();
+
+        //return the JSON representation of the job
+        return Response.ok()
+                .entity(content)
+                .build();
     }
     
 
