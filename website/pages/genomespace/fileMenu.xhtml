@@ -106,12 +106,12 @@
                             <t:dataList value="#{genomeSpaceBean.kindToModules[format]}" var="moduleMenuItem">
                                 <tr>
                                     <td>
-                                        <h:commandLink value="#{moduleMenuItem.name}" action="#{jobsBean.loadTask}" immediate="true">
-                                            <f:param value="#{moduleMenuItem.lsid}" name="module" />
-                                            <f:param value="GenomeSpace" name="source" />
-                                            <f:param value="#{file.url}" name="path" />
-                                            <f:param value="#{format}" name="format" />
-                                        </h:commandLink>
+										<h:outputLink value="index.jsf" style="white-space: nowrap;">
+						                	<h:outputText value="#{moduleMenuItem.name}" />
+						                	<f:param name="lsid" value="#{moduleMenuItem.lsid}" />
+						                    <f:param name="_file" value="#{file.url}" />
+											<f:param name="_format" value="#{format}" />
+						                </h:outputLink>
                                     </td>
                                 </tr>
                             </t:dataList>
