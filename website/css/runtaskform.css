@@ -295,3 +295,34 @@ img.buttonIcon {
 {
     padding: 10px 5px 5px 5px;
 }
+
+#paramsListingDiv .ui-state-default
+{
+	background-image:url(images/btnBG.jpg); 
+	background-repeat:repeat-x;
+    color: #0c1922;
+	border: solid 1px #466eb6;
+	background-color:#dae4f4;
+	-webkit-border-radius: 5px;
+	-moz-border-radius: 5px;
+	-o-border-radius: 5px;
+	border-radius: 5px;
+	padding:2px;
+	font-size:11px;
+};
+
+
+.ui-state-default .ui-icon
+{
+	background-image: url(images/ui-icons_0c1922_256x240.png);
+}
+
+#paramsListingDiv .ui-state-hover
+{
+    background: #80a7d0 url(images/ui-bg_glass_75_B2D1F0_1x400.png) 50% 50% repeat-x;     
+}
+
+#paramsListingDiv .ui-state-active
+{
+    background: #80a7d0 url(images/ui-bg_glass_65_ffffff_1x400.png) 50% 50% repeat-x;
+}
