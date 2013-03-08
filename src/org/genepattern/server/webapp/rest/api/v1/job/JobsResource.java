@@ -1,5 +1,7 @@
 package org.genepattern.server.webapp.rest.api.v1.job;
 
+import java.net.URI;
+
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.POST;
@@ -9,6 +11,7 @@ import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.UriInfo;
 
 import org.genepattern.server.config.ServerConfiguration;
 import org.genepattern.server.job.input.JobInput;
@@ -46,7 +49,11 @@ public class JobsResource {
     @POST
     @Consumes(MediaType.APPLICATION_JSON) 
     @Produces(MediaType.APPLICATION_JSON)
-    public Response addJob(@Context HttpServletRequest request, JobInputValues jobInputValues) {
+    public Response addJob(
+            final @Context UriInfo uriInfo,
+            final @Context HttpServletRequest request, 
+            final JobInputValues jobInputValues) 
+    {
         final ServerConfiguration.Context jobContext=TasksResource.getUserContext(request);
         
         final JSONObject rval=new JSONObject();
@@ -56,6 +63,10 @@ public class JobsResource {
             final JobInputApiImpl impl = new JobInputApiImpl();
             final String jobId = impl.postJob(jobContext, jobInput);
             rval.put("jobId", jobId);
+            
+            //set the Location header to the URI of the newly created resource
+            final URI uri = uriInfo.getAbsolutePathBuilder().path(jobId).build();
+            return Response.created(uri).entity(rval.toString()).build();
         }
         catch (JSONException e) {
             throw new WebApplicationException(
@@ -78,8 +89,6 @@ public class JobsResource {
                     .build()
                 );
         }
-        
-        return Response.ok().entity(rval.toString()).build();
     }
     
     private JobInput parseJobInput(final JobInputValues jobInputValues) {
