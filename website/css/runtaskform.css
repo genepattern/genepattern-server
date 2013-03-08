@@ -138,16 +138,45 @@
 {
     clear: both;
 	font-weight: bold;
-	font-size: 14px;
-	color: #333366;
+	font-size: 15px;
+	/*color: #333366;*/
 	/*background-color: #CCDFFF;*/
-    background-color: #B8C9E6;
+    /*background-color: #B8C9E6; preferred */
+    background-color: #CCCCFF;
 	text-indent: 6px;
-	height: 25px;
+	height: 21px;
 	width: 100%;
 	line-height: 20px;
-	vertical-align: top;
-    padding-top: 5px;
+	vertical-align: bottom !important;
+    padding-top: 1px !important;
+    padding-bottom: 0 !important;
+}
+
+.task_header select
+{
+    padding: 0 !important;
+    margin-bottom: 0 !important;
+    vertical-align: top !important;
+}
+
+.task_header div
+{
+    padding: 0 !important;
+    margin-bottom: 0 !important;
+}
+
+.task_header span
+{
+    padding: 0 !important;
+    margin-bottom: 0 !important;
+}
+
+.task_header label
+{
+    font-weight: normal;
+    font-size: 13px;
+    padding: 0;
+    margin-bottom: 0;
 }
 
 .clear
@@ -252,15 +281,16 @@ button.urlButton
     padding: 2px;
 }
 
-#docPdf
-{
-    width: 100%;
-    height: 920px;
-}
-
 .otherControlsDiv
 {
-    padding: 3px;
+    padding: 3px !important;
+    margin-bottom: 4px !important;
+    vertical-align: bottom !important;    
+}
+
+.submitControlsDiv
+{
+    margin-bottom: 4px !important;
 }
 
 .links
@@ -350,7 +380,6 @@ img.buttonIcon {
 .ui-multiselect.mSelect 
 {
     padding: 2px 3px 1px 10px !important;
-    margin: 10px !important;
     text-align: left;
 }
 
