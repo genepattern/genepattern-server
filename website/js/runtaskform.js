@@ -285,7 +285,8 @@ function loadParameterInfo(parameters)
             select.multiselect({
                 multiple: false,
                 header: false,
-                selectedList: 1
+                selectedList: 1,
+                classes: 'mSelect'
             });
 
             if(parameters[q].optional.length == 0)
@@ -316,16 +317,21 @@ function loadParameterInfo(parameters)
 
             var fileDiv = $("<div class='fileDiv'>");
 
-            fileDiv.append("<span class='btn btn-success fileinput-button'>"
-                    + "<span><i class='icon-plus'></i>"
-                    + uploadFileText + "</span>"
-                    + "<input class='uploadedinputfile' id='" + parameters[q].name + "' name='"+ parameters[q].name +"' type='file'/></span>");
+            var uploadFileBtn = $("<button class='uploadBtn' type='button'>"+ uploadFileText + "</button>");
+            uploadFileBtn.button().click(function()
+            {
+                console.log("uploadedfile: " + $(this).siblings(".uploadedinputfile").first());
+                $(this).parents("div:first").find(".uploadedinputfile:first").click();
+            });
 
-            //valueTd.append("<span class='btn btn-success fileinput-button urlButton'>"
-            //                   + "<span><i class='icon-plus'></i>"
-            //                   + "<img src='../css/images/file_add.gif' width='16' height='16'"
-            //                   + "alt='Specify URL'/>Specify URL...</span></span>");
+            fileDiv.append(uploadFileBtn);
 
+            var fileInput = $("<input class='uploadedinputfile' id='" + parameters[q].name + "' name='"+ parameters[q].name +"' type='file'/>");
+
+            var fileInputDiv = $("<div class='inputFileBtn'/>");
+            fileInputDiv.append(fileInput);
+            fileDiv.append(fileInputDiv);
+            
             fileDiv.append("<button type='button' class='urlButton'>"+ addUrlText +"</button>");
             
             fileDiv.append("<span>  or  <img class='dNdImg' src='/gp/images/Drag_Drop_icon.gif'/> </span>");
@@ -386,21 +392,23 @@ function loadParameterInfo(parameters)
 
     $("button.urlButton").button().click(function()
     {
-        var urlDiv = $("<div/>");
+        var urlDiv = $("<div class='urlDiv'/>");
 
         urlDiv.append("Enter url:");
         var urlInput = $("<input type='text' class='urlInput'/>");
         urlDiv.append(urlInput);
 
+        var urlActionDiv = $("<div class='center'/>");
         var enterButton = $("<button>Enter</button>");
         enterButton.button().click(function()
         {
             var paramName = $(this).parents("tr:first").data("pname");
 
-            var url = $(this).prev().val();
+            var url = $(this).parents("div:nth-child(2)").find(".urlInput").first().val();
+
             $(this).parents("td:first").children().show();
 
-            $(this).parents("div:first").remove();
+            $(this).parents(".urlDiv").first().remove();
 
             //check if this is not an empty string and
             // no non-space characters were entered
@@ -416,7 +424,7 @@ function loadParameterInfo(parameters)
                 param_file_listing[paramName] = fileObjListings;
             }
 
-            //check if max file length will be vialoated
+            //check if max file length will be violated
             var totalFileLength = fileObjListings.length + 1;
             validateMaxFiles(paramName, totalFileLength);
 
@@ -429,15 +437,16 @@ function loadParameterInfo(parameters)
             updateParamFileTable(paramName);
 
         });
-        urlDiv.append(enterButton);
+        urlActionDiv.append(enterButton);
 
         var cancelButton = $("<button>Cancel</button>");
         cancelButton.button().click(function()
         {
-            $(this).parents("td:first").children().show();
-            $(this).parents("div:first").remove();
+            $(this).parents("td:first").children().show();            
+            $(this).parents(".urlDiv").first().remove();            
         });
-        urlDiv.append(cancelButton);
+        urlActionDiv.append(cancelButton);
+        urlDiv.append(urlActionDiv);
 
         //first hide everything in this td parent element
         $(this).parents("td:first").children().hide();
@@ -447,9 +456,10 @@ function loadParameterInfo(parameters)
     
     // Load parameter values from url
     for (var param in Request.parameters()) {
-    	var value = Request.parameter(param);
-    	if (value !== undefined && value !== null && param !== "lsid") {
-    		setParameter(param, value);
+    	var paramValue = Request.parameter(param);
+    	if (paramValue !== undefined && paramValue !== null && param !== "lsid"
+                && param !== "promptForLatestVersion") {
+    		setParameter(param, paramValue);
     	}
     }
 }
@@ -871,7 +881,7 @@ function updateParamFileTable(paramName)
             {
                 fileRow.append("<td>" + files[i].name + "</td>");
             }
-            var delButton = $("<img src='/gp/images/delete-blue.png'/>");
+            var delButton = $("<img class='images' src='/gp/images/delete-blue.png'/>");
             delButton.data("pfile", files[i].name);
             delButton.button().click(function()
             {

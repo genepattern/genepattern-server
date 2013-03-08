@@ -134,23 +134,20 @@
     width: 150px;
 }
 
-
-#task_header clear
-{
-    width: 100%;    
-}
 .task_header
 {
     clear: both;
 	font-weight: bold;
 	font-size: 14px;
 	color: #333366;
-	background-color: #CCCCFF;
+	/*background-color: #CCDFFF;*/
+    background-color: #B8C9E6;
 	text-indent: 6px;
-	height: 21px;
+	height: 25px;
 	width: 100%;
 	line-height: 20px;
 	vertical-align: top;
+    padding-top: 5px;
 }
 
 .clear
@@ -192,7 +189,7 @@
 table.paramFilesTable tr td
 {
     height: 10px;
-    padding: 1px;
+    padding: 0;
 }
 
 table.paramFilesTable tr:nth-child(odd)
@@ -218,13 +215,19 @@ button.urlButton
 
 #paramsTable input[type=text]
 {
-    width: 45%;
+    width: 60%;
     height: 17px;
 }
 
 .fileDiv
 {
     vertical-align: bottom;
+}
+
+.uploadBtn
+{
+    vertical-align: bottom;
+    margin-right: 2px;
 }
 
 /*tr.error {
@@ -307,15 +310,9 @@ img.buttonIcon {
 	-moz-border-radius: 5px;
 	-o-border-radius: 5px;
 	border-radius: 5px;
-	padding:2px;
+	padding:1px;
 	font-size:11px;
 };
-
-
-.ui-state-default .ui-icon
-{
-	background-image: url(images/ui-icons_0c1922_256x240.png);
-}
 
 #paramsListingDiv .ui-state-hover
 {
@@ -326,3 +323,39 @@ img.buttonIcon {
 {
     background: #80a7d0 url(images/ui-bg_glass_65_ffffff_1x400.png) 50% 50% repeat-x;
 }
+
+#paramsListingDiv .ui-widget-header .ui-icon
+{
+	background-image: url(images/ui-icons_0c1922_256x240.png);
+}
+
+#paramsListingDiv .ui-state-default .ui-icon
+{
+	background-image: url(images/ui-icons_0c1922_256x240.png);
+}
+
+.center
+{
+    width: 185px ;
+    margin-left: auto ;
+    margin-right: auto ;
+}
+
+.inputFileBtn
+{
+    position:absolute;
+    z-index:-1000;
+}
+
+.ui-multiselect.mSelect 
+{
+    padding: 2px 3px 1px 10px !important;
+    margin: 10px !important;
+    text-align: left;
+}
+
+.images
+{
+    border: none !important;    
+}
+
