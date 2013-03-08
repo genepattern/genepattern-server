@@ -104,9 +104,12 @@
                     <t:dataList value="#{aFile.sendToModules}" var="moduleMenuItem">
                         <tr>
                             <td>
-                                <h:commandLink value="#{moduleMenuItem.name}" action="#{aFile.sendToTaskInfo}" immediate="true">
-                                    <f:param name="lsid" value="#{moduleMenuItem.lsid}" />
-                                </h:commandLink>
+								<h:outputLink value="/gp/pages/index.jsf" style="white-space: nowrap;">
+				                	<h:outputText value="#{moduleMenuItem.name}" />
+				                	<f:param name="lsid" value="#{moduleMenuItem.lsid}" />
+				                    <f:param name="_file" value="#{aFile.url}" />
+									<f:param name="_format" value="#{aFile.kind}" />
+				                </h:outputLink>
                             </td>
                         </tr>
                     </t:dataList>
