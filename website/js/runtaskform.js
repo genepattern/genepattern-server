@@ -863,7 +863,7 @@ function updateParamFileTable(paramName)
         for(var i=0;i<files.length;i++)
         {
             var fileRow = $("<tr/>");
-            var fileTData = $("<td/>");
+            var fileTData = $("<td class='pfileAction'/>");
 
             //determine if this is a  url
             if(files[i].name.indexOf("://") != -1)
@@ -896,7 +896,10 @@ function updateParamFileTable(paramName)
             fileRow.append(fileTData);
             table.append(fileRow);
         }
-        $(idPName).append(table);
+
+        var div = $("<div class='scroll'/>");
+        div.append(table);
+        $(idPName).append(div);
     }
 }
 
@@ -1051,18 +1054,6 @@ function javascript_abort()
 {
    throw new Error('This is not an error. This is just to abort javascript');
 }
-
-/*function addValueToParameter(paramName, value)
-{
-    //add location to value listing for parameter
-    var valueListing = parameter_and_val_obj[paramName];
-    if(valueListing == undefined || valueListing == null)
-    {
-        valueListing = [];
-    }
-    valueListing.push(value);
-    parameter_and_val_obj[paramName] = valueListing;
-} */
 
 function jqEscape(str) {
 	return str.replace(/([;&,\.\+\*\~':"\!\^$%@\[\]\(\)=>\|])/g, '\\$1');
