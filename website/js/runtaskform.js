@@ -338,7 +338,7 @@ function loadParameterInfo(parameters)
 
             //switch . with _ since the jquery selector does not work with .
             var idPName = parameters[q].name.replace(/\./g,'_');
-            fileDiv.append("<div id='" + idPName + "'></div>");
+            fileDiv.append("<div id='" + idPName + "FileDiv'/>");
 
             valueTd.append(fileDiv);
             paramRow.append(valueTd);
@@ -822,9 +822,10 @@ function updateParamFileTable(paramName)
     var files= param_file_listing[paramName];
 
     var idPName = paramName.replace(/\./g,'_');
+    idPName = "#" + idPName + "FileDiv";
 
     //remove previous file info data
-    $("#" + idPName).empty();
+    $(idPName).empty();
     if(files != null && files != undefined && files.length > 0)
     {
         var pData = $("<p/>");
@@ -839,15 +840,13 @@ function updateParamFileTable(paramName)
             {
                 $(this).text("Hide Details...");
                 $(this).prepend("<img src='/gp/images/arrows-down.gif'/>");
-                $("#" + idPName).find(".paramFilesTable").removeClass("hidden");
+                $(idPName).find(".paramFilesTable").removeClass("hidden");
             }
             else
             {
-                console.log($("#" + idPName).html());
                 $(this).text("Show Details...");
                 $(this).prepend("<img src='/gp/images/arrows.gif'/>");
-                console.log($("#" + idPName).html());                                
-                $("#" + idPName).find(".paramFilesTable").addClass("hidden");
+                $(idPName).find(".paramFilesTable").addClass("hidden");
             }
         });
 
@@ -857,7 +856,7 @@ function updateParamFileTable(paramName)
         selectedFiles += files.length + " files";
 
         pData.append("(" + selectedFiles + ")");
-        $("#" + idPName).append(pData);
+        $(idPName).append(pData);
 
         if(files.length > 0)
         var table = $("<table class='paramFilesTable'/>");
@@ -897,7 +896,7 @@ function updateParamFileTable(paramName)
             fileRow.append(fileTData);
             table.append(fileRow);
         }
-        $("#"+idPName).append(table);
+        $(idPName).append(table);
     }
 }
 
