@@ -90,6 +90,16 @@ public class JobInfoWrapper implements Serializable {
             }
             return "";
         }
+        
+        public String getKind() {
+            String name = getValue();
+            String extension = null;
+            int idx = name.lastIndexOf(".");
+            if (idx > 0 && idx < (name.length() - 1)) {
+                extension = name.substring(idx + 1);
+            }
+            return extension;
+        }
 
         public String getDescription() {
             return parameterInfo.getDescription();
