@@ -142,14 +142,18 @@ public class JobsResource {
     ) {
         
         final ServerConfiguration.Context userContext=TasksResource.getUserContext(request);
-        JSONObject job;
+        JSONObject job=null;
         GetJob getJobImpl = new GetJobLegacy();
+        String jsonStr;
         try {
             job=getJobImpl.getJob(userContext, jobId);
-            
+            if (job==null) {
+                throw new Exception("Unexpected null return value");
+            }
             //decorate with 'self'
             final String self=uriInfo.getAbsolutePath().toString();
             job.put("self", self);
+            jsonStr=job.toString();
         }
         catch (Throwable t) {
             //TODO: customize the response errors, e.g.
@@ -157,26 +161,15 @@ public class JobsResource {
             //    ?, when job_id is not set
             //    ?, when job_id is invalid, e.g. not an integer
             //    ?, when current user does not have read access to the job
-            
-            String errorMessage="Error getting job with jobId="+jobId+
-                    ": "+t.getLocalizedMessage();
+            final String message="Error creating JSON representation for jobId="+jobId+": "+t.getLocalizedMessage();            
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
-                    .entity(errorMessage)
-                    .build();
-        }
-        String content=null;
-        if (job!=null) {
-            content=job.toString();
-        }
-        if (content==null) {
-            return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
-                    .entity("Error creating JSON representation for jobId="+jobId)
+                    .entity(message)
                     .build();
         }
 
         //return the JSON representation of the job
         return Response.ok()
-                .entity(content)
+                .entity(jsonStr)
                 .build();
     }
     
