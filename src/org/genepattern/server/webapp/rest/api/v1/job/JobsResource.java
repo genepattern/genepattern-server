@@ -1,6 +1,8 @@
 package org.genepattern.server.webapp.rest.api.v1.job;
 
+import java.io.File;
 import java.net.URI;
+import java.net.URL;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
@@ -18,6 +20,7 @@ import javax.ws.rs.core.UriInfo;
 import org.apache.log4j.Logger;
 import org.genepattern.server.config.ServerConfiguration;
 import org.genepattern.server.database.HibernateUtil;
+import org.genepattern.server.dm.jobresult.JobResultFile;
 import org.genepattern.server.domain.JobStatus;
 import org.genepattern.server.job.input.JobInput;
 import org.genepattern.server.rest.GpServerException;
@@ -26,6 +29,7 @@ import org.genepattern.server.webapp.rest.api.v1.job.JobInputValues.Param;
 import org.genepattern.server.webapp.rest.api.v1.task.TasksResource;
 import org.genepattern.server.webservice.server.dao.AnalysisDAO;
 import org.genepattern.webservice.JobInfo;
+import org.genepattern.webservice.ParameterInfo;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -206,6 +210,19 @@ public class JobsResource {
             return JobStatus.ERROR.equals(jobInfo.getStatus());
         }
         
+        public static URL getStderrLocation(final JobInfo jobInfo) throws Exception {
+            for(ParameterInfo pinfo : jobInfo.getParameterInfoArray()) {
+                if (pinfo._isStderrFile()) {
+                    //construct URI to the file
+                    String val=pinfo.getValue();
+                    String name=pinfo.getName();
+                    JobResultFile stderr=new JobResultFile(jobInfo, new File(name));
+                    return stderr.getUrl();
+                }
+            }
+            return null;
+        }
+        
         public JSONObject getJob(final ServerConfiguration.Context userContext, final String jobId) 
         throws GetJobException
         {
@@ -247,10 +264,26 @@ public class JobsResource {
             JSONObject job = new JSONObject();
             try {
                 job.put("jobId", jobId);
+                
+                //init jobStatus
+                JSONObject jobStatus = new JSONObject();
                 boolean isFinished=isFinished(jobInfo);
-                job.put("isFinished", isFinished);
+                jobStatus.put("isFinished", isFinished);
                 boolean hasError=hasError(jobInfo);
-                job.put("hasError", hasError);
+                jobStatus.put("hasError", hasError);
+                URL stderr=null;
+                try {
+                    stderr=getStderrLocation(jobInfo);
+                }
+                catch (Throwable t) {
+                    log.error("Error getting stderr file for jobId="+jobId, t);
+                }
+                if (stderr != null) {
+                    //TODO: come up with a standard JSON representation of a gp job result file
+                    jobStatus.put("stderrLocation", stderr.toExternalForm());
+                }
+                
+                job.put("status", jobStatus);
             }
             catch (JSONException e) {
                 log.error("Error initializing JSON representation for jobId="+jobId, e);
@@ -260,6 +293,20 @@ public class JobsResource {
             return job;
         }
     }
+    
+    //proposed model for JobStatus
+    /*
+     jobStatus: {
+         isFinished: Boolean
+         hasError: Boolean
+         status: String [ Pending | Processing | Finished ]
+         exitCode: Integer
+         stderr: URI to file
+         //optionally, expand contents of stderr and return
+     }
+     
+     */
+
 
 
 }
