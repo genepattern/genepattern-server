@@ -136,6 +136,7 @@ public class JobsResource {
     @Produces(MediaType.APPLICATION_JSON)
     @Path("/{jobId}")
     public Response getJob(
+            final @Context UriInfo uriInfo,
             final @Context HttpServletRequest request,
             final @PathParam("jobId") String jobId
     ) {
@@ -145,6 +146,10 @@ public class JobsResource {
         GetJob getJobImpl = new GetJobLegacy();
         try {
             job=getJobImpl.getJob(userContext, jobId);
+            
+            //decorate with 'self'
+            final String self=uriInfo.getAbsolutePath().toString();
+            job.put("self", self);
         }
         catch (Throwable t) {
             //TODO: customize the response errors, e.g.
