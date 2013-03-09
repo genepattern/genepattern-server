@@ -214,7 +214,8 @@ public class JobsResource {
             for(ParameterInfo pinfo : jobInfo.getParameterInfoArray()) {
                 if (pinfo._isStderrFile()) {
                     //construct URI to the file
-                    String val=pinfo.getValue();
+                    //Hint: the name of the parameter is the name of the file (e.g. name=stderr.txt)
+                    //      the value of the parameter includes the jobId (e.g. 2137/stderr.txt)
                     String name=pinfo.getName();
                     JobResultFile stderr=new JobResultFile(jobInfo, new File(name));
                     return stderr.getUrl();
