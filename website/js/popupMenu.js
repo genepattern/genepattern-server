@@ -114,7 +114,8 @@ function PopupMenu(button, menu) {
 	
 	// Add blur event to menu
 	this.menu.blur(function(event) {
-		setTimeout(function(){menuRegistry[this.id].hide();},1);
+		var id = this.id;
+		setTimeout(function(){menuRegistry[id].hide();},100);
 		return true;
 	});
 	
