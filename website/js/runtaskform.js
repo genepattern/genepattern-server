@@ -11,6 +11,9 @@ var parameter_and_val_obj = {};
 //contains all the file upload requests
 var fileUploadRequests = [];
 
+//the field is used to assign unique ids to each file provided for a file input parameter
+//in order to make it easier to delete files
+var fileId = 0;
 //contains the json of parameters received when loading a module
 //saved so it can reused when for the reset operation
 var parametersJson = null;
@@ -429,7 +432,8 @@ function loadParameterInfo(parameters)
             validateMaxFiles(paramName, totalFileLength);
 
             var fileObj = {
-                name: url
+                name: url,
+                id: fileId++
             };
             fileObjListings.push(fileObj);
 
@@ -538,7 +542,8 @@ jQuery(document).ready(function()
         {
             var fileObj = {
                 name: this.files[f].name,
-                object: this.files[f]
+                object: this.files[f],
+                id: fileId++
             };
             fileObjListings.push(fileObj);
         }
@@ -743,7 +748,8 @@ function drop(evt)
             validateMaxFiles(paramName, totalFileLength);
 
             var fileObj = {
-                name: evt.dataTransfer.getData('Text')
+                name: evt.dataTransfer.getData('Text'),
+                id: fileId++
             };
             fileObjListings.push(fileObj);
 
@@ -770,7 +776,8 @@ function handleFiles(files, paramName)
     {
         var fileObj = {
             name: files[f].name,
-            object: files[f]
+            object: files[f],
+            id: fileId++
         };
         fileObjListings.push(fileObj);
     }
@@ -876,13 +883,16 @@ function updateParamFileTable(paramName)
             }
             var delButton = $("<img class='images' src='/gp/images/delete-blue.png'/>");
             delButton.data("pfile", files[i].name);
+            delButton.data("pfileId", files[i].id);
+
             delButton.button().click(function()
             {
                 var file = $(this).data("pfile");
-
+                var id = $(this).data("pfileId");
                 for(var t=0;t<param_file_listing[paramName].length;t++)
                 {
-                    if(param_file_listing[paramName][t].name == file)
+                    if(param_file_listing[paramName][t].name == file
+                            && param_file_listing[paramName][t].id == id)
                     {
                         var fileObjListing = param_file_listing[paramName];
                         fileObjListing.splice(t, 1);
