@@ -33,9 +33,9 @@
 					return safePath = path.replace(/ /g, "+");
 				}
 				
-				function gsError(tool, data) {
+				function gsError(message) {
 					jq("#replyDiv").css("color: #FF0000;");
-					jq("#replyDiv").text("An error occurred trying to add the GenomeSpace tool.");
+					jq("#replyDiv").text("An error occurred trying to add the GenomeSpace tool: " + message);
 				}
 				
 				function atmAddTool(tool, callback){
@@ -48,11 +48,14 @@
 						data: tooljson,
 						contentType: 'application/json',
 						dataType: 'json',
+						beforeSend: function(xhr) {
+					      xhr.withCredentials = true;
+					    },
 						success: function(data) {
 							callback(tool, data);
 						},
 						error: function(xhr) {
-							gsError(tool, data);
+							gsError(xhr.responseText);
 						}
 					});
 				}
@@ -102,7 +105,7 @@
 							"url":"http://www.genomespace.org/datamanager/dataformat/res",
 							"fileExtension":"res"}];		
 					fileParameter.push(aParam);
-					descriptor.fileParameter = fileParameter;
+					descriptor.fileParameters = fileParameter;
 					
 					atmAddTool(descriptor, function(tool, data){
 						jq("#replyDiv").css("color: #000000;");
