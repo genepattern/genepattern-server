@@ -114,7 +114,8 @@ function PopupMenu(button, menu) {
 	
 	// Add blur event to menu
 	this.menu.blur(function(event) {
-		menuRegistry[this.id].hide();
+		setTimeout(function(){menuRegistry[this.id].hide();},1);
+		return true;
 	});
 	
 	// Add click to subdirectory text fields
