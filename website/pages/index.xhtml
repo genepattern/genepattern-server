@@ -16,8 +16,6 @@
     <ui:composition template="/templates/common.xhtml">
         <ui:define name="headText">
             <script type="text/javascript" src="#{facesContext.externalContext.requestContextPath}/js/moduleChooser.js" />
-            <script type="text/javascript" src="#{facesContext.externalContext.requestContextPath}/lytebox/lytebox.js" />
-            <link href="#{facesContext.externalContext.requestContextPath}/lytebox/lytebox.css" rel="stylesheet" type="text/css" />
             <script type="text/javascript" language="javascript">
                 var requiredIds = new Array();
                 var requiredNames = new Array();
@@ -33,12 +31,6 @@
 
             <script type="text/javascript" language="javascript">
                 /* <![CDATA[ */
-
-                function setServerFileValue(parameterName, file) {
-                    myLytebox.end();
-                    setInputField(parameterName, file);
-                }
-
                 function callManagedBean(elExpression, parameters) {
                     jq.ajax({
 						type : "POST",
