@@ -1,8 +1,6 @@
 package org.genepattern.server.webapp.rest.api.v1.job;
 
-import java.io.File;
 import java.net.URI;
-import java.net.URL;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
@@ -19,17 +17,11 @@ import javax.ws.rs.core.UriInfo;
 
 import org.apache.log4j.Logger;
 import org.genepattern.server.config.ServerConfiguration;
-import org.genepattern.server.database.HibernateUtil;
-import org.genepattern.server.dm.jobresult.JobResultFile;
-import org.genepattern.server.domain.JobStatus;
 import org.genepattern.server.job.input.JobInput;
 import org.genepattern.server.rest.GpServerException;
 import org.genepattern.server.rest.JobInputApiImpl;
 import org.genepattern.server.webapp.rest.api.v1.job.JobInputValues.Param;
 import org.genepattern.server.webapp.rest.api.v1.task.TasksResource;
-import org.genepattern.server.webservice.server.dao.AnalysisDAO;
-import org.genepattern.webservice.JobInfo;
-import org.genepattern.webservice.ParameterInfo;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -172,140 +164,5 @@ public class JobsResource {
                 .entity(jsonStr)
                 .build();
     }
-    
-
-    static class GetJobException extends Exception {
-        public GetJobException() {
-        }
-        public GetJobException(final String message) {
-            super(message);
-        }
-    }
-    static interface GetJob {
-        JSONObject getJob(final ServerConfiguration.Context userContext, final String jobId)
-        throws GetJobException;
-    }
-    
-    static class JobRecord extends JSONObject {
-        public JobRecord(final String jobId) throws JSONException {
-            this.put("job_id", jobId);
-        }
-    }
-    
-    static class GetJobLegacy implements GetJob {
-        /**
-         * helper method which indicates if the job has completed processing.
-         */
-        public static boolean isFinished(final JobInfo jobInfo) {
-            if ( JobStatus.FINISHED.equals(jobInfo.getStatus()) ||
-                    JobStatus.ERROR.equals(jobInfo.getStatus()) ) {
-                return true;
-            }
-            return false;        
-        }
-        
-        public static boolean hasError(final JobInfo jobInfo) {
-            return JobStatus.ERROR.equals(jobInfo.getStatus());
-        }
-        
-        public static URL getStderrLocation(final JobInfo jobInfo) throws Exception {
-            for(ParameterInfo pinfo : jobInfo.getParameterInfoArray()) {
-                if (pinfo._isStderrFile()) {
-                    //construct URI to the file
-                    //Hint: the name of the parameter is the name of the file (e.g. name=stderr.txt)
-                    //      the value of the parameter includes the jobId (e.g. 2137/stderr.txt)
-                    String name=pinfo.getName();
-                    JobResultFile stderr=new JobResultFile(jobInfo, new File(name));
-                    return stderr.getUrl();
-                }
-            }
-            return null;
-        }
-        
-        public JSONObject getJob(final ServerConfiguration.Context userContext, final String jobId) 
-        throws GetJobException
-        {
-            if (userContext==null) {
-                throw new IllegalArgumentException("userContext==null");
-            }
-            if (userContext.getUserId()==null || userContext.getUserId().length() == 0) {
-                throw new IllegalArgumentException("userContext.userId not set");
-            }
-            
-            JobInfo jobInfo=null;
-            //expecting jobId to be an integer
-            int jobNo;
-            try {
-                jobNo=Integer.parseInt(jobId);
-            }
-            catch (NumberFormatException e) {
-                throw new GetJobException("Expecting an integer value for jobId="+jobId+" :"
-                        +e.getLocalizedMessage());
-            }
-            if (jobNo<0) {
-                throw new GetJobException("Invalid jobNo="+jobNo+" : Can't be less than 0.");
-            }
-            final boolean isInTransaction=HibernateUtil.isInTransaction();
-            try {
-                AnalysisDAO analysisDao = new AnalysisDAO();
-                jobInfo = analysisDao.getJobInfo(jobNo);
-            }
-            catch (Throwable t) {
-                log.error("Error initializing jobInfo for jobId="+jobId, t);
-            }
-            finally {
-                if (!isInTransaction) {
-                    HibernateUtil.closeCurrentSession();
-                }
-            }
-            
-            //manually create a JSONObject representing the job
-            JSONObject job = new JSONObject();
-            try {
-                job.put("jobId", jobId);
-                
-                //init jobStatus
-                JSONObject jobStatus = new JSONObject();
-                boolean isFinished=isFinished(jobInfo);
-                jobStatus.put("isFinished", isFinished);
-                boolean hasError=hasError(jobInfo);
-                jobStatus.put("hasError", hasError);
-                URL stderr=null;
-                try {
-                    stderr=getStderrLocation(jobInfo);
-                }
-                catch (Throwable t) {
-                    log.error("Error getting stderr file for jobId="+jobId, t);
-                }
-                if (stderr != null) {
-                    //TODO: come up with a standard JSON representation of a gp job result file
-                    jobStatus.put("stderrLocation", stderr.toExternalForm());
-                }
-                
-                job.put("status", jobStatus);
-            }
-            catch (JSONException e) {
-                log.error("Error initializing JSON representation for jobId="+jobId, e);
-                throw new GetJobException("Error initializing JSON representation for jobId="+jobId+
-                        ": "+e.getLocalizedMessage());
-            }
-            return job;
-        }
-    }
-    
-    //proposed model for JobStatus
-    /*
-     jobStatus: {
-         isFinished: Boolean
-         hasError: Boolean
-         status: String [ Pending | Processing | Finished ]
-         exitCode: Integer
-         stderr: URI to file
-         //optionally, expand contents of stderr and return
-     }
-     
-     */
-
-
 
 }
