@@ -107,5 +107,15 @@ public class ServerFilePath extends GpFilePath {
         }
         return false; 
     }
-
+    
+    public void initChildren() {
+        File file = getServerFile();
+        if (!file.isDirectory()) return;
+        if (!this.getChildren().isEmpty()) return;
+        for (File child : file.listFiles()) {
+            ServerFilePath childWrapper = new ServerFilePath(child);
+            childWrapper.initMetadata();
+            this.addChild(childWrapper);
+        }
+    }
 }

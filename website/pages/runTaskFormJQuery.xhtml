@@ -1,7 +1,7 @@
 <!DOCTYPE html
         PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
         "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en" xmlns:ui="http://java.sun.com/jsf/facelets">
 <head>
 
     <title>Run Task</title>
@@ -18,6 +18,8 @@
     <script type="text/javascript" src="#{facesContext.externalContext.requestContextPath}/js/runtaskform.js"></script>
 </head>
 <body>
+	<ui:include src="/pages/serverFileDialog.xhtml" rendered="#{runTaskBean.allowInputFilePaths}" />
+	
 <div id="submitJob">
    <!-- <ul>
         <li><a href="#submitForm">Run Task</a></li>

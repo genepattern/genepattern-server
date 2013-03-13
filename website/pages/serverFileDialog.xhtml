@@ -1,0 +1,128 @@
+<!--
+  ~ Copyright 2012 The Broad Institute, Inc.
+  ~ SOFTWARE COPYRIGHT NOTICE
+  ~ This software and its documentation are the copyright of the Broad Institute, Inc. All rights are reserved.
+  ~
+  ~ This software is supplied without any warranty or guaranteed support whatsoever. The Broad Institute is not responsible for its use, misuse, or functionality.
+  -->
+<!DOCTYPE html PUBLIC "-/W3C/DTD XHTML 1.0 Transitional/EN" "http:/www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:t="http://myfaces.apache.org/tomahawk"
+      xmlns:c="http://java.sun.com/jstl/core">
+    <ui:composition>
+        <ui:define name="headText">
+            <style>
+                .serverFileTreeSelected {
+                    background-color: #9999CC;
+                }
+            </style>
+            <script type="text/javascript" language="javascript">
+                /* <![CDATA[ */
+                var selectedInput = null;
+				var selectedFile = null;
+
+                function openServerFileDialog(node) {
+					selectedInput = jq(node).parent().find(".uploadedinputfile").attr("id")
+                    jq('#serverFileTreeDialog').dialog('open');
+                    return false;
+                }
+
+                function handleServerFileClick(node) {
+                    jq(selectedFile).removeClass("serverFileTreeSelected");
+                    jq(node).addClass("serverFileTreeSelected");
+                    selectedFile = node;
+                    jq("#serverFileTreeDialog").parent().find(".ui-button:first").button("enable");
+                    return false;
+                }
+                /* ]]> */
+            </script>
+            <script src="#{facesContext.externalContext.requestContextPath}/js/jquery/jquery.cookie.js" type="text/javascript" />
+            <script src="#{facesContext.externalContext.requestContextPath}/js/jquery/jquery.jstree.js" type="text/javascript" />
+        </ui:define>
+
+        <div id="serverFileTreeDialog" style="max-height:500px;overflow-y:scroll;">
+            <div id="serverFileTree"></div>
+            <script type="text/javascript">
+                jq("#serverFileTree").jstree({
+                    core:{
+                        "html_titles":true
+                    },
+
+                    "json_data":{
+                        "ajax":{
+                            "url":function (node) {
+                                if (node === -1) {
+                                    return "/gp/ServerFileBrowser/tree";
+                                }
+                                var path = jq(node).find("a").attr("href");
+                                return "/gp/ServerFileBrowser/tree?dir=" + encodeURIComponent(path);
+                            },
+                            "data":function (node) {
+                                return {
+                                    id:node.attr ? node.attr("id") : 0
+                                };
+                            }
+                        }
+                    },
+                    plugins:[ "themes", "json_data", "cookies" ]
+                });
+                jq("#serverFileTree").bind("load_node.jstree", function (event, data) {
+                    var iterate = null;
+
+                    // Handle the case of the initial load
+                    if (data["args"][0] === -1) {
+                        iterate = jq(this).find("li");
+                    }
+                    else {
+                        iterate = jq(data["args"][0]).find("li");
+                    }
+
+                    iterate.each(function (index) {
+
+                        var node = iterate.get(index);
+                        var name = jq(node).find("a:first").attr("name");
+
+                        // Add the id to the node
+                        jq(node).attr("id", name);
+
+                        // Check for the case of empty directories
+                        var link = jq(node).find("a:first").attr("href");
+                        if (link === "#") return;
+                    });
+
+                    jq("#serverFileTreeDialog").parent().find(".ui-button:first").button("disable");
+                });
+            </script>
+        </div>
+        <script type="text/javascript">
+            jq("#serverFileTreeDialog").dialog({
+                width:500,
+                autoOpen:false,
+                title:"Select a File to Use as Input",
+                buttons:[
+                    {
+                        text:"Select",
+                        click:function () {
+                            if (selectedFile === null) {
+                                return;
+                            }						// Prevent submitting if no file is selected
+                            
+							setParameter(selectedInput, jq(selectedFile).attr("href"));
+
+                            jq("#serverFileTreeDialog").dialog("close"); 			// Close the dialog
+                        }
+                    },
+                    {
+                        text:"Cancel",
+                        click:function () {
+                            jq("#serverFileTreeDialog").dialog("close");
+                        }
+                    }
+                ]
+            });
+        </script>
+    </ui:composition>
+</html>

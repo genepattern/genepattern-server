@@ -163,7 +163,7 @@ abstract public class GpFilePath implements Comparable<GpFilePath> {
             }
         }
     }
-    
+
     //cached file metadata
     private String name;
     private Date lastModified;
@@ -235,6 +235,7 @@ abstract public class GpFilePath implements Comparable<GpFilePath> {
         }
         return Collections.unmodifiableList(children);
     }
+    
     public void addChild(GpFilePath child) {
         if (children == null) {
             children = new ArrayList<GpFilePath>();
