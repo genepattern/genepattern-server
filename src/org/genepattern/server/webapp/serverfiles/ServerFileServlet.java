@@ -15,6 +15,7 @@ import org.genepattern.server.config.ServerConfiguration;
 import org.genepattern.server.dm.GpFileObjFactory;
 import org.genepattern.server.dm.GpFilePath;
 import org.genepattern.server.dm.serverfile.ServerFilePath;
+import org.genepattern.server.executor.CommandProperties.Value;
 
 /**
  * Servlet to back the new server files browser
@@ -59,6 +60,18 @@ public class ServerFileServlet extends HttpServlet {
         boolean  allowInputFilePaths = ServerConfiguration.instance().getAllowInputFilePaths(userContext);
         return allowInputFilePaths;
     }
+    
+    private List<File> getSystemBrowseRoots(HttpServletRequest request) {
+        String userId = (String) request.getSession().getAttribute("userID");
+        ServerConfiguration.Context userContext = ServerConfiguration.Context.getContextForUser(userId);
+        Value  roots = ServerConfiguration.instance().getValue(userContext, "server.browse.file.system.root");
+        
+        List<File> toReturn = new ArrayList<File>();
+        for (String path : roots.getValues()) {
+            toReturn.add(new File(path));
+        }
+        return toReturn;
+    }
 
     private void loadTreeLevel(HttpServletRequest request, HttpServletResponse response) {
         String url = request.getParameter("dir");
@@ -69,11 +82,13 @@ public class ServerFileServlet extends HttpServlet {
                 tree = new ArrayList<GpFilePath>();
                 
                 // Add the default root dirs: "server.browse.file.system.root" property
-                File root = new File("/");
-                ServerFilePath rootPath = new ServerFilePath(root);
-                rootPath.initMetadata();
-                rootPath.initChildren();
-                tree.add(rootPath);
+                List<File> roots = getSystemBrowseRoots(request);
+                for (File file : roots) {
+                    ServerFilePath rootPath = new ServerFilePath(file);
+                    rootPath.initMetadata();
+                    rootPath.initChildren();
+                    tree.add(rootPath);
+                }
             }
             catch (Exception e) {
                 log.error("Error getting root of upload file tree");
