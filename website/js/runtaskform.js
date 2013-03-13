@@ -307,14 +307,14 @@ function loadParameterInfo(parameters)
             valueTd.addClass("dNd");
 
             var uploadFileText = "Upload Files...";
-            var addUrlText = "Add URLs...";
+            var addUrlText = "Add Paths or URLs...";
             if(parameters[q].maxValue != undefined
                     && parameters[q].maxValue != null)
             {
                 if(parseInt(parameters[q].maxValue) == 1)
                 {
                     uploadFileText = "Upload File...";
-                    addUrlText = "Add URL...";
+                    addUrlText = "Add Path or URL...";
                 }
             }
 
@@ -453,9 +453,10 @@ function loadParameterInfo(parameters)
         urlDiv.append(urlActionDiv);
 
         //first hide everything in this td parent element
-        $(this).parents("td:first").children().hide();
+        //$(this).parents("td:first").children().hide();
 
-        $(this).parents("td:first").append(urlDiv);
+        $("#dialogUrlDiv").append(urlDiv);
+        openServerFileDialog(this);
     });
     
     // Load parameter values from url
