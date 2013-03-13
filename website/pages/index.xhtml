@@ -426,6 +426,12 @@
                     </h:outputText>
                 </t:div>
             </h:form>
+            <script type="text/javascript">
+            	// Fix Create Pipeline links in IE
+            	if (navigator.userAgent.indexOf("MSIE") !== -1) {
+            		jq("a").filter(function(index) { return jq(this).text() === "Create Pipeline"; }).attr("onclick","JavaScript:Menu.denyIE(null);");
+            	}
+            </script>
         </ui:define>
 
     </ui:composition>
