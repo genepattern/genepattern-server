@@ -494,6 +494,16 @@
  </servlet-mapping>
  
  <servlet>
+    <display-name>ServerFileBrowser Servlet</display-name>
+    <servlet-name>ServerFileBrowser</servlet-name>
+    <servlet-class>org.genepattern.server.webapp.serverfiles.ServerFileServlet</servlet-class>    
+ </servlet>
+ <servlet-mapping>
+  <servlet-name>ServerFileBrowser</servlet-name>
+  <url-pattern>/ServerFileBrowser/*</url-pattern>
+ </servlet-mapping>
+ 
+ <servlet>
     <display-name>GenomeSpace Servlet</display-name>
     <servlet-name>GenomeSpace</servlet-name>
     <servlet-class>org.genepattern.server.genomespace.GenomeSpaceServlet</servlet-class>    
