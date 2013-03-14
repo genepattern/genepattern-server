@@ -225,13 +225,10 @@ function saveModule()
         "filesToDelete": filesToDelete, "fileFormat": fileFormats, "license":licenseFile};
 
     //add other remaining attributes
-    var keys = Object.keys(module_editor.otherModAttrs);
-    for(k =0; k < keys.length; k++)
-    {
-        var keyName = keys[k];
-        console.log("\nsaving other module attributes: " + keys[k] + "=" + module_editor.otherModAttrs[keyName]);
+    $.each(module_editor.otherModAttrs, function(keyName, value) {
+    	console.log("\nsaving other module attributes: " + keyName + "=" + module_editor.otherModAttrs[keyName]);
         json.module[keyName] = module_editor.otherModAttrs[keyName];
-    }
+    });
 
     json["parameters"] = getParametersJSON();
 
@@ -1066,11 +1063,8 @@ function loadModuleInfo(module)
     }
 
     //store remaining task info attributes
-    var keys = Object.keys(module);
-    for(k =0; k < keys.length; k++)
-    {
-        console.log("\nkeys: " + keys[k]);
-        var keyName = keys[k];
+    $.each(module, function(keyName, value) {
+    	console.log("\nkeys: " + keyName);
         if(keyName != "fileFormat" && keyName != "commandLine" && keyName != "description"
                 && keyName != "os" && keyName != "name" && keyName != "author" && keyName != "JVMLevel"
                 && keyName != "LSID" && keyName != "lsidVersions" && keyName != "cpuType"
@@ -1080,8 +1074,8 @@ function loadModuleInfo(module)
         {
             module_editor.otherModAttrs[keyName] = module[keyName];
         }
-    }
-
+    });
+    
     var supportFilesList = module["supportFiles"];
     if(supportFilesList !== undefined && supportFilesList != null &&  supportFilesList != "")
     {
@@ -1231,11 +1225,8 @@ function loadParameterInfo(parameters)
         }
 
         var otherAttrs = {};
-        var keys = Object.keys(parameters[i]);
-        for(k =0; k < keys.length; k++)
-        {
-            console.log("\nkeys: " + keys[k]);
-            var keyName = keys[k];
+        $.each(parameters[i], function(keyName, value) {
+        	console.log("\nkeys: " + keyName);
             if(keyName != "name" && keyName != "description"
                     && keyName != "flag" && keyName != "fileFormat"
                     && keyName != "default_value" && keyName != "prefix" && keyName != "type"
@@ -1243,7 +1234,7 @@ function loadParameterInfo(parameters)
             {
                 otherAttrs[keyName] = parameters[i][keyName];
             }
-        }
+        });
 
         newParameter.data("otherAttrs", otherAttrs);
         updateparameter(newParameter, false);
@@ -1371,12 +1362,11 @@ function getParametersJSON()
 
         //add other remaining attributes
         var otherAttrs = $(this).data("otherAttrs");
-        var keys = Object.keys(otherAttrs);
-        for(k =0; k < keys.length; k++)
-        {
-            var keyName = keys[k];
-            parameter[keyName] =  otherAttrs[keyName];
-            console.log("\nsaving other parameter attributes: " + keyName + "=" + otherAttrs[keyName]);
+        if (otherAttrs !== undefined && otherAttrs !== null) {
+	        $.each(otherAttrs, function(keyName, value) {
+	        	parameter[keyName] =  otherAttrs[keyName];
+	            console.log("\nsaving other parameter attributes: " + keyName + "=" + otherAttrs[keyName]);
+	        });
         }
 
         parameters.push(parameter);
