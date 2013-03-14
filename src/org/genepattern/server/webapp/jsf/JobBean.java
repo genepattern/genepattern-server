@@ -298,11 +298,15 @@ public class JobBean {
         return "run task";
     }
 
-    public String reload() {
+    public void reload() throws IOException {
+        String lsid = null;
+        ParameterInfo[] params = null;
         try {
             int jobNumber = Integer.parseInt(UIBeanHelper.decode(UIBeanHelper.getRequest().getParameter("jobNumber")));
             AnalysisDAO ds = new AnalysisDAO();
             JobInfo reloadJob = ds.getJobInfo(jobNumber);
+            lsid = reloadJob.getTaskLSID();
+            params = reloadJob.getParameterInfoArray();
             RunTaskBean runTaskBean = (RunTaskBean) UIBeanHelper.getManagedBean("#{runTaskBean}");
             assert runTaskBean != null;
             UIBeanHelper.getRequest().setAttribute("reloadJob", String.valueOf(reloadJob.getJobNumber()));
@@ -317,7 +321,21 @@ public class JobBean {
         catch (Throwable t) {
             log.error("Error reloading job.", t);
         }
-        return "run task";
+        
+        String forwardTo = UIBeanHelper.getRequest().getContextPath() + "/pages/index.jsf";
+        if (lsid == null) {
+            UIBeanHelper.getResponse().sendRedirect(forwardTo);
+        }
+        else {
+            forwardTo += "?lsid=" + UIBeanHelper.encode(lsid);
+            if (params != null) {
+                for (int i = 0; i < params.length; i++) {
+                    ParameterInfo param = params[i];
+                    forwardTo += "&" + UIBeanHelper.encode(param.getName()) + "=" + UIBeanHelper.encode(param.getValue());
+                }
+            }
+            UIBeanHelper.getResponse().sendRedirect(forwardTo);
+        }
     }
 
     public void saveFile(ActionEvent event) {
