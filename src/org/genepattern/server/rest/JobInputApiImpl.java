@@ -3,10 +3,7 @@ package org.genepattern.server.rest;
 import org.apache.log4j.Logger;
 import org.genepattern.server.config.ServerConfiguration.Context;
 import org.genepattern.server.eula.GetTaskStrategy;
-import org.genepattern.server.eula.GetTaskStrategyDefault;
 import org.genepattern.server.job.input.JobInput;
-import org.genepattern.webservice.JobInfo;
-import org.genepattern.webservice.ParameterInfo;
 
 /**
  * this class accepts a job submit form from the end user and adds a job to the queue.
@@ -59,16 +56,8 @@ public class JobInputApiImpl implements JobInputApi {
             throw new IllegalArgumentException("jobInput.lsid==null");
         }
         try {
-            JobInputApiLegacy jobInputHelper=new JobInputApiLegacy(jobContext, jobInput);
-            if (getTaskStrategy==null) {
-                getTaskStrategy=new GetTaskStrategyDefault();
-            }
-            jobInputHelper.initTaskInfo(getTaskStrategy);
-            ParameterInfo[] actualValues=jobInputHelper.initParameterValues();
-        
-            int taskId=jobInputHelper.getTaskInfo().getID();
-            JobInfo jobInfo=jobInputHelper.submitJob(taskId, actualValues);
-            String jobId = "" + jobInfo.getJobNumber();
+            JobInputApiLegacy jobInputHelper=new JobInputApiLegacy(jobContext, jobInput, getTaskStrategy);
+            final String jobId=jobInputHelper.submitJob();
             return jobId;
         }
         catch (Throwable t) {

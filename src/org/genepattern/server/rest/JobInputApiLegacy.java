@@ -3,6 +3,8 @@ package org.genepattern.server.rest;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+
+import org.genepattern.server.eula.GetTaskStrategyDefault;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -28,17 +30,25 @@ public class JobInputApiLegacy {
     
 
     public JobInputApiLegacy(final Context jobContext, final JobInput jobInput) {
+        this(jobContext, jobInput, null);
+    }
+    public JobInputApiLegacy(final Context jobContext, final JobInput jobInput, final GetTaskStrategy getTaskStrategyIn) {
         this.jobContext=jobContext;
         this.jobInput=jobInput;
+        
+        final GetTaskStrategy getTaskStrategy;
+        if (getTaskStrategyIn == null) {
+            getTaskStrategy=new GetTaskStrategyDefault();
+        }
+        else {
+            getTaskStrategy=getTaskStrategyIn;
+        }
+        this.taskInfo=getTaskStrategy.getTaskInfo(jobInput.getLsid());
+        this.taskInfo.getParameterInfoArray();
     }
 
     public TaskInfo getTaskInfo() {
         return taskInfo;
-    }
-
-    public synchronized void initTaskInfo(final GetTaskStrategy getTaskStrategy) {
-        this.taskInfo=getTaskStrategy.getTaskInfo(jobInput.getLsid());
-        this.taskInfo.getParameterInfoArray();
     }
 
     public static class ParameterInfoRecord {
@@ -58,7 +68,8 @@ public class JobInputApiLegacy {
         }
     }
 
-    public ParameterInfo[] initParameterValues() throws Exception {
+    public ParameterInfo[] initParameterValues() throws Exception 
+    {
         if (jobInput.getParams()==null) {
             log.debug("jobInput.params==null");
             return new ParameterInfo[0];
@@ -109,6 +120,14 @@ public class JobInputApiLegacy {
         }
         ParameterInfo[] actualParams = actualParameters.toArray(new ParameterInfo[0]);
         return actualParams;
+    }
+
+    public String submitJob() throws Exception {
+        final ParameterInfo[] actualValues=initParameterValues();
+        final int taskId=getTaskInfo().getID();
+        final JobInfo jobInfo=submitJob(taskId, actualValues);
+        final String jobId = "" + jobInfo.getJobNumber();
+        return jobId;
     }
 
     public JobInfo submitJob(final int taskID, final ParameterInfo[] parameters) throws JobSubmissionException {
