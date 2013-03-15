@@ -70,6 +70,7 @@
 	                	url = url.split("/gp/")[1];
 	                	url = url.replace("/", "_");
 	                	url = url.substring(url.indexOf("/") + 1);
+	                	url = decodeURI(url);
 	                	url = url.replace(/[^a-zA-Z0-9]+/g,'_');
 	                	if (url.substring(url.length-1) === "_") {
 	                		url = url.substring(0, url.length-1);
