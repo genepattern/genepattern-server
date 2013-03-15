@@ -66,7 +66,6 @@ public class JobsResource {
         
         final JSONObject rval=new JSONObject();
         try {
-            rval.put("lsid", jobInputValues.lsid);
             final JobInput jobInput=parseJobInput(jobInputValues);
             final JobInputApiImpl impl = new JobInputApiImpl();
             final String jobId = impl.postJob(jobContext, jobInput);
@@ -74,6 +73,7 @@ public class JobsResource {
             
             //set the Location header to the URI of the newly created resource
             final URI uri = uriInfo.getAbsolutePathBuilder().path(jobId).build();
+            rval.put("jobUri", uri.toString());
             return Response.created(uri).entity(rval.toString()).build();
         }
         catch (JSONException e) {
