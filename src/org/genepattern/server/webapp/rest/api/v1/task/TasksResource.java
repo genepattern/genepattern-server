@@ -1,7 +1,9 @@
 package org.genepattern.server.webapp.rest.api.v1.task;
 
 import java.io.File;
+import java.net.MalformedURLException;
 import java.util.ArrayList;
+import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.GET;
@@ -32,7 +34,10 @@ import org.genepattern.webservice.TaskInfoAttributes;
 import org.genepattern.webservice.TaskInfoCache;
 import org.genepattern.webservice.WebServiceException;
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
+
+import com.sun.jersey.api.Responses;
 
 /**
  * RESTful implementation of the /task resource.
@@ -55,6 +60,14 @@ import org.json.JSONObject;
 @Path("/v1/tasks")
 public class TasksResource {
     final static private Logger log = Logger.getLogger(TasksResource.class);
+    private static class TaskNotFoundException extends Exception {
+        public TaskNotFoundException(String message) {
+            super(message);
+        }
+        public TaskNotFoundException(String message, Throwable t) {
+            super(message, t);
+        }
+    }
 
     @Context
     UriInfo uriInfo;
@@ -72,23 +85,52 @@ public class TasksResource {
         JSONObject responseObject = null;
         try {
             responseObject=initTaskResponse(lsid, userContext.getUserId());
-            //responseObject= new JSONObject();
-            //responseObject.put("lsid", lsid);
+        }
+        catch (TaskNotFoundException e) {
+            return Responses.notFound().entity(e.getLocalizedMessage()).build();
+        }
+        catch (WebApplicationException e) {
+            //send this along to the calling method, to formulate an HTTP error response
+            throw e;
+        }
+        catch (JSONException e) {
         }
         catch (Throwable t) {
-            return Response.serverError().build();
+            return Response.serverError()
+                    .entity("Error getting task for lsid="+lsid+": "+t.getLocalizedMessage())
+                    .build();
         }
         return Response.ok().entity(responseObject.toString()).build();
     }
-    
-    private JSONObject initTaskResponse(final String lsid, final String username) throws Exception, WebServiceException {
-        TaskInfo taskInfo = getTaskInfo(lsid, username);
+
+    private JSONObject initTaskResponse(final String lsid, final String username)
+    throws TaskNotFoundException, JSONException
+    {
+        TaskInfo taskInfo = null;
+        try {
+            taskInfo=getTaskInfo(lsid, username);
+        }
+        catch (Throwable t) {
+            throw new TaskNotFoundException("Error initializing task lsid=" + lsid + " for user " + username, t);
+        }
         if(taskInfo == null) {
-            throw new Exception("No task with task id: " + lsid + " found " + "for user " + username);
+            throw new TaskNotFoundException("No task with task id: " + lsid + " found " + "for user " + username);
+        }
+        
+        List<String> moduleVersions=null;
+        try {
+            moduleVersions=getModuleVersions(taskInfo);
+        }
+        catch (MalformedURLException e) {
+            throw new WebApplicationException(
+                    Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+                    .entity("Error initializing moduleVersions for task=" + lsid)
+                    .build()
+                );
         }
         
         ModuleJSON moduleObject = new ModuleJSON(taskInfo, null);
-        moduleObject.put("lsidVersions", new JSONArray(getModuleVersions(taskInfo)));
+        moduleObject.put("lsidVersions", new JSONArray(moduleVersions));
 
         //check if user is allowed to edit the module
         boolean createModuleAllowed = AuthorizationHelper.createModule(username);
@@ -137,16 +179,18 @@ public class TasksResource {
         return responseObject;
     }
 
-    private TaskInfo getTaskInfo(final String taskLSID, final String username) throws WebServiceException {
+    private TaskInfo getTaskInfo(final String taskLSID, final String username) 
+    throws WebServiceException 
+    {
         return new LocalAdminClient(username).getTask(taskLSID);
     }
 
-    private ArrayList getModuleVersions(final TaskInfo taskInfo) throws Exception
+    private List<String> getModuleVersions(final TaskInfo taskInfo) throws MalformedURLException
     {
         LSID taskLSID = new LSID(taskInfo.getLsid());
         String taskNoLSIDVersion = taskLSID.toStringNoVersion();
 
-        ArrayList moduleVersions = new ArrayList();
+        ArrayList<String> moduleVersions = new ArrayList<String>();
         TaskInfo[] tasks = TaskInfoCache.instance().getAllTasks();
         for(int i=0;i<tasks.length;i++)
         {
@@ -159,7 +203,6 @@ public class TasksResource {
                 moduleVersions.add(lsidString);
             }
         }
-
         return moduleVersions;
     }
 
