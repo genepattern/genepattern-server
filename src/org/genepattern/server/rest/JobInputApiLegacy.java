@@ -41,26 +41,44 @@ public class JobInputApiLegacy {
         this.taskInfo.getParameterInfoArray();
     }
 
-    public void initParameterValues() throws Exception {
+    public static class ParameterInfoRecord {
+        private ParameterInfo formalParam;
+        private ParameterInfo actualParam;
+        
+        public ParameterInfoRecord(ParameterInfo formalParam) {
+            this.formalParam=formalParam;
+            this.actualParam=ParameterInfo._deepCopy(formalParam);
+        }
+        
+        public ParameterInfo getFormal() {
+            return formalParam;
+        }
+        public ParameterInfo getActual() {
+            return actualParam;
+        }
+    }
+
+    public ParameterInfo[] initParameterValues() throws Exception {
         if (jobInput.getParams()==null) {
             log.debug("jobInput.params==null");
-            return;
+            return new ParameterInfo[0];
         }
 
         //initialize a map of paramName to ParameterInfo 
-        final Map<String,ParameterInfo> paramInfoMap=new HashMap<String,ParameterInfo>();
+        final Map<String,ParameterInfoRecord> paramInfoMap=new HashMap<String,ParameterInfoRecord>();
         for(ParameterInfo pinfo : taskInfo.getParameterInfoArray()) {
-            paramInfoMap.put(pinfo.getName(), pinfo);
+            ParameterInfoRecord record = new ParameterInfoRecord(pinfo);
+            paramInfoMap.put(pinfo.getName(), record);
         }
 
         //set default values for any parameters which were not set by the user
-        for(Entry<String,ParameterInfo> entry : paramInfoMap.entrySet()) {
+        for(Entry<String,ParameterInfoRecord> entry : paramInfoMap.entrySet()) {
             final String pname=entry.getKey();
-            final ParameterInfo pinfo=entry.getValue();
+            final ParameterInfoRecord record=entry.getValue();
             Param inputValue=jobInput.getParam(entry.getKey());
             if (inputValue==null) {
                 //param not set by end user, check for default values
-                List<String> defaultValues=ParamListHelper.getDefaultValues(pinfo);
+                List<String> defaultValues=ParamListHelper.getDefaultValues(record.getFormal());
                 if (defaultValues != null) {
                     for(final String value : defaultValues) {
                         log.debug("adding default value: "+pname+"="+value);
@@ -74,43 +92,26 @@ public class JobInputApiLegacy {
         for(Entry<ParamId, Param> entry : jobInput.getParams().entrySet()) {
             final Param param=entry.getValue();                
             final ParamId id = param.getParamId();
-            final ParameterInfo pinfo=paramInfoMap.get(id.getFqName());
-            if (pinfo==null) {
-                log.error("Can't get pInfo for id="+id.getFqName());
+            final ParameterInfoRecord record=paramInfoMap.get(id.getFqName());
+            if (record==null) {
+                log.error("Can't get record for id="+id.getFqName());
                 break;
             }
             
-            ParamListHelper plh=new ParamListHelper(jobContext, pinfo, param);
+            ParamListHelper plh=new ParamListHelper(jobContext, record, param);
             plh.validateNumValues();
             plh.updatePinfoValue();
         }
-    }
-
-    private List<ParameterInfo> getMissingParams() {
-        //initialize a map of paramName to ParameterInfo 
-        final List<ParameterInfo> requiredParams=new ArrayList<ParameterInfo>();
-        for(ParameterInfo pinfo : taskInfo.getParameterInfoArray()) {
-            if (!pinfo.isOptional()) {
-                requiredParams.add(pinfo);
-            }
+        
+        List<ParameterInfo> actualParameters = new ArrayList<ParameterInfo>();
+        for(ParameterInfoRecord pinfoRecord : paramInfoMap.values()) {
+            actualParameters.add( pinfoRecord.getActual() );
         }
-
-        final List<ParameterInfo> missingRequiredParams=new ArrayList<ParameterInfo>();
-        for(ParameterInfo pinfo : requiredParams) {
-            if (!jobInput.hasValue(pinfo.getName())) {
-                missingRequiredParams.add(pinfo);
-            }
-        }
-        return missingRequiredParams;
-    }
-    
-    public String submitJob() throws JobSubmissionException {
-        JobInfo job = submitJob(taskInfo.getID(), taskInfo.getParameterInfoArray());
-        String jobId = "" + job.getJobNumber();
-        return jobId;
+        ParameterInfo[] actualParams = actualParameters.toArray(new ParameterInfo[0]);
+        return actualParams;
     }
 
-    private JobInfo submitJob(final int taskID, final ParameterInfo[] parameters) throws JobSubmissionException {
+    public JobInfo submitJob(final int taskID, final ParameterInfo[] parameters) throws JobSubmissionException {
         AddNewJobHandler req = new AddNewJobHandler(taskID, jobContext.getUserId(), parameters);
         JobInfo jobInfo = req.executeRequest();
         return jobInfo;

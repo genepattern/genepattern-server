@@ -6,6 +6,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.log4j.Logger;
 import org.genepattern.server.config.ServerConfiguration.Context;
@@ -14,6 +15,7 @@ import org.genepattern.server.dm.GpFilePath;
 import org.genepattern.server.dm.serverfile.ServerFileObjFactory;
 import org.genepattern.server.job.input.JobInput.Param;
 import org.genepattern.server.job.input.JobInput.ParamValue;
+import org.genepattern.server.rest.JobInputApiLegacy.ParameterInfoRecord;
 import org.genepattern.webservice.ParameterInfo;
 
 /**
@@ -97,30 +99,30 @@ public class ParamListHelper {
 
     //inputs
     Context jobContext;
-    ParameterInfo pinfo;
+    ParameterInfoRecord record;
     Param actualValues;
     //outputs
     NumValues allowedNumValues;
     ListMode listMode=ListMode.LEGACY;
 
-    public ParamListHelper(final Context jobContext, final ParameterInfo pinfo, final Param actualValues) {
+    public ParamListHelper(final Context jobContext, final ParameterInfoRecord record, final Param actualValues) {
         if (jobContext==null) {
             throw new IllegalArgumentException("jobContext==null");
         }
-        if (pinfo==null) {
-            throw new IllegalArgumentException("pinfo==null");
+        if (record==null) {
+            throw new IllegalArgumentException("record==null");
         }
         if (actualValues==null) {
             throw new IllegalArgumentException("actualValues==null");
         }
         this.jobContext=jobContext;
-        this.pinfo=pinfo;
+        this.record=record;
         this.actualValues=actualValues;
 
         initAllowedNumValues();
 
         //initialize list mode
-        String listModeStr = (String) pinfo.getAttributes().get("listMode");
+        String listModeStr = (String) record.getFormal().getAttributes().get("listMode");
         if (listModeStr != null && listModeStr.length()>0) {
             listModeStr = listModeStr.toUpperCase().trim();
             try {
@@ -135,14 +137,14 @@ public class ParamListHelper {
     }
 
     private void initAllowedNumValues() {
-        final String numValuesStr = (String) pinfo.getAttributes().get("numValues");
+        final String numValuesStr = (String) record.getFormal().getAttributes().get("numValues");
         //parse num values string
         NumValuesParser nvParser=new NumValuesParserImpl();
         try { 
             allowedNumValues=nvParser.parseNumValues(numValuesStr);
         }
         catch (Exception e) {
-            String message="Error parsing numValues="+numValuesStr+" for "+pinfo.getName();
+            String message="Error parsing numValues="+numValuesStr+" for "+record.getFormal().getName();
             log.error(message,e);
             throw new IllegalArgumentException(message);
         }
@@ -171,8 +173,8 @@ public class ParamListHelper {
         //when allowedNumValues is not set or if minNumValues is not set, it means there is no 'numValues' attribute for the parameter, assume it's not a filelist
         if (allowedNumValues==null || allowedNumValues.getMin()==null) {
             if (numValuesSet==0) {
-                if (!pinfo.isOptional()) {
-                    throw new IllegalArgumentException("Missing required parameter: "+pinfo.getName());
+                if (!record.getFormal().isOptional()) {
+                    throw new IllegalArgumentException("Missing required parameter: "+record.getFormal().getName());
                 }
             }
             //everything else is valid
@@ -182,13 +184,13 @@ public class ParamListHelper {
         //if we're here, it means numValues is set, need to check for filelists
         //are we in range?
         if (numValuesSet < allowedNumValues.getMin()) {
-            throw new IllegalArgumentException("Not enough values for "+pinfo.getName()+
+            throw new IllegalArgumentException("Not enough values for "+record.getFormal().getName()+
                     ", num="+numValuesSet+", min="+allowedNumValues.getMin());
         }
         if (allowedNumValues.getMax() != null) {
             //check upper bound
             if (numValuesSet > allowedNumValues.getMax()) {
-                throw new IllegalArgumentException("Too many values for "+pinfo.getName()+
+                throw new IllegalArgumentException("Too many values for "+record.getFormal().getName()+
                         ", num="+numValuesSet+", max="+allowedNumValues.getMax());
             }
         }
@@ -236,8 +238,8 @@ public class ParamListHelper {
         final int numValues=actualValues.getNumValues();
         final boolean createFilelist=isCreateFilelist();
 
-        if (pinfo._isDirectory() || pinfo.isInputFile()) {
-            HashMap attrs = pinfo.getAttributes();
+        if (record.getFormal()._isDirectory() || record.getFormal().isInputFile()) {
+            HashMap attrs = record.getActual().getAttributes();
             attrs.put(ParameterInfo.MODE, ParameterInfo.URL_INPUT_MODE);
             attrs.remove(ParameterInfo.TYPE);
         }
@@ -245,17 +247,36 @@ public class ParamListHelper {
         if (createFilelist) {
             final GpFilePath filelistFile=createFilelist();
             String filelist=filelistFile.getUrl().toExternalForm();
-            pinfo.setValue(filelist);
+            record.getActual().setValue(filelist);
         }
         else if (numValues==0) {
-            pinfo.setValue("");
+            record.getActual().setValue("");
         }
         else if (numValues==1) {
-            pinfo.setValue(actualValues.getValues().get(0).getValue());
+            record.getActual().setValue(actualValues.getValues().get(0).getValue());
         }
         else {
-            //TODO: error
             log.error("It's not a filelist and numValues="+numValues);
+        }
+        
+        //special-case: for a choice, if necessary, replace the UI value with the command line value
+        // the key is the UI value
+        // the value is the command line value
+        Map<String,String> choices = record.getFormal().getChoices();
+        if (choices != null && choices.size() > 0) {
+            final String origValue=record.getActual().getValue();
+            if (choices.containsValue(origValue)) {
+                //the value is a valid command line value
+            }
+            else if (choices.containsKey(origValue)) {
+                //TODO: log this?
+                String newValue=choices.get(origValue);
+                record.getActual().setValue(newValue);
+            }
+            //finally, validate
+            if (!choices.containsValue(record.getActual().getValue())) {
+                log.error("Invalid value for choice parameter");
+            }
         }
     }
     
@@ -268,7 +289,7 @@ public class ParamListHelper {
         //now, create a new filelist file, add it into the user uploads directory for the given job
         JobInputFileUtil fileUtil = new JobInputFileUtil(jobContext);
         final int index=-1;
-        final String pname=pinfo.getName();
+        final String pname=record.getFormal().getName();
         final String filename=".list.txt";
         GpFilePath gpFilePath=fileUtil.initUploadFileForInputParam(index, pname, filename);
 

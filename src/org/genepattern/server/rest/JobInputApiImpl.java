@@ -5,6 +5,8 @@ import org.genepattern.server.config.ServerConfiguration.Context;
 import org.genepattern.server.eula.GetTaskStrategy;
 import org.genepattern.server.eula.GetTaskStrategyDefault;
 import org.genepattern.server.job.input.JobInput;
+import org.genepattern.webservice.JobInfo;
+import org.genepattern.webservice.ParameterInfo;
 
 /**
  * this class accepts a job submit form from the end user and adds a job to the queue.
@@ -62,9 +64,11 @@ public class JobInputApiImpl implements JobInputApi {
                 getTaskStrategy=new GetTaskStrategyDefault();
             }
             jobInputHelper.initTaskInfo(getTaskStrategy);
-            jobInputHelper.initParameterValues();
+            ParameterInfo[] actualValues=jobInputHelper.initParameterValues();
         
-            String jobId=jobInputHelper.submitJob();
+            int taskId=jobInputHelper.getTaskInfo().getID();
+            JobInfo jobInfo=jobInputHelper.submitJob(taskId, actualValues);
+            String jobId = "" + jobInfo.getJobNumber();
             return jobId;
         }
         catch (Throwable t) {
