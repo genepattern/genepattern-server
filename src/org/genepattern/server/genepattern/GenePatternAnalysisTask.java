@@ -1535,13 +1535,7 @@ public class GenePatternAnalysisTask {
     }
 
     private static final ParameterInfo copyParameterInfo(ParameterInfo orig) {
-        ParameterInfo copy = new ParameterInfo(orig.getName(), orig.getValue(), orig.getDescription());
-        HashMap origAttributes = orig.getAttributes();
-        HashMap copyAttributes = new HashMap();
-        //this works as a deep copy because we know that the attributes are a Map<String,String>
-        copyAttributes.putAll(orig.getAttributes());
-        copy.setAttributes(copyAttributes);
-        return copy;
+        return ParameterInfo._deepCopy(orig);
     }
 
     private static JobInfoWrapper getJobInfoWrapper(String userId, int jobNumber) {

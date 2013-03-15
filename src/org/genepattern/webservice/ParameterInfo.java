@@ -389,5 +389,16 @@ public class ParameterInfo implements Serializable {
             this.attributes = new HashMap();
         this.attributes.put(ParameterInfo.LABEL, label);
     }
+    
+    //support for deep copy
+    static public ParameterInfo _deepCopy(final ParameterInfo orig) {
+        ParameterInfo copy = new ParameterInfo(orig.getName(), orig.getValue(), orig.getDescription());
+        HashMap origAttributes = orig.getAttributes();
+        HashMap copyAttributes = new HashMap();
+        //this works as a deep copy because we know that the attributes are a Map<String,String>
+        copyAttributes.putAll(orig.getAttributes());
+        copy.setAttributes(copyAttributes);
+        return copy;
+    }
 
 }
