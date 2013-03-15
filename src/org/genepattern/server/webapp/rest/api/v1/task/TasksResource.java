@@ -94,6 +94,9 @@ public class TasksResource {
             throw e;
         }
         catch (JSONException e) {
+            return Response.serverError()
+                    .entity("Error formatting JSON response for lsid="+lsid+": "+e.getLocalizedMessage())
+                    .build();
         }
         catch (Throwable t) {
             return Response.serverError()
