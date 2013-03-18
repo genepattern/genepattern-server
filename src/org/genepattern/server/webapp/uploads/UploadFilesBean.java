@@ -2,6 +2,8 @@ package org.genepattern.server.webapp.uploads;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -574,8 +576,8 @@ public class UploadFilesBean {
         }
         
         // Returns a path encoded for use in div names
-        public String getEncodedPath() {
-            return file.getRelativePath() != null ? file.getRelativePath().replaceAll("[^a-zA-Z0-9]", "_") : "";
+        public String getEncodedPath() throws UnsupportedEncodingException {
+            return file.getRelativePath() != null ? URLEncoder.encode(file.getRelativePath(), "UTF-8").replaceAll("[^a-zA-Z0-9]", "_") : "";
         }
         
         public boolean getPartial() {
