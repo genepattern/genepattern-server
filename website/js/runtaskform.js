@@ -1130,12 +1130,16 @@ function assignParameter(file, format) {
 	for (var json in parametersJson) {
 		var param = parametersJson[json];
 		if (param === null || param === undefined) return;
-		if (param.TYPE !== "FILE") continue;
+		if (param.type !== "java.io.File" && param.type !== "DIRECTORY") continue;
 		
 		var formatList = param.fileFormat.split(";");
 		for (var i = 0; i < formatList.length; i++) {
 			var selectedFormat = formatList[i];
 			if (selectedFormat === format) {
+				setParameter(param.name, file);
+				return;
+			}
+			else if (format === "directory" && param.type === "DIRECTORY") {
 				setParameter(param.name, file);
 				return;
 			}
