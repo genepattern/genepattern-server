@@ -3,6 +3,7 @@ package org.genepattern.server.webapp;
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.net.URI;
 import java.net.URL;
 import java.util.List;
 
@@ -389,40 +390,33 @@ public class DataServlet extends HttpServlet implements Servlet {
         }
         return false; 
     }
-    
+
     /**
      * Is the given child file a descendant of the parent file,
-     * based on comparing canonical path names.
+     * based on converting to a URI and using {@link URI#relativize(URI)}.
      * 
-     * @param parent
-     * @param child
-     * @return
-     * @throws IOException, which can occur when calling getCanonicalPath.
+     *     Note: does not (and should not) consider alternate paths such as symbolic links.
      * 
-     * Notes:
-     *     http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=5002170
+     * @param parentDir
+     * @param childFile
+     * @return true if the childFile is a descendant of the parentDir, based on the pathname.
      */
-    public static boolean isDescendant(File parent, File child) {
-        if (child.equals(parent)) {
-            return true;
-        } 
-
-        try {
-            //assume canonical paths are sufficient
-            String canonicalParent = parent.getAbsoluteFile().getCanonicalPath();
-            String canonicalChild = child.getAbsoluteFile().getCanonicalPath();
-            if (canonicalChild.startsWith(canonicalParent)) {
-                return true;
-            }
-
-            //Note: doesn't follow sym links
+    public static boolean isDescendant(final File parentDir, final File childFile) {
+        if (parentDir==null) {
+            return false;
         }
-        catch (IOException e) {
-            log.error("Error in isDescendant(parent="+ parent.getAbsolutePath()
-                    +", child="+child.getAbsolutePath()
-                    +"): "+e.getLocalizedMessage(), e);
+        if (!parentDir.isDirectory()) {
+            return false;
         }
-        return false;
+        if (childFile==null) {
+            return false;
+        }
+        
+        final URI parentURI = parentDir.toURI();
+        final URI childURI = childFile.toURI();
+        final URI relative = parentURI.relativize(childURI);
+        final boolean isAbsolute=relative.isAbsolute();
+        return !isAbsolute;
     }
     
     public static String getDataServlertUrl() {
@@ -438,31 +432,5 @@ public class DataServlet extends HttpServlet implements Servlet {
             return null;
         }
     }
-
-    //TODO: delete these
-//    private static String getUserFromUploadFile(File file) throws Exception {
-//        String path = file.getCanonicalPath();
-//        String[] parts = path.split("/users", 2);
-//        if (parts.length > 1) {
-//            return GpFileObjFactory.extractUserId(parts[1]);
-//        }
-//        throw new Exception("Unable to get the username from the upload file");
-//    }
-    
-//    private static String getUrlFromFile(File file) {
-//        try {
-//            String user = getUserFromUploadFile(file);
-//            Context context = Context.getContextForUser(user);
-//            String path = file.getCanonicalPath();
-//            String relative = UserUploadManager.absoluteToRelativePath(context, path);
-//            File relativeFile = new File(relative);
-//            GpFilePath filePath = GpFileObjFactory.getUserUploadFile(context, relativeFile);
-//            return filePath.getUrl().toString();
-//        }
-//        catch (Exception e) {
-//            log.error("Error in getUrlFromFile()");
-//            return null;
-//        }
-//    }
 
 }
