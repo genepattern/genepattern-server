@@ -147,9 +147,13 @@
                         if (fileObjListings == null || fileObjListings == undefined) {
                             fileObjListings = [];
                         }
+                        
+                        validateMaxFiles(elementId, fileObjListings.length + 1);
+                        
                         fileObjListings.push({"name": value});
                         param_file_listing[elementId] = fileObjListings;
             			updateParamFileTable(elementId);
+            			toggleFileButtons(elementId);
                 	}
                 	jq(document.body).click(); // Hide all menus after a send
                 }

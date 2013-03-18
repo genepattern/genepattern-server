@@ -439,6 +439,7 @@ function loadParameterInfo(parameters)
 
             // add to file listing for the specified parameter
             updateParamFileTable(paramName);
+            toggleFileButtons(paramName);
 
         });
         urlActionDiv.append(enterButton);
@@ -551,6 +552,7 @@ jQuery(document).ready(function()
 
         // add to file listing for the specified parameter
         updateParamFileTable(paramName);
+        toggleFileButtons(paramName);
     });
 
     $("button.Reset").click(function()
@@ -755,6 +757,7 @@ function drop(evt)
             fileObjListings.push(fileObj);
 
             updateParamFileTable(paramName);
+            toggleFileButtons(paramName);
         }
     }
 }
@@ -785,6 +788,7 @@ function handleFiles(files, paramName)
 
     // add to file listing for the specified parameter
     updateParamFileTable(paramName);
+    toggleFileButtons(paramName);
 }
 
 function validateMaxFiles(paramName, numFiles)
@@ -901,6 +905,7 @@ function updateParamFileTable(paramName)
                 }
 
                 updateParamFileTable(paramName);
+                toggleFileButtons(paramName);
             });
 
             fileTData.append(delButton);
@@ -1145,4 +1150,28 @@ function assignParameter(file, format) {
 			}
 		}
 	}
+}
+
+function toggleFileButtons(paramName) {
+	var paramJSON = null;
+    for(var p=0;p<parametersJson.length; p++)
+    {
+        if(parametersJson[p].name == [paramName])
+        {
+            paramJSON = parametersJson[p];
+        }
+    }
+	var maxValue = parseInt(paramJSON["maxValue"]);
+	
+	// Disable buttons if max reached
+    var fileObjListings = param_file_listing[paramName];
+    if (fileObjListings == null || fileObjListings == undefined) {
+        fileObjListings = [];
+    }
+    if (fileObjListings.length === maxValue) {
+    	$("[id='" + paramName + "']").parent().parent().find("button").button("disable")
+    }
+    else {
+    	$("[id='" + paramName + "']").parent().parent().find("button").button("enable")
+    }
 }
