@@ -4,11 +4,16 @@ import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.SortedMap;
+import java.util.TreeMap;
 
 import org.apache.log4j.Logger;
+import org.genepattern.server.config.ServerConfiguration;
 import org.genepattern.server.config.ServerConfiguration.Context;
 import org.genepattern.server.dm.GpFileObjFactory;
 import org.genepattern.server.dm.GpFilePath;
@@ -234,6 +239,22 @@ public class ParamListHelper {
         return true;
     }
 
+    private static String replaceGpUrl(final String in) {
+        if (!in.startsWith("<GenePatternURL>")) {
+            return in;
+        }
+        URL gpURL=ServerConfiguration.instance().getGenePatternURL();
+        String prefix=gpURL.toExternalForm();
+        String suffix=in.substring("<GenePatternURL>".length());
+        if (prefix.endsWith("/") && suffix.startsWith("/")) {
+            return prefix + suffix.substring(1);
+        }
+        if (!prefix.endsWith("/") && !suffix.startsWith("/")) {
+            return prefix + "/" + suffix;
+        }
+        return prefix +suffix;
+    }
+    
     public void updatePinfoValue() throws Exception {
         final int numValues=actualValues.getNumValues();
         final boolean createFilelist=isCreateFilelist();
@@ -245,9 +266,23 @@ public class ParamListHelper {
         }
 
         if (createFilelist) {
-            final GpFilePath filelistFile=createFilelist();
+            //final GpFilePath filelistFile=createFilelist();
+            final boolean downloadExternalFiles=true;
+            final List<GpFilePath> listOfValues=getListOfValues(downloadExternalFiles);
+            final GpFilePath filelistFile=createFilelist(listOfValues);
+
             String filelist=filelistFile.getUrl().toExternalForm();
             record.getActual().setValue(filelist);
+            
+            //HACK: instead of storing the input values in the filelist or in the DB, store them in the parameter info CLOB
+            int idx=0;
+            for(GpFilePath inputValue : listOfValues) {
+                final String key="values_"+idx;
+                //String value=url.toExternalForm();
+                final String value="<GenePatternURL>"+inputValue.getRelativeUri().toString();
+                record.getActual().getAttributes().put(key, value);
+                ++idx;
+            } 
         }
         else if (numValues==0) {
             record.getActual().setValue("");
@@ -283,9 +318,37 @@ public class ParamListHelper {
     //-----------------------------------------------------
     //helper methods for creating parameter list files ...
     //-----------------------------------------------------
-    private GpFilePath createFilelist() throws Exception {
-        boolean downloadExternalFiles=true;
-        List<GpFilePath> filepaths=getListOfValues(downloadExternalFiles);
+    public static List<String> getInputListValues(ParameterInfo pinfo) {
+        if (pinfo==null) {
+            throw new IllegalArgumentException("pinfo == null");
+        }
+        HashMap<?,?> attrs=pinfo.getAttributes();
+        if (attrs==null) {
+            log.error("pinfo.attributes==null");
+            return Collections.emptyList();
+        }
+        //extract all 'values_' 
+        SortedMap<Integer,String> valuesMap=new TreeMap<Integer,String>();
+        //List<String> values=new ArrayList<String>();
+        for(Entry<?,?> entry : attrs.entrySet()) {
+            String key=entry.getKey().toString();
+            if (key.startsWith("values_")) {
+                try {
+                    int idx=Integer.parseInt( key.split("_")[1] );
+                    String value=entry.getValue().toString();
+                    value=replaceGpUrl(value);
+                    valuesMap.put(idx, value);
+                }
+                catch (Throwable t) {
+                    log.error("Can't parse pinfo.attribute, key="+key, t);
+                }
+            }
+        }
+        List<String> values=new ArrayList<String>(valuesMap.values());
+        return values;
+    }
+
+    private GpFilePath createFilelist(final List<GpFilePath> listOfValues) throws Exception {
         //now, create a new filelist file, add it into the user uploads directory for the given job
         JobInputFileUtil fileUtil = new JobInputFileUtil(jobContext);
         final int index=-1;
@@ -295,11 +358,8 @@ public class ParamListHelper {
 
         //write the file list
         ParamListWriter writer=new ParamListWriter.Default();
-        writer.writeParamList(gpFilePath, filepaths);
-        //writeFilelist(gpFilePath.getServerFile(), filepaths, false);
+        writer.writeParamList(gpFilePath, listOfValues);
         fileUtil.updateUploadsDb(gpFilePath);
-
-        //return gpFilePath.getUrl().toExternalForm();
         return gpFilePath;
     }
     
