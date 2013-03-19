@@ -36,6 +36,7 @@ import org.genepattern.server.config.ServerConfiguration;
 import org.genepattern.server.config.ServerConfiguration.Context;
 import org.genepattern.server.genepattern.GenePatternAnalysisTask;
 import org.genepattern.server.genomespace.GenomeSpaceBean;
+import org.genepattern.server.job.input.ParamListHelper;
 import org.genepattern.server.user.UserDAO;
 import org.genepattern.server.webapp.uploads.UploadFilesBean;
 import org.genepattern.server.webservice.server.dao.AnalysisDAO;
@@ -494,6 +495,14 @@ public class RunTaskBean {
                     ParameterInfo[] reloadParams = reloadJob.getParameterInfoArray();
                     if (reloadParams != null) {
                         for (int i = 0; i < reloadParams.length; i++) {
+                            //TODO: for debugging file lists
+                            boolean debug=true;
+                            if (debug) {
+                                final List<String> listValues=ParamListHelper.getInputListValues(reloadParams[i]);
+                                if (listValues != null && listValues.size()>0) {
+                                    log.debug("reloading a filelist, with "+listValues.size()+" values");
+                                }
+                            }
                             String value = reloadParams[i].getValue();
                             if (reloadParams[i].isInputFile()) {
                                 try {
