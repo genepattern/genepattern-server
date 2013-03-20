@@ -498,7 +498,7 @@ public class RunTaskBean {
                             //TODO: for debugging file lists
                             boolean debug=true;
                             if (debug) {
-                                final List<String> listValues=ParamListHelper.getInputListValues(reloadParams[i]);
+                                final List<String> listValues=ParamListHelper.getInputValues(reloadParams[i]);
                                 if (listValues != null && listValues.size()>0) {
                                     log.debug("reloading a filelist, with "+listValues.size()+" values");
                                 }

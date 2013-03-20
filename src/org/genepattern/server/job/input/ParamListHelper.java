@@ -6,6 +6,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -13,6 +14,7 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 
 import org.apache.log4j.Logger;
+import org.genepattern.server.PermissionsHelper;
 import org.genepattern.server.config.ServerConfiguration;
 import org.genepattern.server.config.ServerConfiguration.Context;
 import org.genepattern.server.dm.GpFileObjFactory;
@@ -21,6 +23,9 @@ import org.genepattern.server.dm.serverfile.ServerFileObjFactory;
 import org.genepattern.server.job.input.JobInput.Param;
 import org.genepattern.server.job.input.JobInput.ParamValue;
 import org.genepattern.server.rest.JobInputApiLegacy.ParameterInfoRecord;
+import org.genepattern.server.webapp.jsf.AuthorizationHelper;
+import org.genepattern.server.webservice.server.dao.AnalysisDAO;
+import org.genepattern.webservice.JobInfo;
 import org.genepattern.webservice.ParameterInfo;
 
 /**
@@ -101,6 +106,89 @@ public class ParamListHelper {
         }
         return numValues;
     }
+
+    /**
+     * Utility method for getting the input values from a (presumably completed) job.
+     * Use this to initialize the jQuery job input form for a reloaded job.
+     * 
+     * @param userContext
+     * @param jobId
+     * @return
+     */
+    static public JobInput getInputValues(final Context userContext, final String jobId) throws Exception {
+        /*
+         * Call this method if you don't already have a JobInfo initialized.
+         * This method call is deliberately agnostic about how we load the info from the GP server.
+         * At the moment (circa GP 3.5) it is getting the values from the ANALYSIS_JOB.PARAMETER_INFO CLOB.
+         */
+        JobInfo jobInfo = initJobInfo(userContext, jobId);
+        return getInputValues(jobInfo);
+    }
+    
+    /**
+     * Get a JobInfo from the DB, for the given jobId.
+     * (Legacy code copied from the RunTaskBean#setTask method).
+     * 
+     * @param userContext, Must be non-null with a valid userId
+     * @param jobId, Must be non-null
+     * 
+     * @return
+     * 
+     * @throws Exception for the following,
+     *     1) if there is no job with jobId in the DB
+     *     2) if the current user does not have permission to 'read' the job
+     */
+    private static JobInfo initJobInfo(final Context userContext, final String jobId) throws Exception {
+        if (userContext==null) {
+            throw new IllegalArgumentException("userContext==null");
+        }
+        if (userContext.getUserId()==null || userContext.getUserId().length()==0) {
+            throw new IllegalArgumentException("userContext.userId is not set");
+        }
+        if (jobId==null) {
+            throw new IllegalArgumentException("jobId==null");
+        }
+        final int jobNumber;
+        try {
+            jobNumber=Integer.parseInt(jobId);
+        }
+        catch (Throwable t) {
+            throw new Exception("Error parsing jobId="+jobId, t);
+        }
+        JobInfo jobInfo = new AnalysisDAO().getJobInfo(jobNumber);
+        if (jobInfo==null) {
+            throw new Exception("Can't load job, jobId="+jobId);
+        }
+
+        // check permissions
+        final boolean isAdmin = AuthorizationHelper.adminJobs(userContext.getUserId());
+        PermissionsHelper perm = new PermissionsHelper(isAdmin, userContext.getUserId(), jobNumber);
+        if (!perm.canReadJob()) {
+            throw new Exception("User does not have permission to load job");
+        }
+        return jobInfo;
+    }
+    
+    /**
+     * Utility method for getting the original input parameters from a 'reloaded' job, 
+     * when you already have a JobInfo initialized from the DB.
+     * 
+     * @param reloadJob
+     * @return
+     */
+    private static JobInput getInputValues(final JobInfo reloadJob) {
+        JobInput jobInput=new JobInput();
+        jobInput.setLsid(reloadJob.getTaskLSID());
+        Map<String, List<String>> orig=getOriginalInputValues(reloadJob);
+        for(final Entry<String, List<String>> entry : orig.entrySet()) {
+            final String pname=entry.getKey();
+            for(String value : entry.getValue()) {
+                jobInput.addValue(pname, value);
+            }
+        }
+        return jobInput;
+    }
+
 
     //inputs
     Context jobContext;
@@ -318,7 +406,7 @@ public class ParamListHelper {
     //-----------------------------------------------------
     //helper methods for creating parameter list files ...
     //-----------------------------------------------------
-    public static List<String> getInputListValues(ParameterInfo pinfo) {
+    public static List<String> getInputValues(ParameterInfo pinfo) {
         if (pinfo==null) {
             throw new IllegalArgumentException("pinfo == null");
         }
@@ -344,7 +432,13 @@ public class ParamListHelper {
                 }
             }
         }
-        List<String> values=new ArrayList<String>(valuesMap.values());
+        if (valuesMap.size() > 0) {
+            List<String> values=new ArrayList<String>(valuesMap.values());
+            return values;
+        }
+        
+        List<String> values=new ArrayList<String>();
+        values.add(pinfo.getValue());
         return values;
     }
 
@@ -497,19 +591,34 @@ public class ParamListHelper {
         return url;
     }
 
-    //util
-    //static private final AtomicReference<JobInputFileUtil> jobInputFileUtilRef= new AtomicReference<JobInputFileUtil>();
-//    private static JobInputFileUtil getJobInputFileUtil(final Context jobContext) throws Exception {
-//        //thread-safe, lazy-init of jobInputFileUtil
-//        JobInputFileUtil existingValue=jobInputFileUtilRef.get();
-//        if (existingValue != null) {
-//            return existingValue;
-//        }
-//        JobInputFileUtil newValue=new JobInputFileUtil(jobContext);
-//        if (jobInputFileUtilRef.compareAndSet(null, newValue)) {
-//            return newValue;
-//        }
-//        return jobInputFileUtilRef.get();
-//    }
+    static private Map<String, List<String>> getOriginalInputValues(final JobInfo reloadJob) {
+        if (reloadJob==null) {
+            log.error("reloadJob==null");
+            return Collections.emptyMap();            
+        }
+        ParameterInfo[] params = reloadJob.getParameterInfoArray();
+        if (params==null) {
+            log.error("reloadJob.parameterInfoArray == null");
+            return Collections.emptyMap();
+        }
+        if (params.length==0) {
+            return Collections.emptyMap();
+        }
 
+        //use LinkedHashMap to preserve input order
+        Map<String, List<String>> inputValues=new LinkedHashMap<String, List<String>>();
+        for (ParameterInfo param : params) {
+            final String pname=param.getName();
+            final List<String> values=getInputValues(param);
+            if (values==null) {
+            }
+            else if (values.size()==0) {
+            }
+            else {
+                inputValues.put(pname, values);
+            }            
+        }
+        return inputValues;
+    }
+    
 }
