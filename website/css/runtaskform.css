@@ -298,3 +298,38 @@ hr
     background-color: #D0D0D0;
 }
 
+/*.ui-button .ui-icon.otherOptions
+{
+    background-image: url(../images/dropMenu-normal.png);
+}
+
+.ui-button.ui-state-hover .ui-icon.otherOptions
+{
+    background-image: url(../images/dropMenu-hover.png);
+} 
+*/
+
+#task_version_main
+{
+    margin-left: 17px;
+}
+
+.ui-iconbutton
+{
+    background: transparent;
+    border: none;
+}
+
+.ui-menu
+{
+    width: 200px;
+}
+
+
+#documentation 
+{
+    text-decoration:underline;
+}
+
+
+

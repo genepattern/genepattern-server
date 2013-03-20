@@ -155,20 +155,21 @@ function loadModuleInfo(module)
     } 
 
     $(".properties").attr("href", propertiesLink);
-
+    */
     //if module has doc specified or if for some reason
     // the hasDoc field was not set then show the doc link
     if(module["hasDoc"] == undefined || module["hasDoc"])
     {
         var docLink = "/gp/getTaskDoc.jsp?name=" + run_task_info.lsid;
-        $(".documentation").attr("href", docLink, "_blank");
+        $("#documentation").attr("href", docLink);
     }
     else
     {
         //otherwise hide the documentation link
-        $(".documentation").hide();
+        $("#documentation").hide();
     }
 
+    /*
     if(module["editable"] != undefined && module["editable"])
     {
         var editLink = "/gp/modules/creator.jsf?lsid=" + run_task_info.lsid;
@@ -185,7 +186,7 @@ function loadModuleInfo(module)
     if(module["description"] !== undefined
             && module["description"] != "")
     {
-        $("#mod_description").append(module["description"]);
+        $("#mod_description").append(module["description"] + " ... ");
     }
 
     //check if there are missing tasks (only applies to pipelines)
@@ -554,6 +555,34 @@ jQuery(document).ready(function()
         updateParamFileTable(paramName);
         toggleFileButtons(paramName);
     });
+
+    var selected = function( event, ui ) {
+        $(this).popup( "close" );
+    };
+
+
+   /*$('#otherOptions').button({
+        text: false,
+        icons: {
+            primary: "otherOptions"   // Custom icon
+        }
+    }); */
+
+    $('#otherOptions').iconbutton({
+        text: false,
+        icons: {
+            primary: "otherOptions"   // Custom icon
+        }
+    }).click(function()
+    {
+        $( "#menu" ).toggle();    
+    });
+
+    $( "#menu" ).hide().menu({
+        select: selected,
+        trigger: $("#otherOptions")
+    });
+
 
     $("button.Reset").click(function()
     {
@@ -1175,3 +1204,12 @@ function toggleFileButtons(paramName) {
     	$("[id='" + paramName + "']").parent().parent().find("button").button("enable")
     }
 }
+
+$.widget('ui.iconbutton', $.extend({}, $.ui.button.prototype, {
+    _init: function() {
+        $.ui.button.prototype._init.call(this);
+        this.element.removeClass('ui-corner-all')
+                    .addClass('ui-iconbutton')
+                    .unbind('.button');
+    }
+}));
