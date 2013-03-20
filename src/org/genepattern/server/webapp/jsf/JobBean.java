@@ -301,8 +301,10 @@ public class JobBean {
     public void reload() throws IOException {
         String lsid = null;
         ParameterInfo[] params = null;
+        int jobNumber=-1;
         try {
-            int jobNumber = Integer.parseInt(UIBeanHelper.decode(UIBeanHelper.getRequest().getParameter("jobNumber")));
+            String jobNumberParam=UIBeanHelper.decode(UIBeanHelper.getRequest().getParameter("jobNumber"));
+            jobNumber = Integer.parseInt(jobNumberParam);
             AnalysisDAO ds = new AnalysisDAO();
             JobInfo reloadJob = ds.getJobInfo(jobNumber);
             lsid = reloadJob.getTaskLSID();
@@ -328,6 +330,11 @@ public class JobBean {
         }
         else {
             forwardTo += "?lsid=" + UIBeanHelper.encode(lsid);
+            if (jobNumber>=0) {
+                forwardTo += "&reloadJob="+jobNumber;
+            }
+            //TODO: comment out these lines, get the original input values from the reloaded job
+            //    as part of the jQuery job input form
             if (params != null) {
                 for (int i = 0; i < params.length; i++) {
                     ParameterInfo param = params[i];
