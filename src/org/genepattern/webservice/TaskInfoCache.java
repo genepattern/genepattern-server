@@ -99,8 +99,6 @@ public class TaskInfoCache {
     }
 
     public void removeFromCache(Integer taskId) {
-        PipelineDependencyHelper.instance().remove(taskId);
-        
         TaskMaster tm = taskMasterCache.get(taskId);
         if (tm != null && tm.getLsid() != null) {
             DirectoryManager.removeTaskLibDirFromCache(tm.getLsid());
@@ -108,6 +106,7 @@ public class TaskInfoCache {
         taskMasterCache.remove(taskId);
         taskInfoAttributesCache.remove(taskId);
         taskDocFilenameCache.remove(taskId);
+        PipelineDependencyHelper.instance().remove(taskId);
     }
     
     private static class IsDocFilenameFilter implements FilenameFilter {

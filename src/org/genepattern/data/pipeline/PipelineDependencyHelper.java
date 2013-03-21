@@ -75,48 +75,11 @@ public class PipelineDependencyHelper {
     }
     
     public synchronized void remove(Integer taskId) {
-        for (TaskInfo info : taskToPipelines.keySet()) {
-            if (taskId.equals(info.getID())) {
-                remove(info);
-                return;
-            }
-        }
+        remove((TaskInfo) null);
     }
     
     public synchronized void remove(TaskInfo task) {
-        // Remove from pipelineToDependencies map
-        for (TaskInfo key : pipelineToDependencies.keySet()) {
-            if (key.getLsid().equals(task.getLsid())) {
-                pipelineToDependencies.remove(key);
-                continue;
-            }
-            
-            Set<TaskInfo> values = pipelineToDependencies.get(key);
-            for (TaskInfo value : values) {
-                if (value.getLsid().equals(task.getLsid())) {
-                    values.remove(value);
-                }
-            }
-        }
-        
-        // Remove from taskToPipelines map
-        for (TaskInfo key : taskToPipelines.keySet()) {
-            if (key.getLsid().equals(task.getLsid())) {
-                taskToPipelines.remove(key);
-                continue;
-            }
-            
-            Set<TaskInfo> values = taskToPipelines.get(key);
-            Set<TaskInfo> newValues = new HashSet<TaskInfo>();
-            for (TaskInfo value : values) {
-                if (!value.getLsid().equals(task.getLsid())) {
-                    newValues.add(value);
-                }
-            }
-            taskToPipelines.put(key, newValues);
-        }
-        
-        pipelineToMissing.remove(task);
+        helper.build();
     }
     
     public Set<String> getMissingDependencies(TaskInfo task) {
