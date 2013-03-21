@@ -184,14 +184,16 @@ public class PipelineDependencyHelper {
         pipelines.addAll(latest);
         
         for (TaskInfo pipeline : latest) {
-            pipelines = getDependenciesRecursive(pipeline, pipelines);
+            pipelines = getDependentPipelinesRecursive(pipeline, pipelines);
         }
         
         return pipelines;
     }
     
     public Set<TaskInfo> getDependencies(TaskInfo pipeline) {
-        return pipelineToDependencies.get(pipeline);
+        Set<TaskInfo> depends = pipelineToDependencies.get(pipeline);
+        if (depends == null) return new HashSet<TaskInfo>();
+        else return depends;
     }
     
     public Set<TaskInfo> getDependencies(PipelineModel pipeline) {
