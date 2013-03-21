@@ -23,14 +23,17 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
 
 import javax.faces.event.ActionEvent;
 
 import org.apache.log4j.Logger;
+import org.genepattern.data.pipeline.PipelineDependencyHelper;
 import org.genepattern.data.pipeline.PipelineModel;
 import org.genepattern.server.user.UserDAO;
 import org.genepattern.server.webservice.server.local.IAdminClient;
@@ -42,6 +45,7 @@ import org.genepattern.util.LSIDUtil;
 import org.genepattern.util.LSIDVersionComparator;
 import org.genepattern.webservice.TaskInfo;
 import org.genepattern.webservice.TaskInfoAttributes;
+import org.genepattern.webservice.TaskInfoCache;
 import org.genepattern.webservice.WebServiceException;
 
 public class ManageTasksBean {
@@ -85,10 +89,39 @@ public class ManageTasksBean {
 
     private void deleteTasks(String[] taskLsids) {
         if (taskLsids != null) {
-            LocalTaskIntegratorClient taskIntegratorClient = new LocalTaskIntegratorClient(UIBeanHelper.getUserId());
+            
+            // Get a set of the deleted TaskInfos
+            Set<TaskInfo> deletedSet = new HashSet<TaskInfo>();
             for (String lsid : taskLsids) {
+                TaskInfo info = TaskInfoCache.instance().getTask(lsid);
+                deletedSet.add(info);
+            }
+
+            String errorMessage = "";
+            LocalTaskIntegratorClient taskIntegratorClient = new LocalTaskIntegratorClient(UIBeanHelper.getUserId());
+            for (TaskInfo task : deletedSet) {
+                // For each deleted task make sure all its dependents are also being deleted
+                // If not, do not delete this task and let the user know in an error message
+                Set<TaskInfo> dependentSet = PipelineDependencyHelper.instance().getDependentPipelinesRecursive(task);
+                boolean goodToDelete = deletedSet.containsAll(dependentSet);
+                
+                if (!goodToDelete) {
+                    // First get the set of all dependents to prompt for
+                    dependentSet.removeAll(deletedSet);
+                    
+                    // Next, add the prompt to the error message
+                    if (!errorMessage.isEmpty()) { errorMessage += "; "; }
+                    errorMessage += task.getName() + " (" + task.getLsid() + ") could not be deleted because it is used in pipelines: ";
+                    for (TaskInfo depends : dependentSet) {
+                        errorMessage += depends.getName() + ", ";
+                    }
+                    errorMessage = errorMessage.substring(0, errorMessage.length() - 2); // Shave off unnecessary comma
+                    errorMessage += ". Please delete those pipelines first.";
+                    continue;
+                }
+                
                 try {
-                    taskIntegratorClient.deleteTask(lsid);
+                    taskIntegratorClient.deleteTask(task.getLsid());
                 } 
                 catch (Exception e) {
                     e.printStackTrace();
@@ -97,6 +130,11 @@ public class ManageTasksBean {
                 }
             }
             updateModules();
+            
+            // If unable to delete all tasks, alert the user
+            if (!errorMessage.isEmpty()) {
+                UIBeanHelper.setErrorMessage(errorMessage);
+            }
         }
     }
 
