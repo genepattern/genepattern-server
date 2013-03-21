@@ -1,5 +1,5 @@
 <%--
-  ~ Copyright 2012 The Broad Institute, Inc.
+  ~ Copyright 2013 The Broad Institute, Inc.
   ~ SOFTWARE COPYRIGHT NOTICE
   ~ This software and its documentation are the copyright of the Broad Institute, Inc. All rights are reserved.
   ~
@@ -16,7 +16,7 @@
                 </td>
 
                 <td>
-                    <div align="right">&copy;2003-2012&nbsp;<a href="http://www.broadinstitute.org" target="_blank">Broad Institute, MIT</a>
+                    <div align="right">&copy;2003-2013&nbsp;<a href="http://www.broadinstitute.org" target="_blank">Broad Institute, MIT</a>
                     </div>
                 <td width="10">&nbsp;</td>
                 <td width="27"><a href="http://www.broadinstitute.org" target="_blank"><img src="<%=request.getContextPath()%>/images/broad-symbol.gif" alt="Broad Institute" border="0" height="30" width="27" /></a>
