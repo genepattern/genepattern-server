@@ -1,9 +1,5 @@
 package org.genepattern.server.util;
 
-//import static org.genepattern.util.GPConstants.STDERR;
-//import static org.genepattern.util.GPConstants.STDOUT;
-//import static org.genepattern.util.GPConstants.TASKLOG;
-
 import java.io.File;
 import java.io.FilenameFilter;
 
@@ -18,16 +14,13 @@ import org.junit.Test;
 
 /**
  * Unit test ServerFileFilenameFilterTest class.
+ * Look at the 'serverFilenameFilter.yaml' file for the server
+ * configuration settings that are being tested.
+ * 
  * @author pcarr
  */
 public class ServerFileFilenameFilterTest {
     private static final File dir = null; //arg to FilenameFilter.accept
-    private static final String ds_store = ".DS_Store";
-    private static final String nfsExample = ".nfs00012.txt";
-    private static final String gctExample = "all_aml_out.gct";
-    private static final String lsfExample = ".lsf_12.out";
-    
-    private ServerFileFilenameFilter filter = null;
 
     @Before
     public void setUp() {
@@ -40,119 +33,98 @@ public class ServerFileFilenameFilterTest {
         ConfigUtil.loadConfigFile(null);
     }
     
+    @Test
+    public void testNullContext() {
+        Context userContext=null;
+        testDefault(userContext);
+    }
+    
+    @Test
+    public void testNullUserId() {
+        Context userContext=ServerConfiguration.Context.getContextForUser("default_user");
+        userContext.setUserId(null);
+        Assert.assertNull("expecting null userContext.userId", userContext.getUserId());
+        testDefault(userContext);
+    }
+    
+    @Test
+    public void testUserIdNotSet() {
+        Context userContext=ServerConfiguration.Context.getContextForUser("");
+        testDefault(userContext);
+    }
+    
     /**
      * Test default configuration
      */
     @Test
     public void testDefaultConfig() {
         Context userContext=ServerConfiguration.Context.getContextForUser("default_user");
-        FilenameFilter filter = ServerFileFilenameFilter.getServerFilenameFilter(userContext);
-        
-        Assert.assertFalse("'.DS_Store' should be filtered", filter.accept(dir, ".DS_Store"));
-        Assert.assertFalse("'Thumbs.db' should be filtered", filter.accept(dir, "Thumbs.db"));
-        
-        Assert.assertTrue("'.hidden' should be accepted", filter.accept(dir, ".hidden"));
+        testDefault(userContext);
     }
     
+    @Test
+    public void testStringFromConfig() {
+        Context userContext=ServerConfiguration.Context.getContextForUser("gp_user");
+        FilenameFilter filter = ServerFileFilenameFilter.getServerFilenameFilter(userContext);
+        check(filter, true, ".DS_Store");
+        check(filter, true, "Thumbs.db");
+        check(filter, false, "hide");
+        check(filter, false, "hidethisfile.txt");
+    }
     
+    @Test
+    public void testCommaDelimitedString() {
+        FilenameFilter filter = ServerFileFilenameFilter.getServerFilenameFilter(".nfs*,.lsf*,a*");
+        check(filter, false, ".nfs0123");
+        check(filter, false, ".lsf0123");
+        check(filter, true, ".DS_Store");
+        check(filter, true, "Thumbs.db");
+        check(filter, false, "anything_with_an_a");
+        check(filter, true, ".hidden");
+        check(filter, true, "blast");
+    }
 
-//    /**
-//     * <pre>
-//       JobResultsFilenameFilter.setGlob(".nfs*").
-//     * </pre>
-//     */
-//    public void testDotNfsStar() {
-//        filter.setGlob(".nfs*");
-//        assertTrue("accept('"+ds_store+"')", filter.accept(dir, ds_store));
-//        assertFalse("accept('"+nfsExample+"')", filter.accept(dir, nfsExample));
-//        assertTrue("accept('"+gctExample+"')", filter.accept(dir, gctExample));
-//    }
-//    
-//    /**
-//     * <pre>
-//       JobResultsFilenameFilter.setGlob(".*").
-//     * </pre>
-//     */
-//    public void testDotStar() {
-//        filter.setGlob(".*");
-//        assertFalse("accept('"+ds_store+"')", filter.accept(dir, ds_store));
-//        assertFalse("accept('"+nfsExample+"')", filter.accept(dir, nfsExample));
-//        assertTrue("accept('"+gctExample+"')", filter.accept(dir, gctExample));
-//    }
-//
-//    /**
-//     * <pre>
-//       JobResultsFilenameFilter.setGlob("*").
-//     * </pre>
-//     */
-//    public void testStar() {
-//        filter.setGlob("*");
-//        assertFalse("accept('"+ds_store+"')", filter.accept(dir, ds_store));
-//        assertFalse("accept('"+nfsExample+"')", filter.accept(dir, nfsExample));
-//        assertFalse("accept('"+gctExample+"')", filter.accept(dir, gctExample));
-//    }
-//
-//    /**
-//     * <pre>
-//       JobResultsFilenameFilter.setGlob(null).
-//     * </pre>
-//     */
-//    public void testNullPattern() {
-//        filter.setGlob((String)null);
-//        assertTrue("null pattern: .nfs", filter.accept(dir, nfsExample));
-//        assertTrue("null pattern: *.gct", filter.accept(dir, gctExample));
-//    }
-//    
-//    /**
-//     * <pre>
-//       JobResultsFilenameFilter.setGlob("").
-//     * </pre>
-//     */
-//    public void testEmptyPattern() {
-//        filter.setGlob("");
-//        assertTrue("empty pattern:", filter.accept(dir, nfsExample));
-//        assertTrue("empty pattern: *.gct", filter.accept(dir, gctExample));
-//
-//        filter.setGlob(" ");
-//        assertTrue("whitespace pattern", filter.accept(dir, nfsExample));
-//        assertTrue("whitespace pattern", filter.accept(dir, gctExample));        
-//    }
-//    
-//    public void testListOfGlobs() {
-//        filter.setGlob(".lsf*,.nfs*");
-//        
-//        assertFalse("accept('"+nfsExample+"')", filter.accept(dir, nfsExample));
-//        assertFalse("accept('"+lsfExample+"')", filter.accept(dir, lsfExample));
-//        assertTrue("accept('"+ds_store+"')", filter.accept(dir, ds_store));
-//        assertTrue("accept('"+gctExample+"')", filter.accept(dir, gctExample));
-//    }
-//
-//    /**
-//     * <pre>
-//       JobResultsFilenameFilter.setGlob(" *").
-//       JobResultsFilenameFilter.setGlob("* ").
-//     * </pre>
-//     */
-//    public void testWhitespace() {
-//        String ws0 = "space char in filename.txt";
-//        String ws1 = ".space char in filename.txt";
-//        String ws2 = " starts with space char";
-//        String ws3 = " starts and ends with space ";
-//        String ws4 = "ends with space ";
-//        
-//        filter.setGlob(" *");
-//        assertTrue("accept('"+ws0+"')", filter.accept(dir, ws0));
-//        assertTrue("accept('"+ws1+"')", filter.accept(dir, ws1));
-//        assertFalse("accept('"+ws2+"')", filter.accept(dir, ws2));
-//        assertFalse("accept('"+ws3+"')", filter.accept(dir, ws3));
-//        assertTrue("accept('"+ws4+"')", filter.accept(dir, ws4));
-//        
-//        filter.setGlob("* ");
-//        assertTrue("accept('"+ws0+"')", filter.accept(dir, ws0));
-//        assertTrue("accept('"+ws1+"')", filter.accept(dir, ws1));
-//        assertTrue("accept('"+ws2+"')", filter.accept(dir, ws2));
-//        assertFalse("accept('"+ws3+"')", filter.accept(dir, ws3));
-//        assertFalse("accept('"+ws4+"')", filter.accept(dir, ws4));
-//    }
+    @Test
+    public void testCommaDelimitedStringFromConfig() {
+        Context userContext=ServerConfiguration.Context.getContextForUser("admin_user");
+        FilenameFilter filter = ServerFileFilenameFilter.getServerFilenameFilter(userContext);
+        check(filter, false, ".nfs0123");
+        check(filter, false, ".lsf0123");
+        check(filter, true, ".DS_Store");
+        check(filter, true, "Thumbs.db");
+        check(filter, false, "anything_with_an_a");
+        check(filter, true, ".hidden");
+        check(filter, true, "blast");
+    }
+    
+    @Test
+    public void testCommaInGlob() {
+        Context userContext=ServerConfiguration.Context.getContextForUser("extra_user");
+        FilenameFilter filter = ServerFileFilenameFilter.getServerFilenameFilter(userContext);
+        check(filter, true, "file");
+        check(filter, true, "with");
+        check(filter, true, "comma");
+        check(filter, false, "file,with,comma");
+        
+    }
+    
+    private void testDefault(final Context userContext) {
+        FilenameFilter filter = ServerFileFilenameFilter.getServerFilenameFilter(userContext);
+        check(filter, false, ".DS_Store");
+        check(filter, false, "Thumbs.db");
+        check(filter, false, ".hidden");
+    }
+    
+    /**
+     * Helper class, for the given filter, does it return the expected result.
+     * 
+     * @param filter
+     * @param expected
+     * @param filename
+     */
+    private void check(final FilenameFilter filter, final boolean expected, final String filename) {
+        Assert.assertEquals("filter.accept('"+filename+"')", expected, filter.accept(dir, filename));
+    }
+    
 
 }

@@ -2,7 +2,11 @@
 #
 default.properties: 
     # by default, set a list of values
-    server.browse.file.system.filter: [ ".DS_Store", "Thumbs.db" ]
+    #server.browse.file.system.filter: [ ".DS_Store", "Thumbs.db" ]
+    # can be a single value, interpreted as a single glob pattern
+    # comma-separated lists are not supported
+    #server.browse.file.system.filter: ".*"
+    
 #
 # Note: the yaml parser for a GP config file requires at least one 'executors' entry
 #
@@ -15,7 +19,11 @@ executors:
 user.properties:
     gp_user:
         # optionally pass in a single value
-        server.browse.file.system.filter: ".DS_Store"
+        server.browse.file.system.filter: "hide*"
     admin_user:
-        # optionally pass in a list of values as a comma-separated string
-        server.browse.file.system.filter: ".DS_Store, Thumbs.db"
+        server.browse.file.system.filter: ".nfs*,.lsf*,a*"
+    extra_user:
+        # just in case you want to include a comma ',' as part of the pattern,
+        # instead of as a delimiter.
+        # include the pattern in an array
+        server.browse.file.system.filter: ["file,with,comma"]

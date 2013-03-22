@@ -5,6 +5,7 @@ import java.io.FilenameFilter;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.log4j.Logger;
 import org.apache.oro.io.GlobFilenameFilter;
 import org.genepattern.server.config.ServerConfiguration;
 import org.genepattern.server.config.ServerConfiguration.Context;
@@ -25,7 +26,14 @@ import org.genepattern.server.executor.CommandProperties;
  * @author pcarr
  */
 public class ServerFileFilenameFilter implements FilenameFilter {
+    final static private Logger log = Logger.getLogger(ServerFileFilenameFilter.class);
+
     public static final String KEY = "server.browse.file.system.filter";
+    public static final String[] GLOBS = {
+        "Thumbs.db",
+        ".DS_Store", //i know, this is redundant
+        ".*"
+    };
     
     private List<GlobFilenameFilter> globs = new ArrayList<GlobFilenameFilter>();
     
@@ -40,24 +48,47 @@ public class ServerFileFilenameFilter implements FilenameFilter {
     public static FilenameFilter getServerFilenameFilter(Context userContext) {
         if (userContext==null) {
             //TODO: log an error?
-            //TODO: use hard-coded default values?
-            return new ServerFileFilenameFilter();
+            log.error("userContext==null");
         }
-        ServerFileFilenameFilter filter = new ServerFileFilenameFilter();
+        else if (userContext.getUserId()==null || userContext.getUserId().length()==0) {
+            log.error("userContext.userId is not set");
+        }
         CommandProperties.Value globPatterns = ServerConfiguration.instance().getValue(userContext, KEY);
-        for(String glob : globPatterns.getValues()) {
-            filter.addGlob(glob);
+        ServerFileFilenameFilter filter=new ServerFileFilenameFilter();
+        if (globPatterns == null) {
+            //not set, use the default values 
+            if (GLOBS != null) {
+                for(String glob : GLOBS) {
+                    filter.addGlob(glob);
+                }
+            }
+            return filter;
+        }
+        else if (globPatterns.getNumValues()==1 && !globPatterns.isFromCollection()) {
+            //special-case, the property was initialized from a String (instead of an array)
+            // in this case, we check for comma-separated values
+            filter.setGlob(globPatterns.getValue());
+        }
+        else {
+            for(String glob : globPatterns.getValues()) {
+                filter.addGlob(glob);
+            }
         }
         return filter;
     }
     
+    public static FilenameFilter getServerFilenameFilter(final String glob) {
+        ServerFileFilenameFilter filter=new ServerFileFilenameFilter();
+        filter.setGlob(glob);
+        return filter;
+    }
     
     /**
      * @param patterns, a comma-separated list of glob patterns, to apply in order. 
      *     A Null or empty input means don't use a glob pattern.
      *     E.g. setGlob(".nfs*,.lsf*");
      */
-    public void setGlob(String patterns) {
+    private void setGlob(String patterns) {
         globs.clear();
         if (patterns == null || patterns.trim().length() == 0) {
             return;
@@ -72,7 +103,7 @@ public class ServerFileFilenameFilter implements FilenameFilter {
      * Null or empty input means don't use glob pattern.
      * @param pattern
      */
-    public void _setGlob(String pattern) {
+    private void _setGlob(String pattern) {
         //null or empty string means ignore glob pattern
         if (pattern == null || pattern.trim().length() == 0) {
             globs = null;
@@ -83,7 +114,7 @@ public class ServerFileFilenameFilter implements FilenameFilter {
         addGlob(pattern);
     }
     
-    public void addGlob(String pattern) {
+    private void addGlob(String pattern) {
         GlobFilenameFilter glob =  new GlobFilenameFilter();            
         glob.setFilterExpression(pattern);
         globs.add(glob);
