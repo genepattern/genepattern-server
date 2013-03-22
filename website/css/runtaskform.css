@@ -367,7 +367,7 @@ hr
 .jMenu li ul li
 {
     background-color: white;
-    min-width: 120px;  
+    min-width: 250px;  
     border-left: 1px solid black;
     border-right: 1px solid black;
     border-top: 1px solid transparent;
@@ -381,7 +381,9 @@ hr
 
 .jMenu li ul li:last-child
 {
-    border-bottom: 1px solid black;        
+    border-top: 1px solid #80a7d0;
+    border-bottom: 1px solid black;
+    min-height: 25px;
 }
 
 .jMenu li ul li a:hover {
