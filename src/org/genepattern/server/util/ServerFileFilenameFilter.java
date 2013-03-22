@@ -30,7 +30,14 @@ public class ServerFileFilenameFilter implements FilenameFilter {
     private List<GlobFilenameFilter> globs = new ArrayList<GlobFilenameFilter>();
     
     //factory methods
-    FilenameFilter getServerFilenameFilter(Context userContext) {
+    /**
+     * Initialize a FilenameFilter for the given user. This filter is to be used when browser server file paths
+     * from the GUI.
+     * 
+     * @param userContext
+     * @return
+     */
+    public static FilenameFilter getServerFilenameFilter(Context userContext) {
         if (userContext==null) {
             //TODO: log an error?
             //TODO: use hard-coded default values?
