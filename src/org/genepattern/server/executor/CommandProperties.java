@@ -62,13 +62,16 @@ public class CommandProperties {
             throw new ConfigurationException("Illegal arg, object is not instanceof String or Collection<?>: '"+object.toString()+"'");
         }
         
+        private boolean fromCollection=false;
         private List<String> values = new ArrayList<String>();
         
-        public Value(String value) {
+        public Value(final String value) {
+            fromCollection=false;
             values.add(value);
         }
         
-        public Value(Collection<String> from) {
+        public Value(final Collection<String> from) {
+            fromCollection=true;
             values.addAll(from);
         }
         
@@ -85,6 +88,28 @@ public class CommandProperties {
         
         public int getNumValues() {
             return values.size();
+        }
+
+        /**
+         * Helper method, return true if this object was initialized from a collection 
+         * of values, false if it was initialized from a single value. 
+         * 
+         * This was added to help with parsing the config file. For example,
+         * <pre>
+               param1: "1"
+               param2: ["1"]
+         
+           param1 was initialized from a single value.
+           param2 was initialized from an array of values.
+         * </pre>
+         * 
+         * In both cases, numValues is 1. For param1, isCollection is false.
+         * For param2, isCollection is true.
+         * 
+         * @return
+         */
+        public boolean isFromCollection() {
+            return fromCollection;
         }
     }
     
