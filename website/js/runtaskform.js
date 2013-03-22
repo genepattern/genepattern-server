@@ -236,7 +236,7 @@ function loadParameterInfo(parameters)
         paramRow.data("pname", parameters[q].name);
 
         var rowId = "pRow" + (q+1);
-        var valueTd = $("<td id='"+ rowId +"'/>");
+        var valueTd = $("<td/>");
 
         var choicelist = parameters[q].value;
         if(choicelist !== undefined && choicelist !== null && choicelist.length > 0)
@@ -305,7 +305,6 @@ function loadParameterInfo(parameters)
         else if(parameters[q].type == "java.io.File")
         {
             inputFileRowIds.push(rowId);
-            valueTd.addClass("dNd");
 
             var uploadFileText = "Upload Files...";
             var addUrlText = "Add Paths or URLs...";
@@ -319,7 +318,7 @@ function loadParameterInfo(parameters)
                 }
             }
 
-            var fileDiv = $("<div class='fileDiv'>");
+            var fileDiv = $("<div id='"+ rowId +"' class='fileDiv'>");
 
             var uploadFileBtn = $("<button class='uploadBtn' type='button'>"+ uploadFileText + "</button>");
             uploadFileBtn.button().click(function()
@@ -869,7 +868,7 @@ function updateParamFileTable(paramName)
     $(idPName).empty();
     if(files != null && files != undefined && files.length > 0)
     {
-        var pData = $("<p/>");
+        var pData = $("<div class='fileDetails'/>");
 
         var editLink = $("<a href='#'><img src='/gp/images/arrows-down.gif'/>Hide Details...</a>");
         editLink.click(function(event)
@@ -890,7 +889,6 @@ function updateParamFileTable(paramName)
                 $(idPName).find(".paramFilesTable").addClass("hidden");
             }
         });
-
         pData.append(editLink);
 
         var selectedFiles = "Selected ";
@@ -945,6 +943,8 @@ function updateParamFileTable(paramName)
         var div = $("<div class='scroll'/>");
         div.append(table);
         $(idPName).append(div);
+
+        editLink.click();
     }
 }
 
