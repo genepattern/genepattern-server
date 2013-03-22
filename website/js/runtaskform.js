@@ -510,6 +510,8 @@ jQuery(document).ready(function()
         $("#paramsTable tr.paramDescription").toggle();
     });
 
+    $("#otherOptionsMenu").jMenu();
+
     $("button").button();
 
     var lsid = Request.parameter('lsid');

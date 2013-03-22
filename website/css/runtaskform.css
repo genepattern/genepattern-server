@@ -344,5 +344,27 @@ hr
     text-decoration:underline;
 }
 
+/*Start jMenu css overrides*/
+.jMenu li
+{
+    background-color: transparent;
+    padding: 0;
+}
 
+.jMenu li a
+{
+    padding-top: 1px;
+    padding-left: 0;
+}
 
+/*
+.jMenu li a
+{
+    padding: 1px;
+}
+*/
+.jMenu li ul li
+{
+    background-color: gray;
+} */
+/*End jMenu css overrides*/

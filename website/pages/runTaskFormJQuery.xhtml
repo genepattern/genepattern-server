@@ -8,10 +8,12 @@
 
     <link  type="text/css" rel="stylesheet" media="screen" href="#{facesContext.externalContext.requestContextPath}/modules/styles/jquery.multiselect.css" />
     <link  type="text/css" rel="stylesheet" media="screen" href="#{facesContext.externalContext.requestContextPath}/css/themes/base/jquery.ui.all.css" />
+    <link  type="text/css" rel="stylesheet" media="screen" href="#{facesContext.externalContext.requestContextPath}/css/jMenu.jquery.css" />
     <link  type="text/css" rel="stylesheet" media="screen" href="#{facesContext.externalContext.requestContextPath}/css/runtaskform.css" />
     
     <script type="text/javascript" src="#{facesContext.externalContext.requestContextPath}/js/jquery/jquery-1.7.1.js"></script>
     <script type="text/javascript" src="#{facesContext.externalContext.requestContextPath}/js/jquery/jquery-ui-1.8.16.js"></script>
+    <script type="text/javascript" src="#{facesContext.externalContext.requestContextPath}/js/jquery/jMenu.jquery.js"></script>
     <script type="text/javascript" src="#{facesContext.externalContext.requestContextPath}/js/jquery/jquery.multiselect.js"></script>
     <script type="text/javascript" src="#{facesContext.externalContext.requestContextPath}/js/jquery/jquery.blockUI.js"></script>    
     <script type="text/javascript" src="#{facesContext.externalContext.requestContextPath}/js/jquery/jquery.validate.js"></script>        
@@ -30,7 +32,6 @@
 
     <div id="documentation"></div>
     -->
-
     <div id="submitForm">
         <div>
             <div>
@@ -57,11 +58,22 @@
                     version
                     </label>
                     <select name='task_versions' id='task_versions'/>
-
-
                 </span>
+                <div class="floatRight">
+                    <ul id="otherOptionsMenu">
+                        <li>
+                            <a>
+                                <img id="otherOptions" alt="other options" src="#{facesContext.externalContext.requestContextPath}/images/dropMenu-normal.png"/>
+                            </a>
+                            <!--<ul>
+                                <li><a id="properties">Properties</a></li>
+                                <li><a id="export">Export</a></li>
+                            </ul> -->
+                        </li>
+                    </ul>
+                </div>
 
-               <!--<div class="floatRight">
+                <!--<div class="floatRight">
                    <button  id="otherOptions">Other options</button>
                    <ul id="menu">
                         <li>
