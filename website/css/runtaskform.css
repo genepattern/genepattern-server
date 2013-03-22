@@ -345,6 +345,7 @@ hr
 }
 
 /*Start jMenu css overrides*/
+
 .jMenu li
 {
     background-color: transparent;
@@ -355,16 +356,44 @@ hr
 {
     padding-top: 1px;
     padding-left: 0;
+    color: black;
+} 
+
+.jMenu li ul
+{
+    background-color: white;    
 }
 
-/*
-.jMenu li a
-{
-    padding: 1px;
-}
-*/
 .jMenu li ul li
 {
-    background-color: gray;
-} */
+    background-color: white;
+    min-width: 120px;  
+    border-left: 1px solid black;
+    border-right: 1px solid black;
+    border-top: 1px solid transparent;
+    border-bottom: 1px solid transparent;
+}
+
+.jMenu li ul li:first-child
+{
+    border-top: 1px solid black;        
+}
+
+.jMenu li ul li:last-child
+{
+    border-bottom: 1px solid black;        
+}
+
+.jMenu li ul li a:hover {
+    background-color: #DCDCDC;
+    border-top: 1px solid transparent;  
+    border-bottom: 1px solid transparent;
+}
+
 /*End jMenu css overrides*/
+
+#otherOptionsDiv
+{
+    width: 200px;
+    padding: 0;
+}

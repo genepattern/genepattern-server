@@ -59,34 +59,19 @@
                     </label>
                     <select name='task_versions' id='task_versions'/>
                 </span>
-                <div class="floatRight">
-                    <ul id="otherOptionsMenu">
+                <div id="otherOptionsDiv" class="floatRight">
+                    <ul id="otherOptionsMenu" class="floatRight">
                         <li>
                             <a>
                                 <img id="otherOptions" alt="other options" src="#{facesContext.externalContext.requestContextPath}/images/dropMenu-normal.png"/>
                             </a>
-                            <!--<ul>
+                            <ul>
                                 <li><a id="properties">Properties</a></li>
-                                <li><a id="export">Export</a></li>
-                            </ul> -->
+                                <li><a id="export" target="_blank">Export</a></li>
+                            </ul>
                         </li>
                     </ul>
                 </div>
-
-                <!--<div class="floatRight">
-                   <button  id="otherOptions">Other options</button>
-                   <ul id="menu">
-                        <li>
-                            <a href="#">Edit</a>
-                        </li>
-                        <li>
-                            <a href="#">Properties</a>
-                        </li>
-                        <li>
-                            <a href="#">Export</a>
-                        </li>
-                    </ul>
-                </div>-->
             </div>
 
             <div id="description_main">
@@ -95,7 +80,7 @@
                         <img id="mod_description_toggle" src="#{facesContext.externalContext.requestContextPath}/images/minus-sign.png" alt="Toggle icon"/>
                     </a>
                 </span>
-                <span id="mod_description_hidden">Show Description ...</span>
+                <span id="mod_description_hidden">Show Description</span>
                 <span id="mod_description"/>
                 <span><a id ="documentation" href="#" target="_blank">View Full Documentation</a></span>
             </div>

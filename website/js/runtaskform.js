@@ -141,10 +141,11 @@ function loadModuleInfo(module)
     }
 
 
-    /*$(".Export").click(function()
+    $("#export").click(function()
     {
-        var exportLink = "/gp/makeZip.jsp?name=" + run_task_info.lsid;
-        window.open(exportLink, '_blank');
+         var exportLink = "/gp/makeZip.jsp?name=" + run_task_info.lsid;
+        $("#export").attr("href", exportLink);
+
     });
 
     var propertiesLink = "/gp/addTask.jsp?name="+run_task_info.lsid+"&view=1";
@@ -154,14 +155,15 @@ function loadModuleInfo(module)
         propertiesLink = "/gp/viewPipeline.jsp?name="+run_task_info.lsid;
     } 
 
-    $(".properties").attr("href", propertiesLink);
-    */
+    $("#properties").attr("href", propertiesLink);
+    
     //if module has doc specified or if for some reason
     // the hasDoc field was not set then show the doc link
     if(module["hasDoc"] == undefined || module["hasDoc"])
     {
         var docLink = "/gp/getTaskDoc.jsp?name=" + run_task_info.lsid;
         $("#documentation").attr("href", docLink);
+        $("#documentation").parent().prepend(" ... ");
     }
     else
     {
@@ -186,7 +188,7 @@ function loadModuleInfo(module)
     if(module["description"] !== undefined
             && module["description"] != "")
     {
-        $("#mod_description").append(module["description"] + " ... ");
+        $("#mod_description").append(module["description"]);
     }
 
     //check if there are missing tasks (only applies to pipelines)
@@ -510,7 +512,12 @@ jQuery(document).ready(function()
         $("#paramsTable tr.paramDescription").toggle();
     });
 
-    $("#otherOptionsMenu").jMenu();
+    $("#otherOptionsMenu").jMenu(
+    {
+        absoluteTop: 22,
+        absoluteLeft: -85,
+        openClick: true
+    });
 
     $("button").button();
 
