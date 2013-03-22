@@ -12,6 +12,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.Logger;
 import org.genepattern.server.config.ServerConfiguration;
+import org.genepattern.server.config.ServerConfiguration.Context;
 import org.genepattern.server.dm.GpFileObjFactory;
 import org.genepattern.server.dm.GpFilePath;
 import org.genepattern.server.dm.serverfile.ServerFilePath;
@@ -97,9 +98,12 @@ public class ServerFileServlet extends HttpServlet {
         else {
             GpFilePath dir;
             try {
+                String userId = (String) request.getSession().getAttribute("userID");
+                Context context = ServerConfiguration.Context.getContextForUser(userId);
+                
                 dir = GpFileObjFactory.getRequestedGpFileObj(url);
                 dir.initMetadata();
-                ((ServerFilePath) dir).initChildren();
+                ((ServerFilePath) dir).initChildren(context);
                 tree = dir.getChildren();
             }
             catch (Exception e) {

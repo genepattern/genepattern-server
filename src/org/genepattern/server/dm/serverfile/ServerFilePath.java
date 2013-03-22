@@ -1,6 +1,7 @@
 package org.genepattern.server.dm.serverfile;
 
 import java.io.File;
+import java.io.FilenameFilter;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.List;
@@ -11,6 +12,7 @@ import org.genepattern.server.config.ServerConfiguration.Context;
 import org.genepattern.server.dm.GpFilePath;
 import org.genepattern.server.dm.UrlUtil;
 import org.genepattern.server.executor.CommandProperties;
+import org.genepattern.server.util.ServerFileFilenameFilter;
 import org.genepattern.server.webapp.DataServlet;
 
 /**
@@ -109,10 +111,17 @@ public class ServerFilePath extends GpFilePath {
     }
     
     public void initChildren() {
+        Context context = ServerConfiguration.Context.getServerContext();
+        initChildren(context);
+    }
+    
+    public void initChildren(Context context) {
+        FilenameFilter filter = ServerFileFilenameFilter.getServerFilenameFilter(context);
+        
         File file = getServerFile();
         if (!file.isDirectory()) return;
         if (!this.getChildren().isEmpty()) return;
-        for (File child : file.listFiles()) {
+        for (File child : file.listFiles(filter)) {
             ServerFilePath childWrapper = new ServerFilePath(child);
             childWrapper.initMetadata();
             this.addChild(childWrapper);
