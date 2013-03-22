@@ -1,0 +1,21 @@
+# example config file for testing the ServerFilenameFilter
+#
+default.properties: 
+    # by default, set a list of values
+    server.browse.file.system.filter: [ ".DS_Store", "Thumbs.db" ]
+#
+# Note: the yaml parser for a GP config file requires at least one 'executors' entry
+#
+executors:
+    # default executor for all jobs, it is included in GenePattern
+    RuntimeExec: 
+        classname: org.genepattern.server.executor.RuntimeCommandExecutor
+
+# use different userId's for testing different configurations
+user.properties:
+    gp_user:
+        # optionally pass in a single value
+        server.browse.file.system.filter: ".DS_Store"
+    admin_user:
+        # optionally pass in a list of values as a comma-separated string
+        server.browse.file.system.filter: ".DS_Store, Thumbs.db"
