@@ -354,14 +354,16 @@ hr
 
 .jMenu li a
 {
-    padding-top: 1px;
+    padding-top: 0;
     padding-left: 0;
     color: black;
+    max-height: 13px;
 } 
 
 .jMenu li ul
 {
-    background-color: white;    
+    background-color: white;
+    padding-top: 0;
 }
 
 .jMenu li ul li
@@ -386,10 +388,15 @@ hr
     min-height: 25px;
 }
 
+.jMenu li ul li a{
+    padding-top: 0;        
+}
+
 .jMenu li ul li a:hover {
     background-color: #DCDCDC;
     border-top: 1px solid transparent;  
     border-bottom: 1px solid transparent;
+    padding-top: 0;        
 }
 
 /*End jMenu css overrides*/
