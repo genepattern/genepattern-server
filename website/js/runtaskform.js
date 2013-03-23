@@ -171,7 +171,7 @@ function loadModuleInfo(module)
         $("#documentation").hide();
     }
 
-    /*
+
     if(module["editable"] != undefined && module["editable"])
     {
         var editLink = "/gp/modules/creator.jsf?lsid=" + run_task_info.lsid;
@@ -181,10 +181,10 @@ function loadModuleInfo(module)
             editLink = "/gp/pipeline/index.jsf?lsid=" + run_task_info.lsid;
         }
 
-        $(".otherControlsDiv").append("<a href='JavaScript:Menu.denyIE(\"" + editLink + "\");'>edit</a>");
+        $("#otherOptionsSubMenu").prepend("<li><a href='JavaScript:Menu.denyIE(\"" + editLink + "\");'>Edit</a></li>");
     }
 
-    */
+    
     if(module["description"] !== undefined
             && module["description"] != "")
     {
@@ -515,7 +515,7 @@ jQuery(document).ready(function()
     $("#otherOptionsMenu").jMenu(
     {
         absoluteTop: 22,
-        absoluteLeft: -85,
+        absoluteLeft: -214,
         openClick: true
     });
 
