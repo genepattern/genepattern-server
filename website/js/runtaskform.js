@@ -714,10 +714,6 @@ function submitTask()
             window.location.replace("/gp/jobResults/"+response.jobId);
             console.log("Response text: " + response.text);
         },
-        complete:function()
-        {
-            $('#runTaskSettingsDiv').unblock();
-        },
         error: function(xhr, ajaxOptions, thrownError)
         {
             alert("Response from server: status=" + xhr.status + " text=" + xhr.responseText);
