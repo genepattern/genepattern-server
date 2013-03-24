@@ -156,6 +156,18 @@ function loadModuleInfo(module)
     } 
 
     $("#properties").attr("href", propertiesLink);
+
+    var hasDescription = false;
+    if(module["description"] !== undefined
+            && module["description"] != "")
+    {
+        $("#mod_description").append(module["description"]);
+        hasDescription = true;
+    }
+    else
+    {
+        $("#description_main").hide();
+    }
     
     //if module has doc specified or if for some reason
     // the hasDoc field was not set then show the doc link
@@ -163,7 +175,11 @@ function loadModuleInfo(module)
     {
         var docLink = "/gp/getTaskDoc.jsp?name=" + run_task_info.lsid;
         $("#documentation").attr("href", docLink);
-        $("#documentation").parent().prepend(" ... ");
+
+        if(hasDescription)
+        {
+            $("#documentation").parent().prepend(" ... ");
+        }
     }
     else
     {
@@ -185,11 +201,6 @@ function loadModuleInfo(module)
     }
 
     
-    if(module["description"] !== undefined
-            && module["description"] != "")
-    {
-        $("#mod_description").append(module["description"]);
-    }
 
     //check if there are missing tasks (only applies to pipelines)
     if(module["missing_tasks"])
@@ -514,7 +525,7 @@ jQuery(document).ready(function()
 
     $("#otherOptionsMenu").jMenu(
     {
-        absoluteTop: 22,
+        absoluteTop: 19,
         absoluteLeft: -214,
         openClick: true
     });
