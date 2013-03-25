@@ -204,6 +204,18 @@ public class JobInput {
         return param.getValues();
     }
     
+    /**
+     * Is there a value set for the given parameter name?
+     * 
+     * A value is not set when:
+     * a) the value is an empty list, or
+     * b) the value is a 1-item list with a null value, or
+     * c) the value is a 1-item list with an empty String value.
+     * 
+     * 
+     * @param id
+     * @return
+     */
     public boolean hasValue(final String id) {
         final List<ParamValue> paramValues=getParamValues(id);
         if (paramValues==null) {
