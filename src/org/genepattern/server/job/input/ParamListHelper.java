@@ -406,6 +406,14 @@ public class ParamListHelper {
     //-----------------------------------------------------
     //helper methods for creating parameter list files ...
     //-----------------------------------------------------
+    /**
+     * Get the list of previous input values for the given parameter, this is to be called 
+     * when reloading a job.
+     * 
+     * @param pinfo
+     * 
+     * @return the list of input values, or null if the paramater is not an input parameter.
+     */
     public static List<String> getInputValues(ParameterInfo pinfo) {
         if (pinfo==null) {
             throw new IllegalArgumentException("pinfo == null");
@@ -415,6 +423,13 @@ public class ParamListHelper {
             log.error("pinfo.attributes==null");
             return Collections.emptyList();
         }
+        
+        if (pinfo.isOutputFile()) {
+            //ignore output files
+            log.debug("pinfo.isOutputFile == true");
+            return null;
+        }
+        
         //extract all 'values_' 
         SortedMap<Integer,String> valuesMap=new TreeMap<Integer,String>();
         //List<String> values=new ArrayList<String>();
