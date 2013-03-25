@@ -378,8 +378,8 @@ hr
     min-width: 250px;  
     border-left: 1px solid black;
     border-right: 1px solid black;
-    border-top: 1px solid transparent;
-    border-bottom: 1px solid transparent;
+    border-top: 0;
+    border-bottom: 0;
 }
 
 .jMenu li ul li:first-child
@@ -400,7 +400,7 @@ hr
 
 .jMenu li ul li a:hover {
     background-color: #DCDCDC;
-    border-top: 1px solid transparent;  
+    border-top: 1px solid transparent;
     border-bottom: 1px solid transparent;
     padding-top: 0;        
 }
