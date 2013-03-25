@@ -19,8 +19,15 @@ var fileId = 0;
 var parametersJson = null;
 
 var Request = {
- 	parameter: function(name) {
- 		return unescape(this.parameters()[name]);
+ 	parameter: function(name)
+     {
+         var result = this.parameters()[name];
+        if(result != undefined && result != null)
+        {
+            return  decodeURIComponent(result);
+        }
+         
+        return result;
  	},
 
  	parameters: function() {
@@ -42,12 +49,13 @@ if (!window.console)
     window.console = { time:function(){}, timeEnd:function(){}, group:function(){}, groupEnd:function(){}, log:function(){} };
 }
 
-function loadModule(taskId)
+function loadModule(taskId) /*, reloadId)*/
 {
      $.ajax({
             type: "GET",
             url: "/gp/rest/RunTask/load",
-            data: { "lsid" : taskId },
+            data: { "lsid" : taskId},
+            /*data: { "lsid" : taskId, "reloadJob":  reloadId},*/
             success: function(response) {
 
                 var message = response["MESSAGE"];
@@ -532,16 +540,21 @@ jQuery(document).ready(function()
 
     $("button").button();
 
+   /* var reloadJob = Request.parameter('reloadJob');
+    if(reloadJob == undefined || reloadJob == null)
+    {
+        reloadJob = "";
+    } */
+
     var lsid = Request.parameter('lsid');
     if(lsid == undefined || lsid == null || lsid  == "")
     {
-        //lsid = "urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00044:9";
         //redirect to splash page
         window.location.replace("/gp/pages/index.jsf");
     }
     else
     {
-        loadModule(lsid);
+        loadModule(lsid); /*, reloadJob);*/
     }
 
     $("input[type='file']").live("change", function()

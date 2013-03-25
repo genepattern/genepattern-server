@@ -17,7 +17,13 @@
 
 #paramsTable td
 {
-    padding: 7px 4px 7px 4px;
+    padding: 7px 4px 6px 4px;
+}
+
+#paramsTable tr.paramDescription td
+{
+    padding-top: 0;
+    padding-bottom: 2px;
 }
 
 #paramsTable td:nth-child(odd)
@@ -27,7 +33,7 @@
 
 #paramsTable td:nth-child(even)
 {
-    padding: 7px 4px 7px 14px;
+    padding-left: 14px;
 }
 
 #paramsTable input
@@ -243,7 +249,7 @@ img.buttonIcon {
 
 #paramsListingDiv .ui-state-default
 {
-	background-image:url(images/btnBG.jpg); 
+	background-image:url(images/btnBG.jpg);
 	background-repeat:repeat-x;
     color: #0c1922;
 	border: solid 1px #466eb6;
