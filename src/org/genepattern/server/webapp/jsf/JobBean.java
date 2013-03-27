@@ -299,21 +299,14 @@ public class JobBean {
     }
 
     public void reload() throws IOException {
-        String lsid = null;
-        ParameterInfo[] params = null;
-        int jobNumber=-1;
+        int reloadJobNumber=-1;
         try {
             String jobNumberParam=UIBeanHelper.decode(UIBeanHelper.getRequest().getParameter("jobNumber"));
-            jobNumber = Integer.parseInt(jobNumberParam);
+            reloadJobNumber = Integer.parseInt(jobNumberParam);
             AnalysisDAO ds = new AnalysisDAO();
-            JobInfo reloadJob = ds.getJobInfo(jobNumber);
-            lsid = reloadJob.getTaskLSID();
-            params = reloadJob.getParameterInfoArray();
-            RunTaskBean runTaskBean = (RunTaskBean) UIBeanHelper.getManagedBean("#{runTaskBean}");
-            assert runTaskBean != null;
-            UIBeanHelper.getRequest().setAttribute("reloadJob", String.valueOf(reloadJob.getJobNumber()));
-            runTaskBean.setTask(reloadJob.getTaskLSID());
+            JobInfo reloadJob = ds.getJobInfo(reloadJobNumber);
 
+            //TODO: refactor so that we don't have to do the eula check until later
             EulaTaskBean eulaTaskBean = (EulaTaskBean) UIBeanHelper.getManagedBean("#{eulaTaskBean}");
             if (eulaTaskBean != null && reloadJob != null) {
                 eulaTaskBean.setReloadJobParam(""+reloadJob.getJobNumber());
@@ -325,24 +318,14 @@ public class JobBean {
         }
         
         String forwardTo = UIBeanHelper.getRequest().getContextPath() + "/pages/index.jsf";
-        if (lsid == null) {
+        if (reloadJobNumber >= 0) {
+            forwardTo += "?reloadJob="+reloadJobNumber;
             UIBeanHelper.getResponse().sendRedirect(forwardTo);
+            return;
         }
-        else {
-            forwardTo += "?lsid=" + UIBeanHelper.encode(lsid);
-            if (jobNumber>=0) {
-                forwardTo += "&reloadJob="+jobNumber;
-            }
-            //TODO: comment out these lines, get the original input values from the reloaded job
-            //    as part of the jQuery job input form
-            if (params != null) {
-                for (int i = 0; i < params.length; i++) {
-                    ParameterInfo param = params[i];
-                    forwardTo += "&" + UIBeanHelper.encode(param.getName()) + "=" + UIBeanHelper.encode(param.getValue());
-                }
-            }
-            UIBeanHelper.getResponse().sendRedirect(forwardTo);
-        }
+        
+        UIBeanHelper.getResponse().sendRedirect(forwardTo);
+        return;
     }
 
     public void saveFile(ActionEvent event) {
