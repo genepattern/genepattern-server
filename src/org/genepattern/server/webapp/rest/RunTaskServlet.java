@@ -177,69 +177,83 @@ public class RunTaskServlet extends HttpServlet
                 for (ParameterInfo pInfo : pInfoArray)
                 {
                     String pName = pInfo.getName();
+                    List valuesList = new ArrayList();
 
-                    JobInput.ParamId paramId = new JobInput.ParamId(pName);
-
-                    //check that this parameter exists and that it does not have a null or an empty string value
-                    if(paramsMap.containsKey(paramId) && jobInput.hasValue(pName))
+                    //check if a value for this parameter was specified as a get request
+                    if(request.getParameterMap().containsKey(pName))
                     {
-                        JobInput.Param  param = paramsMap.get(paramId);
-                        List<JobInput.ParamValue> paramValues = param.getValues();
-
-                        List valuesList = new ArrayList();
-                        Iterator<JobInput.ParamValue> paramValuesIterator = paramValues.listIterator();
-
-                        //check that this is a multi-file list parameter if more than one item was found
-                        //in the list
-                        if(paramValues.size() > 1)
+                        String[] paramValues = request.getParameterValues(pName);
+                        for(int i=0;i<paramValues.length;i++)
                         {
-                            HashMap<String, String> pInfoAttrMap = pInfo.getAttributes();
-                            String maxValue = pInfoAttrMap.get("maxValue");
-                            if(!pInfo.isInputFile())
+                            if(paramValues != null && !paramValues[i].equals(""))
                             {
-                                continue;
+                                valuesList.add(paramValues[i]);
                             }
+                        }
+                    }
+                    else
+                    {
+                        JobInput.ParamId paramId = new JobInput.ParamId(pName);
 
-                            try
+                        //check that this parameter exists and that it does not have a null or an empty string value
+                        if(paramsMap.containsKey(paramId) && jobInput.hasValue(pName))
+                        {
+                            JobInput.Param  param = paramsMap.get(paramId);
+                            List<JobInput.ParamValue> paramValues = param.getValues();
+
+                            Iterator<JobInput.ParamValue> paramValuesIterator = paramValues.listIterator();
+                            while(paramValuesIterator.hasNext())
                             {
-                                int maxValueNum = Integer.parseInt(maxValue);
-                                if(valuesList.size() > maxValueNum)
+                                JobInput.ParamValue value = paramValuesIterator.next();
+
+                                String stringValue = value.getValue();
+                                //if value is set to null then assume it means an empty string
+                                if(stringValue == null)
                                 {
-                                    //this is an error: more input values were specified than
-                                    //this parameter allows so throw an exception
-                                    throw new Exception(" Error: " + valuesList.size() + " input values were specified for " +
-                                    pName + " but a maximum of " + maxValue + " is allowed. " + "Pleas");
+                                    log.error("Warning: A null value was found for the following parameter: " + pName
+                                        + "\nThe null value will be replaced with an empty string.");
+                                    stringValue = "";
                                 }
+                                valuesList.add(stringValue);
                             }
-                            catch(NumberFormatException ne)
-                            {
-                                // max value is not a number, so it must be unlimited
-                                // do nothing and continue
-                            }
-
                         }
+                    }
 
-                        while(paramValuesIterator.hasNext())
+                    //check that this is a multi-file list parameter if more than one item was found
+                    //in the list
+                    if(valuesList.size() > 1)
+                    {
+                        HashMap<String, String> pInfoAttrMap = pInfo.getAttributes();
+                        String maxValue = pInfoAttrMap.get("maxValue");
+                        if(!pInfo.isInputFile())
                         {
-                            JobInput.ParamValue value = paramValuesIterator.next();
-
-                            String stringValue = value.getValue();
-                            //if value is set to null then assume it means an empty string
-                            if(stringValue == null)
-                            {
-                                log.error("Warning: A null value was found for the following parameter: " + pName
-                                    + "\nThe null value will be replaced with an empty string.");
-                                stringValue = "";
-                            }
-                            valuesList.add(stringValue);
+                            continue;
                         }
 
-                        //check if initial values were set for this parameter
-                        if(valuesList.size() > 0)
+                        try
                         {
-                            initialValuesJSONObject.put(pName, valuesList);
+                            int maxValueNum = Integer.parseInt(maxValue);
+                            if(valuesList.size() > maxValueNum)
+                            {
+                                //this is an error: more input values were specified than
+                                //this parameter allows so throw an exception
+                                throw new Exception(" Error: " + valuesList.size() + " input values were specified for " +
+                                pName + " but a maximum of " + maxValue + " is allowed. " + "Pleas");
+                            }
                         }
-                    }                   
+                        catch(NumberFormatException ne)
+                        {
+                            // max value is not a number, so it must be unlimited
+                            // do nothing and continue
+                        }
+
+                    }
+
+                    //check if initial values were set for this parameter
+                    if(valuesList.size() > 0)
+                    {
+                        initialValuesJSONObject.put(pName, valuesList);
+                    }
                 }
                 responseObject.put("initialValues", initialValuesJSONObject);
             }
