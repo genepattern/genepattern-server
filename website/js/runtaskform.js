@@ -75,7 +75,7 @@ function loadModule(taskId, reloadId)
                 {
                     loadModuleInfo(response["module"]);
                     parametersJson = response["parameters"];
-                    loadParameterInfo(parametersJson, response["reloadedJob"]);
+                    loadParameterInfo(parametersJson, response["initialValues"]);
                 }
             },
             error: function(xhr, ajaxOptions, thrownError)
@@ -228,7 +228,7 @@ function loadModuleInfo(module)
     }
 }
 
-function loadParameterInfo(parameters, reloadedJob)
+function loadParameterInfo(parameters, initialValues)
 {
     var paramsTable = $("#paramsTable");
     var inputFileRowIds = [];
@@ -238,11 +238,11 @@ function loadParameterInfo(parameters, reloadedJob)
         var parameterName = parameters[q].name;
 
         //can be null or undefined if this is not a job reload
-        var reloadedValuesList = null;
+        var initialValuesList = null;
 
-        if(reloadedJob != null && reloadedJob != undefined)
+        if(initialValues != null && initialValues != undefined)
         {
-            reloadedValuesList = reloadedJob[parameters[q].name];
+             initialValuesList = initialValues[parameters[q].name];
         }
 
         //use the alternate name if there is one (this is usually set for pipelines)
@@ -311,12 +311,12 @@ function loadParameterInfo(parameters, reloadedJob)
             });
 
 
-            //select reloaded values if there are any
-            if(reloadedValuesList != undefined && reloadedValuesList != null)
+            //select initial values if there are any
+            if( initialValuesList != undefined &&  initialValuesList != null)
             {
-                for(v=0; v < reloadedValuesList.length; v++)
+                for(v=0; v < initialValuesList.length; v++)
                 {
-                    select.val(reloadedValuesList[v]);    
+                    select.val( initialValuesList[v]);
                 }
             }
             valueTd.append(select);
@@ -384,7 +384,7 @@ function loadParameterInfo(parameters, reloadedJob)
             paramRow.append(valueTd);
             paramsTable.append(paramRow);
 
-            if(reloadedValuesList != undefined && reloadedValuesList != null)
+            if( initialValuesList != undefined &&  initialValuesList != null)
             {
                 var fileObjListings = param_file_listing[parameters[q].name];
                 if(fileObjListings == null || fileObjListings == undefined)
@@ -394,17 +394,17 @@ function loadParameterInfo(parameters, reloadedJob)
                 }
 
                 //check if max file length will be vialoated
-                var totalFileLength = fileObjListings.length + reloadedValuesList.length;
+                var totalFileLength = fileObjListings.length +  initialValuesList.length;
                 validateMaxFiles(parameters[q].name, totalFileLength);
 
-                for(var v=0; v < reloadedValuesList.length; v++)
+                for(var v=0; v <  initialValuesList.length; v++)
                 {
                     //check if the file name is not empty
-                    if(reloadedValuesList[v] != null && reloadedValuesList[v] != "")
+                    if( initialValuesList[v] != null &&  initialValuesList[v] != "")
                     {
                         var fileObj =
                         {
-                            name: reloadedValuesList[v],
+                            name:  initialValuesList[v],
                             id: fileId++
                         };
                         fileObjListings.push(fileObj);
@@ -447,15 +447,15 @@ function loadParameterInfo(parameters, reloadedJob)
             //append parameter description table
             paramsTable.append("<tr class='paramDescription'><td></td><td colspan='3'>" + parameters[q].description +"</td></tr>");
 
-            if(reloadedValuesList != undefined && reloadedValuesList != null)
+            if( initialValuesList != undefined &&  initialValuesList != null)
             {
                 var inputFieldValue = "";
-                for(v=0; v < reloadedValuesList.length; v++)
+                for(v=0; v <  initialValuesList.length; v++)
                 {
-                    inputFieldValue += reloadedValuesList[v];
+                    inputFieldValue +=  initialValuesList[v];
                      
                     // add a comma between items in this list
-                    if(v < (reloadedValuesList.length-1))
+                    if(v < ( initialValuesList.length-1))
                     {
                         inputFieldValue += ",";
                     }
@@ -610,7 +610,10 @@ jQuery(document).ready(function()
     }
 
     var lsid = Request.parameter('lsid');
-    if(lsid == undefined || lsid == null || lsid  == "")
+    var reloadJob = Request.parameter('reloadJob');
+
+    if((lsid == undefined || lsid == null || lsid  == "")
+            && (reloadJob == undefined || reloadJob == null || reloadJob  == ""))
     {
         //redirect to splash page
         window.location.replace("/gp/pages/index.jsf");
@@ -940,8 +943,8 @@ function validateMaxFiles(paramName, numFiles)
     //check that the user did not add more files than allowed
     if(maxFilesLimitExceeded)
     {
-        alert("The maximum number of files that can be provided to " +
-                        "this parameter has been reached. Please delete some files " +
+        alert("The maximum number of files that can be provided to the " + paramName +
+                        " parameter has been reached. Please delete some files " +
                         "before continuing.");
         throw new Error("The maximum number of files that can be provided to " +
                         "this parameter (" + paramName +") has been reached. Please delete some files " +

@@ -1,5 +1,6 @@
 package org.genepattern.server.webapp.rest;
 
+import org.genepattern.server.domain.Lsid;
 import org.genepattern.server.job.input.ParamListHelper;
 import org.genepattern.util.GPConstants;
 import org.genepattern.util.LSID;
@@ -67,8 +68,45 @@ public class RunTaskServlet extends HttpServlet
                 throw new Exception("User not logged in");
             }
 
-            if (lsid == null) {
-                throw new Exception ("No lsid received");
+            ServerConfiguration.Context context = ServerConfiguration.Context.getContextForUser(username);
+            JobInput jobInput = null;
+
+            if (lsid == null && reloadJobId == null)
+            {
+                throw new Exception ("No lsid or job number to reload received");
+            }
+
+            if(reloadJobId != null && !reloadJobId.equals(""))
+            {
+                //This is a reloaded job
+                jobInput= ParamListHelper.getInputValues(context, reloadJobId);
+
+                String reloadedLsidString = jobInput.getLsid();
+
+                //check if lsid is null
+                if(lsid == null)
+                {
+                    lsid = reloadedLsidString;
+                }
+                else
+                {
+                    //warn the user if the reloaded job lsid and given lsid do not match
+                    //but continue execution
+                    Lsid reloadLsid = new Lsid(reloadedLsidString);
+                    Lsid givenLsid = new Lsid(lsid);
+                    if(reloadLsid.getLsidNoVersion().equals(givenLsid.getLsidNoVersion()))
+                    {
+                        log.warn("The given lsid " + givenLsid.getLsidNoVersion() + " does not match " +
+                                "the lsid of the reloaded job " + reloadLsid.getLsidNoVersion());
+                    }
+                }
+
+            }
+
+            //check if lsid is still null
+            if(lsid == null)
+            {
+                throw new Exception ("No lsid  received");
             }
 
             TaskInfo taskInfo = getTaskInfo(lsid, username);
@@ -128,13 +166,11 @@ public class RunTaskServlet extends HttpServlet
             responseObject.put(ParametersJSON.KEY, parametersObject);
 
 
+            JSONObject initialValuesJSONObject = new JSONObject();
+
             //if this a reload job request then you also need to get the input values used for the job
             if(reloadJobId != null && !reloadJobId.equals(""))
             {
-                JSONObject reloadJobJSONObject = new JSONObject();
-                ServerConfiguration.Context context = ServerConfiguration.Context.getContextForUser(username);
-
-                JobInput jobInput= ParamListHelper.getInputValues(context, reloadJobId);
                 Map<JobInput.ParamId, JobInput.Param> paramsMap = jobInput.getParams();
 
                 ParameterInfo[] pInfoArray = taskInfo.getParameterInfoArray();
@@ -155,7 +191,7 @@ public class RunTaskServlet extends HttpServlet
 
                         //check that this is a multi-file list parameter if more than one item was found
                         //in the list
-                        if(valuesList.size() > 1)
+                        if(paramValues.size() > 1)
                         {
                             HashMap<String, String> pInfoAttrMap = pInfo.getAttributes();
                             String maxValue = pInfoAttrMap.get("maxValue");
@@ -197,10 +233,15 @@ public class RunTaskServlet extends HttpServlet
                             }
                             valuesList.add(stringValue);
                         }
-                        reloadJobJSONObject.put(pName, valuesList);
-                    }
+
+                        //check if initial values were set for this parameter
+                        if(valuesList.size() > 0)
+                        {
+                            initialValuesJSONObject.put(pName, valuesList);
+                        }
+                    }                   
                 }
-                responseObject.put("reloadedJob", reloadJobJSONObject);
+                responseObject.put("initialValues", initialValuesJSONObject);
             }
 
             return Response.ok().entity(responseObject.toString()).build();
