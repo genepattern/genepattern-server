@@ -299,12 +299,12 @@ public class JobBean {
     }
 
     public void reload() throws IOException {
-        int reloadJobNumber=-1;
+        JobInfo reloadJob=null;
         try {
             String jobNumberParam=UIBeanHelper.decode(UIBeanHelper.getRequest().getParameter("jobNumber"));
-            reloadJobNumber = Integer.parseInt(jobNumberParam);
+            final int reloadJobNumber = Integer.parseInt(jobNumberParam);
             AnalysisDAO ds = new AnalysisDAO();
-            JobInfo reloadJob = ds.getJobInfo(reloadJobNumber);
+            reloadJob = ds.getJobInfo(reloadJobNumber);
 
             //TODO: refactor so that we don't have to do the eula check until later
             EulaTaskBean eulaTaskBean = (EulaTaskBean) UIBeanHelper.getManagedBean("#{eulaTaskBean}");
@@ -318,8 +318,10 @@ public class JobBean {
         }
         
         String forwardTo = UIBeanHelper.getRequest().getContextPath() + "/pages/index.jsf";
-        if (reloadJobNumber >= 0) {
-            forwardTo += "?reloadJob="+reloadJobNumber;
+        if (reloadJob != null && reloadJob.getJobNumber() >= 0) {
+            //TODO: refactor so that we don't need to include the lsid in the request
+            forwardTo += "?lsid="+reloadJob.getTaskLSID();
+            forwardTo += "&reloadJob="+reloadJob.getJobNumber();
             UIBeanHelper.getResponse().sendRedirect(forwardTo);
             return;
         }
