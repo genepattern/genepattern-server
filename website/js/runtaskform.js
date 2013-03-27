@@ -49,13 +49,12 @@ if (!window.console)
     window.console = { time:function(){}, timeEnd:function(){}, group:function(){}, groupEnd:function(){}, log:function(){} };
 }
 
-function loadModule(taskId) /*, reloadId)*/
+function loadModule(taskId, reloadId)
 {
      $.ajax({
             type: "GET",
             url: "/gp/rest/RunTask/load",
-            data: { "lsid" : taskId},
-            /*data: { "lsid" : taskId, "reloadJob":  reloadId},*/
+            data: { "lsid" : taskId, "reloadJob":  reloadId},
             success: function(response) {
 
                 var message = response["MESSAGE"];
@@ -76,7 +75,7 @@ function loadModule(taskId) /*, reloadId)*/
                 {
                     loadModuleInfo(response["module"]);
                     parametersJson = response["parameters"];
-                    loadParameterInfo(parametersJson);
+                    loadParameterInfo(parametersJson, response["reloadedJob"]);
                 }
             },
             error: function(xhr, ajaxOptions, thrownError)
@@ -229,7 +228,7 @@ function loadModuleInfo(module)
     }
 }
 
-function loadParameterInfo(parameters)
+function loadParameterInfo(parameters, reloadedJob)
 {
     var paramsTable = $("#paramsTable");
     var inputFileRowIds = [];
@@ -237,6 +236,14 @@ function loadParameterInfo(parameters)
     {
         var paramRow = $("<tr class='pRow'/>");
         var parameterName = parameters[q].name;
+
+        //can be null or undefined if this is not a job reload
+        var reloadedValuesList = null;
+
+        if(reloadedJob != null && reloadedJob != undefined)
+        {
+            reloadedValuesList = reloadedJob[parameters[q].name];
+        }
 
         //use the alternate name if there is one (this is usually set for pipelines)
         if(parameters[q].altName != undefined
@@ -303,6 +310,15 @@ function loadParameterInfo(parameters)
                 console.log("param name: " + paramName);
             });
 
+
+            //select reloaded values if there are any
+            if(reloadedValuesList != undefined && reloadedValuesList != null)
+            {
+                for(v=0; v < reloadedValuesList.length; v++)
+                {
+                    select.val(reloadedValuesList[v]);    
+                }
+            }
             valueTd.append(select);
             paramRow.append(valueTd);
             paramsTable.append(paramRow);
@@ -367,6 +383,37 @@ function loadParameterInfo(parameters)
             valueTd.append(fileDiv);
             paramRow.append(valueTd);
             paramsTable.append(paramRow);
+
+            if(reloadedValuesList != undefined && reloadedValuesList != null)
+            {
+                var fileObjListings = param_file_listing[parameters[q].name];
+                if(fileObjListings == null || fileObjListings == undefined)
+                {
+                    fileObjListings = [];
+                    param_file_listing[parameters[q].name] = fileObjListings;
+                }
+
+                //check if max file length will be vialoated
+                var totalFileLength = fileObjListings.length + reloadedValuesList.length;
+                validateMaxFiles(parameters[q].name, totalFileLength);
+
+                for(var v=0; v < reloadedValuesList.length; v++)
+                {
+                    //check if the file name is not empty
+                    if(reloadedValuesList[v] != null && reloadedValuesList[v] != "")
+                    {
+                        var fileObj =
+                        {
+                            name: reloadedValuesList[v],
+                            id: fileId++
+                        };
+                        fileObjListings.push(fileObj);
+                    }
+                }
+
+                // add to file listing for the specified parameter
+                updateParamFileTable(parameters[q].name);
+            }
         }
         else
         {
@@ -396,10 +443,26 @@ function loadParameterInfo(parameters)
             {
                 $textField.addClass("required");
             }
-        }
 
-        //append parameter description table
-        paramsTable.append("<tr class='paramDescription'><td></td><td colspan='3'>" + parameters[q].description +"</td></tr>");
+            //append parameter description table
+            paramsTable.append("<tr class='paramDescription'><td></td><td colspan='3'>" + parameters[q].description +"</td></tr>");
+
+            if(reloadedValuesList != undefined && reloadedValuesList != null)
+            {
+                var inputFieldValue = "";
+                for(v=0; v < reloadedValuesList.length; v++)
+                {
+                    inputFieldValue += reloadedValuesList[v];
+                     
+                    // add a comma between items in this list
+                    if(v < (reloadedValuesList.length-1))
+                    {
+                        inputFieldValue += ",";
+                    }
+                }
+                $textField.val(inputFieldValue);
+            }
+        }        
     }
 
     for(var r=0;r<inputFileRowIds.length;r++)
@@ -540,11 +603,11 @@ jQuery(document).ready(function()
 
     $("button").button();
 
-   /* var reloadJob = Request.parameter('reloadJob');
+    var reloadJob = Request.parameter('reloadJob');
     if(reloadJob == undefined || reloadJob == null)
     {
         reloadJob = "";
-    } */
+    }
 
     var lsid = Request.parameter('lsid');
     if(lsid == undefined || lsid == null || lsid  == "")
@@ -554,7 +617,7 @@ jQuery(document).ready(function()
     }
     else
     {
-        loadModule(lsid); /*, reloadJob);*/
+        loadModule(lsid, reloadJob);
     }
 
     $("input[type='file']").live("change", function()
@@ -863,7 +926,7 @@ function validateMaxFiles(paramName, numFiles)
 
     if(paramJSON != null)
     {
-        //in this case the max num of files must be unlimited
+        //in this case the max num of files is not unlimited
         if(paramJSON["maxValue"] != undefined || paramJSON["maxValue"] != null)
         {
             var maxValue = parseInt(paramJSON["maxValue"]);
@@ -881,7 +944,7 @@ function validateMaxFiles(paramName, numFiles)
                         "this parameter has been reached. Please delete some files " +
                         "before continuing.");
         throw new Error("The maximum number of files that can be provided to " +
-                        "this parameter has been reached. Please delete some files " +
+                        "this parameter (" + paramName +") has been reached. Please delete some files " +
                         "before continuing.");
     }
 }
@@ -895,8 +958,16 @@ function updateParamFileTable(paramName)
 
     //remove previous file info data
     $(idPName).empty();
+
     if(files != null && files != undefined && files.length > 0)
     {
+
+        //if there is one file and it is null or en empty string then do nothing and return
+        if(files.length == 1 && (files[0].name == null || files[0].name == ""))
+        {
+            return;
+        }
+
         var pData = $("<div class='fileDetails'/>");
 
         var editLink = $("<a href='#'><img src='/gp/images/arrows-down.gif'/>Hide Details...</a>");
@@ -930,6 +1001,12 @@ function updateParamFileTable(paramName)
         var table = $("<table class='paramFilesTable'/>");
         for(var i=0;i<files.length;i++)
         {
+            //ignore any file names that are empty or null
+            if(files[i].name == null || files[i].name == "")
+            {
+                continue;
+            }
+
             var fileRow = $("<tr/>");
             var fileTData = $("<td class='pfileAction'/>");
 
@@ -980,9 +1057,6 @@ function updateParamFileTable(paramName)
 
 function uploadAllFiles()
 {
-    //disable the parameter listing table so that no changes can be made
-    //$("#paramsTable").find("input,button,textarea,select").attr("disabled", "disabled");
-
     if (!allFilesUploaded())
     {
         $('#runTaskSettingsDiv').block({
@@ -1031,9 +1105,6 @@ function uploadFile(paramName, file, fileOrder, fileId)
         console.log("on load response: " + this.responseText);
 
         var response = $.parseJSON(this.responseText);
-
-        //add location to value listing for parameter
-        //addValueToParameter(paramName, response.location);
 
         param_file_listing[paramName][fileOrder].name = response.location;
         delete param_file_listing[paramName][fileOrder].object;
