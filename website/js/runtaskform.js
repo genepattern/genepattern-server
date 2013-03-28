@@ -602,6 +602,18 @@ jQuery(document).ready(function()
         openClick: true
     });
 
+    $("#otherOptions").hover(
+            function()
+            {
+
+                this.src = this.src.replace("normal","hover");
+            },
+            function ()
+            {
+                this.src = this.src.replace("hover","normal");
+            }
+    );
+
     $("button").button();
 
     var reloadJob = Request.parameter('reloadJob');
