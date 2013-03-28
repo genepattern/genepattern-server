@@ -80,6 +80,9 @@ function loadModule(taskId, reloadId)
                     loadModuleInfo(response["module"]);
                     parametersJson = response["parameters"];
                     loadParameterInfo(parametersJson, response["initialValues"]);
+
+                    //the parameter form elements have been created now make the form visible
+                    $("#submitJob").css('visibility', 'visible');
                 }
             },
             error: function(xhr, ajaxOptions, thrownError)
@@ -745,8 +748,6 @@ jQuery(document).ready(function()
         $('#runTaskSettingsDiv').unblock();
         $("#fileUploadDiv").empty();
     });
-
-    $("#submitJob").css('visibility', 'visible');
 });
 
 function reset()
