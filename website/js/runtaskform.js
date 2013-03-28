@@ -754,7 +754,11 @@ function reset()
 {
 
     $("#paramsTable").empty();
-    loadParameterInfo(parametersJson);
+
+    //remove all input file parameter file listings 
+    param_file_listing = {};
+
+    loadParameterInfo(parametersJson, null);
 }
 
 function runJob()
