@@ -425,9 +425,18 @@ function loadParameterInfo(parameters, initialValues)
         else
         {
             console.log("text default value: " + parameters[q].default_value);
-            var $textField = $("<input type='text' id='" + parameters[q].name
-                        +"' name='" + parameters[q].name + "'/>");
-            $textField.change(function ()
+
+            var textField = null;
+            if(parameters[q].type == "PASSWORD")
+            {
+                textField = $("<input type='password' id='" + parameters[q].name +"' name='" + parameters[q].name + "'/>");                
+            }
+            else
+            {
+                textField = $("<input type='text' id='" + parameters[q].name +"' name='" + parameters[q].name + "'/>");
+            }
+
+            textField.change(function ()
             {
                 var valueList = [];
                 valueList.push($(this).val());
@@ -436,19 +445,19 @@ function loadParameterInfo(parameters, initialValues)
                 parameter_and_val_obj[paramName] = valueList;
                 console.log("text field param name: " + paramName);
             });
-            $textField.val(parameters[q].default_value);
+            textField.val(parameters[q].default_value);
 
             var textValueList = [];
-            textValueList.push($textField.val());
+            textValueList.push(textField.val());
             parameter_and_val_obj[parameters[q].name] = textValueList;
 
-            valueTd.append($textField);
+            valueTd.append(textField);
             paramRow.append(valueTd);
             paramsTable.append(paramRow);
 
             if(parameters[q].optional.length == 0)
             {
-                $textField.addClass("required");
+                textField.addClass("required");
             }
 
             //append parameter description table
@@ -467,7 +476,7 @@ function loadParameterInfo(parameters, initialValues)
                         inputFieldValue += ",";
                     }
                 }
-                $textField.val(inputFieldValue);
+                textField.val(inputFieldValue);
             }
         }        
     }
@@ -675,13 +684,6 @@ jQuery(document).ready(function()
     };
 
 
-   /*$('#otherOptions').button({
-        text: false,
-        icons: {
-            primary: "otherOptions"   // Custom icon
-        }
-    }); */
-
     $('#otherOptions').iconbutton({
         text: false,
         icons: {
@@ -858,9 +860,6 @@ function drop(evt)
 
     var files = evt.dataTransfer.files;
     var count = files.length;
-
-    //console.log("files in text: " + evt.dataTransfer.getData('Text'));
-    //console.log("file count: " + count);
 
     var target = $(evt.target);
     console.log("tData" + target.html());
