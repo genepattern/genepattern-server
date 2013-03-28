@@ -51,9 +51,13 @@ if (!window.console)
 
 function loadModule(taskId, reloadId)
 {
-     $.ajax({
+        var url = window.location.href;
+ 		var getParameters = url.slice(url.indexOf('?') + 1);
+        var queryString = "?" + getParameters;
+
+        $.ajax({
             type: "GET",
-            url: "/gp/rest/RunTask/load",
+            url: "/gp/rest/RunTask/load" + queryString,
             data: { "lsid" : taskId, "reloadJob":  reloadId},
             success: function(response) {
 
@@ -537,15 +541,12 @@ function loadParameterInfo(parameters, initialValues)
         urlActionDiv.append(cancelButton);
         urlDiv.append(urlActionDiv);
 
-        //first hide everything in this td parent element
-        //$(this).parents("td:first").children().hide();
-
         $("#dialogUrlDiv").append(urlDiv);
         openServerFileDialog(this);
     });
     
     // Load parameter values from url
-    loadGetParams();
+    //loadGetParams();
 }
 
 jQuery(document).ready(function()
