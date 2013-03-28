@@ -23,6 +23,7 @@ import org.genepattern.modules.ModuleJSON;
 import org.genepattern.modules.ParametersJSON;
 import org.genepattern.server.config.ServerConfiguration;
 import org.genepattern.server.webapp.jsf.AuthorizationHelper;
+import org.genepattern.server.webapp.rest.api.v1.Util;
 import org.genepattern.server.webservice.server.local.LocalAdminClient;
 import org.genepattern.server.webservice.server.local.LocalTaskIntegratorClient;
 import org.genepattern.util.GPConstants;
@@ -80,7 +81,7 @@ public class TasksResource {
     public Response getTask(@PathParam("lsid") String lsid, @Context HttpServletRequest request) {
         //Note: not using the userContext instance, but the method does throw an exception if
         //    there is not a current user
-        ServerConfiguration.Context userContext=getUserContext(request);
+        ServerConfiguration.Context userContext=Util.getUserContext(request);
 
         JSONObject responseObject = null;
         try {
@@ -221,28 +222,4 @@ public class TasksResource {
 
         return parametersObject;
     }
-
-
-    //utilitiy classes, should eventually be migrated to a common helper class used by all the RESTful classes
-    /**
-     * Create a new userContext instance based on the current HTTP request.
-     * This method as the effect of requiring a valid logged in gp user, because a 
-     * RuntimeException will be thrown if the user is not logged in.
-     * 
-     * @param request
-     * @return
-     * @throws WebApplicationException if there is not a current user.
-     */
-    public static ServerConfiguration.Context getUserContext(final HttpServletRequest request) {
-        final String userId=(String) request.getSession().getAttribute("userid");
-        if (userId==null || userId.length()==0) {
-            //user not logged in, 403 - Forbidden
-            throw new WebApplicationException(Response.Status.FORBIDDEN);
-        }
-        ServerConfiguration.Context userContext = ServerConfiguration.Context.getContextForUser(userId);
-        final boolean isAdmin = AuthorizationHelper.adminServer(userId);
-        userContext.setIsAdmin(isAdmin);
-        return userContext;
-    }
-
 }

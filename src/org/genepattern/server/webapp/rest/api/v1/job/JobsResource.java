@@ -20,8 +20,8 @@ import org.genepattern.server.config.ServerConfiguration;
 import org.genepattern.server.job.input.JobInput;
 import org.genepattern.server.rest.GpServerException;
 import org.genepattern.server.rest.JobInputApiImpl;
+import org.genepattern.server.webapp.rest.api.v1.Util;
 import org.genepattern.server.webapp.rest.api.v1.job.JobInputValues.Param;
-import org.genepattern.server.webapp.rest.api.v1.task.TasksResource;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -62,7 +62,7 @@ public class JobsResource {
             final @Context HttpServletRequest request, 
             final JobInputValues jobInputValues) 
     {
-        final ServerConfiguration.Context jobContext=TasksResource.getUserContext(request);
+        final ServerConfiguration.Context jobContext=Util.getUserContext(request);
         
         final JSONObject rval=new JSONObject();
         try {
@@ -133,7 +133,7 @@ public class JobsResource {
             final @PathParam("jobId") String jobId
     ) {
         
-        final ServerConfiguration.Context userContext=TasksResource.getUserContext(request);
+        final ServerConfiguration.Context userContext=Util.getUserContext(request);
         JSONObject job=null;
         GetJob getJobImpl = new GetJobLegacy();
         String jsonStr;

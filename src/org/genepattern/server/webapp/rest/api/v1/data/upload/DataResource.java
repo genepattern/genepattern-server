@@ -29,7 +29,7 @@ import org.genepattern.server.config.ServerConfiguration;
 import org.genepattern.server.dm.GpFileObjFactory;
 import org.genepattern.server.dm.GpFilePath;
 import org.genepattern.server.job.input.JobInputFileUtil;
-import org.genepattern.server.webapp.rest.api.v1.task.TasksResource;
+import org.genepattern.server.webapp.rest.api.v1.Util;
 
 import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.core.header.FormDataContentDisposition;
@@ -107,7 +107,7 @@ public class DataResource {
             final InputStream in) 
     {
         try { 
-            final ServerConfiguration.Context userContext=TasksResource.getUserContext(request);
+            final ServerConfiguration.Context userContext=Util.getUserContext(request);
             final long maxNumBytes=initMaxNumBytes(contentLength, userContext); 
             final GpFilePath gpFilePath=writeJobInputFile(userContext, in, filename, maxNumBytes);
             final String location = ""+gpFilePath.getUrl().toExternalForm(); 
@@ -157,7 +157,7 @@ public class DataResource {
             final @FormDataParam("file") FormDataContentDisposition fileDetail) 
     {
         try {
-            final ServerConfiguration.Context userContext=TasksResource.getUserContext(request);        
+            final ServerConfiguration.Context userContext=Util.getUserContext(request);        
             final long maxNumBytes=initMaxNumBytes(contentLength, userContext);
             final GpFilePath gpFilePath=writeJobInputFile(userContext, in, fileDetail.getFileName(), maxNumBytes);
             final String location = ""+gpFilePath.getUrl().toExternalForm(); 
@@ -192,7 +192,7 @@ public class DataResource {
             final InputStream in) 
     {
         try {
-            final ServerConfiguration.Context userContext=TasksResource.getUserContext(request);  
+            final ServerConfiguration.Context userContext=Util.getUserContext(request);  
             final long maxNumBytes=initMaxNumBytes(contentLength, userContext);
             final GpFilePath gpFilePath=writeUserUploadFile(userContext, in, path, maxNumBytes);
             final String location = ""+gpFilePath.getUrl().toExternalForm(); 
