@@ -745,6 +745,8 @@ jQuery(document).ready(function()
         $('#runTaskSettingsDiv').unblock();
         $("#fileUploadDiv").empty();
     });
+
+    $("#submitJob").css('visibility', 'visible');
 });
 
 function reset()
