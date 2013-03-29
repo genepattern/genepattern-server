@@ -412,3 +412,9 @@ hr
     width: 200px;
     padding: 0;
 }
+
+.normal
+{
+    font-weight: normal;
+    font-size: 12px;
+}

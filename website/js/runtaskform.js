@@ -77,12 +77,35 @@ function loadModule(taskId, reloadId)
                     && response["parameters"] != undefined
                     && response["parameters"] !== undefined )
                 {
-                    loadModuleInfo(response["module"]);
-                    parametersJson = response["parameters"];
-                    loadParameterInfo(parametersJson, response["initialValues"]);
 
+                    var module = response["module"];
+                    //check if there are missing tasks (only applies to pipelines)
+                    loadModuleInfo(module);
+                    
+                    if(module["missing_tasks"])
+                    {
+
+                        $("#missingTasksDiv").append("<p>WARNING: This pipeline requires modules or module " +
+                                                     "versions which are not installed on this server.</p>");
+                        var installTasksButton = $("<button> Install missing tasks</button>");
+                        installTasksButton.button().click(function()
+                        {
+                            window.location.replace("/gp/viewPipeline.jsp?name=" + run_task_info.lsid);
+                        });
+
+                        $("#missingTasksDiv").append(installTasksButton);
+
+                        $(".submitControlsDiv").hide();
+
+                    }
+                    else
+                    {
+                        parametersJson = response["parameters"];
+                        loadParameterInfo(parametersJson, response["initialValues"]);
+                    }
                     //the parameter form elements have been created now make the form visible
                     $("#submitJob").css('visibility', 'visible');
+
                 }
             },
             error: function(xhr, ajaxOptions, thrownError)
@@ -125,7 +148,7 @@ function loadModuleInfo(module)
             var index = versionnum.lastIndexOf(":");
             if(index == -1)
             {
-                alert("An error occurred while loading module versions.\nInvalid lsid: " + moduleVersionLsidList[v]);
+                alert("An error occurred while loading module versions.\nInvalid lsid: " + module["lsidVersions"][v]);
             }
 
             var version = versionnum.substring(index+1, versionnum.length);
@@ -136,6 +159,12 @@ function loadModuleInfo(module)
             {
                 $('#task_versions').val(versionnum).attr('selected',true);
             }
+        }
+
+        //if there is only one version then replace the drop down with text
+        if(module["lsidVersions"].length == 1)
+        {
+            $("#task_versions").replaceWith("<span class='normal'>" + $('#task_versions option:selected').text() + "</span>");
         }
 
         //disabled until css for multiselect is improved
@@ -212,26 +241,6 @@ function loadModuleInfo(module)
         }
 
         $("#otherOptionsSubMenu").prepend("<li><a href='JavaScript:Menu.denyIE(\"" + editLink + "\");'>Edit</a></li>");
-    }
-
-    
-
-    //check if there are missing tasks (only applies to pipelines)
-    if(module["missing_tasks"])
-    {
-        $("#missingTasksDiv").append("<p>WARNING: This pipeline requires modules or module " +
-                                     "versions which are not installed on this server.</p>");
-        var installTasksButton = $("<button> Install missing tasks</button>");
-        installTasksButton.button().click(function()
-        {
-            window.location.replace("/gp/viewPipeline.jsp?name=" + run_task_info.lsid);
-        });
-
-        $("#missingTasksDiv").append(installTasksButton);
-
-        $(".submitControlsDiv").hide();
-
-        javascript_abort();
     }
 }
 
@@ -1217,9 +1226,17 @@ function allFilesUploaded()
     return true;
 }
 
-function javascript_abort()
+function javascript_abort(message)
 {
-   throw new Error('This is not an error. This is just to abort javascript');
+
+   var abortMsg = 'This is not an error. This is just to abort javascript';
+
+    if(message != undefined && message != null && message != "")
+    {
+        abortMsg = "Request to abort javascript execution: " + message;
+    }
+
+    throw new Error(abortMsg);
 }
 
 function jqEscape(str) {
