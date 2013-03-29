@@ -32,7 +32,8 @@ public class ServerFileFilenameFilter implements FilenameFilter {
     public static final String[] GLOBS = {
         "Thumbs.db",
         ".DS_Store", //i know, this is redundant
-        ".*"
+        ".*",
+        "*~"
     };
     
     private List<GlobFilenameFilter> globs = new ArrayList<GlobFilenameFilter>();
