@@ -114,7 +114,7 @@ Here is example json output for a job which is still running:
 }
 Note: the status.isFinished is 'false'
 
-Recommendation is to poll for job completion by calling GET {jobUri} within a look.
+Recommendation is to poll for job completion by calling GET {jobUri} within a loop.
 Pause a second so you don't throttle the server, then GET again until isFinished is true.
 (Note: we'd like to make this more RESTful by adhering to web standards to indicate when we expect the job to be complete).
 
@@ -152,8 +152,8 @@ Here is an example of the json output for a job which is finished:
 }
 
 
-Note: we have not tested this for running pipelines.
-Notes:
+* We have not testing jobSubmit for pipelines.
+* We do not support getting job details for completed pipelines
 * We use gp-unit as our reference implementation of a REST client. It's implemented in Java, uses the apache http client library,
   and hand-coded JSON parsing code to upload data files, run jobs, poll for job completion, and download result files.
   Contact gp-help for the details. If you have access to SVN, start here:
