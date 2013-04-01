@@ -1,34 +1,57 @@
 package org.genepattern.server.webapp.rest;
 
-import org.genepattern.server.domain.Lsid;
-import org.genepattern.server.job.input.ParamListHelper;
-import org.genepattern.util.GPConstants;
-import org.genepattern.util.LSID;
-import org.genepattern.util.LSIDUtil;
-import org.genepattern.server.webservice.server.local.LocalTaskIntegratorClient;
-import org.genepattern.server.webservice.server.local.LocalAdminClient;
-import org.genepattern.server.webapp.jsf.AuthorizationHelper;
-import org.genepattern.server.dm.GpFilePath;
-import org.genepattern.server.job.input.JobInput;
-import org.genepattern.server.job.input.JobInputFileUtil;
-import org.genepattern.server.rest.JobInputApiImpl;
-import org.genepattern.server.config.ServerConfiguration;
-import org.genepattern.webservice.*;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.ws.rs.Consumes;
+import javax.ws.rs.GET;
+import javax.ws.rs.POST;
+import javax.ws.rs.Path;
+import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
+import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.UriInfo;
+
+import org.apache.log4j.Logger;
+import org.genepattern.data.pipeline.PipelineDependencyHelper;
 import org.genepattern.modules.ModuleJSON;
 import org.genepattern.modules.ParametersJSON;
 import org.genepattern.modules.ResponseJSON;
-import org.genepattern.data.pipeline.PipelineDependencyHelper;
-import org.apache.log4j.Logger;
-import org.json.JSONObject;
+import org.genepattern.server.config.ServerConfiguration;
+import org.genepattern.server.dm.GpFilePath;
+import org.genepattern.server.domain.Lsid;
+import org.genepattern.server.job.input.JobInput;
+import org.genepattern.server.job.input.JobInput.ParamValue;
+import org.genepattern.server.job.input.JobInputFileUtil;
+import org.genepattern.server.job.input.NumValues;
+import org.genepattern.server.job.input.ParamListHelper;
+import org.genepattern.server.rest.JobInputApiImpl;
+import org.genepattern.server.webapp.jsf.AuthorizationHelper;
+import org.genepattern.server.webservice.server.local.LocalAdminClient;
+import org.genepattern.server.webservice.server.local.LocalTaskIntegratorClient;
+import org.genepattern.util.GPConstants;
+import org.genepattern.util.LSID;
+import org.genepattern.util.LSIDUtil;
+import org.genepattern.webservice.ParameterInfo;
+import org.genepattern.webservice.TaskInfo;
+import org.genepattern.webservice.TaskInfoAttributes;
+import org.genepattern.webservice.TaskInfoCache;
+import org.genepattern.webservice.WebServiceException;
 import org.json.JSONArray;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServlet;
-import java.util.*;
-import java.io.*;
-
-import javax.ws.rs.*;
-import javax.ws.rs.core.*;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import com.sun.jersey.core.header.FormDataContentDisposition;
 import com.sun.jersey.multipart.FormDataParam;
@@ -54,10 +77,134 @@ public class RunTaskServlet extends HttpServlet
 	@Context
     UriInfo uriInfo;
 
+    /**
+     * Helper method for initializing the 'fileFormat' from a given file name.
+     * Usually we shouldn't need to call this method because both '_file=' and
+     * '_format=' request parameters are set from the send-to menu.
+     * 
+     * @param _fileParam
+     * @return
+     */
+    private String getType(final String _fileParam) {
+        int idx=_fileParam.lastIndexOf(".");
+        if (idx<0) {
+            log.debug("file has no extension: "+_fileParam);
+            return "";
+        }
+        if (idx==_fileParam.length()-1) {
+            log.debug("file ends with '.': "+_fileParam);
+            return "";
+        }
+        return _fileParam.substring(idx+1);
+    }
+
+    /**
+     * Helper method for initializing the values for the job input form.
+     * Set initial values for the parameters for the following cases:
+     * 
+     * 1) a reloaded job
+     * 2) values set in request parameters, when linking from the protocols page
+     * 3) send to module, from the context menu for a file
+     * 
+     * @param pInfoArray, the list of formal parameters, from the TaskInfo object
+     * @param reloadedValues, the values from the original job, if this is a job reload request
+     * @param _fileParam, the input file value, if this is from a send-to module request
+     * @param _formatParam, the input file type, if this is from a send-to module request
+     * @param parameterMap, the HTTP request parameters, if this is from protocols page link
+     * 
+     * @return
+     * @throws JSONException
+     */
+    private JSONObject getIntialValues(
+            ParameterInfo[] pInfoArray, //the formal input parameters
+            final JobInput reloadedValues, 
+            final String _fileParam,
+            String _formatParam,
+            final Map<String,String[]> parameterMap
+    )
+    throws JSONException, Exception
+    {
+        JSONObject values = new JSONObject();
+        
+        for(ParameterInfo pinfo : pInfoArray) {
+            final String pname=pinfo.getName();
+            //1) initialize from default values
+            final List<String> defaultValues=ParamListHelper.getDefaultValues(pinfo);
+            if (defaultValues != null) {
+                values.put(pname, defaultValues);
+            }
+            
+            //2) if it's a reloaded job, use that
+            if (reloadedValues != null) {
+                if (reloadedValues.hasValue(pname)) {
+                    List<String> fromReload=new ArrayList<String>();
+                    for(ParamValue pval : reloadedValues.getParamValues(pname)) {
+                        fromReload.add(pval.getValue());
+                    }
+                    values.put(pname, fromReload);
+                }
+            }
+
+            //3) if there's a matching request parameter, use that
+            if (parameterMap.containsKey(pname)) {
+                List<String> fromRequestParam=new ArrayList<String>();
+                for(String requestParam : parameterMap.get(pname)) {
+                    fromRequestParam.add(requestParam);
+                }
+                values.put(pname, fromRequestParam);
+            }
+            
+            //validate numValues
+            NumValues numValues=ParamListHelper.initNumValues(pinfo);
+            if (numValues.getMax() != null) {
+                try {
+                    JSONArray jsonValues=values.getJSONArray(pname);
+                    if (jsonValues != null && jsonValues.length() > numValues.getMax()) {
+                        //this is an error: more input values were specified than
+                        //this parameter allows so throw an exception
+                        throw new Exception(" Error: " + jsonValues.length() + " input values were specified for " +
+                                pname + " but a maximum of " + numValues.getMax() + " is allowed. ");
+                    }
+                }
+                catch (JSONException e) {
+                    log.error("server error validating numValues from JSONArray: "+e.getLocalizedMessage(), e);
+                }
+            }
+        }
+        
+        //special-case for send-to module from file
+        if (_fileParam != null && _fileParam.length() != 0) {
+            if (_formatParam == null || _formatParam.length() == 0) {
+                log.error("_format request parameter is not set, _file="+_fileParam);
+                _formatParam=getType(_fileParam);
+            }
+            
+            //find the first parameter which matches the type of the file
+            for(ParameterInfo pinfo : pInfoArray) {
+                List<String> fileFormats=ParamListHelper.getFileFormats(pinfo);
+                if (pinfo != null) {
+                    if (fileFormats.contains(_formatParam)) {
+                        //we found the first match
+                        List<String> fromFile=new ArrayList<String>();
+                        fromFile.add(_fileParam);
+                        values.put(pinfo.getName(), fromFile);
+                    }
+                }
+            }
+        }
+        
+        return values;
+    }
+
     @GET
     @Path("/load")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response loadModule(@QueryParam("lsid") String lsid, @QueryParam("reloadJob") String reloadJobId, @Context HttpServletRequest request)
+    public Response loadModule(
+            @QueryParam("lsid") String lsid, 
+            @QueryParam("reloadJob") String reloadJobId, 
+            @QueryParam("_file") String sendFromFile,
+            @QueryParam("_format") String sendFromFormat,
+            @Context HttpServletRequest request)
     {
         try
         {
@@ -69,7 +216,7 @@ public class RunTaskServlet extends HttpServlet
             }
 
             ServerConfiguration.Context context = ServerConfiguration.Context.getContextForUser(username);
-            JobInput jobInput = null;
+            JobInput reloadJobInput = null;
 
             if (lsid == null && reloadJobId == null)
             {
@@ -79,9 +226,9 @@ public class RunTaskServlet extends HttpServlet
             if(reloadJobId != null && !reloadJobId.equals(""))
             {
                 //This is a reloaded job
-                jobInput= ParamListHelper.getInputValues(context, reloadJobId);
+                reloadJobInput= ParamListHelper.getInputValues(context, reloadJobId);
 
-                String reloadedLsidString = jobInput.getLsid();
+                String reloadedLsidString = reloadJobInput.getLsid();
 
                 //check if lsid is null
                 if(lsid == null)
@@ -166,103 +313,27 @@ public class RunTaskServlet extends HttpServlet
             responseObject.put(ParametersJSON.KEY, parametersObject);
 
 
-            JSONObject initialValuesJSONObject = new JSONObject();
-
-            //set initial values for the parameters if specified from either a reloaded job or get request parameter
-            //with the get request parameter values getting precedence
-
-            ParameterInfo[] pInfoArray = taskInfo.getParameterInfoArray();
-            for (ParameterInfo pInfo : pInfoArray)
-            {
-                String pName = pInfo.getName();
-                List valuesList = new ArrayList();
-
-                //check if a value for this parameter was specified as a get request
-                if(request.getParameterMap().containsKey(pName))
-                {
-                    String[] paramValues = request.getParameterValues(pName);
-                    for(int i=0;i<paramValues.length;i++)
-                    {
-                        if(paramValues != null && !paramValues[i].equals(""))
-                        {
-                            valuesList.add(paramValues[i]);
-                        }
-                    }
+            //set initial values for the parameters for the following cases:
+            //   1) a reloaded job
+            //   2) values set in request parameters, when linking from the protocols page
+            //   3) send to module, from the context menu for a file
+            String _fileParam=null;
+            String _formatParam=null;
+            final Map<String,String[]> parameterMap=request.getParameterMap();
+            if (parameterMap.containsKey("_file")) {
+                _fileParam=parameterMap.get("_file")[0];
+                if (parameterMap.containsKey("_format")) {
+                    _formatParam=parameterMap.get("_format")[0];
                 }
-                else
-                {
-                    //check if this is a reloaded job
-                    //if so then a jobInput should have been initialized earlier
-                    if(jobInput == null)
-                    {
-                        continue;
-                    }
+            } 
+            JSONObject initialValues=getIntialValues(
+                    taskInfo.getParameterInfoArray(), 
+                    reloadJobInput, 
+                    _fileParam, 
+                    _formatParam, 
+                    parameterMap);
 
-                    Map<JobInput.ParamId, JobInput.Param> paramsMap = jobInput.getParams();
-
-                    JobInput.ParamId paramId = new JobInput.ParamId(pName);
-
-                    //check that this parameter exists and that it does not have a null or an empty string value
-                    if(paramsMap.containsKey(paramId) && jobInput.hasValue(pName))
-                    {
-                        JobInput.Param  param = paramsMap.get(paramId);
-                        List<JobInput.ParamValue> paramValues = param.getValues();
-
-                        Iterator<JobInput.ParamValue> paramValuesIterator = paramValues.listIterator();
-                        while(paramValuesIterator.hasNext())
-                        {
-                            JobInput.ParamValue value = paramValuesIterator.next();
-
-                            String stringValue = value.getValue();
-                            //if value is set to null then assume it means an empty string
-                            if(stringValue == null)
-                            {
-                                log.error("Warning: A null value was found for the following parameter: " + pName
-                                    + "\nThe null value will be replaced with an empty string.");
-                                stringValue = "";
-                            }
-                            valuesList.add(stringValue);
-                        }
-                    }
-                }
-
-                //check that this is a multi-file list parameter if more than one item was found
-                //in the list
-                if(valuesList.size() > 1)
-                {
-                    HashMap<String, String> pInfoAttrMap = pInfo.getAttributes();
-                    String maxValue = pInfoAttrMap.get("maxValue");
-                    if(!pInfo.isInputFile())
-                    {
-                        continue;
-                    }
-
-                    try
-                    {
-                        int maxValueNum = Integer.parseInt(maxValue);
-                        if(valuesList.size() > maxValueNum)
-                        {
-                            //this is an error: more input values were specified than
-                            //this parameter allows so throw an exception
-                            throw new Exception(" Error: " + valuesList.size() + " input values were specified for " +
-                            pName + " but a maximum of " + maxValue + " is allowed. " + "Pleas");
-                        }
-                    }
-                    catch(NumberFormatException ne)
-                    {
-                        // max value is not a number, so it must be unlimited
-                        // do nothing and continue
-                    }
-
-                }
-
-                //check if initial values were set for this parameter
-                if(valuesList.size() > 0)
-                {
-                    initialValuesJSONObject.put(pName, valuesList);
-                }
-            }
-            responseObject.put("initialValues", initialValuesJSONObject);
+            responseObject.put("initialValues", initialValues);
 
             return Response.ok().entity(responseObject.toString()).build();
         }
