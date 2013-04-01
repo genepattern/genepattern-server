@@ -34,6 +34,8 @@ public class PipelineDependencyHelper {
     public synchronized void build() {
         TaskInfo[] tasks = TaskInfoCache.instance().getAllTasks();
         pipelineToDependencies = new ConcurrentHashMap<TaskInfo, Set<TaskInfo>>();
+        taskToPipelines = new ConcurrentHashMap<TaskInfo, Set<TaskInfo>>();
+        pipelineToMissing = new ConcurrentHashMap<TaskInfo, Set<String>>();
         
         // Build up the pipelineToDependencies map
         for (TaskInfo task : tasks) {
