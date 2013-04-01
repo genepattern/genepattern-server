@@ -567,7 +567,7 @@ function loadParameterInfo(parameters, initialValues)
     });
     
     // Load parameter values from url
-    loadGetParams();
+    //loadGetParams();
 }
 
 jQuery(document).ready(function()
@@ -1272,56 +1272,56 @@ function setParameter(param, value) {
 	throw new Error("Parameter type not recognized for: " + param);
 }
 
-function loadGetParams() {
-	var file = null;
-	var format = null;
-	
-	for (var param in Request.parameters()) {
-    	var value = Request.parameter(param);
-    	
-    	if (value !== undefined && value !== null && param !== "lsid" && param !== "_file" && param !== "_format") {
-    		setParameter(param, value);
-    	}
-    	else if (param === "_file") {
-    		file = value;
-    	}
-    	else if (param === "_format") {
-    		format = value;
-    	}
-    	
-    	if (file !== null && format !== null) {
-    		assignParameter(file, format);
-    		
-    		// Already set passed in parameter, reset variables
-    		file = null;
-    		format = null;
-    	}
-    }
-}
+//function loadGetParams() {
+//	var file = null;
+//	var format = null;
+//	
+//	for (var param in Request.parameters()) {
+//    	var value = Request.parameter(param);
+//    	
+//    	if (value !== undefined && value !== null && param !== "lsid" && param !== "_file" && param !== "_format") {
+//    		setParameter(param, value);
+//    	}
+//    	else if (param === "_file") {
+//    		file = value;
+//    	}
+//    	else if (param === "_format") {
+//    		format = value;
+//    	}
+//    	
+//    	if (file !== null && format !== null) {
+//    		assignParameter(file, format);
+//    		
+//    		// Already set passed in parameter, reset variables
+//    		file = null;
+//    		format = null;
+//    	}
+//    }
+//}
 
-function assignParameter(file, format) {
-	// Special handling for spaces in file urls
-	file = file.replace(/ /g,"%20");
-	
-	for (var json in parametersJson) {
-		var param = parametersJson[json];
-		if (param === null || param === undefined) return;
-		if (param.type !== "java.io.File" && param.type !== "DIRECTORY") continue;
-		
-		var formatList = param.fileFormat.split(";");
-		for (var i = 0; i < formatList.length; i++) {
-			var selectedFormat = formatList[i];
-			if (selectedFormat === format) {
-				setParameter(param.name, file);
-				return;
-			}
-			else if (format === "directory" && param.type === "DIRECTORY") {
-				setParameter(param.name, file);
-				return;
-			}
-		}
-	}
-}
+//function assignParameter(file, format) {
+//	// Special handling for spaces in file urls
+//	file = file.replace(/ /g,"%20");
+//	
+//	for (var json in parametersJson) {
+//		var param = parametersJson[json];
+//		if (param === null || param === undefined) return;
+//		if (param.type !== "java.io.File" && param.type !== "DIRECTORY") continue;
+//		
+//		var formatList = param.fileFormat.split(";");
+//		for (var i = 0; i < formatList.length; i++) {
+//			var selectedFormat = formatList[i];
+//			if (selectedFormat === format) {
+//				setParameter(param.name, file);
+//				return;
+//			}
+//			else if (format === "directory" && param.type === "DIRECTORY") {
+//				setParameter(param.name, file);
+//				return;
+//			}
+//		}
+//	}
+//}
 
 function toggleFileButtons(paramName) {
 	var paramJSON = null;
