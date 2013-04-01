@@ -1220,6 +1220,7 @@ public class JobBean {
          */
         public String getValueId() {
             String str = getValue().replace('/', '_');
+            str = str.replace(" ", "%20");
             return str;
         }
 
