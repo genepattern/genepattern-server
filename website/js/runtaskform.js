@@ -567,7 +567,7 @@ function loadParameterInfo(parameters, initialValues)
     });
     
     // Load parameter values from url
-    //loadGetParams();
+    loadGetParams();
 }
 
 jQuery(document).ready(function()
@@ -1300,6 +1300,9 @@ function loadGetParams() {
 }
 
 function assignParameter(file, format) {
+	// Special handling for spaces in file urls
+	file = file.replace(/ /g,"%20");
+	
 	for (var json in parametersJson) {
 		var param = parametersJson[json];
 		if (param === null || param === undefined) return;
