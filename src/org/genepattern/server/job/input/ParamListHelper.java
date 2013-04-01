@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.SortedMap;
+import java.util.StringTokenizer;
 import java.util.TreeMap;
 
 import org.apache.log4j.Logger;
@@ -25,6 +26,7 @@ import org.genepattern.server.job.input.JobInput.ParamValue;
 import org.genepattern.server.rest.JobInputApiLegacy.ParameterInfoRecord;
 import org.genepattern.server.webapp.jsf.AuthorizationHelper;
 import org.genepattern.server.webservice.server.dao.AnalysisDAO;
+import org.genepattern.util.GPConstants;
 import org.genepattern.webservice.JobInfo;
 import org.genepattern.webservice.ParameterInfo;
 
@@ -252,6 +254,29 @@ public class ParamListHelper {
             return defaultValues;
         }
         return null;
+    }
+    
+    public static List<String> getFileFormats(final ParameterInfo pinfo) {
+        if (pinfo.isInputFile()) {
+            String fileFormatsString = (String) pinfo.getAttributes().get(GPConstants.FILE_FORMAT);
+            if (fileFormatsString == null || fileFormatsString.equals("")) {
+                return Collections.emptyList();
+            }
+
+            List<String> inputFileTypes=new ArrayList<String>();
+            StringTokenizer st = new StringTokenizer(fileFormatsString, GPConstants.PARAM_INFO_CHOICE_DELIMITER);
+            while (st.hasMoreTokens()) {
+                String type = st.nextToken();
+                inputFileTypes.add(type);
+            }
+            return inputFileTypes;
+        }
+        else if (pinfo._isDirectory()) {
+            List<String> inputFileTypes=new ArrayList<String>();
+            inputFileTypes.add("directory");
+            return inputFileTypes;
+        }
+        return Collections.emptyList();
     }
 
     /**
