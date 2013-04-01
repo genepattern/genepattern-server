@@ -153,6 +153,7 @@ public class JobInfoWrapper implements Serializable {
                 return null;
             }
             String valueId = value.replace('/', '_');
+            valueId = valueId.replace(" ", "%20");
             return valueId;
         }
         
