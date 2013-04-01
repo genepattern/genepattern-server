@@ -72,7 +72,7 @@
                     <t:dataList value="#{fileInfo.moduleMenuItems}" var="moduleMenuItem">
                         <tr>
                             <td>
-								<h:outputLink value="index.jsf" style="white-space: nowrap;">
+								<h:outputLink value="/gp/pages/index.jsf" style="white-space: nowrap;">
 				                	<h:outputText value="#{moduleMenuItem.key}" />
 				                	<f:param name="lsid" value="#{moduleMenuItem.value}" />
 				                    <f:param name="_file" value="#{fileInfo.url}" />
