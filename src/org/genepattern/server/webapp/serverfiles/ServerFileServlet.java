@@ -55,16 +55,20 @@ public class ServerFileServlet extends HttpServlet {
         doGet(request, response);
     }
     
-    private boolean ensureServerFilePermissions(HttpServletRequest request) {
+    private Context getUserContext(HttpServletRequest request) {
         String userId = (String) request.getSession().getAttribute("userID");
         ServerConfiguration.Context userContext = ServerConfiguration.Context.getContextForUser(userId);
+        return userContext;
+    }
+    
+    private boolean ensureServerFilePermissions(HttpServletRequest request) {
+        Context userContext = getUserContext(request);
         boolean  allowInputFilePaths = ServerConfiguration.instance().getAllowInputFilePaths(userContext);
         return allowInputFilePaths;
     }
     
     private List<File> getSystemBrowseRoots(HttpServletRequest request) {
-        String userId = (String) request.getSession().getAttribute("userID");
-        ServerConfiguration.Context userContext = ServerConfiguration.Context.getContextForUser(userId);
+        Context userContext = getUserContext(request);
         Value  roots = ServerConfiguration.instance().getValue(userContext, "server.browse.file.system.root");
         
         List<File> toReturn = new ArrayList<File>();
@@ -81,13 +85,14 @@ public class ServerFileServlet extends HttpServlet {
         if (url == null) {
             try {
                 tree = new ArrayList<GpFilePath>();
+                Context context = getUserContext(request);
                 
                 // Add the default root dirs: "server.browse.file.system.root" property
                 List<File> roots = getSystemBrowseRoots(request);
                 for (File file : roots) {
                     ServerFilePath rootPath = new ServerFilePath(file);
                     rootPath.initMetadata();
-                    rootPath.initChildren();
+                    rootPath.initChildren(context);
                     tree.add(rootPath);
                 }
             }
@@ -98,8 +103,7 @@ public class ServerFileServlet extends HttpServlet {
         else {
             GpFilePath dir;
             try {
-                String userId = (String) request.getSession().getAttribute("userID");
-                Context context = ServerConfiguration.Context.getContextForUser(userId);
+                Context context = getUserContext(request);
                 
                 dir = GpFileObjFactory.getRequestedGpFileObj(url);
                 dir.initMetadata();
