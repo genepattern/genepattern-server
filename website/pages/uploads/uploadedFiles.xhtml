@@ -148,6 +148,8 @@
                             jq(node).find("a:first").after(arrow);
                             menuRegistry._create("#Image_" + name, "#menuDiv_" + name);
                         });
+                        
+                        jq("a em:contains('Empty Directory')").parent().bind("dragstart", function() { return false; });
                     });
                 </script>
             </t:div>
