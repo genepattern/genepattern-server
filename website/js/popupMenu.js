@@ -172,8 +172,8 @@ function PopupMenu(button, menu) {
 	    var menuTop = offsetTop - 50; // Initial guess for the location of the popup menu
 	    var menuBottom = menuTop + height;
 	    
-	    if (menuBottom > jq(window).height()) {
-	        var dv = menuBottom - jq(window).height();
+	    if (menuBottom > jq(document).height()) {
+	        var dv = menuBottom - jq(document).height();
 	        menuTop = menuTop - dv;
 	        menuTop = menuTop - 10; //10 px adjustment to prevent scrollbars
 	        
