@@ -469,9 +469,6 @@ function loadParameterInfo(parameters, initialValues)
                 textField.addClass("required");
             }
 
-            //append parameter description table
-            paramsTable.append("<tr class='paramDescription'><td></td><td colspan='3'>" + parameters[q].description +"</td></tr>");
-
             if( initialValuesList != undefined &&  initialValuesList != null)
             {
                 var inputFieldValue = "";
@@ -487,7 +484,9 @@ function loadParameterInfo(parameters, initialValues)
                 }
                 textField.val(inputFieldValue);
             }
-        }        
+        }
+        //append parameter description table
+        paramsTable.append("<tr class='paramDescription'><td></td><td colspan='3'>" + parameters[q].description +"</td></tr>");      
     }
 
     for(var r=0;r<inputFileRowIds.length;r++)
