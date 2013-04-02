@@ -29,6 +29,9 @@ import org.genepattern.server.webservice.server.dao.AnalysisDAO;
 import org.genepattern.util.GPConstants;
 import org.genepattern.webservice.JobInfo;
 import org.genepattern.webservice.ParameterInfo;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 /**
  * Helper class, instantiated as part of processing user input, before adding a job to the queue.
@@ -126,7 +129,127 @@ public class ParamListHelper {
         JobInfo jobInfo = initJobInfo(userContext, jobId);
         return getInputValues(jobInfo);
     }
-    
+
+    /**
+     * Helper method for initializing the 'fileFormat' from a given file name.
+     * Usually we shouldn't need to call this method because both '_file=' and
+     * '_format=' request parameters are set from the send-to menu.
+     * 
+     * @param _fileParam
+     * @return
+     */
+    public static String getType(final String _fileParam) {
+        int idx=_fileParam.lastIndexOf(".");
+        if (idx<0) {
+            log.debug("file has no extension: "+_fileParam);
+            return "";
+        }
+        if (idx==_fileParam.length()-1) {
+            log.debug("file ends with '.': "+_fileParam);
+            return "";
+        }
+        return _fileParam.substring(idx+1);
+    }
+
+    /**
+     * Helper method for initializing the values for the job input form.
+     * Set initial values for the parameters for the following cases:
+     * 
+     * 1) a reloaded job
+     * 2) values set in request parameters, when linking from the protocols page
+     * 3) send to module, from the context menu for a file
+     * 
+     * @param pInfoArray, the list of formal parameters, from the TaskInfo object
+     * @param reloadedValues, the values from the original job, if this is a job reload request
+     * @param _fileParam, the input file value, if this is from a send-to module request
+     * @param _formatParam, the input file type, if this is from a send-to module request
+     * @param parameterMap, the HTTP request parameters, if this is from protocols page link
+     * 
+     * @return a JSON representation of the initial input values
+     * @throws JSONException
+     */
+    public static JSONObject getInitialValues(
+            ParameterInfo[] pInfoArray, //the formal input parameters
+            final JobInput reloadedValues, 
+            final String _fileParam,
+            String _formatParam,
+            final Map<String,String[]> parameterMap
+    )
+    throws JSONException, Exception
+    {
+        JSONObject values = new JSONObject();
+        
+        for(ParameterInfo pinfo : pInfoArray) {
+            final String pname=pinfo.getName();
+            //1) initialize from default values
+            final List<String> defaultValues=ParamListHelper.getDefaultValues(pinfo);
+            if (defaultValues != null) {
+                values.put(pname, defaultValues);
+            }
+            
+            //2) if it's a reloaded job, use that
+            if (reloadedValues != null) {
+                if (reloadedValues.hasValue(pname)) {
+                    List<String> fromReload=new ArrayList<String>();
+                    for(ParamValue pval : reloadedValues.getParamValues(pname)) {
+                        fromReload.add(pval.getValue());
+                    }
+                    values.put(pname, fromReload);
+                }
+            }
+
+            //3) if there's a matching request parameter, use that
+            if (parameterMap.containsKey(pname)) {
+                List<String> fromRequestParam=new ArrayList<String>();
+                for(String requestParam : parameterMap.get(pname)) {
+                    fromRequestParam.add(requestParam);
+                }
+                values.put(pname, fromRequestParam);
+            }
+            
+            //validate numValues
+            NumValues numValues=ParamListHelper.initNumValues(pinfo);
+            if (numValues.getMax() != null) {
+                try {
+                    JSONArray jsonValues=values.getJSONArray(pname);
+                    if (jsonValues != null && jsonValues.length() > numValues.getMax()) {
+                        //this is an error: more input values were specified than
+                        //this parameter allows so throw an exception
+                        throw new Exception(" Error: " + jsonValues.length() + " input values were specified for " +
+                                pname + " but a maximum of " + numValues.getMax() + " is allowed. ");
+                    }
+                }
+                catch (JSONException e) {
+                    log.error("server error validating numValues from JSONArray: "+e.getLocalizedMessage(), e);
+                }
+            }
+        }
+        
+        //special-case for send-to module from file
+        if (_fileParam != null && _fileParam.length() != 0) {
+            if (_formatParam == null || _formatParam.length() == 0) {
+                log.error("_format request parameter is not set, _file="+_fileParam);
+                _formatParam=getType(_fileParam);
+            }
+            
+            //find the first parameter which matches the type of the file
+            for(ParameterInfo pinfo : pInfoArray) {
+                List<String> fileFormats=ParamListHelper.getFileFormats(pinfo);
+                if (pinfo != null) {
+                    if (fileFormats.contains(_formatParam)) {
+                        //we found the first match
+                        List<String> fromFile=new ArrayList<String>();
+                        fromFile.add(_fileParam);
+                        values.put(pinfo.getName(), fromFile);
+                    }
+                }
+            }
+        }
+        
+        return values;
+    }
+
+
     /**
      * Get a JobInfo from the DB, for the given jobId.
      * (Legacy code copied from the RunTaskBean#setTask method).
@@ -563,7 +686,7 @@ public class ParamListHelper {
     
     /**
      * Copy data from an external URL into a file in the GP user's uploads directory.
-     * This mehtod blocks intil the data file has been transferred.
+     * This method blocks until the data file has been transferred.
      * 
      * TODO: turn this into a task which can be cancelled.
      * TODO: limit the size of the file which can be transferred
