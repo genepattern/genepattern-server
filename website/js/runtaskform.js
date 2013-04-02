@@ -1000,21 +1000,21 @@ function updateParamFileTable(paramName)
 
         var pData = $("<div class='fileDetails'/>");
 
-        var editLink = $("<a href='#'><img src='/gp/images/arrows-down.gif'/>Hide Details...</a>");
+        var editLink = $("<a href='#'><img src='/gp/images/arrows-down.gif'/>Hide Files...</a>");
         editLink.click(function(event)
         {
             event.preventDefault();
 
             var editLinkMode = $(this).text();
-            if(editLinkMode == "Show Details...")
+            if(editLinkMode == "Show Files...")
             {
-                $(this).text("Hide Details...");
+                $(this).text("Hide Files...");
                 $(this).prepend("<img src='/gp/images/arrows-down.gif'/>");
                 $(idPName).find(".paramFilesTable").removeClass("hidden");
             }
             else
             {
-                $(this).text("Show Details...");
+                $(this).text("Show Files...");
                 $(this).prepend("<img src='/gp/images/arrows.gif'/>");
                 $(idPName).find(".paramFilesTable").addClass("hidden");
             }
