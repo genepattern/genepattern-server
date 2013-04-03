@@ -19,7 +19,8 @@ import org.apache.log4j.Logger;
 import org.genepattern.server.config.ServerConfiguration;
 import org.genepattern.server.job.input.JobInput;
 import org.genepattern.server.rest.GpServerException;
-import org.genepattern.server.rest.JobInputApiImpl;
+import org.genepattern.server.rest.JobInputApi;
+import org.genepattern.server.rest.JobInputApiFactory;
 import org.genepattern.server.webapp.rest.api.v1.Util;
 import org.genepattern.server.webapp.rest.api.v1.job.JobInputValues.Param;
 import org.json.JSONException;
@@ -67,7 +68,7 @@ public class JobsResource {
         final JSONObject rval=new JSONObject();
         try {
             final JobInput jobInput=parseJobInput(jobInputValues);
-            final JobInputApiImpl impl = new JobInputApiImpl();
+            final JobInputApi impl = JobInputApiFactory.createJobInputApi(jobContext);
             final String jobId = impl.postJob(jobContext, jobInput);
             rval.put("jobId", jobId);
             

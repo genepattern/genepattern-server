@@ -26,7 +26,7 @@ public class JobInputApiImpl implements JobInputApi {
     final static private Logger log = Logger.getLogger(JobInputApiImpl.class);
     
     private GetTaskStrategy getTaskStrategy;
-    public JobInputApiImpl() {
+    protected JobInputApiImpl() {
     }
     public JobInputApiImpl(final GetTaskStrategy getTaskStrategy) {
         this.getTaskStrategy=getTaskStrategy;

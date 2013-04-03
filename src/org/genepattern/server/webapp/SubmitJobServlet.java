@@ -25,7 +25,8 @@ import org.genepattern.server.job.input.JobInput.Param;
 import org.genepattern.server.job.input.JobInput.ParamId;
 import org.genepattern.server.job.input.JobInput.ParamValue;
 import org.genepattern.server.rest.GpServerException;
-import org.genepattern.server.rest.JobInputApiImpl;
+import org.genepattern.server.rest.JobInputApi;
+import org.genepattern.server.rest.JobInputApiFactory;
 import org.genepattern.server.webapp.jsf.JobBean;
 import org.genepattern.server.webapp.jsf.PageMessages;
 import org.genepattern.util.GPConstants;
@@ -140,7 +141,8 @@ public class SubmitJobServlet extends HttpServlet {
                 setErrorMessage(request, "Error submitting job: "+e.getLocalizedMessage());
                 redirectToHome(response);
             }
-            JobInputApiImpl impl = new JobInputApiImpl();
+            final JobInputApi impl = JobInputApiFactory.createJobInputApi(jobContext);
+
             String jobId;
             try {
                 jobId = impl.postJob(jobContext, jobInput);

@@ -36,7 +36,8 @@ import org.genepattern.server.job.input.JobInput;
 import org.genepattern.server.job.input.JobInput.Param;
 import org.genepattern.server.job.input.JobInputFileUtil;
 import org.genepattern.server.job.input.ParamListHelper;
-import org.genepattern.server.rest.JobInputApiImpl;
+import org.genepattern.server.rest.JobInputApi;
+import org.genepattern.server.rest.JobInputApiFactory;
 import org.genepattern.server.webapp.jsf.AuthorizationHelper;
 import org.genepattern.server.webapp.jsf.UIBeanHelper;
 import org.genepattern.server.webservice.server.local.IAdminClient;
@@ -341,8 +342,8 @@ public class RunTaskServlet extends HttpServlet
             }
 
             ServerConfiguration.Context jobContext=ServerConfiguration.Context.getContextForUser(username);
+            final JobInputApi impl = JobInputApiFactory.createJobInputApi(jobContext);
 
-            JobInputApiImpl impl = new JobInputApiImpl();
             String jobId = impl.postJob(jobContext, jobInput);
 
             ResponseJSON result = new ResponseJSON();
