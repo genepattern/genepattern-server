@@ -24,4 +24,12 @@
 <script src="/gp/js/jquery/jquery-1.7.1.js" type="text/javascript"></script>
 <script src="/gp/js/jquery/jquery-ui-1.8.16.js" type="text/javascript"></script>
 <script src="/gp/js/jquery/ddsmoothmenu.js" type="text/javascript"></script>
+<script type="text/javascript">var jq = jQuery.noConflict();</script>
 <script src="/gp/js/menu.js" type="text/javascript"></script>
+
+<script type="text/javascript" language="javascript">
+    // Build the nav menu
+    if (userLoggedIn) {
+        Menu.buildNavMenu();
+    }
+</script>

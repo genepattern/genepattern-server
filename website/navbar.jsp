@@ -15,15 +15,91 @@
 </div>
 
 <!-- horizontal navigation band -->
-<script language="JavaScript1.2" type="text/javascript">
-    var agt = navigator.userAgent.toLowerCase();
-    var isSafari2 = agt.indexOf("safari/4") != -1;
-    var x = isSafari2 ? -90 : 0;
-    var y = isSafari2 ? 10 : 18;
-</script>
+<div id="navband1" class="navband1 ddsmoothmenu" style="white-space: nowrap; display:none;">
+	 <ul>
+	     <li><a href="/gp/pages/index.jsf">Modules &#38; Pipelines</a>
+	         <ul>
+	             <li class="createPrivatePipelineAllowed"><a href="JavaScript:Menu.denyIE('/gp/pipeline/index.jsf');">New Pipeline</a></li>
+	             <li class="createTaskAllowed"><a href="JavaScript:Menu.denyIE('/gp/modules/creator.jsf');">New Module</a></li>
+	             <li class="createTaskAllowed"><a href="/gp/pages/taskCatalog.jsf">Install From Repository</a></li>
+	             <li><a href="/gp/pages/importTask.jsf">Install From ZIP</a></li>
+	             <li><a href="/gp/pages/manageTasks.jsf">Manage</a></li>
+	         </ul>
+	     </li>
+	     <li><a href="/gp/pages/manageSuite.jsf">Suites</a>
+	         <ul>
+	             <li class="createPrivateSuiteAllowed"><a href="/gp/pages/createSuite.jsf">New Suite</a></li>
+	             <li class="createPublicSuiteAllowed"><a href="/gp/pages/suiteCatalog.jsf">Install From Repository</a></li>
+	             <li><a href="/gp/pages/importTask.jsf?suite=1">Install From ZIP</a></li>
+	             <li><a href="/gp/pages/manageSuite.jsf">Manage</a></li>
+	         </ul>
+	     </li>
+	     <li><a href="/gp/jobResults">Job Results</a>
+	         <ul>
+	             <li><a href="/gp/jobResults">Results Summary</a></li>
+	         </ul>
+	     </li>
+	     <li><a href="/gp/pages/index.jsf?splash=resources">Resources</a>
+	         <ul>
+	             <li><a href="JavaScript:Menu.go('http://www.broadinstitute.org/cancer/software/genepattern/gp_mail.html')">Mailing List</a></li>
+	             <li><a href="/gp/pages/contactUs.jsf">Report Bugs</a></li>
+	             <li><a href="/gp/pages/contactUs.jsf">Contact Us</a></li>
+	         </ul>
+	     </li>
+	     <li><a href="/gp/pages/index.jsf?splash=downloads">Downloads</a>
+	         <ul>
+	             <li><a href="/gp/pages/downloadProgrammingLibaries.jsf">Programming Languages</a></li>
+	             <li><a href="JavaScript:Menu.go('http://www.broadinstitute.org/cancer/software/genepattern/datasets/')">Public Datasets</a></li>
+	             <li><a href="JavaScript:Menu.go('http://www.broadinstitute.org/software/gparc/')">GParc</a></li>
+	         </ul>
+	     </li>
+	     <li class="adminServerAllowed"><a href="/gp/pages/serverSettings.jsf">Administration</a>
+	         <ul>
+	             <li><a href="/gp/pages/serverSettings.jsf">Server Settings</a></li>
+	         </ul>
+	     </li>
+	     <li><a href="/gp/pages/index.jsf">Help</a>
+	         <ul>
+	             <li><a href="JavaScript:Menu.go('http://www.broadinstitute.org/cancer/software/genepattern/tutorial/gp_tutorial.html')">Tutorial</a></li>
+	             <li><a href="JavaScript:Menu.go('http://www.broadinstitute.org/cancer/software/genepattern/desc/videos')">Video Tutorial</a></li>
+	             <li><a href="JavaScript:Menu.go('http://www.broadinstitute.org/cancer/software/genepattern/tutorial/gp_web_client.html')">User Guide</a></li>
+	             <li><a href="JavaScript:Menu.go('http://www.broadinstitute.org/cancer/software/genepattern/tutorial/gp_programmer.html')">Programmers Guide</a></li>
+	             <li><a href="/gp/getTaskDoc.jsp">Module Documentation</a></li>
+	             <li><a href="JavaScript:Menu.go('http://www.broadinstitute.org/cancer/software/genepattern/tutorial/gp_fileformats.html')">File Formats</a></li>
+	             <li><a href="JavaScript:Menu.go('http://www.broadinstitute.org/cancer/software/genepattern/doc/relnotes/current/')">Release Notes</a></li>
+	             <li><a href="JavaScript:Menu.go('http://www.broadinstitute.org/cancer/software/genepattern/doc/faq/')">FAQ</a></li>
+	             <li><a href="/gp/pages/about.jsf">About</a></li>
+	         </ul>
+	     </li>
+	     <li class="genomeSpaceMenu">
+	     	<a href="/gp/pages/index.jsf"><img src="/gp/pages/genomespace/genomespace_icon.gif" class="genomeSpaceIcon" alt="GenomeSpace"></img>GenomeSpace</a>
+	         <ul>
+	             <li class="genomeSpaceLoggedOut"><a href="/gp/pages/genomespace/signon.jsf">Login</a></li>
+	             <li class="genomeSpaceLoggedIn"><a href="/gp/pages/genomespace/signon.jsf">Logout</a></li>
+	             <li class="genomeSpaceLoggedOut"><a href="/gp/pages/genomespace/userRegistration.jsf">Register</a></li>
+	             <li class="genomeSpaceLoggedIn"><a href="/gp/pages/genomespace/privateTool.jsf">Add as Private Tool</a></li>
+	             <li><a href="JavaScript:Menu.go('https://gsui.genomespace.org/jsui/')">GenomeSpace UI</a></li>
+	             <li><a href="JavaScript:Menu.go('http://www.genomespace.org/')">About</a></li>
+	         </ul>
+	     </li>
+	 </ul>
+	 <br style="clear: left"/>
+</div>
 <script type="text/javascript">
-    if (userLoggedIn) {
-        Menu.buildNavMenu();
+   	if (userLoggedIn) {
+   		jq("#navband1").ready(function() {
+   			jq("#navband1").show();
+   			jq("#navband1 ul li ul").css("top", "23px");
+   		});
+    	
+   	}
+   	
+	// Stub out old embeded javascript calls
+    function MM_swapImage() {
+        return true;
+    }
+    function MM_swapImgRestore() {
+        return true;
     }
 </script>
 
