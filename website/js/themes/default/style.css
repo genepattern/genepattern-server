@@ -79,14 +79,14 @@
 	visibility: hidden;
 }
 
-.jstree-closed ins.jstree-icon {
+.jstree-closed > ins.jstree-icon {
 	background-position: 0px 0px;
 	background-image: url("/gp/images/collapsed.gif");
 	background-repeat: no-repeat;
 	background-color: transparent;
 }
 
-.jstree-open ins.jstree-icon {
+.jstree-open > ins.jstree-icon {
 	background-position: 0px 0px;
 	background-image: url("/gp/images/expanded.gif");
 	background-repeat: no-repeat;
