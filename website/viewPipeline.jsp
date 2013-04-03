@@ -164,8 +164,8 @@
                 e.printStackTrace(System.out);
             }
             if (showEdit) {
-                String editURL = "pipeline/index.jsf?lsid=" + pipelineName;
-                out.println("  <input type=\"button\" value=\"Edit\" name=\"edit\" class=\"little\" onclick=\"window.location='" + editURL + "'\"; />");
+/*                 String editURL = "pipeline/index.jsf?lsid=" + pipelineName;
+                out.println("  <input type=\"button\" value=\"Edit\" name=\"edit\" class=\"little\" onclick=\"window.location='" + editURL + "'\"; />"); */
             }
 
             if (AuthorizationHelper.createPipeline(userID)) {

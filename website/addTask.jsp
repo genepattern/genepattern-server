@@ -455,9 +455,6 @@
             <input type="hidden" name="<%= GPConstants.FORMER_NAME %>" value="<%= taskInfo != null ? taskInfo.getName() : "" %>">
 
 
-            <% if (viewOnly && LSIDManager.getInstance().getAuthorityType(new LSID(tia.get(GPConstants.LSID))).equals(LSIDUtil.AUTHORITY_MINE)) { %><input type="button" value="Edit" onclick="window.location='modules/creator.jsf?lsid=<%= request.getParameter(GPConstants.NAME) %>'" class="button"><% } %>
-
-
             <table cols="2" valign="top" width="100%">
                 <tr class="taskperameter">
                     <td>* required field</td>
@@ -894,7 +891,6 @@
                                         authorityType = LSIDManager.getInstance().getAuthorityType(l);
                                         if (authorityType.equals(LSIDUtil.AUTHORITY_MINE)) {
                                     %>
-                                    <input type="button" value="Edit" onclick="window.location='modules/creator.jsf?lsid=<%= request.getParameter(GPConstants.NAME) %>'" class="button">
                                     <% } else { %>
                                     <input type="button" value="<%= RUN %>" name="<%= RUN %>" class="little" onclick="runTask()">
                                     <%
