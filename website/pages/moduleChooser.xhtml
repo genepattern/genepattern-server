@@ -19,8 +19,7 @@
                         <div class="sidebarhead">Modules &amp; Pipelines<br />
 
                             <div class="viewchoice" id="comboBoxPanel">
-                                <img src="/gp/images/search.gif" style="position: absolute; top: 91px; left: 13px;" />
-                                <input autocomplete="off" type="text" id="moduleComboBox" style="padding-left: 20px; width:195px;" onKeyUp="JavaScript:filterType(event);" onKeyDown="JavaScript:handleSelect(event)" onBlur="JavaScript:hideComboBox();" onFocus="JavaScript:showComboBox();" />
+                                <input autocomplete="off" style="padding-left: 20px; width:195px; background-image: url(/gp/images/search.gif); background-repeat: no-repeat;" type="text" id="moduleComboBox" onKeyUp="JavaScript:filterType(event);" onKeyDown="JavaScript:handleSelect(event)" onBlur="JavaScript:hideComboBox();" onFocus="JavaScript:showComboBox();" />
 
                                 <div id="comboBoxChoices" style="display:none;position:relative;">
                                     <t:dataList var="moduleCategoryGroup" value="#{moduleChooserBean.allTasks}">
