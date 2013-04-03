@@ -218,11 +218,6 @@ function loadModuleInfo(module)
     {
         var docLink = "/gp/getTaskDoc.jsp?name=" + run_task_info.lsid;
         $("#documentation").attr("href", docLink);
-
-        if(hasDescription)
-        {
-            $("#documentation").parent().prepend(" ... ");
-        }
     }
     else
     {
@@ -591,23 +586,6 @@ jQuery(document).ready(function()
             $(this).closest('tr.pRow').removeClass('error');
         } */
     });
-
-    $("#mod_description_hidden").hide();
-    $("#mod_description_toggle").click(function()
-    {
-        var descImg = this;
-        if($("#mod_description").is(":visible"))
-        {
-            descImg.src = descImg.src.replace("minus","plus");
-        }
-        else
-        {
-            descImg.src = descImg.src.replace("plus","minus");
-        }
-
-        $("#mod_description_hidden").toggle();                                            
-        $("#mod_description").toggle();
-    });
     
     $("#toggleDesc").click(function()
     {
@@ -617,7 +595,7 @@ jQuery(document).ready(function()
 
     $("#otherOptionsMenu").jMenu(
     {
-        absoluteTop: 19,
+        absoluteTop: -8,
         absoluteLeft: -214,
         openClick: true
     });
@@ -1079,8 +1057,6 @@ function updateParamFileTable(paramName)
         var div = $("<div class='scroll'/>");
         div.append(table);
         $(idPName).append(div);
-
-        editLink.click();
     }
 }
 

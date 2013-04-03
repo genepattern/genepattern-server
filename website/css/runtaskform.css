@@ -160,7 +160,7 @@ button.urlButton
     margin-bottom: 0;
 }
 
-.fileDiv button
+.fileDiv button, img
 {
     margin-left: 5px;
     margin-right: 5px;
@@ -242,7 +242,7 @@ img.buttonIcon {
     vertical-align: 2%;    
 }
 
-#description_doc_main
+#description_main
 {
     padding: 10px 5px 5px 5px;
 }
@@ -318,17 +318,6 @@ hr
     background-color: #D0D0D0;
 }
 
-/*.ui-button .ui-icon.otherOptions
-{
-    background-image: url(../images/dropMenu-normal.png);
-}
-
-.ui-button.ui-state-hover .ui-icon.otherOptions
-{
-    background-image: url(../images/dropMenu-hover.png);
-} 
-*/
-
 #task_version_main
 {
     margin-left: 17px;
@@ -376,21 +365,21 @@ hr
 {
     background-color: white;
     min-width: 250px;  
-    border-left: 1px solid black;
-    border-right: 1px solid black;
+    border-left: 1px solid gray;
+    border-right: 1px solid gray;
     border-top: 0;
     border-bottom: 0;
 }
 
 .jMenu li ul li:first-child
 {
-    border-top: 1px solid black;        
+    border-top: 1px solid gray;
 }
 
 .jMenu li ul li:last-child
 {
     border-top: 1px solid #80a7d0;
-    border-bottom: 1px solid black;
+    border-bottom: 1px solid gray;
     min-height: 25px;
 }
 
@@ -409,7 +398,6 @@ hr
 
 #otherOptionsDiv
 {
-    width: 200px;
     padding: 0;
 }
 
@@ -417,4 +405,10 @@ hr
 {
     font-weight: normal;
     font-size: 12px;
+}
+
+#documentation
+{
+    font-weight: normal;
+    font-size: 11px;
 }
