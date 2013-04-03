@@ -412,3 +412,18 @@ hr
     font-weight: normal;
     font-size: 11px;
 }
+
+#viewCodeDiv
+{
+    border: 2px solid #80a7d0;
+    width: 100%;
+    margin: 14px 0 14px 0;
+    padding: 5px;
+}
+
+#viewCodeHeader
+{
+    font-size: 11px;
+    font-weight: bold;
+}
+

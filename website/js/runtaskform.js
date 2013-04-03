@@ -78,6 +78,7 @@ function loadModule(taskId, reloadId)
                     && response["parameters"] !== undefined )
                 {
 
+                    run_task_info.reloadJobId = reloadId;
                     var module = response["module"];
                     //check if there are missing tasks (only applies to pipelines)
                     loadModuleInfo(module);
@@ -600,6 +601,12 @@ jQuery(document).ready(function()
         openClick: true
     });
 
+    $("#otherOptionsSubMenu").click(function()
+    {
+        $(this).hide();
+    });
+
+
     $("#otherOptions").hover(
             function()
             {
@@ -665,26 +672,17 @@ jQuery(document).ready(function()
         toggleFileButtons(paramName);
     });
 
+    /* begine other options menu code*/
     var selected = function( event, ui ) {
         $(this).popup( "close" );
     };
-
 
     $('#otherOptions').iconbutton({
         text: false,
         icons: {
             primary: "otherOptions"   // Custom icon
         }
-    }).click(function()
-    {
-        $( "#menu" ).toggle();    
     });
-
-    $( "#menu" ).hide().menu({
-        select: selected,
-        trigger: $("#otherOptions")
-    });
-
 
     $("button.Reset").click(function()
     {
@@ -735,6 +733,71 @@ jQuery(document).ready(function()
         //Change text of blocking div
         $('#runTaskSettingsDiv').unblock();
         $("#fileUploadDiv").empty();
+    });
+
+    $("#javaCode").data("language", "Java");
+    $("#matlabCode").data("language", "MATLAB");
+    $("#rCode").data("language", "R");
+
+    $("#removeViewCode").button().click(function()
+    {
+        $("#viewCodeDiv").hide();
+    });
+
+    /*add action for when one of the view code languages is selected */
+    $("#viewCodeDiv").hide();
+    $(".viewCode").click(function()
+    {
+        var language = $(this).data("language");
+        $("#viewCodeDiv").find("p").remove();
+
+        $("#viewCodeDiv").show();
+
+        $("#viewCodeDiv").append("<p id='viewCodeHeader'>" + language + " code to call " + run_task_info.name + ":</p>");
+
+        var url = window.location.href;
+        var getParameters = url.slice(url.indexOf('?') + 1);
+        var queryString = "?" + getParameters;
+
+        //add parameters and their values to the query string
+        var paramNames = Object.keys(parameter_and_val_obj);
+        for(var t=0;t<paramNames.length;t++)
+        {
+            var valuesList = parameter_and_val_obj[paramNames[t]];
+            if(valuesList != undefined && valuesList != null && valuesList.length > 0)
+            {
+                queryString += "&" + paramNames[t] + "=" + valuesList[0];
+            }
+
+        }
+
+        $.ajax({
+            type: "GET",
+            url: "/gp/rest/RunTask/viewCode" + queryString,
+            data: { "lsid" : run_task_info.lsid,
+                    "reloadJob":  run_task_info.reloadJobId,
+                    "language": language},
+            success: function(response) {
+
+                if (response["code"] == undefined || response["code"] == null)
+                {
+                    $("#viewCodeDiv").append("<p>An error occurred while retrieving the code</p>")
+                }
+                else
+                {
+                    $("#viewCodeDiv").append("<p>" + response["code"] + "</p>");
+                }
+
+            },
+            error: function(xhr, ajaxOptions, thrownError)
+            {
+                console.log("Response from server: status=" + xhr.status + " text=" + xhr.responseText);
+                console.log(thrownError);
+
+                $("#viewCodeDiv").append("<p>An error occurred while retrieving the code: " + xhr.responseText + "</p>");
+            },
+            dataType: "json"
+        });
     });
 });
 

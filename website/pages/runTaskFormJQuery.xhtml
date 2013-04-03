@@ -62,6 +62,9 @@
                             <ul id="otherOptionsSubMenu">
                                 <li><a id="properties">Properties</a></li>
                                 <li><a id="export" target="_blank">Export</a></li>
+                                <li><a id="javaCode" class="viewCode">View Java code</a></li>
+                                <li><a id="matlabCode" class="viewCode">View MATLAB code</a></li>
+                                <li><a id="rCode" class="viewCode">View R code</a></li>
                                 <li>
                                     <input name="toggleDesc" id="toggleDesc" type="checkbox" checked="checked" />
                                     <label for="toggleDesc">
@@ -74,6 +77,9 @@
                 </div>
                 <a class="floatRight" id ="documentation" href="#" target="_blank">Documentation</a>
                 
+            </div>
+            <div class="clear" id="viewCodeDiv">
+                <img class="floatRight" alt="close view code text" id='removeViewCode' src='#{facesContext.externalContext.requestContextPath}/images/delete-blue.png'/>
             </div>
 
             <div id="description_main">
