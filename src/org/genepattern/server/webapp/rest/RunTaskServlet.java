@@ -24,6 +24,7 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 
 import org.apache.log4j.Logger;
+import org.genepattern.codegenerator.CodeGeneratorUtil;
 import org.genepattern.data.pipeline.PipelineDependencyHelper;
 import org.genepattern.modules.ModuleJSON;
 import org.genepattern.modules.ParametersJSON;
@@ -32,21 +33,27 @@ import org.genepattern.server.config.ServerConfiguration;
 import org.genepattern.server.dm.GpFilePath;
 import org.genepattern.server.domain.Lsid;
 import org.genepattern.server.job.input.JobInput;
+import org.genepattern.server.job.input.JobInput.Param;
 import org.genepattern.server.job.input.JobInputFileUtil;
 import org.genepattern.server.job.input.ParamListHelper;
 import org.genepattern.server.rest.JobInputApiImpl;
 import org.genepattern.server.webapp.jsf.AuthorizationHelper;
+import org.genepattern.server.webapp.jsf.UIBeanHelper;
+import org.genepattern.server.webservice.server.local.IAdminClient;
 import org.genepattern.server.webservice.server.local.LocalAdminClient;
 import org.genepattern.server.webservice.server.local.LocalTaskIntegratorClient;
 import org.genepattern.util.GPConstants;
 import org.genepattern.util.LSID;
 import org.genepattern.util.LSIDUtil;
+import org.genepattern.webservice.AnalysisJob;
+import org.genepattern.webservice.JobInfo;
 import org.genepattern.webservice.ParameterInfo;
 import org.genepattern.webservice.TaskInfo;
 import org.genepattern.webservice.TaskInfoAttributes;
 import org.genepattern.webservice.TaskInfoCache;
 import org.genepattern.webservice.WebServiceException;
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import com.sun.jersey.core.header.FormDataContentDisposition;
@@ -72,7 +79,7 @@ public class RunTaskServlet extends HttpServlet
 	 */
 	@Context
     UriInfo uriInfo;
-
+	
     @GET
     @Path("/load")
     @Produces(MediaType.APPLICATION_JSON)
@@ -203,7 +210,7 @@ public class RunTaskServlet extends HttpServlet
                     _formatParam=parameterMap.get("_format")[0];
                 }
             } 
-            JSONObject initialValues=ParamListHelper.getInitialValues(
+            JSONObject initialValues=ParamListHelper.getInitialValuesJson(
                     taskInfo.getParameterInfoArray(), 
                     reloadJobInput, 
                     _fileParam, 
@@ -361,6 +368,149 @@ public class RunTaskServlet extends HttpServlet
                     .entity(message)
                     .build()
             );
+        }
+    }
+
+    /**
+     * Get the GP client code for the given task, copied from JobBean#getTaskCode().
+     * Requires a logged in user, and valid 'lsid' query parameter or a valid 'reloadJob' query parameter.
+     * The lsid can be the full lsid or the name of a module.
+     * 
+     * To test from curl,
+     * <pre>
+       curl -u <username:password> <GenePatternURL>/rest/RunTask/viewCode?
+           lsid=<lsid>,
+           reloadJob=<reloadJobId>,
+           language=[ 'Java' | 'R' | 'MATLAB' ], if not set, default to 'Java',
+           <pname>=<pvalue>
+     * </pre>
+     * 
+     * Example 1: get Java code for ComparativeMarkerSelection (v.9)
+     * <pre>
+       curl -u test:**** "http://127.0.0.1:8080/gp/rest/RunTask/viewCode?language=Java&lsid=urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00044:9" 
+     * </pre>
+     * Example 2: by taskName
+     * <pre>
+       curl -u test:**** "http://127.0.0.1:8080/gp/rest/RunTask/viewCode?language=Java&lsid=ComparativeMarkerSelection" 
+     * </pre>
+     * Example 3: initialize the input.filename
+     * <pre>
+       curl -u test:**** "http://127.0.0.1:8080/gp/rest/RunTask/viewCode?language=Java&lsid=urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00044:9&input.filename=ftp://ftp.broadinstitute.org/pub/genepattern/datasets/all_aml/all_aml_test.gct" 
+     * </pre>
+     * Example 4: from a reloaded job
+     * <pre>
+       curl -u test:**** "http://127.0.0.1:8080/gp/rest/RunTask/viewCode?language=Java&reloadJob=9948" 
+     * </pre> 
+     * 
+     * Note: I had to wrap the uri in double-quotes to deal with the '&' character.
+     * 
+     * Note: If you prefer to use use cookie-based authentication. This command logs in and
+     * saves the session cookie to the file 'cookies.txt'
+     * <pre>
+       curl -c cookies.txt "<GenePatternURL>/login?username=<username>&password=<password>"
+       </pre>
+     *
+     * Use the '-b cookies.txt' on subsequent calls.       
+     * 
+     * @param lsid, the full lsid or taskName of the module or pipeline
+     * @param language, the programming language client, e.g. 'Java', 'R', or 'MATLAB'
+     * @return
+     */
+    @GET
+    @Path("/viewCode")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response viewCode(
+            @QueryParam("language") String language,
+            @QueryParam("lsid") String lsid,
+            final @QueryParam("reloadJob") String reloadJob, 
+            final @QueryParam("_file") String _fileParam,
+            final @QueryParam("_format") String _formatParam,
+            final @Context HttpServletRequest request
+    ) {
+
+        String userId = (String) request.getSession().getAttribute("userid");
+        final ServerConfiguration.Context userContext=ServerConfiguration.Context.getContextForUser(userId);
+        JobInput reloadJobInput=null;
+        if (reloadJob != null && !reloadJob.equals("")) {
+            //This is a reloaded job
+            try {
+                reloadJobInput=ParamListHelper.getInputValues(userContext, reloadJob);
+            }
+            catch (Exception e) {
+                log.error("Error initializing from reloadJob="+reloadJob, e);
+                return Response.serverError().entity(e.getLocalizedMessage()).build();
+            }
+        }
+        if (lsid==null || lsid.length()==0) {
+            if (reloadJobInput != null) {
+                lsid=reloadJobInput.getLsid();
+            }
+        }
+        if (lsid==null || lsid.length()==0) { 
+            //400, Bad Request
+            return Response.status(Response.Status.BAD_REQUEST).entity("Missing required request parameter, 'lsid'").build();
+        }
+        if (language==null || language.length()==0) {
+            log.debug("Missing request parameter, setting 'language=Java'");
+            language="Java";
+        }
+        JSONObject content=new JSONObject();
+        try {
+            IAdminClient adminClient = new LocalAdminClient(userId);
+            TaskInfo taskInfo = adminClient.getTask(lsid);
+            if (taskInfo == null) { 
+                return Response.status(Response.Status.NOT_FOUND).entity("Module not found, lsid="+lsid).build();
+            }
+            
+            ParameterInfo[] parameters = taskInfo.getParameterInfoArray();
+            
+            
+            ParameterInfo[] jobParameters=null;
+            if (parameters != null) {
+                JobInput initialValues=ParamListHelper.getInitialValues(
+                        parameters, reloadJobInput, _fileParam, _formatParam, request.getParameterMap());
+                
+                jobParameters = new ParameterInfo[parameters.length];
+                int i=0;
+                for(ParameterInfo pinfo : parameters) {
+                    final String id=pinfo.getName();
+                    String value=null;
+                    if (initialValues.hasValue(id)) {
+                        Param p = initialValues.getParam(pinfo.getName());
+                        int numValues=p.getNumValues();
+                        if (numValues==0) {
+                        }
+                        else if (numValues==1) {
+                            value=p.getValues().get(0).getValue();
+                        }
+                        else {
+                            //TODO: can't initialize from a list of values
+                            log.error("can't initialize from a list of values, lsid="+lsid+
+                                    ", pname="+id+", numValues="+numValues);
+                        }
+                    }
+                    jobParameters[i++] = new ParameterInfo(id, value, "");
+                }
+            }
+
+            JobInfo jobInfo = new JobInfo(-1, -1, null, null, null, jobParameters, userContext.getUserId(), lsid, taskInfo.getName());
+            boolean isVisualizer = TaskInfo.isVisualizer(taskInfo.getTaskInfoAttributes());
+            AnalysisJob job = new AnalysisJob(UIBeanHelper.getServer(), jobInfo, isVisualizer);
+            String code=CodeGeneratorUtil.getCode(language, job, taskInfo, adminClient);
+            content.put("code", code);
+            return Response.ok().entity(content.toString()).build();
+        }
+        catch (Throwable t) {
+            //String errorMessage=;
+            log.error("Error getting code.", t);
+            try {
+                content.put("error", "Error getting code: "+t.getLocalizedMessage());
+                return Response.serverError().entity(content).build();
+            }
+            catch (JSONException e) {
+                log.error(e);
+            }
+            return Response.serverError().build();
         }
     }
 

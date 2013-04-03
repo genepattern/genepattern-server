@@ -153,6 +153,25 @@ public class JobInput {
     }
     
     /**
+     * Replaces the value for the given parameter with a new value.
+     * @param name
+     * @param value
+     */
+    public void addOrReplaceValue(final String name, final String value) {
+        if (name==null) {
+            throw new IllegalArgumentException("name==null");
+        }
+        if (value==null) {
+            throw new IllegalArgumentException("value==null");
+        }
+        if (params != null) {
+            ParamId id = new ParamId(name);
+            params.remove(id);
+        }
+        addValue(name, value);
+    }
+
+    /**
      * Add a value for the param.
      * @param name, the parameter name, which is a unique id. Cannot be null.
      * @param value, the user provided input value, cannot be null.
