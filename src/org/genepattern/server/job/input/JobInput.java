@@ -57,8 +57,9 @@ public class JobInput {
     }
 
     public static class Param {
-        public Param(ParamId id) {
+        public Param(final ParamId id, final boolean batchParam) {
             this.id=id;
+            this.batchParam=batchParam;
         }
         public void addValue(ParamValue val) {
             if (values==null) {
@@ -68,6 +69,7 @@ public class JobInput {
         }
         private ParamId id;
         private List<ParamValue> values;
+        private boolean batchParam=false;
         
         public ParamId getParamId() {
             return id;
@@ -83,8 +85,11 @@ public class JobInput {
             }
             return values.size();
         }
+        
+        public boolean isBatchParam() {
+            return batchParam;
+        }
     }
-
 
     /**
      * Unique identifier for a parameter in a module.
@@ -158,6 +163,9 @@ public class JobInput {
      * @param value
      */
     public void addOrReplaceValue(final String name, final String value) {
+        addOrReplaceValue(name, value, false);
+    }
+    public void addOrReplaceValue(final String name, final String value, final boolean batchParam) {
         if (name==null) {
             throw new IllegalArgumentException("name==null");
         }
@@ -168,7 +176,7 @@ public class JobInput {
             ParamId id = new ParamId(name);
             params.remove(id);
         }
-        addValue(name, value);
+        addValue(name, value, batchParam);
     }
 
     /**
@@ -177,6 +185,10 @@ public class JobInput {
      * @param value, the user provided input value, cannot be null.
      */
     public void addValue(final String name, final String value) {
+        addValue(name, value, false);
+    }
+
+    public void addValue(final String name, final String value, final boolean batchParam) {
         if (name==null) {
             throw new IllegalArgumentException("name==null");
         }
@@ -192,7 +204,7 @@ public class JobInput {
             param=params.get(id);
         }
         else {
-            param=new Param(id);
+            param=new Param(id, batchParam);
             params.put(id, param);
         }
         param.addValue(new ParamValue(value));
@@ -259,6 +271,31 @@ public class JobInput {
             }
         }
         return true;
+    }
+    
+    public boolean isBatchJob() {
+        if (this.params == null) {
+            return false;
+        }
+        for (final Param param : params.values()) {
+            if (param.batchParam) {
+                return true;
+            }
+        }
+        return false;
+    }
+    
+    public List<Param> getBatchParams() {
+        if (this.params == null) {
+            return Collections.emptyList();
+        }
+        List<Param> batchParams = new ArrayList<Param>();
+        for (final Param param : params.values()) {
+            if (param.batchParam) {
+                batchParams.add(param);
+            }
+        }
+        return batchParams;
     }
     
 }
