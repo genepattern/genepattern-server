@@ -44,7 +44,9 @@
 
                 var timerID = 0;
                 function startPolling(elExpression, interval) {
-                    callManagedBean(elExpression);
+                    setTimeout(function() {
+						callManagedBean(elExpression);
+					}, interval);
                     timerID = setTimeout("startPolling('" + elExpression + "', " + interval + ")", interval);
                 }
 
@@ -68,7 +70,7 @@
                     for (var i = 0; i < objArray.length; i++) {
                         var installStatus = objArray[i];
                         var lsid = installStatus.lsid;
-                        var cb = jq("#cb_" + lsid).get(0);
+                        var cb = jq("[id='cb_" + lsid + "']").get(0);
 
                         if (installStatus.status == "success") {
                             if (cb != null) {
