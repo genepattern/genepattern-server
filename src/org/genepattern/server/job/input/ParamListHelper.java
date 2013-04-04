@@ -153,7 +153,7 @@ public class ParamListHelper {
     }
 
     public static JobInput getInitialValues(
-            ParameterInfo[] pInfoArray, //the formal input parameters
+            ParameterInfo[] parameterInfos, //the formal input parameters
             final JobInput reloadedValues, 
             final String _fileParam,
             String _formatParam,
@@ -161,9 +161,12 @@ public class ParamListHelper {
     )
     throws Exception
     {
+        if (parameterInfos == null) {
+            throw new IllegalArgumentException("parameterInfos==null");
+        }
         JobInput initialValues = new JobInput();
         //TODO: initialValues.setLsid(lsid);
-        for(ParameterInfo pinfo : pInfoArray) {
+        for(ParameterInfo pinfo : parameterInfos) {
             final String pname=pinfo.getName();
             //1) initialize from default values
             final List<String> defaultValues=ParamListHelper.getDefaultValues(pinfo);
@@ -232,7 +235,7 @@ public class ParamListHelper {
             }
             
             //find the first parameter which matches the type of the file
-            for(ParameterInfo pinfo : pInfoArray) {
+            for(ParameterInfo pinfo : parameterInfos) {
                 List<String> fileFormats=ParamListHelper.getFileFormats(pinfo);
                 if (pinfo != null) {
                     if (fileFormats.contains(_formatParam)) {
@@ -253,7 +256,7 @@ public class ParamListHelper {
      * 2) values set in request parameters, when linking from the protocols page
      * 3) send to module, from the context menu for a file
      * 
-     * @param pInfoArray, the list of formal parameters, from the TaskInfo object
+     * @param parameterInfos, the list of formal parameters, from the TaskInfo object
      * @param reloadedValues, the values from the original job, if this is a job reload request
      * @param _fileParam, the input file value, if this is from a send-to module request
      * @param _formatParam, the input file type, if this is from a send-to module request
@@ -263,7 +266,7 @@ public class ParamListHelper {
      * @throws JSONException
      */
     public static JSONObject getInitialValuesJson(
-            ParameterInfo[] pInfoArray, //the formal input parameters
+            ParameterInfo[] parameterInfos, //the formal input parameters
             final JobInput reloadedValues, 
             final String _fileParam,
             String _formatParam,
@@ -271,25 +274,24 @@ public class ParamListHelper {
     )
     throws JSONException, Exception
     {
-            JobInput initialValues=getInitialValues(
-                    pInfoArray,
-                    reloadedValues,
-                    _fileParam,
-                    _formatParam,
-                    parameterMap);
+        JobInput initialValues=getInitialValues(
+                parameterInfos,
+                reloadedValues,
+                _fileParam,
+                _formatParam,
+                parameterMap);
             
-            JSONObject values=new JSONObject();
-            for(Entry<ParamId, Param> entry : initialValues.getParams().entrySet()) {
-                final String pname=entry.getKey().getFqName();
-                JSONArray jsonArray = new JSONArray();
-                for(final ParamValue val : entry.getValue().getValues()) {
-                    jsonArray.put(val.getValue());
-                }
-                values.put(pname, jsonArray);
+        JSONObject values=new JSONObject();
+        for(Entry<ParamId, Param> entry : initialValues.getParams().entrySet()) {
+            final String pname=entry.getKey().getFqName();
+            JSONArray jsonArray = new JSONArray();
+            for(final ParamValue val : entry.getValue().getValues()) {
+                jsonArray.put(val.getValue());
             }
-            return values;
+            values.put(pname, jsonArray);
+        }
+        return values;
     }
-
 
     /**
      * Get a JobInfo from the DB, for the given jobId.

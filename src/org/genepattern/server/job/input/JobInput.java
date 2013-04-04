@@ -6,7 +6,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-//import org.apache.log4j.Logger;
+import org.apache.log4j.Logger;
 
 /**
  * Representation of user-supplied input parameters for a new job to be added to the GP server.
@@ -22,7 +22,7 @@ import java.util.Map;
  *
  */
 public class JobInput {
-    //final static private Logger log = Logger.getLogger(JobInput.class);
+    final static private Logger log = Logger.getLogger(JobInput.class);
 
     /**
      * Unique identifier for a step in a pipeline.
@@ -151,8 +151,8 @@ public class JobInput {
     private Map<ParamId, Param> params;
     public Map<ParamId, Param> getParams() {
         if (params==null) {
-            //not sure what an unmodifiableMap(null) means
-            return null;
+            log.debug("params==null, returning emptyMap");
+            return Collections.emptyMap();
         }
         return Collections.unmodifiableMap(params);
     }

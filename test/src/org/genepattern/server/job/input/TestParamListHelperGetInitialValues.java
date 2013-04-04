@@ -143,4 +143,11 @@ public class TestParamListHelperGetInitialValues {
         checkResults(expectedValues, actualInitialValues);
     }
     
+    @Test
+    public void testNoParameters() throws Exception {
+        expectedValues.clear();
+        JSONObject actualInitialValues=ParamListHelper.getInitialValuesJson(new ParameterInfo[] {}, reloadedValues, _fileParam, _formatParam, parameterMap);
+        checkResults(expectedValues, actualInitialValues);
+    }
+    
 }
