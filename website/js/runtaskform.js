@@ -114,6 +114,7 @@ function loadModule(taskId, reloadId)
                 console.log("Response from server: status=" + xhr.status + " text=" + xhr.responseText);
                 console.log(thrownError);
 
+                $("#submitJob").css('visibility', 'visible');
                 $("#submitJob").empty();
                 $("#submitJob").append("An error occurred while loading the task " + taskId + ": <br/>" + xhr.responseText);
             },
@@ -749,11 +750,17 @@ jQuery(document).ready(function()
     $(".viewCode").click(function()
     {
         var language = $(this).data("language");
-        $("#viewCodeDiv").find("p").remove();
-
-        $("#viewCodeDiv").show();
+        $("#viewCodeDiv").children().each(function()
+        {
+            //if this is not the delete button then remove it
+            if($(this).attr("id") != "removeViewCode")
+            {
+                $(this).remove();
+            }
+        });
 
         $("#viewCodeDiv").append("<p id='viewCodeHeader'>" + language + " code to call " + run_task_info.name + ":</p>");
+        $("#viewCodeDiv").show();
 
         var url = window.location.href;
         var getParameters = url.slice(url.indexOf('?') + 1);
@@ -787,10 +794,9 @@ jQuery(document).ready(function()
                 {
                     $("#viewCodeDiv").append("<p>" + response["code"] + "</p>");
                     //add a link to the appropriate programmers guide
-                    $("#viewCodeDiv").append("<hr/>For more details go to the Programmer's Guide section: <a href='http://www.broadinstitute.org/cancer/software/genepattern/gp_guides/programmers/sections/gp_" + language.toLowerCase()+"'> " +
-                            "Using GenePattern from " + language + "</a>");
+                    $("#viewCodeDiv").append("<span><hr/>For more details go to the Programmer's Guide section: <a href='http://www.broadinstitute.org/cancer/software/genepattern/gp_guides/programmers/sections/gp_" + language.toLowerCase()+"'> " +
+                            "Using GenePattern from " + language + "</a></span>");
                 }
-
             },
             error: function(xhr, ajaxOptions, thrownError)
             {
