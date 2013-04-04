@@ -786,6 +786,9 @@ jQuery(document).ready(function()
                 else
                 {
                     $("#viewCodeDiv").append("<p>" + response["code"] + "</p>");
+                    //add a link to the appropriate programmers guide
+                    $("#viewCodeDiv").append("<hr/>For more details go to the Programmer's Guide section: <a href='http://www.broadinstitute.org/cancer/software/genepattern/gp_guides/programmers/sections/gp_" + language.toLowerCase()+"'> " +
+                            "Using GenePattern from " + language + "</a>");
                 }
 
             },

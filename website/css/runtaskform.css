@@ -418,7 +418,7 @@ hr
     border: 2px solid #80a7d0;
     width: 100%;
     margin: 14px 0 14px 0;
-    padding: 5px;
+    padding: 5px 5px 5px 14px;
 }
 
 #viewCodeHeader
