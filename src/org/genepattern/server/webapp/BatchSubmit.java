@@ -338,7 +338,7 @@ public class BatchSubmit {
     
 
     //dirUrl is parsed from the form ( <paramname>_url )
-    private MultiFileParameter getMultiFileParameter(boolean isAdmin, Context userContext, String dirUrl) throws FileUploadException {
+    public static MultiFileParameter getMultiFileParameter(boolean isAdmin, Context userContext, String dirUrl) throws FileUploadException {
         boolean urlInput = false; //TODO: don't need this anymore
         GpFilePath inputDirPath = null;
         try {
@@ -530,7 +530,7 @@ public class BatchSubmit {
         return isBatch;
     }
 
-    private class MultiFileParameter {
+    public static class MultiFileParameter {
         private List<GpFilePath> files = new ArrayList<GpFilePath>();
         private final Comparator<GpFilePath> comparator = new Comparator<GpFilePath>() {
                 public int compare(GpFilePath o1, GpFilePath o2) {

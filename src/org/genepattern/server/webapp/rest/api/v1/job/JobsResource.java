@@ -44,6 +44,24 @@ import org.json.JSONObject;
  *      http://127.0.0.1:8080/gp/rest/v1/jobs
  * </pre>
  * 
+ * <p>To add a batch of job to the server, use the 'isBatchParam' property.</p>
+ * <pre>
+   {
+     "lsid":<actualLsid>,
+     "params": [
+       { "name": <paramName>,
+         "isBatch": <true | false>, //if not set, it means it's not a batch parameter
+         "batchFilter": //if set, this can be used to define a glob patter for matching input files in the given directory
+         "values": [ //list of values, for a file input parameter, if the value is for a directory, then ...
+         ]
+       },
+       {
+       }
+     ]
+   }
+
+ * </pre>
+ * 
  * @author pcarr
  *
  */
@@ -68,7 +86,8 @@ public class JobsResource {
         final JSONObject rval=new JSONObject();
         try {
             final JobInput jobInput=parseJobInput(jobInputValues);
-            final JobInputApi impl = JobInputApiFactory.createJobInputApi(jobContext);
+            //final JobInputApi impl = JobInputApiFactory.createJobInputApi(jobContext);
+            final JobInputApi impl = JobInputApiFactory.createBatchJobInputApi(jobContext);
             final String jobId = impl.postJob(jobContext, jobInput);
             rval.put("jobId", jobId);
             
@@ -105,7 +124,7 @@ public class JobsResource {
         jobInput.setLsid(jobInputValues.lsid);
         for(final Param param : jobInputValues.params) {
             for(final String value : param.values) {
-                jobInput.addValue(param.name, value);
+                jobInput.addValue(param.name, value, param.batchParam);
             }
         }
         return jobInput;

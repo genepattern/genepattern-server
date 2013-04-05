@@ -86,6 +86,10 @@ public class JobInput {
             return values.size();
         }
         
+        private void setBatchParam(boolean batchParam) {
+            this.batchParam=batchParam;
+        }
+        
         public boolean isBatchParam() {
             return batchParam;
         }
@@ -273,6 +277,17 @@ public class JobInput {
         return true;
     }
     
+    public void setBatchParam(final String id, final boolean batchParam) {
+        if (params==null) {
+            throw new IllegalArgumentException("params==null");
+        }
+        Param param=params.get(new ParamId(id));
+        if (param == null) {
+            throw new IllegalArgumentException("no parameter matches id="+id);
+        }
+        param.setBatchParam(batchParam);
+    }
+
     public boolean isBatchJob() {
         if (this.params == null) {
             return false;
