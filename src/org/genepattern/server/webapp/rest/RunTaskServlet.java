@@ -38,6 +38,7 @@ import org.genepattern.server.job.input.JobInputFileUtil;
 import org.genepattern.server.job.input.ParamListHelper;
 import org.genepattern.server.rest.JobInputApi;
 import org.genepattern.server.rest.JobInputApiFactory;
+import org.genepattern.server.rest.JobReceipt;
 import org.genepattern.server.webapp.jsf.AuthorizationHelper;
 import org.genepattern.server.webapp.jsf.UIBeanHelper;
 import org.genepattern.server.webservice.server.local.IAdminClient;
@@ -342,18 +343,19 @@ public class RunTaskServlet extends HttpServlet
             }
 
             ServerConfiguration.Context jobContext=ServerConfiguration.Context.getContextForUser(username);
-            final JobInputApi impl = JobInputApiFactory.createJobInputApi(jobContext);
-
-            String jobId = impl.postJob(jobContext, jobInput);
-
+            //final JobInputApi impl = JobInputApiFactory.createJobInputApi(jobContext);
+            //String jobId = impl.postJob(jobContext, jobInput);
+            final JobInputApi impl = JobInputApiFactory.createBatchJobInputApi(jobContext);
+            JobReceipt receipt=impl.postBatchJob(jobContext, jobInput);
+            
+            //TODO: if necessary, add batch details to the JSON representation
+            String jobId="-1";
+            if (receipt.getJobIds().size()>0) {
+                jobId=receipt.getJobIds().get(0);
+            }
             ResponseJSON result = new ResponseJSON();
-            result.addChild("jobId", jobId);
-
+            result.addChild("jobId", receipt.getJobIds().get(0));
             return Response.ok(result.toString()).build();
-
-            //JSONObject result = new JSONObject(((String)jobSubmitInfo.getParameters());
-            //String r2 = (String)result.get("input.file");
-            //new JSONArray(r2);
         }
         catch(Exception e)
         {

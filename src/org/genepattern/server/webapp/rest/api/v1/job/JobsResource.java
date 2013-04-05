@@ -21,6 +21,7 @@ import org.genepattern.server.job.input.JobInput;
 import org.genepattern.server.rest.GpServerException;
 import org.genepattern.server.rest.JobInputApi;
 import org.genepattern.server.rest.JobInputApiFactory;
+import org.genepattern.server.rest.JobReceipt;
 import org.genepattern.server.webapp.rest.api.v1.Util;
 import org.genepattern.server.webapp.rest.api.v1.job.JobInputValues.Param;
 import org.json.JSONException;
@@ -88,7 +89,17 @@ public class JobsResource {
             final JobInput jobInput=parseJobInput(jobInputValues);
             //final JobInputApi impl = JobInputApiFactory.createJobInputApi(jobContext);
             final JobInputApi impl = JobInputApiFactory.createBatchJobInputApi(jobContext);
-            final String jobId = impl.postJob(jobContext, jobInput);
+            //final String jobId = impl.postJob(jobContext, jobInput);
+            JobReceipt receipt=impl.postBatchJob(jobContext, jobInput);
+            //TODO: if necessary, add batch details to the JSON representation
+            if (receipt.getJobIds()==null) {
+                log.error("receipt.jobIds==null");
+                throw new GpServerException("receipt.jobIds==null");
+            }
+            if (receipt.getJobIds().size()==0) {
+                throw new GpServerException("number of jobs submitted is 0");
+            }
+            final String jobId=receipt.getJobIds().get(0);
             rval.put("jobId", jobId);
             
             //set the Location header to the URI of the newly created resource

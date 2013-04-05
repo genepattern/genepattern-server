@@ -86,7 +86,7 @@ public class JobInput {
             return values.size();
         }
         
-        private void setBatchParam(boolean batchParam) {
+        public void setBatchParam(boolean batchParam) {
             this.batchParam=batchParam;
         }
         

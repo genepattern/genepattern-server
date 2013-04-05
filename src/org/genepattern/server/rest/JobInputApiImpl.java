@@ -67,4 +67,9 @@ public class JobInputApiImpl implements JobInputApi {
         }
     }
     
+    @Override
+    public JobReceipt postBatchJob(Context jobContext, JobInput jobInput) throws GpServerException {
+        throw new GpServerException("postBatchJob not implemented!");
+    }
+    
 }

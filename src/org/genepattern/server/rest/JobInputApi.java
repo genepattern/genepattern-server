@@ -15,4 +15,14 @@ public interface JobInputApi {
      * @return
      */
     String postJob(Context jobContext, JobInput jobInput) throws GpServerException;
+
+    /**
+     * Add a batch of jobs to the queue.
+     * 
+     * @param jobContext
+     * @param jobInput
+     * @return
+     * @throws GpServerException
+     */
+    JobReceipt postBatchJob(Context jobContext, JobInput jobInput) throws GpServerException;
 }

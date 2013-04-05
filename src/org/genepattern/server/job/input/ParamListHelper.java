@@ -445,6 +445,18 @@ public class ParamListHelper {
         return Collections.emptyList();
     }
 
+    public NumValues getAllowedNumValues() {
+        return allowedNumValues;
+    }
+
+    public boolean acceptsList() {
+        if (allowedNumValues==null) {
+            log.debug("allowedNumValues==null");
+            return false;
+        } 
+        return allowedNumValues.acceptsList();
+    }
+    
     /**
      * @throws IllegalArgumentException if number of input values entered is not within
      *      the allowed range of values. For example,
@@ -480,6 +492,43 @@ public class ParamListHelper {
         }
     }
 
+    /**
+     * Can we convert this single input parameter into a batch parameter?
+     * This is a helper method developed as part of the transition from the JSF based 
+     * to the jQuery based job input form.
+     * 
+     * Ideally, the jQuery handle will declare each batch input parameter.
+     * However, this method infers it by comparing the number of input values 
+     * with the number of allowed values for the parameter.
+     * 
+     * Rules:
+     *     1) if the param can accept a list (e.g. numValues=0+), then don't convert to batch input
+     *     2) if the param can't accept a list AND the number of input values is > 1, convert to batch
+     *     3) if the param can't accept a list AND at least one of the input values is a directory, convert to batch
+     * 
+     * @return
+     */
+    public boolean canCreateCreateBatchJob() {
+        if (acceptsList()) {
+            return false;
+        }
+        if (actualValues.getNumValues()==0) {
+            return false;
+        }
+        
+        if (actualValues.getNumValues()>1) {
+            return true;
+        }
+        
+        //if we're here, actualValues.numValues==1
+        ParamValue pValue=actualValues.getValues().get(0);
+        boolean isDir=isServerDir(pValue);
+        if (isDir) {
+            return true;
+        }
+        return false;
+    }
+    
     /**
      * Do we need to create a filelist file for this parameter?
      * Based on the following rules.
@@ -709,6 +758,54 @@ public class ParamListHelper {
         GpFilePath gpPath = ServerFileObjFactory.getServerFile(serverFile);
         return new Record(Record.Type.SERVER_PATH, gpPath, null); 
     }
+
+    //added this method to support batch jobs
+    private boolean isServerDir(final ParamValue pval) {
+        GpFilePath gpPath=null;
+        final String value=pval.getValue();
+        URL externalUrl=initExternalUrl(value);
+        if (externalUrl!=null) {
+            //it's an externalURL
+            return false;
+        }
+
+        try {
+            gpPath = GpFileObjFactory.getRequestedGpFileObj(value);
+            return gpPath.isDirectory();
+        }
+        catch (Exception e) {
+            log.debug("getRequestedGpFileObj("+value+") threw an exception: "+e.getLocalizedMessage(), e);
+            //ignore
+        }
+        
+        //if we are here, it could be a server file path
+        File serverFile=new File(value);
+        gpPath = ServerFileObjFactory.getServerFile(serverFile);
+        return gpPath.isDirectory();
+    }
+    
+//    private GpFilePath initGpFilePathFromValue(final ParamValue pval) {
+//        final String value=pval.getValue();
+//        URL externalUrl=initExternalUrl(value);
+//        if (externalUrl==null) {
+//            //it's an externalURL, don't create GpFilePath object
+//            return null;
+//        }
+//
+//        try {
+//            GpFilePath gpPath = GpFileObjFactory.getRequestedGpFileObj(value);
+//            return gpPath;
+//        }
+//        catch (Exception e) {
+//            log.debug("getRequestedGpFileObj("+value+") threw an exception: "+e.getLocalizedMessage(), e);
+//            //ignore
+//        }
+//        
+//        //if we are here, it could be a server file path
+//        File serverFile=new File(value);
+//        GpFilePath gpPath = ServerFileObjFactory.getServerFile(serverFile);
+//        return gpPath;
+//    }
 
     private static class Record {
         enum Type {
