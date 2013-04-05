@@ -1105,6 +1105,9 @@ function updateParamFileTable(paramName)
 
             delButton.button().click(function()
             {
+            	// Show the buttons again
+            	jq(this).closest(".fileDiv").find("> button, > span").show();
+            	
                 var file = $(this).data("pfile");
                 var id = $(this).data("pfileId");
                 for(var t=0;t<param_file_listing[paramName].length;t++)
@@ -1118,7 +1121,7 @@ function updateParamFileTable(paramName)
                 }
 
                 updateParamFileTable(paramName);
-                toggleFileButtons(paramName);
+                toggleFileButtons(paramName);               
             });
 
             fileTData.append(delButton);
@@ -1129,7 +1132,32 @@ function updateParamFileTable(paramName)
         var div = $("<div class='scroll'/>");
         div.append(table);
         $(idPName).append(div);
+        
+        // Hide the buttons if something is selected
+        if (atMaxFiles(paramName)) {
+        	div.parent().parent().find("> button, > span").hide();
+        }
+        
     }
+}
+
+function atMaxFiles(paramName) {
+	var currentNum = param_file_listing[paramName].length;
+	
+	var maxNum = null;
+	jq(parametersJson).each(function(i) {
+		var param = parametersJson[i];
+		if (param.name === paramName) {
+			maxNum = param.maxValue
+		}
+	});
+	
+	if (currentNum === maxNum) {
+		return true;
+	}
+	else {
+		return false;
+	}
 }
 
 
