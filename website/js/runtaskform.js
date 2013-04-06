@@ -387,7 +387,7 @@ function loadParameterInfo(parameters, initialValues)
             
             fileDiv.append("<button type='button' class='urlButton'>"+ addUrlText +"</button>");
             
-            fileDiv.append("<span>  or  <img class='dNdImg' src='/gp/images/Drag_Drop_icon.gif'/> </span>");
+            fileDiv.append("<span>  or  <img class='dNdImg' src='/gp/images/drag_drop_icon.png'/> </span>");
 
             //switch . with _ since the jquery selector does not work with .
             var idPName = parameters[q].name.replace(/\./g,'_');
@@ -607,19 +607,6 @@ jQuery(document).ready(function()
         $(this).hide();
     });
 
-
-    $("#otherOptions").hover(
-            function()
-            {
-
-                this.src = this.src.replace("normal","hover");
-            },
-            function ()
-            {
-                this.src = this.src.replace("hover","normal");
-            }
-    );
-
     $("button").button();
 
     var reloadJob = Request.parameter('reloadJob');
@@ -678,12 +665,12 @@ jQuery(document).ready(function()
         $(this).popup( "close" );
     };
 
-    $('#otherOptions').iconbutton({
+   /* $('#otherOptionsIcon').iconbutton({
         text: false,
         icons: {
             primary: "otherOptions"   // Custom icon
         }
-    });
+    });*/
 
     $("button.Reset").click(function()
     {
