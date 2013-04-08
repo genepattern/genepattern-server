@@ -872,6 +872,9 @@ function submitTask()
             alert("Response from server: status=" + xhr.status + " text=" + xhr.responseText);
             alert(thrownError);
             console.log("Error: " + xhr.responseText);
+
+            //the jobsubmit failed unblock the run task form
+            $('#runTaskSettingsDiv').unblock();
         },
         dataType: "json"
     });
