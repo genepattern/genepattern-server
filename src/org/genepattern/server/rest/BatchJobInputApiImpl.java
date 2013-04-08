@@ -25,6 +25,8 @@ import org.genepattern.server.job.input.ParamListHelper;
 import org.genepattern.server.rest.JobInputApiLegacy.ParameterInfoRecord;
 import org.genepattern.server.webapp.BatchSubmit;
 import org.genepattern.server.webapp.BatchSubmit.MultiFileParameter;
+import org.genepattern.util.SemanticUtil;
+import org.genepattern.webservice.ParameterInfo;
 import org.genepattern.webservice.TaskInfo;
 
 public class BatchJobInputApiImpl implements JobInputApi {
@@ -151,68 +153,26 @@ public class BatchJobInputApiImpl implements JobInputApi {
             return batchInputs;
         }
         
-        //TODO: implement this method
+        //TODO: handle more than one batch input parameter
         throw new GpServerException("Batch job submission not implemented for more than one batch parameter!");
     }
 
-    private Map<ParamId,List<ParamValue>> initBatchParams(final JobInput batchInputTemplate) throws Exception {
-        if (!batchInputTemplate.isBatchJob()) {
-            //it's not a batch job
-            return Collections.emptyMap();
-        }
-        final Map<ParamId,List<ParamValue>> batchParamMap=new LinkedHashMap<ParamId, List<ParamValue>>();
-        final List<Param> batchParams=batchInputTemplate.getBatchParams();
-        //part 1: for each batch input parameter, if the actual value is a directory
-        //    need to 'ls' the directory and initialize the actual values
-        for(final Param batchParam : batchParams) {
-            final List<ParamValue> values=new ArrayList<ParamValue>();
-            for(final ParamValue paramValue : batchParam.getValues()) {
-                List<ParamValue> out=initParamValues(paramValue);
-                values.addAll(out);
-            }
-            batchParamMap.put(batchParam.getParamId(), values);
-        }
-        
-        //validate number of inputs
-        if (batchParamMap.size()<=1) {
-            //TODO: could do a check for max number of jobs per batch, currently it's unlimited
-            return batchParamMap;
-        }
-
-        //TODO: validate number of inputs when there are more than one batch input parameters
-        throw new IllegalArgumentException("Multiple batch parameters not yet implemented!");
-    }
-    
-    private List<ParamValue> initParamValues(final ParamValue in) throws Exception { 
-        //assume that the value is a directory on the server  
-        List<ParamValue> out=new ArrayList<ParamValue>();
-        
-        boolean isAdmin=jobContext.isAdmin();
-        String dirUrl=in.getValue();
-        MultiFileParameter mfp = BatchSubmit.getMultiFileParameter(isAdmin, jobContext, dirUrl);
-        for(GpFilePath file : mfp.getFiles()) {
-            if (file.isDirectory()) {
-                log.debug("ignoring sub directory: "+file.getRelativeUri().toString());
-            }
-            else {
-                final String value=file.getUrl().toExternalForm();
-                out.add(new ParamValue(value));
-            }
-        }
-        return out;
+    private Map<ParamId,List<ParamValue>> initBatchParams(final JobInput jobInput) throws Exception {
+        BatchInputHelper bih=new BatchInputHelper(jobContext, getTaskStrategy, jobInput);
+        return bih.initBatchParams();
     }
     
     private JobInput prepareBatchInput(ParamId batchParamId, ParamValue batchParamValue, JobInput jobInput) {
         //TODO: should implement JobInput.deepCopy method
         //    first, make a deep copy of job input
         //    then, remove all of the batch params from the copy
-        //    the add the batchParamValues to the copy
+        //    then add the batchParamValues to the copy
         
         JobInput batchInput = new JobInput();
         batchInput.setLsid(jobInput.getLsid());        
         for(final Entry<ParamId,Param> entry : jobInput.getParams().entrySet()) {
             if (entry.getKey().equals(batchParamId)) {
-                //this is the batch parameter (not expecting a list of lists, but we can pass it along)
+                //this is the batch parameter 
                 batchInput.addValue(batchParamId.getFqName(), batchParamValue.getValue());
             }
             else {
@@ -234,6 +194,131 @@ public class BatchJobInputApiImpl implements JobInputApi {
     public JobReceipt postBatchJob(Context jobContext, JobInput jobInput) throws GpServerException {
         JobReceipt receipt=doBatch(jobContext, jobInput);
         return receipt;
+    }
+    
+    static class BatchInputHelper {
+        private JobInput jobInput;
+        private Context jobContext;
+        private GetTaskStrategy getTaskStrategy;
+        private TaskInfo taskInfo;
+        private Map<String,ParameterInfoRecord> paramInfoMap;
+
+        public BatchInputHelper(final Context jobContext, final GetTaskStrategy getTaskStrategyIn, final JobInput jobInput) {
+            this.jobInput=jobInput;
+            this.jobContext=jobContext;
+            if (getTaskStrategyIn == null) {
+                getTaskStrategy=new GetTaskStrategyDefault();
+            }
+            else {
+                getTaskStrategy=getTaskStrategyIn;
+            }
+            taskInfo=getTaskStrategy.getTaskInfo(jobInput.getLsid());
+            paramInfoMap=ParameterInfoRecord.initParamInfoMap(taskInfo);
+            inferBatchParams();
+        }
+        
+        /**
+         * If necessary, setBatchParam on any input parameter for which
+         * we should run a batch job. This is for the case when we infer 
+         * batch parameters rather than declare them.
+         */
+        private void inferBatchParams() { 
+            if (jobInput.getBatchParams().size()>0) {
+                return;
+            }
+                
+            for(Entry<ParamId,Param> entry : jobInput.getParams().entrySet()) {
+                final ParameterInfoRecord record=paramInfoMap.get(entry.getKey().getFqName());
+                final Param param=entry.getValue();
+                if (record.getFormal().isInputFile()) {
+                    ParamListHelper plh=new ParamListHelper(jobContext, record, param);
+                    boolean canCreateBatch=plh.canCreateCreateBatchJob();
+                    if (canCreateBatch) {
+                        param.setBatchParam(true);
+                    }
+                }
+            }
+        }
+        
+        public Map<ParamId,List<ParamValue>> initBatchParams() throws Exception {
+            if (!jobInput.isBatchJob()) {
+                //it's not a batch job
+                return Collections.emptyMap();
+            }
+            final Map<ParamId,List<ParamValue>> batchParamMap=new LinkedHashMap<ParamId, List<ParamValue>>();
+            final List<Param> batchParams=jobInput.getBatchParams();
+            //part 1: for each batch input parameter, if the actual value is a directory
+            //    need to 'ls' the directory and initialize the actual values
+            for(final Param batchParam : batchParams) {
+                final ParameterInfoRecord record=paramInfoMap.get(batchParam.getParamId().getFqName());
+                final ParameterInfo pinfo=record.getFormal();
+                final List<ParamValue> values=new ArrayList<ParamValue>();
+                for(final ParamValue paramValue : batchParam.getValues()) {
+                    List<ParamValue> out=initParamValues(pinfo, paramValue);
+                    values.addAll(out);
+                }
+                batchParamMap.put(batchParam.getParamId(), values);
+            }
+        
+            //validate number of inputs
+            if (batchParamMap.size()<=1) {
+                //TODO: could do a check for max number of jobs per batch, currently it's unlimited
+                return batchParamMap;
+            }
+
+            //TODO: validate number of inputs when there are more than one batch input parameters
+            throw new IllegalArgumentException("Multiple batch parameters not yet implemented!");
+        }
+
+        private List<ParamValue> initParamValues(final ParameterInfo pinfo, final ParamValue in) throws Exception { 
+            //assume that the value is a directory on the server  
+            List<ParamValue> out=new ArrayList<ParamValue>();
+        
+            boolean isAdmin=jobContext.isAdmin();
+            String dirUrl=in.getValue();
+            MultiFileParameter mfp = BatchSubmit.getMultiFileParameter(isAdmin, jobContext, dirUrl);
+            for(GpFilePath file : mfp.getFiles()) {
+                boolean accepted=accept(pinfo, file);
+                if (accepted) {
+                    final String value=file.getUrl().toExternalForm();
+                    out.add(new ParamValue(value));
+                }
+            }
+            return out;
+        }
+
+        /**
+         * Is the given input value a valid batch input parameter for the given pinfo?
+         * 
+         * @param pinfo
+         * @param in
+         * @return
+         */
+        private boolean accept(final ParameterInfo pinfo, final GpFilePath inputValue) {
+            if (inputValue.isDirectory()) {
+                //special-case for directory inputs
+                if (pinfo._isDirectory()) {
+                    return true;
+                }
+                else {
+                    return false;
+                }
+            }
+            List<String> fileFormats = SemanticUtil.getFileFormats(pinfo);
+            if (fileFormats.size()==0) {
+                //no declared fileFormats, acceptAll
+                return true;
+            }
+            final String kind=inputValue.getKind();
+            if (fileFormats.contains(kind)) {
+                return true;
+            }
+            final String ext = inputValue.getExtension();
+            if (fileFormats.contains(ext)) {
+                return true;
+            }
+            return false;
+        }
     }
 
 }
