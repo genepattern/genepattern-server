@@ -155,7 +155,7 @@ function handleSelect(e) {
 			e.preventDefault();
 		if (e.stopPropagation)
 			e.stopPropagation();
-		location.href = jq(jq(choicesBox).children()[comboBoxSelect]).find("a").attr("href");
+		location.href = jq(choicesBox.childNodes[comboBoxSelect]).find("a").attr("href");
 	}
 
 	// Handle down
