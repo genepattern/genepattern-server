@@ -33,16 +33,16 @@ var Menu = {
 	denyIE: function(url) {
 		if (navigator.userAgent.indexOf("MSIE") !== -1) {
 			var alert = document.createElement("div");
-			jq(alert).text("The Pipeline Designer and Module Integrator don't support Internet Explorer.  Please use Firefox, Chrome or Safari.");
-			jq(alert).dialog({
+			this.jquery(alert).text("The Pipeline Designer and Module Integrator don't support Internet Explorer.  Please use Firefox, Chrome or Safari.");
+			this.jquery(alert).dialog({
 	            modal: true,
 	            dialogClass: "top-dialog",
 	            width: 400,
 	            title: "Internet Explorer Not Supported",
 	            buttons: "OK",
 	            close: function() {
-	                $(this).dialog("destroy");
-	                $(this).remove();
+	            	this.jquery(this).dialog("destroy");
+	            	this.jquery(this).remove();
 	            }
 	        });
 		}
@@ -74,7 +74,7 @@ var Menu = {
 	    if (genomeSpaceLoggedIn) this.jquery(".genomeSpaceLoggedOut").hide();
 	    if (!genomeSpaceEnabled) this.jquery(".genomeSpaceMenu").hide();
 	    
-		jq("#navband1").show();
-		jq("#navband1 ul li ul").css("top", "23px");
+	    this.jquery("#navband1").show();
+	    this.jquery("#navband1 ul li ul").css("top", "23px");
 	}
 };
