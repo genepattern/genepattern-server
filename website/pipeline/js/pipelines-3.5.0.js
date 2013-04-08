@@ -1347,7 +1347,7 @@ var editor = {
             	for (var i in changed) {
             		var selected = changed[i];
             		if (selected !== null && selected !== undefined) {
-            			dialogString += "<div class='updateCallback'>" + selected["name"] + "</div><br/>";
+            			dialogString += "<div class='updateCallback'>" + selected["name"] + " v" + editor.extractLsidVersion(selected["lsid"]) + "</div><br/>";
             		}
             	}
             	

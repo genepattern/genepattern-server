@@ -214,7 +214,7 @@ public class PipelineQueryServlet extends HttpServlet {
         }
         
         // Transform the update object string into a JSON object
-        Set<TaskInfo> changed = null;
+        Set<TaskInfo> changed = new HashSet<TaskInfo>();
         try {
             JSONObject updateObject = new JSONObject(updates);
             JSONArray updateListJSON = updateObject.getJSONArray("updateList");
@@ -223,7 +223,7 @@ public class PipelineQueryServlet extends HttpServlet {
             
             for (int i = 0; i < updateListJSON.length(); i++) {
                 String lsidToUpdate = updateListJSON.getString(i);
-                changed = recursiveDependencyUpdate(lsidToUpdate, oldLsid, newLsid, username);
+                changed.addAll(recursiveDependencyUpdate(lsidToUpdate, oldLsid, newLsid, username));
             }
         }
         catch (Throwable e) {
