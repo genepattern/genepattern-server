@@ -917,7 +917,6 @@ function drop(evt)
     var count = files.length;
 
     var target = $(evt.target);
-    console.log("tData" + target.html());
     var paramName = target.parents(".pRow").first().data("pname");
     if(paramName == undefined)
     {
@@ -1033,6 +1032,12 @@ function updateParamFileTable(paramName)
     var idPName = paramName.replace(/\./g,'_');
     idPName = "#" + idPName + "FileDiv";
 
+    var hideFiles = false;
+    if($(idPName).find(".editFilesLink").text() == "Show Files...")
+    {
+        hideFiles = true;
+    }
+
     //remove previous file info data
     $(idPName).empty();
 
@@ -1047,7 +1052,7 @@ function updateParamFileTable(paramName)
 
         var pData = $("<div class='fileDetails'/>");
 
-        var editLink = $("<a href='#'><img src='/gp/images/arrows-down.gif'/>Hide Files...</a>");
+        var editLink = $("<a class='editFilesLink' href='#'><img src='/gp/images/arrows-down.gif'/>Hide Files...</a>");
         editLink.click(function(event)
         {
             event.preventDefault();
@@ -1129,12 +1134,18 @@ function updateParamFileTable(paramName)
         var div = $("<div class='scroll'/>");
         div.append(table);
         $(idPName).append(div);
-        
+
+        //set visibility of the file listing to hidden if that was its previous state
+        // by default the file listing is visible
+        if(hideFiles)
+        {
+            editLink.click();
+        }
+
         // Hide the buttons if something is selected
         if (atMaxFiles(paramName)) {
         	div.parent().parent().find("> button, > span").hide();
         }
-        
     }
 }
 
