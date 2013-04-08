@@ -88,10 +88,8 @@
 <script type="text/javascript">
    	if (userLoggedIn) {
    		jq("#navband1").ready(function() {
-   			jq("#navband1").show();
-   			jq("#navband1 ul li ul").css("top", "23px");
-   		});
-    	
+			Menu.initNavMenu();
+		});
    	}
    	
 	// Stub out old embeded javascript calls

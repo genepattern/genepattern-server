@@ -61,8 +61,10 @@ var Menu = {
 	        classname: 'ddsmoothmenu', //class added to menu's outer DIV
 	        contentsource: "markup" //"markup" or ["container_id", "path_to_menu_file"]
 	    });
-	    
-	    if (!createTaskAllowed) this.jquery(".createTaskAllowed").hide();
+	},
+	
+	initNavMenu: function() {
+		if (!createTaskAllowed) this.jquery(".createTaskAllowed").hide();
 	    if (!createPublicPipelineAllowed) this.jquery(".createPublicPipelineAllowed").hide();
 	    if (!createPrivatePipelineAllowed) this.jquery(".createPrivatePipelineAllowed").hide();
 	    if (!createPublicSuiteAllowed) this.jquery(".createPublicSuiteAllowed").hide();
@@ -71,6 +73,8 @@ var Menu = {
 	    if (!genomeSpaceLoggedIn) this.jquery(".genomeSpaceLoggedIn").hide();
 	    if (genomeSpaceLoggedIn) this.jquery(".genomeSpaceLoggedOut").hide();
 	    if (!genomeSpaceEnabled) this.jquery(".genomeSpaceMenu").hide();
-	    this.jquery("#navband1").show();
+	    
+		jq("#navband1").show();
+		jq("#navband1 ul li ul").css("top", "23px");
 	}
 };
