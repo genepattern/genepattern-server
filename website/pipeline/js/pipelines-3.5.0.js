@@ -1289,7 +1289,7 @@ var editor = {
 	                	var selected = dependents[d];
 	                	if (selected !== null) {
 	                		dialogString += "<input type='checkbox' class='updateCheckbox' id='" + selected["lsid"] + "' checked='true' name='" + selected["lsid"] + "'/>" + 
-	                		"<label class='updateLabel' for='" + selected["lsid"] + "'>" + selected["name"] + "</label><br/>";
+	                		"<label class='updateLabel' for='" + selected["lsid"] + "'>" + selected["name"] + " v" + editor.extractLsidVersion(selected["lsid"]) + "</label><br/>";
 	                	}
 	                }
                 	
