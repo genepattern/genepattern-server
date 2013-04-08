@@ -40,6 +40,7 @@ import org.genepattern.server.rest.JobInputApi;
 import org.genepattern.server.rest.JobInputApiFactory;
 import org.genepattern.server.rest.JobReceipt;
 import org.genepattern.server.webapp.jsf.AuthorizationHelper;
+import org.genepattern.server.webapp.jsf.JobBean;
 import org.genepattern.server.webapp.jsf.UIBeanHelper;
 import org.genepattern.server.webservice.server.local.IAdminClient;
 import org.genepattern.server.webservice.server.local.LocalAdminClient;
@@ -355,6 +356,10 @@ public class RunTaskServlet extends HttpServlet
             }
             ResponseJSON result = new ResponseJSON();
             result.addChild("jobId", receipt.getJobIds().get(0));
+            if (receipt.getBatchId() != null && receipt.getBatchId().length()>0) {
+                result.addChild("batchId", receipt.getBatchId());
+                request.getSession().setAttribute(JobBean.DISPLAY_BATCH, receipt.getBatchId());
+            }
             return Response.ok(result.toString()).build();
         }
         catch(Exception e)

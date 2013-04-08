@@ -856,8 +856,15 @@ function submitTask()
             if (message !== undefined && message !== null) {
                 alert(message);
             }
+            
+            if (response.batchId !== undefined) {
+                window.location.replace("/gp/jobResults");
+            }
+            else if (response.jobId != undefined) {
+                window.location.replace("/gp/jobResults/"+response.jobId);
+            }
 
-            window.location.replace("/gp/jobResults/"+response.jobId);
+            //window.location.replace("/gp/jobResults/"+response.jobId);
             console.log("Response text: " + response.text);
         },
         error: function(xhr, ajaxOptions, thrownError)
