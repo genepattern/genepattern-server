@@ -191,7 +191,13 @@ public class BatchJobInputApiImpl implements JobInputApi {
         String dirUrl=in.getValue();
         MultiFileParameter mfp = BatchSubmit.getMultiFileParameter(isAdmin, jobContext, dirUrl);
         for(GpFilePath file : mfp.getFiles()) {
-            out.add(new ParamValue(file.getUrl().toExternalForm()));
+            if (file.isDirectory()) {
+                log.debug("ignoring sub directory: "+file.getRelativeUri().toString());
+            }
+            else {
+                final String value=file.getUrl().toExternalForm();
+                out.add(new ParamValue(value));
+            }
         }
         return out;
     }
