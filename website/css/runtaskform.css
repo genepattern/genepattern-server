@@ -173,15 +173,19 @@ button.urlButton
 .uploadBtn
 {
     vertical-align: bottom;
-    margin-right: 2px;
+    margin-right: 7px;
 }
 
-/*tr.error {
-  font-weight: bold;
-  color: red;
-  padding: 2px 8px;
-  margin-top: 2px;
-}*/
+.errorMessage
+{
+    font-weight: bold;
+    color: red;
+}
+
+.elemSpacing
+{
+    margin: 0 7px 0 7px;
+}
 
 .floatLeft
 {
@@ -238,7 +242,7 @@ img.buttonIcon {
     display: inline;
     vertical-align: bottom;
     padding-bottom: 2px;
-    /*height: 34px;*/
+    padding-left: 2px;
 }
 
 #mod_description_toggle
@@ -264,7 +268,7 @@ img.buttonIcon {
 	border-radius: 5px;
 	padding:1px;
 	font-size:11px;
-};
+}
 
 #paramsListingDiv .ui-state-hover
 {
@@ -288,9 +292,9 @@ img.buttonIcon {
 
 .center
 {
-    width: 185px ;
-    margin-left: auto ;
-    margin-right: auto ;
+    width: 185px;
+    margin-left: auto;
+    margin-right: auto;
 }
 
 .inputFileBtn
@@ -303,6 +307,14 @@ img.buttonIcon {
 {
     padding: 2px 3px 1px 10px !important;
     text-align: left;
+    color: green;
+    border: 2px solid #ff1493;
+}
+
+.errorHighlight
+{
+    text-align: left;
+    border: 2px dotted #ff1493 !important;
 }
 
 #paramsListingDiv .images

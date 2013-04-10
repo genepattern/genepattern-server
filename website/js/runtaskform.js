@@ -86,7 +86,7 @@ function loadModule(taskId, reloadId)
                     if(module["missing_tasks"])
                     {
 
-                        $("#missingTasksDiv").append("<p>WARNING: This pipeline requires modules or module " +
+                        $("#missingTasksDiv").append("<p class='errorMessage'>WARNING: This pipeline requires modules or module " +
                                                      "versions which are not installed on this server.</p>");
                         var installTasksButton = $("<button> Install missing tasks</button>");
                         installTasksButton.button().click(function()
@@ -307,8 +307,6 @@ function loadParameterInfo(parameters, initialValues)
                 if($(this).val() == parameters[q].default_value)
                 {
                     $(this).parent().val(parameters[q].default_value);
-
-                    console.log("default value is : " + parameters[q].default_value);
                 }
             });
 
@@ -320,9 +318,7 @@ function loadParameterInfo(parameters, initialValues)
 
                 var paramName = $(this).attr("name");
                 parameter_and_val_obj[paramName] = valueList;
-                console.log("param name: " + paramName);
             });
-
 
             //select initial values if there are any
             if( initialValuesList != undefined &&  initialValuesList != null)
@@ -330,8 +326,10 @@ function loadParameterInfo(parameters, initialValues)
                 for(v=0; v < initialValuesList.length; v++)
                 {
                     select.val( initialValuesList[v]);
+                    select.trigger('change');
                 }
             }
+
             valueTd.append(select);
             paramRow.append(valueTd);
             paramsTable.append(paramRow);
@@ -345,7 +343,7 @@ function loadParameterInfo(parameters, initialValues)
 
             if(parameters[q].optional.length == 0)
             {
-                select.addClass("required");
+                select.addClass("requiredParam");
             }
 
             var valueList = [];
@@ -370,6 +368,27 @@ function loadParameterInfo(parameters, initialValues)
 
             var fileDiv = $("<div id='"+ rowId +"' class='fileDiv'>");
             
+            // Create the mode toggle
+            if (parseInt(parameters[q].maxValue) == 1) {
+	            var rowNum = q + 1;
+	            var modeToggle = $("<div id='modeToggle" + rowNum + "'></div>");
+	            modeToggle.append("<input type='radio' value='normal' name='mode" + rowNum + "' id='singleMode" + rowNum + "' checked='true'><label title='In this mode when you submit this task a single job will be executed with the parameter values provided.' for='singleMode" + (q+1) + "'>Single</label></input>");
+	            modeToggle.append("<input type='radio' value='batch' name='mode" + rowNum + "'id='batchMode" + rowNum + "'><label title='In this mode when submit this task a new job will be spawned for every file in the directory provided to this parameter.' for='batchMode" + rowNum + "'>Batch</label></input>");
+	            fileDiv.append(modeToggle);
+	            modeToggle.buttonset();
+	            modeToggle.tooltip();
+	            modeToggle.find("label").click(function() {
+	            	if ($(this).parent().find("input:checked").val() === "batch") {
+	            		$(this).closest(".pRow").css("background-color", "#FFFFFF");
+	            		$(this).closest(".pRow").next().css("background-color", "#FFFFFF");
+	            	}
+	            	else {
+	            		$(this).closest(".pRow").css("background-color", "#F5F5F5");
+	            		$(this).closest(".pRow").next().css("background-color", "#F5F5F5");
+	            	}
+	            });
+            }
+
             // Create the mode toggle
             if (parseInt(parameters[q].maxValue) == 1) {
 	            var rowNum = q + 1;
@@ -427,7 +446,7 @@ function loadParameterInfo(parameters, initialValues)
                     param_file_listing[parameters[q].name] = fileObjListings;
                 }
 
-                //check if max file length will be vialoated
+                //check if max file length will be vialated
                 var totalFileLength = fileObjListings.length +  initialValuesList.length;
                 validateMaxFiles(parameters[q].name, totalFileLength);
 
@@ -451,8 +470,6 @@ function loadParameterInfo(parameters, initialValues)
         }
         else
         {
-            console.log("text default value: " + parameters[q].default_value);
-
             var textField = null;
             if(parameters[q].type == "PASSWORD")
             {
@@ -470,7 +487,6 @@ function loadParameterInfo(parameters, initialValues)
 
                 var paramName = $(this).attr("name");
                 parameter_and_val_obj[paramName] = valueList;
-                console.log("text field param name: " + paramName);
             });
             textField.val(parameters[q].default_value);
 
@@ -484,7 +500,7 @@ function loadParameterInfo(parameters, initialValues)
 
             if(parameters[q].optional.length == 0)
             {
-                textField.addClass("required");
+                textField.addClass("requiredParam");
             }
 
             if( initialValuesList != undefined &&  initialValuesList != null)
@@ -501,6 +517,7 @@ function loadParameterInfo(parameters, initialValues)
                     }
                 }
                 textField.val(inputFieldValue);
+                textField.trigger("change");
             }
         }
         //append parameter description table
@@ -589,27 +606,6 @@ function loadParameterInfo(parameters, initialValues)
 
 jQuery(document).ready(function()
 {
-    /*jQuery.validator.addMethod("requireInputFile",function(value) {
-    total = parseFloat($('#LHSOPERAND').val()) + parseFloat($('#RHSOPERAND').val());
-    return total == parseFloat($('#TOTAL').val());
-    }, "Amounts do not add up!");
-
-    jQuery.validator.classRuleSettings.checkTotal = { checkTotal: true };
-    */
-
-    //Add tabs once properties page is redone
-    //$("#submitJob").tabs();
-
-    $("#runTaskForm").validate(
-    {
-        /*highlight: function(label) {
-            $(this).closest('tr.pRow').addClass('error');
-        },
-        success: function(label) {
-            $(this).closest('tr.pRow').removeClass('error');
-        } */
-    });
-    
     $("#toggleDesc").click(function()
     {
         //show descriptions
@@ -681,7 +677,7 @@ jQuery(document).ready(function()
         toggleFileButtons(paramName);
     });
 
-    /* begine other options menu code*/
+    /* begin other options menu code*/
     var selected = function( event, ui ) {
         $(this).popup( "close" );
     };
@@ -829,8 +825,115 @@ function reset()
     loadParameterInfo(parametersJson, null);
 }
 
+function isText(param)
+{
+    var selector = "#" + jqEscape(param);
+    var input = $(selector);
+    if (input.length === 0) return;
+
+    return input.attr("type") === "text";
+}
+
+function isDropDown(param)
+{
+    var selector = "#" + jqEscape(param);
+    var input = $(selector);
+    if (input.length === 0) return;
+
+    return input.get(0).tagName === "SELECT";
+}
+
+function isFile(param)
+{
+    var selector = "#" + jqEscape(param);
+    var input = $(selector);
+    if (input.length === 0) return;
+
+    // Determine the input type
+    return input.attr("type") === "file";
+}
+
+function validate()
+{
+    //remove any existing error messages
+    $(".errorMessage").remove();
+     $("#missingRequiredParams").remove();
+
+    //create div to list of all parameters with missing values
+    var missingReqParamsDiv = $("<div id='missingRequiredParams'/>");
+    missingReqParamsDiv.append("<p class='errorMessage'>Please provide a value for the following parameter(s):</p>");
+
+    var pListing = $("<ul class='errorMessage'/>");
+    missingReqParamsDiv.append(pListing);
+
+    var errorMessage = "<span class='errorMessage'>This field is required</span>";
+    var failed = false;
+    var paramNames = Object.keys(parameter_and_val_obj);
+    for(var p=0;p<paramNames.length;p++)
+    {
+        console.log("paramNames" + paramNames[p]);
+        var paramId = "#" + jqEscape(paramNames[p]);
+
+        //remove any previous error highlighting
+        $(paramId).parents("td:first").removeClass("errorHighlight");
+
+        //should only be non file input parameters here but check just in case
+        if(!isFile(paramNames[p]))
+        {
+            var value = parameter_and_val_obj[paramNames[p]];
+            var required = $(paramId).hasClass("requiredParam");
+            //check if it is required and there is no value specified
+            if(required && (value == undefined || value == null
+                || value == ""))
+            {
+                pListing.append("<li>"+paramNames[p]+"</li>");
+                $(paramId).parents("td:first").addClass("errorHighlight");
+                $(paramId).parents("td:first").append("<div>"+errorMessage + "</div>");
+
+                //multiselect or drop downs
+                //$(paramId).multiselect().multiselect("option","classes","errorHighlight mSelect").multiselect("refresh");
+
+                failed = true;
+            }
+        }
+    }
+
+    //now check input file parameters
+    paramNames = Object.keys(param_file_listing);
+    for(p=0;p<paramNames.length;p++)
+    {
+        paramId = "#" + jqEscape(paramNames[p]);
+
+        //remove any previous error highlighting
+        $(paramId).parents("td:first").removeClass("errorHighlight");
+
+        if(param_file_listing[paramNames[p]] == undefined
+            || param_file_listing[paramNames[p]] == null
+            || param_file_listing[paramNames[p]].length == 0)
+        {
+            pListing.append("<li>"+paramNames[p]+"</li>");
+            $(paramId).parents("td:first").addClass("errorHighlight");
+            $(paramId).parents("td:first").append("<div>"+errorMessage + "</div>");
+            failed = true;
+        }
+    }
+
+    if(failed)
+    {
+        $("#submitJob").prepend(missingReqParamsDiv);
+    }
+
+    return !failed;
+}
+
 function runJob()
 {
+    //validate that all required inputs have been specified
+    if(!validate())
+    {
+        return;
+    }
+
     //upload all the input files if there are any
     if(!allFilesUploaded())
     {
@@ -847,10 +950,6 @@ function submitTask()
 {
     setAllFileParamValues();
 
-    if(!$('#runTaskForm').validate().form())
-    {
-        return;
-    }
     //Change text of blocking div
     $('#runTaskSettingsDiv').block({
         message: '<h1> Submitting job...</h1>',
