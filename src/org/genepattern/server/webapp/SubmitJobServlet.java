@@ -1,32 +1,16 @@
 package org.genepattern.server.webapp;
 
-import java.io.File;
 import java.io.IOException;
 import java.net.URLEncoder;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
 
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.fileupload.FileUploadException;
-import org.apache.commons.io.FileUtils;
-import org.genepattern.server.config.ServerConfiguration;
-import org.genepattern.server.config.ServerConfiguration.Context;
-import org.genepattern.server.dm.GpFilePath;
 import org.genepattern.server.executor.JobSubmissionException;
-import org.genepattern.server.job.input.JobInput;
-import org.genepattern.server.job.input.JobInputFileUtil;
-import org.genepattern.server.job.input.JobInput.Param;
-import org.genepattern.server.job.input.JobInput.ParamId;
-import org.genepattern.server.job.input.JobInput.ParamValue;
-import org.genepattern.server.rest.GpServerException;
-import org.genepattern.server.rest.JobInputApi;
-import org.genepattern.server.rest.JobInputApiFactory;
 import org.genepattern.server.webapp.jsf.JobBean;
 import org.genepattern.server.webapp.jsf.PageMessages;
 import org.genepattern.util.GPConstants;
@@ -94,70 +78,9 @@ public class SubmitJobServlet extends HttpServlet {
             return;
         }
  
-        //TODO: set this to true to test the new API from the old job submit form
-        final boolean newApi=false;
         if (runTaskHelper.isBatchJob()) {
             request.getSession().setAttribute(JobBean.DISPLAY_BATCH, runTaskHelper.getBatchJob().getId());
             response.sendRedirect("/gp/jobResults");
-        }
-        else if (newApi) {
-            //prototype code for testing the new RESTful API for adding a job to the server
-            //1) [throwaway code ...] parse the legacy job input form, generate an object for using the new API
-            JobInput jobInput=initJobInput(runTaskHelper);
-            
-            //2) [throwaway code ...] hard-code a filelist value so that I can test this part of the API
-            Param param=jobInput.getParams().get(new ParamId("input.filename"));
-            if (param != null) {
-                if ("admin".equals(userID)) {
-                    param.addValue(new ParamValue("http://127.0.0.1:8080/gp/users/admin/all_aml%20test.gct"));
-                    //param.addValue(new ParamValue("<GenePatternURL>users/admin/all_aml%20test.cls"));
-                    //param.addValue(new ParamValue("<GenePatternURL>users/admin/all_aml%20test.gct"));
-                    //param.addValue(new ParamValue("<GenePatternURL>/users/admin/all_aml%20test.cls"));
-                    //param.addValue(new ParamValue("<GenePatternURL>/users/admin/all_aml%20test.gct"));
-                }
-            }
-            
-            //3) [throwaway code ...] add a web upload file to the list of values
-            Context jobContext=ServerConfiguration.Context.getContextForUser(userID);
-            try {
-                JobInputFileUtil fileUtil = new JobInputFileUtil(jobContext);
-                final int idx=2;
-                final String paramName="input.filename";
-                final String fileName="build.properties";
-                GpFilePath gpFilePath=fileUtil.initUploadFileForInputParam(idx, paramName, fileName);
-                
-                // this example, copies the build.properties file into your *new* location
-                File srcFile=new File("../resources/build.properties");
-                File destFile=gpFilePath.getServerFile();
-                FileUtils.copyFile(srcFile, destFile);
-                // replace the above lines with a call to writeToFile, e.g.
-                //     writeToFile(uploadedInputStream, gpFilePath.getServerFile().getCanonicalPath());
-                
-                fileUtil.updateUploadsDb(gpFilePath);
-                                
-                param.addValue(new ParamValue(gpFilePath.getUrl().toExternalForm()));
-            }
-            catch (Exception e) {
-                setErrorMessage(request, "Error submitting job: "+e.getLocalizedMessage());
-                redirectToHome(response);
-            }
-            final JobInputApi impl = JobInputApiFactory.createJobInputApi(jobContext);
-
-            String jobId;
-            try {
-                jobId = impl.postJob(jobContext, jobInput);
-            }
-            catch (GpServerException e) {
-                setErrorMessage(request, "Error submitting job: "+e.getLocalizedMessage());
-                redirectToHome(response);
-                return;
-            }
-            if (jobId == null) {
-                response.sendRedirect("/gp/jobResults");
-            }
-            else {
-                response.sendRedirect("/gp/jobResults/"+jobId + "?openVisualizers=true");
-            }
         }
         else {
             RunJobFromJsp runner = new RunJobFromJsp();
@@ -181,34 +104,4 @@ public class SubmitJobServlet extends HttpServlet {
         }
     }
     
-    private JobInput initJobInput(final RunTaskHelper runTaskHelper) {
-        //initialize a map of input parameter info
-        Map<String,ParameterInfo> pinfomap=new HashMap<String,ParameterInfo>();
-        for(ParameterInfo pinfo : runTaskHelper.getTaskInfo().getParameterInfoArray()) {
-            pinfo.getName();
-            pinfomap.put(pinfo.getName(), pinfo);
-        }
-        
-        final String lsid=runTaskHelper.getTaskLsid();
-        JobInput jobInput = new JobInput();
-        jobInput.setLsid(lsid);
-        
-        for(Entry<?,?> entry : runTaskHelper.getRequestParameters().entrySet()) {
-            String key = (String) entry.getKey();
-            String val = (String) entry.getValue();            
-            ParameterInfo pinfo=pinfomap.get(key);
-            if (pinfo != null) {
-                jobInput.addValue(key, val);
-            }
-        }
-        for(Entry<?,?> entry : runTaskHelper.getInputFileParameters().entrySet()) {
-            String key = (String) entry.getKey();
-            String val = (String) entry.getValue();            
-            ParameterInfo pinfo=pinfomap.get(key);
-            if (pinfo != null) {
-                jobInput.addValue(key, val);
-            }
-        }
-        return jobInput;
-    }
 }
