@@ -6,6 +6,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import org.apache.log4j.Logger;
 import org.genepattern.server.config.ServerConfiguration;
@@ -50,10 +51,33 @@ public class BatchJobInputApiImpl implements JobInputApi {
         }
     }
     
-    //preferred implementation
-    private JobReceipt doBatch(final Context userContext, final JobInput jobInput) throws GpServerException {
-        JobInput batchTemplate=checkForBatchParams(jobInput);
-        List<JobInput> batchInputs=initBatchInputs(batchTemplate);
+    @Override
+    public String postJob(Context jobContext, JobInput jobInput) throws GpServerException {
+        try {
+            JobReceipt receipt=doBatch(jobContext, jobInput);
+            return receipt.getJobIds().get(0);
+        }
+        catch (Throwable t) {
+            log.error(t);
+            throw new GpServerException("Error preparing job", t);
+        }
+    }
+    
+    @Override
+    public JobReceipt postBatchJob(Context jobContext, JobInput jobInput) throws GpServerException {
+        try {
+            JobReceipt receipt=doBatch(jobContext, jobInput);
+            return receipt;
+        }
+        catch (Throwable t) {
+            log.error(t);
+            throw new GpServerException("Error preparing job", t);
+        }
+    }
+    
+    private JobReceipt doBatch(final Context userContext, final JobInput jobInput) throws Exception {
+        JobInput batchTemplate=inferBatchParameters(jobInput);
+        List<JobInput> batchInputs=createBatchInputs(batchTemplate);
         JobReceipt receipt=new JobReceipt();
         for(JobInput batchInput : batchInputs) {
             String jobId = singleJobInputApi.postJob(userContext, batchInput);
@@ -75,7 +99,7 @@ public class BatchJobInputApiImpl implements JobInputApi {
      * @param jobInput
      * @return
      */
-    private JobInput checkForBatchParams(JobInput jobInput) { 
+    private JobInput inferBatchParameters(JobInput jobInput) { 
         if (jobInput.getBatchParams().size()>0) {
             return jobInput;
         }
@@ -95,6 +119,44 @@ public class BatchJobInputApiImpl implements JobInputApi {
             }
         }
         return jobInput;
+    }
+    
+    /**
+     * Create a List of JobInput instances, one for each batch job to run.
+     * Use the given batchTemplate to ...
+     *     1) identify which parameters are batch parameters
+     *        Can be inferred or declared.
+     *     2) set non-default values for the remaining non-batch parameters
+     * 
+     * This is based on the pre-existing 3.5.0 and earlier method. Which has the following limitations:
+     *     1) can only batch on input files, not other types
+     *     2) the value for a batch input parameter must be to a directory on the file system.
+     *     3) when there are multiple batch input parameters, the union of all matching parameters determines
+     *        how many jobs to run. Matches are based on file basename.
+     * 
+     * @param batchTemplate, the jobInput values entered in the job input form, 
+     *     including any flags for batch parameters.
+     * @return a list JobInput, each item in the list is a new job which should be run.
+     * 
+     * @throws Exception
+     */
+    private List<JobInput> createBatchInputs(JobInput batchTemplate) throws Exception {
+        final List<JobInput> batchInputs=new ArrayList<JobInput>();
+        BatchInputHelper bih=new BatchInputHelper(jobContext, getTaskStrategy, batchTemplate);
+        BatchInputHelper.Data batchData=bih.prepareBatchInput();
+        int numJobs=batchData.getNumBatchJobs();
+        if (numJobs==0) {
+            //it's not a batch job
+            batchInputs.add(batchTemplate);
+            return batchInputs;            
+        }
+        
+        //it is a batch job
+        for(int idx=0; idx<numJobs; ++idx) {
+            JobInput nextJob=batchData.prepareJobInput(idx, batchTemplate);
+            batchInputs.add(nextJob);
+        }
+        return batchInputs;
     }
     
     private String recordBatchJob(final Context userContext, final JobReceipt jobReceipt) throws GpServerException {
@@ -126,77 +188,69 @@ public class BatchJobInputApiImpl implements JobInputApi {
         return batchId;
     }
     
-    private List<JobInput> initBatchInputs(JobInput batchTemplate) throws GpServerException {
-        Map<ParamId,List<ParamValue>> batchParamMap=null;
-        try {
-            batchParamMap=initBatchParams(batchTemplate);
-        }
-        catch (Throwable t) {
-            throw new GpServerException("Error initializing batch params", t);
-        }
-        if (batchParamMap==null || batchParamMap.size()==0) {
-            //it's not a batch job
-            List<JobInput> batchInputs=new ArrayList<JobInput>();
-            batchInputs.add(batchTemplate);
-            return batchInputs;
-        }
-        
-        //it is a batch job
-        if (batchParamMap.size()==1) {
-            List<JobInput> batchInputs=new ArrayList<JobInput>();
-            for(Entry<ParamId,List<ParamValue>> entry : batchParamMap.entrySet()) {
-                for(ParamValue value : entry.getValue()) {
-                    JobInput nextBatchInput = prepareBatchInput(entry.getKey(), value, batchTemplate);
-                    batchInputs.add(nextBatchInput);
-                }
-            }
-            return batchInputs;
-        }
-        
-        //TODO: handle more than one batch input parameter
-        throw new GpServerException("Batch job submission not implemented for more than one batch parameter!");
-    }
-
-    private Map<ParamId,List<ParamValue>> initBatchParams(final JobInput jobInput) throws Exception {
-        BatchInputHelper bih=new BatchInputHelper(jobContext, getTaskStrategy, jobInput);
-        return bih.initBatchParams();
-    }
-    
-    private JobInput prepareBatchInput(ParamId batchParamId, ParamValue batchParamValue, JobInput jobInput) {
-        //TODO: should implement JobInput.deepCopy method
-        //    first, make a deep copy of job input
-        //    then, remove all of the batch params from the copy
-        //    then add the batchParamValues to the copy
-        
-        JobInput batchInput = new JobInput();
-        batchInput.setLsid(jobInput.getLsid());        
-        for(final Entry<ParamId,Param> entry : jobInput.getParams().entrySet()) {
-            if (entry.getKey().equals(batchParamId)) {
-                //this is the batch parameter 
-                batchInput.addValue(batchParamId.getFqName(), batchParamValue.getValue());
-            }
-            else {
-                for (ParamValue pv : entry.getValue().getValues()) {
-                    batchInput.addValue(entry.getKey().getFqName(), pv.getValue());
-                }
-            }
-        }
-        return batchInput;
-    }
-
-    @Override
-    public String postJob(Context jobContext, JobInput jobInput) throws GpServerException {
-        JobReceipt receipt=doBatch(jobContext, jobInput);
-        return receipt.getJobIds().get(0);
-    }
-    
-    @Override
-    public JobReceipt postBatchJob(Context jobContext, JobInput jobInput) throws GpServerException {
-        JobReceipt receipt=doBatch(jobContext, jobInput);
-        return receipt;
-    }
-    
     static class BatchInputHelper {
+        static interface Data {
+            int getNumBatchJobs();
+            Set<ParamId> getBatchParameters();
+            ParamValue getValue(ParamId paramId, int idx);
+            boolean isBatchParam(ParamId paramId);
+            
+            JobInput prepareJobInput(int idx, JobInput template);
+        }
+        
+        public Data prepareBatchInput() throws Exception {
+            final Map<ParamId,List<ParamValue>> m=initBatchParams();
+            //final int numBatchParameters=m.size();
+            return new Data() {
+                @Override
+                public boolean isBatchParam(final ParamId paramId) {
+                    return m.containsKey(paramId);
+                }
+
+                @Override
+                public int getNumBatchJobs() {
+                    //TODO: implement more efficient method
+                    if (m==null || m.size()==0) {
+                        return 0;
+                    }
+                    for(List<ParamValue> values : m.values()) {
+                        return values.size();
+                    }
+                    return 0;
+                }
+
+                @Override
+                public ParamValue getValue(final ParamId paramId, final int idx) {
+                    List<ParamValue> values=m.get(paramId);
+                    return values.get(idx);
+                }
+
+                @Override
+                public Set<ParamId> getBatchParameters() {
+                    return m.keySet();
+                }
+
+                @Override
+                public JobInput prepareJobInput(final int idx, final JobInput template) {
+                    JobInput batchInput = new JobInput();
+                    batchInput.setLsid(template.getLsid());
+                    for(final Entry<ParamId,Param> entry : template.getParams().entrySet()) {
+                        if (isBatchParam(entry.getKey())) {
+                            final ParamValue batchValue=getValue(entry.getKey(), idx);
+                            batchInput.addValue(entry.getKey().getFqName(), batchValue.getValue());
+                        }
+                        else {
+                            for (ParamValue pv : entry.getValue().getValues()) {
+                                batchInput.addValue(entry.getKey().getFqName(), pv.getValue());
+                            }
+                        }
+                    }
+                    return batchInput;
+                }
+            };
+
+        }
+        
         private JobInput jobInput;
         private Context jobContext;
         private GetTaskStrategy getTaskStrategy;
@@ -240,7 +294,15 @@ public class BatchJobInputApiImpl implements JobInputApi {
             }
         }
         
-        public Map<ParamId,List<ParamValue>> initBatchParams() throws Exception {
+        /**
+         * Helper method for preparing a batch of jobs.
+         * The expected output is a table of values, where each column is a batch parameter id,
+         * and each row are the input values for a batch job.
+         * 
+         * @return
+         * @throws Exception
+         */
+        private Map<ParamId,List<ParamValue>> initBatchParams() throws Exception {
             if (!jobInput.isBatchJob()) {
                 //it's not a batch job
                 return Collections.emptyMap();
@@ -259,15 +321,25 @@ public class BatchJobInputApiImpl implements JobInputApi {
                 }
                 batchParamMap.put(batchParam.getParamId(), values);
             }
-        
+            
             //validate number of inputs
             if (batchParamMap.size()<=1) {
                 //TODO: could do a check for max number of jobs per batch, currently it's unlimited
                 return batchParamMap;
             }
 
-            //TODO: validate number of inputs when there are more than one batch input parameters
-            throw new IllegalArgumentException("Multiple batch parameters not yet implemented!");
+            //TODO: for multiple batch parameters, create a union based on base filenames
+            int numJobs=-1;
+            for(Entry<ParamId,List<ParamValue>> entry : batchParamMap.entrySet()) {
+                int size=entry.getValue().size();
+                if (numJobs==-1) {
+                    numJobs=size;
+                }
+                if (numJobs != size) {
+                    throw new IllegalArgumentException("Union of batch inputs not yet implemented!");
+                }
+            }
+            return batchParamMap;
         }
 
         private List<ParamValue> initParamValues(final ParameterInfo pinfo, final ParamValue in) throws Exception { 
