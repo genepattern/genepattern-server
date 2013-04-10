@@ -261,7 +261,7 @@ function loadParameterInfo(parameters, initialValues)
         //use the alternate name if there is one (this is usually set for pipelines)
         if(parameters[q].altName != undefined
                 && parameters[q].altName != null
-                && parameters[q].altName.replace(/ /g, '') != "") //trims spaces
+                && parameters[q].altName.replace(/ /g, '') != "") ////trims spaces to check for empty string
         {
             parameterName = parameters[q].altName;
         }
@@ -521,7 +521,14 @@ function loadParameterInfo(parameters, initialValues)
             }
         }
         //append parameter description table
-        paramsTable.append("<tr class='paramDescription'><td></td><td colspan='3'>" + parameters[q].description +"</td></tr>");      
+        var pDescription = parameters[q].description;
+        if(parameters[q].altDescription != undefined
+            && parameters[q].altDescription != null
+            && parameters[q].altDescription.replace(/ /g, '') != "") //trims spaces to check for empty string
+        {
+            pDescription = parameters[q].altDescription;
+        }
+        paramsTable.append("<tr class='paramDescription'><td></td><td colspan='3'>" + pDescription +"</td></tr>");
     }
 
     for(var r=0;r<inputFileRowIds.length;r++)
