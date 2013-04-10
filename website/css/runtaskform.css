@@ -435,3 +435,33 @@ hr
     font-weight: bold;
 }
 
+.fileDiv .ui-buttonset {
+	float: right;
+	top: 0px;
+	position: relative;
+	margin-top: -20px;
+	padding: 0px;
+}
+
+.fileDiv .ui-buttonset label {
+	font-size: 6pt !important;
+	background-image: none !important;
+}
+
+.fileDiv .ui-buttonset label.ui-corner-left {
+	border-top-right-radius: 0px !important;
+	border-bottom-right-radius: 0px !important;
+	border-bottom-left-radius: 5px !important;
+	border-top-left-radius: 5px !important;
+}
+
+.fileDiv .ui-buttonset label.ui-corner-right {
+	border-top-right-radius: 5px !important;
+	border-bottom-right-radius: 5px !important;
+	border-top-left-radius: 0px !important;
+	border-bottom-left-radius: 0px !important;
+}
+
+.fileDiv .ui-buttonset label.ui-state-active {
+	background: #FFFFFF !important;
+}
