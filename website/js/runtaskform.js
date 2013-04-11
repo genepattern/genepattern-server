@@ -937,6 +937,17 @@ function runJob()
     }
 }
 
+function buildBatchList() {
+	var batchParams = [];
+	for (var paramName in param_file_listing) {
+		if (isBatch(paramName)) {
+			batchParams.push(paramName);
+		}
+    }
+	
+	return batchParams;
+}
+
 function submitTask()
 {
     setAllFileParamValues();
@@ -952,7 +963,8 @@ function submitTask()
     var taskJsonObj =
     {
         "lsid" : run_task_info.lsid,
-        "params" : JSON.stringify(parameter_and_val_obj)
+        "params" : JSON.stringify(parameter_and_val_obj),
+        "batchParams": buildBatchList()
     };
 
     $.ajax({
@@ -1390,6 +1402,7 @@ function setAllFileParamValues()
     for(var paramName in param_file_listing)
     {
         var fileList = [];
+        
         for(var f=0; f < param_file_listing[paramName].length; f++)
         {
             var nextFileObj = param_file_listing[paramName][f];
@@ -1399,6 +1412,18 @@ function setAllFileParamValues()
 
         parameter_and_val_obj[paramName] = fileList;
     }
+}
+
+function isBatch(paramName) {
+	var selector = "#" + jqEscape(paramName);
+    var input = $(selector);
+    return input.closest(".fileDiv").find(".ui-buttonset").find(".ui-state-active").prev().val() === "batch";
+}
+
+function makeBatch(paramName) {
+	var selector = "#" + jqEscape(paramName);
+    var input = $(selector);
+    input.closest(".fileDiv").find(".ui-buttonset").find("label:last").click();
 }
 
 function allFilesUploaded()
