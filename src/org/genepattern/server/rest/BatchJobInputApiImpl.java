@@ -232,20 +232,16 @@ public class BatchJobInputApiImpl implements JobInputApi {
 
                 @Override
                 public JobInput prepareJobInput(final int idx, final JobInput template) {
-                    JobInput batchInput = new JobInput();
-                    batchInput.setLsid(template.getLsid());
-                    for(final Entry<ParamId,Param> entry : template.getParams().entrySet()) {
-                        if (isBatchParam(entry.getKey())) {
-                            final ParamValue batchValue=getValue(entry.getKey(), idx);
-                            batchInput.addValue(entry.getKey().getFqName(), batchValue.getValue());
-                        }
-                        else {
-                            for (ParamValue pv : entry.getValue().getValues()) {
-                                batchInput.addValue(entry.getKey().getFqName(), pv.getValue());
-                            }
-                        }
+                    //start with a copy of the jobInput template
+                    JobInput nextJobInput = new JobInput(template);
+                    //then replace batch parameters with the values for this particular (idx) batch job
+                    for(ParamId batchParamId : getBatchParameters()) {
+                        Param batchParam=new Param(batchParamId, false);
+                        ParamValue batchParamValue=getValue(batchParamId, idx);
+                        batchParam.addValue(batchParamValue);
+                        nextJobInput.setValue(batchParamId, batchParam);
                     }
-                    return batchInput;
+                    return nextJobInput;
                 }
             };
 
