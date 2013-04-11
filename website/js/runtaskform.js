@@ -377,14 +377,14 @@ function loadParameterInfo(parameters, initialValues)
 	            fileDiv.append(modeToggle);
 	            modeToggle.buttonset();
 	            modeToggle.tooltip();
-	            modeToggle.find("label").click(function() {
+	            modeToggle.find("input").change(function() {
 	            	if ($(this).parent().find("input:checked").val() === "batch") {
-	            		$(this).closest(".pRow").css("background-color", "#FFFFFF");
-	            		$(this).closest(".pRow").next().css("background-color", "#FFFFFF");
-	            	}
-	            	else {
 	            		$(this).closest(".pRow").css("background-color", "#F5F5F5");
 	            		$(this).closest(".pRow").next().css("background-color", "#F5F5F5");
+	            	}
+	            	else {
+	            		$(this).closest(".pRow").css("background-color", "#FFFFFF");
+	            		$(this).closest(".pRow").next().css("background-color", "#FFFFFF");
 	            	}
 	            });
             }
