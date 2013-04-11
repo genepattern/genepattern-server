@@ -669,7 +669,7 @@ jQuery(document).ready(function()
         validateMaxFiles(paramName, totalFileLength);
 
         //add newly selected files to table of file listing
-        for(var f=0; f < this.files.length; f++)
+        for(var f=0;f < this.files.length;f++)
         {
             var fileObj = {
                 name: this.files[f].name,
@@ -682,6 +682,11 @@ jQuery(document).ready(function()
         // add to file listing for the specified parameter
         updateParamFileTable(paramName);
         toggleFileButtons(paramName);
+
+        //Reset the value of the file input to work around
+        //feature in Chrome where uploading the same file sequentially
+        //does not trigger a change event
+        $(this).val(null);
     });
 
     /* begin other options menu code*/
