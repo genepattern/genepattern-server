@@ -35,6 +35,11 @@ public class JobInput {
             this.id=id;
         }
         
+        //copy constructor
+        public StepId(final StepId in) {
+            this.id=in.id;
+        }
+        
         public String getId() {
             return id;
         }
