@@ -458,6 +458,7 @@ hr
 .fileDiv .ui-buttonset label {
 	font-size: 6pt !important;
 	background-image: none !important;
+	padding: 0px !important;
 }
 
 .fileDiv .ui-buttonset label.ui-corner-left {

@@ -389,27 +389,6 @@ function loadParameterInfo(parameters, initialValues)
 	            });
             }
 
-            // Create the mode toggle
-            if (parseInt(parameters[q].maxValue) == 1) {
-	            var rowNum = q + 1;
-	            var modeToggle = $("<div id='modeToggle" + rowNum + "'></div>");
-	            modeToggle.append("<input type='radio' value='normal' name='mode" + rowNum + "' id='singleMode" + rowNum + "' checked='true'><label title='In this mode when you submit this task a single job will be executed with the parameter values provided.' for='singleMode" + (q+1) + "'>Single</label></input>");
-	            modeToggle.append("<input type='radio' value='batch' name='mode" + rowNum + "'id='batchMode" + rowNum + "'><label title='In this mode when submit this task a new job will be spawned for every file in the directory provided to this parameter.' for='batchMode" + rowNum + "'>Batch</label></input>");
-	            fileDiv.append(modeToggle);
-	            modeToggle.buttonset();
-	            modeToggle.tooltip();
-	            modeToggle.find("label").click(function() {
-	            	if ($(this).parent().find("input:checked").val() === "batch") {
-	            		$(this).closest(".pRow").css("background-color", "#FFFFFF");
-	            		$(this).closest(".pRow").next().css("background-color", "#FFFFFF");
-	            	}
-	            	else {
-	            		$(this).closest(".pRow").css("background-color", "#F5F5F5");
-	            		$(this).closest(".pRow").next().css("background-color", "#F5F5F5");
-	            	}
-	            });
-            }
-
             var uploadFileBtn = $("<button class='uploadBtn' type='button'>"+ uploadFileText + "</button>");
             uploadFileBtn.button().click(function()
             {
