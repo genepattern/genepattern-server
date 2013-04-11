@@ -2,9 +2,10 @@ package org.genepattern.server.job.input;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import org.apache.log4j.Logger;
 
@@ -62,19 +63,29 @@ public class JobInput {
     }
 
     public static class Param {
+        private ParamId id;
+        private List<ParamValue> values=new ArrayList<ParamValue>();
+        private boolean batchParam=false;
+
         public Param(final ParamId id, final boolean batchParam) {
             this.id=id;
             this.batchParam=batchParam;
         }
-        public void addValue(ParamValue val) {
-            if (values==null) {
-                values=new ArrayList<ParamValue>();
+        //copy constructor
+        public Param(final Param in) {
+            this.id=new ParamId(in.id);
+            this.batchParam=in.batchParam;
+            
+            //clone the list of values
+            this.values=new ArrayList<ParamValue>();
+            for(final ParamValue inValue : in.values) {
+                this.values.add(new ParamValue(inValue));
             }
+        }
+        
+        public void addValue(ParamValue val) {
             values.add(val);
         }
-        private ParamId id;
-        private List<ParamValue> values;
-        private boolean batchParam=false;
         
         public ParamId getParamId() {
             return id;
@@ -85,9 +96,6 @@ public class JobInput {
         }
         
         public int getNumValues() {
-            if (values==null) {
-                return 0;
-            }
             return values.size();
         }
         
@@ -118,6 +126,11 @@ public class JobInput {
             this.fqName=fqName;
             this.hashCode=fqName.hashCode();
         }
+        //copy constructor
+        public ParamId(final ParamId in) {
+            this.fqName=in.fqName;
+            this.hashCode=fqName.hashCode();
+        }
         public String getFqName() {
             return fqName;
         }
@@ -134,19 +147,41 @@ public class JobInput {
     }
 
     public static class ParamValue {
-        public ParamValue(String val) {
-            this.value=val;
-        }
         private String value;
+        public ParamValue(final String value) {
+            this.value=value;
+        }
+        //copy constructor
+        public ParamValue(final ParamValue in) {
+            this.value=in.value;
+        }
         public String getValue() {
             return value;
+        }
+    }
+    
+    private String lsid;
+    private Map<ParamId, Param> params=new LinkedHashMap<ParamId, Param>();
+
+    public JobInput() {
+    }
+    /**
+     * Copy constructor.
+     */
+    public JobInput(final JobInput in) {
+        this.lsid=in.lsid;
+        
+        //clone the map
+        for(Entry<ParamId, Param> entry : in.params.entrySet()) {
+            ParamId paramId=new ParamId(entry.getKey());
+            Param param=new Param(entry.getValue());
+            params.put(paramId, param);
         }
     }
     
     /**
      * The lsid for a module installed on the GP server.
      */
-    private String lsid;
     public void setLsid(final String lsid) {
         this.lsid=lsid;
     }
@@ -157,12 +192,7 @@ public class JobInput {
     /**
      * The list of user-supplied parameter values.
      */
-    private Map<ParamId, Param> params;
     public Map<ParamId, Param> getParams() {
-        if (params==null) {
-            log.debug("params==null, returning emptyMap");
-            return Collections.emptyMap();
-        }
         return Collections.unmodifiableMap(params);
     }
     
@@ -174,6 +204,15 @@ public class JobInput {
     public void addOrReplaceValue(final String name, final String value) {
         addOrReplaceValue(name, value, false);
     }
+
+    /**
+     * Replaces the value for the given parameter with a new value,
+     * also declaring the batchParam flag.
+     * 
+     * @param name
+     * @param value
+     * @param batchParam
+     */
     public void addOrReplaceValue(final String name, final String value, final boolean batchParam) {
         if (name==null) {
             throw new IllegalArgumentException("name==null");
@@ -181,10 +220,7 @@ public class JobInput {
         if (value==null) {
             throw new IllegalArgumentException("value==null");
         }
-        if (params != null) {
-            ParamId id = new ParamId(name);
-            params.remove(id);
-        }
+        params.remove(new ParamId(name));
         addValue(name, value, batchParam);
     }
 
@@ -206,9 +242,6 @@ public class JobInput {
         }
         ParamId id = new ParamId(name);
         Param param;
-        if (params==null) {
-            params=new HashMap<ParamId, Param>();
-        }
         if (params.containsKey(id)){
             param=params.get(id);
         }
@@ -218,24 +251,22 @@ public class JobInput {
         }
         param.addValue(new ParamValue(value));
     }
+    
+    public void setValue(final ParamId paramId, final Param param) {
+        params.put(paramId, param);
+    }
 
     /**
      * @param id - the unique id is the name of the parameter, as declared in the manifest
-     * @return the Param for the given id, or null of none is found.
+     * @return the Param for the given id, or null if none is found.
      */
     public Param getParam(final String id) {
-        if (params==null) {
-            return null;
-        }
         final ParamId paramId=new ParamId(id);
         final Param param=params.get(paramId);
         return param;
     }
     
     public List<ParamValue> getParamValues(final String id) {
-        if (params==null) {
-            return null;
-        }
         final ParamId paramId=new ParamId(id);
         final Param param=params.get(paramId);
         if (param==null) {
