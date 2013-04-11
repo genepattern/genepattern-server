@@ -164,8 +164,7 @@
                 }
 
                 function checkBatch(elementId) {
-                    var inputBatch = jq("#" + escapeJquerySelector(elementId) + "_batch").get(0);
-                    inputBatch.checked = true;
+                    makeBatch(elementId);
                 }
 
                 function validateForm() {
