@@ -3,8 +3,6 @@ package org.genepattern.server.webapp.rest;
 import java.util.List;
 
 import org.codehaus.jackson.annotate.JsonProperty;
-import org.codehaus.jackson.annotate.JsonRawValue;
-import org.codehaus.jackson.JsonNode;
 
 /**
  * Created by IntelliJ IDEA.
