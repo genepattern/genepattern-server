@@ -7,6 +7,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
 import javax.servlet.http.HttpServlet;
@@ -328,6 +329,7 @@ public class RunTaskServlet extends HttpServlet
             while(paramNames.hasNext())
             {
                 String parameterName = paramNames.next();
+                boolean isBatch = isBatchParam(jobSubmitInfo, parameterName);
                 //JSONArray valueList = new JSONArray((String)parameters.get(parameterName));
                 JSONArray valueList;
                 Object val=parameters.get(parameterName);
@@ -339,7 +341,7 @@ public class RunTaskServlet extends HttpServlet
                 }
                 for(int v=0; v<valueList.length();v++)
                 {
-                    jobInput.addValue(parameterName, valueList.getString(v));
+                    jobInput.addValue(parameterName, valueList.getString(v), isBatch);
                 }
             }
 
@@ -377,6 +379,17 @@ public class RunTaskServlet extends HttpServlet
                     .build()
             );
         }
+    }
+    
+    /**
+     * Given the submitted job info and a param name, determine if the provided parameter is a batch parameter
+     * @param jobSubmitInfo
+     * @param name
+     * @return
+     */
+    private boolean isBatchParam(JobSubmitInfo jobSubmitInfo, String name) {
+        List<String> batches = jobSubmitInfo.getBatchParams();
+        return batches.contains(name);
     }
 
     /**
