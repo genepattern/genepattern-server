@@ -163,17 +163,6 @@ public class JobInput {
         }
     }
     
-    public static class ParamValueGpFile extends ParamValue {
-        private GpFilePath gpFile;
-        public ParamValueGpFile(final GpFilePath gpFile) throws Exception {
-            super(gpFile.getUrl().toExternalForm());
-        }
-        
-        public GpFilePath getGpFile() {
-            return gpFile;
-        }
-    }
-    
     private String lsid;
     private Map<ParamId, Param> params=new LinkedHashMap<ParamId, Param>();
 
