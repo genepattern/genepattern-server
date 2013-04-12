@@ -400,6 +400,11 @@ function loadParameterInfo(parameters, initialValues)
 
             var fileInput = $("<input class='uploadedinputfile' id='" + parameters[q].name + "' name='"+ parameters[q].name +"' type='file'/>");
 
+            if(parameters[q].optional.length == 0)
+            {
+                fileInput.addClass("requiredParam");
+            }
+
             var fileInputDiv = $("<div class='inputFileBtn'/>");
             fileInputDiv.append(fileInput);
             fileDiv.append(fileInputDiv);
@@ -844,10 +849,7 @@ function isFile(param)
     return input.attr("type") === "file";
 }
 
-function validate() {
-    return true;
-}
-function validate1()
+function validate()
 {
     //remove any existing error messages
     $(".errorMessage").remove();
@@ -900,10 +902,11 @@ function validate1()
 
         //remove any previous error highlighting
         $(paramId).parents("td:first").removeClass("errorHighlight");
+        required = $(paramId).hasClass("requiredParam");
 
-        if(param_file_listing[paramNames[p]] == undefined
+        if(required && (param_file_listing[paramNames[p]] == undefined
             || param_file_listing[paramNames[p]] == null
-            || param_file_listing[paramNames[p]].length == 0)
+            || param_file_listing[paramNames[p]].length == 0))
         {
             pListing.append("<li>"+paramNames[p]+"</li>");
             $(paramId).parents("td:first").addClass("errorHighlight");
