@@ -356,10 +356,14 @@ public class BatchSubmit {
                 inputDirPath = ServerFileObjFactory.getServerFile(serverFile);
             }
         }
-        
         if (inputDirPath == null) {
             throw new FileUploadException("Unable to attain the file at this URL: " + dirUrl);
         }
+        return getMultiFileParameter(isAdmin, userContext, inputDirPath);
+    }
+    
+    public static MultiFileParameter getMultiFileParameter(final boolean isAdmin, final Context userContext, final GpFilePath inputDirPath) throws FileUploadException {
+        final String dirUrl=inputDirPath.getRelativePath();
         if (!inputDirPath.getServerFile().exists()) {
             throw new FileUploadException("Batch directory does not exist: " + dirUrl);
         }
@@ -395,6 +399,7 @@ public class BatchSubmit {
                 log.error("Server error preparing batch input file in directory: " + dirUrl +", fileUrl="+fileUrl);
             }
         }
+        boolean urlInput=true;
         MultiFileParameter multiFile = new MultiFileParameter(filePaths, urlInput);
         return multiFile;
     }
