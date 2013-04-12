@@ -10,7 +10,6 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import org.apache.log4j.Logger;
-import org.genepattern.server.dm.GpFilePath;
 
 /**
  * Representation of user-supplied input parameters for a new job to be added to the GP server.
@@ -88,6 +87,13 @@ public class JobInput {
         
         public void addValue(ParamValue val) {
             values.add(val);
+        }
+        
+        /**
+         * Only needed when transforming an initial JobInput into a batch of JobInputs.
+         */
+        public void clear() {
+            values.clear();
         }
         
         public ParamId getParamId() {
