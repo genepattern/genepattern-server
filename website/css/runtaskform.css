@@ -475,6 +475,12 @@ hr
 	border-bottom-left-radius: 0px !important;
 }
 
-.fileDiv .ui-buttonset label.ui-state-active {
+.fileDiv .ui-buttonset label.ui-state-default {
 	background: #FFFFFF !important;
+	color: #999999 !important;
+}
+
+.fileDiv .ui-buttonset label.ui-state-active {
+	background: #dae4f4 !important;
+	color: #000000 !important;
 }
