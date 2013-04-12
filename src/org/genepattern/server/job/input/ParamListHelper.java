@@ -506,27 +506,27 @@ public class ParamListHelper {
      *     2) if the param can't accept a list AND the number of input values is > 1, convert to batch
      *     3) if the param can't accept a list AND at least one of the input values is a directory, convert to batch
      * 
-     * @return
+     * @return a GpFilePath to the parent directory if we should, otherwise return null.
      */
-    public boolean canCreateCreateBatchJob() {
+    public GpFilePath getBatchInputDirectory() {
         if (acceptsList()) {
-            return false;
+            return null;
         }
         if (actualValues.getNumValues()==0) {
-            return false;
+            return null;
         }
         
         if (actualValues.getNumValues()>1) {
-            return true;
+            return null;
         }
         
         //if we're here, actualValues.numValues==1
         ParamValue pValue=actualValues.getValues().get(0);
-        boolean isDir=isServerDir(pValue);
-        if (isDir) {
-            return true;
+        GpFilePath serverDir=isServerDir(pValue);
+        if (serverDir!=null) {
+            return serverDir;
         }
-        return false;
+        return null;
     }
     
     /**
@@ -760,18 +760,20 @@ public class ParamListHelper {
     }
 
     //added this method to support batch jobs
-    private boolean isServerDir(final ParamValue pval) {
+    private GpFilePath isServerDir(final ParamValue pval) {
         GpFilePath gpPath=null;
         final String value=pval.getValue();
         URL externalUrl=initExternalUrl(value);
         if (externalUrl!=null) {
             //it's an externalURL
-            return false;
+            return null;
         }
 
         try {
             gpPath = GpFileObjFactory.getRequestedGpFileObj(value);
-            return gpPath.isDirectory();
+            if (gpPath.isDirectory()) {
+                return gpPath;
+            }
         }
         catch (Exception e) {
             log.debug("getRequestedGpFileObj("+value+") threw an exception: "+e.getLocalizedMessage(), e);
@@ -781,7 +783,10 @@ public class ParamListHelper {
         //if we are here, it could be a server file path
         File serverFile=new File(value);
         gpPath = ServerFileObjFactory.getServerFile(serverFile);
-        return gpPath.isDirectory();
+        if (gpPath.isDirectory()) {
+            return gpPath;
+        }
+        return null;
     }
     
 //    private GpFilePath initGpFilePathFromValue(final ParamValue pval) {

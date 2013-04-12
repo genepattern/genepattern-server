@@ -3,11 +3,14 @@ package org.genepattern.server.job.input;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import org.apache.log4j.Logger;
+import org.genepattern.server.dm.GpFilePath;
 
 /**
  * Representation of user-supplied input parameters for a new job to be added to the GP server.
@@ -160,6 +163,17 @@ public class JobInput {
         }
     }
     
+    public static class ParamValueGpFile extends ParamValue {
+        private GpFilePath gpFile;
+        public ParamValueGpFile(final GpFilePath gpFile) throws Exception {
+            super(gpFile.getUrl().toExternalForm());
+        }
+        
+        public GpFilePath getGpFile() {
+            return gpFile;
+        }
+    }
+    
     private String lsid;
     private Map<ParamId, Param> params=new LinkedHashMap<ParamId, Param>();
 
@@ -230,17 +244,28 @@ public class JobInput {
      * @param value, the user provided input value, cannot be null.
      */
     public void addValue(final String name, final String value) {
-        addValue(name, value, false);
+        addValue(new ParamId(name), value);
     }
-
+    
+    public void addValue(final ParamId id, final String value) {
+        addValue(id, value, false);
+    }
+    
     public void addValue(final String name, final String value, final boolean batchParam) {
         if (name==null) {
             throw new IllegalArgumentException("name==null");
         }
+        ParamId id = new ParamId(name);
+        addValue(id, value, batchParam);
+    }
+
+    public void addValue(final ParamId id, final String value, final boolean batchParam) {
+        if (id==null) {
+            throw new IllegalArgumentException("id==null");
+        }
         if (value==null) {
             throw new IllegalArgumentException("value==null");
         }
-        ParamId id = new ParamId(name);
         Param param;
         if (params.containsKey(id)){
             param=params.get(id);
@@ -251,6 +276,7 @@ public class JobInput {
         }
         param.addValue(new ParamValue(value));
     }
+
     
     public void setValue(final ParamId paramId, final Param param) {
         params.put(paramId, param);
@@ -266,6 +292,11 @@ public class JobInput {
         return param;
     }
     
+    public Param getParam(final ParamId paramId) {
+        final Param param=params.get(paramId);
+        return param;
+    }
+
     public List<ParamValue> getParamValues(final String id) {
         final ParamId paramId=new ParamId(id);
         final Param param=params.get(paramId);
@@ -336,11 +367,11 @@ public class JobInput {
         return false;
     }
     
-    public List<Param> getBatchParams() {
+    public Set<Param> getBatchParams() {
         if (this.params == null) {
-            return Collections.emptyList();
+            return Collections.emptySet();
         }
-        List<Param> batchParams = new ArrayList<Param>();
+        Set<Param> batchParams = new LinkedHashSet<Param>();
         for (final Param param : params.values()) {
             if (param.batchParam) {
                 batchParams.add(param);
