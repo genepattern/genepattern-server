@@ -844,7 +844,10 @@ function isFile(param)
     return input.attr("type") === "file";
 }
 
-function validate()
+function validate() {
+    return true;
+}
+function validate1()
 {
     //remove any existing error messages
     $(".errorMessage").remove();
