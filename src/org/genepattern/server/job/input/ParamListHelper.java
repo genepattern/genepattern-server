@@ -522,7 +522,7 @@ public class ParamListHelper {
         
         //if we're here, actualValues.numValues==1
         ParamValue pValue=actualValues.getValues().get(0);
-        GpFilePath serverDir=isServerDir(pValue);
+        GpFilePath serverDir=getBatchInputDir(pValue);
         if (serverDir!=null) {
             return serverDir;
         }
@@ -760,9 +760,12 @@ public class ParamListHelper {
     }
 
     //added this method to support batch jobs
-    private GpFilePath isServerDir(final ParamValue pval) {
-        GpFilePath gpPath=null;
+    private static GpFilePath getBatchInputDir(final ParamValue pval) {
         final String value=pval.getValue();
+        return getBatchInputDir(value);
+    }
+    public static GpFilePath getBatchInputDir(final String value) {
+        GpFilePath gpPath=null;
         URL externalUrl=initExternalUrl(value);
         if (externalUrl!=null) {
             //it's an externalURL
@@ -788,29 +791,6 @@ public class ParamListHelper {
         }
         return null;
     }
-    
-//    private GpFilePath initGpFilePathFromValue(final ParamValue pval) {
-//        final String value=pval.getValue();
-//        URL externalUrl=initExternalUrl(value);
-//        if (externalUrl==null) {
-//            //it's an externalURL, don't create GpFilePath object
-//            return null;
-//        }
-//
-//        try {
-//            GpFilePath gpPath = GpFileObjFactory.getRequestedGpFileObj(value);
-//            return gpPath;
-//        }
-//        catch (Exception e) {
-//            log.debug("getRequestedGpFileObj("+value+") threw an exception: "+e.getLocalizedMessage(), e);
-//            //ignore
-//        }
-//        
-//        //if we are here, it could be a server file path
-//        File serverFile=new File(value);
-//        GpFilePath gpPath = ServerFileObjFactory.getServerFile(serverFile);
-//        return gpPath;
-//    }
 
     private static class Record {
         enum Type {

@@ -33,12 +33,11 @@ import org.genepattern.modules.ResponseJSON;
 import org.genepattern.server.config.ServerConfiguration;
 import org.genepattern.server.dm.GpFilePath;
 import org.genepattern.server.domain.Lsid;
+import org.genepattern.server.job.input.BatchInputHelper;
 import org.genepattern.server.job.input.JobInput;
 import org.genepattern.server.job.input.JobInput.Param;
 import org.genepattern.server.job.input.JobInputFileUtil;
 import org.genepattern.server.job.input.ParamListHelper;
-import org.genepattern.server.rest.JobInputApi;
-import org.genepattern.server.rest.JobInputApiFactory;
 import org.genepattern.server.rest.JobReceipt;
 import org.genepattern.server.webapp.jsf.AuthorizationHelper;
 import org.genepattern.server.webapp.jsf.JobBean;
@@ -321,8 +320,8 @@ public class RunTaskServlet extends HttpServlet
                 throw new Exception("User not logged in");
             }
 
-            JobInput jobInput = new JobInput();
-            jobInput.setLsid(jobSubmitInfo.getLsid());
+            final ServerConfiguration.Context userContext=ServerConfiguration.Context.getContextForUser(username);
+            final BatchInputHelper jobInputHelper=new BatchInputHelper(userContext, jobSubmitInfo.getLsid());
 
             JSONObject parameters = new JSONObject(jobSubmitInfo.getParameters());
             Iterator<String> paramNames = parameters.keys();
@@ -341,15 +340,30 @@ public class RunTaskServlet extends HttpServlet
                 }
                 for(int v=0; v<valueList.length();v++)
                 {
-                    jobInput.addValue(parameterName, valueList.getString(v), isBatch);
+                    if (isBatch) {
+                        jobInputHelper.addBatchDirectory(parameterName, valueList.getString(v));
+                    }
+                    else {
+                        jobInputHelper.addValue(parameterName, valueList.getString(v));
+                    }
                 }
             }
 
-            ServerConfiguration.Context jobContext=ServerConfiguration.Context.getContextForUser(username);
-            //final JobInputApi impl = JobInputApiFactory.createJobInputApi(jobContext);
-            //String jobId = impl.postJob(jobContext, jobInput);
-            final JobInputApi impl = JobInputApiFactory.createBatchJobInputApi(jobContext);
-            JobReceipt receipt=impl.postBatchJob(jobContext, jobInput);
+            //
+            // experimental, when inferBatch is true, it means ignore the 'Single' or 'Batch' selection from the end user
+            //    instead infer batch inputs when the input value is a directory (instead of a file)
+            //
+            final List<JobInput> batchInputs;
+            //final boolean inferBatch=false;
+            //jobInputHelper.setInferBatchParams(inferBatch);
+            //if (inferBatch) {
+            //    batchInputs=jobInputHelper.inferBatch();
+            //}
+            //else {
+                batchInputs=jobInputHelper.prepareBatch();
+            //}
+            final JobReceipt receipt=jobInputHelper.submitBatch(batchInputs);
+
             
             //TODO: if necessary, add batch details to the JSON representation
             String jobId="-1";

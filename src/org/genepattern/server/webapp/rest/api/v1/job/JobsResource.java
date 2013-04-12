@@ -86,20 +86,20 @@ public class JobsResource {
         
         final JSONObject rval=new JSONObject();
         try {
+            //TODO: add support for batch jobs to REST API
             final JobInput jobInput=parseJobInput(jobInputValues);
-            //final JobInputApi impl = JobInputApiFactory.createJobInputApi(jobContext);
-            final JobInputApi impl = JobInputApiFactory.createBatchJobInputApi(jobContext);
-            //final String jobId = impl.postJob(jobContext, jobInput);
-            JobReceipt receipt=impl.postBatchJob(jobContext, jobInput);
+            final JobInputApi impl = JobInputApiFactory.createJobInputApi(jobContext);
+            final String jobId = impl.postJob(jobContext, jobInput);
+            //JobReceipt receipt=impl.postBatchJob(jobContext, jobInput);
             //TODO: if necessary, add batch details to the JSON representation
-            if (receipt.getJobIds()==null) {
-                log.error("receipt.jobIds==null");
-                throw new GpServerException("receipt.jobIds==null");
-            }
-            if (receipt.getJobIds().size()==0) {
-                throw new GpServerException("number of jobs submitted is 0");
-            }
-            final String jobId=receipt.getJobIds().get(0);
+            //if (receipt.getJobIds()==null) {
+            //    log.error("receipt.jobIds==null");
+            //    throw new GpServerException("receipt.jobIds==null");
+            //}
+            //if (receipt.getJobIds().size()==0) {
+            //    throw new GpServerException("number of jobs submitted is 0");
+            //}
+            //final String jobId=receipt.getJobIds().get(0);
             rval.put("jobId", jobId);
             
             //set the Location header to the URI of the newly created resource
