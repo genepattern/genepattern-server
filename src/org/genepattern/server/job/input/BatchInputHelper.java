@@ -25,15 +25,6 @@ import org.genepattern.util.SemanticUtil;
 import org.genepattern.webservice.ParameterInfo;
 import org.genepattern.webservice.TaskInfo;
 
-    /**
-     * 
-     * @param batchTemplate, the jobInput values entered in the job input form, 
-     *     including any flags for batch parameters.
-     * @return a list JobInput, each item in the list is a new job which should be run.
-     * 
-     * @throws Exception
-     */
-
 /**
  * Helper class for batch job input.
  * 
@@ -150,6 +141,31 @@ public class BatchInputHelper {
         inferredBatchValues.put(paramId, batchInputFiles);
     }
     
+    /**
+     * After you initialize all of the values, call this method to create the
+     * list of JobInput, one for each new job to run.
+     * 
+     * @return
+     * @throws Exception
+     */
+    public List<JobInput> prepareBatch() throws Exception {
+        initValuesFromBatchDirectories();
+
+        List<JobInput> batchInputs=new ArrayList<JobInput>();
+        int numJobs=getNumBatchJobs();
+        if (numJobs==0) {
+            batchInputs.add(inputTemplate);
+            return batchInputs;
+        }
+
+        //it is a batch job
+        for(int idx=0; idx<numJobs; ++idx) {
+            JobInput nextJob=prepareJobInput(idx, inputTemplate);
+            batchInputs.add(nextJob);
+        }
+        return batchInputs;
+    }
+    
     private int getNumBatchJobs() {
         int numJobs=0;
         for(Param param : inputTemplate.getBatchParams()) {
@@ -164,7 +180,7 @@ public class BatchInputHelper {
         return inputTemplate.getParam(paramId).getValues().get(idx);
     }
 
-    public JobInput prepareJobInput(final int idx, final JobInput template) throws Exception {
+    private JobInput prepareJobInput(final int idx, final JobInput template) throws Exception {
         //start with a copy of the jobInput template
         JobInput nextJobInput = new JobInput(template);
         //then replace batch parameters with the values for this particular (idx) batch job
@@ -239,7 +255,7 @@ public class BatchInputHelper {
         
     }
 
-    protected String getBaseFilename(GpFilePath file) {
+    private String getBaseFilename(GpFilePath file) {
         int periodIndex = file.getName().lastIndexOf('.');
         if (periodIndex > 0) {
             return file.getName().substring(0, periodIndex);
@@ -247,24 +263,6 @@ public class BatchInputHelper {
         else {
             return file.getName();
         }
-    }
-    
-    public List<JobInput> prepareBatch() throws Exception {
-        initValuesFromBatchDirectories();
-
-        List<JobInput> batchInputs=new ArrayList<JobInput>();
-        int numJobs=getNumBatchJobs();
-        if (numJobs==0) {
-            batchInputs.add(inputTemplate);
-            return batchInputs;
-        }
-
-        //it is a batch job
-        for(int idx=0; idx<numJobs; ++idx) {
-            JobInput nextJob=prepareJobInput(idx, inputTemplate);
-            batchInputs.add(nextJob);
-        }
-        return batchInputs;
     }
     
     /**
