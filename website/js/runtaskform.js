@@ -1,5 +1,5 @@
-//map of input parameters to a listing of file objs (local, external urls, internal urls)
-// a file object contains a name and and also an object, if the file will need to be uploaded
+//map of input parameters to a listing of file objects
+// a file object contains a name and and also an input  file object, if the file will need to be uploaded
 var param_file_listing ={};
 
 //contains info about the current selected task
@@ -867,7 +867,6 @@ function validate()
     var paramNames = Object.keys(parameter_and_val_obj);
     for(var p=0;p<paramNames.length;p++)
     {
-        console.log("paramNames" + paramNames[p]);
         var paramId = "#" + jqEscape(paramNames[p]);
 
         //remove any previous error highlighting
@@ -882,12 +881,21 @@ function validate()
             if(required && (value == undefined || value == null
                 || value == ""))
             {
-                pListing.append("<li>"+paramNames[p]+"</li>");
+                var name = paramNames[p];
+
+                //check if the parameter has an alternate name
+                $.each(parametersJson, function( key, value ) {
+                    if(value.name == paramNames[p]
+                        && value.altName != undefined && value.altName != null
+                        && value.altName.replace(/ /g, '') != "")
+                    {
+                        name = value.altName;
+                    }
+                });
+
+                pListing.append("<li>"+name+"</li>");
                 $(paramId).parents("td:first").addClass("errorHighlight");
                 $(paramId).parents("td:first").append("<div>"+errorMessage + "</div>");
-
-                //multiselect or drop downs
-                //$(paramId).multiselect().multiselect("option","classes","errorHighlight mSelect").multiselect("refresh");
 
                 failed = true;
             }
@@ -908,7 +916,18 @@ function validate()
             || param_file_listing[paramNames[p]] == null
             || param_file_listing[paramNames[p]].length == 0))
         {
-            pListing.append("<li>"+paramNames[p]+"</li>");
+            name = paramNames[p];
+            //check if the parameter has an alternate name
+            $.each(parametersJson, function( key, value ) {
+                if(value.name == paramNames[p]
+                    && value.altName != undefined && value.altName != null
+                    && value.altName.replace(/ /g, '') != "")
+                {
+                    name = value.altName;
+                }
+            });
+
+            pListing.append("<li>" + name + "</li>");
             $(paramId).parents("td:first").addClass("errorHighlight");
             $(paramId).parents("td:first").append("<div>"+errorMessage + "</div>");
             failed = true;
