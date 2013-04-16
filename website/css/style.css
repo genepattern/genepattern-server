@@ -25,7 +25,11 @@ img {
 	border: none;
 }
 
-
+#systemMessageLink {
+	position: absolute;
+	right: 0px;
+	width: 300px;
+}
 
 .topband {
 	position:absolute;
