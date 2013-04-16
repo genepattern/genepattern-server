@@ -603,18 +603,6 @@ jQuery(document).ready(function()
         $("#paramsTable tr.paramDescription").toggle();
     });
 
-    $("#otherOptionsMenu").jMenu(
-    {
-        absoluteTop: -8,
-        absoluteLeft: -214,
-        openClick: true
-    });
-
-    $("#otherOptionsSubMenu").click(function()
-    {
-        $(this).hide();
-    });
-
     $("button").button();
 
     var reloadJob = Request.parameter('reloadJob');
@@ -1539,12 +1527,3 @@ function toggleFileButtons(paramName) {
     	$("[id='" + paramName + "']").parent().parent().find("button").button("enable")
     }
 }
-
-$.widget('ui.iconbutton', $.extend({}, $.ui.button.prototype, {
-    _init: function() {
-        $.ui.button.prototype._init.call(this);
-        this.element.removeClass('ui-corner-all')
-                    .addClass('ui-iconbutton')
-                    .unbind('.button');
-    }
-}));

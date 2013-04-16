@@ -10,7 +10,6 @@
     <link  type="text/css" rel="stylesheet" media="screen" href="#{facesContext.externalContext.requestContextPath}/css/runtaskform.css" />
     
 	<script type="text/javascript">$ = jq;</script>
-    <script type="text/javascript" src="#{facesContext.externalContext.requestContextPath}/js/jquery/jMenu.jquery.js"></script>
     <script type="text/javascript" src="#{facesContext.externalContext.requestContextPath}/js/jquery/jquery.multiselect.js"></script>
     <script type="text/javascript" src="#{facesContext.externalContext.requestContextPath}/js/jquery/jquery.blockUI.js"></script>    
     <script type="text/javascript" src="#{facesContext.externalContext.requestContextPath}/js/jquery/jquery.validate.js"></script>        
@@ -50,27 +49,47 @@
                 </span>
 
                 <div id="otherOptionsDiv" class="floatRight">
-
-                    <ul id="otherOptionsMenu" class="floatRight">
-                        <li>
-                            <a>
-                                <img id="otherOptions" alt="other options" src="#{facesContext.externalContext.requestContextPath}/images/gear_icon.png"/>
-                            </a>
-                            <ul id="otherOptionsSubMenu">
-                                <li><a id="properties">Properties</a></li>
-                                <li><a id="export" target="_blank">Export</a></li>
-                                <li><a id="javaCode" class="viewCode">Java code</a></li>
-                                <li><a id="matlabCode" class="viewCode">MATLAB code</a></li>
-                                <li><a id="rCode" class="viewCode">R code</a></li>
-                                <li>
-                                    <input name="toggleDesc" id="toggleDesc" type="checkbox" checked="checked" />
-                                    <label for="toggleDesc">
-                                         Show parameter descriptions
-                                    </label>
-                                </li>
-                            </ul>
-                        </li>
-                    </ul>
+                	<img id="otherOptions" alt="other options" src="#{facesContext.externalContext.requestContextPath}/images/gear_icon.png"/>
+					<div id="otherOptionsSubMenu" class="popupMenu" style="display:none;">
+						<table>
+							<tr>
+								<td>
+									<a id="properties" href="#" onclick="jq('.popupMenu').hide();">Properties</a>
+								</td>
+							</tr>
+							<tr>
+								<td>
+									<a id="export" target="_blank" href="#" onclick="jq('.popupMenu').hide();">Export</a>
+								</td>
+							</tr>
+							<tr>
+								<td>
+									<a id="javaCode" class="viewCode" href="#" onclick="jq('.popupMenu').hide();">Java code</a>
+								</td>
+							</tr>
+							<tr>
+								<td>
+									<a id="matlabCode" class="viewCode" href="#" onclick="jq('.popupMenu').hide();">MATLAB code</a>
+								</td>
+							</tr>
+							<tr>
+								<td>
+									<a id="rCode" class="viewCode" href="#" onclick="jq('.popupMenu').hide();">R code</a>
+								</td>
+							</tr>
+							<tr>
+								<td>
+									<input name="toggleDesc" id="toggleDesc" type="checkbox" checked="checked"  onclick="jq('.popupMenu').hide();" />
+		                            <label for="toggleDesc" onclick="jq('.popupMenu').hide();">
+		                                 Show parameter descriptions
+		                            </label>
+								</td>
+							</tr>
+						</table>
+                    </div>
+					<script type="text/javascript">
+						menuRegistry._create("#otherOptions", "#otherOptionsSubMenu");
+					</script>
                 </div>
                 <a class="floatRight" id ="documentation" href="#" target="_blank">Documentation</a>
                 

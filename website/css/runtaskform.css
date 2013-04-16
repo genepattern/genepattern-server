@@ -347,7 +347,7 @@ hr
 
 .ui-menu
 {
-    width: 200px;
+    width: 220px;
 }
 
 #documentation 
@@ -355,62 +355,13 @@ hr
     text-decoration:underline;
 }
 
-/*Start jMenu css overrides*/
-
-.jMenu li
-{
-    background-color: transparent;
-    padding: 0;
+#otherOptionsSubMenu {
+	font-size: 8pt;
 }
 
-.jMenu li a
-{
-    padding-top: 0;
-    padding-left: 0;
-    color: black;
-    max-height: 13px;
-} 
-
-.jMenu li ul
-{
-    background-color: white;
-    padding-top: 0;
+#otherOptionsSubMenu label {
+	font-size: 8pt !important;
 }
-
-.jMenu li ul li
-{
-    background-color: white;
-    min-width: 250px;  
-    border-left: 1px solid gray;
-    border-right: 1px solid gray;
-    border-top: 0;
-    border-bottom: 0;
-}
-
-.jMenu li ul li:first-child
-{
-    border-top: 1px solid gray;
-}
-
-.jMenu li ul li:last-child
-{
-    border-top: 1px solid #80a7d0;
-    border-bottom: 1px solid gray;
-    min-height: 25px;
-}
-
-.jMenu li ul li a{
-    padding-top: 0;        
-}
-
-.jMenu li ul li a:hover {
-    background-color: #DCDCDC;
-    border-top: 1px solid transparent;
-    border-bottom: 1px solid transparent;
-    padding-top: 0;        
-}
-
-/*End jMenu css overrides*/
 
 #otherOptionsDiv
 {
