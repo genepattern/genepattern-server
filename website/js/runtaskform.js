@@ -381,11 +381,18 @@ function loadParameterInfo(parameters, initialValues)
 	            	if ($(this).parent().find("input:checked").val() === "batch") {
 	            		$(this).closest(".pRow").css("background-color", "#F5F5F5");
 	            		$(this).closest(".pRow").next().css("background-color", "#F5F5F5");
+	            		$(this).closest(".fileDiv").find(".uploadBtn").button("disable");
 	            	}
 	            	else {
 	            		$(this).closest(".pRow").css("background-color", "#FFFFFF");
 	            		$(this).closest(".pRow").next().css("background-color", "#FFFFFF");
+	            		$(this).closest(".fileDiv").find(".uploadBtn").button("enable");
 	            	}
+	            	
+	            	// Clear the files from the parameter
+	            	var paramName = $(this).closest(".fileDiv").find("input[type='file']").attr("id");
+	            	param_file_listing[paramName] = [];
+	            	updateParamFileTable(paramName);
 	            });
             }
 
@@ -1277,11 +1284,15 @@ function updateParamFileTable(paramName)
         {
             editLink.click();
         }
+    }
 
-        // Hide the buttons if something is selected
-        if (atMaxFiles(paramName)) {
-        	div.parent().parent().find("> button, > span").hide();
-        }
+    // Hide or show the buttons if something is selected
+    var div = $(idPName).closest(".fileDiv");
+    if (atMaxFiles(paramName)) {
+    	div.find("> button, > span").hide();
+    }
+    else {
+    	div.find("> button, > span").show();
     }
 }
 
@@ -1514,16 +1525,4 @@ function toggleFileButtons(paramName) {
         }
     }
 	var maxValue = parseInt(paramJSON["maxValue"]);
-	
-	// Disable buttons if max reached
-    var fileObjListings = param_file_listing[paramName];
-    if (fileObjListings == null || fileObjListings == undefined) {
-        fileObjListings = [];
-    }
-    if (fileObjListings.length === maxValue) {
-    	$("[id='" + paramName + "']").parent().parent().find("button").button("disable")
-    }
-    else {
-    	$("[id='" + paramName + "']").parent().parent().find("button").button("enable")
-    }
 }
