@@ -86,7 +86,7 @@
                     <t:dataList value="#{aFile.sendToBatch}" var="p" rendered="#{aFile.directory}">
                         <tr>
                             <td>
-                                <h:outputLink value="#" onclick="setInputField('#{p.name}', '#{aFile.fullUrl}');checkBatch('#{p.name}');">
+                                <h:outputLink value="#" onclick="checkBatch('#{p.name}');setInputField('#{p.name}', '#{aFile.fullUrl}');">
                                     <h:outputText>
                                         Send Batch to #{p.name}
                                     </h:outputText>

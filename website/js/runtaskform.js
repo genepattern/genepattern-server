@@ -372,8 +372,8 @@ function loadParameterInfo(parameters, initialValues)
             if (parseInt(parameters[q].maxValue) == 1) {
 	            var rowNum = q + 1;
 	            var modeToggle = $("<div id='modeToggle" + rowNum + "'></div>");
-	            modeToggle.append("<input type='radio' value='normal' name='mode" + rowNum + "' id='singleMode" + rowNum + "' checked='true'><label title='In this mode when you submit this task a single job will be executed with the parameter values provided.' for='singleMode" + (q+1) + "'>Single</label></input>");
-	            modeToggle.append("<input type='radio' value='batch' name='mode" + rowNum + "'id='batchMode" + rowNum + "'><label title='In this mode when submit this task a new job will be spawned for every file in the directory provided to this parameter.' for='batchMode" + rowNum + "'>Batch</label></input>");
+	            modeToggle.append("<input type='radio' value='normal' name='mode" + rowNum + "' id='singleMode" + rowNum + "' checked='true'><label title='A single job will be started using the given inputs.' for='singleMode" + (q+1) + "'>Single</label></input>");
+	            modeToggle.append("<input type='radio' value='batch' name='mode" + rowNum + "'id='batchMode" + rowNum + "'><label title='This will spawn a job for every file in the directory sent to this parameter, provided the file is of a matching type.' for='batchMode" + rowNum + "'>Batch</label></input>");
 	            fileDiv.append(modeToggle);
 	            modeToggle.buttonset();
 	            modeToggle.tooltip();
