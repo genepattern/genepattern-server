@@ -723,7 +723,7 @@ public class GenePatternAnalysisTask {
             jobType = JOB_TYPE.PIPELINE;
         }
         else {
-            if ("IGV".equals(taskInfo.getName()) || "GENEE".equals(taskInfo.getName())) {
+            if ("IGV".equals(taskInfo.getName()) || "GENE_E".equals(taskInfo.getName()) || "GENEE".equals(taskInfo.getName())) {
                 //special-case code, added in GP 3.3.2 for IGV support
                 //TODO: make this the general case for 'pass-by-reference' input files
                 jobType = JOB_TYPE.IGV;
