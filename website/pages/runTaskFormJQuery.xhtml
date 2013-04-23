@@ -17,6 +17,11 @@
 </head>
 <body>
 	<ui:include src="/pages/serverFileDialog.xhtml" />
+	<script type="text/javascript">
+		$(window).unload(function() {
+			history.pushState(null, document.title, location.href);
+		});
+	</script>
 	
 <div id="submitJob" style="visibility: hidden;">
    <!-- <ul>
