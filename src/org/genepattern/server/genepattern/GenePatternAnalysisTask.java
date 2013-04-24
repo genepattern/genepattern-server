@@ -714,8 +714,6 @@ public class GenePatternAnalysisTask {
         boolean allowInputFilePaths = ServerConfiguration.instance().getAllowInputFilePaths(jobContext);
 
         JOB_TYPE jobType = JOB_TYPE.JOB;
-        JobInfoWrapper jobInfoWrapper = null;
-        Map<String,URL> inputLinkMap = new HashMap<String,URL>();
         if (TaskInfo.isVisualizer(taskInfo.getTaskInfoAttributes())) {
             jobType = JOB_TYPE.VISUALIZER;
         }
@@ -723,17 +721,9 @@ public class GenePatternAnalysisTask {
             jobType = JOB_TYPE.PIPELINE;
         }
         else {
+            //special-case: hard-coded 'pass-by-reference' input files for IGV and GENE-E
             if ("IGV".equals(taskInfo.getName()) || "GENE_E".equals(taskInfo.getName()) || "GENEE".equals(taskInfo.getName())) {
-                //special-case code, added in GP 3.3.2 for IGV support
-                //TODO: make this the general case for 'pass-by-reference' input files
                 jobType = JOB_TYPE.IGV;
-                jobInfoWrapper = getJobInfoWrapper(jobInfo.getUserId(), jobInfo.getJobNumber());
-                List<InputFile> inputFiles = jobInfoWrapper.getInputFiles();
-                for(InputFile inputFile : inputFiles) {
-                    final String name = inputFile.getName();
-                    final URL url = inputFile.getUrl();
-                    inputLinkMap.put(name, url);
-                }
             }
         }
 
@@ -799,6 +789,8 @@ public class GenePatternAnalysisTask {
                 // allow parameter value substitutions within file input parameters
                 originalPath = substitute(originalPath, props, paramsCopy);
                 boolean isOptional = "on".equals(attrsCopy.get("optional"));
+                // if necessary use the URL value instead of the server file path value
+                final boolean isUrlMode=paramsCopy[i]._isUrlMode();
                 if (fileType != null && fileType.equals(ParameterInfo.FILE_TYPE) && mode != null && !mode.equals(ParameterInfo.OUTPUT_MODE)) {
                     if (originalPath == null) {
                         if (isOptional) {
@@ -837,17 +829,6 @@ public class GenePatternAnalysisTask {
                             continue;                        
                         }
                     } 
-                    //special-case for IGV
-                    else if (mode.equals(ParameterInfo.INPUT_MODE) && jobType == JOB_TYPE.IGV) {
-                        //TODO: implement more general 'pass-by-reference'
-                        String name = paramsCopy[i].getName();
-                        String value = paramsCopy[i].getValue();
-                        URL link = inputLinkMap.get(name);
-                        if (link != null) {
-                            value = link.toString();
-                            paramsCopy[i].setValue(value);
-                        }
-                    }
                     else if (mode.equals(ParameterInfo.INPUT_MODE)) {
                         log.debug("IN " + paramsCopy[i].getName() + "=" + originalPath);
                         //web form upload: <java.io.tmpdir>/<user_id>_run[0-9]+.tmp/<filename>
@@ -1039,10 +1020,10 @@ public class GenePatternAnalysisTask {
                             }
                         }
                     }
-                    //if (isURL && jobType != JOB_TYPE.VISUALIZER && jobType != JOB_TYPE.PIPELINE && jobType != JOB_TYPE.IGV) {
-                    if (isURL && jobType == JOB_TYPE.JOB) {
+                    if (isURL && jobType == JOB_TYPE.JOB && !isUrlMode) {
                         //don't translate input urls for visualizers and pipelines
-                        //    including special-case for IGV
+                        //    and passByReference parameters
+                        //    including special-case for IGV, GENEE, and GENE_E
                         URI uri = null;
                         try {
                             uri = new URI(originalPath);

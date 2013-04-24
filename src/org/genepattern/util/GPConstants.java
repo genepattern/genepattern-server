@@ -258,6 +258,8 @@ public class GPConstants {
     public static final Object[] PARAM_INFO_TYPE = { "type", PARAM_INFO_CHOICE, PARAM_INFO_TYPES };
 
     public static final String[] PARAM_INFO_OPTIONAL = { "optional", PARAM_INFO_CHECKBOX };
+    
+    public static String[] PARAM_INFO_URL_MODE = { "url", PARAM_INFO_CHECKBOX };
 
     public static final String[] PARAM_INFO_PREFIX = { "prefix_when_specified", PARAM_INFO_STRING };
 

@@ -390,6 +390,19 @@ public class ParameterInfo implements Serializable {
         this.attributes.put(ParameterInfo.LABEL, label);
     }
     
+    /**
+     * Helper method for url input parameters, such as for IGV and GENE-E. 
+     * 
+     * @return true if the module expects the URL to the input file on the command line instead of the local path to the file.
+     */
+    public boolean _isUrlMode() {
+        if (this.attributes == null) {
+            return false;
+        }
+        final boolean passByReference = "on".equals(this.attributes.get(GPConstants.PARAM_INFO_URL_MODE[0]));
+        return passByReference;
+    }
+    
     //support for deep copy
     static public ParameterInfo _deepCopy(final ParameterInfo orig) {
         ParameterInfo copy = new ParameterInfo(orig.getName(), orig.getValue(), orig.getDescription());
