@@ -1,6 +1,7 @@
 package org.genepattern.server.process;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
@@ -75,6 +76,7 @@ public class UserUploadPurger {
         log.debug("initializing purger for userId="+userContext.getUserId());
         init();
         purgePartialUploadsFromDb();
+        purgeTmpFiles();
     }
     
     /**
@@ -103,6 +105,82 @@ public class UserUploadPurger {
             }
             catch (Throwable t) {
                 log.error("Error purging partial upload, userId="+userContext.getUserId()+", path="+userUpload.getPath(), t);
+            }
+        }
+    }
+    
+    /**
+     * Delete temporary input files, which were uploaded from the job input form.
+     * It also deletes any external urls which were transferred in as part of a file list input.
+     * 
+     * The rule of identifying a temporary file is hard-coded into the UserUploadDao class.
+     *     'tmp/*'
+     * Any file which is in the 'tmp' folder of the given user's User Uploads tab.
+     */
+    private void purgeTmpFiles() {
+        //TODO: improve purge algorithm, to prevent deleting input files for active jobs.
+        purgeTmpFilesByDateCutoff();
+    }
+    
+    /**
+     * This implementation matches functionality in <= GP 3.5.0.
+     * We crudely delete all temp files whose timestamp is greater than the cutoff date
+     * set by the 'Purge Jobs After' field in the File Purge Settings of the admin page.
+     */
+    private void purgeTmpFilesByDateCutoff() {
+        if (userContext==null) {
+            log.error("userContext==null");
+            return;
+        }
+        final String userId=userContext.getUserId();
+        log.debug("purging tmp files for user: "+userId);
+        final Date olderThanDate=new Date(dateCutoff);
+        UserUploadDao dao = new UserUploadDao();
+        List<UserUpload> tmpFiles = dao.selectTmpUserUploadsToPurge(userId, olderThanDate);
+        List<GpFilePath> tmpDirs = new ArrayList<GpFilePath>();
+        
+        //quick and dirty way to delete files and parent directories without conflicts
+        //on the first pass, delete all files, don't delete any directories
+        int numFilesToPurge=0;
+        int numDirsToPurge=0;
+        for(UserUpload userUpload : tmpFiles) {
+            try {
+                GpFilePath gpFilePath = initGpFilePath(userUpload);
+                if (gpFilePath.isFile()) {
+                    ++numFilesToPurge;
+                    purgeUserUploadFile(gpFilePath); 
+                }
+                else if (gpFilePath.isDirectory()) {
+                    ++numDirsToPurge;
+                    tmpDirs.add(gpFilePath);
+                }
+                else {
+                    log.error("gpFilePath is neither a file nor a directory: "+gpFilePath.getServerFile().getPath());
+                }
+            }
+            catch (Throwable t) {
+                log.error("Error purging tmpFile, userId="+userContext.getUserId()+", path="+userUpload.getPath(), t);
+            }
+        }
+        log.debug("numFilesToPurge: "+numFilesToPurge);
+        if (numDirsToPurge != tmpDirs.size()) {
+            log.error("numDirsToPurge != tmpDirs.size(), unexpected server error");
+            log.debug("numDirsToPurge: "+numDirsToPurge);
+            log.debug("tmpDirs.size: "+tmpDirs.size());
+        }
+
+        //on the second pass, delete directories
+        //iterate the sorted list in reverse order to ensure that we don't try to delete a parent directory
+        //before we have deleted all of the child directories
+        //this code assumes that the relativePath to a child directory is always alphabetically after any of its
+        //ancestor directories
+        for(int i=tmpDirs.size(); --i>=0;) {
+            GpFilePath tmpDir=tmpDirs.get(i);
+            try {
+                purgeUserUploadFile(tmpDir);
+            }
+            catch (Throwable t) {
+                log.error("Error purging tmpDir, userId="+userContext.getUserId()+", path="+tmpDir.getRelativePath(), t);
             }
         }
     }
