@@ -1,5 +1,6 @@
 package org.genepattern.server.dm.userupload.dao;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
@@ -37,15 +38,52 @@ public class UserUploadDao extends BaseDAO {
     /**
      * Get all user upload files for the given user.
      * @param userId
+     * @param includeTempFiles Whether temp files should be included in the list or not
      * @return
      */
-    public List<UserUpload> selectAllUserUpload(String userId) {
+    public List<UserUpload> selectAllUserUpload(String userId, boolean includeTempFiles) {
         if (userId == null) return Collections.emptyList();
         String hql = "from "+UserUpload.class.getName()+" uu where uu.userId = :userId order by uu.path";
         Query query = HibernateUtil.getSession().createQuery( hql );
         query.setString("userId", userId);
         List<UserUpload> rval = query.list();
-        return rval;
+        
+        // Filter out temp files if includeTempFiles is false
+        List<UserUpload> toReturn = null;
+        if (!includeTempFiles) {
+            toReturn = new ArrayList<UserUpload>();
+            for (UserUpload i : rval) {
+                if (!isTempFile(i)) {
+                    toReturn.add(i);
+                }
+            }
+        }
+        else {
+            toReturn = rval;
+        }
+        
+        return toReturn;
+    }
+    
+    /**
+     * Determines if the fine in question is a temp file.
+     * A file is considered a temp file if it has the following pattern in its path:
+     *      $tmp/*|tmp
+     * @param file
+     * @return
+     */
+    private boolean isTempFile(UserUpload file) {
+        return file.getPath().startsWith("tmp/") || file.getPath().equals("tmp");
+    }
+    
+    /**
+     * Get all user upload files for the given user.
+     * Does not include temp files.
+     * @param userId
+     * @return
+     */
+    public List<UserUpload> selectAllUserUpload(String userId) {
+        return selectAllUserUpload(userId, false);
     }
     
     /**
