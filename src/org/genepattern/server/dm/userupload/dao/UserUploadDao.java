@@ -5,12 +5,14 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
+import org.apache.log4j.Logger;
 import org.genepattern.server.database.BaseDAO;
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.dm.GpFilePath;
 import org.hibernate.Query;
 
 public class UserUploadDao extends BaseDAO {
+    private static Logger log = Logger.getLogger(UserUploadDao.class);
     
     /**
      * Get the user_upload record from the DB for the given GpFilePath.
@@ -64,9 +66,9 @@ public class UserUploadDao extends BaseDAO {
         
         return toReturn;
     }
-    
+
     /**
-     * Determines if the fine in question is a temp file.
+     * Determines if the file in question is a temp file.
      * A file is considered a temp file if it has the following pattern in its path:
      *      $tmp/*|tmp
      * @param file
@@ -125,7 +127,33 @@ public class UserUploadDao extends BaseDAO {
         List<UserUpload> rval = query.list();
         return rval; 
     }
+
+    /**
+     * Get all of the tmp user upload files for the given user which are scheduled to be purged.
+     * 
+     * @param userId, requires a valid user id, otherwise will return an empty list.
+     * @param olderThanDate, requires a non-null cutoff date, otherwise will return an empty list.
+     * 
+     * @return a list of UserUpload instances which should be deleted.
+     */
+    public List<UserUpload> selectTmpUserUploadsToPurge(final String userId, final Date olderThanDate) {
+        if (userId==null) {
+            log.error("userId==null");
+            return Collections.emptyList();
+        }
+        if (olderThanDate==null) {
+            log.debug("olderThanDate==null");
+            return Collections.emptyList();
+        }
+        String hql = "from "+UserUpload.class.getName()+" uu where uu.userId = :userId and uu.path like 'tmp/%' and uu.lastModified < :olderThanDate order by uu.path";        
+        Query query = HibernateUtil.getSession().createQuery( hql );
+        query.setString("userId", userId);
+        query.setDate("olderThanDate", olderThanDate);
+        List<UserUpload> rval = query.list();
+        return rval;
+    }
     
+
     
     public int deleteUserUpload(String userId, GpFilePath gpFileObj) {
         String relativePath = gpFileObj.getRelativePath();
