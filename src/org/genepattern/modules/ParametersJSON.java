@@ -115,8 +115,8 @@ public class ParametersJSON extends JSONObject {
             //add min and max values attributes which specifies
             NumValues numValues = ParamListHelper.initNumValues(pInfo);
 
-            this.put("minValue", numValues.getMin());
-            this.put("maxValue", numValues.getMax());
+            this.put("minValue", String.valueOf(numValues.getMin()));
+            this.put("maxValue", String.valueOf(numValues.getMax()));
         }
         catch (Exception e) {
             log.error("Error creating parameter JSON from from ParameterInfo object");
