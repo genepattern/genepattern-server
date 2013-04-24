@@ -134,7 +134,7 @@ public class UserUploadDao extends BaseDAO {
      * @param userId, requires a valid user id, otherwise will return an empty list.
      * @param olderThanDate, requires a non-null cutoff date, otherwise will return an empty list.
      * 
-     * @return a list of UserUpload instances which should be deleted.
+     * @return a list of UserUpload instances which should be deleted, ordered by path
      */
     public List<UserUpload> selectTmpUserUploadsToPurge(final String userId, final Date olderThanDate) {
         if (userId==null) {
