@@ -63,6 +63,9 @@ public class UploadReceiver extends HttpServlet {
      */
     private File getUploadDirectory(Context userContext, HttpServletRequest request) throws FileUploadException {
         String uploadDirPath = (String) request.getSession().getAttribute("uploadPath");
+        if (uploadDirPath == null) {
+            throw new FileUploadException("server error, missing session attribute 'uploadPath'");
+        }
         if (!uploadDirPath.startsWith("./")) {
             uploadDirPath = "./" + uploadDirPath;
         }
