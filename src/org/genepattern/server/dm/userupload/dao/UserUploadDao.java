@@ -1,6 +1,5 @@
 package org.genepattern.server.dm.userupload.dao;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
@@ -53,37 +52,16 @@ public class UserUploadDao extends BaseDAO {
      */
     public List<UserUpload> selectAllUserUpload(String userId, boolean includeTempFiles) {
         if (userId == null) return Collections.emptyList();
-        String hql = "from "+UserUpload.class.getName()+" uu where uu.userId = :userId order by uu.path";
+        //String hqlOrig = "from "+UserUpload.class.getName()+" uu where uu.userId = :userId order by uu.path";
+        String hql = "from "+UserUpload.class.getName()+" uu where uu.userId = :userId ";
+        if (!includeTempFiles) {
+            hql += "and uu.path not like '"+TMP_DIR+"/%' and uu.path not like '"+TMP_DIR+"' ";
+        }
+        hql += " order by uu.path";
         Query query = HibernateUtil.getSession().createQuery( hql );
         query.setString("userId", userId);
         List<UserUpload> rval = query.list();
-        
-        // Filter out temp files if includeTempFiles is false
-        List<UserUpload> toReturn = null;
-        if (!includeTempFiles) {
-            toReturn = new ArrayList<UserUpload>();
-            for (UserUpload i : rval) {
-                if (!isTempFile(i)) {
-                    toReturn.add(i);
-                }
-            }
-        }
-        else {
-            toReturn = rval;
-        }
-        
-        return toReturn;
-    }
-
-    /**
-     * Determines if the file in question is a temp file.
-     * A file is considered a temp file if it has the following pattern in its path:
-     *      $tmp/*|tmp
-     * @param file
-     * @return
-     */
-    private boolean isTempFile(UserUpload file) {
-        return file.getPath().startsWith(TMP_DIR+"/") || file.getPath().equals(TMP_DIR);
+        return rval; 
     }
     
     /**

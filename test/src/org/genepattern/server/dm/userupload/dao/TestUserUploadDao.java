@@ -20,25 +20,27 @@ public class TestUserUploadDao {
     final static long HOUR_IN_MS = 1000 * 60 * 60;
     final static long DAY_IN_MS = 1000 * 60 * 60 * 24;
     
+    final static Date now=new Date();
+    final static Date oneDayAgo=new Date(now.getTime() - DAY_IN_MS);
+    final static Date eightDaysAgo=new Date(now.getTime() - 8 * DAY_IN_MS);
+
+    static String adminUser;
+    static String testUser;
+     
     @BeforeClass
     static public void beforeClass() throws Exception {
         DbUtil.initDb();
-    }
-    
-    @AfterClass
-    static public void afterClass() throws Exception {
-        DbUtil.shutdownDb();
-    }
-    
-    @Test
-    public void testSelectTmpUserUploadsToPurge() throws Exception {
-        final String adminUser=DbUtil.addUserToDb("admin");
-        
-        final Date olderThanDate = new Date(System.currentTimeMillis() - DAY_IN_MS);
+        adminUser=DbUtil.addUserToDb("admin");
+        testUser=DbUtil.addUserToDb("test");
         
         //initialize by adding a bunch of records
         try {
             HibernateUtil.beginTransaction();
+            
+            //-------------------------
+            // admin acount
+            //-------------------------            
+            createUserUploadRecord(adminUser, new File("tmp/"), 10 * DAY_IN_MS);
             createUserUploadRecord(adminUser, new File("tmp/a.txt"), 8 * DAY_IN_MS);
             createUserUploadRecord(adminUser, new File("tmp/b.txt"), 8 * DAY_IN_MS);
             createUserUploadRecord(adminUser, new File("tmp/c.txt"), 8 * DAY_IN_MS);
@@ -60,17 +62,48 @@ public class TestUserUploadDao {
             createUserUploadRecord(adminUser, new File("tmp/d.txt"));
             createUserUploadRecord(adminUser, new File("tmp/e.txt"));
             createUserUploadRecord(adminUser, new File("tmp/f.txt"));
+            
+            
+            //-------------------------
+            // test acount
+            //-------------------------            
+            createUserUploadRecord(testUser, new File("tmp/"), 10 * DAY_IN_MS);
+            //exact date isn't purged
+            createUserUploadRecord(testUser, new File("tmp/exact_date.txt"), new Date(oneDayAgo.getTime()));
+            //exact date + 1 ms isn't purged
+            createUserUploadRecord(testUser, new File("tmp/plus_one_milli.txt"), new Date(1L+oneDayAgo.getTime()));
+
+            //everything else should be purged
+            createUserUploadRecord(testUser, new File("tmp/minus_one_milli.txt"), new Date(-1L+oneDayAgo.getTime()));
+            createUserUploadRecord(testUser, new File("tmp/minus_ten_milli.txt"), new Date(-10L+oneDayAgo.getTime()));
+            createUserUploadRecord(testUser, new File("tmp/minus_one_sec.txt"), new Date(-1000L+oneDayAgo.getTime()));
+            createUserUploadRecord(testUser, new File("tmp/minus_ten_sec.txt"), new Date(-10000L+oneDayAgo.getTime()));
+            createUserUploadRecord(testUser, new File("tmp/minus_one_hour.txt"), new Date(-HOUR_IN_MS+oneDayAgo.getTime()));
+            createUserUploadRecord(testUser, new File("tmp/minus_one_day.txt"), new Date(-DAY_IN_MS+oneDayAgo.getTime()));
+            
+            //add some regular (non-temp) files for the test account
+            createUserUploadRecord(testUser, new File("all_aml_test.gct"), new Date());
+            createUserUploadRecord(testUser, new File("all_aml_test.cls"), new Date());
 
             HibernateUtil.commitTransaction();
         }
         finally {
             HibernateUtil.closeCurrentSession();
         }
+    }
+    
+    @AfterClass
+    static public void afterClass() throws Exception {
+        DbUtil.shutdownDb();
+    }
+    
+    @Test
+    public void testSelectTmpUserUploadsToPurge() throws Exception {
 
         //query for tmp files
         try {
             UserUploadDao dao = new UserUploadDao();
-            List<UserUpload> tmpFiles = dao.selectTmpUserUploadsToPurge(adminUser, olderThanDate);
+            List<UserUpload> tmpFiles = dao.selectTmpUserUploadsToPurge(adminUser, oneDayAgo);
             Assert.assertEquals("num tmpFiles", 7, tmpFiles.size());
         }
         finally {
@@ -83,44 +116,56 @@ public class TestUserUploadDao {
      */
     @Test
     public void testSelectTmpUserUploadsToPurgeTimestamp() {
-        final Date olderThanDate=new Date(System.currentTimeMillis() - DAY_IN_MS);
-        final String testUser=DbUtil.addUserToDb("test");
-        
-        try {
-            HibernateUtil.beginTransaction();
-            //exact date isn't purged
-            createUserUploadRecord(testUser, new File("tmp/exact_date.txt"), new Date(olderThanDate.getTime()));
-            //exact date + 1 ms isn't purged
-            createUserUploadRecord(testUser, new File("tmp/plus_one_milli.txt"), new Date(1L+olderThanDate.getTime()));
-
-            
-            //everything else should be purged
-            createUserUploadRecord(testUser, new File("tmp/minus_one_milli.txt"), new Date(-1L+olderThanDate.getTime()));
-            createUserUploadRecord(testUser, new File("tmp/minus_ten_milli.txt"), new Date(-10L+olderThanDate.getTime()));
-            createUserUploadRecord(testUser, new File("tmp/minus_one_sec.txt"), new Date(-1000L+olderThanDate.getTime()));
-            createUserUploadRecord(testUser, new File("tmp/minus_ten_sec.txt"), new Date(-10000L+olderThanDate.getTime()));
-            createUserUploadRecord(testUser, new File("tmp/minus_one_hour.txt"), new Date(-HOUR_IN_MS+olderThanDate.getTime()));
-            createUserUploadRecord(testUser, new File("tmp/minus_one_day.txt"), new Date(-DAY_IN_MS+olderThanDate.getTime()));
-
-            HibernateUtil.commitTransaction();
-        }
-        finally {
-            HibernateUtil.closeCurrentSession();
-        }
-        
         //query for tmp files
         try {
             UserUploadDao dao = new UserUploadDao();
-            List<UserUpload> tmpFiles = dao.selectTmpUserUploadsToPurge(testUser, olderThanDate);
+            List<UserUpload> tmpFiles = dao.selectTmpUserUploadsToPurge(testUser, oneDayAgo);
             Assert.assertEquals("num tmpFiles", 6, tmpFiles.size());
         }
         finally {
             HibernateUtil.closeCurrentSession();
         }
-
     }
 
-    private void createUserUploadRecord(final String userId, final File relativeFile) {
+    /**
+     * test case for geting the filtered list of files from the user uploads tab,
+     * filter out the tmp files.
+     */
+    @Test
+    public void testSelectAllUserUploadExceptTmpFiles() {
+        //set up
+        try {
+            UserUploadDao dao = new UserUploadDao();
+            final boolean includeTempFiles=false;
+            List<UserUpload> userUploads=dao.selectAllUserUpload(adminUser, includeTempFiles);
+            Assert.assertEquals("num files not including tmp", 7, userUploads.size());
+        }
+        finally {
+            HibernateUtil.closeCurrentSession();
+        }
+        
+    }
+
+    /**
+     * test case for geting the filtered list of files from the user uploads tab,
+     * filter out the tmp files.
+     */
+    @Test
+    public void testSelectAllUserUploadIncludeTmpFiles() {
+        //set up
+        try {
+            UserUploadDao dao = new UserUploadDao();
+            final boolean includeTempFiles=true;
+            List<UserUpload> userUploads=dao.selectAllUserUpload(adminUser, includeTempFiles);
+            Assert.assertEquals("num files not including tmp", 18, userUploads.size());
+        }
+        finally {
+            HibernateUtil.closeCurrentSession();
+        }
+        
+    }
+
+    static private void createUserUploadRecord(final String userId, final File relativeFile) {
         final Date date;
         if (relativeFile.exists()) {
             date=new Date(relativeFile.lastModified());
@@ -131,11 +176,11 @@ public class TestUserUploadDao {
         createUserUploadRecord(userId, relativeFile, date);
     }
     
-    private void createUserUploadRecord(final String userId, final File relativeFile, final long timeOffset) {
+    static private void createUserUploadRecord(final String userId, final File relativeFile, final long timeOffset) {
         createUserUploadRecord(userId, relativeFile, new Date(System.currentTimeMillis() - timeOffset));
     }
 
-    private void createUserUploadRecord(final String userId, final File relativeFile, final Date lastModified) {
+    static private void createUserUploadRecord(final String userId, final File relativeFile, final Date lastModified) {
         UserUpload uu = new UserUpload();
         uu.setUserId(userId);
         uu.setPath(relativeFile.getPath());
