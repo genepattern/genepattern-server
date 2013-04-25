@@ -12,7 +12,15 @@ import org.genepattern.server.dm.GpFilePath;
 import org.hibernate.Query;
 
 public class UserUploadDao extends BaseDAO {
-    private static Logger log = Logger.getLogger(UserUploadDao.class);
+    final private static Logger log = Logger.getLogger(UserUploadDao.class);
+    
+    /**
+     * This is the name of root directory relative to a given user's upload tab 
+     * for adding temporary files.
+     * We use this for adding input files via the job input form, hiding tmp files from the GUI, 
+     * and purging tmp files from a 'cron' job.
+     */
+    final public static String TMP_DIR="tmp";
     
     /**
      * Get the user_upload record from the DB for the given GpFilePath.
@@ -75,7 +83,7 @@ public class UserUploadDao extends BaseDAO {
      * @return
      */
     private boolean isTempFile(UserUpload file) {
-        return file.getPath().startsWith("tmp/") || file.getPath().equals("tmp");
+        return file.getPath().startsWith(TMP_DIR+"/") || file.getPath().equals(TMP_DIR);
     }
     
     /**
@@ -145,7 +153,10 @@ public class UserUploadDao extends BaseDAO {
             log.debug("olderThanDate==null");
             return Collections.emptyList();
         }
-        String hql = "from "+UserUpload.class.getName()+" uu where uu.userId = :userId and uu.path like 'tmp/%' and uu.lastModified < :olderThanDate order by uu.path";        
+        
+        String hql = "from "+UserUpload.class.getName()+" uu where uu.userId = :userId "+
+                "and uu.path like '"+TMP_DIR+"/%' "+
+                "and uu.lastModified < :olderThanDate order by uu.path";        
         Query query = HibernateUtil.getSession().createQuery( hql );
         query.setString("userId", userId);
         query.setDate("olderThanDate", olderThanDate);
