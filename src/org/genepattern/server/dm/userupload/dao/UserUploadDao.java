@@ -159,7 +159,7 @@ public class UserUploadDao extends BaseDAO {
                 "and uu.lastModified < :olderThanDate order by uu.path";        
         Query query = HibernateUtil.getSession().createQuery( hql );
         query.setString("userId", userId);
-        query.setDate("olderThanDate", olderThanDate);
+        query.setTimestamp("olderThanDate", olderThanDate);
         List<UserUpload> rval = query.list();
         return rval;
     }
