@@ -359,22 +359,23 @@ public class UploadFilesBean {
                 }
             }
         }
-        
-        // tmp is a reserved name
-        if (subdirName.equals("tmp")) {
-            UIBeanHelper.setErrorMessage("'tmp' is a reserved name. Please choose a different subdirectory name.");
-            return;
-        }
-        
         if (subdirName == null || subdirName.length() == 0) {
             UIBeanHelper.setErrorMessage("Please enter a valid subdirectory name");
             return;
         }
-        
         parentPath = UIBeanHelper.getRequest().getParameter("parentPath");
         
         Context userContext = Context.getContextForUser(UIBeanHelper.getUserId());
-        boolean success = DataManager.createSubdirectory(userContext, parentPath, subdirName);
+        final File relativePath=DataManager.initSubdirectory(parentPath, subdirName);
+        //special-case: don't allow creation of top-level tmp directory
+        //TODO: boolean isTmpDir=UserUploadManager.isTmpDir(userContext, relativePath);
+        boolean isTmpDir=DataManager.isTmpDir(userContext, relativePath);
+        if (isTmpDir) {
+            UIBeanHelper.setErrorMessage("This is a reserved hidden directory: "+subdirName);
+            return;
+        }
+        
+        boolean success = DataManager.createSubdirectory(userContext, relativePath);
         if (success) {
             UIBeanHelper.setInfoMessage("Subdirectory " + subdirName + " successfully created");
             files = null;

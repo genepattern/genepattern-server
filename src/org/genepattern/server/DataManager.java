@@ -31,18 +31,17 @@ public class DataManager {
     }
     
     /**
-     * Create a subdirectory in the user's upload directory and records the entry in the DB.
+     * Helper method for initializing the relative File object from the web input form.
+     * There are several ways to declare a file with no parent directory:
+     *     parentPath==null, or
+     *     parentPath==".", or
+     *     parentPath=="./"
      * 
-     *  TODO: refactor this into the UserUploadManager (or at least into the dm pacakge)
-     * 
-     * @param userContext, requires a valid userId
-     * @param parentPath, the path to the parent directory, specified relative to the user's upload directory.
-     *     It can be null. When null it means create a subdir in the user upload dir.
-     * @param name, the filename
-     * 
-     * @return true if the directory was successfully created
+     * @param parentPath, can be null, ".", "./"
+     * @param name
+     * @return
      */
-    public static boolean createSubdirectory(ServerConfiguration.Context userContext, String parentPath, String name) {
+    public static File initSubdirectory(final String parentPath, final String name) {
         File relativePath = null;
         //numerous tests for the parentPath ...
         if (parentPath == null || parentPath.length() == 0 || ".".equals(parentPath) || "./".equals(parentPath) ) {
@@ -53,6 +52,39 @@ public class DataManager {
             //mkdir in a path relative to the user's upload dir
             relativePath = new File(parentPath, name);
         }
+        return relativePath;
+    }
+    
+    /**
+     * Is the given relativePath the root temp directory for the given user?
+     * 
+     * @param userContext
+     * @param relativePath
+     * @return
+     */
+    final static public boolean isTmpDir(final Context userContext, final File relativePath) {
+        //current implementation is: './tmp/'
+        if (relativePath.getParentFile() != null) {
+            //it's a subdirectory, so it can't be the root tmp dir
+            return false;
+        }
+        if (UserUploadDao.TMP_DIR.equals(relativePath.getName())) {
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Create a sub-directory in the user's upload directory and records the entry in the DB.
+     * 
+     *  TODO: re-factor this into the UserUploadManager (or at least into the dm pacakge)
+     * 
+     * @param userContext, requires a valid userId
+     * @param relativePath, the relative path to the parent directory, specified relative to the user's upload directory.
+     * 
+     * @return true if the directory was successfully created
+     */
+    public static boolean createSubdirectory(final ServerConfiguration.Context userContext, final File relativePath) {
         GpFilePath subdirRef = null;
         try {
             //another option ... subdirRef = GpFileObjFactory.getUserUploadFile(userContext, relativePath);
