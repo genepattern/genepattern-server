@@ -359,10 +359,18 @@ public class UploadFilesBean {
                 }
             }
         }
+        
+        // tmp is a reserved name
+        if (subdirName.equals("tmp")) {
+            UIBeanHelper.setErrorMessage("'tmp' is a reserved name. Please choose a different subdirectory name.");
+            return;
+        }
+        
         if (subdirName == null || subdirName.length() == 0) {
             UIBeanHelper.setErrorMessage("Please enter a valid subdirectory name");
             return;
         }
+        
         parentPath = UIBeanHelper.getRequest().getParameter("parentPath");
         
         Context userContext = Context.getContextForUser(UIBeanHelper.getUserId());
