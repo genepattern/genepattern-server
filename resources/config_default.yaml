@@ -21,9 +21,16 @@ default.properties:
     upload.partition.size: 10000000
     upload.max.size: 20000000000
     upload.jumploader: true
-    upload.purge.all: false
-    # flag to disable listing uploaded input files in the menu
-    upload.display.dirs: true
+    # rules for the file purger for purging files from each user's uploads tab 
+    #     using the same schedule as the job purger, it only purges files older than the cutoff date
+    # when purge.all is true, it means purge all files (default: false)
+    upload.purge.all: false 
+    # when purge.tmp is true, it means purge the tmp files (default: true)
+    upload.purge.tmp: true
+    # when purge.partial is true, it means purge any (presumably) stalled partially uploaded files
+    upload.purge.partial: true
+    # rule for hiding/showing the tmp.dir in the uploads tab, by default it's hidden
+    upload.hide.tmp: true
     
     # flag to disable listing file size and modification date in the gui, 
     display.file.info: true
