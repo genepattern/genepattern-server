@@ -40,8 +40,7 @@
                     //dirName=sub%2Fa%26p
                     //dirNameIn=sub/with space
                     //dirName=sub%2Fwith%20space
-
-                	var dirName=encodeURIComponent(dirNameIn);
+                    var dirName=encodeURIComponent(dirNameIn);
                     if (uploadWindow == null) {
                         uploadWindow = window.open('', '#{uploadFilesBean.uploadWindowName}', 'width=620,height=400,status=no,menubar=no,location=no,toolbar=no,scrollbars=no');
                         var currentLoc = uploadWindow.location + "";
