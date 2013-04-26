@@ -18,16 +18,6 @@
         <title>GenePattern | Upload</title>
         <script type="text/javascript" language="javascript" src="../../js/genepattern.js" />
         <script type="text/javascript" language="javascript">
-            var dirName = gup("dirName");
-            function decode(str) {
-                return unescape(str.replace(/\+/g, " "));
-            }
-
-            function addDirName() {
-                if (dirName != null) if (dirName.length > 0)
-                    document.write(" - " + decode(dirName));
-            }
-
             var oldMessage = null;
             function uploaderFileStatusChanged(uploader, file) {
                 if (file.getStatus() == file.STATUS_FAILED) {
@@ -60,13 +50,13 @@
         </script>
     </head>
     <body>
-        <h2 style="font-family: Verdana, Arial, Helvetica, sans-serif;color: #336;font-weight: bold;font-size: 18px;line-height: 20px;">Upload to GenePattern
-            <script language="JavaScript">addDirName();</script>
+        <h2 style="font-family: Verdana, Arial, Helvetica, sans-serif;color: #336;font-weight: bold;font-size: 18px;line-height: 20px;">Upload to GenePattern - ${jumploaderBean.dirName}
         </h2>
         <div id="alertPanel">
             <div style="font-family: Verdana, Arial, Helvetica, sans-serif;font-size: 11px;line-height: 14px;"><strong>Note:</strong> This window must remain open for the upload to complete. New files will not show up in the main window until the page has been <a style="text-decoration:none;font-weight: bolder;color: #009;" href="JavaScript:window.opener.location.reload(true);">refreshed</a>.</div>
         </div>
         <span id="closeSpan" style="display:none;"> [<a href="JavaScript:closeError()">Close</a>]</span>
+        
         <applet id="jumpLoaderApplet" name="jumpLoaderApplet"
                 code="jmaster.jumploader.app.JumpLoaderApplet.class"
                 archive="/gp/downloads/jl_core_z.jar"

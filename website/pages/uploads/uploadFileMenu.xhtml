@@ -27,7 +27,7 @@
                     <h:outputText rendered="#{aFile.directory}">
                         <tr>
                             <td>
-                                <h:commandLink value="Upload Files" rendered="#{uploadFilesBean.uploadEnabled}" action="#{uploadFilesBean.flagUploadPath}" onclick="JavaScript:openUploadWindow('#{aFile.filename}');return false;" immediate="true">
+                                <h:commandLink value="Upload Files" rendered="#{uploadFilesBean.uploadEnabled}" action="#{uploadFilesBean.flagUploadPath}" onclick="JavaScript:openUploadWindow('#{aFile.path}');return false;" immediate="true">
                                     <f:param name="uploadPath" value="#{aFile.path}" />
                                 </h:commandLink>
                             </td>
