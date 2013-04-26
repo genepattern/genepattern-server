@@ -23,7 +23,6 @@ import java.util.concurrent.Executors;
 import org.apache.log4j.Logger;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.taskdefs.Delete;
-import org.genepattern.server.config.ServerConfiguration;
 import org.genepattern.server.config.ServerConfiguration.Context;
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.domain.BatchJob;
@@ -171,14 +170,9 @@ public class Purger extends TimerTask {
     
     private void purgeUserUploadsForUser(ExecutorService exec, Context userContext, long dateCutoff) {
         log.debug("purgeUserUploadsForUser(userId='"+userContext.getUserId()+"') ...");
-        final boolean purgeAll = ServerConfiguration.instance().getGPBooleanProperty(userContext, "upload.purge.all", false);
-        if (purgeAll) {
-            //TODO: must implement this
-            log.error("purgeAll not implemented for user upload directory");
-        }
-        UserUploadPurger uup = new UserUploadPurger(userContext, dateCutoff, purgeAll);
         try {
-            uup.purge(exec);
+            final UserUploadPurger uup = new UserUploadPurger(exec, userContext, dateCutoff);
+            uup.purge();
         }
         catch (Throwable t) {
             log.error(t);

@@ -13,6 +13,7 @@ import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
 import org.genepattern.server.DataManager;
 import org.genepattern.server.FileUtil;
+import org.genepattern.server.config.ServerConfiguration;
 import org.genepattern.server.config.ServerConfiguration.Context;
 import org.genepattern.server.dm.GpFilePath;
 import org.genepattern.server.dm.userupload.UserUploadManager;
@@ -56,8 +57,7 @@ public class UserUploadPurgerDirectoryWalker extends DirectoryWalker<File> {
         this.uup = uup;
         this.userContext = uup.getUserContext();
         this.dateCutoff = uup.getDateCutoff();
-        this.purgeAll = uup.getPurgeAll();
-        
+        this.purgeAll=ServerConfiguration.instance().getGPBooleanProperty(userContext, UserUploadPurger.PROP_PURGE_ALL, false);
     }
     
     public void purgeFromFileTree() throws Exception {

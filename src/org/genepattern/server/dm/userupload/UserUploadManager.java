@@ -20,6 +20,13 @@ public class UserUploadManager {
     private static Logger log = Logger.getLogger(UserUploadManager.class);
 
     /**
+     * Server configuration setting (config.yaml file), when this is true, it means, hide the tmp directory
+     * and it's contents from the listing of files in the Uploads tab.
+     * Default is: true 
+     */
+    final static public String PROP_UPLOAD_HIDE_TMP="upload.hide.tmp";
+
+    /**
      * Get the root upload directory for the given user.
      * @param userContext, requires a valid userId
      * @return
@@ -38,9 +45,12 @@ public class UserUploadManager {
      * @return
      * @throws Exception
      */
-    static public GpFilePath getUploadFileObj(Context userContext, File relativePath, boolean initMetaData) throws Exception {
-        GpFilePath uploadFilePath = GpFileObjFactory.getUserUploadFile(userContext, relativePath);
+    static public GpFilePath getUploadFileObj(final Context userContext, final File relativePath, final boolean initMetaData) throws Exception {
+        final GpFilePath uploadFilePath = GpFileObjFactory.getUserUploadFile(userContext, relativePath);
+        return getUploadFileObj(userContext, uploadFilePath, initMetaData);
+    }
         
+    static public GpFilePath getUploadFileObj(final Context userContext, final GpFilePath uploadFilePath, final boolean initMetaData) throws Exception {
         //if there is a record in the DB ... 
         boolean isInTransaction = false;
         try {
@@ -212,7 +222,7 @@ public class UserUploadManager {
         final GpDirectoryNode root = new GpDirectoryNode(userDir);
 
         //get the list from the DB
-        final List<UserUpload> all = getAllFiles(userContext.getUserId());
+        final List<UserUpload> all = getAllFiles(userContext);
         
         //initialize the list of GpFilePath objects
         final SortedMap<String,GpDirectoryNode> allDirs = new TreeMap<String,GpDirectoryNode>();
@@ -294,9 +304,12 @@ public class UserUploadManager {
      * @param userId
      * @return
      */
-    static private List<UserUpload> getAllFiles(String userId) {
+    static private List<UserUpload> getAllFiles(final Context userContext) {
+        final String userId=userContext.getUserId();
+        final boolean hideTmp=ServerConfiguration.instance().getGPBooleanProperty(userContext, PROP_UPLOAD_HIDE_TMP, true);
+        final boolean includeTempFiles=!hideTmp;
         UserUploadDao dao = new UserUploadDao();
-        return dao.selectAllUserUpload(userId);
+        return dao.selectAllUserUpload(userId, includeTempFiles);
     }
     
     /**

@@ -12,6 +12,7 @@ import java.util.concurrent.Future;
 
 import org.apache.log4j.Logger;
 import org.genepattern.server.DataManager;
+import org.genepattern.server.config.ServerConfiguration;
 import org.genepattern.server.config.ServerConfiguration.Context;
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.dm.GpFilePath;
@@ -42,17 +43,39 @@ import org.genepattern.server.dm.userupload.dao.UserUploadDao;
  */
 public class UserUploadPurger {
     private static Logger log = Logger.getLogger(UserUploadPurger.class);
+    
+    final static public String PROP_PURGE_ALL="upload.purge.all";
+    final static public String PROP_PURGE_TMP="upload.purge.tmp";
+    final static public String PROP_PURGE_PARTIAL="upload.purge.partial";
 
-    private Context userContext;
-    private long dateCutoff;
-    private boolean purgeAll;
+    final private ExecutorService exec;
+    final private Context userContext;
+    final private long dateCutoff;
+    final private boolean purgeAll;
+    final private boolean purgeTmp;
+    final private boolean purgePartial;
 
-    private ExecutorService exec;
+    public UserUploadPurger(final ExecutorService exec, final Context userContext, final long dateCutoff) {
+        if (userContext == null) {
+            throw new IllegalArgumentException("userContext == null");
+        }
+        if (userContext.getUserId() == null) {
+            throw new IllegalArgumentException("userContext.userId == null");
+        }
 
-    public UserUploadPurger(Context userContext, long dateCutoff, boolean purgeAll) {
         this.userContext = userContext;
         this.dateCutoff = dateCutoff;
-        this.purgeAll = purgeAll;
+        this.purgeAll=ServerConfiguration.instance().getGPBooleanProperty(userContext, PROP_PURGE_ALL, false);
+        this.purgeTmp=ServerConfiguration.instance().getGPBooleanProperty(userContext, PROP_PURGE_TMP, true);
+        this.purgePartial=ServerConfiguration.instance().getGPBooleanProperty(userContext, PROP_PURGE_PARTIAL, true);
+        
+        if (exec==null) {
+            log.debug("creating new singleThreadExecutor");
+            this.exec = Executors.newSingleThreadExecutor();
+        }
+        else {
+            this.exec=exec;
+        }
     }
     
     public Context getUserContext() {
@@ -62,23 +85,26 @@ public class UserUploadPurger {
     public long getDateCutoff() {
         return dateCutoff;
     }
-    
-    public boolean getPurgeAll() {
-        return purgeAll;
-    }
 
-    public void purge(ExecutorService exec) throws Exception { 
-        if (exec == null || exec.isShutdown()) {
-            exec = Executors.newSingleThreadExecutor();
+    public void purge() throws Exception { 
+        //special handling for partial uploads, they are purged after a hard-coded cutoff of 1 day
+        if (purgePartial) {
+            purgePartialUploadsFromDb();
         }
-        this.exec = exec;
-
-        log.debug("initializing purger for userId="+userContext.getUserId());
-        init();
-        purgePartialUploadsFromDb();
-        purgeTmpFiles();
+        // purgeAll means ... purge all files from the User Uploads tab except for the tmp files
+        if (purgeAll) {
+            purgeAll();
+        }
+        // purgeTmp means ... purge only the tmp files
+        if (purgeTmp) {
+            purgeTmpFiles();
+        }
     }
     
+    private void purgeAll() {
+        purgeAllFilesByDateCutoff();
+    }
+
     /**
      * Delete stalled partial uploads.
      * This deletes files from the file system, but only based on existing records in the DB. 
@@ -137,13 +163,57 @@ public class UserUploadPurger {
         final Date olderThanDate=new Date(dateCutoff);
         UserUploadDao dao = new UserUploadDao();
         List<UserUpload> tmpFiles = dao.selectTmpUserUploadsToPurge(userId, olderThanDate);
+        purgeFiles(tmpFiles);
+    }
+    
+    /**
+     * Delete all (non tmp) files from the Uploads tab for the given user,
+     * which are older than the system configured cutoff date.
+     * 
+     * This implementation matches functionality in <= GP 3.5.0.
+     * We crudely delete all files whose timestamp is greater than the cutoff date
+     * set by the 'Purge Jobs After' field in the File Purge Settings of the admin page.
+     */
+    private void purgeAllFilesByDateCutoff() {
+        if (userContext==null) {
+            log.error("userContext==null");
+            return;
+        }
+        final String userId=userContext.getUserId();
+        log.debug("purging tmp files for user: "+userId);
+        final Date olderThanDate=new Date(dateCutoff);
+        UserUploadDao dao = new UserUploadDao();
+        final boolean includeTempFiles=false;
+        List<UserUpload> selectedFiles=dao.selectAllUserUpload(userId, includeTempFiles, olderThanDate);
+        purgeFiles(selectedFiles);
+    }
+
+    /**
+     * Create a GpFilePath instance from a UserUpload instance, fetched from the DB.
+     * 
+     * @param userUploadRecord
+     * @return
+     */
+    private GpFilePath initGpFilePath(UserUpload userUploadRecord) throws Exception {
+        GpFilePath gpFilePath = UserUploadManager.getUploadFileObj(userContext, new File(userUploadRecord.getPath()), userUploadRecord);
+        return gpFilePath;
+    }
+
+    /**
+     * Delete each UserUpload file from the given list.
+     * Make sure to delete child files before parent directories.
+     * This method only deletes non-empty directories.
+     * 
+     * @param filesToDelete
+     */
+    private void purgeFiles(final List<UserUpload> filesToDelete) {
         List<GpFilePath> tmpDirs = new ArrayList<GpFilePath>();
         
         //quick and dirty way to delete files and parent directories without conflicts
         //on the first pass, delete all files, don't delete any directories
         int numFilesToPurge=0;
         int numDirsToPurge=0;
-        for(UserUpload userUpload : tmpFiles) {
+        for(UserUpload userUpload : filesToDelete) {
             try {
                 GpFilePath gpFilePath = initGpFilePath(userUpload);
                 if (gpFilePath.isFile()) {
@@ -159,7 +229,7 @@ public class UserUploadPurger {
                 }
             }
             catch (Throwable t) {
-                log.error("Error purging tmpFile, userId="+userContext.getUserId()+", path="+userUpload.getPath(), t);
+                log.error("Error purging file from Uploads tab, userId="+userContext.getUserId()+", path="+userUpload.getPath(), t);
             }
         }
         log.debug("numFilesToPurge: "+numFilesToPurge);
@@ -182,31 +252,6 @@ public class UserUploadPurger {
             catch (Throwable t) {
                 log.error("Error purging tmpDir, userId="+userContext.getUserId()+", path="+tmpDir.getRelativePath(), t);
             }
-        }
-    }
-    
-    /**
-     * Create a GpFilePath instance from a UserUpload instance, fetched from the DB.
-     * 
-     * @param userUploadRecord
-     * @return
-     */
-    private GpFilePath initGpFilePath(UserUpload userUploadRecord) throws Exception {
-        GpFilePath gpFilePath = UserUploadManager.getUploadFileObj(userContext, new File(userUploadRecord.getPath()), userUploadRecord);
-        return gpFilePath;
-    }
-
-    /**
-     * Initialize all required variables before purging.
-     * 
-     * @throws Exception - if we shouldn't walk the tree
-     */
-    private void init() throws Exception {
-        if (userContext == null) {
-            throw new IllegalArgumentException("userContext == null");
-        }
-        if (userContext.getUserId() == null) {
-            throw new IllegalArgumentException("userContext.userId == null");
         }
     }
 
@@ -236,4 +281,5 @@ public class UserUploadPurger {
             }
         });
     }
+
 }

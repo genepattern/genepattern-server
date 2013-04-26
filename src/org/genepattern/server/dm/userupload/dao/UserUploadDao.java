@@ -51,48 +51,31 @@ public class UserUploadDao extends BaseDAO {
      * @return
      */
     public List<UserUpload> selectAllUserUpload(String userId, boolean includeTempFiles) {
+        Date olderThanDate=null;
+        return selectAllUserUpload(userId, includeTempFiles, olderThanDate);
+    }
+    
+    public List<UserUpload> selectAllUserUpload(final String userId, final boolean includeTempFiles, final Date olderThanDate) {
         if (userId == null) return Collections.emptyList();
         //String hqlOrig = "from "+UserUpload.class.getName()+" uu where uu.userId = :userId order by uu.path";
         String hql = "from "+UserUpload.class.getName()+" uu where uu.userId = :userId ";
         if (!includeTempFiles) {
             hql += "and uu.path not like '"+TMP_DIR+"/%' and uu.path not like '"+TMP_DIR+"' ";
         }
+        if (olderThanDate != null) {
+            hql += " and uu.lastModified < :olderThanDate ";
+        }
         hql += " order by uu.path";
         Query query = HibernateUtil.getSession().createQuery( hql );
         query.setString("userId", userId);
+        if (olderThanDate != null) {
+            query.setTimestamp("olderThanDate", olderThanDate);
+        }
         List<UserUpload> rval = query.list();
         return rval; 
     }
     
-    /**
-     * Get all user upload files for the given user.
-     * Does not include temp files.
-     * @param userId
-     * @return
-     */
-    public List<UserUpload> selectAllUserUpload(String userId) {
-        return selectAllUserUpload(userId, false);
-    }
     
-    /**
-     * Get all user upload files for the given user whose path is prefixed with the given parentPath.
-     * 
-     * @param userId
-     * @param parentPath
-     * 
-     * @return
-     */
-    public List<UserUpload> selectAllUserUpload(String userId, String parentPath) {
-        if (userId == null) return Collections.emptyList();
-        String hql = "from "+UserUpload.class.getName()+" uu where uu.userId = :userId and uu.path like :path order by uu.path";
-        Query query = HibernateUtil.getSession().createQuery( hql );
-        query.setString("userId", userId);
-        parentPath = parentPath + "%";
-        query.setString("path", parentPath);
-        List<UserUpload> rval = query.list();
-        return rval;
-    }
-
     /**
      * Get all of the stalled partial uploads for the given user.
      * A stalled partial upload is a file record in the DB which has not finished being uploaded,
@@ -109,7 +92,6 @@ public class UserUploadDao extends BaseDAO {
         Query query = HibernateUtil.getSession().createQuery( hql );
         query.setString("userId", userId);
         query.setTimestamp("olderThanDate", olderThanDate);
-        //query.setDate("olderThanDate", olderThanDate);
         List<UserUpload> rval = query.list();
         return rval; 
     }

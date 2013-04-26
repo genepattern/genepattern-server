@@ -24,6 +24,7 @@ import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.apache.commons.fileupload.servlet.ServletRequestContext;
 import org.apache.log4j.Logger;
+import org.genepattern.server.DataManager;
 import org.genepattern.server.config.ServerConfiguration;
 import org.genepattern.server.config.ServerConfiguration.Context;
 import org.genepattern.server.dm.GpFileObjFactory;
@@ -96,14 +97,21 @@ public class UploadReceiver extends HttpServlet {
      * @param name
      * @param first, if it's the first chunk of data, it means the file or directory should not be on the file system
      * @return
-     * @throws FileUploadException
+     * @throws FileUploadException if there is a server error, or if there is a naming conflict with the hidden tmp dir.
      */
     private GpFilePath getUploadFile(Context userContext, HttpServletRequest request, String name, boolean first) throws FileUploadException {
-        File uploadDir = getUploadDirectory(userContext, request);
-        File relativeFile = new File(uploadDir, name);
+        final File uploadDir = getUploadDirectory(userContext, request);
+        final File relativeFile = new File(uploadDir, name);
+        
         try {
             boolean initMetaData = !first;
-            GpFilePath uploadFile = UserUploadManager.getUploadFileObj(userContext, relativeFile, initMetaData);
+            //special-case, block 'tmp'
+            final GpFilePath uploadFilePath = GpFileObjFactory.getUserUploadFile(userContext, relativeFile);
+            if (DataManager.isTmpDir(uploadFilePath)) {
+                throw new FileUploadException("Can't save file with reserved filename: "+relativeFile.getPath());
+            }
+
+            final GpFilePath uploadFile = UserUploadManager.getUploadFileObj(userContext, uploadFilePath, initMetaData);
             return uploadFile;
         }
         catch (Exception e) {

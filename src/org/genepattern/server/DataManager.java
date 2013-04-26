@@ -64,7 +64,8 @@ public class DataManager {
      */
     final static public boolean isTmpDir(final Context userContext, final File relativePath) {
         //current implementation is: './tmp/'
-        if (relativePath.getParentFile() != null) {
+        File parent=relativePath.getParentFile();
+        if (parent != null && !".".equals(parent.getName())) {
             //it's a subdirectory, so it can't be the root tmp dir
             return false;
         }
@@ -73,11 +74,21 @@ public class DataManager {
         }
         return false;
     }
+    
+    final static public boolean isTmpDir(final GpFilePath gpFilePath) {
+        boolean isInSubdir=gpFilePath.getRelativeFile().getParent() != null;
+        if (!isInSubdir) {
+            if (UserUploadDao.TMP_DIR.equals(gpFilePath.getName())) {
+                return true;
+            }
+        }
+        return false;
+    }
 
     /**
      * Create a sub-directory in the user's upload directory and records the entry in the DB.
      * 
-     *  TODO: re-factor this into the UserUploadManager (or at least into the dm pacakge)
+     *  TODO: re-factor this into the UserUploadManager (or at least into the dm package)
      * 
      * @param userContext, requires a valid userId
      * @param relativePath, the relative path to the parent directory, specified relative to the user's upload directory.
