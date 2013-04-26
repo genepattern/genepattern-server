@@ -368,7 +368,6 @@ public class UploadFilesBean {
         Context userContext = Context.getContextForUser(UIBeanHelper.getUserId());
         final File relativePath=DataManager.initSubdirectory(parentPath, subdirName);
         //special-case: don't allow creation of top-level tmp directory
-        //TODO: boolean isTmpDir=UserUploadManager.isTmpDir(userContext, relativePath);
         boolean isTmpDir=DataManager.isTmpDir(userContext, relativePath);
         if (isTmpDir) {
             UIBeanHelper.setErrorMessage("This is a reserved hidden directory: "+subdirName);
