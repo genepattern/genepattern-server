@@ -5,7 +5,7 @@ import java.util.Map.Entry;
 
 import org.apache.log4j.Logger;
 import org.genepattern.server.config.ServerConfiguration.Context;
-import org.genepattern.server.job.input.BatchInputHelper;
+import org.genepattern.server.job.input.JobInputHelper;
 import org.genepattern.server.job.input.JobInput;
 import org.genepattern.server.job.input.JobInput.Param;
 import org.genepattern.server.job.input.JobInput.ParamId;
@@ -39,7 +39,7 @@ public class BatchJobInputApiImpl implements JobInputApi {
     
     private JobReceipt doBatch(final Context userContext, final JobInput jobInput) throws GpServerException {
         try {
-            BatchInputHelper batchJobInput=new BatchInputHelper(userContext, jobInput.getLsid());
+            JobInputHelper batchJobInput=new JobInputHelper(userContext, jobInput.getLsid());
             for(Entry<ParamId,Param> entry : jobInput.getParams().entrySet()) {
                 ParamId paramId=entry.getKey();
                 Param param=entry.getValue();

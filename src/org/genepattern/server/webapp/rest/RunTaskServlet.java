@@ -33,7 +33,7 @@ import org.genepattern.modules.ResponseJSON;
 import org.genepattern.server.config.ServerConfiguration;
 import org.genepattern.server.dm.GpFilePath;
 import org.genepattern.server.domain.Lsid;
-import org.genepattern.server.job.input.BatchInputHelper;
+import org.genepattern.server.job.input.JobInputHelper;
 import org.genepattern.server.job.input.JobInput;
 import org.genepattern.server.job.input.JobInput.Param;
 import org.genepattern.server.job.input.JobInputFileUtil;
@@ -321,7 +321,7 @@ public class RunTaskServlet extends HttpServlet
             }
 
             final ServerConfiguration.Context userContext=ServerConfiguration.Context.getContextForUser(username);
-            final BatchInputHelper jobInputHelper=new BatchInputHelper(userContext, jobSubmitInfo.getLsid());
+            final JobInputHelper jobInputHelper=new JobInputHelper(userContext, jobSubmitInfo.getLsid());
 
             JSONObject parameters = new JSONObject(jobSubmitInfo.getParameters());
             Iterator<String> paramNames = parameters.keys();

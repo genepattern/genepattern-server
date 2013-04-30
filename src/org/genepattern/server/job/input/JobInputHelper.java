@@ -1,5 +1,6 @@
 package org.genepattern.server.job.input;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -14,7 +15,9 @@ import java.util.TreeMap;
 import org.apache.log4j.Logger;
 import org.genepattern.server.config.ServerConfiguration.Context;
 import org.genepattern.server.database.HibernateUtil;
+import org.genepattern.server.dm.GpFileObjFactory;
 import org.genepattern.server.dm.GpFilePath;
+import org.genepattern.server.dm.UrlUtil;
 import org.genepattern.server.domain.AnalysisJobDAO;
 import org.genepattern.server.domain.BatchJob;
 import org.genepattern.server.domain.BatchJobDAO;
@@ -28,85 +31,45 @@ import org.genepattern.server.rest.JobInputApi;
 import org.genepattern.server.rest.JobInputApiFactory;
 import org.genepattern.server.rest.JobInputApiLegacy.ParameterInfoRecord;
 import org.genepattern.server.rest.JobReceipt;
-import org.genepattern.server.webapp.BatchSubmit;
-import org.genepattern.server.webapp.BatchSubmit.MultiFileParameter;
 import org.genepattern.util.SemanticUtil;
 import org.genepattern.webservice.ParameterInfo;
 import org.genepattern.webservice.TaskInfo;
 
 /**
- * Helper class for batch job input.
+ * Helper class for the job input form, includes methods for preparing both batch jobs and regular jobs.
+ * 
+ * For batch jobs, you can either explicitly add all batch input values with the #addBatchValue method.
+ * Alternatively, you can declare a batch job with the #addBatchDirectory method.
+ * This is based on the pre-existing 3.5.0 and earlier method. Which has the following limitations:
+ *     1) can only batch on input files, not other types
+ *     2) the value for a batch input parameter must be to one and only one directory on the file system:
+ *        can be on the server file path or in the user upload tab.
+ *     3) when there are multiple batch input parameters, the intersection of all matching parameters determines
+ *        how many jobs to run. Matches are based on file basename.
  * 
  * @author pcarr
  *
  */
-public class BatchInputHelper {
-    final static private Logger log = Logger.getLogger(BatchInputHelper.class);
+public class JobInputHelper {
+    final static private Logger log = Logger.getLogger(JobInputHelper.class);
 
-    /**
-     * Helper method which is used to create a List of JobInput instances, one for each batch job to run.
-     * Use the given jobInputTemplate to ...
-     *     1) identify which parameters are batch parameters
-     *        Can be inferred or declared.
-     *     2) set non-default values for the remaining non-batch parameters
-     * 
-     * This is based on the pre-existing 3.5.0 and earlier method. Which has the following limitations:
-     *     1) can only batch on input files, not other types
-     *     2) the value for a batch input parameter must be to a directory on the file system.
-     *     3) when there are multiple batch input parameters, the intersection of all matching parameters determines
-     *        how many jobs to run. Matches are based on file basename.
-     *        
-     * See {@link #initValuesFromBatchDirectories()} for how this is used.
-     * 
-     * @param jobContext
-     * @param getTaskStrategy
-     * @param jobInputTemplate
-     * @return
-     * @throws Exception
-     */
-    private static BatchInputHelper initBatchJobInput(final Context userContext, final GetTaskStrategy getTaskStrategy, final JobInput jobInputTemplate) 
-    throws GpServerException
-    {
-        final BatchInputHelper batch = new BatchInputHelper(userContext, jobInputTemplate.getLsid());
-
-        final  TaskInfo taskInfo=getTaskStrategy.getTaskInfo(jobInputTemplate.getLsid());
-        final Map<String,ParameterInfoRecord> paramInfoMap=ParameterInfoRecord.initParamInfoMap(taskInfo);
-
-        for(Entry<ParamId,Param> entry : jobInputTemplate.getParams().entrySet()) {
-            final Param param=entry.getValue();
-            final ParameterInfoRecord record=paramInfoMap.get(param.getParamId().getFqName());
-            final GpFilePath batchInputDir=getBatchInputDir(userContext, record, param);
-            if (batchInputDir != null) {
-                batch.setBatchDirectory(record.getFormal(), param.getParamId(), batchInputDir);
-            }
-            else {
-                //it's not a batch parameter
-                for(ParamValue paramValue : param.getValues()) {
-                    batch.addValue(param.getParamId(), paramValue.getValue());
-                }
-            }
-        }        
-        return batch;
-    }
-    
     private Context userContext=null;
     final JobInputApi singleJobInputApi;
     final GetTaskStrategy getTaskStrategy;
     
     private JobInput inputTemplate=new JobInput();
-    private boolean inferBatchParams=false;
+    //private boolean initializeBatchValues=false;
     private Map<ParamId,Integer> numBatchValuesMap=new HashMap<ParamId,Integer>();
     private Map<ParamId, String> batchInputDirStrs=new LinkedHashMap<ParamId, String>();
-    private Map<ParamId, GpFilePath> batchInputDirs=new LinkedHashMap<ParamId, GpFilePath>();
-    private Map<ParamId,List<GpFilePath>> inferredBatchValues=new LinkedHashMap<ParamId,List<GpFilePath>>();
+    private Map<ParamId,List<GpFilePath>> batchValues=new LinkedHashMap<ParamId,List<GpFilePath>>();
     
-    public BatchInputHelper(final Context userContext, final String lsid) {
+    public JobInputHelper(final Context userContext, final String lsid) {
         this(userContext, lsid, null);
     }
-    public BatchInputHelper(final Context userContext, final String lsid, final JobInputApi singleJobInputApi) {
+    public JobInputHelper(final Context userContext, final String lsid, final JobInputApi singleJobInputApi) {
         this(userContext, lsid, singleJobInputApi, null);
     }
-    public BatchInputHelper(final Context userContext, final String lsid, final JobInputApi singleJobInputApiIn, final GetTaskStrategy getTaskStrategyIn) {
+    public JobInputHelper(final Context userContext, final String lsid, final JobInputApi singleJobInputApiIn, final GetTaskStrategy getTaskStrategyIn) {
         this.userContext=userContext;
         inputTemplate.setLsid(lsid);
         if (getTaskStrategyIn == null) {
@@ -123,9 +86,9 @@ public class BatchInputHelper {
         }
     }
     
-    public void setInferBatchParams(final boolean inferBatchParams) {
-        this.inferBatchParams=inferBatchParams;
-    }
+    //public void setInitializeBatchValues(final boolean initializeBatchValues) {
+    //    this.initializeBatchValues=initializeBatchValues;
+    //}
     
     /**
      * Add a value for a non-batch parameter. 
@@ -181,14 +144,9 @@ public class BatchInputHelper {
         batchInputDirStrs.put(id, value);
     }
     
-    public List<JobInput> inferBatch() throws GpServerException {
-        BatchInputHelper bih=BatchInputHelper.initBatchJobInput(userContext, getTaskStrategy, inputTemplate);
-        return bih.prepareBatch();
-    }
-    
     /**
      * After you initialize all of the values, call this method to create the
-     * list of JobInput, one for each new job to run.
+     * list of JobInputs, one for each new job to run.
      * 
      * @return
      * @throws GpServerException
@@ -200,7 +158,6 @@ public class BatchInputHelper {
         if (inputTemplate.getLsid()==null || inputTemplate.getLsid().length()==0) {
             throw new IllegalArgumentException("lsid not set");
         }
-        //inferBatchParams();
         initValuesFromBatchDirectories();
 
         List<JobInput> batchInputs=new ArrayList<JobInput>();
@@ -217,6 +174,31 @@ public class BatchInputHelper {
         }
         return batchInputs;
     }
+    
+//    /**
+//     * Initialize a batch of jobs from the user-supplied values from the job input form.
+//     * This method matches functionality in versions of GP <= 3.5.0. 
+//     * For each batch input parameter:
+//     * 1) the number of values must be exactly 1.
+//     * 2) the value must be a directory, either a server file path or in the user uploads tab.
+//     * 3) there must be at least one matching file in the directory.
+//     * 
+//     * Rules for matching files:
+//     * 1) if the input parameter has no declared fileFormat, then match any file in the directory.
+//     * 2) if there are declared fileFormat(s), then match any file which has the declared fileFormat
+//     * 3) special-case when the fileFormat includes 'directory', in that case a sub-directory is a match.
+//     *    This allows us to use a batch of input directories.
+//     *    
+//     * @return
+//     */
+//    private void prepareBatchV0() {
+//        if (inputTemplate==null) {
+//            throw new IllegalArgumentException("inputTemplate==null");
+//        }
+//        if (inputTemplate.getLsid()==null || inputTemplate.getLsid().length()==0) {
+//            throw new IllegalArgumentException("lsid not set");
+//        }
+//    }
 
     /**
      * Submit your jobs to the GP server.
@@ -259,16 +241,26 @@ public class BatchInputHelper {
     private void setBatchDirectory(final ParameterInfo formalParam, final ParamId paramId, final GpFilePath batchDir) 
     throws GpServerException
     {
-        batchInputDirs.put(paramId, batchDir);
+        //batchInputDirs.put(paramId, batchDir);
         //infer batch parameters
         final List<GpFilePath> batchInputFiles=getBatchInputFiles(userContext, formalParam, batchDir);
-        inferredBatchValues.put(paramId, batchInputFiles);
+        batchValues.put(paramId, batchInputFiles);
     }
     
-    private int getNumBatchJobs() {
+    private int getNumBatchJobs() throws GpServerException {
         int numJobs=0;
         for(Param param : inputTemplate.getBatchParams()) {
-            numJobs=param.getNumValues();
+            if (numJobs==0) {
+                numJobs=param.getNumValues();
+            }
+            else {
+                //validate
+                if (numJobs != param.getNumValues()) {
+                    //error
+                    throw new GpServerException("Number of batch parameters doesn't match, ");
+                    
+                }
+            }
             //TODO: this assumes all batch params have the same number of values
             return numJobs;
         }
@@ -292,57 +284,58 @@ public class BatchInputHelper {
         return nextJobInput;
     }
 
-    /**
-     * Helper method which is used to create a List of JobInput instances, one for each batch job to run.
-     * Use the inputTemplate to infer which parameters are batch parameters
-     * 
-     * This is based on the pre-existing 3.5.0 and earlier method. Which has the following limitations:
-     *     1) can only batch on input files, not other types
-     *     2) the value for a batch input parameter must be to a directory on the file system.
-     *     3) when there are multiple batch input parameters, the intersection of all matching parameters determines
-     *        how many jobs to run. Matches are based on file basename.
-     *        
-     * See {@link #initValuesFromBatchDirectories()} for how this is used.
-     * 
-     * @param jobContext
-     * @param getTaskStrategy
-     * @param jobInputTemplate
-     * @return
-     * @throws Exception
-     */
-    private void inferBatchParams() throws GpServerException {
-        if (!inferBatchParams) {
-            return;
-        }
-        
-        //if necessary go through the list of input and infer batch input parameters
-        final  TaskInfo taskInfo=getTaskStrategy.getTaskInfo(inputTemplate.getLsid());
-        final Map<String,ParameterInfoRecord> paramInfoMap=ParameterInfoRecord.initParamInfoMap(taskInfo);
-
-        for(Entry<ParamId,Param> entry : inputTemplate.getParams().entrySet()) {
-            final ParamId paramId=entry.getKey();
-            final Param param=entry.getValue();
-            if (param.isBatchParam()) {
-                //ignore explicitly declared batch params
-            }
-            else {
-                final ParameterInfoRecord record=paramInfoMap.get(param.getParamId().getFqName());
-                final GpFilePath batchInputDir=getBatchInputDir(userContext, record, param);
-                if (batchInputDir != null) {
-                    final String value; 
-                    try {
-                        value=batchInputDir.getUrl().toExternalForm();
-                    }
-                    catch (Throwable t) {
-                        throw new GpServerException("Error initializing batch input parameter", t);
-                    }
-                    batchInputDirStrs.put(paramId, value);
-                    param.clear();
-                }
-            }
-        }
-    }
+//    /**
+//     * Helper method which is used to create a List of JobInput instances, one for each batch job to run.
+//     * Use the inputTemplate to infer which parameters are batch parameters
+//     * 
+//     * This is based on the pre-existing 3.5.0 and earlier method. Which has the following limitations:
+//     *     1) can only batch on input files, not other types
+//     *     2) the value for a batch input parameter must be to a directory on the file system.
+//     *     3) when there are multiple batch input parameters, the intersection of all matching parameters determines
+//     *        how many jobs to run. Matches are based on file basename.
+//     *        
+//     * See {@link #initValuesFromBatchDirectories()} for how this is used.
+//     * 
+//     * @param jobContext
+//     * @param getTaskStrategy
+//     * @param jobInputTemplate
+//     * @return
+//     * @throws Exception
+//     */
+//    private void inferBatchParams() throws GpServerException {
+//        //if (!initializeBatchValues) {
+//        //    return;
+//        //}
+//        
+//        //if necessary go through the list of input and infer batch input parameters
+//        final  TaskInfo taskInfo=getTaskStrategy.getTaskInfo(inputTemplate.getLsid());
+//        final Map<String,ParameterInfoRecord> paramInfoMap=ParameterInfoRecord.initParamInfoMap(taskInfo);
+//
+//        for(Entry<ParamId,Param> entry : inputTemplate.getParams().entrySet()) {
+//            final ParamId paramId=entry.getKey();
+//            final Param param=entry.getValue();
+//            if (param.isBatchParam()) {
+//                //ignore explicitly declared batch params
+//            }
+//            else {
+//                final ParameterInfoRecord record=paramInfoMap.get(param.getParamId().getFqName());
+//                final GpFilePath batchInputDir=getBatchInputDir(userContext, record, param);
+//                if (batchInputDir != null) {
+//                    final String value; 
+//                    try {
+//                        value=batchInputDir.getUrl().toExternalForm();
+//                    }
+//                    catch (Throwable t) {
+//                        throw new GpServerException("Error initializing batch input parameter", t);
+//                    }
+//                    batchInputDirStrs.put(paramId, value);
+//                    param.clear();
+//                }
+//            }
+//        }
+//    }
     
+
     /**
      * If necessary, automatically add batch parameters for any declared batch directories.
      * Also, compute the intersection of basenames when there are multiple batch directories.
@@ -371,21 +364,26 @@ public class BatchInputHelper {
             }
         }
         
-        if (inferredBatchValues.size()==0) {
+        if (batchValues.size()==0) {
             return;
         }
         //if there is only one batch parameter ...
-        if (inferredBatchValues.size()==1) {
-            for(final Entry<ParamId,List<GpFilePath>> entry : inferredBatchValues.entrySet()) {
+        if (batchValues.size()==1) {
+            for(final Entry<ParamId,List<GpFilePath>> entry : batchValues.entrySet()) {
+                final String pname=entry.getKey().getFqName();
+                final ParameterInfo pinfo=paramInfoMap.get(pname).getFormal();
                 for(GpFilePath inputFile : entry.getValue()) {
-                    final String value;
-                    try {
-                        value=inputFile.getUrl().toExternalForm();
-                    }
-                    catch (Throwable t) {
-                        throw new GpServerException(t.getLocalizedMessage(),t);
-                    }
-                    addBatchValue(entry.getKey(), value);
+                    //filter by fileFormat
+                    //if (accept(pinfo,inputFile)) {
+                        final String value;
+                        try {
+                            value=inputFile.getUrl().toExternalForm();
+                        }
+                        catch (Throwable t) {
+                            throw new GpServerException(t.getLocalizedMessage(),t);
+                        }
+                        addBatchValue(entry.getKey(), value);
+                    //}
                 }
             }
             return;
@@ -394,11 +392,16 @@ public class BatchInputHelper {
         //for multi batch parameters ... first get the intersection of common basenames
         boolean first=true;
         Set<String> commonBasenames = new LinkedHashSet<String>();
-        for(final Entry<ParamId,List<GpFilePath>> entry : inferredBatchValues.entrySet()) {
+        for(final Entry<ParamId,List<GpFilePath>> entry : batchValues.entrySet()) {
+            final String pname=entry.getKey().getFqName();
+            final ParameterInfo pinfo=paramInfoMap.get(pname).getFormal();
             Set<String> basenames=new LinkedHashSet<String>();
             for(GpFilePath inputFile : entry.getValue()) {
-                final String basename = getBaseFilename(inputFile);
-                basenames.add(basename);
+                //filter by fileFormat
+                //if (accept(pinfo, inputFile)) {
+                    final String basename = getBaseFilename(inputFile);
+                    basenames.add(basename);
+                //}
             }
             if (first) {
                 first=false;
@@ -415,12 +418,16 @@ public class BatchInputHelper {
         
         //if there are any common basenames, only add the parameters which match
         //ensure the values are added in the correct order
-        for(final Entry<ParamId,List<GpFilePath>> entry : inferredBatchValues.entrySet()) {
+        for(final Entry<ParamId,List<GpFilePath>> entry : batchValues.entrySet()) {
+            final String pname=entry.getKey().getFqName();
+            final ParameterInfo pinfo=paramInfoMap.get(pname).getFormal();
             SortedMap<String, GpFilePath> sortedValues=new TreeMap<String, GpFilePath>();
             for(final GpFilePath inputFile : entry.getValue()) {
                 final String basename=getBaseFilename(inputFile);
                 if (commonBasenames.contains(basename)) {
-                    sortedValues.put(basename,inputFile);
+                    //if (accept(pinfo, inputFile)) {
+                        sortedValues.put(basename,inputFile);
+                    //}
                 }
             }
             for(final Entry<String,GpFilePath> next : sortedValues.entrySet()) {
@@ -448,62 +455,78 @@ public class BatchInputHelper {
         }
     }
     
-    /**
-     * Any input parameter which accepts one and only one file, but which is given a directory input parameter
-     * should be flagged as a batch input parameter.
-     * 
-     * @return
-     */
-    private static GpFilePath getBatchInputDir(final Context jobContext, final ParameterInfoRecord record, final Param param) {
-        if (record.getFormal().isInputFile()) {
-            ParamListHelper plh=new ParamListHelper(jobContext, record, param);
-            GpFilePath batchInputDir=plh.getBatchInputDirectory();
-            return batchInputDir;
-        }
-        return null;
-    }
-
-    private static List<GpFilePath> getBatchInputFiles(final Context jobContext, final ParameterInfo pinfo, final GpFilePath batchDir) 
-    throws GpServerException 
-            { 
-        //assume that the value is a directory on the server  
-        List<GpFilePath> out=new ArrayList<GpFilePath>();
-        
-        boolean isAdmin=jobContext.isAdmin();
-        MultiFileParameter mfp=null;
+//    /**
+//     * Any input parameter which accepts one and only one file, but which is given a directory input parameter
+//     * should be flagged as a batch input parameter.
+//     * 
+//     * @return
+//     */
+//    private static GpFilePath getBatchInputDir(final Context jobContext, final ParameterInfoRecord record, final Param param) {
+//        if (record.getFormal().isInputFile()) {
+//            ParamListHelper plh=new ParamListHelper(jobContext, record, param);
+//            GpFilePath batchInputDir=plh.getBatchInputDirectory();
+//            return batchInputDir;
+//        }
+//        return null;
+//    }
+    
+    private static List<GpFilePath> getBatchInputFiles(final Context jobContext, final ParameterInfo pinfo, final GpFilePath batchDir) throws GpServerException {
+        final String parentUrl;
         try {
-            mfp = BatchSubmit.getMultiFileParameter(isAdmin, jobContext, batchDir);
+            parentUrl=batchDir.getUrl().toExternalForm();
         }
-        catch (Throwable t) {
-            throw new GpServerException(t.getLocalizedMessage(), t);
+        catch (Exception e) {
+            throw new GpServerException("Error initializing parentUrl: "+batchDir.getRelativeUri().toString());
         }
-        for(GpFilePath file : mfp.getFiles()) {
-            boolean accepted=accept(pinfo, file);
-            if (accepted) {
-                //final String value=file.getUrl().toExternalForm();
-                out.add(file);
+        List<GpFilePath> filePaths = new ArrayList<GpFilePath>();
+        File[] files = batchDir.getServerFile().listFiles();
+        for(File file : files) {
+            final String fileUrl = parentUrl + UrlUtil.encodeURIcomponent( file.getName() );
+            try {
+                GpFilePath filePath = GpFileObjFactory.getRequestedGpFileObj(fileUrl);
+                filePath.initMetadata();
+                if (accept(pinfo,filePath)) {
+                    filePaths.add(filePath);
+                }
+            }
+            catch (Throwable t) {
+                log.error("Server error preparing batch input fileUrl="+fileUrl, t);
             }
         }
-        return out;
+        return filePaths;
     }
 
     /**
-     * Is the given input value a valid batch input parameter for the given pinfo?
+     * Is the given input value a valid batch input parameter for the given parameter?
+     * 
+     * Policy (circa GP <=3.6.0):
+     *    if the pinfo is of type DIRECTORY, accept only input values which are directories
+     *    if the pinfo is of type FILE,
+     *        if it has fileFormats, accept any file which matches one of the file formats
+     *        if it has not fileFormats, match any file which is not a directory
+     *    otherwise, it's not a match
      * 
      * @param pinfo
      * @param in
      * @return
      */
     private static boolean accept(final ParameterInfo pinfo, final GpFilePath inputValue) {
-        if (inputValue.isDirectory()) {
-            //special-case for directory inputs
-            if (pinfo._isDirectory()) {
+        //special-case for DIRECTORY input parameter
+        if (pinfo._isDirectory()) {
+            if (inputValue.isDirectory()) {
                 return true;
             }
             else {
                 return false;
             }
         }
+        
+        if (inputValue.isDirectory()) {
+            //the value is a directory, but the parameter type is not a directory
+            log.error("Not implemented!");
+            return false;
+        }
+        
         List<String> fileFormats = SemanticUtil.getFileFormats(pinfo);
         if (fileFormats.size()==0) {
             //no declared fileFormats, acceptAll

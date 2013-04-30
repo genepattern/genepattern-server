@@ -26,4 +26,24 @@ public class FileUtil {
         return new File(p, filename);
     }
 
+    private static File dataDir=new File("test/data");
+    /**
+     * Get the top-level directory for data files used by the unit tests. 
+     * It's hard-coded to 'test/data'.
+     * 
+     * @return
+     */
+    public static File getDataDir() {
+        return dataDir;
+    }
+
+    /**
+     * Get a data file from the given relative path.
+     * @param relativePath
+     * @return
+     */
+    public static File getDataFile(final String relativePath) {
+        return new File(dataDir, relativePath);
+    }
+
 }
