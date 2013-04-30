@@ -89,12 +89,7 @@ public class JobInputApiLegacy {
             return new ParameterInfo[0];
         }
 
-//        //initialize a map of paramName to ParameterInfo 
-//        final Map<String,ParameterInfoRecord> paramInfoMap=new HashMap<String,ParameterInfoRecord>();
-//        for(ParameterInfo pinfo : taskInfo.getParameterInfoArray()) {
-//            ParameterInfoRecord record = new ParameterInfoRecord(pinfo);
-//            paramInfoMap.put(pinfo.getName(), record);
-//        }
+        //initialize a map of paramName to ParameterInfo 
         final Map<String,ParameterInfoRecord> paramInfoMap=ParameterInfoRecord.initParamInfoMap(taskInfo);
         //set default values for any parameters which were not set by the user
         for(Entry<String,ParameterInfoRecord> entry : paramInfoMap.entrySet()) {
