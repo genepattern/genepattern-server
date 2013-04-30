@@ -349,19 +349,12 @@ public class RunTaskServlet extends HttpServlet
                 }
             }
 
-            //
-            // experimental, when inferBatch is true, it means ignore the 'Single' or 'Batch' selection from the end user
-            //    instead infer batch inputs when the input value is a directory (instead of a file)
-            //
             final List<JobInput> batchInputs;
-            //final boolean inferBatch=false;
-            //jobInputHelper.setInferBatchParams(inferBatch);
-            //if (inferBatch) {
-            //    batchInputs=jobInputHelper.inferBatch();
-            //}
-            //else {
-                batchInputs=jobInputHelper.prepareBatch();
-            //}
+            // experimental, when deduceBatch is true, it means ignore the 'Single' or 'Batch' selection from the end user
+            //    instead automatically set batch inputs when the input value is a directory (instead of a file)
+            final boolean deduceBatchValues=false;
+            jobInputHelper.setDeduceBatchValues(deduceBatchValues);
+            batchInputs=jobInputHelper.prepareBatch();
             final JobReceipt receipt=jobInputHelper.submitBatch(batchInputs);
 
             

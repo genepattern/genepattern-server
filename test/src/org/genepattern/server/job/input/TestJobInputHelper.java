@@ -9,7 +9,6 @@ import org.genepattern.server.config.ServerConfiguration;
 import org.genepattern.server.config.ServerConfiguration.Context;
 import org.genepattern.server.job.input.JobInput.Param;
 import org.genepattern.server.rest.GpServerException;
-import org.genepattern.webservice.TaskInfo;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -26,7 +25,7 @@ public class TestJobInputHelper {
     final Context userContext = ServerConfiguration.Context.getContextForUser(userId);
     
     //ConvertLineEndings v1
-    final String lsid="urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00002:1";
+    final String cleLsid="urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00002:1";
     //ComparativeMarkerSelection v9
     final String cmsLsid="urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00044:9";
     //ListFiles v0.7
@@ -48,7 +47,7 @@ public class TestJobInputHelper {
     
     @Test
     public void testJobSubmit() throws GpServerException {
-        JobInputHelper jobInputHelper=new JobInputHelper(userContext, lsid, null, taskLoader);
+        JobInputHelper jobInputHelper=new JobInputHelper(userContext, cleLsid, null, taskLoader);
         jobInputHelper.addValue("input.filename", 
                 "ftp://ftp.broadinstitute.org/pub/genepattern/datasets/all_aml/all_aml_train.cls");
 
@@ -62,7 +61,7 @@ public class TestJobInputHelper {
     
     @Test
     public void testAddBatchValue() throws GpServerException {
-        JobInputHelper jobInputHelper=new JobInputHelper(userContext, lsid, null, taskLoader);
+        JobInputHelper jobInputHelper=new JobInputHelper(userContext, cleLsid, null, taskLoader);
         jobInputHelper.addBatchValue("input.filename", 
                 "ftp://ftp.broadinstitute.org/pub/genepattern/datasets/all_aml/all_aml_train.cls");
         jobInputHelper.addBatchValue("input.filename", 
@@ -121,7 +120,7 @@ public class TestJobInputHelper {
     public void testAddBatchDirectory() throws GpServerException {
         final File batchDir=FileUtil.getDataFile("all_aml/");
 
-        final JobInputHelper jobInputHelper=new JobInputHelper(userContext, lsid, null, taskLoader);
+        final JobInputHelper jobInputHelper=new JobInputHelper(userContext, cleLsid, null, taskLoader);
         jobInputHelper.addBatchDirectory("input.filename", batchDir.getAbsolutePath());
         final List<JobInput> inputs=jobInputHelper.prepareBatch();
         Assert.assertEquals("num batch jobs", 7, inputs.size());
@@ -139,7 +138,6 @@ public class TestJobInputHelper {
         jobInputHelper.addBatchDirectory("input.file", batchDir.getAbsolutePath());
         //bogus value, but the module requires a cls file
         jobInputHelper.addValue("cls.file", FileUtil.getDataFile("all_aml/all_aml_test.cls").getAbsolutePath());
-        //jobInputHelper.addBatchDirectory("cls.file", batchDir.getAbsolutePath());
         final List<JobInput> inputs=jobInputHelper.prepareBatch();
         Assert.assertEquals("num batch jobs", 4, inputs.size());
     }
@@ -187,5 +185,39 @@ public class TestJobInputHelper {
         final List<JobInput> inputs=jobInputHelper.prepareBatch();
         Assert.assertEquals("num batch jobs", 2, inputs.size());
     }
+    
+    /**
+     * Test case for initializing the batch inputs automatically, 
+     * based on user-supplied input values.
+     */
+    @Test
+    public void testDeduceBatchParams() throws GpServerException {
+        File clsDir=FileUtil.getSourceFile(TestJobInputHelper.class,"batch_01/cls/");
+        
+        JobInputHelper jobInputHelper=new JobInputHelper(userContext, cleLsid, null, taskLoader);
+        jobInputHelper.setDeduceBatchValues(true);
+        jobInputHelper.addValue("input.filename", 
+                clsDir.getAbsolutePath());
+
+        List<JobInput> inputs=jobInputHelper.prepareBatch();
+        Assert.assertEquals("num jobs", 4, inputs.size());
+    }
+
+    /**
+     * Test case for initializing batch inputs automatically, from more than one parameter.
+     */
+    @Test
+    public void testDeduceBatchParamsMulti() throws GpServerException {
+        final File batchDir=FileUtil.getDataFile("all_aml/");
+        final JobInputHelper jobInputHelper=new JobInputHelper(userContext, cmsLsid, null, taskLoader);
+        jobInputHelper.setDeduceBatchValues(true);
+        jobInputHelper.addValue("input.file", batchDir.getAbsolutePath());
+        jobInputHelper.addValue("cls.file", batchDir.getAbsolutePath());
+        final List<JobInput> inputs=jobInputHelper.prepareBatch();
+        Assert.assertEquals("num batch jobs", 2, inputs.size());
+
+    }
+    
+    
 
 }

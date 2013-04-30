@@ -276,6 +276,10 @@ public class JobInput {
     public void setValue(final ParamId paramId, final Param param) {
         params.put(paramId, param);
     }
+    
+    public void removeValue(final ParamId paramId) {
+        params.remove(paramId);
+    }
 
     /**
      * @param id - the unique id is the name of the parameter, as declared in the manifest
