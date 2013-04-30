@@ -586,7 +586,7 @@ public class ParamListHelper {
     public void updatePinfoValue() throws Exception {
         final int numValues=actualValues.getNumValues();
         final boolean createFilelist=isCreateFilelist();
-
+        
         if (record.getFormal()._isDirectory() || record.getFormal().isInputFile()) {
             HashMap attrs = record.getActual().getAttributes();
             attrs.put(ParameterInfo.MODE, ParameterInfo.URL_INPUT_MODE);
@@ -594,7 +594,6 @@ public class ParamListHelper {
         }
 
         if (createFilelist) {
-            //final GpFilePath filelistFile=createFilelist();
             final boolean downloadExternalFiles=true;
             final List<GpFilePath> listOfValues=getListOfValues(downloadExternalFiles);
             final GpFilePath filelistFile=createFilelist(listOfValues);
@@ -616,7 +615,22 @@ public class ParamListHelper {
             record.getActual().setValue("");
         }
         else if (numValues==1) {
-            record.getActual().setValue(actualValues.getValues().get(0).getValue());
+            //special-case for DIRECTORY type, need to convert URL input into server file path
+            if (record.getFormal()._isDirectory()) {
+                final String valueIn=actualValues.getValues().get(0).getValue();
+                try {
+                    GpFilePath directory=GpFileObjFactory.getRequestedGpFileObj(valueIn);
+                    final String valueOut=directory.getServerFile().getAbsolutePath();
+                    record.getActual().setValue(valueOut);
+                }
+                catch (Throwable t) {
+                    log.debug("Could not get a GP file path to the directory: "+valueIn);
+                    record.getActual().setValue(valueIn);
+                }
+            }
+            else {
+                record.getActual().setValue(actualValues.getValues().get(0).getValue());
+            }
         }
         else {
             log.error("It's not a filelist and numValues="+numValues);
