@@ -25,6 +25,33 @@ img {
 	border: none;
 }
 
+.systemMessageForm
+{
+    color: red;
+	border-width: 1px;
+	border-style: solid;
+	border-color:  #cccccc;
+	padding: 2px;
+}
+
+
+/* To customize the background color of your system message, wrap your message with a div
+   <div class="systemMessageAlert">
+   </div>
+*/
+.systemMessageAlert
+{
+    color: #000000;
+    /* red background */
+    background-color: #ffcccc;
+}
+.systemMessageOk
+{
+	color: #000000; 
+	/* green background */
+	background-color: #D8F7D8; 
+}
+
 #systemMessageLink {
 	position: absolute;
 	right: 0px;

@@ -16,7 +16,7 @@
     <body>
 
         <t:div forceId="true" id="systemMessage">
-            <t:div id="systemMessageForm"  forceId="true" style="display:none;border-width:1px;border-style:solid;border-color:#CCCCCC;padding:2px;">
+            <t:div id="systemMessageForm" forceId="true" styleClass="systemMessageForm" style="display: none;">
 				<img src="/gp/modules/styles/images/delete.gif" style="float:right;" id="systemMessageClose" />
                 <h:outputText escape="false" value="#{systemMessageBean.messageAsHtmlString} " />
 				<script type="text/javascript" language="javascript">
