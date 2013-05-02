@@ -38,20 +38,20 @@ public class TestExternalUrl {
     
     @Test
     public void gpUrl() {
-        URL url=ParamListHelper.initExternalUrl(gpUrl);
+        URL url=JobInputHelper.initExternalUrl(gpUrl);
         Assert.assertNull("Not an external URL: "+gpUrl, url);
     }
     
     @Test
     public void jobResultUrl() {
-        URL url=ParamListHelper.initExternalUrl(jobResultUrlFq);
+        URL url=JobInputHelper.initExternalUrl(jobResultUrlFq);
         Assert.assertNull("Not an external URL: "+jobResultUrlFq, url);
     }
     
     @Test
     public void externalFtp() {
         final String value="ftp://ftp.broadinstitute.org/pub/genepattern/datasets/all_aml/all_aml_test.cls";
-        URL url=ParamListHelper.initExternalUrl(value);
+        URL url=JobInputHelper.initExternalUrl(value);
         Assert.assertNotNull(url);
         Assert.assertEquals(value, url.toExternalForm());
     }
@@ -59,7 +59,7 @@ public class TestExternalUrl {
     @Test
     public void externalHttp() {
         final String value="http://www.broadinstitute.org/cancer/software/genepattern/tutorial/linkedFiles/sample.cdt";
-        URL url=ParamListHelper.initExternalUrl(value);
+        URL url=JobInputHelper.initExternalUrl(value);
         Assert.assertNotNull(url);
         Assert.assertEquals(value, url.toExternalForm());
 
@@ -68,7 +68,7 @@ public class TestExternalUrl {
     @Test
     public void serverFilePath() {
         final String value="/xchip/sqa/TestFiles/all_aml_test.cls";
-        URL url=ParamListHelper.initExternalUrl(value);
+        URL url=JobInputHelper.initExternalUrl(value);
         Assert.assertNull("Not an external URL: ", url);
     }
 

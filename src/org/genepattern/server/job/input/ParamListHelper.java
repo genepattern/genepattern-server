@@ -1,7 +1,6 @@
 package org.genepattern.server.job.input;
 
 import java.io.File;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -491,43 +490,6 @@ public class ParamListHelper {
             }
         }
     }
-
-    /**
-     * Can we convert this single input parameter into a batch parameter?
-     * This is a helper method developed as part of the transition from the JSF based 
-     * to the jQuery based job input form.
-     * 
-     * Ideally, the jQuery handle will declare each batch input parameter.
-     * However, this method infers it by comparing the number of input values 
-     * with the number of allowed values for the parameter.
-     * 
-     * Rules:
-     *     1) if the param can accept a list (e.g. numValues=0+), then don't convert to batch input
-     *     2) if the param can't accept a list AND the number of input values is > 1, convert to batch
-     *     3) if the param can't accept a list AND at least one of the input values is a directory, convert to batch
-     * 
-     * @return a GpFilePath to the parent directory if we should, otherwise return null.
-     */
-    public GpFilePath getBatchInputDirectory() {
-        if (acceptsList()) {
-            return null;
-        }
-        if (actualValues.getNumValues()==0) {
-            return null;
-        }
-        
-        if (actualValues.getNumValues()>1) {
-            return null;
-        }
-        
-        //if we're here, actualValues.numValues==1
-        ParamValue pValue=actualValues.getValues().get(0);
-        GpFilePath serverDir=getBatchInputDir(pValue);
-        if (serverDir!=null) {
-            return serverDir;
-        }
-        return null;
-    }
     
     /**
      * Do we need to create a filelist file for this parameter?
@@ -751,7 +713,7 @@ public class ParamListHelper {
     
     private Record initFromValue(final ParamValue pval) throws Exception {
         final String value=pval.getValue();
-        URL externalUrl=initExternalUrl(value);
+        URL externalUrl=JobInputHelper.initExternalUrl(value);
         if (externalUrl != null) {
             //this method does not download the file
             GpFilePath gpPath=JobInputFileUtil.getDistinctPathForExternalUrl(jobContext, externalUrl);
@@ -771,39 +733,6 @@ public class ParamListHelper {
         File serverFile=new File(value);
         GpFilePath gpPath = ServerFileObjFactory.getServerFile(serverFile);
         return new Record(Record.Type.SERVER_PATH, gpPath, null); 
-    }
-
-    //added this method to support batch jobs
-    private static GpFilePath getBatchInputDir(final ParamValue pval) {
-        final String value=pval.getValue();
-        return getBatchInputDir(value);
-    }
-    public static GpFilePath getBatchInputDir(final String value) {
-        GpFilePath gpPath=null;
-        URL externalUrl=initExternalUrl(value);
-        if (externalUrl!=null) {
-            //it's an externalURL
-            return null;
-        }
-
-        try {
-            gpPath = GpFileObjFactory.getRequestedGpFileObj(value);
-            if (gpPath.isDirectory()) {
-                return gpPath;
-            }
-        }
-        catch (Exception e) {
-            log.debug("getRequestedGpFileObj("+value+") threw an exception: "+e.getLocalizedMessage(), e);
-            //ignore
-        }
-        
-        //if we are here, it could be a server file path
-        File serverFile=new File(value);
-        gpPath = ServerFileObjFactory.getServerFile(serverFile);
-        if (gpPath.isDirectory()) {
-            return gpPath;
-        }
-        return null;
     }
 
     private static class Record {
@@ -860,37 +789,6 @@ public class ParamListHelper {
             JobInputFileUtil jobInputFileUtil=new JobInputFileUtil(jobContext);
             jobInputFileUtil.updateUploadsDb(gpPath);
         }
-    }
-
-    /**
-     * Is the input value an external URL?
-     * 
-     * @param value
-     * 
-     * @return the URL if it's an external url, otherwise return null.
-     */
-    static public URL initExternalUrl(final String value) {
-        log.debug("intialize external URL for value="+value);
-
-        if (value.startsWith("<GenePatternURL>")) {
-            log.debug("it's a substition for the gp url");
-            return null;
-        }
-        if (value.startsWith(GpFilePath.getGenePatternUrl().toExternalForm())) {
-            log.debug("it's a gp url");
-            return null;
-        }
-
-        URL url=null;
-        try {
-            url=new URL(value);
-            //url.getHost()
-        }
-        catch (MalformedURLException e) {
-            log.debug("it's not a url", e);
-            return null;
-        }
-        return url;
     }
 
     static private Map<String, List<String>> getOriginalInputValues(final JobInfo reloadJob) {

@@ -21,8 +21,8 @@ import org.junit.Test;
  */
 public class TestJobInputHelper {
     private static TaskLoader taskLoader;
-    final String userId="test";
-    final Context userContext = ServerConfiguration.Context.getContextForUser(userId);
+    private static String adminUserId;
+    private static Context userContext;
     
     //ConvertLineEndings v1
     final String cleLsid="urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00002:1";
@@ -39,6 +39,9 @@ public class TestJobInputHelper {
     
     @BeforeClass
     static public void beforeClass() {
+        adminUserId="admin";
+        userContext=ServerConfiguration.Context.getContextForUser(adminUserId);
+        userContext.setIsAdmin(true);
         taskLoader=new TaskLoader();
         taskLoader.addTask(TestJobInputHelper.class, "ConvertLineEndings_v1.zip");
         taskLoader.addTask(TestJobInputHelper.class, "ComparativeMarkerSelection_v9.zip");
@@ -83,10 +86,10 @@ public class TestJobInputHelper {
     public void testAddBatchMultiParam() throws GpServerException {
         final JobInputHelper jobInputHelper=new JobInputHelper(userContext, cmsLsid, null, taskLoader);
         
-        jobInputHelper.addBatchValue("input.file", createUserUploadRef(userId, "01.gct"));
-        jobInputHelper.addBatchValue("cls.file", createUserUploadRef(userId, "01.cls"));
-        jobInputHelper.addBatchValue("input.file", createUserUploadRef(userId, "02.gct"));
-        jobInputHelper.addBatchValue("cls.file", createUserUploadRef(userId, "02.cls"));
+        jobInputHelper.addBatchValue("input.file", createUserUploadRef(adminUserId, "01.gct"));
+        jobInputHelper.addBatchValue("cls.file", createUserUploadRef(adminUserId, "01.cls"));
+        jobInputHelper.addBatchValue("input.file", createUserUploadRef(adminUserId, "02.gct"));
+        jobInputHelper.addBatchValue("cls.file", createUserUploadRef(adminUserId, "02.cls"));
         final List<JobInput> inputs=jobInputHelper.prepareBatch();
         Assert.assertEquals("num jobs", 2, inputs.size());
         
@@ -96,9 +99,9 @@ public class TestJobInputHelper {
             Param inputFile=input.getParam("input.file");
             Param clsFile=input.getParam("cls.file");
             Assert.assertEquals("num 'input.file'", 1, inputFile.getNumValues());
-            Assert.assertEquals("input.file["+idx+"]", createUserUploadRef(userId,"0"+idx+".gct"), inputFile.getValues().get(0).getValue());
+            Assert.assertEquals("input.file["+idx+"]", createUserUploadRef(adminUserId,"0"+idx+".gct"), inputFile.getValues().get(0).getValue());
             Assert.assertEquals("num 'cls.file'", 1, clsFile.getNumValues());
-            Assert.assertEquals("cls.file["+idx+"]", createUserUploadRef(userId,"0"+idx+".cls"), clsFile.getValues().get(0).getValue());
+            Assert.assertEquals("cls.file["+idx+"]", createUserUploadRef(adminUserId,"0"+idx+".cls"), clsFile.getValues().get(0).getValue());
         }
     }
     
@@ -110,8 +113,8 @@ public class TestJobInputHelper {
     public void testAddBatchMultiParamOneValue() throws GpServerException {
         final JobInputHelper jobInputHelper=new JobInputHelper(userContext, cmsLsid, null, taskLoader);
         
-        jobInputHelper.addBatchValue("input.file", createUserUploadRef(userId, "01.gct"));
-        jobInputHelper.addBatchValue("cls.file", createUserUploadRef(userId, "01.cls"));
+        jobInputHelper.addBatchValue("input.file", createUserUploadRef(adminUserId, "01.gct"));
+        jobInputHelper.addBatchValue("cls.file", createUserUploadRef(adminUserId, "01.cls"));
         final List<JobInput> inputs=jobInputHelper.prepareBatch();
         Assert.assertEquals("num jobs", 1, inputs.size());
     }
@@ -215,9 +218,138 @@ public class TestJobInputHelper {
         jobInputHelper.addValue("cls.file", batchDir.getAbsolutePath());
         final List<JobInput> inputs=jobInputHelper.prepareBatch();
         Assert.assertEquals("num batch jobs", 2, inputs.size());
-
     }
     
+    /**
+     * Test case for a missing batch input parameter, for instance, 
+     *     addBatchDirectory("input.filename", directory) with CMS.
+     *     CMS has an "input.file" parameter, but not an "input.filename" parameter.
+     */
+    @Test
+    public void testMissingBatchInputParameter() {
+        final File batchDir=FileUtil.getSourceFile(TestJobInputHelper.class, "batch_01/res/");
+        final JobInputHelper jobInputHelper=new JobInputHelper(userContext, cmsLsid, null, taskLoader);
+        jobInputHelper.addBatchDirectory("input.filename", 
+                batchDir.getAbsolutePath());
+        try {
+            //final List<JobInput> inputs=
+                    jobInputHelper.prepareBatch();
+            Assert.fail("Expecting GpServerException: empty batch directory");
+        }
+        catch (GpServerException e) {
+            //expected
+        }
+    }
+
+    /**
+     * Test case for an empty batch directory.
+     */
+    @Test
+    public void testEmptyBatchDir() {
+        final File batchDir=FileUtil.getSourceFile(TestJobInputHelper.class,"empty_batch_dir/");
+        final JobInputHelper jobInputHelper=new JobInputHelper(userContext, cleLsid, null, taskLoader);
+        jobInputHelper.addBatchDirectory("input.filename", 
+                batchDir.getAbsolutePath());
+        try {
+            //final List<JobInput> inputs=
+                    jobInputHelper.prepareBatch();
+            Assert.fail("Expecting GpServerException: empty batch directory");
+        }
+        catch (GpServerException e) {
+            //expected
+        }
+    }
+
+    /**
+     * Test case for a non-existent batch directory.
+     */
+    @Test
+    public void testBatchDirNotExists() {
+        final File batchDir=FileUtil.getSourceFile(TestJobInputHelper.class, "batch_dir_does_not_exist/");
+        final JobInputHelper jobInputHelper=new JobInputHelper(userContext, cleLsid, null, taskLoader);
+        jobInputHelper.addBatchDirectory("input.filename", 
+                batchDir.getAbsolutePath());
+        try {
+            //final List<JobInput> inputs=
+                    jobInputHelper.prepareBatch();
+            Assert.fail("Expecting GpServerException: batch directory doesn't exist");
+        }
+        catch (GpServerException e) {
+            //expected
+        }
+    }
+
+    /**
+     * Test case for a batch directory with no matching input files.
+     * E.g. parameter fileFormat=gct and the batch input directory has no gct files.
+     */
+    @Test
+    public void testBatchDirNoMatch() {
+        final File batchDir=FileUtil.getSourceFile(TestJobInputHelper.class, "batch_01/");
+        final JobInputHelper jobInputHelper=new JobInputHelper(userContext, cmsLsid, null, taskLoader);
+        jobInputHelper.addBatchDirectory("input.file", batchDir.getAbsolutePath());
+        try {
+            //final List<JobInput> inputs=
+                    jobInputHelper.prepareBatch();
+            Assert.fail("Expecting GpServerException: empty batch directory");
+        }
+        catch (GpServerException e) {
+            //expected
+        }
+    }
     
+    /**
+     * Test case for multiple batch input parameters, when the intersection of all files 
+     * results in no matches.
+     */
+    @Test
+    public void testMultiBatchDirNoMatch() {
+        final File batchDir=FileUtil.getSourceFile(TestJobInputHelper.class, "batch_03/");
+        final JobInputHelper jobInputHelper=new JobInputHelper(userContext, cmsLsid, null, taskLoader);
+        jobInputHelper.addBatchDirectory("input.file", batchDir.getAbsolutePath());
+        jobInputHelper.addBatchDirectory("cls.file", batchDir.getAbsolutePath());
+        try {
+            //final List<JobInput> inputs=
+                    jobInputHelper.prepareBatch();
+            Assert.fail("Expecting GpServerException: empty batch directory");
+        }
+        catch (GpServerException e) {
+            //expected
+        }
+    }
+
+//    /**
+//     * Test case for a batch input directory, make sure the current user can ready the input directory.
+//     * 
+//     *     TODO: non-admin user using a folder in a different user's upload tab
+//     *     TODO: non-amdin user looking at a server file path, which is not in their allowed list of available server file paths
+//     *     TODO: non-admin user who doesn't have permission to look at server file paths
+//     */
+//    @Test
+//    public void testBatchDirPermissionsCheck() {
+//        throw new IllegalArgumentException("Test not implemented!");
+//    }
+//
+//    /**
+//     * Test case for an input directory for a non-batch parameter which doesn't accept a directory. 
+//     * For instance, drag a directory from the uploads tab to the 'input.file' param of the CLE module.
+//     * 
+//     * TODO: implement fix for this failing test-case
+//     */
+//    @Test
+//    public void testNonBatchInputDirectory() {
+//        final File batchDir=FileUtil.getDataFile("all_aml/");
+//        final JobInputHelper jobInputHelper=new JobInputHelper(userContext, cleLsid, null, taskLoader);
+//        jobInputHelper.addValue("input.filename", 
+//                batchDir.getAbsolutePath());
+//        try {
+//            //final List<JobInput> inputs=
+//                    jobInputHelper.prepareBatch();
+//            Assert.fail("Expecting GpServerException: directory value for a file input parameter");
+//        }
+//        catch (GpServerException e) {
+//            //expected
+//        }
+//    }
 
 }

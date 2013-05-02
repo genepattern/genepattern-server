@@ -2,6 +2,8 @@ package org.genepattern.server.job.input;
 
 import java.io.File;
 import java.io.FilenameFilter;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -19,6 +21,7 @@ import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.dm.GpFileObjFactory;
 import org.genepattern.server.dm.GpFilePath;
 import org.genepattern.server.dm.UrlUtil;
+import org.genepattern.server.dm.serverfile.ServerFileObjFactory;
 import org.genepattern.server.domain.AnalysisJobDAO;
 import org.genepattern.server.domain.BatchJob;
 import org.genepattern.server.domain.BatchJobDAO;
@@ -53,6 +56,37 @@ import org.genepattern.webservice.TaskInfo;
  */
 public class JobInputHelper {
     final static private Logger log = Logger.getLogger(JobInputHelper.class);
+    /**
+     * Is the input value an external URL?
+     * 
+     * @param value
+     * 
+     * @return the URL if it's an external url, otherwise return null.
+     */
+    static public URL initExternalUrl(final String value) {
+        log.debug("intialize external URL for value="+value);
+
+        if (value.startsWith("<GenePatternURL>")) {
+            log.debug("it's a substition for the gp url");
+            return null;
+        }
+        if (value.startsWith(GpFilePath.getGenePatternUrl().toExternalForm())) {
+            log.debug("it's a gp url");
+            return null;
+        }
+
+        URL url=null;
+        try {
+            url=new URL(value);
+            //url.getHost()
+        }
+        catch (MalformedURLException e) {
+            log.debug("it's not a url", e);
+            return null;
+        }
+        return url;
+    }
+
 
     private Context userContext=null;
     final JobInputApi singleJobInputApi;
@@ -293,7 +327,7 @@ public class JobInputHelper {
             }
             else {
                 final String valueIn=param.getValues().get(0).getValue();
-                final GpFilePath batchInputDir=ParamListHelper.getBatchInputDir(valueIn);
+                final GpFilePath batchInputDir=getBatchInputDir(valueIn);
                 if (batchInputDir!=null) {
                     //automatically convert to a batch param
                     try {
@@ -311,7 +345,78 @@ public class JobInputHelper {
             inputTemplate.removeValue(paramId);
         }
     }
+    
+        //added this method to support batch jobs
+    private static GpFilePath getBatchInputDir(final ParamValue pval) {
+        final String value=pval.getValue();
+        return getBatchInputDir(value);
+    }
+    private static GpFilePath getBatchInputDir(final String value) {
+        GpFilePath gpPath=null;
+        URL externalUrl=initExternalUrl(value);
+        if (externalUrl!=null) {
+            //it's an externalURL
+            return null;
+        }
 
+        try {
+            gpPath = GpFileObjFactory.getRequestedGpFileObj(value);
+            if (gpPath.isDirectory()) {
+                return gpPath;
+            }
+        }
+        catch (Exception e) {
+            log.debug("getRequestedGpFileObj("+value+") threw an exception: "+e.getLocalizedMessage(), e);
+            //ignore
+        }
+        
+        //if we are here, it could be a server file path
+        File serverFile=new File(value);
+        gpPath = ServerFileObjFactory.getServerFile(serverFile);
+        if (gpPath.isDirectory()) {
+            return gpPath;
+        }
+        return null;
+    }
+
+
+    /**
+     * 
+     * @param batchInputDirStr
+     * @return
+     */
+    private List<GpFilePath> listBatchDir(final ParameterInfo formalParam, final String initialValue) throws GpServerException {
+        if (initialValue==null) {
+            throw new IllegalArgumentException("initialValue==null");
+        }
+        if (formalParam==null) {
+            throw new IllegalArgumentException("formalParam==null");
+        }
+        final GpFilePath batchInputDir=getBatchInputDir(initialValue);
+        if (batchInputDir==null) {
+            //error: initialValue is not a valid batch input directory
+            final String errorMessage=""+initialValue+" is not a valid batch input directory";
+            throw new GpServerException(errorMessage);
+        }
+        if (!batchInputDir.canRead(userContext.isAdmin(), userContext)) {
+            throw new GpServerException("The current user ("+userContext.getUserId()+") doesn't have permission to read the batch input directory: "+initialValue);
+        }
+        if (!batchInputDir.getServerFile().exists()) {
+            //another error
+            throw new GpServerException("Can't read batch input directory: "+batchInputDir.getRelativeUri().toString());
+        }
+        if (!batchInputDir.getServerFile().isDirectory()) {
+            final String errorMessage=""+initialValue+" is not a valid batch input directory";
+            throw new GpServerException(errorMessage);
+        }
+        
+        final List<GpFilePath> batchInputFiles=getBatchInputFiles(formalParam, batchInputDir);
+        if (batchInputFiles.size()==0) {
+            throw new GpServerException("No matching input files in batch input directory: "+initialValue);
+        }
+        return batchInputFiles;
+    }
+    
     /**
      * If necessary, automatically add batch parameters for any declared batch directories.
      * Also, compute the intersection of basenames when there are multiple batch directories.
@@ -328,16 +433,28 @@ public class JobInputHelper {
         }
         for(final Entry<ParamId,String> entry : batchInputDirStrs.entrySet()) {
             final ParamId paramId=entry.getKey();
-            final String value=entry.getValue();
-            final GpFilePath batchInputDir=ParamListHelper.getBatchInputDir(value);
-            if (batchInputDir != null) {
-                final ParameterInfoRecord record=paramInfoMap.get(paramId.getFqName());
-                setBatchDirectory(record.getFormal(), paramId, batchInputDir);
+            final String initialValue=entry.getValue();
+            final ParameterInfoRecord record=paramInfoMap.get(paramId.getFqName());
+            if (record==null) {
+                //invalid parameter name, the module does not have a parameter with this name
+                throw new GpServerException("Invalid parameter name for batch input directory, "+paramId.getFqName()+"="+initialValue);
             }
-            else {
-                //TODO: this is an error
-                log.error("Invalid batch input directory: "+value);
-            }
+            final ParameterInfo formalParam=record.getFormal();
+            
+            List<GpFilePath> fileList=this.listBatchDir(formalParam, initialValue);
+            //TODO: get rid of the batchValues table
+            batchValues.put(paramId, fileList);
+
+            //final String value=entry.getValue();
+            //final GpFilePath batchInputDir=ParamListHelper.getBatchInputDir(value);
+            //if (batchInputDir != null) {
+            //    final ParameterInfoRecord record=paramInfoMap.get(paramId.getFqName());
+            //    setBatchDirectory(record.getFormal(), paramId, batchInputDir);
+            //}
+            //else {
+            //    //TODO: this is an error
+            //    log.error("Invalid batch input directory: "+value);
+            //}
         }
         
         if (batchValues.size()==0) {
@@ -380,6 +497,11 @@ public class JobInputHelper {
                     break;
                 }
             }
+        }
+        
+        //special-case: no matching parameters, because commonBasenames is empty
+        if (commonBasenames.isEmpty()) {
+            throw new GpServerException("No matching input files for multi-batch job.");
         }
         
         //if there are any common basenames, only add the parameters which match
@@ -427,6 +549,31 @@ public class JobInputHelper {
         }
     };
     private static List<GpFilePath> getBatchInputFiles(final Context jobContext, final ParameterInfo pinfo, final GpFilePath batchDir) throws GpServerException {
+        final String parentUrl;
+        try {
+            parentUrl=batchDir.getUrl().toExternalForm();
+        }
+        catch (Exception e) {
+            throw new GpServerException("Error initializing parentUrl: "+batchDir.getRelativeUri().toString());
+        }
+        List<GpFilePath> filePaths = new ArrayList<GpFilePath>();
+        File[] files = batchDir.getServerFile().listFiles(listFilesFilter);
+        for(File file : files) {
+            final String fileUrl = parentUrl + UrlUtil.encodeURIcomponent( file.getName() );
+            try {
+                GpFilePath filePath = GpFileObjFactory.getRequestedGpFileObj(fileUrl);
+                filePath.initMetadata();
+                if (accept(pinfo,filePath)) {
+                    filePaths.add(filePath);
+                }
+            }
+            catch (Throwable t) {
+                log.error("Server error preparing batch input fileUrl="+fileUrl, t);
+            }
+        }
+        return filePaths;
+    }
+    private List<GpFilePath> getBatchInputFiles(final ParameterInfo pinfo, final GpFilePath batchDir) throws GpServerException {
         final String parentUrl;
         try {
             parentUrl=batchDir.getUrl().toExternalForm();
