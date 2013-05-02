@@ -40,7 +40,6 @@ public class LsfCommandExecutorDebug extends LsfCommandExecutor {
 
     @Override
     public void runCommand(String[] commandLine, Map<String, String> environmentVariables, File runDir, File stdoutFile, File stderrFile, JobInfo jobInfo, File stdinFile) throws CommandExecutorException {
-        // TODO Auto-generated method stub
         log.debug("Running command for job "+jobInfo.getJobNumber()+". "+jobInfo.getTaskName());
         final CommandProperties lsfProperties = CommandManagerFactory.getCommandManager().getCommandProperties(jobInfo);
         final LsfCommand cmd = new LsfCommand();
