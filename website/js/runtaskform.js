@@ -470,8 +470,19 @@ function loadParameterInfo(parameters, initialValues)
             {
                 textField = $("<input type='text' id='" + parameters[q].name +"' name='" + parameters[q].name + "'/>");
             }
+            
+            // Handle link drags
+            textField.get(0).addEventListener("dragenter", dragEnter, true);
+            textField.get(0).addEventListener("dragleave", dragLeave, true);
+            textField.get(0).addEventListener("dragexit", dragExit, false);
+            textField.get(0).addEventListener("dragover", dragOver, false);
+            textField.get(0).addEventListener("drop", function(event) {
+            	$(this).removeClass('highlight');
+            	var link = event.dataTransfer.getData('Text')
+            	$(this).val(link);
+            }, true);
 
-            textField.change(function ()
+            textField.change(function()
             {
                 var valueList = [];
                 valueList.push($(this).val());
@@ -531,7 +542,7 @@ function loadParameterInfo(parameters, initialValues)
         dropbox.addEventListener("dragleave", dragLeave, true);
         dropbox.addEventListener("dragexit", dragExit, false);
         dropbox.addEventListener("dragover", dragOver, false);
-        dropbox.addEventListener("drop", drop, false);
+        dropbox.addEventListener("drop", drop, true);
     }
 
     $("button.urlButton").button().click(function()
