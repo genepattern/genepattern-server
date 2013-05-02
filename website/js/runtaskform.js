@@ -1361,13 +1361,13 @@ function uploadFile(paramName, file, fileOrder, fileId)
     fileId = "file_" + fileId;
     $("#fileUploadDiv").append("<div id='" + fileId + "'/>");
     $("#"+fileId).before("<p>" + file.name + "</p>");
-    $("#"+fileId).after("<p id='" + fileId + "Percentage'/>");
+    $("#"+fileId).append("<div class='progress-label' id='" + fileId + "Percentage'/>");
 
     //initialize the progress bar to 0
     $("#"+fileId).progressbar({
         value: 0
     });
-    $("#"+fileId + "Percentage").append("0%");
+    $("#"+fileId + "Percentage").text("0%");
 
     var destinationUrl = "/gp/rest/RunTask/upload";
     // prepare XMLHttpRequest
@@ -1403,8 +1403,7 @@ function uploadFile(paramName, file, fileOrder, fileId)
                 value: percentComplete
             });
 
-            $("#"+fileId + "Percentage").empty();
-            $("#"+fileId + "Percentage").append(percentComplete.toString() + "%");
+            $("#"+fileId + "Percentage").text(percentComplete.toString() + "%");
         }
         else
         {

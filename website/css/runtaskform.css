@@ -202,6 +202,20 @@ button.urlButton
     padding: 2px;
 }
 
+.progress-label
+{
+    float: left;
+    margin-left: 50%;
+    text-shadow: 1px 1px 0 #fff;
+    margin-top: 6px;
+}
+
+#fileUploadDivMain
+{
+    border: 1px solid #708090;
+    margin-bottom: 5px;
+}
+
 .fileDetails
 {
     margin: 10px 0 6px 0;
