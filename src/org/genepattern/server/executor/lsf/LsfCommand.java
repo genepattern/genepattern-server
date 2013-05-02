@@ -81,6 +81,21 @@ class LsfCommand {
         extraBsubArgs.add("rusage[mem="+maxMemory+"]");
         extraBsubArgs.add("-M");
         extraBsubArgs.add(maxMemory);
+
+        final String cpuSlots=lsfProperties.getProperty(LsfProperties.Key.CPU_SLOTS.getKey());
+        if (cpuSlots != null) {
+            //expecting an integer
+            try {
+                //int numCpuSlots=
+                        Integer.parseInt(cpuSlots);
+            }
+            catch (Throwable t) {
+                //ignoring exception, let the bsub command deal with it
+                log.error("Unexpcted value for "+LsfProperties.Key.CPU_SLOTS.getKey()+"="+cpuSlots);
+            }
+            extraBsubArgs.add("-n");
+            extraBsubArgs.add(cpuSlots);
+        }
         
         Value extraBsubArgsFromConfigFile = lsfProperties.get(LsfProperties.Key.EXTRA_BSUB_ARGS.getKey());
         if (extraBsubArgsFromConfigFile != null) {
