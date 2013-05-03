@@ -51,37 +51,6 @@ public class JobInputApiLegacy {
         return taskInfo;
     }
 
-    public static class ParameterInfoRecord {
-        /**
-         * Initialize a map of paramName to ParameterInfo 
-         * @param taskInfo
-         * @return
-         */
-        final static public Map<String,ParameterInfoRecord> initParamInfoMap(final TaskInfo taskInfo) {
-            Map<String,ParameterInfoRecord> paramInfoMap=new HashMap<String,ParameterInfoRecord>();
-            for(ParameterInfo pinfo : taskInfo.getParameterInfoArray()) {
-                ParameterInfoRecord record = new ParameterInfoRecord(pinfo);
-                paramInfoMap.put(pinfo.getName(), record);
-            }
-            return paramInfoMap;
-        }
-        
-        private ParameterInfo formalParam;
-        private ParameterInfo actualParam;
-        
-        public ParameterInfoRecord(ParameterInfo formalParam) {
-            this.formalParam=formalParam;
-            this.actualParam=ParameterInfo._deepCopy(formalParam);
-        }
-        
-        public ParameterInfo getFormal() {
-            return formalParam;
-        }
-        public ParameterInfo getActual() {
-            return actualParam;
-        }
-    }
-
     public ParameterInfo[] initParameterValues() throws Exception 
     {
         if (jobInput.getParams()==null) {

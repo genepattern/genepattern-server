@@ -28,6 +28,7 @@ import org.junit.Test;
  */
 public class TestParamListHelperGetInitialValues {
     private static TaskInfo taskInfo;
+    private static String lsid;
     private static ParameterInfo[] paramInfos;
     
     private JobInput reloadedValues;
@@ -39,6 +40,7 @@ public class TestParamListHelperGetInitialValues {
     @BeforeClass
     static public void initClass() {
         taskInfo = TaskUtil.getTaskInfoFromZip(TestParamListHelperGetInitialValues.class, "ComparativeMarkerSelection_v9.zip");
+        lsid = taskInfo.getLsid();
         paramInfos=taskInfo.getParameterInfoArray();
     }
     
@@ -105,7 +107,7 @@ public class TestParamListHelperGetInitialValues {
     @Test
     public void testFromDefaultValues() throws Exception {
         JSONObject actualInitialValues=ParamListHelper.getInitialValuesJson(
-                paramInfos, reloadedValues, _fileParam, _formatParam, parameterMap);
+                lsid, paramInfos, reloadedValues, _fileParam, _formatParam, parameterMap);
         checkResults(expectedValues, actualInitialValues);
     }
     
@@ -116,7 +118,7 @@ public class TestParamListHelperGetInitialValues {
         //expecting input.file to match the _fileParam
         expectedValues.put("input.file", new ArrayList<String>(Arrays.asList( _fileParam )));
         JSONObject actualInitialValues=ParamListHelper.getInitialValuesJson(
-                paramInfos, reloadedValues, _fileParam, _formatParam, parameterMap);        
+                lsid, paramInfos, reloadedValues, _fileParam, _formatParam, parameterMap);        
         checkResults(expectedValues, actualInitialValues);
     }
     
@@ -127,7 +129,7 @@ public class TestParamListHelperGetInitialValues {
         //expecting input.file to match the _fileParam
         expectedValues.put("input.file", new ArrayList<String>(Arrays.asList( _fileParam )));
         JSONObject actualInitialValues=ParamListHelper.getInitialValuesJson(
-                paramInfos, reloadedValues, _fileParam, _formatParam, parameterMap);        
+                lsid, paramInfos, reloadedValues, _fileParam, _formatParam, parameterMap);        
         checkResults(expectedValues, actualInitialValues);
     }
     
@@ -139,14 +141,14 @@ public class TestParamListHelperGetInitialValues {
         //expecting input.file to match the request parameter
         expectedValues.put("input.file", new ArrayList<String>(Arrays.asList( inputFile )));
         JSONObject actualInitialValues=ParamListHelper.getInitialValuesJson(
-                paramInfos, reloadedValues, _fileParam, _formatParam, parameterMap);
+                lsid, paramInfos, reloadedValues, _fileParam, _formatParam, parameterMap);
         checkResults(expectedValues, actualInitialValues);
     }
     
     @Test
     public void testNoParameters() throws Exception {
         expectedValues.clear();
-        JSONObject actualInitialValues=ParamListHelper.getInitialValuesJson(new ParameterInfo[] {}, reloadedValues, _fileParam, _formatParam, parameterMap);
+        JSONObject actualInitialValues=ParamListHelper.getInitialValuesJson(lsid, new ParameterInfo[] {}, reloadedValues, _fileParam, _formatParam, parameterMap);
         checkResults(expectedValues, actualInitialValues);
     }
     

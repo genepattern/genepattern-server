@@ -5,16 +5,13 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.SortedMap;
 import java.util.StringTokenizer;
-import java.util.TreeMap;
+import java.util.regex.Pattern;
 
 import org.apache.log4j.Logger;
-import org.genepattern.server.PermissionsHelper;
 import org.genepattern.server.config.ServerConfiguration;
 import org.genepattern.server.config.ServerConfiguration.Context;
 import org.genepattern.server.dm.GpFileObjFactory;
@@ -23,11 +20,8 @@ import org.genepattern.server.dm.serverfile.ServerFileObjFactory;
 import org.genepattern.server.job.input.JobInput.Param;
 import org.genepattern.server.job.input.JobInput.ParamId;
 import org.genepattern.server.job.input.JobInput.ParamValue;
-import org.genepattern.server.rest.JobInputApiLegacy.ParameterInfoRecord;
-import org.genepattern.server.webapp.jsf.AuthorizationHelper;
-import org.genepattern.server.webservice.server.dao.AnalysisDAO;
+import org.genepattern.server.rest.ParameterInfoRecord;
 import org.genepattern.util.GPConstants;
-import org.genepattern.webservice.JobInfo;
 import org.genepattern.webservice.ParameterInfo;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -113,24 +107,6 @@ public class ParamListHelper {
     }
 
     /**
-     * Utility method for getting the input values from a (presumably completed) job.
-     * Use this to initialize the jQuery job input form for a reloaded job.
-     * 
-     * @param userContext
-     * @param jobId
-     * @return
-     */
-    static public JobInput getInputValues(final Context userContext, final String jobId) throws Exception {
-        /*
-         * Call this method if you don't already have a JobInfo initialized.
-         * This method call is deliberately agnostic about how we load the info from the GP server.
-         * At the moment (circa GP 3.5) it is getting the values from the ANALYSIS_JOB.PARAMETER_INFO CLOB.
-         */
-        JobInfo jobInfo = initJobInfo(userContext, jobId);
-        return getInputValues(jobInfo);
-    }
-
-    /**
      * Helper method for initializing the 'fileFormat' from a given file name.
      * Usually we shouldn't need to call this method because both '_file=' and
      * '_format=' request parameters are set from the send-to menu.
@@ -152,7 +128,8 @@ public class ParamListHelper {
     }
 
     public static JobInput getInitialValues(
-            ParameterInfo[] parameterInfos, //the formal input parameters
+            final String lsid, //the lsid for the module or pipeline
+            final ParameterInfo[] parameterInfos, //the formal input parameters
             final JobInput reloadedValues, 
             final String _fileParam,
             String _formatParam,
@@ -164,7 +141,7 @@ public class ParamListHelper {
             throw new IllegalArgumentException("parameterInfos==null");
         }
         JobInput initialValues = new JobInput();
-        //TODO: initialValues.setLsid(lsid);
+        initialValues.setLsid(lsid);
         for(ParameterInfo pinfo : parameterInfos) {
             final String pname=pinfo.getName();
             //1) initialize from default values
@@ -265,15 +242,17 @@ public class ParamListHelper {
      * @throws JSONException
      */
     public static JSONObject getInitialValuesJson(
-            ParameterInfo[] parameterInfos, //the formal input parameters
+            final String lsid,
+            final ParameterInfo[] parameterInfos, //the formal input parameters
             final JobInput reloadedValues, 
             final String _fileParam,
-            String _formatParam,
+            final String _formatParam,
             final Map<String,String[]> parameterMap
     )
     throws JSONException, Exception
     {
         JobInput initialValues=getInitialValues(
+                lsid,
                 parameterInfos,
                 reloadedValues,
                 _fileParam,
@@ -291,71 +270,6 @@ public class ParamListHelper {
         }
         return values;
     }
-
-    /**
-     * Get a JobInfo from the DB, for the given jobId.
-     * (Legacy code copied from the RunTaskBean#setTask method).
-     * 
-     * @param userContext, Must be non-null with a valid userId
-     * @param jobId, Must be non-null
-     * 
-     * @return
-     * 
-     * @throws Exception for the following,
-     *     1) if there is no job with jobId in the DB
-     *     2) if the current user does not have permission to 'read' the job
-     */
-    private static JobInfo initJobInfo(final Context userContext, final String jobId) throws Exception {
-        if (userContext==null) {
-            throw new IllegalArgumentException("userContext==null");
-        }
-        if (userContext.getUserId()==null || userContext.getUserId().length()==0) {
-            throw new IllegalArgumentException("userContext.userId is not set");
-        }
-        if (jobId==null) {
-            throw new IllegalArgumentException("jobId==null");
-        }
-        final int jobNumber;
-        try {
-            jobNumber=Integer.parseInt(jobId);
-        }
-        catch (Throwable t) {
-            throw new Exception("Error parsing jobId="+jobId, t);
-        }
-        JobInfo jobInfo = new AnalysisDAO().getJobInfo(jobNumber);
-        if (jobInfo==null) {
-            throw new Exception("Can't load job, jobId="+jobId);
-        }
-
-        // check permissions
-        final boolean isAdmin = AuthorizationHelper.adminJobs(userContext.getUserId());
-        PermissionsHelper perm = new PermissionsHelper(isAdmin, userContext.getUserId(), jobNumber);
-        if (!perm.canReadJob()) {
-            throw new Exception("User does not have permission to load job");
-        }
-        return jobInfo;
-    }
-    
-    /**
-     * Utility method for getting the original input parameters from a 'reloaded' job, 
-     * when you already have a JobInfo initialized from the DB.
-     * 
-     * @param reloadJob
-     * @return
-     */
-    private static JobInput getInputValues(final JobInfo reloadJob) {
-        JobInput jobInput=new JobInput();
-        jobInput.setLsid(reloadJob.getTaskLSID());
-        Map<String, List<String>> orig=getOriginalInputValues(reloadJob);
-        for(final Entry<String, List<String>> entry : orig.entrySet()) {
-            final String pname=entry.getKey();
-            for(String value : entry.getValue()) {
-                jobInput.addValue(pname, value);
-            }
-        }
-        return jobInput;
-    }
-
 
     //inputs
     Context jobContext;
@@ -529,20 +443,21 @@ public class ParamListHelper {
         return true;
     }
 
-    private static String replaceGpUrl(final String in) {
-        if (!in.startsWith("<GenePatternURL>")) {
+    /**
+     * Replace the actual url with the '<GenePatternURL>' substitution variable.
+     * @return
+     */
+    private static String insertGpUrlSubstitution(final String in) {
+        URL gpURL=ServerConfiguration.instance().getGenePatternURL();
+        String gpUrlStr=gpURL.toExternalForm();
+        if (!gpUrlStr.endsWith("/")) {
+            gpUrlStr += "/";
+        }
+        
+        if (!in.startsWith(gpUrlStr)) {
             return in;
         }
-        URL gpURL=ServerConfiguration.instance().getGenePatternURL();
-        String prefix=gpURL.toExternalForm();
-        String suffix=in.substring("<GenePatternURL>".length());
-        if (prefix.endsWith("/") && suffix.startsWith("/")) {
-            return prefix + suffix.substring(1);
-        }
-        if (!prefix.endsWith("/") && !suffix.startsWith("/")) {
-            return prefix + "/" + suffix;
-        }
-        return prefix +suffix;
+        return in.replaceFirst(Pattern.quote(gpUrlStr), "<GenePatternURL>");
     }
     
     public void updatePinfoValue() throws Exception {
@@ -563,7 +478,8 @@ public class ParamListHelper {
             String filelist=filelistFile.getUrl().toExternalForm();
             record.getActual().setValue(filelist);
             
-            //HACK: instead of storing the input values in the filelist or in the DB, store them in the parameter info CLOB
+            //TODO: fix this HACK
+            //    instead of storing the input values in the filelist or in the DB, store them in the parameter info CLOB
             int idx=0;
             for(GpFilePath inputValue : listOfValues) {
                 final String key="values_"+idx;
@@ -617,62 +533,22 @@ public class ParamListHelper {
                 log.error("Invalid value for choice parameter");
             }
         }
+        
+        //special-case for input files and directories, if necessary replace actual URL with '<GenePatternURL>'
+        if (record.getFormal()._isDirectory() || record.getFormal().isInputFile()) {
+            boolean replaceGpUrl=true;
+            if (replaceGpUrl) {
+                final String in=record.getActual().getValue();
+                final String out=ParamListHelper.insertGpUrlSubstitution(in);
+                record.getActual().setValue(out);
+            }
+            
+        }
     }
     
     //-----------------------------------------------------
     //helper methods for creating parameter list files ...
     //-----------------------------------------------------
-    /**
-     * Get the list of previous input values for the given parameter, this is to be called 
-     * when reloading a job.
-     * 
-     * @param pinfo
-     * 
-     * @return the list of input values, or null if the paramater is not an input parameter.
-     */
-    public static List<String> getInputValues(ParameterInfo pinfo) {
-        if (pinfo==null) {
-            throw new IllegalArgumentException("pinfo == null");
-        }
-        HashMap<?,?> attrs=pinfo.getAttributes();
-        if (attrs==null) {
-            log.error("pinfo.attributes==null");
-            return Collections.emptyList();
-        }
-        
-        if (pinfo.isOutputFile()) {
-            //ignore output files
-            log.debug("pinfo.isOutputFile == true");
-            return null;
-        }
-        
-        //extract all 'values_' 
-        SortedMap<Integer,String> valuesMap=new TreeMap<Integer,String>();
-        //List<String> values=new ArrayList<String>();
-        for(Entry<?,?> entry : attrs.entrySet()) {
-            String key=entry.getKey().toString();
-            if (key.startsWith("values_")) {
-                try {
-                    int idx=Integer.parseInt( key.split("_")[1] );
-                    String value=entry.getValue().toString();
-                    value=replaceGpUrl(value);
-                    valuesMap.put(idx, value);
-                }
-                catch (Throwable t) {
-                    log.error("Can't parse pinfo.attribute, key="+key, t);
-                }
-            }
-        }
-        if (valuesMap.size() > 0) {
-            List<String> values=new ArrayList<String>(valuesMap.values());
-            return values;
-        }
-        
-        List<String> values=new ArrayList<String>();
-        values.add(pinfo.getValue());
-        return values;
-    }
-
     private GpFilePath createFilelist(final List<GpFilePath> listOfValues) throws Exception {
         //now, create a new filelist file, add it into the user uploads directory for the given job
         JobInputFileUtil fileUtil = new JobInputFileUtil(jobContext);
@@ -789,36 +665,6 @@ public class ParamListHelper {
             JobInputFileUtil jobInputFileUtil=new JobInputFileUtil(jobContext);
             jobInputFileUtil.updateUploadsDb(gpPath);
         }
-    }
-
-    static private Map<String, List<String>> getOriginalInputValues(final JobInfo reloadJob) {
-        if (reloadJob==null) {
-            log.error("reloadJob==null");
-            return Collections.emptyMap();            
-        }
-        ParameterInfo[] params = reloadJob.getParameterInfoArray();
-        if (params==null) {
-            log.error("reloadJob.parameterInfoArray == null");
-            return Collections.emptyMap();
-        }
-        if (params.length==0) {
-            return Collections.emptyMap();
-        }
-
-        //use LinkedHashMap to preserve input order
-        Map<String, List<String>> inputValues=new LinkedHashMap<String, List<String>>();
-        for (ParameterInfo param : params) {
-            final String pname=param.getName();
-            final List<String> values=getInputValues(param);
-            if (values==null) {
-            }
-            else if (values.size()==0) {
-            }
-            else {
-                inputValues.put(pname, values);
-            }            
-        }
-        return inputValues;
     }
     
 }

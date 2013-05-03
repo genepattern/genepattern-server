@@ -38,6 +38,7 @@ import org.genepattern.server.job.input.JobInput;
 import org.genepattern.server.job.input.JobInput.Param;
 import org.genepattern.server.job.input.JobInputFileUtil;
 import org.genepattern.server.job.input.ParamListHelper;
+import org.genepattern.server.job.input.ReloadJobHelper;
 import org.genepattern.server.rest.JobReceipt;
 import org.genepattern.server.webapp.jsf.AuthorizationHelper;
 import org.genepattern.server.webapp.jsf.JobBean;
@@ -113,7 +114,8 @@ public class RunTaskServlet extends HttpServlet
             if(reloadJobId != null && !reloadJobId.equals(""))
             {
                 //This is a reloaded job
-                reloadJobInput= ParamListHelper.getInputValues(context, reloadJobId);
+                ReloadJobHelper reloadJobHelper=new ReloadJobHelper(context);
+                reloadJobInput = reloadJobHelper.getInputValues(reloadJobId);
 
                 String reloadedLsidString = reloadJobInput.getLsid();
 
@@ -214,6 +216,7 @@ public class RunTaskServlet extends HttpServlet
                 }
             } 
             JSONObject initialValues=ParamListHelper.getInitialValuesJson(
+                    lsid,
                     taskInfo.getParameterInfoArray(), 
                     reloadJobInput, 
                     _fileParam, 
@@ -462,7 +465,8 @@ public class RunTaskServlet extends HttpServlet
         if (reloadJob != null && !reloadJob.equals("")) {
             //This is a reloaded job
             try {
-                reloadJobInput=ParamListHelper.getInputValues(userContext, reloadJob);
+                ReloadJobHelper reloadJobHelper=new ReloadJobHelper(userContext);
+                reloadJobInput = reloadJobHelper.getInputValues(reloadJob);
             }
             catch (Exception e) {
                 log.error("Error initializing from reloadJob="+reloadJob, e);
@@ -496,7 +500,7 @@ public class RunTaskServlet extends HttpServlet
             ParameterInfo[] jobParameters=null;
             if (parameters != null) {
                 JobInput initialValues=ParamListHelper.getInitialValues(
-                        parameters, reloadJobInput, _fileParam, _formatParam, request.getParameterMap());
+                        lsid, parameters, reloadJobInput, _fileParam, _formatParam, request.getParameterMap());
                 
                 jobParameters = new ParameterInfo[parameters.length];
                 int i=0;

@@ -24,6 +24,8 @@ public class TestJobInputHelper {
     private static String adminUserId;
     private static Context userContext;
     
+    final String GP_URL="http://127.0.0.1:8080/gp";
+    
     //ConvertLineEndings v1
     final String cleLsid="urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00002:1";
     //ComparativeMarkerSelection v9
@@ -47,6 +49,24 @@ public class TestJobInputHelper {
         taskLoader.addTask(TestJobInputHelper.class, "ComparativeMarkerSelection_v9.zip");
         taskLoader.addTask(TestJobInputHelper.class, "ListFiles_v0.7.zip");
     }
+    
+    //////////////////////////////////////////
+    // test cases for input file values
+    //
+    //////////////////////////////////////////
+    @Test
+    public void testGpUrlValue() {
+        final String initialValue=GP_URL+"/users/"+adminUserId+"/all_aml_test.cls";
+
+        JobInputHelper jobInputHelper=new JobInputHelper(userContext, cleLsid, null, taskLoader);
+        jobInputHelper.addValue("input.filename", initialValue);
+        
+    }
+
+    //////////////////////////////////////////
+    // test cases for batch input handling
+    //
+    //////////////////////////////////////////
     
     @Test
     public void testJobSubmit() throws GpServerException {
