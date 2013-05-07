@@ -210,12 +210,6 @@ button.urlButton
     margin-top: 6px;
 }
 
-#fileUploadDivMain
-{
-    border: 1px solid #708090;
-    margin-bottom: 5px;
-}
-
 .fileDetails
 {
     margin: 10px 0 6px 0;
@@ -249,14 +243,6 @@ img.buttonIcon {
 	padding-right: 5px;
 	margin-left: -5px;
 	vertical-align:top;
-}
-
-.dNdImg
-{
-    display: inline;
-    vertical-align: bottom;
-    padding-bottom: 2px;
-    padding-left: 2px;
 }
 
 #mod_description_toggle
@@ -449,3 +435,23 @@ hr
 	background: #dae4f4 !important;
 	color: #000000 !important;
 }
+
+span.drop-box
+{
+    font-family: Helvetica, Arial, sans-serif;
+    font-size:13px;
+    background-color:#eee;
+    border: 1px dashed #466eb6;
+    width: 120px;
+    height: 20px;
+    text-align:center;
+    padding-top:5px;
+    -moz-border-radius: 5px;
+    -webkit-border-radius: 5px;
+    -o-border-radius: 5px;
+    border-radius: 5px;
+    margin-left: 9px;
+    padding: 5px 10px 5px 10px;
+}
+
+

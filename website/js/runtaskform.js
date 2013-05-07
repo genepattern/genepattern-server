@@ -417,8 +417,9 @@ function loadParameterInfo(parameters, initialValues)
             fileDiv.append(fileInputDiv);
             
             fileDiv.append("<button type='button' class='urlButton'>"+ addUrlText +"</button>");
-            
-            fileDiv.append("<span>  or  <img class='dNdImg' src='/gp/images/drag_drop_icon.png'/> </span>");
+
+
+            fileDiv.append("<span class='drop-box'>drop files here</span>");
 
             //switch . with _ since the jquery selector does not work with .
             var idPName = parameters[q].name.replace(/\./g,'_');
