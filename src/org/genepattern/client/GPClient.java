@@ -746,7 +746,7 @@ public class GPClient {
                     }
                 }
                 else if (choice.length()==0) {
-                    //special-case for empty value AND display value, manifest is missing required '='
+                    //special-case for empty value, no display value set
                     if (value.length()==0) {
                         validValue=true;
                     }
