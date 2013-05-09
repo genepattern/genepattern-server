@@ -723,29 +723,35 @@ public class GPClient {
 	}
     }
 
+    /**
+     * See if parameter belongs to a set of choices, e.g. 1=T-Test.
+     * If so substitute 1 for T-Test, also check to see if value is valid.
+     * 
+     * @param formalParam
+     * @param value
+     * @return
+     * @throws WebServiceException
+     */
     private static String sub(ParameterInfo formalParam, String value) throws WebServiceException {
-	// see if parameter belongs to a set of choices, e.g. 1=T-Test.
-	// If so substitute 1 for T-Test, also check to see if value is
-	// valid
-	String choicesString = formalParam.getValue();
-	if (value != null && choicesString != null && !choicesString.equals("")) {
-	    String[] choices = choicesString.split(";");
-	    boolean validValue = false;
-	    for (int j = 0; j < choices.length && !validValue; j++) {
-		String[] choiceValueAndChoiceUIValue = choices[j].split("=");
-		if (value.equals(choiceValueAndChoiceUIValue[0])) {
-		    validValue = true;
-		} else if (choiceValueAndChoiceUIValue.length == 2 && value.equals(choiceValueAndChoiceUIValue[1])) {
-		    value = choiceValueAndChoiceUIValue[0];
-		    validValue = true;
-		}
-	    }
-	    if (!validValue) {
-		throw new WebServiceException("Illegal value for parameter " + formalParam.getName() + ". Value: "
-			+ value);
-	    }
-	}
-	return value;
+        String choicesString = formalParam.getValue();
+        if (value != null && choicesString != null && !choicesString.equals("")) {
+            String[] choices = choicesString.split(";");
+            boolean validValue = false;
+            for (int j = 0; j < choices.length && !validValue; j++) {
+                String[] choiceValueAndChoiceUIValue = choices[j].split("=");
+                if (value.equals(choiceValueAndChoiceUIValue[0])) {
+                    validValue = true;
+                } else if (choiceValueAndChoiceUIValue.length == 2 && value.equals(choiceValueAndChoiceUIValue[1])) {
+                    value = choiceValueAndChoiceUIValue[0];
+                    validValue = true;
+                }
+            }
+            if (!validValue) {
+                throw new WebServiceException("Illegal value for parameter " + formalParam.getName() + ". Value: "
+                        + value);
+            }
+        }
+        return value;
     }
 
     /**
