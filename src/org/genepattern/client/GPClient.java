@@ -732,18 +732,34 @@ public class GPClient {
      * @return
      * @throws WebServiceException
      */
-    private static String sub(ParameterInfo formalParam, String value) throws WebServiceException {
-        String choicesString = formalParam.getValue();
+    private static String sub(final ParameterInfo formalParam, String value) throws WebServiceException {
+        final String choicesString = formalParam.getValue();
         if (value != null && choicesString != null && !choicesString.equals("")) {
-            String[] choices = choicesString.split(";");
+            final String[] choices = choicesString.split(";");
             boolean validValue = false;
             for (int j = 0; j < choices.length && !validValue; j++) {
-                String[] choiceValueAndChoiceUIValue = choices[j].split("=");
-                if (value.equals(choiceValueAndChoiceUIValue[0])) {
-                    validValue = true;
-                } else if (choiceValueAndChoiceUIValue.length == 2 && value.equals(choiceValueAndChoiceUIValue[1])) {
-                    value = choiceValueAndChoiceUIValue[0];
-                    validValue = true;
+                final String choice=choices[j];
+                if ("=".equals(choice)) {
+                    //special-case for empty value AND display value
+                    if (value.length()==0) {
+                        validValue=true;
+                    }
+                }
+                else if (choice.length()==0) {
+                    //special-case for empty value AND display value, manifest is missing required '='
+                    if (value.length()==0) {
+                        validValue=true;
+                    }
+                }
+                else {
+                    final String[] choiceValueAndChoiceUIValue = choice.split("=");
+                    if (value.equals(choiceValueAndChoiceUIValue[0])) {
+                        validValue = true;
+                    }
+                    else if (choiceValueAndChoiceUIValue.length == 2 && value.equals(choiceValueAndChoiceUIValue[1])) {
+                        value = choiceValueAndChoiceUIValue[0];
+                        validValue = true;
+                    }
                 }
             }
             if (!validValue) {
