@@ -1791,11 +1791,20 @@ public class GenePatternAnalysisTask {
         for (InputFile inputFile : jobInfoWrapper.getInputFiles()) {
             if (inputFile.isUrl()) {
                 if (inputFile.isExternalLink()) {
-                    log.debug("isExternalLink");
-                    String link = inputFile.getLink();
-                    try {
-                        URL url = new URL(link);
-                        String path = url.getPath();
+                    log.debug("isExternalLink: "+inputFile.getValue());
+                    String path=null;
+                    final URL url = inputFile.getUrl();
+                    if (url==null) {
+                        log.error("can't initialize url for input file: "+inputFile.getValue());
+                    }
+                    else {
+                        try {
+                            final URI uri=url.toURI();
+                            path=uri.getPath();
+                        } 
+                        catch (URISyntaxException e) {
+                            log.error("can't initialize url for input file: "+inputFile.getValue(), e);
+                        }
                         if (path != null) {
                             String filename = path;
                             int idx = path.lastIndexOf('/');
@@ -1806,24 +1815,11 @@ public class GenePatternAnalysisTask {
                             File inputFileToDelete = new File(jobDir, filename);
                             if (inputFileToDelete.canWrite()) {
                                 boolean deleted = inputFileToDelete.delete();
-                                log.debug("deleting input file from job results directory, '"+inputFileToDelete.getAbsolutePath()+"', deleted="+deleted);
+                                log.debug("deleted input file from job results directory, '"+inputFileToDelete.getAbsolutePath()+"', deleted="+deleted);
                             }
                         }
                     }
-                    catch (MalformedURLException e1) {
-                        log.error("not a url: "+link, e1);
-                    }
                 }
-                else if (inputFile.isInternalLink()) {
-                    String value = inputFile.getValue();
-                    String link = inputFile.getLink();
-                    log.debug("isInternalLink value="+value+", link="+link);
-                }
-            }
-            else if (inputFile.isServerFilePath()) {
-                String value = inputFile.getValue();
-                String link = inputFile.getLink();
-                log.debug("isServerFilePath value="+value+", link="+link);
             }
         }
     }
