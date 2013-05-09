@@ -155,7 +155,7 @@
             			updateParamFileTable(elementId);
             			toggleFileButtons(elementId);
                 	}
-                	jq(document.body).click(); // Hide all menus after a send
+                	jq(document.body).focus(); // Hide all menus after a send
                 }
 
                 function preventClose(event) {
@@ -165,6 +165,7 @@
 
                 function checkBatch(elementId) {
                     makeBatch(elementId);
+                    jq(document.body).focus();
                 }
 
                 function validateForm() {
