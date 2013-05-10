@@ -660,6 +660,17 @@ jQuery(document).ready(function()
             fileObjListings = [];
             param_file_listing[paramName] = fileObjListings;
         }
+        
+        // Check if any of the files are over 2 gigs, skip if browser cannot do this
+        if (this.files !== undefined) {
+        	for (var i = 0; i < this.files.length; i++) {
+        		var file = this.files[i];
+        		if (file.size > 2147483648) {
+        			alert("The provided file " + file.name + "is over the 2 GB limit. This file cannot be uploaded in this manner. To use this file please upload it first using the 'Upload' tab found to the far right.");
+        			throw new Error("The provided file " + file.name + "is over the 2 GB limit.");
+        		}
+        	}
+        }
 
         //check if max file length will be violated
         var totalFileLength = fileObjListings.length + this.files.length;
