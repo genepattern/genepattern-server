@@ -237,7 +237,7 @@ function loadModuleInfo(module)
             editLink = "/gp/pipeline/index.jsf?lsid=" + run_task_info.lsid;
         }
 
-        $("#otherOptionsSubMenu").prepend("<li><a href='JavaScript:Menu.denyIE(\"" + editLink + "\");'>Edit</a></li>");
+        $("#otherOptionsSubMenu table tbody").prepend("<tr><td><a href='JavaScript:Menu.denyIE(\"" + editLink + "\");' onclick='jq('.popupMenu').hide();'>Edit</a></td></tr>");
     }
 }
 
