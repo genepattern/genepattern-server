@@ -367,7 +367,8 @@ function loadParameterInfo(parameters, initialValues)
             }
 
             var fileDiv = $("<div id='"+ rowId +"' class='fileDiv'>");
-            
+            var fileInput = $("<input class='uploadedinputfile' id='" + parameters[q].name + "' name='"+ parameters[q].name +"' type='file'/>");
+
             // Create the mode toggle
             if (parseInt(parameters[q].maxValue) == 1) {
 	            var rowNum = q + 1;
@@ -395,6 +396,11 @@ function loadParameterInfo(parameters, initialValues)
 	            	updateParamFileTable(paramName);
 	            });
             }
+            else
+            {
+                //make the file input field multiselect
+                fileInput.attr("multiple", "multiple");
+            }
 
             var uploadFileBtn = $("<button class='uploadBtn' type='button'>"+ uploadFileText + "</button>");
             uploadFileBtn.button().click(function()
@@ -405,7 +411,6 @@ function loadParameterInfo(parameters, initialValues)
 
             fileDiv.append(uploadFileBtn);
 
-            var fileInput = $("<input class='uploadedinputfile' id='" + parameters[q].name + "' name='"+ parameters[q].name +"' type='file'/>");
 
             if(parameters[q].optional.length == 0)
             {
@@ -646,6 +651,7 @@ jQuery(document).ready(function()
 
     $("input[type='file']").live("change", function()
     {
+        var _2GBToBytes = 2147483648;
         var paramName = $(this).attr("name");
 
         var fileObjListings = param_file_listing[paramName];
@@ -655,19 +661,40 @@ jQuery(document).ready(function()
             param_file_listing[paramName] = fileObjListings;
         }
 
-        //check if max file length will be vialoated
+        //check if max file length will be violated
         var totalFileLength = fileObjListings.length + this.files.length;
         validateMaxFiles(paramName, totalFileLength);
 
+        var listOfLargeFiles = [];
         //add newly selected files to table of file listing
         for(var f=0;f < this.files.length;f++)
         {
-            var fileObj = {
-                name: this.files[f].name,
-                object: this.files[f],
-                id: fileId++
-            };
-            fileObjListings.push(fileObj);
+            //first check that the size of the file is <2GB in bytes
+            if(this.files[f].size > _2GBToBytes)
+            {
+                listOfLargeFiles.push(this.files[f]);
+            }
+            else
+            {
+                var fileObj = {
+                    name: this.files[f].name,
+                    object: this.files[f],
+                    id: fileId++
+                };
+                fileObjListings.push(fileObj);
+            }
+        }
+
+        if(listOfLargeFiles.length > 0)
+        {
+            var message = "The following files are larger than 2GB and will not be added: \n";
+            for(var l=0; l<listOfLargeFiles.length; l++)
+            {
+                message += listOfLargeFiles[l].name + "\n";
+            }
+
+            message += "\nPlease use the Uploads tab to upload these files instead.";
+            alert(message);
         }
 
         // add to file listing for the specified parameter
