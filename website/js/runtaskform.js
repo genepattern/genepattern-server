@@ -185,7 +185,6 @@ function loadModuleInfo(module)
         });
     }
 
-
     $("#export").click(function()
     {
          var exportLink = "/gp/makeZip.jsp?name=" + run_task_info.lsid;
@@ -672,24 +671,37 @@ jQuery(document).ready(function()
         	}
         }
 
+        //create a copy of files so that the input file field
+        //can be reset so that files with the same name can be reuploaded
+        var uploadedFiles = [];
+        for(var t=0;t<this.files.length;t++)
+        {
+            uploadedFiles.push(this.files[t]);
+        }
+
+        //Reset the value of the file input to work around
+        //feature in Chrome where uploading the same file sequentially
+        //does not trigger a change event
+        $(this).val(null);
+
         //check if max file length will be violated
-        var totalFileLength = fileObjListings.length + this.files.length;
+        var totalFileLength = fileObjListings.length + uploadedFiles.length;
         validateMaxFiles(paramName, totalFileLength);
 
         var listOfLargeFiles = [];
         //add newly selected files to table of file listing
-        for(var f=0;f < this.files.length;f++)
+        for(var f=0;f < uploadedFiles.length;f++)
         {
             //first check that the size of the file is <2GB in bytes
-            if(this.files[f].size > _2GBToBytes)
+            if(uploadedFiles[f].size > _2GBToBytes)
             {
-                listOfLargeFiles.push(this.files[f]);
+                listOfLargeFiles.push(uploadedFiles[f]);
             }
             else
             {
                 var fileObj = {
-                    name: this.files[f].name,
-                    object: this.files[f],
+                    name: uploadedFiles[f].name,
+                    object: uploadedFiles[f],
                     id: fileId++
                 };
                 fileObjListings.push(fileObj);
@@ -711,24 +723,12 @@ jQuery(document).ready(function()
         // add to file listing for the specified parameter
         updateParamFileTable(paramName);
         toggleFileButtons(paramName);
-
-        //Reset the value of the file input to work around
-        //feature in Chrome where uploading the same file sequentially
-        //does not trigger a change event
-        $(this).val(null);
     });
 
     /* begin other options menu code*/
     var selected = function( event, ui ) {
         $(this).popup( "close" );
     };
-
-   /* $('#otherOptionsIcon').iconbutton({
-        text: false,
-        icons: {
-            primary: "otherOptions"   // Custom icon
-        }
-    });*/
 
     $("button.Reset").click(function()
     {
