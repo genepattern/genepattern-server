@@ -485,6 +485,9 @@ function loadParameterInfo(parameters, initialValues)
             	$(this).removeClass('highlight');
             	var link = event.dataTransfer.getData('Text')
             	$(this).val(link);
+
+                //now trigger a change so that this value is added to this parameter
+                $(this).trigger("change");
             }, true);
 
             textField.change(function()
