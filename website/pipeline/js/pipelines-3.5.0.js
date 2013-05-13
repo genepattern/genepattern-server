@@ -84,9 +84,9 @@ var editor = {
             	$("#library").height(height);
             }
         });
-
-        window.onbeforeunload = function (event) {
-            // If the workspace is not dirty then do not prompt for confirmation
+        
+        $(window).bind('beforeunload', function(event) {
+        	// If the workspace is not dirty then do not prompt for confirmation
             if (!editor.workspace.dirty) { return; }
 
             //noinspection JSDuplicatedDeclaration
@@ -95,7 +95,7 @@ var editor = {
             if (event) { event.returnValue = message; }
             // For Safari
             return message;
-        };
+        });
 	},
 
 	removeFile: function(filename) {
