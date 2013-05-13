@@ -185,12 +185,50 @@ function loadModuleInfo(module)
         });
     }
 
-    $("#export").click(function()
+    var isPipeline = module["taskType"] == "pipeline";
+    var exportLink = "/gp/makeZip.jsp?name=" + run_task_info.lsid;
+    $("#export").attr("href", exportLink);
+    $("#export").data("pipeline", isPipeline);
+    $("#export").click(function(e)
     {
-         var exportLink = "/gp/makeZip.jsp?name=" + run_task_info.lsid;
-        $("#export").attr("href", exportLink);
+        var isPipeline = $(this).data("pipeline");
+
+        if(isPipeline)
+        {
+            e.preventDefault();
+            //prompt the user if they want to include modules
+            var dialog = $("<div><p>Do you want to include all modules used by " +
+                        run_task_info.name + " in the exported zip file?</p></div>");
+            dialog.dialog({
+                title: "Export Pipeline",
+                resizable: true,
+                height: 170,
+                width: 500,
+                modal: true,
+                buttons: {
+                    "Yes": function() {
+                        window.open("/gp/makeZip.jsp?name=" + run_task_info.lsid + "&includeDependents=1");
+                        $( this ).dialog( "close" );
+                    },
+                    "No": function() {
+                        window.open("/gp/makeZip.jsp?name=" + run_task_info.lsid);
+                        $( this ).dialog( "close" );
+                    },
+                    Cancel: function() {
+                        $( this ).dialog( "close" );
+                    }
+                }
+            });
+        }
+
 
     });
+
+    var propertiesLink = "/gp/addTask.jsp?name="+run_task_info.lsid+"&view=1";
+    if(isPipeline)
+    {
+        propertiesLink = "/gp/viewPipeline.jsp?name="+run_task_info.lsid;
+    }
 
     var propertiesLink = "/gp/addTask.jsp?name="+run_task_info.lsid+"&view=1";
 

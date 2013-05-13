@@ -200,6 +200,7 @@ button.urlButton
 #fileUploadDiv
 {
     padding: 2px;
+    margin-bottom: 10px;
 }
 
 .progress-label
