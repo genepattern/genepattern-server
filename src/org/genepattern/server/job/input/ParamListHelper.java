@@ -213,10 +213,11 @@ public class ParamListHelper {
             //find the first parameter which matches the type of the file
             for(ParameterInfo pinfo : parameterInfos) {
                 List<String> fileFormats=ParamListHelper.getFileFormats(pinfo);
-                if (pinfo != null) {
+                if (fileFormats != null) {
                     if (fileFormats.contains(_formatParam)) {
                         //we found the first match
                         initialValues.addOrReplaceValue(pinfo.getName(), _fileParam);
+                        break;
                     }
                 }
             }
