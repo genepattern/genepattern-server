@@ -431,6 +431,11 @@
                 </t:div>
             </h:form>
             <script type="text/javascript">
+            	// Hide menus after click
+            	jq(".popupMenu a").click(function() {
+            		jq(".popupMenu").hide();
+            	});
+            
             	// Fix Create Pipeline links in IE
             	if (navigator.userAgent.indexOf("MSIE") !== -1) {
             		jq("a").filter(function(index) { return jq(this).text() === "Create Pipeline"; }).attr("onclick","JavaScript:Menu.denyIE(null);");
