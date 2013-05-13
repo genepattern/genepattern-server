@@ -1102,9 +1102,9 @@ function submitTask()
         },
         error: function(xhr, ajaxOptions, thrownError)
         {
-            alert("Response from server: status=" + xhr.status + " text=" + xhr.responseText);
-            alert(thrownError);
+            alert("Error: \n" + xhr.responseText);
             console.log("Error: " + xhr.responseText);
+            console.log("Error on server: " + thrownError);
 
             //the jobsubmit failed unblock the run task form
             $('#runTaskSettingsDiv').unblock();
