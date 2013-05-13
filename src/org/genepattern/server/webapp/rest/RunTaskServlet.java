@@ -5,10 +5,11 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -33,10 +34,10 @@ import org.genepattern.modules.ResponseJSON;
 import org.genepattern.server.config.ServerConfiguration;
 import org.genepattern.server.dm.GpFilePath;
 import org.genepattern.server.domain.Lsid;
-import org.genepattern.server.job.input.JobInputHelper;
 import org.genepattern.server.job.input.JobInput;
 import org.genepattern.server.job.input.JobInput.Param;
 import org.genepattern.server.job.input.JobInputFileUtil;
+import org.genepattern.server.job.input.JobInputHelper;
 import org.genepattern.server.job.input.ParamListHelper;
 import org.genepattern.server.job.input.ReloadJobHelper;
 import org.genepattern.server.rest.JobReceipt;
@@ -145,7 +146,7 @@ public class RunTaskServlet extends HttpServlet
                 throw new Exception ("No lsid  received");
             }
 
-            TaskInfo taskInfo = getTaskInfo(lsid, username);
+            final TaskInfo taskInfo = getTaskInfo(lsid, username);
 
             if(taskInfo == null)
             {
@@ -153,17 +154,19 @@ public class RunTaskServlet extends HttpServlet
                         "for user " + username);
             }
 
-            ModuleJSON moduleObject = new ModuleJSON(taskInfo, null);
-            moduleObject.put("lsidVersions", new JSONArray(getModuleVersions(taskInfo)));
+            final ModuleJSON moduleObject = new ModuleJSON(taskInfo, null);
+            final SortedSet<LSID> moduleLsidVersions=getModuleVersions(taskInfo);
+            final JSONArray lsidVersions=new JSONArray();
+            for(final LSID moduleLsidVersion : moduleLsidVersions) {
+                lsidVersions.put(moduleLsidVersion.toString());
+            }
+            moduleObject.put("lsidVersions", lsidVersions);
 
             //check if user is allowed to edit the module
             boolean createModuleAllowed = AuthorizationHelper.createModule(username);
             boolean editable = createModuleAllowed && taskInfo.getUserId().equals(username)
                     && LSIDUtil.getInstance().isAuthorityMine(taskInfo.getLsid());
             moduleObject.put("editable", editable);
-
-            //check if the user is allowed to view the module
-            boolean isViewable = true;
 
             //check if the module has documentation
             boolean hasDoc = true;
@@ -582,25 +585,43 @@ public class RunTaskServlet extends HttpServlet
         return parametersObject;
     }
 
-    private ArrayList getModuleVersions(TaskInfo taskInfo) throws Exception
+    /**
+     * Get the set of LSID for all versions of this task which are installed on the server.
+     * The LSID are ordered by the natural ordering as implemented in the LSID class,
+     * which is in reverse order of the LSID version.
+     * 
+     * @param taskInfo
+     * @return
+     * @throws Exception
+     */
+    private SortedSet<LSID> getModuleVersions(final TaskInfo taskInfo) throws Exception
     {
-        LSID taskLSID = new LSID(taskInfo.getLsid());
-        String taskNoLSIDVersion = taskLSID.toStringNoVersion();
-
-        ArrayList moduleVersions = new ArrayList();
-        TaskInfo[] tasks = TaskInfoCache.instance().getAllTasks();
+        final LSID taskLSID = new LSID(taskInfo.getLsid());
+        final String taskNoLSIDVersion = taskLSID.toStringNoVersion();
+        //to change the order, implement a custom comparator
+        //final SortedSet<LSID> moduleVersions = new TreeSet<LSID>(new Comparator<LSID>() {
+        //    @Override
+        //    public int compare(final LSID arg0, final LSID arg1) {
+        //        //reverse sort
+        //        return arg1.compareTo(arg0);
+        //    }
+        //});
+        final SortedSet<LSID> moduleVersions = new TreeSet<LSID>();
+        
+        //TODO: shouldn't need to get entire list of all installed tasks on the server
+        final TaskInfo[] tasks = TaskInfoCache.instance().getAllTasks();
         for(int i=0;i<tasks.length;i++)
         {
-            TaskInfoAttributes tia = tasks[i].giveTaskInfoAttributes();
-            String lsidString = tia.get(GPConstants.LSID);
-            LSID lsid = new LSID(lsidString);
-            String lsidNoVersion = lsid.toStringNoVersion();
+            final TaskInfoAttributes tia = tasks[i].giveTaskInfoAttributes();
+            final String lsidString = tia.get(GPConstants.LSID);
+            final LSID lsid = new LSID(lsidString);
+            final String lsidNoVersion = lsid.toStringNoVersion();
             if(taskNoLSIDVersion.equals(lsidNoVersion))
             {
-                moduleVersions.add(lsidString);
+                //moduleVersions.add(lsidString);
+                moduleVersions.add(lsid);
             }
         }
-
         return moduleVersions;
     }
 
