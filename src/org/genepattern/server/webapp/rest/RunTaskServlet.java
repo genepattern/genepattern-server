@@ -579,6 +579,7 @@ public class RunTaskServlet extends HttpServlet
         for(int i =0;i < pArray.length;i++)
         {
             ParametersJSON parameter = new ParametersJSON(pArray[i]);
+            parameter.addNumValues(pArray[i]);
             parametersObject.put(parameter);
         }
 

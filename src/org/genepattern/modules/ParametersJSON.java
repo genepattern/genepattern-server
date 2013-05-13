@@ -100,7 +100,6 @@ public class ParametersJSON extends JSONObject {
             this.put(FLAG, pAttrs.get(FLAG));
             this.put(VALUE, pInfo.getValue());
 
-
             Set keys = pAttrs.keySet();
             Iterator<String> kIter = keys.iterator();
             while(kIter.hasNext())
@@ -111,14 +110,36 @@ public class ParametersJSON extends JSONObject {
                     this.put(keyName, pAttrs.get(keyName));
                 }
             }
-
-            //add min and max values attributes which specifies
-            NumValues numValues = ParamListHelper.initNumValues(pInfo);
-
-            this.put("minValue", String.valueOf(numValues.getMin()));
-            this.put("maxValue", String.valueOf(numValues.getMax()));
         }
         catch (Exception e) {
+            log.error("Error creating parameter JSON from from ParameterInfo object");
+        }
+    }
+
+    /**
+     * Helper method to parse the option 'numValues' attribute for the given parameter.
+     * Add min and max values attributes which specify the number of values that this
+     * given parameter can accept.
+     * 
+     * When the number of values is unlimited, 'maxValue' will not be set.
+     *  
+     * @param pInfo
+     */
+    public void addNumValues(final ParameterInfo pInfo) { 
+        if (pInfo == null) {
+            throw new IllegalArgumentException("pInfo==null");
+        }
+        final NumValues numValues = ParamListHelper.initNumValues(pInfo);
+        
+        try {
+            if (numValues.getMin() != null) {
+                this.put("minValue", numValues.getMin());
+            }
+            if (numValues.getMax() != null) {
+                this.put("maxValue", numValues.getMax());
+            }
+        }
+        catch (JSONException e) {
             log.error("Error creating parameter JSON from from ParameterInfo object");
         }
     }
