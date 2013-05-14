@@ -26,7 +26,7 @@ var menuRegistry = {
 		if (typeof menu !== 'string') {
 			menu = menuRegistry._generate(menu);
 		}
-		setTimeout(function() { new PopupMenu(button, menu); }, 300);
+		jq(document).ready(function() { new PopupMenu(button, menu); });
 	},
 	
 	/**
