@@ -410,7 +410,7 @@ function loadParameterInfo(parameters, initialValues)
             if (parseInt(parameters[q].maxValue) == 1) {
 	            var rowNum = q + 1;
 	            var modeToggle = $("<div id='modeToggle" + rowNum + "'></div>");
-	            modeToggle.append("<input type='radio' value='normal' name='mode" + rowNum + "' id='singleMode" + rowNum + "' checked='true'><label title='A single job will be started using the given input.' for='singleMode" + (q+1) + "'>Normal</label></input>");
+	            modeToggle.append("<input type='radio' value='normal' name='mode" + rowNum + "' id='singleMode" + rowNum + "' checked='true'><label title='This is GenePattern's default and typical mode of operation. A single job will be started using the given input.' for='singleMode" + (q+1) + "'>Single</label></input>");
 	            modeToggle.append("<input type='radio' value='batch' name='mode" + rowNum + "'id='batchMode" + rowNum + "'><label title='This will launch a job for every file in the directory sent to this parameter, provided the file is of a matching type.' for='batchMode" + rowNum + "'>Batch</label></input>");
 	            fileDiv.append(modeToggle);
 	            modeToggle.buttonset();
