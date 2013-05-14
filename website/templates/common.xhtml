@@ -94,7 +94,12 @@
                 if (userLoggedIn) {
                     Menu.buildNavMenu();
                 }
-
+				
+            	 // IE layout hack
+            	if (navigator.userAgent.indexOf("MSIE") !== -1) {
+            		jq("#systemMessageLink").css("right", "");
+            		jq("#systemMessageLink").css("left", (jq(window).width() - 700) + "px");
+            	}
             </script>
 
             <!-- Use this insert to override the "onLoad" initialization method.  This function is triggered from the body onload event.  -->
