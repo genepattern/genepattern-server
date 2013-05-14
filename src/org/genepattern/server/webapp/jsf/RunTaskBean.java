@@ -12,8 +12,6 @@
 
 package org.genepattern.server.webapp.jsf;
 
-import static org.genepattern.server.webapp.jsf.UIBeanHelper.getRequest;
-
 import java.io.File;
 import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
@@ -36,7 +34,6 @@ import org.genepattern.server.config.ServerConfiguration;
 import org.genepattern.server.config.ServerConfiguration.Context;
 import org.genepattern.server.genepattern.GenePatternAnalysisTask;
 import org.genepattern.server.genomespace.GenomeSpaceBean;
-import org.genepattern.server.job.input.ParamListHelper;
 import org.genepattern.server.user.UserDAO;
 import org.genepattern.server.webapp.uploads.UploadFilesBean;
 import org.genepattern.server.webservice.server.dao.AnalysisDAO;
