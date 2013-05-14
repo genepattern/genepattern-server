@@ -143,6 +143,9 @@ public class RunTaskBean {
     }
     
     public boolean isHasDoc() {
+        if (documentationFilenames == null) {
+            return false;
+        }
         return documentationFilenames.length > 0;
     }
 
