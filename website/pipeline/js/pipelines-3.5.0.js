@@ -1317,7 +1317,7 @@ var editor = {
 	
 	_updateDependentPipelines: function(oldLsid, newLsid) {
 		var updateList = [];
-		var checkedArray = $(".updateCheckbox[checked=true]");
+		var checkedArray = $(".updateCheckbox:checked");
 		checkedArray.each(function(i) {
 			var checkbox = $(checkedArray.get(i));
 			updateList.push(checkbox.attr("id"));
