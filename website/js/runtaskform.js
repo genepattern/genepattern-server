@@ -701,16 +701,7 @@ jQuery(document).ready(function()
             param_file_listing[paramName] = fileObjListings;
         }
         
-        // Check if any of the files are over 2 gigs, skip if browser cannot do this
-        if (this.files !== undefined) {
-        	for (var i = 0; i < this.files.length; i++) {
-        		var file = this.files[i];
-        		if (file.size > 2147483648) {
-        			alert("The provided file " + file.name + "is over the 2 GB limit. This file cannot be uploaded in this manner. To use this file please upload it first using the 'Upload' tab found to the far right.");
-        			throw new Error("The provided file " + file.name + "is over the 2 GB limit.");
-        		}
-        	}
-        }
+        checkFileSizes(this.files);
 
         //create a copy of files so that the input file field
         //can be reset so that files with the same name can be reuploaded
@@ -1160,6 +1151,8 @@ function drop(evt)
     // Only call the handler if 1 or more files was dropped.
     if (count > 0)
     {
+        checkFileSizes(files);
+
         handleFiles(files, paramName);
     }
     else
@@ -1255,6 +1248,18 @@ function validateMaxFiles(paramName, numFiles)
         throw new Error("The maximum number of files that can be provided to " +
                         "this parameter (" + paramName +") has been reached. Please delete some files " +
                         "before continuing.");
+    }
+}
+
+function checkFileSizes(files)
+{
+    //check if any of these files is > 2GB
+    for (var i = 0; i < files.length; i++) {
+        var file = files[i];
+        if (file.size > 2147483648) {
+            alert("One or more of the selected files are over the 2 GB limit. Files over 2 GB cannot be uploaded in this manner. Please use the 'Uploads' tab located next to the Recent Jobs tab to upload these files");
+            throw new Error("The provided file " + file.name + " is over the 2 GB limit.");
+        }
     }
 }
 
