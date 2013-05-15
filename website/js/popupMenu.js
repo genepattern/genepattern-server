@@ -166,7 +166,7 @@ function PopupMenu(button, menu) {
     	var offsetLeft = this.button.offset().left;
     	var offsetTop = this.button.offset().top;
     	
-    	if (offsetLeft < (width / 2)) {
+    	if (offsetLeft < (jq(window).width() / 2)) {
     		// Menu is on left side of page, use left align
     		this.menu.css("left", Math.max(0, offsetLeft - 50) + "px");
     	}
