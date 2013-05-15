@@ -21,6 +21,7 @@ import org.apache.log4j.Logger;
 import org.genepattern.data.pipeline.JobSubmission;
 import org.genepattern.data.pipeline.PipelineModel;
 import org.genepattern.server.config.ServerConfiguration;
+import org.genepattern.server.dm.UrlUtil;
 import org.genepattern.server.domain.JobStatus;
 import org.genepattern.server.genepattern.GenePatternAnalysisTask;
 import org.genepattern.server.process.JobPurgerUtil;
@@ -229,6 +230,23 @@ public class JobInfoWrapper implements Serializable {
             }
             return null;
         }
+
+        /**
+         * When the URL is to be sent to the job input form, it should be
+         * passed as part of the queryString for an HTTP request. 
+         * This method returns the correct form of the url for this scenario.
+         * 
+         * @return 
+         */
+        public String getEncodedUrl() {
+            URL url=getUrl();
+            if (url==null) {
+                return null;
+            }
+            final String urlStr=url.toExternalForm();
+            final String encodedStr=UrlUtil.encodeURIcomponent(urlStr);
+            return encodedStr;
+        }
         
         public void addModuleMenuItem(TaskInfo sendTo) {
             if (moduleMenuItems == null) {
@@ -315,7 +333,9 @@ public class JobInfoWrapper implements Serializable {
             }
 
             //map from ParameterInfo.name to URL for downloading the output file from the server
-            String link = contextPath + "/jobResults/" + jobInfo.getJobNumber() + "/" + parameterInfo.getName();
+            String linkIn = contextPath + "/jobResults/" + jobInfo.getJobNumber() + "/" + parameterInfo.getName();
+            File file=new File(linkIn);
+            String link=UrlUtil.encodeFilePath(file);
             setLink(link);
             setDisplayValue(parameterInfo.getName());
             

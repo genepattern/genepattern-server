@@ -71,14 +71,9 @@
                     </h:outputText>
                     <t:dataList value="#{fileInfo.moduleMenuItems}" var="moduleMenuItem">
                         <tr>
-                            <td>
-								<h:outputLink value="/gp/pages/index.jsf" style="white-space: nowrap;">
-				                	<h:outputText value="#{moduleMenuItem.key}" />
-				                	<f:param name="lsid" value="#{moduleMenuItem.value}" />
-				                    <f:param name="_file" value="#{fileInfo.url}" />
-									<f:param name="_format" value="#{fileInfo.kind}" />
-				                </h:outputLink>
-                            </td>
+                           <td><h:outputLink value="/gp/pages/index.jsf?lsid=#{moduleMenuItem.value}&amp;_file=#{fileInfo.encodedUrl}&amp;_format=#{fileInfo.kind}"  style="white-space: nowrap;">
+                               <h:outputText value="#{moduleMenuItem.key}"/></h:outputLink>
+                           </td>
                         </tr>
                     </t:dataList>
                 </tbody>

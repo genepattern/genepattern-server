@@ -14,6 +14,8 @@ package org.genepattern.server.webapp.jsf;
 
 import java.io.Serializable;
 
+import org.genepattern.server.dm.UrlUtil;
+
 public class KeyValuePair implements Serializable {
     private String altKey;
     private String key;
@@ -44,6 +46,10 @@ public class KeyValuePair implements Serializable {
 
     public String getValue() {
         return value;
+    }
+    
+    public String getEncodedValue() {
+        return UrlUtil.encodeURIcomponent(value);
     }
 
     public void setAltKey(String altKey) {

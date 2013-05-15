@@ -49,6 +49,7 @@ import org.genepattern.server.UserAccountManager;
 import org.genepattern.server.auth.IGroupMembershipPlugin;
 import org.genepattern.server.config.ServerConfiguration;
 import org.genepattern.server.config.ServerConfiguration.Context;
+import org.genepattern.server.dm.UrlUtil;
 import org.genepattern.server.domain.BatchJob;
 import org.genepattern.server.domain.BatchJobDAO;
 import org.genepattern.server.executor.JobTerminationException;
@@ -1160,6 +1161,11 @@ public class JobBean {
             }
             String urlStr = UIBeanHelper.getServer() + "/jobResults/" + filepath;
             return urlStr;
+        }
+        
+        public String getEncodedUrl() {
+            String in = getUrl();
+            return UrlUtil.encodeURIcomponent(in);
         }
 
         public int getJobNumber() {
