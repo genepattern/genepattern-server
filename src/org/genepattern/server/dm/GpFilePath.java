@@ -153,7 +153,7 @@ abstract public class GpFilePath implements Comparable<GpFilePath> {
         if (file != null) {
             this.name = file.getName();
             this.extension = SemanticUtil.getExtension(file);
-            if (this.extension.length()>0) {
+            if (this.extension != null && this.extension.length()>0) {
                 this.kind=this.extension;
             }
         }
