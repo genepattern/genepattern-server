@@ -150,11 +150,16 @@ abstract public class GpFilePath implements Comparable<GpFilePath> {
     
     public void initMetadata() {
         File file = getServerFile();
-        if (file != null && file.exists()) {
+        if (file != null) {
             this.name = file.getName();
+            this.extension = SemanticUtil.getExtension(file);
+            if (this.extension.length()>0) {
+                this.kind=this.extension;
+            }
+        }
+        if (file != null && file.exists()) {
             this.lastModified = new Date(file.lastModified());
             this.fileLength = file.length();
-            this.extension = SemanticUtil.getExtension(file);
             if (file.isDirectory()) {
                 this.kind = "directory";
             }
