@@ -3,12 +3,9 @@ package org.genepattern.server.job.input;
 import java.io.File;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
-import java.util.StringTokenizer;
 import java.util.regex.Pattern;
 
 import org.apache.log4j.Logger;
@@ -18,14 +15,9 @@ import org.genepattern.server.dm.GpFileObjFactory;
 import org.genepattern.server.dm.GpFilePath;
 import org.genepattern.server.dm.serverfile.ServerFileObjFactory;
 import org.genepattern.server.job.input.JobInput.Param;
-import org.genepattern.server.job.input.JobInput.ParamId;
 import org.genepattern.server.job.input.JobInput.ParamValue;
 import org.genepattern.server.rest.ParameterInfoRecord;
-import org.genepattern.util.GPConstants;
 import org.genepattern.webservice.ParameterInfo;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
 
 /**
  * Helper class, instantiated as part of processing user input, before adding a job to the queue.
@@ -127,150 +119,150 @@ public class ParamListHelper {
         return _fileParam.substring(idx+1);
     }
 
-    public static JobInput getInitialValues(
-            final String lsid, //the lsid for the module or pipeline
-            final ParameterInfo[] parameterInfos, //the formal input parameters
-            final JobInput reloadedValues, 
-            final String _fileParam,
-            String _formatParam,
-            final Map<String,String[]> parameterMap
-    )
-    throws Exception
-    {
-        if (parameterInfos == null) {
-            throw new IllegalArgumentException("parameterInfos==null");
-        }
-        JobInput initialValues = new JobInput();
-        initialValues.setLsid(lsid);
-        for(ParameterInfo pinfo : parameterInfos) {
-            final String pname=pinfo.getName();
-            //1) initialize from default values
-            final List<String> defaultValues=ParamListHelper.getDefaultValues(pinfo);
-            if (defaultValues != null) {
-                boolean first=true;
-                for(final String defaultValue : defaultValues) {
-                    if (first) {
-                        initialValues.addOrReplaceValue(pname, defaultValue);
-                        first=false;
-                    }
-                    else {
-                        initialValues.addValue(pname, defaultValue);
-                    }
-                }
-            }
-            
-            //2) if it's a reloaded job, use that
-            if (reloadedValues != null) {
-                boolean first=true;
-                for(final ParamValue reloadedValue : reloadedValues.getParamValues(pname)) {
-                    if (first) {
-                        initialValues.addOrReplaceValue(pname, reloadedValue.getValue());
-                        first=false;
-                    }
-                    else {
-                        initialValues.addValue(pname, reloadedValue.getValue());
-                    }
-                }
-            }
-
-            //3) if there's a matching request parameter, use that
-            if (parameterMap.containsKey(pname)) {
-                //List<String> fromRequestParam=new ArrayList<String>();
-                boolean first=true;
-                for(String requestParam : parameterMap.get(pname)) {
-                    if (first) {
-                        initialValues.addOrReplaceValue(pname, requestParam);
-                        first=false;
-                    }
-                    else {
-                        initialValues.addValue(pname, requestParam);
-                    }
-                }
-            }
-            
-            //validate numValues
-            NumValues numValues=ParamListHelper.initNumValues(pinfo);
-            if (numValues.getMax() != null) {
-                final Param param=initialValues.getParam(pname);
-                if (param!=null) {
-                    if (param.getNumValues()>numValues.getMax()) {
-                        //this is an error: more input values were specified than
-                        //this parameter allows so throw an exception
-                        throw new Exception(" Error: " + param.getNumValues() + " input values were specified for " +
-                                pname + " but a maximum of " + numValues.getMax() + " is allowed. ");
-                    }
-                }
-            }
-        }
-        
-        //special-case for send-to module from file
-        if (_fileParam != null && _fileParam.length() != 0) {
-            if (_formatParam == null || _formatParam.length() == 0) {
-                log.error("_format request parameter is not set, _file="+_fileParam);
-                _formatParam=getType(_fileParam);
-            }
-            
-            //find the first parameter which matches the type of the file
-            for(ParameterInfo pinfo : parameterInfos) {
-                List<String> fileFormats=ParamListHelper.getFileFormats(pinfo);
-                if (fileFormats != null) {
-                    if (fileFormats.contains(_formatParam)) {
-                        //we found the first match
-                        initialValues.addOrReplaceValue(pinfo.getName(), _fileParam);
-                        break;
-                    }
-                }
-            }
-        }
-        return initialValues;
-    }
-    
-    /**
-     * Helper method for initializing the values for the job input form.
-     * Set initial values for the parameters for the following cases:
-     * 
-     * 1) a reloaded job
-     * 2) values set in request parameters, when linking from the protocols page
-     * 3) send to module, from the context menu for a file
-     * 
-     * @param parameterInfos, the list of formal parameters, from the TaskInfo object
-     * @param reloadedValues, the values from the original job, if this is a job reload request
-     * @param _fileParam, the input file value, if this is from a send-to module request
-     * @param _formatParam, the input file type, if this is from a send-to module request
-     * @param parameterMap, the HTTP request parameters, if this is from protocols page link
-     * 
-     * @return a JSON representation of the initial input values
-     * @throws JSONException
-     */
-    public static JSONObject getInitialValuesJson(
-            final String lsid,
-            final ParameterInfo[] parameterInfos, //the formal input parameters
-            final JobInput reloadedValues, 
-            final String _fileParam,
-            final String _formatParam,
-            final Map<String,String[]> parameterMap
-    )
-    throws JSONException, Exception
-    {
-        JobInput initialValues=getInitialValues(
-                lsid,
-                parameterInfos,
-                reloadedValues,
-                _fileParam,
-                _formatParam,
-                parameterMap);
-            
-        JSONObject values=new JSONObject();
-        for(Entry<ParamId, Param> entry : initialValues.getParams().entrySet()) {
-            final String pname=entry.getKey().getFqName();
-            JSONArray jsonArray = new JSONArray();
-            for(final ParamValue val : entry.getValue().getValues()) {
-                jsonArray.put(val.getValue());
-            }
-            values.put(pname, jsonArray);
-        }
-        return values;
-    }
+//    public static JobInput getInitialValues(
+//            final String lsid, //the lsid for the module or pipeline
+//            final ParameterInfo[] parameterInfos, //the formal input parameters
+//            final JobInput reloadedValues, 
+//            final String _fileParam,
+//            String _formatParam,
+//            final Map<String,String[]> parameterMap
+//    )
+//    throws Exception
+//    {
+//        if (parameterInfos == null) {
+//            throw new IllegalArgumentException("parameterInfos==null");
+//        }
+//        JobInput initialValues = new JobInput();
+//        initialValues.setLsid(lsid);
+//        for(ParameterInfo pinfo : parameterInfos) {
+//            final String pname=pinfo.getName();
+//            //1) initialize from default values
+//            final List<String> defaultValues=ParamListHelper.getDefaultValues(pinfo);
+//            if (defaultValues != null) {
+//                boolean first=true;
+//                for(final String defaultValue : defaultValues) {
+//                    if (first) {
+//                        initialValues.addOrReplaceValue(pname, defaultValue);
+//                        first=false;
+//                    }
+//                    else {
+//                        initialValues.addValue(pname, defaultValue);
+//                    }
+//                }
+//            }
+//            
+//            //2) if it's a reloaded job, use that
+//            if (reloadedValues != null) {
+//                boolean first=true;
+//                for(final ParamValue reloadedValue : reloadedValues.getParamValues(pname)) {
+//                    if (first) {
+//                        initialValues.addOrReplaceValue(pname, reloadedValue.getValue());
+//                        first=false;
+//                    }
+//                    else {
+//                        initialValues.addValue(pname, reloadedValue.getValue());
+//                    }
+//                }
+//            }
+//
+//            //3) if there's a matching request parameter, use that
+//            if (parameterMap.containsKey(pname)) {
+//                //List<String> fromRequestParam=new ArrayList<String>();
+//                boolean first=true;
+//                for(String requestParam : parameterMap.get(pname)) {
+//                    if (first) {
+//                        initialValues.addOrReplaceValue(pname, requestParam);
+//                        first=false;
+//                    }
+//                    else {
+//                        initialValues.addValue(pname, requestParam);
+//                    }
+//                }
+//            }
+//            
+//            //validate numValues
+//            NumValues numValues=ParamListHelper.initNumValues(pinfo);
+//            if (numValues.getMax() != null) {
+//                final Param param=initialValues.getParam(pname);
+//                if (param!=null) {
+//                    if (param.getNumValues()>numValues.getMax()) {
+//                        //this is an error: more input values were specified than
+//                        //this parameter allows so throw an exception
+//                        throw new Exception(" Error: " + param.getNumValues() + " input values were specified for " +
+//                                pname + " but a maximum of " + numValues.getMax() + " is allowed. ");
+//                    }
+//                }
+//            }
+//        }
+//        
+//        //special-case for send-to module from file
+//        if (_fileParam != null && _fileParam.length() != 0) {
+//            if (_formatParam == null || _formatParam.length() == 0) {
+//                log.error("_format request parameter is not set, _file="+_fileParam);
+//                _formatParam=getType(_fileParam);
+//            }
+//            
+//            //find the first parameter which matches the type of the file
+//            for(ParameterInfo pinfo : parameterInfos) {
+//                List<String> fileFormats=ParamListHelper.getFileFormats(pinfo);
+//                if (fileFormats != null) {
+//                    if (fileFormats.contains(_formatParam)) {
+//                        //we found the first match
+//                        initialValues.addOrReplaceValue(pinfo.getName(), _fileParam);
+//                        break;
+//                    }
+//                }
+//            }
+//        }
+//        return initialValues;
+//    }
+//    
+//    /**
+//     * Helper method for initializing the values for the job input form.
+//     * Set initial values for the parameters for the following cases:
+//     * 
+//     * 1) a reloaded job
+//     * 2) values set in request parameters, when linking from the protocols page
+//     * 3) send to module, from the context menu for a file
+//     * 
+//     * @param parameterInfos, the list of formal parameters, from the TaskInfo object
+//     * @param reloadedValues, the values from the original job, if this is a job reload request
+//     * @param _fileParam, the input file value, if this is from a send-to module request
+//     * @param _formatParam, the input file type, if this is from a send-to module request
+//     * @param parameterMap, the HTTP request parameters, if this is from protocols page link
+//     * 
+//     * @return a JSON representation of the initial input values
+//     * @throws JSONException
+//     */
+//    public static JSONObject getInitialValuesJson(
+//            final String lsid,
+//            final ParameterInfo[] parameterInfos, //the formal input parameters
+//            final JobInput reloadedValues, 
+//            final String _fileParam,
+//            final String _formatParam,
+//            final Map<String,String[]> parameterMap
+//    )
+//    throws JSONException, Exception
+//    {
+//        JobInput initialValues=getInitialValues(
+//                lsid,
+//                parameterInfos,
+//                reloadedValues,
+//                _fileParam,
+//                _formatParam,
+//                parameterMap);
+//            
+//        JSONObject values=new JSONObject();
+//        for(Entry<ParamId, Param> entry : initialValues.getParams().entrySet()) {
+//            final String pname=entry.getKey().getFqName();
+//            JSONArray jsonArray = new JSONArray();
+//            for(final ParamValue val : entry.getValue().getValues()) {
+//                jsonArray.put(val.getValue());
+//            }
+//            values.put(pname, jsonArray);
+//        }
+//        return values;
+//    }
 
     //inputs
     Context jobContext;
@@ -334,29 +326,6 @@ public class ParamListHelper {
             return defaultValues;
         }
         return null;
-    }
-    
-    public static List<String> getFileFormats(final ParameterInfo pinfo) {
-        if (pinfo.isInputFile()) {
-            String fileFormatsString = (String) pinfo.getAttributes().get(GPConstants.FILE_FORMAT);
-            if (fileFormatsString == null || fileFormatsString.equals("")) {
-                return Collections.emptyList();
-            }
-
-            List<String> inputFileTypes=new ArrayList<String>();
-            StringTokenizer st = new StringTokenizer(fileFormatsString, GPConstants.PARAM_INFO_CHOICE_DELIMITER);
-            while (st.hasMoreTokens()) {
-                String type = st.nextToken();
-                inputFileTypes.add(type);
-            }
-            return inputFileTypes;
-        }
-        else if (pinfo._isDirectory()) {
-            List<String> inputFileTypes=new ArrayList<String>();
-            inputFileTypes.add("directory");
-            return inputFileTypes;
-        }
-        return Collections.emptyList();
     }
 
     public NumValues getAllowedNumValues() {

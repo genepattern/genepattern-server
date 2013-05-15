@@ -11,14 +11,13 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 
 import org.apache.log4j.Logger;
-import org.genepattern.server.PermissionsHelper;
 import org.genepattern.server.config.ServerConfiguration;
 import org.genepattern.server.config.ServerConfiguration.Context;
 import org.genepattern.server.eula.GetTaskStrategy;
 import org.genepattern.server.eula.GetTaskStrategyDefault;
+import org.genepattern.server.job.JobInfoLoader;
+import org.genepattern.server.job.JobInfoLoaderDefault;
 import org.genepattern.server.rest.ParameterInfoRecord;
-import org.genepattern.server.webapp.jsf.AuthorizationHelper;
-import org.genepattern.server.webservice.server.dao.AnalysisDAO;
 import org.genepattern.webservice.JobInfo;
 import org.genepattern.webservice.ParameterInfo;
 import org.genepattern.webservice.TaskInfo;
@@ -37,7 +36,7 @@ public class ReloadJobHelper {
      * @param in
      * @return
      */
-    private static String replaceGpUrl(final String in) {
+    public static String replaceGpUrl(final String in) {
         if (!in.startsWith("<GenePatternURL>")) {
             return in;
         }
@@ -53,57 +52,61 @@ public class ReloadJobHelper {
         return prefix +suffix;
     }
 
-    /**
-     * Get a JobInfo from the DB, for the given jobId.
-     * (Legacy code copied from the RunTaskBean#setTask method).
-     * 
-     * @param userContext, Must be non-null with a valid userId
-     * @param jobId, Must be non-null
-     * 
-     * @return
-     * 
-     * @throws Exception for the following,
-     *     1) if there is no job with jobId in the DB
-     *     2) if the current user does not have permission to 'read' the job
-     */
-    private static JobInfo initJobInfo(final Context userContext, final String jobId) throws Exception {
-        if (userContext==null) {
-            throw new IllegalArgumentException("userContext==null");
-        }
-        if (userContext.getUserId()==null || userContext.getUserId().length()==0) {
-            throw new IllegalArgumentException("userContext.userId is not set");
-        }
-        if (jobId==null) {
-            throw new IllegalArgumentException("jobId==null");
-        }
-        final int jobNumber;
-        try {
-            jobNumber=Integer.parseInt(jobId);
-        }
-        catch (Throwable t) {
-            throw new Exception("Error parsing jobId="+jobId, t);
-        }
-        JobInfo jobInfo = new AnalysisDAO().getJobInfo(jobNumber);
-        if (jobInfo==null) {
-            throw new Exception("Can't load job, jobId="+jobId);
-        }
-
-        // check permissions
-        final boolean isAdmin = AuthorizationHelper.adminJobs(userContext.getUserId());
-        PermissionsHelper perm = new PermissionsHelper(isAdmin, userContext.getUserId(), jobNumber);
-        if (!perm.canReadJob()) {
-            throw new Exception("User does not have permission to load job");
-        }
-        return jobInfo;
-    }
+//    /**
+//     * Get a JobInfo from the DB, for the given jobId.
+//     * (Legacy code copied from the RunTaskBean#setTask method).
+//     * 
+//     * @param userContext, Must be non-null with a valid userId
+//     * @param jobId, Must be non-null
+//     * 
+//     * @return
+//     * 
+//     * @throws Exception for the following,
+//     *     1) if there is no job with jobId in the DB
+//     *     2) if the current user does not have permission to 'read' the job
+//     */
+//    public static JobInfo initJobInfo(final Context userContext, final String jobId) throws Exception {
+//        if (userContext==null) {
+//            throw new IllegalArgumentException("userContext==null");
+//        }
+//        if (userContext.getUserId()==null || userContext.getUserId().length()==0) {
+//            throw new IllegalArgumentException("userContext.userId is not set");
+//        }
+//        if (jobId==null) {
+//            throw new IllegalArgumentException("jobId==null");
+//        }
+//        final int jobNumber;
+//        try {
+//            jobNumber=Integer.parseInt(jobId);
+//        }
+//        catch (Throwable t) {
+//            throw new Exception("Error parsing jobId="+jobId, t);
+//        }
+//        JobInfo jobInfo = new AnalysisDAO().getJobInfo(jobNumber);
+//        if (jobInfo==null) {
+//            throw new Exception("Can't load job, jobId="+jobId);
+//        }
+//
+//        // check permissions
+//        final boolean isAdmin = AuthorizationHelper.adminJobs(userContext.getUserId());
+//        PermissionsHelper perm = new PermissionsHelper(isAdmin, userContext.getUserId(), jobNumber);
+//        if (!perm.canReadJob()) {
+//            throw new Exception("User does not have permission to load job");
+//        }
+//        return jobInfo;
+//    }
 
     final Context userContext;
     final GetTaskStrategy getTaskStrategy;
+    final JobInfoLoader jobInfoLoader;
     
     public ReloadJobHelper(final Context userContext) {
         this(userContext, null);
     }
     public ReloadJobHelper(final Context userContext, final GetTaskStrategy getTaskStrategyIn) {
+        this(userContext, null, null);
+    }
+    public ReloadJobHelper(final Context userContext, final GetTaskStrategy getTaskStrategyIn, final JobInfoLoader jobInfoLoaderIn) {
         if (userContext==null) {
             throw new IllegalArgumentException("userContext==null");
         }
@@ -113,6 +116,12 @@ public class ReloadJobHelper {
         }
         else {
             this.getTaskStrategy=new GetTaskStrategyDefault();
+        }
+        if (jobInfoLoaderIn != null) {
+            this.jobInfoLoader=jobInfoLoaderIn;
+        }
+        else {
+            this.jobInfoLoader=new JobInfoLoaderDefault();
         }
     }
 
@@ -126,7 +135,8 @@ public class ReloadJobHelper {
      * @return
      */
     public JobInput getInputValues(final String reloadJobId) throws Exception {
-        final JobInfo jobInfo = initJobInfo(userContext, reloadJobId);        
+        //final JobInfo jobInfo = initJobInfo(userContext, reloadJobId);
+        final JobInfo jobInfo = jobInfoLoader.getJobInfo(userContext, reloadJobId);
         return getInputValues(jobInfo);
     }
     

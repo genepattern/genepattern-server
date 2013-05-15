@@ -1,22 +1,20 @@
 package org.genepattern.server.rest;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-
-import org.genepattern.server.eula.GetTaskStrategyDefault;
 import java.util.Map;
 import java.util.Map.Entry;
 
 import org.apache.log4j.Logger;
 import org.genepattern.server.config.ServerConfiguration.Context;
 import org.genepattern.server.eula.GetTaskStrategy;
+import org.genepattern.server.eula.GetTaskStrategyDefault;
 import org.genepattern.server.executor.JobSubmissionException;
 import org.genepattern.server.handler.AddNewJobHandler;
 import org.genepattern.server.job.input.JobInput;
-import org.genepattern.server.job.input.ParamListHelper;
 import org.genepattern.server.job.input.JobInput.Param;
 import org.genepattern.server.job.input.JobInput.ParamId;
+import org.genepattern.server.job.input.ParamListHelper;
 import org.genepattern.webservice.JobInfo;
 import org.genepattern.webservice.ParameterInfo;
 import org.genepattern.webservice.TaskInfo;

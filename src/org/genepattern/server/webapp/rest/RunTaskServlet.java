@@ -38,7 +38,7 @@ import org.genepattern.server.job.input.JobInput;
 import org.genepattern.server.job.input.JobInput.Param;
 import org.genepattern.server.job.input.JobInputFileUtil;
 import org.genepattern.server.job.input.JobInputHelper;
-import org.genepattern.server.job.input.ParamListHelper;
+import org.genepattern.server.job.input.LoadModuleHelper;
 import org.genepattern.server.job.input.ReloadJobHelper;
 import org.genepattern.server.rest.JobReceipt;
 import org.genepattern.server.webapp.jsf.AuthorizationHelper;
@@ -218,13 +218,22 @@ public class RunTaskServlet extends HttpServlet
                     _formatParam=parameterMap.get("_format")[0];
                 }
             } 
-            JSONObject initialValues=ParamListHelper.getInitialValuesJson(
+            //JSONObject initialValues=ParamListHelper.getInitialValuesJson(
+            //        lsid,
+            //        taskInfo.getParameterInfoArray(), 
+            //        reloadJobInput, 
+            //        _fileParam, 
+            //        _formatParam, 
+            //        parameterMap);
+            LoadModuleHelper loadModuleHelper=new LoadModuleHelper(context);
+            JSONObject initialValues=loadModuleHelper.getInitialValuesJson(
                     lsid,
                     taskInfo.getParameterInfoArray(), 
                     reloadJobInput, 
                     _fileParam, 
                     _formatParam, 
                     parameterMap);
+
 
             responseObject.put("initialValues", initialValues);
 
@@ -502,8 +511,12 @@ public class RunTaskServlet extends HttpServlet
             
             ParameterInfo[] jobParameters=null;
             if (parameters != null) {
-                JobInput initialValues=ParamListHelper.getInitialValues(
+                //JobInput initialValues=ParamListHelper.getInitialValues(
+                //        lsid, parameters, reloadJobInput, _fileParam, _formatParam, request.getParameterMap());
+                LoadModuleHelper loadModuleHelper=new LoadModuleHelper(userContext);
+                JobInput initialValues=loadModuleHelper.getInitialValues(
                         lsid, parameters, reloadJobInput, _fileParam, _formatParam, request.getParameterMap());
+
                 
                 jobParameters = new ParameterInfo[parameters.length];
                 int i=0;

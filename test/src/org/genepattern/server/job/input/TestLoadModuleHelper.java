@@ -9,7 +9,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import org.genepattern.junitutil.TaskUtil;
+import org.genepattern.junitutil.JobInfoLoaderFromMap;
+import org.genepattern.junitutil.TaskLoader;
+import org.genepattern.server.config.ServerConfiguration;
+import org.genepattern.server.config.ServerConfiguration.Context;
+import org.genepattern.server.job.JobInfoLoader;
 import org.genepattern.webservice.ParameterInfo;
 import org.genepattern.webservice.TaskInfo;
 import org.json.JSONArray;
@@ -26,7 +30,12 @@ import org.junit.Test;
  * @author pcarr
  *
  */
-public class TestParamListHelperGetInitialValues {
+public class TestLoadModuleHelper {
+    private static TaskLoader taskLoader;
+    private static JobInfoLoader jobInfoLoader;
+    private static String adminUserId;
+    private static Context userContext;
+
     private static TaskInfo taskInfo;
     private static String lsid;
     private static ParameterInfo[] paramInfos;
@@ -38,8 +47,15 @@ public class TestParamListHelperGetInitialValues {
     private LinkedHashMap<String,List<String>> expectedValues;
 
     @BeforeClass
-    static public void initClass() {
-        taskInfo = TaskUtil.getTaskInfoFromZip(TestParamListHelperGetInitialValues.class, "ComparativeMarkerSelection_v9.zip");
+    static public void beforeClass() {
+        adminUserId="admin";
+        userContext=ServerConfiguration.Context.getContextForUser(adminUserId);
+        userContext.setIsAdmin(true);
+        taskLoader=new TaskLoader();
+        taskLoader.addTask(TestLoadModuleHelper.class, "ComparativeMarkerSelection_v9.zip");
+        taskInfo = taskLoader.getTaskInfo("urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00044:9");
+        jobInfoLoader = new JobInfoLoaderFromMap();
+
         lsid = taskInfo.getLsid();
         paramInfos=taskInfo.getParameterInfoArray();
     }
@@ -106,8 +122,10 @@ public class TestParamListHelperGetInitialValues {
     
     @Test
     public void testFromDefaultValues() throws Exception {
-        JSONObject actualInitialValues=ParamListHelper.getInitialValuesJson(
-                lsid, paramInfos, reloadedValues, _fileParam, _formatParam, parameterMap);
+        LoadModuleHelper loadModuleHelper=new LoadModuleHelper(userContext, taskLoader, jobInfoLoader);
+        JSONObject actualInitialValues=
+                loadModuleHelper.getInitialValuesJson(
+                        lsid, paramInfos, reloadedValues, _fileParam, _formatParam, parameterMap);
         checkResults(expectedValues, actualInitialValues);
     }
     
@@ -117,8 +135,10 @@ public class TestParamListHelperGetInitialValues {
         _formatParam="gct";
         //expecting input.file to match the _fileParam
         expectedValues.put("input.file", new ArrayList<String>(Arrays.asList( _fileParam )));
-        JSONObject actualInitialValues=ParamListHelper.getInitialValuesJson(
-                lsid, paramInfos, reloadedValues, _fileParam, _formatParam, parameterMap);        
+        LoadModuleHelper loadModuleHelper=new LoadModuleHelper(userContext, taskLoader, jobInfoLoader);
+        JSONObject actualInitialValues=
+                loadModuleHelper.getInitialValuesJson(
+                        lsid, paramInfos, reloadedValues, _fileParam, _formatParam, parameterMap);
         checkResults(expectedValues, actualInitialValues);
     }
     
@@ -128,8 +148,10 @@ public class TestParamListHelperGetInitialValues {
         //_formatParam="gct";
         //expecting input.file to match the _fileParam
         expectedValues.put("input.file", new ArrayList<String>(Arrays.asList( _fileParam )));
-        JSONObject actualInitialValues=ParamListHelper.getInitialValuesJson(
-                lsid, paramInfos, reloadedValues, _fileParam, _formatParam, parameterMap);        
+        LoadModuleHelper loadModuleHelper=new LoadModuleHelper(userContext, taskLoader, jobInfoLoader);
+        JSONObject actualInitialValues=
+                loadModuleHelper.getInitialValuesJson(
+                        lsid, paramInfos, reloadedValues, _fileParam, _formatParam, parameterMap);
         checkResults(expectedValues, actualInitialValues);
     }
     
@@ -140,15 +162,20 @@ public class TestParamListHelperGetInitialValues {
         parameterMap.put("input.file", new String[] {inputFile} );
         //expecting input.file to match the request parameter
         expectedValues.put("input.file", new ArrayList<String>(Arrays.asList( inputFile )));
-        JSONObject actualInitialValues=ParamListHelper.getInitialValuesJson(
-                lsid, paramInfos, reloadedValues, _fileParam, _formatParam, parameterMap);
+        LoadModuleHelper loadModuleHelper=new LoadModuleHelper(userContext, taskLoader, jobInfoLoader);
+        JSONObject actualInitialValues=
+                loadModuleHelper.getInitialValuesJson(
+                        lsid, paramInfos, reloadedValues, _fileParam, _formatParam, parameterMap);
         checkResults(expectedValues, actualInitialValues);
     }
     
     @Test
     public void testNoParameters() throws Exception {
         expectedValues.clear();
-        JSONObject actualInitialValues=ParamListHelper.getInitialValuesJson(lsid, new ParameterInfo[] {}, reloadedValues, _fileParam, _formatParam, parameterMap);
+        LoadModuleHelper loadModuleHelper=new LoadModuleHelper(userContext, taskLoader, jobInfoLoader);
+        JSONObject actualInitialValues=
+                loadModuleHelper.getInitialValuesJson(
+                        lsid, new ParameterInfo[] {}, reloadedValues, _fileParam, _formatParam, parameterMap);
         checkResults(expectedValues, actualInitialValues);
     }
     
