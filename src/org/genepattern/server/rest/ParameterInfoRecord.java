@@ -1,14 +1,8 @@
 package org.genepattern.server.rest;
 
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.StringTokenizer;
 
-import org.apache.log4j.Logger;
-import org.genepattern.util.GPConstants;
 import org.genepattern.webservice.ParameterInfo;
 import org.genepattern.webservice.TaskInfo;
 
@@ -22,7 +16,6 @@ import org.genepattern.webservice.TaskInfo;
  *
  */
 public class ParameterInfoRecord {
-    final static private Logger log = Logger.getLogger(ParameterInfoRecord.class);
 
     /**
      * Initialize a map of paramName to ParameterInfo 
@@ -38,29 +31,6 @@ public class ParameterInfoRecord {
         return paramInfoMap;
     }
 
-    public static List<String> getFileFormats(final ParameterInfo pinfo) {
-        if (pinfo.isInputFile()) {
-            String fileFormatsString = (String) pinfo.getAttributes().get(GPConstants.FILE_FORMAT);
-            if (fileFormatsString == null || fileFormatsString.equals("")) {
-                return Collections.emptyList();
-            }
-
-            List<String> inputFileTypes=new ArrayList<String>();
-            StringTokenizer st = new StringTokenizer(fileFormatsString, GPConstants.PARAM_INFO_CHOICE_DELIMITER);
-            while (st.hasMoreTokens()) {
-                String type = st.nextToken();
-                inputFileTypes.add(type);
-            }
-            return inputFileTypes;
-        }
-        else if (pinfo._isDirectory()) {
-            List<String> inputFileTypes=new ArrayList<String>();
-            inputFileTypes.add("directory");
-            return inputFileTypes;
-        }
-        return Collections.emptyList();
-    }
-
     private ParameterInfo formalParam;
     private ParameterInfo actualParam;
 
@@ -74,14 +44,6 @@ public class ParameterInfoRecord {
     }
     public ParameterInfo getActual() {
         return actualParam;
-    }
-
-    public List<String> getFileFormats() {
-        if (formalParam != null) {
-            return getFileFormats(formalParam);
-        }
-        log.error("formalParam == null");
-        return Collections.emptyList();
     }
 }
 
