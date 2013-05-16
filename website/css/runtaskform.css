@@ -374,6 +374,12 @@ hr
     padding-top: 1px;
     margin: 0;
 }
+
+#otherOptions:hover
+{
+    cursor: pointer;
+}
+
 .normal
 {
     font-weight: normal;
