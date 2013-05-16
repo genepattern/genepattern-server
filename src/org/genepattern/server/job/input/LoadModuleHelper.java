@@ -287,14 +287,22 @@ public class LoadModuleHelper {
                     log.error("Error initializing jobInfo, fromJobId="+fromJobId);
                 }
                 else {
+                    final boolean ignoreStderr=true;
+                    final boolean ignoreStdout=true;
                     for(final ParameterInfo pinfo : fromJobInfo.getParameterInfoArray()) {
-                        final GpFilePath outputFile=getOutputFile(fromJobInfo, pinfo);
-                        if (outputFile != null) {
-                            if (fromFile.equals(outputFile)) {
-                                //only add the fromFile once
-                            }
-                            else {
-                                helper.addResultFile(outputFile);
+                        if (ignoreStderr && pinfo._isStderrFile()) {
+                        }
+                        else if (ignoreStdout && pinfo._isStdoutFile()) {
+                        }
+                        else {
+                            final GpFilePath outputFile=getOutputFile(fromJobInfo, pinfo);
+                            if (outputFile != null) {
+                                if (fromFile.equals(outputFile)) {
+                                    //only add the fromFile once
+                                }
+                                else {
+                                    helper.addResultFile(outputFile);
+                                }
                             }
                         }
                     }
