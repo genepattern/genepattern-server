@@ -132,30 +132,22 @@
                 // elementId input parameter id.
                 // value value to set field to.
                 function setInputField(elementId, value) {
-                	// Try sending to parameter the old way
-                 	var selected = jq("#" + escapeJquerySelector(elementId) + "_url");
-                	if (selected.length > 0) {
-                		var urlInput = selected.get(0);
-                        urlInput.value = value;
-                        jq("#" + escapeJquerySelector(elementId) + "_div_file").hide();
-                        jq("#" + escapeJquerySelector(elementId) + "_div_url").show();
-                        var urlRadio = jq("#" + escapeJquerySelector(elementId) + '_cb_url').get(0);
-                        urlRadio.checked = true;
-                	}
-                	else { // If that doesn't work, try the new way
-                		var fileObjListings = param_file_listing[elementId];
-                        if (fileObjListings == null || fileObjListings == undefined) {
-                            fileObjListings = [];
-                        }
-                        
-                        validateMaxFiles(elementId, fileObjListings.length + 1);
+                	// See if the field is a file
+                	var fileObjListings = param_file_listing[elementId];
+                	
+                	// If it is a file
+                    if (fileObjListings !== null && fileObjListings !== undefined) {
+                    	validateMaxFiles(elementId, fileObjListings.length + 1);
                         
                         fileObjListings.push({"name": value});
                         param_file_listing[elementId] = fileObjListings;
             			updateParamFileTable(elementId);
             			toggleFileButtons(elementId);
-                	}
-                	jq(document.body).focus(); // Hide all menus after a send
+                    }
+                    else { // Otherwise, assume it's a directory
+                    	var selected = jq("#" + escapeJquerySelector(elementId));
+                    	selected.val(value);
+                    }
                 }
 
                 function preventClose(event) {
