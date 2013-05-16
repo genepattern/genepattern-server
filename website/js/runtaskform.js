@@ -1160,6 +1160,35 @@ function drop(evt)
     evt.stopPropagation();
     evt.preventDefault();
 
+    //Check and prevent upload of directories
+    //Works only on browsers that support the HTML5 FileSystem API
+    //right now this is Chrome v21 and up
+    if(evt.dataTransfer && evt.dataTransfer.items){
+        var items = evt.dataTransfer.items;
+        var length   = items.length;
+
+        for(var i=0; i<length; i++)
+        {
+            var entry = items[i];
+            if(entry.getAsEntry)
+            {
+                //Standard HTML5 API
+                entry = entry.getAsEntry();
+            }
+            else if(entry.webkitGetAsEntry)
+            {
+                //WebKit implementation of HTML5 API.
+                entry = entry.webkitGetAsEntry();
+            }
+
+            if(entry.isDirectory){
+                //do to continur if any directories are found
+                alert("Directory uploads are not allowed.");
+                return;
+            }
+        }
+    }
+
     var files = evt.dataTransfer.files;
     var count = files.length;
 
