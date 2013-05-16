@@ -409,22 +409,45 @@ function loadParameterInfo(parameters, initialValues)
             // Create the mode toggle
             if (parseInt(parameters[q].maxValue) == 1) {
 	            var rowNum = q + 1;
-	            var modeToggle = $("<div id='modeToggle" + rowNum + "'></div>");
+	            var batchBox = $("<div class='batchBox' title='If a directory is selected and this box is checked, a job will be launched for every file in the directory with a matching type.'></div>");
+	            // Add the checkbox
+	            batchBox.append("<input type='checkbox' id='batchCheck" + rowNum + "' />");
+	            batchBox.append("<label for='batchCheck" + rowNum + "'>Batch</label>");
+	            batchBox.find("input[type=checkbox]").change(function() {
+	            	if ($(this).is(":checked")) {
+	            		$(this).parent().find("input[type=radio]:last").click();
+	            	}
+	            	else {
+	            		$(this).parent().find("input[type=radio]:first").click();
+	            	}
+	            });
+	            
+	            // Add the old toggle buttons
+	            var modeToggle = $("<div id='modeToggle" + rowNum + "' style='display:none'></div>");
 	            modeToggle.append("<input type='radio' value='normal' name='mode" + rowNum + "' id='singleMode" + rowNum + "' checked='true'><label title='This is the default and typical mode of operation for GenePattern. A single job will be started using the given input.' for='singleMode" + (q+1) + "'>Single</label></input>");
 	            modeToggle.append("<input type='radio' value='batch' name='mode" + rowNum + "'id='batchMode" + rowNum + "'><label title='This will launch a job for every file in the directory sent to this parameter, provided the file is of a matching type.' for='batchMode" + rowNum + "'>Batch</label></input>");
-	            fileDiv.append(modeToggle);
+	            
+	            batchBox.append(modeToggle);
+	            fileDiv.append(batchBox);	            
+            
 	            modeToggle.buttonset();
 	            modeToggle.tooltip();
-	            modeToggle.find("input").change(function() {
+	            modeToggle.find("input[type=radio]").change(function() {
 	            	if ($(this).parent().find("input:checked").val() === "batch") {
 	            		$(this).closest(".pRow").css("background-color", "#F5F5F5");
 	            		$(this).closest(".pRow").next().css("background-color", "#F5F5F5");
 	            		$(this).closest(".fileDiv").find(".uploadBtn").button("disable");
+	            		
+	            		// Check the box
+	            		$(this).parent().parent().find("input[type=checkbox]").prop('checked', true);
 	            	}
 	            	else {
 	            		$(this).closest(".pRow").css("background-color", "#FFFFFF");
 	            		$(this).closest(".pRow").next().css("background-color", "#FFFFFF");
 	            		$(this).closest(".fileDiv").find(".uploadBtn").button("enable");
+	            		
+	            		// Check the box
+	            		$(this).parent().parent().find("input[type=checkbox]").prop('checked', false);
 	            	}
 	            	
 	            	// Clear the files from the parameter
