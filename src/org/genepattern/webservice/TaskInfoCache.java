@@ -106,7 +106,7 @@ public class TaskInfoCache {
         taskMasterCache.remove(taskId);
         taskInfoAttributesCache.remove(taskId);
         taskDocFilenameCache.remove(taskId);
-        PipelineDependencyHelper.instance().remove(taskId);
+        //PipelineDependencyHelper.instance().remove(taskId);
     }
     
     private static class IsDocFilenameFilter implements FilenameFilter {
