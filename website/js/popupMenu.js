@@ -120,7 +120,6 @@ function PopupMenu(button, menu) {
 		if (visible) {
 			setTimeout(function() {
 				menuRegistry[id].hide();
-				jq("body").focus();
 			},200);
 		}
 		return true;
