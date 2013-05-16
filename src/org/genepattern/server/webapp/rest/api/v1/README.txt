@@ -8,8 +8,9 @@ Target audience: Someone integrating the eQTL portal with a REST-enabled GP serv
 Setup:
 
 Install a GP server which has support for the REST API in whatever manner seems appropriate to you.
-As of this writing, you need GP 3.5.2. It has not been released yet but a stable version is ready 
-(circa April 2013). Contact gp-help and ask for an installer. Note: because we use HTTP 
+You will need GP 3.6.0 or higher.  If not available on
+http://www.broadinstitute.org/cancer/software/genepattern/installer/latest/install.htm,
+contact gp-help and ask for an installer. Note: because we use HTTP 
 Basic Authentication for REST calls, you should install your server as an HTTPS server.
 Our online documentation has the details:
     http://www.broadinstitute.org/cancer/software/genepattern/gp_guides/administrators-guide/sections/security
