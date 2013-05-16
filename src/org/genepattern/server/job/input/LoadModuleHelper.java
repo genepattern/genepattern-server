@@ -313,10 +313,16 @@ public class LoadModuleHelper {
         
         public Helper(final ParameterInfo[] parameterInfos, final GpFilePath sendFromFile) {
             this.parameterInfos=parameterInfos;
+            if (sendFromFile.getKind()==null) {
+                sendFromFile.initMetadata();
+            }
             resultFiles.add(sendFromFile);
         }
         
         public void addResultFile(final GpFilePath resultFile) {
+            if (resultFile.getKind()==null) {
+                resultFile.initMetadata();
+            }
             resultFiles.add(resultFile);
         }
         
