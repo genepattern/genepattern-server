@@ -400,6 +400,11 @@ public class ProvenanceFinder {
     public String getURLFromParam(ParameterInfo pinfo) {
         HashMap attributes = pinfo.getAttributes();
         String pvalue = pinfo.getValue();
+        
+        //handle '<GenePatternURL>'
+        if (pvalue.startsWith("<GenePatternURL>")) {
+            pvalue=serverURL + pvalue.substring("<GenePatternURL>".length());
+        }
 
         if (pvalue.toUpperCase().startsWith(serverURL.toUpperCase()) || pvalue.toUpperCase().startsWith(serverURL) || pvalue.toUpperCase().startsWith("HTTP://LOCALHOST") || pvalue.toUpperCase().startsWith("HTTP://127.0.0.1")) {
             log.debug("\t\t" + pinfo.getName() + "=" + pvalue);
