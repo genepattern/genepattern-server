@@ -1773,6 +1773,7 @@
 						if(!s.ajax.dataType) { s.ajax.dataType = "json"; }
 						if($.isFunction(s.ajax.url)) { s.ajax.url = s.ajax.url.call(this, obj); }
 						if($.isFunction(s.ajax.data)) { s.ajax.data = s.ajax.data.call(this, obj); }
+						s.ajax.cache = false;
 						$.ajax(s.ajax);
 						break;
 				}
@@ -3314,6 +3315,7 @@
 						if(!s.ajax.dataType) { s.ajax.dataType = "xml"; }
 						if($.isFunction(s.ajax.url)) { s.ajax.url = s.ajax.url.call(this, obj); }
 						if($.isFunction(s.ajax.data)) { s.ajax.data = s.ajax.data.call(this, obj); }
+						s.ajax.cache = false;
 						$.ajax(s.ajax);
 						break;
 				}
@@ -3459,6 +3461,7 @@
 					if($.isFunction(s.ajax.data)) { s.ajax.data = s.ajax.data.call(this, str); }
 					if(!s.ajax.data) { s.ajax.data = { "search_string" : str }; }
 					if(!s.ajax.dataType || /^json/.exec(s.ajax.dataType)) { s.ajax.dataType = "json"; }
+					s.ajax.cache = false;
 					$.ajax(s.ajax);
 					return;
 				}
@@ -4134,6 +4137,7 @@
 						if(!s.ajax.dataType) { s.ajax.dataType = "html"; }
 						if($.isFunction(s.ajax.url)) { s.ajax.url = s.ajax.url.call(this, obj); }
 						if($.isFunction(s.ajax.data)) { s.ajax.data = s.ajax.data.call(this, obj); }
+						s.ajax.cache = false;
 						$.ajax(s.ajax);
 						break;
 				}
