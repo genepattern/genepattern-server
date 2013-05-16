@@ -431,7 +431,7 @@ function loadParameterInfo(parameters, initialValues)
 	            fileDiv.append(batchBox);	            
             
 	            modeToggle.buttonset();
-	            modeToggle.tooltip();
+	            batchBox.tooltip();
 	            modeToggle.find("input[type=radio]").change(function() {
 	            	if ($(this).parent().find("input:checked").val() === "batch") {
 	            		$(this).closest(".pRow").css("background-color", "#F5F5F5");
