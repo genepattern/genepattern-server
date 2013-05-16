@@ -36,9 +36,7 @@
                 function openServerFileDialog(node) {
 					// Remove excess URL components
 					if (jq("#dialogUrlDiv").children().length > 1) {
-						var saveChild = jq("#dialogUrlDiv").children().last();
-						jq("#dialogUrlDiv").html("");
-						jq("#dialogUrlDiv").append(saveChild);
+						jq("#dialogUrlDiv").children().first().remove();
 					}
 					
 					jq("#serverFileTreeDialog").parent().find("button").button();
