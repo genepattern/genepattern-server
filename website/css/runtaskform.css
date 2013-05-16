@@ -151,7 +151,7 @@ button.urlButton
 .fileDiv
 {
     vertical-align: bottom;
-    border: 2px dashed #DDD;
+    border: 2px solid #DDD;
     -moz-border-radius: 8px;
     -webkit-border-radius: 8px;
     padding: 9px 10px 10px 10px;
