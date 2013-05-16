@@ -625,8 +625,7 @@ var editor = {
 
 	// Takes a port child id in the form of "prefix_portid_moduleid" and returns the port id.
 	_extractPortId: function(element) {
-		var parts = element.split("_");
-		return parts [parts.length - 2];
+		return element.substring(element.indexOf("_")+1, element.lastIndexOf("_"));
 	},
 
 	// Takes a port child or child element id and returns the parent port
