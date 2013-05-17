@@ -162,10 +162,8 @@ public class RunTaskServlet extends HttpServlet
             }
             moduleObject.put("lsidVersions", lsidVersions);
 
-            //check if user is allowed to edit the module
-            boolean createModuleAllowed = AuthorizationHelper.createModule(userId);
-            boolean editable = createModuleAllowed && taskInfo.getUserId().equals(userId)
-                    && LSIDUtil.getInstance().isAuthorityMine(taskInfo.getLsid());
+            //check if user is allowed to edit the task
+            final boolean editable=isEditable(userContext, taskInfo);
             moduleObject.put("editable", editable);
 
             //check if the module has documentation
@@ -630,5 +628,46 @@ public class RunTaskServlet extends HttpServlet
     private TaskInfo getTaskInfo(String taskLSID, String username) throws WebServiceException
     {
         return new LocalAdminClient(username).getTask(taskLSID);
+    }
+    
+    /**
+     * Check if the user is allowed to edit the module or pipeline.
+     * @param userContext
+     * @return
+     */
+    private boolean isEditable(final ServerConfiguration.Context userContext, final TaskInfo taskInfo) {
+        if (userContext == null) {
+            log.error("userContext == null");
+            return false;
+        }
+        if (userContext.getUserId()==null) {
+            log.error("userContext.userId == null");
+            return false;
+        }
+        if (userContext.getUserId().length()==0) {
+            log.error("userContext.userId not set");
+            return false;
+        }
+        //can only edit your own task
+        final boolean isMine=taskInfo.getUserId().equals(userContext.getUserId());
+        if (!isMine) {
+            return false;
+        }
+        //can only edit modules or pipelines created on this gp server
+        final boolean isAuthorityMine = LSIDUtil.getInstance().isAuthorityMine(taskInfo.getLsid());
+        if (!isAuthorityMine) {
+            return false;
+        } 
+        final boolean isPipeline=taskInfo.isPipeline();
+        if (!isPipeline) {
+            final boolean createModuleAllowed = AuthorizationHelper.createModule(userContext.getUserId());
+            final boolean editable = createModuleAllowed && isMine && isAuthorityMine;
+            return editable;
+        }
+        else {
+            final boolean createPipelineAllowed = AuthorizationHelper.createPipeline(userContext.getUserId());
+            boolean editable = createPipelineAllowed && isMine && isAuthorityMine;
+            return editable;
+        }
     }
 }
