@@ -1245,7 +1245,12 @@ var editor = {
         if (!ignorePrompts["readOnly"] && !editor.confirmClone(runImmediately, ignorePrompts)) {
             return;
         }
-
+        
+        // Add the UI block
+        $("html").block({message:"<h2>Saving Pipeline... Please Wait...</h2>"});
+        $(".blockOverlay").css("z-index", "15000");
+        $(".blockMsg").css("z-index", "15001");
+        
 		var toSend = editor._bundleForSave();
         $.ajax({
             type: "POST",
@@ -1254,6 +1259,10 @@ var editor = {
             success: function(response) {
                 var message = response["MESSAGE"];
                 var error = response["ERROR"];
+                
+                if (!runImmediately) {
+                	$("html").unblock();
+                }
 
                 if (error !== undefined && error !== null) {
                     editor.showDialog("ERROR", "<div style='text-align: center; font-weight: bold;'>" + error + "</div>");
