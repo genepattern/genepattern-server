@@ -25,6 +25,7 @@ import org.genepattern.server.eula.EulaManager;
 import org.genepattern.server.genepattern.GenePatternAnalysisTask;
 import org.genepattern.server.webservice.server.DirectoryManager;
 import org.genepattern.util.GPConstants;
+import org.genepattern.util.LSID;
 import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
@@ -308,7 +309,93 @@ public class TaskInfoCache {
         }
     }
     
+    /**
+     * This is was added so that we can replace the call to getAllTasks, when all we really need
+     * are all the versions of a particular task baseLsid, which can be run by a given user.
+     * Here is the original code snippet in the RunTaskServlet (circa 3.6.0 pre-release):
+     * <pre>
+     *         final TaskInfo[] tasks = TaskInfoCache.instance().getAllTasks();
+     * </pre>
+     * 
+     * To match existing (albeit klunky functionality), this method will start a new Hibernate transaction,
+     * if one has not already been started.
+     * It will not close the transaction, it's up to the calling thread to clean up.
+     * 
+     * @param userContext
+     * @param lsid
+     * @return
+     */
+    public List<TaskInfo> getAllVersions(final ServerConfiguration.Context userContext, final LSID lsid) {
+        final boolean closeSessionIfNecessary=false;
+        return getAllVersions(closeSessionIfNecessary, userContext, lsid);
+    }
+    public List<TaskInfo> getAllVersions(final boolean closeSessionIfNecessary, final ServerConfiguration.Context userContext, final LSID lsid) {
+        if (userContext==null) {
+            throw new IllegalArgumentException("userContext==null");
+        }
+        if (userContext.getUserId()==null) {
+            throw new IllegalArgumentException("userContext.userId==null");
+        }
+        if (userContext.getUserId().length()==0) {
+            throw new IllegalArgumentException("userContext.userId not set");
+        }
+        if (lsid==null) {
+            throw new IllegalArgumentException("lsid==null");
+        }
+        final String baseLsid=lsid.toStringNoVersion();
+        
+        final List<Integer> taskIds;
+        final boolean inTransaction=HibernateUtil.isInTransaction();
+        try {
+            //admin query
+            /*
+            select * from task_master where 
+                lsid like 'urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00283:%'
+            */
+
+            //non-admin query
+            /*
+            select * from task_master where 
+                lsid like 'urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00283:%'
+                and
+                ( access_id = 1 or user_id = 'test' )
+            */
+            String hql = "select taskId from org.genepattern.server.domain.TaskMaster where lsid like :baseLsid ";
+            if (!userContext.isAdmin()) {
+                    hql += " and ( accessId = :accessId or userId = :userId )"; 
+            }
+            Session session = HibernateUtil.getSession();
+            Query query = session.createQuery(hql);
+            query.setString("baseLsid", baseLsid+"%");
+            if (!userContext.isAdmin()) {
+                query.setInteger("accessId", 1); //public
+                query.setString("userId", userContext.getUserId());
+            }
+            taskIds = query.list();
+            if (taskIds == null) {
+                log.error("Unexpected null returned from hibernate call");
+                return Collections.emptyList();
+            }
+            return getTasksAsList(taskIds);
+        }
+        catch (Throwable t) {
+            log.error("Error getting TaskInfo versions for baseLsid="+baseLsid, t);
+            return Collections.emptyList();
+        }
+        finally {
+            if (closeSessionIfNecessary && !inTransaction) {
+                HibernateUtil.closeCurrentSession();
+            }
+        }
+    }
+    
     public TaskInfo[] getTasks(List<Integer> taskIds) {
+        List<TaskInfo> allTaskInfos = getTasksAsList(taskIds);
+        TaskInfo[] taskInfoArray = allTaskInfos.toArray(new TaskInfo[allTaskInfos.size()]);
+        return taskInfoArray;        
+    }
+    
+    private List<TaskInfo> getTasksAsList(List<Integer> taskIds) {
         List<TaskInfo> allTaskInfos = new ArrayList<TaskInfo>();
         for(Integer taskId : taskIds) {
             try {
@@ -319,10 +406,9 @@ public class TaskInfoCache {
                 log.error("Missing task info: ", e);
             }
         }
-        TaskInfo[] taskInfoArray = allTaskInfos.toArray(new TaskInfo[allTaskInfos.size()]);
-        return taskInfoArray;        
+        return allTaskInfos;
     }
-    
+
     /**
      * Get the list of declared documentation files for this module.
      * 

@@ -97,25 +97,26 @@ public class RunTaskServlet extends HttpServlet
     {
         try
         {
-            String username = (String) request.getSession().getAttribute("userid");
-
-            if (username == null)
-            {
+            String userId = (String) request.getSession().getAttribute("userid");
+            if (userId == null) {
                 throw new Exception("User not logged in");
             }
-
-            ServerConfiguration.Context context = ServerConfiguration.Context.getContextForUser(username);
-            JobInput reloadJobInput = null;
-
-            if (lsid == null && reloadJobId == null)
-            {
+            if (lsid == null && reloadJobId == null) {
                 throw new Exception ("No lsid or job number to reload received");
             }
+
+            //Note: we have a helper method to initialize the userId,
+            //    see org.genepattern.server.webapp.rest.api.v1.Util#getUserContext 
+            ServerConfiguration.Context userContext = ServerConfiguration.Context.getContextForUser(userId);
+            final boolean isAdmin = AuthorizationHelper.adminServer(userId);
+            userContext.setIsAdmin(isAdmin);
+            
+            JobInput reloadJobInput = null;
 
             if(reloadJobId != null && !reloadJobId.equals(""))
             {
                 //This is a reloaded job
-                ReloadJobHelper reloadJobHelper=new ReloadJobHelper(context);
+                ReloadJobHelper reloadJobHelper=new ReloadJobHelper(userContext);
                 reloadJobInput = reloadJobHelper.getInputValues(reloadJobId);
 
                 String reloadedLsidString = reloadJobInput.getLsid();
@@ -137,7 +138,6 @@ public class RunTaskServlet extends HttpServlet
                                 "the lsid of the reloaded job " + reloadLsid.getLsidNoVersion());
                     }
                 }
-
             }
 
             //check if lsid is still null
@@ -146,16 +146,16 @@ public class RunTaskServlet extends HttpServlet
                 throw new Exception ("No lsid  received");
             }
 
-            final TaskInfo taskInfo = getTaskInfo(lsid, username);
+            final TaskInfo taskInfo = getTaskInfo(lsid, userId);
 
             if(taskInfo == null)
             {
                 throw new Exception("No task with task id: " + lsid + " found " +
-                        "for user " + username);
+                        "for user " + userId);
             }
 
             final ModuleJSON moduleObject = new ModuleJSON(taskInfo, null);
-            final SortedSet<LSID> moduleLsidVersions=getModuleVersions(taskInfo);
+            final SortedSet<LSID> moduleLsidVersions=getModuleVersions(userContext, taskInfo);
             final JSONArray lsidVersions=new JSONArray();
             for(final LSID moduleLsidVersion : moduleLsidVersions) {
                 lsidVersions.put(moduleLsidVersion.toString());
@@ -163,8 +163,8 @@ public class RunTaskServlet extends HttpServlet
             moduleObject.put("lsidVersions", lsidVersions);
 
             //check if user is allowed to edit the module
-            boolean createModuleAllowed = AuthorizationHelper.createModule(username);
-            boolean editable = createModuleAllowed && taskInfo.getUserId().equals(username)
+            boolean createModuleAllowed = AuthorizationHelper.createModule(userId);
+            boolean editable = createModuleAllowed && taskInfo.getUserId().equals(userId)
                     && LSIDUtil.getInstance().isAuthorityMine(taskInfo.getLsid());
             moduleObject.put("editable", editable);
 
@@ -173,7 +173,7 @@ public class RunTaskServlet extends HttpServlet
 
             File[] docFiles = null;
             try {
-                LocalTaskIntegratorClient taskIntegratorClient = new LocalTaskIntegratorClient(username);
+                LocalTaskIntegratorClient taskIntegratorClient = new LocalTaskIntegratorClient(userId);
                 docFiles = taskIntegratorClient.getDocFiles(taskInfo);
 
                 if(docFiles == null || docFiles.length == 0)
@@ -225,7 +225,7 @@ public class RunTaskServlet extends HttpServlet
             //        _fileParam, 
             //        _formatParam, 
             //        parameterMap);
-            LoadModuleHelper loadModuleHelper=new LoadModuleHelper(context);
+            LoadModuleHelper loadModuleHelper=new LoadModuleHelper(userContext);
             JSONObject initialValues=loadModuleHelper.getInitialValuesJson(
                     lsid,
                     taskInfo.getParameterInfoArray(), 
@@ -604,35 +604,23 @@ public class RunTaskServlet extends HttpServlet
      * The LSID are ordered by the natural ordering as implemented in the LSID class,
      * which is in reverse order of the LSID version.
      * 
+     * @param userContext, must have valid userId, and should have isAdmin set
      * @param taskInfo
      * @return
      * @throws Exception
      */
-    private SortedSet<LSID> getModuleVersions(final TaskInfo taskInfo) throws Exception
+    private SortedSet<LSID> getModuleVersions(final ServerConfiguration.Context userContext, final TaskInfo taskInfo) throws Exception
     {
         final LSID taskLSID = new LSID(taskInfo.getLsid());
         final String taskNoLSIDVersion = taskLSID.toStringNoVersion();
-        //to change the order, implement a custom comparator
-        //final SortedSet<LSID> moduleVersions = new TreeSet<LSID>(new Comparator<LSID>() {
-        //    @Override
-        //    public int compare(final LSID arg0, final LSID arg1) {
-        //        //reverse sort
-        //        return arg1.compareTo(arg0);
-        //    }
-        //});
         final SortedSet<LSID> moduleVersions = new TreeSet<LSID>();
         
-        //TODO: shouldn't need to get entire list of all installed tasks on the server
-        final TaskInfo[] tasks = TaskInfoCache.instance().getAllTasks();
-        for(int i=0;i<tasks.length;i++)
-        {
-            final TaskInfoAttributes tia = tasks[i].giveTaskInfoAttributes();
-            final String lsidString = tia.get(GPConstants.LSID);
-            final LSID lsid = new LSID(lsidString);
+        final List<TaskInfo> allVersions=TaskInfoCache.instance().getAllVersions(userContext, taskLSID);
+        for(final TaskInfo version : allVersions) {
+            final LSID lsid=new LSID(version.getLsid());
             final String lsidNoVersion = lsid.toStringNoVersion();
             if(taskNoLSIDVersion.equals(lsidNoVersion))
             {
-                //moduleVersions.add(lsidString);
                 moduleVersions.add(lsid);
             }
         }
