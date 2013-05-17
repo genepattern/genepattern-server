@@ -197,24 +197,24 @@ function loadModuleInfo(module)
         {
             e.preventDefault();
             //prompt the user if they want to include modules
-            var dialog = $("<div><p>Do you want to include all modules used by " +
-                        run_task_info.name + " in the exported zip file?</p></div>");
+            var dialog = $("<div><p>Press 'Include modules' to include all modules used by " +  run_task_info.name +
+                " in the exported zip file. </p> <p>Press 'Pipeline only' to include only the " + run_task_info.name + " pipeline definition itself. </p></div>");
             dialog.dialog({
                 title: "Export Pipeline",
                 resizable: true,
-                height: 170,
+                height: 210,
                 width: 500,
                 modal: true,
                 buttons: {
-                    "Yes": function() {
+                    "Include modules": function() {
                         window.open("/gp/makeZip.jsp?name=" + run_task_info.lsid + "&includeDependents=1");
                         $( this ).dialog( "close" );
                     },
-                    "No": function() {
+                    "Pipeline only": function() {
                         window.open("/gp/makeZip.jsp?name=" + run_task_info.lsid);
                         $( this ).dialog( "close" );
                     },
-                    Cancel: function() {
+                    "Cancel Export": function() {
                         $( this ).dialog( "close" );
                     }
                 }
@@ -1558,7 +1558,7 @@ function uploadFile(paramName, file, fileOrder, fileId)
     formData.append('index', id);
     xhr.send(formData);
 
-    //keep track of all teh upload request so that they can be canceled
+    //keep track of all the upload requests so that they can be canceled
     //using the cancel button
     fileUploadRequests.push(xhr);
 }
