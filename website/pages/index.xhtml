@@ -147,6 +147,7 @@
                     else { // Otherwise, assume it's a directory
                     	var selected = jq("#" + escapeJquerySelector(elementId));
                     	selected.val(value);
+                    	parameter_and_val_obj[elementId] = [value];
                     }
                 }
 
