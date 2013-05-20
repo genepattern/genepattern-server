@@ -181,12 +181,13 @@ public class LoadModuleHelper {
                 _formatParam,
                 parameterMap);
             
-        JSONObject values=new JSONObject();
+        final JSONObject values=new JSONObject();
         for(Entry<ParamId, Param> entry : initialValues.getParams().entrySet()) {
             final String pname=entry.getKey().getFqName();
-            JSONArray jsonArray = new JSONArray();
+            final JSONArray jsonArray = new JSONArray();
             for(final ParamValue val : entry.getValue().getValues()) {
-                jsonArray.put(val.getValue());
+                final String value=val.getValue();
+                jsonArray.put(value);
             }
             values.put(pname, jsonArray);
         }
@@ -206,9 +207,9 @@ public class LoadModuleHelper {
         if (parameterInfos == null) {
             throw new IllegalArgumentException("parameterInfos==null");
         }
-        JobInput initialValues = new JobInput();
+        final JobInput initialValues = new JobInput();
         initialValues.setLsid(lsid);
-        for(ParameterInfo pinfo : parameterInfos) {
+        for(final ParameterInfo pinfo : parameterInfos) {
             final String pname=pinfo.getName();
             //1) initialize from default values
             final List<String> defaultValues=ParamListHelper.getDefaultValues(pinfo);
@@ -228,14 +229,20 @@ public class LoadModuleHelper {
             //2) if it's a reloaded job, use that
             if (reloadedValues != null) {
                 boolean first=true;
-                for(final ParamValue reloadedValue : reloadedValues.getParamValues(pname)) {
-                    if (first) {
-                        initialValues.addOrReplaceValue(pname, reloadedValue.getValue());
-                        first=false;
+                final List<ParamValue> paramValues=reloadedValues.getParamValues(pname);
+                if (paramValues != null) {
+                    for(final ParamValue reloadedValue : paramValues) {
+                        if (first) {
+                            initialValues.addOrReplaceValue(pname, reloadedValue.getValue());
+                            first=false;
+                        }
+                        else {
+                            initialValues.addValue(pname, reloadedValue.getValue());
+                        }
                     }
-                    else {
-                        initialValues.addValue(pname, reloadedValue.getValue());
-                    }
+                }
+                else {
+                    log.error("no values in previous job for, pname="+pname);
                 }
             }
 
