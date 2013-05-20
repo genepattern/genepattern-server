@@ -3,6 +3,7 @@ package org.genepattern.server.webapp.uploads;
 import java.io.File;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.net.URL;
 import java.net.URLEncoder;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -29,6 +30,7 @@ import org.genepattern.server.config.ServerConfiguration.Context;
 import org.genepattern.server.dm.GpDirectoryNode;
 import org.genepattern.server.dm.GpFilePath;
 import org.genepattern.server.dm.Node;
+import org.genepattern.server.dm.UrlUtil;
 import org.genepattern.server.dm.UserUploadFile;
 import org.genepattern.server.dm.userupload.UserUploadManager;
 import org.genepattern.server.webapp.FileDownloader;
@@ -494,15 +496,37 @@ public class UploadFilesBean {
     }
 
     public class FileInfoWrapper {
-        private GpFilePath file = null;
-        private String url = null;
+        final private GpFilePath file;
+        final private String url;
+        final private String encodedUrl;
         private List<SendToModule> sendToModules = null;
         private List<ParameterInfo> batchParams = null;
         private boolean directory = false;
         private boolean root = false;
 
-        public FileInfoWrapper(GpFilePath file) {
+        public FileInfoWrapper(final GpFilePath file) {
             this.file = file;
+            this.url=initUrl(file);
+            if (this.url.length()>0) {
+                this.encodedUrl=UrlUtil.encodeURIcomponent(url);
+            }
+            else {
+                this.encodedUrl="";
+            }
+        }
+        
+        private String initUrl(final GpFilePath file) {
+            if (file==null) {
+                return "";
+            }
+            try {
+                URL urlObj=file.getUrl();
+                return urlObj.toExternalForm();
+            }
+            catch (Throwable t) {
+                log.error("Error initializing FileInfoWrapper", t);
+                return "";
+            }
         }
         
         public String getType() {
@@ -562,21 +586,11 @@ public class UploadFilesBean {
         
         // Returns absolute URL
         public String getFullUrl() {
-            if (url==null) {
-               url = initUrl();
-            }
             return url;
         }
 
-        private String initUrl() {
-            String url = "";
-            try {
-                url = file.getUrl().toString();
-            }
-            catch (Throwable t) {
-                log.error(t);
-            }
-            return url;
+        public String getEncodedUrl() {
+            return encodedUrl;
         }
 
         public String getPath() {
