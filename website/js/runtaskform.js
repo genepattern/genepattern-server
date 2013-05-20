@@ -724,7 +724,6 @@ jQuery(document).ready(function()
 
     $("input[type='file']").live("change", function()
     {
-        var _2GBToBytes = 2147483648;
         var paramName = $(this).attr("name");
 
         var fileObjListings = param_file_listing[paramName];
@@ -753,36 +752,15 @@ jQuery(document).ready(function()
         var totalFileLength = fileObjListings.length + uploadedFiles.length;
         validateMaxFiles(paramName, totalFileLength);
 
-        var listOfLargeFiles = [];
         //add newly selected files to table of file listing
         for(var f=0;f < uploadedFiles.length;f++)
         {
-            //first check that the size of the file is <2GB in bytes
-            if(uploadedFiles[f].size > _2GBToBytes)
-            {
-                listOfLargeFiles.push(uploadedFiles[f]);
-            }
-            else
-            {
-                var fileObj = {
-                    name: uploadedFiles[f].name,
-                    object: uploadedFiles[f],
-                    id: fileId++
-                };
-                fileObjListings.push(fileObj);
-            }
-        }
-
-        if(listOfLargeFiles.length > 0)
-        {
-            var message = "The following files are larger than 2GB and will not be added: \n";
-            for(var l=0; l<listOfLargeFiles.length; l++)
-            {
-                message += listOfLargeFiles[l].name + "\n";
-            }
-
-            message += "\nPlease use the Uploads tab to upload these files instead.";
-            alert(message);
+            var fileObj = {
+                name: uploadedFiles[f].name,
+                object: uploadedFiles[f],
+                id: fileId++
+            };
+            fileObjListings.push(fileObj);
         }
 
         // add to file listing for the specified parameter
@@ -1318,8 +1296,8 @@ function checkFileSizes(files)
     //check if any of these files is > 2GB
     for (var i = 0; i < files.length; i++) {
         var file = files[i];
-        if (file.size > 2147483648) {
-            alert("One or more of the selected files are over the 2 GB limit. Files over 2 GB cannot be uploaded in this manner. Please use the 'Uploads' tab located next to the Recent Jobs tab to upload these files");
+        if (file.size > 2040109466) { //approx 1.9GB in bytes
+            alert("One or more of the selected files are at the 2 GB file size limit. Those files be uploaded in this manner. Please use the 'Uploads' tab located next to the Recent Jobs tab to upload these files");
             throw new Error("The provided file " + file.name + " is over the 2 GB limit.");
         }
     }
