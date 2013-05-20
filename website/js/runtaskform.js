@@ -1191,7 +1191,7 @@ function drop(evt)
                 entry = entry.webkitGetAsEntry();
             }
 
-            if(entry.isDirectory){
+            if(entry && entry.isDirectory){
                 //do to continur if any directories are found
                 alert("Directory uploads are not allowed.");
                 return;
