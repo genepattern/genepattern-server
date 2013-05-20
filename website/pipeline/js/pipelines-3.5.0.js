@@ -3030,7 +3030,10 @@ var properties = {
             
             // For licenses, ensure that the license if a txt file
             if (label === "License") {
-	            var oldFunction = $("#uploadInput").data('events')["change"][0].handler; // Get the old change function
+            	var elem = $("#uploadInput")[0];
+            	var data = $.hasData(elem) && $._data(elem);
+            	
+	            var oldFunction = data["events"]["change"][0].handler; // Get the old change function
 	            $("#uploadInput").off("change"); 		// Remove the normal click
 	            $("#uploadInput").change(function() {	// Add the new function
 	            	if ($("#uploadInput").get(0).value.match(/.txt$/) === null) {
