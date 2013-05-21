@@ -27,7 +27,6 @@ import javax.ws.rs.core.UriInfo;
 
 import org.apache.log4j.Logger;
 import org.genepattern.codegenerator.CodeGeneratorUtil;
-import org.genepattern.data.pipeline.PipelineDependencyHelper;
 import org.genepattern.modules.ModuleJSON;
 import org.genepattern.modules.ParametersJSON;
 import org.genepattern.modules.ResponseJSON;
@@ -188,13 +187,16 @@ public class RunTaskServlet extends HttpServlet
             TaskInfoAttributes tia = taskInfo.giveTaskInfoAttributes();
             String taskType = tia.get(GPConstants.TASK_TYPE);
             boolean isPipeline = "pipeline".equalsIgnoreCase(taskType);
-            if(isPipeline && PipelineDependencyHelper.instance().getMissingDependenciesRecursive(taskInfo).size() != 0)
-            {
-                moduleObject.put("missing_tasks", true);
-            }
-            else
-            {
-                moduleObject.put("missing_tasks", false);                        
+            if (isPipeline) {
+                //TODO: check for missing dependencies
+                moduleObject.put("missing_tasks", false); 
+                //Set<String> missingDependencies=PipelineDependencyHelper.instance().getMissingDependenciesRecursive(taskInfo);
+                //if (missingDependencies != null && missingDependencies.size() > 0) {
+                //    moduleObject.put("missing_tasks", true); 
+                //}
+                //else {
+                //    moduleObject.put("missing_tasks", false); 
+                //}
             }
             JSONObject responseObject = new JSONObject();
             responseObject.put(ModuleJSON.KEY, moduleObject);
@@ -216,13 +218,6 @@ public class RunTaskServlet extends HttpServlet
                     _formatParam=parameterMap.get("_format")[0];
                 }
             } 
-            //JSONObject initialValues=ParamListHelper.getInitialValuesJson(
-            //        lsid,
-            //        taskInfo.getParameterInfoArray(), 
-            //        reloadJobInput, 
-            //        _fileParam, 
-            //        _formatParam, 
-            //        parameterMap);
             LoadModuleHelper loadModuleHelper=new LoadModuleHelper(userContext);
             JSONObject initialValues=loadModuleHelper.getInitialValuesJson(
                     lsid,
