@@ -597,9 +597,29 @@ public class UploadFilesBean {
             return file.getRelativePath();
         }
         
-        // Returns a path encoded for use in div names
-        public String getEncodedPath() throws UnsupportedEncodingException {
-            return file.getRelativePath() != null ? URLEncoder.encode(file.getRelativePath(), "UTF-8").replaceAll("[^a-zA-Z0-9]", "_") : "";
+        /**
+         * Get a valid id for the menu div, must be unique for all of the current user's upload files.
+         * @return
+         * @throws UnsupportedEncodingException
+         */
+        public String getMenuDivId() throws UnsupportedEncodingException {
+            //return file.getRelativePath() != null ? URLEncoder.encode(file.getRelativePath(), "UTF-8").replaceAll("[^a-zA-Z0-9]", "_") : "";
+            if (file==null) {
+                return "";
+            }
+            final String relativePath=file.getRelativePath();
+            if (relativePath==null) {
+                return "";
+            }
+            final String encodedPath=URLEncoder.encode(relativePath, "UTF-8");
+            
+            final String divId=encodedPath.replaceAll("[^a-zA-Z0-9]", "_");
+            
+            if (log.isDebugEnabled()) {
+                final String encodedPathTest=UrlUtil.encodeURIcomponent(relativePath);
+                log.debug(divId+"=( "+relativePath+", "+encodedPath+", "+encodedPathTest+" )");
+            }
+            return divId;
         }
         
         public boolean getPartial() {
