@@ -1297,7 +1297,7 @@ function checkFileSizes(files)
     for (var i = 0; i < files.length; i++) {
         var file = files[i];
         if (file.size > 2040109466) { //approx 1.9GB in bytes
-            alert("One or more of the selected files are at the 2 GB file size limit. Those files be uploaded in this manner. Please use the 'Uploads' tab located next to the Recent Jobs tab to upload these files");
+            alert("One or more of the selected files are at the 2 GB file size limit. Those files cannot be uploaded in this manner. Please use the 'Uploads' tab located next to the Recent Jobs tab to upload these files");
             throw new Error("The provided file " + file.name + " is over the 2 GB limit.");
         }
     }
