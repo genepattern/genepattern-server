@@ -44,7 +44,6 @@ public class TaskInfoCache {
     private static class Singleton {
         final static TaskInfoCache taskInfoCache = new TaskInfoCache();
         private Singleton() {
-            PipelineDependencyHelper.instance();
         }
     }
     private static TaskInfo taskInfoFromTaskMaster(TaskMaster tm, TaskInfoAttributes taskInfoAttributes) {
@@ -252,7 +251,8 @@ public class TaskInfoCache {
         }
         if (addToCache) {
             addToCache(taskMaster);
-            PipelineDependencyHelper.instance().add(this.getTaskInfoFromTaskMaster(taskMaster, addToCache));
+            final TaskInfo taskInfo=getTaskInfoFromTaskMaster(taskMaster, addToCache);
+            PipelineDependencyHelper.instance().add(taskInfo);
         }
         return taskMaster;
     }
