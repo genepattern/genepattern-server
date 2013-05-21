@@ -4858,7 +4858,7 @@ function Pipe(connection) {
         this.inputPort.removePipe(this);
 
         // If the output port is empty, remove the output
-        if (!this.outputPort.isConnected()) {
+        if (!this.outputPort.isConnected() && !this.outputModule.isFile()) {
             this.outputPort.module.removeOutput(this.outputPort.pointer);
         }
 
