@@ -365,7 +365,7 @@ public class LoadModuleHelper {
             //find matching files from previous job
             for(ParameterInfo pinfo : parameterInfos) {
                 if (hasUnmatchedFiles()) {
-                    if (pinfo.isInputFile()) {
+                    if (pinfo.isInputFile() || pinfo._isDirectory()) {
                         GpFilePath inputValue=getSendToFile(pinfo);
                         if (inputValue != null) {
                             try {
