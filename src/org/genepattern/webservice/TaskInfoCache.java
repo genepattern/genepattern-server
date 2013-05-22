@@ -13,7 +13,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 import org.apache.log4j.Logger;
-import org.genepattern.data.pipeline.PipelineDependencyHelper;
 import org.genepattern.server.TaskIDNotFoundException;
 import org.genepattern.server.TaskLSIDNotFoundException;
 import org.genepattern.server.config.ServerConfiguration;
@@ -106,7 +105,6 @@ public class TaskInfoCache {
         taskMasterCache.remove(taskId);
         taskInfoAttributesCache.remove(taskId);
         taskDocFilenameCache.remove(taskId);
-        PipelineDependencyHelper.instance().remove(taskId);
     }
     
     private static class IsDocFilenameFilter implements FilenameFilter {
@@ -252,7 +250,6 @@ public class TaskInfoCache {
         if (addToCache) {
             addToCache(taskMaster);
             final TaskInfo taskInfo=getTaskInfoFromTaskMaster(taskMaster, addToCache);
-            PipelineDependencyHelper.instance().add(taskInfo);
         }
         return taskMaster;
     }
