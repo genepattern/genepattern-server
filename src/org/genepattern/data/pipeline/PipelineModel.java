@@ -29,7 +29,6 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.TreeMap;
 import java.util.Vector;
@@ -254,22 +253,6 @@ public class PipelineModel implements Serializable {
     
     public void setDocumentation(final String documentation) {
         this.documentation = documentation;
-    }
-    
-    public Set<TaskInfo> getDependencies() {
-        return PipelineDependencyHelper.instance().getDependencies(this);
-    }
-    
-    public Set<TaskInfo> getDependenciesRecursive() {
-        return PipelineDependencyHelper.instance().getDependenciesRecursive(this);
-    }
-    
-    public Set<TaskInfo> getDependentPipelines() {
-        return PipelineDependencyHelper.instance().getDependentPipelines(this);
-    }
-    
-    public Set<TaskInfo> getDependentPipelinesRecursive() {
-        return PipelineDependencyHelper.instance().getDependentPipelinesRecursive(this);
     }
 
     public void addTask(JobSubmission jobSubmission) {
