@@ -732,8 +732,6 @@ jQuery(document).ready(function()
             fileObjListings = [];
             param_file_listing[paramName] = fileObjListings;
         }
-        
-        checkFileSizes(this.files);
 
         //create a copy of files so that the input file field
         //can be reset so that files with the same name can be reuploaded
@@ -747,6 +745,8 @@ jQuery(document).ready(function()
         //feature in Chrome where uploading the same file sequentially
         //does not trigger a change event
         $(this).val(null);
+
+        checkFileSizes(uploadedFiles);
 
         //check if max file length will be violated
         var totalFileLength = fileObjListings.length + uploadedFiles.length;
@@ -1297,7 +1297,29 @@ function checkFileSizes(files)
     for (var i = 0; i < files.length; i++) {
         var file = files[i];
         if (file.size > 2040109466) { //approx 1.9GB in bytes
-            alert("One or more of the selected files are at the 2 GB file size limit. Those files cannot be uploaded in this manner. Please use the 'Uploads' tab located next to the Recent Jobs tab to upload these files");
+            /*var errorMessage = "One or more of the selected files exceeds the 2GB limit for this upload method." +
+                " Please use the 'Uploads' tab on the right (located next to the Recent Jobs tab) to upload these" +
+                " files.More information about using large files can be found in our User Guide available in the " +
+                "Help Menu above. http://www.google.com");*/
+            var errorMessageDiv = $("<div/>");
+            errorMessageDiv.append("<p>One or more of the selected files exceeds the 2GB limit for this upload method.</p>");
+            errorMessageDiv.append("<p> Please use the 'Uploads' tab on the right (located next to the Recent Jobs tab)" +
+                " to upload these files.</p>");
+            errorMessageDiv.append("<p> More information about using large files can be found in our " +
+                "<a href='http://www.broadinstitute.org/cancer/software/genepattern/gp_guides/user-guide" +
+                "/sections/running-modules#_Uploading_Files' target='_blank'>User Guide </a></p>");
+            errorMessageDiv.dialog({
+                title: "Max File Upload Size Exceeded",
+                resizable: true,
+                height: 210,
+                width: 500,
+                modal: true,
+                buttons: {
+                    "OK": function() {
+                        $( this ).dialog( "close" );
+                    }
+                }
+            });
             throw new Error("The provided file " + file.name + " is over the 2 GB limit.");
         }
     }
