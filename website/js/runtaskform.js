@@ -1307,7 +1307,7 @@ function checkFileSizes(files)
                 " to upload these files.</p>");
             errorMessageDiv.append("<p> More information about using large files can be found in our " +
                 "<a href='http://www.broadinstitute.org/cancer/software/genepattern/gp_guides/user-guide" +
-                "/sections/running-modules#_Uploading_Files' target='_blank'>User Guide </a></p>");
+                "/sections/running-modules#_Uploading_Files' target='_blank'>User Guide.</a></p>");
             errorMessageDiv.dialog({
                 title: "Max File Upload Size Exceeded",
                 resizable: true,
