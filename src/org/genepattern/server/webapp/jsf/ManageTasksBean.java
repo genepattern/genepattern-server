@@ -33,7 +33,7 @@ import java.util.TreeMap;
 import javax.faces.event.ActionEvent;
 
 import org.apache.log4j.Logger;
-import org.genepattern.data.pipeline.PipelineDependencyHelper;
+//import org.genepattern.data.pipeline.PipelineDependencyHelper;
 import org.genepattern.data.pipeline.PipelineModel;
 import org.genepattern.server.user.UserDAO;
 import org.genepattern.server.webservice.server.local.IAdminClient;
@@ -100,25 +100,26 @@ public class ManageTasksBean {
             String errorMessage = "";
             LocalTaskIntegratorClient taskIntegratorClient = new LocalTaskIntegratorClient(UIBeanHelper.getUserId());
             for (TaskInfo task : deletedSet) {
+                // TODO: re-implement this method
                 // For each deleted task make sure all its dependents are also being deleted
                 // If not, do not delete this task and let the user know in an error message
-                Set<TaskInfo> dependentSet = PipelineDependencyHelper.instance().getDependentPipelinesRecursive(task);
-                boolean goodToDelete = deletedSet.containsAll(dependentSet);
+                //Set<TaskInfo> dependentSet = PipelineDependencyHelper.instance().getDependentPipelinesRecursive(task);
+                //boolean goodToDelete = deletedSet.containsAll(dependentSet);
                 
-                if (!goodToDelete) {
-                    // First get the set of all dependents to prompt for
-                    dependentSet.removeAll(deletedSet);
-                    
-                    // Next, add the prompt to the error message
-                    if (!errorMessage.isEmpty()) { errorMessage += "; "; }
-                    errorMessage += task.getName() + " (" + task.getLsid() + ") could not be deleted because it is used in pipelines: ";
-                    for (TaskInfo depends : dependentSet) {
-                        errorMessage += depends.getName() + ", ";
-                    }
-                    errorMessage = errorMessage.substring(0, errorMessage.length() - 2); // Shave off unnecessary comma
-                    errorMessage += ". Please delete those pipelines first.";
-                    continue;
-                }
+                //if (!goodToDelete) {
+                //    // First get the set of all dependents to prompt for
+                //    dependentSet.removeAll(deletedSet);
+                //    
+                //    // Next, add the prompt to the error message
+                //    if (!errorMessage.isEmpty()) { errorMessage += "; "; }
+                //    errorMessage += task.getName() + " (" + task.getLsid() + ") could not be deleted because it is used in pipelines: ";
+                //    for (TaskInfo depends : dependentSet) {
+                //        errorMessage += depends.getName() + ", ";
+                //    }
+                //    errorMessage = errorMessage.substring(0, errorMessage.length() - 2); // Shave off unnecessary comma
+                //    errorMessage += ". Please delete those pipelines first.";
+                //    continue;
+                //}
                 
                 try {
                     taskIntegratorClient.deleteTask(task.getLsid());
