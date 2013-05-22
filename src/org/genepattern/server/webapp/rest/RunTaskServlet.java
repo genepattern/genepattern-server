@@ -27,7 +27,7 @@ import javax.ws.rs.core.UriInfo;
 
 import org.apache.log4j.Logger;
 import org.genepattern.codegenerator.CodeGeneratorUtil;
-import org.genepattern.data.pipeline.GetDependentTasks;
+import org.genepattern.data.pipeline.GetIncludedTasks;
 import org.genepattern.modules.ModuleJSON;
 import org.genepattern.modules.ParametersJSON;
 import org.genepattern.modules.ResponseJSON;
@@ -188,7 +188,7 @@ public class RunTaskServlet extends HttpServlet
                 // check for missing dependencies
                 // hint, all of the work is done in the constructor, including initialization of the 
                 //    dependent tasks and missing task lsids
-                GetDependentTasks getDependentTasks = new GetDependentTasks(userContext, taskInfo);
+                GetIncludedTasks getDependentTasks = new GetIncludedTasks(userContext, taskInfo);
                 if (getDependentTasks.getMissingTaskLsids().size()>0) {
                     moduleObject.put("missing_tasks", true);
                     if (log.isDebugEnabled()) {

@@ -19,17 +19,16 @@ import org.genepattern.webservice.TaskInfoAttributes;
 
 /**
  * Helper class for checking for module dependencies before running a task.
- * It recursively initializes a set of all required TaskInfo which are needed
- * to run a given pipeline.
- * It also initilizes a set of missing task LSIDs, for those tasks referenced by the 
- * pipeline and which are not installed.
+ *
+ * Use this class to get the set of all tasks that are included in the target pipeline,
+ * recursively including all tasks within nested pipelines.
  * 
- * Recursively get all dependent tasks for the given task.
+ * It initializes the set within the constructor (so don't create these unnecessarily).
  * 
  * @author pcarr
  */
-public class GetDependentTasks {
-    final static private Logger log = Logger.getLogger(GetDependentTasks.class);
+public class GetIncludedTasks {
+    final static private Logger log = Logger.getLogger(GetIncludedTasks.class);
     
     final private Context userContext;
     final private GetTaskStrategy getTaskStrategy;
@@ -40,11 +39,11 @@ public class GetDependentTasks {
     //so that we don't visit the same pipeline more than once
     final private Set<String> visitedLsids;
 
-    public GetDependentTasks(final Context userContext, final TaskInfo forTask) {
+    public GetIncludedTasks(final Context userContext, final TaskInfo forTask) {
         this(userContext, forTask, null);
     }
 
-    public GetDependentTasks(final Context userContext, final TaskInfo forTask, final GetTaskStrategy getTaskStrategyIn) {
+    public GetIncludedTasks(final Context userContext, final TaskInfo forTask, final GetTaskStrategy getTaskStrategyIn) {
         this.userContext=userContext;
         if (forTask==null) {
             throw new IllegalArgumentException("forTask==null");
@@ -183,7 +182,7 @@ public class GetDependentTasks {
      * @param taskInfo
      * @return
      */
-    public Set<TaskInfo> getInstalledDependentTasks(final TaskInfo taskInfo) {
+    public Set<TaskInfo> getInstalledDependentTasks() {
         return Collections.unmodifiableSet( dependentTasks );
     }    
 
