@@ -27,6 +27,7 @@ import javax.ws.rs.core.UriInfo;
 
 import org.apache.log4j.Logger;
 import org.genepattern.codegenerator.CodeGeneratorUtil;
+import org.genepattern.data.pipeline.GetDependentTasks;
 import org.genepattern.modules.ModuleJSON;
 import org.genepattern.modules.ParametersJSON;
 import org.genepattern.modules.ResponseJSON;
@@ -46,14 +47,12 @@ import org.genepattern.server.webapp.jsf.UIBeanHelper;
 import org.genepattern.server.webservice.server.local.IAdminClient;
 import org.genepattern.server.webservice.server.local.LocalAdminClient;
 import org.genepattern.server.webservice.server.local.LocalTaskIntegratorClient;
-import org.genepattern.util.GPConstants;
 import org.genepattern.util.LSID;
 import org.genepattern.util.LSIDUtil;
 import org.genepattern.webservice.AnalysisJob;
 import org.genepattern.webservice.JobInfo;
 import org.genepattern.webservice.ParameterInfo;
 import org.genepattern.webservice.TaskInfo;
-import org.genepattern.webservice.TaskInfoAttributes;
 import org.genepattern.webservice.TaskInfoCache;
 import org.genepattern.webservice.WebServiceException;
 import org.json.JSONArray;
@@ -184,19 +183,33 @@ public class RunTaskServlet extends HttpServlet
             moduleObject.put("hasDoc", hasDoc);
 
             //if this is a pipeline check if there are any missing dependencies
-            TaskInfoAttributes tia = taskInfo.giveTaskInfoAttributes();
-            String taskType = tia.get(GPConstants.TASK_TYPE);
-            boolean isPipeline = "pipeline".equalsIgnoreCase(taskType);
+            final boolean isPipeline=taskInfo.isPipeline();
             if (isPipeline) {
-                //TODO: check for missing dependencies
-                moduleObject.put("missing_tasks", false); 
-                //Set<String> missingDependencies=PipelineDependencyHelper.instance().getMissingDependenciesRecursive(taskInfo);
-                //if (missingDependencies != null && missingDependencies.size() > 0) {
-                //    moduleObject.put("missing_tasks", true); 
-                //}
-                //else {
-                //    moduleObject.put("missing_tasks", false); 
-                //}
+                // check for missing dependencies
+                // hint, all of the work is done in the constructor, including initialization of the 
+                //    dependent tasks and missing task lsids
+                GetDependentTasks getDependentTasks = new GetDependentTasks(userContext, taskInfo);
+                if (getDependentTasks.getMissingTaskLsids().size()>0) {
+                    moduleObject.put("missing_tasks", true);
+                    if (log.isDebugEnabled()) {
+                        for(final LSID missingTaskLsid : getDependentTasks.getMissingTaskLsids()) {
+                            final String str=missingTaskLsid.toString();
+                            log.debug("missingTaskLsid: "+str);
+                        }
+                    }
+                }
+                else {
+                    moduleObject.put("missing_tasks", false); 
+                }
+                
+                if (getDependentTasks.getPrivateTasks().size()>0) {
+                    //TODO: notify end-user
+                    log.debug("current user, '"+userContext.getUserId()+"', doesn't have permission to run one of the dependent tasks");
+                    for(final TaskInfo privateTask : getDependentTasks.getPrivateTasks()) {
+                        final String message=privateTask.getName()+", "+privateTask.getLsid();
+                        log.debug(message);
+                    }
+                }
             }
             JSONObject responseObject = new JSONObject();
             responseObject.put(ModuleJSON.KEY, moduleObject);
