@@ -11,7 +11,7 @@ public class PipelineDependencyHelper {
     final static PipelineDependencyHelperCached helper = new PipelineDependencyHelperCached();
     static boolean init = false;
 
-    synchronized public static PipelineDependency instance() {
+    public static PipelineDependency instance() {
         return CachedImpl.INSTANCE;
     }
     
