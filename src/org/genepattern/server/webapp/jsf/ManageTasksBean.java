@@ -43,6 +43,7 @@ import org.genepattern.util.GPConstants;
 import org.genepattern.util.LSID;
 import org.genepattern.util.LSIDUtil;
 import org.genepattern.util.LSIDVersionComparator;
+import org.genepattern.webservice.PipelineDependencyCache;
 import org.genepattern.webservice.TaskInfo;
 import org.genepattern.webservice.TaskInfoAttributes;
 import org.genepattern.webservice.TaskInfoCache;
@@ -100,35 +101,50 @@ public class ManageTasksBean {
             String errorMessage = "";
             LocalTaskIntegratorClient taskIntegratorClient = new LocalTaskIntegratorClient(UIBeanHelper.getUserId());
             for (TaskInfo task : deletedSet) {
-                // TODO: re-implement this method
+                boolean goodToDelete=true;
                 // For each deleted task make sure all its dependents are also being deleted
                 // If not, do not delete this task and let the user know in an error message
-                //Set<TaskInfo> dependentSet = PipelineDependencyHelper.instance().getDependentPipelinesRecursive(task);
-                //boolean goodToDelete = deletedSet.containsAll(dependentSet);
-                
-                //if (!goodToDelete) {
-                //    // First get the set of all dependents to prompt for
-                //    dependentSet.removeAll(deletedSet);
-                //    
-                //    // Next, add the prompt to the error message
-                //    if (!errorMessage.isEmpty()) { errorMessage += "; "; }
-                //    errorMessage += task.getName() + " (" + task.getLsid() + ") could not be deleted because it is used in pipelines: ";
-                //    for (TaskInfo depends : dependentSet) {
-                //        errorMessage += depends.getName() + ", ";
-                //    }
-                //    errorMessage = errorMessage.substring(0, errorMessage.length() - 2); // Shave off unnecessary comma
-                //    errorMessage += ". Please delete those pipelines first.";
-                //    continue;
-                //}
-                
-                try {
-                    taskIntegratorClient.deleteTask(task.getLsid());
-                } 
-                catch (Exception e) {
-                    e.printStackTrace();
-                    log.error(e);
-                    throw new RuntimeException(e);
+                if (PipelineDependencyCache.isEnabled()) {
+                    final Set<TaskInfo> referringTasks=PipelineDependencyCache.instance().getAllReferringPipelines(task);
+                    boolean changed=referringTasks.removeAll(deletedSet);
+                    goodToDelete=referringTasks.size()==0;
+                    if (!goodToDelete) {
+                        // Next, add the prompt to the error message
+                        if (!errorMessage.isEmpty()) { errorMessage += "; "; }
+                        errorMessage += task.getName() + " (" + task.getLsid() + ") could not be deleted because it is used in "+
+                                referringTasks.size() +" pipelines.  ";
+                        //don't want to fill the display with too many items
+                        final int MAX_TO_DISPLAY=100;
+                        int idx=0;
+                        for (final TaskInfo referringTask : referringTasks) {
+                            ++idx;
+                            if (idx>MAX_TO_DISPLAY) {
+                                break;
+                            }
+                            String version="";
+                            try {
+                                version=new LSID(referringTask.getLsid()).getVersion();
+                                version = ":"+version;
+                            }
+                            catch (Throwable t) {
+                                log.error("Error getting lsid version for task="+referringTask.getLsid(), t);
+                            }
+                            errorMessage += referringTask.getName() + version+", ";
+                        }
+                        errorMessage = errorMessage.substring(0, errorMessage.length() - 2); // Shave off unnecessary comma
+                        errorMessage += ". Please delete those pipelines first.";
+                    }
                 }
+                
+                if (goodToDelete) {
+                    try {
+                        taskIntegratorClient.deleteTask(task.getLsid());
+                    } 
+                    catch (Exception e) {
+                        log.error(e);
+                        throw new RuntimeException(e);
+                    }
+                } 
             }
             updateModules();
             

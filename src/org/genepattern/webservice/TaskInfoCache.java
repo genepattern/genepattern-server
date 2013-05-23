@@ -83,12 +83,21 @@ public class TaskInfoCache {
         taskMasterCache.put(taskId, taskMaster);
         TaskInfoAttributes taskInfoAttributes = TaskInfoAttributes.decode(taskMaster.getTaskinfoattributes());
         taskInfoAttributesCache.put(taskId, taskInfoAttributes);
+
+        if (PipelineDependencyCache.isEnabled()) {
+            final TaskInfo taskToAdd = taskInfoFromTaskMaster(taskMaster, taskInfoAttributes);
+            PipelineDependencyCache.instance().addTask(taskToAdd);
+        }
     }
 
     public void clearCache() {
         taskMasterCache.clear();
         taskInfoAttributesCache.clear();
         taskDocFilenameCache.clear();
+        if (PipelineDependencyCache.isEnabled()) {
+            PipelineDependencyCache.instance().clear();
+        }
+        
     }
 
     public void removeFromCache(String lsid) {
@@ -98,13 +107,20 @@ public class TaskInfoCache {
     }
 
     public void removeFromCache(Integer taskId) {
-        TaskMaster tm = taskMasterCache.get(taskId);
+        final TaskMaster tm = taskMasterCache.get(taskId);
         if (tm != null && tm.getLsid() != null) {
             DirectoryManager.removeTaskLibDirFromCache(tm.getLsid());
         }
         taskMasterCache.remove(taskId);
         taskInfoAttributesCache.remove(taskId);
         taskDocFilenameCache.remove(taskId);
+
+        if (PipelineDependencyCache.isEnabled()) {
+            if (tm != null) {
+                final String taskLsid=tm.getLsid();
+                PipelineDependencyCache.instance().removeTask(taskLsid);
+            }
+        }
     }
     
     private static class IsDocFilenameFilter implements FilenameFilter {
