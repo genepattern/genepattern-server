@@ -207,16 +207,16 @@ public class UploadFilesBean {
      */
     public TreeNode<FileInfoWrapper> getFileTree() throws Exception {
         // Set up the root node
-        TreeNode<FileInfoWrapper> rootNode = new TreeNodeImpl<FileInfoWrapper>();
-        GpFilePath rootFileFacade = new UserUploadFile(null);
+        final TreeNode<FileInfoWrapper> rootNode = new TreeNodeImpl<FileInfoWrapper>();
+        final GpFilePath rootFileFacade = new UserUploadFile(null);
         rootFileFacade.setName(UIBeanHelper.getUserId());
-        FileInfoWrapper rootWrapper = new DirectoryInfoWrapper(rootFileFacade);
+        final FileInfoWrapper rootWrapper = new DirectoryInfoWrapper(rootFileFacade);
         rootWrapper.setDirectory(true);
         rootWrapper.setRoot(true);
         rootNode.setData(rootWrapper);
 
         // Add component trees
-        TreeNode<FileInfoWrapper> uploadFilesTree = getUploadFilesTree();
+        final TreeNode<FileInfoWrapper> uploadFilesTree = getUploadFilesTree();
         ((DirectoryInfoWrapper) rootWrapper).addChildFile(uploadFilesTree.getData());
         rootNode.addChild(0, uploadFilesTree);
         return rootNode;
@@ -521,12 +521,16 @@ public class UploadFilesBean {
             }
             try {
                 URL urlObj=file.getUrl();
-                return urlObj.toExternalForm();
+                if (urlObj != null) {
+                    return urlObj.toExternalForm();
+                }
             }
             catch (Throwable t) {
                 log.error("Error initializing FileInfoWrapper", t);
                 return "";
             }
+            log.debug("url is not initialized");
+            return "";
         }
         
         public String getType() {
@@ -796,7 +800,6 @@ public class UploadFilesBean {
     
     public class DirectoryInfoWrapper extends FileInfoWrapper {
         private List<FileInfoWrapper> dirFiles = new ArrayList<FileInfoWrapper>();
-        private GpDirectoryNode gpDirectory;
         
         public DirectoryInfoWrapper(GpFilePath dir) {
             super(dir);
@@ -806,7 +809,6 @@ public class UploadFilesBean {
         public DirectoryInfoWrapper(final GpDirectoryNode dir) {
             super(dir.getValue());
             this.setDirectory(true);
-            this.gpDirectory = dir;
         }
         
         public void addChildDir(DirectoryInfoWrapper childDir) {

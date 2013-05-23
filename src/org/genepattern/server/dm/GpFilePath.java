@@ -110,10 +110,24 @@ abstract public class GpFilePath implements Comparable<GpFilePath> {
      * @throws Exception
      */
     public URL getUrl() throws Exception {
-        URL gpUrl = getGenePatternUrl();
-        URI uri = getRelativeUri();
-
-        String str = gpUrl.toString() + uri.toString();
+        String str="";
+        final URL gpUrl = getGenePatternUrl();
+        if (gpUrl==null) {
+            log.error("GenePatternURL is null");
+        }
+        else {
+            //expected
+            str += gpUrl.toString();
+        }
+        
+        final URI relativeUri = getRelativeUri();
+        if (relativeUri==null) {
+            //null relativeUri means use the GP URL
+            log.debug("known error: uri is null");
+        }
+        else {
+            str += relativeUri.toString();
+        }
         if (isDirectory() && !str.endsWith("/")) {
             str = str + "/";
         }
