@@ -309,10 +309,12 @@ public class RunTaskServlet extends HttpServlet
             writeToFile(uploadedInputStream, gpFilePath.getServerFile().getCanonicalPath());
             fileUtil.updateUploadsDb(gpFilePath);
 
-            String output = "File uploaded to : " + gpFilePath.getServerFile().getCanonicalPath();
-            log.error(output);
+            if (log.isDebugEnabled()) {
+                final String output = "File uploaded to : " + gpFilePath.getServerFile().getCanonicalPath();
+                log.debug(output);
+                log.debug(gpFilePath.getUrl().toExternalForm());
+            }
 
-            log.error(gpFilePath.getUrl().toExternalForm());
             ResponseJSON result = new ResponseJSON();
             result.addChild("location",  gpFilePath.getUrl().toExternalForm());
             return Response.ok().entity(result.toString()).build();
