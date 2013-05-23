@@ -284,7 +284,7 @@ public class RunTaskServlet extends HttpServlet
     @POST
     @Path("/upload")
     @Produces(MediaType.APPLICATION_JSON)
-    @Consumes(MediaType.MULTIPART_FORM_DATA)
+    @Consumes({MediaType.MULTIPART_FORM_DATA, MediaType.APPLICATION_OCTET_STREAM})
     public Response uploadFile(
         @FormDataParam("ifile") InputStream uploadedInputStream,
         @FormDataParam("ifile") FormDataContentDisposition fileDetail,
