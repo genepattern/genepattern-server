@@ -8,6 +8,7 @@ import java.io.OutputStream;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
@@ -202,14 +203,21 @@ public class RunTaskServlet extends HttpServlet
                     moduleObject.put("missing_tasks", false); 
                 }
                 
-                if (getDependentTasks.getPrivateTasks().size()>0) {
-                    //TODO: notify end-user
+                final Set<TaskInfo> privateTasks=getDependentTasks.getPrivateTasks();
+                if (privateTasks != null && privateTasks.size()>0) {
                     log.debug("current user, '"+userContext.getUserId()+"', doesn't have permission to run one of the dependent tasks");
+                    JSONArray privateTasksObj=new JSONArray();
                     for(final TaskInfo privateTask : getDependentTasks.getPrivateTasks()) {
                         final String message=privateTask.getName()+", "+privateTask.getLsid();
                         log.debug(message);
+                        final JSONObject entry=new JSONObject();
+                        entry.put("name", privateTask.getName());
+                        entry.put("lsid", privateTask.getLsid());
+                        entry.put("userId", privateTask.getUserId());
+                        privateTasksObj.put(entry);
                     }
-                }
+                    moduleObject.put("private_tasks", privateTasksObj);
+               }
             }
             JSONObject responseObject = new JSONObject();
             responseObject.put(ModuleJSON.KEY, moduleObject);

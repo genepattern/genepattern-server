@@ -109,6 +109,12 @@ function loadModule(taskId, reloadId)
                         $(".submitControlsDiv").hide();
 
                     }
+                    else if(module["private_tasks"])
+                    {
+                        $("#missingTasksDiv").append("<p class='errorMessage'>WARNING: This pipeline includes tasks " +
+                        "which you do not have permission to run on this server.</p>");
+                        $(".submitControlsDiv").hide(); 
+                    }
                     else
                     {
                         parametersJson = response["parameters"];
