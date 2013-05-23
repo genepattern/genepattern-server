@@ -15,7 +15,6 @@ import org.genepattern.server.eula.GetTaskStrategyDefault;
 import org.genepattern.util.GPConstants;
 import org.genepattern.util.LSID;
 import org.genepattern.webservice.TaskInfo;
-import org.genepattern.webservice.TaskInfoAttributes;
 
 /**
  * Helper class for checking for module dependencies before running a task.
@@ -96,7 +95,7 @@ public class GetIncludedTasks {
 
         PipelineModel pipelineModel=null;
         try {
-            pipelineModel=initPipelineModel(taskInfo);
+            pipelineModel=PipelineUtil.getPipelineModel(taskInfo);
             pipelineModel.setLsid(taskInfo.getLsid());
         }
         catch (Throwable t) {
@@ -206,47 +205,6 @@ public class GetIncludedTasks {
             return false;
         }
         return taskOwner.equals( userContext.getUserId() );
-    }
-
-    /**
-     * Initialize a PipelineModel object for the given taskInfo.
-     * Copied from PipelineHandler.
-     * 
-     * @param taskInfo
-     * @return
-     * @throws PipelineModelException
-     */
-    private static PipelineModel initPipelineModel(final TaskInfo taskInfo) throws PipelineModelException
-    {
-        if (taskInfo==null) {
-            log.error("Unexpected null arg");
-            return null;
-        }
-        if (!taskInfo.isPipeline()) {
-            log.debug("task is not a pipeline");
-            return null;
-        }
-        
-        final TaskInfoAttributes tia = taskInfo.giveTaskInfoAttributes();
-        if (tia == null) {
-            throw new PipelineModelException("taskInfo.giveTaskInfoAttributes is null for taskInfo.ID="+taskInfo.getID()+", taskInfo.name="+taskInfo.getName());
-        }
-        String serializedModel = (String) tia.get(GPConstants.SERIALIZED_MODEL);
-        if (serializedModel == null || serializedModel.length() == 0) {
-            throw new PipelineModelException("Missing "+GPConstants.SERIALIZED_MODEL+" for taskInfo.ID="+taskInfo.getID()+", taskInfo.name="+taskInfo.getName());
-        }
-        PipelineModel model = null;
-        try {
-            model = PipelineModel.toPipelineModel(serializedModel);
-        } 
-        catch (Throwable t) {
-            throw new PipelineModelException(t);
-        }
-        if (model == null) {
-            throw new PipelineModelException("pipeline model is null for taskInfo.ID="+taskInfo.getID()+", taskInfo.name="+taskInfo.getName());
-        }
-        model.setLsid(taskInfo.getLsid());
-        return model;
     }
 
 }
