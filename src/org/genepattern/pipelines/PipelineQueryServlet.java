@@ -24,6 +24,7 @@ import java.net.MalformedURLException;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -47,10 +48,11 @@ import org.apache.commons.fileupload.servlet.ServletRequestContext;
 import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.log4j.Logger;
 import org.genepattern.data.pipeline.JobSubmission;
-import org.genepattern.data.pipeline.PipelineDependencyHelper;
 import org.genepattern.data.pipeline.PipelineModel;
 import org.genepattern.data.pipeline.PipelineUtil;
+import org.genepattern.server.TaskLSIDNotFoundException;
 import org.genepattern.server.config.ServerConfiguration;
+import org.genepattern.server.config.ServerConfiguration.Context;
 import org.genepattern.server.executor.pipeline.PipelineException;
 import org.genepattern.server.genepattern.TaskInstallationException;
 import org.genepattern.server.webapp.PipelineCreationHelper;
@@ -59,6 +61,7 @@ import org.genepattern.server.webservice.server.local.IAdminClient;
 import org.genepattern.server.webservice.server.local.LocalAdminClient;
 import org.genepattern.util.GPConstants;
 import org.genepattern.webservice.ParameterInfo;
+import org.genepattern.webservice.PipelineDependencyCache;
 import org.genepattern.webservice.TaskInfo;
 import org.genepattern.webservice.TaskInfoAttributes;
 import org.genepattern.webservice.TaskInfoCache;
@@ -248,8 +251,14 @@ public class PipelineQueryServlet extends HttpServlet {
 	    Set<TaskInfo> changed = new HashSet<TaskInfo>();
 	    
 	    // Get a list of the pipelines dependent on this one (useful for recursion later)
-        Set<TaskInfo> dependents = PipelineDependencyHelper.instance().getDependentPipelines(toUpdateTaskInfo);
-	    
+	    final Set<TaskInfo> dependents;
+	    Context userContext=ServerConfiguration.Context.getContextForUser(username);
+	    if (PipelineDependencyCache.isEnabled(userContext)) {
+	        dependents=PipelineDependencyCache.instance().getParentPipelines(toUpdateTaskInfo);
+	    }
+	    else {
+	        dependents=Collections.emptySet();
+	    }
 	    synchronized(this) {
     	    try {
                 toUpdateModel = PipelineUtil.getPipelineModel(toUpdateTaskInfo);
@@ -771,7 +780,6 @@ public class PipelineQueryServlet extends HttpServlet {
         
         // Build up the pipeline model to save
         String newLsid = null;
-        Set<TaskInfo> dependents = null;
         
         synchronized(this) {
             PipelineModel model = null;
@@ -821,22 +829,37 @@ public class PipelineQueryServlet extends HttpServlet {
             }
         }
         
-        TaskInfo oldInfo = null;
-        
-        // Check for dependent pipelines to prompt for update
+        // Create the new pipeline directory in taskLib and move files
+        TaskInfo oldInfo=null;
+        String pipelineLsid="";
         try {
-            if (pipelineObject.getLsid().length() > 0) { 
-                oldInfo = TaskInfoCache.instance().getTask(pipelineObject.getLsid());
-                dependents = PipelineDependencyHelper.instance().getDependentPipelines(oldInfo);
+            pipelineLsid=pipelineObject.getLsid();
+        }
+        catch (JSONException e) {
+            log.error(e);
+        }
+        catch (Throwable t) {
+            log.error(t);
+        }
+        try {
+            // first, initialize the old TaskInfo
+            if (pipelineLsid != null && pipelineLsid.length()>0) {
+                oldInfo = TaskInfoCache.instance().getTask(pipelineLsid);
+            }
+            else {
+                oldInfo=null;
             }
         }
-        catch (Exception e) {
-            log.error("Unable to retrieve the old taskInfo based on old lsid for: " + newLsid, e);
-            sendError(response, "Unable to save uploaded files for the pipeline: " + e.getLocalizedMessage());
-            return;
+        catch (TaskLSIDNotFoundException e) {
+            //can happen when saving a new pipeline
+            oldInfo=null;
+        }
+        catch (Throwable t) {
+            //unexpected, but we should ignore
+            log.error("Unexpected exception getting TaskInfo from cache: "+pipelineLsid, t);
+            oldInfo=null;
         }
 
-        // Create the new pipeline directory in taskLib and move files
         try {
             File newDir = copyFilesToNewTaskLib(pipelineObject.getLsid(), pipelineObject.getName(), pipelineObject.getFiles(), oldInfo, newLsid, username);
             
@@ -847,10 +870,19 @@ public class PipelineQueryServlet extends HttpServlet {
             PipelineDesignerFile pdFile = new PipelineDesignerFile(newDir);
             pdFile.write(modulesList, verifiedFiles);
         }
-        catch (Throwable e) {
-            log.error("Unable to retrieve the old taskInfo based on old lsid for: " + newLsid, e);
-            sendError(response, "Unable to save uploaded files for the pipeline: " + e.getLocalizedMessage());
+        catch (Throwable t) {
+            log.error("Unable to retrieve the old taskInfo based on old lsid for: " + newLsid, t);
+            sendError(response, "Unable to save uploaded files for the pipeline: " + t.getLocalizedMessage());
             return;
+        }
+
+        // Check for dependent pipelines to prompt for update
+        Set<TaskInfo> dependents=Collections.emptySet();
+        if (oldInfo != null) {
+            final Context userContext=ServerConfiguration.Context.getContextForUser(username);
+            if (PipelineDependencyCache.isEnabled(userContext)) {
+                dependents=PipelineDependencyCache.instance().getParentPipelines(oldInfo);
+            }
         }
 
         // Respond to the client
