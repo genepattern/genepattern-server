@@ -96,9 +96,25 @@ public class PipelineDependencyCache {
      * @return an empty set if the given task is not included in any installed pipelines.
      */
     public Set<TaskInfo> getParentPipelines(final TaskInfo childTaskInfo) {
-        final Set<TaskInfo> parentPipelines=new HashSet<TaskInfo>();
+        if (childTaskInfo==null) {
+            log.debug("ignoring null childTaskInfo");
+            return Collections.emptySet();
+        }
+        if (childTaskInfo.getLsid()==null || childTaskInfo.getLsid().length()==0) {
+            log.debug("ignoring, childTaskInfo.lsid not set");
+            return Collections.emptySet();
+        }
         final List<String> parentLsids=parentLsidLookup.get(childTaskInfo.getLsid());
+        if (parentLsids == null) {
+            log.error("parentLsids is null, for childTaskInfo="+childTaskInfo.getName()+", "+childTaskInfo.getLsid());
+            return Collections.emptySet();
+        }
+        if (parentLsids.size()==0) {
+            //can happen often, no need to create a new HashSet
+            return Collections.emptySet();
+        }
         
+        final Set<TaskInfo> parentPipelines=new HashSet<TaskInfo>();
         for(final String parentLsid : parentLsids) {
             final TaskInfo parentTaskInfo; 
             try {
