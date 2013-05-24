@@ -35,6 +35,8 @@ import javax.faces.event.ActionEvent;
 import org.apache.log4j.Logger;
 //import org.genepattern.data.pipeline.PipelineDependencyHelper;
 import org.genepattern.data.pipeline.PipelineModel;
+import org.genepattern.server.config.ServerConfiguration;
+import org.genepattern.server.config.ServerConfiguration.Context;
 import org.genepattern.server.user.UserDAO;
 import org.genepattern.server.webservice.server.local.IAdminClient;
 import org.genepattern.server.webservice.server.local.LocalAdminClient;
@@ -90,6 +92,8 @@ public class ManageTasksBean {
 
     private void deleteTasks(String[] taskLsids) {
         if (taskLsids != null) {
+            final String userId=UIBeanHelper.getUserId();
+            final Context userContext=ServerConfiguration.Context.getContextForUser(userId);
             
             // Get a set of the deleted TaskInfos
             Set<TaskInfo> deletedSet = new HashSet<TaskInfo>();
@@ -98,8 +102,8 @@ public class ManageTasksBean {
                 deletedSet.add(info);
             }
 
-            String errorMessage = "";
-            LocalTaskIntegratorClient taskIntegratorClient = new LocalTaskIntegratorClient(UIBeanHelper.getUserId());
+            StringBuffer errorMessage = new StringBuffer();
+            LocalTaskIntegratorClient taskIntegratorClient = new LocalTaskIntegratorClient(userId);
             for (TaskInfo task : deletedSet) {
                 boolean goodToDelete=true;
                 // For each deleted task make sure all its dependents are also being deleted
@@ -110,9 +114,11 @@ public class ManageTasksBean {
                     goodToDelete=referringTasks.size()==0;
                     if (!goodToDelete) {
                         // Next, add the prompt to the error message
-                        if (!errorMessage.isEmpty()) { errorMessage += "; "; }
-                        errorMessage += task.getName() + " (" + task.getLsid() + ") could not be deleted because it is used in "+
-                                referringTasks.size() +" pipelines.  ";
+                        if (errorMessage.length()>0) {
+                            errorMessage.append("; ");
+                        }
+                        errorMessage.append( task.getName() + " (" + task.getLsid() + ") could not be deleted because it is used in "+
+                                referringTasks.size() +" pipelines.  ");
                         //don't want to fill the display with too many items
                         final int MAX_TO_DISPLAY=100;
                         int idx=0;
@@ -129,10 +135,12 @@ public class ManageTasksBean {
                             catch (Throwable t) {
                                 log.error("Error getting lsid version for task="+referringTask.getLsid(), t);
                             }
-                            errorMessage += referringTask.getName() + version+", ";
+                            errorMessage.append(referringTask.getName() + version+", ");
                         }
-                        errorMessage = errorMessage.substring(0, errorMessage.length() - 2); // Shave off unnecessary comma
-                        errorMessage += ". Please delete those pipelines first.";
+                        // Shave off unnecessary comma
+                        final int K=errorMessage.length();
+                        errorMessage.delete(K-2, K);
+                        errorMessage.append(". Please delete those pipelines first.");
                     }
                 }
                 
@@ -149,8 +157,8 @@ public class ManageTasksBean {
             updateModules();
             
             // If unable to delete all tasks, alert the user
-            if (!errorMessage.isEmpty()) {
-                UIBeanHelper.setErrorMessage(errorMessage);
+            if (errorMessage.length()>0) {
+                UIBeanHelper.setErrorMessage(errorMessage.toString());
             }
         }
     }
