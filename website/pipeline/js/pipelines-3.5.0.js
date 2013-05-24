@@ -1319,6 +1319,10 @@ var editor = {
                 
                 editor._finishSave(message, newVersion, newLsid);
             },
+            error: function() {
+            	$("html").unblock();
+            	editor.showDialog("ERROR", "<div style='text-align: center; font-weight: bold;'>Error Saving Pipeline</div>");
+            },
             dataType: "json"
         });
 	},
