@@ -108,7 +108,7 @@ public class ManageTasksBean {
                 boolean goodToDelete=true;
                 // For each deleted task make sure all its dependents are also being deleted
                 // If not, do not delete this task and let the user know in an error message
-                if (PipelineDependencyCache.isEnabled()) {
+                if (PipelineDependencyCache.isEnabled(userContext)) {
                     final Set<TaskInfo> referringTasks=PipelineDependencyCache.instance().getAllReferringPipelines(task);
                     boolean changed=referringTasks.removeAll(deletedSet);
                     goodToDelete=referringTasks.size()==0;

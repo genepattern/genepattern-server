@@ -73,18 +73,25 @@ public class TaskInfoCache {
     private void initializeCache() {
         boolean closeDbSession = true;
         List<TaskMaster> allTaskMasters = findAll(closeDbSession);
+        final Context serverContext=ServerConfiguration.Context.getServerContext();
+        final boolean isPipelineDependencyCacheEnabled=PipelineDependencyCache.isEnabled(serverContext);
         for(TaskMaster taskMaster : allTaskMasters) {
-            addToCache(taskMaster);
+            addToCache(taskMaster, isPipelineDependencyCacheEnabled);
         }
     }
     
-    private void addToCache(TaskMaster taskMaster) {
+    private void addToCache(final TaskMaster taskMaster) {
+        final Context serverContext=ServerConfiguration.Context.getServerContext();
+        addToCache(taskMaster, PipelineDependencyCache.isEnabled(serverContext));
+    }
+
+    private void addToCache(final TaskMaster taskMaster, final boolean isPipelineDependencyCacheEnabled) {
         Integer taskId = taskMaster.getTaskId();
         taskMasterCache.put(taskId, taskMaster);
         TaskInfoAttributes taskInfoAttributes = TaskInfoAttributes.decode(taskMaster.getTaskinfoattributes());
         taskInfoAttributesCache.put(taskId, taskInfoAttributes);
 
-        if (PipelineDependencyCache.isEnabled()) {
+        if (isPipelineDependencyCacheEnabled) {
             final TaskInfo taskToAdd = taskInfoFromTaskMaster(taskMaster, taskInfoAttributes);
             PipelineDependencyCache.instance().addTask(taskToAdd);
         }
@@ -94,10 +101,10 @@ public class TaskInfoCache {
         taskMasterCache.clear();
         taskInfoAttributesCache.clear();
         taskDocFilenameCache.clear();
-        if (PipelineDependencyCache.isEnabled()) {
+        final Context serverContext=ServerConfiguration.Context.getServerContext();
+        if (PipelineDependencyCache.isEnabled(serverContext)) {
             PipelineDependencyCache.instance().clear();
         }
-        
     }
 
     public void removeFromCache(String lsid) {
@@ -115,7 +122,8 @@ public class TaskInfoCache {
         taskInfoAttributesCache.remove(taskId);
         taskDocFilenameCache.remove(taskId);
 
-        if (PipelineDependencyCache.isEnabled()) {
+        final Context serverContext=ServerConfiguration.Context.getServerContext();
+        if (PipelineDependencyCache.isEnabled(serverContext)) {
             if (tm != null) {
                 final String taskLsid=tm.getLsid();
                 PipelineDependencyCache.instance().removeTask(taskLsid);

@@ -44,7 +44,15 @@ default.properties:
     job.queue.suspend_on_start: false
     # flag to allow users to submit jobs
     allow.new.job: true
-
+    
+    # PipelineDependencyCache, hidden features in the 3.6.0 release.
+    # Set this to true to enable.
+    # 1) check for dependent modules and pipelines when deleting a task
+    #    from the manage modules page
+    # 2) check for dependent pipelines after making an edit to a dependent pipeline 
+    #    from the Pipeline Designer page
+    pipelineDependencyCache.enable: false
+    
 
 # a list of command executors
 # The executor id, 'org.genepattern.server.executor.PipelineExecutor', is reserved for the default executor which runs all GP pipelines.

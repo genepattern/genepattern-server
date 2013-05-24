@@ -14,6 +14,8 @@ import org.genepattern.data.pipeline.PipelineModel;
 import org.genepattern.data.pipeline.PipelineModelException;
 import org.genepattern.data.pipeline.PipelineUtil;
 import org.genepattern.server.TaskLSIDNotFoundException;
+import org.genepattern.server.config.ServerConfiguration;
+import org.genepattern.server.config.ServerConfiguration.Context;
 
 
 /**
@@ -24,9 +26,11 @@ import org.genepattern.server.TaskLSIDNotFoundException;
  */
 public class PipelineDependencyCache {
     final static private Logger log = Logger.getLogger(PipelineDependencyCache.class);
-
-    public static boolean isEnabled() {
-        return false;
+    
+    final static public String PROP_ENABLE="pipelineDependencyCache.enable";
+    public static boolean isEnabled(Context userContext) {
+        boolean enabled = ServerConfiguration.instance().getGPBooleanProperty(userContext, PROP_ENABLE, false);
+        return enabled;
     }
     
     public static PipelineDependencyCache instance() {
