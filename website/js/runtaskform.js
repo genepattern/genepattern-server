@@ -68,6 +68,7 @@ function loadModule(taskId, reloadId)
         $.ajax({
             type: "GET",
             url: "/gp/rest/RunTask/load" + queryString,
+            cache: false,
             data: { "lsid" : taskId, "reloadJob":  reloadId},
             success: function(response) {
 
@@ -875,6 +876,7 @@ jQuery(document).ready(function()
         $.ajax({
             type: "GET",
             url: "/gp/rest/RunTask/viewCode" + queryString,
+            cache: false,
             data: { "lsid" : run_task_info.lsid,
                     "reloadJob":  run_task_info.reloadJobId,
                     "language": language},
@@ -1522,30 +1524,19 @@ function uploadFile(paramName, file, fileOrder, fileId)
     $("#"+fileId + "Percentage").text("0%");
 
     var destinationUrl = "/gp/rest/RunTask/upload";
-    // prepare XMLHttpRequest
-    var xhr = new XMLHttpRequest();
-    xhr.open('POST', destinationUrl);
-    xhr.onload = function() {
-        console.log("on load response: " + this.responseText);
-
-        var response = $.parseJSON(this.responseText);
-
-        param_file_listing[paramName][fileOrder].name = response.location;
-        delete param_file_listing[paramName][fileOrder].object;
-
-        if(allFilesUploaded())
-        {
-            $("#cancelUpload").hide();
-            submitTask();
-        }
-
-    };
-    xhr.onerror = function() {
-        result.textContent = this.responseText;
-        console.log("Error uploading the file " + file.name + " :" + this.responseText);
-    };
-    xhr.upload.onprogress = function(event) {
-        if (event.lengthComputable)
+	var isMSIE = /*@cc_on!@*/0;
+//	if (isMSIE) {
+//		destinationUrl = "/gp/rest/v1/data/upload/job_input?name=" + file.name;
+//	}
+	
+	// prepare FormData
+    var formData = new FormData();
+    formData.append('ifile', file);
+    formData.append('paramName', paramName);
+    formData.append('index', id);
+	
+    var progressEvent = function(event) {
+		if (event.lengthComputable)
         {
 
             var percentComplete = Math.round(event.loaded * 100 / event.total);
@@ -1561,18 +1552,42 @@ function uploadFile(paramName, file, fileOrder, fileId)
         {
             $("#fileUploadDiv").append('<p>Unable to determine progress</p>');
         }
-    }
+	};
+    
+    var xhr = null;
+    $.ajax({
+    	type: "POST",
+    	cache: false,
+    	url: destinationUrl,
+    	data: formData,
+    	processData: false,
+    	contentType: false,
+    	xhr: function() {
+    		xhr = new window.XMLHttpRequest();
+    		//Upload progress
+    		if (xhr.upload) {
+    			xhr.upload.addEventListener("progress", progressEvent, false);
+    		}
 
-    xhr.upload.onloadstart = function(event) {
-        console.log("onload start support file upload");
-    }
+    		return xhr;
+    	},
+    	success: function(event) {
+            console.log("on load response: " + event);
 
-    // prepare FormData
-    var formData = new FormData();
-    formData.append('ifile', file);
-    formData.append('paramName', paramName);
-    formData.append('index', id);
-    xhr.send(formData);
+            param_file_listing[paramName][fileOrder].name = $.parseJSON(event).location;
+            delete param_file_listing[paramName][fileOrder].object;
+
+            if(allFilesUploaded())
+            {
+                $("#cancelUpload").hide();
+                submitTask();
+            }
+
+        },
+    	error: function(event) {
+            console.log("Error uploading the file " + file.name + " :" + event.statusText);
+        }
+    });
 
     //keep track of all the upload requests so that they can be canceled
     //using the cancel button
