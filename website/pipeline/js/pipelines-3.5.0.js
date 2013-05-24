@@ -1260,7 +1260,7 @@ var editor = {
                 var message = response["MESSAGE"];
                 var error = response["ERROR"];
                 
-                if (!runImmediately) {
+                if (!runImmediately || error) {
                 	$("html").unblock();
                 }
 
