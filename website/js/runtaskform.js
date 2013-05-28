@@ -1524,10 +1524,6 @@ function uploadFile(paramName, file, fileOrder, fileId)
     $("#"+fileId + "Percentage").text("0%");
 
     var destinationUrl = "/gp/rest/RunTask/upload";
-	var isMSIE = /*@cc_on!@*/0;
-//	if (isMSIE) {
-//		destinationUrl = "/gp/rest/v1/data/upload/job_input?name=" + file.name;
-//	}
 	
 	// prepare FormData
     var formData = new FormData();
@@ -1585,6 +1581,9 @@ function uploadFile(paramName, file, fileOrder, fileId)
 
         },
     	error: function(event) {
+    		$("#cancelUpload").trigger("click");
+    		$("#fileUploadDiv").html("<span style='color:red;'>Error uploading file. This may be due to an incompatible browser, such as Internet Explorer. If so, please use a supported browser (Chrome, Firefox, Safari) or use the Java uploader in the Uploads Tab.</span>");
+    		$("#fileUploadDiv").show();
             console.log("Error uploading the file " + file.name + " :" + event.statusText);
         }
     });
