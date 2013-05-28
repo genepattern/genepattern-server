@@ -1569,8 +1569,9 @@ function uploadFile(paramName, file, fileOrder, fileId)
     	},
     	success: function(event) {
             console.log("on load response: " + event);
-
-            param_file_listing[paramName][fileOrder].name = $.parseJSON(event).location;
+            
+            var parsedEvent = typeof event === "string" ? $.parseJSON(event) : event;
+            param_file_listing[paramName][fileOrder].name = parsedEvent.location;
             delete param_file_listing[paramName][fileOrder].object;
 
             if(allFilesUploaded())
