@@ -140,14 +140,24 @@ abstract public class GpFilePath implements Comparable<GpFilePath> {
      * @return
      */
     public boolean isFile() {
-        return getServerFile().isFile();
+        final File serverFile=getServerFile();
+        if (serverFile==null) {
+            log.debug("server file is null");
+            return false;
+        }
+        return serverFile.isFile();
     }
 
     /**
      * Same as {@link java.io.File#isDirectory()}.
      */
     public boolean isDirectory() {
-        return getServerFile().isDirectory();
+        final File serverFile=getServerFile();
+        if (serverFile==null) {
+            log.debug("server file is null");
+            return false;
+        }
+        return serverFile.isDirectory();
     }
     
     /**
