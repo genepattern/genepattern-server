@@ -15,6 +15,8 @@ import org.genepattern.webservice.TaskInfoCache;
  * Cached implementation of the PipelineDependency interface.
  * 
  * @author pcarr
+ * 
+ * @deprecated - Use the PipelineDependencyCache instead.
  *
  */
 public class PipelineDependencyHelperCached implements PipelineDependency {

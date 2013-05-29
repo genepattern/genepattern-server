@@ -5,6 +5,8 @@ package org.genepattern.data.pipeline;
  * which implements the PipelineDependency interface.
  * 
  * @author pcarr
+ * 
+ * @deprecated - use the PipelineDependencyCache instead
  *
  */
 public class PipelineDependencyHelper {
