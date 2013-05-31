@@ -127,14 +127,15 @@ public class RunTaskServlet extends HttpServlet
                 }
                 else
                 {
-                    //warn the user if the reloaded job lsid and given lsid do not match
-                    //but continue execution
-                    final Lsid reloadLsid = new Lsid(reloadedLsidString);
-                    final Lsid givenLsid = new Lsid(lsid);
-                    if(!reloadLsid.getLsidNoVersion().equals(givenLsid.getLsidNoVersion()))
-                    {
-                        log.warn("The given lsid " + givenLsid.getLsidNoVersion() + " does not match " +
-                                "the lsid of the reloaded job " + reloadLsid.getLsidNoVersion());
+                    if (log.isDebugEnabled()) {
+                        log.debug("reloadedLsidString="+reloadedLsidString);
+                        log.debug("lsid="+lsid);
+                        if (!reloadedLsidString.equals(lsid)) {
+                            //warn if the reloaded job lsid and given lsid do not match
+                            //but continue execution
+                            log.warn("The given lsid " + lsid + " does not match " +
+                                    "the lsid of the reloaded job " + reloadedLsidString);
+                        }
                     }
                 }
             }
