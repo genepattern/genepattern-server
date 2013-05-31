@@ -129,9 +129,9 @@ public class RunTaskServlet extends HttpServlet
                 {
                     //warn the user if the reloaded job lsid and given lsid do not match
                     //but continue execution
-                    Lsid reloadLsid = new Lsid(reloadedLsidString);
-                    Lsid givenLsid = new Lsid(lsid);
-                    if(reloadLsid.getLsidNoVersion().equals(givenLsid.getLsidNoVersion()))
+                    final Lsid reloadLsid = new Lsid(reloadedLsidString);
+                    final Lsid givenLsid = new Lsid(lsid);
+                    if(!reloadLsid.getLsidNoVersion().equals(givenLsid.getLsidNoVersion()))
                     {
                         log.warn("The given lsid " + givenLsid.getLsidNoVersion() + " does not match " +
                                 "the lsid of the reloaded job " + reloadLsid.getLsidNoVersion());
