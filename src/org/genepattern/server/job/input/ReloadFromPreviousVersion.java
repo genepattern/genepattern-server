@@ -81,7 +81,7 @@ public class ReloadFromPreviousVersion {
                 gpUrlStr += "/";
             }
             
-            this.inputFormValue=gpUrlStr + "getFile.jsp?job="+originalJobId+"&file="+fileParam;
+            this.inputFormValue=gpUrlStr + "getFile.jsp?task=job="+originalJobId+"&file="+fileParam;
             log.debug("inputFormValue="+inputFormValue);
         }
         else {
