@@ -19,7 +19,7 @@ public class FileUtil {
     /**
      * Helper method to compare two files, returning true if they are equal, or if their canonical paths are equal.
      */
-    private static boolean fileEquals(File f1, File f2) {
+    public static boolean fileEquals(File f1, File f2) {
         if (f1 == null) {
             //special case: null == null
             return f2 == null;

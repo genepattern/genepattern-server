@@ -92,7 +92,6 @@ public class ReloadJobHelper {
      * @return
      */
     public JobInput getInputValues(final String reloadJobId) throws Exception {
-        //final JobInfo jobInfo = initJobInfo(userContext, reloadJobId);
         final JobInfo jobInfo = jobInfoLoader.getJobInfo(userContext, reloadJobId);
         return getInputValues(jobInfo);
     }
@@ -133,7 +132,7 @@ public class ReloadJobHelper {
                 formalParam=paramInfoMap.get(pname).getFormal();
             }
             //if formalParam is null, it's probably an output file, as opposed to an initial input param
-            final List<String> values=getOriginalInputValues(formalParam, actualParam);
+            final List<String> values=getOriginalInputValues(""+reloadJob.getJobNumber(), formalParam, actualParam);
             if (values != null) {
                 for(final String value : values) {
                     jobInput.addValue(pname, value);
@@ -150,6 +149,10 @@ public class ReloadJobHelper {
      * Has special-handling for parameter lists, when the original run has a list of values for the parameter.
      * Has special-handling for '<GenePatternURL>', when the formalParam is a File or Directory, always replace the
      *     '<GenePatternURL>' substitution variable with the actual GenePatternURL.
+     *     
+     * Has special handling for reloading jobs from a previous version of GP (>=3.6.0)
+     *     1) for a file uploaded with the original job
+     *     TODO: 2) for a file uploaded as part of a SOAP request
      * 
      * @param formalParam, the formal parameter as initialized from the TaskInfo (derived from the manifest for the module).
      *     Can be null.
@@ -158,7 +161,7 @@ public class ReloadJobHelper {
      * 
      * @return the list of zero or more values, if any, that were set for the original job.
      */
-    private List<String> getOriginalInputValues(final ParameterInfo formalParam, final ParameterInfo paramValue) {
+    private List<String> getOriginalInputValues(final String reloadJobId, final ParameterInfo formalParam, final ParameterInfo paramValue) {
         if (paramValue==null) {
             throw new IllegalArgumentException("paramValue == null");
         }
@@ -174,6 +177,7 @@ public class ReloadJobHelper {
             return null;
         }
         
+        log.debug("reloadJobId="+reloadJobId+", "+paramValue.getName()+"="+paramValue.getValue());
         //extract all 'values_' 
         SortedMap<Integer,String> valuesMap=new TreeMap<Integer,String>();
         for(Entry<?,?> entry : attrs.entrySet()) {
@@ -192,19 +196,39 @@ public class ReloadJobHelper {
         }
         if (valuesMap.size() > 0) {
             List<String> values=new ArrayList<String>(valuesMap.values());
+            if (log.isDebugEnabled()) {
+                log.debug("reloading a file list");
+                int i=0;
+                for(final String value : values) {
+                    log.debug("    ["+i+"]: "+value);
+                    ++i;
+                }
+            }
             return values;
         }
         
         List<String> values=new ArrayList<String>();
         //if necessary, replace <GenePatternURL> with actual value
         String value=paramValue.getValue();
+        
+        //special-case for form upload reloaded from a previous GP version (<=3.5.0)
+        boolean prevFormUpload=false;
+        if (formalParam.isInputFile()) {
+            ReloadFromPreviousVersion r=new ReloadFromPreviousVersion(reloadJobId, paramValue);
+            if (r.isWebUpload()) {
+                log.debug("is previous form upload");
+                prevFormUpload=true;
+                value=r.getInputFormValue();
+            }
+        }
         //special-case for input files and directories, if necessary replace actual URL with '<GenePatternURL>'
-        if (formalParam != null) {
+        if (!prevFormUpload && formalParam != null) {
             if (formalParam.isInputFile() || formalParam._isDirectory()) {
                 value=replaceGpUrl(paramValue.getValue());
             }
         }
         values.add(value);
+        log.debug("value: "+value);
         return values;
     }
 
