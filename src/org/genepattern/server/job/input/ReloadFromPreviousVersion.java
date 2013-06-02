@@ -23,6 +23,7 @@ public class ReloadFromPreviousVersion {
     final static private Logger log = Logger.getLogger(ReloadFromPreviousVersion.class);
 
     final private boolean isWebUpload;
+    final private boolean isSoapUpload;
     final private String inputFormValue;
 
     public ReloadFromPreviousVersion(final String originalJobId, final ParameterInfo pinfo) {
@@ -40,12 +41,14 @@ public class ReloadFromPreviousVersion {
         if (pinfo == null) {
             log.debug("pinfo==null, ignore");
             isWebUpload=false;
+            isSoapUpload=false;
             inputFormValue="";
             return;
         }
         if (!pinfo.isInputFile()) {
             log.debug("pinfo is not an input file, ignore");
             isWebUpload=false;
+            isSoapUpload=false;
             inputFormValue="";
             return;
         }
@@ -59,29 +62,54 @@ public class ReloadFromPreviousVersion {
         final File webUploadDirectory = new File(System.getProperty("java.io.tmpdir"));
         
         this.isWebUpload=FileUtil.fileEquals(inputFileGrandParent, webUploadDirectory);
-
-        if (isWebUpload) {
-            log.debug("isWebUpload, originalValue="+originalValue);
-            String fileParam = "";
-            if (inputFileParent != null) {
-                fileParam += inputFileParent.getName() + "/";
-            }
-            fileParam += originalServerFile.getName();
-            //url encode fileParam
-            try {
-                fileParam = URLEncoder.encode(fileParam, "UTF-8");
-            }
-            catch (UnsupportedEncodingException e) {
-                log.error("Error encoding inputFile param, '"+fileParam+"' "+e.getLocalizedMessage(), e);
-            } 
-            
+        if (this.isWebUpload) {
+            this.isSoapUpload=false;
+        }
+        else {
+            final File soapAttachmentDir = new File(System.getProperty("soap.attachment.dir"));
+            this.isSoapUpload=FileUtil.fileEquals(inputFileGrandParent, soapAttachmentDir);
+        }
+        
+        if (isWebUpload || isSoapUpload) {
             final URL gpURL=ServerConfiguration.instance().getGenePatternURL();
             String gpUrlStr=gpURL.toExternalForm();
             if (!gpUrlStr.endsWith("/")) {
                 gpUrlStr += "/";
             }
             
-            this.inputFormValue=gpUrlStr + "getFile.jsp?task=&job="+originalJobId+"&file="+fileParam;
+            if (isWebUpload) {
+                log.debug("isWebUpload, originalValue="+originalValue);
+                String fileParam = "";
+                if (inputFileParent != null) {
+                    fileParam += inputFileParent.getName() + "/";
+                }
+                fileParam += originalServerFile.getName();
+                //url encode fileParam
+                try {
+                    fileParam = URLEncoder.encode(fileParam, "UTF-8");
+                }
+                catch (UnsupportedEncodingException e) {
+                    log.error("Error encoding inputFile param, '"+fileParam+"' "+e.getLocalizedMessage(), e);
+                } 
+                this.inputFormValue=gpUrlStr + "getFile.jsp?task=&job="+originalJobId+"&file="+fileParam;
+            }
+            else {
+                log.debug("isSoapUpload, originalValue="+originalValue);
+                // convert the value from the PARAMETER_INFO_CLOB for the original job into a valid value to
+                // be used on the job input form
+                // e.g. convert from a server file path,
+                //    C:\Broad\gp\temp\attachments\test\Axis8739953618398021627.att_all_aml_test.res
+                // to a URL,
+                //    http://192.168.195.165:8080/gp/getFile.jsp?task=&file=test/Axis8739953618398021627.att_all_aml_test.res
+                String fileParam = inputFileParent.getName()+"/"+originalServerFile.getName();
+                try {
+                    fileParam = URLEncoder.encode(fileParam, "UTF-8");
+                }
+                catch (UnsupportedEncodingException e) {
+                    log.error("Error encoding inputFile param, '"+fileParam+"' "+e.getLocalizedMessage(), e);
+                }
+                this.inputFormValue=gpUrlStr + "getFile.jsp?task=&file="+fileParam;
+            }
             log.debug("inputFormValue="+inputFormValue);
         }
         else {
@@ -93,8 +121,15 @@ public class ReloadFromPreviousVersion {
         return isWebUpload;
     }
     
+    /**
+     * Is the original ParameterInfo a SOAP upload file?
+     */
+    public boolean isSoapUpload() {
+        return isSoapUpload;
+    }
+
     public String getInputFormValue() {
         return inputFormValue;
     }
-
+    
 }

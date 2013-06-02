@@ -212,17 +212,22 @@ public class ReloadJobHelper {
         String value=paramValue.getValue();
         
         //special-case for form upload reloaded from a previous GP version (<=3.5.0)
-        boolean prevFormUpload=false;
+        boolean fileFromPrevGpVersion=false;
         if (formalParam.isInputFile()) {
             ReloadFromPreviousVersion r=new ReloadFromPreviousVersion(reloadJobId, paramValue);
             if (r.isWebUpload()) {
-                log.debug("is previous form upload");
-                prevFormUpload=true;
+                log.debug("is previous form upload: "+paramValue.getValue());
+                fileFromPrevGpVersion=true;
+                value=r.getInputFormValue();
+            }
+            else if (r.isSoapUpload()) {
+                log.debug("is previous SOAP upload: "+paramValue.getValue());
+                fileFromPrevGpVersion=true;
                 value=r.getInputFormValue();
             }
         }
         //special-case for input files and directories, if necessary replace actual URL with '<GenePatternURL>'
-        if (!prevFormUpload && formalParam != null) {
+        if (!fileFromPrevGpVersion && formalParam != null) {
             if (formalParam.isInputFile() || formalParam._isDirectory()) {
                 value=replaceGpUrl(paramValue.getValue());
             }
