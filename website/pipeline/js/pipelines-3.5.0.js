@@ -1,5 +1,5 @@
 /*
- * Copyright 2012 The Broad Institute, Inc.
+ * Copyright 2013 The Broad Institute, Inc.
  * SOFTWARE COPYRIGHT NOTICE
  * This software and its documentation are the copyright of the Broad Institute, Inc. All rights are reserved.
  *
@@ -4003,6 +4003,10 @@ function Module(moduleJSON) {
             this.outputEnds[0].removePipes();
             if (this.outputEnds[0] && this.outputEnds[0].isMaster()) {
                 this.outputEnds[0].remove();
+            }
+            if (this.isFile()) { 
+            	this.outputEnds[0].remove();
+            	break; 
             }
         }
     };
