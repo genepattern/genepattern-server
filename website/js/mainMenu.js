@@ -57,7 +57,7 @@ function mmLoadMenus() {
   mm_menu_documentation.addMenuItem("User Guide","window.open('http://www.broadinstitute.org/cancer/software/genepattern/tutorial/gp_web_client.html', '_blank');");
   mm_menu_documentation.addMenuItem("Programmers Guide","window.open('http://www.broadinstitute.org/cancer/software/genepattern/tutorial/gp_programmer.html', '_blank');");
   mm_menu_documentation.addMenuItem("Module&nbsp;Documentation","location=contextRoot + '/getTaskDoc.jsp'");
-  mm_menu_documentation.addMenuItem("File Formats","window.open('http://www.broadinstitute.org/cancer/software/genepattern/tutorial/gp_fileformats.html', '_blank');");
+  mm_menu_documentation.addMenuItem("File Formats","window.open('http://www.broadinstitute.org/cancer/software/genepattern/gp_guides/file-formats', '_blank');");
   mm_menu_documentation.addMenuItem("Release&nbsp;Notes","window.open('http://www.broadinstitute.org/cancer/software/genepattern/doc/relnotes/current/', '_blank')");
   mm_menu_documentation.addMenuItem("FAQ","window.open('http://www.broadinstitute.org/cancer/software/genepattern/doc/faq/', '_blank')");
   mm_menu_documentation.addMenuItem("About","location=contextRoot + '/pages/about.jsf'");
