@@ -487,6 +487,12 @@ public class GenePatternAnalysisTask {
             if (file.exists()) {
                 return file;
             }
+            else {
+                //new code circa 3.6.0 release (just before 3.6.1)
+                String errorMessage = "Requested file does not exist: "+filename+ " ("+url+")";
+                log.error(errorMessage);
+                throw new IllegalArgumentException(errorMessage);
+            }
         }
         
         // If the URL passed in uses the data servlet
