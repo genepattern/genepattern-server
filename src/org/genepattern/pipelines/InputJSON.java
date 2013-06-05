@@ -29,7 +29,13 @@ public class InputJSON extends JSONObject {
     
     public static final String VALUE = "value";
     
-    public InputJSON(ParameterInfo param) {
+    public InputJSON(final ParameterInfo param) {
+        if (param==null) {
+            throw new IllegalArgumentException("param==null");
+        }
+        if (param.getAttributes()==null) {
+            throw new IllegalArgumentException("param.attributes==null");
+        }
         try {
             this.setName(param.getName());
             this.setDescription(param.getDescription());
@@ -42,11 +48,17 @@ public class InputJSON extends JSONObject {
             this.determineNumValues((String) param.getAttributes().get("numValues"));
         }
         catch (JSONException e) {
-            log.error("Error parsing JSON and initializing InputJSON from ParameterInfo: " + param.getName());
+            log.error("Error parsing JSON and initializing InputJSON from ParameterInfo: " + param.getName(), e);
         }
     }
     
-    public InputJSON(ParameterInfo param, boolean promptWhenRun) {
+    public InputJSON(final ParameterInfo param, final boolean promptWhenRun) {
+        if (param==null) {
+            throw new IllegalArgumentException("param==null");
+        }
+        if (param.getAttributes()==null) {
+            throw new IllegalArgumentException("param.getAttributes()==null");
+        }
         try {
             JSONArray pwrArray = null;
             if (promptWhenRun) {
@@ -68,13 +80,47 @@ public class InputJSON extends JSONObject {
             this.setValue(param.getValue());
         }
         catch (JSONException e) {
-            log.error("Error parsing JSON and initializing InputJSON from InputJSON");
+            log.error("Error parsing JSON and initializing InputJSON from param="+param.getName()+", promptWhenRun="+promptWhenRun, e);
         }
     }
     
-    public InputJSON(JSONObject param) {
+    /**
+     * Helper class to get a value from the jsonObject or a 'nullValue' if the  
+     * jsonObject does not have a value for the specified key.
+     * 
+     * @param key
+     * @param nullValue, can be null
+     * @return
+     */
+    private static String getStringOrNull(final JSONObject jsonObject, final String key, final String nullValue) {
+        if (jsonObject==null) {
+            log.error("jsonObject==null");
+            return nullValue;
+        }
+        if (key==null) {
+            log.error("key==null");
+            return nullValue;
+        }
+        if (jsonObject.isNull(key)) {
+            log.debug(key+"=<not set or is null>");
+            return nullValue;
+        }
         try {
-            this.setName(param.getString(NAME));
+            return jsonObject.getString(key);
+        }
+        catch (JSONException e) {
+            log.error("error in getString("+key+")", e);
+        }
+        catch (Throwable t) {
+            log.error("unexpected throwable in getString("+key+")", t);
+        }
+        return nullValue;
+    }
+    
+    public InputJSON(final JSONObject param) {
+        try {
+            final String name=getStringOrNull(param, NAME, "");
+            this.setName(name);
             if (!param.isNull(PROMPT_WHEN_RUN)) {
                 this.setPromptWhenRun(param.getJSONArray(PROMPT_WHEN_RUN));
             }
@@ -83,7 +129,8 @@ public class InputJSON extends JSONObject {
             }
             
             this.setValue(param.getString(VALUE));
-            this.determineNumValues(param.getString(NUM_VALUES));
+            final String numValues=getStringOrNull(param, NUM_VALUES, null);
+            this.determineNumValues(numValues);
         }
         catch (JSONException e) {
             log.error("Error parsing JSON and initializing InputJSON from ParameterInfo: " + param);
@@ -98,7 +145,7 @@ public class InputJSON extends JSONObject {
         this.put(NUM_VALUES, numValues);
     }
     
-    public void determineNumValues(String rawNumValues) throws JSONException {
+    public void determineNumValues(final String rawNumValues) throws JSONException {
         if (rawNumValues == null) {
             this.setNumValues("0-1");
         }
@@ -190,8 +237,22 @@ public class InputJSON extends JSONObject {
     public void determinePromptWhenRun() throws JSONException {
         this.setPromptWhenRun((JSONArray) null);
     }
-    
+
+    /**
+     * if there is a non-null default value return it.
+     * else return empty string
+     * @return
+     * @throws JSONException
+     */
     public String getDefaultValue() throws JSONException {
+        if (!this.has(DEFAULT_VALUE)) {
+            log.debug(DEFAULT_VALUE+" not set");
+            return "";
+        }
+        if (this.get(DEFAULT_VALUE)==null) {
+            log.debug(DEFAULT_VALUE+"==null");
+            return "";
+        }
         return this.getString(DEFAULT_VALUE);
     }
     
