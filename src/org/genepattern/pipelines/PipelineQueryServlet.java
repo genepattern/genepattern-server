@@ -998,9 +998,15 @@ public class PipelineQueryServlet extends HttpServlet {
             }
             
             // Handle module input files
-            for (FileJSON file : files.values()) {
-                if (isInternalFile(file.getPath())) {
-                    File systemFile = new File (dir, file.getName());
+            for (final FileJSON file : files.values()) {
+                final String pathFromJson=file.getPath();
+                if (isInternalFile(pathFromJson)) {
+                    //presumably the FileJSON#name is a URLencoded relative file path
+                    //    must decode it before creating an actual java.io.File object
+                    final String nameFromJson=file.getName();
+                    final String decodedNameFromJson = URLDecoder.decode(nameFromJson, "UTF-8");
+                    final String filename=decodedNameFromJson;
+                    final File systemFile = new File (dir, filename);
                     verified.inputFiles.add(systemFile);
                     verified.positions.put(systemFile, new HashMap<String, String>());
                     verified.positions.get(systemFile).put("top", file.getTop());
