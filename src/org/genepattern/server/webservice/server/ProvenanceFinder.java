@@ -49,7 +49,7 @@ import org.genepattern.webservice.WebServiceException;
 public class ProvenanceFinder {
     private static Logger log = Logger.getLogger(ProvenanceFinder.class);
 
-    private static String serverURL = null;
+    private final String serverURL;
     private String userID = null;
     //the max size (in bytes) for copying a file into the taskLib
     // pipeline.max.file.size
@@ -57,8 +57,8 @@ public class ProvenanceFinder {
     private ArrayList filesToCopy = new ArrayList();
     private ProvenancePipelineResult result = new ProvenancePipelineResult();
 
-    static {
-        serverURL = System.getProperty("GenePatternURL");
+    private static String getServerURLtoUpper() {
+        String serverURL = System.getProperty("GenePatternURL");
         if (serverURL == null || serverURL.trim().length() == 0) {
             try {
                 String portStr = System.getProperty("GENEPATTERN_PORT", "");
@@ -74,10 +74,12 @@ public class ProvenanceFinder {
             }
         }
         serverURL = serverURL.toUpperCase();
+        return serverURL;
     }
 
-    public ProvenanceFinder(String user) {
-        userID = user;
+    public ProvenanceFinder(final String user) {
+        this.userID = user;
+        this.serverURL=getServerURLtoUpper();
 
         //init system configured setting for max file size
         ServerConfiguration.Context userContext = ServerConfiguration.Context.getContextForUser(userID);
