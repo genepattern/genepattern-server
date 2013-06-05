@@ -577,7 +577,7 @@ var editor = {
 
         // If the output is from a file, set the value
         if (output.module.isFile()) {
-            input.param.value = output.module.getFilename();
+            input.param.value = output.module.getFileValue();
         }
 
         // Make not draggable
@@ -4127,11 +4127,24 @@ function File(name, path) {
     };
 
     file.getDisplayPath = function() {
-        if (this.lsid.indexOf("ftp://") !== 0 && this.lsid.indexOf("http://") !== 0) {
+        if (!this.isExternalFile()) {
             return "Uploaded File: " + this.getFilename();
         }
         else {
             return this.getPath();
+        }
+    };
+    
+    file.isExternalFile = function() {
+    	return (this.lsid.indexOf("ftp://") === 0 || this.lsid.indexOf("http://") === 0);
+    };
+    
+    file.getFileValue = function() {
+    	if (this.isExternalFile()) {
+            return this.getPath();
+        }
+        else {
+            return this.getFilename();
         }
     };
 
