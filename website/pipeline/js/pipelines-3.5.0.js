@@ -4044,6 +4044,7 @@ function Module(moduleJSON) {
         	
         	// Create the combobox widget
             $("#masterComboText_" + this.id).combobox($("#masterComboSelect_" + this.id));
+            $("#masterComboSelect_" + this.id).css("top", "");
         }
 
         jsPlumb.draggable(this.ui);
