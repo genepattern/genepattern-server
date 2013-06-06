@@ -848,18 +848,11 @@ public class PipelineHandler {
     }
 
     /**
-     * Create a task_info instance for the given job.
-     * @param jobInfo
+     * Get the TaskInfo for the given lsid.
+     * @param lsid, must not be null
      * @return
+     * @throws Exception
      */
-    private static TaskInfo getTaskInfo(JobInfo jobInfo) throws Exception {
-        if (jobInfo == null) {
-            throw new IllegalArgumentException("jobInfo == null");
-        }
-        String lsid = jobInfo.getTaskLSID();
-        return getTaskInfo(lsid);
-    }
-    
     private static TaskInfo getTaskInfo(String lsid) throws Exception {
         if (lsid == null) {
             throw new IllegalArgumentException("lsid == null");
