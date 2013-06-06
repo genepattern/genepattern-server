@@ -82,7 +82,7 @@
                                 cb.src = "#{facesContext.externalContext.requestContextPath}/images/red-x.gif";
                             }
                             var errorDivId = "#error_" + lsid;
-							jq(errorDivId).text(installStatus.message);
+							jq(errorDivId).html(installStatus.message);
 							jq(errorDivId).show();
                         }
                         else {
@@ -91,7 +91,7 @@
                         }
                         var progressId = "#progress_" + lsid;
                         if (installStatus.patch != '') {
-							jq(progressId).text(installStatus.patch);
+							jq(progressId).html(installStatus.patch);
 							jq(progressId).show();
                         } 
 						else {

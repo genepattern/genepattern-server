@@ -44,7 +44,9 @@
 
                 var timerID = 0;
                 function startPolling(elExpression, interval) {
-                    callManagedBean(elExpression);
+                	setTimeout(function() {
+						callManagedBean(elExpression);
+					}, interval);
                     timerID = setTimeout("startPolling('" + elExpression + "', " + interval + ")", interval);
                 }
 
@@ -68,7 +70,7 @@
                     for (var i = 0; i < objArray.length; i++) {
                         var installStatus = objArray[i];
                         var lsid = installStatus.lsid;
-                        var cb = jq("#cb_" + lsid).get(0);
+                        var cb = jq("[id='cb_" + lsid + "']").get(0);
                         if (installStatus.status == "success") {
                             if (cb != null) {
                                 cb.src = "#{facesContext.externalContext.requestContextPath}/images/checkbox.gif";
@@ -79,7 +81,7 @@
                                 cb.src = "#{facesContext.externalContext.requestContextPath}/images/red-x.gif";
                             }
                             var errorDivId = "#error_" + lsid;
-							jq(errorDivId).text(installStatus.message);
+							jq(errorDivId).html(installStatus.message);
 							jq(errorDivId).show();
                         }
                         else if (installStatus.status == "warning") {
@@ -87,7 +89,7 @@
                                 cb.src = "#{facesContext.externalContext.requestContextPath}/images/checkbox.gif";
                             }
 							var warningDivId = "#warning_" + lsid;
-							jq(warningDivId).text(installStatus.message);
+							jq(warningDivId).html(installStatus.message);
 							jq(warningDivId).show();
                         }
                         else {
@@ -98,7 +100,7 @@
                     }
 
                     if (complete == true) {
-						jq("#progress_indicator").text("&#160;complete");
+						jq("#progress_indicator").html("&#160;complete");
                         stopPolling();
                         var buttonPane = jq("#button_pane").get(0);
                         if (buttonPane != null) {
