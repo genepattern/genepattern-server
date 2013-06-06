@@ -598,7 +598,8 @@ public class PipelineModel implements Serializable {
             } 
             // old pipelines don't have hsqldb.jar on classpath
             if (taskInfo == null) {
-                log.error("No such task: " + (lsid.length() > 0 ? lsid : taskName));
+                log.error("Error adding task to pipeline, pipeline="+this.name+" ("+this.lsid+")");
+                log.error("    No such task: " + (lsid.length() > 0 ? lsid : taskName));
             }
         }
         job.setTaskInfo(taskInfo);
