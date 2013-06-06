@@ -109,9 +109,9 @@ function loadModule(taskId, reloadId)
 
                         $(".submitControlsDiv").hide();
 
-                        $("#javaCode").hide();
-                        $("#matlabCode").hide();
-                        $("#rCode").hide();
+                        $("#javaCode").parents("tr:first").hide();
+                        $("#matlabCode").parents("tr:first").hide();
+                        $("#rCode").parents("tr:first").hide();
 
                     }
                     else if(module["private_tasks"])
@@ -120,9 +120,9 @@ function loadModule(taskId, reloadId)
                         "which you do not have permission to run on this server.</p>");
                         $(".submitControlsDiv").hide();
 
-                        $("#javaCode").hide();
-                        $("#matlabCode").hide();
-                        $("#rCode").hide();
+                        $("#javaCode").parents("tr:first").hide();
+                        $("#matlabCode").parents("tr:first").hide();
+                        $("#rCode").parents("tr:first").hide();
                     }
                     else
                     {
