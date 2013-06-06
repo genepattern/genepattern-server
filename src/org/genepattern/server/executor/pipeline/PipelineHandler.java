@@ -877,32 +877,14 @@ public class PipelineHandler {
             }
         }
     }
-    
-    /**
-     * Get the PipelineModle for the given job, based on the job's task lsid.
-     */
-    private static PipelineModel getPipelineModel(JobInfo pipelineJobInfo) throws PipelineModelException
-    {
-        if (pipelineJobInfo == null) {
-            throw new IllegalArgumentException("pipelineJobInfo == null");
-        }
-        TaskInfo taskInfo = null;
-        try {
-            taskInfo = getTaskInfo(pipelineJobInfo);
-        }
-        catch (Exception e) {
-            String errorMessage = "Error getting taskInfo for "+pipelineJobInfo.getTaskName()+"(job="+pipelineJobInfo.getJobNumber()+"): "+ e.getLocalizedMessage();
-            throw new PipelineModelException(errorMessage);
-        }
-        if (taskInfo == null) {
-            throw new PipelineModelException("taskInfo is null for jobInfo.taskID="+pipelineJobInfo.getTaskID());
-        }
-        if (!taskInfo.isPipeline()) {
-            throw new PipelineModelException("task (id="+taskInfo.getID()+", name="+taskInfo.getName()+") is not a pipeline.");
-        }
-        return getPipelineModel(taskInfo);
-    }
 
+    /**
+     * Get the PipelineModel from the given TaskInfo.
+     * 
+     * @param taskInfo, must not be null, must be for a pipeline.
+     * @return
+     * @throws PipelineModelException
+     */
     private static PipelineModel getPipelineModel(TaskInfo taskInfo) throws PipelineModelException
     {
         if (taskInfo == null) {
