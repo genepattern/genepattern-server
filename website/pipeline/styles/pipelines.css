@@ -153,9 +153,16 @@ a:hover {
 
 #navband1 {
     white-space: nowrap;
+    display: inline-block;
     position: fixed;
 	line-height: 7px;
 	width: 100%;
+	min-width: 1000px;
+}
+
+#navband1 > ul {
+	white-space: nowrap;
+    display: inline-block;
 }
 
 .modulePropertiesTitle {
