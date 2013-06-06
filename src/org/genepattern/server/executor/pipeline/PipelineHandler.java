@@ -19,6 +19,7 @@ import java.util.Set;
 import java.util.Vector;
 
 import org.apache.log4j.Logger;
+import org.genepattern.data.pipeline.GetIncludedTasks;
 import org.genepattern.data.pipeline.JobSubmission;
 import org.genepattern.data.pipeline.MissingTasksException;
 import org.genepattern.data.pipeline.PipelineModel;
@@ -632,9 +633,24 @@ public class PipelineHandler {
     {  
         log.debug("starting pipeline: "+pipelineJobInfo.getTaskName()+" ["+pipelineJobInfo.getJobNumber()+"]");
 
-        PipelineModel pipelineModel = getPipelineModel(pipelineJobInfo);
-        checkForMissingTasks(pipelineJobInfo.getUserId(), pipelineModel);
+        final Context userContext=Context.getContextForUser(pipelineJobInfo.getUserId());
+        // initialized permissions
+        final IAuthorizationManager authManager = AuthorizationManagerFactory.getAuthorizationManager();
+        final boolean isAdmin = (authManager.checkPermission("adminServer", pipelineJobInfo.getUserId()) || authManager.checkPermission("adminModules", pipelineJobInfo.getUserId()));
+        userContext.setIsAdmin(isAdmin);
+
+        final TaskInfo pipelineTaskInfo;
+        try {
+            pipelineTaskInfo=getTaskInfo(pipelineJobInfo.getTaskLSID());
+        }
+        catch (Throwable t) {
+            log.error(t);
+            throw new JobSubmissionException("Error getting task for pipeline: "+pipelineJobInfo.getTaskName()+" ["+pipelineJobInfo.getJobNumber()+"]");
+        }
         
+        PipelineModel pipelineModel = getPipelineModel(pipelineTaskInfo);
+        checkForMissingTasks(userContext, pipelineTaskInfo);
+
         //initialize the pipeline args
         Map<String,String> additionalArgs = new HashMap<String,String>();
         for(ParameterInfo param : pipelineJobInfo.getParameterInfoArray()) {
@@ -644,18 +660,27 @@ public class PipelineHandler {
         int stepNum = 0;
         Vector<JobSubmission> tasks = pipelineModel.getTasks();
         List<JobInfo> submittedJobs = new ArrayList<JobInfo>();
-        for(JobSubmission jobSubmission : tasks) { 
+        for(final JobSubmission jobSubmission : tasks) { 
             if (stepNum >= stopAfterTask) {
                 // stop and execute no further
                 break;
             }
             
-            ParameterInfo[] parameterInfo = jobSubmission.giveParameterInfoArray();
+            final ParameterInfo[] parameterInfo = jobSubmission.giveParameterInfoArray();
             substituteLsidInInputFiles(pipelineJobInfo.getTaskLSID(), parameterInfo);
             ParameterInfo[] params = parameterInfo;
             params = setJobParametersFromArgs(jobSubmission.getName(), stepNum + 1, params, additionalArgs);
-
-            JobInfo submittedJob = addJobToPipeline(pipelineJobInfo.getJobNumber(), pipelineJobInfo.getUserId(), jobSubmission, params);
+            
+            //TODO: the taskInfos are all initialized in the checkForMissingTasks, should use the same data structure,
+            //    rather making another call
+            final TaskInfo taskInfo;
+            try {
+                taskInfo = getTaskInfo(jobSubmission.getLSID());
+            }
+            catch (Throwable t) {
+                throw new JobSubmissionException("Error initializing task from lsid="+jobSubmission.getLSID()+": "+t.getLocalizedMessage());
+            }
+            JobInfo submittedJob = addJobToPipeline(pipelineJobInfo.getJobNumber(), pipelineJobInfo.getUserId(), taskInfo, params);
             submittedJobs.add(submittedJob);
             ++stepNum;
         }
@@ -667,9 +692,24 @@ public class PipelineHandler {
     { 
         log.debug("starting scatter pipeline: "+pipelineJobInfo.getTaskName()+" ["+pipelineJobInfo.getJobNumber()+"]");
         
+        final Context userContext=Context.getContextForUser(pipelineJobInfo.getUserId());
+        // initialized permissions
+        final IAuthorizationManager authManager = AuthorizationManagerFactory.getAuthorizationManager();
+        final boolean isAdmin = (authManager.checkPermission("adminServer", pipelineJobInfo.getUserId()) || authManager.checkPermission("adminModules", pipelineJobInfo.getUserId()));
+        userContext.setIsAdmin(isAdmin);
+
+        final TaskInfo pipelineTaskInfo;
+        try {
+            pipelineTaskInfo=getTaskInfo(pipelineJobInfo.getTaskLSID());
+        }
+        catch (Throwable t) {
+            log.error(t);
+            throw new JobSubmissionException("Error getting task for pipeline: "+pipelineJobInfo.getTaskName()+" ["+pipelineJobInfo.getJobNumber()+"]");
+        }
+        
         // add a batch of jobs, as children of the given pipelineJobInfo 
-        PipelineModel pipelineModel = getPipelineModel(pipelineJobInfo);
-        checkForMissingTasks(pipelineJobInfo.getUserId(), pipelineModel);
+        PipelineModel pipelineModel = getPipelineModel(pipelineTaskInfo);
+        checkForMissingTasks(userContext, pipelineTaskInfo);
 
         //initialize the pipeline args
         Map<String,String> additionalArgs = new HashMap<String,String>();
@@ -1094,28 +1134,6 @@ public class PipelineHandler {
      * @throws IllegalArgumentException, if the given JobSubmission does not have a valid taskId
      * @throws JobSubmissionException, if not able to add the job to the internal queue
      */
-    private static JobInfo addJobToPipeline(int parentJobId, String userID, JobSubmission jobSubmission, ParameterInfo[] params)
-    throws JobSubmissionException
-    {
-        if (jobSubmission == null) {
-            throw new IllegalArgumentException("jobSubmission is null");
-        }
-        if (jobSubmission.getTaskInfo() == null) {
-            throw new IllegalArgumentException("jobSubmission.taskInfo is null");
-        }
-        if (jobSubmission.getTaskInfo().getID() < 0) {
-            throw new IllegalArgumentException("jobSubmission.taskInfo.ID not set");
-        }
-        TaskInfo taskInfo = jobSubmission.getTaskInfo();
-        return addJobToPipeline(parentJobId, userID, taskInfo, params);
-    }
-    
-    /**
-     * Add the job to the pipeline and add it to the internal job queue in a WAITING state.
-     * 
-     * @throws IllegalArgumentException, if the given JobSubmission does not have a valid taskId
-     * @throws JobSubmissionException, if not able to add the job to the internal queue
-     */
     private static JobInfo addJobToPipeline(int parentJobId, String userID, TaskInfo taskInfo, ParameterInfo[] params)
     throws JobSubmissionException
     {
@@ -1154,34 +1172,33 @@ public class PipelineHandler {
         JobInfo jobInfo = addJobToQueue(taskInfo, userID, params, parentJobId);
         return jobInfo;
     }
-    
-    private static void checkForMissingTasks(String userId, PipelineModel model) throws MissingTasksException {
-        MissingTasksException ex = null;
-        IAuthorizationManager authManager = AuthorizationManagerFactory.getAuthorizationManager();
-        boolean isAdmin = (authManager.checkPermission("adminServer", userId) || authManager.checkPermission("adminModules", userId));
-        
-        for(JobSubmission jobSubmission : model.getTasks()) {
-            String lsid = jobSubmission.getLSID();
-            TaskInfo taskInfo = null;
-            boolean canRun = false;
-            try {
-                taskInfo = getTaskInfo(lsid);
-                canRun = canRun(isAdmin, userId, taskInfo);
-            }
-            catch (Exception e) {
-            }
-            if (taskInfo == null || canRun == false) {
-                if (ex == null) {
-                    ex = new MissingTasksException();
-                }
-                ex.addError(jobSubmission);
-            }
-        }        
-        if (ex != null) {
-            throw ex;
-        }
-    }
 
+    private static void checkForMissingTasks(final Context userContext, final TaskInfo forTask) throws MissingTasksException {
+        final GetIncludedTasks taskChecker;
+        try {
+            taskChecker=new GetIncludedTasks(userContext, forTask);
+        }
+        catch (Throwable t) {
+            log.error(t);
+            return;
+        }
+        
+        if (taskChecker.allTasksAvailable()) {
+            return;
+        }
+
+        MissingTasksException ex = new MissingTasksException();
+        for(final JobSubmission jobSubmission : taskChecker.getMissingJobSubmissions()) {
+            ex.addError(MissingTasksException.Type.NOT_FOUND, jobSubmission);
+        }
+        for(final TaskInfo privateTask : taskChecker.getPrivateTasks()) {
+            ex.addError(MissingTasksException.Type.PERMISSION_ERROR, privateTask.getName(), privateTask.getLsid());
+        }
+        if (ex.hasErrors()) {
+            throw ex;
+        }        
+    }
+    
     /**
      * Before starting the next step in the pipeline, link output files from previous steps to input parameters for this step.
      * 
