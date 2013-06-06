@@ -33,6 +33,7 @@ public class GetIncludedTasks {
     final private GetTaskStrategy getTaskStrategy;
     final private Set<TaskInfo> dependentTasks;
     final private Set<LSID> missingTaskLsids;
+    final private Set<JobSubmission> missingTaskJobSubmissions;
     final private Set<TaskInfo> insufficientPermissions;
     
     //so that we don't visit the same pipeline more than once
@@ -57,6 +58,7 @@ public class GetIncludedTasks {
         //do all the work in the constructor
         dependentTasks=new LinkedHashSet<TaskInfo>();
         missingTaskLsids=new LinkedHashSet<LSID>();
+        missingTaskJobSubmissions=new LinkedHashSet<JobSubmission>();
         insufficientPermissions=new LinkedHashSet<TaskInfo>();
         visitedLsids=new HashSet<String>();
         
@@ -119,8 +121,13 @@ public class GetIncludedTasks {
             if (dependantTask == null) {
                 log.debug("task is not installed on server, lsid="+jobSubmission.getLSID());
                 try {
+                    missingTaskJobSubmissions.add(jobSubmission);
                     final LSID missingTaskLsid = new LSID(lsid);
                     missingTaskLsids.add(missingTaskLsid);
+                    
+                    TaskInfo missingTaskInfo=new TaskInfo();
+                    missingTaskInfo.setName(jobSubmission.getName());
+                    missingTaskInfo.giveTaskInfoAttributes().put("LSID", jobSubmission.getLSID());
                 }
                 catch (MalformedURLException e) {
                     log.error(e);
@@ -149,6 +156,14 @@ public class GetIncludedTasks {
     }
 
     /**
+     * Helper method, when this is true, it means all dependent tasks are available for running the module or pipeline.
+     * @return
+     */
+    public boolean allTasksAvailable() {
+        return missingTaskLsids.size() == 0 && insufficientPermissions.size() == 0;
+    }
+
+    /**
      * Get the set of LSIDs for tasks which are in the pipeline or one of the installed nested pipelines,
      * but which are not installed on this server.
      * 
@@ -156,6 +171,10 @@ public class GetIncludedTasks {
      */
     public Set<LSID> getMissingTaskLsids() {
         return Collections.unmodifiableSet( missingTaskLsids );
+    }
+    
+    public Set<JobSubmission> getMissingJobSubmissions() {
+        return Collections.unmodifiableSet( missingTaskJobSubmissions );
     }
 
     /**
@@ -192,6 +211,10 @@ public class GetIncludedTasks {
      * @return
      */
     private boolean canRun(final TaskInfo taskInfo) {
+        if (taskInfo==null) {
+            log.debug("taskInfo==null, can't run");
+            return false;
+        }
         if (userContext.isAdmin()) {
             return true;
         }
