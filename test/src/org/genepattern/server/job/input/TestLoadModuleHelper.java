@@ -128,7 +128,7 @@ public class TestLoadModuleHelper {
                         lsid, paramInfos, reloadedValues, _fileParam, _formatParam, parameterMap);
         checkResults(expectedValues, actualInitialValues);
     }
-    
+
     @Test
     public void testFromSendToMenu() throws Exception {
         _fileParam="http://127.0.0.1:8080/gp/jobResults/688040/CEL_IK50.cvt.gct";
@@ -177,6 +177,69 @@ public class TestLoadModuleHelper {
                 loadModuleHelper.getInitialValuesJson(
                         lsid, new ParameterInfo[] {}, reloadedValues, _fileParam, _formatParam, parameterMap);
         checkResults(expectedValues, actualInitialValues);
+    }
+    
+    @Test
+    public void testSendOdfAsComparativeMarkerSelection() {
+        Assert.fail("test not implemented");
+    }
+
+    /**
+     * Test case for sending an external url as a _fileParam in the HTTP request for loading a job.
+     * 
+     * @throws Exception
+     */
+    @Test
+    public void testSendExternalUrl() throws Exception {
+        _fileParam="ftp://ftp.broadinstitute.org/pub/genepattern/datasets/all_aml/all_aml_test.gct";
+        _formatParam="gct";
+        expectedValues.put("input.file", new ArrayList<String>(Arrays.asList( _fileParam )));
+        LoadModuleHelper loadModuleHelper=new LoadModuleHelper(userContext, taskLoader, jobInfoLoader);
+        JSONObject actualInitialValues=
+                loadModuleHelper.getInitialValuesJson(
+                        lsid, paramInfos, reloadedValues, _fileParam, _formatParam, parameterMap);
+        checkResults(expectedValues, actualInitialValues);
+    }
+    
+    /**
+     * Test case for sending a file to a module from the GenomeSpace tab.
+     * 
+     * Example link,
+     *     http://genepattern/gp/pages/index.jsf
+     *        ?lsid=urn%3Alsid%3Abroad.mit.edu%3Acancer.software.genepattern.module.analysis%3A00044%3A9
+     *        &_file=https%3A//dm.genomespace.org/datamanager/file/Home/pcarr/all_aml_test.gct
+     *        &_format=gct
+     */
+    @Test
+    public void testSendFromGenomeSpaceTab() throws Exception {
+        _fileParam="https://dm.genomespace.org/datamanager/file/Home/pcarr/all_aml_test.gct";
+        _formatParam="gct";
+        expectedValues.put("input.file", new ArrayList<String>(Arrays.asList( _fileParam )));
+        LoadModuleHelper loadModuleHelper=new LoadModuleHelper(userContext, taskLoader, jobInfoLoader);
+        JSONObject actualInitialValues=
+                loadModuleHelper.getInitialValuesJson(
+                        lsid, paramInfos, reloadedValues, _fileParam, _formatParam, parameterMap);
+        checkResults(expectedValues, actualInitialValues);
+    }
+    
+    @Test
+    public void testSendFromGsTabSpecialChars() throws Exception {
+        _fileParam="https://dm.genomespace.org/datamanager/file/Home/pcarr/all%20aml%20test.gct";
+        _formatParam="gct";
+        expectedValues.put("input.file", new ArrayList<String>(Arrays.asList( _fileParam )));
+        LoadModuleHelper loadModuleHelper=new LoadModuleHelper(userContext, taskLoader, jobInfoLoader);
+        JSONObject actualInitialValues=
+                loadModuleHelper.getInitialValuesJson(
+                        lsid, paramInfos, reloadedValues, _fileParam, _formatParam, parameterMap);
+        checkResults(expectedValues, actualInitialValues);
+    }
+    
+    /**
+     * Test case for sending a GenomeSpace file from the landing page to the job input form.
+     */
+    @Test
+    public void testSendFromGsLandingPage() {
+        Assert.fail("test not implemented");
     }
     
 }
