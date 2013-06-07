@@ -207,6 +207,9 @@ public class GetIncludedTasks {
     /**
      * Rule for whether the current user has permission to execute the given task.
      * 
+     * TODO: this method should be implemented in a more globally accessible part of the code base.
+     * TODO: implement permissions for modules, similar to access permissions for job results
+     * 
      * @param taskInfo
      * @return
      */

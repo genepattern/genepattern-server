@@ -1705,29 +1705,6 @@ public class PipelineHandler {
         return parameterInfo;
     }
     
-    /**
-     * Rule for whether the given user (the owner of the parent pipeline) has permission
-     * to execute the given task (a step in the parent pipeline).
-     * 
-     * TODO: this method should be implemented in a more globally accessible part of the code base.
-     * TODO: implement permissions for modules, similar to access permissions for job results
-     * 
-     * @param currentUser
-     * @param taskInfo
-     * @return true iff the current user can run the given task.
-     */
-    private static boolean canRun(boolean isAdmin, String currentUser, TaskInfo taskInfo) {
-        if (isAdmin) {
-            return true;
-        }
-        boolean isPublic =  taskInfo != null && taskInfo.getAccessId() == GPConstants.ACCESS_PUBLIC;
-        if (isPublic) {
-            return true;
-        }
-        String taskOwner = taskInfo.getUserId();
-        return currentUser != null && currentUser.equals(taskOwner);
-    }
-    
     //custom implementation of JobManager code
     /**
      * Adds a new job entry to the ANALYSIS_JOB table.
