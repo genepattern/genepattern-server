@@ -231,7 +231,7 @@ public abstract class DBLoader {
 
 
     // search for an existing task with the same name
-    public int getTaskIDByName(String name, String user_id) throws OmnigeneException, RemoteException {
+    static public int getTaskIDByName(String name, String user_id) throws OmnigeneException, RemoteException {
         log.debug("getTaskIDByName...\n\tname="+name+"\tuser_id="+user_id);
         AdminDAO ds = new AdminDAO();
         TaskInfo taskInfo = ds.getTask(name, user_id);

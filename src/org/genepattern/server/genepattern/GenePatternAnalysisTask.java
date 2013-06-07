@@ -3075,20 +3075,20 @@ public class GenePatternAnalysisTask {
      * 
      * @author Jim Lerner
      */
-    public static Vector installTask(String name, String description, ParameterInfo[] params, TaskInfoAttributes taskInfoAttributes, String username, int access_id, Status taskIntegrator)
+    public static Vector installTask(String name, String description, ParameterInfo[] params, TaskInfoAttributes taskInfoAttributes, final String requestedTaskOwner, final int requestedAccessId, Status taskIntegrator)
     throws OmnigeneException, RemoteException 
     {
-        String originalUsername = username;
-        TaskInfo taskInfo = new TaskInfo();
+        final String originalUsername = requestedTaskOwner;
+        final TaskInfo taskInfo = new TaskInfo();
         taskInfo.setName(name);
         taskInfo.setDescription(description);
-        taskInfo.setUserId(username);
+        taskInfo.setUserId(requestedTaskOwner);
         taskInfo.setTaskInfoAttributes(taskInfoAttributes);
         taskInfo.setParameterInfoArray(params);
-        Vector vProblems = GenePatternAnalysisTask.validateInputs(taskInfo, name, taskInfoAttributes, params);
+        final Vector<String> vProblems = GenePatternAnalysisTask.validateInputs(taskInfo, name, taskInfoAttributes, params);
 
         try {
-            String expected = taskInfoAttributes.get(OS);
+            final String expected = taskInfoAttributes.get(OS);
             if (validateOS(expected, "install " + name)) {
                 PluginManagerLegacy.validatePatches(taskInfo, taskIntegrator);
             }
@@ -3104,11 +3104,6 @@ public class GenePatternAnalysisTask {
             return vProblems;
         }
 
-        // privacy is stored both in the task_master table as a field, and in the taskInfoAttributes
-        taskInfoAttributes.put(PRIVACY, access_id == ACCESS_PRIVATE ? PRIVATE : PUBLIC);
-        if (access_id == ACCESS_PRIVATE) {
-            taskInfoAttributes.put(USERID, username);
-        }
         String lsid = taskInfoAttributes.get(LSID);
         if (lsid == null || lsid.equals("")) {
             // System.out.println("installTask: creating new LSID");
@@ -3116,14 +3111,51 @@ public class GenePatternAnalysisTask {
             taskInfoAttributes.put(LSID, lsid);
         }
 
-        // TODO: if the task is a pipeline, generate the serialized model right now too
-        GenePatternTaskDBLoader loader = new GenePatternTaskDBLoader(name, description, params, taskInfoAttributes.encode(), username, access_id);
-        int formerID = loader.getTaskIDByName(lsid, originalUsername);
+        final int formerID = GenePatternTaskDBLoader.getTaskIDByName(lsid, originalUsername);
         boolean isNew = (formerID == -1);
+
+        //for new tasks, set the owner and privacy based on the calling method
+        // privacy is stored both in the task_master table as a field, and in the taskInfoAttributes
+        String taskOwner=requestedTaskOwner;
+        int accessId=requestedAccessId;
+        taskInfoAttributes.put(PRIVACY, requestedAccessId == ACCESS_PRIVATE ? PRIVATE : PUBLIC);
+        if (requestedAccessId == ACCESS_PRIVATE) {
+            taskInfoAttributes.put(USERID, requestedTaskOwner);
+        }
         if (!isNew) {
+            //special-case, GP-3745, when installing task from within a pipeline or suite don't change the permissions
+            //    reminder, we could be installing a private pipeline which includes public modules
+            TaskInfo existingTask=null;
+            try {
+                existingTask=TaskInfoCache.instance().getTask(formerID);
+                final int existingAccessId=existingTask.getAccessId();
+                final String existingUserId=existingTask.getUserId();
+                final boolean diffAcessId=existingAccessId != requestedAccessId;
+                final boolean diffUserId=!requestedTaskOwner.equals(existingUserId);
+                if (diffAcessId) {
+                    log.debug("access_id does not match. existing="+existingAccessId+", new="+requestedAccessId);
+                    accessId=existingAccessId;
+                }
+                if (diffUserId) {
+                    taskOwner=existingUserId;
+                    log.debug("username does not match. existing="+existingUserId+", new="+requestedTaskOwner); 
+                }
+                
+                //preserve task owner and access permissions
+                taskInfoAttributes.put(PRIVACY, existingAccessId == ACCESS_PRIVATE ? PRIVATE : PUBLIC);
+                taskInfoAttributes.put(USERID, existingUserId);
+            }
+            catch (TaskIDNotFoundException e) {
+                log.debug("taskIDNotFound: "+formerID);
+            }
+            catch (Throwable t) {
+                log.error("Unexpected error loading TaskInfo from cache, formerID="+formerID, t);
+            }
             //remove the previous entry from the cache
             TaskInfoCache.instance().removeFromCache(formerID);
         }
+        // TODO: if the task is a pipeline, generate the serialized model right now too
+        GenePatternTaskDBLoader loader = new GenePatternTaskDBLoader(name, description, params, taskInfoAttributes.encode(), taskOwner, accessId);
         loader.run(isNew ? GenePatternTaskDBLoader.CREATE : GenePatternTaskDBLoader.UPDATE);
         return null;
     }
