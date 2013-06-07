@@ -253,25 +253,6 @@ public class PipelineHandler {
         }
     }
     
-//    private static List<JobInfo> getChildJobInfos(final JobInfo pipelineJobInfo) {
-//        final int parentJobId = pipelineJobInfo.getJobNumber();
-//        boolean inTransaction = HibernateUtil.isInTransaction();
-//        try {
-//            AnalysisDAO dao = new AnalysisDAO();
-//            JobInfo[] all = dao.getChildren(parentJobId);
-//            List<JobInfo> childJobs = new ArrayList<JobInfo>();
-//            for(JobInfo jobInfo : all) {
-//                childJobs.add(jobInfo);
-//            }
-//            return childJobs;
-//        }
-//        finally {
-//            if (!inTransaction) {
-//                HibernateUtil.closeCurrentSession();
-//            }
-//        }
-//    }
-
     /**
      * Called when a step in a pipeline job has completed, put the next job on the queue.
      * Check for and handle pipeline termination.
@@ -603,14 +584,42 @@ public class PipelineHandler {
     private static List<JobInfo> runPipeline(JobInfo pipelineJobInfo, int stopAfterTask, boolean isScatterStep) 
     throws PipelineModelException, MissingTasksException, JobSubmissionException
     {
+        final Context userContext=Context.getContextForUser(pipelineJobInfo.getUserId());
+        // initialized permissions
+        final IAuthorizationManager authManager = AuthorizationManagerFactory.getAuthorizationManager();
+        final boolean isAdmin = (authManager.checkPermission("adminServer", pipelineJobInfo.getUserId()) || authManager.checkPermission("adminModules", pipelineJobInfo.getUserId()));
+        userContext.setIsAdmin(isAdmin);
+
+        final TaskInfo pipelineTaskInfo;
+        try {
+            pipelineTaskInfo=getTaskInfo(pipelineJobInfo.getTaskLSID());
+        }
+        catch (Throwable t) {
+            log.error(t);
+            throw new JobSubmissionException("Error getting task for pipeline: "+pipelineJobInfo.getTaskName()+" ["+pipelineJobInfo.getJobNumber()+"]");
+        }
+        
+        
+        //TODO: the checkForMissingTasks and the getPipelineModel call both initialize the list of tasks for the pipeline
+        //    should refactor the code to avoid redundant calls
+        checkForMissingTasks(userContext, pipelineTaskInfo);
+        final PipelineModel pipelineModel = getPipelineModel(pipelineTaskInfo);
+        final Vector<JobSubmission> tasks = pipelineModel.getTasks();
+
+        //initialize the pipeline args
+        Map<String,String> additionalArgs = new HashMap<String,String>();
+        for(ParameterInfo param : pipelineJobInfo.getParameterInfoArray()) {
+            additionalArgs.put(param.getName(), param.getValue());
+        }
+
         List<JobInfo> addedJobs = new ArrayList<JobInfo>();
         if (!isScatterStep) {
             // add job records to the analysis_job table
-            addedJobs = runPipeline(pipelineJobInfo, stopAfterTask);
+            addedJobs = runPipeline(pipelineJobInfo, tasks, additionalArgs, stopAfterTask);
             return addedJobs;
         }
         else {
-            addedJobs = runScatterPipeline(pipelineJobInfo, stopAfterTask);
+            addedJobs = runScatterPipeline(pipelineJobInfo, tasks, additionalArgs, stopAfterTask);
             return addedJobs;
         }
     }
@@ -628,38 +637,13 @@ public class PipelineHandler {
      * @throws WebServiceException
      * @throws JobSubmissionException
      */
-    private static List<JobInfo> runPipeline(JobInfo pipelineJobInfo, int stopAfterTask) 
+    private static List<JobInfo> runPipeline(final JobInfo pipelineJobInfo, final List<JobSubmission> tasks, final Map<String,String> additionalArgs, final int stopAfterTask) 
     throws PipelineModelException, MissingTasksException, JobSubmissionException
     {  
         log.debug("starting pipeline: "+pipelineJobInfo.getTaskName()+" ["+pipelineJobInfo.getJobNumber()+"]");
 
-        final Context userContext=Context.getContextForUser(pipelineJobInfo.getUserId());
-        // initialized permissions
-        final IAuthorizationManager authManager = AuthorizationManagerFactory.getAuthorizationManager();
-        final boolean isAdmin = (authManager.checkPermission("adminServer", pipelineJobInfo.getUserId()) || authManager.checkPermission("adminModules", pipelineJobInfo.getUserId()));
-        userContext.setIsAdmin(isAdmin);
-
-        final TaskInfo pipelineTaskInfo;
-        try {
-            pipelineTaskInfo=getTaskInfo(pipelineJobInfo.getTaskLSID());
-        }
-        catch (Throwable t) {
-            log.error(t);
-            throw new JobSubmissionException("Error getting task for pipeline: "+pipelineJobInfo.getTaskName()+" ["+pipelineJobInfo.getJobNumber()+"]");
-        }
-        
-        PipelineModel pipelineModel = getPipelineModel(pipelineTaskInfo);
-        checkForMissingTasks(userContext, pipelineTaskInfo);
-
-        //initialize the pipeline args
-        Map<String,String> additionalArgs = new HashMap<String,String>();
-        for(ParameterInfo param : pipelineJobInfo.getParameterInfoArray()) {
-            additionalArgs.put(param.getName(), param.getValue());
-        }
-
         int stepNum = 0;
-        Vector<JobSubmission> tasks = pipelineModel.getTasks();
-        List<JobInfo> submittedJobs = new ArrayList<JobInfo>();
+        final List<JobInfo> submittedJobs = new ArrayList<JobInfo>();
         for(final JobSubmission jobSubmission : tasks) { 
             if (stepNum >= stopAfterTask) {
                 // stop and execute no further
@@ -687,38 +671,12 @@ public class PipelineHandler {
         return submittedJobs;
     }
 
-    private static List<JobInfo> runScatterPipeline(JobInfo pipelineJobInfo, int stopAfterTask) 
+    private static List<JobInfo> runScatterPipeline(final JobInfo pipelineJobInfo, final List<JobSubmission> tasks, final Map<String,String> additionalArgs, int stopAfterTask) 
     throws PipelineModelException, MissingTasksException, JobSubmissionException
     { 
         log.debug("starting scatter pipeline: "+pipelineJobInfo.getTaskName()+" ["+pipelineJobInfo.getJobNumber()+"]");
         
-        final Context userContext=Context.getContextForUser(pipelineJobInfo.getUserId());
-        // initialized permissions
-        final IAuthorizationManager authManager = AuthorizationManagerFactory.getAuthorizationManager();
-        final boolean isAdmin = (authManager.checkPermission("adminServer", pipelineJobInfo.getUserId()) || authManager.checkPermission("adminModules", pipelineJobInfo.getUserId()));
-        userContext.setIsAdmin(isAdmin);
-
-        final TaskInfo pipelineTaskInfo;
-        try {
-            pipelineTaskInfo=getTaskInfo(pipelineJobInfo.getTaskLSID());
-        }
-        catch (Throwable t) {
-            log.error(t);
-            throw new JobSubmissionException("Error getting task for pipeline: "+pipelineJobInfo.getTaskName()+" ["+pipelineJobInfo.getJobNumber()+"]");
-        }
-        
-        // add a batch of jobs, as children of the given pipelineJobInfo 
-        PipelineModel pipelineModel = getPipelineModel(pipelineTaskInfo);
-        checkForMissingTasks(userContext, pipelineTaskInfo);
-
-        //initialize the pipeline args
-        Map<String,String> additionalArgs = new HashMap<String,String>();
-        for(ParameterInfo param : pipelineJobInfo.getParameterInfoArray()) {
-            additionalArgs.put(param.getName(), param.getValue());
-        }
-
         int stepNum = 0;
-        Vector<JobSubmission> tasks = pipelineModel.getTasks();
         if (tasks.size() == 0)  {
             throw new JobSubmissionException("Don't know what to do with 0 tasks in pipelineModel");
         }
@@ -729,7 +687,6 @@ public class PipelineHandler {
 
         //assuming a 1-step pipeline 
         // to avoid potential bug in pipelineModel, load the TaskInfo directly
-        //TaskInfo taskInfo = tasks.get(0).getTaskInfo();
         final JobSubmission jobSubmission=tasks.get(0);
         final TaskInfo taskInfo;
         try {
