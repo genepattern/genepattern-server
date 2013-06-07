@@ -202,6 +202,7 @@ public class RegistrationBean {
     public void validateEmail(FacesContext context, UIComponent component, Object value) throws ValidatorException {
     if (!value.equals(emailConfirmComponent.getSubmittedValue())) {
         String message = "Email entries do not match.";
+        UIBeanHelper.setErrorMessage(message);
         FacesMessage facesMessage = new FacesMessage(FacesMessage.SEVERITY_ERROR, message, message);
         ((UIInput) component).setValid(false);
         throw new ValidatorException(facesMessage);
@@ -215,6 +216,7 @@ public class RegistrationBean {
             UserAccountManager.instance().validateNewUsername(value.toString());
         }
         catch (AuthenticationException e) {
+            UIBeanHelper.setErrorMessage(e.getMessage());
             FacesMessage facesMessage = new FacesMessage(e.getLocalizedMessage());
             ((UIInput) component).setValid(false);
             throw new ValidatorException(facesMessage);
@@ -224,6 +226,7 @@ public class RegistrationBean {
     public void validatePassword(FacesContext context, UIComponent component, Object value) throws ValidatorException {
         if (!value.equals(passwordConfirmComponent.getSubmittedValue())) {
             String message = "Password entries do not match.";
+            UIBeanHelper.setErrorMessage(message);
             FacesMessage facesMessage = new FacesMessage(FacesMessage.SEVERITY_ERROR, message, message);
             ((UIInput) component).setValid(false);
             throw new ValidatorException(facesMessage);
