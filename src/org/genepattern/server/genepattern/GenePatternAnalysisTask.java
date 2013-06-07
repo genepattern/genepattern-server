@@ -3124,21 +3124,22 @@ public class GenePatternAnalysisTask {
         }
         if (!isNew) {
             //special-case, GP-3745, when installing task from within a pipeline or suite don't change the permissions
-            //    reminder, we could be installing a private pipeline which includes public modules
+            //    reminder, we could be installing a private pipeline which includes public modules            
+            //the following code simplifies by never changing the owner or privacy flag of an existing module
             TaskInfo existingTask=null;
             try {
                 existingTask=TaskInfoCache.instance().getTask(formerID);
                 final int existingAccessId=existingTask.getAccessId();
                 final String existingUserId=existingTask.getUserId();
-                final boolean diffAcessId=existingAccessId != requestedAccessId;
+                final boolean diffAccessId=existingAccessId != requestedAccessId;
                 final boolean diffUserId=!requestedTaskOwner.equals(existingUserId);
-                if (diffAcessId) {
-                    log.debug("access_id does not match. existing="+existingAccessId+", new="+requestedAccessId);
+                if (diffAccessId) {
+                    log.debug("Ignoring request to change the 'access_id' for an existing module from "+existingAccessId+" to "+requestedAccessId);
                     accessId=existingAccessId;
                 }
                 if (diffUserId) {
                     taskOwner=existingUserId;
-                    log.debug("username does not match. existing="+existingUserId+", new="+requestedTaskOwner); 
+                    log.debug("Ignoring request to change the owner of an existing module from "+existingUserId+" to "+requestedTaskOwner);
                 }
                 
                 //preserve task owner and access permissions
