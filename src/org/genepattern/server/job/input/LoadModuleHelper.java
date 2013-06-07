@@ -1,6 +1,7 @@
 package org.genepattern.server.job.input;
 
 import java.io.File;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -8,7 +9,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.StringTokenizer;
-
+import org.genepattern.server.dm.ExternalFile;
 import org.apache.log4j.Logger;
 import org.genepattern.server.config.ServerConfiguration.Context;
 import org.genepattern.server.dm.GpFileObjFactory;
@@ -30,9 +31,14 @@ import org.json.JSONObject;
 
 /**
  * Helper class for initializing the job input form, handles different scenarios for opening the job input form:
- * 1) from default values,
- * 2) from a reloaded job,
- * 3) from a send-to menu event from a previous job result.
+ * 
+ * 1) from default values
+ * 2) from a reloaded job
+ * 3) from a send-to menu event from a previous job result
+ * 4) from the Recent Jobs tab
+ * 5) from the Uploads tab
+ * 6) from the GenomeSpace tab
+ * 7) from the GS landing page
  * 
  * @author pcarr
  *
@@ -285,8 +291,26 @@ public class LoadModuleHelper {
                 _formatParam=ParamListHelper.getType(_fileParam);
             }
             
-            final GpFilePath fromFile = GpFileObjFactory.getRequestedGpFileObj(_fileParam);
-            final Helper helper=new Helper(parameterInfos, fromFile);
+            GpFilePath fromFile=null;
+            try {
+                fromFile = GpFileObjFactory.getRequestedGpFileObj(_fileParam);
+            }
+            catch (Throwable t) {
+                //circa GP <= 3.6.1, GenePatternAnalysisTask#onJob depends on quirky behavior of GpFileObjFactory#getRequestedGpFileObj
+                //     specifically, it throws an exception when given an external url file.
+                // we rely on this exception being thrown
+                try {
+                    URL url = new URL(_fileParam);
+                    fromFile = new ExternalFile(_fileParam);
+                }
+                catch (MalformedURLException e) {
+                    ///assume it's not an external url
+                }
+            }
+            if (fromFile==null) {
+                log.error("_fileParam is not a valid GpFilePath nor a valid external url: "+_fileParam);
+            }
+            final Helper helper=new Helper(parameterInfos, fromFile, _formatParam);
             if (fromFile instanceof JobResultFile) {
                 final String fromJobId=((JobResultFile) fromFile).getJobId();
                 final JobInfo fromJobInfo=jobInfoLoader.getJobInfo(userContext, fromJobId);
@@ -323,15 +347,21 @@ public class LoadModuleHelper {
     //helper class
     private static class Helper {
         private final ParameterInfo[] parameterInfos;
+        private final GpFilePath sendFromFile;
+        private final String sendFromFormat;
         //one and only one type per file
         private final List<GpFilePath> resultFiles=new ArrayList<GpFilePath>();
         
-        public Helper(final ParameterInfo[] parameterInfos, final GpFilePath sendFromFile) {
+        public Helper(final ParameterInfo[] parameterInfos, final GpFilePath sendFromFile, final String sendFromFormat) {
             this.parameterInfos=parameterInfos;
-            if (sendFromFile.getKind()==null) {
-                sendFromFile.initMetadata();
+            this.sendFromFile=sendFromFile;
+            if (sendFromFile != null) {
+                if (sendFromFile.getKind()==null) {
+                    sendFromFile.initMetadata();
+                }
+                resultFiles.add(sendFromFile);
             }
-            resultFiles.add(sendFromFile);
+            this.sendFromFormat=sendFromFormat;
         }
         
         public void addResultFile(final GpFilePath resultFile) {
@@ -344,11 +374,20 @@ public class LoadModuleHelper {
         public GpFilePath getSendToFile(final ParameterInfo pinfo) {
             GpFilePath match=null;
             final List<String> fileFormats=LoadModuleHelper.getFileFormats(pinfo);
-            for(GpFilePath resultFile : resultFiles) {
-                final String resultFormat=resultFile.getKind();
-                if (fileFormats.contains(resultFormat)) {
-                    match=resultFile;
-                    break;
+            //special-case: sendFromFormat is set
+            if (sendFromFormat != null && sendFromFormat.length()>0 && resultFiles.contains(sendFromFile)) {
+                //see if the sendFromType matchs
+                if (fileFormats.contains(sendFromFormat)) {
+                    match=sendFromFile;
+                }
+            }
+            if (match == null) {
+                for(GpFilePath resultFile : resultFiles) {
+                    final String resultFormat=resultFile.getKind();
+                    if (fileFormats.contains(resultFormat)) {
+                        match=resultFile;
+                        break;
+                    }
                 }
             }
             if (match != null) {

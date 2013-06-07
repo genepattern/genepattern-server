@@ -36,15 +36,13 @@ public class TestLoadModuleHelper {
     private static String adminUserId;
     private static Context userContext;
 
-    private static TaskInfo taskInfo;
-    private static String lsid;
-    private static ParameterInfo[] paramInfos;
+    final private static String cmsLsid="urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00044:9";    
+    final private static String ecmrLsid="urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00046:2"; 
     
     private JobInput reloadedValues;
     private String _fileParam;
     private String _formatParam;
     private Map<String,String[]> parameterMap;
-    private LinkedHashMap<String,List<String>> expectedValues;
 
     @BeforeClass
     static public void beforeClass() {
@@ -53,11 +51,9 @@ public class TestLoadModuleHelper {
         userContext.setIsAdmin(true);
         taskLoader=new TaskLoader();
         taskLoader.addTask(TestLoadModuleHelper.class, "ComparativeMarkerSelection_v9.zip");
-        taskInfo = taskLoader.getTaskInfo("urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00044:9");
-        jobInfoLoader = new JobInfoLoaderFromMap();
+        taskLoader.addTask(TestLoadModuleHelper.class, "ExtractComparativeMarkerResults_v2.zip");
 
-        lsid = taskInfo.getLsid();
-        paramInfos=taskInfo.getParameterInfoArray();
+        jobInfoLoader = new JobInfoLoaderFromMap();
     }
     
     @Before
@@ -66,22 +62,39 @@ public class TestLoadModuleHelper {
         _fileParam=null; //not from a sendTo file menu
         _formatParam=null; //not from a sendTo file menu
         parameterMap=Collections.emptyMap();
+    }
+    
+    private LinkedHashMap<String,List<String>> initCms() {
+        LinkedHashMap<String,List<String>> expectedValues=new LinkedHashMap<String,List<String>>();
+        initVal(expectedValues, "input.file", "");
+        initVal(expectedValues, "cls.file", "");
+        initVal(expectedValues, "confounding.variable.cls.file", "");
+        initVal(expectedValues, "test.direction", "2");
+        initVal(expectedValues, "test.statistic","0");
+        initVal(expectedValues, "min.std", "");
+        initVal(expectedValues, "number.of.permutations","10000");
+        initVal(expectedValues, "log.transformed.data","false");
+        initVal(expectedValues, "complete","false");
+        initVal(expectedValues, "balanced","false");
+        initVal(expectedValues, "random.seed","779948241");
+        initVal(expectedValues, "smooth.p.values","true");
+        initVal(expectedValues, "phenotype.test","one versus all");
+        initVal(expectedValues, "output.filename","<input.file_basename>.comp.marker.odf");
         
-        expectedValues=new LinkedHashMap<String,List<String>>();
-        initVal("input.file", "");
-        initVal("cls.file", "");
-        initVal("confounding.variable.cls.file", "");
-        initVal("test.direction", "2");
-        initVal("test.statistic","0");
-        initVal("min.std", "");
-        initVal("number.of.permutations","10000");
-        initVal("log.transformed.data","false");
-        initVal("complete","false");
-        initVal("balanced","false");
-        initVal("random.seed","779948241");
-        initVal("smooth.p.values","true");
-        initVal("phenotype.test","one versus all");
-        initVal("output.filename","<input.file_basename>.comp.marker.odf");
+        return expectedValues;
+    }
+    
+    private LinkedHashMap<String,List<String>> initEcmr() {
+        LinkedHashMap<String,List<String>> expectedValues=new LinkedHashMap<String,List<String>>();
+        initVal(expectedValues, "comparative.marker.selection.filename", "");
+        initVal(expectedValues, "dataset.filename", "");
+        initVal(expectedValues, "field", "");
+        initVal(expectedValues, "min", "");
+        initVal(expectedValues, "max", "");
+        initVal(expectedValues, "number.of.neighbors", "");
+        initVal(expectedValues, "base.output.name", "<comparative.marker.selection.filename_basename>.filt");
+
+        return expectedValues;
     }
 
     /**
@@ -90,7 +103,7 @@ public class TestLoadModuleHelper {
      * @param pname
      * @param pval
      */
-    private void initVal(final String pname, final String pval) {
+    private void initVal(final LinkedHashMap<String,List<String>> expectedValues, final String pname, final String pval) {
         List<String> pvalList=new ArrayList<String>();
         pvalList.add(pval);
         expectedValues.put(pname, pvalList);
@@ -122,66 +135,115 @@ public class TestLoadModuleHelper {
     
     @Test
     public void testFromDefaultValues() throws Exception {
+        final TaskInfo taskInfo=taskLoader.getTaskInfo(cmsLsid);
         LoadModuleHelper loadModuleHelper=new LoadModuleHelper(userContext, taskLoader, jobInfoLoader);
         JSONObject actualInitialValues=
                 loadModuleHelper.getInitialValuesJson(
-                        lsid, paramInfos, reloadedValues, _fileParam, _formatParam, parameterMap);
-        checkResults(expectedValues, actualInitialValues);
+                        taskInfo.getLsid(), taskInfo.getParameterInfoArray(), reloadedValues, _fileParam, _formatParam, parameterMap);
+        checkResults(initCms(), actualInitialValues);
     }
 
     @Test
     public void testFromSendToMenu() throws Exception {
+        final TaskInfo taskInfo=taskLoader.getTaskInfo(cmsLsid);
         _fileParam="http://127.0.0.1:8080/gp/jobResults/688040/CEL_IK50.cvt.gct";
         _formatParam="gct";
         //expecting input.file to match the _fileParam
-        expectedValues.put("input.file", new ArrayList<String>(Arrays.asList( _fileParam )));
+        final LinkedHashMap<String,List<String>> cmsExpectedValues=initCms();
+        cmsExpectedValues.put("input.file", new ArrayList<String>(Arrays.asList( _fileParam )));
         LoadModuleHelper loadModuleHelper=new LoadModuleHelper(userContext, taskLoader, jobInfoLoader);
         JSONObject actualInitialValues=
                 loadModuleHelper.getInitialValuesJson(
-                        lsid, paramInfos, reloadedValues, _fileParam, _formatParam, parameterMap);
-        checkResults(expectedValues, actualInitialValues);
+                        cmsLsid, taskInfo.getParameterInfoArray(), reloadedValues, _fileParam, _formatParam, parameterMap);
+        checkResults(cmsExpectedValues, actualInitialValues);
     }
     
     @Test
     public void testFromSendToMenuFormatParamNotSet() throws Exception {
+        final TaskInfo taskInfo=taskLoader.getTaskInfo(cmsLsid);
         _fileParam="http://127.0.0.1:8080/gp/jobResults/688040/CEL_IK50.cvt.gct";
-        //_formatParam="gct";
         //expecting input.file to match the _fileParam
-        expectedValues.put("input.file", new ArrayList<String>(Arrays.asList( _fileParam )));
+        final LinkedHashMap<String,List<String>> cmsExpectedValues=initCms();
+        cmsExpectedValues.put("input.file", new ArrayList<String>(Arrays.asList( _fileParam )));
         LoadModuleHelper loadModuleHelper=new LoadModuleHelper(userContext, taskLoader, jobInfoLoader);
         JSONObject actualInitialValues=
                 loadModuleHelper.getInitialValuesJson(
-                        lsid, paramInfos, reloadedValues, _fileParam, _formatParam, parameterMap);
-        checkResults(expectedValues, actualInitialValues);
+                        cmsLsid, taskInfo.getParameterInfoArray(), reloadedValues, _fileParam, _formatParam, parameterMap);
+        checkResults(cmsExpectedValues, actualInitialValues);
+    }
+    
+    /**
+     * 
+     * @throws Exception
+     */
+    @Test
+    public void testFromRecendJobsTab() throws Exception {
+        //&_file=http%3A%2F%2Fgpdev.broadinstitute.org%2Fgp%2FjobResults%2F50043%2Fall_aml_test.comp.marker.odf&_format=Comparative%20Marker%20Selection
+        _fileParam="http://127.0.0.1:8080/gp/jobResults/50043/all_aml_test.comp.marker.odf";
+        _formatParam="Comparative Marker Selection";
+    }
+    
+    @Test
+    public void testSendFromUploadsTab() throws Exception {
+        final TaskInfo taskInfo=taskLoader.getTaskInfo(cmsLsid);
+        _fileParam="http://127.0.0.1:8080/gp/users/test/all_aml_test.cls";
+        _formatParam="cls";
+        final LinkedHashMap<String,List<String>> cmsExpectedValues=initCms();
+        cmsExpectedValues.put("cls.file", new ArrayList<String>(Arrays.asList( _fileParam )));
+        LoadModuleHelper loadModuleHelper=new LoadModuleHelper(userContext, taskLoader, jobInfoLoader);
+        JSONObject actualInitialValues=
+                loadModuleHelper.getInitialValuesJson(
+                        cmsLsid, taskInfo.getParameterInfoArray(), reloadedValues, _fileParam, _formatParam, parameterMap);
+        checkResults(cmsExpectedValues, actualInitialValues);        
     }
     
     @Test
     public void testFromRequestParam() throws Exception {
+        final TaskInfo taskInfo=taskLoader.getTaskInfo(cmsLsid);
         final String inputFile="ftp://ftp.broadinstitute.org/pub/genepattern/datasets/all_aml/all_aml_test.gct";
         parameterMap=new HashMap<String,String[]>();
         parameterMap.put("input.file", new String[] {inputFile} );
         //expecting input.file to match the request parameter
-        expectedValues.put("input.file", new ArrayList<String>(Arrays.asList( inputFile )));
+        final LinkedHashMap<String,List<String>> cmsExpectedValues=initCms();
+        cmsExpectedValues.put("input.file", new ArrayList<String>(Arrays.asList( inputFile )));
         LoadModuleHelper loadModuleHelper=new LoadModuleHelper(userContext, taskLoader, jobInfoLoader);
         JSONObject actualInitialValues=
                 loadModuleHelper.getInitialValuesJson(
-                        lsid, paramInfos, reloadedValues, _fileParam, _formatParam, parameterMap);
-        checkResults(expectedValues, actualInitialValues);
+                        cmsLsid, taskInfo.getParameterInfoArray(), reloadedValues, _fileParam, _formatParam, parameterMap);
+        checkResults(cmsExpectedValues, actualInitialValues);
     }
     
     @Test
     public void testNoParameters() throws Exception {
-        expectedValues.clear();
+        final LinkedHashMap<String,List<String>> cmsExpectedValues=initCms();
+        cmsExpectedValues.clear();
         LoadModuleHelper loadModuleHelper=new LoadModuleHelper(userContext, taskLoader, jobInfoLoader);
         JSONObject actualInitialValues=
                 loadModuleHelper.getInitialValuesJson(
-                        lsid, new ParameterInfo[] {}, reloadedValues, _fileParam, _formatParam, parameterMap);
-        checkResults(expectedValues, actualInitialValues);
+                        cmsLsid, new ParameterInfo[] {}, reloadedValues, _fileParam, _formatParam, parameterMap);
+        checkResults(cmsExpectedValues, actualInitialValues);
     }
     
+    /**
+     * Test sending a '.odf' file as a 'Comparative Marker Selection' file.
+     * 
+     * For example, send odf result file from a run of ComparativeMarkerSelection to the ExtractComparativeMarkerSelectionResults module.
+     * 
+     * @throws Exception
+     */
     @Test
-    public void testSendOdfAsComparativeMarkerSelection() {
-        Assert.fail("test not implemented");
+    public void testSendOdfAsComparativeMarkerSelection() throws Exception {
+        _fileParam="http://127.0.0.1:8080/gp/jobResults/50043/all_aml_test.comp.marker.odf";
+        _formatParam="Comparative Marker Selection";
+        final LinkedHashMap<String,List<String>> expectedValues=initEcmr();
+        expectedValues.put("comparative.marker.selection.filename", new ArrayList<String>(Arrays.asList( _fileParam )));
+        //ExtractComparativeMarkerResults
+        final TaskInfo taskInfo = taskLoader.getTaskInfo(ecmrLsid);
+        LoadModuleHelper loadModuleHelper=new LoadModuleHelper(userContext, taskLoader, jobInfoLoader);
+        JSONObject actualInitialValues=
+                loadModuleHelper.getInitialValuesJson(
+                        taskInfo.getLsid(), taskInfo.getParameterInfoArray(), reloadedValues, _fileParam, _formatParam, parameterMap);
+        checkResults(expectedValues, actualInitialValues);
     }
 
     /**
@@ -191,14 +253,16 @@ public class TestLoadModuleHelper {
      */
     @Test
     public void testSendExternalUrl() throws Exception {
+        final TaskInfo taskInfo=taskLoader.getTaskInfo(cmsLsid);
         _fileParam="ftp://ftp.broadinstitute.org/pub/genepattern/datasets/all_aml/all_aml_test.gct";
         _formatParam="gct";
-        expectedValues.put("input.file", new ArrayList<String>(Arrays.asList( _fileParam )));
+        final LinkedHashMap<String,List<String>> cmsExpectedValues=initCms();
+        cmsExpectedValues.put("input.file", new ArrayList<String>(Arrays.asList( _fileParam )));
         LoadModuleHelper loadModuleHelper=new LoadModuleHelper(userContext, taskLoader, jobInfoLoader);
         JSONObject actualInitialValues=
                 loadModuleHelper.getInitialValuesJson(
-                        lsid, paramInfos, reloadedValues, _fileParam, _formatParam, parameterMap);
-        checkResults(expectedValues, actualInitialValues);
+                        cmsLsid, taskInfo.getParameterInfoArray(), reloadedValues, _fileParam, _formatParam, parameterMap);
+        checkResults(cmsExpectedValues, actualInitialValues);
     }
     
     /**
@@ -212,34 +276,53 @@ public class TestLoadModuleHelper {
      */
     @Test
     public void testSendFromGenomeSpaceTab() throws Exception {
+        final TaskInfo taskInfo=taskLoader.getTaskInfo(cmsLsid);
         _fileParam="https://dm.genomespace.org/datamanager/file/Home/pcarr/all_aml_test.gct";
         _formatParam="gct";
-        expectedValues.put("input.file", new ArrayList<String>(Arrays.asList( _fileParam )));
+        final LinkedHashMap<String,List<String>> cmsExpectedValues=initCms();
+        cmsExpectedValues.put("input.file", new ArrayList<String>(Arrays.asList( _fileParam )));
         LoadModuleHelper loadModuleHelper=new LoadModuleHelper(userContext, taskLoader, jobInfoLoader);
         JSONObject actualInitialValues=
                 loadModuleHelper.getInitialValuesJson(
-                        lsid, paramInfos, reloadedValues, _fileParam, _formatParam, parameterMap);
-        checkResults(expectedValues, actualInitialValues);
+                        cmsLsid, taskInfo.getParameterInfoArray(), reloadedValues, _fileParam, _formatParam, parameterMap);
+        checkResults(cmsExpectedValues, actualInitialValues);
     }
     
     @Test
     public void testSendFromGsTabSpecialChars() throws Exception {
+        final TaskInfo taskInfo=taskLoader.getTaskInfo(cmsLsid);
         _fileParam="https://dm.genomespace.org/datamanager/file/Home/pcarr/all%20aml%20test.gct";
         _formatParam="gct";
-        expectedValues.put("input.file", new ArrayList<String>(Arrays.asList( _fileParam )));
+        final LinkedHashMap<String,List<String>> cmsExpectedValues=initCms();
+        cmsExpectedValues.put("input.file", new ArrayList<String>(Arrays.asList( _fileParam )));
         LoadModuleHelper loadModuleHelper=new LoadModuleHelper(userContext, taskLoader, jobInfoLoader);
         JSONObject actualInitialValues=
                 loadModuleHelper.getInitialValuesJson(
-                        lsid, paramInfos, reloadedValues, _fileParam, _formatParam, parameterMap);
-        checkResults(expectedValues, actualInitialValues);
+                        cmsLsid, taskInfo.getParameterInfoArray(), reloadedValues, _fileParam, _formatParam, parameterMap);
+        checkResults(cmsExpectedValues, actualInitialValues);
     }
     
+//    /**
+//     * Test case for sending a GenomeSpace file from the landing page to the job input form.
+//     */
+//    @Test
+//    public void testSendFromGsLandingPage() {
+//        //TODO: implement this test: Assert.fail("test not implemented");
+//    }
+
     /**
-     * Test case for sending a GenomeSpace file from the landing page to the job input form.
+     * Test case for sending an invalid _file= parameter in the HTTP request.
      */
     @Test
-    public void testSendFromGsLandingPage() {
-        Assert.fail("test not implemented");
+    public void testBogusFileParam() throws Exception {
+        final TaskInfo taskInfo=taskLoader.getTaskInfo(cmsLsid);
+        _fileParam="/xchip/gpdev/servers/shared_data/all_aml_test.gct";
+        LoadModuleHelper loadModuleHelper=new LoadModuleHelper(userContext, taskLoader, jobInfoLoader);
+        JSONObject actualInitialValues=
+                loadModuleHelper.getInitialValuesJson(
+                        cmsLsid, taskInfo.getParameterInfoArray(), reloadedValues, _fileParam, _formatParam, parameterMap);
+        final LinkedHashMap<String,List<String>> cmsExpectedValues=initCms();
+        checkResults(cmsExpectedValues, actualInitialValues);
     }
     
 }
