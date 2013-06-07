@@ -727,8 +727,18 @@ public class PipelineHandler {
             throw new JobSubmissionException("Only a single batch step is allowed, num steps = "+tasks.size());
         }
 
-        //assuming a 1-step pipeline
-        TaskInfo taskInfo = tasks.get(0).getTaskInfo();
+        //assuming a 1-step pipeline 
+        // to avoid potential bug in pipelineModel, load the TaskInfo directly
+        //TaskInfo taskInfo = tasks.get(0).getTaskInfo();
+        final JobSubmission jobSubmission=tasks.get(0);
+        final TaskInfo taskInfo;
+        try {
+            taskInfo = getTaskInfo(jobSubmission.getLSID());
+        }
+        catch (Throwable t) {
+            throw new JobSubmissionException("Error initializing task from lsid="+jobSubmission.getLSID()+": "+t.getLocalizedMessage());
+        }
+    
         ParameterInfo[] parameterInfo = tasks.get(0).giveParameterInfoArray();
         substituteLsidInInputFiles(pipelineJobInfo.getTaskLSID(), parameterInfo);
         ParameterInfo[] params = parameterInfo;
