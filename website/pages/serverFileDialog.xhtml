@@ -40,7 +40,7 @@
 					}
 					
 					jq("#serverFileTreeDialog").parent().find("button").button();
-					jq(".urlInput").keyup(function() {
+					var enableSelectButton = function() {
 						var text = jq(".urlInput").val();
 						if (text !== "") {
 							jq("#serverFileTreeDialog").parent().find(".ui-dialog-buttonpane button:first").button("enable");
@@ -48,6 +48,10 @@
 						else {
 							jq("#serverFileTreeDialog").parent().find(".ui-dialog-buttonpane button:first").button("disable");
 						}
+					};
+					jq(".urlInput").keyup(enableSelectButton);
+					jq(".urlInput").bind("paste", function() {
+						setTimeout(enableSelectButton, 100);
 					});
 					
 					jq("#serverFileTreeDialog").parent().find(".ui-dialog-buttonpane button:first").button("disable");
