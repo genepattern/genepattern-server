@@ -107,6 +107,11 @@
   <managed-bean-scope>session</managed-bean-scope>
  </managed-bean>
  <managed-bean>
+  <managed-bean-name>moduleRepositorySelectorBean</managed-bean-name>
+  <managed-bean-class>org.genepattern.server.webapp.jsf.ModuleRepositorySelectorBean</managed-bean-class>
+  <managed-bean-scope>request</managed-bean-scope>
+ </managed-bean>
+ <managed-bean>
   <managed-bean-name>userPrefsBean</managed-bean-name>
   <managed-bean-class>org.genepattern.server.webapp.jsf.UserPrefsBean</managed-bean-class>
   <managed-bean-scope>request</managed-bean-scope>
