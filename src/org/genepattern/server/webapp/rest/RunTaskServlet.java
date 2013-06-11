@@ -326,7 +326,7 @@ public class RunTaskServlet extends HttpServlet
             {
                 message = message + ": " + e.getMessage();
             }
-            log.error(message);
+            log.error(message,e);
 
             throw new WebApplicationException(
                 Response.status(Response.Status.BAD_REQUEST)
