@@ -136,13 +136,17 @@ function gup(name) {
 
 // Requires jQuery & jQuery UI
 function showDialog(title, message, button) {
+	if (typeof jq === 'undefined') {
+		var jq = $;
+	}
+	
 	var alert = document.createElement("div");
 
 	if (typeof (message) == 'string') {
 		alert.innerHTML = message;
 		;
 	} else {
-		alert.appendChild(message);
+		$(alert).append(message);
 	}
 
 	if (button === undefined || button === null) {
