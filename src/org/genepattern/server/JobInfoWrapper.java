@@ -507,12 +507,27 @@ public class JobInfoWrapper implements Serializable {
             
             //case B
             if (isInternalLink) {
-                this.setLink(value);
+                URL internalUrl;
+                try {
+                    internalUrl = new URL(value);
+                    this.setLink(internalUrl.getPath());
+                }
+                catch (MalformedURLException e) {
+                    log.error("Could not make a URL out of: " + value);
+                    this.setLink(value);
+                }
+                
                 
                 String displayValue = value;
                 //drop the server url, including first '/' from the display value
                 if (displayValue.startsWith(genePatternUrl)) {
                     displayValue = displayValue.substring(genePatternUrl.length() + 1);
+                }
+                
+                // If the URL ends with a trailing slash, remove that slash
+                if (displayValue.endsWith("/")) {
+                    displayValue = displayValue.replaceAll("/$", "");
+                    this.setLink(""); // Remove the link, since the directory link would otherwise be broken
                 }
                 
                 int lastNameIdx = displayValue.lastIndexOf("/");
