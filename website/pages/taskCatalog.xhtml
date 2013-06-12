@@ -47,13 +47,18 @@
                     <td>Install Modules &amp; Pipelines From Repository</td>
                 </tr>
             </table>
-            
+
+            <div class="repositoryChooser">
             <h:form id="repositoryChooser">
                 <h:outputText>module repository: </h:outputText>
-                <h:selectOneMenu value="#{moduleRepositorySelectorBean.moduleRepositoryUrl}" onchange="this.form.submit();">
-                    <f:selectItems value="#{moduleRepositorySelectorBean.moduleRepositoryUrlMenuItems}" />
+                <h:selectOneMenu value="#{moduleRepositorySelectorBean.url}" onchange="this.form.submit();">
+                    <f:selectItems value="#{moduleRepositorySelectorBean.menuItems}" />
                 </h:selectOneMenu>
             </h:form>
+            <h:outputText value="label: #{moduleRepositorySelectorBean.label}" /><br />
+            <h:outputText value="url: #{moduleRepositorySelectorBean.url}" /><br />
+            <h:outputText value="description: #{moduleRepositorySelectorBean.description}" />
+            </div>
 
             <c:choose>
                 <c:when test="#{taskCatalogBean.error}">
