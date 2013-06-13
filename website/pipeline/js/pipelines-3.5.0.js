@@ -1247,6 +1247,7 @@ var editor = {
         }
         
         // Add the UI block
+        $(window).scrollLeft("0px")
         $("html").block({message:"<h2>Saving Pipeline... Please Wait...</h2>"});
         $(".blockOverlay").css("z-index", "15000");
         $(".blockMsg").css("z-index", "15001");
