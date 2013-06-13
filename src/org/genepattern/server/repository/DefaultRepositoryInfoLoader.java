@@ -24,11 +24,11 @@ public class DefaultRepositoryInfoLoader implements RepositoryInfoLoader {
      * Initialize default repositories.
      */
     static {
-         
          //Broad public repository
          try {
              broadPublic=new RepositoryInfo("Broad public", new URL("http://www.broadinstitute.org/webservices/gpModuleRepository"));
              broadPublic.setDescription("Modules developed and tested by the GenePattern development team");
+             broadPublic.setIconImgSrc("images/broad-symbol.gif");
          }
          catch (MalformedURLException e) {
              log.error(e);
@@ -60,8 +60,6 @@ public class DefaultRepositoryInfoLoader implements RepositoryInfoLoader {
          catch (MalformedURLException e) {
              log.error(e);
          }
-         
-         
     }
     
     private static Map<String, RepositoryInfo> initRepositoryMap(final Context userContext) {

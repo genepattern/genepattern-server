@@ -50,14 +50,22 @@
 
             <div class="repositoryChooser">
             <h:form id="repositoryChooser">
-                <h:outputText>module repository: </h:outputText>
+                <h:outputText>Source: </h:outputText>
                 <h:selectOneMenu value="#{moduleRepositorySelectorBean.url}" onchange="this.form.submit();">
                     <f:selectItems value="#{moduleRepositorySelectorBean.menuItems}" />
                 </h:selectOneMenu>
+                <br />
+                <h:outputText rendered="#{true}">
+                    icon: <img src="#{facesContext.externalContext.requestContextPath}/#{moduleRepositorySelectorBean.currentRepository.iconImgSrc}" /> 
+                </h:outputText>
+                <br />
+                <h:outputText value="label: #{moduleRepositorySelectorBean.currentRepository.label}" />
+                <br />
+                <h:outputText value="url: #{moduleRepositorySelectorBean.currentRepository.url}" />
+                <br />
+                <!--  change escape to 'true' if you don't want to support formatted text -->
+                <h:outputText escape="false" value="description: #{moduleRepositorySelectorBean.currentRepository.description}" />
             </h:form>
-            <h:outputText value="label: #{moduleRepositorySelectorBean.label}" /><br />
-            <h:outputText value="url: #{moduleRepositorySelectorBean.url}" /><br />
-            <h:outputText value="description: #{moduleRepositorySelectorBean.description}" />
             </div>
 
             <c:choose>
