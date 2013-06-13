@@ -17,16 +17,18 @@ public class DefaultRepositoryInfoLoader implements RepositoryInfoLoader {
     
     static RepositoryInfo broadPublic;
     static RepositoryInfo gparc;
-    final static private Map<String, RepositoryInfo> repositoryMap;
-    final static private List<RepositoryInfo> repositoryList;
+    static RepositoryInfo broadBeta;
+    static RepositoryInfo broadDev;
+    
+    /**
+     * Initialize default repositories.
+     */
     static {
-         repositoryMap=new LinkedHashMap<String, RepositoryInfo>();
          
          //Broad public repository
          try {
              broadPublic=new RepositoryInfo("Broad public", new URL("http://www.broadinstitute.org/webservices/gpModuleRepository"));
              broadPublic.setDescription("Modules developed and tested by the GenePattern development team");
-             repositoryMap.put(broadPublic.getUrl().toExternalForm(), broadPublic);
          }
          catch (MalformedURLException e) {
              log.error(e);
@@ -36,32 +38,74 @@ public class DefaultRepositoryInfoLoader implements RepositoryInfoLoader {
          try {
              gparc=new RepositoryInfo("GParc", new URL("http://vgpprod01.broadinstitute.org:4542/gparcModuleRepository"));
              gparc.setDescription("Modules developed by GenePattern users are available on GParc, the GenePattern Archive.");
-             repositoryMap.put(gparc.getUrl().toExternalForm(), gparc);
+         }
+         catch (MalformedURLException e) {
+             log.error(e);
+         }
+         
+         //Broad beta repository
+         try {
+             broadBeta=new RepositoryInfo("Broad beta", new URL("http://www.broadinstitute.org/webservices/betaModuleRepository"));
+             broadBeta.setDescription("Broad beta repository, for beta quality modules developed and or curated by the GenePattern team");
          }
          catch (MalformedURLException e) {
              log.error(e);
          }
          
          //Broad dev repository (only available via Broad internal network)
-         final Context serverContext=ServerConfiguration.Context.getServerContext();
-         final boolean includeDevRepository=ServerConfiguration.instance().getGPBooleanProperty(serverContext, "includeDevRepository", true);
-         if (includeDevRepository) {
          try {
-             RepositoryInfo dev=new RepositoryInfo("Broad dev", new URL("http://www.broadinstitute.org/webservices/gpModuleRepository?env=dev"));
-             dev.setDescription("Broad internal dev repository, only available via Broad internal network");
-             repositoryMap.put(dev.getUrl().toExternalForm(), dev);
+             broadDev=new RepositoryInfo("Broad dev", new URL("http://www.broadinstitute.org/webservices/gpModuleRepository?env=dev"));
+             broadDev.setDescription("Broad internal dev repository, only available via Broad internal network");
          }
          catch (MalformedURLException e) {
              log.error(e);
          }
+         
+         
+    }
+    
+    private static Map<String, RepositoryInfo> initRepositoryMap(final Context userContext) {
+         final Map<String, RepositoryInfo> repositoryMap=new LinkedHashMap<String, RepositoryInfo>();
+         repositoryMap.put(broadPublic.getUrl().toExternalForm(), broadPublic);
+         repositoryMap.put(gparc.getUrl().toExternalForm(), gparc);
+         repositoryMap.put(broadBeta.getUrl().toExternalForm(), broadBeta);
+         
+         final Context serverContext=ServerConfiguration.Context.getServerContext();
+         //TODO: set this flag's default value to 'false', it's true for debugging
+         final boolean includeDevRepository=ServerConfiguration.instance().getGPBooleanProperty(serverContext, "includeDevRepository", true);         
+         if (includeDevRepository) {
+             repositoryMap.put(broadDev.getUrl().toExternalForm(), broadDev);
          }
          
-         repositoryList=new ArrayList<RepositoryInfo>();
-         repositoryList.addAll(repositoryMap.values());
+         //legacy support, include any entries from the Server Settings -> Module Repositories page which aren't in the list
+         final List<String> fromGpProps=getModuleRepositoryUrlsFromGpProps();
+         for(final String fromGpProp : fromGpProps) {
+             if (repositoryMap.containsKey(fromGpProp)) {
+                 //ignore, it's already on the list
+             }
+             else {
+                 try {
+                     RepositoryInfo info=new RepositoryInfo(new URL(fromGpProp));
+                     repositoryMap.put(info.getUrl().toExternalForm(), info);
+                 }
+                 catch (MalformedURLException e) {
+                     //TODO: should notify end-user when an invalid repository URL is entered
+                     log.error(e);
+                 }
+             }
+         }
+         return repositoryMap;
     }
     
     
-    final Context userContext;
+    final private Context userContext;
+    final private Map<String, RepositoryInfo> repositoryMap;
+    final private List<RepositoryInfo> repositoryList;
+    
+    /**
+     * Hint: Create a new instance for each page load. The constructor initializes the list of 
+     * repositories. This info could become stale if you hang onto an instance for a while.
+     */
     public DefaultRepositoryInfoLoader() {
         this(null);
     }
@@ -72,6 +116,9 @@ public class DefaultRepositoryInfoLoader implements RepositoryInfoLoader {
         else {
             userContext=userContextIn;
         }
+        repositoryMap=initRepositoryMap(userContext);
+        repositoryList=new ArrayList<RepositoryInfo>();
+        repositoryList.addAll(repositoryMap.values());
     }
 
     @Override
@@ -94,12 +141,30 @@ public class DefaultRepositoryInfoLoader implements RepositoryInfoLoader {
         }
         
         //TODO: if we're here it's an error
+        log.error("Didn't find a matching RepositoryInfo for the currentRepository: "+moduleRepositoryUrl);
         return broadPublic;
     }
 
     @Override
     public List<RepositoryInfo> getRepositories() {
         return Collections.unmodifiableList(repositoryList);
+    }
+    
+    //
+    static private List<String> getModuleRepositoryUrlsFromGpProps() { 
+        final String moduleRepositoryUrls=System.getProperty(RepositoryInfo.PROP_MODULE_REPOSITORY_URLS, broadPublic.getUrl().toExternalForm());
+        if (moduleRepositoryUrls==null) {
+            return Collections.emptyList();
+        }
+        //can be a single url or a comma-separated list
+        final List<String> urls=new ArrayList<String>();
+        final String[] splits=moduleRepositoryUrls.split(",");
+        if (splits != null) {
+            for(final String str : splits) { 
+                    urls.add(str);
+            }
+        }
+        return urls;
     }
 
 }
