@@ -1250,6 +1250,7 @@ var editor = {
         $("html").block({message:"<h2>Saving Pipeline... Please Wait...</h2>"});
         $(".blockOverlay").css("z-index", "15000");
         $(".blockMsg").css("z-index", "15001");
+        $("body").css("overflow", "hidden");
         
 		var toSend = editor._bundleForSave();
         $.ajax({
@@ -1262,6 +1263,7 @@ var editor = {
                 
                 if (!runImmediately || error) {
                 	$("html").unblock();
+                	$("body").css("overflow", "visible");
                 }
 
                 if (error !== undefined && error !== null) {
@@ -1321,6 +1323,7 @@ var editor = {
             },
             error: function() {
             	$("html").unblock();
+            	$("body").css("overflow", "visible");
             	editor.showDialog("ERROR", "<div style='text-align: center; font-weight: bold;'>Error Saving Pipeline</div>");
             },
             dataType: "json"
