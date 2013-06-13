@@ -24,7 +24,7 @@ public class RepositoryInfo {
     private String label="";
     final private URL url;
     private String description="";
-    private String iconImgSrc="images/broad-symbol.gif";
+    private String iconImgSrc=null;
     
     public RepositoryInfo(final URL url) {
         this(url.toExternalForm(), url);

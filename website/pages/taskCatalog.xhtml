@@ -55,7 +55,7 @@
                     <f:selectItems value="#{moduleRepositorySelectorBean.menuItems}" />
                 </h:selectOneMenu>
                 <br />
-                <h:outputText rendered="#{true}">
+                <h:outputText rendered="#{not empty moduleRepositorySelectorBean.currentRepository.iconImgSrc}">
                     icon: <img src="#{facesContext.externalContext.requestContextPath}/#{moduleRepositorySelectorBean.currentRepository.iconImgSrc}" /> 
                 </h:outputText>
                 <br />
