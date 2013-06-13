@@ -71,7 +71,7 @@ public class ModuleRepositorySelectorBean {
     }
 
     // ----- JSF agnostic helper methods 
-    private RepositoryInfo getCurrentRepository() {
+    public RepositoryInfo getCurrentRepository() {
         return loader.getCurrentRepository();
     }
 
