@@ -25,6 +25,7 @@ import org.genepattern.server.dm.UrlUtil;
 import org.genepattern.server.domain.JobStatus;
 import org.genepattern.server.genepattern.GenePatternAnalysisTask;
 import org.genepattern.server.process.JobPurgerUtil;
+import org.genepattern.server.repository.ModuleQualityInfo;
 import org.genepattern.server.util.AuthorizationManagerFactory;
 import org.genepattern.server.util.IAuthorizationManager;
 import org.genepattern.server.webapp.jsf.AuthorizationHelper;
@@ -632,8 +633,52 @@ public class JobInfoWrapper implements Serializable {
     private JobInfo jobInfo = null;
     private TaskInfo taskInfo = null;
     private PipelineModel pipelineModel = null;
+    private ModuleQualityInfo qualityInfo = null;
     private Long size = null;
     private boolean includeInputFilesInSize = false;
+    
+    private void lazyInitQualityInfo() {
+        if (qualityInfo == null) {
+            qualityInfo = new ModuleQualityInfo(taskInfo.getLsid());
+        }
+    }
+    
+    public String getSource() {
+        lazyInitQualityInfo();
+        
+        return qualityInfo.getSource();
+    }
+    
+    public String getSourceIcon() {
+        lazyInitQualityInfo();
+        
+        if (ModuleQualityInfo.PRODUCTION_REPOSITORY.equals(qualityInfo.getSource())) {
+            return "/gp/images/broad-symbol.gif";
+        }
+        else if (ModuleQualityInfo.BETA_REPOSITORY.equals(qualityInfo.getSource())) {
+            return "/gp/images/broad-symbol.gif";
+        }
+        else if (ModuleQualityInfo.GPARC.equals(qualityInfo.getSource())) {
+            return "/gp/images/gparc.png";
+        }
+        else {
+            return "";
+        }
+    }
+    
+    public String getQualityDescription() {
+        lazyInitQualityInfo();
+        
+        if (ModuleQualityInfo.PRODUCTION_REPOSITORY.equals(qualityInfo.getSource())) {
+            return "This module has been tested and verified by the GenePattern team.";
+        }
+        else if (ModuleQualityInfo.BETA_REPOSITORY.equals(qualityInfo.getSource())) {
+            return "This module has been tested for safeness by the GenePattern team, but the accuracy of its results have not been tested.";
+        }
+        else {
+            return qualityInfo.getSource();
+        }
+    }
 
     /**
      * Get the total size of all of the output files for this job, including all descendant jobs.

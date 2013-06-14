@@ -375,10 +375,13 @@ public class ManageTasksBean {
         
         public String getSourceIcon() {
             if (ModuleQualityInfo.PRODUCTION_REPOSITORY.equals(qualityInfo.getSource())) {
-                return "/gp/images/complete.gif";
+                return "/gp/images/broad-symbol.gif";
             }
             else if (ModuleQualityInfo.BETA_REPOSITORY.equals(qualityInfo.getSource())) {
-                return "/gp/images/complete.gif";
+                return "/gp/images/broad-symbol.gif";
+            }
+            else if (ModuleQualityInfo.GPARC.equals(qualityInfo.getSource())) {
+                return "/gp/images/gparc.png";
             }
             else {
                 return "";
@@ -393,7 +396,7 @@ public class ManageTasksBean {
                 return "This module has been tested for safeness by the GenePattern team, but the accuracy of its results have not been tested.";
             }
             else {
-                return "";
+                return qualityInfo.getSource();
             }
         }
         
