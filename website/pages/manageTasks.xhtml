@@ -76,7 +76,10 @@
                 }
 
                 /* ]]> */
-
+				
+                jq(document).ready(function () {
+                	jq("body").tooltip();
+                });
             </script>
         </ui:define>
         <ui:define name="body">
@@ -110,7 +113,7 @@
                             <td>version&#160;</td>
                             <td>name&#160;</td>
                             <td>owner&#160;</td>
-                            <td>used by&#160;</td>
+                            <td>source&#160;</td>
                         </tr>
 
                         <!--  Loop through tasklist -->
@@ -165,9 +168,11 @@
                                             <h:outputText rendered="#{!taskGroup.pipeline}"><a href="#{facesContext.externalContext.requestContextPath}/addTask.jsp?name=#{versionInfo.lsid}">#{versionInfo.reason}</a></h:outputText>
                                         </td>
                                         <td>#{versionInfo.owner}</td>
-                                        <td><t:dataList var="pipelineName" value="#{versionInfo.pipelineNames}">
-                                            #{pipelineName}<br />
-                                        </t:dataList>
+                                        <td>
+	                                        <t:outputText rendered="#{not empty versionInfo.sourceIcon}">
+	                                        	<img src="#{versionInfo.sourceIcon}" height="16px" title="#{versionInfo.qualityDescription}" alt="#{versionInfo.qualityDescription}"/>
+	                                        </t:outputText>
+	                                        #{versionInfo.source}
                                         </td>
 
                                     </tr>

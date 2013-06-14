@@ -37,6 +37,7 @@ import org.apache.log4j.Logger;
 import org.genepattern.data.pipeline.PipelineModel;
 import org.genepattern.server.config.ServerConfiguration;
 import org.genepattern.server.config.ServerConfiguration.Context;
+import org.genepattern.server.repository.ModuleQualityInfo;
 import org.genepattern.server.user.UserDAO;
 import org.genepattern.server.webservice.server.local.IAdminClient;
 import org.genepattern.server.webservice.server.local.LocalAdminClient;
@@ -356,17 +357,46 @@ public class ManageTasksBean {
         private TaskInfo ti;
         private boolean deleteAuthorized = false;
         private boolean editAuthorized = false;
+        private ModuleQualityInfo qualityInfo = null;
 
-        public VersionInfo() {
-        }
+        public VersionInfo() {}
 
         public VersionInfo(TaskInfo ti) {
             this.ti = ti;
             String userId = UIBeanHelper.getUserId();
             deleteAuthorized = ti.getUserId().equals(userId) || AuthorizationHelper.adminModules();
             editAuthorized = ti.getUserId().equals(userId) && LSIDUtil.getInstance().isAuthorityMine(ti.getLsid());
+            qualityInfo = new ModuleQualityInfo(ti.getLsid());
         }
-
+        
+        public String getSource() {
+            return qualityInfo.getSource();
+        }
+        
+        public String getSourceIcon() {
+            if (ModuleQualityInfo.PRODUCTION_REPOSITORY.equals(qualityInfo.getSource())) {
+                return "/gp/images/complete.gif";
+            }
+            else if (ModuleQualityInfo.BETA_REPOSITORY.equals(qualityInfo.getSource())) {
+                return "/gp/images/complete.gif";
+            }
+            else {
+                return "";
+            }
+        }
+        
+        public String getQualityDescription() {
+            if (ModuleQualityInfo.PRODUCTION_REPOSITORY.equals(qualityInfo.getSource())) {
+                return "This module has been tested and verified by the GenePattern team.";
+            }
+            else if (ModuleQualityInfo.BETA_REPOSITORY.equals(qualityInfo.getSource())) {
+                return "This module has been tested for safeness by the GenePattern team, but the accuracy of its results have not been tested.";
+            }
+            else {
+                return "";
+            }
+        }
+        
         public void addPipelineName(TaskInfo pti) {
             pipelineNames.add(pti.getName() + " ver. " + getLSID(pti.getLsid()).getVersion());
             isUsedBy = true;
