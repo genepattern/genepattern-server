@@ -58,7 +58,7 @@
                 <p>
                 <h:outputText rendered="#{not empty moduleRepositorySelectorBean.currentRepository.iconImgSrc}">
                     <img src="#{facesContext.externalContext.requestContextPath}/#{moduleRepositorySelectorBean.currentRepository.iconImgSrc}" height="14" width="14"/>
-                    <a href="#{moduleRepositorySelectorBean.currentRepository.url}">#{moduleRepositorySelectorBean.currentRepository.label} </a>
+                    #{moduleRepositorySelectorBean.currentRepository.label}
                 </h:outputText>
                 <h:outputText rendered="#{empty moduleRepositorySelectorBean.currentRepository.iconImgSrc}">
                     <a href="#{moduleRepositorySelectorBean.currentRepository.url}">#{moduleRepositorySelectorBean.currentRepository.label} </a>
@@ -67,6 +67,7 @@
                 <!--  change escape to 'true' if you don't want to support formatted text -->
                 <h:outputText escape="false" value="#{moduleRepositorySelectorBean.currentRepository.description}" />
                 </p>
+                <h:outputText><a href="#{#facesContext.externalContext.requestContextPath}/gp/serverSettings.jsf">You can configure your repositories here</a></h:outputText>
             </h:form>
             </div>
 
