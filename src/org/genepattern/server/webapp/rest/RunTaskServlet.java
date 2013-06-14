@@ -321,6 +321,7 @@ public class RunTaskServlet extends HttpServlet
         }
         catch(Exception e)
         {
+            e.printStackTrace();
             String message = "An error occurred while uploading the file \"" + fileDetail.getFileName() + "\"";
             if(e.getMessage() != null)
             {

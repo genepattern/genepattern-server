@@ -27,7 +27,7 @@ public class DefaultRepositoryInfoLoader implements RepositoryInfoLoader {
          //Broad public repository
          try {
              broadPublic=new RepositoryInfo("Broad public", new URL("http://www.broadinstitute.org/webservices/gpModuleRepository"));
-             broadPublic.setDescription("Modules developed and tested by the GenePattern development team");
+             broadPublic.setDescription("A repository of production quality modules developed and or curated by the GenePattern team.");
              broadPublic.setIconImgSrc("images/broad-symbol.gif");
          }
          catch (MalformedURLException e) {
@@ -36,8 +36,10 @@ public class DefaultRepositoryInfoLoader implements RepositoryInfoLoader {
 
          //GParc repository
          try {
-             gparc=new RepositoryInfo("GParc", new URL("http://vgpprod01.broadinstitute.org:4542/gparcModuleRepository"));
-             gparc.setDescription("Modules developed by GenePattern users are available on GParc, the GenePattern Archive.");
+             gparc=new RepositoryInfo("GParc (GenePattern Archive)", new URL("http://vgpprod01.broadinstitute.org:4542/gparcModuleRepository"));
+             gparc.setDescription("A repository of modules developed by GenePattern users.");
+             gparc.setIconImgSrc("images/gparc_logo.png");
+
          }
          catch (MalformedURLException e) {
              log.error(e);
@@ -46,7 +48,8 @@ public class DefaultRepositoryInfoLoader implements RepositoryInfoLoader {
          //Broad beta repository
          try {
              broadBeta=new RepositoryInfo("Broad beta", new URL("http://www.broadinstitute.org/webservices/betaModuleRepository"));
-             broadBeta.setDescription("Broad beta repository, for beta quality modules developed and or curated by the GenePattern team");
+             broadBeta.setDescription("A repository of beta quality modules developed and or curated by the GenePattern team.");
+             broadPublic.setIconImgSrc("images/broad-symbol.gif");
          }
          catch (MalformedURLException e) {
              log.error(e);
@@ -55,7 +58,7 @@ public class DefaultRepositoryInfoLoader implements RepositoryInfoLoader {
          //Broad dev repository (only available via Broad internal network)
          try {
              broadDev=new RepositoryInfo("Broad dev", new URL("http://www.broadinstitute.org/webservices/gpModuleRepository?env=dev"));
-             broadDev.setDescription("Broad internal dev repository, only available via Broad internal network");
+             broadDev.setDescription("A repository of internal development quality modules developed by the GenePattern team.");
          }
          catch (MalformedURLException e) {
              log.error(e);

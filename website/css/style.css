@@ -876,4 +876,18 @@ input.error, select.error {
     font-size: 9px;
     text-align: right;
 }
-/*End CSS for license UI
+/*End CSS for license UI  */
+
+
+#repositoryChooser
+{
+    margin-top: 8px;
+    margin-bottom: 20px;
+    vertical-align: text-top;
+}
+
+#repositoryChooser p
+{
+    margin-left: 16px;
+}
+
