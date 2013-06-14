@@ -12,6 +12,7 @@ import java.util.Set;
 import org.apache.log4j.Logger;
 import org.genepattern.server.config.ServerConfiguration.Context;
 import org.genepattern.server.dm.GpFilePath;
+import org.genepattern.server.dm.UrlUtil;
 import org.genepattern.server.webapp.jsf.JobHelper;
 
 /**
@@ -203,6 +204,14 @@ public class GenomeSpaceFile extends GpFilePath {
     @Override
     public URL getUrl() throws Exception {
         return gsUrl;
+    }
+    
+    public String getEncodedUrl() {
+        if (gsUrl==null) {
+            return "";
+        }
+        final String encodedUrl=UrlUtil.encodeURIcomponent(gsUrl.toExternalForm());
+        return encodedUrl;
     }
     
     public void setUri(URI uri) {

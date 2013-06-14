@@ -106,12 +106,9 @@
                             <t:dataList value="#{genomeSpaceBean.kindToModules[format]}" var="moduleMenuItem">
                                 <tr>
                                     <td>
-										<h:outputLink value="index.jsf" style="white-space: nowrap;">
-						                	<h:outputText value="#{moduleMenuItem.name}" />
-						                	<f:param name="lsid" value="#{moduleMenuItem.lsid}" />
-						                    <f:param name="_file" value="#{file.url}" />
-											<f:param name="_format" value="#{format}" />
-						                </h:outputLink>
+                                        <h:outputLink value="index.jsf?lsid=#{moduleMenuItem.lsid}&amp;_file=#{file.encodedUrl}&amp;_format=#{format}"  style="white-space: nowrap;">
+                                            <h:outputText value="#{moduleMenuItem.name}" />
+                                        </h:outputLink>
                                     </td>
                                 </tr>
                             </t:dataList>
