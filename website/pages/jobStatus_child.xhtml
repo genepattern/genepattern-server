@@ -29,7 +29,14 @@
                                 <img src="/gp/images/blank.gif" />
                             </h:outputText>
                         </t:dataList>
-                        <img src="/gp/images/darkArrow.gif" /> step #{childJobInfo.stepPath}: #{childJobInfo.taskName} [id: #{childJobInfo.jobNumber}]
+                        <img src="/gp/images/darkArrow.gif" /> step #{childJobInfo.stepPath}: #{childJobInfo.taskName} [id: #{childJobInfo.jobNumber}] <br />
+                        <span style="font-size: 9pt; color: #333333; font-weight: normal; margin-left: 25px;">
+	                        <strong>Source:</strong> 
+							<t:outputText rendered="#{not empty childJobInfo.sourceIcon}">
+	                        	<img src="#{childJobInfo.sourceIcon}" height="14px" title="#{childJobInfo.qualityDescription}" alt="#{childJobInfo.qualityDescription}" style="position: relative; top: 3px"/>
+	                        </t:outputText>
+	                        #{childJobInfo.source}
+						</span>
                     </td>
                     <td>
                         <h:outputText rendered="#{not empty childJobInfo.inputParameters}">
