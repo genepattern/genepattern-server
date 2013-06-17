@@ -253,6 +253,7 @@ div.ui-layout-north
 {
     padding: 0;
     overflow: auto;
+    top: 120px;
 }
 
 .ui-layout-west, .ui-layout-south, .west-center, .west-south
@@ -309,6 +310,14 @@ div.ui-layout-north
 }
 
 #modcontrols
+{
+    float: right;
+    font-size: 0.75em;
+    margin: 0;
+    padding: 0;
+}
+
+#gparcControls
 {
     float: right;
     font-size: 0.75em;
@@ -535,13 +544,14 @@ img.imgexpand {
 {
     margin: 0;
     padding: 0;
+    height: 120px;
 }
 
 #modheader {
 	background-color: #cddcf1;
 	padding: 10px 15px 10px 15px;
 	border-bottom: solid 1px #a5c3e6;
-    height: 25px;
+    height: 28px;
     margin: 0;
 }
 

@@ -76,12 +76,13 @@ function setDirty(value)
     }
     
     // Disable GParc button or not
-    if (isDirty()) {
-    	$('#publishGParc').button("disable");
-    }
-    else {
-    	$('#publishGParc').button("enable");
-    }
+    // ENABLE: 
+//    if (isDirty()) {
+//    	$('#publishGParc').button("disable");
+//    }
+//    else {
+//    	$('#publishGParc').button("enable");
+//    }
 }
 
 function isDirty()
@@ -1139,7 +1140,7 @@ function loadModuleInfo(module)
     }
     
     // Enable GParc button
-    $('#publishGParc').button("enable");
+    // ENABLE: $('#publishGParc').button("enable");
 }
 
 function loadParameterInfo(parameters)
@@ -1757,7 +1758,7 @@ jQuery(document).ready(function() {
         else
         {
             saveAndUpload(false);
-            $('#publishGParc').button("enable");
+            // ENABLE: $('#publishGParc').button("enable");
         }
     });
 
@@ -1793,14 +1794,24 @@ jQuery(document).ready(function() {
     	if (!hasDocFiles()) {
     		dialogHTML += '<img src="styles/images/alert.gif" alt="Alert" /> <span style="color:red;">This module does not yet have attached documentation.</span><br/><br/>\
     			In order to submit a module to GParc the module will need to have attached documentation.<br/><br/>';
-    			setTimeout(function() {
-    				$(".ui-dialog-buttonset > button:visible").button("disable");
-    			}, 100);
 		}
-    	dialogHTML += 'To submit a module to GParc you will need to do the following: <ol><li>Export your module as a ZIP file</li><li>Click the "Go to GParc" button below and upload the file.</li></ol></div>';
+    	if (isDirty()) {
+    		dialogHTML += '<img src="styles/images/alert.gif" alt="Alert" /> <span style="color:red;">Changes to this module must be saved before it can be submitted to GParc.</span><br/><br/>';
+		}
+    	dialogHTML += 'To submit a module to GParc you will need to do the following: <ol><li>Export your module as a ZIP file</li><li>Click the "Go to GParc" button below and upload the file. To do this you will need to have an account on GParc and be signed in.</li></ol></div>';
+    	if (!hasDocFiles() || isDirty()) {
+    		setTimeout(function() {
+				$(".ui-dialog-buttonset > button:visible").button("disable");
+			}, 100);
+    	}
     	showDialog("Submit Module to GParc", $(dialogHTML), buttons);
     });
-    $('#publishGParc').button("disable");
+    // ENABLE: $('#publishGParc').button("disable");
+    $('#whatIsGparc').click(function(event) {
+    	showDialog("What is GParc?", '<a href="http://gparc.org"><img src="styles/images/gparc.png" alt="GParc" style="margin-bottom: 10px;" /></a><br /><strong>GParc</strong> is a repository and community where users can share and discuss their own GenePattern modules.<br/><br/>Unregistered users can download modules and rate them.  Registered GParc users can:<ul><li>Submit modules</li><li>Download modules</li><li>Rate modules</li><li>Comment on modules</li><li>Access the GPARC forum</ul>');
+    	if (event.preventDefault) event.preventDefault();
+        if (event.stopPropagation) event.stopPropagation();
+    });
 
 
     $("select[name='c_type']").change(function()
