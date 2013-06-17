@@ -27,7 +27,7 @@ public class DefaultRepositoryInfoLoader implements RepositoryInfoLoader {
          //Broad public repository
          try {
              broadPublic=new RepositoryInfo("Broad public", new URL("http://www.broadinstitute.org/webservices/gpModuleRepository"));
-             broadPublic.setDescription("A repository of production quality modules developed and or curated by the GenePattern team.");
+             broadPublic.setDescription("A repository of production quality modules curated by the GenePattern team.");
              broadPublic.setIconImgSrc("images/broad-symbol.gif");
          }
          catch (MalformedURLException e) {
@@ -37,7 +37,7 @@ public class DefaultRepositoryInfoLoader implements RepositoryInfoLoader {
          //GParc repository
          try {
              gparc=new RepositoryInfo("GParc (GenePattern Archive)", new URL("http://vgpprod01.broadinstitute.org:4542/gparcModuleRepository"));
-             gparc.setDescription("A repository of modules developed by GenePattern users.");
+             gparc.setDescription("A repository of modules, not curated by the GenePattern team, contributed by the GenePattern community.");
              gparc.setIconImgSrc("images/gparc_logo.png");
 
          }
@@ -48,8 +48,8 @@ public class DefaultRepositoryInfoLoader implements RepositoryInfoLoader {
          //Broad beta repository
          try {
              broadBeta=new RepositoryInfo("Broad beta", new URL("http://www.broadinstitute.org/webservices/betaModuleRepository"));
-             broadBeta.setDescription("A repository of beta quality modules developed and or curated by the GenePattern team.");
-             broadPublic.setIconImgSrc("images/broad-symbol.gif");
+             broadBeta.setDescription("A repository of beta quality modules curated by the GenePattern team.");
+             broadBeta.setIconImgSrc("images/broad-symbol.gif");
          }
          catch (MalformedURLException e) {
              log.error(e);
