@@ -306,7 +306,7 @@ function loadModuleInfo(module)
     if(module["source_info"] != undefined)
     {
         var label = module["source_info"].label;
-        var iconUrl = "/gp/" + module["source_info"].iconUrl;
+        var iconUrl = module["source_info"].iconUrl;
         var briefDescription = module["source_info"].briefDesc;
         var fullDescription = module["source_info"].fullDesc;
 
@@ -346,6 +346,7 @@ function loadModuleInfo(module)
         if(iconUrl !== undefined && iconUrl !== '' && iconUrl !== null)
         {
             reposContainer.prepend("<img src='" + iconUrl + "' width='10' height='10' />");
+            empty = false;
         }
 
         if(briefDescription !== undefined && briefDescription !== '' && briefDescription !== null)
@@ -354,6 +355,7 @@ function loadModuleInfo(module)
             {
                 $("#source_info").append(" - ");
             }
+
             $("#source_info").append(briefDescription);
         }
     }
