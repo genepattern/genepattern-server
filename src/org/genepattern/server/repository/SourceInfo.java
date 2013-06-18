@@ -30,6 +30,7 @@ public abstract class SourceInfo {
         return sourceInfoLoaderSingleton;
     }
     
+    protected boolean showSourceInfo=true;
     final private Type type;
     final private String iconImgSrc;
     final private String label;
@@ -38,6 +39,10 @@ public abstract class SourceInfo {
         this.type=type;
         this.label=label;
         this.iconImgSrc=iconImgSrc;
+    }
+
+    public boolean getShowSourceInfo() {
+        return showSourceInfo;
     }
 
     public Type getType() {
@@ -65,6 +70,9 @@ public abstract class SourceInfo {
         public FromRepo(final RepositoryInfo repositoryInfo) {
             super(Type.REPOSITORY, repositoryInfo.getLabel(), repositoryInfo.getIconImgSrc());
             this.repositoryInfo=repositoryInfo;
+            if (this.repositoryInfo.getUrl().toExternalForm().equalsIgnoreCase("http://www.broadinstitute.org/webservices/gpModuleRepository")) {
+                this.showSourceInfo=false;
+            }
         }
         
         public String getBriefDescription() {
