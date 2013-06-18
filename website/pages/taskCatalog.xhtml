@@ -57,7 +57,7 @@
                 </h:selectOneMenu>
                 <p>
                 <h:outputText rendered="#{not empty moduleRepositorySelectorBean.currentRepository.iconImgSrc}">
-                    <img src="#{facesContext.externalContext.requestContextPath}/#{moduleRepositorySelectorBean.currentRepository.iconImgSrc}" height="14" width="14"/>
+                    <img src="#{moduleRepositorySelectorBean.currentRepository.iconImgSrc}" height="14" width="14"/>
                     #{moduleRepositorySelectorBean.currentRepository.label}
                 </h:outputText>
                 <h:outputText rendered="#{empty moduleRepositorySelectorBean.currentRepository.iconImgSrc}">
