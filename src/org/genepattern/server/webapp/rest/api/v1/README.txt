@@ -128,6 +128,18 @@ Each output file has a link which has an href. Get the href to download the file
 
     GET {outputFiles[idx].link.href}
 
+You must set the User-Agent to 'GenePatternRest', otherwise you will download the contents of 
+the login page instead of the actual file.
+
+Example HTTP request header:
+
+    User-Agent: GenePatternRest
+
+Example curl command line, 
+    curl -A GenePatternRest ...
+
+To download job result files you must use the 'GenePatternRest' User-Agent. If the User-Agent is not 
+
 Here is an example of the json output for a job which is finished:
 {
   "self":"http://127.0.0.1:8080/gp/rest/v1/jobs/46149,
@@ -153,7 +165,7 @@ Here is an example of the json output for a job which is finished:
 }
 
 
-* We have not testing jobSubmit for pipelines.
+* We have not tested jobSubmit for pipelines.
 * We do not support getting job details for completed pipelines
 * We use gp-unit as our reference implementation of a REST client. It's implemented in Java, uses the apache http client library,
   and hand-coded JSON parsing code to upload data files, run jobs, poll for job completion, and download result files.
