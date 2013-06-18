@@ -228,25 +228,26 @@ public class RunTaskServlet extends HttpServlet
 
             SourceInfoLoader sourceInfoLoader = SourceInfo.getSourceInfoLoader(userContext);
             SourceInfo sourceInfo = sourceInfoLoader.getSourceInfo(taskInfo);
-
-            if(sourceInfo.getLabel() != null)
+            if(sourceInfo.getShowSourceInfo())
             {
-                sourceInfoObj.put("label", sourceInfo.getLabel());
+                if(sourceInfo.getLabel() != null)
+                {
+                    sourceInfoObj.put("label", sourceInfo.getLabel());
+                }
+                if(sourceInfo.getIconImgSrc() != null)
+                {
+                    sourceInfoObj.put("iconUrl", sourceInfo.getIconImgSrc());
+                }
+                if(sourceInfo.getBriefDescription() != null)
+                {
+                    sourceInfoObj.put("briefDesc", sourceInfo.getBriefDescription());
+                }
+                if(sourceInfo.getFullDescription() != null)
+                {
+                    sourceInfoObj.put("fullDesc", sourceInfo.getFullDescription());
+                }
+                moduleObject.put("source_info", sourceInfoObj);
             }
-            if(sourceInfo.getIconImgSrc() != null)
-            {
-                sourceInfoObj.put("iconUrl", sourceInfo.getIconImgSrc());
-            }
-            if(sourceInfo.getBriefDescription() != null)
-            {
-                sourceInfoObj.put("briefDesc", sourceInfo.getBriefDescription());
-            }
-            if(sourceInfo.getFullDescription() != null)
-            {
-                sourceInfoObj.put("fullDesc", sourceInfo.getFullDescription());
-            }
-            moduleObject.put("source_info", sourceInfoObj);
-
             JSONObject responseObject = new JSONObject();
             responseObject.put(ModuleJSON.KEY, moduleObject);
 

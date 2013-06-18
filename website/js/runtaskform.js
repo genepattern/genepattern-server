@@ -303,7 +303,7 @@ function loadModuleInfo(module)
     }
 
     //add source info
-    if(module["source_info"] != undefined)
+    if(module["source_info"] !== undefined && module["source_info"] != null)
     {
         var label = module["source_info"].label;
         var iconUrl = module["source_info"].iconUrl;
@@ -358,6 +358,7 @@ function loadModuleInfo(module)
 
             $("#source_info").append(briefDescription);
         }
+        $("#source_info").prepend("<hr/>");
     }
 
 }
