@@ -15,56 +15,37 @@ import org.genepattern.server.config.ServerConfiguration.Context;
 public class DefaultRepositoryInfoLoader implements RepositoryInfoLoader {
     final static private Logger log = Logger.getLogger(DefaultRepositoryInfoLoader.class);
     
-    static RepositoryInfo broadPublic;
-    static RepositoryInfo gparc;
-    static RepositoryInfo broadBeta;
-    static RepositoryInfo broadDev;
+    //
+    // Initialize default repositories.
+    //
+    //Broad public repository
+    final static public RepositoryInfo broadPublic=init("Broad public", "/gp/images/broad-symbol.gif", "http://www.broadinstitute.org/webservices/gpModuleRepository",
+            "A repository of production quality modules curated by the GenePattern team."); 
+    //GParc repository
+    final static public RepositoryInfo gparc=init("GParc (GenePattern Archive)", "/gp/images/gparc_logo.png", "http://vgpprod01.broadinstitute.org:4542/gparcModuleRepository",
+            "A repository of modules, not curated by the GenePattern team, contributed by the GenePattern community.");
+    //Broad beta repository
+    final static public RepositoryInfo broadBeta=init("Broad beta", "/gp/images/broad-symbol.gif", "http://www.broadinstitute.org/webservices/betaModuleRepository",
+            "A repository of beta quality modules curated by the GenePattern team." );
+    //Broad dev repository (only available via Broad internal network)
+    final static public RepositoryInfo broadDev=init("Broad dev", null, "http://www.broadinstitute.org/webservices/gpModuleRepository?env=dev",
+            "A repository of internal development quality modules developed by the GenePattern team." );
     
-    /**
-     * Initialize default repositories.
-     */
-    static {
-         //Broad public repository
-         try {
-             broadPublic=new RepositoryInfo("Broad public", new URL("http://www.broadinstitute.org/webservices/gpModuleRepository"));
-             broadPublic.setDescription("A repository of production quality modules curated by the GenePattern team.");
-             broadPublic.setIconImgSrc("/gp/images/broad-symbol.gif");
-         }
-         catch (MalformedURLException e) {
-             log.error(e);
-         }
-
-         //GParc repository
-         try {
-             gparc=new RepositoryInfo("GParc (GenePattern Archive)", new URL("http://vgpprod01.broadinstitute.org:4542/gparcModuleRepository"));
-             gparc.setDescription("A repository of modules, not curated by the GenePattern team, contributed by the GenePattern community.");
-             gparc.setIconImgSrc("/gp/images/gparc_logo.png");
-
-         }
-         catch (MalformedURLException e) {
-             log.error(e);
-         }
-         
-         //Broad beta repository
-         try {
-             broadBeta=new RepositoryInfo("Broad beta", new URL("http://www.broadinstitute.org/webservices/betaModuleRepository"));
-             broadBeta.setDescription("A repository of beta quality modules curated by the GenePattern team.");
-             broadBeta.setIconImgSrc("/gp/images/broad-symbol.gif");
-         }
-         catch (MalformedURLException e) {
-             log.error(e);
-         }
-         
-         //Broad dev repository (only available via Broad internal network)
-         try {
-             broadDev=new RepositoryInfo("Broad dev", new URL("http://www.broadinstitute.org/webservices/gpModuleRepository?env=dev"));
-             broadDev.setDescription("A repository of internal development quality modules developed by the GenePattern team.");
-         }
-         catch (MalformedURLException e) {
-             log.error(e);
-         }
+    final static private RepositoryInfo init(final String label, final String iconImgSrc,
+            final String urlStr,
+            final String description) {        
+        try {
+            RepositoryInfo repoInfo=new RepositoryInfo(label, new URL(urlStr));
+            repoInfo.setDescription(description);
+            repoInfo.setIconImgSrc(iconImgSrc);
+            return repoInfo;
+        }
+        catch (MalformedURLException e) {
+            log.error(e);
+            return null;
+        }
     }
-    
+
     private static Map<String, RepositoryInfo> initRepositoryMap(final Context userContext) {
          final Map<String, RepositoryInfo> repositoryMap=new LinkedHashMap<String, RepositoryInfo>();
          repositoryMap.put(broadPublic.getUrl().toExternalForm(), broadPublic);

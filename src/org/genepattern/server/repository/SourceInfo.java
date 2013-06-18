@@ -18,14 +18,14 @@ public abstract class SourceInfo {
     public enum Type {
         REPOSITORY, // installed from module repository
         ZIP, // installed from zip file
-        NEW, // created with Module Integrator (first version)
-        EDIT, // edited with Module Integrator (from a new or cloned module)
-        CLONE, // cloned on this server
+        ON_SERVER, // created on server, for example by cloning an installed module, creating or editing a module 
+                   // with the Module Integrator
         PREVIOUSLY_INSTALLED, //default setting when updating a GP server from <= 3.6.0 to >= 3.6.1
         UNKNOWN
     }
 
-    final static SourceInfoLoader sourceInfoLoaderSingleton=new StubSourceInfoLoader();
+    //final static SourceInfoLoader sourceInfoLoaderSingleton=new StubSourceInfoLoader();
+    final static SourceInfoLoader sourceInfoLoaderSingleton=new LsidSourceInfoLoader();
     final static public SourceInfoLoader getSourceInfoLoader(final Context userContext) {
         return sourceInfoLoaderSingleton;
     }
@@ -91,6 +91,17 @@ public abstract class SourceInfo {
     //TODO: implement FromZip extends SourceInfo class
     //TODO: implement FromModuleIntegrator extends SourceInfo class
     //TODO: implement FromClone extends SourceInfo class
+    final static public class CreatedOnServer extends SourceInfo {
+        public CreatedOnServer() {
+            super(Type.ON_SERVER, "Local Authority", null);
+        }
+        public String getBriefDescription() {
+            return "Created on this server, as a clone of an existing module, or with the Module Integrator";
+        }
+        public String getFullDescription() {
+            return null;
+        }
+    }
 
     /**
      * SourceInfo for a task when it is not known where the task was installed from,
