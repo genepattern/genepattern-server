@@ -38,6 +38,8 @@ import org.genepattern.data.pipeline.PipelineModel;
 import org.genepattern.server.config.ServerConfiguration;
 import org.genepattern.server.config.ServerConfiguration.Context;
 import org.genepattern.server.repository.ModuleQualityInfo;
+import org.genepattern.server.repository.SourceInfo;
+import org.genepattern.server.repository.SourceInfoLoader;
 import org.genepattern.server.user.UserDAO;
 import org.genepattern.server.webservice.server.local.IAdminClient;
 import org.genepattern.server.webservice.server.local.LocalAdminClient;
@@ -357,7 +359,7 @@ public class ManageTasksBean {
         private TaskInfo ti;
         private boolean deleteAuthorized = false;
         private boolean editAuthorized = false;
-        private ModuleQualityInfo qualityInfo = null;
+        private SourceInfo sourceInfo = null;
 
         public VersionInfo() {}
 
@@ -366,38 +368,21 @@ public class ManageTasksBean {
             String userId = UIBeanHelper.getUserId();
             deleteAuthorized = ti.getUserId().equals(userId) || AuthorizationHelper.adminModules();
             editAuthorized = ti.getUserId().equals(userId) && LSIDUtil.getInstance().isAuthorityMine(ti.getLsid());
-            qualityInfo = new ModuleQualityInfo(ti.getLsid());
+            
+            SourceInfoLoader sil = SourceInfo.getSourceInfoLoader(UIBeanHelper.getUserContext());
+            sourceInfo = sil.getSourceInfo(ti);
         }
         
         public String getSource() {
-            return qualityInfo.getSource();
+            return sourceInfo.getLabel();
         }
         
         public String getSourceIcon() {
-            if (ModuleQualityInfo.PRODUCTION_REPOSITORY.equals(qualityInfo.getSource())) {
-                return "/gp/images/broad-symbol.gif";
-            }
-            else if (ModuleQualityInfo.BETA_REPOSITORY.equals(qualityInfo.getSource())) {
-                return "/gp/images/broad-symbol.gif";
-            }
-            else if (ModuleQualityInfo.GPARC.equals(qualityInfo.getSource())) {
-                return "/gp/images/gparc.png";
-            }
-            else {
-                return "";
-            }
+            return sourceInfo.getIconImgSrc();
         }
         
         public String getQualityDescription() {
-            if (ModuleQualityInfo.PRODUCTION_REPOSITORY.equals(qualityInfo.getSource())) {
-                return "This module has been tested and verified by the GenePattern team.";
-            }
-            else if (ModuleQualityInfo.BETA_REPOSITORY.equals(qualityInfo.getSource())) {
-                return "This module has been tested for safeness by the GenePattern team, but the accuracy of its results have not been tested.";
-            }
-            else {
-                return qualityInfo.getSource();
-            }
+            return sourceInfo.getBriefDescription();
         }
         
         public void addPipelineName(TaskInfo pti) {
