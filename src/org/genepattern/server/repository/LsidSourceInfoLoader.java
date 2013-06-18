@@ -3,7 +3,6 @@ package org.genepattern.server.repository;
 import java.net.MalformedURLException;
 
 import org.apache.log4j.Logger;
-import org.genepattern.server.config.ServerConfiguration;
 import org.genepattern.server.repository.SourceInfo.CreatedOnServer;
 import org.genepattern.server.repository.SourceInfo.FromRepo;
 import org.genepattern.server.repository.SourceInfo.FromUnknown;
@@ -58,10 +57,6 @@ public class LsidSourceInfoLoader implements SourceInfoLoader {
             else {
                 isBeta=false;
             }
-
-            ServerConfiguration.Context serverContext=ServerConfiguration.Context.getServerContext();
-            RepositoryInfoLoader loader=RepositoryInfo.getRepositoryInfoLoader(serverContext);
-            
             if (!isBeta) {
                 return new FromRepo(DefaultRepositoryInfoLoader.broadPublic);
             }
