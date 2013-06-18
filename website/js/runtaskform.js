@@ -91,9 +91,9 @@ function loadModule(taskId, reloadId)
 
                     run_task_info.reloadJobId = reloadId;
                     var module = response["module"];
-                    //check if there are missing tasks (only applies to pipelines)
                     loadModuleInfo(module);
-                    
+
+                    //check if there are missing tasks (only applies to pipelines)
                     if(module["missing_tasks"])
                     {
 
@@ -301,6 +301,63 @@ function loadModuleInfo(module)
 
         $("#otherOptionsSubMenu table tbody").prepend("<tr><td><a href='JavaScript:Menu.denyIE(\"" + editLink + "\");' onclick='jq('.popupMenu').hide();'>Edit</a></td></tr>");
     }
+
+    //add source info
+    if(module["source_info"] != undefined)
+    {
+        var label = module["source_info"].label;
+        var iconUrl = "/gp/" + module["source_info"].iconUrl;
+        var briefDescription = module["source_info"].briefDesc;
+        var fullDescription = module["source_info"].fullDesc;
+
+        var reposContainer = $("#source_info");
+        var empty = true;
+        if(label !== undefined && label !== '' && label !== null)
+        {
+            //make repos label a link if there is a full description specified
+            //we will use the link to trigger opening of div containing full description
+            if(fullDescription != null)
+            {
+                reposContainer = $("<a href='#'></a>");
+
+                reposContainer.click(function(event)
+                {
+                    event.preventDefault();
+                    $("#source_info_details").empty();
+                    $("#source_info_details").append(fullDescription);
+
+                    var delButton = $("<img src='/gp/images/delete-blue.png'/>");
+
+                    delButton.button().click(function()
+                    {
+                       //clear the contents of the div
+                       $(this).parent("div").empty();
+                    });
+
+                    $("#source_info_details").append(delButton);
+                });
+
+                $("#source_info").append(reposContainer);
+            }
+            reposContainer.append(label);
+            empty = false;
+        }
+
+        if(iconUrl !== undefined && iconUrl !== '' && iconUrl !== null)
+        {
+            reposContainer.prepend("<img src='" + iconUrl + "' width='10' height='10' />");
+        }
+
+        if(briefDescription !== undefined && briefDescription !== '' && briefDescription !== null)
+        {
+            if(!empty)
+            {
+                $("#source_info").append(" - ");
+            }
+            $("#source_info").append(briefDescription);
+        }
+    }
+
 }
 
 function loadParameterInfo(parameters, initialValues)

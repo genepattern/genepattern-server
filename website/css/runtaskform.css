@@ -251,6 +251,22 @@ img.buttonIcon {
     padding: 10px 5px 5px 5px;
 }
 
+#source_info
+{
+    border-top: 1px solid #dae4f4;
+    margin: 2px 5px 5px 5px;
+}
+
+#source_info img
+{
+    margin-right: 2px;
+}
+
+#source_info_details
+{
+    margin: 2px 5px 5px 30px;
+}
+
 #paramsListingDiv .ui-state-default
 {
 	background-image:url(images/btnBG.jpg);
@@ -455,5 +471,6 @@ span.drop-box
     margin-left: 9px;
     padding: 5px 10px 5px 10px;
 }
+
 
 
