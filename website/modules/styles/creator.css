@@ -547,6 +547,14 @@ img.imgexpand {
     height: 120px;
 }
 
+#publishGParc {
+	background-image: url(images/export_gparc_btn.png);
+}
+
+#publishGParc:hover {
+	background-image: url(images/export_gparc_btn_over.png);
+}
+
 #modheader {
 	background-color: #cddcf1;
 	padding: 10px 15px 10px 15px;
