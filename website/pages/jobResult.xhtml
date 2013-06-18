@@ -343,7 +343,7 @@
 								<td colspan="3" style="padding-left: 24px;">
 									<strong>Source:</strong> 
 									<t:outputText rendered="#{not empty jobStatusBean.jobInfo.sourceIcon}">
-	                                	<img src="#{jobStatusBean.jobInfo.sourceIcon}" height="14px" title="#{jobStatusBean.jobInfo.qualityDescription}" alt="#{jobStatusBean.jobInfo.qualityDescription}" style="position: relative; top: 3px"/>
+	                                	<img src="/gp/#{jobStatusBean.jobInfo.sourceIcon}" height="14px" title="#{jobStatusBean.jobInfo.qualityDescription}" alt="#{jobStatusBean.jobInfo.qualityDescription}" style="position: relative; top: 3px"/>
 	                                </t:outputText>
 	                                #{jobStatusBean.jobInfo.source}<br />
 									<h:outputText rendered="${jobStatusBean.jobInfo.userId != jobStatusBean.currentUserId}">
