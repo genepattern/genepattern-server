@@ -6,7 +6,14 @@ import org.genepattern.server.repository.SourceInfo.FromRepo;
 import org.genepattern.server.repository.SourceInfo.FromUnknown;
 import org.genepattern.webservice.TaskInfo;
 
-public class DefaultSourceInfoLoader implements SourceInfoLoader {
+/**
+ * Dummy implementation of the SourceInfoLoader interface,
+ * with hard-coded mapping from a module name to a SourceInfo.
+ * 
+ * @author pcarr
+ *
+ */
+public class StubSourceInfoLoader implements SourceInfoLoader {
 
     @Override
     public SourceInfo getSourceInfo(final TaskInfo taskInfo) {

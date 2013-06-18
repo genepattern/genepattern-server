@@ -25,7 +25,7 @@ public abstract class SourceInfo {
         UNKNOWN
     }
 
-    final static SourceInfoLoader sourceInfoLoaderSingleton=new DefaultSourceInfoLoader();
+    final static SourceInfoLoader sourceInfoLoaderSingleton=new StubSourceInfoLoader();
     final static public SourceInfoLoader getSourceInfoLoader(final Context userContext) {
         return sourceInfoLoaderSingleton;
     }
