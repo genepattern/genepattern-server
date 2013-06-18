@@ -138,8 +138,6 @@ Example HTTP request header:
 Example curl command line, 
     curl -A GenePatternRest ...
 
-To download job result files you must use the 'GenePatternRest' User-Agent. If the User-Agent is not 
-
 Here is an example of the json output for a job which is finished:
 {
   "self":"http://127.0.0.1:8080/gp/rest/v1/jobs/46149,
@@ -164,6 +162,8 @@ Here is an example of the json output for a job which is finished:
   ],
 }
 
+Here is an example curl command to GET a result file,
+    curl -X GET -A GenePatternRest -u test:**** -O http://127.0.0.1:8080/gp/jobResults/46149/all_aml_train.preprocessed.feat.odf
 
 * We have not tested jobSubmit for pipelines.
 * We do not support getting job details for completed pipelines
