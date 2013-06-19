@@ -55,7 +55,7 @@ public class ModuleRepositorySelectorBean {
     }
 
     public String getDescription() {
-        return currentRepository.getDescription();
+        return currentRepository.getBriefDescription();
     }
 
     public List<SelectItem> getMenuItems() {
