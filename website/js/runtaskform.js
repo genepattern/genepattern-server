@@ -345,7 +345,7 @@ function loadModuleInfo(module)
 
         if(iconUrl !== undefined && iconUrl !== '' && iconUrl !== null)
         {
-            reposContainer.prepend("<img src='" + iconUrl + "' width='10' height='10' />");
+            reposContainer.prepend("<img src='" + iconUrl + "' width='14' height='14' />");
             empty = false;
         }
 

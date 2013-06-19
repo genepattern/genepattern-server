@@ -25,7 +25,7 @@ public class DefaultRepositoryInfoLoader implements RepositoryInfoLoader {
     final static public RepositoryInfo gparc=init("GParc (GenePattern Archive)", "/gp/images/gparc_logo.png", "http://vgpprod01.broadinstitute.org:4542/gparcModuleRepository",
             "A repository of modules, not curated by the GenePattern team, contributed by the GenePattern community.");
     //Broad beta repository
-    final static public RepositoryInfo broadBeta=init("Broad beta", "/gp/images/broad-symbol.gif", "http://www.broadinstitute.org/webservices/betaModuleRepository",
+    final static public RepositoryInfo broadBeta=init("Broad beta", "/gp/images/broad_beta.png", "http://www.broadinstitute.org/webservices/betaModuleRepository",
             "A repository of beta quality modules curated by the GenePattern team." );
     //Broad dev repository (only available via Broad internal network)
     final static public RepositoryInfo broadDev=init("Broad dev", null, "http://www.broadinstitute.org/webservices/gpModuleRepository?env=dev",
