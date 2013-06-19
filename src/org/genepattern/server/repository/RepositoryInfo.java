@@ -27,12 +27,21 @@ public class RepositoryInfo {
     private String iconImgSrc=null;
     
     public RepositoryInfo(final URL url) {
-        this(url.toExternalForm(), url);
+        this(null, url);
     }
     
     public RepositoryInfo(final String label, final URL url) {
-        this.label=label;
+        if (url==null) {
+            throw new IllegalArgumentException("Invalid null arg, url==null");
+        }
         this.url=url;
+        
+        if (label==null) {
+            this.label=url.toExternalForm();
+        }
+        else {
+            this.label=label;
+        }
     }
     
     public URL getUrl() {
