@@ -6,6 +6,7 @@ import org.apache.log4j.Logger;
 import org.genepattern.server.repository.SourceInfo.CreatedOnServer;
 import org.genepattern.server.repository.SourceInfo.FromRepo;
 import org.genepattern.server.repository.SourceInfo.FromUnknown;
+import org.genepattern.server.repository.SourceInfo.FromZip;
 import org.genepattern.util.LSID;
 import org.genepattern.util.LSIDUtil;
 import org.genepattern.webservice.TaskInfo;
@@ -36,6 +37,12 @@ public class LsidSourceInfoLoader implements SourceInfoLoader {
         // hard-code ConvertLineEndings source to GParc
         if ("ConvertLineEndings".equals(taskInfo.getName())) {
             return new FromRepo(DefaultRepositoryInfoLoader.gparc);
+        }
+        
+        //TODO: remove this line before we go to production
+        // hard-code modules named 'test*' as if source is unknown 
+        if (taskInfo.getName().toLowerCase().startsWith("test")) {
+            return new FromUnknown();
         }
 
         // example LSID from Broad public repository
@@ -86,7 +93,7 @@ public class LsidSourceInfoLoader implements SourceInfoLoader {
             return new CreatedOnServer();
         }
         
-        return new FromUnknown();
+        return new FromZip();
     }
 
 }
