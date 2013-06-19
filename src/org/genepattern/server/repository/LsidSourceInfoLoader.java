@@ -16,6 +16,9 @@ import org.genepattern.webservice.TaskInfo;
  * 
  * Hint: can probably be a server-wide singleton.
  * 
+ * For debugging, ConvertLineEndings is always from GParc.
+ * 
+ * 
  * @author pcarr
  *
  */
@@ -27,6 +30,12 @@ public class LsidSourceInfoLoader implements SourceInfoLoader {
         if (taskInfo==null) {
             log.error("taskInfo==null");
             return new FromUnknown();
+        }
+
+        //TODO: remove this line before we go to production,
+        // hard-code ConvertLineEndings source to GParc
+        if ("ConvertLineEndings".equals(taskInfo.getName())) {
+            return new FromRepo(DefaultRepositoryInfoLoader.gparc);
         }
 
         // example LSID from Broad public repository
@@ -48,6 +57,7 @@ public class LsidSourceInfoLoader implements SourceInfoLoader {
         catch (MalformedURLException e) {
             log.error(e);
         }
+        
         
         if (lsidStr.toLowerCase().startsWith("urn:lsid:broad.mit.edu:cancer.software.genepattern.module.")) {
             boolean isBeta=false;
