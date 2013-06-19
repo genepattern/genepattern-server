@@ -2,6 +2,7 @@ package org.genepattern.server.repository;
 
 import org.apache.log4j.Logger;
 import org.genepattern.server.config.ServerConfiguration.Context;
+import org.genepattern.webservice.TaskInfo;
 
 /**
  * Java bean representation of the information about the source from which a particular task
@@ -18,8 +19,13 @@ public abstract class SourceInfo {
     public enum Type {
         REPOSITORY, // installed from module repository
         ZIP, // installed from zip file
-        ON_SERVER, // created on server, for example by cloning an installed module, creating or editing a module 
-                   // with the Module Integrator
+        ON_SERVER, // created on server, for example by ...
+                   //     cloning an installed module
+                   //     creating a provenance pipeline
+                   //     creating a new pipeline with the Pipeline Designer
+                   //     editing a new version of a pipeline with the Pipeline Designer
+                   //     creating a new module with the Module Integrator
+                   //     editing a new version of a module with the Module Integrator
         PREVIOUSLY_INSTALLED, //default setting when updating a GP server from <= 3.6.0 to >= 3.6.1
         UNKNOWN
     }
@@ -32,8 +38,8 @@ public abstract class SourceInfo {
     
     protected boolean showSourceInfo=true;
     final private Type type;
-    final private String iconImgSrc;
-    final private String label;
+    protected String iconImgSrc;
+    protected String label;
     
     private SourceInfo(final Type type, final String label, final String iconImgSrc) {
         this.type=type;
@@ -88,16 +94,39 @@ public abstract class SourceInfo {
         }
     }
     
-    //TODO: implement FromZip extends SourceInfo class
-    //TODO: implement FromModuleIntegrator extends SourceInfo class
-    //TODO: implement FromClone extends SourceInfo class
     final static public class CreatedOnServer extends SourceInfo {
+        private String userId=null;
         public CreatedOnServer() {
-            super(Type.ON_SERVER, "Local Authority", null);
+            super(Type.ON_SERVER, "Created on server", null);
         }
+        
+        public CreatedOnServer(final TaskInfo taskInfo) {
+            super(Type.ON_SERVER, "Created on server", null);
+            this.userId=taskInfo.getUserId();
+        }
+
         public String getBriefDescription() {
+            if (userId != null) {
+                return "Created on this server by "+userId+", as a clone of an existing module, or with the Module Integrator";
+            }
             return "Created on this server, as a clone of an existing module, or with the Module Integrator";
         }
+        public String getFullDescription() {
+            return null;
+        }
+    }
+    
+    final static public class FromZip extends SourceInfo {
+        public FromZip() {
+            super(Type.ZIP, "Installed from zip", null);
+        }
+
+        @Override
+        public String getBriefDescription() {
+            return "Installed from zip";
+        }
+
+        @Override
         public String getFullDescription() {
             return null;
         }
