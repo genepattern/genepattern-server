@@ -16,7 +16,9 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.net.InetAddress;
+import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -510,6 +512,15 @@ public class ProvenanceFinder {
                 attrs.put(PipelineModel.INHERIT_TASKNAME, "" + pipeNo);
                 JobInfo priorJob = new AnalysisDAO().getJobInfo(jobNo);
                 String name = getParamFromURL(value, "filename");
+                
+                // Special case code for handling special characters
+                try {
+                    name = URLDecoder.decode(name, "UTF-8");
+                }
+                catch (UnsupportedEncodingException e) {
+                    log.error("Error decoding filename: " + name);
+                }
+                
                 //
                 // XXX use file index for now, 
                 // Change to file type when I understand how
