@@ -20,23 +20,27 @@ public class DefaultRepositoryInfoLoader implements RepositoryInfoLoader {
     //
     //Broad public repository
     final static public RepositoryInfo broadPublic=init("Broad public", "/gp/images/broad-symbol.gif", "http://www.broadinstitute.org/webservices/gpModuleRepository",
-            "A repository of production quality modules curated by the GenePattern team."); 
+            "A repository of production quality modules curated by the GenePattern team.",  "A repository of production quality modules curated by the GenePattern team (full description).");
     //GParc repository
     final static public RepositoryInfo gparc=init("GParc (GenePattern Archive)", "/gp/images/gparc_logo.png", "http://vgpprod01.broadinstitute.org:4542/gparcModuleRepository",
-            "A repository of modules, not curated by the GenePattern team, contributed by the GenePattern community.");
+            "A repository of modules, not curated by the GenePattern team, contributed by the GenePattern community.",
+                "A repository of modules, not curated by the GenePattern team, contributed by the GenePattern community (full description).");
     //Broad beta repository
     final static public RepositoryInfo broadBeta=init("Broad beta", "/gp/images/broad_beta.png", "http://www.broadinstitute.org/webservices/betaModuleRepository",
-            "A repository of beta quality modules curated by the GenePattern team." );
+            "A repository of beta quality modules curated by the GenePattern team.", "A repository of beta quality modules curated by the GenePattern team (full description)." );
     //Broad dev repository (only available via Broad internal network)
     final static public RepositoryInfo broadDev=init("Broad dev", null, "http://www.broadinstitute.org/webservices/gpModuleRepository?env=dev",
-            "A repository of internal development quality modules developed by the GenePattern team." );
+            "A repository of internal development quality modules developed by the GenePattern team." ,
+                "A repository of internal development quality modules developed by the GenePattern team (full description).");
     
     final static private RepositoryInfo init(final String label, final String iconImgSrc,
             final String urlStr,
-            final String description) {        
+            final String briefDescription,
+            final String fullDescription) {
         try {
             RepositoryInfo repoInfo=new RepositoryInfo(label, new URL(urlStr));
-            repoInfo.setDescription(description);
+            repoInfo.setBriefDescription(briefDescription);
+            repoInfo.setFullDescription(fullDescription);
             repoInfo.setIconImgSrc(iconImgSrc);
             return repoInfo;
         }

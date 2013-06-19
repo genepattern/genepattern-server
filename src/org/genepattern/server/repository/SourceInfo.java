@@ -84,13 +84,13 @@ public abstract class SourceInfo {
         public String getBriefDescription() {
             //TODO: 
             log.error("Not implemented!");
-            return repositoryInfo.getDescription();
+            return repositoryInfo.getBriefDescription();
         }
         
         public String getFullDescription() {
             //TODO: 
             log.error("Not implemented!");
-            return repositoryInfo.getDescription();
+            return repositoryInfo.getFullDescription();
         }
     }
     
@@ -118,7 +118,7 @@ public abstract class SourceInfo {
     
     final static public class FromZip extends SourceInfo {
         public FromZip() {
-            super(Type.ZIP, "Installed from zip", null);
+            super(Type.ZIP, "Installed from zip", "/gp/images/zip_file.png");
         }
 
         @Override
@@ -145,7 +145,7 @@ public abstract class SourceInfo {
             super(Type.UNKNOWN, "?", null);
         }
         public String getBriefDescription() {
-            return null;
+            return "The origin of this module is unknown";
         }
         public String getFullDescription() {
             return null;

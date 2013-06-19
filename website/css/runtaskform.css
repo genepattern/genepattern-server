@@ -259,6 +259,7 @@ img.buttonIcon {
 #source_info img
 {
     margin-right: 2px;
+    vertical-align:middle;
 }
 
 #source_info_details

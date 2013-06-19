@@ -23,7 +23,9 @@ public class RepositoryInfo {
     
     private String label="";
     final private URL url;
-    private String description="";
+    private String briefDescription="";
+    private String fullDescription="";
+
     private String iconImgSrc=null;
     
     public RepositoryInfo(final URL url) {
@@ -55,11 +57,18 @@ public class RepositoryInfo {
         this.label=label;
     }
 
-    public String getDescription() {
-        return description;
+    public String getBriefDescription() {
+        return briefDescription;
     }
-    public void setDescription(final String description) {
-        this.description=description;
+    public void setBriefDescription(final String description) {
+        this.briefDescription=description;
+    }
+
+    public String getFullDescription() {
+        return fullDescription;
+    }
+    public void setFullDescription(final String description) {
+        this.fullDescription=description;
     }
 
     /**
