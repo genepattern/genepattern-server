@@ -881,13 +881,25 @@ input.error, select.error {
 
 #repositoryChooser
 {
-    margin-top: 8px;
+    margin-top: 6px;
     margin-bottom: 14px;
     vertical-align: text-top;
+}
+
+#repositoryChooser img
+{
+    vertical-align: middle;
+}
+
+#repositoryChooser div
+{
+    margin-top: 0;
+    margin-left: 45px;
 }
 
 #repositoryChooser p
 {
     margin-left: 16px;
+    margin-bottom: 2px;
 }
 

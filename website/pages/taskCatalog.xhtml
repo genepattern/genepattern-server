@@ -57,15 +57,18 @@
                 </h:selectOneMenu>
                 <p>
                 <h:outputText rendered="#{not empty moduleRepositorySelectorBean.currentRepository.iconImgSrc}">
-                    <img src="#{moduleRepositorySelectorBean.currentRepository.iconImgSrc}" height="14" width="14"/>
+                    <img src="#{moduleRepositorySelectorBean.currentRepository.iconImgSrc}" height="18" width="18"/>
                     #{moduleRepositorySelectorBean.currentRepository.label}
                 </h:outputText>
                 <h:outputText rendered="#{empty moduleRepositorySelectorBean.currentRepository.iconImgSrc}">
                     <a href="#{moduleRepositorySelectorBean.currentRepository.url}">#{moduleRepositorySelectorBean.currentRepository.label} </a>
                 </h:outputText>
-                <br/>
                 <!--  change escape to 'true' if you don't want to support formatted text -->
-                <h:outputText escape="false" value="#{moduleRepositorySelectorBean.currentRepository.briefDescription}" />
+                (<h:outputText escape="false" value="#{moduleRepositorySelectorBean.currentRepository.briefDescription}" />)
+                <br/>
+                <div>
+                    <h:outputText escape="false" value="#{moduleRepositorySelectorBean.currentRepository.fullDescription}" />
+                </div>
                 </p>
             </h:form>
             </div>

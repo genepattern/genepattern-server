@@ -24,7 +24,8 @@ public class DefaultRepositoryInfoLoader implements RepositoryInfoLoader {
     //GParc repository
     final static public RepositoryInfo gparc=init("GParc (GenePattern Archive)", "/gp/images/gparc_logo.png", "http://vgpprod01.broadinstitute.org:4542/gparcModuleRepository",
             "A repository of modules, not curated by the GenePattern team, contributed by the GenePattern community.",
-                "A repository of modules, not curated by the GenePattern team, contributed by the GenePattern community (full description).");
+                "GParc is a repository and community where users can share and discuss their own GenePattern modules. Unregistered users can download modules and rate them. Registered GParc users can " +
+                        "submit, download, rate and comment on modules and also access the GParc forum.");
     //Broad beta repository
     final static public RepositoryInfo broadBeta=init("Broad beta", "/gp/images/broad_beta.png", "http://www.broadinstitute.org/webservices/betaModuleRepository",
             "A repository of beta quality modules curated by the GenePattern team.", "A repository of beta quality modules curated by the GenePattern team (full description)." );
