@@ -310,13 +310,14 @@ function loadModuleInfo(module)
         var briefDescription = module["source_info"].briefDesc;
         var fullDescription = module["source_info"].fullDesc;
 
-        var reposContainer = $("#source_info");
         var empty = true;
         if(label !== undefined && label !== '' && label !== null)
         {
+            $("#source_info").append(label);
+
             //make repos label a link if there is a full description specified
             //we will use the link to trigger opening of div containing full description
-            if(fullDescription != null)
+            /*if(fullDescription != null)
             {
                 reposContainer = $("<a href='#'></a>");
 
@@ -340,12 +341,12 @@ function loadModuleInfo(module)
                 $("#source_info").append(reposContainer);
             }
             reposContainer.append(label);
-            empty = false;
+            empty = false; */
         }
 
         if(iconUrl !== undefined && iconUrl !== '' && iconUrl !== null)
         {
-            reposContainer.prepend("<img src='" + iconUrl + "' width='18' height='16' />");
+            $("#source_info").prepend("<img src='" + iconUrl + "' width='18' height='16' />");
             empty = false;
         }
 
@@ -358,6 +359,30 @@ function loadModuleInfo(module)
 
             $("#source_info").append(briefDescription);
         }
+
+        if(fullDescription != null)
+        {
+            var readMoreLink = $("<a href='#'> Read More</a>");
+            $("#source_info").append(readMoreLink);
+
+            readMoreLink.click(function(event)
+            {
+                event.preventDefault();
+                if($(this).text() == " Read More")
+                {
+                    $("#source_info_details").append(fullDescription);
+                    $("#source_info_details").append(this);
+                    $(this).text(" Show Less");
+                }
+                else
+                {
+                    $("#source_info").append(this);
+                    $("#source_info_details").empty();
+                    $(this).text(" Read More");
+                }
+            });
+        }
+
         $("#source_info").prepend("<hr/>");
     }
 
