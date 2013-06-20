@@ -893,13 +893,7 @@ input.error, select.error {
 
 #repositoryChooser div
 {
-    margin-top: 0;
-    margin-left: 45px;
-}
-
-#repositoryChooser p
-{
-    margin-left: 16px;
-    margin-bottom: 2px;
+    margin-top: 4px;
+    margin-left: 20px;
 }
 

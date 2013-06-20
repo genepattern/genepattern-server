@@ -52,24 +52,19 @@
             <h:form id="repositoryChooser">
                 <h:outputText><b>Select a repository: </b></h:outputText>
                 <br />
+                <img src="#{moduleRepositorySelectorBean.currentRepository.iconImgSrc}" height="18" width="18"/>
                 <h:selectOneMenu value="#{moduleRepositorySelectorBean.url}" onchange="this.form.submit();">
                     <f:selectItems value="#{moduleRepositorySelectorBean.menuItems}" />
                 </h:selectOneMenu>
-                <p>
-                <h:outputText rendered="#{not empty moduleRepositorySelectorBean.currentRepository.iconImgSrc}">
-                    <img src="#{moduleRepositorySelectorBean.currentRepository.iconImgSrc}" height="18" width="18"/>
-                    #{moduleRepositorySelectorBean.currentRepository.label}
-                </h:outputText>
-                <h:outputText rendered="#{empty moduleRepositorySelectorBean.currentRepository.iconImgSrc}">
-                    <a href="#{moduleRepositorySelectorBean.currentRepository.url}">#{moduleRepositorySelectorBean.currentRepository.label} </a>
-                </h:outputText>
+               <br/>
                 <!--  change escape to 'true' if you don't want to support formatted text -->
-                (<h:outputText escape="false" value="#{moduleRepositorySelectorBean.currentRepository.briefDescription}" />)
+                <h:outputText escape="false" value="#{moduleRepositorySelectorBean.briefDescription}" />
                 <br/>
                 <div>
-                    <h:outputText escape="false" value="#{moduleRepositorySelectorBean.currentRepository.fullDescription}" />
+                    <h:outputText escape="false" value="#{moduleRepositorySelectorBean.fullDescription}" />
+                    <br/>
+                    <h:outputText escape="false" value="#{moduleRepositorySelectorBean.url}" />
                 </div>
-                </p>
             </h:form>
             </div>
 

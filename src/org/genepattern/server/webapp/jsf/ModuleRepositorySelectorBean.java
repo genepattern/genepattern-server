@@ -54,8 +54,16 @@ public class ModuleRepositorySelectorBean {
         return currentRepository.getLabel();
     }
 
-    public String getDescription() {
+    public String getBriefDescription() {
         return currentRepository.getBriefDescription();
+    }
+
+    public String getFullDescription() {
+        return currentRepository.getFullDescription();
+    }
+
+    public String getIconImgSrc() {
+        return currentRepository.getIconImgSrc();
     }
 
     public List<SelectItem> getMenuItems() {
