@@ -310,6 +310,7 @@ public class JobInfoManager {
                         if (GP_URL.endsWith("/")) {
                             link = link.substring(1);
                         }
+                        link = GP_URL + link;
                     }
                     paramValue = link;
                 }
