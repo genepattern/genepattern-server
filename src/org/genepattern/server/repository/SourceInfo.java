@@ -123,7 +123,7 @@ public abstract class SourceInfo {
 
         @Override
         public String getBriefDescription() {
-            return "Installed from zip";
+            return null;
         }
 
         @Override
@@ -145,7 +145,8 @@ public abstract class SourceInfo {
             super(Type.UNKNOWN, "?", null);
         }
         public String getBriefDescription() {
-            return "The origin of this module is unknown";
+            //return "The origin of this module is unknown";
+            return null;
         }
         public String getFullDescription() {
             return null;

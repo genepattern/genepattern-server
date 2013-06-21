@@ -37,7 +37,12 @@ public class DefaultRepositoryInfoLoader implements RepositoryInfoLoader {
             "facilisi. Aenean luctus quam sed mauris tempus iaculis. Ut pharetra est vel sem fermentum, vel luctus ante commodo. Suspendisse " +
             "potenti. Aenean at ante vel lectus fringilla semper quis ac elit. Nullam eget velit eu turpis egestas dapibus. Duis laoreet egestas" +
             " sapien sit amet euismod. Phasellus pharetra ultricies magna. Aliquam sapien magna, ultricies malesuada felis ac, euismod ultrices " +
-            "ipsum. Suspendisse potenti." );
+            "ipsum. Suspendisse potenti.In quis lacinia turpis, ac venenatis nisi. Phasellus purus elit, vestibulum sed tempus at, feugiat ut dui." +
+            " Curabitur fringilla volutpat vehicula. Sed sagittis dictum pulvinar. Fusce interdum magna at enim porttitor volutpat. Donec vestibulum" +
+            " ut dui a aliquam. Praesent et convallis diam. Morbi elementum quam a purus venenatis, vitae egestas metus porttitor. Nullam et nisi " +
+            "neque. Mauris sollicitudin varius semper. In suscipit, sapien sit amet auctor rhoncus, diam felis pellentesque orci, dignissim aliquet " +
+            "urna lacus ac mi. Nam ultrices, purus eu sollicitudin aliquam, mi lectus sagittis urna, nec sodales mi nibh ultricies diam. Sed semper" +
+            " metus accumsan erat sollicitudin, quis aliquam lectus congue. Vivamus ultrices ultrices dolor. Nulla facilisi." );
     //Broad dev repository (only available via Broad internal network)
     final static public RepositoryInfo broadDev=init("Broad dev", null, "http://www.broadinstitute.org/webservices/gpModuleRepository?env=dev",
             "A repository of internal development quality modules developed by the GenePattern team." ,
