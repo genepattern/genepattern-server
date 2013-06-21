@@ -65,53 +65,63 @@ public abstract class DBLoader {
     public abstract void setup();
 
     /**
-     * loads an analysis task into the database, it will add a new task if the
-     * task doesn't exist; and it will update the task description and
-     * parameters if the task is already in the database.
      * 
      * @throws OmnigeneException
+     * @deprecated - I can find no evidence that this method is used anymore (circa GP 3.6.0) - pcarr
      */
     public void load() throws OmnigeneException {
-        String lsid = getLSIDOrName();
-
-        int taskID = -1;
-        AnalysisDAO ds = new AnalysisDAO();
-        try {
-            // search for an existing task with the same name
-            taskID = getTaskIDByName(lsid, user_id);
-        }
-        catch (OmnigeneException e) {
-            // this is a new task, no taskID exists
-            // do nothing
-        }
-        catch (RemoteException re) {
-            throw new OmnigeneException("Unable to load the task: " + re.getMessage());
-        }
-        String parameter_info = ParameterFormatConverter.getJaxbString(this._params);
-        // task doesn't exist
-        if (taskID < 0) {
-            // create new task
-            int id;
-            try {
-                id = ds.addNewTask(this._name, this.user_id, this.access_id, this._taskDescription, parameter_info,
-                        this._taskInfoAttributes);
-                log.info(this._name + " has been created with id " + id);
-            }
-            catch (Exception e) {
-                throw new OmnigeneException("Unable to create new task! " + e.getMessage());
-            }
-        }
-        // task exist, update task
-        else {
-            try {
-                ds.updateTask(taskID, this._taskDescription, parameter_info, this._taskInfoAttributes, user_id, access_id);
-                log.info(this._name + " has been updated.");
-            }
-            catch (Exception e) {
-                throw new OmnigeneException("Unable to update task" + e.getMessage());
-            }
-        }
+        log.error("Unexpected call to deprecated method, load()");
     }
+
+//    /**
+//     * loads an analysis task into the database, it will add a new task if the
+//     * task doesn't exist; and it will update the task description and
+//     * parameters if the task is already in the database.
+//     * 
+//     * @throws OmnigeneException
+//     */
+//    final public void _load() throws OmnigeneException {
+//        log.debug("loading task, _name="+_name);
+//        String lsid = getLSIDOrName();
+//
+//        int taskID = -1;
+//        AnalysisDAO ds = new AnalysisDAO();
+//        try {
+//            // search for an existing task with the same name
+//            taskID = getTaskIDByName(lsid, user_id);
+//        }
+//        catch (OmnigeneException e) {
+//            // this is a new task, no taskID exists
+//            // do nothing
+//        }
+//        catch (RemoteException re) {
+//            throw new OmnigeneException("Unable to load the task: " + re.getMessage());
+//        }
+//        String parameter_info = ParameterFormatConverter.getJaxbString(this._params);
+//        // task doesn't exist
+//        if (taskID < 0) {
+//            // create new task
+//            int id;
+//            try {
+//                id = ds.addNewTask(this._name, this.user_id, this.access_id, this._taskDescription, parameter_info,
+//                        this._taskInfoAttributes);
+//                log.info(this._name + " has been created with id " + id);
+//            }
+//            catch (Exception e) {
+//                throw new OmnigeneException("Unable to create new task! " + e.getMessage());
+//            }
+//        }
+//        // task exist, update task
+//        else {
+//            try {
+//                ds.updateTask(taskID, this._taskDescription, parameter_info, this._taskInfoAttributes, user_id, access_id);
+//                log.info(this._name + " has been updated.");
+//            }
+//            catch (Exception e) {
+//                throw new OmnigeneException("Unable to update task" + e.getMessage());
+//            }
+//        }
+//    }
 
     /**
      * Creates a new task in the analysis database
@@ -119,6 +129,7 @@ public abstract class DBLoader {
      * @throws OmnigeneException
      */
     public void create() throws OmnigeneException {
+        log.debug("creating task, _name="+_name);
         AnalysisDAO ds = new AnalysisDAO();
         String parameter_info = ParameterFormatConverter.getJaxbString(this._params);
 
@@ -153,6 +164,7 @@ public abstract class DBLoader {
      * @throws OmnigeneException
      */
     public void update() throws OmnigeneException {
+        log.debug("updating task, _name="+_name);
         String lsid = getLSIDOrName();
         AnalysisDAO ds = new AnalysisDAO();
         int taskID = -1;
@@ -187,6 +199,7 @@ public abstract class DBLoader {
      * @throws OmnigeneException, RemoteException
      */
     public void delete() throws OmnigeneException, RemoteException {
+        log.debug("deleting task, _name="+_name);
         int taskID;
         AdminDAO ds = new AdminDAO();
         String lsid = getLSIDOrName();
