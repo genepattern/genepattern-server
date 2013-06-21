@@ -1,6 +1,5 @@
 package org.genepattern.server.repository;
 
-import org.apache.log4j.Logger;
 import org.genepattern.server.config.ServerConfiguration.Context;
 import org.genepattern.webservice.TaskInfo;
 
@@ -15,7 +14,6 @@ import org.genepattern.webservice.TaskInfo;
  *
  */
 public abstract class SourceInfo {
-    final static private Logger log = Logger.getLogger(SourceInfo.class);
     public enum Type {
         REPOSITORY, // installed from module repository
         ZIP, // installed from zip file
@@ -82,14 +80,10 @@ public abstract class SourceInfo {
         }
         
         public String getBriefDescription() {
-            //TODO: 
-            log.error("Not implemented!");
             return repositoryInfo.getBriefDescription();
         }
         
         public String getFullDescription() {
-            //TODO: 
-            log.error("Not implemented!");
             return repositoryInfo.getFullDescription();
         }
     }
