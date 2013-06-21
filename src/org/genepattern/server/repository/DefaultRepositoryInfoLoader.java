@@ -28,7 +28,16 @@ public class DefaultRepositoryInfoLoader implements RepositoryInfoLoader {
                         "submit, download, rate and comment on modules and also access the GParc forum.");
     //Broad beta repository
     final static public RepositoryInfo broadBeta=init("Broad beta", "/gp/images/broad_beta.png", "http://www.broadinstitute.org/webservices/betaModuleRepository",
-            "A repository of beta quality modules curated by the GenePattern team.", "A repository of beta quality modules curated by the GenePattern team (full description)." );
+            "A repository of beta quality modules curated by the GenePattern team.", "Lorem ipsum dolor sit amet, consectetur adipiscing elit. " +
+            "Sed eu blandit libero. Suspendisse placerat justo vitae elit pharetra vehicula. Praesent vel vestibulum massa, sit amet rutrum " +
+            "massa. Ut sed auctor erat. Suspendisse consectetur velit vel bibendum mattis. Integer sapien urna, cursus vitae laoreet in, " +
+            "vulputate sit amet purus. Cras ullamcorper est ac turpis vulputate euismod. Donec varius viverra lorem, nec sodales justo feugiat " +
+            "eget. Morbi vitae lorem sollicitudin, lobortis odio vitae, laoreet augue. Ut egestas blandit lorem, ut suscipit turpis interdum non." +
+            " Nulla nunc sem, euismod id urna vel, aliquam porttitor purus. Morbi posuere bibendum magna, at rutrum dolor rutrum in. Nulla " +
+            "facilisi. Aenean luctus quam sed mauris tempus iaculis. Ut pharetra est vel sem fermentum, vel luctus ante commodo. Suspendisse " +
+            "potenti. Aenean at ante vel lectus fringilla semper quis ac elit. Nullam eget velit eu turpis egestas dapibus. Duis laoreet egestas" +
+            " sapien sit amet euismod. Phasellus pharetra ultricies magna. Aliquam sapien magna, ultricies malesuada felis ac, euismod ultrices " +
+            "ipsum. Suspendisse potenti." );
     //Broad dev repository (only available via Broad internal network)
     final static public RepositoryInfo broadDev=init("Broad dev", null, "http://www.broadinstitute.org/webservices/gpModuleRepository?env=dev",
             "A repository of internal development quality modules developed by the GenePattern team." ,
