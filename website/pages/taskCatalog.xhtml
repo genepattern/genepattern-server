@@ -52,7 +52,7 @@
             <h:form id="repositoryChooser">
                 <h:outputText><b>Select a repository: </b></h:outputText>
                 <br />
-                <img src="#{moduleRepositorySelectorBean.currentRepository.iconImgSrc}" height="18" width="18"/>
+                <img src="#{moduleRepositorySelectorBean.iconImgSrc}" height="18" width="18"/>
                 <h:selectOneMenu value="#{moduleRepositorySelectorBean.url}" onchange="this.form.submit();">
                     <f:selectItems value="#{moduleRepositorySelectorBean.menuItems}" />
                 </h:selectOneMenu>
