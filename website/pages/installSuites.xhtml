@@ -79,8 +79,8 @@
                             if (cb != null) {
                                 cb.src = "#{facesContext.externalContext.requestContextPath}/images/red-x.gif";
                             }
-                            var errorDivId = "#error_" + lsid;
-							jq(errorDivId).html(installStatus.message);
+                            var errorDivId = "error_" + lsid;
+							jq(jq("[id='" + errorDivId + "']").html(installStatus.message);).html(installStatus.message);
 							jq(errorDivId).show();
                         }
                         else if (installStatus.status == "warning") {

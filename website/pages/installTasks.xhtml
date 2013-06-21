@@ -80,8 +80,8 @@
                             if (cb != null) {
                                 cb.src = "#{facesContext.externalContext.requestContextPath}/images/red-x.gif";
                             }
-                            var errorDivId = "#error_" + lsid;
-							jq(errorDivId).html(installStatus.message);
+                            var errorDivId = "error_" + lsid;
+							jq("[id='" + errorDivId + "']").html(installStatus.message);
 							jq(errorDivId).show();
                         }
                         else {
