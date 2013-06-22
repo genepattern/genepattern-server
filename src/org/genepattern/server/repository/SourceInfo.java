@@ -29,7 +29,8 @@ public abstract class SourceInfo {
     }
 
     //final static SourceInfoLoader sourceInfoLoaderSingleton=new StubSourceInfoLoader();
-    final static SourceInfoLoader sourceInfoLoaderSingleton=new LsidSourceInfoLoader();
+    //final static SourceInfoLoader sourceInfoLoaderSingleton=new LsidSourceInfoLoader();
+    final static SourceInfoLoader sourceInfoLoaderSingleton=new DbSourceInfoLoader();
     final static public SourceInfoLoader getSourceInfoLoader(final Context userContext) {
         return sourceInfoLoaderSingleton;
     }

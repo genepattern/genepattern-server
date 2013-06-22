@@ -14,6 +14,7 @@ import org.genepattern.server.taskinstall.InstallInfo;
 import org.genepattern.server.taskinstall.RecordInstallInfoToDb;
 import org.genepattern.server.taskinstall.dao.TaskInstall;
 import org.genepattern.util.LSID;
+import org.genepattern.util.LSIDUtil;
 import org.genepattern.webservice.TaskInfo;
 
 /**
@@ -22,7 +23,7 @@ import org.genepattern.webservice.TaskInfo;
  * @author pcarr
  *
  */
-public class FromDbSourceInfoLoader implements SourceInfoLoader {
+public class DbSourceInfoLoader implements SourceInfoLoader {
     final static private Logger log = Logger.getLogger(SourceInfoLoader.class);
     
     private Context serverContext=ServerConfiguration.Context.getServerContext();
@@ -37,22 +38,14 @@ public class FromDbSourceInfoLoader implements SourceInfoLoader {
             log.error("taskInfo.lsid==null");
             return new FromUnknown();
         }
-        LSID lsid;
-        try {
-            lsid = new LSID(taskInfo.getLsid());
-        }
-        catch (MalformedURLException e) {
-            log.error("taskInfo.lsid is invalid", e);
-            return new FromUnknown();
-        }
         
         final boolean inTransaction=HibernateUtil.isInTransaction();
         TaskInstall taskInstall=null;
         try {
-            taskInstall=new RecordInstallInfoToDb().query(lsid.toString());
+            taskInstall=new RecordInstallInfoToDb().query(taskInfo.getLsid());
         }
         catch (Throwable t) {
-            log.error("error getting 'task_install' record from DB for lsid="+lsid.toString(), t);
+            log.error("error getting 'task_install' record from DB for lsid="+taskInfo.getLsid(), t);
         }
         finally {
             if (!inTransaction) {
@@ -60,9 +53,10 @@ public class FromDbSourceInfoLoader implements SourceInfoLoader {
             }
         }
         if (taskInstall==null) {
-            return new FromUnknown();
+            //no record in db, probably installed before updating to GP 3.6.0+
+            //use the lsid to guess the source
+            return fromLsid(taskInfo.getLsid());
         }
-
 
         final String source_type=taskInstall.getSourceType();
         InstallInfo.Type type=InstallInfo.Type.UNKNOWN;
@@ -90,6 +84,51 @@ public class FromDbSourceInfoLoader implements SourceInfoLoader {
             return new FromZip();
         }
         else if (type.is(InstallInfo.Type.SERVER)) {
+            return new CreatedOnServer();
+        }
+        return new FromUnknown();
+    }
+    
+    private SourceInfo fromLsid(final String lsidStr) {
+        if (lsidStr==null || lsidStr.length()==0) {
+            log.error("taskInfo.lsid is not set");
+            return new FromUnknown();
+        }
+        
+        LSID lsid=null;
+        String lsidVersion=null;
+        try {
+            lsid=new LSID(lsidStr);
+            lsidVersion=lsid.getVersion();
+        }
+        catch (MalformedURLException e) {
+            log.error(e);
+        }
+    
+        if (lsidStr.toLowerCase().startsWith("urn:lsid:broad.mit.edu:cancer.software.genepattern.module.")) {
+            boolean isBeta=false;
+            if (lsidVersion != null && lsidVersion.contains(LSID.VERSION_DELIMITER)) {
+                isBeta=true;
+            }
+            else {
+                isBeta=false;
+            }
+            if (!isBeta) {
+                return new FromRepo(DefaultRepositoryInfoLoader.broadPublic);
+            }
+            else {
+                // assume it's from Broad beta repository
+                return new FromRepo(DefaultRepositoryInfoLoader.broadBeta);
+            }
+        }
+        
+        boolean createdOnServer=false;
+        final String serverAuthority=LSIDUtil.getInstance().getAuthority();
+        if (lsid != null && serverAuthority.equals( lsid.getAuthority() )) {
+            //assume it's created/edited on this server
+            createdOnServer=true;
+        }
+        if (createdOnServer) {
             return new CreatedOnServer();
         }
         return new FromUnknown();
