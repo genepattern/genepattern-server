@@ -127,20 +127,11 @@ public class DefaultRepositoryInfoLoader implements RepositoryInfoLoader {
         //final String moduleRepositoryUrl=ServerConfiguration.instance().getGPProperty(userContext, "ModuleRepositoryURL", "http://www.broadinstitute.org/webservices/gpModuleRepository");
         final String moduleRepositoryUrl=System.getProperty(RepositoryInfo.PROP_MODULE_REPOSITORY_URL, broadPublic.getUrl().toExternalForm());
         
-        RepositoryInfo repositoryInfo=repositoryMap.get(moduleRepositoryUrl);
-        if (repositoryInfo!=null) {
+        RepositoryInfo repositoryInfo=getRepository(moduleRepositoryUrl);
+        if (repositoryInfo != null) {
             return repositoryInfo;
         }
-        else {
-            try {
-                repositoryInfo=new RepositoryInfo(new URL(moduleRepositoryUrl));
-                return repositoryInfo;
-            }
-            catch (MalformedURLException e) {
-                log.error(e);
-            }
-        }
-        
+                
         //TODO: if we're here it's an error
         log.error("Didn't find a matching RepositoryInfo for the currentRepository: "+moduleRepositoryUrl);
         return broadPublic;
@@ -151,6 +142,24 @@ public class DefaultRepositoryInfoLoader implements RepositoryInfoLoader {
         return Collections.unmodifiableList(repositoryList);
     }
     
+    @Override
+    public RepositoryInfo getRepository(String moduleRepositoryUrl)  { 
+        RepositoryInfo repositoryInfo=repositoryMap.get(moduleRepositoryUrl);
+        if (repositoryInfo!=null) {
+            return repositoryInfo;
+        }
+        else {
+            try {
+                repositoryInfo=new RepositoryInfo(new URL(moduleRepositoryUrl));
+                return repositoryInfo;
+            }
+            catch (MalformedURLException e) {
+                log.error("Invalid moduleRepositoryUrl="+moduleRepositoryUrl, e);
+                return null;
+            }
+        }
+    }
+
     //
     static private List<String> getModuleRepositoryUrlsFromGpProps() { 
         final String moduleRepositoryUrls=System.getProperty(RepositoryInfo.PROP_MODULE_REPOSITORY_URLS, broadPublic.getUrl().toExternalForm());
