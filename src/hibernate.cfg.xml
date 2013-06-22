@@ -54,5 +54,6 @@
     <mapping class="org.genepattern.server.jobqueue.JobQueue" />
     <mapping class="org.genepattern.server.eula.dao.EulaRecord" />
     <mapping class="org.genepattern.server.eula.dao.EulaRemoteQueue" />
+    <mapping class="org.genepattern.server.taskinstall.dao.TaskInstall" />
   </session-factory>
 </hibernate-configuration>
