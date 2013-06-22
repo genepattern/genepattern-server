@@ -18,6 +18,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -102,6 +103,9 @@ public class InstallTask {
 
     protected String[] docFileURLs = null;
 
+    //the url of the module repository
+    protected URL reposURL;
+    //the url of the zip file for the module
     protected String installURL = null;
 
     protected boolean initialInstall = false;
@@ -117,6 +121,8 @@ public class InstallTask {
     protected String lsidVersion = "";
 
     protected boolean deprecated = false;
+    
+    //protected String reposURL = null;
 
     public InstallTask(String userID, String manifestString,
             String[] supportFiles, String installURL, long downloadSize,
@@ -174,6 +180,10 @@ public class InstallTask {
         module.put(STATE, isAlreadyInstalled() ? (isNewer() ? UPDATED : UPTODATE) : NEW);
         module.put(REFRESHABLE, isAlreadyInstalled() ? (isNewer() ? YES : NO) : YES);
         module.put(LSID_VERSION, lsidVersion);
+    }
+    
+    public void setReposUrl(final URL reposUrl) {
+        this.reposURL=reposUrl;
     }
     
     /**
@@ -461,11 +471,11 @@ public class InstallTask {
             throws TaskInstallationException {
         String filename = null;
         Vector vProblems = new Vector();
-        String url = getUrl();
+        final String zipUrl = getUrl();
         try {
             boolean wasInstalled = isAlreadyInstalled()
                     && tia.get(GPConstants.LSID).equals(getLsid());
-            filename = GenePatternAnalysisTask.downloadTask(url);
+            filename = GenePatternAnalysisTask.downloadTask(zipUrl);
             String zipLSID = (String) GenePatternAnalysisTask
                     .getPropsFromZipFile(filename)
                     .getProperty(GPConstants.LSID);
@@ -475,15 +485,15 @@ public class InstallTask {
 
             String taskName = GenePatternAnalysisTask
                     .getTaskNameFromZipFile(filename);
-            lsid = GenePatternAnalysisTask.installNewTask(filename, username,
-                    access_id, status);
+            //lsid = GenePatternAnalysisTask.installNewTask(filename, username, access_id, status);
+            lsid = GenePatternAnalysisTask.installNewTaskFromRepository(reposURL, installURL, filename, username, access_id, status);
 
             return wasInstalled;
         } catch (TaskInstallationException tie) {
             throw tie;
         } catch (Exception e) {
             Vector vErrors = new Vector();
-            vErrors.add(FAILED + ": unable to load " + url + ": "
+            vErrors.add(FAILED + ": unable to load " + zipUrl + ": "
                     + e.getMessage());
             throw new TaskInstallationException(vErrors);
         } finally {

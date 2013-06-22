@@ -150,6 +150,8 @@ import org.genepattern.server.genomespace.GenomeSpaceException;
 import org.genepattern.server.genomespace.GenomeSpaceFileManager;
 import org.genepattern.server.job.event.JobEventDispatcher;
 import org.genepattern.server.plugin.PluginManagerLegacy;
+import org.genepattern.server.taskinstall.InstallInfo;
+import org.genepattern.server.taskinstall.InstallInfo.Type;
 import org.genepattern.server.user.UsageLog;
 import org.genepattern.server.util.JobResultsFilenameFilter;
 import org.genepattern.server.util.PropertiesManager_3_2;
@@ -3078,6 +3080,11 @@ public class GenePatternAnalysisTask {
     public static Vector installTask(String name, String description, ParameterInfo[] params, TaskInfoAttributes taskInfoAttributes, final String requestedTaskOwner, final int requestedAccessId, Status taskIntegrator)
     throws OmnigeneException, RemoteException 
     {
+        return installTask(name, description, params, taskInfoAttributes, requestedTaskOwner, requestedAccessId, taskIntegrator, null);
+    }
+    public static Vector installTask(final String name, final String description, final ParameterInfo[] params, final TaskInfoAttributes taskInfoAttributes, final String requestedTaskOwner, final int requestedAccessId, final Status taskIntegrator, InstallInfo taskInstallInfo)
+    throws OmnigeneException, RemoteException 
+    {
         final String originalUsername = requestedTaskOwner;
         final TaskInfo taskInfo = new TaskInfo();
         taskInfo.setName(name);
@@ -3157,6 +3164,7 @@ public class GenePatternAnalysisTask {
         }
         // TODO: if the task is a pipeline, generate the serialized model right now too
         GenePatternTaskDBLoader loader = new GenePatternTaskDBLoader(name, description, params, taskInfoAttributes.encode(), taskOwner, accessId);
+        loader.setInstallInfo(taskInstallInfo);
         loader.run(isNew ? GenePatternTaskDBLoader.CREATE : GenePatternTaskDBLoader.UPDATE);
         return null;
     }
@@ -3385,6 +3393,15 @@ public class GenePatternAnalysisTask {
     }
 
     /**
+     * @deprecated - should pass in a TaskInstallInfo arg
+     */
+    public static String installNewTask(final String zipFilename, final String username, final int access_id, final boolean recursive, final Status taskIntegrator) 
+    throws TaskInstallationException 
+    {
+        return installNewTask(zipFilename, username, access_id, recursive, taskIntegrator, null);
+    }
+
+    /**
      * accepts the filename of a GenePattern-packaged task in the form of a zip file, unpacks it, and installs the task
      * in the Omnigene task database. Any taskLib entries (files such as scripts, DLLs, properties, etc.) from the zip
      * file are installed in the appropriate taskLib directory.
@@ -3395,7 +3412,7 @@ public class GenePatternAnalysisTask {
      * @author Jim Lerner
      * @see #installTask
      */
-    public static String installNewTask(String zipFilename, String username, int access_id, boolean recursive, Status taskIntegrator) 
+    public static String installNewTask(final String zipFilename, final String username, final int access_id, final boolean recursive, final Status taskIntegrator, final InstallInfo taskInstallInfo) 
     throws TaskInstallationException 
     {
         Vector vProblems = new Vector();
@@ -3560,7 +3577,7 @@ public class GenePatternAnalysisTask {
             // tia.privacy=" + tia.get(PRIVACY));
             if (vProblems.size() == 0) {
                 log.info("installing " + taskName + " into database");
-                vProblems = GenePatternAnalysisTask.installTask(taskName, taskDescription, params, tia, username, access_id, taskIntegrator);
+                vProblems = GenePatternAnalysisTask.installTask(taskName, taskDescription, params, tia, username, access_id, taskIntegrator, taskInstallInfo);
                 if (vProblems == null) {
                     vProblems = new Vector();
                 }
@@ -3680,6 +3697,25 @@ public class GenePatternAnalysisTask {
         }
         TaskInfoCache.instance().removeFromCache(lsid);
         return lsid;
+    }
+
+    public static String installNewTaskFromRepository(final URL repositoryUrl, final String zipUrl, final String zipFilename, final String username, final int access_id, final Status taskIntegrator) 
+    throws TaskInstallationException
+    {
+        log.debug("Installing task from repository");
+        log.debug("repositoryUrl="+repositoryUrl);
+        log.debug("zipUrl="+zipUrl);
+        log.debug("zipFilename="+zipFilename);
+        log.debug("username="+username);
+        log.debug("access_id="+access_id);
+        
+        InstallInfo taskInstallInfo = new InstallInfo(Type.REPOSITORY);
+        taskInstallInfo.setRepositoryUrl(repositoryUrl);
+
+        String rval= installNewTask(zipFilename, username, access_id, true, taskIntegrator, taskInstallInfo);
+        
+        //TODO: record 'task_install_info' to DB
+        return rval;
     }
 
     public static String installNewTask(String zipFilename, String username, int access_id, Status taskIntegrator)
@@ -4305,8 +4341,5 @@ public class GenePatternAnalysisTask {
 	    this.user_id = username;
 	}
 
-	public void updateTaskInfoAttributes(String taskInfoAttributes) {
-	    this._taskInfoAttributes = taskInfoAttributes;
-	}
     }
 }

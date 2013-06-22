@@ -14,6 +14,7 @@
 package org.genepattern.server.process;
 
 import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Date;
@@ -23,8 +24,11 @@ import java.util.Map;
 import java.util.TreeSet;
 import java.util.Vector;
 
+import org.genepattern.server.config.ServerConfiguration;
+import org.genepattern.server.config.ServerConfiguration.Context;
 import org.genepattern.server.config.ServerProperties;
 import org.genepattern.server.genepattern.TaskInstallationException;
+import org.genepattern.server.repository.RepositoryInfo;
 import org.genepattern.util.GPConstants;
 import org.genepattern.util.LSID;
 
@@ -32,31 +36,36 @@ public class InstallTasksCollectionUtils {
 
     protected InstallTask[] unfilteredTasks = new InstallTask[0];
     protected InstallTask[] filteredTasks = new InstallTask[0];
-    protected String userID = null;
-    ModuleRepository repos = null;
+    final protected String userID;
+    final protected URL repositoryURL;
+    final protected ModuleRepository repos;
     boolean initialInstall = false;
 
     public InstallTasksCollectionUtils(String userID, boolean initialInstall) {
         this.userID = userID;
         this.initialInstall = initialInstall;
-        repos = new ModuleRepository();
+        final Context userContext=ServerConfiguration.Context.getContextForUser(userID);
+        final RepositoryInfo repositoryInfo=RepositoryInfo.getRepositoryInfoLoader(userContext).getCurrentRepository();
+        this.repositoryURL = repositoryInfo.getUrl();
+        repos = new ModuleRepository(repositoryURL);
     }
 
     // get a list of all modules available for download
     public InstallTask[] getAvailableModules() throws Exception {
-        String repositoryURL = System.getProperty("ModuleRepositoryURL");
-        boolean notFirstParam = (repositoryURL.indexOf("?") > 0);		
+        //String repositoryURL = System.getProperty("ModuleRepositoryURL");
+        String repositoryUrlQuery=repositoryURL.toExternalForm();
+        boolean notFirstParam = (repositoryUrlQuery.indexOf("?") > 0);       
         String paramPrefix = notFirstParam? "&" :"?";
-
         if (initialInstall) {
-            repositoryURL = repositoryURL + paramPrefix + "initialInstall=1&GenePatternVersion=" + ServerProperties.instance().getProperty("GenePatternVersion");
+            repositoryUrlQuery = repositoryURL.toExternalForm() + paramPrefix + "initialInstall=1&GenePatternVersion=" + ServerProperties.instance().getProperty("GenePatternVersion");
         } 
         else {
-            repositoryURL = repositoryURL + paramPrefix + "GenePatternVersion=" + ServerProperties.instance().getProperty("GenePatternVersion");
+            repositoryUrlQuery = repositoryURL.toExternalForm() + paramPrefix + "GenePatternVersion=" + ServerProperties.instance().getProperty("GenePatternVersion");
         }
 
+
         Vector modules = new Vector();
-        modules.addAll(Arrays.asList(repos.parse(repositoryURL)));
+        modules.addAll(Arrays.asList(repos.parse(repositoryUrlQuery)));
         // weed out any bad LSIDs right away
         InstallTask task = null;
         for (ListIterator itModule = modules.listIterator(); itModule.hasNext();) {

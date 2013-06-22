@@ -87,15 +87,17 @@ public class ModuleRepository {
     private int motd_urgency = 0;
 
     private String motd_url = "";
+    
+    final URL repositoryUrl;
 
-    public ModuleRepository() {
-
+    public ModuleRepository(final URL repositoryUrl) {
+        this.repositoryUrl=repositoryUrl;
     }
 
-    public InstallTask[] parse(String url) throws Exception {
+    public InstallTask[] parse(final String url) throws Exception {
         String DBF = "javax.xml.parsers.DocumentBuilderFactory";
         String oldDocumentBuilderFactory = System.getProperty(DBF);
-        URL reposURL = new URL(url);
+        final URL reposURL = new URL(url);
 
         InputStream is = null;
         Document doc = null;
@@ -214,6 +216,7 @@ public class ModuleRepository {
                             try {
                                 InstallTask it = new InstallTask(null, manifest, supportUrlArray, url, fileSize,
                                         timestamp, siteName, deprecated);
+                                it.setReposUrl(repositoryUrl);
                                 module_list.add(it);
                             } catch (Throwable t) {
                                 System.err.println(t.getMessage());
@@ -325,14 +328,13 @@ public class ModuleRepository {
         return outputWriter.toString();
     }
 
-    public static void main(String[] args) {
-        String url = "http://www.broadinstitute.org/cgi-bin/cancer/software/genepattern/gp_module_repository.cgi";
-
-        ModuleRepository mr = new ModuleRepository();
-
+    public static void main(String[] args) { 
         try {
+            String url = "http://www.broadinstitute.org/cgi-bin/cancer/software/genepattern/gp_module_repository.cgi";
+            ModuleRepository mr = new ModuleRepository(new URL(url));
             mr.parse(url);
-        } catch (Exception e) {
+        } 
+        catch (Exception e) {
             e.printStackTrace();
         }
 

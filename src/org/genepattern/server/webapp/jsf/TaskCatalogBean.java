@@ -13,6 +13,7 @@
 package org.genepattern.server.webapp.jsf;
 
 import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -188,8 +189,9 @@ public class TaskCatalogBean {
     private void updatePatches() {
         HashMap<String, InstallTask> lsidToPatchMap = new HashMap<String, InstallTask>();
         try {
-            String reposUrl = System.getProperty("DefaultPatchRepositoryURL");
-            InstallTask[] patches = new ModuleRepository().parse(reposUrl);
+            final String reposUrlStr = System.getProperty("DefaultPatchRepositoryURL");
+            final URL reposUrl=new URL(reposUrlStr);
+            InstallTask[] patches = new ModuleRepository(reposUrl).parse(reposUrl.toExternalForm());
             if (patches != null) {
                 for (InstallTask t : patches) {
                     lsidToPatchMap.put(t.getLsid(), t);

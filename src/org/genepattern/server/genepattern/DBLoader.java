@@ -13,11 +13,15 @@
 package org.genepattern.server.genepattern;
 
 import java.rmi.RemoteException;
+import java.util.Date;
 
 import org.apache.log4j.Logger;
+import org.genepattern.server.taskinstall.InstallInfo;
+import org.genepattern.server.taskinstall.RecordInstallInfoToDb;
 import org.genepattern.server.webservice.server.dao.AdminDAO;
 import org.genepattern.server.webservice.server.dao.AnalysisDAO;
 import org.genepattern.util.GPConstants;
+import org.genepattern.util.LSID;
 import org.genepattern.webservice.OmnigeneException;
 import org.genepattern.webservice.ParameterFormatConverter;
 import org.genepattern.webservice.ParameterInfo;
@@ -50,6 +54,13 @@ public abstract class DBLoader {
     protected String _taskInfoAttributes;
     protected String user_id;
     protected int access_id = 1;
+    
+    //task installation details
+    private InstallInfo installInfo;
+    
+    public void setInstallInfo(final InstallInfo taskInstallInfo) {
+        this.installInfo=taskInstallInfo;
+    }
 
     /**
      * Constructor
@@ -139,6 +150,12 @@ public abstract class DBLoader {
         }
         catch (Exception e) {
             throw new OmnigeneException("Unable to create new task! " + e.getMessage());
+        } 
+        try {
+            recordInstallInfo();
+        }
+        catch (Throwable t) {
+            log.error("Server exception recording installation details for task id="+id+", name="+_name, t);
         }
     }
 
@@ -157,7 +174,7 @@ public abstract class DBLoader {
         }
         return lsid;
     }
-
+    
     /**
      * Updates an existing task
      * 
@@ -191,6 +208,7 @@ public abstract class DBLoader {
         catch (Exception e) {
             throw new OmnigeneException("Unable to update " + _name + ": " + e.getMessage());
         }
+        recordInstallInfo();
     }
 
     /**
@@ -214,6 +232,7 @@ public abstract class DBLoader {
         catch (Exception e) {
             throw new OmnigeneException("Unable to delete " + this._name + ". " + e.getMessage());
         }
+        deleteInstallInfo();
     }
 
     /**
@@ -258,5 +277,78 @@ public abstract class DBLoader {
         }
         return (taskInfo == null ? -1 : taskInfo.getID());
     }
+    
+    ////////
+    // helper methods for recording installation details into the DB
+    ///////
+    private LSID getLSIDOrNull() {
+        final String lsidStr=getLSIDOrName();
+        try {
+            LSID lsid=new LSID(lsidStr);
+            return lsid;
+        }
+        catch (Throwable t) {
+            log.debug(t);
+            return null;
+        }
+    }
 
+    private void recordInstallInfo() {
+        final LSID lsid=getLSIDOrNull();
+        if (lsid==null) {
+            log.error("Error recording installation details for task="+getLSIDOrName()+", lsid not set");
+            return;
+        }
+        log.debug("installed new task "+lsid.toString());
+        if (installInfo == null) {
+            log.debug("creating new TaskInstallInfo()");
+            installInfo=new InstallInfo();
+        }
+        
+        //initialize values
+        installInfo.setLsid(lsid);
+        installInfo.setUserId(user_id);
+        installInfo.setDateInstalled(new Date());
+        
+        //TODO: optionally record zip file path
+        //TODO: optionally record previous lsid
+        //TODO: optionally record libdir path
+         
+        log.debug("    from source: "+installInfo.getType());
+        log.debug("    as user: "+installInfo.getUserId());
+        log.debug("    on date: "+installInfo.getDateInstalled());
+        if (installInfo.getRepositoryUrl() != null) {
+            log.debug("    repository: "+installInfo.getRepositoryUrl());
+        } 
+        //TODO: add record to DB
+        
+        log.debug("saving to db ...");
+        try {
+            new RecordInstallInfoToDb().save(installInfo);
+            log.debug("done!");
+        }
+        catch (Throwable t) {
+            log.error("failed! ", t);
+        }
+    }
+    
+    private void deleteInstallInfo() {
+        final LSID lsid=getLSIDOrNull();
+        if (lsid==null) {
+            log.error("Error deleting installation record for task="+getLSIDOrName()+", lsid not set");
+            return;
+        }
+        else {
+            log.debug("deleted task "+lsid.toString());
+            //TODO: remove record from DB
+        }
+        log.debug("deleting from db ...");
+        try {
+            int numDeleted=new RecordInstallInfoToDb().delete(lsid.toString());
+            log.debug("done! numDeleted="+numDeleted);
+        }
+        catch (Throwable t) {
+            log.error("failed! ", t);
+        }
+    }
 }
