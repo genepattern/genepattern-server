@@ -323,6 +323,7 @@ div.ui-layout-north
     font-size: 0.75em;
     margin: 0;
     padding: 0;
+    margin-left: 3px;
 }
 
 /*CSS partially copied from JQuery File upload plugin  */
