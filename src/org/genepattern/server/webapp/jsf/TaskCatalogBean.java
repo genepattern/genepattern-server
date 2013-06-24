@@ -44,11 +44,11 @@ public class TaskCatalogBean {
 
     private final String UP_TO_DATE = "Search for up to date modules";
 
-    private final String NEW_TEXT = "Search for new modules to install";
+    private final String NEW_TEXT = "Search for new modules";
 
     private final String UPDATED_TEXT = "Search for updates of the currently installed modules";
 
-    private final String PLATFORM_INDEPENDENT = "Platform Independent";
+    private final String PLATFORM_INDEPENDENT = "Linux, Mac, or Windows";
 
     private MySelectItem[] operatingSystems = new MySelectItem[] { new MySelectItem("any", PLATFORM_INDEPENDENT) };
 
