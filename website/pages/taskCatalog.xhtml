@@ -83,7 +83,7 @@
 
                             <tr valign="top">
                                 <td valign="top">
-                                    Filtering options:
+                                    <b>Filtering options:</b>
                                     <br />
                                     <t:dataList var="t" value="#{taskCatalogBean.states}">
                                         <h:outputText rendered="#{t.selected}">
@@ -97,7 +97,7 @@
                                 </td>
                                 <td valign="top">
 
-                                    Operating System:
+                                    <b>Operating System: </b>
                                     <br />
                                     <t:dataList var="t" value="#{taskCatalogBean.operatingSystems}">
                                         <h:outputText rendered="#{t.selected}">
@@ -116,7 +116,7 @@
                             <tr>
                                 <td>
                                     <h:commandButton
-                                            action="#{taskCatalogBean.filter}" value="Search" />
+                                            action="#{taskCatalogBean.filter}" value="Show" />
                                 </td>
                             </tr>
 
