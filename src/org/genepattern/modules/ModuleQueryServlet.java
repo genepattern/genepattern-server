@@ -18,6 +18,7 @@ import org.genepattern.server.eula.EulaInfo;
 import org.genepattern.server.eula.EulaManager;
 import org.genepattern.server.eula.GetEulaAsManifestProperty;
 import org.genepattern.server.genepattern.GenePatternAnalysisTask;
+import org.genepattern.server.taskinstall.InstallInfo;
 import org.genepattern.server.webservice.server.Status;
 import org.genepattern.server.webservice.server.DirectoryManager;
 import org.genepattern.server.webservice.server.local.LocalTaskIntegratorClient;
@@ -564,7 +565,8 @@ public class ModuleQueryServlet extends HttpServlet
                         }
                         public void statusMessage(String message) {
                         }
-                });
+                },
+                new InstallInfo(InstallInfo.Type.CREATE));
             }
             else
             {

@@ -3077,12 +3077,7 @@ public class GenePatternAnalysisTask {
      * 
      * @author Jim Lerner
      */
-    public static Vector installTask(String name, String description, ParameterInfo[] params, TaskInfoAttributes taskInfoAttributes, final String requestedTaskOwner, final int requestedAccessId, Status taskIntegrator)
-    throws OmnigeneException, RemoteException 
-    {
-        return installTask(name, description, params, taskInfoAttributes, requestedTaskOwner, requestedAccessId, taskIntegrator, null);
-    }
-    public static Vector installTask(final String name, final String description, final ParameterInfo[] params, final TaskInfoAttributes taskInfoAttributes, final String requestedTaskOwner, final int requestedAccessId, final Status taskIntegrator, InstallInfo taskInstallInfo)
+    public static Vector installTask(final String name, final String description, final ParameterInfo[] params, final TaskInfoAttributes taskInfoAttributes, final String requestedTaskOwner, final int requestedAccessId, final Status taskIntegrator, final InstallInfo taskInstallInfo)
     throws OmnigeneException, RemoteException 
     {
         final String originalUsername = requestedTaskOwner;
@@ -3192,56 +3187,17 @@ public class GenePatternAnalysisTask {
 	return taskLSID;
     }
 
-    /**
-     * use installTask but first manage the LSID. if it has one, keep it unchanged. If not, create a new one to be used
-     * when creating a new task or installing from a zip file
-     */
-    public static String installNewTask(String name, String description, ParameterInfo[] params, TaskInfoAttributes taskInfoAttributes, String username, int access_id, Status taskIntegrator)
+    public static String installNewTask(String name, String description, ParameterInfo[] params, TaskInfoAttributes taskInfoAttributes, String username, int access_id, Status taskIntegrator, InstallInfo installInfo)
     throws OmnigeneException, RemoteException, TaskInstallationException {
         LSID taskLSID = null;
         String requestedLSID = taskInfoAttributes.get(LSID);
         taskLSID = getNextTaskLsid(requestedLSID);
         taskInfoAttributes.put(GPConstants.LSID, taskLSID.toString());
-        Vector probs = installTask(name, description, params, taskInfoAttributes, username, access_id, taskIntegrator);
+        Vector probs = installTask(name, description, params, taskInfoAttributes, username, access_id, taskIntegrator, installInfo);
         if ((probs != null) && (probs.size() > 0)) {
             throw new TaskInstallationException(probs);
         }
         return taskLSID.toString();
-    }
-
-    /**
-     * use installTask but first manage LSID, If it has a local one, update the version. If it has an external LSID
-     * create a new one. Used when modifying an existing task in an editor
-     */
-    public static String updateTask(String name, String description, ParameterInfo[] params,
-	    TaskInfoAttributes taskInfoAttributes, String username, int access_id) throws OmnigeneException, RemoteException,
-	    TaskInstallationException {
-	LSID requestedLSID = null;
-	try {
-	    // System.out.println("updateTask: old LSID=" +
-	    // taskInfoAttributes.get(LSID));
-	    requestedLSID = new LSID(taskInfoAttributes.get(LSID));
-	} catch (MalformedURLException mue) {
-	    mue.printStackTrace();
-	    // XXX what to do here?
-	    System.err.println("updateTask: " + mue);
-	}
-
-	LSID taskLSID = getNextTaskLsid(requestedLSID.toString());
-	LSIDManager lsidManager = LSIDManager.getInstance();
-	if (!lsidManager.getAuthority().equalsIgnoreCase(taskLSID.getAuthority())) {
-
-	    String provenance = taskInfoAttributes.get(GPConstants.LSID_PROVENANCE);
-	    provenance = provenance + "  " + taskLSID.toString();
-	    taskInfoAttributes.put(GPConstants.LSID_PROVENANCE, provenance);
-	}
-	taskInfoAttributes.put(LSID, taskLSID.toString());
-
-	Vector probs = installTask(name, description, params, taskInfoAttributes, username, access_id, null);
-	if ((probs != null) && (probs.size() > 0)) {
-	    throw new TaskInstallationException(probs);
-	}
-	return taskLSID.toString();
     }
 
     public static boolean taskExists(String taskName, String user) throws OmnigeneException {
@@ -3412,7 +3368,7 @@ public class GenePatternAnalysisTask {
      * @author Jim Lerner
      * @see #installTask
      */
-    public static String installNewTask(final String zipFilename, final String username, final int access_id, final boolean recursive, final Status taskIntegrator, final InstallInfo taskInstallInfo) 
+    public static String installNewTask(final String zipFilename, final String username, final int access_id, final boolean recursive, final Status taskIntegrator, final InstallInfo installInfo) 
     throws TaskInstallationException 
     {
         Vector vProblems = new Vector();
@@ -3467,7 +3423,9 @@ public class GenePatternAnalysisTask {
                     }
                     is.close();
                     log.info("installing " + outFile.getAbsolutePath());
-                    lsid = installNewTask(outFile.getAbsolutePath(), username, access_id, taskIntegrator);
+                    
+                    InstallInfo installInfoEntry = new InstallInfo(InstallInfo.Type.ZIP);
+                    lsid = installNewTask(outFile.getAbsolutePath(), username, access_id, taskIntegrator, installInfoEntry);
                     log.info("installed " + lsid);
                     if (firstLSID == null) {
                         firstLSID = lsid;
@@ -3577,7 +3535,7 @@ public class GenePatternAnalysisTask {
             // tia.privacy=" + tia.get(PRIVACY));
             if (vProblems.size() == 0) {
                 log.info("installing " + taskName + " into database");
-                vProblems = GenePatternAnalysisTask.installTask(taskName, taskDescription, params, tia, username, access_id, taskIntegrator, taskInstallInfo);
+                vProblems = GenePatternAnalysisTask.installTask(taskName, taskDescription, params, tia, username, access_id, taskIntegrator, installInfo);
                 if (vProblems == null) {
                     vProblems = new Vector();
                 }
@@ -3718,9 +3676,9 @@ public class GenePatternAnalysisTask {
         return rval;
     }
 
-    public static String installNewTask(String zipFilename, String username, int access_id, Status taskIntegrator)
-	    throws TaskInstallationException {
-	return installNewTask(zipFilename, username, access_id, true, taskIntegrator);
+    public static String installNewTask(String zipFilename, String username, int access_id, Status taskIntegrator, InstallInfo installInfo)
+        throws TaskInstallationException {
+        return installNewTask(zipFilename, username, access_id, true, taskIntegrator, installInfo);
     }
 
     public static String downloadTask(String zipURL) throws IOException {

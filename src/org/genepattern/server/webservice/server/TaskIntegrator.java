@@ -63,6 +63,7 @@ import org.genepattern.server.process.InstallTask;
 import org.genepattern.server.process.InstallTasksCollectionUtils;
 import org.genepattern.server.process.SuiteRepository;
 import org.genepattern.server.process.ZipSuite;
+import org.genepattern.server.taskinstall.InstallInfo;
 import org.genepattern.server.util.AuthorizationManagerFactory;
 import org.genepattern.server.util.IAuthorizationManager;
 import org.genepattern.server.webapp.jsf.AuthorizationHelper;
@@ -574,15 +575,18 @@ public class TaskIntegrator {
 
             if (type.equals(ZipFileType.MODULE_ZIP)) {
                 isAuthorized(getUserName(), "createModule");
-                return GenePatternAnalysisTask.installNewTask(zipFile.getCanonicalPath(), username, privacy, recursive, taskIntegrator);
+                final InstallInfo installInfo=new InstallInfo(InstallInfo.Type.MODULE_ZIP);
+                return GenePatternAnalysisTask.installNewTask(zipFile.getCanonicalPath(), username, privacy, recursive, taskIntegrator, installInfo);
             } 
             else if (type.equals(ZipFileType.PIPELINE_ZIP)) {
                 isAuthorized(getUserName(), "createPipeline");
-                return GenePatternAnalysisTask.installNewTask(zipFile.getCanonicalPath(), username, privacy, recursive, taskIntegrator);
+                final InstallInfo installInfo=new InstallInfo(InstallInfo.Type.PIPELINE_ZIP);
+                return GenePatternAnalysisTask.installNewTask(zipFile.getCanonicalPath(), username, privacy, recursive, taskIntegrator, installInfo);
             } 
             else if (type.equals(ZipFileType.PIPELINE_ZIP_OF_ZIPS)) {
                 isAuthorized(getUserName(), "createPipeline");
-                return GenePatternAnalysisTask.installNewTask(zipFile.getCanonicalPath(), username, privacy, recursive, taskIntegrator);
+                final InstallInfo installInfo=new InstallInfo(InstallInfo.Type.PIPELINE_ZIP_OF_ZIPS);
+                return GenePatternAnalysisTask.installNewTask(zipFile.getCanonicalPath(), username, privacy, recursive, taskIntegrator, installInfo);
             } 
             else if (type.equals(ZipFileType.SUITE_ZIP)) {
                 isAuthorized(getUserName(), "createSuite");
@@ -607,29 +611,29 @@ public class TaskIntegrator {
         return url;
     }
 
-    /**
-     * Install the suite with the given LSID from the repository.
-     * 
-     * @param lsid
-     * @throws WebServiceException
-     */
-
-    private void installSuiteFromRepository(String lsid) throws WebServiceException {
-	isAuthorized(getUserName(), "createSuite");
-	try {
-	    SuiteRepository sr = new SuiteRepository();
-	    HashMap suites = sr.getSuites(System.getProperty("SuiteRepositoryURL"));
-
-	    HashMap hm = (HashMap) suites.get(lsid);
-	    // get the info from the HashMap and install it into the DB
-	    SuiteInfo suite = new SuiteInfo(hm);
-
-	    installSuite(suite, GPConstants.ACCESS_PUBLIC);
-	} catch (Exception e) {
-	    log.error(e);
-	    throw new WebServiceException(e);
-	}
-    }
+//    /**
+//     * Install the suite with the given LSID from the repository.
+//     * 
+//     * @param lsid
+//     * @throws WebServiceException
+//     */
+//
+//    private void installSuiteFromRepository(String lsid) throws WebServiceException {
+//	isAuthorized(getUserName(), "createSuite");
+//	try {
+//	    SuiteRepository sr = new SuiteRepository();
+//	    HashMap suites = sr.getSuites(System.getProperty("SuiteRepositoryURL"));
+//
+//	    HashMap hm = (HashMap) suites.get(lsid);
+//	    // get the info from the HashMap and install it into the DB
+//	    SuiteInfo suite = new SuiteInfo(hm);
+//
+//	    installSuite(suite, GPConstants.ACCESS_PUBLIC);
+//	} catch (Exception e) {
+//	    log.error(e);
+//	    throw new WebServiceException(e);
+//	}
+//    }
 
     /**
      * Create a new suite from the SuiteInfo object.
@@ -1133,7 +1137,8 @@ public class TaskIntegrator {
                 }
                 public void statusMessage(String message) {
                 }
-		    });
+		    },
+		    new InstallInfo(InstallInfo.Type.EDIT));
             taskAttributes.put(LSID, lsid); 
             // update so that upon return, the LSID is the new one
             String attachmentDir = DirectoryManager.getTaskLibDir(taskName, lsid, username);

@@ -99,7 +99,7 @@ public class InstallTasks extends CommandLineAction implements FilenameFilter {
 				module = moduleList[i];
 				System.out.println("Installing " + module.getName());
 				String lsid = GenePatternAnalysisTask.installNewTask(module.getCanonicalPath(),
-						"GenePattern", GPConstants.ACCESS_PUBLIC, null);
+						"GenePattern", GPConstants.ACCESS_PUBLIC, null, null);
 			}
 
 		} catch (TaskInstallationException tie) {

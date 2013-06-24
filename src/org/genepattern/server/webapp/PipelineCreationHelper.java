@@ -18,6 +18,7 @@ import org.genepattern.codegenerator.AbstractPipelineCodeGenerator;
 import org.genepattern.data.pipeline.PipelineModel;
 import org.genepattern.server.genepattern.GenePatternAnalysisTask;
 import org.genepattern.server.genepattern.TaskInstallationException;
+import org.genepattern.server.taskinstall.InstallInfo;
 import org.genepattern.util.GPConstants;
 import org.genepattern.util.LSID;
 import org.genepattern.webservice.ParameterInfo;
@@ -76,7 +77,8 @@ public class PipelineCreationHelper {
                     model.getUserID(), 
                     model.isPrivate() ? GPConstants.ACCESS_PRIVATE
                         : GPConstants.ACCESS_PUBLIC, 
-                    null);
+                    null,
+                    new InstallInfo(InstallInfo.Type.CREATE));
                 if ((probs != null) && (probs.size() > 0)) {
                     throw new TaskInstallationException(probs);
                 }
