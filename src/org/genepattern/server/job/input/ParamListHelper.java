@@ -124,8 +124,8 @@ public class ParamListHelper {
     ParameterInfoRecord record;
     Param actualValues;
     //outputs
-    NumValues allowedNumValues;
-    ListMode listMode=ListMode.LIST;
+    final NumValues allowedNumValues;
+    final ListMode listMode;
 
     public ParamListHelper(final Context jobContext, final ParameterInfoRecord record, final Param actualValues) {
         if (jobContext==null) {
@@ -141,14 +141,20 @@ public class ParamListHelper {
         this.record=record;
         this.actualValues=actualValues;
 
-        initAllowedNumValues();
+        //initialize allowedNumValues
+        this.allowedNumValues=initAllowedNumValues();
 
+        //initialize list mode
+        this.listMode=initListMode(record);
+    }
+    
+    private ListMode initListMode(final ParameterInfoRecord record) {
         //initialize list mode
         String listModeStr = (String) record.getFormal().getAttributes().get("listMode");
         if (listModeStr != null && listModeStr.length()>0) {
             listModeStr = listModeStr.toUpperCase().trim();
             try {
-                listMode=ListMode.valueOf(listModeStr);
+                return ListMode.valueOf(listModeStr);
             }
             catch (Throwable t) {
                 String message="Error initializing listMode from listMode="+listModeStr;
@@ -156,14 +162,16 @@ public class ParamListHelper {
                 throw new IllegalArgumentException(message);
             }
         }
+        //default value
+        return ListMode.LIST;
     }
 
-    private void initAllowedNumValues() {
+    private NumValues initAllowedNumValues() {
         final String numValuesStr = (String) record.getFormal().getAttributes().get("numValues");
         //parse num values string
         NumValuesParser nvParser=new NumValuesParserImpl();
         try { 
-            allowedNumValues=nvParser.parseNumValues(numValuesStr);
+            return nvParser.parseNumValues(numValuesStr);
         }
         catch (Exception e) {
             String message="Error parsing numValues="+numValuesStr+" for "+record.getFormal().getName();
@@ -245,6 +253,13 @@ public class ParamListHelper {
      * @return
      */
     public boolean isCreateFilelist() {
+        if (this.allowedNumValues == null) {
+            return false;
+        }
+        if (!this.allowedNumValues.acceptsList()) {
+            return false;
+        }
+        
         final int numValuesSet=actualValues.getNumValues();
         if (numValuesSet>1) {
             //always create a filelist when there are more than 1 values
