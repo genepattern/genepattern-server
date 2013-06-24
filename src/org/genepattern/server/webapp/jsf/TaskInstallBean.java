@@ -12,13 +12,16 @@
 
 package org.genepattern.server.webapp.jsf;
 
-import java.util.*;
-import org.json.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
-import org.genepattern.server.database.HibernateUtil;
-import org.genepattern.server.genepattern.TaskInstallationException;
 import org.genepattern.server.process.InstallTask;
-import org.genepattern.util.GPConstants;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 /**
  * A session scoped bean to keep track of tasks installed during the user
