@@ -22,6 +22,9 @@ public class InstallInfo {
         UNKNOWN(null),
         REPOSITORY(null),
         ZIP(null),
+            MODULE_ZIP(ZIP), //installing a module from a zip
+            PIPELINE_ZIP(ZIP), //installing a pipeline from a zip
+            PIPELINE_ZIP_OF_ZIPS(ZIP), //installing a pipeline from a zip which includes modules nested in zips
         SERVER(null),
             CREATE(SERVER),
             EDIT(SERVER),
