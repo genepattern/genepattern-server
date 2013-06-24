@@ -137,7 +137,7 @@ public abstract class SourceInfo {
      */
     final static public class FromUnknown extends SourceInfo {
         public FromUnknown() {
-            super(Type.UNKNOWN, "?", null);
+            super(Type.UNKNOWN, "N/A", "/gp/images/blank.gif");
         }
         public String getBriefDescription() {
             //return "The origin of this module is unknown";
