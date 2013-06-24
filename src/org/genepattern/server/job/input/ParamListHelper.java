@@ -125,7 +125,7 @@ public class ParamListHelper {
     Param actualValues;
     //outputs
     NumValues allowedNumValues;
-    ListMode listMode=ListMode.LEGACY;
+    ListMode listMode=ListMode.LIST;
 
     public ParamListHelper(final Context jobContext, final ParameterInfoRecord record, final Param actualValues) {
         if (jobContext==null) {
