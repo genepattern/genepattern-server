@@ -17,6 +17,7 @@ import org.genepattern.server.eula.GetTaskStrategy;
 import org.genepattern.server.eula.GetTaskStrategyDefault;
 import org.genepattern.server.job.JobInfoLoader;
 import org.genepattern.server.job.JobInfoLoaderDefault;
+import org.genepattern.server.job.input.ParamListHelper.ListMode;
 import org.genepattern.server.rest.ParameterInfoRecord;
 import org.genepattern.webservice.JobInfo;
 import org.genepattern.webservice.ParameterInfo;
@@ -194,6 +195,15 @@ public class ReloadJobHelper {
                 }
             }
         }
+        if (valuesMap.size() == 0) {
+            //special-case for reloading and empty file list
+            if (formalParam.getAttributes().containsKey("listMode")) {
+                if (isReloadEmpty(formalParam)) {
+                    return Collections.emptyList();
+                }
+            }
+        }
+        
         if (valuesMap.size() > 0) {
             List<String> values=new ArrayList<String>(valuesMap.values());
             if (log.isDebugEnabled()) {
@@ -235,6 +245,33 @@ public class ReloadJobHelper {
         values.add(value);
         log.debug("value: "+value);
         return values;
+    }
+    
+    
+    /**
+     * Helper method for the special-case of reloading a job with a parameter list (e.g. numValues=0+),
+     * and which can take an empty list (e.g. listMode=LIST_INCLUDE_EMPTY).
+     * 
+     * This method just returns whether or not the above hold true.
+     * 
+     * @param formalParam
+     * @return
+     */
+    private boolean isReloadEmpty(final ParameterInfo formalParam) { 
+        String listModeStr = (String) formalParam.getAttributes().get("listMode");
+        if (listModeStr != null && listModeStr.length()>0) {
+            listModeStr = listModeStr.toUpperCase().trim();
+            try {
+                ListMode listMode=ListMode.valueOf(listModeStr);
+                return ListMode.LIST_INCLUDE_EMPTY == listMode;
+            }
+            catch (Throwable t) {
+                String message="Error initializing listMode from listMode="+listModeStr;
+                log.error(message, t);
+                throw new IllegalArgumentException(message);
+            }
+        }
+        return false;
     }
 
 }
