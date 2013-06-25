@@ -4,6 +4,7 @@ import org.genepattern.junitutil.TaskLoader;
 import org.genepattern.server.config.ServerConfiguration;
 import org.genepattern.server.config.ServerConfiguration.Context;
 import org.genepattern.server.job.input.TestJobInputHelper;
+import org.genepattern.server.taskinstall.InstallInfo;
 import org.genepattern.webservice.TaskInfo;
 import org.junit.Assert;
 import org.junit.BeforeClass;
@@ -32,7 +33,8 @@ public class TestSourceInfoLoader {
     @BeforeClass
     static public void init() {
         serverContext = ServerConfiguration.Context.getServerContext();
-        sourceInfoLoader=SourceInfo.getSourceInfoLoader(serverContext);
+        //sourceInfoLoader=SourceInfo.getSourceInfoLoader(serverContext);
+        sourceInfoLoader=new StubSourceInfoLoader();
 
         taskLoader=new TaskLoader();
         taskLoader.addTask(TestJobInputHelper.class, "ConvertLineEndings_v1.zip");
@@ -46,7 +48,7 @@ public class TestSourceInfoLoader {
         final TaskInfo cleTaskInfo=taskLoader.getTaskInfo(cleLsid);
         final SourceInfo fromBroadProd=sourceInfoLoader.getSourceInfo(cleTaskInfo);
         Assert.assertNotNull("expecting non-null sourceInfo", fromBroadProd);
-        Assert.assertEquals("sourceInfo.type", SourceInfo.Type.REPOSITORY, fromBroadProd.getType());
+        Assert.assertEquals("sourceInfo.type", InstallInfo.Type.REPOSITORY, fromBroadProd.getType());
         Assert.assertEquals("sourceInfo.label", "Broad public", fromBroadProd.getLabel());
         Assert.assertNotNull("sourceInfo.iconImgSrc, unexpected null value", fromBroadProd.getIconImgSrc());
         Assert.assertNotNull("sourceInfo.briefDescription, unexpected null value", fromBroadProd.getBriefDescription());
@@ -58,7 +60,7 @@ public class TestSourceInfoLoader {
         final TaskInfo cmsTaskInfo=taskLoader.getTaskInfo(cmsLsid);
         final SourceInfo fromGparc=sourceInfoLoader.getSourceInfo(cmsTaskInfo);
         Assert.assertNotNull("expecting non-null sourceInfo", fromGparc);
-        Assert.assertEquals("sourceInfo.type", SourceInfo.Type.REPOSITORY, fromGparc.getType());
+        Assert.assertEquals("sourceInfo.type", InstallInfo.Type.REPOSITORY, fromGparc.getType());
         Assert.assertEquals("sourceInfo.label", "GParc (GenePattern Archive)", fromGparc.getLabel());
         Assert.assertNotNull("sourceInfo.iconImgSrc, unexpected null value", fromGparc.getIconImgSrc());
         Assert.assertNotNull("sourceInfo.briefDescription, unexpected null value", fromGparc.getBriefDescription());
@@ -70,7 +72,7 @@ public class TestSourceInfoLoader {
         final TaskInfo pdTaskInfo=taskLoader.getTaskInfo(pdLsid);
         final SourceInfo fromBroadBeta=sourceInfoLoader.getSourceInfo(pdTaskInfo);
         Assert.assertNotNull("expecting non-null sourceInfo", fromBroadBeta);
-        Assert.assertEquals("sourceInfo.type", SourceInfo.Type.REPOSITORY, fromBroadBeta.getType());
+        Assert.assertEquals("sourceInfo.type", InstallInfo.Type.REPOSITORY, fromBroadBeta.getType());
         Assert.assertEquals("sourceInfo.label", "Broad beta", fromBroadBeta.getLabel());
         Assert.assertNotNull("sourceInfo.iconImgSrc, unexpected null value", fromBroadBeta.getIconImgSrc());
         Assert.assertNotNull("sourceInfo.briefDescription, unexpected null value", fromBroadBeta.getBriefDescription());
@@ -82,9 +84,9 @@ public class TestSourceInfoLoader {
         final TaskInfo listFilesTaskInfo=taskLoader.getTaskInfo(listFilesLsid);
         final SourceInfo fromUnknown=sourceInfoLoader.getSourceInfo(listFilesTaskInfo);
         Assert.assertNotNull("expecting non-null sourceInfo", fromUnknown);
-        Assert.assertEquals("sourceInfo.type", SourceInfo.Type.UNKNOWN, fromUnknown.getType());
-        Assert.assertEquals("sourceInfo.label", "?", fromUnknown.getLabel());
-        Assert.assertNull("sourceInfo.iconImgSrc, expecting null value", fromUnknown.getIconImgSrc());
+        Assert.assertEquals("sourceInfo.type", InstallInfo.Type.UNKNOWN, fromUnknown.getType());
+        Assert.assertEquals("sourceInfo.label", "N/A", fromUnknown.getLabel());
+        Assert.assertNotNull("sourceInfo.iconImgSrc, expecting non-null value", fromUnknown.getIconImgSrc());
         Assert.assertNull("sourceInfo.briefDescription, expecting null value", fromUnknown.getBriefDescription());
         Assert.assertNull("sourceInfo.fullDescription, expecting null value", fromUnknown.getFullDescription());
     }

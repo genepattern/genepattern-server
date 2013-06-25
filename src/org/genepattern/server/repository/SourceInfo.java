@@ -1,6 +1,7 @@
 package org.genepattern.server.repository;
 
 import org.genepattern.server.config.ServerConfiguration.Context;
+import org.genepattern.server.taskinstall.InstallInfo;
 import org.genepattern.webservice.TaskInfo;
 
 /**
@@ -14,19 +15,6 @@ import org.genepattern.webservice.TaskInfo;
  *
  */
 public abstract class SourceInfo {
-    public enum Type {
-        REPOSITORY, // installed from module repository
-        ZIP, // installed from zip file
-        ON_SERVER, // created on server, for example by ...
-                   //     cloning an installed module
-                   //     creating a provenance pipeline
-                   //     creating a new pipeline with the Pipeline Designer
-                   //     editing a new version of a pipeline with the Pipeline Designer
-                   //     creating a new module with the Module Integrator
-                   //     editing a new version of a module with the Module Integrator
-        PREVIOUSLY_INSTALLED, //default setting when updating a GP server from <= 3.6.0 to >= 3.6.1
-        UNKNOWN
-    }
 
     //final static SourceInfoLoader sourceInfoLoaderSingleton=new StubSourceInfoLoader();
     //final static SourceInfoLoader sourceInfoLoaderSingleton=new LsidSourceInfoLoader();
@@ -36,11 +24,11 @@ public abstract class SourceInfo {
     }
     
     protected boolean showSourceInfo=true;
-    final private Type type;
+    final private InstallInfo.Type type;
     protected String iconImgSrc;
     protected String label;
     
-    private SourceInfo(final Type type, final String label, final String iconImgSrc) {
+    private SourceInfo(final InstallInfo.Type type, final String label, final String iconImgSrc) {
         this.type=type;
         this.label=label;
         this.iconImgSrc=iconImgSrc;
@@ -50,7 +38,7 @@ public abstract class SourceInfo {
         return showSourceInfo;
     }
 
-    public Type getType() {
+    public InstallInfo.Type getType() {
         return type;
     }
 
@@ -73,7 +61,7 @@ public abstract class SourceInfo {
     final static public class FromRepo extends SourceInfo {
         final private RepositoryInfo repositoryInfo;
         public FromRepo(final RepositoryInfo repositoryInfo) {
-            super(Type.REPOSITORY, repositoryInfo.getLabel(), repositoryInfo.getIconImgSrc());
+            super(InstallInfo.Type.REPOSITORY, repositoryInfo.getLabel(), repositoryInfo.getIconImgSrc());
             this.repositoryInfo=repositoryInfo;
             if (this.repositoryInfo.getUrl().toExternalForm().equalsIgnoreCase("http://www.broadinstitute.org/webservices/gpModuleRepository")) {
                 this.showSourceInfo=false;
@@ -92,11 +80,11 @@ public abstract class SourceInfo {
     final static public class CreatedOnServer extends SourceInfo {
         private String userId=null;
         public CreatedOnServer() {
-            super(Type.ON_SERVER, "Created on server", null);
+            super(InstallInfo.Type.SERVER, "Created on server", null);
         }
         
         public CreatedOnServer(final TaskInfo taskInfo) {
-            super(Type.ON_SERVER, "Created on server", null);
+            super(InstallInfo.Type.SERVER, "Created on server", null);
             this.userId=taskInfo.getUserId();
         }
 
@@ -113,7 +101,7 @@ public abstract class SourceInfo {
     
     final static public class FromZip extends SourceInfo {
         public FromZip() {
-            super(Type.ZIP, "Installed from zip", "/gp/images/zip_file.png");
+            super(InstallInfo.Type.ZIP, "Installed from zip", "/gp/images/zip_file.png");
         }
 
         @Override
@@ -137,7 +125,7 @@ public abstract class SourceInfo {
      */
     final static public class FromUnknown extends SourceInfo {
         public FromUnknown() {
-            super(Type.UNKNOWN, "N/A", "/gp/images/blank.gif");
+            super(InstallInfo.Type.UNKNOWN, "N/A", "/gp/images/blank.gif");
         }
         public String getBriefDescription() {
             //return "The origin of this module is unknown";
