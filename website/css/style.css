@@ -888,10 +888,10 @@ input.error, select.error {
 
 #repositoryChooser img
 {
-    vertical-align: middle;
+    margin-right: 1px;
 }
 
-#repositoryChooser div
+#repositoryDescription
 {
     margin-top: 4px;
     margin-left: 20px;

@@ -55,12 +55,14 @@
                 <h:selectOneMenu value="#{moduleRepositorySelectorBean.url}" onchange="this.form.submit();">
                     <f:selectItems value="#{moduleRepositorySelectorBean.menuItems}" />
                 </h:selectOneMenu>
-               <br/>
                 <!--  change escape to 'true' if you don't want to support formatted text -->
-                <img src="#{moduleRepositorySelectorBean.iconImgSrc}" height="18" width="18"/>
+                <div id="repositoryLabel">
+                    <img src="#{moduleRepositorySelectorBean.iconImgSrc}" height="14" width="14"/>
+                    <h:outputText id="repositoryLabel" escape="false" value="#{moduleRepositorySelectorBean.label}" />
+                </div>
                 <h:outputText escape="false" value="#{moduleRepositorySelectorBean.briefDescription}" />
                 <br/>
-                <div>
+                <div id="repositoryDescription">
                     <h:outputText escape="false" value="#{moduleRepositorySelectorBean.fullDescription}" />
                 </div>
             </h:form>
