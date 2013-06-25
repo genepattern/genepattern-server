@@ -1785,7 +1785,7 @@ jQuery(document).ready(function() {
                 },
                 "2. Go to GParc": function() {
                     $(this).dialog("close");
-                    window.open("http://www.broadinstitute.org/software/gparc/submit_module", '_blank');
+                    window.open("http://www.broadinstitute.org/software/gparc/submit_module_gp", '_blank');
                     if (event.preventDefault) event.preventDefault();
                     if (event.stopPropagation) event.stopPropagation();
                 }};
