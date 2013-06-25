@@ -314,34 +314,6 @@ function loadModuleInfo(module)
         if(label !== undefined && label !== '' && label !== null)
         {
             $("#source_info").append(label);
-
-            //make repos label a link if there is a full description specified
-            //we will use the link to trigger opening of div containing full description
-            /*if(fullDescription != null)
-            {
-                reposContainer = $("<a href='#'></a>");
-
-                reposContainer.click(function(event)
-                {
-                    event.preventDefault();
-                    $("#source_info_details").empty();
-                    $("#source_info_details").append(fullDescription);
-
-                    var delButton = $("<img src='/gp/images/delete-blue.png'/>");
-
-                    delButton.button().click(function()
-                    {
-                       //clear the contents of the div
-                       $(this).parent("div").empty();
-                    });
-
-                    $("#source_info_details").append(delButton);
-                });
-
-                $("#source_info").append(reposContainer);
-            }
-            reposContainer.append(label);
-            empty = false; */
         }
 
         if(iconUrl !== undefined && iconUrl !== '' && iconUrl !== null)
@@ -352,40 +324,52 @@ function loadModuleInfo(module)
 
         if(briefDescription !== undefined && briefDescription !== '' && briefDescription !== null)
         {
-            if(!empty)
-            {
-                $("#source_info").append(" - ");
-            }
-
-            $("#source_info").append(briefDescription);
+            $("#source_info_tooltip").hide();
+            $("#source_info_tooltip").append(briefDescription);
         }
 
-        if(fullDescription != null)
+        if(fullDescription !== undefined && fullDescription !== '' && fullDescription !== null)
         {
+            $("#source_info_details").hide();
+            $("#source_info_details").append(fullDescription);
+            $("#source_info_details").dialog(
+            {
+                autoOpen: false,
+                title: label + " Repository Details",
+                minWidth: 580,
+                modal: true,
+                buttons: {
+                    OK: function()
+                    {
+                        $( this ).dialog( "close" );
+                    }
+                }
+            });
             var readMoreLink = $("<a href='#'> Read More</a>");
-            $("#source_info").append(readMoreLink);
-
             readMoreLink.click(function(event)
             {
                 event.preventDefault();
-                if($(this).text() == " Read More")
-                {
-                    $("#source_info_details").append(fullDescription);
-                    $("#source_info_details").append(this);
-                    $(this).text(" Show Less");
-                }
-                else
-                {
-                    $("#source_info").append(this);
-                    $("#source_info_details").empty();
-                    $(this).text(" Read More");
-                }
+                $("#source_info_tooltip").hide();
+                $("#source_info_details").dialog("open");
+
             });
+            $("#source_info_tooltip").append(readMoreLink);
         }
+        $("#source_info").mouseover(function() {
+            setTimeout(function() {
+                $("#source_info_tooltip").show();}, 2000);
+        });
 
-        $("#source_info").prepend("<hr/>");
+        $("#source_info_tooltip").mouseleave(function() {
+            $("#source_info_tooltip").hide();
+        });
+
+        $("#source_info_tooltip").focusout(function() {
+            $("#source_info_tooltip").hide();
+        });
+
+        $("#source_info").prepend("Source: ");
     }
-
 }
 
 function loadParameterInfo(parameters, initialValues)
