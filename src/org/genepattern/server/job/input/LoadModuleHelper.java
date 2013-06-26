@@ -219,13 +219,7 @@ public class LoadModuleHelper {
             final String pname=pinfo.getName();
             //1) initialize from default values
             final List<String> defaultValues=ParamListHelper.getDefaultValues(pinfo);
-            if (pinfo.isInputFile() && defaultValues == null || defaultValues.size()==0) {
-                //TODO: modify the client so that we don't have to have a default value
-                log.debug("adding empty string value for "+pname);
-                //HACK: add empty string value
-                initialValues.addOrReplaceValue(pname, "");
-            }
-            else if (defaultValues != null) {
+            if (defaultValues != null) {
                 boolean first=true;
                 for(final String defaultValue : defaultValues) {
                     if (first) {
