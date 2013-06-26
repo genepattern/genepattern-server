@@ -588,15 +588,15 @@ function loadParameterInfo(parameters, initialValues)
             paramRow.append(valueTd);
             paramsTable.append(paramRow);
 
+            var fileObjListings = param_file_listing[parameters[q].name];
+            if(fileObjListings == null || fileObjListings == undefined)
+            {
+                fileObjListings = [];
+                param_file_listing[parameters[q].name] = fileObjListings;
+            }
+
             if( initialValuesList != undefined &&  initialValuesList != null)
             {
-                var fileObjListings = param_file_listing[parameters[q].name];
-                if(fileObjListings == null || fileObjListings == undefined)
-                {
-                    fileObjListings = [];
-                    param_file_listing[parameters[q].name] = fileObjListings;
-                }
-
                 //check if max file length will be vialated
                 var totalFileLength = fileObjListings.length +  initialValuesList.length;
                 validateMaxFiles(parameters[q].name, totalFileLength);
