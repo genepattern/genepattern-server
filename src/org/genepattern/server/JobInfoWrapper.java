@@ -25,7 +25,6 @@ import org.genepattern.server.dm.UrlUtil;
 import org.genepattern.server.domain.JobStatus;
 import org.genepattern.server.genepattern.GenePatternAnalysisTask;
 import org.genepattern.server.process.JobPurgerUtil;
-import org.genepattern.server.repository.ModuleQualityInfo;
 import org.genepattern.server.repository.SourceInfo;
 import org.genepattern.server.repository.SourceInfoLoader;
 import org.genepattern.server.util.AuthorizationManagerFactory;

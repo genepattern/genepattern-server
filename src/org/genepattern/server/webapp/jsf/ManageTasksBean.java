@@ -37,7 +37,6 @@ import org.apache.log4j.Logger;
 import org.genepattern.data.pipeline.PipelineModel;
 import org.genepattern.server.config.ServerConfiguration;
 import org.genepattern.server.config.ServerConfiguration.Context;
-import org.genepattern.server.repository.ModuleQualityInfo;
 import org.genepattern.server.repository.SourceInfo;
 import org.genepattern.server.repository.SourceInfoLoader;
 import org.genepattern.server.user.UserDAO;
