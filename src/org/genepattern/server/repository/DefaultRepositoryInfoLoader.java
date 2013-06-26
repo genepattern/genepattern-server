@@ -73,7 +73,7 @@ public class DefaultRepositoryInfoLoader implements RepositoryInfoLoader {
          
          final Context serverContext=ServerConfiguration.Context.getServerContext();
          //TODO: set this flag's default value to 'false', it's true for debugging
-         final boolean includeDevRepository=ServerConfiguration.instance().getGPBooleanProperty(serverContext, "includeDevRepository", true);         
+         final boolean includeDevRepository=ServerConfiguration.instance().getGPBooleanProperty(serverContext, "includeDevRepository", false);         
          if (includeDevRepository) {
              repositoryMap.put(broadDev.getUrl().toExternalForm(), broadDev);
          }
