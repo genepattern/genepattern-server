@@ -45,22 +45,9 @@
                     points to the closest cluster center until the
                     distance between consecutive cluster centers converges into <i>k</i> stable clusters.
                 </li>
-                <li><b><a href="ClassDiscovery_som.html">Self-organizing maps (SOM)</a></b> (Tamayo et al., 1999) creates and iteratively adjusts
-                    a two-dimensional grid of clusters to reflect the global structure in the expression data set.
-                    The result is a set of clusters organized in a two-dimensional grid where similar clusters lie
-                    near each other and provide an "executive summary" of the data set.
-                    Tamayo et al. indicate that SOMs are best suited to identifying
-                    a small number of prominent classes in the data; Brunet et al. (2004)
-                    comment that they "can be unstable, yielding different decompositions of the data
-                    depending on the choice of initial conditions."
-                </li>
                 <li><b><a href="ClassDiscovery_nmf.html">Non-negative matrix factorization (NMF)</a></b> (Brunet et al., 2004) clusters the data by
                     breaking it down into metagenes or metasamples,
                     each of which represents a group of genes or samples, respectively. NMF extracts features that may more accurately correspond to biological processes.
-                </li>
-                <li><b><a href="ClassDiscovery_consensus.html">Consensus clustering</a></b> (Monti et al., 2003) determines an optimal number of clusters by running a selected clustering algorithm several times and then assessing the stability
-                    of discovered clusters. Supported clustering methods: hierarchical clustering, K-means clustering,
-                    self-organizing maps (SOM), and non-negative matrix factorization (NMF).
                 </li>
             </ul>
         </div>
@@ -74,10 +61,6 @@
         <p>Eisen, M.B., Spellman, P.T., Brown, P.O., and Botstein, D. 1998. Cluster Analysis and Display of Genome-Wide Expression Patterns. <i>Proc. Natl. Acad. Sci. USA</i> 95:14863-14868.</p>
 
         <p>MacQueen, J. B. 1967. Some Methods for classification and Analysis of Multivariate Observations. <i>In</i> Proceedings of Fifth Berkeley Symposium on Mathematical Statistics and Probability, Vol. 1. University of California Press, California. pp. 281-297.</p>
-
-        <p>Monti, S., Tamayo, P., Mesirov, J.P., and Golub, T. 2003. Consensus Clustering: A resampling-based method for class discovery and visualization of gene expression microarray data. <i>Machine Learning Journal</i> 52(1-2):91-118.</p>
-
-        <p>Tamayo, P., Slonim, D., Mesirov, J., Zhu, Q., Dmitrovsky, E., Lander, E.S., and Golub, T.R. 1999. Interpreting gene expression with self-organizing maps: Methods and application to hematopoeitic differentiation. <i>Proc. Natl. Acad. Sci. USA</i> 96:2907-2912.</p>
 
     </body>
 </html>
