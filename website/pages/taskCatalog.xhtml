@@ -48,26 +48,28 @@
                 </tr>
             </table>
 
-            <div class="repositoryChooser">
-            <h:form id="repositoryChooser">
-                <h:outputText><b>Select a repository: </b></h:outputText>
-                <br />
-                <h:selectOneMenu value="#{moduleRepositorySelectorBean.url}" onchange="this.form.submit();">
-                    <f:selectItems value="#{moduleRepositorySelectorBean.menuItems}" />
-                </h:selectOneMenu>
-                <!--  change escape to 'true' if you don't want to support formatted text -->
-                <div id="repositoryLabel">
-                    <img src="#{moduleRepositorySelectorBean.iconImgSrc}" height="14" width="14"/>
-                    <h:outputText id="repositoryLabel" escape="false" value="#{moduleRepositorySelectorBean.label}" />
-                </div>
-                <h:outputText escape="false" value="#{moduleRepositorySelectorBean.briefDescription}" />
-                <br/>
-                <div id="repositoryDescription">
-                    <h:outputText escape="false" value="#{moduleRepositorySelectorBean.fullDescription}" />
-                </div>
-            </h:form>
+            <div id="repositoryChooser">
+                <h:form id="repositoryChooser">
+                    <h:outputText><b>Select a repository: </b></h:outputText>
+                    <br />
+                    <h:selectOneMenu value="#{moduleRepositorySelectorBean.url}" onchange="this.form.submit();">
+                        <f:selectItems value="#{moduleRepositorySelectorBean.menuItems}" />
+                    </h:selectOneMenu>
+                    <!--  change escape to 'true' if you don't want to support formatted text -->
+                    <div>
+                        <img id="repositoryIcon" src="#{moduleRepositorySelectorBean.iconImgSrc}" align="left" class="repo-logo" width="30" height="30"/>
+                        <h3 class="repo-name">
+                            <h:outputText escape="false" value="#{moduleRepositorySelectorBean.label}" />
+                        </h3>
+                        <p class="short-description">
+                            <h:outputText escape="false" value="#{moduleRepositorySelectorBean.briefDescription}" />
+                        </p>
+                        <p class="full-description">
+                            <h:outputText escape="false" value="#{moduleRepositorySelectorBean.fullDescription}" />
+                        </p>
+                    </div>
+                </h:form>
             </div>
-
             <c:choose>
                 <c:when test="#{taskCatalogBean.error}">
                     <p>Sorry, the module repository is not currently available.</p>
@@ -81,63 +83,55 @@
                     <h:form id="taskCatalogForm">
                         <h:inputHidden id="taskCatalogSubmit" value="1" />
 
-                        <table border="0" cellpadding="5" cellspacing="0">
+                        <table  class="filter-options" border="0" cellpadding="5" cellspacing="0">
+                            <tbody>
+                                <tr>
+                                    <td colspan="2" class="filter-option-title">
+                                        <strong>Filtering options</strong>
+                                        <strong class="filtered-number">(Found #{taskCatalogBean.numberOfTasks} modules)</strong>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="filter-type">Module versions:</td>
+                                    <td class="filter-type">Operating System:</td>
+                                </tr>
+                                <tr valign="top">
+                                    <td valign="top">
+                                        <t:dataList var="t" value="#{taskCatalogBean.states}">
+                                            <h:outputText rendered="#{t.selected}">
+                                                <input type="checkbox" name="state" value="#{t.value}" checked="true">#{t.label}</input>
+                                            </h:outputText>
+                                            <h:outputText rendered="#{!t.selected}">
+                                                <input type="checkbox" name="state" value="#{t.value}">#{t.label}</input>
+                                            </h:outputText>
+                                            <br />
+                                        </t:dataList>
+                                    </td>
+                                    <td valign="top">
 
-                            <tr valign="top">
-                                <td valign="top">
-                                    <b>Filtering options:</b>
-                                    <br />
-                                    <t:dataList var="t" value="#{taskCatalogBean.states}">
-                                        <h:outputText rendered="#{t.selected}">
-                                            <input type="checkbox" name="state" value="#{t.value}" checked="true">#{t.label}</input>
-                                        </h:outputText>
-                                        <h:outputText rendered="#{!t.selected}">
-                                            <input type="checkbox" name="state" value="#{t.value}">#{t.label}</input>
-                                        </h:outputText>
+                                        Operating System:
                                         <br />
-                                    </t:dataList>
-                                </td>
-                                <td valign="top">
+                                        <t:dataList var="t" value="#{taskCatalogBean.operatingSystems}">
+                                            <h:outputText rendered="#{t.selected}">
+                                                <input type="checkbox" name="os" value="#{t.value}" checked="true">#{t.label}</input>
+                                            </h:outputText>
+                                            <h:outputText rendered="#{! t.selected}">
+                                                <input type="checkbox" name="os" value="#{t.value}">#{t.label}</input>
+                                            </h:outputText>
+                                            <br />
+                                        </t:dataList>
 
-                                    <b>Operating System: </b>
-                                    <br />
-                                    <t:dataList var="t" value="#{taskCatalogBean.operatingSystems}">
-                                        <h:outputText rendered="#{t.selected}">
-                                            <input type="checkbox" name="os" value="#{t.value}" checked="true">#{t.label}</input>
-                                        </h:outputText>
-                                        <h:outputText rendered="#{! t.selected}">
-                                            <input type="checkbox" name="os" value="#{t.value}">#{t.label}</input>
-                                        </h:outputText>
-                                        <br />
-                                    </t:dataList>
-
-                                </td>
-
-
-                            </tr>
-                            <tr>
-                                <td>
-                                    <h:commandButton
-                                            action="#{taskCatalogBean.filter}" value="Show" />
-                                </td>
-                            </tr>
-
+                                    </td>
+                                </tr>
+                            </tbody>
                         </table>
 
-
-                        <table width="100%" border="0" cellpadding="0" cellspacing="0"
-                               class="barhead-task">
-                            <tr>
-                                <td class="barhead-version">Found
-                                    #{taskCatalogBean.numberOfTasks} modules
-                                </td>
-                            </tr>
-                        </table>
+                        <h:commandButton
+                                action="#{taskCatalogBean.filter}" value="Update view" />
 
                         <c:if test="#{taskCatalogBean.numberOfTasks > 0}">
 
-                            <p><h:commandButton action="#{taskCatalogBean.install}"
-                                                value="Install Checked" /></p>
+                            <h:commandButton action="#{taskCatalogBean.install}" value="Install Checked" />
 
                             <table width="100%" cellpadding="5" cellspacing="0"
                                    class="smalltype">

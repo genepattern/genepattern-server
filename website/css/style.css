@@ -879,21 +879,60 @@ input.error, select.error {
 /*End CSS for license UI  */
 
 
+img.repo-logo
+{
+    padding-right: 8px;
+}
+
+h3.repo-name
+{
+    margin-bottom: -1px;
+}
+
+p.short-description
+{
+    font-size: 11px;
+    margin-top: 0;
+    margin-bottom: -10px;
+}
+
+p.long-description
+{
+    margin-top: -5px;
+}
+
+td.filter-type
+{
+    font-size: 13px;
+}
+
+td.filter-option-title
+{
+    background-color: #ddd;
+}
+
+table.filter-options {
+    border: solid 1px #777;
+    margin-bottom: 5px;
+}
+
+table.filter-options > tbody > tr > td
+{
+    padding: 3px;
+    padding-left: 10px;
+    padding-right: 20px;
+}
+
+strong.filtered-number
+{
+    color: #36C;
+}
+
 #repositoryChooser
 {
-    margin-top: 6px;
-    margin-bottom: 14px;
-    vertical-align: text-top;
+    font-family: Arial, Verdana, Geneva, sans-serif;
+    font-size:13px;
+    line-height: 16px;
 }
 
-#repositoryChooser img
-{
-    margin-right: 1px;
-}
-
-#repositoryDescription
-{
-    margin-top: 4px;
-    margin-left: 20px;
-}
 
