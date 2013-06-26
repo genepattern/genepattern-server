@@ -13,7 +13,6 @@ import org.genepattern.server.executor.JobSubmissionException;
 import org.genepattern.server.handler.AddNewJobHandler;
 import org.genepattern.server.job.input.JobInput;
 import org.genepattern.server.job.input.JobInput.Param;
-import org.genepattern.server.job.input.JobInput.ParamId;
 import org.genepattern.server.job.input.ParamListHelper;
 import org.genepattern.webservice.JobInfo;
 import org.genepattern.webservice.ParameterInfo;
@@ -49,7 +48,7 @@ public class JobInputApiLegacy {
         return taskInfo;
     }
 
-    public ParameterInfo[] initParameterValues() throws Exception 
+    private ParameterInfo[] initParameterValues() throws Exception 
     {
         if (jobInput.getParams()==null) {
             log.debug("jobInput.params==null");
@@ -58,34 +57,14 @@ public class JobInputApiLegacy {
 
         //initialize a map of paramName to ParameterInfo 
         final Map<String,ParameterInfoRecord> paramInfoMap=ParameterInfoRecord.initParamInfoMap(taskInfo);
-        //set default values for any parameters which were not set by the user
-        for(Entry<String,ParameterInfoRecord> entry : paramInfoMap.entrySet()) {
-            final String pname=entry.getKey();
-            final ParameterInfoRecord record=entry.getValue();
-            Param inputValue=jobInput.getParam(entry.getKey());
-            if (inputValue==null) {
-                //param not set by end user, check for default values
-                List<String> defaultValues=ParamListHelper.getDefaultValues(record.getFormal());
-                if (defaultValues != null) {
-                    for(final String value : defaultValues) {
-                        log.debug("adding default value: "+pname+"="+value);
-                        jobInput.addValue(pname, value);
-                    }
-                }
-            }
-        }
 
-        //walk through the list of input values
-        for(Entry<ParamId, Param> entry : jobInput.getParams().entrySet()) {
-            final Param param=entry.getValue();                
-            final ParamId id = param.getParamId();
-            final ParameterInfoRecord record=paramInfoMap.get(id.getFqName());
-            if (record==null) {
-                log.error("Can't get record for id="+id.getFqName());
-                break;
-            }
-            
-            ParamListHelper plh=new ParamListHelper(jobContext, record, param);
+        //for each formal input parameter ... set the actual value to be used on the command line
+        for(Entry<String,ParameterInfoRecord> entry : paramInfoMap.entrySet()) {
+            // set default values for any parameters which were not set by the user
+            // validate num values
+            // and initialize input file (or parameter) lists as needed
+            Param inputParam=jobInput.getParam( entry.getKey() );
+            ParamListHelper plh=new ParamListHelper(jobContext, entry.getValue(), inputParam);
             plh.validateNumValues();
             plh.updatePinfoValue();
         }

@@ -15,6 +15,7 @@ import org.genepattern.server.dm.GpFileObjFactory;
 import org.genepattern.server.dm.GpFilePath;
 import org.genepattern.server.dm.serverfile.ServerFileObjFactory;
 import org.genepattern.server.job.input.JobInput.Param;
+import org.genepattern.server.job.input.JobInput.ParamId;
 import org.genepattern.server.job.input.JobInput.ParamValue;
 import org.genepattern.server.rest.ParameterInfoRecord;
 import org.genepattern.webservice.ParameterInfo;
@@ -120,32 +121,72 @@ public class ParamListHelper {
     }
 
     //inputs
-    Context jobContext;
-    ParameterInfoRecord record;
-    Param actualValues;
+    final Context jobContext;
+    final ParameterInfoRecord record;
+    final Param actualValues;
     //outputs
     final NumValues allowedNumValues;
     final ListMode listMode;
 
-    public ParamListHelper(final Context jobContext, final ParameterInfoRecord record, final Param actualValues) {
+    public ParamListHelper(final Context jobContext, final ParameterInfoRecord record, final Param inputValues) {
         if (jobContext==null) {
             throw new IllegalArgumentException("jobContext==null");
         }
         if (record==null) {
             throw new IllegalArgumentException("record==null");
         }
-        if (actualValues==null) {
-            throw new IllegalArgumentException("actualValues==null");
-        }
+        //if (actualValues==null) {
+        //    throw new IllegalArgumentException("actualValues==null");
+        //}
         this.jobContext=jobContext;
         this.record=record;
-        this.actualValues=actualValues;
+        //this.actualValues=actualValues;
 
         //initialize allowedNumValues
         this.allowedNumValues=initAllowedNumValues();
 
         //initialize list mode
         this.listMode=initListMode(record);
+        
+        //initialize from default value
+        if (inputValues == null) {
+            actualValues=initFromDefault();
+        }
+        else {
+            actualValues=inputValues;
+        }
+    }
+    
+    private Param initFromDefault() {
+        final List<String> defaultValues=ParamListHelper.getDefaultValues(record.getFormal());
+        if (defaultValues==null) {
+            //return a param with no value
+            Param noValue=new Param(new ParamId(record.getFormal().getName()), false);
+            return noValue;
+        }
+        else if (defaultValues.size()==0) {
+            //special-case, an empty list is the 'default_value'
+            Param noValue=new Param(new ParamId(record.getFormal().getName()), false);
+            return noValue;
+        }
+        else if (defaultValues.size()==1 && "".equals(defaultValues.get(0))) {
+            //special-case, an empty string is the 'default_value'
+            if (record.getFormal().isInputFile()) {
+                //special-case, an empty string for a file param is the 'default_value'
+                Param noValue=new Param(new ParamId(record.getFormal().getName()), false);
+                return noValue;
+            }
+            Param emptyStringValue=new Param(new ParamId(record.getFormal().getName()), false);
+            emptyStringValue.addValue(new ParamValue(""));
+            return emptyStringValue;
+        }
+        else {
+            Param listValue=new Param(new ParamId(record.getFormal().getName()), false);
+            for(final String value : defaultValues) {
+                listValue.addValue(new ParamValue(value));
+            }
+            return listValue;
+        }
     }
     
     private ListMode initListMode(final ParameterInfoRecord record) {
@@ -181,9 +222,24 @@ public class ParamListHelper {
     }
 
     public static List<String> getDefaultValues(final ParameterInfo pinfo) {
+        final String defaultValue=pinfo.getDefaultValue();
+        if (defaultValue==null) {
+            log.debug(pinfo.getName()+": default_value is not set");
+            return null;
+        }
+        
+        if (defaultValue.length()==0) {
+            log.debug(pinfo.getName()+": default_value is empty string");
+            if (pinfo.isInputFile()) {
+                log.warn(pinfo.getName()+" input file and default_value is empty string");
+                return null;
+                //return Collections.emptyList();
+            }
+        }
+        
         //parse default_values param ... 
         //TODO: implement support for default values as a list of values
-        if (pinfo.getDefaultValue() != null) {
+        if (defaultValue != null) {
             List<String> defaultValues=new ArrayList<String>();
             defaultValues.add(pinfo.getDefaultValue());
             return defaultValues;
