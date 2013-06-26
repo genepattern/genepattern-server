@@ -6,7 +6,9 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.text.SimpleDateFormat;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 import org.apache.log4j.Logger;
@@ -43,6 +45,7 @@ public class GenomeSpaceFile extends GpFilePath {
     private String path;
     boolean converted = false;
     Object gsSession = null;
+    Map<String, String> conversionUrls = null;
     
     public GenomeSpaceFile(Object gsSession) {
         if (gsSession == null) {
@@ -212,6 +215,36 @@ public class GenomeSpaceFile extends GpFilePath {
         }
         final String encodedUrl=UrlUtil.encodeURIcomponent(gsUrl.toExternalForm());
         return encodedUrl;
+    }
+    
+    public String getEncodedConversionUrl(String format) {
+        if (gsSession == null) {
+            log.error("ERROR: Null gsSession found in getEncodedConversionUrl()");
+        }
+        URL url = null;
+        String urlString = "#";
+        try {
+            url = GenomeSpaceClientFactory.getGenomeSpaceClient().getConvertedURL(gsSession, this, format);
+            urlString = url.toString();
+        }
+        catch (GenomeSpaceException e) {
+            log.error("Exception getting converted URL in getEncodedConversionUrl(): " + this.getName());
+        }
+        return UrlUtil.encodeURIcomponent(urlString);
+    }
+    
+    public Map<String, String> getConversionUrls() {
+        // Lazily initialize
+        if (conversionUrls == null) {
+            conversionUrls = new HashMap<String, String>();
+
+            // Add URLs for conversion formats
+            for (String format : this.getConversionsWithKind()) {
+                conversionUrls.put(format, this.getEncodedConversionUrl(format));
+            }
+        }
+        
+        return conversionUrls;
     }
     
     public void setUri(URI uri) {

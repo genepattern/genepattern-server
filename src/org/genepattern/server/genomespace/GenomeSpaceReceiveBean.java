@@ -218,7 +218,28 @@ public class GenomeSpaceReceiveBean {
         for (GpFilePath file : receivedFiles) {
             ParameterInfo selectedParam = null;
             String url = URLEncoder.encode(file.getUrl().toString(), "UTF-8");
-            List<ParameterInfo> relevantParams = module._getKindToParameterInfoMap().get(file.getKind());
+            
+            List<ParameterInfo> relevantParams = null;
+            
+            if (file instanceof GenomeSpaceFile) {
+                for (String format : ((GenomeSpaceFile) file).getConversions()) {
+                    relevantParams = module._getKindToParameterInfoMap().get(format);
+                    if (relevantParams != null) {
+                        url = ((GenomeSpaceFile) file).getConversionUrls().get(format);
+                        break;
+                    }
+                }
+            }
+            else {
+                relevantParams = module._getKindToParameterInfoMap().get(file.getKind());
+            }
+            
+            // Protect against null
+            if (relevantParams == null) {
+                relevantParams = new ArrayList<ParameterInfo>();
+            }
+            
+            module._getKindToParameterInfoMap().get(file.getKind());
             if (relevantParams.size() > 0) {
                 selectedParam = relevantParams.get(0);
             }

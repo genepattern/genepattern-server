@@ -106,7 +106,7 @@
                             <t:dataList value="#{genomeSpaceBean.kindToModules[format]}" var="moduleMenuItem">
                                 <tr>
                                     <td>
-                                        <h:outputLink value="index.jsf?lsid=#{moduleMenuItem.lsid}&amp;_file=#{file.encodedUrl}&amp;_format=#{format}"  style="white-space: nowrap;">
+                                        <h:outputLink value="index.jsf?lsid=#{moduleMenuItem.lsid}&amp;_file=#{file.conversionUrls[format]}&amp;_format=#{format}"  style="white-space: nowrap;">
                                             <h:outputText value="#{moduleMenuItem.name}" />
                                         </h:outputLink>
                                     </td>
