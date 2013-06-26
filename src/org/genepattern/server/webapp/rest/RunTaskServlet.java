@@ -40,7 +40,6 @@ import org.genepattern.server.job.input.JobInputFileUtil;
 import org.genepattern.server.job.input.JobInputHelper;
 import org.genepattern.server.job.input.LoadModuleHelper;
 import org.genepattern.server.job.input.ReloadJobHelper;
-import org.genepattern.server.repository.ModuleQualityInfo;
 import org.genepattern.server.repository.SourceInfo;
 import org.genepattern.server.repository.SourceInfoLoader;
 import org.genepattern.server.rest.JobReceipt;
