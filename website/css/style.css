@@ -887,6 +887,7 @@ img.repo-logo
 h3.repo-name
 {
     margin-bottom: -1px;
+    color: #000000;
 }
 
 p.short-description
@@ -933,6 +934,5 @@ strong.filtered-number
     font-family: Arial, Verdana, Geneva, sans-serif;
     font-size:13px;
     line-height: 16px;
+    color: #000000;
 }
-
-

@@ -59,7 +59,7 @@
                     <div>
                         <img id="repositoryIcon" src="#{moduleRepositorySelectorBean.iconImgSrc}" align="left" class="repo-logo" width="30" height="30"/>
                         <h3 class="repo-name">
-                            <h:outputText escape="false" value="#{moduleRepositorySelectorBean.label}" />
+                            <h:outputText escape="false" value="#{moduleRepositorySelectorBean.label} Repository" />
                         </h3>
                         <p class="short-description">
                             <h:outputText escape="false" value="#{moduleRepositorySelectorBean.briefDescription}" />
@@ -108,9 +108,6 @@
                                         </t:dataList>
                                     </td>
                                     <td valign="top">
-
-                                        Operating System:
-                                        <br />
                                         <t:dataList var="t" value="#{taskCatalogBean.operatingSystems}">
                                             <h:outputText rendered="#{t.selected}">
                                                 <input type="checkbox" name="os" value="#{t.value}" checked="true">#{t.label}</input>
@@ -127,11 +124,11 @@
                         </table>
 
                         <h:commandButton
-                                action="#{taskCatalogBean.filter}" value="Update view" />
+                                action="#{taskCatalogBean.filter}" styleClass="ui-state-default ui-corner-all" value="Update view" />
 
                         <c:if test="#{taskCatalogBean.numberOfTasks > 0}">
 
-                            <h:commandButton action="#{taskCatalogBean.install}" value="Install Checked" />
+                            <h:commandButton styleClass="ui-state-default ui-corner-all" action="#{taskCatalogBean.install}" value="Install Checked" />
 
                             <table width="100%" cellpadding="5" cellspacing="0"
                                    class="smalltype">
