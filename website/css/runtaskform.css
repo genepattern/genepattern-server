@@ -281,10 +281,12 @@ img.buttonIcon {
 {
     z-index: 9000;
     position: absolute;
+    float: right;
     background-color: white;
     max-width: 280px;
     padding: 10px;
-    margin: -17px -5px -5px -50px;
+    margin-top: -17px;
+    /*margin: -17px -5px -5px -50px; */
     -webkit-box-shadow:0 0 5px #aaa;
     box-shadow:0 0 5px #aaa;
     text-align: left;
@@ -407,7 +409,7 @@ hr
 #otherOptions
 {
     padding-top: 1px;
-    margin: 0;
+    margin: 0 0 0 15px;
 }
 
 #otherOptions:hover

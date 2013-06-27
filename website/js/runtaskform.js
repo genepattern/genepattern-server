@@ -332,47 +332,33 @@ function loadModuleInfo(module)
 
         if(fullDescription !== undefined && fullDescription !== '' && fullDescription !== null)
         {
-            $("#source_info_details").hide();
-            $("#source_info_details").append(fullDescription);
-            $("#source_info_details").dialog(
-            {
-                autoOpen: false,
-                title: label + " Repository Details",
-                minWidth: 580,
-                modal: true,
-                buttons: {
-                    OK: function()
-                    {
-                        $( this ).dialog( "close" );
-                    }
-                },
-                open: function(event, ui)
-                {
-                    $("#source_info_tooltip").hide();
-                    $("#source_info_tooltip").children().attr("disabled", "disabled");
-                    $("#source_info_tooltip").children().prop('disabled',true);
-
-                }
-            });
             var readMoreLink = $("<a href='#'> Read More</a>");
             readMoreLink.click(function(event)
             {
                 event.preventDefault();
                 $("#source_info_tooltip").hide();
 
-                $("#source_info_details").dialog("open");
+                showDialog(label + " Repository Details", fullDescription, "OK");
 
             });
             $("#source_info_tooltip").append(readMoreLink);
         }
 
-        $("#source_info").hover(function()
+        $("#source_info").hover(function(e)
         {
+            var x = e.pageX;
+            var y = e.pageY;
+            var width = $("#source_info_tooltip").width();
+            $("#source_info_tooltip").css("top", y -10);
+            $("#source_info_tooltip").css("left", x - width/2);
             setTimeout(function()
             {
-                if($("#source_info").data("hasBriefDescription"))
+                if($("#source_info").is(":hover"))
                 {
-                    $("#source_info_tooltip").show();
+                    if($("#source_info").data("hasBriefDescription"))
+                    {
+                        $("#source_info_tooltip").show();
+                    }
                 }
             }, 2000);
         });

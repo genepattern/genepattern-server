@@ -101,7 +101,7 @@ public abstract class SourceInfo {
     
     final static public class FromZip extends SourceInfo {
         public FromZip() {
-            super(InstallInfo.Type.ZIP, "Installed from zip", "/gp/images/zip_file.png");
+            super(InstallInfo.Type.ZIP, "Installed from zip", "/gp/images/winzip_icon.png");
         }
 
         @Override
