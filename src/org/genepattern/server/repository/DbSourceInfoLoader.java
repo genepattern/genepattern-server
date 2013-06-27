@@ -31,7 +31,7 @@ public class DbSourceInfoLoader implements SourceInfoLoader {
      * Flag for how to deal with modules when there is no 'install_info' entry in the DB.
      * Either return unknown, or guess based on the lsid of the task.
      */
-    private boolean deduceFromLsid=false;
+    private boolean deduceFromLsid=true;
 
     @Override
     public SourceInfo getSourceInfo(final TaskInfo taskInfo) {
