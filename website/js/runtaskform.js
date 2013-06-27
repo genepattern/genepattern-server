@@ -397,7 +397,7 @@ function loadParameterInfo(parameters, initialValues)
             parameterName = parameters[q].altName;
         }
 
-        if(parameters[q].optional.length == 0)
+        if(parameters[q].optional.length == 0 && parameters[q].minValue != 0)
         {
            parameterName += "*";
         }
@@ -472,7 +472,7 @@ function loadParameterInfo(parameters, initialValues)
                 classes: 'mSelect'
             });
 
-            if(parameters[q].optional.length == 0)
+            if(parameters[q].optional.length == 0 && parameters[q].minValue != 0)
             {
                 select.addClass("requiredParam");
             }
@@ -566,7 +566,7 @@ function loadParameterInfo(parameters, initialValues)
             fileDiv.append(uploadFileBtn);
 
 
-            if(parameters[q].optional.length == 0)
+            if(parameters[q].optional.length == 0 && parameters[q].minValue != 0)
             {
                 fileInput.addClass("requiredParam");
             }
@@ -663,7 +663,7 @@ function loadParameterInfo(parameters, initialValues)
             paramRow.append(valueTd);
             paramsTable.append(paramRow);
 
-            if(parameters[q].optional.length == 0)
+            if(parameters[q].optional.length == 0 && parameters[q].minValue != 0)
             {
                 textField.addClass("requiredParam");
             }
