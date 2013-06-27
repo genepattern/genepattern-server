@@ -271,10 +271,6 @@ function loadModuleInfo(module)
         $("#mod_description").append(module["description"]);
         hasDescription = true;
     }
-    else
-    {
-        $("#description_main").hide();
-    }
     
     //if module has doc specified or if for some reason
     // the hasDoc field was not set then show the doc link
