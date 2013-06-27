@@ -6,6 +6,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.log4j.Logger;
 import org.genepattern.server.config.ServerConfiguration;
@@ -31,44 +33,39 @@ public class ConfigRepositoryInfoLoader implements RepositoryInfoLoader {
     final static public String BROAD_DEV_URL="http://www.broadinstitute.org/webservices/gpModuleRepository?env=dev";
     final static public String GPARC_URL="http://vgpprod01.broadinstitute.org:4542/gparcModuleRepository";
     
-    final Context userContext;
+    final Context serverContext=ServerConfiguration.Context.getServerContext();
     
-    public ConfigRepositoryInfoLoader(final Context userContextIn) {
-        if (userContextIn==null) {
-            userContext=ServerConfiguration.Context.getServerContext();
-        }
-        else {
-            userContext=userContextIn;
-        }
+    final static Map<String, RepositoryInfo> cache=new ConcurrentHashMap<String, RepositoryInfo>();
+    
+    public ConfigRepositoryInfoLoader() {
     }
 
     @Override
     public RepositoryInfo getCurrentRepository() {
         final String moduleRepositoryUrl=System.getProperty(RepositoryInfo.PROP_MODULE_REPOSITORY_URL, BROAD_PROD_URL);
-        RepositoryInfo info = initRepositoryInfo(moduleRepositoryUrl);
+        RepositoryInfo info=getRepository(moduleRepositoryUrl);
         if (info != null) {
             return info;
         }
-        
         log.error("Error initializing repository info for current repository: "+moduleRepositoryUrl);
-        return initRepositoryInfo(BROAD_PROD_URL);
+        return getRepository(BROAD_PROD_URL);
     }
 
     @Override
     public List<RepositoryInfo> getRepositories() {
-        final LinkedHashSet<String> repoIds=new LinkedHashSet<String>();
+        final LinkedHashSet<String> repoUrls=new LinkedHashSet<String>();
         
         //hard-coded items
-        repoIds.add(BROAD_PROD_URL);
-        repoIds.add(GPARC_URL);
-        repoIds.add(BROAD_BETA_URL);
+        repoUrls.add(BROAD_PROD_URL);
+        repoUrls.add(GPARC_URL);
+        repoUrls.add(BROAD_BETA_URL);
         
         //check for repos in the config.yaml file
-        Value reposFromConfigFile=ServerConfiguration.instance().getValue(userContext, "org.genepattern.server.repository.RepositoryUrls");
+        Value reposFromConfigFile=ServerConfiguration.instance().getValue(serverContext, "org.genepattern.server.repository.RepositoryUrls");
         if (reposFromConfigFile != null) {
             for(final String repoUrl : reposFromConfigFile.getValues()) {
-                if (!repoIds.contains(repoUrl)) {
-                    repoIds.add(repoUrl);
+                if (!repoUrls.contains(repoUrl)) {
+                    repoUrls.add(repoUrl);
                 }
             }
         }
@@ -76,15 +73,17 @@ public class ConfigRepositoryInfoLoader implements RepositoryInfoLoader {
         //check for repos from the gp.properties file (also set via Server Settings -> Repositories page)
         final List<String> fromProps=getModuleRepositoryUrlsFromGpProps();
         for(final String fromProp : fromProps) {
-            if (!repoIds.contains(fromProp)) {
-                repoIds.add(fromProp);
+            if (!repoUrls.contains(fromProp)) {
+                repoUrls.add(fromProp);
             }
         }
 
         //check for (and set) details in the server configuration yaml file
         final List<RepositoryInfo> repos=new ArrayList<RepositoryInfo>();
-        for(final String repoId : repoIds) {
-            RepositoryInfo info = initRepositoryInfo(repoId);
+        for(final String repoUrl : repoUrls) {
+            final RepositoryInfo info = initRepositoryInfo(repoUrl);
+            //refresh cache if necessary
+            cache.put(repoUrl, info);
             repos.add(info);
         }
         return repos;
@@ -93,7 +92,18 @@ public class ConfigRepositoryInfoLoader implements RepositoryInfoLoader {
     @Override
     public RepositoryInfo getRepository(final String repositoryUrl) {
         log.debug("repositoryUrl="+repositoryUrl);
-        return initRepositoryInfo(repositoryUrl);
+        RepositoryInfo cached = cache.get(repositoryUrl);
+        if (cached != null) {
+            return cached;
+        }
+        RepositoryInfo info = initRepositoryInfo(repositoryUrl);
+        if (info == null) {
+            log.error("Error initializing RepositoryInfo for "+repositoryUrl);
+        }
+        else {
+            cache.put(repositoryUrl, info);
+        }
+        return info;
     }
     
     private RepositoryInfo initRepositoryInfo(final String repoUrl) {
@@ -111,10 +121,10 @@ public class ConfigRepositoryInfoLoader implements RepositoryInfoLoader {
         final String full_key =repoUrl+"/about/full";
         final String icon_key =repoUrl+"/about/icon";
         
-        final String label=ServerConfiguration.instance().getGPProperty(userContext, label_key, repoUrl);
-        final String brief=ServerConfiguration.instance().getGPProperty(userContext, brief_key);
-        final String full=ServerConfiguration.instance().getGPProperty(userContext, full_key);
-        final String icon=ServerConfiguration.instance().getGPProperty(userContext, icon_key);
+        final String label=ServerConfiguration.instance().getGPProperty(serverContext, label_key, repoUrl);
+        final String brief=ServerConfiguration.instance().getGPProperty(serverContext, brief_key);
+        final String full=ServerConfiguration.instance().getGPProperty(serverContext, full_key);
+        final String icon=ServerConfiguration.instance().getGPProperty(serverContext, icon_key);
         RepositoryInfo info=new RepositoryInfo(label, url);
         if (brief != null) {
             info.setBriefDescription(brief);
