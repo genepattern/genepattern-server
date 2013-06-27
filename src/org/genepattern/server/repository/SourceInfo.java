@@ -80,11 +80,11 @@ public abstract class SourceInfo {
     final static public class CreatedOnServer extends SourceInfo {
         private String userId=null;
         public CreatedOnServer() {
-            super(InstallInfo.Type.SERVER, "Created on server", null);
+            super(InstallInfo.Type.SERVER, "Created on server", "/gp/images/blank.gif");
         }
         
         public CreatedOnServer(final TaskInfo taskInfo) {
-            super(InstallInfo.Type.SERVER, "Created on server", null);
+            super(InstallInfo.Type.SERVER, "Created on server", "/gp/images/blank.gif");
             this.userId=taskInfo.getUserId();
         }
 
