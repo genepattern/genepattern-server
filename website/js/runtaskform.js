@@ -303,6 +303,8 @@ function loadModuleInfo(module)
     }
 
     //add source info
+    $("#source_info_tooltip").hide();
+
     if(module["source_info"] !== undefined && module["source_info"] != null)
     {
         var label = module["source_info"].label;
@@ -324,8 +326,12 @@ function loadModuleInfo(module)
 
         if(briefDescription !== undefined && briefDescription !== '' && briefDescription !== null)
         {
-            $("#source_info_tooltip").hide();
             $("#source_info_tooltip").append(briefDescription);
+            $("#source_info").data("hasBriefDescription", true);
+        }
+        else
+        {
+            $("#source_info").data("hasBriefDescription", false);
         }
 
         if(fullDescription !== undefined && fullDescription !== '' && fullDescription !== null)
@@ -343,6 +349,13 @@ function loadModuleInfo(module)
                     {
                         $( this ).dialog( "close" );
                     }
+                },
+                open: function(event, ui)
+                {
+                    $("#source_info_tooltip").hide();
+                    $("#source_info_tooltip").children().attr("disabled", "disabled");
+                    $("#source_info_tooltip").children().prop('disabled',true);
+
                 }
             });
             var readMoreLink = $("<a href='#'> Read More</a>");
@@ -350,14 +363,30 @@ function loadModuleInfo(module)
             {
                 event.preventDefault();
                 $("#source_info_tooltip").hide();
+
                 $("#source_info_details").dialog("open");
 
             });
             $("#source_info_tooltip").append(readMoreLink);
         }
-        $("#source_info").mouseover(function() {
-            setTimeout(function() {
-                $("#source_info_tooltip").show();}, 2000);
+
+        $("#source_info").hover(function()
+        {
+            setTimeout(function()
+            {
+                if($("#source_info").data("hasBriefDescription"))
+                {
+                    $("#source_info_tooltip").show();
+                }
+            }, 2000);
+        });
+
+        $("body").mousemove(function()
+        {
+            if(!$("#source_info_tooltip").is(":hover"))
+            {
+                $("#source_info_tooltip").hide();
+            }
         });
 
         $("#source_info_tooltip").mouseleave(function() {

@@ -251,16 +251,19 @@ img.buttonIcon {
     vertical-align: 2%;
 }
 
+
 #description_main
 {
-    padding: 10px 5px 5px 5px;
     font-size: 12px;
+    width: 100%;
 }
+
 
 #source_info
 {
     margin: 2px 5px 5px 5px;
-    float: right;
+    text-align: right;
+    white-space:nowrap;
 }
 
 #source_info img
@@ -284,6 +287,8 @@ img.buttonIcon {
     margin: -17px -5px -5px -50px;
     -webkit-box-shadow:0 0 5px #aaa;
     box-shadow:0 0 5px #aaa;
+    text-align: left;
+    white-space: normal;
 }
 
 #paramsListingDiv .ui-state-default
