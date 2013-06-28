@@ -15,6 +15,7 @@ import org.genepattern.webservice.TaskInfo;
  *
  */
 public abstract class SourceInfo {
+    final static private String BLANK_IMG="/gp/images/blank.gif";
 
     //final static SourceInfoLoader sourceInfoLoaderSingleton=new StubSourceInfoLoader();
     //final static SourceInfoLoader sourceInfoLoaderSingleton=new LsidSourceInfoLoader();
@@ -66,6 +67,10 @@ public abstract class SourceInfo {
             if (this.repositoryInfo.getUrl().toExternalForm().equalsIgnoreCase("http://www.broadinstitute.org/webservices/gpModuleRepository")) {
                 this.showSourceInfo=false;
             }
+            // if there is no icon for the repository, show a blank image
+            if (this.repositoryInfo.getIconImgSrc()==null || this.repositoryInfo.getIconImgSrc().length()==0) {
+                this.iconImgSrc=BLANK_IMG;
+            }
         }
         
         public String getBriefDescription() {
@@ -80,11 +85,11 @@ public abstract class SourceInfo {
     final static public class CreatedOnServer extends SourceInfo {
         private String userId=null;
         public CreatedOnServer() {
-            super(InstallInfo.Type.SERVER, "Created on server", "/gp/images/blank.gif");
+            super(InstallInfo.Type.SERVER, "Created on server", BLANK_IMG);
         }
         
         public CreatedOnServer(final TaskInfo taskInfo) {
-            super(InstallInfo.Type.SERVER, "Created on server", "/gp/images/blank.gif");
+            super(InstallInfo.Type.SERVER, "Created on server", BLANK_IMG);
             this.userId=taskInfo.getUserId();
         }
 
@@ -125,7 +130,7 @@ public abstract class SourceInfo {
      */
     final static public class FromUnknown extends SourceInfo {
         public FromUnknown() {
-            super(InstallInfo.Type.UNKNOWN, "N/A", "/gp/images/blank.gif");
+            super(InstallInfo.Type.UNKNOWN, "N/A", BLANK_IMG);
         }
         public String getBriefDescription() {
             //return "The origin of this module is unknown";
