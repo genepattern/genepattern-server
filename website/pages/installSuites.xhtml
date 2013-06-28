@@ -80,7 +80,7 @@
                                 cb.src = "#{facesContext.externalContext.requestContextPath}/images/red-x.gif";
                             }
                             var errorDivId = "error_" + lsid;
-							jq("[id='" + errorDivId + "']").html(installStatus.message);
+							jq("[id='" + errorDivId + "']").text(installStatus.message);
 							jq(errorDivId).show();
                         }
                         else if (installStatus.status == "warning") {
