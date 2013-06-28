@@ -19,30 +19,26 @@ public class DefaultRepositoryInfoLoader implements RepositoryInfoLoader {
     // Initialize default repositories.
     //
     //Broad public repository
-    final static public RepositoryInfo broadPublic=init("Broad public", "/gp/images/broad-symbol.gif", "http://www.broadinstitute.org/webservices/gpModuleRepository",
-            "A repository of production quality modules curated by the GenePattern team.",  "A repository of production quality modules curated by the GenePattern team (full description).");
+    final static public RepositoryInfo broadPublic=init("Broad production", "/gp/images/broad-symbol.gif", "http://www.broadinstitute.org/webservices/gpModuleRepository",
+            "A repository of GenePattern modules curated by the GenePattern team.",  
+            "The GenePattern production repository containing curated modules which have been developed and fully tested by the Broad Institute’s GenePattern team.");
+
     //GParc repository
     final static public RepositoryInfo gparc=init("GParc (GenePattern Archive)", "/gp/images/gparc_logo.png", "http://vgpprod01.broadinstitute.org:4542/gparcModuleRepository",
-            "A repository of modules, not curated by the GenePattern team, contributed by the GenePattern community.",
-                "GParc is a repository and community where users can share and discuss their own GenePattern modules. Unregistered users can download modules and rate them. Registered GParc users can " +
-                        "submit, download, rate and comment on modules and also access the GParc forum.");
+            "A GenePattern module repository whose content is contributed by members of the GenePattern community.  These modules are not curated by the GenePattern team.",
+                "GParc, short for GenePattern Archive, is both a GenePattern module repository and a web-based community. "+
+                "The repository contains GenePattern modules contributed by members of the GenePattern community, for use by that community. "+
+                "The GenePattern team does not curate GParc modules.  Community members can go to the <a href=\"http://www.broadinstitute.org/software/gparc/\">GParc website</a> "+
+                "to share, browse, discuss and rate the repository’s modules.  The GParc website also provides resources to assist in the authoring and testing of GenePattern modules.");
+
     //Broad beta repository
     final static public RepositoryInfo broadBeta=init("Broad beta", "/gp/images/broad_beta.png", "http://www.broadinstitute.org/webservices/betaModuleRepository",
-            "A repository of beta quality modules curated by the GenePattern team.", "Lorem ipsum dolor sit amet, consectetur adipiscing elit. " +
-            "Sed eu blandit libero. Suspendisse placerat justo vitae elit pharetra vehicula. Praesent vel vestibulum massa, sit amet rutrum " +
-            "massa. Ut sed auctor erat. Suspendisse consectetur velit vel bibendum mattis. Integer sapien urna, cursus vitae laoreet in, " +
-            "vulputate sit amet purus. Cras ullamcorper est ac turpis vulputate euismod. Donec varius viverra lorem, nec sodales justo feugiat " +
-            "eget. Morbi vitae lorem sollicitudin, lobortis odio vitae, laoreet augue. Ut egestas blandit lorem, ut suscipit turpis interdum non." +
-            " Nulla nunc sem, euismod id urna vel, aliquam porttitor purus. Morbi posuere bibendum magna, at rutrum dolor rutrum in. Nulla " +
-            "facilisi. Aenean luctus quam sed mauris tempus iaculis. Ut pharetra est vel sem fermentum, vel luctus ante commodo. Suspendisse " +
-            "potenti. Aenean at ante vel lectus fringilla semper quis ac elit. Nullam eget velit eu turpis egestas dapibus. Duis laoreet egestas" +
-            " sapien sit amet euismod. Phasellus pharetra ultricies magna. Aliquam sapien magna, ultricies malesuada felis ac, euismod ultrices " +
-            "ipsum. Suspendisse potenti.In quis lacinia turpis, ac venenatis nisi. Phasellus purus elit, vestibulum sed tempus at, feugiat ut dui." +
-            " Curabitur fringilla volutpat vehicula. Sed sagittis dictum pulvinar. Fusce interdum magna at enim porttitor volutpat. Donec vestibulum" +
-            " ut dui a aliquam. Praesent et convallis diam. Morbi elementum quam a purus venenatis, vitae egestas metus porttitor. Nullam et nisi " +
-            "neque. Mauris sollicitudin varius semper. In suscipit, sapien sit amet auctor rhoncus, diam felis pellentesque orci, dignissim aliquet " +
-            "urna lacus ac mi. Nam ultrices, purus eu sollicitudin aliquam, mi lectus sagittis urna, nec sodales mi nibh ultricies diam. Sed semper" +
-            " metus accumsan erat sollicitudin, quis aliquam lectus congue. Vivamus ultrices ultrices dolor. Nulla facilisi." );
+            "A GenePattern module repository containing beta releases of GenePattern modules.", 
+            "The GenePattern beta repository containing modules which have been developed by the Broad Institute’s GenePattern team but have undergone limited testing. "+
+            "Module testing is sufficient to verify it will not harm the GenePattern server in which they run. "+
+            "The GenePattern team, however, does not guarantee the module is computationally correct or that its interface will not be subject to change. "+
+            "The documentation that accompanies beta modules is likely to be incomplete." );
+    
     //Broad dev repository (only available via Broad internal network)
     final static public RepositoryInfo broadDev=init("Broad dev", null, "http://www.broadinstitute.org/webservices/gpModuleRepository?env=dev",
             "A repository of internal development quality modules developed by the GenePattern team." ,
