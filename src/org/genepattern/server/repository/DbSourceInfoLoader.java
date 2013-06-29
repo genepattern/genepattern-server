@@ -124,11 +124,15 @@ public class DbSourceInfoLoader implements SourceInfoLoader {
                 isBeta=false;
             }
             if (!isBeta) {
-                return new FromRepo(DefaultRepositoryInfoLoader.broadPublic);
+                RepositoryInfo prod=
+                        RepositoryInfo.getRepositoryInfoLoader(serverContext).getRepository(RepositoryInfo.BROAD_PROD_URL);
+                return new FromRepo(prod);
             }
             else {
                 // assume it's from Broad beta repository
-                return new FromRepo(DefaultRepositoryInfoLoader.broadBeta);
+                RepositoryInfo beta=
+                        RepositoryInfo.getRepositoryInfoLoader(serverContext).getRepository(RepositoryInfo.BROAD_BETA_URL);
+                return new FromRepo(beta);
             }
         }
         

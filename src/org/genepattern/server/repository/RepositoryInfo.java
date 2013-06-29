@@ -12,13 +12,18 @@ import org.genepattern.server.config.ServerConfiguration.Context;
 public class RepositoryInfo {
     final static public String PROP_MODULE_REPOSITORY_URL="ModuleRepositoryURL";
     final static public String PROP_MODULE_REPOSITORY_URLS="ModuleRepositoryURLs";
-
+    
+    final static public String BROAD_PROD_URL="http://www.broadinstitute.org/webservices/gpModuleRepository";
+    final static public String BROAD_BETA_URL="http://www.broadinstitute.org/webservices/betaModuleRepository";
+    final static public String BROAD_DEV_URL="http://www.broadinstitute.org/webservices/gpModuleRepository?env=dev";
+    final static public String GPARC_URL="http://vgpprod01.broadinstitute.org:4542/gparcModuleRepository";
     
     /**
      * RepositoryInfoFactory implementation
      */
     final static public RepositoryInfoLoader getRepositoryInfoLoader(final Context userContext) {
-        return new DefaultRepositoryInfoLoader(userContext);
+        //return new DefaultRepositoryInfoLoader(userContext);
+        return new ConfigRepositoryInfoLoader();
     }
     
     private String label="";

@@ -1,18 +1,24 @@
 package org.genepattern.server.repository;
 
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.log4j.Logger;
 import org.genepattern.server.config.ServerConfiguration;
 import org.genepattern.server.config.ServerConfiguration.Context;
-import org.genepattern.server.executor.CommandProperties.Value;
+import org.yaml.snakeyaml.Yaml;
 
 /**
  * A RepositoryInfoLoader based on system properties and server configuration files.
@@ -20,35 +26,45 @@ import org.genepattern.server.executor.CommandProperties.Value;
  * The current repository and the list of repositories are set in the genepattern.properties file,
  * and can be edited on the Server Settings -> Repositories page.
  * 
- * Additional details, such as label, icon, brief and full description are configured with the
- * server configuration yaml file (config.yaml, config_default.yaml or config_custom.yaml depending
- * on your server).
+ * Additional details, such as label, icon, brief and full description are configured in the
+ * repositoryDetails.yaml file.
+ * 
+ * TODO: optionally check for repository details in the repository web site, 
+ *     <repoUrl>/about/about.json
+ *     <repoUrl>/about/about.yaml
+ *     <repoUrl>/about/dev/about.json
+ *     <repoUrl>/about/dev/about.yaml 
  * 
  * @author pcarr
  */
 public class ConfigRepositoryInfoLoader implements RepositoryInfoLoader {
     final static private Logger log = Logger.getLogger(ConfigRepositoryInfoLoader.class);
-    final static public String BROAD_PROD_URL="http://www.broadinstitute.org/webservices/gpModuleRepository";
-    final static public String BROAD_BETA_URL="http://www.broadinstitute.org/webservices/betaModuleRepository";
-    final static public String BROAD_DEV_URL="http://www.broadinstitute.org/webservices/gpModuleRepository?env=dev";
-    final static public String GPARC_URL="http://vgpprod01.broadinstitute.org:4542/gparcModuleRepository";
-    
+        
     final Context serverContext=ServerConfiguration.Context.getServerContext();
     
+    //cached map of repositoryUrl to RepositoryInfo
     final static Map<String, RepositoryInfo> cache=new ConcurrentHashMap<String, RepositoryInfo>();
+    
+    //cached map of repositoryUrl to RepositoryInfo loaded from the 'repositoryDetails.yaml' file
+    final static Map<String, RepositoryInfo> repositoryDetailsYaml=new ConcurrentHashMap<String, RepositoryInfo>();
+    
+    static {
+        //initialize the details from the config file
+        repositoryDetailsYaml.putAll( loadDetailsFromConfig() );
+    }
     
     public ConfigRepositoryInfoLoader() {
     }
 
     @Override
     public RepositoryInfo getCurrentRepository() {
-        final String moduleRepositoryUrl=System.getProperty(RepositoryInfo.PROP_MODULE_REPOSITORY_URL, BROAD_PROD_URL);
+        final String moduleRepositoryUrl=System.getProperty(RepositoryInfo.PROP_MODULE_REPOSITORY_URL, RepositoryInfo.BROAD_PROD_URL);
         RepositoryInfo info=getRepository(moduleRepositoryUrl);
         if (info != null) {
             return info;
         }
         log.error("Error initializing repository info for current repository: "+moduleRepositoryUrl);
-        return getRepository(BROAD_PROD_URL);
+        return getRepository(RepositoryInfo.BROAD_PROD_URL);
     }
 
     @Override
@@ -56,19 +72,19 @@ public class ConfigRepositoryInfoLoader implements RepositoryInfoLoader {
         final LinkedHashSet<String> repoUrls=new LinkedHashSet<String>();
         
         //hard-coded items
-        repoUrls.add(BROAD_PROD_URL);
-        repoUrls.add(GPARC_URL);
-        repoUrls.add(BROAD_BETA_URL);
+        repoUrls.add(RepositoryInfo.BROAD_PROD_URL);
+        repoUrls.add(RepositoryInfo.GPARC_URL);
+        repoUrls.add(RepositoryInfo.BROAD_BETA_URL);
         
-        //check for repos in the config.yaml file
-        Value reposFromConfigFile=ServerConfiguration.instance().getValue(serverContext, "org.genepattern.server.repository.RepositoryUrls");
-        if (reposFromConfigFile != null) {
-            for(final String repoUrl : reposFromConfigFile.getValues()) {
-                if (!repoUrls.contains(repoUrl)) {
-                    repoUrls.add(repoUrl);
-                }
-            }
-        }
+//        //check for repos in the config.yaml file
+//        Value reposFromConfigFile=ServerConfiguration.instance().getValue(serverContext, "org.genepattern.server.repository.RepositoryUrls");
+//        if (reposFromConfigFile != null) {
+//            for(final String repoUrl : reposFromConfigFile.getValues()) {
+//                if (!repoUrls.contains(repoUrl)) {
+//                    repoUrls.add(repoUrl);
+//                }
+//            }
+//        }
         
         //check for repos from the gp.properties file (also set via Server Settings -> Repositories page)
         final List<String> fromProps=getModuleRepositoryUrlsFromGpProps();
@@ -76,6 +92,14 @@ public class ConfigRepositoryInfoLoader implements RepositoryInfoLoader {
             if (!repoUrls.contains(fromProp)) {
                 repoUrls.add(fromProp);
             }
+        }
+        
+        //check for (and set) details in the repositoryDetails.yaml file
+        repositoryDetailsYaml.clear();
+        repositoryDetailsYaml.putAll( loadDetailsFromConfig() );
+        //add additional repositories from the config file
+        for(final String urlFromConfig : repositoryDetailsYaml.keySet()) {
+            repoUrls.add(urlFromConfig);
         }
 
         //check for (and set) details in the server configuration yaml file
@@ -105,41 +129,9 @@ public class ConfigRepositoryInfoLoader implements RepositoryInfoLoader {
         }
         return info;
     }
-    
-    private RepositoryInfo initRepositoryInfo(final String repoUrl) {
-        final URL url;
-        try {
-            url=new URL(repoUrl);
-        }
-        catch (MalformedURLException e) {
-            log.error("Invalid moduleRepositoryUrl: "+repoUrl, e);
-            return null;
-        }
-        
-        final String label_key=repoUrl+"/about/label";
-        final String brief_key=repoUrl+"/about/brief";
-        final String full_key =repoUrl+"/about/full";
-        final String icon_key =repoUrl+"/about/icon";
-        
-        final String label=ServerConfiguration.instance().getGPProperty(serverContext, label_key, repoUrl);
-        final String brief=ServerConfiguration.instance().getGPProperty(serverContext, brief_key);
-        final String full=ServerConfiguration.instance().getGPProperty(serverContext, full_key);
-        final String icon=ServerConfiguration.instance().getGPProperty(serverContext, icon_key);
-        RepositoryInfo info=new RepositoryInfo(label, url);
-        if (brief != null) {
-            info.setBriefDescription(brief);
-        }
-        if (full != null) {
-            info.setFullDescription(full);
-        }
-        if (icon != null) {
-            info.setIconImgSrc(icon);
-        }
-        return info;
-    }
 
     static private List<String> getModuleRepositoryUrlsFromGpProps() { 
-        final String moduleRepositoryUrls=System.getProperty(RepositoryInfo.PROP_MODULE_REPOSITORY_URLS, BROAD_PROD_URL);
+        final String moduleRepositoryUrls=System.getProperty(RepositoryInfo.PROP_MODULE_REPOSITORY_URLS, RepositoryInfo.BROAD_PROD_URL);
         if (moduleRepositoryUrls==null) {
             return Collections.emptyList();
         }
@@ -154,35 +146,225 @@ public class ConfigRepositoryInfoLoader implements RepositoryInfoLoader {
         return urls;
     }
 
-    // ... exploring the possibility of loading a map of values directly from the config.yaml file ...
-//    private static void initFromConfig(final Context userContext) {
-//        Map<?,?> detailsMap=Collections.emptyMap();
-//        final Value urls=ServerConfiguration.instance().getValue(userContext, "org.genepattern.server.repository.RepositoryUrls");
-//        
-//        final Value detailsValue=ServerConfiguration.instance().getValue(userContext, "org.genepattern.server.repository.RepositoryDetails");
-//        if (detailsValue != null && detailsValue.isMap() && detailsValue.getMap() != null) {
-//            detailsMap=detailsValue.getMap();
-//        }
-//        
-//        if (urls != null) {
-//            for(final String url : urls.getValues()) {
-//                log.debug("adding repository: "+url);
-//            }
-//        }
-//        
-//        for(final String url : getModuleRepositoryUrlsFromGpProps()) {
-//            final Object detailsForUrl=detailsMap.get(url);
-//            
-//            //expecting a map
-//            if (detailsForUrl instanceof Map<?,?>) {
-//                Map<?,?> entry = (Map<?,?>) detailsForUrl;
-//                Object label=entry.get("label");
-//                Object icon=entry.get("icon");
-//                Object brief=entry.get("brief");
-//                Object full=entry.get("full");
-//            }
-//        }
-//    }
+    private RepositoryInfo initRepositoryInfo(final String repoUrl) {
+        final URL url;
+        try {
+            url=new URL(repoUrl);
+        }
+        catch (MalformedURLException e) {
+            log.error("Invalid moduleRepositoryUrl: "+repoUrl, e);
+            return null;
+        }
 
+        RepositoryInfo info=null;
+        // first, see if the details are available in the (remote) repository
+        // Note: commented out for first checkin
+        //RepositoryInfo info = initDetailsFromRepo(repoUrl);
+        //if (info == null) {
+        //    info = repositoryDetailsYaml.get(repoUrl);
+        //}
+        //if (info != null) {
+        //    return info;
+        //}
+        
+        info = new RepositoryInfo(url);
+        return info; 
+    }
+
+    /**
+     * Optionally get the details directly from the repository.
+     * 
+     * @param info
+     * @param aboutLink
+     * @return
+     */
+    private RepositoryInfo initDetailsFromRepo(final URL repoUrl) {
+        if (repoUrl==null) {
+            log.error("repoUrl==null");
+            return null;
+        }
+        
+        String aboutLink=repoUrl.toExternalForm();
+        String query=repoUrl.getQuery();
+        if (query != null) {
+            aboutLink=aboutLink.substring(0, aboutLink.lastIndexOf("?"));
+        }
+        //check for dev, queryString will be "env=dev"
+        boolean isDev=false;
+        if ("env=dev".equals(query)) {
+            isDev=true;
+        }
+        aboutLink += "/about";
+        if (isDev) {
+            aboutLink += "/dev";
+        }
+        aboutLink += "/about.yaml";
+        
+        URL aboutUrl;
+        try {
+            aboutUrl=new URL(aboutLink);
+        }
+        catch (MalformedURLException e) {
+            log.error(e);
+            return null;
+        }
+        
+        try { 
+            Map<String,RepositoryInfo> detailsFromUrl=loadDetailsFromUrl(aboutUrl);
+            if (detailsFromUrl == null || detailsFromUrl.size()==0) {
+                log.debug("no details available from url: "+aboutUrl);
+                return null;
+            }
+            log.debug("found "+detailsFromUrl.size()+" repository detail entries from "+aboutUrl);
+            return detailsFromUrl.get(repoUrl);
+        }
+        catch (Throwable t) {
+            log.error("Error getting repository details from "+aboutUrl, t);
+        }
+        
+        return null;
+        
+    }
+
+    private static Map<String,RepositoryInfo> loadDetailsFromConfig() {
+        File localFile=new File(System.getProperty("resources"), "repositoryDetails.yaml");
+        if (!localFile.exists()) {
+            log.debug("repositoryDetails.yaml does not exist: "+localFile);
+            return Collections.emptyMap();
+        }
+        if (!localFile.canRead()) {
+            log.error("repositoryDetails.yaml is not readable: "+localFile);
+            return Collections.emptyMap();
+        }
+        if (!localFile.isFile()) {
+            log.error("repositoryDetails.yaml is not a file: "+localFile);
+            return Collections.emptyMap();
+        }
+        
+        URL url;
+        try {
+            url=localFile.toURI().toURL();
+        }
+        catch (MalformedURLException e) {
+            log.error("Unexpected exception getting URL for local file: "+localFile);
+            return Collections.emptyMap();
+        }
+        
+        return loadDetailsFromUrl(url);
+    }
+    
+    private static Map<String,RepositoryInfo> loadDetailsFromUrl(final URL url) {        
+        String yamlStr;
+        final int connectTimeout=10*1000; //10 seconds
+        final int readTimeout=10*1000; //10 seconds
+        
+        try {
+            URLConnection con = url.openConnection();
+            con.setConnectTimeout(connectTimeout);
+            con.setReadTimeout(readTimeout);
+            InputStream in = con.getInputStream();        
+            yamlStr = IOUtils.toString(in, "UTF-8");
+        }
+        catch (IOException e) {
+            log.debug("Error loading repositoryDetails.yaml", e);
+            return Collections.emptyMap();
+        }
+
+
+        Map<String, RepositoryInfo> map=new LinkedHashMap<String,RepositoryInfo>();
+        Yaml yaml=new Yaml();
+        Iterable<Object> yamlFiles=yaml.loadAll(yamlStr);
+        for(Object yamlFile : yamlFiles) {
+            RepositoryInfo info=initFromYaml(yamlFile);
+            if (info != null) {
+                if (info.getUrl() != null) {
+                    map.put(info.getUrl().toExternalForm(), info);
+                }
+            }
+        }
+        return map;
+    }
+
+    /**
+     * Parse the yaml representation of the repository info.
+     * Can be either in JSON or YAML format. Example format,
+     * <pre>
+{
+"url": "http://www.broadinstitute.org/webservices/gpModuleRepository",
+"label": "Broad production",
+"icon": "/gp/images/broad-symbol.gif",
+"brief": "A repository of GenePattern modules curated by the GenePattern team.",
+"full": "The GenePattern production repository containing curated modules which have been developed and fully tested by the Broad Institute's GenePattern team."
+}
+     * </pre>
+     * 
+     * @param info, an existing RepositoryInfo instance, set values on this based on the contents of the yaml file.
+     * @param yamlStr, the contents of the yaml (or json) file loaded from the file system or via external url.
+     * @return
+     */
+    static private RepositoryInfo initFromYaml(final Object yamlDocument) {
+        return initFromYaml(null, yamlDocument);
+    }
+
+    static private RepositoryInfo initFromYaml(final String urlIn, final Object yamlDocument) {
+        if (!(yamlDocument instanceof Map)) {
+            log.error("Expecting an object of type map, returning null RepositoryInfo");
+            return null;
+        }
+        final Map map = (Map) yamlDocument;
+        URL url=null;
+        String urlStr;
+        if (map.containsKey("url")) {
+            urlStr = (String) map.get("url");
+            try {
+                url = new URL(urlStr);
+            }
+            catch (MalformedURLException e) {
+                log.error("Invalid url: "+urlStr, e);
+                return null;
+            }
+        }
+        else {
+            try {
+                url = new URL(urlIn);
+            }
+            catch (MalformedURLException e) {
+                log.error("Invalid urlIn: "+urlIn, e);
+                return null;
+            }
+        }
+        RepositoryInfo info = new RepositoryInfo(url);
+        if (map.containsKey("label")) {
+            info.setLabel((String) map.get("label"));
+        }
+        if (map.containsKey("icon")) {
+            String icon= (String) map.get("icon");
+            //handle url vs. relative vs. absolute path
+            try {
+                URL iconUrl=new URL(icon);
+                info.setIconImgSrc(iconUrl.toExternalForm());
+            }
+            catch (MalformedURLException e) {
+                if (icon.startsWith("/")) {
+                    info.setIconImgSrc(icon);
+                }
+                //else if (localFile != null) {
+                //    //TODO: handle local relative paths
+                //    log.error("pathToIcon not implemented: icon="+icon);
+                //}
+                else {
+                    //TODO: handle local relative paths
+                    log.error("pathToIcon not implemented: icon="+icon);
+                }
+            }
+        }
+        if (map.containsKey("brief")) {
+            info.setBriefDescription( (String) map.get("brief"));
+        }
+        if (map.containsKey("full")) {
+            info.setFullDescription( (String) map.get("full"));
+        }
+        return info;
+    }
 
 }

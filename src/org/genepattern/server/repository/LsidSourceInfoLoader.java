@@ -3,6 +3,7 @@ package org.genepattern.server.repository;
 import java.net.MalformedURLException;
 
 import org.apache.log4j.Logger;
+import org.genepattern.server.config.ServerConfiguration;
 import org.genepattern.server.repository.SourceInfo.CreatedOnServer;
 import org.genepattern.server.repository.SourceInfo.FromRepo;
 import org.genepattern.server.repository.SourceInfo.FromUnknown;
@@ -30,18 +31,6 @@ public class LsidSourceInfoLoader implements SourceInfoLoader {
     public SourceInfo getSourceInfo(final TaskInfo taskInfo) {
         if (taskInfo==null) {
             log.error("taskInfo==null");
-            return new FromUnknown();
-        }
-
-        //TODO: remove this line before we go to production,
-        // hard-code ConvertLineEndings source to GParc
-        if ("ConvertLineEndings".equals(taskInfo.getName())) {
-            return new FromRepo(DefaultRepositoryInfoLoader.gparc);
-        }
-        
-        //TODO: remove this line before we go to production
-        // hard-code modules named 'test*' as if source is unknown 
-        if (taskInfo.getName().toLowerCase().startsWith("test")) {
             return new FromUnknown();
         }
 
@@ -75,11 +64,17 @@ public class LsidSourceInfoLoader implements SourceInfoLoader {
                 isBeta=false;
             }
             if (!isBeta) {
-                return new FromRepo(DefaultRepositoryInfoLoader.broadPublic);
+                ServerConfiguration.Context serverContext=ServerConfiguration.Context.getServerContext();
+                RepositoryInfo prod=
+                        RepositoryInfo.getRepositoryInfoLoader(serverContext).getRepository(RepositoryInfo.BROAD_PROD_URL);
+                return new FromRepo(prod);
             }
             else {
                 // assume it's from Broad beta repository
-                return new FromRepo(DefaultRepositoryInfoLoader.broadBeta);
+                ServerConfiguration.Context serverContext=ServerConfiguration.Context.getServerContext();
+                RepositoryInfo beta=
+                        RepositoryInfo.getRepositoryInfoLoader(serverContext).getRepository(RepositoryInfo.BROAD_BETA_URL);
+                return new FromRepo(beta);
             }
         }
         

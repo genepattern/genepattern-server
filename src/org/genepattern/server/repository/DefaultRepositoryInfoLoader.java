@@ -19,12 +19,12 @@ public class DefaultRepositoryInfoLoader implements RepositoryInfoLoader {
     // Initialize default repositories.
     //
     //Broad public repository
-    final static public RepositoryInfo broadPublic=init("Broad production", "/gp/images/broad-symbol.gif", "http://www.broadinstitute.org/webservices/gpModuleRepository",
+    final static private RepositoryInfo broadPublic=init("Broad production", "/gp/images/broad-symbol.gif", "http://www.broadinstitute.org/webservices/gpModuleRepository",
             "A repository of GenePattern modules curated by the GenePattern team.",  
             "The GenePattern production repository containing curated modules which have been developed and fully tested by the Broad Institute’s GenePattern team.");
 
     //GParc repository
-    final static public RepositoryInfo gparc=init("GParc (GenePattern Archive)", "/gp/images/gparc_logo.png", "http://vgpprod01.broadinstitute.org:4542/gparcModuleRepository",
+    final static private RepositoryInfo gparc=init("GParc (GenePattern Archive)", "/gp/images/gparc_logo.png", "http://vgpprod01.broadinstitute.org:4542/gparcModuleRepository",
             "A GenePattern module repository whose content is contributed by members of the GenePattern community.  These modules are not curated by the GenePattern team.",
                 "GParc, short for GenePattern Archive, is both a GenePattern module repository and a web-based community. "+
                 "The repository contains GenePattern modules contributed by members of the GenePattern community, for use by that community. "+
@@ -32,7 +32,7 @@ public class DefaultRepositoryInfoLoader implements RepositoryInfoLoader {
                 "to share, browse, discuss and rate the repository’s modules.  The GParc website also provides resources to assist in the authoring and testing of GenePattern modules.");
 
     //Broad beta repository
-    final static public RepositoryInfo broadBeta=init("Broad beta", "/gp/images/broad_beta.png", "http://www.broadinstitute.org/webservices/betaModuleRepository",
+    final static private RepositoryInfo broadBeta=init("Broad beta", "/gp/images/broad_beta.png", "http://www.broadinstitute.org/webservices/betaModuleRepository",
             "A GenePattern module repository containing beta releases of GenePattern modules.", 
             "The GenePattern beta repository containing modules which have been developed by the Broad Institute’s GenePattern team but have undergone limited testing. "+
             "Module testing is sufficient to verify it will not harm the GenePattern server in which they run. "+
@@ -40,7 +40,7 @@ public class DefaultRepositoryInfoLoader implements RepositoryInfoLoader {
             "The documentation that accompanies beta modules is likely to be incomplete." );
     
     //Broad dev repository (only available via Broad internal network)
-    final static public RepositoryInfo broadDev=init("Broad dev", null, "http://www.broadinstitute.org/webservices/gpModuleRepository?env=dev",
+    final static private RepositoryInfo broadDev=init("Broad dev", null, "http://www.broadinstitute.org/webservices/gpModuleRepository?env=dev",
             "A repository of internal development quality modules developed by the GenePattern team." ,
                 "A repository of internal development quality modules developed by the GenePattern team (full description).");
     
