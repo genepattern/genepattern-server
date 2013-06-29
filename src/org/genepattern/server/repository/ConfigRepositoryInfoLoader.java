@@ -216,7 +216,7 @@ public class ConfigRepositoryInfoLoader implements RepositoryInfoLoader {
                 return null;
             }
             log.debug("found "+detailsFromUrl.size()+" repository detail entries from "+aboutUrl);
-            return detailsFromUrl.get(repoUrl);
+            return detailsFromUrl.get(repoUrl.toExternalForm());
         }
         catch (Throwable t) {
             log.error("Error getting repository details from "+aboutUrl, t);
