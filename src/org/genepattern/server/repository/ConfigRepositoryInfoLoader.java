@@ -12,6 +12,7 @@ import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.commons.io.IOUtils;
@@ -44,13 +45,8 @@ public class ConfigRepositoryInfoLoader implements RepositoryInfoLoader {
     
     //cached map of repositoryUrl to RepositoryInfo
     final static Map<String, RepositoryInfo> cache=new ConcurrentHashMap<String, RepositoryInfo>();
-    
-    //cached map of repositoryUrl to RepositoryInfo loaded from the 'repositoryDetails.yaml' file
-    final static Map<String, RepositoryInfo> repositoryDetailsYaml=new ConcurrentHashMap<String, RepositoryInfo>();
-    
-    static {
-        //initialize the details from the config file
-        repositoryDetailsYaml.putAll( loadDetailsFromConfig() );
+    final static public void clearCache() {
+        cache.clear();
     }
     
     public ConfigRepositoryInfoLoader() {
@@ -76,16 +72,6 @@ public class ConfigRepositoryInfoLoader implements RepositoryInfoLoader {
         repoUrls.add(RepositoryInfo.GPARC_URL);
         repoUrls.add(RepositoryInfo.BROAD_BETA_URL);
         
-//        //check for repos in the config.yaml file
-//        Value reposFromConfigFile=ServerConfiguration.instance().getValue(serverContext, "org.genepattern.server.repository.RepositoryUrls");
-//        if (reposFromConfigFile != null) {
-//            for(final String repoUrl : reposFromConfigFile.getValues()) {
-//                if (!repoUrls.contains(repoUrl)) {
-//                    repoUrls.add(repoUrl);
-//                }
-//            }
-//        }
-        
         //check for repos from the gp.properties file (also set via Server Settings -> Repositories page)
         final List<String> fromProps=getModuleRepositoryUrlsFromGpProps();
         for(final String fromProp : fromProps) {
@@ -94,21 +80,24 @@ public class ConfigRepositoryInfoLoader implements RepositoryInfoLoader {
             }
         }
         
-        //check for (and set) details in the repositoryDetails.yaml file
-        repositoryDetailsYaml.clear();
-        repositoryDetailsYaml.putAll( loadDetailsFromConfig() );
-        //add additional repositories from the config file
-        for(final String urlFromConfig : repositoryDetailsYaml.keySet()) {
+        //check for entries in the repositoryDetails.yaml file
+        final Set<String> urlsFromConfig=ServerConfiguration.instance().getRepositoryUrls();
+        for(final String urlFromConfig : urlsFromConfig) {
             repoUrls.add(urlFromConfig);
         }
 
-        //check for (and set) details in the server configuration yaml file
+        //initialize details and update the cache
         final List<RepositoryInfo> repos=new ArrayList<RepositoryInfo>();
         for(final String repoUrl : repoUrls) {
             final RepositoryInfo info = initRepositoryInfo(repoUrl);
-            //refresh cache if necessary
-            cache.put(repoUrl, info);
-            repos.add(info);
+            if (info==null) {
+                log.error("error initalizing RepositoryInfo for :"+repoUrl);
+            }
+            else {
+                //update the cache
+                cache.put(repoUrl, info);
+                repos.add(info);
+            }
         }
         return repos;
     }
@@ -163,7 +152,8 @@ public class ConfigRepositoryInfoLoader implements RepositoryInfoLoader {
         
         // next, check for details in (local) config file, repositoryDetails.yaml
         if (info == null) {
-            info = repositoryDetailsYaml.get(repoUrl);
+            //info = repositoryDetailsYaml.get(repoUrl);
+            info = ServerConfiguration.instance().getRepositoryInfo(repoUrl);
         }
         if (info != null) {
             return info;
@@ -228,27 +218,30 @@ public class ConfigRepositoryInfoLoader implements RepositoryInfoLoader {
         
     }
 
-    private static Map<String,RepositoryInfo> loadDetailsFromConfig() {
-        File localFile=new File(System.getProperty("resources"), "repositoryDetails.yaml");
-        if (!localFile.exists()) {
-            log.debug("repositoryDetails.yaml does not exist: "+localFile);
+    public static Map<String,RepositoryInfo> parseRepositoryDetailsYaml() {
+        final File repositoryDetailsFile=new File(System.getProperty("resources"), "repositoryDetails.yaml");
+        return parseRepositoryDetailsYaml(repositoryDetailsFile);
+    }
+    public static Map<String,RepositoryInfo> parseRepositoryDetailsYaml(final File repositoryDetailsFile) {
+        if (!repositoryDetailsFile.exists()) {
+            log.debug("repositoryDetails.yaml does not exist: "+repositoryDetailsFile);
             return Collections.emptyMap();
         }
-        if (!localFile.canRead()) {
-            log.error("repositoryDetails.yaml is not readable: "+localFile);
+        if (!repositoryDetailsFile.canRead()) {
+            log.error("repositoryDetails.yaml is not readable: "+repositoryDetailsFile);
             return Collections.emptyMap();
         }
-        if (!localFile.isFile()) {
-            log.error("repositoryDetails.yaml is not a file: "+localFile);
+        if (!repositoryDetailsFile.isFile()) {
+            log.error("repositoryDetails.yaml is not a file: "+repositoryDetailsFile);
             return Collections.emptyMap();
         }
         
         URL url;
         try {
-            url=localFile.toURI().toURL();
+            url=repositoryDetailsFile.toURI().toURL();
         }
         catch (MalformedURLException e) {
-            log.error("Unexpected exception getting URL for local file: "+localFile);
+            log.error("Unexpected exception getting URL for local file: "+repositoryDetailsFile);
             return Collections.emptyMap();
         }
         
@@ -272,7 +265,7 @@ public class ConfigRepositoryInfoLoader implements RepositoryInfoLoader {
             return Collections.emptyMap();
         }
 
-
+        //use linked hash map to preserve order of entries
         Map<String, RepositoryInfo> map=new LinkedHashMap<String,RepositoryInfo>();
         Yaml yaml=new Yaml();
         Iterable<Object> yamlFiles=yaml.loadAll(yamlStr);

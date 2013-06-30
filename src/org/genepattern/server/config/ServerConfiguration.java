@@ -4,10 +4,15 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import org.apache.log4j.Logger;
 import org.genepattern.server.executor.CommandProperties;
+import org.genepattern.server.repository.ConfigRepositoryInfoLoader;
+import org.genepattern.server.repository.RepositoryInfo;
 import org.genepattern.webservice.JobInfo;
 import org.genepattern.webservice.TaskInfo;
 
@@ -171,6 +176,15 @@ public class ServerConfiguration {
             errors.add(t);
             log.error(t);
         }
+        // parse the repositoryDetails.yaml file
+        try {
+            this.repositoryDetails=ConfigRepositoryInfoLoader.parseRepositoryDetailsYaml();
+            ConfigRepositoryInfoLoader.clearCache();
+        }
+        catch (Throwable t) {
+            errors.add(t);
+            log.error(t);
+        }
     }
     
     public String getConfigFilepath() {
@@ -199,6 +213,20 @@ public class ServerConfiguration {
     public JobConfigObj getJobConfiguration() {
         return jobConfig;
     }
+    private Map<String,RepositoryInfo> repositoryDetails=Collections.emptyMap();
+    public Set<String> getRepositoryUrls() {
+        if (repositoryDetails==null || repositoryDetails.size()==0) {
+            return Collections.emptySet();
+        }
+        return repositoryDetails.keySet();
+    }
+    public RepositoryInfo getRepositoryInfo(final String url) {
+        if (repositoryDetails==null) {
+            return null;
+        }
+        return repositoryDetails.get(url);
+    }
+
 
     /**
      * Utility method for parsing properties as a boolean.
@@ -518,5 +546,5 @@ public class ServerConfiguration {
         tempDir.mkdir();
         return tempDir;
     }
-
+    
 }
