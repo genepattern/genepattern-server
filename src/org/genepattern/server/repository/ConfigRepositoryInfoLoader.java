@@ -157,15 +157,17 @@ public class ConfigRepositoryInfoLoader implements RepositoryInfoLoader {
         }
 
         RepositoryInfo info=null;
-        // first, see if the details are available in the (remote) repository
-        // Note: commented out for first checkin
+        // first, check for details in (remote) repository
+        // Note: commented out for first check in
         //RepositoryInfo info = initDetailsFromRepo(repoUrl);
-        //if (info == null) {
-        //    info = repositoryDetailsYaml.get(repoUrl);
-        //}
-        //if (info != null) {
-        //    return info;
-        //}
+        
+        // next, check for details in (local) config file, repositoryDetails.yaml
+        if (info == null) {
+            info = repositoryDetailsYaml.get(repoUrl);
+        }
+        if (info != null) {
+            return info;
+        }
         
         info = new RepositoryInfo(url);
         return info; 
