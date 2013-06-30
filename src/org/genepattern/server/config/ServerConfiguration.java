@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
 import org.apache.log4j.Logger;
@@ -176,14 +177,31 @@ public class ServerConfiguration {
             errors.add(t);
             log.error(t);
         }
-        // parse the repositoryDetails.yaml file
+
+        // parse the repository.yaml and optional repository_custom.yaml file
+        boolean parsedRepoInfo=false;
         try {
-            this.repositoryDetails=ConfigRepositoryInfoLoader.parseRepositoryDetailsYaml();
-            ConfigRepositoryInfoLoader.clearCache();
+            final File defaultRepositoryFile=new File(System.getProperty("resources"), "repository.yaml");
+            this.repositoryDetails=ConfigRepositoryInfoLoader.parseRepositoryDetailsYaml(defaultRepositoryFile);
+            parsedRepoInfo=true;
         }
         catch (Throwable t) {
-            errors.add(t);
-            log.error(t);
+            log.error("Error in repository.yaml", t);
+            errors.add(new Exception("Error in repository.yaml: "+t.getLocalizedMessage(), t));
+        }
+        if (parsedRepoInfo) {            
+            try {
+                final File customRepositoryFile=new File(System.getProperty("resources"), "repository_custom.yaml");
+                final Map<String,RepositoryInfo> custom=ConfigRepositoryInfoLoader.parseRepositoryDetailsYaml(customRepositoryFile);
+                for(Entry<String,RepositoryInfo> entry : custom.entrySet()) {
+                    this.repositoryDetails.put(entry.getKey(), entry.getValue());
+                }
+            }
+            catch (Throwable t) {
+                log.error("Error in repository_custom.yaml", t);
+                errors.add(new Exception("Error in repository_custom.yaml: "+t.getLocalizedMessage(), t));
+            }
+            ConfigRepositoryInfoLoader.clearCache();
         }
     }
     

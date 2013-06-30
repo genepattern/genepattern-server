@@ -1,7 +1,14 @@
 #
 # Module Repository details are configured in this file in YAML format.
-# Details for each repository are in a separate 'document' within this file. 
-# Documents are delimited by the '---' separator.
+#
+# Each entry (aka yaml document) in this list will be displayed in the module chooser 
+# drop-down on the 'Install from repository' page.
+#
+# Entries (aka documents) are delimited by the '---' separator at the start of a line.
+#
+# To add additional repositories to the menu, create a new 'repository_custom.yaml' file
+# and add it to the resources directory.
+# This (repository.yaml) file will be replaced if/when you update your GP server.
 #
 #
 --- # Details for the Broad production repository
@@ -39,10 +46,3 @@ but have undergone limited testing. Module testing is sufficient to verify it wi
 they run. The GenePattern team, however, does not guarantee the module is computationally correct or that its interface will 
 not be subject to change. The documentation that accompanies beta modules is likely to be incomplete."
 }
-#--- # Details for the Broad dev repository
-#{
-#"url": "http://www.broadinstitute.org/webservices/gpModuleRepository?env=dev",
-#"label": "Broad dev",
-#"icon": "",
-#"brief": "A GenePattern module repository containing development quality releases of GenePattern modules."
-#}

@@ -48,7 +48,79 @@ public class ConfigRepositoryInfoLoader implements RepositoryInfoLoader {
     final static public void clearCache() {
         cache.clear();
     }
+
+    /**
+     * Load the repository details from a the given configuration file,
+     * for example 'resources/repository.yaml'.
+     * 
+     * @param repositoryDetailsFile
+     * @return a Map, possibly empty if there was an error reading the file.
+     */
+    public static Map<String,RepositoryInfo> parseRepositoryDetailsYaml(final File repositoryDetailsFile) throws Exception {
+        if (!repositoryDetailsFile.exists()) {
+            log.debug("repositoryDetails.yaml does not exist: "+repositoryDetailsFile);
+            return Collections.emptyMap();
+        }
+        if (!repositoryDetailsFile.canRead()) {
+            log.error("repositoryDetails.yaml is not readable: "+repositoryDetailsFile);
+            return Collections.emptyMap();
+        }
+        if (!repositoryDetailsFile.isFile()) {
+            log.error("repositoryDetails.yaml is not a file: "+repositoryDetailsFile);
+            return Collections.emptyMap();
+        }
+        
+        URL url;
+        try {
+            url=repositoryDetailsFile.toURI().toURL();
+        }
+        catch (MalformedURLException e) {
+            log.error("Unexpected exception getting URL for local file: "+repositoryDetailsFile);
+            return Collections.emptyMap();
+        }
+        
+        return loadDetailsFromUrl(url);
+    }
     
+    private static Map<String,RepositoryInfo> loadDetailsFromUrl(final URL url) throws Exception {        
+        String yamlStr;
+        final int connectTimeout=10*1000; //10 seconds
+        final int readTimeout=10*1000; //10 seconds
+        
+        try {
+            URLConnection con = url.openConnection();
+            con.setConnectTimeout(connectTimeout);
+            con.setReadTimeout(readTimeout);
+            InputStream in = con.getInputStream();        
+            yamlStr = IOUtils.toString(in, "UTF-8");
+        }
+        catch (IOException e) {
+            log.debug("Error loading repositoryDetails.yaml", e);
+            return Collections.emptyMap();
+        }
+
+        //use linked hash map to preserve order of entries
+        Map<String, RepositoryInfo> map=new LinkedHashMap<String,RepositoryInfo>();
+        Yaml yaml=new Yaml();
+        Iterable<Object> yamlFiles;
+        try {
+            yamlFiles=yaml.loadAll(yamlStr);
+        }
+        catch (Throwable t) {
+            log.error("Error parsing repository file: "+url.toExternalForm(), t);
+            throw new Exception("Error parsing "+url.toExternalForm()+": "+t.getLocalizedMessage());
+        }
+        for(Object yamlFile : yamlFiles) {
+            RepositoryInfo info=initFromYaml(yamlFile);
+            if (info != null) {
+                if (info.getUrl() != null) {
+                    map.put(info.getUrl().toExternalForm(), info);
+                }
+            }
+        }
+        return map;
+    }
+
     public ConfigRepositoryInfoLoader() {
     }
 
@@ -216,68 +288,6 @@ public class ConfigRepositoryInfoLoader implements RepositoryInfoLoader {
         
         return null;
         
-    }
-
-    public static Map<String,RepositoryInfo> parseRepositoryDetailsYaml() {
-        final File repositoryDetailsFile=new File(System.getProperty("resources"), "repositoryDetails.yaml");
-        return parseRepositoryDetailsYaml(repositoryDetailsFile);
-    }
-    public static Map<String,RepositoryInfo> parseRepositoryDetailsYaml(final File repositoryDetailsFile) {
-        if (!repositoryDetailsFile.exists()) {
-            log.debug("repositoryDetails.yaml does not exist: "+repositoryDetailsFile);
-            return Collections.emptyMap();
-        }
-        if (!repositoryDetailsFile.canRead()) {
-            log.error("repositoryDetails.yaml is not readable: "+repositoryDetailsFile);
-            return Collections.emptyMap();
-        }
-        if (!repositoryDetailsFile.isFile()) {
-            log.error("repositoryDetails.yaml is not a file: "+repositoryDetailsFile);
-            return Collections.emptyMap();
-        }
-        
-        URL url;
-        try {
-            url=repositoryDetailsFile.toURI().toURL();
-        }
-        catch (MalformedURLException e) {
-            log.error("Unexpected exception getting URL for local file: "+repositoryDetailsFile);
-            return Collections.emptyMap();
-        }
-        
-        return loadDetailsFromUrl(url);
-    }
-    
-    private static Map<String,RepositoryInfo> loadDetailsFromUrl(final URL url) {        
-        String yamlStr;
-        final int connectTimeout=10*1000; //10 seconds
-        final int readTimeout=10*1000; //10 seconds
-        
-        try {
-            URLConnection con = url.openConnection();
-            con.setConnectTimeout(connectTimeout);
-            con.setReadTimeout(readTimeout);
-            InputStream in = con.getInputStream();        
-            yamlStr = IOUtils.toString(in, "UTF-8");
-        }
-        catch (IOException e) {
-            log.debug("Error loading repositoryDetails.yaml", e);
-            return Collections.emptyMap();
-        }
-
-        //use linked hash map to preserve order of entries
-        Map<String, RepositoryInfo> map=new LinkedHashMap<String,RepositoryInfo>();
-        Yaml yaml=new Yaml();
-        Iterable<Object> yamlFiles=yaml.loadAll(yamlStr);
-        for(Object yamlFile : yamlFiles) {
-            RepositoryInfo info=initFromYaml(yamlFile);
-            if (info != null) {
-                if (info.getUrl() != null) {
-                    map.put(info.getUrl().toExternalForm(), info);
-                }
-            }
-        }
-        return map;
     }
 
     /**
