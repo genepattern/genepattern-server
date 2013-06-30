@@ -82,7 +82,13 @@ public class ConfigRepositoryInfoLoader implements RepositoryInfoLoader {
         return loadDetailsFromUrl(url);
     }
     
-    private static Map<String,RepositoryInfo> loadDetailsFromUrl(final URL url) throws Exception {        
+    private static Map<String,RepositoryInfo> loadDetailsFromUrl(final URL url) throws Exception {  
+        if (url==null) {
+            log.error("url==null");
+            return Collections.emptyMap();
+        }        
+        log.debug("loading repository details from "+url);
+
         String yamlStr;
         final int connectTimeout=10*1000; //10 seconds
         final int readTimeout=10*1000; //10 seconds
@@ -152,7 +158,7 @@ public class ConfigRepositoryInfoLoader implements RepositoryInfoLoader {
             }
         }
         
-        //check for entries in the repositoryDetails.yaml file
+        //check for entries in the server configuration
         final Set<String> urlsFromConfig=ServerConfiguration.instance().getRepositoryUrls();
         for(final String urlFromConfig : urlsFromConfig) {
             repoUrls.add(urlFromConfig);
@@ -219,8 +225,7 @@ public class ConfigRepositoryInfoLoader implements RepositoryInfoLoader {
 
         RepositoryInfo info=null;
         // first, check for details in (remote) repository
-        // Note: commented out for first check in
-        //RepositoryInfo info = initDetailsFromRepo(repoUrl);
+        info = initDetailsFromRepo(url);
         
         // next, check for details in (local) config file, repositoryDetails.yaml
         if (info == null) {
@@ -247,6 +252,8 @@ public class ConfigRepositoryInfoLoader implements RepositoryInfoLoader {
             log.error("repoUrl==null");
             return null;
         }
+
+        log.debug("Checking for details in repository: "+repoUrl);
         
         String aboutLink=repoUrl.toExternalForm();
         String query=repoUrl.getQuery();
@@ -272,6 +279,7 @@ public class ConfigRepositoryInfoLoader implements RepositoryInfoLoader {
             log.error(e);
             return null;
         }
+        log.debug("aboutUrl="+aboutUrl);
         
         try { 
             Map<String,RepositoryInfo> detailsFromUrl=loadDetailsFromUrl(aboutUrl);
@@ -285,9 +293,7 @@ public class ConfigRepositoryInfoLoader implements RepositoryInfoLoader {
         catch (Throwable t) {
             log.error("Error getting repository details from "+aboutUrl, t);
         }
-        
         return null;
-        
     }
 
     /**
