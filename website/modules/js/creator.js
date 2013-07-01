@@ -1791,13 +1791,16 @@ jQuery(document).ready(function() {
                 }};
     	var dialogHTML = '<div><a href="http://gparc.org"><img src="styles/images/gparc.png" alt="GParc" style="margin-bottom: 10px;" /></a><br />\
 			<strong>GParc</strong> is a repository and community where users can share and discuss their own GenePattern modules.<br/><br/>';
-    	if (!hasDocFiles()) {
+
+        if (isDirty()) {
+            dialogHTML += '<img src="styles/images/alert.gif" alt="Alert" /> <span style="color:red;">Changes to this module must be saved before it can be submitted to GParc.</span><br/><br/>';
+        }
+
+        if (!hasDocFiles()) {
     		dialogHTML += '<img src="styles/images/alert.gif" alt="Alert" /> <span style="color:red;">This module does not yet have attached documentation.</span><br/><br/>\
     			In order to submit a module to GParc the module will need to have attached documentation.<br/><br/>';
 		}
-    	if (isDirty()) {
-    		dialogHTML += '<img src="styles/images/alert.gif" alt="Alert" /> <span style="color:red;">Changes to this module must be saved before it can be submitted to GParc.</span><br/><br/>';
-		}
+
     	dialogHTML += 'To submit a module to GParc you will need to do the following: <ol><li>Export your module as a ZIP file</li><li>Click the "Go to GParc" button below and upload the file. To do this you will need to have an account on GParc and be signed in.</li></ol></div>';
     	if (!hasDocFiles() || isDirty()) {
     		setTimeout(function() {
