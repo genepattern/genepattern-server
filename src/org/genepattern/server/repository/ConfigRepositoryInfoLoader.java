@@ -27,14 +27,18 @@ import org.yaml.snakeyaml.Yaml;
  * The current repository and the list of repositories are set in the genepattern.properties file,
  * and can be edited on the Server Settings -> Repositories page.
  * 
- * Additional details, such as label, icon, brief and full description are configured in the
- * repositoryDetails.yaml file.
- * 
- * TODO: optionally check for repository details in the repository web site, 
- *     <repoUrl>/about/about.json
+ * Additional details, such as label, icon, brief and full description are optionally loaded from the 
+ * module repository if an about.yaml file is present.
+ * <pre>
  *     <repoUrl>/about/about.yaml
- *     <repoUrl>/about/dev/about.json
- *     <repoUrl>/about/dev/about.yaml 
+ * e.g. for the Broad production repository,
+ *     http://www.broadinstitute.org/webservices/gpModuleRepository/about/about.yaml
+ * e.g. for the Broad dev repository,
+ *     http://www.broadinstitute.org/webservices/gpModuleRepository/about/dev/about.yaml
+ * </pre>
+ * 
+ * If an about.yaml file is not present in the repository, 
+ * details are loaded from the 'repository.yaml' and/or 'repository_custom.yaml' file.
  * 
  * @author pcarr
  */
@@ -252,8 +256,7 @@ public class ConfigRepositoryInfoLoader implements RepositoryInfoLoader {
             log.error("repoUrl==null");
             return null;
         }
-
-        log.debug("Checking for details in repository: "+repoUrl);
+        log.debug("remote check for repository details: "+repoUrl);
         
         String aboutLink=repoUrl.toExternalForm();
         String query=repoUrl.getQuery();
