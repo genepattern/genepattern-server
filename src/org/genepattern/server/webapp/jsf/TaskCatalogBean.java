@@ -12,6 +12,7 @@
 
 package org.genepattern.server.webapp.jsf;
 
+import java.io.FileNotFoundException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -60,6 +61,7 @@ public class TaskCatalogBean {
     private static Logger log = Logger.getLogger(TaskCatalogBean.class);
 
     private boolean error;
+    private List<String> errorMessages=new ArrayList<String>();
 
     private InstallTasksCollectionUtils collection;
 
@@ -99,30 +101,52 @@ public class TaskCatalogBean {
         collection = new InstallTasksCollectionUtils(UIBeanHelper.getUserId(), false);
         try {
             this.tasks = collection.getAvailableModules();
-        } catch (Exception e) {
+        }
+        catch (FileNotFoundException e) {
+            errorMessages.add("FileNotFound");
             log.error(e);
             error = true;
         }
+        catch (Exception e) {
+            errorMessages.add(e.getLocalizedMessage());
+            log.error(e);
+            error = true;
+        }
+        catch (OutOfMemoryError e) {
+            errorMessages.add("OutOfMemoryError, your server does not have enough RAM to load the module repository catalog. Select a different repository, or increase the memory settings for your server.");
+            log.error(e);
+            error=true;
+        }
+        catch (Throwable t) {
+            errorMessages.add(t.getClass().getName()+", unexpected error loading the module repository catalog");
+            log.error(t);
+            error=true;
+        }
         try {
             this.baseLsidToTasksMap = new LinkedHashMap<String, List>();
-            for (InstallTask t : tasks) {
-                try {
-                    String baseLsid = new LSID(t.getLsid()).toStringNoVersion();
-                    List<InstallTask> taskList = baseLsidToTasksMap.get(baseLsid);
-                    if (taskList == null) {
-                        taskList = new ArrayList<InstallTask>();
-                        baseLsidToTasksMap.put(baseLsid, taskList);
+            if (tasks != null) {
+                for (InstallTask t : tasks) {
+                    try {
+                        String baseLsid = new LSID(t.getLsid()).toStringNoVersion();
+                        List<InstallTask> taskList = baseLsidToTasksMap.get(baseLsid);
+                        if (taskList == null) {
+                            taskList = new ArrayList<InstallTask>();
+                            baseLsidToTasksMap.put(baseLsid, taskList);
+                        }
+                        taskList.add(t);
+                    } 
+                    catch (MalformedURLException e) {
+                        log.error(e);
                     }
-                    taskList.add(t);
-                } catch (MalformedURLException e) {
-                    log.error(e);
                 }
             }
-
-        } catch (Exception e) {
+        } 
+        catch (Exception e) {
+            errorMessages.add(e.getLocalizedMessage());
             this.error = true;
             log.error(e);
         }
+
         lsidToTaskMap = new HashMap<String, InstallTask>();
         if (tasks != null) {
             for (InstallTask t : tasks) {
@@ -157,6 +181,13 @@ public class TaskCatalogBean {
             filter();
         }
 
+    }
+    
+    public String getRepositoryUrl() {
+        if (collection==null) {
+            return "";
+        }
+        return collection.getRepositoryUrl();
     }
 
     private static void updateSelectedItems(String[] request, MySelectItem[] selectItems) {
@@ -260,6 +291,10 @@ public class TaskCatalogBean {
 
     public boolean isError() {
         return error;
+    }
+    
+    public List<String> getErrorMessages() {
+        return errorMessages;
     }
 
     public HashSet getMissingLsids() {

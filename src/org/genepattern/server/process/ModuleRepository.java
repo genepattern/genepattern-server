@@ -12,6 +12,7 @@
 
 package org.genepattern.server.process;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -94,7 +95,7 @@ public class ModuleRepository {
         this.repositoryUrl=repositoryUrl;
     }
 
-    public InstallTask[] parse(final String url) throws Exception {
+    public InstallTask[] parse(final String url) throws FileNotFoundException, Exception {
         String DBF = "javax.xml.parsers.DocumentBuilderFactory";
         String oldDocumentBuilderFactory = System.getProperty(DBF);
         final URL reposURL = new URL(url);
@@ -120,9 +121,14 @@ public class ModuleRepository {
 
             doc = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(
                     new InputSource(new InputStreamReader(is)));
-        } catch (IOException ioe) {
+        }
+        catch (FileNotFoundException e) {
+            throw e;
+        }
+        catch (IOException ioe) {
             throw new IOException(ioe.getMessage() + " while connecting to " + url);
-        } finally {
+        } 
+        finally {
             try {
                 if (is != null)
                     is.close();

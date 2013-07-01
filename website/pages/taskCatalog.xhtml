@@ -73,7 +73,10 @@
             <br/>
             <c:choose>
                 <c:when test="#{taskCatalogBean.error}">
-                    <p>Sorry, the module repository is not currently available.</p>
+                    <p>Sorry, the module repository is not currently available: #{taskCatalogBean.repositoryUrl}</p>
+                    <t:dataList var="error" value="#{taskCatalogBean.errorMessages}" rowIndexVar="taskIndex">
+                        <h:outputText value="#{error}" />
+                    </t:dataList>
                     <c:if test="#{authorizationBean.adminServerAllowed}">
                         <p>If you use a web proxy to connect to the internet, please
                             ensure your <a href="#{facesContext.externalContext.requestContextPath}/pages/serverSettings.jsf">web proxy settings</a> are

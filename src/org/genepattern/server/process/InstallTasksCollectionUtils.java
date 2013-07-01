@@ -49,6 +49,13 @@ public class InstallTasksCollectionUtils {
         this.repositoryURL = repositoryInfo.getUrl();
         repos = new ModuleRepository(repositoryURL);
     }
+    
+    public String getRepositoryUrl() {
+        if (repositoryURL != null) {
+            return repositoryURL.toExternalForm();
+        }
+        return "";
+    }
 
     // get a list of all modules available for download
     public InstallTask[] getAvailableModules() throws Exception {
