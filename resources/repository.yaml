@@ -7,8 +7,27 @@
 # Entries (aka documents) are delimited by the '---' separator at the start of a line.
 #
 # To add additional repositories to the menu, create a new 'repository_custom.yaml' file
-# and add it to the resources directory.
+# and include it in the resources directory.
 # This (repository.yaml) file will be replaced if/when you update your GP server.
+#
+# You can also add repositories from the Server Settings -> Repositories page.
+#
+# To include details such as a label, icon, brief description, and full description
+# for a custom module repository. These are steps to take in the repository web application
+# not this GP server
+#
+# 1) create an about folder in the repository webapp dir
+#    e.g. ./webapps/gpModuleRepository/about
+# 2) update the WEB-INF/web.xml file
+#    <servlet-mapping>
+#        <servlet-name>jspservlet</servlet-name>
+#        <url-pattern>/about/*</url-pattern>
+#    </servlet-mapping>
+#
+# 3) add an about.jsp file to this folder 
+#    It can be empty. This is a signal to the GP server that there is a details file.
+# 4) add an about.yml file to this folder in the same format as this file
+#    Except with only one entry
 #
 #
 --- # Details for the Broad production repository
@@ -19,7 +38,7 @@
 "brief": "A repository of GenePattern modules curated by the GenePattern team.",
 "full": 
     "The GenePattern production repository containing curated modules which 
-have been developed and fully tested by the Broad Institute's GenePattern team."
+    have been developed and fully tested by the Broad Institute's GenePattern team."
 }
 --- # Details for the GParc repository
 {
