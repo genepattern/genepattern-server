@@ -19,6 +19,9 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.apache.commons.io.IOUtils;
 import org.apache.log4j.Logger;
 import org.genepattern.server.config.ServerConfiguration;
+import org.genepattern.server.config.ServerConfiguration.Context;
+import org.genepattern.server.database.HibernateUtil;
+import org.genepattern.server.user.UserDAO;
 import org.yaml.snakeyaml.Yaml;
 
 /**
@@ -257,18 +260,72 @@ public class ConfigRepositoryInfoLoader implements RepositoryInfoLoader {
         }
         return info;
     }
+    
+    final private Context userContext; 
+    private String currentRepository=RepositoryInfo.BROAD_PROD_URL;
 
-    public ConfigRepositoryInfoLoader() {
+    public ConfigRepositoryInfoLoader(Context userContext) {
+        if (userContext==null) {
+            log.debug("User context==null");
+            this.userContext=ServerConfiguration.Context.getServerContext();
+        }
+        else {
+            this.userContext=userContext;
+            if (userContext.getUserId()==null || userContext.getUserId().length()==0) {
+                log.error("userContext.userId is not set");
+            }
+            else {
+                boolean inTransaction=HibernateUtil.isInTransaction();
+                try {
+                    UserDAO userDao=new UserDAO();
+                    this.currentRepository=userDao.getPropertyValue(userContext.getUserId(), RepositoryInfo.PROP_MODULE_REPOSITORY_URL, RepositoryInfo.BROAD_PROD_URL);
+                }
+                finally {
+                    if (!inTransaction) {
+                        HibernateUtil.closeCurrentSession();
+                    }
+                }
+            }            
+        }
     }
 
     @Override
+    public void setCurrentRepository(final String repositoryUrl) {
+        this.currentRepository=repositoryUrl;
+        if (userContext==null || userContext.getUserId()==null || userContext.getUserId().length()==0) {
+            //when userId us not set, match previous <= 3.6.0 functionality by saving as a global system property
+            log.error("userContext is null or userContext.userId is not set");
+            System.setProperty(RepositoryInfo.PROP_MODULE_REPOSITORY_URL, repositoryUrl);
+            return;
+        }
+        
+        boolean inTransaction=HibernateUtil.isInTransaction();
+        try {
+            UserDAO userDao = new UserDAO();
+            userDao.setProperty(userContext.getUserId(), RepositoryInfo.PROP_MODULE_REPOSITORY_URL, repositoryUrl);
+            if (!inTransaction) {
+                HibernateUtil.commitTransaction();
+            }
+        }
+        catch (Throwable t) {
+            log.error("Error in setCurrentRepository("+repositoryUrl+") for user="+userContext.getUserId(), t);
+            HibernateUtil.rollbackTransaction();
+        }
+        finally {
+            if (!inTransaction) {
+                HibernateUtil.closeCurrentSession();
+            }
+        }
+    }
+    
+    @Override
     public RepositoryInfo getCurrentRepository() {
-        final String moduleRepositoryUrl=System.getProperty(RepositoryInfo.PROP_MODULE_REPOSITORY_URL, RepositoryInfo.BROAD_PROD_URL);
-        RepositoryInfo info=getRepository(moduleRepositoryUrl);
+        //final String moduleRepositoryUrl=System.getProperty(RepositoryInfo.PROP_MODULE_REPOSITORY_URL, RepositoryInfo.BROAD_PROD_URL);
+        RepositoryInfo info=getRepository(currentRepository);
         if (info != null) {
             return info;
         }
-        log.error("Error initializing repository info for current repository: "+moduleRepositoryUrl);
+        log.error("Error initializing repository info for current repository: "+currentRepository);
         return getRepository(RepositoryInfo.BROAD_PROD_URL);
     }
 

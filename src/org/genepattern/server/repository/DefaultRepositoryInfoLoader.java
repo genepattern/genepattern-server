@@ -12,6 +12,11 @@ import org.apache.log4j.Logger;
 import org.genepattern.server.config.ServerConfiguration;
 import org.genepattern.server.config.ServerConfiguration.Context;
 
+/**
+ * 
+ * @author pcarr
+ * @deprecated Use the ConfigRepositoryInfo instead.
+ */
 public class DefaultRepositoryInfoLoader implements RepositoryInfoLoader {
     final static private Logger log = Logger.getLogger(DefaultRepositoryInfoLoader.class);
     
@@ -119,8 +124,14 @@ public class DefaultRepositoryInfoLoader implements RepositoryInfoLoader {
     }
 
     @Override
+    public void setCurrentRepository(final String repositoryUrl) {
+        //TODO: must save this to the DB or else the menu will appear to have no effect
+        //initial implementation matches current (<= 3.6.0 functionality) by saving as a global system property
+        System.setProperty(RepositoryInfo.PROP_MODULE_REPOSITORY_URL, repositoryUrl);        
+    }
+
+    @Override
     public RepositoryInfo getCurrentRepository() {
-        //final String moduleRepositoryUrl=ServerConfiguration.instance().getGPProperty(userContext, "ModuleRepositoryURL", "http://www.broadinstitute.org/webservices/gpModuleRepository");
         final String moduleRepositoryUrl=System.getProperty(RepositoryInfo.PROP_MODULE_REPOSITORY_URL, broadPublic.getUrl().toExternalForm());
         
         RepositoryInfo repositoryInfo=getRepository(moduleRepositoryUrl);

@@ -40,9 +40,7 @@ public class ModuleRepositorySelectorBean {
      * @param url
      */
     public void setUrl(final String url) {
-        //TODO: must save this to the DB or else the menu will appear to have no effect
-        //initial implementation matches current (<= 3.6.0 functionality) by saving as a global system property
-        System.setProperty(RepositoryInfo.PROP_MODULE_REPOSITORY_URL, url);
+        loader.setCurrentRepository(url);
         init();
     }
 

@@ -59,7 +59,6 @@ public class InstallTasksCollectionUtils {
 
     // get a list of all modules available for download
     public InstallTask[] getAvailableModules() throws Exception {
-        //String repositoryURL = System.getProperty("ModuleRepositoryURL");
         String repositoryUrlQuery=repositoryURL.toExternalForm();
         boolean notFirstParam = (repositoryUrlQuery.indexOf("?") > 0);       
         String paramPrefix = notFirstParam? "&" :"?";

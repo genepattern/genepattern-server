@@ -22,8 +22,7 @@ public class RepositoryInfo {
      * RepositoryInfoFactory implementation
      */
     final static public RepositoryInfoLoader getRepositoryInfoLoader(final Context userContext) {
-        //return new DefaultRepositoryInfoLoader(userContext);
-        return new ConfigRepositoryInfoLoader();
+        return new ConfigRepositoryInfoLoader(userContext);
     }
     
     private String label="";
