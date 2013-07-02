@@ -27,11 +27,6 @@ public class DbSourceInfoLoader implements SourceInfoLoader {
     final static private Logger log = Logger.getLogger(SourceInfoLoader.class);
     
     private Context serverContext=ServerConfiguration.Context.getServerContext();
-    /**
-     * Flag for how to deal with modules when there is no 'install_info' entry in the DB.
-     * Either return unknown, or guess based on the lsid of the task.
-     */
-    private boolean deduceFromLsid=true;
 
     @Override
     public SourceInfo getSourceInfo(final TaskInfo taskInfo) {
@@ -60,6 +55,7 @@ public class DbSourceInfoLoader implements SourceInfoLoader {
         if (taskInstall==null) {
             //no record in db, probably installed before updating to GP 3.6.0+
             //use the lsid to guess the source
+            boolean deduceFromLsid=ServerConfiguration.instance().getGPBooleanProperty(serverContext, SourceInfo.PROP_DEDUCE_FROM_LSID, false);
             if (deduceFromLsid) {
                 return fromLsid(taskInfo.getLsid());
             }

@@ -15,6 +15,11 @@ import org.genepattern.webservice.TaskInfo;
  *
  */
 public abstract class SourceInfo {
+    /**
+     * Flag for how to deal with modules when there is no 'install_info' entry in the DB.
+     * Either return unknown, or guess based on the lsid of the task.
+     */
+    final static public String PROP_DEDUCE_FROM_LSID=RepositoryInfo.class.getName()+".deduceFromLsid";
     final static private String BLANK_IMG="/gp/images/blank.gif";
 
     //final static SourceInfoLoader sourceInfoLoaderSingleton=new StubSourceInfoLoader();
@@ -133,8 +138,7 @@ public abstract class SourceInfo {
             super(InstallInfo.Type.UNKNOWN, "N/A", BLANK_IMG);
         }
         public String getBriefDescription() {
-            //return "The origin of this module is unknown";
-            return null;
+            return "Installation source not known, module was installed before the GP 3.6.1 update";
         }
         public String getFullDescription() {
             return null;
