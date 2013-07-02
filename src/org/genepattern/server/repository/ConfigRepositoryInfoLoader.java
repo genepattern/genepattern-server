@@ -281,6 +281,12 @@ public class ConfigRepositoryInfoLoader implements RepositoryInfoLoader {
         repoUrls.add(RepositoryInfo.GPARC_URL);
         repoUrls.add(RepositoryInfo.BROAD_BETA_URL);
         
+        //check for entries in the server configuration
+        final Set<String> urlsFromConfig=ServerConfiguration.instance().getRepositoryUrls();
+        for(final String urlFromConfig : urlsFromConfig) {
+            repoUrls.add(urlFromConfig);
+        }
+
         //check for repos from the gp.properties file (also set via Server Settings -> Repositories page)
         final List<String> fromProps=getModuleRepositoryUrlsFromGpProps();
         for(final String fromProp : fromProps) {
@@ -289,12 +295,6 @@ public class ConfigRepositoryInfoLoader implements RepositoryInfoLoader {
             }
         }
         
-        //check for entries in the server configuration
-        final Set<String> urlsFromConfig=ServerConfiguration.instance().getRepositoryUrls();
-        for(final String urlFromConfig : urlsFromConfig) {
-            repoUrls.add(urlFromConfig);
-        }
-
         //initialize details and update the cache
         final List<RepositoryInfo> repos=new ArrayList<RepositoryInfo>();
         for(final String repoUrl : repoUrls) {
