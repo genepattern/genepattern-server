@@ -321,9 +321,14 @@ div.ui-layout-north
 {
     float: right;
     font-size: 0.78em;
-    margin: 0;
+    margin: 0 0 -1px 0;
     padding: 0;
     margin-left: 3px;
+}
+
+.top-dialog ul
+{
+    list-style: disc;
 }
 
 /*CSS partially copied from JQuery File upload plugin  */

@@ -1811,7 +1811,10 @@ jQuery(document).ready(function() {
     });
     // ENABLE: $('#publishGParc').button("disable");
     $('#whatIsGparc').click(function(event) {
-    	showDialog("What is GParc?", '<a href="http://gparc.org"><img src="styles/images/gparc.png" alt="GParc" style="margin-bottom: 10px;" /></a><br /><strong>GParc</strong> is a repository and community where users can share and discuss their own GenePattern modules.<br/><br/>Unregistered users can download modules and rate them.  Registered GParc users can:<ul><li>Submit modules</li><li>Download modules</li><li>Rate modules</li><li>Comment on modules</li><li>Access the GPARC forum</ul>');
+    	showDialog("What is GParc?", '<a href="http://gparc.org"><img src="styles/images/gparc.png" alt="GParc" style="margin-bottom: 10px;"'+
+            '/></a><br /><strong>GParc</strong> is a repository and community where users can share and discuss their own GenePattern modules.'+
+            '<br/><br/>Unregistered users can download modules and rate them.  Registered GParc users can:<ul><li>Submit modules</li>'+
+            '<li>Download modules</li><li>Rate modules</li><li>Comment on modules</li><li>Access the GParc forum</ul>');
     	if (event.preventDefault) event.preventDefault();
         if (event.stopPropagation) event.stopPropagation();
     });
