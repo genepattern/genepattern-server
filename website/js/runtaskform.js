@@ -360,7 +360,7 @@ function loadModuleInfo(module)
                         $("#source_info_tooltip").show();
                     }
                 }
-            }, 2000);
+            }, 1150);
         });
 
         $("body").mousemove(function()
