@@ -181,20 +181,13 @@ public class ConfigRepositoryInfoLoader implements RepositoryInfoLoader {
 
     /**
      * Parse the yaml representation of the repository info.
-     * Can be either in JSON or YAML format. Example format,
-     * <pre>
-{
-"url": "http://www.broadinstitute.org/webservices/gpModuleRepository",
-"label": "Broad production",
-"icon": "/gp/images/broad-symbol.gif",
-"brief": "A repository of GenePattern modules curated by the GenePattern team.",
-"full": "The GenePattern production repository containing curated modules which have been developed and fully tested by the Broad Institute's GenePattern team."
-}
-     * </pre>
+     * Can be either in JSON or YAML format.
+     * See the 'repository.yaml' file in the resources directory for an example.
      * 
-     * @param info, an existing RepositoryInfo instance, set values on this based on the contents of the yaml file.
-     * @param yamlStr, the contents of the yaml (or json) file loaded from the file system or via external url.
-     * @return
+     * @param yamlDocument, the contents of the yaml (or json) file loaded from the file system
+     *     or via external url.
+     *     
+     * @return a RepositoryInfo instance or null if there are parser errors
      */
     final static private RepositoryInfo initFromYaml(final Object yamlDocument) {
         return initFromYaml(null, yamlDocument);
@@ -332,11 +325,6 @@ public class ConfigRepositoryInfoLoader implements RepositoryInfoLoader {
     @Override
     public List<RepositoryInfo> getRepositories() {
         final LinkedHashSet<String> repoUrls=new LinkedHashSet<String>();
-        
-        //hard-coded items
-        repoUrls.add(RepositoryInfo.BROAD_PROD_URL);
-        repoUrls.add(RepositoryInfo.GPARC_URL);
-        repoUrls.add(RepositoryInfo.BROAD_BETA_URL);
         
         //check for entries in the server configuration
         final Set<String> urlsFromConfig=ServerConfiguration.instance().getRepositoryUrls();
