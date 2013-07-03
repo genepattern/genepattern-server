@@ -17,31 +17,32 @@ import org.genepattern.server.repository.RepositoryInfoLoader;
  *
  */
 public class ModuleRepositorySelectorBean {
-    private Context userContext;
-    private RepositoryInfoLoader loader;
+    final private RepositoryInfoLoader loader;
+    final private List<SelectItem> menuItems;
     private RepositoryInfo currentRepository;
     
     public ModuleRepositorySelectorBean() {
-        setUserId(UIBeanHelper.getUserId());
-        init();
-    }
-    
-    public void setUserId(final String userId) {
-        userContext=ServerConfiguration.Context.getContextForUser(userId);
+        final String userId=UIBeanHelper.getUserId();
+        final Context userContext=ServerConfiguration.Context.getContextForUser(userId);
         loader=RepositoryInfo.getRepositoryInfoLoader(userContext);
-    }
-
-    private void init() {
-        currentRepository=getCurrentRepository();
+        currentRepository=loader.getCurrentRepository();
+        this.menuItems=new ArrayList<SelectItem>(); 
+        final List<RepositoryInfo> infos=loader.getRepositories();
+        for(final RepositoryInfo info : infos) {
+            final String value=info.getUrl().toExternalForm();
+            final String label=info.getLabel();
+            final SelectItem selectItem=new SelectItem(value, label);
+            menuItems.add(selectItem);
+        }
     }
     
     /**
      * In response to selecting a repository from the menu.
      * @param url
      */
-    public void setUrl(final String url) {
+    synchronized public void setUrl(final String url) {
         loader.setCurrentRepository(url);
-        init();
+        this.currentRepository=loader.getRepository(url);
     }
 
     public String getUrl() {
@@ -65,25 +66,11 @@ public class ModuleRepositorySelectorBean {
     }
 
     public List<SelectItem> getMenuItems() {
-        final List<SelectItem> selectItems=new ArrayList<SelectItem>(); 
-        final List<RepositoryInfo> infos=getModuleRepositoryInfos();
-        for(final RepositoryInfo info : infos) {
-            final String value=info.getUrl().toExternalForm();
-            final String label=info.getLabel();
-            final SelectItem selectItem=new SelectItem(value, label);
-            selectItems.add(selectItem);
-        }
-        return selectItems;
+        return menuItems;
     }
 
-    // ----- JSF agnostic helper methods 
     public RepositoryInfo getCurrentRepository() {
-        return loader.getCurrentRepository();
-    }
-
-    private List<RepositoryInfo> getModuleRepositoryInfos() {
-        RepositoryInfoLoader loader=RepositoryInfo.getRepositoryInfoLoader(userContext);
-        return loader.getRepositories();
+        return currentRepository;
     }
 
 }
