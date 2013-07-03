@@ -231,7 +231,7 @@ public class ParamListHelper {
         if (defaultValue.length()==0) {
             log.debug(pinfo.getName()+": default_value is empty string");
             if (pinfo.isInputFile()) {
-                log.warn(pinfo.getName()+" input file and default_value is empty string");
+                log.debug(pinfo.getName()+" input file and default_value is empty string");
                 return null;
                 //return Collections.emptyList();
             }
