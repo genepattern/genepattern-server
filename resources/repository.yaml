@@ -50,7 +50,7 @@
     The repository contains GenePattern modules contributed by members of the GenePattern community, for use by 
     that community. The GenePattern team does not curate GParc modules.  Community members can go to 
     the <a href=\"http://www.broadinstitute.org/software/gparc/\">GParc website</a> to share, browse, 
-    discuss and rate the repository’s modules. The GParc website also provides resources to assist in the
+    discuss and rate the modules. The GParc website also provides resources to assist in the
     authoring and testing of GenePattern modules."
 }
 --- # Details for the Broad beta repository
@@ -60,7 +60,7 @@
 "icon": "/gp/images/broad_beta.png",
 "brief": "A GenePattern module repository containing beta releases of GenePattern modules.",
 "full": 
-    "The GenePattern beta repository contains modules which have have undergone limited testing by the Broad Institute’s 
+    "The GenePattern beta repository contains modules which have have undergone limited testing by the Broad Institute's 
 GenePattern team and are not yet ready for the Production repository. Testing is sufficient to show that they perform as
 expected under typical usage scenarios, but their exact behavior and interface is subject to change.  The documentation that
 accompanies beta modules is likely to be incomplete."
