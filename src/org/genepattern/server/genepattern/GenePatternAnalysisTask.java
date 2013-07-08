@@ -719,7 +719,7 @@ public class GenePatternAnalysisTask {
         }
        
         INPUT_FILE_MODE inputFileMode = getInputFileMode();
-        boolean allowInputFilePaths = ServerConfiguration.instance().getAllowInputFilePaths(jobContext);
+        final boolean allowInputFilePaths = ServerConfiguration.instance().getAllowInputFilePaths(jobContext);
 
         JOB_TYPE jobType = JOB_TYPE.JOB;
         if (TaskInfo.isVisualizer(taskInfo.getTaskInfoAttributes())) {
@@ -1000,15 +1000,23 @@ public class GenePatternAnalysisTask {
                         // handle http files by downloading them and substituting the downloaded filename for the URL in the command line.
                         if (inputFileMode == INPUT_FILE_MODE.PATH && new File(originalPath).exists()) {
                             boolean isInTaskLib = false;
-                            if (!allowInputFilePaths) {
+                            boolean canRead = false;
+                            try {
+                                //does the current user have permission to access the file?
+                                final GpFilePath serverFile=GpFileObjFactory.getRequestedGpFileObj("/data", originalPath);
+                                canRead=serverFile.canRead(isAdmin, jobContext);
+                            }
+                            catch (Throwable t) {
+                                log.error(t);
+                            }
+                            if (!canRead) {
                                 //special-case: check if this is a file in the taskLib
                                 isInTaskLib = isInTaskLib(taskInfo, originalPath);
+                                if (!isInTaskLib) {
+                                    vProblems.add("You are not permitted to access the requested file: "+originalPath);
+                                    continue;
+                                }
                             }
-                            if (!allowInputFilePaths && !isInTaskLib) {
-                                vProblems.add("You are not permitted to access the requested file: "+originalPath);
-                                continue;
-                            }
-                            //TODO: don't remove
                             attrsCopy.remove(ParameterInfo.TYPE);
                             attrsCopy.remove(ParameterInfo.INPUT_MODE);
                         } 
