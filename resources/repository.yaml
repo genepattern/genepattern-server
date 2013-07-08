@@ -26,7 +26,7 @@
 #
 # 3) add an about.jsp file to this folder 
 #    It can be empty. This is a signal to the GP server that there is a details file.
-# 4) add an about.yml file to this folder in the same format as this file
+# 4) add an about.yaml file to this folder in the same format as this file
 #    Except with only one entry
 #
 #
