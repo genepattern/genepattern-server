@@ -29,7 +29,7 @@ public class DefaultRepositoryInfoLoader implements RepositoryInfoLoader {
             "The GenePattern production repository containing curated modules which have been developed and fully tested by the Broad Institute’s GenePattern team.");
 
     //GParc repository
-    final static private RepositoryInfo gparc=init("GParc (GenePattern Archive)", "/gp/images/gparc_logo.png", "http://vgpprod01.broadinstitute.org:4542/gparcModuleRepository",
+    final static private RepositoryInfo gparc=init("GParc (GenePattern Archive)", "/gp/images/gparc_logo.png", RepositoryInfo.GPARC_URL,
             "A GenePattern module repository whose content is contributed by members of the GenePattern community.  These modules are not curated by the GenePattern team.",
                 "GParc, short for GenePattern Archive, is both a GenePattern module repository and a web-based community. "+
                 "The repository contains GenePattern modules contributed by members of the GenePattern community, for use by that community. "+

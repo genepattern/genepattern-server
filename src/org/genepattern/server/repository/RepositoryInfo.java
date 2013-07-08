@@ -16,7 +16,8 @@ public class RepositoryInfo {
     final static public String BROAD_PROD_URL="http://www.broadinstitute.org/webservices/gpModuleRepository";
     final static public String BROAD_BETA_URL="http://www.broadinstitute.org/webservices/betaModuleRepository";
     final static public String BROAD_DEV_URL="http://www.broadinstitute.org/webservices/gpModuleRepository?env=dev";
-    final static public String GPARC_URL="http://vgpprod01.broadinstitute.org:4542/gparcModuleRepository";
+    //internal path to gparc, http://vgpprod01.broadinstitute.org:4542/gparcModuleRepository
+    final static public String GPARC_URL="http://www.broadinstitute.org/webservices/gparcModuleRepository";
     
     /**
      * RepositoryInfoFactory implementation
