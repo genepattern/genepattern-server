@@ -42,7 +42,7 @@
 }
 --- # Details for the GParc repository
 {
-"url": "http://vgpprod01.broadinstitute.org:4542/gparcModuleRepository", 
+"url": "http://www.broadinstitute.org/webservices/gparcModuleRepository",
 "label": "GParc (GenePattern Archive)",
 "icon": "/gp/images/gparc_logo.png",
 "brief": "A GenePattern module repository whose content is contributed by members of the GenePattern community.  These modules are not curated by the GenePattern team.",
