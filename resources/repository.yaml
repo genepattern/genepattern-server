@@ -37,8 +37,8 @@
 "icon": "/gp/images/broad-symbol.gif",
 "brief": "A repository of GenePattern modules curated by the GenePattern team.",
 "full": 
-    "The GenePattern production repository containing curated modules which 
-    have been developed and fully tested by the Broad Institute's GenePattern team."
+    "The GenePattern production repository contains curated modules which 
+    have been fully tested by the Broad Institute's GenePattern team."
 }
 --- # Details for the GParc repository
 {
@@ -60,8 +60,8 @@
 "icon": "/gp/images/broad_beta.png",
 "brief": "A GenePattern module repository containing beta releases of GenePattern modules.",
 "full": 
-    "The GenePattern beta repository containing modules which have been developed by the Broad Institute’s GenePattern team 
-but have undergone limited testing. Module testing is sufficient to verify it will not harm the GenePattern server in which 
-they run. The GenePattern team, however, does not guarantee the module is computationally correct or that its interface will 
-not be subject to change. The documentation that accompanies beta modules is likely to be incomplete."
+    "The GenePattern beta repository contains modules which have have undergone limited testing by the Broad Institute’s 
+GenePattern team and are not yet ready for the Production repository. Testing is sufficient to show that they perform as
+expected under typical usage scenarios, but their exact behavior and interface is subject to change.  The documentation that
+accompanies beta modules is likely to be incomplete."
 }
