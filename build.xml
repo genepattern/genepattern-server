@@ -324,6 +324,13 @@
             </fileset>
             <fileset dir="${genepattern.build}" includes="${full-jarname}" />
         </copy>
+        
+        <!-- Copy repository.yaml to the resources directory -->
+        <copy todir="${genepattern.build}/resources">
+        	<fileset dir="./resources">
+        		<include name="repository.yaml" />
+        	</fileset>
+        </copy>
 
 
         <!-- Now call any custom post-compilation people want to do -->
