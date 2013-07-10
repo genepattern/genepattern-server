@@ -470,11 +470,10 @@ public class ParamListHelper {
                 final ParamValue paramValueIn=actualValues.getValues().get(0);
                 final GpFilePath directory=initDirectoryInputValue(paramValueIn);
                 if (directory != null) {                    
-                    //TODO: check canRead
-                    //boolean canRead=directory.canRead(jobContext.isAdmin(), jobContext);
-                    //if (!canRead) {
-                    //    throw new Exception("You are not permitted to access the file: "+paramValueIn.getValue());
-                    //}
+                    boolean canRead=directory.canRead(jobContext.isAdmin(), jobContext);
+                    if (!canRead) {
+                        throw new Exception("You are not permitted to access the file: "+paramValueIn.getValue());
+                    }
                     record.getActual().setValue(directory.getUrl().toExternalForm());
                 }
                 else {
