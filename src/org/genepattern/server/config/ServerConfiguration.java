@@ -14,6 +14,7 @@ import org.apache.log4j.Logger;
 import org.genepattern.server.executor.CommandProperties;
 import org.genepattern.server.repository.ConfigRepositoryInfoLoader;
 import org.genepattern.server.repository.RepositoryInfo;
+import org.genepattern.server.webapp.jsf.AuthorizationHelper;
 import org.genepattern.webservice.JobInfo;
 import org.genepattern.webservice.TaskInfo;
 
@@ -55,10 +56,19 @@ public class ServerConfiguration {
             return context;
         }
 
-        public static Context getContextForUser(String userId) {
+        public static Context getContextForUser(final String userId) {
+            return getContextForUser(userId, false);
+        }
+
+        public static Context getContextForUser(final String userId, final boolean initIsAdmin) {
+            if (userId==null) {
+                return new Context();
+            }
             Context context = new Context();
-            if (userId != null) {
-                context.setUserId(userId);
+            context.setUserId(userId);
+            if (initIsAdmin) { 
+                final boolean isAdmin = AuthorizationHelper.adminServer(userId);
+                context.setIsAdmin(isAdmin);
             }
             return context;
         }

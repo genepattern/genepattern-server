@@ -382,7 +382,8 @@ public class RunTaskServlet extends HttpServlet
                 throw new Exception("User not logged in");
             }
 
-            final ServerConfiguration.Context userContext=ServerConfiguration.Context.getContextForUser(username);
+            final boolean initIsAdmin=true;
+            final ServerConfiguration.Context userContext=ServerConfiguration.Context.getContextForUser(username, initIsAdmin);
             final JobInputHelper jobInputHelper=new JobInputHelper(userContext, jobSubmitInfo.getLsid());
 
             JSONObject parameters = new JSONObject(jobSubmitInfo.getParameters());
