@@ -71,5 +71,19 @@ public class TestExternalUrl {
         URL url=JobInputHelper.initExternalUrl(value);
         Assert.assertNull("Not an external URL: ", url);
     }
+    
+    @Test
+    public void localFile() {
+        final String value="file:///xchip/sqa/TestFiles/all_aml_test.cls";
+        URL url=JobInputHelper.initExternalUrl(value);
+        Assert.assertNull("Not an external URL: ", url);
+    }
+    
+    @Test
+    public void localWindowsFile() {
+        final String value="file:///C:/xchip/sqa/TestFiles/all_aml_test.cls";
+        URL url=JobInputHelper.initExternalUrl(value);
+        Assert.assertNull("Not an external URL: ", url);
+    }
 
 }
