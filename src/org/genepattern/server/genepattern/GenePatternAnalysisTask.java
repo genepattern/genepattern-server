@@ -1093,20 +1093,33 @@ public class GenePatternAnalysisTask {
                             String name = null;
                             boolean downloadUrl = true;
                             if ("file".equalsIgnoreCase(uri.getScheme())) {
+                                log.debug("handling 'file:///' url: "+originalPath);
+                                
                                 final boolean allowInputFilePaths = ServerConfiguration.instance().getAllowInputFilePaths(jobContext);
                                 if (allowInputFilePaths) {
-                                    File f = new File(uri);
-                                    if (inputFileMode == INPUT_FILE_MODE.PATH) {
-                                        pinfo.setValue(f.getAbsolutePath());
-                                        //TODO: don't remove
+                                    //check permissions and optionally convert value from url to server file path
+                                    final String pname=pinfoRecord.getFormal().getName();
+                                    final Param inputParam=new Param(new ParamId(pname), false);
+                                    inputParam.addValue(new ParamValue(pinfo.getValue()));
+                                    ParamListHelper plh=new ParamListHelper(jobContext, pinfoRecord, inputParam);
+                                    GpFilePath gpFilePath=null;
+                                    try {
+                                        gpFilePath=plh.initFileInputValue(inputParam.getValues().get(0));
+                                    }
+                                    catch (Exception e) {
+                                        throw new JobDispatchException(e.getLocalizedMessage());
+                                    }
+                                    if (gpFilePath != null) {
+                                        final String serverPath=gpFilePath.getServerFile().getAbsolutePath();
+                                        boolean canRead=gpFilePath.canRead(jobContext.isAdmin(), jobContext);
+                                        if (!canRead) {
+                                            throw new JobDispatchException("You are not permitted to access the file: "+pinfo.getValue());
+                                        }
+                                        pinfo.setValue(serverPath);
                                         attrsCopy.remove(ParameterInfo.TYPE);
                                         attrsCopy.remove(ParameterInfo.INPUT_MODE);
                                         downloadUrl = false;
                                     } 
-                                    else {
-                                        is = new FileInputStream(f);
-                                        name = f.getName();
-                                    }
                                 } 
                                 else {
                                     boolean isAllowed = false;
