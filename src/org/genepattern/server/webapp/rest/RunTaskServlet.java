@@ -42,6 +42,7 @@ import org.genepattern.server.job.input.LoadModuleHelper;
 import org.genepattern.server.job.input.ReloadJobHelper;
 import org.genepattern.server.repository.SourceInfo;
 import org.genepattern.server.repository.SourceInfoLoader;
+import org.genepattern.server.rest.GpServerException;
 import org.genepattern.server.rest.JobReceipt;
 import org.genepattern.server.webapp.jsf.AuthorizationHelper;
 import org.genepattern.server.webapp.jsf.JobBean;
@@ -61,6 +62,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.core.header.FormDataContentDisposition;
 import com.sun.jersey.multipart.FormDataParam;
 
@@ -431,12 +433,20 @@ public class RunTaskServlet extends HttpServlet
             }
             return Response.ok(result.toString()).build();
         }
-        catch(Exception e)
-        {
+        catch (GpServerException e) {
             String message = "An error occurred while submitting the job";
             if(e.getMessage() != null)
             {
                 message = message + ": " + e.getMessage();
+            }
+            return Response.status(ClientResponse.Status.FORBIDDEN).entity(message).build();
+        }        
+        catch(Throwable t)
+        {
+            String message = "An error occurred while submitting the job";
+            if(t.getMessage() != null)
+            {
+                message = message + ": " + t.getMessage();
             }
             log.error(message);
 
