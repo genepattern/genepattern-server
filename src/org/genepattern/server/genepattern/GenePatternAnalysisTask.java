@@ -1028,7 +1028,7 @@ public class GenePatternAnalysisTask {
                             boolean canRead = false;
                             try {
                                 //does the current user have permission to access the file?
-                                final GpFilePath serverFile=GpFileObjFactory.getRequestedGpFileObj("/data", originalPath);
+                                final GpFilePath serverFile=GpFileObjFactory.getRequestedGpFileObj("/data", "/"+originalPath);
                                 canRead=serverFile.canRead(isAdmin, jobContext);
                             }
                             catch (Throwable t) {
