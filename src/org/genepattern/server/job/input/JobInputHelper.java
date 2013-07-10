@@ -78,10 +78,15 @@ public class JobInputHelper {
         URL url=null;
         try {
             url=new URL(value);
-            //url.getHost()
         }
         catch (MalformedURLException e) {
             log.debug("it's not a url", e);
+            return null;
+        }
+        
+        //special-case for file:/// urls
+        if ("file".equalsIgnoreCase(url.getProtocol())) {
+            log.debug("it's a file url, assume it's a local path: "+value);
             return null;
         }
         return url;

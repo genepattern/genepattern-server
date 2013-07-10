@@ -1,6 +1,7 @@
 package org.genepattern.server.job.input;
 
 import java.io.File;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -120,6 +121,23 @@ public class ParamListHelper {
         return _fileParam.substring(idx+1);
     }
 
+    /**
+     * Replace the actual url with the '<GenePatternURL>' substitution variable.
+     * @return
+     */
+    private static String insertGpUrlSubstitution(final String in) {
+        URL gpURL=ServerConfiguration.instance().getGenePatternURL();
+        String gpUrlStr=gpURL.toExternalForm();
+        if (!gpUrlStr.endsWith("/")) {
+            gpUrlStr += "/";
+        }
+        
+        if (!in.startsWith(gpUrlStr)) {
+            return in;
+        }
+        return in.replaceFirst(Pattern.quote(gpUrlStr), "<GenePatternURL>");
+    }
+    
     //inputs
     final Context jobContext;
     final ParameterInfoRecord record;
@@ -135,12 +153,8 @@ public class ParamListHelper {
         if (record==null) {
             throw new IllegalArgumentException("record==null");
         }
-        //if (actualValues==null) {
-        //    throw new IllegalArgumentException("actualValues==null");
-        //}
         this.jobContext=jobContext;
         this.record=record;
-        //this.actualValues=actualValues;
 
         //initialize allowedNumValues
         this.allowedNumValues=initAllowedNumValues();
@@ -338,24 +352,86 @@ public class ParamListHelper {
         }
         return true;
     }
+    
+    public boolean isFileInputParam() {
+        return record.getFormal().isInputFile();
+    }
+    public boolean isDirectoryInputParam() {
+        return record.getFormal()._isDirectory();
+    }
 
     /**
-     * Replace the actual url with the '<GenePatternURL>' substitution variable.
+     * Convert the user-supplied value for a directory input parameter into a GpFilePath instance.
+     * Example inputs include ...
+     * a) literal server path, e.g. /xchip/shared_data/all_aml_test.cls
+     * b) http url to server file, e.g. http://127.0.0.1:8080/gp/data//xchip/shared_data/all_aml_test.cls
+     * c) file url, e.g. file:///xchip/shared_data/all_aml_test.cls
+     * 
+     * Invalid inputs include any external urls.
+     *     
+     * @param valueIn
      * @return
      */
-    private static String insertGpUrlSubstitution(final String in) {
-        URL gpURL=ServerConfiguration.instance().getGenePatternURL();
-        String gpUrlStr=gpURL.toExternalForm();
-        if (!gpUrlStr.endsWith("/")) {
-            gpUrlStr += "/";
+    public GpFilePath initDirectoryInputValue(final ParamValue paramValueIn) throws Exception {
+        if (!isDirectoryInputParam()) {
+            throw new Exception("Input parameter is not DIRECTORY type: "+record.getFormal().getName()+"="+paramValueIn.getValue());
+        } 
+        if (paramValueIn==null) {
+            log.error("paramValueIn==null"+record.getFormal().getName());
+            return null;
+        } 
+        //ignore empty input
+        if (paramValueIn.getValue()==null || paramValueIn.getValue().length()==0) {
+            log.debug("value not set for DIRECTORY: "+record.getFormal().getName());
+            return null;            
         }
         
-        if (!in.startsWith(gpUrlStr)) {
-            return in;
+        GpFilePath directory=null;
+        final Record inputRecord=initFromValue(paramValueIn);
+        //special-case: external urls are not allowed
+        if (inputRecord.type==Record.Type.EXTERNAL_URL) {
+            throw new Exception("External url not allowed for DIRECTORY: "+record.getFormal().getName()+"="+paramValueIn.getValue());
         }
-        return in.replaceFirst(Pattern.quote(gpUrlStr), "<GenePatternURL>");
+        //special-case: it's not a directory
+        if (!inputRecord.gpFilePath.isDirectory()) {
+            throw new Exception("Value is not a directory: "+record.getFormal().getName()+"="+paramValueIn.getValue());
+        }
+        directory=inputRecord.gpFilePath;
+        return directory;
     }
     
+    /**
+     * Convert user-supplied value for a file input paramter into a GpFilePath instance.
+     * 
+     * @param paramValueIn
+     * @return
+     * @throws Exception
+     */
+    public GpFilePath initFileInputValue(final ParamValue paramValueIn) throws Exception {
+        if (!isFileInputParam()) {
+            throw new Exception("Input parameter is not a FILE type: "+record.getFormal().getName()+"="+paramValueIn.getValue());
+        }
+        if (paramValueIn==null) {
+            log.error("paramValueIn==null"+record.getFormal().getName());
+            return null;
+        } 
+        //ignore empty input
+        if (paramValueIn.getValue()==null || paramValueIn.getValue().length()==0) {
+            log.debug("value not set for FILE: "+record.getFormal().getName());
+            return null;            
+        }
+        
+        GpFilePath file=null;
+        final Record inputRecord=initFromValue(paramValueIn);
+        //special-case: it's not a file
+        if (!inputRecord.gpFilePath.isFile()) {
+            throw new Exception("Value is not a file: "+record.getFormal().getName()+"="+paramValueIn.getValue());
+        }
+        file=inputRecord.gpFilePath;
+        return file;
+    }
+    
+
     public void updatePinfoValue() throws Exception {
         final int numValues=actualValues.getNumValues();
         final boolean createFilelist=isCreateFilelist();
@@ -391,15 +467,18 @@ public class ParamListHelper {
         else if (numValues==1) {
             //special-case for DIRECTORY type, need to convert URL input into server file path
             if (record.getFormal()._isDirectory()) {
-                final String valueIn=actualValues.getValues().get(0).getValue();
-                try {
-                    GpFilePath directory=GpFileObjFactory.getRequestedGpFileObj(valueIn);
-                    final String valueOut=directory.getServerFile().getAbsolutePath();
-                    record.getActual().setValue(valueOut);
+                final ParamValue paramValueIn=actualValues.getValues().get(0);
+                final GpFilePath directory=initDirectoryInputValue(paramValueIn);
+                if (directory != null) {                    
+                    //TODO: check canRead
+                    //boolean canRead=directory.canRead(jobContext.isAdmin(), jobContext);
+                    //if (!canRead) {
+                    //    throw new Exception("You are not permitted to access the file: "+paramValueIn.getValue());
+                    //}
+                    record.getActual().setValue(directory.getUrl().toExternalForm());
                 }
-                catch (Throwable t) {
-                    log.debug("Could not get a GP file path to the directory: "+valueIn);
-                    record.getActual().setValue(valueIn);
+                else {
+                    record.getActual().setValue(paramValueIn.getValue());
                 }
             }
             else {
@@ -438,7 +517,6 @@ public class ParamListHelper {
                 final String out=ParamListHelper.insertGpUrlSubstitution(in);
                 record.getActual().setValue(out);
             }
-            
         }
     }
     
@@ -483,7 +561,8 @@ public class ParamListHelper {
         return values;
     }
     
-    private Record initFromValue(final ParamValue pval) throws Exception {
+    private Record initFromValue(final ParamValue pval) throws Exception 
+    {
         final String value=pval.getValue();
         URL externalUrl=JobInputHelper.initExternalUrl(value);
         if (externalUrl != null) {
@@ -501,10 +580,48 @@ public class ParamListHelper {
             //ignore
         }
         
-        //if we are here, it could be a server file path
-        File serverFile=new File(value);
-        GpFilePath gpPath = ServerFileObjFactory.getServerFile(serverFile);
-        return new Record(Record.Type.SERVER_PATH, gpPath, null); 
+        //if we are here, it could be a server file path in one of two forms,
+        //    a) literal path /
+        //    b) uri path file:///
+        GpFilePath gpPath=null;
+        String pathIn=null;
+        try {
+            URL urlIn=new URL(value);
+            if ("file".equalsIgnoreCase(urlIn.getProtocol())) {
+                if (urlIn.getHost() != null && urlIn.getHost().length() > 0) {
+                    log.error("Ignoring host part of file url: "+value);
+                }
+                //special-case, strip 'file' from url protocol
+                pathIn=urlIn.getPath();
+            }
+        }
+        catch (MalformedURLException e) {
+            //it's not a URL, assume a literal file path
+            pathIn=value;
+        }
+        if (pathIn != null) {
+            try {
+                //hint: need to append a '/' to the value, e.g. "/data//xchip/shared_data/all_aml_test.gct"
+                gpPath=GpFileObjFactory.getRequestedGpFileObj("/data", "/"+pathIn);
+            }
+            catch (Throwable tx) {
+                log.error("Error initializing gpFilePath for directory input: "+pathIn, tx);
+            }
+        }
+        else {
+            try {
+                gpPath=GpFileObjFactory.getRequestedGpFileObj(value);
+            }
+            catch (Throwable t) {
+                log.error("Error initializing gpFilePath for directory input: "+value, t);
+                final File serverFile=new File(value);
+                gpPath = ServerFileObjFactory.getServerFile(serverFile);
+            }
+        }
+        if (gpPath != null) {
+            return new Record(Record.Type.SERVER_PATH, gpPath, null); 
+        }
+        throw new Exception("Error initializing gpFilePath for value="+value);
     }
 
     private static class Record {

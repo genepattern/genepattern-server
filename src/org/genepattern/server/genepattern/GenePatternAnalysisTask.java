@@ -149,7 +149,12 @@ import org.genepattern.server.genomespace.GenomeSpaceClientFactory;
 import org.genepattern.server.genomespace.GenomeSpaceException;
 import org.genepattern.server.genomespace.GenomeSpaceFileManager;
 import org.genepattern.server.job.event.JobEventDispatcher;
+import org.genepattern.server.job.input.JobInput.Param;
+import org.genepattern.server.job.input.JobInput.ParamId;
+import org.genepattern.server.job.input.JobInput.ParamValue;
+import org.genepattern.server.job.input.ParamListHelper;
 import org.genepattern.server.plugin.PluginManagerLegacy;
+import org.genepattern.server.rest.ParameterInfoRecord;
 import org.genepattern.server.taskinstall.InstallInfo;
 import org.genepattern.server.taskinstall.InstallInfo.Type;
 import org.genepattern.server.user.UsageLog;
@@ -719,7 +724,6 @@ public class GenePatternAnalysisTask {
         }
        
         INPUT_FILE_MODE inputFileMode = getInputFileMode();
-        final boolean allowInputFilePaths = ServerConfiguration.instance().getAllowInputFilePaths(jobContext);
 
         JOB_TYPE jobType = JOB_TYPE.JOB;
         if (TaskInfo.isVisualizer(taskInfo.getTaskInfoAttributes())) {
@@ -770,7 +774,6 @@ public class GenePatternAnalysisTask {
             }
         }
 
-        //ParameterInfo[] paramsActual = jobInfo.getParameterInfoArray();
         ParameterInfo[] paramsCopy = copyParameterInfoArray(jobInfo);
         Properties props = null;
         try {
@@ -782,29 +785,51 @@ public class GenePatternAnalysisTask {
         }
         Vector<String> vProblems = new Vector<String>();
         if (paramsCopy != null) {
-            for (int i = 0; i < paramsCopy.length; i++) {
-                //HashMap attrsActual = paramsActual[i].getAttributes();
-                HashMap attrsCopy = paramsCopy[i].getAttributes();
+            final Map<String,ParameterInfoRecord> paramInfoMap=ParameterInfoRecord.initParamInfoMap(taskInfo);
+            for (int j = 0; j < paramsCopy.length; j++) {
+                final ParameterInfo pinfo=paramsCopy[j];
+                HashMap attrsCopy = pinfo.getAttributes();
                 if (attrsCopy == null) {
                     attrsCopy = new HashMap();
                 }
-                //if (attrsActual == null) {
-                //    attrsActual = new HashMap();
-                //}
                 String fileType = (String) attrsCopy.get(ParameterInfo.TYPE);
                 String mode = (String) attrsCopy.get(ParameterInfo.MODE);
-                String originalPath = paramsCopy[i].getValue();
+                String originalPath = pinfo.getValue();
                 // allow parameter value substitutions within file input parameters
                 originalPath = substitute(originalPath, props, paramsCopy);
                 boolean isOptional = "on".equals(attrsCopy.get("optional"));
                 // if necessary use the URL value instead of the server file path value
-                final boolean isUrlMode=paramsCopy[i]._isUrlMode();
-                if (fileType != null && fileType.equals(ParameterInfo.FILE_TYPE) && mode != null && !mode.equals(ParameterInfo.OUTPUT_MODE)) {
+                final boolean isUrlMode=pinfo._isUrlMode();
+                ParameterInfoRecord pinfoRecord=paramInfoMap.get(pinfo.getName());
+                final boolean isDirectoryInputParam=pinfoRecord.getFormal()._isDirectory();
+                if (isDirectoryInputParam) {
+                    //check permissions and optionally convert value from url to server file path
+                    final String pname=pinfoRecord.getFormal().getName();
+                    final Param inputParam=new Param(new ParamId(pname), false);
+                    inputParam.addValue(new ParamValue(pinfo.getValue()));
+                    ParamListHelper plh=new ParamListHelper(jobContext, pinfoRecord, inputParam);
+                    GpFilePath directory=null;
+                    try {
+                        directory=plh.initDirectoryInputValue(inputParam.getValues().get(0));
+                    }
+                    catch (Exception e) {
+                        throw new JobDispatchException(e.getLocalizedMessage());
+                    }
+                    if (directory != null) {
+                        final String serverPath=directory.getServerFile().getAbsolutePath();
+                        pinfo.setValue(serverPath);
+                        boolean canRead=directory.canRead(jobContext.isAdmin(), jobContext);
+                        if (!canRead) {
+                            throw new JobDispatchException("You are not permitted to access the directory: "+pinfo.getValue());
+                        }
+                    } 
+                }
+                else if (fileType != null && fileType.equals(ParameterInfo.FILE_TYPE) && mode != null && !mode.equals(ParameterInfo.OUTPUT_MODE)) {
                     if (originalPath == null) {
                         if (isOptional) {
                             continue;
                         }
-                        throw new JobDispatchException("Non-optional parameter " + paramsCopy[i].getName() + " has not been assigned a filename.");
+                        throw new JobDispatchException("Non-optional parameter " + pinfo.getName() + " has not been assigned a filename.");
                     }
                     if (mode.equals("CACHED_IN")) {
                         //param is existing job output file
@@ -838,7 +863,7 @@ public class GenePatternAnalysisTask {
                         }
                     } 
                     else if (mode.equals(ParameterInfo.INPUT_MODE)) {
-                        log.debug("IN " + paramsCopy[i].getName() + "=" + originalPath);
+                        log.debug("IN " + pinfo.getName() + "=" + originalPath);
                         //web form upload: <java.io.tmpdir>/<user_id>_run[0-9]+.tmp/<filename>
                         //SOAP client upload: <soap.attachment.dir>/<user_id>/<filename>
                         //inherited input file from parent pipeline job: <jobResults>/<different_job_id>/<filename>
@@ -917,7 +942,7 @@ public class GenePatternAnalysisTask {
                         }
                     } 
                     else {
-                        vProblems.add("Unknown mode for parameter " + paramsCopy[i].getName() + ".");
+                        vProblems.add("Unknown mode for parameter " + pinfo.getName() + ".");
                         continue;
                     }
                     File inFile = new File(originalPath);
@@ -965,7 +990,7 @@ public class GenePatternAnalysisTask {
 
                         attrsCopy.put(ORIGINAL_PATH, originalPath);
                         try {
-                            paramsCopy[i].setValue(outFile.getCanonicalPath());
+                            pinfo.setValue(outFile.getCanonicalPath());
                         }
                         catch (IOException e) {
                             throw new JobDispatchException(e);
@@ -976,8 +1001,8 @@ public class GenePatternAnalysisTask {
                         //attrsActual.put(ORIGINAL_LENGTH, ""+outFile.length());
                     }
                 } 
-                else if (i >= formalParamsLength) {
-                    log.debug("params[" + i + "]=" + paramsCopy[i].getName() + " has no formal parameter defined");
+                else if (j >= formalParamsLength) {
+                    log.debug("params[" + j + "]=" + paramsCopy[j].getName() + " has no formal parameter defined");
                 } 
                 else {
                     // check formal parameters for a file input type that
@@ -988,7 +1013,7 @@ public class GenePatternAnalysisTask {
                     fileType = null;
                     mode = null;
                     for (int formal = 0; formals != null && formal < formals.length; formal++) {
-                        if (formals[formal].getName().equals(paramsCopy[i].getName())) {
+                        if (formals[formal].getName().equals(pinfo.getName())) {
                             attrFormals = formals[formal].getAttributes();
                             fileType = attrFormals.get(ParameterInfo.TYPE);
                             mode = attrFormals.get(ParameterInfo.MODE);
@@ -1029,6 +1054,7 @@ public class GenePatternAnalysisTask {
                             } 
                             catch (MalformedURLException mfe) {
                                 // path on server
+                                final boolean allowInputFilePaths = ServerConfiguration.instance().getAllowInputFilePaths(jobContext);
                                 if (!allowInputFilePaths) {
                                     vProblems.add("You are not permitted to access the requested file: "+originalPath);
                                     continue;
@@ -1066,75 +1092,78 @@ public class GenePatternAnalysisTask {
                         try {
                             String name = null;
                             boolean downloadUrl = true;
-                            if ("file".equalsIgnoreCase(uri.getScheme()) && allowInputFilePaths) {
-                                File f = new File(uri);
-                                if (inputFileMode == INPUT_FILE_MODE.PATH) {
-                                    paramsCopy[i].setValue(f.getAbsolutePath());
-                                    //TODO: don't remove
-                                    attrsCopy.remove(ParameterInfo.TYPE);
-                                    attrsCopy.remove(ParameterInfo.INPUT_MODE);
-                                    downloadUrl = false;
-                                } 
-                                else {
-                                    is = new FileInputStream(f);
-                                    name = f.getName();
-                                }
-                            } 
-                            else if ("file".equalsIgnoreCase(uri.getScheme()) && !allowInputFilePaths) {
-                                boolean isAllowed = false;
-                                File inputFile = new File(uri);
-                                String inputFileDirectory = inputFile.getParentFile().getCanonicalPath();
-                                String inputFileGrandParent = inputFile.getParentFile().getParentFile().getCanonicalPath();
-
-                                //special case: uploaded file from web client
-                                //                <java.io.tmpdir>/<user_id>_run[0-9]+.tmp/<filename>
-                                String webUploadDirectory = new File(System.getProperty("java.io.tmpdir")).getCanonicalPath();
-                                boolean isWebUpload = inputFileGrandParent.equals(webUploadDirectory);
-                                isAllowed = isWebUpload;
-
-                                //special case: uploaded file from SOAP client
-                                //                <soap.attachment.dir>/<user_id>/<filename>
-                                if (!isAllowed) {
-                                    String soapAttachmentDir = new File(System.getProperty("soap.attachment.dir") + File.separator + jobInfo.getUserId()).getCanonicalPath();
-                                    boolean isSoapUpload = inputFileDirectory.equals(soapAttachmentDir);
-                                    isAllowed = isSoapUpload;
-                                }
-
-                                //special case: output from a previous job
-                                if (!isAllowed) {
-                                    String jobsDirectory = rootJobDir.getCanonicalPath();
-                                    boolean isJobOutput = jobsDirectory.equals(inputFileGrandParent);
-                                    if (isJobOutput) {
-                                        try {
-                                            String parentFileName = inputFile.getParentFile().getName();
-                                            int jobNumber = Integer.parseInt(parentFileName);
-                                            //only allow access if the owner of this job has at least read access to the job which output this input file
-                                            boolean canRead = canReadJob(isAdmin, jobInfo.getUserId(), jobNumber);
-                                            isAllowed = isJobOutput && canRead;
-                                        }
-                                        catch (NumberFormatException e) {
-                                            log.error("Invalid job number in file path: jobId="+jobId+", file="+inputFile.getAbsolutePath());
-                                        }
+                            if ("file".equalsIgnoreCase(uri.getScheme())) {
+                                final boolean allowInputFilePaths = ServerConfiguration.instance().getAllowInputFilePaths(jobContext);
+                                if (allowInputFilePaths) {
+                                    File f = new File(uri);
+                                    if (inputFileMode == INPUT_FILE_MODE.PATH) {
+                                        pinfo.setValue(f.getAbsolutePath());
+                                        //TODO: don't remove
+                                        attrsCopy.remove(ParameterInfo.TYPE);
+                                        attrsCopy.remove(ParameterInfo.INPUT_MODE);
+                                        downloadUrl = false;
                                     } 
-                                }
-                                if (!isAllowed) {
-                                    vProblems.add("File input URLs are not allowed on this GenePattern server: " + inputFile.getAbsolutePath());
-                                    continue;                                    
-                                }
-
-                                File f = new File(uri);
-                                if (inputFileMode == INPUT_FILE_MODE.PATH) {
-                                    paramsCopy[i].setValue(f.getAbsolutePath());
-                                    //TODO: don't remove
-                                    attrsCopy.remove(ParameterInfo.TYPE);
-                                    attrsCopy.remove(ParameterInfo.INPUT_MODE);
-                                    downloadUrl = false;
+                                    else {
+                                        is = new FileInputStream(f);
+                                        name = f.getName();
+                                    }
                                 } 
                                 else {
-                                    is = new FileInputStream(f);
-                                    name = f.getName();
+                                    boolean isAllowed = false;
+                                    File inputFile = new File(uri);
+                                    String inputFileDirectory = inputFile.getParentFile().getCanonicalPath();
+                                    String inputFileGrandParent = inputFile.getParentFile().getParentFile().getCanonicalPath();
+
+                                    //special case: uploaded file from web client
+                                    //                <java.io.tmpdir>/<user_id>_run[0-9]+.tmp/<filename>
+                                    String webUploadDirectory = new File(System.getProperty("java.io.tmpdir")).getCanonicalPath();
+                                    boolean isWebUpload = inputFileGrandParent.equals(webUploadDirectory);
+                                    isAllowed = isWebUpload;
+
+                                    //special case: uploaded file from SOAP client
+                                    //                <soap.attachment.dir>/<user_id>/<filename>
+                                    if (!isAllowed) {
+                                        String soapAttachmentDir = new File(System.getProperty("soap.attachment.dir") + File.separator + jobInfo.getUserId()).getCanonicalPath();
+                                        boolean isSoapUpload = inputFileDirectory.equals(soapAttachmentDir);
+                                        isAllowed = isSoapUpload;
+                                    }
+
+                                    //special case: output from a previous job
+                                    if (!isAllowed) {
+                                        String jobsDirectory = rootJobDir.getCanonicalPath();
+                                        boolean isJobOutput = jobsDirectory.equals(inputFileGrandParent);
+                                        if (isJobOutput) {
+                                            try {
+                                                String parentFileName = inputFile.getParentFile().getName();
+                                                int jobNumber = Integer.parseInt(parentFileName);
+                                                //only allow access if the owner of this job has at least read access to the job which output this input file
+                                                boolean canRead = canReadJob(isAdmin, jobInfo.getUserId(), jobNumber);
+                                                isAllowed = isJobOutput && canRead;
+                                            }
+                                            catch (NumberFormatException e) {
+                                                log.error("Invalid job number in file path: jobId="+jobId+", file="+inputFile.getAbsolutePath());
+                                            }
+                                        } 
+                                    }
+                                    if (!isAllowed) {
+                                        vProblems.add("File input URLs are not allowed on this GenePattern server: " + inputFile.getAbsolutePath());
+                                        continue;                                    
+                                    }
+
+                                    File f = new File(uri);
+                                    if (inputFileMode == INPUT_FILE_MODE.PATH) {
+                                        pinfo.setValue(f.getAbsolutePath());
+                                        //TODO: don't remove
+                                        attrsCopy.remove(ParameterInfo.TYPE);
+                                        attrsCopy.remove(ParameterInfo.INPUT_MODE);
+                                        downloadUrl = false;
+                                    } 
+                                    else {
+                                        is = new FileInputStream(f);
+                                        name = f.getName();
+                                    }
                                 }
-                            } 
+                            }
                             else {
                                 URL url = uri.toURL();
                                 if (isLocalHost(url)) {
@@ -1142,7 +1171,7 @@ public class GenePatternAnalysisTask {
                                         File file = localInputUrlToFile(url, isAdmin, jobContext);
                                         if (file != null) {
                                             if (inputFileMode == INPUT_FILE_MODE.PATH) {
-                                                paramsCopy[i].setValue(file.getAbsolutePath());
+                                                pinfo.setValue(file.getAbsolutePath());
                                                 //TODO: don't remove
                                                 attrsCopy.remove(ParameterInfo.TYPE);
                                                 attrsCopy.remove(ParameterInfo.INPUT_MODE);
@@ -1211,7 +1240,7 @@ public class GenePatternAnalysisTask {
                                 }
                                 //TODO: mark file for delete from job results directory on handle job completion
                                 attrsCopy.put(ORIGINAL_PATH, originalPath);
-                                paramsCopy[i].setValue(outFile.getAbsolutePath());
+                                pinfo.setValue(outFile.getAbsolutePath());
 
                                 //attrsActual.put(ORIGINAL_PATH, originalPath);
                                 //attrsActual.put(ORIGINAL_FILENAME, outFile.getName());

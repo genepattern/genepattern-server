@@ -63,7 +63,7 @@ public class JobInputApiImpl implements JobInputApi {
         catch (Throwable t) {
             String message="Error adding job to queue, currentUser="+jobContext.getUserId()+", lsid="+jobInput.getLsid();
             log.error(message,t);
-            throw new GpServerException(message, t);
+            throw new GpServerException(t.getLocalizedMessage(), t);
         }
     }
     
