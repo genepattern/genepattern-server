@@ -71,12 +71,21 @@ public class JobInfoWrapper implements Serializable {
         
         protected boolean displayFileInfo = true;
         
-        public ParameterInfoWrapper(ParameterInfo parameterInfo) {
+        public ParameterInfoWrapper(final ParameterInfo parameterInfo) {
             this.parameterInfo = parameterInfo;
             
             String currentUserId = UIBeanHelper.getUserId();
             ServerConfiguration.Context userContext = ServerConfiguration.Context.getContextForUser(currentUserId);
             displayFileInfo = ServerConfiguration.instance().getGPBooleanProperty(userContext, "display.file.info");
+            
+            //set the display name
+            if (parameterInfo != null) {
+                String name = parameterInfo.getName();
+                if (name != null) {
+                    name = name.replaceAll("\\.", " ");
+                    setDisplayName(name);
+                }
+            }
         }
         
         /**
@@ -267,6 +276,29 @@ public class JobInfoWrapper implements Serializable {
         }
     }
     
+    /**
+     * Wrapper class for a ParameterInfo which is a directory parameter.
+     */
+    public static class InputDirectory extends ParameterInfoWrapper {
+        public InputDirectory(final ParameterInfo parameterInfo) {
+            super(parameterInfo);
+
+
+            
+            String origValue = parameterInfo.getValue();
+            String genePatternUrl = UIBeanHelper.getServer();
+            String value = origValue;
+            //substitute <GenePatternURL>
+            if (origValue.startsWith("<GenePatternURL>")) {
+                value = genePatternUrl + "/" + origValue.substring("<GenePatternURL>".length());
+            }
+            if (origValue.startsWith("file:")) {
+                value = origValue.substring(5);
+            } 
+            this.setDisplayValue(value);
+        }
+    }
+
     /**
      * Wrapper class for a ParameterInfo which is an output file.
      */
@@ -885,13 +917,7 @@ public class JobInfoWrapper implements Serializable {
      */
     private void processParameterInfoArray() {
         for(ParameterInfo param : jobInfo.getParameterInfoArray()) {
-            if (param._isDirectory()) {
-                ParameterInfoWrapper directory = new ParameterInfoWrapper(param);
-                directoryInputs.add(directory);
-            }
-            
             if (param.isOutputFile()) {
-                //OutputFile outputFile = new OutputFile(kindToModules, outputDir, servletContextPath, jobInfo, param);
                 OutputFile outputFile = new OutputFile(outputDir, servletContextPath, jobInfo, param);
                 if (outputFile.isChildJobResult) {
                     outputFilesAndTaskLogs.add(outputFile);
@@ -900,14 +926,17 @@ public class JobInfoWrapper implements Serializable {
                     }
                 }
             }
+            else if (param._isDirectory()) {
+                ParameterInfoWrapper directory = new InputDirectory(param);
+                directoryInputs.add(directory);
+                inputParameters.add(directory);
+            }
             else {
                 ParameterInfoWrapper inputParam = null;
-                //ParameterInfo formalParam = ParameterInfoWrapper.getFormalParameter(formalParams, param);
-                //String uiValue = param.getUIValue(formalParam);
                 String value = param.getValue();
                 if (value != null && !"".equals(value)) {
                     if (isInputFile(param)) {
-                       InputFile inputFile = new InputFile(taskInfo, jobInfo, servletContextPath, value, param);
+                        InputFile inputFile = new InputFile(taskInfo, jobInfo, servletContextPath, value, param);
                         inputFiles.add(inputFile);
                         inputParam = inputFile;
                     } 
@@ -919,15 +948,6 @@ public class JobInfoWrapper implements Serializable {
                     // [optional] parameter that the user did not give a value for
                     inputParam = new ParameterInfoWrapper(param);
                 }
-                //set the display name
-                String name = param.getName();
-                //String name = (String) formalParam.getAttributes().get("altName");
-                //if (name == null) {
-                //    name = formalParam.getName();
-                //}
-                name = name.replaceAll("\\.", " ");
-                inputParam.setDisplayName(name);
-
                 inputParameters.add(inputParam);
             }
         }
