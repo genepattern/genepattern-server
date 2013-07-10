@@ -459,14 +459,29 @@ public class ParamListHelper {
             record.getActual().setValue("");
         }
         else if (numValues==1) {
-            //special-case for DIRECTORY type, need to convert URL input into server file path
-            if (record.getFormal()._isDirectory()) {
-                final ParamValue paramValueIn=actualValues.getValues().get(0);
+            final ParamValue paramValueIn=actualValues.getValues().get(0);
+            //special-case for FILE type with server file paths, check file access permissions and if necessary convert value to URL form
+            if (record.getFormal().isInputFile()) {
+                final Record inputRecord=initFromValue(paramValueIn);
+                if (inputRecord.type==Record.Type.SERVER_PATH || inputRecord.type==Record.Type.SERVER_URL) {
+                    final GpFilePath file=inputRecord.gpFilePath;
+                    boolean canRead=file.canRead(jobContext.isAdmin(), jobContext);
+                    if (!canRead) {
+                        throw new Exception("You are not permitted to access the file: "+paramValueIn.getValue());
+                    }
+                    record.getActual().setValue(file.getUrl().toExternalForm());
+                }
+                else {
+                    record.getActual().setValue(actualValues.getValues().get(0).getValue());
+                }
+            }
+            //special-case for DIRECTORY type, check file access permissions and if necessary convert value to URL form
+            else if (record.getFormal()._isDirectory()) {
                 final GpFilePath directory=initDirectoryInputValue(paramValueIn);
                 if (directory != null) {                    
                     boolean canRead=directory.canRead(jobContext.isAdmin(), jobContext);
                     if (!canRead) {
-                        throw new Exception("You are not permitted to access the file: "+paramValueIn.getValue());
+                        throw new Exception("You are not permitted to access the directory: "+paramValueIn.getValue());
                     }
                     record.getActual().setValue(directory.getUrl().toExternalForm());
                 }
