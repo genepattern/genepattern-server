@@ -1409,43 +1409,6 @@ public class JobInfoWrapper implements Serializable {
         return total;
     }
 
-    /**
-     * For debugging, or as a future improvement,
-     * get the number of steps in the pipeline, based on the number of child jobs,
-     * rather than based on the PipelineModel.
-     */
-    private Integer[] getNumStepsInPipelineFromJob() {
-        int numStepsInPipeline = 0;
-        if (children != null) {
-            numStepsInPipeline = children.size();
-        }
-        return new Integer[numStepsInPipeline];
-    }
-
-    /**
-     * For debugging, or as a future improvement,
-     * get the number of visualizers in the pipeline,
-     * based on the number of visualizers in child jobs,
-     * rather than based on the PipelineModel.
-     * @return
-     */
-    private int getNumVisualizersFromJob() {
-        if (isVisualizer()) {
-            return 1;
-        }
-        
-        int count = 0;
-        if (isPipeline()) {
-            for(JobInfoWrapper step : getAllSteps()) {
-                if (step.isVisualizer()) {
-                    ++count;
-                }
-            }
-        }
-        return count;
-    }
-    
-
     private int currentStepInPipeline = 0;
     public int getCurrentStepInPipeline() {
         return currentStepInPipeline;
