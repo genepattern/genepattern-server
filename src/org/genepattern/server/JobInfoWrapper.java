@@ -487,9 +487,8 @@ public class JobInfoWrapper implements Serializable {
                 }
             }
             isUrl = false;
-            URL url = null;
             try {
-                url = new URL(value);
+                URL url = new URL(value);
                 isUrl = true;
             }
             catch (MalformedURLException e) {
@@ -512,7 +511,8 @@ public class JobInfoWrapper implements Serializable {
                 URL internalUrl;
                 try {
                     internalUrl = new URL(value);
-                    this.setLink(internalUrl.getPath());
+                    String linkValue=internalUrl.toExternalForm();
+                    this.setLink(linkValue);
                 }
                 catch (MalformedURLException e) {
                     log.error("Could not make a URL out of: " + value);
