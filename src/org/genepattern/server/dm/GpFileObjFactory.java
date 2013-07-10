@@ -260,11 +260,6 @@ public class GpFileObjFactory {
             URL url = ServerConfiguration.instance().getGenePatternURL();
             String gpUrl=url.toString();
             String path=urlStr.substring("<GenePatternURL>".length());
-            if (gpUrl.endsWith("/")) {
-                
-            }
-            if (path.startsWith("/")) {
-            }
             urlStr=gpUrl;
             if (urlStr.endsWith("/") && path.startsWith("/")) {
                 //remove extra slash
