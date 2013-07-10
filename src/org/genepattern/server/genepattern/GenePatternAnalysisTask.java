@@ -1104,7 +1104,7 @@ public class GenePatternAnalysisTask {
                                     ParamListHelper plh=new ParamListHelper(jobContext, pinfoRecord, inputParam);
                                     GpFilePath gpFilePath=null;
                                     try {
-                                        gpFilePath=plh.initFileInputValue(inputParam.getValues().get(0));
+                                        gpFilePath=plh.initGpFilePath(inputParam.getValues().get(0));
                                     }
                                     catch (Exception e) {
                                         throw new JobDispatchException(e.getLocalizedMessage());

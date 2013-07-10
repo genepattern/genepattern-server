@@ -407,9 +407,9 @@ public class ParamListHelper {
      * @return
      * @throws Exception
      */
-    public GpFilePath initFileInputValue(final ParamValue paramValueIn) throws Exception {
-        if (!isFileInputParam()) {
-            throw new Exception("Input parameter is not a FILE type: "+record.getFormal().getName()+"="+paramValueIn.getValue());
+    public GpFilePath initGpFilePath(final ParamValue paramValueIn) throws Exception {
+        if (!isFileInputParam() & !isDirectoryInputParam()) {
+            throw new Exception("Input parameter is not a FILE or DIRECTORY: "+record.getFormal().getName()+"="+paramValueIn.getValue());
         }
         if (paramValueIn==null) {
             log.error("paramValueIn==null"+record.getFormal().getName());
@@ -419,18 +419,12 @@ public class ParamListHelper {
         if (paramValueIn.getValue()==null || paramValueIn.getValue().length()==0) {
             log.debug("value not set for FILE: "+record.getFormal().getName());
             return null;            
-        }
-        
+        } 
         GpFilePath file=null;
         final Record inputRecord=initFromValue(paramValueIn);
-        //special-case: it's not a file
-        if (!inputRecord.gpFilePath.isFile()) {
-            throw new Exception("Value is not a file: "+record.getFormal().getName()+"="+paramValueIn.getValue());
-        }
         file=inputRecord.gpFilePath;
         return file;
     }
-    
 
     public void updatePinfoValue() throws Exception {
         final int numValues=actualValues.getNumValues();
