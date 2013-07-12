@@ -41,7 +41,7 @@ import org.yaml.snakeyaml.Yaml;
  * </pre>
  * 
  * If an about.yaml file is not present in the repository, 
- * details are loaded from the 'repository.yaml' and/or 'repository_custom.yaml' file.
+ * details are loaded from the 'repo.yaml' and/or 'repository_custom.yaml' file.
  * 
  * @author pcarr
  */
@@ -103,7 +103,7 @@ public class ConfigRepositoryInfoLoader implements RepositoryInfoLoader {
 
     /**
      * Load the repository details from a the given configuration file,
-     * for example 'resources/repository.yaml'.
+     * for example 'resources/repo.yaml'.
      * 
      * @param repositoryDetailsFile
      * @return a Map, possibly empty if there was an error reading the file.
@@ -182,7 +182,7 @@ public class ConfigRepositoryInfoLoader implements RepositoryInfoLoader {
     /**
      * Parse the yaml representation of the repository info.
      * Can be either in JSON or YAML format.
-     * See the 'repository.yaml' file in the resources directory for an example.
+     * See the 'repo.yaml' file in the resources directory for an example.
      * 
      * @param yamlDocument, the contents of the yaml (or json) file loaded from the file system
      *     or via external url.

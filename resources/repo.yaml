@@ -8,7 +8,7 @@
 #
 # To add additional repositories to the menu, create a new 'repository_custom.yaml' file
 # and include it in the resources directory.
-# This (repository.yaml) file will be replaced if/when you update your GP server.
+# This (repo.yaml) file will be replaced if/when you update your GP server.
 #
 # You can also add repositories from the Server Settings -> Repositories page.
 #

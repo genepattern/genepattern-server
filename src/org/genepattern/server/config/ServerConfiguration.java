@@ -188,16 +188,16 @@ public class ServerConfiguration {
             log.error(t);
         }
 
-        // parse the repository.yaml and optional repository_custom.yaml file
+        // parse the repo.yaml and optional repository_custom.yaml file
         boolean parsedRepoInfo=false;
         try {
-            final File defaultRepositoryFile=new File(System.getProperty("resources"), "repository.yaml");
+            final File defaultRepositoryFile=new File(System.getProperty("resources"), "repo.yaml");
             this.repositoryDetails=ConfigRepositoryInfoLoader.parseRepositoryDetailsYaml(defaultRepositoryFile);
             parsedRepoInfo=true;
         }
         catch (Throwable t) {
-            log.error("Error in repository.yaml", t);
-            errors.add(new Exception("Error in repository.yaml: "+t.getLocalizedMessage(), t));
+            log.error("Error in repo.yaml", t);
+            errors.add(new Exception("Error in repo.yaml: "+t.getLocalizedMessage(), t));
         }
         if (parsedRepoInfo) {            
             try {
