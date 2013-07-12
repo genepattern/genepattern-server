@@ -6,7 +6,7 @@
 #
 # Entries (aka documents) are delimited by the '---' separator at the start of a line.
 #
-# To add additional repositories to the menu, create a new 'repository_custom.yaml' file
+# To add additional repositories to the menu, create a new 'repo_custom.yaml' file
 # and include it in the resources directory.
 # This (repo.yaml) file will be replaced if/when you update your GP server.
 #
