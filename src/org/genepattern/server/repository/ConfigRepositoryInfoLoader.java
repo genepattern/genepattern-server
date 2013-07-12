@@ -41,7 +41,7 @@ import org.yaml.snakeyaml.Yaml;
  * </pre>
  * 
  * If an about.yaml file is not present in the repository, 
- * details are loaded from the 'repo.yaml' and/or 'repository_custom.yaml' file.
+ * details are loaded from the 'repo.yaml' and/or 'repo_custom.yaml' file.
  * 
  * @author pcarr
  */
