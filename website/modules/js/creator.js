@@ -1232,7 +1232,6 @@ function loadParameterInfo(parameters)
             newParameter.find("select[name='p_type']").trigger("change");
 
             newParameter.find('input[name="choicelist"]').val(choices);
-            newParameter.find('input[name="choicelist"]').multiselect("refresh");
             newParameter.find('input[name="choicelist"]').data("prevVal", choices);
         }
 
