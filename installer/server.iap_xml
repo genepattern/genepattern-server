@@ -8313,7 +8313,7 @@ http://localhost:$GENEPATTERN_PORT$/gp/installFrame.jsp]]></string>
 					</method>
 					<method name="put">
 						<string><![CDATA[com.zerog.ia.installer.options.heap.size.max]]></string>
-						<string><![CDATA[512000000]]></string>
+						<string><![CDATA[1024000000]]></string>
 					</method>
 					<method name="put">
 						<string><![CDATA[com.zerog.ia.build.options.auto-populate.labels]]></string>
