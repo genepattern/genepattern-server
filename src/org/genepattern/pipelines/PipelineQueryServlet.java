@@ -21,6 +21,7 @@ import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
+import java.net.URL;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.util.ArrayList;
@@ -610,10 +611,7 @@ public class PipelineQueryServlet extends HttpServlet {
                         if (input.getValue().startsWith("<GenePatternURL>")) {
                             filePath = input.getValue();
                         }
-                        else if (input.getValue().startsWith("http://")) {  // Check for external HTTP URLs
-                            filePath = input.getValue();
-                        }
-                        else if (input.getValue().startsWith("ftp://")) {  // Check for external FTP URLs
+                        else if (isExternalUrl(input.getValue())) {
                             filePath = input.getValue();
                         }
                         else {
@@ -633,6 +631,20 @@ public class PipelineQueryServlet extends HttpServlet {
 	                TaskInfo.isVisualizer(tia), taskInfo);
 	        model.addTask(js);
 	        taskNum++;
+	    }
+	}
+	
+	private boolean isExternalUrl(final String inputValue) {
+	    try {
+	        final URL url = new URL(inputValue);
+	        return true;
+	    }
+	    catch (MalformedURLException e) {
+	        return false;
+	    }
+	    catch (Throwable t) {
+	        log.error(t);
+	        return false;
 	    }
 	}
 	
