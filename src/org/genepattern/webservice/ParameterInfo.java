@@ -346,6 +346,11 @@ public class ParameterInfo implements Serializable {
      */
     public Map<String, String> getChoices() {
         String choicesString = getValue();
+        final Map<String,String> uiValueToCommandLineValueMap = _initChoicesFromString(choicesString);
+        return uiValueToCommandLineValueMap;
+    }
+    
+    final static public Map<String,String> _initChoicesFromString(final String choicesString) {
         Map<String, String> uiValueToCommandLineValueMap = new HashMap<String, String>();
         if (choicesString != null && !choicesString.equals("")) {
             String[] choicesArray = choicesString.split(";");
@@ -363,7 +368,7 @@ public class ParameterInfo implements Serializable {
             }
         }
         return uiValueToCommandLineValueMap;
-    }
+    } 
 
     /**
      * Gets the parameter displaying label.
