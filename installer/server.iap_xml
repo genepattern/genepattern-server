@@ -9859,25 +9859,6 @@ and any path to a file to read from that file]]></string>
 																</object>
 															</method>
 															<method name="addElement">
-																<object class="com.zerog.ia.installer.PatternAtom" objectID="bc60f0ba8f22">
-																	<property name="searchDescription">
-																		<string><![CDATA[Begins With]]></string>
-																	</property>
-																	<property name="includeExcludeState">
-																		<string><![CDATA[Excludes]]></string>
-																	</property>
-																	<property name="matchString">
-																		<string><![CDATA[Root]]></string>
-																	</property>
-																	<property name="ignoresCase">
-																		<string><![CDATA[Yes]]></string>
-																	</property>
-																	<property name="typeOption">
-																		<string><![CDATA[Files and Folders]]></string>
-																	</property>
-																</object>
-															</method>
-															<method name="addElement">
 																<object class="com.zerog.ia.installer.PatternAtom" objectID="2671beaba6c9">
 																	<property name="searchDescription">
 																		<string><![CDATA[Begins With]]></string>
@@ -10083,25 +10064,6 @@ and any path to a file to read from that file]]></string>
 																	</property>
 																	<property name="matchString">
 																		<string><![CDATA[Repository]]></string>
-																	</property>
-																	<property name="ignoresCase">
-																		<string><![CDATA[Yes]]></string>
-																	</property>
-																	<property name="typeOption">
-																		<string><![CDATA[Files and Folders]]></string>
-																	</property>
-																</object>
-															</method>
-															<method name="addElement">
-																<object class="com.zerog.ia.installer.PatternAtom" objectID="bc6a4d998f27">
-																	<property name="searchDescription">
-																		<string><![CDATA[Begins With]]></string>
-																	</property>
-																	<property name="includeExcludeState">
-																		<string><![CDATA[Excludes]]></string>
-																	</property>
-																	<property name="matchString">
-																		<string><![CDATA[Root]]></string>
 																	</property>
 																	<property name="ignoresCase">
 																		<string><![CDATA[Yes]]></string>
