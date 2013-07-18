@@ -19,6 +19,8 @@ import org.genepattern.webservice.ParameterInfo;
 import org.genepattern.util.GPConstants;
 import org.genepattern.server.job.input.ParamListHelper;
 import org.genepattern.server.job.input.NumValues;
+import org.genepattern.server.job.input.choice.ChoiceInfo;
+import org.genepattern.server.job.input.choice.ChoiceInfoHelper;
 
 import java.util.HashMap;
 import java.util.Iterator;
@@ -140,7 +142,23 @@ public class ParametersJSON extends JSONObject {
             }
         }
         catch (JSONException e) {
-            log.error("Error creating parameter JSON from from ParameterInfo object");
+            log.error("Error creating parameter JSON from ParameterInfo object");
+        }
+    }
+    
+    public void initChoice(final ParameterInfo pInfo) {
+        try {
+            final ChoiceInfo choiceInfo = ChoiceInfoHelper.initChoiceInfo(pInfo);
+            if (choiceInfo != null) {
+                JSONArray choice = ChoiceInfoHelper.initChoiceJson(choiceInfo);
+                this.put("choice", choice);
+            }
+        }
+        catch (JSONException e) {
+            log.error("JSONException initializing choice for "+pInfo.getName(), e);
+        }
+        catch (Throwable t) {
+            log.error("Unexpected error initializing choice for "+pInfo.getName(), t);
         }
     }
 
