@@ -1641,26 +1641,14 @@ var library = {
         $("#attachFile").button();
         $("#attachFile").click(function() {
             var label = document.createElement("div");
-            label.innerHTML = "<strong>Please select a file below to upload.</strong><br />";
+            label.innerHTML = "<strong>Please select a file below to upload or add URL.</strong><br />";
             var uploadForm = document.createElement("form");
             uploadForm.setAttribute("id", "upload_form");
             uploadForm.setAttribute("action", "/gp/PipelineDesigner/upload");
             uploadForm.setAttribute("method", "POST");
             uploadForm.setAttribute("enctype", "multipart/form-data");
             label.appendChild(uploadForm);
-
-            var fileUpload = document.createElement("input");
-            fileUpload.setAttribute("type", "file");
-            fileUpload.setAttribute("name", "uploadInput");
-            fileUpload.setAttribute("id", "uploadInput");
-            fileUpload.setAttribute("class", "propertyValue");
-            uploadForm.appendChild(fileUpload);
-
-            var path = document.createElement("input");
-            path.setAttribute("type", "hidden");
-            path.setAttribute("id", "hiddenFilePath");
-            uploadForm.appendChild(path);
-
+            
             // Attach the uploading and done images
             var uploadingImg = document.createElement("img");
             uploadingImg.setAttribute("class", "uploadingImage");
@@ -1674,10 +1662,30 @@ var library = {
             doneImg.setAttribute("style", "display: none;");
             uploadForm.appendChild(doneImg);
 
+            var fileUpload = document.createElement("input");
+            fileUpload.setAttribute("type", "file");
+            fileUpload.setAttribute("name", "uploadInput");
+            fileUpload.setAttribute("id", "uploadInput");
+            fileUpload.setAttribute("class", "propertyValue");
+            uploadForm.appendChild(fileUpload);
+
+            var path = document.createElement("input");
+            path.setAttribute("type", "hidden");
+            path.setAttribute("id", "hiddenFilePath");
+            uploadForm.appendChild(path);
+
+            $(uploadForm).append("<br/><label for='externalURL' style='font-weight:bold;'>External URL:</label> " +
+            		"<input id='externalURL' name='externalURL' type='text' style='width:280px;'/>");
+
             var buttons = {
                 "OK": function(event) {
                     // Add the file to the UI
-                    editor.addFile($("#uploadInput").val(), $("#hiddenFilePath").val());
+                	if (!$("#uploadInput").attr("disabled")) {
+                		editor.addFile($("#uploadInput").val(), $("#hiddenFilePath").val());
+                	}
+                	else {
+                		editor.addFile($("#externalURL").val(), $("#externalURL").val());
+                	}
 
                     // Tear down the dialog
                     $(this).dialog("close");
@@ -1694,6 +1702,22 @@ var library = {
             editor.showDialog("Attach File", label, buttons);
             $(".ui-dialog-buttonpane button:contains('OK')").button("disable");
             $(".ui-dialog-titlebar-close").hide();
+            var testForExternalURLType = function(event) {
+            	var externalURLInputBox = this;
+            	setTimeout(function() {
+            		var type = $(externalURLInputBox).val().trim();
+                	if (type.length > 0) {
+                		$("#uploadInput").attr("disabled", "disabled");
+                		$(".ui-dialog-buttonpane button:contains('OK')").button("enable");
+                	}
+                	else {
+                		$("#uploadInput").removeAttr("disabled");
+                		$(".ui-dialog-buttonpane button:contains('OK')").button("disable");
+                	}
+            	}, 10);
+            }
+            $("#externalURL").keyup(testForExternalURLType);
+            $("#externalURL").bind('paste', testForExternalURLType);
 
             // When the upload form is submitted, send to the servlet
             $("#upload_form").iframePostForm({
@@ -1728,6 +1752,7 @@ var library = {
                             editor.workspace["files"].push(response.location);
                         }
                         $("#hiddenFilePath").val(response.location);
+                        $("#externalURL").attr("disabled", "disabled");
                         $(".ui-dialog-buttonpane button:contains('OK')").button("enable");
                     }
                 }
