@@ -166,6 +166,9 @@
 	return;
 }
 
+forward = requestParameters.getProperty("forward");
+if (forward == null) forward = "addTask.jsp?view=1&" + GPConstants.NAME + "=" + lsid;
+
 // delete support file
 
 if ((requestParameters.getProperty("deleteFiles") != null || requestParameters.getProperty("deleteFiles") != null) ||
@@ -291,7 +294,7 @@ if (requestParameters.getProperty("clone") != null) {
                             window.location = "viewPipeline.jsp?<%= GPConstants.NAME %>=<%= lsid %>";
                             <%
            } else { %>
-                            window.location = "addTask.jsp?view=1&<%= GPConstants.NAME %>=<%= lsid %>";
+                            window.location = "<%= forward %>";
                             <%}
            %>
 

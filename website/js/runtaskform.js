@@ -1791,3 +1791,20 @@ function toggleFileButtons(paramName) {
     }
 	var maxValue = parseInt(paramJSON["maxValue"]);
 }
+
+function getUsername() {
+	var parts = $("#systemMessageLink td").text().split(" ");
+	return $.trim(parts[parts.length-1]);
+}
+
+function cloneTask() {
+	var cloneName = window.prompt("Name for cloned module", "copyOf" + run_task_info.name);
+    if (cloneName == null || cloneName.length == 0) {
+        return;
+    }
+    window.location.href = "/gp/saveTask.jsp?clone=1&name=" + run_task_info.name + 
+    		"&LSID=" + encodeURIComponent(run_task_info.lsid) + 
+    		"&cloneName=" + encodeURIComponent(cloneName) + 
+    		"&userid=" + encodeURIComponent(getUsername()) + 
+    		"&forward=" + encodeURIComponent("/gp/pages/index.jsf?lsid=" + encodeURIComponent(cloneName));
+}
