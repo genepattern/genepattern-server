@@ -157,6 +157,8 @@ button.urlButton
     padding: 9px 10px 10px 10px;
     min-width: 490px;
     margin-bottom: 0;
+    display: inline-block;
+    white-space: nowrap;
 }
 
 .fileDiv button img
