@@ -9,13 +9,21 @@ import java.util.List;
  *
  */
 public class ChoiceInfo {
-    final static ChoiceInfoParser defaultChoiceInfoParser= new DefaultChoiceInfoParser();
+    //final static ChoiceInfoParser defaultChoiceInfoParser= new DefaultChoiceInfoParser();
+    final static ChoiceInfoParser choiceInfoParser= new DynamicChoiceInfoParser();
     public static ChoiceInfoParser getChoiceInfoParser() {
-        return defaultChoiceInfoParser;
+        return choiceInfoParser;
     }
     
-    Object source;
+    private String ftpDir=null;
     private List<Choice> choices=null;
+    
+    public void setFtpDir(final String ftpDir) {
+        this.ftpDir=ftpDir;
+    }
+    public String getFtpDir() {
+        return ftpDir;
+    }
     
     public List<Choice> getChoices() {
         return choices;
