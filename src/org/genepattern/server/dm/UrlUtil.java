@@ -1,6 +1,9 @@
 package org.genepattern.server.dm;
 import java.io.File;
 import java.io.UnsupportedEncodingException;
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URL;
 import java.net.URLEncoder;
 
 import org.apache.log4j.Logger;
@@ -45,6 +48,27 @@ public class UrlUtil {
             }
         }
         return o.toString();
+    }
+    
+    //alternative implementation which uses standard java classes, File, URL, and URI
+    private static String encodeURIcomponent_file(String name) {
+        final File file=new File(name);
+        final URI uri=file.toURI();
+        try { 
+            final URL url=uri.toURL();
+            final String encodedPath=url.toExternalForm();
+            int beginIndex=encodedPath.lastIndexOf("/");
+            ++beginIndex;
+            if (beginIndex<0) {
+                beginIndex=0;
+            }
+            final String encodedName=encodedPath.substring(beginIndex);
+            return encodedName;
+        }
+        catch (MalformedURLException e) {
+            log.error(e);
+        }
+        return name;
     }
 
     private static char toHex(int ch) {
