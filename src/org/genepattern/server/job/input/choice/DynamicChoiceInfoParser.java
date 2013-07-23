@@ -26,6 +26,22 @@ import org.genepattern.webservice.ParameterInfo;
 public class DynamicChoiceInfoParser implements ChoiceInfoParser {
     final static private Logger log = Logger.getLogger(DynamicChoiceInfoParser.class);
 
+    public boolean hasChoiceInfo(ParameterInfo param) {
+        final String choiceDirFtp = (String) param.getAttributes().get("choiceDirFtp");
+        if (choiceDirFtp != null) {
+            return true;
+        }
+        final String declaredChoicesStr= (String) param.getAttributes().get("choice");
+        if (declaredChoicesStr != null) {
+            return true;
+        }
+        Map<String,String> legacy=param.getChoices();
+        if (legacy != null && legacy.size()>0) {
+            return true;
+        }
+        return false;
+    }
+
     @Override
     public ChoiceInfo initChoiceInfo(ParameterInfo param) {
         final Map<String,String> choices;
