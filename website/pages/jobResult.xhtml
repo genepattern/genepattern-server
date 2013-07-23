@@ -157,12 +157,20 @@
                         jobId = vizAppletsToUpdate.pop();
                     }
                 }
+                
+                function fixHostBug(appletString) {
+                	var tagParts = appletString.split("><");
+                	for (var i = 0; i < tagParts.length; i++) {
+                		tagParts[i].replace(/http:\/\/.*\/gp\//, window.location.protocol + "//" + window.location.host + "/gp/");
+                	}
+                	return tagParts.join("><");
+                }
 
                 function addVisualizer(key, jobId, appletName, appletId, appletTag, openVisualizerFlag) {
                     //alert('addVisualizer, openVisualizerFlag='+openVisualizerFlag);
                     
                     // Host bug fix
-                    //appletTag = appletTag.replace(/http:\/\/.*\/gp\//, "http://" + window.location.host + "/gp/");
+                    appletTag = fixHostBug(appletTag);
                     
                     vizKeys['' + jobId] = key;
                     vizAppletNames['' + jobId] = appletName;
