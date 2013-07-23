@@ -421,78 +421,59 @@ function loadParameterInfo(parameters, initialValues)
         var rowId = "pRow" + (q+1);
         var valueTd = $("<td/>");
 
-        var choicelist = parameters[q].value;
-        if(choicelist !== undefined && choicelist !== null && choicelist.length > 0)
+        paramRow.append(valueTd);
+        paramsTable.append(paramRow);
+
+        var choiceFound = false;
+        //check if there are predefined list of choices for this parameter
+        if(parameters[q].choice != undefined  && parameters[q].choice != null && parameters[q].choice != '')
         {
-            var choiceResult = choicelist.split(';');
-            var select = $("<select id='"+ parameters[q].name +"' name='"
-                    + parameters[q].name+ "'/>");
-
-            for(var p=0;p<choiceResult.length;p++)
+            choiceFound = true;
+            //display drop down showing available file choices
+            var choice = $("<select class='choice'/>");
+            choice.data("cname", parameters[q].name)
+            for(var c=0;c<parameters[q].choice.length;c++)
             {
-                var value = "";
-                var rowdata = choiceResult[p].split("=");
-                if(rowdata != undefined && rowdata != null && rowdata.length > 1)
-                {
-                    value = rowdata[0];
-                    select.append("<option value='"+ value +"'>" + rowdata[1]+ "</option>");
-                }
-                else
-                {
-                    value = choiceResult[p];
-                    select.append("<option value='"+value +"'>" + value + "</option>");
-                }
+                choice.append("<option value='"+parameters[q].choice[c].value+"'>"
+                        + parameters[q].choice[c].label+"</option>");
             }
 
-            select.children("option").each(function()
-            {
-                if($(this).val() == parameters[q].default_value)
-                {
-                    $(this).parent().val(parameters[q].default_value);
-                }
-            });
+            valueTd.append(choice);
 
-            //initially select the first choice
-            select.change(function ()
-            {
-                var valueList = [];
-                valueList.push($(this).val());
-
-                var paramName = $(this).attr("name");
-                parameter_and_val_obj[paramName] = valueList;
-            });
-
-            //select initial values if there are any
-            if( initialValuesList != undefined &&  initialValuesList != null)
-            {
-                for(v=0; v < initialValuesList.length; v++)
-                {
-                    select.val( initialValuesList[v]);
-                    select.trigger('change');
-                }
-            }
-
-            valueTd.append(select);
-            paramRow.append(valueTd);
-            paramsTable.append(paramRow);
-
-            select.multiselect({
+            choice.multiselect({
                 multiple: false,
                 header: false,
                 selectedList: 1,
                 classes: 'mSelect'
             });
 
-            if(parameters[q].optional.length == 0 && parameters[q].minValue != 0)
+            choice.change(function ()
             {
-                select.addClass("requiredParam");
+                var valueList = [];
+                valueList.push($(this).val());
+
+                var paramName = $(this).data("cname");
+                parameter_and_val_obj[paramName] = valueList;
+            });
+
+            //select initial values if there are any
+            if( initialValuesList != undefined &&  initialValuesList != null)
+            {
+                //should only be one item in the list for now
+                for(v=0; v < initialValuesList.length; v++)
+                {
+                    choice.val( initialValuesList[v]);
+                    choice.trigger('change');
+                    choice.multiselect("refresh");
+                }
             }
 
             var valueList = [];
-            valueList.push(select.val());
+            valueList.push(choice.val());
             parameter_and_val_obj[parameters[q].name] = valueList;
         }
-        else if(parameters[q].type == "java.io.File")
+
+        if(parameters[q].TYPE == "FILE" && parameters[q].MODE == "IN")
         {
             inputFileRowIds.push(rowId);
 
@@ -563,7 +544,7 @@ function loadParameterInfo(parameters, initialValues)
             }
             else
             {
-                //make the file input field multiselect
+                //make the file input field multiselect, so you can select more than one file
                 fileInput.attr("multiple", "multiple");
             }
 
@@ -575,8 +556,6 @@ function loadParameterInfo(parameters, initialValues)
             });
 
             fileDiv.append(uploadFileBtn);
-
-
             if(parameters[q].optional.length == 0 && parameters[q].minValue != 0)
             {
                 fileInput.addClass("requiredParam");
@@ -596,8 +575,31 @@ function loadParameterInfo(parameters, initialValues)
             fileDiv.append("<div id='" + idPName + "FileDiv'/>");
 
             valueTd.append(fileDiv);
-            paramRow.append(valueTd);
-            paramsTable.append(paramRow);
+
+            //check if there are predefined file values
+            if(parameters[q].choice != undefined  && parameters[q].choice != null)
+            {
+                //add toggling to display regular file input div
+                var customFileP = $("<p/>");
+                var customFileLink = $("<a href='#' class='select'> <img id='fileToggle' src='/gp/images/arrows.gif'> Upload your own file</a>");
+                customFileLink.click(function()
+                {
+                    var newValue = $("#fileToggle").attr("src").replace("arrows.gif", "arrows-down.gif");
+
+                    if(newValue == $("#fileToggle").attr("src"))
+                    {
+                        newValue = $("#fileToggle").attr("src").replace("arrows-down.gif", "arrows.gif");
+                    }
+                    $("#fileToggle").attr("src", newValue);
+                    $(this).parents("td:first").find(".fileDiv").toggle();
+
+                    $(this).parents("td:first").find(".ui-multiselect").toggle();
+                });
+
+                customFileP.append(customFileLink);
+                fileDiv.before(customFileP);
+                fileDiv.hide();
+            }
 
             var fileObjListings = param_file_listing[parameters[q].name];
             if(fileObjListings == null || fileObjListings == undefined)
@@ -632,6 +634,11 @@ function loadParameterInfo(parameters, initialValues)
         }
         else
         {
+            if(choiceFound)
+            {
+                continue;
+            }
+
             var textField = null;
             if(parameters[q].type == "PASSWORD")
             {
@@ -782,9 +789,6 @@ function loadParameterInfo(parameters, initialValues)
         $("#dialogUrlDiv").append(urlDiv);
         openServerFileDialog(this);
     });
-    
-    // Load parameter values from url
-    //loadGetParams();
 }
 
 jQuery(document).ready(function()
@@ -1691,7 +1695,16 @@ function setAllFileParamValues()
     for(var paramName in param_file_listing)
     {
         var fileList = [];
-        
+
+        //if there is a value set from a choice already for this file then continue
+        if(param_file_listing[paramName].length == 0
+            && parameter_and_val_obj[paramName] != null &&
+            parameter_and_val_obj[paramName] != undefined)
+        {
+            //check if value already set from a choice list
+            continue;
+        }
+
         for(var f=0; f < param_file_listing[paramName].length; f++)
         {
             var nextFileObj = param_file_listing[paramName][f];
