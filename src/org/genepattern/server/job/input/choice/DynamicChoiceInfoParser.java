@@ -47,14 +47,20 @@ public class DynamicChoiceInfoParser implements ChoiceInfoParser {
     public ChoiceInfo initChoiceInfo(ParameterInfo param) {
         final Map<String,String> choices;
         //the new way (>= 3.7.0), check for remote ftp directory
-        final String choiceDirFtp = (String) param.getAttributes().get("choiceDirFtp");
-        if (choiceDirFtp != null) {
-            log.debug("Initializing choice from remote source for param="+param.getName()+", choiceDirFtp="+choiceDirFtp);
+        final String ftpDir = (String) param.getAttributes().get("choiceDirFtp");
+        if (ftpDir != null) {
+            log.debug("Initializing choice from remote source for param="+param.getName()+", choiceDirFtp="+ftpDir);
             try {
-                final ChoiceInfo choiceInfoFromFtp = initChoicesFromFtp(choiceDirFtp);
+                final ChoiceInfo choiceInfoFromFtp = initChoicesFromFtp(ftpDir);
                 return choiceInfoFromFtp;
             }
             catch (Throwable t) {
+                String userMessage="Server error initializing list of choices from remote server: "+ftpDir;
+                String developerMessage="Error initializing choices for '"+param.getName()+"' from "+ftpDir+": "+t.getLocalizedMessage();
+                log.error(developerMessage, t);
+                final ChoiceInfo choiceInfo = new ChoiceInfo();
+                choiceInfo.setFtpDir(ftpDir);
+                choiceInfo.setStatus(new ChoiceInfoException.Status(ChoiceInfoException.Status.Flag.ERROR, userMessage));
                 log.error(t);
             }
         }
@@ -93,7 +99,7 @@ public class DynamicChoiceInfoParser implements ChoiceInfoParser {
      * @param ftpDir
      * @return
      */
-    private ChoiceInfo initChoicesFromFtp(final String ftpDir) {
+    private ChoiceInfo initChoicesFromFtp(final String ftpDir) throws ChoiceInfoException {
         final ChoiceInfo choiceInfo=new ChoiceInfo();
         choiceInfo.setFtpDir(ftpDir);
         final URL ftpUrl;
@@ -101,13 +107,20 @@ public class DynamicChoiceInfoParser implements ChoiceInfoParser {
             ftpUrl=new URL(ftpDir);
             if (!"ftp".equalsIgnoreCase(ftpUrl.getProtocol())) {
                 log.error("Invalid ftpDir="+ftpDir);
+                final ChoiceInfoException.Status status=new ChoiceInfoException.Status(ChoiceInfoException.Status.Flag.ERROR,
+                        "Module error, Invalid ftpDir="+ftpDir);
+                choiceInfo.setStatus(status);
                 return choiceInfo;
             }
         }
         catch (MalformedURLException e) {
             log.error("Invalid ftpDir="+ftpDir, e);
-                return choiceInfo;
+            final ChoiceInfoException.Status status=new ChoiceInfoException.Status(ChoiceInfoException.Status.Flag.ERROR,
+                    "Module error, Invalid ftpDir="+ftpDir);
+            choiceInfo.setStatus(status);
+            return choiceInfo;
         }
+
         FTPFile[] files;
         final FTPClient ftpClient = new FTPClient();
         try {
@@ -117,6 +130,7 @@ public class DynamicChoiceInfoParser implements ChoiceInfoParser {
             if(!FTPReply.isPositiveCompletion(reply)) {
                 ftpClient.disconnect();
                 log.error("FTP server refused connection, ftpDir="+ftpDir);
+                
                 return choiceInfo;
             }
             // anonymous login
@@ -133,11 +147,13 @@ public class DynamicChoiceInfoParser implements ChoiceInfoParser {
         }
         catch (IOException e) {
             log.error("Error listing files from remote ftp dir="+ftpDir, e);
-                return choiceInfo;
+            //TODO: choiceInfo.addStatusMessage(ChoiceInfo.InitError.ConnectionError);
+            return choiceInfo;
         }
         catch (Throwable t) {
             log.error("Unexpected exception listing files from remote ftp dir="+ftpDir, t);
-                return choiceInfo;
+            //TODO: choiceInfo.addStatusMessage(ChoiceInfo.InitError.ConnectionError);
+            return choiceInfo;
         }
         finally {
             if(ftpClient.isConnected()) {

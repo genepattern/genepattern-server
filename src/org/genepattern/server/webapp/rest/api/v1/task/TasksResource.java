@@ -1,6 +1,7 @@
 package org.genepattern.server.webapp.rest.api.v1.task;
 
 import java.net.URI;
+import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.GET;
@@ -12,7 +13,11 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 
+import org.apache.log4j.Logger;
 import org.genepattern.server.config.ServerConfiguration;
+import org.genepattern.server.job.input.choice.ChoiceInfo;
+import org.genepattern.server.job.input.choice.ChoiceInfoHelper;
+import org.genepattern.server.rest.ParameterInfoRecord;
 import org.genepattern.server.webapp.rest.api.v1.Util;
 import org.genepattern.server.webservice.server.local.LocalAdminClient;
 import org.genepattern.webservice.ParameterInfo;
@@ -84,6 +89,7 @@ import com.sun.jersey.api.Responses;
  */
 @Path("/v1/tasks")
 public class TasksResource {
+    final static private Logger log = Logger.getLogger(TasksResource.class);
 
     @GET
     @Produces(MediaType.APPLICATION_JSON)
@@ -143,6 +149,85 @@ public class TasksResource {
             return Response.serverError().entity(errorMessage).build();
         }
         return Response.ok().entity(jsonObj.toString()).build();        
+    }
+
+    /**
+     * Get the choiceInfo.json representation for the [optional] list of choices for a given module input parameter.
+     * Example usage,
+     *     curl -u test:test http://127.0.0.1:8080/gp/rest/v1/tasks/DemoRNASeQC/annotation.gtf/choiceInfo.json
+     * Example response,
+     * <pre>
+       200 OK
+       {
+         "status":{"flag":"OK"},
+         "ftpDir":"ftp://ftp.broadinstitute.org/pub/genepattern/rna_seq/referenceAnnotation/gtf",
+         "choices": [
+           {"value":"ftp://ftp.broadinstitute.org/pub/genepattern/rna_seq/referenceAnnotation/gtf/Arabidopsis_thaliana_Ensembl_TAIR10.gtf","label":"Arabidopsis_thaliana_Ensembl_TAIR10.gtf"},
+           {"value":"ftp://ftp.broadinstitute.org/pub/genepattern/rna_seq/referenceAnnotation/gtf/Arabidopsis_thaliana_Ensembl_TAIR9.gtf","label":"Arabidopsis_thaliana_Ensembl_TAIR9.gtf"},
+           ...
+           {"value": "", label: "" }
+           ]}
+     * </pre>
+     * 
+     * @param uriInfo
+     * @param taskNameOrLsid
+     * @param pname
+     * @param request
+     * @return
+     */
+    @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    @Path("{taskNameOrLsid}/{pname}/choiceInfo.json")
+    public Response getChoiceInfo(
+            final @Context UriInfo uriInfo,
+            final @PathParam("taskNameOrLsid") String taskNameOrLsid,
+            final @PathParam("pname") String pname,
+            final @Context HttpServletRequest request
+
+    ) {
+        log.debug("taskNameOrLsid="+taskNameOrLsid);
+        log.debug("pname="+pname);
+        
+        ServerConfiguration.Context userContext=Util.getUserContext(request);
+        final String userId=userContext.getUserId();
+        TaskInfo taskInfo = null;
+        try {
+            taskInfo=getTaskInfo(taskNameOrLsid, userId);
+        }
+        catch (Throwable t) {
+            return Responses.notFound().entity(t.getLocalizedMessage()).build();
+        }
+        if(taskInfo == null) {
+            String errorMessage="No task with task id: " + taskNameOrLsid + " found " + "for user " + userId;
+            return Responses.notFound().entity(errorMessage).build();
+        }
+        
+        final Map<String,ParameterInfoRecord> paramInfoMap=ParameterInfoRecord.initParamInfoMap(taskInfo);
+        if (!paramInfoMap.containsKey(pname)) {
+            String errorMessage="No parameter with name="+pname;
+            return Responses.notFound().entity(errorMessage).build();
+        }
+        
+        ParameterInfoRecord pinfoRecord=paramInfoMap.get(pname);
+        if (!ChoiceInfo.getChoiceInfoParser().hasChoiceInfo(pinfoRecord.getFormal())) {
+            return Responses.notFound().entity(taskInfo.getName()+"."+pname + " does not have a choiceInfo").build();
+        }
+        
+        ChoiceInfo choiceInfo=ChoiceInfo.getChoiceInfoParser().initChoiceInfo(pinfoRecord.getFormal());
+        
+        //hard-coded JSON serialization
+        try {
+            final JSONObject choiceInfoJson=ChoiceInfoHelper.initChoiceInfoJson(choiceInfo);
+            final String choiceInfoStr=choiceInfoJson.toString();
+
+            //return the JSON representation of the job
+            return Response.ok()
+                .entity(choiceInfoStr)
+                .build();
+        }
+        catch (Throwable t) {
+            return Response.serverError().entity("Error serializing JSON response: "+t.getLocalizedMessage()).build();
+        }
     }
     
     private TaskInfo getTaskInfo(final String taskLSID, final String username) 
