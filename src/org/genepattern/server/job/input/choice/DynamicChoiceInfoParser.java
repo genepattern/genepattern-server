@@ -3,6 +3,7 @@ package org.genepattern.server.job.input.choice;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.Date;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -12,6 +13,7 @@ import org.apache.commons.net.ftp.FTPFile;
 import org.apache.commons.net.ftp.FTPReply;
 import org.apache.log4j.Logger;
 import org.genepattern.server.dm.UrlUtil;
+import org.genepattern.server.job.input.choice.ChoiceInfo.Status.Flag;
 import org.genepattern.webservice.ParameterInfo;
 
 /**
@@ -55,24 +57,24 @@ public class DynamicChoiceInfoParser implements ChoiceInfoParser {
                 return choiceInfoFromFtp;
             }
             catch (Throwable t) {
-                String userMessage="Server error initializing list of choices from remote server: "+ftpDir;
+                String userMessage="Server error initializing list of choices from "+ftpDir;
                 String developerMessage="Error initializing choices for '"+param.getName()+"' from "+ftpDir+": "+t.getLocalizedMessage();
                 log.error(developerMessage, t);
                 final ChoiceInfo choiceInfo = new ChoiceInfo();
                 choiceInfo.setFtpDir(ftpDir);
-                choiceInfo.setStatus(new ChoiceInfoException.Status(ChoiceInfoException.Status.Flag.ERROR, userMessage));
+                choiceInfo.setStatus(Flag.ERROR, userMessage);
                 log.error(t);
             }
         }
 
-        //the new way (>= 3.7.0), check for choice= in manifest
+        //the new way (>= 3.7.0), check for 'choice' attribute in manifest
         final String declaredChoicesStr= (String) param.getAttributes().get("choice");
         if (declaredChoicesStr != null) {
             log.debug("parsing choice entry from manifest for parm="+param.getName());
             choices=ParameterInfo._initChoicesFromString(declaredChoicesStr);
         }
         else {
-            //the old way
+            //the old way (<= 3.6.1, based on 'values' attribute in manifest)
             choices=param.getChoices();
         }
 
@@ -107,17 +109,13 @@ public class DynamicChoiceInfoParser implements ChoiceInfoParser {
             ftpUrl=new URL(ftpDir);
             if (!"ftp".equalsIgnoreCase(ftpUrl.getProtocol())) {
                 log.error("Invalid ftpDir="+ftpDir);
-                final ChoiceInfoException.Status status=new ChoiceInfoException.Status(ChoiceInfoException.Status.Flag.ERROR,
-                        "Module error, Invalid ftpDir="+ftpDir);
-                choiceInfo.setStatus(status);
+                choiceInfo.setStatus(Flag.ERROR, "Module error, Invalid ftpDir="+ftpDir);
                 return choiceInfo;
             }
         }
         catch (MalformedURLException e) {
             log.error("Invalid ftpDir="+ftpDir, e);
-            final ChoiceInfoException.Status status=new ChoiceInfoException.Status(ChoiceInfoException.Status.Flag.ERROR,
-                    "Module error, Invalid ftpDir="+ftpDir);
-            choiceInfo.setStatus(status);
+            choiceInfo.setStatus(Flag.ERROR, "Module error, Invalid ftpDir="+ftpDir);
             return choiceInfo;
         }
 
@@ -129,14 +127,17 @@ public class DynamicChoiceInfoParser implements ChoiceInfoParser {
             final int reply = ftpClient.getReplyCode();
             if(!FTPReply.isPositiveCompletion(reply)) {
                 ftpClient.disconnect();
-                log.error("FTP server refused connection, ftpDir="+ftpDir);
-                
+                log.error("Connection refused, ftpDir="+ftpDir);
+                choiceInfo.setStatus(Flag.ERROR, "Connection refused, ftpDir="+ftpDir);
                 return choiceInfo;
             }
             // anonymous login
-            boolean success=ftpClient.login("anonymous", "genepatt@broadinstitute.org");
+            final String ftpUsername="anonymous";
+            final String ftpPassword="gp-help@broadinstitute.org";
+            boolean success=ftpClient.login(ftpUsername, ftpPassword);
             if (!success) {
-                log.error("FTP server login error, ftpDir="+ftpDir);
+                log.error("Login error, ftpDir="+ftpDir);
+                choiceInfo.setStatus(Flag.ERROR, "Login error, ftpDir="+ftpDir);
                 return choiceInfo;
             }
             ftpClient.setFileType(FTP.ASCII_FILE_TYPE);
@@ -146,13 +147,15 @@ public class DynamicChoiceInfoParser implements ChoiceInfoParser {
             files = ftpClient.listFiles(ftpUrl.getPath());
         }
         catch (IOException e) {
-            log.error("Error listing files from remote ftp dir="+ftpDir, e);
-            //TODO: choiceInfo.addStatusMessage(ChoiceInfo.InitError.ConnectionError);
+            String errorMessage="Error listing files from "+ftpDir;
+            log.error(errorMessage, e);
+            choiceInfo.setStatus(Flag.ERROR, errorMessage);
             return choiceInfo;
         }
         catch (Throwable t) {
-            log.error("Unexpected exception listing files from remote ftp dir="+ftpDir, t);
-            //TODO: choiceInfo.addStatusMessage(ChoiceInfo.InitError.ConnectionError);
+            String errorMessage="Unexpected error listing files from "+ftpDir+", "+t.getClass().getName();
+            log.error(errorMessage, t);
+            choiceInfo.setStatus(Flag.ERROR, errorMessage);
             return choiceInfo;
         }
         finally {
@@ -168,7 +171,9 @@ public class DynamicChoiceInfoParser implements ChoiceInfoParser {
         }
         
         if (files==null) {
-            log.error("Error listing files from ftpDir="+ftpDir);
+            final String errorMessage="Error listing files from "+ftpDir;
+            log.error(errorMessage);
+            choiceInfo.setStatus(Flag.ERROR, errorMessage);
             return choiceInfo;
         }
         for(FTPFile ftpFile : files) {
@@ -189,6 +194,9 @@ public class DynamicChoiceInfoParser implements ChoiceInfoParser {
                 choiceInfo.add(choice);
             }
         }
+        final String statusMessage="Initialized "+choiceInfo.getChoices().size()+" choices from "+ftpDir+" on "+new Date();
+        log.debug(statusMessage);
+        choiceInfo.setStatus(Flag.OK, statusMessage);
         return choiceInfo;
     }
 }

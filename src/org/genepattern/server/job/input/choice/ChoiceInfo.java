@@ -10,6 +10,49 @@ import java.util.List;
  *
  */
 public class ChoiceInfo {
+    /**
+     * Get the status of the choiceInfo to indicate to the end-user if there were problems initializing 
+     * the list of choices for the parameter. Example status messages,
+     * 
+     *     OK, Initialized from values attribute (old way)
+     *     OK, Initialized from choices attribute (new way, not dynamic)
+     *     OK, Initialized from remote server (url=, date=)
+     *     WARN, Initialized from cache, problem connecting to remote server
+     *     ERROR, Error in module manifest, didn't initialize choices.
+     *     ERROR, Connection error to remote server (url)
+     *     ERROR, Timeout waiting for listing from remote server (url, timeout)
+     * 
+     * @author pcarr
+     *
+     */
+    public static class Status {
+        public static enum Flag {
+            OK,
+            WARNING,
+            ERROR
+        }
+        
+        final private Flag flag;
+        final private String message;
+        
+        public Status(final Flag flag) {
+            this(flag,flag.toString());
+        }
+        public Status(final Flag flag, final String message) {
+            this.flag=flag;
+            this.message=message;
+        }
+        
+        public Flag getFlag() {
+            return flag;
+        }
+        
+        public String getMessage() {
+            return message;
+        }
+    }
+
+    
     //final static ChoiceInfoParser defaultChoiceInfoParser= new DefaultChoiceInfoParser();
     final static ChoiceInfoParser choiceInfoParser= new DynamicChoiceInfoParser();
     public static ChoiceInfoParser getChoiceInfoParser() {
@@ -18,7 +61,7 @@ public class ChoiceInfo {
     
     private String ftpDir=null;
     private List<Choice> choices=null;
-    private ChoiceInfoException.Status status=null;
+    private ChoiceInfo.Status status=null;
     
     public void setFtpDir(final String ftpDir) {
         this.ftpDir=ftpDir;
@@ -34,7 +77,7 @@ public class ChoiceInfo {
         return Collections.unmodifiableList(choices);
     }
     
-    public ChoiceInfoException.Status getStatus() {
+    public ChoiceInfo.Status getStatus() {
         return status;
     }
     
@@ -45,8 +88,8 @@ public class ChoiceInfo {
         choices.add(choice);
     }
     
-    public void setStatus(final ChoiceInfoException.Status status) {
-        this.status=status;
+    public void setStatus(final ChoiceInfo.Status.Flag statusFlag, final String statusMessage) {
+        this.status=new ChoiceInfo.Status(statusFlag, statusMessage);
     }
 
 }

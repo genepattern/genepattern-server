@@ -21,8 +21,18 @@ public class ChoiceInfoHelper {
         return true;
     }
 
+    final static public ChoiceInfo initChoiceInfo(final ParameterInfo pinfo) {
+        try {
+            return ChoiceInfo.getChoiceInfoParser().initChoiceInfo(pinfo);
+        }
+        catch (Throwable t) {
+            log.error(t);
+            return null;
+        }
+    }
+    
     /**
-     * Get the JSON representation of the choice info for the given parameter.
+     * Get the JSON representation for the given choiceInfo.
      * 
      * GET /v1/tasks/{lsid}/params/{paramName}
      * <pre>
@@ -69,31 +79,18 @@ public class ChoiceInfoHelper {
      * @param pinfo
      * @return
      */
-    final static public ChoiceInfo initChoiceInfo(final ParameterInfo pinfo) {
-        try {
-            return ChoiceInfo.getChoiceInfoParser().initChoiceInfo(pinfo);
-        }
-        catch (Throwable t) {
-            log.error(t);
-            return null;
-        }
-    }
-    
-    /**
-     * Create the JSON representation for the given choiceInfo.
-     * 
-     * @param choiceInfo
-     * @return
-     */
     final static public JSONObject initChoiceInfoJson(final ChoiceInfo choiceInfo) throws JSONException {
-        JSONObject json=new JSONObject();
+        final JSONObject json=new JSONObject();
         if (isSet(choiceInfo.getFtpDir())) {
             json.put("ftpDir", choiceInfo.getFtpDir());
         }
-        JSONObject statusObj=new JSONObject();
-        statusObj.put("flag", "OK");
-        json.put("status", statusObj);
-        JSONArray choices=initChoiceJson(choiceInfo);
+        if (choiceInfo.getStatus() != null) {
+            final JSONObject statusObj=new JSONObject();
+            statusObj.put("flag", choiceInfo.getStatus().getFlag().name());
+            statusObj.put("message", choiceInfo.getStatus().getMessage());
+            json.put("status", statusObj);
+        }
+        final JSONArray choices=initChoiceJson(choiceInfo);
         json.put("choices", choices);
         return json;
     }
