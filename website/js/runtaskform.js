@@ -470,11 +470,30 @@ function loadParameterInfo(parameters, initialValues)
             if( initialValuesList != undefined &&  initialValuesList != null)
             {
                 //should only be one item in the list for now
-                for(v=0; v < initialValuesList.length; v++)
+                //but handle case when there is more than one item
+                if($.isArray(choice.val()))
                 {
-                    choice.val( initialValuesList[v]);
-                    choice.trigger('change');
-                    choice.multiselect("refresh");
+                    var matchingValueList = [];
+                    for(var n=0;n<initialValuesList.length;n++)
+                    {
+                        if($.inArray(initialValuesList[n], choice.val()) != -1)
+                        {
+                            matchingValueList.push(initialValuesList[n]);
+                        }
+                    }
+
+                    choice.val(matchingValueList);
+                }
+                else
+                {
+                    //if there is more than one item in the list then only the first item in the list
+                    //will be selected since the choice is not multiselect
+                    if(initialValuesList.length > 0)
+                    {
+                        choice.val( initialValuesList[0]);
+                        choice.trigger("change");
+                        choice.multiselect("refresh");
+                    }
                 }
             }
 
@@ -593,61 +612,46 @@ function loadParameterInfo(parameters, initialValues)
                 var toggleChoiceFileP = $("<p class='fileChoiceToggle'/>");
 
                 toggleChoiceFileP.data("pname", parameters[q].name);
-                var choiceFileLink = $("<a href='#' class='fileChoiceLink'> Select a file </a>");
-                choiceFileLink.hide();
-                toggleChoiceFileP.append(choiceFileLink);
-                toggleChoiceFileP.append("<span class='fileChoiceText'> Select a file </span>");
-                toggleChoiceFileP.append(" or ");
-                choiceFileLink.click(function()
+
+                var fileChoiceOptions = $('<div class="fileChoiceOptions">  ' +
+                   '<input id="selectFile_' + idPName + '" name="radio" type="radio" checked="checked" /><label for="selectFile_'+ idPName +'">Select a file</label> ' +
+                   ' <span class="elemSpacing">  or  </span>  ' +
+                   ' <input id="customFile_'+ idPName +'" name="radio" type="radio" /><label for="customFile_'+ idPName +'">Upload your own file</label> ' +
+                ' </div>');
+
+                fileChoiceOptions.data("pname", parameters[q].name);
+                fileChoiceOptions.change(function()
                 {
-                    var pname = $(this).parents(".fileChoiceToggle:first").data("pname");
+                    var selectedOption = ($(this).find(":radio:checked + label").text());
 
-                    $(this).parents("td:first").find(".fileDiv").toggle();
-
-                    $(this).parents("td:first").find(".ui-multiselect").toggle();
-
-                    var defaultValue = $(this).parents("td:first").find(".choice").data("default_value");
-
-                    if(defaultValue == undefined || defaultValue == null)
+                    if(selectedOption == "Select a file" || selectedOption == "Upload your own file")
                     {
-                        defaultValue = "";
+                        var pname = $(this).data("pname");
+
+                        $(this).parents("td:first").find(".fileDiv").toggle();
+                        $(this).parents("td:first").find(".ui-multiselect").toggle();
+
+                        var defaultValue = $(this).parents("td:first").find(".choice").data("default_value");
+
+                        if(defaultValue == undefined || defaultValue == null)
+                        {
+                            defaultValue = "";
+                        }
+
+                        $(this).parents("td:first").find(".choice").val(defaultValue);
+
+                        $(this).parents("td:first").find(".choice").multiselect("refresh");
+
+                        //clear any values that were set
+                        param_file_listing[pname] = [];
+                        parameter_and_val_obj[pname] = [];
+                        updateParamFileTable(pname);
                     }
-
-                    $(this).parents("td:first").find(".choice").val(defaultValue);
-
-                    $(this).parents("td:first").find(".choice").multiselect("refresh");
-
-                    $(this).parents(".fileChoiceToggle:first").find(".fileChoiceText").remove();
-                    $(this).parents(".fileChoiceToggle:first").find(".fileChoiceLink").hide();
-                    $(this).parents(".fileChoiceToggle:first").find(".customFileLink").show();
-                    $(this).parents(".fileChoiceToggle:first").prepend("<span class='fileChoiceText'> Select a file or </span>");
-
-                    //clear any values that were set
-                    param_file_listing[pname] = [];
-                    parameter_and_val_obj[pname] = [];
                 });
 
-                var customFileLink = $("<a href='#' class='customFileLink'> upload your own file</a>");
-                customFileLink.click(function()
-                {
-                    $(this).parents("td:first").find(".fileDiv").toggle();
+                toggleChoiceFileP.append(fileChoiceOptions);
+                fileChoiceOptions.buttonset();
 
-                    $(this).parents("td:first").find(".ui-multiselect").toggle();
-                    $(this).parents("td:first").find(".choice").val("");
-                    $(this).parents("td:first").find(".choice").multiselect("refresh");
-
-                    $(this).parents(".fileChoiceToggle:first").find(".fileChoiceText").remove();
-                    $(this).parents(".fileChoiceToggle:first").find(".fileChoiceLink").show();
-                    $(this).parents(".fileChoiceToggle:first").find(".customFileLink").hide();
-                    $(this).parents(".fileChoiceToggle:first").append("<span class='fileChoiceText'> upload your own file </span> ");
-
-                    //clear any values that were set
-                    var pname = $(this).parents(".fileChoiceToggle:first").data("pname");
-                    param_file_listing[pname] = [];
-                    parameter_and_val_obj[pname] = [];
-                });
-
-                toggleChoiceFileP.append(customFileLink);
                 valueTd.prepend(toggleChoiceFileP);
                 fileDiv.hide();
             }
@@ -659,8 +663,7 @@ function loadParameterInfo(parameters, initialValues)
                 param_file_listing[parameters[q].name] = fileObjListings;
             }
 
-            if( initialValuesList != undefined &&  initialValuesList != null
-                && !choiceFound)
+            if( initialValuesList != undefined &&  initialValuesList != null)
             {
                 //check if max file length will be violated
                 var totalFileLength = fileObjListings.length +  initialValuesList.length;
@@ -671,12 +674,33 @@ function loadParameterInfo(parameters, initialValues)
                     //check if the file name is not empty
                     if( initialValuesList[v] != null &&  initialValuesList[v] != "")
                     {
+                        if(choiceFound)
+                        {
+                            //if this a a file choice parameter, check whether the initial values are custom files
+                            var selectedValues = $(this).parents("td:first").find(".choice").val();
+                            if($.isArray(selectedValues) && $.inArray(initialValuesList[v], selectedValues))
+                            {
+                                break;
+                            }
+                            else
+                            {
+                                if(selectedValues == initialValuesList[v])
+                                {
+                                    break;
+                                }
+                            }
+
+                            valueTd.find(".fileChoiceOptions").find(":radio:unchecked").attr("checked", "checked");
+                            valueTd.find(".fileChoiceOptions").trigger("change");
+                        }
+
                         var fileObj =
                         {
                             name:  initialValuesList[v],
                             id: fileId++
                         };
                         fileObjListings.push(fileObj);
+                        param_file_listing[parameters[q].name] = fileObjListings;
                     }
                 }
 
@@ -743,7 +767,7 @@ function loadParameterInfo(parameters, initialValues)
                 var inputFieldValue = "";
                 for(v=0; v <  initialValuesList.length; v++)
                 {
-                    inputFieldValue +=  initialValuesList[v];
+                    inputFieldValue += initialValuesList[v];
                      
                     // add a comma between items in this list
                     if(v < ( initialValuesList.length-1))
