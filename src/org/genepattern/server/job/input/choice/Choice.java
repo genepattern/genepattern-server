@@ -32,4 +32,11 @@ public class Choice {
     public String getValue() {
         return value;
     }
+    
+    public String toString() {
+        if (label != null) {
+            return label+"="+value;
+        }
+        return value;
+    }
 }
