@@ -26,6 +26,8 @@ import org.genepattern.server.webapp.rest.api.v1.task.TasksResource;
 
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.io.File;
 
@@ -103,15 +105,13 @@ public class ParametersJSON extends JSONObject {
             this.put(OPTIONAL, pAttrs.get(GPConstants.PARAM_INFO_OPTIONAL[0]));
             this.put(FLAG, pAttrs.get(FLAG));
             this.put(VALUE, pInfo.getValue());
-
-            Set keys = pAttrs.keySet();
-            Iterator<String> kIter = keys.iterator();
-            while(kIter.hasNext())
-            {
-                String keyName = kIter.next();
-                if(!this.has(keyName))
-                {
-                    this.put(keyName, pAttrs.get(keyName));
+            
+            Iterator<?> it = pAttrs.entrySet().iterator();
+            while (it.hasNext()) {
+                final Map.Entry<?,?> entry = (Map.Entry<?,?>)it.next();
+                final String keyName = (String) entry.getKey();
+                if (!this.has(keyName)) {
+                    this.put(keyName, (String) entry.getValue());
                 }
             }
         }
