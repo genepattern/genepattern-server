@@ -1,8 +1,8 @@
 package org.genepattern.server.webapp.rest.api.v1.task;
 
-import java.net.URI;
 import java.util.Map;
 
+import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
@@ -44,7 +44,7 @@ import com.sun.jersey.api.Responses;
    This returns a JSON representation of the task, for example,
    <pre>
 {
-"self":"http://127.0.0.1:8080/gp/rest/v1/tasks/urn:lsid:broad.mit.edu:cancer.software.genepattern.module.test.analysis:00007:0.1",
+"href":"http://127.0.0.1:8080/gp/rest/v1/tasks/urn:lsid:broad.mit.edu:cancer.software.genepattern.module.test.analysis:00007:0.1",
 "name":"TestJavaWrapper",
 "lsid":"urn:lsid:broad.mit.edu:cancer.software.genepattern.module.test.analysis:00007:0.1",
 "params":[
@@ -87,9 +87,35 @@ import com.sun.jersey.api.Responses;
  * @author pcarr
  *
  */
-@Path("/v1/tasks")
+@Path("/"+TasksResource.URI_PATH)
 public class TasksResource {
     final static private Logger log = Logger.getLogger(TasksResource.class);
+    final static public String URI_PATH="v1/tasks";
+    
+    public static String getTaskInfoPath(final TaskInfo taskInfo) {
+        String rootPath=ServerConfiguration.instance().getGenePatternURL().toExternalForm();
+        if (!rootPath.endsWith("/")) {
+            rootPath += "/";
+        }
+        rootPath += "rest/";
+        rootPath += URI_PATH + "/" + taskInfo.getLsid();
+        return rootPath;
+    }
+    
+    /**
+     * Get the relative path, relative to the root REST API end point, to GET the choiceInfo for the given parameter for the given task.
+     * 
+     * @param taskInfo
+     * @param pname
+     * @return
+     */
+    public static String getChoiceInfoPath(final TaskInfo taskInfo, final String pname) { 
+        // at the moment, (circa GP 3.7.0), the task LSID and the parameter name will be valid URI path components
+        // if this ever changes we should encode them
+        //String path = URI_PATH + "/" + UrlUtil.encodeURIcomponent( taskInfo.getLsid() ) + "/" + UrlUtil.encodeURIcomponent( pname ) + "/choiceInfo.json";
+        String path = getTaskInfoPath(taskInfo) + "/" + pname  + "/choiceInfo.json";
+        return path;
+    }
 
     @GET
     @Produces(MediaType.APPLICATION_JSON)
@@ -117,13 +143,8 @@ public class TasksResource {
         JSONObject jsonObj=null;
         try {
             jsonObj=new JSONObject();
-            URI baseUri=uriInfo.getBaseUri();
-            String self=baseUri.toURL().toExternalForm();
-            if (!self.endsWith("/")) {
-                self += "/";
-            }
-            self += "v1/tasks/" + taskInfo.getLsid();
-            jsonObj.put("self", self);
+            String href=getTaskInfoPath(taskInfo);
+            jsonObj.put("href", href);
             jsonObj.put("name", taskInfo.getName());
             jsonObj.put("lsid", taskInfo.getLsid());
             JSONArray paramsJson=new JSONArray();
@@ -182,7 +203,8 @@ public class TasksResource {
             final @Context UriInfo uriInfo,
             final @PathParam("taskNameOrLsid") String taskNameOrLsid,
             final @PathParam("pname") String pname,
-            final @Context HttpServletRequest request
+            final @Context HttpServletRequest request,
+            final @Context ServletContext servletContext
 
     ) {
         log.debug("taskNameOrLsid="+taskNameOrLsid);
@@ -218,6 +240,8 @@ public class TasksResource {
         //hard-coded JSON serialization
         try {
             final JSONObject choiceInfoJson=ChoiceInfoHelper.initChoiceInfoJson(choiceInfo);
+            final String href=getChoiceInfoPath(taskInfo, pname);
+            choiceInfoJson.put("href", href);
             final String choiceInfoStr=choiceInfoJson.toString();
 
             //return the JSON representation of the job
