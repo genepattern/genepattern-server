@@ -2670,6 +2670,7 @@ var properties = {
 
                 // Save when the select is changed
                 properties.saveToModel();
+                properties.redrawDisplay();
             });
         }
 
@@ -2810,12 +2811,17 @@ var properties = {
                 var module = properties.current;
                 var paramName = this.getAttribute("name");
                 var input = module.getInputByName(properties._stripTrailingAstrik(paramName));
+                var port = input.port;
+                var outputPort = port.pipes[0].outputPort;
                 input.value = "";
                 input.makeUnused();
-                var port = input.port;
 
                 for (var i = 0; i < port.pipes.length; i++) {
                     port.pipes[i].remove();
+                }
+                
+                for (var i = 0; i < outputPort.pipes.length; i++) {
+                	outputPort.pipes[i].remove();
                 }
 
                 properties.redrawDisplay();
@@ -2945,9 +2951,45 @@ var properties = {
         if (input.promptWhenRun !== null) {
             disabled = true;
         }
+        
+        if (input.fileChoice && (input.port === null || (!input.port.isConnected() && !input.isPWR()))) {
+    		input.value = "";
+    	}
+        
         var descWithNumValues = input.description + " | Number of Values: " + input.numValues;
         var div = this._addFileUpload(input.name + required, input, descWithNumValues, true, disabled);
         div.setAttribute("name", input.module.id); // Used in PWR view
+        
+        // Init the file choice if necessary
+        if (input.fileChoice && !input.isFileChoiceInit()) {
+        	input.initFileChoice();
+        }
+        
+        // If a file choice add the dropdown
+        if (input.fileChoice) {
+        	$(div).append("<div style='width:100%; font-size: 8pt;'>Select a file from the list:</div>");
+        	var selectString = "<select class='fileChoiceSelect' name='" + input.name + "' style='width:100%;'>";
+        	selectString += "<option value=''>-- None Selected --</option>";
+        	for (var i = 0; i < input.choices.length; i++) {
+        		var choice = input.choices[i];
+        		var parts = choice.split("=", 2);
+        		selectString += "<option value='" + parts[1] + "'" + (input.value === parts[1] ? " selected='selected'" : "") + ">" + parts[0] + "</option>";
+        	}
+        	selectString += "</select>";
+        	$(div).append(selectString);
+        	
+        	if (input.value || input.isPWR() || input.port === null) {
+            	$(div).find(".fileChoiceSelect").attr("disabled", "disabled");
+            }
+            
+            $(div).find(".fileChoiceSelect").change(function() {
+            	editor.addFile($(this).val(), $(this).val());
+            	var file = editor.getLastFile();
+            	var port = input.port;
+                editor.addPipe(port, file.outputEnds[0]);
+            });
+        }
+
         return div;
     },
 
@@ -4237,6 +4279,50 @@ function InputParam(module, paramJSON) {
     this.port = null;
     this.value = editor.protectAgainstUndefined(this.defaultValue);
     this.numValues = editor.protectAgainstUndefined(paramJSON.numValues);
+    this.fileChoice = paramJSON.fileChoice;
+    
+    this.initFileChoice = function() {
+    	if (!this.fileChoice || this.isFileChoiceInit()) {
+    		editor.log("ERROR: Bad call to InputParam.initFileChoice()");
+    		return false;
+    	}
+    	
+    	this.choices = ["Currently Loading Choices..."];
+    	
+    	// TODO: Make an ajax call here to get the list, set the choices attribute 
+    	// on the callback and then refresh the view of the properties panel
+    	var paramToUpdate = this;
+    	$.ajax({
+    		dataType: "json",
+    		url: "/gp/rest/v1/tasks/" + paramToUpdate.module.lsid + "/" + paramToUpdate.name + "/choiceInfo.json",
+    		success: function(data) {
+    			var newChoices = [];
+    			for (var i = 0; i < data.choices.length; i++) {
+    				newChoices.push(data.choices[i].label + "=" + data.choices[i].value);
+    			}
+    			paramToUpdate.choices = newChoices;
+    			properties.redrawDisplay();
+    		},
+	    	error: function() {
+	    		paramToUpdate.choices = ["Error loading choice list"];
+	    		editor.log("Error getting file choice list for " + paramToUpdate.name);
+	    		properties.redrawDisplay();
+	    	}
+    	});
+    };
+    
+    this.isFileChoiceInit = function() {
+    	if (this.fileChoice && this.choices.length > 0) {
+    		return true;
+    	}
+    	else if (this.fileChoice && this.choices.length == 0) {
+    		return false;
+    	}
+    	else {
+    		editor.log("ERROR: Bad call to InputParam.isFileChoiceInit()");
+    		return false;
+    	}
+    };
 
     this.initPWR = function(pwrJSON) {
         if (pwrJSON !== undefined && pwrJSON !== null) {

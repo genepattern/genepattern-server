@@ -9,6 +9,9 @@
 package org.genepattern.pipelines;
 
 import org.apache.log4j.Logger;
+import org.genepattern.server.job.input.choice.ChoiceInfo;
+import org.genepattern.server.job.input.choice.ChoiceInfoHelper;
+import org.genepattern.server.job.input.choice.ChoiceInfoParser;
 import org.genepattern.webservice.ParameterInfo;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -26,6 +29,7 @@ public class InputJSON extends JSONObject {
     public static final String DEFAULT_VALUE = "defaultValue";
     public static final String CHOICES = "choices";
     public static final String NUM_VALUES = "numValues";
+    public static final String FILE_CHOICE = "fileChoice";
     
     public static final String VALUE = "value";
     
@@ -46,6 +50,7 @@ public class InputJSON extends JSONObject {
             this.setDefaultValue((String) param.getAttributes().get("default_value"));
             this.buildChoices(param.getValue(), this.getDefaultValue());
             this.determineNumValues((String) param.getAttributes().get("numValues"));
+            this.determineFileChoice(param);
         }
         catch (JSONException e) {
             log.error("Error parsing JSON and initializing InputJSON from ParameterInfo: " + param.getName(), e);
@@ -70,6 +75,7 @@ public class InputJSON extends JSONObject {
             this.setName(param.getName());
             this.setPromptWhenRun(pwrArray);
             this.determineNumValues((String) param.getAttributes().get("numValues"));
+            this.determineFileChoice(param);
             
             // Hack to fix broken GP 3.3.3 pipelines
             if (param.isInputFile() && param.getValue().contains("<GenePatternURL>") && !param.getValue().contains("<LSID>")) {
@@ -129,8 +135,9 @@ public class InputJSON extends JSONObject {
             }
             
             this.setValue(param.getString(VALUE));
-            final String numValues=getStringOrNull(param, NUM_VALUES, null);
+            final String numValues = getStringOrNull(param, NUM_VALUES, null);
             this.determineNumValues(numValues);
+            this.setFileChoice(param.getBoolean(FILE_CHOICE));
         }
         catch (JSONException e) {
             log.error("Error parsing JSON and initializing InputJSON from ParameterInfo: " + param);
@@ -143,6 +150,20 @@ public class InputJSON extends JSONObject {
     
     public void setNumValues(String numValues) throws JSONException {
         this.put(NUM_VALUES, numValues);
+    }
+    
+    public boolean getFileChoice() throws JSONException {
+        return this.getBoolean(FILE_CHOICE);
+    }
+    
+    public void setFileChoice(boolean fileChoice) throws JSONException {
+        this.put(FILE_CHOICE, fileChoice);
+    }
+    
+    public void determineFileChoice(ParameterInfo info) throws JSONException {
+        ChoiceInfoParser choiceInfoParser = ChoiceInfo.getChoiceInfoParser();
+        boolean hasChoice = choiceInfoParser.hasChoiceInfo(info); 
+        this.setFileChoice(hasChoice);
     }
     
     public void determineNumValues(final String rawNumValues) throws JSONException {
