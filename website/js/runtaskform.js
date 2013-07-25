@@ -434,29 +434,44 @@ function loadParameterInfo(parameters, initialValues)
 
         var choiceFound = false;
         //check if there are predefined list of choices for this parameter
-        if(parameters[q].choice != undefined  && parameters[q].choice != null && parameters[q].choice != '')
+        if(parameters[q].choiceInfo != undefined  && parameters[q].choiceInfo != null && parameters[q].choiceInfo != '')
         {
+            if(parameters[q].choiceInfo.status != undefined && parameters[q].choiceInfo.status != null
+                && parameters[q].choiceInfo.status != undefined && parameters[q].choiceInfo.status != null
+                && parameters[q].choiceInfo.status.flag != "OK")
+            {
+               valueTd.append("<p class='errorMessage'> Unable to load choices </p>");
+            }
+
             choiceFound = true;
             //display drop down showing available file choices
             var choice = $("<select class='choice'/>");
-            choice.data("cname", parameters[q].name)
-            for(var c=0;c<parameters[q].choice.length;c++)
+            choice.data("cname", parameters[q].name);
+            var longChars = 1;
+            for(var c=0;c<parameters[q].choiceInfo.choices.length;c++)
             {
-                choice.append("<option value='"+parameters[q].choice[c].value+"'>"
-                        + parameters[q].choice[c].label+"</option>");
+                choice.append("<option value='"+parameters[q].choiceInfo.choices[c].value+"'>"
+                        + parameters[q].choiceInfo.choices[c].label+"</option>");
+                if(parameters[q].choiceInfo.choices[c].label.length > longChars)
+                {
+                    longChars = parameters[q].choiceInfo.choices[c].label.length;
+                }
             }
 
             valueTd.append(choice);
 
+            var cMinWidth = Math.log(longChars) * 83;
 
             choice.multiselect({
                 multiple: allowMultiple,
                 header: allowMultiple,
                 selectedList: 2,
-                minWidth: 110,
+                minWidth: cMinWidth,
+                noneSelectedText: "Select an option",
                 classes: 'mSelect'
             });
 
+            choice.multiselect("refresh");
 
             choice.data("maxValue", parameters[q].maxValue);
             choice.change(function ()
@@ -631,7 +646,6 @@ function loadParameterInfo(parameters, initialValues)
             
             fileDiv.append("<button type='button' class='urlButton'>"+ addUrlText +"</button>");
 
-
             fileDiv.append("<span class='drop-box'>drop files here</span>");
 
             //switch . with _ since the jquery selector does not work with .
@@ -641,7 +655,7 @@ function loadParameterInfo(parameters, initialValues)
             valueTd.append(fileDiv);
 
             //check if there are predefined file values
-            if(parameters[q].choice != undefined  && parameters[q].choice != null)
+            if(parameters[q].choiceInfo != undefined  && parameters[q].choiceInfo != null)
             {
                 //add toggling to display regular file input div
                 var toggleChoiceFileP = $("<p class='fileChoiceToggle'/>");
