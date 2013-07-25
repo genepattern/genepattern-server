@@ -38,48 +38,7 @@ public class ChoiceInfoHelper {
     /**
      * Get the JSON representation for the given choiceInfo.
      * 
-     * GET /v1/tasks/{lsid}/params/{paramName}
-     * <pre>
-     * 200 OK
-     * {
-     *   ...
-     *   choice: {
-     *     href: "/v1/tasks/{lsid}/params/{paramName}/choices"
-     *   }
-     * }
-     * </pre>
-     * 
-     * GET /v1/tasks/{lsid}/params/{paramName}/choices
-     * <pre>
-     * 200 OK
-     * {
-     * href: "/v1/tasks/{lsid}/params/{paramName}/choiceInfo",
-     * ftpDir: "ftp://ftp.broadinstitute.org/pub/genepattern/rna_seq/referenceAnnotation/gtf",
-     * status: {
-     *     flag: "OK" | "WARNING" | "ERROR"
-     *     message: ""
-     * },
-     * selectedValue: "ftp://ftp.broadinstitute.org/pub/genepattern/rna_seq/referenceAnnotation/gtf/Arabidopsis_thaliana_Ensembl_TAIR10.gtf"
-     * choices: [
-     *   {
-     *     label: "Arabidopsis_thaliana_Ensembl_TAIR10.gtf",
-     *     value: "ftp://ftp.broadinstitute.org/pub/genepattern/rna_seq/referenceAnnotation/gtf/Arabidopsis_thaliana_Ensembl_TAIR10.gtf"
-     *   },
-     *   { label: "", value: "" },
-     *   ...
-     *   { label: "", value: "" }
-     * ]
-     * }
-     * </pre>
-     * 
-     * Example status messages,
-     *     OK, Initialized from values param (old way)
-     *     OK, Initialized from choices param (new way, not dynamic)
-     *     OK, Initialized from remote server (url=, date=)
-     *     WARN, Initialized from cache, problem connecting to remote server
-     *     ERROR, Error in module manifest, didn't initialize choices.
-     *     ERROR, Connection error to remote server (url)
-     *     ERROR, Timeout waiting for listing from remote server (url, timeout)
+     * @see TasksResource#getChoiceInfo(javax.ws.rs.core.UriInfo, String, String, HttpServletRequest)
      * 
      * @param pinfo
      * @return

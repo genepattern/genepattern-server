@@ -173,22 +173,36 @@ public class TasksResource {
     }
 
     /**
-     * Get the choiceInfo.json representation for the [optional] list of choices for a given module input parameter.
-     * Example usage,
+     * Get the JSON representation of the choices for a given module input parameter.
+     *     GET /rest/v1/tasks/{taskNameOrLsid}/{parameterName}/choiceInfo.json
+     *     GET /rest/v1/tasks/DemoRNASeQC/annotation.gtf/choiceInfo.json
      *     curl -u test:test http://127.0.0.1:8080/gp/rest/v1/tasks/DemoRNASeQC/annotation.gtf/choiceInfo.json
+     * 
      * Example response,
      * <pre>
        200 OK
        {
-         "status":{"flag":"OK"},
+         "href":"http://127.0.0.1:8080/gp/rest/v1/tasks/DemoRNASeQC/annotation.gtf/choiceInfo.json",
+         "status":{"flag":"OK", "message": "A user message"},
          "ftpDir":"ftp://ftp.broadinstitute.org/pub/genepattern/rna_seq/referenceAnnotation/gtf",
+         "selectedValue": "ftp://ftp.broadinstitute.org/pub/genepattern/rna_seq/referenceAnnotation/gtf/Arabidopsis_thaliana_Ensembl_TAIR10.gtf",
          "choices": [
            {"value":"ftp://ftp.broadinstitute.org/pub/genepattern/rna_seq/referenceAnnotation/gtf/Arabidopsis_thaliana_Ensembl_TAIR10.gtf","label":"Arabidopsis_thaliana_Ensembl_TAIR10.gtf"},
            {"value":"ftp://ftp.broadinstitute.org/pub/genepattern/rna_seq/referenceAnnotation/gtf/Arabidopsis_thaliana_Ensembl_TAIR9.gtf","label":"Arabidopsis_thaliana_Ensembl_TAIR9.gtf"},
            ...
            {"value": "", label: "" }
-           ]}
+           ]
+       }
      * </pre>
+     * 
+     * Example status messages,
+     *     OK, Initialized from values param (old way)
+     *     OK, Initialized from choices param (new way, not dynamic)
+     *     OK, Initialized from remote server (url=, date=)
+     *     WARN, Initialized from cache, problem connecting to remote server
+     *     ERROR, Error in module manifest, didn't initialize choices.
+     *     ERROR, Connection error to remote server (url)
+     *     ERROR, Timeout waiting for listing from remote server (url, timeout)
      * 
      * @param uriInfo
      * @param taskNameOrLsid
