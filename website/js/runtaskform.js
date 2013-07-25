@@ -424,6 +424,14 @@ function loadParameterInfo(parameters, initialValues)
         paramRow.append(valueTd);
         paramsTable.append(paramRow);
 
+        var allowMultiple = false;
+        if(parameters[q].maxValue == undefined
+            || parameters[q].maxValue == null
+            || parseInt(parameters[q].maxValue) != 1)
+        {
+            allowMultiple = true;
+        }
+
         var choiceFound = false;
         //check if there are predefined list of choices for this parameter
         if(parameters[q].choice != undefined  && parameters[q].choice != null && parameters[q].choice != '')
@@ -440,17 +448,48 @@ function loadParameterInfo(parameters, initialValues)
 
             valueTd.append(choice);
 
+
             choice.multiselect({
-                multiple: false,
-                header: false,
-                selectedList: 1,
+                multiple: allowMultiple,
+                header: allowMultiple,
+                selectedList: 2,
+                minWidth: 110,
                 classes: 'mSelect'
             });
 
+
+            choice.data("maxValue", parameters[q].maxValue);
             choice.change(function ()
             {
                 var valueList = [];
-                valueList.push($(this).val());
+
+               var value = $(this).val();
+
+                //if this a multiselect choice, then check that the maximum number of allowable selections was not reached
+                if($.isArray(value))
+                {
+                    var maxVal = parseInt($(this).data("maxValue"));
+                    if(!isNaN(maxVal) && value.length() > maxVal)
+                    {
+                        //remove the last selection
+                        if(value.length == 1)
+                        {
+                            $(this).val([]);
+                        }
+                        else
+                        {
+                            $(this).val(value.slice(0, value.length()-1));
+                        }
+
+                        alert("The maximum number of selections is " + $(this).data("maxValue"));
+                        return;
+                    }
+                    valueList = value;
+                }
+                else
+                {
+                    valueList.push($(this).val());
+                }
 
                 var paramName = $(this).data("cname");
                 parameter_and_val_obj[paramName] = valueList;
@@ -508,14 +547,10 @@ function loadParameterInfo(parameters, initialValues)
 
             var uploadFileText = "Upload Files...";
             var addUrlText = "Add Paths or URLs...";
-            if(parameters[q].maxValue != undefined
-                    && parameters[q].maxValue != null)
+            if(!allowMultiple)
             {
-                if(parseInt(parameters[q].maxValue) == 1)
-                {
-                    uploadFileText = "Upload File...";
-                    addUrlText = "Add Path or URL...";
-                }
+                uploadFileText = "Upload File...";
+                addUrlText = "Add Path or URL...";
             }
 
             var fileDiv = $("<div id='"+ rowId +"' class='fileDiv'>");
@@ -677,7 +712,7 @@ function loadParameterInfo(parameters, initialValues)
                         if(choiceFound)
                         {
                             //if this a a file choice parameter, check whether the initial values are custom files
-                            var selectedValues = $(this).parents("td:first").find(".choice").val();
+                            var selectedValues = valueTd.find(".choice").val();
                             if($.isArray(selectedValues) && $.inArray(initialValuesList[v], selectedValues))
                             {
                                 break;
@@ -690,8 +725,11 @@ function loadParameterInfo(parameters, initialValues)
                                 }
                             }
 
-                            valueTd.find(".fileChoiceOptions").find(":radio:unchecked").attr("checked", "checked");
-                            valueTd.find(".fileChoiceOptions").trigger("change");
+                            var checked = valueTd.find(".fileChoiceOptions").find(":radio:checked");
+                            var unchecked = valueTd.find(".fileChoiceOptions").find(":radio:unchecked");
+
+                            checked.removeAttr("checked");
+                            unchecked.trigger("click");
                         }
 
                         var fileObj =
