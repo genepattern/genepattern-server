@@ -95,6 +95,9 @@ public class DynamicChoiceInfoParser implements ChoiceInfoParser {
             choiceInfo.add(choice);
         }
         choiceInfo.setStatus(Flag.OK, "Initialized static list from manifest");
+        
+        //initialize default value for choice, must do this after the list of choices is initialized
+        choiceInfo.setDefaultValue(param.getDefaultValue());
         return choiceInfo;
     }
     

@@ -6,6 +6,8 @@ import java.net.URI;
 import java.net.URL;
 import java.net.URLEncoder;
 
+import javax.servlet.http.HttpServletRequest;
+
 import org.apache.log4j.Logger;
 
 
@@ -16,6 +18,23 @@ import org.apache.log4j.Logger;
  */
 public class UrlUtil {
     public static Logger log = Logger.getLogger(UrlUtil.class);
+
+    /**
+     * Helper method for getting the base GenePatternURL for a given request.
+     * This method is based on the client request rather than the server configuration
+     * setting for the GenePatternURL.
+     * 
+     * @param request
+     * @return
+     */
+    public static String getGpUrl(final HttpServletRequest request) {
+        String gpUrl = request.getScheme() + "://"+ request.getServerName();
+        if (request.getServerPort() > 0) {
+            gpUrl += ":"+request.getServerPort();
+        }
+        gpUrl += request.getContextPath();
+        return gpUrl;
+    }
     
     /** Converts a string into something you can safely insert into a URL. */
     public static String encodeURIcomponent(String str) {

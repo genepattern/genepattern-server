@@ -14,7 +14,7 @@ import org.json.JSONObject;
 public class ChoiceInfoHelper {
     final static private Logger log = Logger.getLogger(ChoiceInfoHelper.class);
     
-    static private boolean isSet(final String in) {
+    final static public boolean isSet(final String in) {
         if (in == null || in.length()==0) {
             return false;
         }
