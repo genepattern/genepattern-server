@@ -27,7 +27,7 @@ import org.genepattern.webservice.ParameterInfo;
  */
 public class DynamicChoiceInfoParser implements ChoiceInfoParser {
     final static private Logger log = Logger.getLogger(DynamicChoiceInfoParser.class);
-
+    
     @Override
     public boolean hasChoiceInfo(ParameterInfo param) {
         final String choiceDirFtp = (String) param.getAttributes().get("choiceDirFtp");
@@ -54,6 +54,8 @@ public class DynamicChoiceInfoParser implements ChoiceInfoParser {
             log.debug("Initializing choice from remote source for param="+param.getName()+", choiceDirFtp="+ftpDir);
             try {
                 final ChoiceInfo choiceInfoFromFtp = initChoicesFromFtp(param, ftpDir);
+                choiceInfoFromFtp.initDefaultValue(param);
+                log.debug("initial selection: "+choiceInfoFromFtp.getSelected());
                 return choiceInfoFromFtp;
             }
             catch (Throwable t) {
@@ -97,7 +99,8 @@ public class DynamicChoiceInfoParser implements ChoiceInfoParser {
         choiceInfo.setStatus(Flag.OK, "Initialized static list from manifest");
         
         //initialize default value for choice, must do this after the list of choices is initialized
-        choiceInfo.setDefaultValue(param.getDefaultValue());
+        choiceInfo.initDefaultValue(param);
+        log.debug("initial selection: "+choiceInfo.getSelected());
         return choiceInfo;
     }
     

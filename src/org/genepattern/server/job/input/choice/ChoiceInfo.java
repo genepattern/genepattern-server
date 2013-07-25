@@ -5,6 +5,7 @@ import java.util.Collections;
 import java.util.List;
 
 import org.apache.log4j.Logger;
+import org.genepattern.webservice.ParameterInfo;
 
 /**
  * Initialized by parsing the manifest for a given parameter info.
@@ -78,6 +79,10 @@ public class ChoiceInfo {
         return paramName;
     }
     
+    public Choice getSelected() {
+        return selected;
+    }
+    
     public void setFtpDir(final String ftpDir) {
         this.ftpDir=ftpDir;
     }
@@ -107,48 +112,67 @@ public class ChoiceInfo {
         this.status=new ChoiceInfo.Status(statusFlag, statusMessage);
     }
     
-    public void setDefaultValue(final String defaultValue) {
-        if (!ChoiceInfoHelper.isSet(defaultValue)) {
-            //no default value
-            if (choices==null) {
-                log.error("Can't set default value on an empty list");
-                return;
+    /**
+     * If necessary add an empty item to the top of the choice list and select the default value.
+     * Must call this method after the list of choices is initialized.
+     * 
+     * If there is an empty valued item on the list don't create a new 'Choose...' entry.
+     * Otherwise,
+     *     If the param is optional, always add a 'Choose...' option as the 1st item on the list
+     *     If the param is required, include a 'Choose...' option only if there is no default value
+     * 
+     * @param defaultValue
+     */
+    public void initDefaultValue(final ParameterInfo param) {
+        if (param==null) {
+            throw new IllegalArgumentException("param==null");
+        }
+        final String defaultValue=param.getDefaultValue();
+        final boolean isOptional=param.isOptional();
+        final boolean hasDefaultValue = ChoiceInfoHelper.isSet(defaultValue);
+        
+        //1) check for an existing empty valued item 
+        Choice emptyChoice = getFirstMatchingValue("");
+        if (emptyChoice == null) {
+            if (isOptional || (!isOptional && !hasDefaultValue )) {
+                //check manifest for displayValue for the first item on the list
+                String emptyDisplayValue= (String) param.getAttributes().get("emptyDisplayValue");
+                if (emptyDisplayValue==null) {
+                    emptyDisplayValue="Choose...";
+                }
+                emptyChoice=new Choice(emptyDisplayValue, "");
+                if (choices==null) {
+                    log.error("Can't set default value on an empty list");
+                }
+                else {
+                    //insert at top of the list
+                    choices.add(0, emptyChoice);
+                } 
             }
-            if (choices.size()==0) {
-                choices.add(new Choice("Choose...", ""));
-                return;
-            }
-            
-            //walk through all the choices
-            Choice emptyChoice = getFirstMatchingValue("");
-            if (emptyChoice == null) {
-                //append an empty choice to the top of the list
-                emptyChoice=new Choice("Choose...", "");
-                choices.add(0, emptyChoice);
-            }
-            selected=emptyChoice;
-            return;            
         }
         
-        // if we're here, it means there is a default value
-        Choice defaultChoice = getFirstMatchingValue(defaultValue);
-        if (defaultChoice==null) {
-            //try to match by name
-            defaultChoice = getFirstMatchingLabel(defaultValue);
-            if (defaultChoice != null) {
-                log.debug("No match by value, but found match by displayName="+defaultValue);
-            }
-        }
-        if (defaultChoice==null) {
-            log.debug("No match in choice for defaultValue="+defaultValue);
-            //append an empty choice to the top of the list
-            Choice emptyChoice=new Choice("Choose...", "");
-            choices.add(0, emptyChoice);
-            selected=emptyChoice;
+        //2) select either the default value or the empty value if there is no default value
+        Choice defaultChoice;
+        if (!hasDefaultValue) {
+            defaultChoice=emptyChoice;
         }
         else {
-            selected=defaultChoice;
+            // if we're here, it means there is a default value
+            defaultChoice = getFirstMatchingValue(defaultValue);
+            if (defaultChoice==null) {
+                //try to match by name
+                defaultChoice = getFirstMatchingLabel(defaultValue);
+                if (defaultChoice != null) {
+                    log.debug("No match by value, but found match by displayName="+defaultValue);
+                }
+            }
+            if (defaultChoice==null) {
+                log.debug("No match in choice for defaultValue="+defaultValue);
+                defaultChoice=emptyChoice;
+            }
         }
+        selected=defaultChoice;
+        log.debug("Initial selection is "+selected);
     }
     
     private Choice getFirstMatchingValue(final String value) {

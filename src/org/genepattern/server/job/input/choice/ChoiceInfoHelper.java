@@ -59,6 +59,7 @@ public class ChoiceInfoHelper {
      *     flag: "OK" | "WARNING" | "ERROR"
      *     message: ""
      * },
+     * selectedValue: "ftp://ftp.broadinstitute.org/pub/genepattern/rna_seq/referenceAnnotation/gtf/Arabidopsis_thaliana_Ensembl_TAIR10.gtf"
      * choices: [
      *   {
      *     label: "Arabidopsis_thaliana_Ensembl_TAIR10.gtf",
@@ -100,6 +101,9 @@ public class ChoiceInfoHelper {
             statusObj.put("flag", choiceInfo.getStatus().getFlag().name());
             statusObj.put("message", choiceInfo.getStatus().getMessage());
             json.put("status", statusObj);
+        }
+        if (choiceInfo.getSelected() != null) {
+            json.put("selectedValue", choiceInfo.getSelected().getValue());
         }
         final JSONArray choices=initChoiceJson(choiceInfo);
         json.put("choices", choices);
