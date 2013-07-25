@@ -11,27 +11,24 @@
 
 package org.genepattern.modules;
 
-import org.json.JSONObject;
-import org.json.JSONException;
-import org.json.JSONArray;
-import org.apache.log4j.Logger;
-import org.genepattern.webservice.ParameterInfo;
-import org.genepattern.webservice.TaskInfo;
-import org.genepattern.util.GPConstants;
-import org.genepattern.server.job.input.ParamListHelper;
-import org.genepattern.server.job.input.NumValues;
-import org.genepattern.server.job.input.choice.ChoiceInfo;
-import org.genepattern.server.job.input.choice.ChoiceInfoHelper;
-import org.genepattern.server.webapp.rest.api.v1.task.TasksResource;
-
+import java.io.File;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-import java.io.File;
 
 import javax.servlet.http.HttpServletRequest;
+
+import org.apache.log4j.Logger;
+import org.genepattern.server.job.input.NumValues;
+import org.genepattern.server.job.input.ParamListHelper;
+import org.genepattern.server.job.input.choice.ChoiceInfo;
+import org.genepattern.server.job.input.choice.ChoiceInfoHelper;
+import org.genepattern.util.GPConstants;
+import org.genepattern.webservice.ParameterInfo;
+import org.genepattern.webservice.TaskInfo;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 /**
  * User: nazaire
