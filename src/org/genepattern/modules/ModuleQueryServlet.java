@@ -696,13 +696,13 @@ public class ModuleQueryServlet extends HttpServlet
         }
     }
 
-    private JSONArray getParameterList(ParameterInfo[] pArray)
+    private JSONArray getParameterList(final TaskInfo taskInfo, ParameterInfo[] pArray)
     {
         JSONArray parametersObject = new JSONArray();
 
         for(int i =0;i < pArray.length;i++)
         {
-            ParametersJSON parameter = new ParametersJSON(pArray[i]);
+            ParametersJSON parameter = new ParametersJSON(taskInfo, pArray[i]);
             parametersObject.put(parameter);
         }
 
@@ -776,7 +776,7 @@ public class ModuleQueryServlet extends HttpServlet
 
             responseObject.addChild(ModuleJSON.KEY, moduleObject);
 
-            JSONArray parametersObject = getParameterList(taskInfo.getParameterInfoArray());
+            JSONArray parametersObject = getParameterList(taskInfo, taskInfo.getParameterInfoArray());
             responseObject.addChild(ParametersJSON.KEY, parametersObject);
             this.write(response, responseObject);
         }

@@ -16,11 +16,13 @@ import org.json.JSONException;
 import org.json.JSONArray;
 import org.apache.log4j.Logger;
 import org.genepattern.webservice.ParameterInfo;
+import org.genepattern.webservice.TaskInfo;
 import org.genepattern.util.GPConstants;
 import org.genepattern.server.job.input.ParamListHelper;
 import org.genepattern.server.job.input.NumValues;
 import org.genepattern.server.job.input.choice.ChoiceInfo;
 import org.genepattern.server.job.input.choice.ChoiceInfoHelper;
+import org.genepattern.server.webapp.rest.api.v1.task.TasksResource;
 
 import java.util.HashMap;
 import java.util.Iterator;
@@ -87,7 +89,7 @@ public class ParametersJSON extends JSONObject {
     }
 
 
-    public ParametersJSON(ParameterInfo pInfo)
+    public ParametersJSON(final TaskInfo taskInfo, final ParameterInfo pInfo)
     {
         try {
             HashMap pAttrs = pInfo.getAttributes();
@@ -146,12 +148,14 @@ public class ParametersJSON extends JSONObject {
         }
     }
     
-    public void initChoice(final ParameterInfo pInfo) {
+    public void initChoice(final TaskInfo taskInfo, final ParameterInfo pInfo) {
         try {
             final ChoiceInfo choiceInfo = ChoiceInfoHelper.initChoiceInfo(pInfo);
             if (choiceInfo != null) {
-                JSONArray choice = ChoiceInfoHelper.initChoiceJson(choiceInfo);
-                this.put("choice", choice);
+                JSONObject choiceInfoJson=ChoiceInfoHelper.initChoiceInfoJson(choiceInfo);
+                final String href=TasksResource.getChoiceInfoPath(taskInfo, pInfo.getName());
+                choiceInfoJson.put("href", href);
+                this.put("choiceInfo", choiceInfoJson);
             }
         }
         catch (JSONException e) {
