@@ -78,10 +78,10 @@ public class GenomeSpaceServlet extends HttpServlet {
             tree = bean.getFileTree();
             tree = new ArrayList<GenomeSpaceFile>(tree.get(0).getChildFiles());
             for (GenomeSpaceFile file : tree) {
-                if (!file.getName().contains("Shared ") && !file.getName().equals("Public")) {
+                if (file.getName().equals(bean.getUsername())) {
                     tree = new ArrayList<GenomeSpaceFile>();
                     tree.add(file);
-                    continue;
+                    break;
                 }
             }
         }
