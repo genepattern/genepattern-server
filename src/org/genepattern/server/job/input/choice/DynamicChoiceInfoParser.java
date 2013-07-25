@@ -72,10 +72,12 @@ public class DynamicChoiceInfoParser implements ChoiceInfoParser {
         if (declaredChoicesStr != null) {
             log.debug("parsing choice entry from manifest for parm="+param.getName());
             choices=ParameterInfo._initChoicesFromString(declaredChoicesStr);
+            log.debug("Initialized choices from choice attribute");
         }
         else {
             //the old way (<= 3.6.1, based on 'values' attribute in manifest)
             choices=param.getChoices();
+            log.debug("Initialized choices from value attribute");
         }
 
         if (choices==null) {
@@ -92,6 +94,7 @@ public class DynamicChoiceInfoParser implements ChoiceInfoParser {
             Choice choice = new Choice(choiceEntry.getKey(), choiceEntry.getValue());
             choiceInfo.add(choice);
         }
+        choiceInfo.setStatus(Flag.OK, "Initialized static list from manifest");
         return choiceInfo;
     }
     
