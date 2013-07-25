@@ -63,10 +63,20 @@ public class ChoiceInfo {
         return choiceInfoParser;
     }
     
+    final private String paramName;
+    
     private String ftpDir=null;
     private List<Choice> choices=null;
     private ChoiceInfo.Status status=null;
     private Choice selected=null;
+    
+    public ChoiceInfo(final String paramName) {
+        this.paramName=paramName;
+    }
+    
+    public String getParamName() {
+        return paramName;
+    }
     
     public void setFtpDir(final String ftpDir) {
         this.ftpDir=ftpDir;

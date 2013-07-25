@@ -45,7 +45,7 @@ public class DefaultChoiceInfoParser implements ChoiceInfoParser {
             return null;
         }
         
-        final ChoiceInfo choiceInfo=new ChoiceInfo();
+        final ChoiceInfo choiceInfo=new ChoiceInfo(param.getName());
         for(final Entry<String,String> choiceEntry : choices.entrySet()) {
             Choice choice = new Choice(choiceEntry.getKey(), choiceEntry.getValue());
             choiceInfo.add(choice);

@@ -2,7 +2,6 @@ package org.genepattern.server.webapp.rest.api.v1.task;
 
 import java.util.Map;
 
-import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
@@ -15,6 +14,7 @@ import javax.ws.rs.core.UriInfo;
 
 import org.apache.log4j.Logger;
 import org.genepattern.server.config.ServerConfiguration;
+import org.genepattern.server.dm.UrlUtil;
 import org.genepattern.server.job.input.choice.ChoiceInfo;
 import org.genepattern.server.job.input.choice.ChoiceInfoHelper;
 import org.genepattern.server.rest.ParameterInfoRecord;
@@ -92,8 +92,8 @@ public class TasksResource {
     final static private Logger log = Logger.getLogger(TasksResource.class);
     final static public String URI_PATH="v1/tasks";
     
-    public static String getTaskInfoPath(final TaskInfo taskInfo) {
-        String rootPath=ServerConfiguration.instance().getGenePatternURL().toExternalForm();
+    public static String getTaskInfoPath(final HttpServletRequest request, final TaskInfo taskInfo) {
+        String rootPath=UrlUtil.getGpUrl(request);
         if (!rootPath.endsWith("/")) {
             rootPath += "/";
         }
@@ -109,11 +109,11 @@ public class TasksResource {
      * @param pname
      * @return
      */
-    public static String getChoiceInfoPath(final TaskInfo taskInfo, final String pname) { 
+    public static String getChoiceInfoPath(final HttpServletRequest request, final TaskInfo taskInfo, final String pname) { 
         // at the moment, (circa GP 3.7.0), the task LSID and the parameter name will be valid URI path components
         // if this ever changes we should encode them
         //String path = URI_PATH + "/" + UrlUtil.encodeURIcomponent( taskInfo.getLsid() ) + "/" + UrlUtil.encodeURIcomponent( pname ) + "/choiceInfo.json";
-        String path = getTaskInfoPath(taskInfo) + "/" + pname  + "/choiceInfo.json";
+        String path = getTaskInfoPath(request, taskInfo) + "/" + pname  + "/choiceInfo.json";
         return path;
     }
 
@@ -143,7 +143,7 @@ public class TasksResource {
         JSONObject jsonObj=null;
         try {
             jsonObj=new JSONObject();
-            String href=getTaskInfoPath(taskInfo);
+            String href=getTaskInfoPath(request, taskInfo);
             jsonObj.put("href", href);
             jsonObj.put("name", taskInfo.getName());
             jsonObj.put("lsid", taskInfo.getLsid());
@@ -203,9 +203,7 @@ public class TasksResource {
             final @Context UriInfo uriInfo,
             final @PathParam("taskNameOrLsid") String taskNameOrLsid,
             final @PathParam("pname") String pname,
-            final @Context HttpServletRequest request,
-            final @Context ServletContext servletContext
-
+            final @Context HttpServletRequest request
     ) {
         log.debug("taskNameOrLsid="+taskNameOrLsid);
         log.debug("pname="+pname);
@@ -237,11 +235,8 @@ public class TasksResource {
         
         ChoiceInfo choiceInfo=ChoiceInfo.getChoiceInfoParser().initChoiceInfo(pinfoRecord.getFormal());
         
-        //hard-coded JSON serialization
         try {
-            final JSONObject choiceInfoJson=ChoiceInfoHelper.initChoiceInfoJson(choiceInfo);
-            final String href=getChoiceInfoPath(taskInfo, pname);
-            choiceInfoJson.put("href", href);
+            final JSONObject choiceInfoJson=ChoiceInfoHelper.initChoiceInfoJson(request, taskInfo, choiceInfo);            
             final String choiceInfoStr=choiceInfoJson.toString();
 
             //return the JSON representation of the job

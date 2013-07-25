@@ -252,7 +252,7 @@ public class RunTaskServlet extends HttpServlet
             JSONObject responseObject = new JSONObject();
             responseObject.put(ModuleJSON.KEY, moduleObject);
 
-            JSONArray parametersObject = getParameterList(taskInfo);
+            JSONArray parametersObject = getParameterList(request, taskInfo);
             responseObject.put(ParametersJSON.KEY, parametersObject);
 
 
@@ -641,7 +641,7 @@ public class RunTaskServlet extends HttpServlet
 
     }
 
-    private JSONArray getParameterList(final TaskInfo taskInfo) 
+    private JSONArray getParameterList(final HttpServletRequest request, final TaskInfo taskInfo) 
     {
         final ParameterInfo[] pArray=taskInfo.getParameterInfoArray();
         JSONArray parametersObject = new JSONArray();
@@ -651,7 +651,7 @@ public class RunTaskServlet extends HttpServlet
             final ParameterInfo pinfo=pArray[i];
             ParametersJSON parameter = new ParametersJSON(taskInfo, pinfo);
             parameter.addNumValues(pinfo);
-            parameter.initChoice(taskInfo, pinfo);
+            parameter.initChoice(request, taskInfo, pinfo);
             parametersObject.put(parameter);
         }
 

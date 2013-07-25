@@ -1,7 +1,11 @@
 package org.genepattern.server.job.input.choice;
 
+import javax.servlet.http.HttpServletRequest;
+
 import org.apache.log4j.Logger;
+import org.genepattern.server.webapp.rest.api.v1.task.TasksResource;
 import org.genepattern.webservice.ParameterInfo;
+import org.genepattern.webservice.TaskInfo;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -79,8 +83,15 @@ public class ChoiceInfoHelper {
      * @param pinfo
      * @return
      */
-    final static public JSONObject initChoiceInfoJson(final ChoiceInfo choiceInfo) throws JSONException {
+    final static public JSONObject initChoiceInfoJson(final HttpServletRequest request, final TaskInfo taskInfo, final ChoiceInfo choiceInfo) throws JSONException {
+        if (choiceInfo==null) {
+            throw new IllegalArgumentException("choiceInfo==null");
+        }
         final JSONObject json=new JSONObject();
+        if (request != null && taskInfo != null && isSet(choiceInfo.getParamName())) {
+            final String href=TasksResource.getChoiceInfoPath(request, taskInfo, choiceInfo.getParamName());
+            json.put("href", href);
+        }
         if (isSet(choiceInfo.getFtpDir())) {
             json.put("ftpDir", choiceInfo.getFtpDir());
         }

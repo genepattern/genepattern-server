@@ -31,6 +31,8 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.io.File;
 
+import javax.servlet.http.HttpServletRequest;
+
 /**
  * User: nazaire
  * Date: Mar 15, 2012
@@ -148,13 +150,11 @@ public class ParametersJSON extends JSONObject {
         }
     }
     
-    public void initChoice(final TaskInfo taskInfo, final ParameterInfo pInfo) {
+    public void initChoice(final HttpServletRequest request, final TaskInfo taskInfo, final ParameterInfo pInfo) {
         try {
             final ChoiceInfo choiceInfo = ChoiceInfoHelper.initChoiceInfo(pInfo);
             if (choiceInfo != null) {
-                JSONObject choiceInfoJson=ChoiceInfoHelper.initChoiceInfoJson(choiceInfo);
-                final String href=TasksResource.getChoiceInfoPath(taskInfo, pInfo.getName());
-                choiceInfoJson.put("href", href);
+                JSONObject choiceInfoJson=ChoiceInfoHelper.initChoiceInfoJson(request, taskInfo, choiceInfo);
                 this.put("choiceInfo", choiceInfoJson);
             }
         }

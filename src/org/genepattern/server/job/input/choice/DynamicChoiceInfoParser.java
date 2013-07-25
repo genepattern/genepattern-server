@@ -53,14 +53,14 @@ public class DynamicChoiceInfoParser implements ChoiceInfoParser {
         if (ftpDir != null) {
             log.debug("Initializing choice from remote source for param="+param.getName()+", choiceDirFtp="+ftpDir);
             try {
-                final ChoiceInfo choiceInfoFromFtp = initChoicesFromFtp(ftpDir);
+                final ChoiceInfo choiceInfoFromFtp = initChoicesFromFtp(param, ftpDir);
                 return choiceInfoFromFtp;
             }
             catch (Throwable t) {
                 String userMessage="Server error initializing list of choices from "+ftpDir;
                 String developerMessage="Error initializing choices for '"+param.getName()+"' from "+ftpDir+": "+t.getLocalizedMessage();
                 log.error(developerMessage, t);
-                final ChoiceInfo choiceInfo = new ChoiceInfo();
+                final ChoiceInfo choiceInfo = new ChoiceInfo(param.getName());
                 choiceInfo.setFtpDir(ftpDir);
                 choiceInfo.setStatus(Flag.ERROR, userMessage);
                 log.error(t);
@@ -89,7 +89,7 @@ public class DynamicChoiceInfoParser implements ChoiceInfoParser {
             return null;
         }
         
-        final ChoiceInfo choiceInfo=new ChoiceInfo();
+        final ChoiceInfo choiceInfo=new ChoiceInfo(param.getName());
         for(final Entry<String,String> choiceEntry : choices.entrySet()) {
             Choice choice = new Choice(choiceEntry.getKey(), choiceEntry.getValue());
             choiceInfo.add(choice);
@@ -107,8 +107,8 @@ public class DynamicChoiceInfoParser implements ChoiceInfoParser {
      * @param ftpDir
      * @return
      */
-    private ChoiceInfo initChoicesFromFtp(final String ftpDir) throws ChoiceInfoException {
-        final ChoiceInfo choiceInfo=new ChoiceInfo();
+    private ChoiceInfo initChoicesFromFtp(final ParameterInfo param, final String ftpDir) throws ChoiceInfoException {
+        final ChoiceInfo choiceInfo=new ChoiceInfo(param.getName());
         choiceInfo.setFtpDir(ftpDir);
         final URL ftpUrl;
         try {
