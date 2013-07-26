@@ -1535,7 +1535,14 @@ jQuery(document).ready(function() {
     ,	useStateCookie:			true
     });
 
-    $( "#parameters" ).sortable();
+    $( "#parameters" ).sortable(
+    {
+        change: function(event, ui)
+        {
+            setDirty(true);
+        }
+    });
+
     $( "#commandlist" ).sortable();
 
     $("#addone").button().click(function()
