@@ -19,28 +19,28 @@ var fileId = 0;
 var parametersJson = null;
 
 var Request = {
- 	parameter: function(name)
-     {
-         var result = this.parameters()[name];
+    parameter: function(name)
+    {
+        var result = this.parameters()[name];
         if(result != undefined && result != null)
         {
             return  decodeURIComponent(result);
         }
-         
+
         return result;
- 	},
+    },
 
- 	parameters: function() {
- 		var result = {};
- 		var url = window.location.href;
- 		var parameters = url.slice(url.indexOf('?') + 1).split('&');
+    parameters: function() {
+        var result = {};
+        var url = window.location.href;
+        var parameters = url.slice(url.indexOf('?') + 1).split('&');
 
- 		for(var i = 0;  i < parameters.length; i++) {
- 			var parameter = parameters[i].split('=');
- 			result[parameter[0]] = parameter[1];
- 		}
- 		return result;
- 	}
+        for(var i = 0;  i < parameters.length; i++) {
+            var parameter = parameters[i].split('=');
+            result[parameter[0]] = parameter[1];
+        }
+        return result;
+    }
 };
 
 function htmlEncode(value)
@@ -61,90 +61,90 @@ if (!window.console)
 
 function loadModule(taskId, reloadId)
 {
-        var url = window.location.href;
- 		var getParameters = url.slice(url.indexOf('?') + 1);
-        var queryString = "?" + getParameters;
+    var url = window.location.href;
+    var getParameters = url.slice(url.indexOf('?') + 1);
+    var queryString = "?" + getParameters;
 
-        $.ajax({
-            type: "GET",
-            url: "/gp/rest/RunTask/load" + queryString,
-            cache: false,
-            data: { "lsid" : taskId, "reloadJob":  reloadId},
-            success: function(response) {
+    $.ajax({
+        type: "GET",
+        url: "/gp/rest/RunTask/load" + queryString,
+        cache: false,
+        data: { "lsid" : taskId, "reloadJob":  reloadId},
+        success: function(response) {
 
-                var message = response["MESSAGE"];
-                var error = response["ERROR"];
+            var message = response["MESSAGE"];
+            var error = response["ERROR"];
 
-                if (error !== undefined && error !== null)
-                {
-                    alert(error);
-                }
-                if (message !== undefined && message !== null) {
-                    alert(message);
-                }
-
-                if (response["module"] !== undefined &&
-                    response["module"] !== null
-                    && response["parameters"] != undefined
-                    && response["parameters"] !== undefined )
-                {
-
-                    run_task_info.reloadJobId = reloadId;
-                    var module = response["module"];
-                    loadModuleInfo(module);
-
-                    //check if there are missing tasks (only applies to pipelines)
-                    if(module["missing_tasks"])
-                    {
-
-                        $("#missingTasksDiv").append("<p class='errorMessage'>WARNING: This pipeline requires modules or module " +
-                                                     "versions which are not installed on this server.</p>");
-                        var installTasksButton = $("<button> Install missing tasks</button>");
-                        installTasksButton.button().click(function()
-                        {
-                            window.location.replace("/gp/viewPipeline.jsp?name=" + run_task_info.lsid);
-                        });
-
-                        $("#missingTasksDiv").append(installTasksButton);
-
-                        $(".submitControlsDiv").hide();
-
-                        $("#javaCode").parents("tr:first").hide();
-                        $("#matlabCode").parents("tr:first").hide();
-                        $("#rCode").parents("tr:first").hide();
-
-                    }
-                    else if(module["private_tasks"])
-                    {
-                        $("#missingTasksDiv").append("<p class='errorMessage'>WARNING: This pipeline includes tasks " +
-                        "which you do not have permission to run on this server.</p>");
-                        $(".submitControlsDiv").hide();
-
-                        $("#javaCode").parents("tr:first").hide();
-                        $("#matlabCode").parents("tr:first").hide();
-                        $("#rCode").parents("tr:first").hide();
-                    }
-                    else
-                    {
-                        parametersJson = response["parameters"];
-                        loadParameterInfo(parametersJson, response["initialValues"]);
-                    }
-                    //the parameter form elements have been created now make the form visible
-                    $("#submitJob").css('visibility', 'visible');
-
-                }
-            },
-            error: function(xhr, ajaxOptions, thrownError)
+            if (error !== undefined && error !== null)
             {
-                console.log("Response from server: status=" + xhr.status + " text=" + xhr.responseText);
-                console.log(thrownError);
+                alert(error);
+            }
+            if (message !== undefined && message !== null) {
+                alert(message);
+            }
 
+            if (response["module"] !== undefined &&
+                response["module"] !== null
+                && response["parameters"] != undefined
+                && response["parameters"] !== undefined )
+            {
+
+                run_task_info.reloadJobId = reloadId;
+                var module = response["module"];
+                loadModuleInfo(module);
+
+                //check if there are missing tasks (only applies to pipelines)
+                if(module["missing_tasks"])
+                {
+
+                    $("#missingTasksDiv").append("<p class='errorMessage'>WARNING: This pipeline requires modules or module " +
+                        "versions which are not installed on this server.</p>");
+                    var installTasksButton = $("<button> Install missing tasks</button>");
+                    installTasksButton.button().click(function()
+                    {
+                        window.location.replace("/gp/viewPipeline.jsp?name=" + run_task_info.lsid);
+                    });
+
+                    $("#missingTasksDiv").append(installTasksButton);
+
+                    $(".submitControlsDiv").hide();
+
+                    $("#javaCode").parents("tr:first").hide();
+                    $("#matlabCode").parents("tr:first").hide();
+                    $("#rCode").parents("tr:first").hide();
+
+                }
+                else if(module["private_tasks"])
+                {
+                    $("#missingTasksDiv").append("<p class='errorMessage'>WARNING: This pipeline includes tasks " +
+                        "which you do not have permission to run on this server.</p>");
+                    $(".submitControlsDiv").hide();
+
+                    $("#javaCode").parents("tr:first").hide();
+                    $("#matlabCode").parents("tr:first").hide();
+                    $("#rCode").parents("tr:first").hide();
+                }
+                else
+                {
+                    parametersJson = response["parameters"];
+                    loadParameterInfo(parametersJson, response["initialValues"]);
+                }
+                //the parameter form elements have been created now make the form visible
                 $("#submitJob").css('visibility', 'visible');
-                $("#submitJob").empty();
-                $("#submitJob").append("An error occurred while loading the task " + taskId + ": <br/>" + xhr.responseText);
-            },
-            dataType: "json"
-        });
+
+            }
+        },
+        error: function(xhr, ajaxOptions, thrownError)
+        {
+            console.log("Response from server: status=" + xhr.status + " text=" + xhr.responseText);
+            console.log(thrownError);
+
+            $("#submitJob").css('visibility', 'visible');
+            $("#submitJob").empty();
+            $("#submitJob").append("An error occurred while loading the task " + taskId + ": <br/>" + xhr.responseText);
+        },
+        dataType: "json"
+    });
 }
 
 function loadModuleInfo(module)
@@ -196,12 +196,12 @@ function loadModuleInfo(module)
 
         //disabled until css for multiselect is improved
         /*$('#task_versions').multiselect(
-        {
-            header: false,
-            multiple: false,
-            selectedList: 1,
-            classes: "multiselect"
-        });*/
+         {
+         header: false,
+         multiple: false,
+         selectedList: 1,
+         classes: "multiselect"
+         });*/
 
         $('#task_versions').change(function()
         {
@@ -260,18 +260,18 @@ function loadModuleInfo(module)
     if(module["taskType"] == "pipeline")
     {
         propertiesLink = "/gp/viewPipeline.jsp?name="+run_task_info.lsid;
-    } 
+    }
 
     $("#properties").attr("href", propertiesLink);
 
     var hasDescription = false;
     if(module["description"] !== undefined
-            && module["description"] != "")
+        && module["description"] != "")
     {
         $("#mod_description").append(module["description"]);
         hasDescription = true;
     }
-    
+
     //if module has doc specified or if for some reason
     // the hasDoc field was not set then show the doc link
     if(module["hasDoc"] == undefined || module["hasDoc"])
@@ -397,20 +397,20 @@ function loadParameterInfo(parameters, initialValues)
 
         if(initialValues != null && initialValues != undefined)
         {
-             initialValuesList = initialValues[parameters[q].name];
+            initialValuesList = initialValues[parameters[q].name];
         }
 
         //use the alternate name if there is one (this is usually set for pipelines)
         if(parameters[q].altName != undefined
-                && parameters[q].altName != null
-                && parameters[q].altName.replace(/ /g, '') != "") ////trims spaces to check for empty string
+            && parameters[q].altName != null
+            && parameters[q].altName.replace(/ /g, '') != "") ////trims spaces to check for empty string
         {
             parameterName = parameters[q].altName;
         }
 
         if(parameters[q].optional.length == 0 && parameters[q].minValue != 0)
         {
-           parameterName += "*";
+            parameterName += "*";
         }
 
         //replace . with spaces in parameter name
@@ -440,18 +440,27 @@ function loadParameterInfo(parameters, initialValues)
                 && parameters[q].choiceInfo.status != undefined && parameters[q].choiceInfo.status != null
                 && parameters[q].choiceInfo.status.flag != "OK")
             {
-               valueTd.append("<p class='errorMessage'> Unable to load choices </p>");
+                valueTd.append("<p class='errorMessage'> Unable to load choices </p>");
             }
 
             choiceFound = true;
             //display drop down showing available file choices
-            var choice = $("<select class='choice'/>");
+            var choice = null;
+
+            if(allowMultiple)
+            {
+                choice = $("<select class='choice' multiple='multiple'/>");
+            }
+            else
+            {
+                choice = $("<select class='choice'/>");
+            }
             choice.data("cname", parameters[q].name);
             var longChars = 1;
             for(var c=0;c<parameters[q].choiceInfo.choices.length;c++)
             {
                 choice.append("<option value='"+parameters[q].choiceInfo.choices[c].value+"'>"
-                        + parameters[q].choiceInfo.choices[c].label+"</option>");
+                    + parameters[q].choiceInfo.choices[c].label+"</option>");
                 if(parameters[q].choiceInfo.choices[c].label.length > longChars)
                 {
                     longChars = parameters[q].choiceInfo.choices[c].label.length;
@@ -478,10 +487,10 @@ function loadParameterInfo(parameters, initialValues)
             {
                 var valueList = [];
 
-               var value = $(this).val();
+                var value = $(this).val();
 
                 //if this a multiselect choice, then check that the maximum number of allowable selections was not reached
-                if($.isArray(value))
+                if($(this).multiselect("option", "multiple"))
                 {
                     var maxVal = parseInt($(this).data("maxValue"));
                     if(!isNaN(maxVal) && value.length() > maxVal)
@@ -525,15 +534,18 @@ function loadParameterInfo(parameters, initialValues)
             {
                 //should only be one item in the list for now
                 //but handle case when there is more than one item
-                if($.isArray(choice.val()))
+                if(choice.multiselect("option", "multiple"))
                 {
                     var matchingValueList = [];
                     for(var n=0;n<initialValuesList.length;n++)
                     {
-                        if($.inArray(initialValuesList[n], choice.val()) != -1)
+                        choice.find("option").each(function()
                         {
-                            matchingValueList.push(initialValuesList[n]);
-                        }
+                            if(initialValuesList[n] == $(this).val())
+                            {
+                                matchingValueList.push(initialValuesList[n]);
+                            }
+                        });
                     }
 
                     choice.val(matchingValueList);
@@ -545,10 +557,9 @@ function loadParameterInfo(parameters, initialValues)
                     if(initialValuesList.length > 0)
                     {
                         choice.val( initialValuesList[0]);
-                        choice.trigger("change");
-                        choice.multiselect("refresh");
                     }
                 }
+                choice.multiselect("refresh");
             }
 
             var valueList = [];
@@ -573,53 +584,53 @@ function loadParameterInfo(parameters, initialValues)
 
             // Create the mode toggle
             if (parseInt(parameters[q].maxValue) == 1) {
-	            var rowNum = q + 1;
-	            var batchBox = $("<div class='batchBox' title='If a directory is selected and this box is checked, a job will be launched for every file in the directory with a matching type.'></div>");
-	            // Add the checkbox
-	            batchBox.append("<input type='checkbox' id='batchCheck" + rowNum + "' />");
-	            batchBox.append("<label for='batchCheck" + rowNum + "'>Batch</label>");
-	            batchBox.find("input[type=checkbox]").change(function() {
-	            	if ($(this).is(":checked")) {
-	            		$(this).parent().find("input[type=radio]:last").click();
-	            	}
-	            	else {
-	            		$(this).parent().find("input[type=radio]:first").click();
-	            	}
-	            });
-	            
-	            // Add the old toggle buttons
-	            var modeToggle = $("<div id='modeToggle" + rowNum + "' style='display:none'></div>");
-	            modeToggle.append("<input type='radio' value='normal' name='mode" + rowNum + "' id='singleMode" + rowNum + "' checked='true'><label title='This is the default and typical mode of operation for GenePattern. A single job will be started using the given input.' for='singleMode" + (q+1) + "'>Single</label></input>");
-	            modeToggle.append("<input type='radio' value='batch' name='mode" + rowNum + "'id='batchMode" + rowNum + "'><label title='This will launch a job for every file in the directory sent to this parameter, provided the file is of a matching type.' for='batchMode" + rowNum + "'>Batch</label></input>");
-	            
-	            batchBox.append(modeToggle);
-	            fileDiv.append(batchBox);	            
-            
-	            modeToggle.buttonset();
-	            batchBox.tooltip();
-	            modeToggle.find("input[type=radio]").change(function() {
-	            	if ($(this).parent().find("input:checked").val() === "batch") {
-	            		$(this).closest(".pRow").css("background-color", "#F5F5F5");
-	            		$(this).closest(".pRow").next().css("background-color", "#F5F5F5");
-	            		$(this).closest(".fileDiv").find(".uploadBtn").button("disable");
-	            		
-	            		// Check the box
-	            		$(this).parent().parent().find("input[type=checkbox]").prop('checked', true);
-	            	}
-	            	else {
-	            		$(this).closest(".pRow").css("background-color", "#FFFFFF");
-	            		$(this).closest(".pRow").next().css("background-color", "#FFFFFF");
-	            		$(this).closest(".fileDiv").find(".uploadBtn").button("enable");
-	            		
-	            		// Check the box
-	            		$(this).parent().parent().find("input[type=checkbox]").prop('checked', false);
-	            	}
-	            	
-	            	// Clear the files from the parameter
-	            	var paramName = $(this).closest(".fileDiv").find("input[type='file']").attr("id");
-	            	param_file_listing[paramName] = [];
-	            	updateParamFileTable(paramName);
-	            });
+                var rowNum = q + 1;
+                var batchBox = $("<div class='batchBox' title='If a directory is selected and this box is checked, a job will be launched for every file in the directory with a matching type.'></div>");
+                // Add the checkbox
+                batchBox.append("<input type='checkbox' id='batchCheck" + rowNum + "' />");
+                batchBox.append("<label for='batchCheck" + rowNum + "'>Batch</label>");
+                batchBox.find("input[type=checkbox]").change(function() {
+                    if ($(this).is(":checked")) {
+                        $(this).parent().find("input[type=radio]:last").click();
+                    }
+                    else {
+                        $(this).parent().find("input[type=radio]:first").click();
+                    }
+                });
+
+                // Add the old toggle buttons
+                var modeToggle = $("<div id='modeToggle" + rowNum + "' style='display:none'></div>");
+                modeToggle.append("<input type='radio' value='normal' name='mode" + rowNum + "' id='singleMode" + rowNum + "' checked='true'><label title='This is the default and typical mode of operation for GenePattern. A single job will be started using the given input.' for='singleMode" + (q+1) + "'>Single</label></input>");
+                modeToggle.append("<input type='radio' value='batch' name='mode" + rowNum + "'id='batchMode" + rowNum + "'><label title='This will launch a job for every file in the directory sent to this parameter, provided the file is of a matching type.' for='batchMode" + rowNum + "'>Batch</label></input>");
+
+                batchBox.append(modeToggle);
+                fileDiv.append(batchBox);
+
+                modeToggle.buttonset();
+                batchBox.tooltip();
+                modeToggle.find("input[type=radio]").change(function() {
+                    if ($(this).parent().find("input:checked").val() === "batch") {
+                        $(this).closest(".pRow").css("background-color", "#F5F5F5");
+                        $(this).closest(".pRow").next().css("background-color", "#F5F5F5");
+                        $(this).closest(".fileDiv").find(".uploadBtn").button("disable");
+
+                        // Check the box
+                        $(this).parent().parent().find("input[type=checkbox]").prop('checked', true);
+                    }
+                    else {
+                        $(this).closest(".pRow").css("background-color", "#FFFFFF");
+                        $(this).closest(".pRow").next().css("background-color", "#FFFFFF");
+                        $(this).closest(".fileDiv").find(".uploadBtn").button("enable");
+
+                        // Check the box
+                        $(this).parent().parent().find("input[type=checkbox]").prop('checked', false);
+                    }
+
+                    // Clear the files from the parameter
+                    var paramName = $(this).closest(".fileDiv").find("input[type='file']").attr("id");
+                    param_file_listing[paramName] = [];
+                    updateParamFileTable(paramName);
+                });
             }
             else
             {
@@ -643,7 +654,7 @@ function loadParameterInfo(parameters, initialValues)
             var fileInputDiv = $("<div class='inputFileBtn'/>");
             fileInputDiv.append(fileInput);
             fileDiv.append(fileInputDiv);
-            
+
             fileDiv.append("<button type='button' class='urlButton'>"+ addUrlText +"</button>");
 
             fileDiv.append("<span class='drop-box'>drop files here</span>");
@@ -663,10 +674,10 @@ function loadParameterInfo(parameters, initialValues)
                 toggleChoiceFileP.data("pname", parameters[q].name);
 
                 var fileChoiceOptions = $('<div class="fileChoiceOptions">  ' +
-                   '<input id="selectFile_' + idPName + '" name="radio" type="radio" checked="checked" /><label for="selectFile_'+ idPName +'">Select a file</label> ' +
-                   ' <span class="elemSpacing">  or  </span>  ' +
-                   ' <input id="customFile_'+ idPName +'" name="radio" type="radio" /><label for="customFile_'+ idPName +'">Upload your own file</label> ' +
-                ' </div>');
+                    '<input id="selectFile_' + idPName + '" name="' +  idPName + '_radio" type="radio" checked="checked" /><label for="selectFile_'+ idPName +'">Select a file</label> ' +
+                    ' <span class="elemSpacing">  or  </span>  ' +
+                    ' <input id="customFile_'+ idPName +'" name="'+ idPName +'_radio" type="radio" /><label for="customFile_'+ idPName +'">Upload your own file</label> ' +
+                    ' </div>');
 
                 fileChoiceOptions.data("pname", parameters[q].name);
                 fileChoiceOptions.change(function()
@@ -727,7 +738,7 @@ function loadParameterInfo(parameters, initialValues)
                         {
                             //if this a a file choice parameter, check whether the initial values are custom files
                             var selectedValues = valueTd.find(".choice").val();
-                            if($.isArray(selectedValues) && $.inArray(initialValuesList[v], selectedValues))
+                            if($.isArray(selectedValues) && $.inArray(initialValuesList[v], selectedValues) != -1)
                             {
                                 break;
                             }
@@ -742,8 +753,11 @@ function loadParameterInfo(parameters, initialValues)
                             var checked = valueTd.find(".fileChoiceOptions").find(":radio:checked");
                             var unchecked = valueTd.find(".fileChoiceOptions").find(":radio:unchecked");
 
-                            checked.removeAttr("checked");
-                            unchecked.trigger("click");
+                            if(checked.next("label").text() != "Upload your own file")
+                            {
+                                checked.removeAttr("checked");
+                                unchecked.trigger("click");
+                            }
                         }
 
                         var fileObj =
@@ -770,22 +784,22 @@ function loadParameterInfo(parameters, initialValues)
             var textField = null;
             if(parameters[q].type == "PASSWORD")
             {
-                textField = $("<input type='password' id='" + parameters[q].name +"' name='" + parameters[q].name + "'/>");                
+                textField = $("<input type='password' id='" + parameters[q].name +"' name='" + parameters[q].name + "'/>");
             }
             else
             {
                 textField = $("<input type='text' id='" + parameters[q].name +"' name='" + parameters[q].name + "'/>");
             }
-            
+
             // Handle link drags
             textField.get(0).addEventListener("dragenter", dragEnter, true);
             textField.get(0).addEventListener("dragleave", dragLeave, true);
             textField.get(0).addEventListener("dragexit", dragExit, false);
             textField.get(0).addEventListener("dragover", dragOver, false);
             textField.get(0).addEventListener("drop", function(event) {
-            	$(this).removeClass('highlight');
-            	var link = event.dataTransfer.getData('Text')
-            	$(this).val(link);
+                $(this).removeClass('highlight');
+                var link = event.dataTransfer.getData('Text')
+                $(this).val(link);
 
                 //now trigger a change so that this value is added to this parameter
                 $(this).trigger("change");
@@ -820,7 +834,7 @@ function loadParameterInfo(parameters, initialValues)
                 for(v=0; v <  initialValuesList.length; v++)
                 {
                     inputFieldValue += initialValuesList[v];
-                     
+
                     // add a comma between items in this list
                     if(v < ( initialValuesList.length-1))
                     {
@@ -908,8 +922,8 @@ function loadParameterInfo(parameters, initialValues)
         var cancelButton = $("<button>Cancel</button>");
         cancelButton.button().click(function()
         {
-            $(this).parents("td:first").children().show();            
-            $(this).parents(".urlDiv").first().remove();            
+            $(this).parents("td:first").children().show();
+            $(this).parents(".urlDiv").first().remove();
         });
         urlActionDiv.append(cancelButton);
         urlDiv.append(urlActionDiv);
@@ -939,7 +953,7 @@ jQuery(document).ready(function()
     var reloadJob = Request.parameter('reloadJob');
 
     if((lsid == undefined || lsid == null || lsid  == "")
-            && (reloadJob == undefined || reloadJob == null || reloadJob  == ""))
+        && (reloadJob == undefined || reloadJob == null || reloadJob  == ""))
     {
         //redirect to splash page
         window.location.replace("/gp/pages/index.jsf");
@@ -1013,18 +1027,18 @@ jQuery(document).ready(function()
 
     //disable default browser behavior of opening files using drag and drop
     $(document).bind({
-       dragenter: function (e) {
-          e.stopPropagation();
-          e.preventDefault();
-          var dt = e.originalEvent.dataTransfer;
-         dt.effectAllowed = dt.dropEffect = 'none';
-       },
-       dragover: function (e) {
-          e.stopPropagation();
-          e.preventDefault();
-          var dt = e.originalEvent.dataTransfer;
-          dt.effectAllowed = dt.dropEffect = 'none';
-       }
+        dragenter: function (e) {
+            e.stopPropagation();
+            e.preventDefault();
+            var dt = e.originalEvent.dataTransfer;
+            dt.effectAllowed = dt.dropEffect = 'none';
+        },
+        dragover: function (e) {
+            e.stopPropagation();
+            e.preventDefault();
+            var dt = e.originalEvent.dataTransfer;
+            dt.effectAllowed = dt.dropEffect = 'none';
+        }
     });
 
     $(document).bind('drop dragover', function (e) {
@@ -1098,8 +1112,8 @@ jQuery(document).ready(function()
             url: "/gp/rest/RunTask/viewCode" + queryString,
             cache: false,
             data: { "lsid" : run_task_info.lsid,
-                    "reloadJob":  run_task_info.reloadJobId,
-                    "language": language},
+                "reloadJob":  run_task_info.reloadJobId,
+                "language": language},
             success: function(response) {
 
                 if (response["code"] == undefined || response["code"] == null)
@@ -1111,7 +1125,7 @@ jQuery(document).ready(function()
                     $("#viewCodeDiv").append("<p>" + htmlEncode(response["code"]) + "</p>");
                     //add a link to the appropriate programmers guide
                     $("#viewCodeDiv").append("<span><hr/>For more details go to the Programmer's Guide section: <a href='http://www.broadinstitute.org/cancer/software/genepattern/gp_guides/programmers/sections/gp_" + language.toLowerCase()+"'> " +
-                            "Using GenePattern from " + language + "</a></span>");
+                        "Using GenePattern from " + language + "</a></span>");
                 }
             },
             error: function(xhr, ajaxOptions, thrownError)
@@ -1131,7 +1145,7 @@ function reset()
 
     $("#paramsTable").empty();
 
-    //remove all input file parameter file listings 
+    //remove all input file parameter file listings
     param_file_listing = {};
 
     loadParameterInfo(parametersJson, null);
@@ -1169,7 +1183,7 @@ function validate()
 {
     //remove any existing error messages
     $(".errorMessage").remove();
-     $("#missingRequiredParams").remove();
+    $("#missingRequiredParams").remove();
 
     //create div to list of all parameters with missing values
     var missingReqParamsDiv = $("<div id='missingRequiredParams'/>");
@@ -1279,14 +1293,14 @@ function runJob()
 }
 
 function buildBatchList() {
-	var batchParams = [];
-	for (var paramName in param_file_listing) {
-		if (isBatch(paramName)) {
-			batchParams.push(paramName);
-		}
+    var batchParams = [];
+    for (var paramName in param_file_listing) {
+        if (isBatch(paramName)) {
+            batchParams.push(paramName);
+        }
     }
-	
-	return batchParams;
+
+    return batchParams;
 }
 
 function submitTask()
@@ -1320,7 +1334,7 @@ function submitTask()
             if (message !== undefined && message !== null) {
                 alert(message);
             }
-            
+
             if (response.batchId !== undefined) {
                 window.location.replace("/gp/jobResults");
             }
@@ -1426,8 +1440,8 @@ function drop(evt)
     else
     {
         if(evt.dataTransfer.getData('Text') != null
-                && evt.dataTransfer.getData('Text')  !== undefined
-                && evt.dataTransfer.getData('Text') != "")
+            && evt.dataTransfer.getData('Text')  !== undefined
+            && evt.dataTransfer.getData('Text') != "")
         {
             //This must be a url and not a file
             var fileObjListings = param_file_listing[paramName];
@@ -1511,11 +1525,11 @@ function validateMaxFiles(paramName, numFiles)
     if(maxFilesLimitExceeded)
     {
         alert("The maximum number of files that can be provided to the " + paramName +
-                        " parameter has been reached. Please delete some files " +
-                        "before continuing.");
+            " parameter has been reached. Please delete some files " +
+            "before continuing.");
         throw new Error("The maximum number of files that can be provided to " +
-                        "this parameter (" + paramName +") has been reached. Please delete some files " +
-                        "before continuing.");
+            "this parameter (" + paramName +") has been reached. Please delete some files " +
+            "before continuing.");
     }
 }
 
@@ -1526,9 +1540,9 @@ function checkFileSizes(files)
         var file = files[i];
         if (file.size > 2040109466) { //approx 1.9GB in bytes
             /*var errorMessage = "One or more of the selected files exceeds the 2GB limit for this upload method." +
-                " Please use the 'Uploads' tab on the right (located next to the Recent Jobs tab) to upload these" +
-                " files.More information about using large files can be found in our User Guide available in the " +
-                "Help Menu above. http://www.google.com");*/
+             " Please use the 'Uploads' tab on the right (located next to the Recent Jobs tab) to upload these" +
+             " files.More information about using large files can be found in our User Guide available in the " +
+             "Help Menu above. http://www.google.com");*/
             var errorMessageDiv = $("<div/>");
             errorMessageDiv.append("<p>One or more of the selected files exceeds the 2GB limit for this upload method.</p>");
             errorMessageDiv.append("<p> Please use the 'Uploads' tab on the right (located next to the Recent Jobs tab)" +
@@ -1608,7 +1622,7 @@ function updateParamFileTable(paramName)
         $(idPName).append(pData);
 
         if(files.length > 0)
-        var table = $("<table class='paramFilesTable'/>");
+            var table = $("<table class='paramFilesTable'/>");
         for(var i=0;i<files.length;i++)
         {
             //ignore any file names that are empty or null
@@ -1635,15 +1649,15 @@ function updateParamFileTable(paramName)
 
             delButton.button().click(function()
             {
-            	// Show the buttons again
-            	jq(this).closest(".fileDiv").find("> button, > span").show();
-            	
+                // Show the buttons again
+                jq(this).closest(".fileDiv").find("> button, > span").show();
+
                 var file = $(this).data("pfile");
                 var id = $(this).data("pfileId");
                 for(var t=0;t<param_file_listing[paramName].length;t++)
                 {
                     if(param_file_listing[paramName][t].name == file
-                            && param_file_listing[paramName][t].id == id)
+                        && param_file_listing[paramName][t].id == id)
                     {
                         var fileObjListing = param_file_listing[paramName];
                         fileObjListing.splice(t, 1);
@@ -1651,7 +1665,7 @@ function updateParamFileTable(paramName)
                 }
 
                 updateParamFileTable(paramName);
-                toggleFileButtons(paramName);               
+                toggleFileButtons(paramName);
             });
 
             fileTData.append(delButton);
@@ -1674,30 +1688,30 @@ function updateParamFileTable(paramName)
     // Hide or show the buttons if something is selected
     var div = $(idPName).closest(".fileDiv");
     if (atMaxFiles(paramName)) {
-    	div.find("> button, > span").hide();
+        div.find("> button, > span").hide();
     }
     else {
-    	div.find("> button, > span").show();
+        div.find("> button, > span").show();
     }
 }
 
 function atMaxFiles(paramName) {
-	var currentNum = param_file_listing[paramName].length;
-	
-	var maxNum = null;
-	jq(parametersJson).each(function(i) {
-		var param = parametersJson[i];
-		if (param.name === paramName) {
-			maxNum = param.maxValue
-		}
-	});
-	
-	if (currentNum === maxNum) {
-		return true;
-	}
-	else {
-		return false;
-	}
+    var currentNum = param_file_listing[paramName].length;
+
+    var maxNum = null;
+    jq(parametersJson).each(function(i) {
+        var param = parametersJson[i];
+        if (param.name === paramName) {
+            maxNum = param.maxValue
+        }
+    });
+
+    if (currentNum === maxNum) {
+        return true;
+    }
+    else {
+        return false;
+    }
 }
 
 
@@ -1744,15 +1758,15 @@ function uploadFile(paramName, file, fileOrder, fileId)
     $("#"+fileId + "Percentage").text("0%");
 
     var destinationUrl = "/gp/rest/RunTask/upload";
-	
-	// prepare FormData
+
+    // prepare FormData
     var formData = new FormData();
     formData.append('ifile', file);
     formData.append('paramName', paramName);
     formData.append('index', id);
-	
+
     var progressEvent = function(event) {
-		if (event.lengthComputable)
+        if (event.lengthComputable)
         {
 
             var percentComplete = Math.round(event.loaded * 100 / event.total);
@@ -1768,28 +1782,28 @@ function uploadFile(paramName, file, fileOrder, fileId)
         {
             $("#fileUploadDiv").append('<p>Unable to determine progress</p>');
         }
-	};
-    
+    };
+
     var xhr = null;
     $.ajax({
-    	type: "POST",
-    	cache: false,
-    	url: destinationUrl,
-    	data: formData,
-    	processData: false,
-    	contentType: false,
-    	xhr: function() {
-    		xhr = new window.XMLHttpRequest();
-    		//Upload progress
-    		if (xhr.upload) {
-    			xhr.upload.addEventListener("progress", progressEvent, false);
-    		}
+        type: "POST",
+        cache: false,
+        url: destinationUrl,
+        data: formData,
+        processData: false,
+        contentType: false,
+        xhr: function() {
+            xhr = new window.XMLHttpRequest();
+            //Upload progress
+            if (xhr.upload) {
+                xhr.upload.addEventListener("progress", progressEvent, false);
+            }
 
-    		return xhr;
-    	},
-    	success: function(event) {
+            return xhr;
+        },
+        success: function(event) {
             console.log("on load response: " + event);
-            
+
             var parsedEvent = typeof event === "string" ? $.parseJSON(event) : event;
             param_file_listing[paramName][fileOrder].name = parsedEvent.location;
             delete param_file_listing[paramName][fileOrder].object;
@@ -1801,10 +1815,10 @@ function uploadFile(paramName, file, fileOrder, fileId)
             }
 
         },
-    	error: function(event) {
-    		$("#cancelUpload").trigger("click");
-    		$("#fileUploadDiv").html("<span style='color:red;'>Error uploading file. This may be due to an incompatible browser, such as Internet Explorer. If so, please use a supported browser (Chrome, Firefox, Safari) or use the Java uploader in the Uploads Tab.</span>");
-    		$("#fileUploadDiv").show();
+        error: function(event) {
+            $("#cancelUpload").trigger("click");
+            $("#fileUploadDiv").html("<span style='color:red;'>Error uploading file. This may be due to an incompatible browser, such as Internet Explorer. If so, please use a supported browser (Chrome, Firefox, Safari) or use the Java uploader in the Uploads Tab.</span>");
+            $("#fileUploadDiv").show();
             console.log("Error uploading the file " + file.name + " :" + event.statusText);
         }
     });
@@ -1815,7 +1829,7 @@ function uploadFile(paramName, file, fileOrder, fileId)
 }
 
 /*
-    add the list of file paths/urls specified for file parameters which will be sent to the server
+ add the list of file paths/urls specified for file parameters which will be sent to the server
  */
 function setAllFileParamValues()
 {
@@ -1845,13 +1859,13 @@ function setAllFileParamValues()
 }
 
 function isBatch(paramName) {
-	var selector = "#" + jqEscape(paramName);
+    var selector = "#" + jqEscape(paramName);
     var input = $(selector);
     return input.closest(".fileDiv").find(".ui-buttonset").find(".ui-state-active").prev().val() === "batch";
 }
 
 function makeBatch(paramName) {
-	var selector = "#" + jqEscape(paramName);
+    var selector = "#" + jqEscape(paramName);
     var input = $(selector);
     input.closest(".fileDiv").find(".ui-buttonset").find("label:last").click();
 }
@@ -1878,7 +1892,7 @@ function allFilesUploaded()
 function javascript_abort(message)
 {
 
-   var abortMsg = 'This is not an error. This is just to abort javascript';
+    var abortMsg = 'This is not an error. This is just to abort javascript';
 
     if(message != undefined && message != null && message != "")
     {
@@ -1889,40 +1903,40 @@ function javascript_abort(message)
 }
 
 function jqEscape(str) {
-	return str.replace(/([;&,\.\+\*\~':"\!\^$%@\[\]\(\)=>\|])/g, '\\$1');
+    return str.replace(/([;&,\.\+\*\~':"\!\^$%@\[\]\(\)=>\|])/g, '\\$1');
 }
 
 function setParameter(param, value) {
-	var selector = "#" + jqEscape(param);
-	var input = $(selector);
-	if (input.length === 0) return;
-	
-	// Determine the input type
-	var isText = input.attr("type") === "text";
-	var isDropdown = input.get(0).tagName === "SELECT";
-	var isFile = input.attr("type") === "file";
-	
-	if (isText) {
-		input.val(value);
-		return;
-	}
-	
-	if (isDropdown) {
-		input.find("[value='" + value + "']").attr("selected", "true");
-		input.multiselect("refresh");
-		return;
-	}
-	
-	if (isFile) {
-		setInputField(param, value);
-		return;
-	}
-	
-	throw new Error("Parameter type not recognized for: " + param);
+    var selector = "#" + jqEscape(param);
+    var input = $(selector);
+    if (input.length === 0) return;
+
+    // Determine the input type
+    var isText = input.attr("type") === "text";
+    var isDropdown = input.get(0).tagName === "SELECT";
+    var isFile = input.attr("type") === "file";
+
+    if (isText) {
+        input.val(value);
+        return;
+    }
+
+    if (isDropdown) {
+        input.find("[value='" + value + "']").attr("selected", "true");
+        input.multiselect("refresh");
+        return;
+    }
+
+    if (isFile) {
+        setInputField(param, value);
+        return;
+    }
+
+    throw new Error("Parameter type not recognized for: " + param);
 }
 
 function toggleFileButtons(paramName) {
-	var paramJSON = null;
+    var paramJSON = null;
     for(var p=0;p<parametersJson.length; p++)
     {
         if(parametersJson[p].name == [paramName])
@@ -1930,22 +1944,22 @@ function toggleFileButtons(paramName) {
             paramJSON = parametersJson[p];
         }
     }
-	var maxValue = parseInt(paramJSON["maxValue"]);
+    var maxValue = parseInt(paramJSON["maxValue"]);
 }
 
 function getUsername() {
-	var parts = $("#systemMessageLink td").text().split(" ");
-	return $.trim(parts[parts.length-1]);
+    var parts = $("#systemMessageLink td").text().split(" ");
+    return $.trim(parts[parts.length-1]);
 }
 
 function cloneTask() {
-	var cloneName = window.prompt("Name for cloned module", "copyOf" + run_task_info.name);
+    var cloneName = window.prompt("Name for cloned module", "copyOf" + run_task_info.name);
     if (cloneName == null || cloneName.length == 0) {
         return;
     }
-    window.location.href = "/gp/saveTask.jsp?clone=1&name=" + run_task_info.name + 
-    		"&LSID=" + encodeURIComponent(run_task_info.lsid) + 
-    		"&cloneName=" + encodeURIComponent(cloneName) + 
-    		"&userid=" + encodeURIComponent(getUsername()) + 
-    		"&forward=" + encodeURIComponent("/gp/pages/index.jsf?lsid=" + encodeURIComponent(cloneName));
+    window.location.href = "/gp/saveTask.jsp?clone=1&name=" + run_task_info.name +
+        "&LSID=" + encodeURIComponent(run_task_info.lsid) +
+        "&cloneName=" + encodeURIComponent(cloneName) +
+        "&userid=" + encodeURIComponent(getUsername()) +
+        "&forward=" + encodeURIComponent("/gp/pages/index.jsf?lsid=" + encodeURIComponent(cloneName));
 }
