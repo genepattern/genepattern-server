@@ -714,6 +714,13 @@ function loadParameterInfo(parameters, initialValues)
 
                 valueTd.prepend(toggleChoiceFileP);
                 fileDiv.hide();
+
+
+                //set an initial value for choice parameters based on selected choice
+                if( initialValuesList == undefined &&  initialValuesList == null)
+                {
+                    initialValuesList = [choice.val()];
+                }
             }
 
             var fileObjListings = param_file_listing[parameters[q].name];
@@ -738,25 +745,17 @@ function loadParameterInfo(parameters, initialValues)
                         {
                             //if this a a file choice parameter, check whether the initial values are custom files
                             var selectedValues = valueTd.find(".choice").val();
-                            if($.isArray(selectedValues) && $.inArray(initialValuesList[v], selectedValues) != -1)
+                            if(($.isArray(selectedValues) && $.inArray(initialValuesList[v], selectedValues) == -1)
+                             || selectedValues != initialValuesList[v])
                             {
-                                break;
-                            }
-                            else
-                            {
-                                if(selectedValues == initialValuesList[v])
+                                var checked = valueTd.find(".fileChoiceOptions").find(":radio:checked");
+                                var unchecked = valueTd.find(".fileChoiceOptions").find(":radio:unchecked");
+
+                                if(checked.next("label").text() != "Upload your own file")
                                 {
-                                    break;
+                                    checked.removeAttr("checked");
+                                    unchecked.trigger("click");
                                 }
-                            }
-
-                            var checked = valueTd.find(".fileChoiceOptions").find(":radio:checked");
-                            var unchecked = valueTd.find(".fileChoiceOptions").find(":radio:unchecked");
-
-                            if(checked.next("label").text() != "Upload your own file")
-                            {
-                                checked.removeAttr("checked");
-                                unchecked.trigger("click");
                             }
                         }
 
