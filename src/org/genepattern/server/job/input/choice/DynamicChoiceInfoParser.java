@@ -65,7 +65,7 @@ public class DynamicChoiceInfoParser implements ChoiceInfoParser {
                 final ChoiceInfo choiceInfo = new ChoiceInfo(param.getName());
                 choiceInfo.setFtpDir(ftpDir);
                 choiceInfo.setStatus(Flag.ERROR, userMessage);
-                log.error(t);
+                return choiceInfo;
             }
         }
 
