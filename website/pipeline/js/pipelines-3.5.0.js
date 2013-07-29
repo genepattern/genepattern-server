@@ -2555,6 +2555,13 @@ var properties = {
         $(button).click(function() {
             properties.displayPWRs();
         });
+        
+        // Add styling
+        $(button).css("width", "150px");
+        $(label).css("display", "block");
+        $(label).css("float", "left");
+        $(label).css("width", "90px");
+        
         $(div).append(label);
         $(div).append(button);
         $("#" + this.inputDiv).append(div);
@@ -3139,6 +3146,12 @@ var properties = {
             });
         });
 
+        // Add styling
+        $(docButton).css("width", "150px");
+        $(parent).find("label").css("display", "block");
+        $(parent).find("label").css("float", "left");
+        $(parent).find("label").css("width", "90px");
+        
         parent.append(docButton);
     },
 
