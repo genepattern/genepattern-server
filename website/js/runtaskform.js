@@ -469,14 +469,21 @@ function loadParameterInfo(parameters, initialValues)
 
             valueTd.append(choice);
 
+            var noneSelectedText = "Select an option";
+
             var cMinWidth = Math.log(longChars) * 83;
+
+            if(cMinWidth == 0)
+            {
+                cMinWidth = Math.log(noneSelectedText.length) * 83;
+            }
 
             choice.multiselect({
                 multiple: allowMultiple,
                 header: allowMultiple,
                 selectedList: 2,
                 minWidth: cMinWidth,
-                noneSelectedText: "Select an option",
+                noneSelectedText: noneSelectedText,
                 classes: 'mSelect'
             });
 
