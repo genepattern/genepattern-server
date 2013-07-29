@@ -176,6 +176,9 @@ public class ChoiceInfo {
     }
     
     private Choice getFirstMatchingValue(final String value) {
+        if (choices==null) {
+            return null;
+        }
         for(Choice choice : choices) {
             if (value.equals(choice.getValue())) {
                 return choice;
@@ -185,6 +188,9 @@ public class ChoiceInfo {
     }
 
     private Choice getFirstMatchingLabel(final String label) {
+        if (choices==null) {
+            return null;
+        }
         for(Choice choice : choices) {
             if (label.equals(choice.getLabel())) {
                 return choice;
