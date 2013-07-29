@@ -436,11 +436,14 @@ function loadParameterInfo(parameters, initialValues)
         //check if there are predefined list of choices for this parameter
         if(parameters[q].choiceInfo != undefined  && parameters[q].choiceInfo != null && parameters[q].choiceInfo != '')
         {
+            var selectChoiceDiv = $("<div class='selectChoice'/>");
+            valueTd.append(selectChoiceDiv);
+
             if(parameters[q].choiceInfo.status != undefined && parameters[q].choiceInfo.status != null
                 && parameters[q].choiceInfo.status != undefined && parameters[q].choiceInfo.status != null
                 && parameters[q].choiceInfo.status.flag != "OK")
             {
-                valueTd.append("<p class='errorMessage'> Unable to load choices </p>");
+                selectChoiceDiv.append("<p class='errorMessage'> No selections available </p>");
             }
 
             choiceFound = true;
@@ -467,7 +470,7 @@ function loadParameterInfo(parameters, initialValues)
                 }
             }
 
-            valueTd.append(choice);
+            selectChoiceDiv.append(choice);
 
             var noneSelectedText = "Select an option";
 
@@ -489,6 +492,11 @@ function loadParameterInfo(parameters, initialValues)
 
             choice.multiselect("refresh");
 
+            if(parameters[q].choiceInfo.choices.length == 0)
+            {
+                choice.multiselect("disable");
+            }
+
             choice.data("maxValue", parameters[q].maxValue);
             choice.change(function ()
             {
@@ -502,14 +510,15 @@ function loadParameterInfo(parameters, initialValues)
                     var maxVal = parseInt($(this).data("maxValue"));
                     if(!isNaN(maxVal) && value.length() > maxVal)
                     {
-                        //remove the last selection
+                        //remove the last selection since it will exceed max allowed
                         if(value.length == 1)
                         {
                             $(this).val([]);
                         }
                         else
                         {
-                            $(this).val(value.slice(0, value.length()-1));
+                            value.pop();
+                            $(this).val(value);
                         }
 
                         alert("The maximum number of selections is " + $(this).data("maxValue"));
@@ -570,7 +579,10 @@ function loadParameterInfo(parameters, initialValues)
             }
 
             var valueList = [];
-            valueList.push(choice.val());
+            if(choice.val() != null)
+            {
+                valueList.push(choice.val());
+            }
             parameter_and_val_obj[parameters[q].name] = valueList;
         }
 
@@ -696,7 +708,7 @@ function loadParameterInfo(parameters, initialValues)
                         var pname = $(this).data("pname");
 
                         $(this).parents("td:first").find(".fileDiv").toggle();
-                        $(this).parents("td:first").find(".ui-multiselect").toggle();
+                        $(this).parents("td:first").find(".selectChoice").toggle();
 
                         var defaultValue = $(this).parents("td:first").find(".choice").data("default_value");
 
@@ -1333,6 +1345,7 @@ function submitTask()
         url: "/gp/rest/RunTask/addJob",
         contentType: 'application/json',
         data: JSON.stringify(taskJsonObj),
+        timeout: 60000,  //timeout added to specifically to handle cases of file choice ftp listing taking too long
         success: function(response) {
 
             var message = response["MESSAGE"];
