@@ -1859,7 +1859,7 @@ function setAllFileParamValues()
 
         //if there is a value set from a choice already for this file then continue
         if(param_file_listing[paramName].length == 0
-            && parameter_and_val_obj[paramName] != null &&
+            || parameter_and_val_obj[paramName] != null ||
             parameter_and_val_obj[paramName] != undefined)
         {
             //check if value already set from a choice list
