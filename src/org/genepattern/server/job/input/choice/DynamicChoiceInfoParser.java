@@ -54,6 +54,7 @@ public class DynamicChoiceInfoParser implements ChoiceInfoParser {
             log.debug("Initializing choice from remote source for param="+param.getName()+", choiceDirFtp="+ftpDir);
             try {
                 final ChoiceInfo choiceInfoFromFtp = initChoicesFromFtp(param, ftpDir);
+                log.debug(choiceInfoFromFtp.getStatus());
                 choiceInfoFromFtp.initDefaultValue(param);
                 log.debug("initial selection: "+choiceInfoFromFtp.getSelected());
                 return choiceInfoFromFtp;
@@ -145,15 +146,25 @@ public class DynamicChoiceInfoParser implements ChoiceInfoParser {
             final String ftpPassword="gp-help@broadinstitute.org";
             boolean success=ftpClient.login(ftpUsername, ftpPassword);
             if (!success) {
-                log.error("Login error, ftpDir="+ftpDir);
-                choiceInfo.setStatus(Flag.ERROR, "Login error, ftpDir="+ftpDir);
+                final String errorMessage="Login error, ftpDir="+ftpDir;
+                log.error(errorMessage);
+                choiceInfo.setStatus(Flag.ERROR, errorMessage);
                 return choiceInfo;
             }
             ftpClient.setFileType(FTP.ASCII_FILE_TYPE);
             //ftpClient.setFileType(FTP.BINARY_FILE_TYPE);
             ftpClient.enterLocalPassiveMode();
-
-            files = ftpClient.listFiles(ftpUrl.getPath());
+            
+            //check for valid path
+            success=ftpClient.changeWorkingDirectory(ftpUrl.getPath());
+            if (!success) {
+                final String errorMessage="Error CWD="+ftpUrl.getPath()+", ftpDir="+ftpDir;
+                log.error(errorMessage);
+                choiceInfo.setStatus(Flag.ERROR, errorMessage);
+                return choiceInfo;
+            }
+            log.debug("listing files from directory: "+ftpClient.printWorkingDirectory());
+            files = ftpClient.listFiles();
         }
         catch (IOException e) {
             String errorMessage="Error listing files from "+ftpDir;
@@ -203,9 +214,13 @@ public class DynamicChoiceInfoParser implements ChoiceInfoParser {
                 choiceInfo.add(choice);
             }
         }
-        final String statusMessage="Initialized "+choiceInfo.getChoices().size()+" choices from "+ftpDir+" on "+new Date();
-        log.debug(statusMessage);
-        choiceInfo.setStatus(Flag.OK, statusMessage);
+        if (choiceInfo.getChoices().size()==0) {
+            choiceInfo.setStatus(Flag.WARNING, "No matching files in "+ftpDir);
+        }
+        else {
+            final String statusMessage="Initialized "+choiceInfo.getChoices().size()+" choices from "+ftpDir+" on "+new Date();
+            choiceInfo.setStatus(Flag.OK, statusMessage);
+        }
         return choiceInfo;
     }
 }
