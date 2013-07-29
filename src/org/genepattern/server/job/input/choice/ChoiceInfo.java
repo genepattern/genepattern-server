@@ -176,6 +176,9 @@ public class ChoiceInfo {
     }
     
     private Choice getFirstMatchingValue(final String value) {
+        if (value==null) {
+            throw new IllegalArgumentException("value==null");
+        }
         if (choices==null) {
             return null;
         }
@@ -188,6 +191,9 @@ public class ChoiceInfo {
     }
 
     private Choice getFirstMatchingLabel(final String label) {
+        if (label==null) {
+            throw new IllegalArgumentException("label==null");
+        }
         if (choices==null) {
             return null;
         }
