@@ -118,11 +118,11 @@ function bytesToSize(bytes)
 }
 
 
-function abortSave(errorMessage)
+function saveError(errorMessage)
 {
     $("#savingDialog").dialog("destroy");
-    $("#savedDialog").append(errorMessage);
-    $("#savedDialog").dialog({
+    $("#savingDialog").empty();
+    $("#savingDialog").append(errorMessage).dialog({
         resizable: false,
         width: 400,
         height:130,
@@ -135,6 +135,7 @@ function abortSave(errorMessage)
             }
         }
     });
+    saving = false;
 }
 
 function updateModuleVersions(lsids)
@@ -181,8 +182,8 @@ function saveModule()
     var modname = $('#modtitle').val();
     if(modname == undefined || modname == null || modname.length < 1)
     {
-        abortSave("A module name must be specified");
-        throw("A module name must be specified");
+        saveError("A module name must be specified");
+        return;
     }
 
     var description = $('textarea[name="description"]').val();
@@ -211,8 +212,8 @@ function saveModule()
 
     if(commandLine == undefined || commandLine == null || commandLine.length < 1)
     {
-        abortSave("A command line must be specified");
-        throw("A command line must be specified");
+        saveError("A command line must be specified");
+        return("A command line must be specified");
     }
 
     var licenseFile = module_editor.licensefile;
@@ -247,8 +248,9 @@ function saveModule()
         data: { "bundle" : JSON.stringify(json) },
         success: function(response) {
             $("#savingDialog").dialog("destroy");
-            //remove wait cursor
-            //$("html").removeClass('busy').unbind('click');
+
+            saving = false;
+
             var error = response["ERROR"];
             var newLsid = response["lsid"];
             //get updated module versions
@@ -265,10 +267,10 @@ function saveModule()
                     buttons: {
                         OK: function() {
                             $( this ).dialog( "close" );
-                            throw(error);
                         }
                     }
                 });
+                return;
             }
 
             setDirty(false);
@@ -313,7 +315,6 @@ function saveModule()
 
                                 $('select[name="modversion"]').multiselect("refresh");
 
-                                saving = false;
                                 if(run)
                                 {
                                     runModule(newLsid);
@@ -1322,7 +1323,7 @@ function getParametersJSON()
 
         if(pname == undefined || pname == null || pname.length < 1)
         {
-            abortSave("A parameter name must be specified for parameter number " + pnum);
+            saveError("A parameter name must be specified for parameter number " + pnum);
             throw("A parameter name is missing");
         }
         //this is an input file type
@@ -1396,15 +1397,21 @@ function saveAndUpload(runModule)
 
     saving = true;
 
+    $("#savingDialog").empty();
+
+    $('<div/>').progressbar({ value: 100 }).appendTo("#savingDialog");
+
     $("#savingDialog").dialog({
         autoOpen: true,
         modal: true,
         height:130,
         width: 400,
         title: "Saving Module",
-        beforeClose: function() { return false; }
+        open: function()
+         {
+             $(".ui-dialog-titlebar-close").hide();
+         }
     });
-    $('#progressbar').progressbar({ value: 100 });
 
     run = runModule;
     //if no support files need to be upload then skip upload file step
