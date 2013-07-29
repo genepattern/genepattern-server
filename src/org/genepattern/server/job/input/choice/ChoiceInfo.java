@@ -55,6 +55,10 @@ public class ChoiceInfo {
         public String getMessage() {
             return message;
         }
+        
+        public String toString() {
+            return flag.name()+": "+message;
+        }
     }
 
     
