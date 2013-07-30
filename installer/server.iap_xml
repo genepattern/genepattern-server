@@ -1724,7 +1724,7 @@ R is freely available from http://www.r-project.org/.]]></string>
 									</property>
 									<rules logicalOperation="AND">
 										<object class="com.zerog.ia.installer.rules.PlatformChk" objectID="1fd972aea5aa">
-											<property name="installOnPlatformList">
+											<property name="doNotInstallOnPlatformList">
 												<object class="java.util.Vector">
 													<method name="addElement">
 														<string><![CDATA[Windows 95]]></string>
@@ -1751,12 +1751,17 @@ R is freely available from http://www.r-project.org/.]]></string>
 														<string><![CDATA[Windows Vista]]></string>
 													</method>
 													<method name="addElement">
+														<string><![CDATA[Windows 7]]></string>
+													</method>						
+													<method name="addElement">
+														<string><![CDATA[Windows 8]]></string>
+													</method>																				
+													<method name="addElement">
 														<string><![CDATA[Mac OS X]]></string>
 													</method>
-												</object>
-											</property>
-											<property name="doNotInstallOnPlatformList">
-												<object class="java.util.Vector">
+													<method name="addElement">
+														<string><![CDATA[Mac OS]]></string>
+													</method>												
 													<method name="addElement">
 														<string><![CDATA[OS/2]]></string>
 													</method>
