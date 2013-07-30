@@ -352,7 +352,8 @@ function addparameter()
 {
     var paramDiv = $("<div class='parameter'>  \
         <table class='deloptions'>\
-        <tr><td class='btntd'>\
+        <tr> <td class='dragIndicator'></td>\
+        <td class='btntd'>\
         <button class='delparam'>x Delete</button></td><td>\
         <p>Name*: <br/>\
         <input type='text' name='p_name' size='28'/>\
@@ -575,6 +576,8 @@ function updateparameter(parameter, updateCmdLine)
 
 function changeParameterType(element)
 {
+    $(".parameter table").resize();
+
     var value = element.val();
 
     if(element.data("editing") !== value)

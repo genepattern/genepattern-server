@@ -632,29 +632,33 @@ img.buttonIcon {
 
 .parameter table {
 	width: 100%;
-    margin-left: 5px;
+    margin-right: 3px;
 }
 
 .parameter table td {
 	border-right: solid 1px #ddd;
-	width:20px;
+	width: auto;
 	padding:0;
 }
 
 .parameter table td.lasttd {
 	border-right: solid 0px;
+    width: 400px;
 }
+
 
 table.pmoptions td {
 	border:none;
 	padding:0;
+    width: 100%;
 }
 
 .parameter table td.btntd {
 	text-align:center;
-	padding:0;
+	padding:0 3px 0 0;
 	vertical-align:middle;
-	width: 30px;
+    width: 6%;
+    min-width: 70px;
 }
 
 .parameter table p
@@ -662,14 +666,13 @@ table.pmoptions td {
     font-size: 11px;
 }
 
-.parameter button {
-	margin-right: 10px;
-	margin-top:45px;
+#addinputfileformat
+{
+    margin-left: 7px;
 }
 /* from jQuery dialog definition */
 .ui-dialog .ui-dialog-titlebar { padding: 1.5em 1em; position: relative; background-color:#000;}
 .ui-dialog .ui-dialog-title { float: left; margin: -1px 16px 5px 5px; font-size:13px;}
-
 
 
 table.deloptions
@@ -726,3 +729,21 @@ table.deloptions
 {
     margin-right: 3px;
 }
+
+.parameter table td.dragIndicator
+{
+    background-image: url(images/drag_drop_indicator.png);
+    background-size: 9px 160px;
+    background-repeat: no-repeat;
+    padding: 0;
+    margin: 0;
+    width: 0.8%;
+    min-width: 9px;
+}
+
+.parameter table td.dragIndicator:hover
+{
+    cursor: pointer;
+}
+
+
