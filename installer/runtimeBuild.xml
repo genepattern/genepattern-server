@@ -1,13 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project default="post-install" name="post-install">
-	<target name="init">
-		<property name="output.dir" value="webapps/gp"/>
-		<property name="downloadDir" value="${output.dir}/downloads"/>
-		<property name="R25lib" value="${R25}/library/"/> 
-		<property name="tar-file" value="${downloadDir}/GenePattern_0.1-0.tar.gz"/>
-		<property name="zip-file" value="${downloadDir}/GenePattern_0.1-0.zip"/>
-		<mkdir dir="${downloadDir}"/>
-	</target>
 	
 	<target name="backupResources">
 		<copyfile src="${USER_INSTALL_DIR}/resources/genepattern.properties" dest="${USER_INSTALL_DIR}/resources/genepattern.properties.save"/>
