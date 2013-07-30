@@ -206,7 +206,7 @@ and any path to a file to read from that file]]></string>
 								<boolean>false</boolean>
 							</property>
 							<property name="sourcePath">
-								<string><![CDATA[$IA_PROJECT_DIR$/../external-src/commons-httpclient-3.0.1/dist/]]></string>
+								<string><![CDATA[$IA_PROJECT_DIR$/../external-src/commons-httpclient-3.1/dist/]]></string>
 							</property>
 							<property name="shouldUninstall">
 								<boolean>true</boolean>
@@ -1859,6 +1859,12 @@ If you do not have write permission to this directory, the GenePattern server  w
 									<property name="doNotInstallOnPlatformList">
 										<object class="java.util.Vector">
 											<method name="addElement">
+												<string><![CDATA[Mac OS]]></string>
+											</method>
+											<method name="addElement">
+												<string><![CDATA[Mac OS X]]></string>
+											</method>
+											<method name="addElement">
 												<string><![CDATA[Windows 95]]></string>
 											</method>
 											<method name="addElement">
@@ -1882,6 +1888,12 @@ If you do not have write permission to this directory, the GenePattern server  w
 											<method name="addElement">
 												<string><![CDATA[Windows Vista]]></string>
 											</method>
+											<method name="addElement">
+												<string><![CDATA[Windows 7]]></string>
+											</method>						
+											<method name="addElement">
+												<string><![CDATA[Windows 8]]></string>
+											</method>																
 											<method name="addElement">
 												<string><![CDATA[OS/2]]></string>
 											</method>
