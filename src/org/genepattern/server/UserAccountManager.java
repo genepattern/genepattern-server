@@ -187,6 +187,10 @@ public class UserAccountManager {
             throw new AuthenticationException(AuthenticationException.Type.INVALID_USERNAME,
                     "Invalid username: '"+username+"': Can't contain a semicolon (';') character.");
         }
+        if (username.startsWith(".")) {
+            throw new AuthenticationException(AuthenticationException.Type.INVALID_USERNAME,
+                    "Invalid username: '"+username+"': Can't start with the dot ('.') character.");
+        }
     }
 
     /**
