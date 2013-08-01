@@ -45,6 +45,19 @@ default.properties:
     # flag to allow users to submit jobs
     allow.new.job: true
     
+    # flag for enabling server files
+    # Set this to true to allow users to access data files which are on the server file path
+    allow.input.file.paths: false
+    # when allow.input.file.paths is true, define the paths on the server file system
+    # which can be used as input files
+    # If you don't set this, then all files are allowed
+    #
+    # Can be a single path
+    #server.browse.file.system.root: "/Users/SharedData"
+    # Can be a list of paths
+    #server.browse.file.system.root: [ "/Users/SharedData",  "/Custom/Path" ]
+    
+    
     # PipelineDependencyCache, hidden features in the 3.6.0 release.
     # Set this to true to enable.
     # 1) check for dependent modules and pipelines when deleting a task
