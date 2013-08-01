@@ -179,6 +179,21 @@ public class ChoiceInfo {
         log.debug("Initial selection is "+selected);
     }
     
+    public Choice getValue(final String value) {
+        if (value==null) {
+            throw new IllegalArgumentException("value==null");
+        }
+        if (choices==null) {
+            return null;
+        }
+        for(Choice choice : choices) {
+            if (value.equals(choice.getValue())) {
+                return choice;
+            }
+        }
+        return null; 
+    }
+    
     private Choice getFirstMatchingValue(final String value) {
         if (value==null) {
             throw new IllegalArgumentException("value==null");

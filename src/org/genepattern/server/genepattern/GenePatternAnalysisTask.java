@@ -153,6 +153,9 @@ import org.genepattern.server.job.input.JobInput.Param;
 import org.genepattern.server.job.input.JobInput.ParamId;
 import org.genepattern.server.job.input.JobInput.ParamValue;
 import org.genepattern.server.job.input.ParamListHelper;
+import org.genepattern.server.job.input.choice.Choice;
+import org.genepattern.server.job.input.choice.ChoiceInfo;
+import org.genepattern.server.job.input.choice.ChoiceInfoHelper;
 import org.genepattern.server.plugin.PluginManagerLegacy;
 import org.genepattern.server.rest.ParameterInfoRecord;
 import org.genepattern.server.taskinstall.InstallInfo;
@@ -800,8 +803,16 @@ public class GenePatternAnalysisTask {
                 boolean isOptional = "on".equals(attrsCopy.get("optional"));
                 // if necessary use the URL value instead of the server file path value
                 final boolean isUrlMode=pinfo._isUrlMode();
-                ParameterInfoRecord pinfoRecord=paramInfoMap.get(pinfo.getName());
+                final ParameterInfoRecord pinfoRecord=paramInfoMap.get(pinfo.getName());
                 final boolean isDirectoryInputParam=pinfoRecord.getFormal()._isDirectory();
+                final ChoiceInfo choiceInfo=initChoiceInfo(pinfoRecord, pinfo);
+                final Choice selectedChoice= choiceInfo == null ? null : choiceInfo.getValue(pinfo.getValue());
+                final boolean isFileChoiceSelection=
+                        pinfoRecord.getFormal().isInputFile()
+                        &&
+                        selectedChoice != null && 
+                        selectedChoice.getValue() != null && 
+                        selectedChoice.getValue().length() > 0;
                 if (isDirectoryInputParam) {
                     //check permissions and optionally convert value from url to server file path
                     final String pname=pinfoRecord.getFormal().getName();
@@ -818,11 +829,38 @@ public class GenePatternAnalysisTask {
                     if (directory != null) {
                         final String serverPath=directory.getServerFile().getAbsolutePath();
                         pinfo.setValue(serverPath);
-                        boolean canRead=directory.canRead(jobContext.isAdmin(), jobContext);
+                        final boolean canRead=directory.canRead(jobContext.isAdmin(), jobContext);
                         if (!canRead) {
                             throw new JobDispatchException("You are not permitted to access the directory: "+pinfo.getValue());
                         }
                     } 
+                }
+                //special-case for File Choice parameters, cached values
+                else if (isFileChoiceSelection) {
+                    //it's a file choice
+                    log.debug("Checking for cached value for File Choice, "+pinfo.getName()+"="+pinfo.getValue());
+                    //TODO: this is prototype code, should refactor before 3.7.0 release
+                    //    this method waits, if necessary, for the file to be transferred from the external url to a 
+                    //    local directory
+                    final GpFilePath cachedFile;
+                    try {
+                        cachedFile=ChoiceInfoHelper.getCachedValue(jobContext, choiceInfo, selectedChoice);
+                    }
+                    catch (Throwable t) {
+                        final String errorMessage="Error getting cached value for pinfo.getName()="+pinfo.getValue();
+                        log.error(errorMessage, t);
+                        throw new JobDispatchException(errorMessage+": "+t.getClass().getName()+" - "+t.getLocalizedMessage());
+                    }
+                    if (cachedFile == null || cachedFile.getServerFile()==null) {
+                        final String errorMessage="Error getting cached value for pinfo.getName()="+pinfo.getValue()+": file is null";
+                        throw new JobDispatchException(errorMessage);
+                    }
+                    final boolean canRead=cachedFile.canRead(jobContext.isAdmin(), jobContext);
+                    if (!cachedFile.getServerFile().canRead()) {
+                        throw new JobDispatchException("You are not permitted to access the file: "+pinfo.getValue());
+                    }
+                    final String serverPath=cachedFile.getServerFile().getAbsolutePath();
+                    pinfo.setValue(serverPath);
                 }
                 else if (fileType != null && fileType.equals(ParameterInfo.FILE_TYPE) && mode != null && !mode.equals(ParameterInfo.OUTPUT_MODE)) {
                     if (originalPath == null) {
@@ -1223,6 +1261,9 @@ public class GenePatternAnalysisTask {
                                         }
                                     } 
                                 } 
+
+                                // TODO: check for previously cached version of the file
+                                // TODO: if necessary cache the file
                                 
                                 if (is == null && downloadUrl) {
                                     try {
@@ -1490,6 +1531,16 @@ public class GenePatternAnalysisTask {
 
         long jobDispatchTimeout = ServerConfiguration.instance().getGPIntegerProperty(jobContext, "job.dispatch.timeout", 300000);
         runCommand(taskInfo.isPipeline(), cmdExec, jobDispatchTimeout, cmdLineArgs, environmentVariables, outDir, stdoutFile, stderrFile, jobInfo, stdinFile);
+    }
+    
+    private ChoiceInfo initChoiceInfo(final ParameterInfoRecord pinfoRecord, final ParameterInfo pinfo) {
+        if (ChoiceInfo.getChoiceInfoParser().hasChoiceInfo(pinfoRecord.getFormal())) {
+            //it's a file choice
+            log.debug("Checking for cached value for File Choice, "+pinfo.getName()+"="+pinfo.getValue());
+            ChoiceInfo choiceInfo = ChoiceInfo.getChoiceInfoParser().initChoiceInfo(pinfoRecord.getFormal());
+            return choiceInfo;
+        }
+        return null;
     }
 
     private void runCommand(final boolean isPipeline, final CommandExecutor cmdExec, final long jobDispatchTimeout, final String[] commandTokens, final Map<String, String> environmentVariables, final File outDir, final File stdoutFile, final File stderrFile, final JobInfo jobInfo, final File stdinFile) 

@@ -557,7 +557,7 @@ public class ParamListHelper {
         if (downloadExternalFiles) {
             for(final Record rec : tmpList) {
                 if (rec.type.equals(Record.Type.EXTERNAL_URL)) {
-                    copyExternalUrlToUserUploads(rec.gpFilePath, rec.url);
+                    forFileListCopyExternalUrlToUserUploads(rec.gpFilePath, rec.url);
                 }
             }
         } 
@@ -660,8 +660,10 @@ public class ParamListHelper {
      * @param gpPath
      * @param url
      * @throws Exception
+     * 
+     * @deprecated - should replace this with a static call
      */
-    private void copyExternalUrlToUserUploads(final GpFilePath gpPath, final URL url) throws Exception {
+    private void forFileListCopyExternalUrlToUserUploads(final GpFilePath gpPath, final URL url) throws Exception {
         final File parentDir=gpPath.getServerFile().getParentFile();
         if (!parentDir.exists()) {
             boolean success=parentDir.mkdirs();
@@ -687,5 +689,43 @@ public class ParamListHelper {
             jobInputFileUtil.updateUploadsDb(gpPath);
         }
     }
-    
+
+    /**
+     * Copy data from an external URL into a file in the GP user's uploads directory.
+     * This method blocks until the data file has been transferred.
+     * 
+     * TODO: turn this into a task which can be cancelled.
+     * TODO: limit the size of the file which can be transferred
+     * TODO: implement a timeout
+     * 
+     * @param gpPath
+     * @param url
+     * @throws Exception
+     */
+    public static void copyExternalUrlToUserUploads(final GpFilePath gpPath, final URL url) throws Exception {
+        final File parentDir=gpPath.getServerFile().getParentFile();
+        if (!parentDir.exists()) {
+            boolean success=parentDir.mkdirs();
+            if (!success) {
+                String message="Error creating upload directory for external url: dir="+parentDir.getPath()+", url="+url.toExternalForm();
+                log.error(message);
+                throw new Exception(message);
+            }
+        }
+        final File dataFile=gpPath.getServerFile();
+        if (dataFile.exists()) {
+            //do nothing, assume the file has already been transferred
+            //TODO: should implement a more robust caching mechanism, using HTTP HEAD to see if we need to 
+            //    download a new copy
+            log.debug("dataFile already exists: "+dataFile.getPath());
+        }
+        else {
+            //copy the external url into a new file in the user upload folder
+            org.apache.commons.io.FileUtils.copyURLToFile(url, dataFile);
+
+            //add a record of the file to the DB, so that a link will appear in the Uploads tab
+            JobInputFileUtil.__addUploadFileToDb(gpPath);
+        }
+    }
+
 }

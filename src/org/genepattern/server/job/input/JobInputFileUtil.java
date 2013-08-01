@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.log4j.Logger;
+import org.genepattern.server.config.ServerConfiguration;
 import org.genepattern.server.config.ServerConfiguration.Context;
 import org.genepattern.server.dm.GpFileObjFactory;
 import org.genepattern.server.dm.GpFilePath;
@@ -238,6 +239,42 @@ public class JobInputFileUtil {
         }
         UserUploadManager.createUploadFile(context, gpFilePath, 1, true);
         UserUploadManager.updateUploadFile(context, gpFilePath, 1, 1);
+    }
+
+    /**
+     * For the current user, given a relative path to a file,
+     * add a record in the User Uploads DB for the file,
+     * creating, if necessary, records for all parent directories.
+     * 
+     * @param relativePath
+     */
+    public static void __addUploadFileToDb(final GpFilePath _gpFilePath) throws Exception {
+        if (!(_gpFilePath instanceof UserUploadFile)) {
+            throw new IllegalArgumentException("Expecting a GpFilePath instance of type UserUploadFile");
+        }
+        
+        final UserUploadFile userUploadFile = (UserUploadFile) _gpFilePath;
+
+        List<String> dirs=new ArrayList<String>();
+
+        File f=userUploadFile.getRelativeFile().getParentFile();
+        while(f!=null) {
+            dirs.add(0, f.getName());
+            f=f.getParentFile();
+        }
+
+        final String userId=userUploadFile.getOwner();
+        final Context userContext=ServerConfiguration.Context.getContextForUser(userId);
+        String parentPath="";
+        for(String dirname : dirs) {
+            parentPath += (dirname+"/");
+            //create a new record for the directory, if necessary
+            GpFilePath parent = GpFileObjFactory.getUserUploadFile(userContext, new File(parentPath));
+            UserUploadManager.createUploadFile(userContext, parent, 1, true);
+            UserUploadManager.updateUploadFile(userContext, parent, 1, 1);
+        }
+        UserUploadManager.createUploadFile(userContext, userUploadFile, 1, true);
+        UserUploadManager.updateUploadFile(userContext, userUploadFile, 1, 1);
     }
 
     /**

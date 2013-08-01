@@ -65,6 +65,9 @@ public class JobInputHelper {
      */
     static public URL initExternalUrl(final String value) {
         log.debug("intialize external URL for value="+value);
+        if (value==null) {
+            throw new IllegalArgumentException("value==null");
+        }
 
         if (value.startsWith("<GenePatternURL>")) {
             log.debug("it's a substition for the gp url");
