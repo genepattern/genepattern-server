@@ -57,7 +57,13 @@ public class UserUploadFile extends GpFilePath {
         if (isAdmin) {
             return true;
         }
-        
+
+        //HACK: special-case for cached data files from external URL
+        if (owner.equals( ".cache" )) {
+            //TODO: implement access permissions for user data files
+            return true;
+        }
+
         if (owner == null || owner.length() == 0) {
             return false;
         }
