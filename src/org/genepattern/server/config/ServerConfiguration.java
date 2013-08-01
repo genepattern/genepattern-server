@@ -501,7 +501,7 @@ public class ServerConfiguration {
 
     /**
      * Get the upload directory for the given user, the location for files uploaded directly from the Uploads tab.
-     * By default, user uploads are stored in ../users/<user.id>/user.uploads/
+     * By default, user uploads are stored in ../users/<user.id>/uploads/
      * 
      * The default location can be overridden with the 'user.upload.dir' property.
      * If there is no 'user.upload.dir' or 'gp.user.dir' set, then 'java.io.tempdir' is returned.
