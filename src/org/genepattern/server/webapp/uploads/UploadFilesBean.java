@@ -786,6 +786,12 @@ public class UploadFilesBean {
          * Helper method, which actually deletes the file.
          */
         public boolean deleteFile() {
+            // Protect against deleting root directory
+            if (file.getRelativePath().equals("./")) {
+                UIBeanHelper.setInfoMessage("Cannot delete root uploads directory");
+                return false;
+            }
+            
             boolean deleted = DataManager.deleteUserUploadFile(currentUser, file);
             if (deleted) {
                 UIBeanHelper.setInfoMessage("Deleted file: " + file.getName());
