@@ -1,11 +1,13 @@
 package org.genepattern.server;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
 import org.genepattern.server.config.ServerConfiguration;
 import org.genepattern.server.config.ServerConfiguration.Context;
@@ -143,6 +145,7 @@ public class DataManager {
         //1) if it exists, delete the file from the file system
         boolean deleted = false;
         boolean canDelete = canDelete(userId, uploadedFileObj);
+        boolean directory = file.isDirectory();
         if (!canDelete) {
             return false;
         }
@@ -152,7 +155,18 @@ public class DataManager {
         }
             
         if (file.exists()) {
-            deleted = file.delete(); 
+            if (directory) {
+                try {
+                    FileUtils.deleteDirectory(file);
+                    deleted = true;
+                }
+                catch (IOException e) {
+                    deleted = false;
+                }
+            }
+            else {
+                deleted = file.delete();
+            }
             if (!deleted) {
                 log.error("Error deleting file: "+file.getPath());
             }
@@ -164,14 +178,9 @@ public class DataManager {
             try {
                 //this begins a new transaction
                 UserUploadDao dao = new UserUploadDao();
-                int numDeleted = dao.deleteUserUpload(userId, uploadedFileObj);
-                if (numDeleted != 1) {
+                int numDeleted = dao.deleteUserUploadRecursive(userId, uploadedFileObj);
+                if (numDeleted < 1) {
                     log.error("Error deleting user upload file record from db, userId="+userId+", path= '"+uploadedFileObj.getRelativePath()+"'. numDeleted="+numDeleted);
-                    if (numDeleted > 1) {
-                        deleted = false;
-                        //rollback if more than one row was deleted
-                        HibernateUtil.rollbackTransaction();
-                    }
                 }
                 if (!inTransaction) {
                     HibernateUtil.commitTransaction();
@@ -208,10 +217,6 @@ public class DataManager {
             return true;
         }
         
-        if (toDel.isDirectory() && toDel.listFiles().length > 0) {
-            log.error("Unable to delete non-empty directories: " + toDel.getPath());
-            return false;
-        }
         if (currentUserId == null) {
             //require a userid
             log.error("Require a valid userId to delete file: " + toDel.getPath());
