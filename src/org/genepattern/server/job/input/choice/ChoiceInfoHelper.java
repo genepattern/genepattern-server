@@ -160,13 +160,8 @@ public class ChoiceInfoHelper {
         if (selectedGpFilePath==null) {
             return null;
         }
-        
-        if (selectedGpFilePath.getServerFile().exists()) {
-            log.debug("returning cached file");
-            return selectedGpFilePath;
-        }
-        
-        // transfer the file from remote server
+
+        // Make sure the URL is copied to the right directory, caching as necessary
         try {
             ParamListHelper.copyExternalUrlToUserUploads(selectedGpFilePath, url);
             return selectedGpFilePath;
