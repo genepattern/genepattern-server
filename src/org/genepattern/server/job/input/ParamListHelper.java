@@ -829,24 +829,26 @@ public class ParamListHelper {
         File tempFile = tempPath.getServerFile();
         
         // If the temp path exists, determine if it is currently downloading or timed out
-        File inCurrentDownloadsCache = currentDownloadsCache.get(realPath.getRelativePath());
-        boolean timedOut = false;
-        if (inCurrentDownloadsCache != null && inCurrentDownloadsCache.exists()) {
-            final long TIMEOUT = 60000; // Timeout is 1 minute
-            timedOut = (new Date()).getTime() - TIMEOUT > inCurrentDownloadsCache.lastModified();
-        }
-        
-        // If not downloading or the download is timed out, blow away the temp file and continue
-        if (inCurrentDownloadsCache == null || timedOut) {
-            boolean deleted = tempFile.delete();
-            if (!deleted) {
-                String message="Unable to delete temp file: " + tempPath.getRelativePath();
-                log.error(message);
-                throw new Exception(message);
+        if (tempFile.exists()) {
+            File inCurrentDownloadsCache = currentDownloadsCache.get(realPath.getRelativePath());
+            boolean timedOut = false;
+            if (inCurrentDownloadsCache != null && inCurrentDownloadsCache.exists()) {
+                final long TIMEOUT = 60000; // Timeout is 1 minute
+                timedOut = (new Date()).getTime() - TIMEOUT > inCurrentDownloadsCache.lastModified();
             }
-            currentDownloadsCache.remove(realPath.getRelativePath());
+            
+            // If not downloading or the download is timed out, blow away the temp file and continue
+            if (inCurrentDownloadsCache == null || timedOut) {
+                boolean deleted = tempFile.delete();
+                if (!deleted) {
+                    String message="Unable to delete temp file: " + tempPath.getRelativePath();
+                    log.error(message);
+                    throw new Exception(message);
+                }
+                currentDownloadsCache.remove(realPath.getRelativePath());
+            }
         }
-        
+
         // If currently downloading and not timed out then wait
         else {
             ; // TODO: Implement Wait for Download to Complete, then Return
