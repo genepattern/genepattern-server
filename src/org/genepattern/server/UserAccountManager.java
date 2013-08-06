@@ -297,6 +297,10 @@ public class UserAccountManager {
         if (java.util.Arrays.equals(encryptedPassword, user.getPassword())) {
             return true;
         }
+        
+        //if we are here, it means the gp user_id / password doesn't match
+        //for GP-4540, it could be a GenomeSpace account
+        
         throw new AuthenticationException(AuthenticationException.Type.INVALID_CREDENTIALS, "Incorrect password for user '"+username+"'");
     }
 
