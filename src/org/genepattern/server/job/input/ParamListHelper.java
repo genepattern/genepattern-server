@@ -1,9 +1,7 @@
 package org.genepattern.server.job.input;
 
 import java.io.File;
-import java.io.IOException;
 import java.net.MalformedURLException;
-import java.net.SocketException;
 import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -12,6 +10,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Pattern;
 
 import org.apache.commons.httpclient.Header;
@@ -43,6 +42,7 @@ import org.genepattern.webservice.ParameterInfo;
  */
 public class ParamListHelper {
     final static private Logger log = Logger.getLogger(ParamListHelper.class);
+    private static Map<String, File> currentDownloadsCache = new ConcurrentHashMap<String, File>();
 
     public enum ListMode { 
         /**
@@ -711,16 +711,9 @@ public class ParamListHelper {
      */
     private static GpFilePath getTempPath(GpFilePath realPath) throws Exception {
         Context userContext = ServerConfiguration.Context.getContextForUser(".cache");
-        // Loop to verify temp file name
-        File tempFile = null;
-        boolean usedFileName = false;
-        do {
-            String tempPath = realPath.getRelativePath() + ".tmp";
-            tempFile = new File(tempPath);
-            
-            // Make sure the temp file doesn't overwrite another file
-            if (tempFile.exists()) usedFileName = true;
-        } while (usedFileName);
+        //String tempPath = realPath.getRelativePath() + ".downloading";
+        String tempPath = FilenameUtils.getPath(realPath.getRelativePath()) + ".downloading/" + FilenameUtils.getName(realPath.getRelativePath());
+        File tempFile = new File(tempPath);
 
         return GpFileObjFactory.getUserUploadFile(userContext, tempFile);
     }
@@ -835,8 +828,29 @@ public class ParamListHelper {
         GpFilePath tempPath = getTempPath(realPath);
         File tempFile = tempPath.getServerFile();
         
-        // If the temp path exists, determine if it is currently downloading or failed
-        // TODO: Implement
+        // If the temp path exists, determine if it is currently downloading or timed out
+        File inCurrentDownloadsCache = currentDownloadsCache.get(realPath.getRelativePath());
+        boolean timedOut = false;
+        if (inCurrentDownloadsCache != null && inCurrentDownloadsCache.exists()) {
+            final long TIMEOUT = 60000; // Timeout is 1 minute
+            timedOut = (new Date()).getTime() - TIMEOUT > inCurrentDownloadsCache.lastModified();
+        }
+        
+        // If not downloading or the download is timed out, blow away the temp file and continue
+        if (inCurrentDownloadsCache == null || timedOut) {
+            boolean deleted = tempFile.delete();
+            if (!deleted) {
+                String message="Unable to delete temp file: " + tempPath.getRelativePath();
+                log.error(message);
+                throw new Exception(message);
+            }
+            currentDownloadsCache.remove(realPath.getRelativePath());
+        }
+        
+        // If currently downloading and not timed out then wait
+        else {
+            ; // TODO: Implement Wait for Download to Complete, then Return
+        }
         
         // If the temp path does not exist, lazily create the parent dir, then do the download and return
         if (!tempFile.exists()) {
@@ -849,7 +863,11 @@ public class ParamListHelper {
                     throw new Exception(message);
                 }
             }
+            
+            // Add to currently downloading cache, download and then remove from cache
+            currentDownloadsCache.put(realPath.getRelativePath(), tempFile);
             FileUtils.copyURLToFile(url, tempFile);
+            currentDownloadsCache.remove(realPath.getRelativePath());
             
             // Once complete, move the file to the real location
             boolean success = tempFile.renameTo(realFile);
