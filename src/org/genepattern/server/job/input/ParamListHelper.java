@@ -22,6 +22,7 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.net.ftp.FTPClient;
 import org.apache.log4j.Logger;
+import org.genepattern.server.DataManager;
 import org.genepattern.server.config.ServerConfiguration;
 import org.genepattern.server.config.ServerConfiguration.Context;
 import org.genepattern.server.dm.GpFileObjFactory;
@@ -710,9 +711,17 @@ public class ParamListHelper {
      */
     private static GpFilePath getTempPath(GpFilePath realPath) throws Exception {
         Context userContext = ServerConfiguration.Context.getContextForUser(".cache");
-        // TODO: Figure out a better temp location than this
-        String tempPath = realPath.getRelativePath() + ".tmp";
-        File tempFile = new File(tempPath);
+        // Loop to verify temp file name
+        File tempFile = null;
+        boolean usedFileName = false;
+        do {
+            String tempPath = realPath.getRelativePath() + ".tmp";
+            tempFile = new File(tempPath);
+            
+            // Make sure the temp file doesn't overwrite another file
+            if (tempFile.exists()) usedFileName = true;
+        } while (usedFileName);
+
         return GpFileObjFactory.getUserUploadFile(userContext, tempFile);
     }
     
@@ -760,13 +769,14 @@ public class ParamListHelper {
     }
     
     /**
-     * Do an HTTP HEAD on the URL and see if it is out of date
+     * Do an HTTP HEAD or FTP Modification Time on the URL and see if it is out of date
      * @param realPath
      * @param url
      * @return
      */
     private static boolean needToRedownload(GpFilePath realPath, URL url) throws Exception {
         // If the last modified isn't set for this path, assume it's not out of date
+        realPath.initMetadata();
         if (realPath.getLastModified() == null) {
             log.debug("Last modified not set for: " + realPath.getName());
             return false;
@@ -788,7 +798,9 @@ public class ParamListHelper {
 
     /**
      * Copy data from an external URL into a file in the GP user's uploads directory.
-     * This method blocks until the data file has been transferred.
+     * This method blocks until the data file has been transferred. If the file has 
+     * already been cached, and the cached copy is up to date, it doesn't transfer 
+     * the file at all, but relies on the cached copy.
      * 
      * TODO: turn this into a task which can be cancelled.
      * TODO: limit the size of the file which can be transferred
@@ -808,8 +820,14 @@ public class ParamListHelper {
                 return;
             }
             else {
-                // TODO: Implement deleting old copy and redownloading. For now this just returns.
-                return;
+                // Delete out of date copy and update database
+                realFile.delete();
+                boolean deleted = DataManager.deleteUserUploadFile(".cache", realPath);
+                if (!deleted) {
+                    String message="Error deleting expired copy of file: " + realPath.getRelativePath();
+                    log.error(message);
+                    throw new Exception(message);
+                }
             }
         }
 
@@ -834,7 +852,7 @@ public class ParamListHelper {
             FileUtils.copyURLToFile(url, tempFile);
             
             // Once complete, move the file to the real location
-            boolean success = tempFile.renameTo(realFile);;
+            boolean success = tempFile.renameTo(realFile);
             if (!success) {
                 String message="Error moving temp file to real location: temp=" + tempFile.getPath() + ", real=" + realFile.getPath();
                 log.error(message);
