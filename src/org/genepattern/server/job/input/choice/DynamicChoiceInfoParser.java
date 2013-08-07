@@ -1,26 +1,30 @@
 package org.genepattern.server.job.input.choice;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Date;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.regex.Pattern;
 
 import org.apache.commons.net.ftp.FTP;
 import org.apache.commons.net.ftp.FTPClient;
 import org.apache.commons.net.ftp.FTPFile;
+import org.apache.commons.net.ftp.FTPFileFilter;
 import org.apache.commons.net.ftp.FTPReply;
 import org.apache.log4j.Logger;
 import org.genepattern.server.dm.UrlUtil;
 import org.genepattern.server.job.input.choice.ChoiceInfo.Status.Flag;
+import org.genepattern.server.util.FindFileFilter;
 import org.genepattern.webservice.ParameterInfo;
 
 /**
  * Initialize the list of choices for a given parameter from a remote ftp server.
  * 
  * Example manifest entry,
- *     p4_choiceDirFtp=ftp://ftp.broadinstitute.org/pub/genepattern/rna_seq/referenceAnnotation/gtf
+ *     p4_choiceDir=ftp://ftp.broadinstitute.org/pub/genepattern/rna_seq/referenceAnnotation/gtf
  * 
  * @author pcarr
  *
@@ -30,11 +34,11 @@ public class DynamicChoiceInfoParser implements ChoiceInfoParser {
     
     @Override
     public boolean hasChoiceInfo(ParameterInfo param) {
-        final String choiceDirFtp = (String) param.getAttributes().get("choiceDirFtp");
-        if (choiceDirFtp != null) {
+        final String choiceDir = (String) param.getAttributes().get(ChoiceInfo.PROP_CHOICE_DIR);
+        if (choiceDir != null) {
             return true;
         }
-        final String declaredChoicesStr= (String) param.getAttributes().get("choice");
+        final String declaredChoicesStr= (String) param.getAttributes().get(ChoiceInfo.PROP_CHOICE);
         if (declaredChoicesStr != null) {
             return true;
         }
@@ -49,9 +53,9 @@ public class DynamicChoiceInfoParser implements ChoiceInfoParser {
     public ChoiceInfo initChoiceInfo(ParameterInfo param) {
         final Map<String,String> choices;
         //the new way (>= 3.7.0), check for remote ftp directory
-        final String ftpDir = (String) param.getAttributes().get("choiceDirFtp");
+        final String ftpDir = (String) param.getAttributes().get(ChoiceInfo.PROP_CHOICE_DIR);
         if (ftpDir != null) {
-            log.debug("Initializing choice from remote source for param="+param.getName()+", choiceDirFtp="+ftpDir);
+            log.debug("Initializing drop-down from remote source for param="+param.getName()+", ChoiceInfo.PROP_CHOICE_DIR="+ftpDir);
             try {
                 final ChoiceInfo choiceInfoFromFtp = initChoicesFromFtp(param, ftpDir);
                 log.debug(choiceInfoFromFtp.getStatus());
@@ -60,22 +64,21 @@ public class DynamicChoiceInfoParser implements ChoiceInfoParser {
                 return choiceInfoFromFtp;
             }
             catch (Throwable t) {
-                String userMessage="Server error initializing list of choices from "+ftpDir;
-                String developerMessage="Error initializing choices for '"+param.getName()+"' from "+ftpDir+": "+t.getLocalizedMessage();
+                String userMessage="Server error initializing drop-down menu from "+ftpDir;
+                String developerMessage="Error initializing drop-down menu for '"+param.getName()+"' from "+ftpDir+": "+t.getLocalizedMessage();
                 log.error(developerMessage, t);
                 final ChoiceInfo choiceInfo = new ChoiceInfo(param.getName());
-                choiceInfo.setFtpDir(ftpDir);
+                choiceInfo.setChoiceDir(ftpDir);
                 choiceInfo.setStatus(Flag.ERROR, userMessage);
                 return choiceInfo;
             }
         }
 
         //the new way (>= 3.7.0), check for 'choice' attribute in manifest
-        final String declaredChoicesStr= (String) param.getAttributes().get("choice");
+        final String declaredChoicesStr= (String) param.getAttributes().get(ChoiceInfo.PROP_CHOICE);
         if (declaredChoicesStr != null) {
-            log.debug("parsing choice entry from manifest for parm="+param.getName());
+            log.debug("Initializing "+ChoiceInfo.PROP_CHOICE+" entry from manifest for parm="+param.getName());
             choices=ParameterInfo._initChoicesFromString(declaredChoicesStr);
-            log.debug("Initialized choices from choice attribute");
         }
         else {
             //the old way (<= 3.6.1, based on 'values' attribute in manifest)
@@ -104,6 +107,76 @@ public class DynamicChoiceInfoParser implements ChoiceInfoParser {
         log.debug("initial selection: "+choiceInfo.getSelected());
         return choiceInfo;
     }
+
+    public static class ChoiceDirFilter implements FTPFileFilter {
+        public static enum Type {
+            file,
+            dir,
+            any
+        }
+        
+        private Type type=Type.file;
+        final private String choiceDirFilter;
+        final private FindFileFilter globs;
+        
+        public ChoiceDirFilter(final ParameterInfo param) {
+            if (param==null) {
+                throw new IllegalArgumentException("param==null");
+            }
+            if (param.getAttributes()==null) {
+                throw new IllegalArgumentException("param.attributes==null");
+            }
+            choiceDirFilter = (String) param.getAttributes().get(ChoiceInfo.PROP_CHOICE_DIR_FILTER);
+            if (!ChoiceInfoHelper.isSet(choiceDirFilter)) {
+                globs=null;
+            }
+            else {
+                globs = new FindFileFilter();
+            
+                //parse this as a ';' separated list of patterns
+                String[] patterns=choiceDirFilter.split(Pattern.quote(";"));
+                for(final String pattern : patterns) {
+                    if (!ChoiceInfoHelper.isSet(pattern)) {
+                        //skip empty pattern
+                    }
+                    else if (pattern.startsWith("type="+Type.dir)) {
+                        type=Type.dir;
+                    }
+                    else if (pattern.startsWith("type="+Type.file)) {
+                        type=Type.file;
+                    }
+                    else if (pattern.startsWith("type="+Type.any)) {
+                        type=Type.any;
+                    }
+                    else {
+                        //it's a glob pattern
+                        globs.addGlob(pattern);
+                    }
+                }
+            }
+        }
+
+        @Override
+        public boolean accept(final FTPFile ftpFile) {
+            if (type==Type.file) {
+                if (!ftpFile.isFile()) {
+                    return false;
+                }
+            }
+            else if (type==Type.dir) {
+                if (!ftpFile.isDirectory()) {
+                    return false;
+                }
+            }
+            
+            //check for glob patterns
+            if (globs==null) {
+                return true;
+            }
+            return globs.accept(new File(ftpFile.getName()));
+        }
+
+    }
     
     /**
      * Initialize the ChoiceInfo from an ftp directory.
@@ -113,7 +186,7 @@ public class DynamicChoiceInfoParser implements ChoiceInfoParser {
      */
     private ChoiceInfo initChoicesFromFtp(final ParameterInfo param, final String ftpDir) throws ChoiceInfoException {
         final ChoiceInfo choiceInfo=new ChoiceInfo(param.getName());
-        choiceInfo.setFtpDir(ftpDir);
+        choiceInfo.setChoiceDir(ftpDir);
         final URL ftpUrl;
         try {
             ftpUrl=new URL(ftpDir);
@@ -163,6 +236,7 @@ public class DynamicChoiceInfoParser implements ChoiceInfoParser {
                 choiceInfo.setStatus(Flag.ERROR, errorMessage);
                 return choiceInfo;
             }
+            
             log.debug("listing files from directory: "+ftpClient.printWorkingDirectory());
             files = ftpClient.listFiles();
         }
@@ -196,9 +270,12 @@ public class DynamicChoiceInfoParser implements ChoiceInfoParser {
             choiceInfo.setStatus(Flag.ERROR, errorMessage);
             return choiceInfo;
         }
+        
+        //optionally filter
+        final FTPFileFilter choiceDirFilter = new ChoiceDirFilter(param);
         for(FTPFile ftpFile : files) {
-            if (!ftpFile.isFile()) {
-                log.debug("Skipping '"+ftpFile.getName()+ "' from ftpDir="+ftpDir+". It's not a file");
+            if (!choiceDirFilter.accept(ftpFile)) {
+                log.debug("Skipping '"+ftpFile.getName()+ "' from ftpDir="+ftpDir);
             }
             else {
                 final String name=ftpFile.getName();
@@ -210,7 +287,7 @@ public class DynamicChoiceInfoParser implements ChoiceInfoParser {
                 else {
                     value=ftpDir + "/" + encodedName;
                 }
-                final Choice choice=new Choice(name, value);
+                final Choice choice=new Choice(name, value, ftpFile.isDirectory());
                 choiceInfo.add(choice);
             }
         }
