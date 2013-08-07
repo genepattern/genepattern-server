@@ -8,12 +8,54 @@ import org.apache.log4j.Logger;
 import org.genepattern.webservice.ParameterInfo;
 
 /**
- * Initialized by parsing the manifest for a given parameter info.
+ * JavaBean representation of a module drop-down menu for a given input parameter.
+ * Initialized by parsing the parameter info attributes from the manifest file.
  * @author pcarr
  *
  */
 public class ChoiceInfo {
     final static private Logger log = Logger.getLogger(ChoiceInfo.class);
+
+    /**
+     * ParameterInfo attribute for the module manifest. Set the list of choices for a drop-down menu for this parameter.
+     * This is in the same format as the 'value' parameter for GP <=3.6.1 'Choice' parameter.
+     * 
+     * E.g.
+     *     p4_choice=ftp://ftp.broadinstitute.org/pub/genepattern/rna_seq/referenceAnnotation/gtf/Arabidopsis_thaliana_Ensembl_TAIR10.gtf=Arabidopsis_thaliana_Ensembl_TAIR10.gtf;
+     */
+    public static final String PROP_CHOICE="choice";
+    /**
+     * ParameterInfo attribute for the module manifest.
+     * Create a drop-down menu by listing the contents of the remote directory. 
+     * This is created dynamically, when the module input form is created, instead of hard-coding
+     * a list of values in the manifest file.
+     * 
+     * E.g.
+     *     p4_choiceDir=ftp://ftp.broadinstitute.org/pub/genepattern/rna_seq/referenceAnnotation/gtf
+     */
+    public static final String PROP_CHOICE_DIR="choiceDir";
+    /**
+     * ParameterInfo attribute for the module manifest. 
+     * When creating a drop-down menu from a remote directory, optionally filter the list of
+     * values based on a glob pattern. This filter applies only to the remote 'choiceDir' setting.
+     * 
+     * By default, directory values are ignored, override the default setting by ...
+     *     p4_choiceDirFilterType= all | file | dir
+     *     p4_choiceDir
+     * 
+     */
+    public static final String PROP_CHOICE_DIR_FILTER="choiceDirFilter";
+    /**
+     * ParameterInfo attribute for the module manifest, optionally declare whether a custom value is allowed for the given
+     * parameter. This only applies for parameters with a drop-down menu.
+     */
+    public static final String PROP_CHOICE_ALLOW_CUSTOM_VALUE="choiceAllowCustom";
+    /**
+     * ParameterInfo attribute for the module manifest, optionally declare the display value for the first item on the drop-down menu.
+     * E.g. 'Choose...'.
+     */
+    public static final String PROP_CHOICE_EMPTY_DISPLAY_VALUE="choiceEmptyDisplayValue";
+    public static final String CHOICE_EMPTY_DISPLAY_VALUE_DEFAULT="Choose ...";
 
     /**
      * Get the status of the choiceInfo to indicate to the end-user if there were problems initializing 
@@ -62,7 +104,6 @@ public class ChoiceInfo {
     }
 
     
-    //final static ChoiceInfoParser defaultChoiceInfoParser= new DefaultChoiceInfoParser();
     final static ChoiceInfoParser choiceInfoParser= new DynamicChoiceInfoParser();
     public static ChoiceInfoParser getChoiceInfoParser() {
         return choiceInfoParser;
@@ -70,10 +111,11 @@ public class ChoiceInfo {
     
     final private String paramName;
     
-    private String ftpDir=null;
+    private String choiceDir=null;
     private List<Choice> choices=null;
     private ChoiceInfo.Status status=null;
     private Choice selected=null;
+    private boolean acceptsCustomValue=true;
     
     public ChoiceInfo(final String paramName) {
         this.paramName=paramName;
@@ -87,11 +129,11 @@ public class ChoiceInfo {
         return selected;
     }
     
-    public void setFtpDir(final String ftpDir) {
-        this.ftpDir=ftpDir;
+    public void setChoiceDir(final String choiceDir) {
+        this.choiceDir=choiceDir;
     }
-    public String getFtpDir() {
-        return ftpDir;
+    public String getChoiceDir() {
+        return choiceDir;
     }
     
     public List<Choice> getChoices() {
@@ -99,6 +141,10 @@ public class ChoiceInfo {
             return Collections.emptyList();
         }
         return Collections.unmodifiableList(choices);
+    }
+    
+    public boolean isAcceptsCustomValue() {
+        return acceptsCustomValue;
     }
     
     public ChoiceInfo.Status getStatus() {
@@ -140,9 +186,9 @@ public class ChoiceInfo {
         if (emptyChoice == null) {
             if (isOptional || (!isOptional && !hasDefaultValue )) {
                 //check manifest for displayValue for the first item on the list
-                String emptyDisplayValue= (String) param.getAttributes().get("emptyDisplayValue");
+                String emptyDisplayValue= (String) param.getAttributes().get(PROP_CHOICE_EMPTY_DISPLAY_VALUE);
                 if (emptyDisplayValue==null) {
-                    emptyDisplayValue="Choose...";
+                    emptyDisplayValue=CHOICE_EMPTY_DISPLAY_VALUE_DEFAULT;
                 }
                 emptyChoice=new Choice(emptyDisplayValue, "");
                 if (choices==null) {
