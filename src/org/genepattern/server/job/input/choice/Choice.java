@@ -14,15 +14,25 @@ public class Choice {
     /**
      * The actual value.
      */
-    final private String value; //actual value
+    final private String value;
+    /**
+     * flag indicating the value is a remote directory.
+     * @param value
+     */
+    final private boolean remoteDir;
     
     public Choice(final String value) {
         this(value, value);
     }
     
     public Choice(final String label, final String value) {
+        this(label,value,false);
+    }
+    
+    public Choice(final String label, final String value, final boolean isRemoteDir) {
         this.label=label;
         this.value=value;
+        this.remoteDir=isRemoteDir;
     }
     
     public String getLabel() {
@@ -31,6 +41,10 @@ public class Choice {
     
     public String getValue() {
         return value;
+    }
+    
+    public boolean isRemoteDir() {
+        return remoteDir;
     }
     
     public String toString() {
