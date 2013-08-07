@@ -844,10 +844,15 @@ public class GenePatternAnalysisTask {
                     //    local directory
                     final GpFilePath cachedFile;
                     try {
-                        cachedFile=ChoiceInfoHelper.getCachedValue(jobContext, choiceInfo, selectedChoice);
+                        cachedFile=ChoiceInfoHelper.getCachedValue(jobContext, selectedChoice);
+                    }
+                    catch (ChoiceInfoHelper.Ex ex) {
+                        final String errorMessage="Error getting cached value for "+pinfo.getName()+"="+pinfo.getValue();
+                        log.error(errorMessage, ex);
+                        throw new JobDispatchException(errorMessage+": "+ex.getLocalizedMessage());
                     }
                     catch (Throwable t) {
-                        final String errorMessage="Error getting cached value for pinfo.getName()="+pinfo.getValue();
+                        final String errorMessage="Error getting cached value for "+pinfo.getName()+"="+pinfo.getValue();
                         log.error(errorMessage, t);
                         throw new JobDispatchException(errorMessage+": "+t.getClass().getName()+" - "+t.getLocalizedMessage());
                     }
