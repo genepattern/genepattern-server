@@ -70,8 +70,8 @@ public class ChoiceInfoHelper {
             final String href=TasksResource.getChoiceInfoPath(request, taskInfo, choiceInfo.getParamName());
             json.put("href", href);
         }
-        if (isSet(choiceInfo.getFtpDir())) {
-            json.put("ftpDir", choiceInfo.getFtpDir());
+        if (isSet(choiceInfo.getChoiceDir())) {
+            json.put("choiceDir", choiceInfo.getChoiceDir());
         }
         if (choiceInfo.getStatus() != null) {
             final JSONObject statusObj=new JSONObject();
@@ -117,17 +117,20 @@ public class ChoiceInfoHelper {
      * @param selectedChoice
      * @return
      */
-    public static GpFilePath getCachedValue(final Context jobContext, final ChoiceInfo choiceInfo, final Choice selectedChoice) throws Ex {
+    public static GpFilePath getCachedValue(final Context jobContext, final Choice selectedChoice) throws Ex {
         if (jobContext==null) {
             log.warn("jobContext==null");
-        }
-        if (choiceInfo==null) {
-            throw new IllegalArgumentException("choiceInfo==null");
         }
         if (selectedChoice==null) {
             throw new IllegalArgumentException("choice==null");
         }
-        final GpFilePath fromCache = getSelectedValueAsUserUploadFile(selectedChoice);
+        final GpFilePath fromCache;
+        if (selectedChoice.isRemoteDir()) {
+            fromCache = getSelectedValueAsUserUploadDir(selectedChoice);
+        }
+        else {
+            fromCache = getSelectedValueAsUserUploadFile(selectedChoice);
+        }
         return fromCache;
     }
     
@@ -170,6 +173,10 @@ public class ChoiceInfoHelper {
             log.error(t);
             throw new Ex(t.getLocalizedMessage());
         }
+    }
+    
+    private static GpFilePath getSelectedValueAsUserUploadDir(final Choice selectedChoice) throws Ex {
+        throw new Ex("Caching not implemented for remote directory");
     }
 
 }
