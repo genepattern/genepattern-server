@@ -3127,6 +3127,10 @@ var properties = {
 	            });
             }
             
+            // Remove the external URL feature
+            $(".ui-dialog label").hide();
+            $(".ui-dialog input[type=text]").hide();
+            
             // Remove the normal click event
             $(".ui-dialog-buttonpane button:contains('OK')").off("click");
             // Add the new doc click event
