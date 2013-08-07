@@ -605,7 +605,12 @@ public class PipelineQueryServlet extends HttpServlet {
 	            }
 	            else {
                     // Special case for file paths
-                    if (taskInfo.getParameterInfoArray()[i].getAttributes().get("type").equals("java.io.File") && !input.getValue().equals("")) {
+	                Object type = taskInfo.getParameterInfoArray()[i].getAttributes().get("type");
+	                if (type == null) {
+	                    log.error("Type attribute in " + taskInfo.getName() + " is not set for " + taskInfo.getParameterInfoArray()[i].getName() + ". This is a bug in the module. The pipeline is unable to save while this bug is present.");
+	                    throw new Exception("Type attribute in " + taskInfo.getName() + " is not set for " + taskInfo.getParameterInfoArray()[i].getName());
+	                }
+                    if (type.equals("java.io.File") && !input.getValue().equals("")) {
                         String filePath = null;
                         // Check for values that already embed the <GenePatternURL>
                         if (input.getValue().startsWith("<GenePatternURL>")) {
@@ -826,7 +831,7 @@ public class PipelineQueryServlet extends HttpServlet {
             }
             catch (Throwable t) {
                 log.error("Unable to build the pipeline model", t);
-                sendError(response, "Unable to save the pipeline: Server error, Unable to build the pipeline model");
+                sendError(response, "Unable to save the pipeline. Server error: " + t.getMessage());
                 return;
             }
             
