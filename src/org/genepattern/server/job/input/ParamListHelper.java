@@ -815,7 +815,7 @@ public class ParamListHelper {
             else {
                 // Delete out of date copy and update database
                 realFile.delete();
-                boolean deleted = DataManager.deleteUserUploadFile(".cache", realPath);
+                boolean deleted = DataManager.deleteUserUploadFile(realPath.getOwner(), realPath);
                 if (!deleted) {
                     String message="Error deleting expired copy of file: " + realPath.getRelativePath();
                     log.error(message);
