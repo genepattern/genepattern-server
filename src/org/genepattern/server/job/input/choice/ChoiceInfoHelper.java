@@ -135,6 +135,7 @@ public class ChoiceInfoHelper {
         return fromCache;
     }
     
+
     /**
      * If necessary transfer the file from the external URL into the uploads directory for the '.cache'
      * user account.
@@ -152,16 +153,11 @@ public class ChoiceInfoHelper {
         }
         
         GpFilePath selectedGpFilePath=null;
-        final Context userContext=ServerConfiguration.Context.getContextForUser(".cache");
-        final String relPath="cache/"+url.getHost()+"/"+url.getPath();
-        final File relFile=new File(relPath);
         try {
-            selectedGpFilePath=GpFileObjFactory.getUserUploadFile(userContext, relFile);
+            selectedGpFilePath=getLocalPath(url);
         }
         catch (Throwable t) {
             log.error(t);
-        }
-        if (selectedGpFilePath==null) {
             return null;
         }
 
@@ -179,5 +175,37 @@ public class ChoiceInfoHelper {
     private static GpFilePath getSelectedValueAsUserUploadDir(final Choice selectedChoice) throws Ex {
         throw new Ex("Caching not implemented for remote directory");
     }
+    
+    /**
+     * Helper class, initialize a GpFilePath instance for the external url.
+     * This method does not download the file, it does define the path
+     * to where the external URL is to be downloaded.
+     * 
+     * This method was created for the specific use-case of caching an external url
+     * selected from a File Choice parameter.
+     * 
+     * @param url
+     * @return
+     */
+    private static GpFilePath getLocalPath(final URL url) throws Exception {
+        final Context userContext=ServerConfiguration.Context.getContextForUser(".cache");
+        final String relPath="cache/"+url.getHost()+"/"+url.getPath();
+        final File relFile=new File(relPath);
+        GpFilePath localPath=GpFileObjFactory.getUserUploadFile(userContext, relFile);
+        return localPath;
+    }
+    
+    public static GpFilePath getLocalPathFromSelection(final Choice selectedChoice) throws Exception {
+        final URL url=JobInputHelper.initExternalUrl(selectedChoice.getValue());
+        if (url==null) {
+            //it's not an external url
+            return null;
+        }
+        
+        GpFilePath localPath=getLocalPath(url);
+        return localPath;
+    }
+    
+
 
 }
