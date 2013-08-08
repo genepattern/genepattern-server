@@ -178,13 +178,14 @@ public class TasksResource {
      *     GET /rest/v1/tasks/DemoRNASeQC/annotation.gtf/choiceInfo.json
      *     curl -u test:test http://127.0.0.1:8080/gp/rest/v1/tasks/DemoRNASeQC/annotation.gtf/choiceInfo.json
      * 
-     * Example response,
+     * Example response for a dynamic drop-down,
      * <pre>
        200 OK
        {
          "href":"http://127.0.0.1:8080/gp/rest/v1/tasks/DemoRNASeQC/annotation.gtf/choiceInfo.json",
          "status":{"flag":"OK", "message": "A user message"},
-         "ftpDir":"ftp://ftp.broadinstitute.org/pub/genepattern/rna_seq/referenceAnnotation/gtf",
+         "choiceDir":"ftp://ftp.broadinstitute.org/pub/genepattern/rna_seq/referenceAnnotation/gtf",
+         "choiceAllowCustomValue":"true", 
          "selectedValue": "ftp://ftp.broadinstitute.org/pub/genepattern/rna_seq/referenceAnnotation/gtf/Arabidopsis_thaliana_Ensembl_TAIR10.gtf",
          "choices": [
            {"value":"ftp://ftp.broadinstitute.org/pub/genepattern/rna_seq/referenceAnnotation/gtf/Arabidopsis_thaliana_Ensembl_TAIR10.gtf","label":"Arabidopsis_thaliana_Ensembl_TAIR10.gtf"},
@@ -194,6 +195,8 @@ public class TasksResource {
            ]
        }
      * </pre>
+     * 
+     * For a static drop-down, the 'choiceDir' will not be set.
      * 
      * Example status messages,
      *     OK, Initialized from values param (old way)
