@@ -49,26 +49,66 @@ public class DynamicChoiceInfoParser implements ChoiceInfoParser {
         return false;
     }
 
+    /**
+     * Helper method to set the choiceInfo.allowCustomValue flag based on the
+     *     properties in the manifest file.
+     * 
+     * @param choiceInfo
+     * @param param
+     */
+    private static void initAllowCustomValue(final ChoiceInfo choiceInfo, final ParameterInfo param) {
+        if (choiceInfo==null) {
+            throw new IllegalArgumentException("choiceInfo==null");
+        }
+        final String allowCustomValueStr;
+        if (param==null) {
+            allowCustomValueStr=null;
+        }
+        else {
+            allowCustomValueStr= (String) param.getAttributes().get( ChoiceInfo.PROP_CHOICE_ALLOW_CUSTOM_VALUE );
+        }
+        if (ChoiceInfoHelper.isSet(allowCustomValueStr)) {
+            // if it's 'on' then it's true
+            if ("on".equalsIgnoreCase(allowCustomValueStr.trim())) {
+                choiceInfo.setAllowCustomValue(true);
+            }
+            else {
+                //otherwise, false
+                choiceInfo.setAllowCustomValue(false);
+            }
+        }
+        else if (param.isInputFile()) {
+            //by default, a file choice parameter allows a custom value
+            choiceInfo.setAllowCustomValue(true);
+        }
+        else {
+            //by default, a text choice parameter does not allow a custom value
+            choiceInfo.setAllowCustomValue(false);
+        }
+    }
+
     @Override
-    public ChoiceInfo initChoiceInfo(ParameterInfo param) {
+    public ChoiceInfo initChoiceInfo(final ParameterInfo param) {
         final Map<String,String> choices;
         //the new way (>= 3.7.0), check for remote ftp directory
-        final String ftpDir = (String) param.getAttributes().get(ChoiceInfo.PROP_CHOICE_DIR);
-        if (ftpDir != null) {
-            log.debug("Initializing drop-down from remote source for param="+param.getName()+", ChoiceInfo.PROP_CHOICE_DIR="+ftpDir);
+        final String choiceDir = (String) param.getAttributes().get(ChoiceInfo.PROP_CHOICE_DIR);
+        if (choiceDir != null) {
+            log.debug("Initializing drop-down from remote source for param="+param.getName()+", ChoiceInfo.PROP_CHOICE_DIR="+choiceDir);
             try {
-                final ChoiceInfo choiceInfoFromFtp = initChoicesFromFtp(param, ftpDir);
+                final ChoiceInfo choiceInfoFromFtp = initChoicesFromFtp(param, choiceDir);
                 log.debug(choiceInfoFromFtp.getStatus());
                 choiceInfoFromFtp.initDefaultValue(param);
                 log.debug("initial selection: "+choiceInfoFromFtp.getSelected());
+                DynamicChoiceInfoParser.initAllowCustomValue(choiceInfoFromFtp, param);
+                log.debug("isAllowCustomValue: "+choiceInfoFromFtp.isAllowCustomValue());
                 return choiceInfoFromFtp;
             }
             catch (Throwable t) {
-                String userMessage="Server error initializing drop-down menu from "+ftpDir;
-                String developerMessage="Error initializing drop-down menu for '"+param.getName()+"' from "+ftpDir+": "+t.getLocalizedMessage();
+                String userMessage="Server error initializing drop-down menu from "+choiceDir;
+                String developerMessage="Error initializing drop-down menu for '"+param.getName()+"' from "+choiceDir+": "+t.getLocalizedMessage();
                 log.error(developerMessage, t);
                 final ChoiceInfo choiceInfo = new ChoiceInfo(param.getName());
-                choiceInfo.setChoiceDir(ftpDir);
+                choiceInfo.setChoiceDir(choiceDir);
                 choiceInfo.setStatus(Flag.ERROR, userMessage);
                 return choiceInfo;
             }
@@ -104,6 +144,8 @@ public class DynamicChoiceInfoParser implements ChoiceInfoParser {
         
         //initialize default value for choice, must do this after the list of choices is initialized
         choiceInfo.initDefaultValue(param);
+        DynamicChoiceInfoParser.initAllowCustomValue(choiceInfo, param);
+        
         log.debug("initial selection: "+choiceInfo.getSelected());
         return choiceInfo;
     }

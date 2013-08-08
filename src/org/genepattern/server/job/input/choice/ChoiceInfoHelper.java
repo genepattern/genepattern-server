@@ -71,7 +71,7 @@ public class ChoiceInfoHelper {
             json.put("href", href);
         }
         if (isSet(choiceInfo.getChoiceDir())) {
-            json.put("choiceDir", choiceInfo.getChoiceDir());
+            json.put(ChoiceInfo.PROP_CHOICE_DIR, choiceInfo.getChoiceDir());
         }
         if (choiceInfo.getStatus() != null) {
             final JSONObject statusObj=new JSONObject();
@@ -84,10 +84,11 @@ public class ChoiceInfoHelper {
         }
         final JSONArray choices=initChoiceJson(choiceInfo);
         json.put("choices", choices);
+        json.put(ChoiceInfo.PROP_CHOICE_ALLOW_CUSTOM_VALUE, choiceInfo.isAllowCustomValue());
         return json;
     }
     
-    final static public JSONArray initChoiceJson(final ChoiceInfo choiceInfo) {
+    final static private JSONArray initChoiceJson(final ChoiceInfo choiceInfo) {
         if (choiceInfo==null) {
             log.error("Unexpected null value");
             return null;

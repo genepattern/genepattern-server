@@ -21,9 +21,9 @@ public class ChoiceInfo {
      * This is in the same format as the 'value' parameter for GP <=3.6.1 'Choice' parameter.
      * 
      * E.g.
-     *     p4_choice=ftp://ftp.broadinstitute.org/pub/genepattern/rna_seq/referenceAnnotation/gtf/Arabidopsis_thaliana_Ensembl_TAIR10.gtf=Arabidopsis_thaliana_Ensembl_TAIR10.gtf;
+     *     p4_choices=ftp://ftp.broadinstitute.org/pub/genepattern/rna_seq/referenceAnnotation/gtf/Arabidopsis_thaliana_Ensembl_TAIR10.gtf=Arabidopsis_thaliana_Ensembl_TAIR10.gtf;
      */
-    public static final String PROP_CHOICE="choice";
+    public static final String PROP_CHOICE="choices";
     /**
      * ParameterInfo attribute for the module manifest.
      * Create a drop-down menu by listing the contents of the remote directory. 
@@ -115,7 +115,7 @@ public class ChoiceInfo {
     private List<Choice> choices=null;
     private ChoiceInfo.Status status=null;
     private Choice selected=null;
-    private boolean acceptsCustomValue=true;
+    private boolean allowCustomValue=true;
     
     public ChoiceInfo(final String paramName) {
         this.paramName=paramName;
@@ -143,8 +143,11 @@ public class ChoiceInfo {
         return Collections.unmodifiableList(choices);
     }
     
-    public boolean isAcceptsCustomValue() {
-        return acceptsCustomValue;
+    public void setAllowCustomValue(final boolean b) {
+        this.allowCustomValue=b;
+    }
+    public boolean isAllowCustomValue() {
+        return allowCustomValue;
     }
     
     public ChoiceInfo.Status getStatus() {
