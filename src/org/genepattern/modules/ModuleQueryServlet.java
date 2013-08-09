@@ -11,44 +11,75 @@
 
 package org.genepattern.modules;
 
-import org.genepattern.webservice.*;
+import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.PrintWriter;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.SortedSet;
+import java.util.TreeSet;
+
+import javax.activation.MimetypesFileTypeMap;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import org.apache.commons.fileupload.FileItem;
+import org.apache.commons.fileupload.FileItemFactory;
+import org.apache.commons.fileupload.FileUploadBase;
+import org.apache.commons.fileupload.RequestContext;
+import org.apache.commons.fileupload.disk.DiskFileItemFactory;
+import org.apache.commons.fileupload.servlet.ServletFileUpload;
+import org.apache.commons.fileupload.servlet.ServletRequestContext;
+import org.apache.commons.httpclient.HttpClient;
+import org.apache.commons.httpclient.HttpVersion;
+import org.apache.commons.httpclient.methods.MultipartPostMethod;
+import org.apache.commons.httpclient.methods.PostMethod;
+import org.apache.commons.httpclient.methods.multipart.FilePart;
+import org.apache.commons.httpclient.methods.multipart.MultipartRequestEntity;
+import org.apache.commons.httpclient.methods.multipart.Part;
+import org.apache.commons.httpclient.methods.multipart.StringPart;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.params.CoreProtocolPNames;
+import org.apache.log4j.Logger;
+import org.genepattern.server.TaskLSIDNotFoundException;
 import org.genepattern.server.config.ServerConfiguration;
 import org.genepattern.server.config.ServerConfiguration.Context;
 import org.genepattern.server.eula.EulaInfo;
 import org.genepattern.server.eula.EulaManager;
 import org.genepattern.server.eula.GetEulaAsManifestProperty;
 import org.genepattern.server.genepattern.GenePatternAnalysisTask;
+import org.genepattern.server.process.ZipTask;
 import org.genepattern.server.taskinstall.InstallInfo;
-import org.genepattern.server.webservice.server.Status;
-import org.genepattern.server.webservice.server.DirectoryManager;
-import org.genepattern.server.webservice.server.local.LocalTaskIntegratorClient;
-import org.genepattern.server.TaskLSIDNotFoundException;
 import org.genepattern.server.webapp.jsf.AuthorizationHelper;
+import org.genepattern.server.webservice.server.DirectoryManager;
+import org.genepattern.server.webservice.server.Status;
+import org.genepattern.server.webservice.server.local.LocalTaskIntegratorClient;
 import org.genepattern.util.GPConstants;
 import org.genepattern.util.LSID;
 import org.genepattern.util.LSIDUtil;
-import org.apache.log4j.Logger;
-import org.apache.commons.fileupload.RequestContext;
-import org.apache.commons.fileupload.FileUploadBase;
-import org.apache.commons.fileupload.FileItemFactory;
-import org.apache.commons.fileupload.FileItem;
-import org.apache.commons.fileupload.disk.DiskFileItemFactory;
-import org.apache.commons.fileupload.servlet.ServletRequestContext;
-import org.apache.commons.fileupload.servlet.ServletFileUpload;
-import org.json.JSONObject;
+import org.genepattern.webservice.ParameterInfo;
+import org.genepattern.webservice.TaskInfo;
+import org.genepattern.webservice.TaskInfoAttributes;
+import org.genepattern.webservice.TaskInfoCache;
+import org.genepattern.webservice.WebServiceException;
 import org.json.JSONArray;
-
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import java.util.*;
-import java.io.*;
+import org.json.JSONObject;
+import org.mozilla.javascript.tools.idswitch.FileBody;
 
 /**
  * based on PipelineQueryServer class in the org.genepattern.pipelines class
  */
-public class ModuleQueryServlet extends HttpServlet
-{
+public class ModuleQueryServlet extends HttpServlet {
+    private static final long serialVersionUID = 4631280565736438091L;
     public static Logger log = Logger.getLogger(ModuleQueryServlet.class);
 
     public static final String MODULE_CATEGORIES = "/categories";
@@ -56,11 +87,11 @@ public class ModuleQueryServlet extends HttpServlet
     public static final String UPLOAD = "/upload";
     public static final String SAVE = "/save";
     public static final String LOAD = "/load";
+    public static final String GPARC = "/gparc";
 
 
 
-    public void doGet(HttpServletRequest request, HttpServletResponse response)
-    {
+    public void doGet(HttpServletRequest request, HttpServletResponse response) {
 		String action = request.getPathInfo();
 
 		// Route to the appropriate action, returning an error if unknown
@@ -82,6 +113,10 @@ public class ModuleQueryServlet extends HttpServlet
         {
 		    uploadFile(request, response);
 		}
+        else if (GPARC.equals(action))
+        {
+            gparcSubmit(request, response);
+        }
         else
         {
 		    sendError(response, "Routing error for " + action);
@@ -128,6 +163,50 @@ public class ModuleQueryServlet extends HttpServlet
 	    error.addError("ERROR: " + message);
 	    this.write(response, error);
 	}
+    
+    private File getZipFile(HttpServletRequest request) throws Exception {
+        String lsid = request.getParameter("lsid");
+        TaskInfo taskInfo = getTaskInfo(lsid);
+        String username = (String) request.getSession().getAttribute("userid");
+        ZipTask zipTask = new ZipTask();
+        return zipTask.packageTask(taskInfo, username);
+    }
+    
+    @SuppressWarnings("deprecation")
+    public void gparcSubmit(HttpServletRequest request, HttpServletResponse response) {
+        try {
+            // Set up the client
+            HttpClient client = new HttpClient();
+            client.getParams().setParameter(CoreProtocolPNames.PROTOCOL_VERSION, HttpVersion.HTTP_1_1);
+            
+            // Set up the file post
+            File zipfile = getZipFile(request);
+            
+            // Set up the post method
+            MultipartPostMethod post = new MultipartPostMethod("http://dev.broadinstitute.org/software/gparc/server_upload.php");
+            post.addRequestHeader("Content-type", "multipart/form-data" );
+            post.addParameter("zipfilename", zipfile.getName(), zipfile); 
+            
+            // Execute
+            int status = client.executeMethod(post);
+            
+            // Get the token from the response
+            if (status == 200) {
+                String token = post.getResponseBodyAsString();
+                
+                // Write the token back to the UI
+                this.write(response, token);   
+            }
+            else {
+                this.write(response, "{'error': 'ERROR: Unknown response code ' " + status + "}");
+            }         
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+            log.error("Error preparing submit to GParc: " + e.getMessage());
+            this.write(response, "ERROR: " + e.getMessage());
+        }
+    }
 
     public SortedSet<String> getAllCategories() {
         SortedSet<String> categories = new TreeSet<String>(new Comparator<String>() {
