@@ -155,7 +155,7 @@ import org.genepattern.server.job.input.JobInput.ParamValue;
 import org.genepattern.server.job.input.ParamListHelper;
 import org.genepattern.server.job.input.choice.Choice;
 import org.genepattern.server.job.input.choice.ChoiceInfo;
-import org.genepattern.server.job.input.choice.ChoiceInfoHelper;
+import org.genepattern.server.job.input.choice.ChoiceInfoFileCache;
 import org.genepattern.server.plugin.PluginManagerLegacy;
 import org.genepattern.server.rest.ParameterInfoRecord;
 import org.genepattern.server.taskinstall.InstallInfo;
@@ -838,18 +838,11 @@ public class GenePatternAnalysisTask {
                 //special-case for File Choice parameters, cached values
                 else if (isFileChoiceSelection) {
                     //it's a file choice
-                    log.debug("Checking for cached value for File Choice, "+pinfo.getName()+"="+pinfo.getValue());
-                    //TODO: this is prototype code, should refactor before 3.7.0 release
-                    //    this method waits, if necessary, for the file to be transferred from the external url to a 
-                    //    local directory
+                    log.debug("Checking cache for "+pinfo.getName()+"="+pinfo.getValue());
                     final GpFilePath cachedFile;
                     try {
-                        cachedFile=ChoiceInfoHelper.getCachedValue(jobContext, selectedChoice);
-                    }
-                    catch (ChoiceInfoHelper.Ex ex) {
-                        final String errorMessage="Error getting cached value for "+pinfo.getName()+"="+pinfo.getValue();
-                        log.error(errorMessage, ex);
-                        throw new JobDispatchException(errorMessage+": "+ex.getLocalizedMessage());
+                        // this method waits, if necessary, for the file to be transferred to a local path
+                        cachedFile=ChoiceInfoFileCache.instance().getCachedGpFilePathWait(selectedChoice);
                     }
                     catch (Throwable t) {
                         final String errorMessage="Error getting cached value for "+pinfo.getName()+"="+pinfo.getValue();
