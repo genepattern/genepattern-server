@@ -47,94 +47,94 @@ import org.genepattern.server.util.LaunderThrowable;
  *
  */
 public class ChoiceInfoFileCache {
-    private static Demo demo=new Demo();
-    public static Demo instance() {
-        return demo;
+    private static ChoiceInfoFileCache instance=new ChoiceInfoFileCache();
+    public static ChoiceInfoFileCache instance() {
+        return instance;
+    }
+    private ChoiceInfoFileCache() {
     }
     
-    public static class Demo {
-        /**
-         * Map of cached files, indexed by external URL.
-         * Note: URL is not a good key for a hashmap. It's hashcode method performs a DNS lookup.
-         * Store the process (aka Future) in the cache so that we can get the status of a
-         * file while it is being transferred.
-         * 
-         */
-        private final ConcurrentMap<String, Future<GpFilePath>> cache = new ConcurrentHashMap<String, Future<GpFilePath>>();
+    /**
+     * Map of cached files, indexed by external URL.
+     * Note: URL is not a good key for a hashmap. It's hashcode method performs a DNS lookup.
+     * Store the process (aka Future) in the cache so that we can get the status of a
+     * file while it is being transferred.
+     * 
+     */
+    private final ConcurrentMap<String, Future<GpFilePath>> cache = new ConcurrentHashMap<String, Future<GpFilePath>>();
 
-        private Callable<GpFilePath> initCallableFileDownloader(final Choice selectedChoice) {
-            Callable<GpFilePath> eval = new Callable<GpFilePath>() {
-                public GpFilePath call() throws Exception {
-                    final URL url=JobInputHelper.initExternalUrl(selectedChoice.getValue());
-                    GpFilePath actualPath=null;
-                    actualPath=ChoiceInfoHelper.getLocalPathFromSelection(selectedChoice);
-                    ParamListHelper.copyExternalUrlToUserUploads(actualPath, url);
-                    return actualPath;
-                }
-            };
-            return eval;
-        }
-
-        private Future<GpFilePath> initOrGetFileDownloader(final Choice selectedChoice) {
-            final URL _url=JobInputHelper.initExternalUrl(selectedChoice.getValue());
-            final String urlKey=_url.toExternalForm();
-            Future<GpFilePath> f = cache.get(urlKey);
-            if (f == null) {
-                Callable<GpFilePath> eval = initCallableFileDownloader(selectedChoice);
-                FutureTask<GpFilePath> ft = new FutureTask<GpFilePath>(eval);
-                f = cache.putIfAbsent(urlKey, ft);
-                if (f == null) {
-                    f = ft;
-                    ft.run();
-                }
+    private Callable<GpFilePath> initCallableFileDownloader(final Choice selectedChoice) {
+        Callable<GpFilePath> eval = new Callable<GpFilePath>() {
+            public GpFilePath call() throws Exception {
+                final URL url=JobInputHelper.initExternalUrl(selectedChoice.getValue());
+                GpFilePath actualPath=null;
+                actualPath=ChoiceInfoHelper.getLocalPathFromSelection(selectedChoice);
+                ParamListHelper.copyExternalUrlToUserUploads(actualPath, url);
+                return actualPath;
             }
-            return f;
-        }
+        };
+        return eval;
+    }
 
-        /**
-         * Call this if you want a TimeoutException after 0.1 second, instead of waiting for the transfer to complete.
-         * 
-         * @param selectedChoice
-         * @return
-         * @throws InterruptedException
-         * @throws ExecutionException
-         * @throws TimeoutException
-         */
-        public GpFilePath getCachedGpFilePath(final Choice selectedChoice)  throws InterruptedException, ExecutionException, TimeoutException {
-            return getCachedGpFilePath(selectedChoice, 100, TimeUnit.MILLISECONDS);
+    private Future<GpFilePath> initOrGetFileDownloader(final Choice selectedChoice) {
+        final URL _url=JobInputHelper.initExternalUrl(selectedChoice.getValue());
+        final String urlKey=_url.toExternalForm();
+        Future<GpFilePath> f = cache.get(urlKey);
+        if (f == null) {
+            Callable<GpFilePath> eval = initCallableFileDownloader(selectedChoice);
+            FutureTask<GpFilePath> ft = new FutureTask<GpFilePath>(eval);
+            f = cache.putIfAbsent(urlKey, ft);
+            if (f == null) {
+                f = ft;
+                ft.run();
+            }
         }
+        return f;
+    }
 
-        public GpFilePath getCachedGpFilePath(final Choice selectedChoice, final long timeout, final TimeUnit unit)  throws InterruptedException, ExecutionException, TimeoutException {
-            Future<GpFilePath> f = initOrGetFileDownloader(selectedChoice);
-            if (f.isDone()) {
+    /**
+     * Call this if you want a TimeoutException after 0.1 second, instead of waiting for the transfer to complete.
+     * 
+     * @param selectedChoice
+     * @return
+     * @throws InterruptedException
+     * @throws ExecutionException
+     * @throws TimeoutException
+     */
+    public GpFilePath getCachedGpFilePath(final Choice selectedChoice)  throws InterruptedException, ExecutionException, TimeoutException {
+        return getCachedGpFilePath(selectedChoice, 100, TimeUnit.MILLISECONDS);
+    }
+
+    public GpFilePath getCachedGpFilePath(final Choice selectedChoice, final long timeout, final TimeUnit unit)  throws InterruptedException, ExecutionException, TimeoutException {
+        Future<GpFilePath> f = initOrGetFileDownloader(selectedChoice);
+        if (f.isDone()) {
+            return f.get();
+        }
+        return f.get(timeout, unit);
+    }
+
+    /**
+     * Call this if you want to wait for the transfer to complete.
+     * 
+     * @param selectedChoice
+     * @return
+     * @throws InterruptedException
+     */
+    public GpFilePath getCachedGpFilePathWait(final Choice selectedChoice) throws InterruptedException {
+        while(true) {
+            Future<GpFilePath> f=initOrGetFileDownloader(selectedChoice);
+
+            //copied from memoizer
+            try {
                 return f.get();
             }
-            return f.get(timeout, unit);
-        }
-
-        /**
-         * Call this if you want to wait for the transfer to complete.
-         * 
-         * @param selectedChoice
-         * @return
-         * @throws InterruptedException
-         */
-        public GpFilePath getCachedGpFilePathWait(final Choice selectedChoice) throws InterruptedException {
-            while(true) {
-                Future<GpFilePath> f=initOrGetFileDownloader(selectedChoice);
-            
-                //copied from memoizer
-                try {
-                    return f.get();
-                }
-                catch (CancellationException e) {
-                    final URL _url=JobInputHelper.initExternalUrl(selectedChoice.getValue());
-                    final String urlKey=_url.toExternalForm();
-                    cache.remove(urlKey, f);
-                }
-                catch (ExecutionException e) {
-                    throw LaunderThrowable.launderThrowable(e.getCause());
-                }
+            catch (CancellationException e) {
+                final URL _url=JobInputHelper.initExternalUrl(selectedChoice.getValue());
+                final String urlKey=_url.toExternalForm();
+                cache.remove(urlKey, f);
+            }
+            catch (ExecutionException e) {
+                throw LaunderThrowable.launderThrowable(e.getCause());
             }
         }
     }
