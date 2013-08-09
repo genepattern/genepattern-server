@@ -210,6 +210,34 @@ public class UserUploadManager {
     }
     
     /**
+     * Delete the record of the user upload file from the database, only if there is one.
+     * 
+     * @param gpFilePath
+     * @return the number of records which were deleted, usually 0 or 1.
+     * @throws Exception
+     */
+    static public int deleteUploadFile(final GpFilePath gpFilePath) throws Exception {
+        boolean inTransaction = HibernateUtil.isInTransaction();
+        try {
+            UserUploadDao dao = new UserUploadDao();
+            int numDeleted=dao.deleteUserUpload(gpFilePath.getOwner(), gpFilePath);
+            if (!inTransaction) {
+                HibernateUtil.commitTransaction();
+            }
+            return numDeleted;
+        }
+        catch (Throwable t) {
+            HibernateUtil.rollbackTransaction();
+            throw new Exception("Error deleting upload file record for file '" + gpFilePath.getRelativePath() + "': " + t.getLocalizedMessage(), t);
+        }
+        finally {
+            if (!inTransaction) {
+                HibernateUtil.closeCurrentSession();
+            }
+        }
+    }
+    
+    /**
      * Get the entire tree of user upload files, rooted at the upload directory for the given user.
      * The root element is the user's upload directory, which typically is not displayed.
      * 
