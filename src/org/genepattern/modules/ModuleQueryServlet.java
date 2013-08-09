@@ -182,9 +182,13 @@ public class ModuleQueryServlet extends HttpServlet {
             // Set up the file post
             File zipfile = getZipFile(request);
             
+            // Get the URL to post to
+            Context context = Context.getContextForUser((String) request.getSession().getAttribute("userid"));
+            String gparcURL = ServerConfiguration.instance().getGPProperty(context, "gparcURL", "http://dev.broadinstitute.org/software/gparc/server_upload.php");
+            
             // Set up the post method
-            MultipartPostMethod post = new MultipartPostMethod("http://dev.broadinstitute.org/software/gparc/server_upload.php");
-            post.addRequestHeader("Content-type", "multipart/form-data" );
+            MultipartPostMethod post = new MultipartPostMethod(gparcURL);
+            post.addRequestHeader("Content-type", "multipart/form-data");
             post.addParameter("zipfilename", zipfile.getName(), zipfile); 
             
             // Execute
