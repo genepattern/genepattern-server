@@ -10,7 +10,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Pattern;
 
 import org.apache.commons.httpclient.Header;
@@ -27,6 +26,7 @@ import org.genepattern.server.config.ServerConfiguration.Context;
 import org.genepattern.server.dm.GpFileObjFactory;
 import org.genepattern.server.dm.GpFilePath;
 import org.genepattern.server.dm.serverfile.ServerFileObjFactory;
+import org.genepattern.server.dm.userupload.UserUploadManager;
 import org.genepattern.server.job.input.JobInput.Param;
 import org.genepattern.server.job.input.JobInput.ParamId;
 import org.genepattern.server.job.input.JobInput.ParamValue;
@@ -42,7 +42,6 @@ import org.genepattern.webservice.ParameterInfo;
  */
 public class ParamListHelper {
     final static private Logger log = Logger.getLogger(ParamListHelper.class);
-    private static Map<String, File> currentDownloadsCache = new ConcurrentHashMap<String, File>();
 
     public enum ListMode { 
         /**
@@ -803,7 +802,7 @@ public class ParamListHelper {
      * @param url
      * @throws Exception
      */
-    public static void copyExternalUrlToUserUploads(GpFilePath realPath, URL url) throws Exception {
+    public static void copyExternalUrlToUserUploads(final GpFilePath realPath, final URL url) throws Exception {
         // If the real path exists, check to see if it is out of date and return if it is not
         File realFile = realPath.getServerFile();
         if (realFile.exists()) {
@@ -828,32 +827,27 @@ public class ParamListHelper {
         GpFilePath tempPath = getTempPath(realPath);
         File tempFile = tempPath.getServerFile();
         
-        // If the temp path exists, determine if it is currently downloading or timed out
+        // If the temp path exists, blow away the temp file
         if (tempFile.exists()) {
-            File inCurrentDownloadsCache = currentDownloadsCache.get(realPath.getRelativePath());
-            boolean timedOut = false;
-            if (inCurrentDownloadsCache != null && inCurrentDownloadsCache.exists()) {
-                final long TIMEOUT = 60000; // Timeout is 1 minute
-                timedOut = (new Date()).getTime() - TIMEOUT > inCurrentDownloadsCache.lastModified();
+            boolean deleted = tempFile.delete();
+            if (!deleted) {
+                String message="Unable to delete temp file: " + tempPath.getRelativePath();
+                log.error(message);
+                throw new Exception(message);
             }
-            
-            // If not downloading or the download is timed out, blow away the temp file and continue
-            if (inCurrentDownloadsCache == null || timedOut) {
-                boolean deleted = tempFile.delete();
-                if (!deleted) {
-                    String message="Unable to delete temp file: " + tempPath.getRelativePath();
-                    log.error(message);
-                    throw new Exception(message);
-                }
-                currentDownloadsCache.remove(realPath.getRelativePath());
-            }
-        }
-
-        // If currently downloading and not timed out then wait
-        else {
-            ; // TODO: Implement Wait for Download to Complete, then Return
         }
         
+        // If necessary, delete the record of the actual file from the DB
+        try {
+            int numDeleted=UserUploadManager.deleteUploadFile(realPath);
+            if (numDeleted>0) {
+                log.debug("Deleted record from DB: ");
+            }
+        }
+        catch (Throwable t) {
+            log.error("Unable to delete record from DB: "+realPath.getRelativeUri().toString(), t);
+        }
+
         // If the temp path does not exist, lazily create the parent dir, then do the download and return
         if (!tempFile.exists()) {
             File parentDir = realPath.getServerFile().getParentFile();
@@ -867,9 +861,7 @@ public class ParamListHelper {
             }
             
             // Add to currently downloading cache, download and then remove from cache
-            currentDownloadsCache.put(realPath.getRelativePath(), tempFile);
             FileUtils.copyURLToFile(url, tempFile);
-            currentDownloadsCache.remove(realPath.getRelativePath());
             
             // Once complete, move the file to the real location
             boolean success = tempFile.renameTo(realFile);
