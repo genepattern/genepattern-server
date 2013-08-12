@@ -769,11 +769,13 @@ table.deloptions
 .parameter table td.dragIndicator
 {
     background-image: url(images/drag_drop_indicator.png);
-    background-size: 9px 160px;
+    background-size: 9px 180px;
     background-repeat: no-repeat;
     padding: 0;
     margin: 0;
     width: 0.8%;
+    height: 100%;
+    min-height: 98%;
     min-width: 9px;
 }
 
