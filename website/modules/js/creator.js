@@ -792,9 +792,10 @@ function changeParameterType(element)
                         //check if this should be set as the default
                         if(element.parents(".parameter").find("input[name='p_defaultvalue']").val() == value)
                         {
-                            table.find("input[name='cradio']").last().removeAttr("disabled");
                             table.find("input[name='cradio']").last().attr("checked", "checked");
                         }
+
+                        table.find("input[name='cradio']").last().removeAttr("disabled");
 
                         table.find("input[name='choicev']").last().val(value);
                         table.find("input[name='choicen']").last().val(displayValue);
@@ -812,7 +813,7 @@ function changeParameterType(element)
                     var choiceURLTableTR = $("<tr/>");
                     choiceURLTableTR.append("<td>Ftp directory:</td>");
                     var choiceURL = $("<input name='choiceURL' type='text' size='45'/>");
-
+                    choiceURL.val(element.parents(".parameter").find("input[name='choiceDir']").val());
                     $("<td/>").append(choiceURL).append("<div class='shortDescription'>Enter the ftp directory " +
                         "containing the files to use to populate the drop-down list</div>").appendTo(choiceURLTableTR);
                     choiceURLTable.append(choiceURLTableTR);
@@ -822,7 +823,8 @@ function changeParameterType(element)
                     choiceURLTableFilterTR.append("<td>File filter:</td>");
                     choiceURLTable.append(choiceURLTableFilterTR);
                     var fileFilter = $("<input name='choiceURLFilter' type='text'/>");
-                     $("<td/>").append(fileFilter).append("<div class='shortDescription'>Enter a glob expression pattern (i.e *.gct) " +
+                    fileFilter.val(element.parents(".parameter").find("input[name='choiceDirFilter']").val());
+                    $("<td/>").append(fileFilter).append("<div class='shortDescription'>Enter a glob expression pattern (i.e *.gct) " +
                          "for filtering the files found on the ftp directory</div>").appendTo(choiceURLTableFilterTR);
 
                     var altStaticChoiceToggle = $("<input type='checkbox' class='staticChoiceLink'/>");
@@ -866,7 +868,14 @@ function changeParameterType(element)
 
                     addsectioncollapseimages();
 
-                    staticChoiceButton.click();
+                    if(choiceURL.val() != undefined && choiceURL.val() != null && choiceURL.val() != "")
+                    {
+                        dynamicChoiceButton.click();
+                    }
+                    else
+                    {
+                        staticChoiceButton.click();
+                    }
                 }
             },
             close: function()
@@ -922,7 +931,6 @@ function changeParameterType(element)
                         }
                     });
 
-
                     //validate if default value is valid
                     var defaultValueObj = element.parents(".parameters").find("input[name='p_defaultvalue']");
                     validateDefaultChoiceValue(defaultValueObj);
@@ -934,8 +942,14 @@ function changeParameterType(element)
                     {
                        element.parents(".parameter").find("input[name='choiceDir']").val(choiceURL);
                        element.parents(".parameter").find("input[name='choiceDir']").trigger("change");
-                        /*element.parents(".parameter").find(".dynamicChoicesInfo").append("Dynamic directory URL: "
-                            + choiceURL.substring(0, 50)); */
+                    }
+
+                    //set the dynamic url if there are any
+                    var choiceURLFilter = $(this).find("input[name='choiceURLFilter']").val();
+                    if(choiceURLFilter != undefined && choiceURLFilter != null && choiceURLFilter.length > 0)
+                    {
+                        element.parents(".parameter").find("input[name='choiceDirFilter']").val(choiceURLFilter);
+                        element.parents(".parameter").find("input[name='choiceDirFilter']").trigger("change");
                     }
 
                     $(this).dialog( "destroy" );
