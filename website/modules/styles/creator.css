@@ -207,12 +207,6 @@ div.ui-layout-north
     font-size: 0.75em;
 }
 
-#editchoicedialog
-{
-    text-align: left;
-    font-size: 12px;
-}
-
 .dialog
 {
     font-size: 0.8125em;
@@ -221,21 +215,59 @@ div.ui-layout-north
     clear: both;
 }
 
-#editchoicedialog button
+div.editChoicesDialog
 {
-    font-size: 60%;
+    text-align: left;
+    font-size: 12px;
+    margin-left: 9px;
+    margin-right: 9px;
+    margin-top: 3px;
+}
+
+.editChoicesDialog p
+{
+    font-size: 12px;
+}
+
+
+.editChoicesDialog table .ui-button-text
+{
+    font-size: 7px;
     text-align: left;
 }
 
-#editchoicedialog table
+.editChoicesDialog table
 {
-    width: 310px;
-    margin: 8px;
+    width: 100%;
+    margin: 15px 3px 5px 3px;
+    border-spacing: 0;
+    padding:0;
+    font-size: 12px;
 }
 
-#editchoicedialog input
+.editChoicesDialog table.staticChoiceTable
 {
-    width: auto;
+    width: 100%;
+    margin: 18px 1px 5px 1px;
+    border-spacing: 0;
+    padding:0;
+}
+
+.editChoicesDialog span.staticTableHeader
+{
+    font-size: 14px;
+    font-weight: bold;
+}
+
+.editChoicesDialog span.staticTableHeaderSmall
+{
+    font-size: 12px;
+    font-weight: bold;
+}
+
+.editChoicesDialog table input
+{
+    width: 94%;
 }
 
 .ui-dialog .ui-dialog-buttonpane button
@@ -646,10 +678,14 @@ img.buttonIcon {
     width: 400px;
 }
 
+.parameter table td.lasttd img {
+    margin: 4px;
+    vertical-align: middle;
+}
 
 table.pmoptions td {
-	border:none;
-	padding:0;
+	border: none;
+	padding: 0;
     width: 100%;
 }
 
@@ -746,4 +782,49 @@ table.deloptions
     cursor: pointer;
 }
 
+.selectChoiceTypeDiv
+{
+    margin: 4px 0 20px 1px;
+}
 
+.shortDescription
+{
+    font-style: italic;
+    font-size: 10px;
+}
+
+a.staticChoiceLink
+{
+    margin-top: 8px;
+}
+
+p.editChoiceEntry
+{
+    font-size: 10px;
+    font-style: italic;
+    margin: 4px 0 10px 16px;
+}
+
+.choiceadd
+{
+    margin-left: 1px;
+}
+
+p.editChoicesHeading {
+    border-bottom: 1px solid #bb8;
+    margin-bottom: 1px;
+    color: #333;
+    font-size: 14px !important;
+    font-weight: normal;
+}
+
+.altStaticDesc
+{
+ margin-left: 2px;
+}
+
+.staticChoicesInfo, .dynamicChoicesInfo
+{
+    margin-left: 12px;
+    font-size: 10px;
+}

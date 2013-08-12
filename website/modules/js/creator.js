@@ -7,7 +7,7 @@
  This software is supplied without any warranty or guaranteed support
  whatsoever. The Broad Institute cannot be responsible for its
  use, misuse, or functionality.
-*/
+ */
 
 var mainLayout;
 var run = false;
@@ -25,21 +25,21 @@ var module_editor = {
 };
 
 var Request = {
- 	parameter: function(name) {
- 		return this.parameters()[name];
- 	},
+    parameter: function(name) {
+        return this.parameters()[name];
+    },
 
- 	parameters: function() {
- 		var result = {};
- 		var url = window.location.href;
- 		var parameters = url.slice(url.indexOf('?') + 1).split('&');
+    parameters: function() {
+        var result = {};
+        var url = window.location.href;
+        var parameters = url.slice(url.indexOf('?') + 1).split('&');
 
- 		for(var i = 0;  i < parameters.length; i++) {
- 			var parameter = parameters[i].split('=');
- 			result[parameter[0]] = parameter[1];
- 		}
- 		return result;
- 	}
+        for(var i = 0;  i < parameters.length; i++) {
+            var parameter = parameters[i].split('=');
+            result[parameter[0]] = parameter[1];
+        }
+        return result;
+    }
 };
 
 //For those browsers that dont have it so at least they won't crash.
@@ -50,12 +50,12 @@ if (!window.console)
 
 function trim(s)
 {
-	var l=0; var r=s.length -1;
-	while(l < s.length && s[l] == ' ')
-	{	l++; }
-	while(r > l && s[r] == ' ')
-	{	r-=1;	}
-	return s.substring(l, r+1);
+    var l=0; var r=s.length -1;
+    while(l < s.length && s[l] == ' ')
+    {	l++; }
+    while(r > l && s[r] == ' ')
+    {	r-=1;	}
+    return s.substring(l, r+1);
 }
 
 function setDirty(value)
@@ -74,9 +74,9 @@ function setDirty(value)
     {
         $(window).unbind('beforeunload');
     }
-    
+
     // Disable GParc button or not
-    // ENABLE: 
+    // ENABLE:
 //    if (isDirty()) {
 //    	$('#publishGParc').button("disable");
 //    }
@@ -123,9 +123,9 @@ function saveError(errorMessage)
     $("#savingDialog").dialog("destroy");
     $("#savingDialog").empty();
     $("#savingDialog").append(errorMessage).dialog({
-        resizable: false,
+        resizable: true,
         width: 400,
-        height:130,
+        height:200,
         modal: true,
         title: "Module Save Error",
         buttons: {
@@ -236,7 +236,7 @@ function saveModule()
 
     //add other remaining attributes
     $.each(module_editor.otherModAttrs, function(keyName, value) {
-    	console.log("\nsaving other module attributes: " + keyName + "=" + module_editor.otherModAttrs[keyName]);
+        console.log("\nsaving other module attributes: " + keyName + "=" + module_editor.otherModAttrs[keyName]);
         json.module[keyName] = module_editor.otherModAttrs[keyName];
     });
 
@@ -323,7 +323,7 @@ function saveModule()
                                 {
                                     //reload the editor page using the new LSID
                                     var editLocation = "creator.jsf?lsid=" + newLsid;
-                                    window.open(editLocation, '_self');;
+                                    window.open(editLocation, '_self');
                                 }
                             }
                         }
@@ -357,38 +357,38 @@ function addparameter()
         <button class='delparam'>x Delete</button></td><td>\
         <p>Name*: <br/>\
         <input type='text' name='p_name' size='28'/>\
-        <input type='checkbox' name='p_optional' size='25'/>Optional</p><p>\
-        Description:<br/>\
+        </p><p>\
+        <input type='checkbox' name='p_optional' size='25'/>Make this parameter optional.</p>\
+        <p>Description:<br/>\
         <textarea cols='60' name='p_description' rows='2'></textarea></p>\
-        </td><td class='lasttd'>\
-        <table class='pmoptions'><tr><td>Default Value:</td><td><input type='text' name='p_defaultvalue' size='16'/><br/>\
-        </td></tr>\
-        <tr><td>Flag:</td><td><input type='text' name='p_flag' size='7'/>\
-        <input type='checkbox' name='p_prefix' size='7' disabled='disabled'></input> prefix when specified \
+        </td><td >\
+        <table class='pmoptions'>\
+        <tr><td>Flag:<br/><input type='text' name='p_flag' size='7'/>\
+        <input type='checkbox' name='p_prefix' size='7' disabled='disabled'/> prefix when specified \
         </td> \
         </tr>\
-        <tr><td>Type*:</td><td><select name='p_type'>\
-                       <option value='text'>Text</option> \
-                       <option value='Input File'>Input File</option>\
-                       <option value='Choice'>Choice</option> \
-                       <option value='Integer'>Integer</option>  \
-                       <option value='Floating Point'>Floating Point</option>  \
-                       <option value='Directory'>Directory</option>\
-                       <option value='Password'>Password</option> \
-                   </select>\
+        <tr><td>Type of field to display*:<br/>\
+                <select name='p_type' class='m_select'>\
+                        <option value='text'>Text Field</option> \
+                        <option value='Input File'>Input File Field</option>\
+                </select>\
         </td></tr></table>\
         </td></tr>\
         </table>\
+        <div class='editChoicesDialog'/> \
     </div>");
+
+    //trigger change so that the options for the Text type are displayed
+    changeParameterType(paramDiv.find("select[name='p_type']"));
 
     paramDiv.find("select[name='p_type']").multiselect({
         multiple: false,
         header: false,
-        noneSelectedText: "",
+        noneSelectedText: "Select type",
         selectedList: 1,
         position: {
-          my: 'left bottom',
-          at: 'left top'
+            my: 'left bottom',
+            at: 'left top'
         }
     });
 
@@ -416,7 +416,6 @@ function addparameter()
     $("select[name='p_type']").live("change", function()
     {
         var tSelect = $(this);
-
         changeParameterType(tSelect);
     });
 
@@ -576,221 +575,452 @@ function updateparameter(parameter, updateCmdLine)
 
 function changeParameterType(element)
 {
-    $(".parameter table").resize();
+    if(!element.parent().next().children().is("input[name='p_prefix']"))
+    {
+        element.parent().next().remove();
+    }
 
     var value = element.val();
+    element.parents(".pmoptions").parent().find(".textFieldData").remove();
 
-    if(element.data("editing") !== value)
+    var fieldDetailsTd = $("<td/>");
+    if(value == "Input File")
     {
-        if(!element.parent().next().children().is("input[name='p_prefix']"))
+        fieldDetailsTd.append("File format: <br/>");
+
+        var fileFormatList = $('<select multiple="multiple" name="fileformat"></select>');
+        var fileFormatButton = $('<button id="addinputfileformat">New</button>');
+
+        fileFormatButton.button().click(function()
         {
-            element.parent().next().remove();
+            $( "#addfileformatdialog" ).dialog("open");
+        });
+
+        //copy option values from the modules output file format list that was generated earlier
+        $('select[name="mod_fileformat"]').children("option").each(function()
+        {
+            fileFormatList.append("<option>" + $(this).val() + "</option>");
+        });
+
+        fieldDetailsTd.append(fileFormatList);
+        fieldDetailsTd.append(fileFormatButton);
+
+        fileFormatList.multiselect({
+            header: false,
+            noneSelectedText: "Specify input file formats",
+            selectedList: 4, // 0-based index
+            position:
+            {
+                my: 'left bottom',
+                at: 'left top'
+            }
+        });
+    }
+    else
+    {
+        var dataTypeTd = $("<td class='textFieldData'/>");
+        dataTypeTd.append("Type of data to enter*: <br/>");
+        var formatList = $("<select name='p_format'>\
+                <option value='String'>Text</option>\
+                <option value='Integer'>Integer</option>\
+                <option value='Floating Point'>Floating Point</option>\
+                <option value='Directory'>Directory</option>\
+                <option value='Password'>Password</option>\
+            </select> ");
+        formatList.change(function()
+        {
+            //hide choices info if this is a directory or password entry
+            if($(this).val() == "Directory" || $(this).val() == "Password")
+            {
+                $(this).parents(".parameter:first").find(".choices").hide();
+            }
+            else
+            {
+                $(this).parents(".parameter:first").find(".choices").show();
+            }
+        });
+
+        dataTypeTd.append(formatList);
+        formatList.multiselect({
+            header: false,
+            multiple: false,
+            noneSelectedText: "Specify text format",
+            selectedList: 1, // 0-based index
+            position:
+            {
+                my: 'left bottom',
+                at: 'left top'
+            }
+        });
+
+        $("<tr/>").append(dataTypeTd).appendTo(element.parents(".pmoptions"));
+    }
+
+    var typeDetailsTable = $("<table class='ptypeDetails pmoptions'/>");
+
+    element.parents(".pmoptions").parent().next(".lasttd").remove();
+
+    $("<td class='lasttd'/>").append(typeDetailsTable).insertAfter(element.parents(".pmoptions").parent());
+    $("<tr/>").append(fieldDetailsTd).appendTo(typeDetailsTable);
+
+    var defaultValueRow = $("<tr/>");
+    var defaultValue = $("<input type='text' name='p_defaultvalue' />");
+    $("<td/>").append("Default value:<br/>").append(defaultValue).appendTo(defaultValueRow);
+    typeDetailsTable.append(defaultValueRow);
+
+    var specifyChoicesRow = $("<tr class='choices'/>");
+    var editChoicesLink = $("<a href='#' class='choicelink'>add a drop-down list</a>");
+    editChoicesLink.click(function(event)
+    {
+        event.preventDefault();
+
+        var isFile = !($(this).parents(".parameter").find("select[name='p_type']").val() != "Input File");
+        var choices = $(this).parents(".parameter").find("input[name='choicelist']").val();
+        var pName = $(this).parents(".parameter").find("input[name='p_name']").val();
+        var title =  "Create drop-down list";
+        if(pName != null && pName != undefined && pName.length > 0)
+        {
+            pName =  pName.replace(/\./g, " ");
+
+            title = "Edit Choices for "+ pName;
         }
 
-        if(value == "Choice")
-        {
-            //added as a workaround - check for duplicate calls to this function
-            var editChoiceList = $("<td><input type='text' name='choicelist' size='40'/></td>");
-            var editChoiceLink = $("<a href='#'>edit choice</a>");
+        var editChoicesDialog = $(this).parents(".parameter").find(".editChoicesDialog");
+        editChoicesDialog.empty();
 
-            editChoiceLink.click(function()
+        editChoicesDialog.dialog({
+            autoOpen: true,
+            height: 620,
+            width: 600,
+            title: title,
+            create: function()
             {
-                var choices = $(this).prev().val();
+                var enterValuesDiv = $("<div class='hcontent'/>");
+                $(this).prepend(enterValuesDiv);
 
-                $( "#editchoicedialog" ).dialog({
-                    autoOpen: true,
-                    height: 500,
-                    width: 360,
-                    create: function()
+                var staticChoiceDiv = $("<div class='staticChoicesDiv'/>");
+                enterValuesDiv.append(staticChoiceDiv);
+                var choiceButton = $("<button class='choiceadd'>Add Menu Item</button>");
+                choiceButton.button().click(function()
+                {
+                    var choicerow = $("<tr> <td class='defaultChoiceCol'> <input type='radio' name='cradio' disabled='disabled'/></td>" +
+                        "<td> <input type='text' name='choicev'/> </td>" +
+                        "<td> <input type='text' name='choicen'/> </td>" +
+                        "<td> <button> X </button></td></tr>");
+                    choicerow.find("button").button().click(function()
                     {
-                        var table = $("<table>\
-                            <tr>  \
-                                <th>Value<br/>(required)</th> \
-                                <th>Display Value<br/>(optional)</th> \
-                            </tr>  \
-                        </table>");
+                        $(this).parent().parent().remove();
+                    });
 
-                        $(this).append(table);
-
-                        table.find("tbody").sortable();
-
-                        var result = choices.split(';');
-                        if(result == null || result == "" || result.length < 0)
+                    choicerow.find("input[name='choicev']").focusout(function()
+                    {
+                        //set the display value if it is empty
+                        if($(this).val() != "")
                         {
-                            //start with two rows of data
-                            var trowdef = $("<tr><td> <input type='text' name='choicev' size='15'/> </td>" +
-                                 "<td> <input type='text' name='choicen' size='15'/> </td>" +
-                                 "<td> <button> X </button></td></tr>");
-
-                            trowdef.find("button").button().click(function()
+                            if(choicerow.find("input[name='choicen']").val() == "")
                             {
-                                    $(this).parent().parent().remove();
-                            });
+                                var displayVal = $(this).val();
+                                if(isFile)
+                                {
+                                    displayVal = displayVal.replace(/\/\//g, '');
+                                    var url_split = displayVal.split("/");
+                                    if(url_split.length > 1)
+                                    {
+                                        //get last item in parsed file url
+                                        displayVal = url_split[url_split.length -1];
+                                    }
+                                }
 
-                            var trowdef2 = $("<tr><td> <input type='text' name='choicev' size='15'/> </td>" +
-                                 "<td> <input type='text' name='choicen' size='15'/> </td>" +
-                                 "<td> <button> X </button></td></tr>");
+                                choicerow.find("input[name='choicen']").val(displayVal);
+                            }
+                            choicerow.find("input[name='cradio']").removeAttr("disabled");
+                        }
+                        else
+                        {
+                            choicerow.find("input[name='cradio']").attr("disabled", "disabled");
+                        }
+                    });
 
-                            trowdef2.find("button").button().click(function()
-                            {
-                                    $(this).parent().parent().remove();
-                            });
+                    $(this).parent().find("table").append(choicerow);
+                });
+                staticChoiceDiv.append(choiceButton);
 
-                            $(this).find("table").append(trowdef);
-                            $(this).find("table").append(trowdef2);
+                var valueColHeader = "Value";
+                var dValueColHeader = "Display Value";
+                var valueColHeaderDescription = "The value to pass on the command line";
+                var dValueColHeaderDescription = "The value to display in the drop-down list";
+
+                if(isFile)
+                {
+                    //change header text for file choices
+                    valueColHeader = "URL";
+                    valueColHeaderDescription = "Enter URLs (ftp, http, https)";
+                }
+
+                var table = $("<table class='staticChoiceTable'>" +
+                    "<tr><td> <span class='staticTableHeaderSmall'>Make <br/> Default <br/> </span> " +
+                    "<input type='radio' name='cradio' checked='checked'/> </td>" +
+                    "<td> <span class='staticTableHeader'>" + valueColHeader + "</span>" +
+                    "<br/>" +
+                    "<span class='shortDescription'>" + valueColHeaderDescription + "</span>" +
+                    "</td> <td>"+
+                    "<span class='staticTableHeader'>" + dValueColHeader + "</span>" +
+                    "<br/>" +
+                    "<span class='shortDescription'>" + dValueColHeaderDescription + "</span>" +
+                " </td> </tr> </table>");
+
+                table.find("input[name='cradio']").data("nullRow", true);
+
+                staticChoiceDiv.prepend(table);
+
+                table.find("tbody").sortable();
+
+                var result = choices.split(';');
+                if(choices== "" || result == null  || result.length < 1)
+                {
+                    //start with two rows of data
+                    choiceButton.click();
+                    choiceButton.click();
+                }
+                else
+                {
+                    for(var i=0;i<result.length;i++)
+                    {
+                        var rowdata = result[i].split("=");
+
+                        var displayValue = "";
+                        var value = "";
+                        if(rowdata.length > 1)
+                        {
+                            displayValue = rowdata[1];
+                            value = rowdata[0];
+                        }
+                        else
+                        {
+                            value = rowdata[0];
+                        }
+
+                        choiceButton.click();
+
+                        //check if this should be set as the default
+                        if(element.parents(".parameter").find("input[name='p_defaultvalue']").val() == value)
+                        {
+                            table.find("input[name='cradio']").last().removeAttr("disabled");
+                            table.find("input[name='cradio']").last().attr("checked", "checked");
+                        }
+
+                        table.find("input[name='choicev']").last().val(value);
+                        table.find("input[name='choicen']").last().val(displayValue);
+                    }
+                }
+
+                if(isFile)
+                {
+                    //type is file then display field to input url to retrieve
+                    //files from
+                    var choiceURLDiv = $("<div class='choicesURLDiv'/>");
+
+                    var choiceURLTable = $("<table/>");
+                    choiceURLDiv.append(choiceURLTable);
+                    var choiceURLTableTR = $("<tr/>");
+                    choiceURLTableTR.append("<td>Ftp directory:</td>");
+                    var choiceURL = $("<input name='choiceURL' type='text' size='45'/>");
+
+                    $("<td/>").append(choiceURL).append("<div class='shortDescription'>Enter the ftp directory " +
+                        "containing the files to use to populate the drop-down list</div>").appendTo(choiceURLTableTR);
+                    choiceURLTable.append(choiceURLTableTR);
+
+                    //add filter box
+                    var choiceURLTableFilterTR = $("<tr/>");
+                    choiceURLTableFilterTR.append("<td>File filter:</td>");
+                    choiceURLTable.append(choiceURLTableFilterTR);
+                    var fileFilter = $("<input name='choiceURLFilter' type='text'/>");
+                     $("<td/>").append(fileFilter).append("<div class='shortDescription'>Enter a glob expression pattern (i.e *.gct) " +
+                         "for filtering the files found on the ftp directory</div>").appendTo(choiceURLTableFilterTR);
+
+                    var altStaticChoiceToggle = $("<input type='checkbox' class='staticChoiceLink'/>");
+                    altStaticChoiceToggle.click(function(event)
+                    {
+                        $(this).parents(".editChoicesDialog").find(".staticChoicesDiv").toggle();
+                    });
+                    $("<span>Specify alternative static drop-down list</span>").prepend(altStaticChoiceToggle).appendTo(choiceURLDiv);
+
+                    var altStaticChoiceDescription = $("<span class='altStaticDesc shortDescription'> Static values will be " +
+                        "displayed in the event the dynamic choices cannot be loaded</span>");
+                    altStaticChoiceToggle.parent().append("<br/>").append(altStaticChoiceDescription);
+
+                    enterValuesDiv.prepend(choiceURLDiv);
+
+                    $(this).prepend("<p class='heading editChoicesHeading'>Step 2: Enter URL(s)</p>");
+
+
+                    var dynamicChoiceButton = $('<input type="radio" name="radio"/><label for="radio1">Dynamic drop-down list</label>');
+                    dynamicChoiceButton.click(function()
+                    {
+                        $(this).parents(".editChoicesDialog").find(".choicesURLDiv").show();
+                        $(this).parents(".editChoicesDialog").find(".staticChoiceLink").removeAttr("checked");
+                        $(this).parents(".editChoicesDialog").find(".staticChoicesDiv").hide();
+                    });
+
+                    var staticChoiceButton = $('<input type="radio" name="radio"/><label for="radio1">Static drop-down list</label>');
+                    staticChoiceButton.click(function()
+                    {
+                        $(this).parents(".editChoicesDialog").find(".choicesURLDiv").hide();
+                        $(this).parents(".editChoicesDialog").find(".staticChoicesDiv").show();
+                    });
+
+                    var selectChoiceTypeDiv = $("<div class='selectChoiceTypeDiv hcontent'/>");
+                    $("<div/>").append("<p class='editChoiceEntry'>Select this option to manually enter a list of files to populate the drop-down list</p>").prepend(staticChoiceButton).appendTo(selectChoiceTypeDiv);
+                    $("<div/>").append("<p class='editChoiceEntry'>Select this option to create a drop-down list that will be dynamically populated <br/> with a list of files found at a remote location</p>").prepend(dynamicChoiceButton).appendTo(selectChoiceTypeDiv);
+                    $(this).prepend(selectChoiceTypeDiv);
+
+                    var selectDropDownType = $("<p class='heading editChoicesHeading'>Step 1: Select drop-down type</p>");
+                    $(this).prepend(selectDropDownType);
+
+                    addsectioncollapseimages();
+
+                    staticChoiceButton.click();
+                }
+            },
+            close: function()
+            {
+                $( this ).dialog( "destroy" );
+            },
+            buttons: {
+                "OK": function() {
+                    var choicelist = "";
+                    $(this).find(".staticChoiceTable").find("tr").each(function()
+                    {
+                        var dvalue = $(this).find("td input[name='choicen']").val();
+                        var value = $(this).find("td input[name='choicev']").val();
+
+                        if((dvalue == undefined && value == undefined)
+                            || (dvalue == "" && value==""))
+                        {
                             return;
                         }
 
-                        for(i=0;i<result.length;i++)
+                        if(choicelist !== "")
                         {
-                            var rowdata = result[i].split("=");
-
-                            var displayValue = "";
-                            var value = "";
-                            if(rowdata.length > 1)
-                            {
-                                displayValue = rowdata[1];
-                                value = rowdata[0];
-                            }
-                            else
-                            {
-                                value = rowdata[0];
-                            }
-
-                            var trow = $("<tr><td> <input type='text' name='choicev' size='15' value='"
-                                        + value +"'/> </td>" +
-                                    "<td> <input type='text' name='choicen' size='15'value='"
-                                     + displayValue + "'/> </td>" +
-                                    "<td> <button> X </button></td></tr>");
-
-                            trow.find("button").button().click(function()
-                            {
-                                $(this).parent().parent().remove();
-                            });
-
-                            $(this).find("table").append(trow);
+                            choicelist += ";";
                         }
-                    },
-                    close: function()
-                    {
-                        $( this ).dialog( "destroy" );
-                        $("#editchoicedialog").find( "table" ).remove();
-                    },
-                    buttons: {
-                            "OK": function() {
-                                var choicelist = "";
-                                $(this).find("tr").each(function()
-                                {
-                                    var dvalue = $(this).find("td input[name='choicen']").val();
-                                    var value = $(this).find("td input[name='choicev']").val();
 
-                                    if((dvalue == undefined && value == undefined)
-                                       || (dvalue == "" && value==""))
-                                    {
-                                        return;
-                                    }
+                        if(dvalue == undefined || dvalue == null|| dvalue == "")
+                        {
+                            choicelist += value;
+                        }
+                        else
+                        {
+                            choicelist += value + "=" + dvalue;
+                        }
 
-                                    if(choicelist !== "")
-                                    {
-                                        choicelist += ";";
-                                    }
-
-                                    if(dvalue == undefined || dvalue == null|| dvalue == "")
-                                    {
-                                        choicelist += value;
-                                    }
-                                    else
-                                    {
-                                        choicelist += value + "=" + dvalue;
-                                    }
-                                });
-
-                                $("#editchoicedialog").dialog("destroy");
-                                $("#editchoicedialog").find( "table" ).remove();
-
-                                element.parent().parent().find("input[name='choicelist']").each(function()
-                                {
-                                    $(this).val(choicelist);
-                                    $(this).data('prevVal', choicelist);
-                                    element.data('editing', "Choice");
-
-                                    //validate if default value is valid
-                                    var parent = $(this).closest(".parameter");
-                                    var defaultValueObj = parent.find("input[name='p_defaultvalue']");
-                                    validateDefaultChoiceValue(defaultValueObj);
-                                });
-                            },
-                            "Cancel": function() {
-                                var choiceListElement = $("input[name='choicelist']");
-                                choiceListElement.parent().next().data('editing', false);
-                                $( this ).dialog( "destroy" );
-                                $("#editchoicedialog").find( "table" ).remove();
+                        //set default value
+                        if($(this).find("input[name='cradio']").is(":checked"))
+                        {
+                            //set the default value
+                            var newDefault = $(this).find("input[name='choicev']").val();
+                            newDefault = newDefault.trim();
+                            if(newDefault.length > 0)
+                            {
+                                element.parents(".parameter").find("input[name='p_defaultvalue']").val(newDefault);
                             }
-                    },
-                    resizable: true
-                });
-            });
+                        }
+                        else
+                        {
+                            if(value == element.parents(".parameter").find("input[name='p_defaultvalue']").val())
+                            {
+                                //remove the previous default value since it was no longer selected as the default
+                                element.parents(".parameter").find("input[name='p_defaultvalue']").val("");
+                            }
+                        }
+                    });
 
-            element.data("editing", "Choice");
 
-            element.parent().after(editChoiceList);
-            editChoiceList.append(editChoiceLink);
+                    //validate if default value is valid
+                    var defaultValueObj = element.parents(".parameters").find("input[name='p_defaultvalue']");
+                    validateDefaultChoiceValue(defaultValueObj);
+                    element.parents(".parameter").find("input[name='choicelist']").val(choicelist);
 
-            $("input[name='choicelist']").change(function()
-            {
-               var prevVal = $(this).data("prevVal");
-               var curVal = $(this).val();
-               if(prevVal !== curVal)
-               {
-                   $(this).val(prevVal);
-                   alert("The list of choices cannot be edited from here. Please use the edit choice link.");
-               }
-            });
+                    //set the dynamic url if there are any
+                    var choiceURL = $(this).find("input[name='choiceURL']").val();
+                    if(choiceURL != undefined && choiceURL != null && choiceURL.length > 0)
+                    {
+                       element.parents(".parameter").find("input[name='choiceDir']").val(choiceURL);
+                       element.parents(".parameter").find("input[name='choiceDir']").trigger("change");
+                        /*element.parents(".parameter").find(".dynamicChoicesInfo").append("Dynamic directory URL: "
+                            + choiceURL.substring(0, 50)); */
+                    }
 
-        }
-        else if(value == "Input File")
-        {
-            var fileFormatList = $('<select multiple="multiple" name="fileformat"></select>');
-            var fileFormatButton = $('<button id="addinputfileformat">New</button>');
-
-            fileFormatButton.button().click(function()
-            {
-                $( "#addfileformatdialog" ).dialog("open");
-            });
-
-            console.log("Found file formats: " + $('select[name="mod_fileformat"]').children("option").text());
-            //copy option values from the modules output file format list that was generated earlier
-            $('select[name="mod_fileformat"]').children("option").each(function()
-            {
-                fileFormatList.append("<option>" + $(this).val() + "</option>");
-            });
-
-            var fileFormatTD = $("<td></td>");
-            element.parent().after(fileFormatTD);
-
-            //hide TD so that default select appearance does not appear in UI
-            fileFormatTD.hide();
-            fileFormatTD.append(fileFormatList);
-            fileFormatTD.append(fileFormatButton);
-            fileFormatTD.show();
-            fileFormatList.multiselect({
-                header: false,
-                noneSelectedText: "Specify input file formats",
-                selectedList: 4, // 0-based index
-                position:
+                    $(this).dialog( "destroy" );
+                },
+                "Cancel": function()
                 {
-                    my: 'left bottom',
-                    at: 'left top'
+                    $(this).dialog( "destroy" );
                 }
-            });
+            },
+            resizable: true
+        });
+    });
 
-            element.data("editing", "Input File");
+    $("<td/>").append(editChoicesLink).appendTo(specifyChoicesRow);
+
+    editChoicesLink.parent().append("<a href='createhelp.jsp#paramType' target='help'> " +
+        " <img src='styles/images/help_small.gif' width='12' height='12' alt='help' class='buttonIcon' />"
+        + "</a>");
+
+    editChoicesLink.parent().append("<div class='staticChoicesInfo'/>");
+    editChoicesLink.parent().append("<div class='dynamicChoicesInfo'/>");
+
+    //create hidden link for list of choices
+    editChoicesLink.parent().append("<input type='hidden' name='choicelist'/>");
+
+    //also create hidden fields for the ftp directory and file filter
+    editChoicesLink.parent().append("<input type='hidden' name='choiceDir'/>");
+    editChoicesLink.parent().append("<input type='hidden' name='choiceDirFilter'/>");
+
+    editChoicesLink.parent().find("input[name='choicelist']").change(function()
+    {
+        var choicelist = $(this).parents(".parameter").find("input[name='choicelist']").val();
+        $(this).parents(".parameter").find(".staticChoicesInfo").text("");
+
+        if(choicelist != null && choicelist != undefined && choicelist.length > 0)
+        {
+            //change text of the create drop down link to edit
+            $(this).parents(".parameter").find(".choicelink").text("edit drop down list");
+
+            var result = choicelist.split(";");
+            if(result.length > 0)
+            {
+                $(this).parents(".parameter").find(".staticChoicesInfo").append("Static list: " + result.length + " items");
+            }
         }
         else
         {
-            element.data('editing', "");
+            $(this).parents(".parameter").find(".choicelink").text("add a drop down list");
         }
-    }
+    });
+
+    specifyChoicesRow.find("input[name='choiceDir']").change(function()
+    {
+        $(this).parents(".parameter").find(".dynamicChoicesInfo").text("");
+
+        var ftpDir = $(this).parents(".parameter").find("input[name='choiceDir']").val();
+        if(ftpDir != null && ftpDir != undefined && ftpDir.length > 0)
+        {
+            //change text of the create drop down link to edit
+            $(this).parents(".parameter").find(".choicelink").text("edit drop down list");
+
+            $(this).parents(".parameter").find(".dynamicChoicesInfo").append("Dynamic directory URL: "
+                + ftpDir.substring(0, 50));
+        }
+        else
+        {
+            $(this).parents(".parameter").find(".choicelink").text("add a drop down list");
+        }
+
+    });
+
+    typeDetailsTable.append(specifyChoicesRow);
 }
 
 function updatemodulecategories()
@@ -885,21 +1115,27 @@ function updatefileformats()
 
 function addsectioncollapseimages()
 {
-    var imagecollapse = $("<img class='imgcollapse' src='styles/images/section_collapsearrow.png' alt='some_text' width='11' height='11'/>");
-    var imageexpand = $("<img class='imgexpand' src='styles/images/section_expandarrow.png' alt='some_text' width='11' height='11'/>");
+    $(".heading").each(function()
+    {
+        if($(this).find(".imgcollapse").length == 0 || $(this).find(".imgexpand").length == 0)
+        {
+            var imagecollapse = $("<img class='imgcollapse' src='styles/images/section_collapsearrow.png' alt='some_text' width='11' height='11'/>");
+            var imageexpand = $("<img class='imgexpand' src='styles/images/section_expandarrow.png' alt='some_text' width='11' height='11'/>");
 
-    $(".heading").prepend(imageexpand);
-    $(".heading").prepend(imagecollapse);
+            $(this).prepend(imageexpand);
+            $(this).prepend(imagecollapse);
 
-    $(".heading").children(".imgcollapse").toggle();
+            $(this).children(".imgcollapse").toggle();
 
-    $(".heading").next(".hcontent").data("visible", true);
+            $(this).next(".hcontent").data("visible", true);
+         }
+    });
 }
 
 
 function htmlEncode(value)
 {
-  return $('<div/>').text(value).html();
+    return $('<div/>').text(value).html();
 }
 
 function loadModuleInfo(module)
@@ -1009,14 +1245,14 @@ function loadModuleInfo(module)
         if(cmdtype === "Custom" || cmdtype == null)
         {
             if(module["commandLine"].indexOf("<java>") != -1 &&
-                    module["commandLine"].indexOf("<java>") < 1)
+                module["commandLine"].indexOf("<java>") < 1)
             {
                 $("select[name='c_type']").val("Java");
                 $("select[name='c_type']").multiselect("refresh");
                 $("#commandtextarea textarea").data("type", "<java>");
             }
             if(module["commandLine"].indexOf("<perl>") != -1 &&
-                    module["commandLine"].indexOf("<perl>") < 1)
+                module["commandLine"].indexOf("<perl>") < 1)
             {
                 $("select[name='c_type']").val("Perl");
                 $("select[name='c_type']").multiselect("refresh");
@@ -1077,18 +1313,18 @@ function loadModuleInfo(module)
 
     //store remaining task info attributes
     $.each(module, function(keyName, value) {
-    	console.log("\nkeys: " + keyName);
+        console.log("\nkeys: " + keyName);
         if(keyName != "fileFormat" && keyName != "commandLine" && keyName != "description"
-                && keyName != "os" && keyName != "name" && keyName != "author" && keyName != "JVMLevel"
-                && keyName != "LSID" && keyName != "lsidVersions" && keyName != "cpuType"
-                && keyName != "privacy" && keyName != "language" && keyName != "version"
-                && keyName != "supportFiles" && keyName != "taskType"
-                && keyName != "quality" && keyName != "license")
+            && keyName != "os" && keyName != "name" && keyName != "author" && keyName != "JVMLevel"
+            && keyName != "LSID" && keyName != "lsidVersions" && keyName != "cpuType"
+            && keyName != "privacy" && keyName != "language" && keyName != "version"
+            && keyName != "supportFiles" && keyName != "taskType"
+            && keyName != "quality" && keyName != "license")
         {
             module_editor.otherModAttrs[keyName] = module[keyName];
         }
     });
-    
+
     var supportFilesList = module["supportFiles"];
     if(supportFilesList !== undefined && supportFilesList != null &&  supportFilesList != "")
     {
@@ -1110,27 +1346,27 @@ function loadModuleInfo(module)
             module_editor.currentUploadedFiles.push(supportFilesList[s]);
 
             var checkbox = $('<input type="checkbox" name="currentfiles" value="' +
-            supportFilesList[s] + '" />').click(function()
-            {
-                var selectedVal = $(this).val();
-
-                if($(this).is(':checked'))
+                supportFilesList[s] + '" />').click(function()
                 {
-                    module_editor.filesToDelete.push(selectedVal);
-                }
-                else
-                {
-                    //check the attribute in case deleting from the file list fails
-                    this.setAttribute("checked", "checked");
-                    this.checked = true;
-                    //remove from delete file list
-                    removeFileToDelete(selectedVal);
+                    var selectedVal = $(this).val();
 
-                    this.setAttribute("checked", ""); // For IE
-                    this.removeAttribute("checked");
-                    this.checked = false;
-                }
-            });
+                    if($(this).is(':checked'))
+                    {
+                        module_editor.filesToDelete.push(selectedVal);
+                    }
+                    else
+                    {
+                        //check the attribute in case deleting from the file list fails
+                        this.setAttribute("checked", "checked");
+                        this.checked = true;
+                        //remove from delete file list
+                        removeFileToDelete(selectedVal);
+
+                        this.setAttribute("checked", ""); // For IE
+                        this.removeAttribute("checked");
+                        this.checked = false;
+                    }
+                });
 
             currentFilesDiv.append(checkbox);
 
@@ -1142,7 +1378,7 @@ function loadModuleInfo(module)
 
         currentFilesDiv.append("<br><br>");
     }
-    
+
     // Enable GParc button
     // ENABLE: $('#publishGParc').button("enable");
 }
@@ -1193,34 +1429,34 @@ function loadParameterInfo(parameters)
         {
             newParameter.find("select[name='p_type']").val("Integer");
             newParameter.find("select[name='p_type']").multiselect("refresh");
-            changeParameterType(newParameter.find("select[name='p_type']"));
+            changeParameterType(newParameter.find("select[name='p_format']"));
         }
         if(type == "java.lang.Float")
         {
             newParameter.find("select[name='p_type']").val("Floating Point");
             newParameter.find("select[name='p_type']").multiselect("refresh");
-            changeParameterType(newParameter.find("select[name='p_type']"));
+            changeParameterType(newParameter.find("select[name='p_format']"));
         }
 
         if(type == "PASSWORD")
         {
             newParameter.find("select[name='p_type']").val("Password");
             newParameter.find("select[name='p_type']").multiselect("refresh");
-            changeParameterType(newParameter.find("select[name='p_type']"));
+            changeParameterType(newParameter.find("select[name='p_format']"));
         }
 
         if(type == "DIRECTORY")
         {
             newParameter.find("select[name='p_type']").val("Directory");
             newParameter.find("select[name='p_type']").multiselect("refresh");
-            changeParameterType(newParameter.find("select[name='p_type']"));
+            changeParameterType(newParameter.find("select[name='p_format']"));
         }
 
         if(pfileformat !== undefined && pfileformat != null && pfileformat.length > 0)
         {
             newParameter.find("select[name='p_type']").val("Input File");
             newParameter.find("select[name='p_type']").multiselect("refresh");
-            changeParameterType(newParameter.find("select[name='p_type']"));
+            changeParameterType(newParameter.find("select[name='p_format']"));
 
             var pfileformatlist = pfileformat.split(";");
             newParameter.find("select[name='fileformat']").val(pfileformatlist);
@@ -1228,24 +1464,39 @@ function loadParameterInfo(parameters)
             newParameter.find("select[name='fileformat']").multiselect('refresh');
         }
 
-        var choices = parameters[i].value;
+        var values = parameters[i].value;
+        if(values !== undefined && values !== null && values.length > 0)
+        {
+
+            newParameter.find('input[name="choicelist"]').val(values);
+            newParameter.find('input[name="choicelist"]').trigger("change");
+        }
+
+        var choices = parameters[i].choices;
         if(choices !== undefined && choices !== null && choices.length > 0)
         {
-            newParameter.find("select[name='p_type']").val("Choice");
-            newParameter.find("select[name='p_type']").multiselect("refresh");
-            newParameter.find("select[name='p_type']").trigger("change");
 
-            newParameter.find('input[name="choicelist"]').val(choices);
-            newParameter.find('input[name="choicelist"]').data("prevVal", choices);
+            newParameter.find('input[name="choicelist"]').val(choices.join(";"));
+            newParameter.find('input[name="choicelist"]').trigger("change");
+        }
+
+        var choiceDir = parameters[i].choiceDir;
+        if(choiceDir !== undefined && choiceDir !== null && choiceDir.length > 0)
+        {
+
+            newParameter.find('input[name="choiceDir"]').val(choiceDir);
+            newParameter.find('input[name="choiceDir"]').trigger("change");
         }
 
         var otherAttrs = {};
         $.each(parameters[i], function(keyName, value) {
-        	console.log("\nkeys: " + keyName);
+            console.log("\nkeys: " + keyName);
             if(keyName != "name" && keyName != "description"
-                    && keyName != "flag" && keyName != "fileFormat"
-                    && keyName != "default_value" && keyName != "prefix" && keyName != "type"
-                    && keyName != "TYPE" && keyName != "MODE" && keyName != "optional" && keyName != "value" && keyName != "prefix_when_specified")
+                && keyName != "flag" && keyName != "fileFormat"
+                && keyName != "default_value" && keyName != "prefix" && keyName != "type"
+                && keyName != "TYPE" && keyName != "MODE" && keyName != "optional" && keyName != "value"
+                && keyName != "prefix_when_specified" && keyName != "choices"
+                && keyName != "choiceDirFilter")
             {
                 otherAttrs[keyName] = parameters[i][keyName];
             }
@@ -1258,33 +1509,33 @@ function loadParameterInfo(parameters)
 
 function loadModule(taskId)
 {
-     $.ajax({
-            type: "POST",
-            url: "/gp/ModuleCreator/load",
-            data: { "lsid" : taskId },
-            success: function(response) {
-                var message = response["MESSAGE"];
-                var error = response["ERROR"];
-                var module = response["module"];
+    $.ajax({
+        type: "POST",
+        url: "/gp/ModuleCreator/load",
+        data: { "lsid" : taskId },
+        success: function(response) {
+            var message = response["MESSAGE"];
+            var error = response["ERROR"];
+            var module = response["module"];
 
-                if (error !== undefined && error !== null)
+            if (error !== undefined && error !== null)
+            {
+                alert(error);
+
+                if(error.indexOf("not editable") != -1)
                 {
-                    alert(error);
-
-                    if(error.indexOf("not editable") != -1)
-                    {
-                        window.open("/gp/modules/creator.jsf", '_self');
-                    }
+                    window.open("/gp/modules/creator.jsf", '_self');
                 }
-                if (message !== undefined && message !== null) {
-                    alert(message);
-                }
-                loadModuleInfo(response["module"]);
-                loadParameterInfo(response["parameters"]);
-                setDirty(false);
-            },
-            dataType: "json"
-        });
+            }
+            if (message !== undefined && message !== null) {
+                alert(message);
+            }
+            loadModuleInfo(response["module"]);
+            loadParameterInfo(response["parameters"]);
+            setDirty(false);
+        },
+        dataType: "json"
+    });
 }
 
 function getParametersJSON()
@@ -1300,16 +1551,15 @@ function getParametersJSON()
         var default_val = $(this).find("input[name='p_defaultvalue']").val();
         var optional = $(this).find('input[name="p_optional"]').is(':checked') ? "on" : "";
         var fileformatlist = "";
-        var value = "";
         var mode = "";
         var prefix = "";
         var flag = "";
 
         if($(this).find('select[name="fileformat"]').val() !== undefined
-                && $(this).find('select[name="fileformat"]').val() !== null)
+            && $(this).find('select[name="fileformat"]').val() !== null)
         {
             var fileformat = $(this).find('select[name="fileformat"]').val();
-            for(f=0;f< fileformat.length;f++)
+            for(var f=0;f< fileformat.length;f++)
             {
                 fileformatlist = fileformatlist + fileformat[f];
                 if(f+1 < fileformat.length)
@@ -1335,33 +1585,29 @@ function getParametersJSON()
             mode = "IN";
             type = "FILE";
         }
-        else if(type === "Directory")
-        {
-            type = "DIRECTORY";
-        }
-        else if(type === "Password")
-        {
-            type = "PASSWORD";
-        }
-        else if(type === "Integer")
-        {
-            type = "Integer";
-        }
-        else if(type === "Floating Point")
-        {
-            type = "Floating Point";
-        }
         else
         {
-            type = "TEXT";
-        }
-
-        //this is a choice type
-        var choices = "";
-
-        if($(this).find('input[name="choicelist"]').length > 0)
-        {
-            choices = $(this).find('input[name="choicelist"]').val();
+            var format = $(this).find("select[name='p_format'] option:selected").val();
+            if(format === "Directory")
+            {
+                type = "DIRECTORY";
+            }
+            else if(format === "Password")
+            {
+                type = "PASSWORD";
+            }
+            else if(format === "Integer")
+            {
+                type = "Integer";
+            }
+            else if(format === "Floating Point")
+            {
+                type = "Floating Point";
+            }
+            else
+            {
+                type = "TEXT";
+            }
         }
 
         if($(this).find('input[name="p_prefix"]').is(":checked"))
@@ -1372,16 +1618,38 @@ function getParametersJSON()
         var parameter = {
             "name": pname, "description": description, "TYPE": type,
             "default_value": default_val, "optional": optional,
-            "fileFormat": fileformatlist, "MODE": mode, "value": choices, "prefix": prefix, "flag":flag
+            "fileFormat": fileformatlist, "MODE": mode, "prefix": prefix, "flag": flag
         };
+
+        parameter["value"] = "";
+
+        //there are choices defined
+        if($(this).find('input[name="choicelist"]').val().length > 0)
+        {
+            parameter["value"] = $(this).find('input[name="choicelist"]').val();
+            if(type == "FILE")
+            {
+                parameter["choices"] = $(this).find('input[name="choicelist"]').val();
+            }
+        }
+
+        if($(this).find('input[name="choiceDir"]').val().length > 0)
+        {
+            parameter["choiceDir"] = ($(this).find('input[name="choiceDir"]').val());
+        }
+
+        if($(this).find('input[name="choiceDirFilter"]').val().length > 0)
+        {
+            parameter["choiceDirFilter"] = ($(this).find('input[name="choiceDirFilter"]').val());
+        }
 
         //add other remaining attributes
         var otherAttrs = $(this).data("otherAttrs");
         if (otherAttrs !== undefined && otherAttrs !== null) {
-	        $.each(otherAttrs, function(keyName, value) {
-	        	parameter[keyName] =  otherAttrs[keyName];
-	            console.log("\nsaving other parameter attributes: " + keyName + "=" + otherAttrs[keyName]);
-	        });
+            $.each(otherAttrs, function(keyName, value) {
+                parameter[keyName] =  otherAttrs[keyName];
+                console.log("\nsaving other parameter attributes: " + keyName + "=" + otherAttrs[keyName]);
+            });
         }
 
         parameters.push(parameter);
@@ -1411,9 +1679,9 @@ function saveAndUpload(runModule)
         width: 400,
         title: "Saving Module",
         open: function()
-         {
-             $(".ui-dialog-titlebar-close").hide();
-         }
+        {
+            $(".ui-dialog-titlebar-close").hide();
+        }
     });
 
     run = runModule;
@@ -1465,7 +1733,7 @@ function validateDefaultChoiceValue(defaultValueObj)
         }
 
         var choices = choicelist.split(';');
-        for(i=0;i<choices.length;i++)
+        for(var i=0;i<choices.length;i++)
         {
             var rowdata = choices[i].split("=");
             if(rowdata != undefined && rowdata != null && rowdata.length > 0)
@@ -1494,7 +1762,7 @@ jQuery(document).ready(function() {
     //check if this is a request to edit an existing module
     editModule();
 
-    $(".heading").click(function()
+    $(".heading").live("click", function()
     {
         var visible = $(this).next(".hcontent").data("visible");
         //if first time then content is visible
@@ -1513,45 +1781,41 @@ jQuery(document).ready(function() {
 
     $(".hcontent").show();
 
-    //$(".mheader").load("/gp/modules/header.xhtml");
-    // this layout could be created with NO OPTIONS - but showing some here just as a sample...
-    // myLayout = $('body').layout(); -- syntax with No Options
-
     mainLayout = $('body').layout({
 
-    //	enable showOverflow on west-pane so CSS popups will overlap north pane
+        //	enable showOverflow on west-pane so CSS popups will overlap north pane
         west__showOverflowOnHover: false
 
-    //	reference only - these options are NOT required because 'true' is the default
-    ,	closable:				true
-    ,	resizable:				true	// when open, pane can be resized
-    ,	slidable:				true	// when closed, pane can 'slide' open over other panes - closes on mouse-out
+        //	reference only - these options are NOT required because 'true' is the default
+        ,	closable:				true
+        ,	resizable:				true	// when open, pane can be resized
+        ,	slidable:				true	// when closed, pane can 'slide' open over other panes - closes on mouse-out
 
-    //	some resizing/toggling settings
-    ,	north__slidable:		false	// OVERRIDE the pane-default of 'slidable=true'
-    ,	north__spacing_open:	0		// no resizer-bar when open (zero height)
-    ,	north__spacing_closed:	20		// big resizer-bar when open (zero height)
-    ,	south__spacing_open:	0
+        //	some resizing/toggling settings
+        ,	north__slidable:		false	// OVERRIDE the pane-default of 'slidable=true'
+        ,	north__spacing_open:	0		// no resizer-bar when open (zero height)
+        ,	north__spacing_closed:	20		// big resizer-bar when open (zero height)
+        ,	south__spacing_open:	0
 
-    ,	south__slidable:		false	// OVERRIDE the pane-default of 'slidable=true'
+        ,	south__slidable:		false	// OVERRIDE the pane-default of 'slidable=true'
         //some pane-size settings
-    ,	north__minHeight:		80
-    ,	north__height:		    80
-    ,	south__minHeight:		40
-    ,	west__size:			    360
-    ,	east__size:				300
-    ,	south__size:		    34
-    ,	center__minWidth:		100
-    ,	useStateCookie:			true
+        ,	north__minHeight:		80
+        ,	north__height:		    80
+        ,	south__minHeight:		40
+        ,	west__size:			    360
+        ,	east__size:				300
+        ,	south__size:		    34
+        ,	center__minWidth:		100
+        ,	useStateCookie:			true
     });
 
     $( "#parameters" ).sortable(
-    {
-        change: function(event, ui)
         {
-            setDirty(true);
-        }
-    });
+            change: function(event, ui)
+            {
+                setDirty(true);
+            }
+        });
 
     $( "#commandlist" ).sortable();
 
@@ -1589,7 +1853,7 @@ jQuery(document).ready(function() {
                 p_prefix.attr("disabled", true);
             }
         }
-     });
+    });
 
     $("input[name='p_name'], input[name='p_flag'], input[name='p_prefix']").live("change", function()
     {
@@ -1607,20 +1871,6 @@ jQuery(document).ready(function() {
         $("#commandtextarea").toggle();
     });
 
-    $( "#choiceadd" )
-        .button()
-        .click(function() {
-            var choicerow = $("<tr><td> <input type='text' name='choicev' size='15'/></td>" +
-                            "<td> <input type='text' name='choicen' size='15'/></td>" +
-                            "<td> <button> X </button></td></tr>");
-            choicerow.find("button").button().click(function()
-            {
-                $(this).parent().parent().remove();
-            });
-
-            $(this).parent().next("table").append(choicerow);
-    });
-
     //check for invalid chars ; and = in parameter choice list
     $("input[name='choicen'], input[name='choicev']").live("keyup", function()
     {
@@ -1632,85 +1882,85 @@ jQuery(document).ready(function() {
     });
 
     $( "#addmodcategorydialog" ).dialog({
-            autoOpen: false,
-            height: 210,
-            width: 330,
-            buttons: {
-                    "OK": function() {
-                        var category = $("#newcategoryname").val();
-                        var newcategory = $("<option>" +category + "</option>");
-                        $("select[name='category']").append(newcategory);
-                        $("select[name='category']").val(category);
-                        $("select[name='category']").multiselect("refresh");
-                        $( this ).dialog( "close" );
-                    },
-                    "Cancel": function() {
-                        $( this ).dialog( "close" );
-                    }
+        autoOpen: false,
+        height: 210,
+        width: 330,
+        buttons: {
+            "OK": function() {
+                var category = $("#newcategoryname").val();
+                var newcategory = $("<option>" +category + "</option>");
+                $("select[name='category']").append(newcategory);
+                $("select[name='category']").val(category);
+                $("select[name='category']").multiselect("refresh");
+                $( this ).dialog( "close" );
             },
-            resizable: false
-     });
+            "Cancel": function() {
+                $( this ).dialog( "close" );
+            }
+        },
+        resizable: false
+    });
 
     $("#addcategory").button().click(function()
     {
-       $( "#addmodcategorydialog" ).dialog("open");
+        $( "#addmodcategorydialog" ).dialog("open");
     });
 
 
     $( "#addfileformatdialog" ).dialog({
-            autoOpen: false,
-            height: 210,
-            width: 330,
-            buttons: {
-                    "OK": function() {
-                        var fileformat = $("#newfileformat").val();
-                        fileformat = trim(fileformat);
+        autoOpen: false,
+        height: 210,
+        width: 330,
+        buttons: {
+            "OK": function() {
+                var fileformat = $("#newfileformat").val();
+                fileformat = trim(fileformat);
 
-                        $("#newfileformat").val("");
-                        if(fileformat != "")
+                $("#newfileformat").val("");
+                if(fileformat != "")
+                {
+                    var newfileformat = $("<option value='" + fileformat + "'>" + fileformat + "</option>");
+
+                    var exists = false;
+                    //check if fileformat already exists
+                    //append to parameter input file format
+                    $("select[name='mod_fileformat']").children().each(function()
+                    {
+                        if($(this).val() == fileformat)
                         {
-                            var newfileformat = $("<option value='" + fileformat + "'>" + fileformat + "</option>");
-
-                            var exists = false;
-                            //check if fileformat already exists
-                            //append to parameter input file format
-                            $("select[name='mod_fileformat']").children().each(function()
-                            {
-                                if($(this).val() == fileformat)
-                                {
-                                    exists = true;
-                                }
-                            });
-
-                            if(exists)
-                            {
-                                alert("The file format " + fileformat + " already exists");
-                                return;
-                            }
-
-
-                            $("select[name='fileformat']").append(newfileformat);
-                            $("select[name='fileformat']").multiselect("refresh");
-
-                            //append to module output file format
-                            var modnewfileformat = $("<option value='" + fileformat + "'>" + fileformat + "</option>");
-                            $("select[name='mod_fileformat']").append(modnewfileformat);
-                            $("select[name='mod_fileformat']").multiselect("refresh");
+                            exists = true;
                         }
-                        $( this ).dialog( "close" );
-                    },
-                    "Cancel": function() {
-                        $("#newfileformat").val("");
-                        $( this ).dialog( "close" );
+                    });
+
+                    if(exists)
+                    {
+                        alert("The file format " + fileformat + " already exists");
+                        return;
                     }
+
+
+                    $("select[name='fileformat']").append(newfileformat);
+                    $("select[name='fileformat']").multiselect("refresh");
+
+                    //append to module output file format
+                    var modnewfileformat = $("<option value='" + fileformat + "'>" + fileformat + "</option>");
+                    $("select[name='mod_fileformat']").append(modnewfileformat);
+                    $("select[name='mod_fileformat']").multiselect("refresh");
+                }
+                $( this ).dialog( "close" );
             },
-            resizable: false
+            "Cancel": function() {
+                $("#newfileformat").val("");
+                $( this ).dialog( "close" );
+            }
+        },
+        resizable: false
     });
 
 
     $("#addfileformat").button().click(function()
     {
-       $( "#addfileformatdialog" ).dialog("open");
+        $( "#addfileformatdialog" ).dialog("open");
     });
 
     $("#viewparameter").button().click(function()
@@ -1732,35 +1982,35 @@ jQuery(document).ready(function() {
         height: 440,
         width: 340,
         buttons: {
-                "OK": function()
+            "OK": function()
+            {
+                var prev = $("#commandlist").data("prevlisting");
+
+                var cur = [];
+                $("#commandlist").children("li").each(function()
                 {
-                    var prev = $("#commandlist").data("prevlisting");
+                    cur.push($(this).text());
+                });
 
-                    var cur = [];
-                    $("#commandlist").children("li").each(function()
+                //Reorder the parameters in the command line
+                if(prev !== cur)
+                {
+                    var cmdline = $("#commandtextarea textarea").val();
+
+                    for(p=0; p <prev.length; p++)
                     {
-                        cur.push($(this).text());
-                    });
-
-                    //Reorder the parameters in the command line
-                    if(prev !== cur)
-                    {
-                        var cmdline = $("#commandtextarea textarea").val();
-
-                        for(p=0; p <prev.length; p++)
-                        {
-                            cmdline = cmdline.replace(prev[p], "+++" + p + "***");
-                        }
-
-                        for(p=0;p<prev.length;p++)
-                        {
-                            cmdline = cmdline.replace("+++" + p + "***", cur[p]);
-                        }
+                        cmdline = cmdline.replace(prev[p], "+++" + p + "***");
                     }
 
-                    $("#commandtextarea textarea").val(cmdline);
-                    $( this ).dialog( "close" );
+                    for(p=0;p<prev.length;p++)
+                    {
+                        cmdline = cmdline.replace("+++" + p + "***", cur[p]);
+                    }
                 }
+
+                $("#commandtextarea textarea").val(cmdline);
+                $( this ).dialog( "close" );
+            }
         },
         resizable: true
     });
@@ -1793,19 +2043,19 @@ jQuery(document).ready(function() {
     });
 
     $('#publishGParc').button().click(function() {
-    	var buttons = {
-                "1. Export ZIP": function() {
-                	window.open("/gp/makeZip.jsp?name=" + module_editor.lsid);
-                    if (event.preventDefault) event.preventDefault();
-                    if (event.stopPropagation) event.stopPropagation();
-                },
-                "2. Go to GParc": function() {
-                    $(this).dialog("close");
-                    window.open("http://www.broadinstitute.org/software/gparc/submit_module_gp", '_blank');
-                    if (event.preventDefault) event.preventDefault();
-                    if (event.stopPropagation) event.stopPropagation();
-                }};
-    	var dialogHTML = '<div><a href="http://gparc.org"><img src="styles/images/gparc.png" alt="GParc" style="margin-bottom: 10px;" /></a><br />\
+        var buttons = {
+            "1. Export ZIP": function() {
+                window.open("/gp/makeZip.jsp?name=" + module_editor.lsid);
+                if (event.preventDefault) event.preventDefault();
+                if (event.stopPropagation) event.stopPropagation();
+            },
+            "2. Go to GParc": function() {
+                $(this).dialog("close");
+                window.open("http://www.broadinstitute.org/software/gparc/submit_module_gp", '_blank');
+                if (event.preventDefault) event.preventDefault();
+                if (event.stopPropagation) event.stopPropagation();
+            }};
+        var dialogHTML = '<div><a href="http://gparc.org"><img src="styles/images/gparc.png" alt="GParc" style="margin-bottom: 10px;" /></a><br />\
 			<strong>GParc</strong> is a repository and community where users can share and discuss their own GenePattern modules.<br/><br/>';
 
         if (isDirty()) {
@@ -1813,25 +2063,25 @@ jQuery(document).ready(function() {
         }
 
         if (!hasDocFiles()) {
-    		dialogHTML += '<img src="styles/images/alert.gif" alt="Alert" /> <span style="color:red;">This module does not yet have attached documentation.</span><br/><br/>\
+            dialogHTML += '<img src="styles/images/alert.gif" alt="Alert" /> <span style="color:red;">This module does not yet have attached documentation.</span><br/><br/>\
     			In order to submit a module to GParc the module will need to have attached documentation.<br/><br/>';
-		}
+        }
 
-    	dialogHTML += 'To submit a module to GParc you will need to do the following: <ol><li>Export your module as a ZIP file</li><li>Click the "Go to GParc" button below and upload the file. To do this you will need to have an account on GParc and be signed in.</li></ol></div>';
-    	if (!hasDocFiles() || isDirty()) {
-    		setTimeout(function() {
-				$(".ui-dialog-buttonset > button:visible").button("disable");
-			}, 100);
-    	}
-    	showDialog("Submit Module to GParc", $(dialogHTML), buttons);
+        dialogHTML += 'To submit a module to GParc you will need to do the following: <ol><li>Export your module as a ZIP file</li><li>Click the "Go to GParc" button below and upload the file. To do this you will need to have an account on GParc and be signed in.</li></ol></div>';
+        if (!hasDocFiles() || isDirty()) {
+            setTimeout(function() {
+                $(".ui-dialog-buttonset > button:visible").button("disable");
+            }, 100);
+        }
+        showDialog("Submit Module to GParc", $(dialogHTML), buttons);
     });
     // ENABLE: $('#publishGParc').button("disable");
     $('#whatIsGparc').click(function(event) {
-    	showDialog("What is GParc?", '<a href="http://gparc.org"><img src="styles/images/gparc.png" alt="GParc" style="margin-bottom: 10px;"'+
+        showDialog("What is GParc?", '<a href="http://gparc.org"><img src="styles/images/gparc.png" alt="GParc" style="margin-bottom: 10px;"'+
             '/></a><br /><strong>GParc</strong> is a repository and community where users can share and discuss their own GenePattern modules.'+
             '<br/><br/>Unregistered users can download modules and rate them.  Registered GParc users can:<ul><li>Submit modules</li>'+
             '<li>Download modules</li><li>Rate modules</li><li>Comment on modules</li><li>Access the GParc forum</ul>');
-    	if (event.preventDefault) event.preventDefault();
+        if (event.preventDefault) event.preventDefault();
         if (event.stopPropagation) event.stopPropagation();
     });
 
@@ -1897,7 +2147,7 @@ jQuery(document).ready(function() {
         module_editor.licensefile = this.files[0].name;
 
         var licenseFileNameDiv = $("<div id='licenseFileNameDiv' class='clear'>" + this.files[0].name
-                + " (" + bytesToSize(this.files[0].size) + ")" +"</div>");
+            + " (" + bytesToSize(this.files[0].size) + ")" +"</div>");
         licenseFileNameDiv.prepend(delbutton);
 
         //hide the button to upload a new file
@@ -1925,15 +2175,15 @@ jQuery(document).ready(function() {
     });
 
     $("select[name='category'], select[name='privacy'], select[name='quality'], " +
-      "select[name='c_type'], select[name='cpu'], select[name='language'], select[name='modversion']").multiselect({
-        multiple: false,
-        header: false,
-        selectedList: 1
-    });
+        "select[name='c_type'], select[name='cpu'], select[name='language'], select[name='modversion']").multiselect({
+            multiple: false,
+            header: false,
+            selectedList: 1
+        });
 
     $("#helpbtn").button().click(function()
     {
-          window.open('createhelp.jsp#editingPropertiesHelp', '_blank');
+        window.open('createhelp.jsp#editingPropertiesHelp', '_blank');
     });
 
     $("#modtitle").change(function()
@@ -1968,18 +2218,18 @@ jQuery(document).ready(function() {
 
     //disable default browser behavior of opening files using drag and drop
     $(document).bind({
-       dragenter: function (e) {
-          e.stopPropagation();
-          e.preventDefault();
-          var dt = e.originalEvent.dataTransfer;
-         dt.effectAllowed = dt.dropEffect = 'none';
-       },
-       dragover: function (e) {
-          e.stopPropagation();
-          e.preventDefault();
-          var dt = e.originalEvent.dataTransfer;
-          dt.effectAllowed = dt.dropEffect = 'none';
-       }
+        dragenter: function (e) {
+            e.stopPropagation();
+            e.preventDefault();
+            var dt = e.originalEvent.dataTransfer;
+            dt.effectAllowed = dt.dropEffect = 'none';
+        },
+        dragover: function (e) {
+            e.stopPropagation();
+            e.preventDefault();
+            var dt = e.originalEvent.dataTransfer;
+            dt.effectAllowed = dt.dropEffect = 'none';
+        }
     });
 });
 
@@ -2053,9 +2303,9 @@ function addFileToUpload(file)
             if(index == -1)
             {
                 alert("ERROR: The file" + file.name + " already exists in the module. " +
-                      "Please remove the file first.");
+                    "Please remove the file first.");
                 throw("ERROR: The file" + file.name + " already exists in the module. " +
-                      "Please remove the file first.");
+                    "Please remove the file first.");
             }
         }
     }
@@ -2102,8 +2352,8 @@ function removeFileToDelete(fileName)
     //file was not re-uploaded so it is ok to leave it in the module
     if(index == -1)
     {
-         var fIndex = jQuery.inArray(fileName, module_editor.filesToDelete);
-         module_editor.filesToDelete.splice(fIndex,1);
+        var fIndex = jQuery.inArray(fileName, module_editor.filesToDelete);
+        module_editor.filesToDelete.splice(fIndex,1);
     }
     else
     {
@@ -2186,8 +2436,8 @@ function uploadFile(file)
 }
 
 function hasDocFiles() {
-	var uploads = module_editor.currentUploadedFiles.length;
-	var hasLicense = module_editor.licensefile !== "";
-	if (hasLicense) { uploads--; }
-	return uploads > 0;
+    var uploads = module_editor.currentUploadedFiles.length;
+    var hasLicense = module_editor.licensefile !== "";
+    if (hasLicense) { uploads--; }
+    return uploads > 0;
 }

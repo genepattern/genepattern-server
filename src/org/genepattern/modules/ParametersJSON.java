@@ -49,6 +49,7 @@ public class ParametersJSON extends JSONObject {
     public static final String FILEFORMAT = "fileFormat";
     public static final String PREFIX = "prefix";
     public static final String VALUE = "value";
+    public static final String CHOICES = "choices";
     public static final String FLAG = "flag";
 
 
@@ -62,7 +63,6 @@ public class ParametersJSON extends JSONObject {
             this.put(DEFAULT_VALUE, object.get(DEFAULT_VALUE));
             this.put(OPTIONAL, object.get(OPTIONAL));
             this.put(PREFIX, object.get(PREFIX));
-            this.put(VALUE, object.get(VALUE));
             this.put(FLAG, object.get(FLAG));
 
             String typeString = String.class.getName();
@@ -104,6 +104,10 @@ public class ParametersJSON extends JSONObject {
             this.put(OPTIONAL, pAttrs.get(GPConstants.PARAM_INFO_OPTIONAL[0]));
             this.put(FLAG, pAttrs.get(FLAG));
             this.put(VALUE, pInfo.getValue());
+            if(pInfo.hasChoices(";"))
+            {
+                this.put(CHOICES, pInfo.getChoices(";"));
+            }
             
             Iterator<?> it = pAttrs.entrySet().iterator();
             while (it.hasNext()) {
