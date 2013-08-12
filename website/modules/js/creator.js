@@ -935,6 +935,7 @@ function changeParameterType(element)
                     var defaultValueObj = element.parents(".parameters").find("input[name='p_defaultvalue']");
                     validateDefaultChoiceValue(defaultValueObj);
                     element.parents(".parameter").find("input[name='choicelist']").val(choicelist);
+                    element.parents(".parameter").find("input[name='choicelist']").trigger("change");
 
                     //set the dynamic url if there are any
                     var choiceURL = $(this).find("input[name='choiceURL']").val();
@@ -971,6 +972,9 @@ function changeParameterType(element)
 
     editChoicesLink.parent().append("<div class='staticChoicesInfo'/>");
     editChoicesLink.parent().append("<div class='dynamicChoicesInfo'/>");
+
+    //create hidden link for list of default values
+    editChoicesLink.parent().append("<input type='hidden' name='p_defaultvalue'/>");
 
     //create hidden link for list of choices
     editChoicesLink.parent().append("<input type='hidden' name='choicelist'/>");
@@ -1477,7 +1481,7 @@ function loadParameterInfo(parameters)
         if(choices !== undefined && choices !== null && choices.length > 0)
         {
 
-            newParameter.find('input[name="choicelist"]').val(choices.join(";"));
+            newParameter.find('input[name="choicelist"]').val(choices);
             newParameter.find('input[name="choicelist"]').trigger("change");
         }
 
@@ -1756,8 +1760,12 @@ function validateDefaultChoiceValue(defaultValueObj)
         }
     }
 
-    defaultValueObj.val("");
-    alert("Default value \"" + defaultValue + "\" could not be found in the list of possible input values:\n" + choiceValues.join(', ') + "\n\nPlease enter a valid default value.");
+    //enforce default value if this is a text input parameter
+    if(!parent.find("select[name='p_type']").val().equals("Input File"))
+    {
+        defaultValueObj.val("");
+        alert("Default value \"" + defaultValue + "\" could not be found in the list of possible input values:\n" + choiceValues.join(', ') + "\n\nPlease enter a valid default value.");
+    }
 }
 
 jQuery(document).ready(function() {
