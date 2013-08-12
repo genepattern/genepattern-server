@@ -794,73 +794,71 @@ function loadParameterInfo(parameters, initialValues)
         }
         else
         {
-            if(choiceFound)
+            if(!choiceFound)
             {
-                continue;
-            }
-
-            var textField = null;
-            if(parameters[q].type == "PASSWORD")
-            {
-                textField = $("<input type='password' id='" + parameters[q].name +"' name='" + parameters[q].name + "'/>");
-            }
-            else
-            {
-                textField = $("<input type='text' id='" + parameters[q].name +"' name='" + parameters[q].name + "'/>");
-            }
-
-            // Handle link drags
-            textField.get(0).addEventListener("dragenter", dragEnter, true);
-            textField.get(0).addEventListener("dragleave", dragLeave, true);
-            textField.get(0).addEventListener("dragexit", dragExit, false);
-            textField.get(0).addEventListener("dragover", dragOver, false);
-            textField.get(0).addEventListener("drop", function(event) {
-                $(this).removeClass('highlight');
-                var link = event.dataTransfer.getData('Text')
-                $(this).val(link);
-
-                //now trigger a change so that this value is added to this parameter
-                $(this).trigger("change");
-            }, true);
-
-            textField.change(function()
-            {
-                var valueList = [];
-                valueList.push($(this).val());
-
-                var paramName = $(this).attr("name");
-                parameter_and_val_obj[paramName] = valueList;
-            });
-            textField.val(parameters[q].default_value);
-
-            var textValueList = [];
-            textValueList.push(textField.val());
-            parameter_and_val_obj[parameters[q].name] = textValueList;
-
-            valueTd.append(textField);
-            paramRow.append(valueTd);
-            paramsTable.append(paramRow);
-
-            if(parameters[q].optional.length == 0 && parameters[q].minValue != 0)
-            {
-                textField.addClass("requiredParam");
-            }
-
-            if( initialValuesList != undefined &&  initialValuesList != null)
-            {
-                var inputFieldValue = "";
-                for(v=0; v <  initialValuesList.length; v++)
+                var textField = null;
+                if(parameters[q].type == "PASSWORD")
                 {
-                    inputFieldValue += initialValuesList[v];
-
-                    // add a comma between items in this list
-                    if(v < ( initialValuesList.length-1))
-                    {
-                        inputFieldValue += ",";
-                    }
+                    textField = $("<input type='password' id='" + parameters[q].name +"' name='" + parameters[q].name + "'/>");
                 }
-                textField.val(inputFieldValue);
-                textField.trigger("change");
+                else
+                {
+                    textField = $("<input type='text' id='" + parameters[q].name +"' name='" + parameters[q].name + "'/>");
+                }
+
+                // Handle link drags
+                textField.get(0).addEventListener("dragenter", dragEnter, true);
+                textField.get(0).addEventListener("dragleave", dragLeave, true);
+                textField.get(0).addEventListener("dragexit", dragExit, false);
+                textField.get(0).addEventListener("dragover", dragOver, false);
+                textField.get(0).addEventListener("drop", function(event) {
+                    $(this).removeClass('highlight');
+                    var link = event.dataTransfer.getData('Text')
+                    $(this).val(link);
+
+                    //now trigger a change so that this value is added to this parameter
+                    $(this).trigger("change");
+                }, true);
+
+                textField.change(function()
+                {
+                    var valueList = [];
+                    valueList.push($(this).val());
+
+                    var paramName = $(this).attr("name");
+                    parameter_and_val_obj[paramName] = valueList;
+                });
+                textField.val(parameters[q].default_value);
+
+                var textValueList = [];
+                textValueList.push(textField.val());
+                parameter_and_val_obj[parameters[q].name] = textValueList;
+
+                valueTd.append(textField);
+                paramRow.append(valueTd);
+                paramsTable.append(paramRow);
+
+                if(parameters[q].optional.length == 0 && parameters[q].minValue != 0)
+                {
+                    textField.addClass("requiredParam");
+                }
+
+                if( initialValuesList != undefined &&  initialValuesList != null)
+                {
+                    var inputFieldValue = "";
+                    for(v=0; v <  initialValuesList.length; v++)
+                    {
+                        inputFieldValue += initialValuesList[v];
+
+                        // add a comma between items in this list
+                        if(v < ( initialValuesList.length-1))
+                        {
+                            inputFieldValue += ",";
+                        }
+                    }
+                    textField.val(inputFieldValue);
+                    textField.trigger("change");
+                }
             }
         }
         //append parameter description table
