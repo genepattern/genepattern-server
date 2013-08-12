@@ -120,7 +120,6 @@ function bytesToSize(bytes)
 
 function saveError(errorMessage)
 {
-    $("#savingDialog").dialog("destroy");
     $("#savingDialog").empty();
     $("#savingDialog").append(errorMessage).dialog({
         resizable: true,
@@ -130,7 +129,7 @@ function saveError(errorMessage)
         title: "Module Save Error",
         buttons: {
             OK: function() {
-                $( this ).dialog( "close" );
+                $(this).dialog("destroy");
                 throw(errorMessage);
             }
         }
@@ -257,19 +256,7 @@ function saveModule()
             var versions = response["lsidVersions"];
 
             if (error !== undefined && error !== null) {
-                $("#savedDialog").append(error);
-                $("#savedDialog").dialog({
-                    resizable: false,
-                    width: 400,
-                    height:130,
-                    modal: true,
-                    title: "Module Save Error",
-                    buttons: {
-                        OK: function() {
-                            $( this ).dialog( "close" );
-                        }
-                    }
-                });
+                saveError(error);
                 return;
             }
 
@@ -1486,6 +1473,14 @@ function loadParameterInfo(parameters)
 
             newParameter.find('input[name="choiceDir"]').val(choiceDir);
             newParameter.find('input[name="choiceDir"]').trigger("change");
+        }
+
+        var choiceDirFilter = parameters[i].choiceDirFilter;
+        if(choiceDirFilter !== undefined && choiceDirFilter !== null && choiceDirFilter.length > 0)
+        {
+
+            newParameter.find('input[name="choiceDirFilter"]').val(choiceDirFilter);
+            newParameter.find('input[name="choiceDirFilter"]').trigger("change");
         }
 
         var otherAttrs = {};
