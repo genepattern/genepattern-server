@@ -104,10 +104,6 @@ public class ParametersJSON extends JSONObject {
             this.put(OPTIONAL, pAttrs.get(GPConstants.PARAM_INFO_OPTIONAL[0]));
             this.put(FLAG, pAttrs.get(FLAG));
             this.put(VALUE, pInfo.getValue());
-            if(pInfo.hasChoices(";"))
-            {
-                this.put(CHOICES, pInfo.getChoices(";"));
-            }
             
             Iterator<?> it = pAttrs.entrySet().iterator();
             while (it.hasNext()) {
