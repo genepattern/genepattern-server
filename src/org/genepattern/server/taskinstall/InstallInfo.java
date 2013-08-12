@@ -29,7 +29,10 @@ public class InstallInfo {
             CREATE(SERVER),
             EDIT(SERVER),
             CLONE(SERVER),
-            PROVENANCE(SERVER)
+            PROVENANCE(SERVER),
+        SERVER_ONLY(null),
+            SERVER_ONLY_PROD(SERVER_ONLY),
+            SERVER_ONLY_BETA(SERVER_ONLY)
         ;
         
         private final Type parent;

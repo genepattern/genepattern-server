@@ -10,6 +10,7 @@ import org.genepattern.server.repository.SourceInfo.CreatedOnServer;
 import org.genepattern.server.repository.SourceInfo.FromRepo;
 import org.genepattern.server.repository.SourceInfo.FromUnknown;
 import org.genepattern.server.repository.SourceInfo.FromZip;
+import org.genepattern.server.repository.SourceInfo.ServerOnly;
 import org.genepattern.server.taskinstall.InstallInfo;
 import org.genepattern.server.taskinstall.RecordInstallInfoToDb;
 import org.genepattern.server.taskinstall.dao.TaskInstall;
@@ -91,6 +92,9 @@ public class DbSourceInfoLoader implements SourceInfoLoader {
         }
         else if (type.is(InstallInfo.Type.SERVER)) {
             return new CreatedOnServer();
+        }
+        else if (type.is(InstallInfo.Type.SERVER_ONLY)) {
+            return new ServerOnly(type);
         }
         return new FromUnknown();
     }

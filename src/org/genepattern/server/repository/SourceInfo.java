@@ -21,9 +21,10 @@ public abstract class SourceInfo {
      */
     final static public String PROP_DEDUCE_FROM_LSID=RepositoryInfo.class.getName()+".deduceFromLsid";
     final static private String BLANK_IMG="/gp/images/blank.gif";
+    final static private String ZIP_IMG="/gp/images/winzip_icon.png";
+    final static private String SERVER_ONLY_PROD_IMG="/gp/images/server_only_prod.gif";
+    final static private String SERVER_ONLY_BETA_IMG="/gp/images/server_only_beta.png";
 
-    //final static SourceInfoLoader sourceInfoLoaderSingleton=new StubSourceInfoLoader();
-    //final static SourceInfoLoader sourceInfoLoaderSingleton=new LsidSourceInfoLoader();
     final static SourceInfoLoader sourceInfoLoaderSingleton=new DbSourceInfoLoader();
     final static public SourceInfoLoader getSourceInfoLoader(final Context userContext) {
         return sourceInfoLoaderSingleton;
@@ -34,6 +35,9 @@ public abstract class SourceInfo {
     protected String iconImgSrc;
     protected String label;
     
+    private SourceInfo(final InstallInfo.Type type) {
+        this.type=type;
+    }
     private SourceInfo(final InstallInfo.Type type, final String label, final String iconImgSrc) {
         this.type=type;
         this.label=label;
@@ -111,7 +115,7 @@ public abstract class SourceInfo {
     
     final static public class FromZip extends SourceInfo {
         public FromZip() {
-            super(InstallInfo.Type.ZIP, "Installed from zip", "/gp/images/winzip_icon.png");
+            super(InstallInfo.Type.ZIP, "Installed from zip", ZIP_IMG);
         }
 
         @Override
@@ -140,6 +144,45 @@ public abstract class SourceInfo {
         public String getBriefDescription() {
             return "Installation source not known, module was installed before the GP 3.6.1 update";
         }
+        public String getFullDescription() {
+            return null;
+        }
+    }
+    
+    /**
+     * SourceInfo for a public server only task, one which is installed on the server 
+     * (from either a zip file or the dev repository), but which is not available from the public module repository.
+     * 
+     * @author pcarr
+     *
+     */
+    final static public class ServerOnly extends SourceInfo {
+        private final String briefDescription;
+        public ServerOnly(final InstallInfo.Type type) {
+            super(type);
+            if (type.is(InstallInfo.Type.SERVER_ONLY_PROD)) {
+                this.label="Server only";
+                this.iconImgSrc=SERVER_ONLY_PROD_IMG;
+                this.briefDescription="Production quality module curated by the Broad team, not available from the module repository.";
+            }
+            else if (type.is(InstallInfo.Type.SERVER_ONLY_BETA)) {
+                this.label="Server only (beta)";
+                this.iconImgSrc=SERVER_ONLY_BETA_IMG;
+                this.briefDescription="Beta quality module curated by the Broad team, not available from the module repository.";
+            }
+            else {
+                this.label="Server only";
+                this.iconImgSrc=ZIP_IMG;
+                this.briefDescription="Module installed on the server, but not available from the module repository.";
+            }
+        }
+
+        @Override
+        public String getBriefDescription() {
+            return briefDescription;
+        }
+
+        @Override
         public String getFullDescription() {
             return null;
         }
