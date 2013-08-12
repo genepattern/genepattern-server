@@ -398,6 +398,8 @@ function addparameter()
         updateparameter($(this).parent().parent());
 
         $(this).parents("div:first").remove();
+
+        setDirty(true);
     });
 
     $("select[name='p_type']").live("change", function()
@@ -651,7 +653,7 @@ function changeParameterType(element)
     $("<tr/>").append(fieldDetailsTd).appendTo(typeDetailsTable);
 
     var defaultValueRow = $("<tr/>");
-    var defaultValue = $("<input type='text' name='p_defaultvalue' />");
+    var defaultValue = $("<input type='text' name='p_defaultvalue' class='defaultValue'/>");
     $("<td/>").append("Default value:<br/>").append(defaultValue).appendTo(defaultValueRow);
     typeDetailsTable.append(defaultValueRow);
 
@@ -790,7 +792,7 @@ function changeParameterType(element)
                         choiceButton.click();
 
                         //check if this should be set as the default
-                        if(element.parents(".parameter").find("input[name='p_defaultvalue']").val() == value)
+                        if(element.parents(".parameter").find(".defaultValue").val() == value)
                         {
                             table.find("input[name='cradio']").last().attr("checked", "checked");
                         }
@@ -885,6 +887,8 @@ function changeParameterType(element)
             buttons: {
                 "OK": function() {
                     var choicelist = "";
+                    element.parents(".parameter").find(".defaultValue").val("");
+
                     $(this).find(".staticChoiceTable").find("tr").each(function()
                     {
                         var dvalue = $(this).find("td input[name='choicen']").val();
@@ -918,26 +922,18 @@ function changeParameterType(element)
                             newDefault = newDefault.trim();
                             if(newDefault.length > 0)
                             {
-                                element.parents(".parameter").find("input[name='p_defaultvalue']").val(newDefault);
-                            }
-                        }
-                        else
-                        {
-                            if(value == element.parents(".parameter").find("input[name='p_defaultvalue']").val())
-                            {
-                                //remove the previous default value since it was no longer selected as the default
-                                element.parents(".parameter").find("input[name='p_defaultvalue']").val("");
+                                element.parents(".parameter").find(".defaultValue").val(newDefault);
                             }
                         }
                     });
 
                     //validate if default value is valid
-                    var defaultValueObj = element.parents(".parameters").find("input[name='p_defaultvalue']");
+                    var defaultValueObj = element.parents(".parameters").find(".defaultValue");
                     validateDefaultChoiceValue(defaultValueObj);
                     element.parents(".parameter").find("input[name='choicelist']").val(choicelist);
                     element.parents(".parameter").find("input[name='choicelist']").trigger("change");
 
-                    //set the dynamic url if there are any
+                    //set the dynamic url if there is any
                     var choiceURL = $(this).find("input[name='choiceURL']").val();
                     if(choiceURL != undefined && choiceURL != null && choiceURL.length > 0)
                     {
@@ -945,7 +941,7 @@ function changeParameterType(element)
                        element.parents(".parameter").find("input[name='choiceDir']").trigger("change");
                     }
 
-                    //set the dynamic url if there are any
+                    //set the dynamic url filter if there is any
                     var choiceURLFilter = $(this).find("input[name='choiceURLFilter']").val();
                     if(choiceURLFilter != undefined && choiceURLFilter != null && choiceURLFilter.length > 0)
                     {
@@ -973,9 +969,6 @@ function changeParameterType(element)
     editChoicesLink.parent().append("<div class='staticChoicesInfo'/>");
     editChoicesLink.parent().append("<div class='dynamicChoicesInfo'/>");
 
-    //create hidden link for list of default values
-    editChoicesLink.parent().append("<input type='hidden' name='p_defaultvalue'/>");
-
     //create hidden link for list of choices
     editChoicesLink.parent().append("<input type='hidden' name='choicelist'/>");
 
@@ -993,15 +986,31 @@ function changeParameterType(element)
             //change text of the create drop down link to edit
             $(this).parents(".parameter").find(".choicelink").text("edit drop down list");
 
-            var result = choicelist.split(";");
-            if(result.length > 0)
+            var choicelistArray = choicelist.split(";");
+            if(choicelistArray.length > 0)
             {
-                $(this).parents(".parameter").find(".staticChoicesInfo").append("Static list: " + result.length + " items");
+                $(this).parents(".parameter").find(".staticChoicesInfo").append("Static list: " + choicelistArray.length + " items");
             }
+
+            //change the default value field to a combo box
+            var currentDefaultValue = $(this).parents(".parameter").find(".defaultValue").val();
+
+            var defaultValueComboBox = $("<select class='defaultValue'/>");
+            for(var t=0;t<choicelistArray.length;t++)
+            {
+                var result = choicelistArray[t].split("=");
+                defaultValueComboBox.append("<option value='" + result[0]+ "'>" + result[0]+ "</option>");
+            }
+
+            var prevDef = $(this).parents(".parameter").find(".defaultValue");
+            $(this).parents(".parameter").find(".defaultValue").after(defaultValueComboBox);
+            prevDef.remove();
+            $(this).parents(".parameter").find(".defaultValue").combobox();
         }
         else
         {
             $(this).parents(".parameter").find(".choicelink").text("add a drop down list");
+            $(this).parents(".parameter").find(".defaultValue").replaceWith("<input name='p_defaultvalue' class='defaultValue'/>");
         }
     });
 
@@ -1395,7 +1404,8 @@ function loadParameterInfo(parameters)
         var newParameter = addparameter();
         newParameter.find("input[name='p_name']").val(parameters[i].name);
         newParameter.find("textarea[name='p_description']").val(parameters[i].description);
-        newParameter.find("input[name='p_defaultvalue']").val(parameters[i].default_value);
+        newParameter.find(".defaultValue").val(parameters[i].default_value);
+
         var optional = parameters[i].optional;
         var prefix = parameters[i].prefix;
 
@@ -1561,7 +1571,7 @@ function getParametersJSON()
         var pname = $(this).find("input[name='p_name']").val();
         var description = $(this).find("textarea[name='p_description']").val();
         var type = $(this).find("select[name='p_type'] option:selected").val();
-        var default_val = $(this).find("input[name='p_defaultvalue']").val();
+        var default_val = $(this).find(".defaultValue").val();
         var optional = $(this).find('input[name="p_optional"]').is(':checked') ? "on" : "";
         var fileformatlist = "";
         var mode = "";
@@ -2213,7 +2223,7 @@ jQuery(document).ready(function() {
         }
     });
 
-    $("input[name='p_defaultvalue']").live("change", function()
+    $(".defaultValue").live("change", function()
     {
         validateDefaultChoiceValue($(this));
     });
