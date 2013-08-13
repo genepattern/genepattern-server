@@ -452,12 +452,18 @@ function loadParameterInfo(parameters, initialValues)
 
             if(allowMultiple)
             {
-                choice = $("<select class='choice' multiple='multiple'/>");
+                choice = $("<select class='choice' multiple='multiple' id='"+ parameters[q].name +"'/>");
             }
             else
             {
-                choice = $("<select class='choice'/>");
+                choice = $("<select class='choice' id='"+ parameters[q].name +"'/>");
             }
+
+            if(parameters[q].optional.length == 0 && parameters[q].minValue != 0)
+            {
+                choice.addClass("requiredParam");
+            }
+
             choice.data("cname", parameters[q].name);
             var longChars = 1;
             for(var c=0;c<parameters[q].choiceInfo.choices.length;c++)
@@ -528,7 +534,10 @@ function loadParameterInfo(parameters, initialValues)
                 }
                 else
                 {
-                    valueList.push($(this).val());
+                    if($(this).val() != "")
+                    {
+                        valueList.push($(this).val());
+                    }
                 }
 
                 var paramName = $(this).data("cname");
@@ -579,7 +588,7 @@ function loadParameterInfo(parameters, initialValues)
             }
 
             var valueList = [];
-            if(choice.val() != null)
+            if(choice.val() != null && choice.val() != "")
             {
                 valueList.push(choice.val());
             }
@@ -822,7 +831,10 @@ function loadParameterInfo(parameters, initialValues)
                 textField.change(function()
                 {
                     var valueList = [];
-                    valueList.push($(this).val());
+                    if($(this).val() != "")
+                    {
+                        valueList.push($(this).val());
+                    }
 
                     var paramName = $(this).attr("name");
                     parameter_and_val_obj[paramName] = valueList;
@@ -830,7 +842,11 @@ function loadParameterInfo(parameters, initialValues)
                 textField.val(parameters[q].default_value);
 
                 var textValueList = [];
-                textValueList.push(textField.val());
+
+                if(textField.val() != "")
+                {
+                    textValueList.push(textField.val());
+                }
                 parameter_and_val_obj[parameters[q].name] = textValueList;
 
                 valueTd.append(textField);
