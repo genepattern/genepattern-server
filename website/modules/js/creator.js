@@ -74,15 +74,6 @@ function setDirty(value)
     {
         $(window).unbind('beforeunload');
     }
-
-    // Disable GParc button or not
-    // ENABLE:
-//    if (isDirty()) {
-//    	$('#publishGParc').button("disable");
-//    }
-//    else {
-//    	$('#publishGParc').button("enable");
-//    }
 }
 
 function isDirty()
@@ -1404,9 +1395,6 @@ function loadModuleInfo(module)
 
         currentFilesDiv.append("<br><br>");
     }
-
-    // Enable GParc button
-    // ENABLE: $('#publishGParc').button("enable");
 }
 
 function loadParameterInfo(parameters)
@@ -2075,7 +2063,6 @@ jQuery(document).ready(function() {
         else
         {
             saveAndUpload(false);
-            // ENABLE: $('#publishGParc').button("enable");
         }
     });
 
@@ -2094,19 +2081,52 @@ jQuery(document).ready(function() {
     });
 
     $('#publishGParc').button().click(function() {
-        var buttons = {
-            "1. Export ZIP": function() {
-                window.open("/gp/makeZip.jsp?name=" + module_editor.lsid);
-                if (event.preventDefault) event.preventDefault();
-                if (event.stopPropagation) event.stopPropagation();
-            },
-            "2. Go to GParc": function() {
-                $(this).dialog("close");
-                window.open("http://www.broadinstitute.org/software/gparc/submit_module_gp", '_blank');
-                if (event.preventDefault) event.preventDefault();
-                if (event.stopPropagation) event.stopPropagation();
-            }};
-        var dialogHTML = '<div><a href="http://gparc.org"><img src="styles/images/gparc.png" alt="GParc" style="margin-bottom: 10px;" /></a><br />\
+    	var token = null;
+    	var buttons = {
+                "Submit to GParc": function() {
+                	$(this).dialog("close");
+                	
+                	var afterHTML = "<div><div style='width:100%;text-align:center;'><img id='gparcUploadProgress' style='height: 32px; margin: 10px;' src='/gp/images/runningJob.gif'/></div>" + 
+                			"<div id='gparcInfoText'>Uploading your module to GParc. Please wait...</div></div>";
+                	var afterButtons = {"Confirm on GParc": function() {
+                		window.open("http://dev.broadinstitute.org/software/gparc/uniqid?uniqid=" + token);
+                	}};
+
+                	showDialog("Uploading to GParc. Please Wait...", $(afterHTML), afterButtons);
+                	setTimeout(function() {
+        				$(".ui-dialog-buttonset > button:visible").button("disable");
+        			}, 100);
+                    
+                    $.ajax({
+                        type: "GET",
+                        dataType: "json",
+                        url: "/gp/ModuleCreator/gparc?lsid=" + module_editor.lsid,
+                        success: function(response) {
+                        	if (response.token) {
+                        		token = response.token;
+                            	$("#gparcUploadProgress").attr("src", "/gp/images/checkbox.gif");
+                            	var successHTML = 'Your module has been uploaded to GParc. Please click the button below to log into GParc and finalize your submission.<br/><br/>' +
+                            		  '<em>Remember, in order to finish the submission you will need to a GParc account and will need to be logged in. This account is different ' + 
+    		          				  'from your GenePattern account.</em>' + 
+    		          				  '<ul><li>To register for a GParc account <a href="http://www.broadinstitute.org/software/gparc/user/register" target="_blank" style="text-decoration: underline; color: #000099;">click here</a>.</li>' + 
+    		          				  '<li>To log in to GParc <a href="http://www.broadinstitute.org/software/gparc/user" target="_blank" style="text-decoration: underline; color: #000099;">click here</a>.</li></ul>' + 
+    		          				  'Once you have logged in, click "Confirm on GParc" below.</div>';
+                            	$("#gparcInfoText").html(successHTML);
+                            	setTimeout(function() {
+                    				$(".ui-dialog-buttonset > button:visible").button("enable");
+                    			}, 101);
+                        	}
+                        	else {
+                        		token = response.error;
+                            	$("#gparcUploadProgress").attr("src", "/gp/images/error.gif");
+                            	var successHTML = 'There was an error submitting your module to GParc. ' + token;
+                            	$("#gparcInfoText").text(successHTML);
+                        	}
+                        }
+                    });
+                }
+    		};
+    	var dialogHTML = '<div><a href="http://gparc.org"><img src="styles/images/gparc.png" alt="GParc" style="margin-bottom: 10px;" /></a><br />\
 			<strong>GParc</strong> is a repository and community where users can share and discuss their own GenePattern modules.<br/><br/>';
 
         if (isDirty()) {
@@ -2118,15 +2138,19 @@ jQuery(document).ready(function() {
     			In order to submit a module to GParc the module will need to have attached documentation.<br/><br/>';
         }
 
-        dialogHTML += 'To submit a module to GParc you will need to do the following: <ol><li>Export your module as a ZIP file</li><li>Click the "Go to GParc" button below and upload the file. To do this you will need to have an account on GParc and be signed in.</li></ol></div>';
-        if (!hasDocFiles() || isDirty()) {
-            setTimeout(function() {
-                $(".ui-dialog-buttonset > button:visible").button("disable");
-            }, 100);
-        }
-        showDialog("Submit Module to GParc", $(dialogHTML), buttons);
+    	dialogHTML += '<em>To submit a module to GParc please click the Submit to GParc button below and wait for your module to be uploaded.<br/><br/>' +
+    				  'In order to finish the submission you will need to a GParc account and will need to be logged in. This account is different ' + 
+    				  'from your GenePattern account.</em>' + 
+    				  '<ul><li>To register for a GParc account <a href="http://www.broadinstitute.org/software/gparc/user/register" target="_blank" style="text-decoration: underline; color: #000099;">click here</a>.</li>' + 
+    				  '<li>To log in to GParc <a href="http://www.broadinstitute.org/software/gparc/user" target="_blank" style="text-decoration: underline; color: #000099;">click here</a>.</li></ul></div>';
+    	if (!hasDocFiles() || isDirty()) {
+    		setTimeout(function() {
+				$(".ui-dialog-buttonset > button:visible").button("disable");
+			}, 100);
+    	}
+    	showDialog("Submit Module to GParc", $(dialogHTML), buttons);
     });
-    // ENABLE: $('#publishGParc').button("disable");
+
     $('#whatIsGparc').click(function(event) {
         showDialog("What is GParc?", '<a href="http://gparc.org"><img src="styles/images/gparc.png" alt="GParc" style="margin-bottom: 10px;"'+
             '/></a><br /><strong>GParc</strong> is a repository and community where users can share and discuss their own GenePattern modules.'+
