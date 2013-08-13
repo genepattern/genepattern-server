@@ -747,7 +747,7 @@ function changeParameterType(element)
                 }
 
                 var table = $("<table class='staticChoiceTable'>" +
-                    "<tr><td> <span class='staticTableHeaderSmall'>Make <br/> Default <br/> </span> " +
+                    "<tr><td> <span class='staticTableHeader'> Default </span> " +
                     "<input type='radio' name='cradio' checked='checked'/> </td>" +
                     "<td> <span class='staticTableHeader'>" + valueColHeader + "</span>" +
                     "<br/>" +
@@ -791,13 +791,13 @@ function changeParameterType(element)
 
                         choiceButton.click();
 
+                        table.find("input[name='cradio']").last().removeAttr("disabled");
+
                         //check if this should be set as the default
                         if(element.parents(".parameter").find(".defaultValue").val() == value)
                         {
                             table.find("input[name='cradio']").last().attr("checked", "checked");
                         }
-
-                        table.find("input[name='cradio']").last().removeAttr("disabled");
 
                         table.find("input[name='choicev']").last().val(value);
                         table.find("input[name='choicen']").last().val(displayValue);
@@ -888,7 +888,7 @@ function changeParameterType(element)
                 "OK": function() {
                     var choicelist = "";
                     element.parents(".parameter").find(".defaultValue").val("");
-
+                    var newDefault = "";
                     $(this).find(".staticChoiceTable").find("tr").each(function()
                     {
                         var dvalue = $(this).find("td input[name='choicen']").val();
@@ -918,12 +918,8 @@ function changeParameterType(element)
                         if($(this).find("input[name='cradio']").is(":checked"))
                         {
                             //set the default value
-                            var newDefault = $(this).find("input[name='choicev']").val();
+                            newDefault = $(this).find("input[name='choicev']").val();
                             newDefault = newDefault.trim();
-                            if(newDefault.length > 0)
-                            {
-                                element.parents(".parameter").find(".defaultValue").val(newDefault);
-                            }
                         }
                     });
 
@@ -932,6 +928,22 @@ function changeParameterType(element)
                     validateDefaultChoiceValue(defaultValueObj);
                     element.parents(".parameter").find("input[name='choicelist']").val(choicelist);
                     element.parents(".parameter").find("input[name='choicelist']").trigger("change");
+
+                    //set default value
+                    if(choicelist.length > 0)
+                    {
+                        element.parents(".parameter").find(".defaultValue").combobox("destroy");
+                        element.parents(".parameter").find(".defaultValue").find("option:selected").removeAttr("selected");
+                        element.parents(".parameter").find(".defaultValue").val(newDefault);
+
+                        if(element.parents(".parameter").find(".defaultValue").val() != newDefault)
+                        {
+                            element.parents(".parameter").find(".defaultValue").append("<option value='" + newDefault + "'>" +
+                                newDefault + "</option>");
+                            element.parents(".parameter").find(".defaultValue").val(newDefault);
+                        }
+                        element.parents(".parameter").find(".defaultValue").combobox();
+                    }
 
                     //set the dynamic url if there is any
                     var choiceURL = $(this).find("input[name='choiceURL']").val();

@@ -97,6 +97,8 @@
             var value = this.input.val(),
                 valueLowerCase = value.toLowerCase(),
                 valid = false;
+
+
             this.element.children( "option" ).each(function() {
                 if ( $( this ).text().toLowerCase() === valueLowerCase ) {
                     this.selected = valid = true;
@@ -108,19 +110,12 @@
             if ( valid ) {
                 return;
             }
-
-            // Remove invalid value
-            this.input
-                .val( "" )
-                .attr( "title", value + " didn't match any item" )
-                .tooltip( "open" );
-            this.element.val( "" );
-            this._delay(function() {
-                this.input.tooltip( "close" ).attr( "title", "" );
-            }, 2500 );
-            this.input.data( "ui-autocomplete" ).term = "";
+            else
+            {
+                //add missing value
+                ui.append("<option value='" + value + "' selected>" + value + "</option>");
+            }
         },
-
         _destroy: function() {
             this.wrapper.remove();
             this.element.show();
