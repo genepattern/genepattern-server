@@ -702,14 +702,18 @@ function loadParameterInfo(parameters, initialValues)
                 fileChoiceOptions.change(function()
                 {
                     var selectedOption = ($(this).find(":radio:checked + label").text());
+                    var pname = $(this).data("pname");
 
-                    if(selectedOption == "Select a file" || selectedOption == "Upload your own file")
+                    //clear any values that were set
+                    param_file_listing[pname] = [];
+                    parameter_and_val_obj[pname] = [];
+                    updateParamFileTable(pname);
+
+                    $(this).parents("td:first").find(".fileDiv").toggle();
+                    $(this).parents("td:first").find(".selectChoice").toggle();
+
+                    if(selectedOption == "Select a file")
                     {
-                        var pname = $(this).data("pname");
-
-                        $(this).parents("td:first").find(".fileDiv").toggle();
-                        $(this).parents("td:first").find(".selectChoice").toggle();
-
                         var defaultValue = $(this).parents("td:first").find(".choice").data("default_value");
 
                         if(defaultValue == undefined || defaultValue == null)
@@ -718,13 +722,8 @@ function loadParameterInfo(parameters, initialValues)
                         }
 
                         $(this).parents("td:first").find(".choice").val(defaultValue);
-
+                        $(this).parents("td:first").find(".choice").trigger("change");
                         $(this).parents("td:first").find(".choice").multiselect("refresh");
-
-                        //clear any values that were set
-                        param_file_listing[pname] = [];
-                        parameter_and_val_obj[pname] = [];
-                        updateParamFileTable(pname);
                     }
                 });
 
@@ -1197,72 +1196,78 @@ function isFile(param)
 
 function validate()
 {
-    //remove any existing error messages
-    $(".errorMessage").remove();
-    $("#missingRequiredParams").remove();
+    var missingReqParameters = [];
 
-    //create div to list of all parameters with missing values
-    var missingReqParamsDiv = $("<div id='missingRequiredParams'/>");
-    missingReqParamsDiv.append("<p class='errorMessage'>Please provide a value for the following parameter(s):</p>");
-
-    var pListing = $("<ul class='errorMessage'/>");
-    missingReqParamsDiv.append(pListing);
-
-    var errorMessage = "<span class='errorMessage'>This field is required</span>";
-    var failed = false;
     var paramNames = Object.keys(parameter_and_val_obj);
     for(var p=0;p<paramNames.length;p++)
     {
         var paramId = "#" + jqEscape(paramNames[p]);
-
-        //remove any previous error highlighting
-        $(paramId).parents("td:first").removeClass("errorHighlight");
-
-        //should only be non file input parameters here but check just in case
-        if(!isFile(paramNames[p]))
+        var value = parameter_and_val_obj[paramNames[p]];
+        var required = $(paramId).hasClass("requiredParam");
+        //check if it is required and there is no value specified
+        if(required && (value == undefined || value == null
+            || value.length == 0))
         {
-            var value = parameter_and_val_obj[paramNames[p]];
-            var required = $(paramId).hasClass("requiredParam");
-            //check if it is required and there is no value specified
-            if(required && (value == undefined || value == null
-                || value == ""))
-            {
-                var name = paramNames[p];
-
-                //check if the parameter has an alternate name
-                $.each(parametersJson, function( key, value ) {
-                    if(value.name == paramNames[p]
-                        && value.altName != undefined && value.altName != null
-                        && value.altName.replace(/ /g, '') != "")
-                    {
-                        name = value.altName;
-                    }
-                });
-
-                pListing.append("<li>"+name+"</li>");
-                $(paramId).parents("td:first").addClass("errorHighlight");
-                $(paramId).parents("td:first").append("<div>"+errorMessage + "</div>");
-
-                failed = true;
-            }
+            missingReqParameters.push(paramNames[p]);
         }
     }
 
-    //now check input file parameters
     paramNames = Object.keys(param_file_listing);
     for(p=0;p<paramNames.length;p++)
     {
-        paramId = "#" + jqEscape(paramNames[p]);
+        var paramId = "#" + jqEscape(paramNames[p]);
 
-        //remove any previous error highlighting
-        $(paramId).parents("td:first").removeClass("errorHighlight");
-        required = $(paramId).hasClass("requiredParam");
+        var value = param_file_listing[paramNames[p]];
+        var required = $(paramId).hasClass("requiredParam");
 
-        if(required && (param_file_listing[paramNames[p]] == undefined
-            || param_file_listing[paramNames[p]] == null
-            || param_file_listing[paramNames[p]].length == 0))
+        //check if it is required and there is no value specified
+        if(required)
         {
-            name = paramNames[p];
+            if(value == undefined || value == null || value.length == 0)
+            {
+                if($.inArray(paramNames[p], Object.keys(parameter_and_val_obj)) == -1
+                && $.inArray(paramNames[p], missingReqParameters) == -1)
+                {               //add it to list if it is not already there
+                    missingReqParameters.push(paramNames[p]);
+                }
+            }
+            else
+            {
+                var index = $.inArray(paramNames[p], missingReqParameters);
+                if(index != -1)
+                {
+                    missingReqParameters.splice(index,1);
+                }
+            }
+        }
+
+    }
+
+    //remove any existing error messages
+    $(".errorMessage").remove();
+    $("#missingRequiredParams").remove();
+    $(".errorHighlight").each(function()
+    {
+        $(this).removeClass("errorHighlight");
+    });
+
+    if(missingReqParameters.length > 0)
+    {
+        //create div to list of all parameters with missing values
+        var missingReqParamsDiv = $("<div id='missingRequiredParams'/>");
+        missingReqParamsDiv.append("<p class='errorMessage'>Please provide a value for the following parameter(s):</p>");
+
+        var pListing = $("<ul class='errorMessage'/>");
+        missingReqParamsDiv.append(pListing);
+
+        var errorMessage = "<div class='errorMessage'>This field is required</div>";
+
+        for(p=0;p<missingReqParameters.length;p++)
+        {
+            var paramId = "#" + jqEscape(missingReqParameters[p]);
+
+            var name = paramNames[p];
+
             //check if the parameter has an alternate name
             $.each(parametersJson, function( key, value ) {
                 if(value.name == paramNames[p]
@@ -1273,19 +1278,17 @@ function validate()
                 }
             });
 
-            pListing.append("<li>" + name + "</li>");
+            pListing.append("<li>"+name+"</li>");
+
             $(paramId).parents("td:first").addClass("errorHighlight");
-            $(paramId).parents("td:first").append("<div>"+errorMessage + "</div>");
-            failed = true;
+            $(paramId).parents("td:first").append(errorMessage);
+
         }
+
+        return false;
     }
 
-    if(failed)
-    {
-        $("#submitJob").prepend(missingReqParamsDiv);
-    }
-
-    return !failed;
+    return true;
 }
 
 function runJob()
