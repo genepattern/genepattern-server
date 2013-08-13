@@ -1003,6 +1003,18 @@ function changeParameterType(element)
             {
                 var result = choicelistArray[t].split("=");
                 defaultValueComboBox.append("<option value='" + result[0]+ "'>" + result[0]+ "</option>");
+
+                if(result[0] == currentDefaultValue)
+                {
+                    defaultValueComboBox.val(result[0]);
+                }
+            }
+
+            if(defaultValueComboBox.val() != currentDefaultValue)
+            {
+                defaultValueComboBox.append("<option value='" + currentDefaultValue + "'>"
+                    + currentDefaultValue + "</option>");
+                defaultValueComboBox.val(currentDefaultValue);
             }
 
             var prevDef = $(this).parents(".parameter").find(".defaultValue");
