@@ -733,6 +733,16 @@ function loadParameterInfo(parameters, initialValues)
                         $(this).parents("td:first").find(".choice").val(defaultValue);
                         $(this).parents("td:first").find(".choice").trigger("change");
                         $(this).parents("td:first").find(".choice").multiselect("refresh");
+
+                        //change the id to the parameter name since the choice is the current view
+                        $(this).parents("td:first").find(".fileDiv").find("input[type='file']").removeAttr("id");
+                        $(this).parents("td:first").find(".choice").attr("id", pname);
+                    }
+                    else
+                    {
+                        //change the id to the parameter name since the upload your own file is the current view
+                        $(this).parents("td:first").find(".choice").removeAttr("id");
+                        $(this).parents("td:first").find(".fileDiv").find("input[type='file']").attr("id", pname);
                     }
                 });
 
@@ -768,6 +778,13 @@ function loadParameterInfo(parameters, initialValues)
                     //check if the file name is not empty
                     if( initialValuesList[v] != null &&  initialValuesList[v] != "")
                     {
+                        var fileObj =
+                        {
+                            name:  initialValuesList[v],
+                            id: fileId++
+                        };
+                        fileObjListings.push(fileObj);
+
                         if(choiceFound)
                         {
                             //if this a a file choice parameter, check whether the initial values are custom files
@@ -785,14 +802,10 @@ function loadParameterInfo(parameters, initialValues)
                                 }
                             }
                         }
-
-                        var fileObj =
+                        else
                         {
-                            name:  initialValuesList[v],
-                            id: fileId++
-                        };
-                        fileObjListings.push(fileObj);
-                        param_file_listing[parameters[q].name] = fileObjListings;
+                            param_file_listing[parameters[q].name] = fileObjListings;
+                        }
                     }
                 }
 
@@ -1626,6 +1639,16 @@ function updateParamFileTable(paramName)
         if(files.length == 1 && (files[0].name == null || files[0].name == ""))
         {
             return;
+        }
+
+        //toggle view if this is a file choice parameter
+        var fileChoiceToggle = $(idPName).parents(".pRow:first").find("input[id^=customFile_]");
+        if(fileChoiceToggle.length != 0)
+        {
+            //switch view to custom file view
+            fileChoiceToggle.click();
+
+            param_file_listing[paramName] = files;
         }
 
         var pData = $("<div class='fileDetails'/>");
