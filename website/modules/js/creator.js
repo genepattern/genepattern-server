@@ -2102,6 +2102,7 @@ jQuery(document).ready(function() {
                 			"<div id='gparcInfoText'>Uploading your module to GParc</div></div>";
                 	var afterButtons = {"Confirm on GParc": function() {
                 		window.open(token);
+                		$(this).dialog("close");
                 	}};
 
                 	showDialog("Uploading to GParc. Please Wait...", $(afterHTML), afterButtons);
