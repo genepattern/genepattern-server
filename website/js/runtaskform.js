@@ -783,7 +783,6 @@ function loadParameterInfo(parameters, initialValues)
                             name:  initialValuesList[v],
                             id: fileId++
                         };
-                        fileObjListings.push(fileObj);
 
                         if(choiceFound)
                         {
@@ -800,17 +799,21 @@ function loadParameterInfo(parameters, initialValues)
                                     checked.removeAttr("checked");
                                     unchecked.trigger("click");
                                 }
+                                // add to file listing for the specified parameter
+                                fileObjListings.push(fileObj);
+                                param_file_listing[parameters[q].name] = fileObjListings;
+                                updateParamFileTable(parameters[q].name);
                             }
                         }
                         else
                         {
+                            // add to file listing for the specified parameter
+                            fileObjListings.push(fileObj);
                             param_file_listing[parameters[q].name] = fileObjListings;
+                            updateParamFileTable(parameters[q].name);
                         }
                     }
                 }
-
-                // add to file listing for the specified parameter
-                updateParamFileTable(parameters[q].name);
             }
         }
         else
