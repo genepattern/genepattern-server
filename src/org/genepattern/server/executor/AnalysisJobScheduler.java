@@ -12,8 +12,6 @@
 
 package org.genepattern.server.executor;
 
-import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
@@ -53,11 +51,12 @@ public class AnalysisJobScheduler implements Runnable {
     
     private static final int BOUND = 20000;
     private final BlockingQueue<Integer> pendingJobQueue = new LinkedBlockingQueue<Integer>(BOUND);
-    private static ExecutorService jobTerminationService = Executors.newFixedThreadPool(5);
+    private static ExecutorService jobTerminationService=null;
     private Object jobQueueWaitObject = new Object();
     //the batch size, the max number of pending jobs to fetch from the db at a time
     private int batchSize = 20;
-    private int numJobSubmissionThreads = 5;
+    private int numJobSubmissionThreads = 5;  //set to 0, effectively replaces the original (<= 3.6.1) implementation with the new one 
+    private int numJobTerminationThreads = 5;  
     private boolean suspended = false;
     private Thread runner = null;
     private List<Thread> jobSubmissionThreads = null;
@@ -78,8 +77,8 @@ public class AnalysisJobScheduler implements Runnable {
     }
 
     public void startQueue() {
-        if (jobTerminationService.isTerminated()) {
-            jobTerminationService = Executors.newFixedThreadPool(numJobSubmissionThreads);
+        if (jobTerminationService==null || jobTerminationService.isTerminated()) {
+            jobTerminationService = Executors.newFixedThreadPool(numJobTerminationThreads);
         }
         runner = new Thread(THREAD_GROUP, this);
         runner.setName("AnalysisTaskThread");
@@ -130,7 +129,7 @@ public class AnalysisJobScheduler implements Runnable {
 
     /** Main AnalysisTask's thread method. */
     public void run() {
-        log.info("Starting AnalysisTask thread ... ");
+        log.info("Starting AnalysisTask thread ... ");        
         try {
             while (true) {
                 // Load input data to input queue
@@ -462,83 +461,6 @@ public class AnalysisJobScheduler implements Runnable {
             return true;
         }
         return false;        
-    }
-
-    private static class ProcessingJobsHandler implements Runnable {
-        private ExecutorService jobSubmissionService;
-        private final BlockingQueue<Integer> pendingJobQueue;
-        private final GenePatternAnalysisTask genePattern;
-        
-        public ProcessingJobsHandler(BlockingQueue<Integer> pendingJobQueue) {
-            this.pendingJobQueue = pendingJobQueue;
-            this.jobSubmissionService = Executors.newSingleThreadExecutor();
-            this.genePattern = new GenePatternAnalysisTask(jobSubmissionService);
-        }
-        
-        public void run() {
-            try {
-                while (true) {
-                    Integer jobId = pendingJobQueue.take();
-                    submitJob(jobId);
-                }
-            }
-            catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-            }
-            if (jobSubmissionService != null) {
-                jobSubmissionService.shutdown();
-                try {
-                    if (!jobSubmissionService.awaitTermination(30, TimeUnit.SECONDS)) {
-                        log.error("jobSubmissionService shutdown timed out after 30 seconds.");
-                        jobSubmissionService.shutdownNow();
-                    }
-                }
-                catch (final InterruptedException e) {
-                    log.error("jobSubmissionService executor.shutdown was interrupted", e);
-                    Thread.currentThread().interrupt();
-                }
-            }
-        }
-        
-        private void submitJob(Integer jobId) {
-            if (genePattern == null) {
-                log.error("job not run, genePattern == null!");
-                return;
-            }
-            try {
-                genePattern.onJob(jobId);
-            }
-            catch (JobDispatchException e) {
-                handleJobDispatchException(jobId, e);
-            }
-            catch (Throwable t) {
-                log.error("Unexpected error thrown by GenePatternAnalysisTask.onJob: "+t.getLocalizedMessage());
-                handleJobDispatchException(jobId, t);
-            }
-        }
-
-        //handle errors during job dispatch (moved from GPAT.onJob)
-        private void handleJobDispatchException(int jobId, Throwable t) {
-            if (t.getCause() != null) {
-              t = t.getCause();
-            }
-            log.error("Error submitting job #"+jobId, t);
-            try {
-                String errorMessage = "GenePattern Server error preparing job "+jobId+" for execution.\n"+t.getMessage() + "\n\n";
-                errorMessage += stackTraceToString(t);
-                GenePatternAnalysisTask.handleJobCompletion(jobId, -1, errorMessage);
-            }
-            catch (Throwable t1) {
-                log.error("Error handling job completion for job #"+jobId, t1);
-            }
-        }
-        
-        private static String stackTraceToString(Throwable t) {
-            StringWriter sw = new StringWriter();
-            PrintWriter pw = new PrintWriter(sw);
-            t.printStackTrace(pw);
-            return sw.toString();
-        }
     }
 
 }
