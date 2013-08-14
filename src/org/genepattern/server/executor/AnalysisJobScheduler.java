@@ -57,7 +57,7 @@ public class AnalysisJobScheduler implements Runnable {
     private Object jobQueueWaitObject = new Object();
     //the batch size, the max number of pending jobs to fetch from the db at a time
     private int batchSize = 20;
-    private int numJobSubmissionThreads = 3;
+    private int numJobSubmissionThreads = 5;
     private boolean suspended = false;
     private Thread runner = null;
     private List<Thread> jobSubmissionThreads = null;
@@ -78,8 +78,8 @@ public class AnalysisJobScheduler implements Runnable {
     }
 
     public void startQueue() {
-        if (!jobTerminationService.isTerminated()) {
-            jobTerminationService = Executors.newFixedThreadPool(5);
+        if (jobTerminationService.isTerminated()) {
+            jobTerminationService = Executors.newFixedThreadPool(numJobSubmissionThreads);
         }
         runner = new Thread(THREAD_GROUP, this);
         runner.setName("AnalysisTaskThread");
@@ -138,9 +138,7 @@ public class AnalysisJobScheduler implements Runnable {
                     if (!suspended && pendingJobQueue.isEmpty()) {
                         List<Integer> waitingJobs = null;
                         try {
-                            List<JobQueue> records = JobQueueUtil.getPendingJobs(batchSize);
-
-                            
+                            final List<JobQueue> records = JobQueueUtil.getPendingJobs(batchSize);
                             waitingJobs = new ArrayList<Integer>();
                             if (records != null) {
                                 for(JobQueue record : records) {
