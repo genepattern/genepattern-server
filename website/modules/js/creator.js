@@ -2101,7 +2101,7 @@ jQuery(document).ready(function() {
                 	var afterHTML = "<div><div style='width:100%;text-align:center;'><img id='gparcUploadProgress' style='height: 32px; margin: 10px;' src='/gp/images/runningJob.gif'/></div>" + 
                 			"<div id='gparcInfoText'>Uploading your module to GParc. Please wait...</div></div>";
                 	var afterButtons = {"Confirm on GParc": function() {
-                		window.open("http://dev.broadinstitute.org/software/gparc/uniqid?uniqid=" + token);
+                		window.open(token);
                 	}};
 
                 	showDialog("Uploading to GParc. Please Wait...", $(afterHTML), afterButtons);
@@ -2134,6 +2134,9 @@ jQuery(document).ready(function() {
                             	var successHTML = 'There was an error submitting your module to GParc. ' + token;
                             	$("#gparcInfoText").text(successHTML);
                         	}
+                        },
+                        error: function(error) {
+                        	alert(error);
                         }
                     });
                 }

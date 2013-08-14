@@ -184,10 +184,10 @@ public class ModuleQueryServlet extends HttpServlet {
             
             // Get the URL to post to
             Context context = Context.getContextForUser((String) request.getSession().getAttribute("userid"));
-            String gparcURL = ServerConfiguration.instance().getGPProperty(context, "gparcURL", "http://dev.broadinstitute.org/software/gparc/server_upload.php");
+            String gparcUploadURL = ServerConfiguration.instance().getGPProperty(context, "gparcUploadURL", "http://dev.broadinstitute.org/software/gparc/server_upload.php");
             
             // Set up the post method
-            MultipartPostMethod post = new MultipartPostMethod(gparcURL);
+            MultipartPostMethod post = new MultipartPostMethod(gparcUploadURL);
             post.addRequestHeader("Content-type", "multipart/form-data");
             post.addParameter("zipfilename", zipfile.getName(), zipfile); 
             
@@ -196,13 +196,25 @@ public class ModuleQueryServlet extends HttpServlet {
             
             // Get the token from the response
             if (status == 200) {
-                String token = post.getResponseBodyAsString();
+                String tokenJSON = post.getResponseBodyAsString();
+                JSONObject tokenObject = new JSONObject(tokenJSON);
+                String token = tokenObject.getString("token");
+                
+                String tokenURL = null;
+                if (token != null) {
+                    String gparcSubmitURL = ServerConfiguration.instance().getGPProperty(context, "gparcSubmitURL", "http://dev.broadinstitute.org/software/gparc/uniqid");
+                    tokenURL = gparcSubmitURL + "?uniqid=" + token;
+                    tokenObject.put("token", tokenURL);
+                }
+                else {
+                    tokenURL = "{'error': 'ERROR: No token sent, " + tokenObject.getString("error") + "'}";
+                }
                 
                 // Write the token back to the UI
-                this.write(response, token);   
+                this.write(response, tokenObject);   
             }
             else {
-                this.write(response, "{'error': 'ERROR: Unknown response code ' " + status + "}");
+                this.write(response, "{'error': 'ERROR: Unknown response code " + status + "'}");
             }         
         }
         catch (Exception e) {
