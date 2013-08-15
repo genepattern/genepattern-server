@@ -64,13 +64,6 @@ public class ChoiceInfoHelper {
         return null;
     }
 
-    
-    final static public void addChoiceInfoToParam(final ParameterInfo param, final ChoiceInfo choiceInfo) {
-        
-    }
-    final static public void addChoiceInfoToParam(final ParameterInfo param, final JSONObject choiceInfo) {
-    }
-    
     /**
      * Get the JSON representation for the given choiceInfo.
      * 
