@@ -22,34 +22,50 @@ import org.genepattern.webservice.ParameterInfo;
 import org.genepattern.webservice.TaskInfo;
 
 /**
- * Helper class for the JobSubmitter, so that we can wait for all external file drop-down selections
- * to be downloaded to the cache before starting the job.
+ * Helper class for the JobSubmitter, for downloading external file drop-down selections
+ * to the cache before starting a job.
  * 
  * @author pcarr
  *
  */
 public class FileDownloader {
-    final GetTaskStrategy getTaskStrategy;
-    final Integer jobId;
-    final JobInfo jobInfo;
     final List<Choice> selectedChoices;
+    
+    /**
+     * Create a new downloader for the given job based on the jobId.
+     * 
+     * @param jobId
+     * @return
+     * @throws JobDispatchException
+     */
+    public static final FileDownloader fromJobId(final Integer jobId) throws JobDispatchException {
+        return new FileDownloader(jobId);
+    }
                 
-    public FileDownloader(final Integer jobId) throws JobDispatchException {
+    private FileDownloader(final Integer jobId) throws JobDispatchException {
         this(jobId, null);
     }
-    public FileDownloader(final Integer jobId, final GetTaskStrategy getTaskStrategyIn) throws JobDispatchException {
-        this.jobId=jobId;
+    private FileDownloader(final Integer jobId, final GetTaskStrategy getTaskStrategyIn) throws JobDispatchException {
+        final JobInfo jobInfo=initJobInfo(jobId);
+        final GetTaskStrategy getTaskStrategy;
         if (getTaskStrategyIn == null) {
             getTaskStrategy=new GetTaskStrategyDefault();
         }
         else {
             getTaskStrategy=getTaskStrategyIn;
         }
-        this.jobInfo=initJobInfo();
-        this.selectedChoices=initSelectedChoices();
+        final TaskInfo taskInfo=getTaskStrategy.getTaskInfo(jobInfo.getTaskLSID());
+        this.selectedChoices=initSelectedChoices(taskInfo, jobInfo);
     }
 
-    private JobInfo initJobInfo() throws JobDispatchException {
+    /**
+     * Initialize a JobInfo instance for the given jobId.
+     * Note: could be refactored into a publicly available helper method.
+     * @param jobId
+     * @return
+     * @throws JobDispatchException
+     */
+    private static JobInfo initJobInfo(final Integer jobId) throws JobDispatchException {
         JobInfo jobInfo = null;
         final boolean isInTransaction=HibernateUtil.isInTransaction();
         try {
@@ -67,9 +83,16 @@ public class FileDownloader {
         return jobInfo;
     }
 
-    private List<Choice> initSelectedChoices() {
+    /**
+     * Initialize a list of selected Choices for the given job. For each input parameter, if it has a file drop-down
+     * (aka Choice) and the runtime value was selected from the drop-down, then add it to the list.
+     * 
+     * @param taskInfo
+     * @param jobInfo
+     * @return an empty list of the job has no input values from a file drop-down selection.
+     */
+    private static List<Choice> initSelectedChoices(final TaskInfo taskInfo, final JobInfo jobInfo) {
         List<Choice> selectedChoices=null;
-        final TaskInfo taskInfo=getTaskStrategy.getTaskInfo(jobInfo.getTaskLSID());
         final Map<String,ParameterInfoRecord> paramInfoMap=ParameterInfoRecord.initParamInfoMap(taskInfo);
         for(final ParameterInfo pinfo : jobInfo.getParameterInfoArray()) {
             final ParameterInfoRecord pinfoRecord=paramInfoMap.get( pinfo.getName() );
@@ -95,17 +118,37 @@ public class FileDownloader {
         return selectedChoices;
     }
 
+    /**
+     * Does the job have at least one input selected from a file drop-down?
+     * @return
+     */
     public boolean hasSelectedChoices() {
         return selectedChoices != null && selectedChoices.size()>0;
     }
 
+    /**
+     * Call this method before running the job, it takes care of downloading any input files selected from a 
+     * drop-down menu. The main purpose of this method is to wait, if necessary, for each of the files to download 
+     * into the cache before proceeding. The ChoiceInfoCache manages the download process.
+     * 
+     * @see ChoiceInfoCache
+     * @throws InterruptedException
+     * @throws ExecutionException
+     */
     public void startDownloadAndWait() throws InterruptedException, ExecutionException {
         if (selectedChoices == null) {
             return;
         }
-        
-        List<Choice> copy=new ArrayList<Choice>(selectedChoices);
-        List<Choice> toRemove=new ArrayList<Choice>();
+        if (selectedChoices.size()==0) {
+            return;
+        }
+
+        //
+        // use a while loop so that we can initiate the download for each file in the list
+        // then poll for completion
+        //
+        final List<Choice> copy=new ArrayList<Choice>(selectedChoices);
+        final List<Choice> toRemove=new ArrayList<Choice>();
         while (copy.size()>0) {
             toRemove.clear();
             for(final Choice selectedCopy : copy) {
@@ -121,6 +164,14 @@ public class FileDownloader {
             for(Choice choiceToRemove : toRemove) {
                 copy.remove(choiceToRemove);
             }
+            // sleep a second, so that we can be interrupted (job cancellation) 
+            //     and so that we don't throttle the server
+            Thread.sleep(1000);
         }
+        
+        // another option would be to download them sequentially, e.g.
+        //for(final Choice selectedChoice : selectedChoices) {
+        //    final GpFilePath cachedFile=ChoiceInfoFileCache.instance().getCachedGpFilePathWait(selectedChoice);
+        //}
     }
 }

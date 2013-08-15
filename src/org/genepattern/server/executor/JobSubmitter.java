@@ -51,7 +51,7 @@ public class JobSubmitter implements Runnable {
     }
     
     private void startDownloadAndWait() throws JobDispatchException, ExecutionException, InterruptedException {
-        final FileDownloader downloader=new FileDownloader(jobId);
+        final FileDownloader downloader=FileDownloader.fromJobId(jobId);
         if (!downloader.hasSelectedChoices()) {
             log.debug("No selected choices");
             return;
