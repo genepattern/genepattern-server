@@ -1484,8 +1484,8 @@ function loadParameterInfo(parameters)
 
         if(type == "java.io.File")
         {
-            newParameter.find("input[name='p_type']").val("Input File");
-            newParameter.find("input[name='p_type']").multiselect("refresh");
+            newParameter.find("select[name='p_type']").val("Input File");
+            newParameter.find("select[name='p_type']").multiselect("refresh");
             changeParameterType(newParameter.find("select[name='p_type']"));
         }
 
