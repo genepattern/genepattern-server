@@ -684,8 +684,8 @@ function changeParameterType(element)
                 choiceButton.button().click(function()
                 {
                     var choicerow = $("<tr> <td class='defaultChoiceCol'> <input type='radio' name='cradio' disabled='disabled'/></td>" +
-                        "<td> <input type='text' name='choicev'/> </td>" +
-                        "<td> <input type='text' name='choicen'/> </td>" +
+                        "<td> <input type='text' name='choicev' class='choiceFields'/> </td>" +
+                        "<td> <input type='text' name='choicen' class='choiceFields'/> </td>" +
                         "<td> <button> X </button></td></tr>");
                     choicerow.find("button").button().click(function()
                     {
@@ -721,7 +721,45 @@ function changeParameterType(element)
                         }
                     });
 
-                    $(this).parent().find("table").append(choicerow);
+                    var choiceEntries = document.getElementsByClassName("choiceFields");
+
+                    for (var y = 0; y < choiceEntries.length; ++y) {
+                        var choiceEntry = choiceEntries[y];
+                        choiceEntry.addEventListener("dragenter", function(evt)
+                        {
+                            evt.stopPropagation();
+                            evt.preventDefault();
+                        }, true);
+                        choiceEntry.addEventListener("dragleave", function(evt)
+                        {
+                            evt.stopPropagation();
+                            evt.preventDefault();
+                        }, true);
+                        choiceEntry.addEventListener("dragexit", function(evt)
+                        {
+                            evt.stopPropagation();
+                            evt.preventDefault();
+                        }, false);
+                        choiceEntry.addEventListener("dragover", function(evt)
+                        {
+                            evt.stopPropagation();
+                            evt.preventDefault();
+                        }, false);
+                        choiceEntry.addEventListener("drop", function(evt)
+                        {
+                            evt.stopPropagation();
+                            evt.preventDefault();
+
+                            console.log("choice entry drop");
+                            if(evt.dataTransfer.getData('Text') != null
+                                && evt.dataTransfer.getData('Text')  !== undefined
+                                && evt.dataTransfer.getData('Text') != "")
+                            {
+                                $(this).val(evt.dataTransfer.getData('Text'));
+                            }
+                        }, false);
+                    }
+
                 });
                 staticChoiceDiv.append(choiceButton);
 
@@ -834,7 +872,6 @@ function changeParameterType(element)
                     enterValuesDiv.prepend(choiceURLDiv);
 
                     $(this).prepend("<p class='heading editChoicesHeading'>Step 2: Enter URL(s)</p>");
-
 
                     var dynamicChoiceButton = $('<input type="radio" name="radio"/><label for="radio1">Dynamic drop-down list</label>');
                     dynamicChoiceButton.click(function()
