@@ -2,6 +2,7 @@ package org.genepattern.server.executor;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.util.concurrent.ExecutionException;
 
 import org.apache.log4j.Logger;
 import org.genepattern.server.genepattern.GenePatternAnalysisTask;
@@ -31,15 +32,31 @@ public class JobSubmitter implements Runnable {
             return;
         }
         try {
+            startDownloadAndWait();
             genePattern.onJob(jobId);
         }
         catch (JobDispatchException e) {
             handleJobDispatchException(jobId, e);
         }
+        catch (ExecutionException e) {
+            handleJobDispatchException(jobId, e);
+        }
+        catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
         catch (Throwable t) {
             log.error("Unexpected error thrown by GenePatternAnalysisTask.onJob: "+t.getLocalizedMessage());
             handleJobDispatchException(jobId, t);
         }
+    }
+    
+    private void startDownloadAndWait() throws JobDispatchException, ExecutionException, InterruptedException {
+        final FileDownloader downloader=new FileDownloader(jobId);
+        if (!downloader.hasSelectedChoices()) {
+            log.debug("No selected choices");
+            return;
+        }
+        downloader.startDownloadAndWait();
     }
 
     //handle errors during job dispatch (moved from GPAT.onJob)
