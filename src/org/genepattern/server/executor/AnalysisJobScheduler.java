@@ -55,7 +55,7 @@ public class AnalysisJobScheduler implements Runnable {
     private Object jobQueueWaitObject = new Object();
     //the batch size, the max number of pending jobs to fetch from the db at a time
     private int batchSize = 20;
-    private int numJobSubmissionThreads = 5;  //set to 0, effectively replaces the original (<= 3.6.1) implementation with the new one 
+    private int numJobSubmissionThreads = 0;  //set to 0, effectively replaces the original (<= 3.6.1) implementation with the new one 
     private int numJobTerminationThreads = 5;  
     private boolean suspended = false;
     private Thread runner = null;
@@ -129,7 +129,39 @@ public class AnalysisJobScheduler implements Runnable {
 
     /** Main AnalysisTask's thread method. */
     public void run() {
-        log.info("Starting AnalysisTask thread ... ");        
+        log.info("Starting AnalysisTask thread ... ");
+        
+        //the monitor polls the pendingJobQueue and starts jobs as they are added to the DB
+        final Thread monitor=new Thread(new Runnable() {
+            final ExecutorService jobSubmissionService=Executors.newCachedThreadPool();
+            final GenePatternAnalysisTask genePattern = new GenePatternAnalysisTask(jobSubmissionService);
+
+            @Override
+            public void run() {
+                try {
+                    while(true) {
+                        final Integer jobId=pendingJobQueue.take();
+                        try {
+                            // start a new thread for adding the job to the queue,
+                            // don't wait, because if necessary, input files will be downloaded before
+                            // calling GPAT.onJob
+                            jobSubmissionService.submit(new JobSubmitter(genePattern, jobId));
+                        }
+                        catch (Throwable t) {
+                            //log an error here because it's not expected
+                            log.error("Unexpected error while starting jobId="+jobId, t);
+                        }
+                    }
+                }
+                catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                }
+                jobSubmissionService.shutdown();
+            }
+        });
+        monitor.start();
+        
+        //the while loop polls the DB and adds job ids to the pendingJobQueue as they become available
         try {
             while (true) {
                 // Load input data to input queue
@@ -180,6 +212,8 @@ public class AnalysisJobScheduler implements Runnable {
         catch (InterruptedException ex) {
             Thread.currentThread().interrupt();
         }
+        // on shutdown
+        monitor.interrupt();
         log.debug("Exited AnalysisTask thread.");
     }
 
