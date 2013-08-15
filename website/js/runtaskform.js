@@ -433,9 +433,16 @@ function loadParameterInfo(parameters, initialValues)
         }
 
         var choiceFound = false;
+        var allowCustomChoice = false;
+
         //check if there are predefined list of choices for this parameter
         if(parameters[q].choiceInfo != undefined  && parameters[q].choiceInfo != null && parameters[q].choiceInfo != '')
         {
+            choiceFound = true;
+
+            if(parameters[q].choiceInfo.choiceAllowCustom)
+                allowCustomChoice = true;
+
             var selectChoiceDiv = $("<div class='selectChoice'/>");
             valueTd.append(selectChoiceDiv);
 
@@ -446,7 +453,6 @@ function loadParameterInfo(parameters, initialValues)
                 selectChoiceDiv.append("<p class='errorMessage'> No selections available </p>");
             }
 
-            choiceFound = true;
             //display drop down showing available file choices
             var choice = null;
 
@@ -595,7 +601,10 @@ function loadParameterInfo(parameters, initialValues)
             parameter_and_val_obj[parameters[q].name] = valueList;
         }
 
-        if(parameters[q].TYPE == "FILE" && parameters[q].MODE == "IN")
+        //check if this is a file only or this is a file choice
+        //if this is a file choice check if a custom file can be supplied
+        if(parameters[q].TYPE == "FILE" && parameters[q].MODE == "IN" && ((choiceFound && allowCustomChoice) ||
+            !choiceFound))
         {
             inputFileRowIds.push(rowId);
 
