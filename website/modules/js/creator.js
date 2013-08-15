@@ -1673,10 +1673,13 @@ function getParametersJSON()
         //there are choices defined
         if($(this).find('input[name="choicelist"]').val().length > 0)
         {
-            parameter["value"] = $(this).find('input[name="choicelist"]').val();
             if(type == "FILE")
             {
                 parameter["choices"] = $(this).find('input[name="choicelist"]').val();
+            }
+            else
+            {
+                parameter["value"] = $(this).find('input[name="choicelist"]').val();
             }
         }
 
