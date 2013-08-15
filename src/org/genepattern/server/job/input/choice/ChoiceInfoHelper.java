@@ -12,6 +12,7 @@ import org.genepattern.server.dm.GpFileObjFactory;
 import org.genepattern.server.dm.GpFilePath;
 import org.genepattern.server.job.input.JobInputHelper;
 import org.genepattern.server.job.input.ParamListHelper;
+import org.genepattern.server.rest.ParameterInfoRecord;
 import org.genepattern.server.webapp.rest.api.v1.task.TasksResource;
 import org.genepattern.webservice.ParameterInfo;
 import org.genepattern.webservice.TaskInfo;
@@ -51,6 +52,23 @@ public class ChoiceInfoHelper {
             log.error(t);
             return null;
         }
+    }
+    
+    public static final ChoiceInfo initChoiceInfo(final ParameterInfoRecord pinfoRecord, final ParameterInfo pinfo) {
+        if (ChoiceInfo.getChoiceInfoParser().hasChoiceInfo(pinfoRecord.getFormal())) {
+            //it's a file choice
+            log.debug("Checking for cached value for File Choice, "+pinfo.getName()+"="+pinfo.getValue());
+            ChoiceInfo choiceInfo = ChoiceInfo.getChoiceInfoParser().initChoiceInfo(pinfoRecord.getFormal());
+            return choiceInfo;
+        }
+        return null;
+    }
+
+    
+    final static public void addChoiceInfoToParam(final ParameterInfo param, final ChoiceInfo choiceInfo) {
+        
+    }
+    final static public void addChoiceInfoToParam(final ParameterInfo param, final JSONObject choiceInfo) {
     }
     
     /**
