@@ -62,6 +62,14 @@ public class ChoiceInfoFileCache {
      * 
      */
     private final ConcurrentMap<String, Future<GpFilePath>> cache = new ConcurrentHashMap<String, Future<GpFilePath>>();
+    
+    ///**
+    // * An executor for removing items from the cache when they expire.
+    // * @param selectedChoice
+    // * @return
+    // */
+    //ScheduledExecutorService executorService=Executors.newSingleThreadScheduledExecutor();
+    
 
     private Callable<GpFilePath> initCallableFileDownloader(final Choice selectedChoice) {
         Callable<GpFilePath> eval = new Callable<GpFilePath>() {
@@ -70,9 +78,18 @@ public class ChoiceInfoFileCache {
                 GpFilePath actualPath=null;
                 actualPath=ChoiceInfoHelper.getLocalPathFromSelection(selectedChoice);
                 ParamListHelper.copyExternalUrlToUserUploads(actualPath, url);
+//TODO: schedule removal of Future from cache
+//                executorService.schedule(new Runnable() {
+//
+//                    @Override
+//                    public void run() {
+//                        cache.remove(url.toExternalForm());
+//                    }
+//                },
+//                300, TimeUnit.SECONDS);
                 return actualPath;
             }
-        };
+       };
         return eval;
     }
 
