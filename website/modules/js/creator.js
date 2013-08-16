@@ -356,9 +356,6 @@ function addparameter()
         <div class='editChoicesDialog'/> \
     </div>");
 
-    //trigger change so that the options for the Text type are displayed
-    changeParameterType(paramDiv.find("select[name='p_type']"), "text");
-
     paramDiv.find("select[name='p_type']").multiselect({
         multiple: false,
         header: false,
@@ -369,6 +366,10 @@ function addparameter()
             at: 'left top'
         }
     });
+
+    //trigger change so that the options for the Text type are displayed
+    changeParameterType(paramDiv.find("select[name='p_type']"), "text");
+
 
     $('#parameters').append(paramDiv);
 
@@ -572,6 +573,7 @@ function changeParameterType(element, newType)
     }
 
     element.val(newType);
+    element.multiselect("refresh");
 
     if(!element.parent().next().children().is("input[name='p_prefix']"))
     {
