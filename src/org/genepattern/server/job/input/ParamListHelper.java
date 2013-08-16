@@ -803,78 +803,100 @@ public class ParamListHelper {
      * @throws Exception
      */
     public static void copyExternalUrlToUserUploads(final GpFilePath realPath, final URL url) throws Exception {
-        // If the real path exists, check to see if it is out of date and return if it is not
-        File realFile = realPath.getServerFile();
-        if (realFile.exists()) {
-            log.debug("realFile already exists: " + realFile.getPath());
-            boolean outOfDate = needToRedownload(realPath, url);
-            if (!outOfDate) {
+        try {
+            // If the real path exists, check to see if it is out of date and return if it is not
+            File realFile = realPath.getServerFile();
+            if (realFile.exists()) {
+                log.debug("realFile already exists: " + realFile.getPath());
+                boolean outOfDate = needToRedownload(realPath, url);
+                if (!outOfDate) {
+                    return;
+                }
+                else {
+                    // Delete out of date copy and update database
+                    realFile.delete();
+                    boolean deleted = DataManager.deleteUserUploadFile(realPath.getOwner(), realPath);
+                    if (!deleted) {
+                        String message="Error deleting expired copy of file: " + realPath.getRelativePath();
+                        log.error(message);
+                        throw new Exception(message);
+                    }
+                }
+            }
+    
+            // If not, create the temp path
+            GpFilePath tempPath = getTempPath(realPath);
+            File tempFile = tempPath.getServerFile();
+            
+            // If the temp path exists, blow away the temp file
+            if (tempFile.exists()) {
+                boolean deleted = tempFile.delete();
+                if (!deleted) {
+                    String message = "Unable to delete temp file: " + tempPath.getRelativePath();
+                    log.error(message);
+                    throw new Exception(message);
+                }
+            }
+            
+            // If necessary, delete the record of the actual file from the DB
+            try {
+                int numDeleted = UserUploadManager.deleteUploadFile(realPath);
+                if (numDeleted > 0) {
+                    log.debug("Deleted record from DB: ");
+                }
+            }
+            catch (Throwable t) {
+                log.error("Unable to delete record from DB: "+realPath.getRelativeUri().toString(), t);
+            }
+    
+            // If the temp path does not exist, lazily create the parent dir, then do the download and return
+            if (!tempFile.exists()) {
+                File parentDir = realPath.getServerFile().getParentFile();
+                if (!parentDir.exists()) {
+                    boolean success = parentDir.mkdirs();
+                    if (!success) {
+                        String message = "Error creating upload directory for external url: dir=" + parentDir.getPath() + ", url=" + url.toExternalForm();
+                        log.error(message);
+                        throw new Exception(message);
+                    }
+                }
+                
+                // Add to currently downloading cache, download and then remove from cache
+                FileUtils.copyURLToFile(url, tempFile);
+                
+                // Add it to the database
+                JobInputFileUtil.__addUploadFileToDb(realPath);
+                
+                // Once complete, move the file to the real location and return
+                boolean success = tempFile.renameTo(realFile);
+                if (!success) {
+                    String message = "Error moving temp file to real location: temp=" + tempFile.getPath() + ", real=" + realFile.getPath();
+                    log.error(message);
+                    throw new Exception(message);
+                }
                 return;
             }
-            else {
-                // Delete out of date copy and update database
-                realFile.delete();
-                boolean deleted = DataManager.deleteUserUploadFile(realPath.getOwner(), realPath);
-                if (!deleted) {
-                    String message="Error deleting expired copy of file: " + realPath.getRelativePath();
-                    log.error(message);
-                    throw new Exception(message);
-                }
-            }
         }
-
-        // If not, create the temp path
-        GpFilePath tempPath = getTempPath(realPath);
-        File tempFile = tempPath.getServerFile();
-        
-        // If the temp path exists, blow away the temp file
-        if (tempFile.exists()) {
-            boolean deleted = tempFile.delete();
-            if (!deleted) {
-                String message="Unable to delete temp file: " + tempPath.getRelativePath();
-                log.error(message);
-                throw new Exception(message);
-            }
-        }
-        
-        // If necessary, delete the record of the actual file from the DB
-        try {
-            int numDeleted=UserUploadManager.deleteUploadFile(realPath);
-            if (numDeleted>0) {
-                log.debug("Deleted record from DB: ");
-            }
-        }
-        catch (Throwable t) {
-            log.error("Unable to delete record from DB: "+realPath.getRelativeUri().toString(), t);
-        }
-
-        // If the temp path does not exist, lazily create the parent dir, then do the download and return
-        if (!tempFile.exists()) {
-            File parentDir = realPath.getServerFile().getParentFile();
-            if (!parentDir.exists()) {
-                boolean success = parentDir.mkdirs();
-                if (!success) {
-                    String message="Error creating upload directory for external url: dir=" + parentDir.getPath() + ", url=" + url.toExternalForm();
-                    log.error(message);
-                    throw new Exception(message);
-                }
-            }
+        catch (InterruptedException e) {
+            log.debug("copyExternalUrlToUserUploads() received an InterruptedException and the download was aborted: " + realPath.getRelativePath());
             
-            // Add to currently downloading cache, download and then remove from cache
-            FileUtils.copyURLToFile(url, tempFile);
+            // Check for file in database
+            Context userContext = ServerConfiguration.Context.getContextForUser(".cache");
+            boolean inDatabase = UserUploadManager.getUploadFileObj(userContext, realPath.getRelativeFile(), false) != null;
             
-            // Once complete, move the file to the real location
-            boolean success = tempFile.renameTo(realFile);
-            if (!success) {
-                String message="Error moving temp file to real location: temp=" + tempFile.getPath() + ", real=" + realFile.getPath();
-                log.error(message);
-                throw new Exception(message);
+            // Check for file on file system
+            boolean inFileSystem = realPath.getServerFile().exists();
+            
+            // Take appropriate actions
+            if (inFileSystem && !inDatabase) {
+                JobInputFileUtil.__addUploadFileToDb(realPath);
             }
-            
-            // Add it to the database and return
-            JobInputFileUtil.__addUploadFileToDb(realPath);
-            return;
+            else if (inDatabase && !inFileSystem) {
+                UserUploadManager.deleteUploadFile(realPath);
+            }
         }
-    }
-
+        finally {
+            
+        }
+    }   
 }
