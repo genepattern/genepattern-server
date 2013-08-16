@@ -126,6 +126,7 @@ function saveError(errorMessage)
         }
     });
     saving = false;
+    throw new Error(errorMessage);
 }
 
 function updateModuleVersions(lsids)
@@ -563,16 +564,15 @@ function changeParameterType(element, newType)
     {
         var numItems = choicelist.split(";");
         var confirmed = confirm("You have a drop down list containing " +
-           numItems.length + " items. Changing parameter types" +
+            numItems.length + " items. Changing parameter types" +
             " will cause this drop down list to be lost. Do you want to continue?");
         if(!confirmed)
         {
-            element.find("option :unselected").click();
+            element.find("option:not(:selected)").click();
             return;
         }
     }
 
-    element.val(newType);
     element.multiselect("refresh");
 
     if(!element.parent().next().children().is("input[name='p_prefix']"))
@@ -807,7 +807,7 @@ function changeParameterType(element, newType)
                     "<span class='staticTableHeader'>" + dValueColHeader + "</span>" +
                     "<br/>" +
                     "<span class='shortDescription'>" + dValueColHeaderDescription + "</span>" +
-                " </td> </tr> </table>");
+                    " </td> </tr> </table>");
 
                 table.find("input[name='cradio']").data("nullRow", true);
 
@@ -878,7 +878,7 @@ function changeParameterType(element, newType)
                     var fileFilter = $("<input name='choiceURLFilter' type='text'/>");
                     fileFilter.val(element.parents(".parameter").find("input[name='choiceDirFilter']").val());
                     $("<td/>").append(fileFilter).append("<div class='shortDescription'>Enter a glob expression pattern (i.e *.gct) " +
-                         "for filtering the files found on the ftp directory</div>").appendTo(choiceURLTableFilterTR);
+                        "for filtering the files found on the ftp directory</div>").appendTo(choiceURLTableFilterTR);
 
                     var altStaticChoiceToggle = $("<input type='checkbox' class='staticChoiceLink'/>");
                     altStaticChoiceToggle.click(function(event)
@@ -937,12 +937,11 @@ function changeParameterType(element, newType)
             buttons: {
                 "OK": function() {
                     var choicelist = "";
-                    element.parents(".parameter").find(".defaultValue").val("");
                     var newDefault = "";
                     $(this).find(".staticChoiceTable").find("tr").each(function()
                     {
-                        var dvalue = $(this).find("td input[name='choicen']").val();
-                        var value = $(this).find("td input[name='choicev']").val();
+                        var dvalue = $(this).find(".parameter").find("input[name='choicen']").val();
+                        var value =$(this).find(".parameter").find("td input[name='choicev']").val();
 
                         if((dvalue == undefined && value == undefined)
                             || (dvalue == "" && value==""))
@@ -973,9 +972,6 @@ function changeParameterType(element, newType)
                         }
                     });
 
-                    //validate if default value is valid
-                    var defaultValueObj = element.parents(".parameters").find(".defaultValue");
-                    validateDefaultChoiceValue(defaultValueObj);
                     element.parents(".parameter").find("input[name='choicelist']").val(choicelist);
                     element.parents(".parameter").find("input[name='choicelist']").trigger("change");
 
@@ -992,6 +988,7 @@ function changeParameterType(element, newType)
                                 newDefault + "</option>");
                             element.parents(".parameter").find(".defaultValue").val(newDefault);
                         }
+
                         element.parents(".parameter").find(".defaultValue").combobox();
                     }
 
@@ -999,8 +996,8 @@ function changeParameterType(element, newType)
                     var choiceURL = $(this).find("input[name='choiceURL']").val();
                     if(choiceURL != undefined && choiceURL != null && choiceURL.length > 0)
                     {
-                       element.parents(".parameter").find("input[name='choiceDir']").val(choiceURL);
-                       element.parents(".parameter").find("input[name='choiceDir']").trigger("change");
+                        element.parents(".parameter").find("input[name='choiceDir']").val(choiceURL);
+                        element.parents(".parameter").find("input[name='choiceDir']").trigger("change");
                     }
 
                     //set the dynamic url filter if there is any
@@ -1057,7 +1054,7 @@ function changeParameterType(element, newType)
             //change the default value field to a combo box
             var currentDefaultValue = $(this).parents(".parameter").find(".defaultValue").val();
 
-            var defaultValueComboBox = $("<select class='defaultValue'/>");
+            var defaultValueComboBox = $("<select name='p_defaultvalue' class='defaultValue'/>");
             for(var t=0;t<choicelistArray.length;t++)
             {
                 var result = choicelistArray[t].split("=");
@@ -1079,6 +1076,7 @@ function changeParameterType(element, newType)
             var prevDef = $(this).parents(".parameter").find(".defaultValue");
             $(this).parents(".parameter").find(".defaultValue").after(defaultValueComboBox);
             prevDef.remove();
+
             $(this).parents(".parameter").find(".defaultValue").combobox();
         }
         else
@@ -1216,7 +1214,7 @@ function addsectioncollapseimages()
             $(this).children(".imgcollapse").toggle();
 
             $(this).next(".hcontent").data("visible", true);
-         }
+        }
     });
 }
 
@@ -1633,6 +1631,8 @@ function loadModule(taskId)
 
 function getParametersJSON()
 {
+    validateDefaultChoiceValues();
+
     var parameters = [];
     var pnum = 0;
     $(".parameter").each(function()
@@ -1806,48 +1806,61 @@ function uploadAllFiles()
     }
 }
 
-function validateDefaultChoiceValue(defaultValueObj)
+function validateDefaultChoiceValues()
 {
-    var defaultValue = defaultValueObj.val();
+    //validate default values for choice parameters during save
+    var matchNotFoundParams = [];
 
-    if(defaultValue == undefined || defaultValue == null || defaultValue.length < 1)
+    $(".parameter").each(function()
     {
-        return;
-    }
+        var choicelistObj  = $(this).find("input[name='choicelist']");
+        var defaultValue = $(this).find(".defaultValue").val();
 
-    var choiceValues = [];
-    //we are validating that the default value is valid if this parameter is a drop down
-    var parent = defaultValueObj.closest(".parameter");
-
-    var choiceParameter = parent.find("input[name='choicelist']");
-    if(choiceParameter !== undefined && choiceParameter !== null)
-    {
-        var choicelist = choiceParameter.val();
-        if(choicelist == undefined || choicelist == null)
+        if(defaultValue == undefined || defaultValue == null || defaultValue.length < 1)
         {
             return;
         }
 
-        var choices = choicelist.split(';');
-        for(var i=0;i<choices.length;i++)
+        if(choicelistObj != undefined && choicelistObj != null)
         {
-            var rowdata = choices[i].split("=");
-            if(rowdata != undefined && rowdata != null && rowdata.length > 0)
+            var matchFound = false;
+            var choicelist = choicelistObj.val();
+
+            if(choicelist.length > 0)
             {
-                choiceValues.push(rowdata[0]);
-                if(rowdata[0] == defaultValue)
+                //ignore default values for dynamic file choice parameters for now
+                if($(this).find("input[name='choiceDir']") == undefined ||
+                    $(this).find("input[name='choiceDir']") == null  ||
+                    $(this).find("input[name='choiceDir']").val().length == 0)
                 {
-                    return;
+
+                    var choices = choicelist.split(';');
+                    for(var i=0;i<choices.length;i++)
+                    {
+                        var rowdata = choices[i].split("=");
+                        if(rowdata != undefined && rowdata != null && rowdata.length > 0)
+                        {
+                            if(rowdata[0] == defaultValue)
+                            {
+                                matchFound = true;
+                            }
+                        }
+                    }
+                    if(!matchFound)
+                    {
+                        matchNotFoundParams.push($(this).find("input[name='p_name']").val());
+                    }
                 }
             }
-        }
-    }
 
-    //enforce default value if this is a text input parameter
-    if(!parent.find("select[name='p_type']").val().equals("Input File"))
+        }
+    });
+
+
+    if(matchNotFoundParams.length > 0)
     {
-        defaultValueObj.val("");
-        alert("Default value \"" + defaultValue + "\" could not be found in the list of possible input values:\n" + choiceValues.join(', ') + "\n\nPlease enter a valid default value.");
+        saveError("The following parameters "+ matchNotFoundParams.join(", ") + " have default values that could not be found " +
+            "in their drop-down list. The default values must be fixed before saving.");
     }
 }
 
@@ -1980,6 +1993,37 @@ jQuery(document).ready(function() {
             $(this).val("");
         }
     });
+
+    /*$(".defaultValue").live("change", function()
+     {
+     //check if this is a regular/non-file choice list
+     var matchFound = false;
+     console.log("default change called");
+     if($(this).parents(".parameter").find("select[name='p_type']") == "text")
+     {
+     var choicelist = $(this).parents(".parameter").find("input[name='choicelist']").val();
+     if(choicelist != undefined && choicelist != null && choicelist.length > 0)
+     {
+     var choiceItems = choicelist.split(";");
+     for(var c=0;c<choiceItems.length;c++)
+     {
+     var result = choiceItems[c].split("=");
+     if(result[0] == $(this).val())
+     {
+     matchFound = true;
+     }
+     }
+     }
+     }
+
+     if(!matchFound)
+     {
+     $(this).val("");
+     alert("Could not find the specified default value " + $(this).val() + " in the list of URLs defined " +
+     "for  the drop down list");
+
+     }
+     }); */
 
     $( "#addmodcategorydialog" ).dialog({
         autoOpen: false,
@@ -2142,56 +2186,56 @@ jQuery(document).ready(function() {
     });
 
     $('#publishGParc').button().click(function() {
-    	var token = null;
-    	var buttons = {
-                "Submit to GParc": function() {
-                	$(this).dialog("close");
+        var token = null;
+        var buttons = {
+            "Submit to GParc": function() {
+                $(this).dialog("close");
 
-                	var afterHTML = "<div><div style='width:100%;text-align:center;'><img id='gparcUploadProgress' style='height: 32px; margin: 10px;' src='/gp/images/runningJob.gif'/></div>" +
-                			"<div id='gparcInfoText'>Uploading your module to GParc</div></div>";
-                	var afterButtons = {"Confirm on GParc": function() {
-                		window.open(token);
-                		$(this).dialog("close");
-                	}};
+                var afterHTML = "<div><div style='width:100%;text-align:center;'><img id='gparcUploadProgress' style='height: 32px; margin: 10px;' src='/gp/images/runningJob.gif'/></div>" +
+                    "<div id='gparcInfoText'>Uploading your module to GParc</div></div>";
+                var afterButtons = {"Confirm on GParc": function() {
+                    window.open(token);
+                    $(this).dialog("close");
+                }};
 
-                	showDialog("Uploading to GParc. Please Wait...", $(afterHTML), afterButtons);
-                	setTimeout(function() {
-        				$(".ui-dialog-buttonset > button:visible").button("disable");
-        			}, 100);
+                showDialog("Uploading to GParc. Please Wait...", $(afterHTML), afterButtons);
+                setTimeout(function() {
+                    $(".ui-dialog-buttonset > button:visible").button("disable");
+                }, 100);
 
-                    $.ajax({
-                        type: "GET",
-                        dataType: "json",
-                        url: "/gp/ModuleCreator/gparc?lsid=" + module_editor.lsid,
-                        success: function(response) {
-                        	if (response.token) {
-                        		token = response.token;
-                            	$("#gparcUploadProgress").attr("src", "/gp/images/checkbox.gif");
-                            	var successHTML = 'Your module has been uploaded to GParc. Please click the button below to log into GParc and finalize your submission.<br/><br/>' +
-                            		  '<em>Remember, in order to finish the submission you will need to a GParc account and will need to be logged in. This account is different ' +
-    		          				  'from your GenePattern account.</em>' +
-    		          				  '<ul><li>To register for a GParc account <a href="http://www.broadinstitute.org/software/gparc/user/register" target="_blank" style="text-decoration: underline; color: #000099;">click here</a>.</li>' +
-    		          				  '<li>To log in to GParc <a href="http://www.broadinstitute.org/software/gparc/user" target="_blank" style="text-decoration: underline; color: #000099;">click here</a>.</li></ul>' +
-    		          				  'Once you have logged in, click "Confirm on GParc" below.</div>';
-                            	$("#gparcInfoText").html(successHTML);
-                            	setTimeout(function() {
-                    				$(".ui-dialog-buttonset > button:visible").button("enable");
-                    			}, 101);
-                        	}
-                        	else {
-                        		token = response.error;
-                            	$("#gparcUploadProgress").attr("src", "/gp/images/error.gif");
-                            	var successHTML = 'There was an error submitting your module to GParc. ' + token;
-                            	$("#gparcInfoText").text(successHTML);
-                        	}
-                        },
-                        error: function(error) {
-                        	alert(error);
+                $.ajax({
+                    type: "GET",
+                    dataType: "json",
+                    url: "/gp/ModuleCreator/gparc?lsid=" + module_editor.lsid,
+                    success: function(response) {
+                        if (response.token) {
+                            token = response.token;
+                            $("#gparcUploadProgress").attr("src", "/gp/images/checkbox.gif");
+                            var successHTML = 'Your module has been uploaded to GParc. Please click the button below to log into GParc and finalize your submission.<br/><br/>' +
+                                '<em>Remember, in order to finish the submission you will need to a GParc account and will need to be logged in. This account is different ' +
+                                'from your GenePattern account.</em>' +
+                                '<ul><li>To register for a GParc account <a href="http://www.broadinstitute.org/software/gparc/user/register" target="_blank" style="text-decoration: underline; color: #000099;">click here</a>.</li>' +
+                                '<li>To log in to GParc <a href="http://www.broadinstitute.org/software/gparc/user" target="_blank" style="text-decoration: underline; color: #000099;">click here</a>.</li></ul>' +
+                                'Once you have logged in, click "Confirm on GParc" below.</div>';
+                            $("#gparcInfoText").html(successHTML);
+                            setTimeout(function() {
+                                $(".ui-dialog-buttonset > button:visible").button("enable");
+                            }, 101);
                         }
-                    });
-                }
-    		};
-    	var dialogHTML = '<div><a href="http://gparc.org"><img src="styles/images/gparc.png" alt="GParc" style="margin-bottom: 10px;" /></a><br />\
+                        else {
+                            token = response.error;
+                            $("#gparcUploadProgress").attr("src", "/gp/images/error.gif");
+                            var successHTML = 'There was an error submitting your module to GParc. ' + token;
+                            $("#gparcInfoText").text(successHTML);
+                        }
+                    },
+                    error: function(error) {
+                        alert(error);
+                    }
+                });
+            }
+        };
+        var dialogHTML = '<div><a href="http://gparc.org"><img src="styles/images/gparc.png" alt="GParc" style="margin-bottom: 10px;" /></a><br />\
 			<strong>GParc</strong> is a repository and community where users can share and discuss their own GenePattern modules.<br/><br/>';
 
         if (isDirty()) {
@@ -2203,17 +2247,17 @@ jQuery(document).ready(function() {
     			In order to submit a module to GParc the module will need to have attached documentation.<br/><br/>';
         }
 
-    	dialogHTML += 'To submit a module to GParc please click the Submit to GParc button below and wait for your module to be uploaded.<br/><br/>' +
-    				  '<em>In order to finish the submission you will need a GParc account and will need to be logged in. This account is different ' +
-    				  'from your GenePattern account.</em>' +
-    				  '<ul><li>To register for a GParc account <a href="http://www.broadinstitute.org/software/gparc/user/register" target="_blank" style="text-decoration: underline; color: #000099;">click here</a>.</li>' +
-    				  '<li>To log in to GParc <a href="http://www.broadinstitute.org/software/gparc/user" target="_blank" style="text-decoration: underline; color: #000099;">click here</a>.</li></ul></div>';
-    	if (!hasDocFiles() || isDirty()) {
-    		setTimeout(function() {
-				$(".ui-dialog-buttonset > button:visible").button("disable");
-			}, 100);
-    	}
-    	showDialog("Submit Module to GParc", $(dialogHTML), buttons);
+        dialogHTML += 'To submit a module to GParc please click the Submit to GParc button below and wait for your module to be uploaded.<br/><br/>' +
+            '<em>In order to finish the submission you will need a GParc account and will need to be logged in. This account is different ' +
+            'from your GenePattern account.</em>' +
+            '<ul><li>To register for a GParc account <a href="http://www.broadinstitute.org/software/gparc/user/register" target="_blank" style="text-decoration: underline; color: #000099;">click here</a>.</li>' +
+            '<li>To log in to GParc <a href="http://www.broadinstitute.org/software/gparc/user" target="_blank" style="text-decoration: underline; color: #000099;">click here</a>.</li></ul></div>';
+        if (!hasDocFiles() || isDirty()) {
+            setTimeout(function() {
+                $(".ui-dialog-buttonset > button:visible").button("disable");
+            }, 100);
+        }
+        showDialog("Submit Module to GParc", $(dialogHTML), buttons);
     });
 
     $('#whatIsGparc').click(function(event) {
@@ -2334,11 +2378,6 @@ jQuery(document).ready(function() {
             modtitle = modtitle.replace(/ /g, ".");
             $("#modtitle").val(modtitle);
         }
-    });
-
-    $(".defaultValue").live("change", function()
-    {
-        validateDefaultChoiceValue($(this));
     });
 
     $("body").change(function()
