@@ -940,8 +940,8 @@ function changeParameterType(element, newType)
                     var newDefault = "";
                     $(this).find(".staticChoiceTable").find("tr").each(function()
                     {
-                        var dvalue = $(this).find(".parameter").find("input[name='choicen']").val();
-                        var value =$(this).find(".parameter").find("td input[name='choicev']").val();
+                        var dvalue = $(this).find("td input[name='choicen']").val();
+                        var value = $(this).find("td input[name='choicev']").val();
 
                         if((dvalue == undefined && value == undefined)
                             || (dvalue == "" && value==""))
