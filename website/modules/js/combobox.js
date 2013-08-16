@@ -113,7 +113,7 @@
             else
             {
                 //add missing value
-                ui.append("<option value='" + value + "' selected>" + value + "</option>");
+                this.element.append("<option value='" + value + "' selected>" + value + "</option>");
             }
         },
         _destroy: function() {
