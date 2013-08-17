@@ -1829,8 +1829,8 @@ function validateDefaultChoiceValues()
             if(choicelist.length > 0)
             {
                 //ignore default values for dynamic file choice parameters for now
-                if($(this).find("input[name='choiceDir']") == undefined ||
-                    $(this).find("input[name='choiceDir']") == null  ||
+                if($(this).find("input[name='choiceDir']").val() == undefined ||
+                    $(this).find("input[name='choiceDir']").val() == null  ||
                     $(this).find("input[name='choiceDir']").val().length == 0)
                 {
 
@@ -1860,7 +1860,7 @@ function validateDefaultChoiceValues()
     if(matchNotFoundParams.length > 0)
     {
         saveError("The following parameters "+ matchNotFoundParams.join(", ") + " have default values that could not be found " +
-            "in their drop-down list. The default values must be fixed before saving.");
+            "in their drop-down list. The default values must be changed before saving.");
     }
 }
 
