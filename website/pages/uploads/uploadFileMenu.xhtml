@@ -13,7 +13,10 @@
                 <tbody>
                     <tr>
                         <td>
-                            <h:commandLink value="Delete" onclick="return confirm('Are you sure you want to delete the selected file from the upload directory?');" actionListener="#{uploadFilesBean.deleteFile}" rendered="#{not aFile.root}">
+                            <h:commandLink value="Delete" onclick="return confirm('Are you sure you want to delete the selected file from the upload directory?');" actionListener="#{uploadFilesBean.deleteFile}" rendered="#{not aFile.root and not aFile.directory}">
+                                <f:param name="filePath" value="#{aFile.path}" />
+                            </h:commandLink>
+                            <h:commandLink value="Delete" onclick="return confirm('Are you sure you want to delete the selected directory and all contained files?');" actionListener="#{uploadFilesBean.deleteFile}" rendered="#{not aFile.root and aFile.directory}">
                                 <f:param name="filePath" value="#{aFile.path}" />
                             </h:commandLink>
                         </td>
