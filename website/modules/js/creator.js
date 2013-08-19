@@ -349,7 +349,7 @@ function addparameter()
         <tr><td>Type of field to display*:<br/>\
                 <select name='p_type' class='m_select'>\
                         <option value='text'>Text Field</option> \
-                        <option value='Input File'>Input File Field</option>\
+                        <option value='Input File'>File Field</option>\
                 </select>\
         </td></tr></table>\
         </td></tr>\
