@@ -1108,7 +1108,7 @@ function changeParameterType(element)
             $(this).parents(".parameter").find(".choicelink").text("edit drop down list");
 
             $(this).parents(".parameter").find(".dynamicChoicesInfo").append("Dynamic directory URL: "
-                + ftpDir.substring(0, 50));
+                + ftpDir.substring(0, 59) + "...");
         }
         else
         {
