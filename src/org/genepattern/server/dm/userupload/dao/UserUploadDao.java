@@ -126,16 +126,16 @@ public class UserUploadDao extends BaseDAO {
     
     public int deleteUserUploadRecursive(String userId, GpFilePath gpFileObj) {
         String relativePath = gpFileObj.getRelativePath();
+        
+        // Delete the file itself
+        int numDeleted = deleteUserUpload(userId, gpFileObj);
 
         // Delete child files
         String hql = "delete from " + UserUpload.class.getName() + " where user_id = '" + userId + "' and path like '" + relativePath + "/%'"; //delete "+UserUpload.class.getName()+" uu where uu.userId = :userId and uu.path like :path";
         Query query = HibernateUtil.getSession().createQuery( hql );
-//        query.setString("userId", userId);
-//        query.setString("path", "'" + relativePath + "/%'");
-        int numDeleted = query.executeUpdate();
+        numDeleted += query.executeUpdate();
         
-        // Delete the file itself
-        numDeleted += deleteUserUpload(userId, gpFileObj);
+        
         
         return numDeleted;
     }
