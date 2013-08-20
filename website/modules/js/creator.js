@@ -381,8 +381,7 @@ function addparameter()
                 " will cause this drop down list to be lost. Do you want to continue?");
             if(!confirmed)
             {
-                //element.find("option:not(:selected)").click();
-                event.preventDefault();
+                element.find("option:not(:selected)").click();
                 return;
             }
         }
