@@ -368,9 +368,27 @@ function addparameter()
         }
     });
 
-    //trigger change so that the options for the Text type are displayed
-    changeParameterType(paramDiv.find("select[name='p_type']"), "text");
+    $("select[name='p_type']").live("change", function(event)
+    {
+        var tSelect = $(this);
 
+        var choicelist = tSelect.parents(".parameter").find("input[name='choicelist']").val();
+        if(choicelist != undefined && choicelist != null && choicelist.length != 0)
+        {
+            var numItems = choicelist.split(";");
+            var confirmed = confirm("You have a drop down list containing " +
+                numItems.length + " items. Changing parameter types" +
+                " will cause this drop down list to be lost. Do you want to continue?");
+            if(!confirmed)
+            {
+                //element.find("option:not(:selected)").click();
+                event.preventDefault();
+                return;
+            }
+        }
+
+        changeParameterType(tSelect);
+    });
 
     $('#parameters').append(paramDiv);
 
@@ -393,12 +411,6 @@ function addparameter()
         $(this).parents("div:first").remove();
 
         setDirty(true);
-    });
-
-    $("select[name='p_type']").live("change", function()
-    {
-        var tSelect = $(this);
-        changeParameterType(tSelect);
     });
 
     return paramDiv;
@@ -555,11 +567,11 @@ function updateparameter(parameter, updateCmdLine)
     }
 }
 
-function changeParameterType(element, newType)
+function changeParameterType(element)
 {
     //check if there are any choices defined and warn
     //user since they will lose their list
-    var choicelist = element.parents(".parameter").find("input[name='choicelist']").val();
+    /*var choicelist = element.parents(".parameter").find("input[name='choicelist']").val();
     if(choicelist != undefined && choicelist != null && choicelist.length != 0)
     {
         var numItems = choicelist.split(";");
@@ -571,7 +583,7 @@ function changeParameterType(element, newType)
             element.find("option:not(:selected)").click();
             return;
         }
-    }
+    } */
 
     element.multiselect("refresh");
 
@@ -1502,21 +1514,23 @@ function loadParameterInfo(parameters)
 
         var type = parameters[i].type;
 
-        if(type == "java.io.File")
+        newParameter.find("select[name='p_type']").val("text");
+        newParameter.find("select[name='p_type']").trigger("change");
+
+        if(parameters[i].TYPE == "FILE" && parameters[i].MODE == "IN")
         {
-            changeParameterType(newParameter.find("select[name='p_type']"), "Input File");
+            newParameter.find("select[name='p_type']").val("Input File");
+            newParameter.find("select[name='p_type']").trigger("change");
         }
 
         if(type == "java.lang.Integer")
         {
-            changeParameterType(newParameter.find("select[name='p_type']"), "text");
             newParameter.find("select[name='p_format']").val("Integer");
             newParameter.find("select[name='p_format']").multiselect("refresh");
             newParameter.find("select[name='p_format']").trigger('change');
         }
         if(type == "java.lang.Float")
         {
-            changeParameterType(newParameter.find("select[name='p_type']"), "text");
             newParameter.find("select[name='p_format']").val("Floating Point");
             newParameter.find("select[name='p_format']").multiselect("refresh");
             newParameter.find("select[name='p_format']").trigger('change');
@@ -1524,7 +1538,6 @@ function loadParameterInfo(parameters)
 
         if(type == "PASSWORD")
         {
-            changeParameterType(newParameter.find("select[name='p_type']"), "text");
             newParameter.find("select[name='p_format']").val("Password");
             newParameter.find("select[name='p_format']").multiselect("refresh");
             newParameter.find("select[name='p_format']").trigger('change');
@@ -1532,7 +1545,6 @@ function loadParameterInfo(parameters)
 
         if(type == "DIRECTORY")
         {
-            changeParameterType(newParameter.find("select[name='p_type']"), "text");
             newParameter.find("select[name='p_format']").val("Directory");
             newParameter.find("select[name='p_format']").multiselect("refresh");
             newParameter.find("select[name='p_format']").trigger('change');
@@ -1540,8 +1552,6 @@ function loadParameterInfo(parameters)
 
         if(pfileformat !== undefined && pfileformat != null && pfileformat.length > 0)
         {
-            changeParameterType(newParameter.find("select[name='p_type']"), "Input File");
-
             var pfileformatlist = pfileformat.split(";");
             newParameter.find("select[name='fileformat']").val(pfileformatlist);
             newParameter.find("select[name='fileformat']").data("fileformats", pfileformatlist);
