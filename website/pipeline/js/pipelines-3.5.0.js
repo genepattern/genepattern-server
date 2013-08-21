@@ -3130,6 +3130,7 @@ var properties = {
             // Remove the external URL feature
             $(".ui-dialog label").hide();
             $(".ui-dialog input[type=text]").hide();
+            $(".ui-dialog strong").text("Please select a file below to upload.");
             
             // Remove the normal click event
             $(".ui-dialog-buttonpane button:contains('OK')").off("click");
