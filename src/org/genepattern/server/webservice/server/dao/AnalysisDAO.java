@@ -1146,11 +1146,11 @@ public class AnalysisDAO extends BaseDAO {
                 lsidHibernate.setVersion(lsid.getVersion());
                 Object mergedLsidHibernate = getSession().merge(lsidHibernate);
                 if (mergedLsidHibernate != lsidHibernate) {
-                    String errorMessage = "Duplicate installation of task, lsid="+lsid.toString();
+                    String warningMessage = "Duplicate installation of task, lsid="+lsid.toString();
                     if (mergedLsidHibernate instanceof Lsid) {
                         lsidHibernate = (Lsid) mergedLsidHibernate;
                     }
-                    log.error(errorMessage);
+                    log.warn(warningMessage);
                 }
             }
             getSession().flush();
