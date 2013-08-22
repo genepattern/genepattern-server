@@ -184,7 +184,7 @@ public class ModuleQueryServlet extends HttpServlet {
             
             // Get the URL to post to
             Context context = Context.getContextForUser((String) request.getSession().getAttribute("userid"));
-            String gparcUploadURL = ServerConfiguration.instance().getGPProperty(context, "gparcUploadURL", "http://dev.broadinstitute.org/software/gparc/server_upload.php");
+            String gparcUploadURL = ServerConfiguration.instance().getGPProperty(context, "gparcUploadURL", "http://www.broadinstitute.org/software/gparc/server_upload.php");
             
             // Set up the post method
             MultipartPostMethod post = new MultipartPostMethod(gparcUploadURL);
@@ -202,7 +202,7 @@ public class ModuleQueryServlet extends HttpServlet {
                 
                 String tokenURL = null;
                 if (token != null) {
-                    String gparcSubmitURL = ServerConfiguration.instance().getGPProperty(context, "gparcSubmitURL", "http://dev.broadinstitute.org/software/gparc/uniqid");
+                    String gparcSubmitURL = ServerConfiguration.instance().getGPProperty(context, "gparcSubmitURL", "http://www.broadinstitute.org/software/gparc/uniqid");
                     tokenURL = gparcSubmitURL + "?uniqid=" + token;
                     tokenObject.put("token", tokenURL);
                 }
