@@ -450,36 +450,51 @@ example (with space): <span class="example">-F <i>inputfile</i></span>
 example (without space): <span class="example">-F<i>inputfile</i></span>
 
 
-<a name="paramType"></a><h4>Type</h4>
+<a name="paramType"></a><h4>Type of field</h4>
 
-Declaration of the type of an input parameter allows the client to make a smarter presentation of the input to the
-user.  (As of <%=messages.get("ApplicationName")%> 1.2, all parameters are being treated as either text or input file types).  Parameter type
+Declaration of the type of an input parameter allows the client to make a smarter UI presentation of the input to the
+user.  (As of <%=messages.get("ApplicationName")%> 1.2, all parameters are being treated as either text or input file types).  Parameter field type
 choices are:
 
 <ul>
-<li>Text</li>
-<li>Input File
+<li>Text Field</li>
+    When text is selected "A type of data to enter" field is displayed where you can select the following options:
+    <ul>
+    <li> Text </li>
+        This option will provide the user with a standard text input field where any input can be entered.
+    <li>Integer</li>
+        This option will provide the user with a text field where only integers should be entered.
+    <li>Floating Point</li>
+        This option will provide the user with a text field where only floating point numbers should be entered.
+    <li>Directory</li>
+        This option will provide the user with a text field where the input will be interpreted as a directory path available on the server file system.
+    <li>Password</li>
+        This option will provide the user with a text field where the input will be masked with dots.
+    </ul>
+<li>File Field
 <p>
-When you select a parameter type of input file, a drop-down list of file formats appears in the file format column. Select the valid file format(s) for this parameter. If your module requires an input file format not included in the list, scroll back to the Output Description field and click New to add that format to the list.
+When you select a parameter type of input file, a drop-down list of file formats appears in the third column. Select the valid file format(s) for this parameter. If your module requires an input file format not included in the list, click New to add that format to the list. The new file format will be appended to the end of the list.
 For this type of parameter, when the user enters the name of the file, the
 <%=messages.get("ApplicationName")%> clients pass along the entire
 file rather than just the file name.<br><br>
 
 </p>
 </li>
-<li>Choice
+</ul>
+
+<h4> Drop-down list </h4>
 <p>
 Some parameters are best represented as a drop-down list of choices.  By constraining input to those from the list,
 the user is saved typing and cannot make a mistake by choosing an invalid setting (unless there is a dependency
-on some other parameter). To enter the choices, click the Edit Choices link and enter the
-choices in the Edit Choice List window.
+on some other parameter). To enter the choices, click the "add drop-down list" link and enter the
+choices in the Create drop-down list window.
 <br><br>
-For each choice enter the value required by the program (Value) and, optionally, a more
-human-readable value (Display Value). When you exit from the Edit Choice List window,
-the choices you entered are displayed as a semi-colon delimited set of choices. For example:
+For Text fields, enter the value required by the program (Value) and, optionally, a more
+human-readable value (Display Value). When you exit from the Create drop-down list window,
+the total number of choices is listed. For example:
 <br><br>
 
-<span class="example"><font size="-1">hierarchical=Hierarchical clustering;SOM=Self-organizing map;NMF=Non-negative Matrix Factorization;3.14159265=pi</font></span>
+<span class="example"><img src='styles/images/create-static-choice.png' width='610' height='180'></span>
 <br>
 <form>
 <table>
@@ -487,22 +502,9 @@ the choices you entered are displayed as a semi-colon delimited set of choices. 
 <td valign="top">
 would create a drop-down list that looks like this:</td>
 <td>
-<select size="4"><option>Hierarchical clustering</option><option>Self-organizing map</option><option>Non-negative Matrix Factorization</option><option>pi</option></select>
+<img src='styles/images/static-choice-drop-down.png' width='285' height='170'>
 </td></tr></table>
 </form>
-</li>
-<li>Integer</li>
-<li>Floating Point</li>
-<li>Directory</li>
-<li>Password</li>
-</ul>
-
-
-
-
-
-<br><br>
-
 <br>
 </body>
 </html>
