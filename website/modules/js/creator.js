@@ -1595,7 +1595,7 @@ function loadParameterInfo(parameters)
             allAttrs[keyName] = parameters[i][keyName];
         });
 
-        newParameter.data(" allAttrs",  allAttrs);
+        newParameter.data("allAttrs",  allAttrs);
         updateparameter(newParameter, false);
     }
 }
@@ -1745,9 +1745,11 @@ function getParametersJSON()
         var allAttrs = $(this).data("allAttrs");
         if (allAttrs !== undefined && allAttrs !== null) {
             $.each(allAttrs, function(keyName, value) {
-                if($.inArray(keyName, Object.keys(parameter)) != -1)
+                if($.inArray(keyName, Object.keys(parameter)) == -1
+                    && keyName != "type" && keyName != "prefix_when_specified" && keyName != "choices"
+                    && keyName != "choiceDir" && keyName != "choiceDirFilter")
                 {
-                    parameter[keyName] =  allAttrs[keyName];
+                    parameter[keyName] = allAttrs[keyName];
                     console.log("\nsaving unknown parameter attributes: " + keyName + "=" + allAttrs[keyName]);
                 }
             });
