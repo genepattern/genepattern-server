@@ -909,18 +909,45 @@ function changeParameterType(element)
                     $(this).prepend("<p class='heading editChoicesHeading'>Step 2: Enter URL(s)</p>");
 
                     var dynamicChoiceButton = $('<input type="radio" name="radio"/><label for="radio1">Dynamic drop-down list</label>');
+                    var staticChoiceButton = $('<input type="radio" name="radio"/><label for="radio1">Static drop-down list</label>');
+
+                    if(choiceURL.val() != undefined && choiceURL.val() != null && choiceURL.val() != "")
+                    {
+                        $(this).find(".choicesURLDiv").show();
+                        $(this).find(".staticChoicesDiv").hide();
+                        dynamicChoiceButton.click();
+                    }
+                    else
+                    {
+                        $(this).find(".choicesURLDiv").hide();
+                        $(this).find(".staticChoicesDiv").show();
+                        staticChoiceButton.click();
+                    }
+
                     dynamicChoiceButton.click(function()
                     {
+                        //remove any values specified for static or dynamic drop-down lists
+                        $(this).parents(".editChoicesDialog").find("input[name='choicev']").empty();
+                        $(this).parents(".editChoicesDialog").find("input[name='choicen']").empty();
+                        $(this).parents(".editChoicesDialog").find("input[name='choiceURL']").val("");
+                        $(this).parents(".editChoicesDialog").find("input[name='choiceURL']").val("");
+
                         $(this).parents(".editChoicesDialog").find(".choicesURLDiv").show();
-                        $(this).parents(".editChoicesDialog").find(".staticChoiceLink").removeAttr("checked");
                         $(this).parents(".editChoicesDialog").find(".staticChoicesDiv").hide();
+                        $(this).parents(".editChoicesDialog").find(".staticChoiceLink").removeAttr("checked");
                     });
 
-                    var staticChoiceButton = $('<input type="radio" name="radio"/><label for="radio1">Static drop-down list</label>');
                     staticChoiceButton.click(function()
                     {
+                        //remove any values specified for static or dynamic drop-down lists
+                        $(this).parents(".editChoicesDialog").find("input[name='choicev']").empty();
+                        $(this).parents(".editChoicesDialog").find("input[name='choicen']").empty();
+                        $(this).parents(".editChoicesDialog").find("input[name='choiceURL']").val("");
+                        $(this).parents(".editChoicesDialog").find("input[name='choiceURLFilter']").val("");
+
                         $(this).parents(".editChoicesDialog").find(".choicesURLDiv").hide();
                         $(this).parents(".editChoicesDialog").find(".staticChoicesDiv").show();
+                        $(this).parents(".editChoicesDialog").find(".staticChoiceLink").removeAttr("checked");
                     });
 
                     var selectChoiceTypeDiv = $("<div class='selectChoiceTypeDiv hcontent'/>");
@@ -932,15 +959,6 @@ function changeParameterType(element)
                     $(this).prepend(selectDropDownType);
 
                     addsectioncollapseimages();
-
-                    if(choiceURL.val() != undefined && choiceURL.val() != null && choiceURL.val() != "")
-                    {
-                        dynamicChoiceButton.click();
-                    }
-                    else
-                    {
-                        staticChoiceButton.click();
-                    }
                 }
             },
             close: function()
@@ -1007,7 +1025,7 @@ function changeParameterType(element)
 
                     //set the dynamic url if there is any
                     var choiceURL = $(this).find("input[name='choiceURL']").val();
-                    if(choiceURL != undefined && choiceURL != null && choiceURL.length > 0)
+                    if(choiceURL != undefined && choiceURL != null)
                     {
                         element.parents(".parameter").find("input[name='choiceDir']").val(choiceURL);
                         element.parents(".parameter").find("input[name='choiceDir']").trigger("change");
@@ -1015,7 +1033,7 @@ function changeParameterType(element)
 
                     //set the dynamic url filter if there is any
                     var choiceURLFilter = $(this).find("input[name='choiceURLFilter']").val();
-                    if(choiceURLFilter != undefined && choiceURLFilter != null && choiceURLFilter.length > 0)
+                    if(choiceURLFilter != undefined && choiceURLFilter != null)
                     {
                         element.parents(".parameter").find("input[name='choiceDirFilter']").val(choiceURLFilter);
                         element.parents(".parameter").find("input[name='choiceDirFilter']").trigger("change");
@@ -1109,12 +1127,22 @@ function changeParameterType(element)
             //change text of the create drop down link to edit
             $(this).parents(".parameter").find(".choicelink").text("edit drop down list");
 
+            var newFtpDir = ftpDir;
+            if(newFtpDir.length > 60)
+            {
+                newFtpDir = newFtpDir.substring(0, 59) + "...";
+            }
             $(this).parents(".parameter").find(".dynamicChoicesInfo").append("Dynamic directory URL: "
-                + ftpDir.substring(0, 59) + "...");
+                + newFtpDir);
         }
         else
         {
-            $(this).parents(".parameter").find(".choicelink").text("add a drop down list");
+            if($(this).parents(".parameter").find("input[name='choicelist']").val() == undefined
+            || $(this).parents(".parameter").find("input[name='choicelist']").val() == null
+            || $(this).parents(".parameter").find("input[name='choicelist']").val().length < 1)
+            {
+                $(this).parents(".parameter").find(".choicelink").text("add a drop down list");
+            }
         }
 
     });
@@ -2001,36 +2029,6 @@ jQuery(document).ready(function() {
         }
     });
 
-    /*$(".defaultValue").live("change", function()
-     {
-     //check if this is a regular/non-file choice list
-     var matchFound = false;
-     console.log("default change called");
-     if($(this).parents(".parameter").find("select[name='p_type']") == "text")
-     {
-     var choicelist = $(this).parents(".parameter").find("input[name='choicelist']").val();
-     if(choicelist != undefined && choicelist != null && choicelist.length > 0)
-     {
-     var choiceItems = choicelist.split(";");
-     for(var c=0;c<choiceItems.length;c++)
-     {
-     var result = choiceItems[c].split("=");
-     if(result[0] == $(this).val())
-     {
-     matchFound = true;
-     }
-     }
-     }
-     }
-
-     if(!matchFound)
-     {
-     $(this).val("");
-     alert("Could not find the specified default value " + $(this).val() + " in the list of URLs defined " +
-     "for  the drop down list");
-
-     }
-     }); */
 
     $( "#addmodcategorydialog" ).dialog({
         autoOpen: false,
