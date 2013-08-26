@@ -1486,7 +1486,6 @@ function loadParameterInfo(parameters)
         var newParameter = addparameter();
         newParameter.find("input[name='p_name']").val(parameters[i].name);
         newParameter.find("textarea[name='p_description']").val(parameters[i].description);
-        newParameter.find(".defaultValue").val(parameters[i].default_value);
 
         var optional = parameters[i].optional;
         var prefix = parameters[i].prefix;
@@ -1530,6 +1529,7 @@ function loadParameterInfo(parameters)
             newParameter.find("select[name='p_format']").multiselect("refresh");
             newParameter.find("select[name='p_format']").trigger('change');
         }
+
         if(type == "java.lang.Float")
         {
             newParameter.find("select[name='p_format']").val("Floating Point");
@@ -1550,6 +1550,8 @@ function loadParameterInfo(parameters)
             newParameter.find("select[name='p_format']").multiselect("refresh");
             newParameter.find("select[name='p_format']").trigger('change');
         }
+
+        newParameter.find(".defaultValue").val(parameters[i].default_value);
 
         if(pfileformat !== undefined && pfileformat != null && pfileformat.length > 0)
         {
