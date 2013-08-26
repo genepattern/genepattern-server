@@ -412,6 +412,8 @@ function addparameter()
         setDirty(true);
     });
 
+    paramDiv.find("select[name='p_type']").trigger("change");
+
     return paramDiv;
 }
 
@@ -1575,7 +1577,6 @@ function loadParameterInfo(parameters)
         var choiceDir = parameters[i].choiceDir;
         if(choiceDir !== undefined && choiceDir !== null && choiceDir.length > 0)
         {
-
             newParameter.find('input[name="choiceDir"]').val(choiceDir);
             newParameter.find('input[name="choiceDir"]').trigger("change");
         }
@@ -1583,26 +1584,16 @@ function loadParameterInfo(parameters)
         var choiceDirFilter = parameters[i].choiceDirFilter;
         if(choiceDirFilter !== undefined && choiceDirFilter !== null && choiceDirFilter.length > 0)
         {
-
             newParameter.find('input[name="choiceDirFilter"]').val(choiceDirFilter);
             newParameter.find('input[name="choiceDirFilter"]').trigger("change");
         }
 
-        var otherAttrs = {};
+        var allAttrs = {};
         $.each(parameters[i], function(keyName, value) {
-            console.log("\nkeys: " + keyName);
-            if(keyName != "name" && keyName != "description"
-                && keyName != "flag" && keyName != "fileFormat"
-                && keyName != "default_value" && keyName != "prefix" && keyName != "type"
-                && keyName != "TYPE" && keyName != "MODE" && keyName != "optional" && keyName != "value"
-                && keyName != "prefix_when_specified" && keyName != "choices"
-                && keyName != "choiceDirFilter")
-            {
-                otherAttrs[keyName] = parameters[i][keyName];
-            }
+            allAttrs[keyName] = parameters[i][keyName];
         });
 
-        newParameter.data("otherAttrs", otherAttrs);
+        newParameter.data(" allAttrs",  allAttrs);
         updateparameter(newParameter, false);
     }
 }
@@ -1749,11 +1740,14 @@ function getParametersJSON()
         }
 
         //add other remaining attributes
-        var otherAttrs = $(this).data("otherAttrs");
-        if (otherAttrs !== undefined && otherAttrs !== null) {
-            $.each(otherAttrs, function(keyName, value) {
-                parameter[keyName] =  otherAttrs[keyName];
-                console.log("\nsaving other parameter attributes: " + keyName + "=" + otherAttrs[keyName]);
+        var allAttrs = $(this).data("allAttrs");
+        if (allAttrs !== undefined && allAttrs !== null) {
+            $.each(allAttrs, function(keyName, value) {
+                if($.inArray(keyName, Object.keys(parameter)) != -1)
+                {
+                    parameter[keyName] =  allAttrs[keyName];
+                    console.log("\nsaving unknown parameter attributes: " + keyName + "=" + allAttrs[keyName]);
+                }
             });
         }
 
