@@ -25,6 +25,7 @@ import static org.genepattern.util.GPConstants.PARAM_INFO_PREFIX;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.genepattern.util.GPConstants;
@@ -351,7 +352,7 @@ public class ParameterInfo implements Serializable {
     }
     
     final static public Map<String,String> _initChoicesFromString(final String choicesString) {
-        Map<String, String> uiValueToCommandLineValueMap = new HashMap<String, String>();
+        Map<String, String> uiValueToCommandLineValueMap = new LinkedHashMap<String, String>();
         if (choicesString != null && !choicesString.equals("")) {
             String[] choicesArray = choicesString.split(";");
             if (choicesArray != null) {
