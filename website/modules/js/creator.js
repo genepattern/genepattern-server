@@ -2005,10 +2005,32 @@ jQuery(document).ready(function() {
     $("#addmultiple").button().click(function()
     {
         var numparams = $("#addparamnum").val();
-        for(i=0;i<numparams;i++)
+
+        numparams = parseInt(numparams);
+        if(isNaN(numparams))
         {
-            addparameter();
+            alert("Please enter a number greater than 0");
+            return;
         }
+
+        //keep track of first parameter added so we can auto scroll to it
+        var firstParameterDiv;
+        for(var i=0;i<numparams;i++)
+        {
+            var parameterDiv = addparameter();
+
+            if(i==0)
+            {
+                firstParameterDiv = parameterDiv;
+            }
+        }
+
+        $(".ui-layout-center").animate({
+
+            scrollTop: parameterDiv.offset().top
+
+        },2000);
+
     });
 
 
