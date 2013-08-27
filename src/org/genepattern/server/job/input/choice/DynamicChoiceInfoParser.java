@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Date;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.regex.Pattern;
@@ -89,7 +90,8 @@ public class DynamicChoiceInfoParser implements ChoiceInfoParser {
 
     @Override
     public ChoiceInfo initChoiceInfo(final ParameterInfo param) {
-        final Map<String,String> choices;
+        final List<Choice> choiceList;
+        //final Map<String,String> choices;
         //the new way (>= 3.7.0), check for remote ftp directory
         final String choiceDir = (String) param.getAttributes().get(ChoiceInfo.PROP_CHOICE_DIR);
         if (choiceDir != null) {
@@ -101,6 +103,7 @@ public class DynamicChoiceInfoParser implements ChoiceInfoParser {
                 log.debug("initial selection: "+choiceInfoFromFtp.getSelected());
                 DynamicChoiceInfoParser.initAllowCustomValue(choiceInfoFromFtp, param);
                 log.debug("isAllowCustomValue: "+choiceInfoFromFtp.isAllowCustomValue());
+                //TODO: optionally return alternate static drop-down
                 return choiceInfoFromFtp;
             }
             catch (Throwable t) {
@@ -110,6 +113,7 @@ public class DynamicChoiceInfoParser implements ChoiceInfoParser {
                 final ChoiceInfo choiceInfo = new ChoiceInfo(param.getName());
                 choiceInfo.setChoiceDir(choiceDir);
                 choiceInfo.setStatus(Flag.ERROR, userMessage);
+                //TODO: optionally return alternate static drop-down
                 return choiceInfo;
             }
         }
@@ -118,26 +122,32 @@ public class DynamicChoiceInfoParser implements ChoiceInfoParser {
         final String declaredChoicesStr= (String) param.getAttributes().get(ChoiceInfo.PROP_CHOICE);
         if (declaredChoicesStr != null) {
             log.debug("Initializing "+ChoiceInfo.PROP_CHOICE+" entry from manifest for parm="+param.getName());
-            choices=ParameterInfo._initChoicesFromString(declaredChoicesStr);
+            //choices=ParameterInfo._initChoicesFromString(declaredChoicesStr);
+            choiceList=ChoiceInfoHelper.initChoicesFromManifestEntry(declaredChoicesStr);
         }
         else {
             //the old way (<= 3.6.1, based on 'values' attribute in manifest)
-            choices=param.getChoices();
+            //choices=param.getChoices();
+            final String choicesString=param.getValue();
+            choiceList=ChoiceInfoHelper.initChoicesFromManifestEntry(choicesString);
             log.debug("Initialized choices from value attribute");
         }
 
-        if (choices==null) {
-            log.debug("choices is null, param="+param.getName());
+        if (choiceList==null) {
+            log.debug("choiceList is null, param="+param.getName());
             return null;
         }
-        if (choices.size()==0) {
-            log.debug("choices.size()==0, param="+param.getName());
+        if (choiceList.size()==0) {
+            log.debug("choiceList.size()==0, param="+param.getName());
             return null;
         }
         
         final ChoiceInfo choiceInfo=new ChoiceInfo(param.getName());
-        for(final Entry<String,String> choiceEntry : choices.entrySet()) {
-            Choice choice = new Choice(choiceEntry.getKey(), choiceEntry.getValue());
+//        for(final Entry<String,String> choiceEntry : choices.entrySet()) {
+//            Choice choice = new Choice(choiceEntry.getKey(), choiceEntry.getValue());
+//            choiceInfo.add(choice);
+//        }
+        for(final Choice choice : choiceList) {
             choiceInfo.add(choice);
         }
         choiceInfo.setStatus(Flag.OK, "Initialized static list from manifest");

@@ -2,6 +2,10 @@ package org.genepattern.server.job.input.choice;
 
 import java.io.File;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.regex.Pattern;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -43,6 +47,59 @@ public class ChoiceInfoHelper {
         }
         return true;
     }
+
+    /**
+     * Helper method for initializing a Choice instance when parsing a list of choices from the manifest for a module.
+     * Call this method for each item in the ';' delimited list of entries for the drop-down.
+     * 
+     * entry: <actualValue>=<displayValue>
+     * 
+     * @param entry, must not be null or will throw IllegalArgumentException
+     * @return
+     */
+    public static final Choice initChoiceFromManifestEntry(final String entry) {
+        if (entry==null) {
+            throw new IllegalArgumentException("entry==null");
+        }
+        final String[] splits=entry.split(Pattern.quote("="), 2);
+        if (splits.length==1) {
+            //special-case
+            if (entry.startsWith("=")) {
+                //empty actual value
+                return new Choice(entry.substring(1), "");
+            }
+            else if (entry.endsWith("=")) {
+                //empty display value
+                return new Choice("", entry.substring(0, entry.length()-1));
+            }
+            else {
+                //it's the actual value, use that as the display value
+                return new Choice(entry);
+            }
+        }
+        else if (splits.length==2) {
+            return new Choice(splits[1], splits[0]);
+        }
+        log.error("Parse error in choice entry='"+entry+"' split into too many parts: "+splits.length);
+        return null;
+    }
+    
+    public static final List<Choice> initChoicesFromManifestEntry(final String choicesString) {
+        if (!isSet(choicesString)) {
+            return Collections.emptyList();
+        }
+        final String[] choicesArray = choicesString.split(";");
+        if (choicesArray==null) {
+            return Collections.emptyList();
+        }
+        List<Choice> choices=new ArrayList<Choice>();
+        for(final String entry : choicesArray) {
+            Choice choice=initChoiceFromManifestEntry(entry);
+            choices.add(choice);
+        }
+        return choices;
+    }
+
 
     final static public ChoiceInfo initChoiceInfo(final ParameterInfo pinfo) {
         try {

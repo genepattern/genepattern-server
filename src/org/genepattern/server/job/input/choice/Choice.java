@@ -1,5 +1,8 @@
 package org.genepattern.server.job.input.choice;
 
+import org.apache.commons.lang.builder.EqualsBuilder;
+import org.apache.commons.lang.builder.HashCodeBuilder;
+
 /**
  * Java bean representation of a single item in the choice menu for a module input parameter.
  * 
@@ -21,6 +24,8 @@ public class Choice {
      */
     final private boolean remoteDir;
     
+    private final HashCodeBuilder hcb;
+
     public Choice(final String value) {
         this(value, value);
     }
@@ -33,6 +38,10 @@ public class Choice {
         this.label=label;
         this.value=value;
         this.remoteDir=isRemoteDir;
+        this.hcb = new HashCodeBuilder(17,31).
+                append(label).
+                append(value).
+                append(remoteDir);
     }
     
     public String getLabel() {
@@ -52,5 +61,24 @@ public class Choice {
             return label+"="+value;
         }
         return value;
+    }
+    
+    public boolean equals(Object obj) {
+        if (!(obj instanceof Choice)) {
+            return false;
+        }
+        if (obj == this) {
+            return true;
+        }
+        Choice rhs = (Choice) obj;
+        return new EqualsBuilder().
+                append(label, rhs.label).
+                append(value, rhs.value).
+                append(remoteDir, rhs.remoteDir).
+                isEquals();
+    }
+    
+    public int hashCode() {
+        return hcb.toHashCode();
     }
 }

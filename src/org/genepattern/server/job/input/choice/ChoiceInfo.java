@@ -187,6 +187,10 @@ public class ChoiceInfo {
         //1) check for an existing empty valued item 
         Choice emptyChoice = getFirstMatchingValue("");
         if (emptyChoice == null) {
+            // otherwise, check for an existing item with an empty displayValue
+            emptyChoice = getFirstMatchingLabel("");
+        }
+        if (emptyChoice == null) {
             if (isOptional || (!isOptional && !hasDefaultValue )) {
                 //check manifest for displayValue for the first item on the list
                 String emptyDisplayValue= (String) param.getAttributes().get(PROP_CHOICE_EMPTY_DISPLAY_VALUE);
