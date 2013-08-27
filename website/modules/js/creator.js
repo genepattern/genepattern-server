@@ -1674,7 +1674,7 @@ function loadParameterInfo(parameters)
     if(invalidDefaultValueFound)
     {
         alert("Warning: Some parameters with invalid default drop-down parameters were found. " +
-            "\nThe default value of these parameters have been removed.");
+            "The default value of these parameters have been removed.");
     }
 }
 
@@ -1711,8 +1711,6 @@ function loadModule(taskId)
 
 function getParametersJSON()
 {
-    validateDefaultChoiceValues();
-
     var parameters = [];
     var pnum = 0;
     $(".parameter").each(function()
@@ -1835,6 +1833,8 @@ function getParametersJSON()
 
         parameters.push(parameter);
     });
+
+    validateDefaultChoiceValues();
 
     return(parameters);
 }
