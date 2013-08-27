@@ -850,3 +850,25 @@ p.editChoicesHeading {
     margin: 0;
     padding: 0.3em;
 }
+
+.ui-sort-placeholder
+{
+    height: 2.3em;
+    line-height: 2.0em;
+}
+
+.sortHandle
+{
+    background-color: #DFDFAC;
+    max-height: 15px;
+    min-height: 15px;
+    max-width: 20px;
+    min-width: 20px;
+    padding-bottom: 7px;
+    vertical-align: middle;
+}
+
+.sortHandle:hover
+{
+    cursor: pointer;
+}

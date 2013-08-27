@@ -703,7 +703,7 @@ function changeParameterType(element)
                 var choiceButton = $("<button class='choiceadd'>Add Menu Item</button>");
                 choiceButton.button().click(function()
                 {
-                    var choicerow = $("<tr> <td class='defaultChoiceCol'> <input type='radio' name='cradio'/></td>" +
+                    var choicerow = $("<tr> <td> <div class='sortHandle'/> </td><td class='defaultChoiceCol'> <input type='radio' name='cradio'/></td>" +
                         "<td> <input type='text' name='choicev' class='choiceFields'/> </td>" +
                         "<td> <input type='text' name='choicen' class='choiceFields'/> </td>" +
                         "<td> <button> X </button></td></tr>");
@@ -763,7 +763,7 @@ function changeParameterType(element)
                         }
                     });
 
-                    $(this).parent().find("table").append(choicerow);
+                    $(this).parent().find("table").find("tbody").append(choicerow);
 
                     var choiceEntries = document.getElementsByClassName("choiceFields");
 
@@ -820,7 +820,7 @@ function changeParameterType(element)
                 }
 
                 var table = $("<table class='staticChoiceTable'>" +
-                    "<tr><td> <span class='staticTableHeader'> Default </span> " +
+                    "<thead><tr class='choiceHeaderRow'><td></td><td><span class='staticTableHeader'> Default </span> " +
                     "<input type='radio' name='cradio' checked='checked'/> </td>" +
                     "<td> <span class='staticTableHeader'>" + valueColHeader + "</span>" +
                     "<br/>" +
@@ -829,13 +829,26 @@ function changeParameterType(element)
                     "<span class='staticTableHeader'>" + dValueColHeader + "</span>" +
                     "<br/>" +
                     "<span class='shortDescription'>" + dValueColHeaderDescription + "</span>" +
-                    " </td> </tr> </table>");
+                    " </td> </tr> </thead><tbody></tbody></table>");
 
                 table.find("input[name='cradio']").data("nullRow", true);
 
                 staticChoiceDiv.prepend(table);
 
-                table.find("tbody").sortable();
+                table.find("tbody").sortable(
+                {
+                    placeholder: "ui-sort-placeholder",
+                    forcePlaceholderSize: true,
+                    start: function(event, ui)
+                    {
+                        ui.item.addClass("highlight")
+                    },
+                    stop: function(event, ui)
+                    {
+                        ui.item.removeClass("highlight")
+                    },
+                    handle: ".sortHandle"
+                });
 
                 var result = choices.split(';');
                 if(choices== "" || result == null  || result.length < 1)
@@ -2014,6 +2027,14 @@ jQuery(document).ready(function() {
             change: function(event, ui)
             {
                 setDirty(true);
+            },
+            start: function(event, ui)
+            {
+                ui.item.addClass("highlight")
+            },
+            stop: function(event, ui)
+            {
+                ui.item.removeClass("highlight")
             }
         });
 
