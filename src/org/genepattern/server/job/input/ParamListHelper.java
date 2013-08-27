@@ -1,6 +1,9 @@
 package org.genepattern.server.job.input;
 
+import java.io.BufferedInputStream;
 import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.text.SimpleDateFormat;
@@ -789,6 +792,136 @@ public class ParamListHelper {
     }
 
     /**
+     * Download from the url into a file, creating the file and all parent directories if necessary.
+     * This is implemented using basic Java I/O capabilities (pre Java 7 NIO).
+     * 
+     * see: http://www.ibm.com/developerworks/java/library/j-jtp05236/index.html
+     * 
+     * @param fromUrl
+     * @param toFile
+     * @throws IOException
+     */
+    public static void downloadFile(final URL fromUrl, final File toFile) throws IOException, InterruptedException {
+        final boolean replaceExisting=true;
+        downloadFile(fromUrl, toFile, replaceExisting);
+    }
+    public static boolean downloadFile(final URL fromUrl, final File toFile, final boolean deleteExisting) throws IOException, InterruptedException {
+        if (toFile==null) {
+            throw new IllegalArgumentException("toFile==null");
+        }
+        if (toFile.exists()) {
+            if (deleteExisting) {
+                boolean success=toFile.delete();
+                if (!success) {
+                    throw new IllegalArgumentException("failed to delete existing file: "+toFile.getAbsolutePath());
+                }
+            }
+            else {
+                throw new IllegalArgumentException("file already exists: "+toFile.getAbsolutePath());
+            }
+        }
+
+        //if necessary, create parent download directory
+        final File parentDir=toFile.getParentFile();
+        if (parentDir != null) {
+            if (!parentDir.exists()) {
+                boolean success=parentDir.mkdirs();
+                if (!success) {
+                    throw new IllegalArgumentException("Failed to create parent download directory for file: "+toFile.getAbsolutePath());
+                }
+            }
+        }
+        boolean interrupted=false;
+        BufferedInputStream in = null;
+        FileOutputStream fout = null;
+        try {
+            final int BUFSIZE=1024;
+            in = new BufferedInputStream(fromUrl.openStream());
+            fout = new FileOutputStream(toFile);
+
+            final byte data[] = new byte[BUFSIZE];
+            int count;
+            while (!interrupted && (count = in.read(data, 0, BUFSIZE)) != -1) {
+                fout.write(data, 0, count);
+                if (Thread.interrupted()) {
+                    interrupted=true;
+                }
+            }
+        }
+        finally {
+            if (in != null) {
+                in.close();
+            }
+            if (fout != null) {
+                fout.close();
+            }
+        }
+        if (interrupted) {
+            //Thread.currentThread().interrupt();
+            throw new InterruptedException();
+        }
+        return true;
+    }
+    
+    /**
+     * Copy data from an external URL into a file in the GP user's uploads directory.
+     * This method blocks until the data file has been transferred. If the file has 
+     * already been cached, and the cached copy is up to date, it doesn't transfer 
+     * the file at all, but relies on the cached copy.
+     * 
+     * TODO: limit the size of the file which can be transferred
+     * TODO: implement a timeout
+     * 
+     * Notes:
+     *     Is it possible to interrupt FileUtils.copyURLToFile? I'm not sure. This thread is inconclusive.
+     *     http://stackoverflow.com/questions/10535335/apache-commons-copyurltofile-possible-to-stop-copying
+     * 
+     * @param realPath
+     * @param url
+     * @throws Exception
+     */
+    public static void copyExternalUrlToUserUploads(final GpFilePath realPath, final URL url) throws Exception {
+        // If the real path exists, assume it's up to date
+        final File realFile = realPath.getServerFile();
+        if (realFile.exists()) {
+            return;
+        }
+
+        // otherwise, download to tmp location
+        final GpFilePath tempPath = getTempPath(realPath);
+        final File tempFile = tempPath.getServerFile();
+
+        boolean deleteExisting=true;
+        boolean interrupted=false;
+        try {
+            boolean success=downloadFile(url, tempFile, deleteExisting);
+            if (!success) {
+                throw new Exception("Error downloading from '"+url.toExternalForm()+"' to temp file: "+tempFile.getAbsolutePath());
+            }
+        }
+        catch (InterruptedException e) {
+            interrupted=true;
+        }
+        if (interrupted) {
+            // blow away the partial download
+            // Note: we may want to leave it around so that we can pick up from where we left off
+            tempFile.delete();
+            Thread.currentThread().interrupt();
+            return;
+        }
+
+        // Add it to the database
+        JobInputFileUtil.__addUploadFileToDb(realPath);
+        // Once complete, move the file to the real location and return
+        boolean success = tempFile.renameTo(realFile);
+        if (!success) {
+            String message = "Error moving temp file to real location: temp=" + tempFile.getPath() + ", real=" + realFile.getPath();
+            log.error(message);
+            throw new Exception(message);
+        }
+    }
+
+    /**
      * Copy data from an external URL into a file in the GP user's uploads directory.
      * This method blocks until the data file has been transferred. If the file has 
      * already been cached, and the cached copy is up to date, it doesn't transfer 
@@ -802,7 +935,7 @@ public class ParamListHelper {
      * @param url
      * @throws Exception
      */
-    public static void copyExternalUrlToUserUploads(final GpFilePath realPath, final URL url) throws Exception {
+    private static void origCopyExternalUrlToUserUploads(final GpFilePath realPath, final URL url) throws Exception {
         try {
             // If the real path exists, check to see if it is out of date and return if it is not
             File realFile = realPath.getServerFile();
@@ -898,5 +1031,6 @@ public class ParamListHelper {
         finally {
             
         }
-    }   
+    }
+    
 }
