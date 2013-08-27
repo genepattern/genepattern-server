@@ -430,9 +430,22 @@ The default value may use substitution variables, just like the rest of the comm
 a valid default for an output file might be <span class="example">&lt;input.filename_basename&gt;.foo</span>,
 meaning that the output file will have the same stem as the input.filename parameter, but will have a .foo extension.
 <br><br>
-Default values for parameters that have a choice list must be either blank or one of the values from the choice list.
+Default values for parameters that have a static drop-down list must be either blank or one of the values from the choice list.
 Any other setting will result in an error message.  If no default for a choice list is provided, the first entry
-on the list will be the default.
+on the list will be the default. For any item in the list where the value to pass on the command line is blank, it will need to be the first item
+in the list in order to be the default selection.
+<br><br>
+For file parameters which have a dynamic drop-down list, the default value can only be a url to a file found in the provided ftp directory URL.
+<br>
+For example:
+<br>
+<ul><li>
+FTP directory:  <span class="example">ftp://ftp.broadinstitute.org/pub/genepattern/rna_seq/referenceAnnotation/gtf/</span>
+<br>
+Default value: <span class="example">ftp://ftp.broadinstitute.org/pub/genepattern/rna_seq/referenceAnnotation/gtf/Homo_sapiens_UCSC_hg18.gtf</span>
+</li></ul>
+
+For file parameters which have a static drop-down list only, the default value can be any ftp, http, or https URL.
 <br><br>
 
 ConsensusClustering examples: <span class="example">NMF</span>, <span class="example">5</span>, <span class="example">&lt;input.filename_basename&gt;</span>
@@ -463,9 +476,9 @@ choices are:
     <li> Text </li>
         This option will provide the user with a standard text input field where any input can be entered.
     <li>Integer</li>
-        This option will provide the user with a text field where only integers should be entered.
+        This option will provide the user with a text field where only an integer should be entered.
     <li>Floating Point</li>
-        This option will provide the user with a text field where only floating point numbers should be entered.
+        This option will provide the user with a text field where only a floating point number should be entered.
     <li>Directory</li>
         This option will provide the user with a text field where the input will be interpreted as a directory path available on the server file system.
     <li>Password</li>
@@ -494,16 +507,19 @@ human-readable value (Display Value). When you exit from the Create drop-down li
 the total number of choices is listed. For example:
 <br><br>
 
-<span class="example"><img src='styles/images/create-static-choice.png' width='610' height='180'></span>
+<span class="example"><img src='styles/images/create-static-choice.png' width='602' height='167'></span>
 <br>
 <form>
-<table>
-<tr>
-<td valign="top">
-would create a drop-down list that looks like this:</td>
-<td>
-<img src='styles/images/static-choice-drop-down.png' width='285' height='170'>
-</td></tr></table>
+    <table>
+        <tr>
+            <td valign="top">
+                would create a drop-down list that looks like this:
+            </td>
+            <td>
+                <img src='styles/images/static-choice-drop-down.png' width='265' height='150'>
+            </td>
+        </tr>
+    </table>
 </form>
 <br>
 </body>

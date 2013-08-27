@@ -662,8 +662,10 @@ function changeParameterType(element)
     $("<tr/>").append(fieldDetailsTd).appendTo(typeDetailsTable);
 
     var defaultValueRow = $("<tr/>");
-    var defaultValue = $("<input type='text' name='p_defaultvalue' class='defaultValue'/>");
-    $("<td/>").append("Default value:<br/>").append(defaultValue).appendTo(defaultValueRow);
+    var defaultValue = $("<input type='text' name='p_defaultvalue' class='defaultValue' size='40'/>");
+    $("<td/>").append("Default value:<br/>").append(defaultValue).append("<a href='createhelp.jsp#paramDefault' target='help'> " +
+        " <img src='styles/images/help_small.gif' width='12' height='12' alt='help' class='buttonIcon' />"
+        + "</a>").appendTo(defaultValueRow);
     typeDetailsTable.append(defaultValueRow);
 
     var specifyChoicesRow = $("<tr class='choices'/>");
