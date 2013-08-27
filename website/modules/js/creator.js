@@ -571,22 +571,6 @@ function updateparameter(parameter, updateCmdLine)
 
 function changeParameterType(element)
 {
-    //check if there are any choices defined and warn
-    //user since they will lose their list
-    /*var choicelist = element.parents(".parameter").find("input[name='choicelist']").val();
-    if(choicelist != undefined && choicelist != null && choicelist.length != 0)
-    {
-        var numItems = choicelist.split(";");
-        var confirmed = confirm("You have a drop down list containing " +
-            numItems.length + " items. Changing parameter types" +
-            " will cause this drop down list to be lost. Do you want to continue?");
-        if(!confirmed)
-        {
-            element.find("option:not(:selected)").click();
-            return;
-        }
-    } */
-
     element.multiselect("refresh");
 
     if(!element.parent().next().children().is("input[name='p_prefix']"))
@@ -1010,12 +994,32 @@ function changeParameterType(element)
                     }
 
                     var choiceURL = $(this).find("input[name='choiceURL']").val();
+                    //set the dynamic url if there is any
+                    if(choiceURL == undefined && choiceURL == null)
+                    {
+                        choiceURL = "";
+                    }
 
                     if($(this).find(".dynamicChoice").is(":checked") && choiceURL.length < 1)
                     {
                         alert("Please enter an ftp directory or switch to a static drop-down list");
                         return;
                     }
+
+                    element.parents(".parameter").find("input[name='choiceDir']").val(choiceURL);
+                    element.parents(".parameter").find("input[name='choiceDir']").trigger("change");
+
+                    //set the dynamic url filter if there is any
+                    var choiceURLFilter = $(this).find("input[name='choiceURLFilter']").val();
+                    //set the dynamic url if there is any
+                    if(choiceURLFilter == undefined && choiceURLFilter == null)
+                    {
+                        choiceURLFilter = "";
+                    }
+
+                    element.parents(".parameter").find("input[name='choiceDirFilter']").val(choiceURLFilter);
+                    element.parents(".parameter").find("input[name='choiceDirFilter']").trigger("change");
+
 
                     element.parents(".parameter").find("input[name='choicelist']").val(choicelist);
                     element.parents(".parameter").find("input[name='choicelist']").trigger("change");
@@ -1032,21 +1036,6 @@ function changeParameterType(element)
                                 newDefault + "</option>");
                             element.parents(".parameter").find(".defaultValue").val(newDefault);
                         }
-                    }
-
-                    //set the dynamic url if there is any
-                    if(choiceURL != undefined && choiceURL != null)
-                    {
-                        element.parents(".parameter").find("input[name='choiceDir']").val(choiceURL);
-                        element.parents(".parameter").find("input[name='choiceDir']").trigger("change");
-                    }
-
-                    //set the dynamic url filter if there is any
-                    var choiceURLFilter = $(this).find("input[name='choiceURLFilter']").val();
-                    if(choiceURLFilter != undefined && choiceURLFilter != null)
-                    {
-                        element.parents(".parameter").find("input[name='choiceDirFilter']").val(choiceURLFilter);
-                        element.parents(".parameter").find("input[name='choiceDirFilter']").trigger("change");
                     }
 
                     $(this).dialog( "destroy" );
@@ -1081,6 +1070,9 @@ function changeParameterType(element)
         var choicelist = $(this).parents(".parameter").find("input[name='choicelist']").val();
         $(this).parents(".parameter").find(".staticChoicesInfo").text("");
 
+        var prevDefaultField = $(this).parents(".parameter").find(".defaultValue");
+        var choiceDir = $(this).parents(".parameter").find("input[name='choiceDir']").val();
+
         if(choicelist != null && choicelist != undefined && choicelist.length > 0)
         {
             //change text of the create drop down link to edit
@@ -1092,51 +1084,58 @@ function changeParameterType(element)
                 $(this).parents(".parameter").find(".staticChoicesInfo").append("Static list: " + choicelistArray.length + " items");
             }
 
-            //change the default value field to a combo box
-            var currentDefaultValue = $(this).parents(".parameter").find(".defaultValue").val();
-
-            var defaultValueSelect = $("<select name='p_defaultvalue' class='defaultValue'/>");
-            defaultValueSelect.append("<option value=''></option>");
-            var defaultValueFound = false;
-            for(var t=0;t<choicelistArray.length;t++)
+            //change the default value field to a combo box if this is not a dynamic file choice
+            if(choiceDir == undefined || choiceDir == null || choiceDir.length < 1)
             {
-                var result = choicelistArray[t].split("=");
-                defaultValueSelect.append("<option value='" + result[0]+ "'>" + result[0]+ "</option>");
+                var currentDefaultValue = $(this).parents(".parameter").find(".defaultValue").val();
 
-                if(result[0] == currentDefaultValue)
+                var defaultValueSelect = $("<select name='p_defaultvalue' class='defaultValue'/>");
+                defaultValueSelect.append("<option value=''></option>");
+                var defaultValueFound = false;
+                for(var t=0;t<choicelistArray.length;t++)
                 {
-                    defaultValueSelect.val(result[0]);
-                    defaultValueFound = true;
+                    var result = choicelistArray[t].split("=");
+                    defaultValueSelect.append("<option value='" + result[0]+ "'>" + result[0]+ "</option>");
+
+                    if(result[0] == currentDefaultValue)
+                    {
+                        defaultValueSelect.val(result[0]);
+                        defaultValueFound = true;
+                    }
                 }
-            }
 
-            if(!defaultValueFound && currentDefaultValue != undefined
-                && currentDefaultValue != null && currentDefaultValue != "")
-            {
-                invalidDefaultValueFound = true;
-            }
-
-            var prevDef = $(this).parents(".parameter").find(".defaultValue");
-            $(this).parents(".parameter").find(".defaultValue").after(defaultValueSelect);
-            prevDef.remove();
-
-            $(this).parents(".parameter").find(".defaultValue").multiselect(
-            {
-                header: false,
-                multiple: false,
-                selectedList: 1,
-                position:
+                if(!defaultValueFound && currentDefaultValue != undefined
+                    && currentDefaultValue != null && currentDefaultValue != "")
                 {
-                    my: 'left bottom',
-                    at: 'left top'
+                    invalidDefaultValueFound = true;
                 }
+
+                $(this).parents(".parameter").find(".defaultValue").after(defaultValueSelect);
+                prevDefaultField.remove();
+
+                $(this).parents(".parameter").find(".defaultValue").multiselect(
+                {
+                    header: false,
+                    multiple: false,
+                    selectedList: 1,
+                    position:
+                    {
+                        my: 'left bottom',
+                        at: 'left top'
+                    }
+                }
+                );
             }
-            );
         }
         else
         {
-            $(this).parents(".parameter").find(".choicelink").text("add a drop down list");
-            $(this).parents(".parameter").find(".defaultValue").replaceWith("<input name='p_defaultvalue' class='defaultValue'/>");
+            if(choiceDir == undefined || choiceDir == null || choiceDir.length < 1)
+            {
+                $(this).parents(".parameter").find(".choicelink").text("add a drop down list");
+            }
+
+            prevDefaultField.after("<input name='p_defaultvalue' class='defaultValue'/>");
+            prevDefaultField.remove();
         }
     });
 
