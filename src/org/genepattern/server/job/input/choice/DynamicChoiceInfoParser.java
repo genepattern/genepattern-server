@@ -4,10 +4,10 @@ import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.regex.Pattern;
 
 import org.apache.commons.net.ftp.FTP;
@@ -88,6 +88,16 @@ public class DynamicChoiceInfoParser implements ChoiceInfoParser {
         }
     }
 
+    private List<Choice> getAltChoices(final ParameterInfo param) {
+        final String declaredChoicesStr= (String) param.getAttributes().get(ChoiceInfo.PROP_CHOICE);
+        if (declaredChoicesStr != null) {
+            log.debug("Initializing "+ChoiceInfo.PROP_CHOICE+" entry from manifest for parm="+param.getName());
+            //choices=ParameterInfo._initChoicesFromString(declaredChoicesStr);
+            return ChoiceInfoHelper.initChoicesFromManifestEntry(declaredChoicesStr);
+        }
+        return Collections.emptyList();
+    }
+    
     @Override
     public ChoiceInfo initChoiceInfo(final ParameterInfo param) {
         final List<Choice> choiceList;
@@ -103,7 +113,14 @@ public class DynamicChoiceInfoParser implements ChoiceInfoParser {
                 log.debug("initial selection: "+choiceInfoFromFtp.getSelected());
                 DynamicChoiceInfoParser.initAllowCustomValue(choiceInfoFromFtp, param);
                 log.debug("isAllowCustomValue: "+choiceInfoFromFtp.isAllowCustomValue());
-                //TODO: optionally return alternate static drop-down
+                
+                if (ChoiceInfo.Status.Flag.ERROR==choiceInfoFromFtp.getStatus().getFlag()) {
+                    //check for alternative static drop-down
+                    List<Choice> altChoices=getAltChoices(param);
+                    for(final Choice choice : altChoices) {
+                        choiceInfoFromFtp.add(choice);
+                    }
+                }
                 return choiceInfoFromFtp;
             }
             catch (Throwable t) {
