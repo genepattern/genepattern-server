@@ -13,6 +13,7 @@ var mainLayout;
 var run = false;
 var dirty = false;
 var saving = false;
+var invalidDefaultValueFound = false;
 
 var module_editor = {
     lsid: "",
@@ -1022,7 +1023,6 @@ function changeParameterType(element)
                     //set default value
                     if(choicelist.length > 0)
                     {
-                        element.parents(".parameter").find(".defaultValue").combobox("destroy");
                         element.parents(".parameter").find(".defaultValue").find("option:selected").removeAttr("selected");
                         element.parents(".parameter").find(".defaultValue").val(newDefault);
 
@@ -1032,8 +1032,6 @@ function changeParameterType(element)
                                 newDefault + "</option>");
                             element.parents(".parameter").find(".defaultValue").val(newDefault);
                         }
-
-                        element.parents(".parameter").find(".defaultValue").combobox();
                     }
 
                     //set the dynamic url if there is any
@@ -1097,30 +1095,43 @@ function changeParameterType(element)
             //change the default value field to a combo box
             var currentDefaultValue = $(this).parents(".parameter").find(".defaultValue").val();
 
-            var defaultValueComboBox = $("<select name='p_defaultvalue' class='defaultValue'/>");
+            var defaultValueSelect = $("<select name='p_defaultvalue' class='defaultValue'/>");
+            defaultValueSelect.append("<option value=''></option>");
+            var defaultValueFound = false;
             for(var t=0;t<choicelistArray.length;t++)
             {
                 var result = choicelistArray[t].split("=");
-                defaultValueComboBox.append("<option value='" + result[0]+ "'>" + result[0]+ "</option>");
+                defaultValueSelect.append("<option value='" + result[0]+ "'>" + result[0]+ "</option>");
 
                 if(result[0] == currentDefaultValue)
                 {
-                    defaultValueComboBox.val(result[0]);
+                    defaultValueSelect.val(result[0]);
+                    defaultValueFound = true;
                 }
             }
 
-            if(defaultValueComboBox.val() != currentDefaultValue)
+            if(!defaultValueFound && currentDefaultValue != undefined
+                && currentDefaultValue != null && currentDefaultValue != "")
             {
-                defaultValueComboBox.append("<option value='" + currentDefaultValue + "'>"
-                    + currentDefaultValue + "</option>");
-                defaultValueComboBox.val(currentDefaultValue);
+                invalidDefaultValueFound = true;
             }
 
             var prevDef = $(this).parents(".parameter").find(".defaultValue");
-            $(this).parents(".parameter").find(".defaultValue").after(defaultValueComboBox);
+            $(this).parents(".parameter").find(".defaultValue").after(defaultValueSelect);
             prevDef.remove();
 
-            $(this).parents(".parameter").find(".defaultValue").combobox();
+            $(this).parents(".parameter").find(".defaultValue").multiselect(
+            {
+                header: false,
+                multiple: false,
+                selectedList: 1,
+                position:
+                {
+                    my: 'left bottom',
+                    at: 'left top'
+                }
+            }
+            );
         }
         else
         {
@@ -1637,6 +1648,12 @@ function loadParameterInfo(parameters)
 
         newParameter.data("allAttrs",  allAttrs);
         updateparameter(newParameter, false);
+    }
+
+    if(invalidDefaultValueFound)
+    {
+        alert("Warning: Some parameters with invalid default drop-down parameters were found. " +
+            "\nThe default value of these parameters have been removed.");
     }
 }
 
