@@ -502,7 +502,7 @@ the user is saved typing and cannot make a mistake by choosing an invalid settin
 on some other parameter). To enter the choices, click the "add drop-down list" link and enter the
 choices in the Create drop-down list window.
 <br><br>
-For Text fields, enter the value required by the program (Value) and, optionally, a more
+For Text fields, you can create only a static drop-down list. Enter the value required by the program (Value) and, optionally, a more
 human-readable value (Display Value). When you exit from the Create drop-down list window,
 the total number of choices is listed. For example:
 <br><br>
@@ -521,6 +521,28 @@ the total number of choices is listed. For example:
         </tr>
     </table>
 </form>
+<br><br>
+For file fields, you can create either a dynamic or static drop-down list. Creation of a static drop-down list is the same as
+for text fields but the command line values must be urls in ftp, http, or https format.
 <br>
+Dynamic drop-down lists are drop-down lists that are populated using files available on an ftp directory URL. For example:
+<br>
+<p>
+FTP directory:  <span class="example">ftp://ftp.broadinstitute.org/pub/genepattern/rna_seq/referenceAnnotation/gtf/</span>
+
+<form>
+    <table>
+        <tr>
+            <td valign="top">
+            would create a drop-down list that looks like this:
+            </td>
+            <td>
+                <img src='styles/images/dynamic-drop-down.png' width='340' height='220'>
+            </td>
+        </tr>
+    </table>
+</form>
+<br>
+
 </body>
 </html>
