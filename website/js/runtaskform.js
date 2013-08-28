@@ -450,7 +450,23 @@ function loadParameterInfo(parameters, initialValues)
                 && parameters[q].choiceInfo.status != undefined && parameters[q].choiceInfo.status != null
                 && parameters[q].choiceInfo.status.flag != "OK")
             {
-                selectChoiceDiv.append("<p class='errorMessage'> No selections available </p>");
+                var errorDetailsLink = $("<a href='#'> (more...)</a>");
+
+                var errorMessageDiv = $("<p><span class='errorMessage'>No dynamic file selections available</span></p>");
+                errorMessageDiv.append(errorDetailsLink);
+                selectChoiceDiv.append(errorMessageDiv);
+                errorDetailsLink.data("errMsg", parameters[q].choiceInfo.status.message);
+                errorDetailsLink.click(function(event)
+                {
+                    event.preventDefault();
+                    var errorDetailsDiv = $("<div/>");
+                    errorDetailsDiv.append("<p>"+  $(this).data("errMsg") + "</p>");
+                    errorDetailsDiv.dialog(
+                        {
+                            title: "Dynamic File Selection Loading Error"
+                        }
+                    );
+                });
             }
 
             //display drop down showing available file choices
