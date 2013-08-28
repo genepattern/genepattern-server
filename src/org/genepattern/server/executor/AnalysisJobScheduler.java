@@ -112,11 +112,10 @@ public class AnalysisJobScheduler implements Runnable {
         
         //reset any stuck 'dispatching' jobs, this covers jobs which were in the middle of being dispatched
         //at the time of a server shutdown
-        //TODO: logging statements
-        //int numUpdated=JobQueueUtil.changeJobStatus(JobQueue.Status.DISPATCHING, JobQueue.Status.PENDING);
-        //if (numUpdated >0) {
-        //    log.info("reset "+numUpdated+" jobs from "+JobQueue.Status.DISPATCHING+" to "+JobQueue.Status.PENDING);
-        //}
+        int numUpdated=JobQueueUtil.changeJobStatus(JobQueue.Status.DISPATCHING, JobQueue.Status.PENDING);
+        if (numUpdated >0) {
+            log.info("reset "+numUpdated+" jobs from "+JobQueue.Status.DISPATCHING+" to "+JobQueue.Status.PENDING);
+        }
         
         //the monitor polls the pendingJobQueue and starts jobs as they are added to the DB
         final Thread monitor=new Thread(new Runnable() {

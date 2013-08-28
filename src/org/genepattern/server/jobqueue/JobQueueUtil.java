@@ -154,5 +154,40 @@ public class JobQueueUtil {
             throw new Exception(t);
         }
     }
+    
+    /**
+     * Change the status for all the entries in the JOB_QUEUE table which have the given 'from' status
+     * to the given 'to' status.
+     * 
+     * @param from, the original status
+     * @param to, the new status
+     * @return the number of updated rows
+     */
+    static public int changeJobStatus(JobQueue.Status from, JobQueue.Status to) {
+        int num=0;
+        boolean inTransaction = HibernateUtil.isInTransaction();
+        try {
+            HibernateUtil.beginTransaction();
+            final String hql = "update "+JobQueue.class.getName()+" jq set jq.status = :toStatus where jq.status = :fromStatus";
+            Query query = HibernateUtil.getSession().createQuery( hql );
+            query.setString("fromStatus", from.name());
+            query.setString("toStatus", to.name());
+            num=query.executeUpdate();
+            if (!inTransaction) {
+                HibernateUtil.commitTransaction();
+            }
+            return num;
+        }
+        catch (Throwable t) {
+            log.error("Error changing JobQueue status from "+from+" to "+to, t);
+            HibernateUtil.rollbackTransaction();
+        }
+        finally {
+            if (!inTransaction) {
+                HibernateUtil.closeCurrentSession();
+            }
+        }
+        return num;
+    }
 
 }
