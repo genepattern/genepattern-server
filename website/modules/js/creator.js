@@ -2305,7 +2305,7 @@ jQuery(document).ready(function() {
 
                 var afterHTML = "<div><div style='width:100%;text-align:center;'><img id='gparcUploadProgress' style='height: 32px; margin: 10px;' src='/gp/images/runningJob.gif'/></div>" +
                     "<div id='gparcInfoText'>Uploading your module to GParc</div></div>";
-                var afterButtons = {"Confirm on GParc": function() {
+                var afterButtons = {"Finalize on GParc": function() {
                     window.open(token);
                     $(this).dialog("close");
                 }};
@@ -2324,11 +2324,11 @@ jQuery(document).ready(function() {
                             token = response.token;
                             $("#gparcUploadProgress").attr("src", "/gp/images/checkbox.gif");
                             var successHTML = 'Your module has been uploaded to GParc. Please click the button below to log into GParc and finalize your submission.<br/><br/>' +
-                                '<em>Remember, in order to finish the submission you will need to a GParc account and will need to be logged in. This account is different ' +
-                                'from your GenePattern account.</em>' +
+                                '<strong>Remember, in order to finish the submission you will need to a GParc account and will need to be logged in. This account is different ' +
+                                'from your GenePattern account.</strong>' +
                                 '<ul><li>To register for a GParc account <a href="http://www.broadinstitute.org/software/gparc/user/register" target="_blank" style="text-decoration: underline; color: #000099;">click here</a>.</li>' +
                                 '<li>To log in to GParc <a href="http://www.broadinstitute.org/software/gparc/user" target="_blank" style="text-decoration: underline; color: #000099;">click here</a>.</li></ul>' +
-                                'Once you have logged in, click "Confirm on GParc" below.</div>';
+                                'Once you have logged in, click the "Finalize on GParc" button below.</div>';
                             $("#gparcInfoText").html(successHTML);
                             setTimeout(function() {
                                 $(".ui-dialog-buttonset > button:visible").button("enable");
@@ -2355,15 +2355,14 @@ jQuery(document).ready(function() {
         }
 
         if (!hasDocFiles()) {
-            dialogHTML += '<img src="styles/images/alert.gif" alt="Alert" /> <span style="color:red;">This module does not yet have attached documentation.</span><br/><br/>\
-    			In order to submit a module to GParc the module will need to have attached documentation.<br/><br/>';
+            dialogHTML += '<img src="styles/images/alert.gif" alt="Alert" /> <span style="color:red;">This module does not have attached PDF documentation.</span><br/><br/>';
         }
 
-        dialogHTML += 'To submit a module to GParc please click the Submit to GParc button below and wait for your module to be uploaded.<br/><br/>' +
-            '<em>In order to finish the submission you will need a GParc account and will need to be logged in. This account is different ' +
-            'from your GenePattern account.</em>' +
+        dialogHTML += '<ol><li>To submit a module to GParc the module will need to have attached documentation in PDF format.</li>' + 
+        	'<li>Click the Submit to GParc button below and wait for your module to be uploaded.</li>' +
+            '<li><strong>You will need a GParc account and will need to be logged in. This account is different from your GenePattern account.</strong>' +
             '<ul><li>To register for a GParc account <a href="http://www.broadinstitute.org/software/gparc/user/register" target="_blank" style="text-decoration: underline; color: #000099;">click here</a>.</li>' +
-            '<li>To log in to GParc <a href="http://www.broadinstitute.org/software/gparc/user" target="_blank" style="text-decoration: underline; color: #000099;">click here</a>.</li></ul></div>';
+            '<li>To log in to GParc <a href="http://www.broadinstitute.org/software/gparc/user" target="_blank" style="text-decoration: underline; color: #000099;">click here</a>.</li></ul></li></ol></div>';
         if (!hasDocFiles() || isDirty()) {
             setTimeout(function() {
                 $(".ui-dialog-buttonset > button:visible").button("disable");
