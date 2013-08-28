@@ -24,7 +24,7 @@ The Broad Institute
 #commandlist
 {
     margin-left: 1px;
-    cursor: pointer;
+    cursor: move;
 }
 
 .heading
@@ -781,7 +781,7 @@ table.deloptions
 
 .parameter table td.dragIndicator:hover
 {
-    cursor: pointer;
+    cursor: move;
 }
 
 .selectChoiceTypeDiv
@@ -870,5 +870,5 @@ p.editChoicesHeading {
 
 .sortHandle:hover
 {
-    cursor: pointer;
+    cursor: move;
 }

@@ -721,8 +721,8 @@ function changeParameterType(element)
                         }
 
                         //check if this is the first item in the list
-                        var firstListItem = $(this).parents("tr:first").prev().find(".staticTableHeader");
-                        if(firstListItem != undefined && firstListItem != null && firstListItem.length > 0)
+                        var firstListItem = $(this).parents("tr:first").prev();
+                        if(firstListItem == undefined || firstListItem == null || firstListItem.length < 1)
                         {
                             //this is the first item in the list so allow it to be set as the default
                             return;
@@ -841,11 +841,23 @@ function changeParameterType(element)
                     forcePlaceholderSize: true,
                     start: function(event, ui)
                     {
-                        ui.item.addClass("highlight")
+                        ui.item.addClass("highlight");
                     },
                     stop: function(event, ui)
                     {
-                        ui.item.removeClass("highlight")
+                        var element = ui.item;
+                        element.removeClass("highlight");
+
+                        //check if this item is set at as the default and its actual value is blank
+                        if(element.find("input[name='cradio']").is(":checked")
+                            && (element.find("input[name='choicev']").val() == undefined
+                            || element.find("input[name='choicev']").val() == null
+                            || element.find("input[name='choicev']").val().length < 1))
+                        {
+                            alert("You are not allowed to move a default selection with no command line " +
+                                "value to any position except the first");
+                            element.parents("tbody").sortable("cancel");
+                        }
                     },
                     handle: ".sortHandle"
                 });
@@ -2030,11 +2042,11 @@ jQuery(document).ready(function() {
             },
             start: function(event, ui)
             {
-                ui.item.addClass("highlight")
+                ui.item.addClass("highlight");
             },
             stop: function(event, ui)
             {
-                ui.item.removeClass("highlight")
+                ui.item.removeClass("highlight");
             }
         });
 
