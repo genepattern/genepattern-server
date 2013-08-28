@@ -860,15 +860,23 @@ p.editChoicesHeading {
 .sortHandle
 {
     background-color: #DFDFAC;
-    max-height: 15px;
-    min-height: 15px;
-    max-width: 20px;
-    min-width: 20px;
-    padding-bottom: 7px;
+    max-height: 18px;
+    min-height: 18px;
+    max-width: 31px;
+    min-width: 31px;
     vertical-align: middle;
+    font-size: 9px;
+    text-align: center;
+    padding-top: 4px;
 }
 
 .sortHandle:hover
 {
     cursor: move;
+}
+
+#supportFileHelp
+{
+    font-size: 10px;
+    font-style: italic;
 }
