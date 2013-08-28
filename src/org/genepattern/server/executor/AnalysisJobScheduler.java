@@ -53,13 +53,8 @@ public class AnalysisJobScheduler implements Runnable {
     private final BlockingQueue<Integer> pendingJobQueue = new LinkedBlockingQueue<Integer>(BOUND);
     private static ExecutorService jobTerminationService=null;
     private Object jobQueueWaitObject = new Object();
-    //the batch size, the max number of pending jobs to fetch from the db at a time
-    private int batchSize = 20;
-    private int numJobSubmissionThreads = 0;  //set to 0, effectively replaces the original (<= 3.6.1) implementation with the new one 
-    private int numJobTerminationThreads = 5;  
     private boolean suspended = false;
     private Thread runner = null;
-    private List<Thread> jobSubmissionThreads = null;
 
     public AnalysisJobScheduler() { 
     }
@@ -77,21 +72,13 @@ public class AnalysisJobScheduler implements Runnable {
     }
 
     public void startQueue() {
+        final int numJobTerminationThreads = 5;  
         if (jobTerminationService==null || jobTerminationService.isTerminated()) {
             jobTerminationService = Executors.newFixedThreadPool(numJobTerminationThreads);
         }
         runner = new Thread(THREAD_GROUP, this);
         runner.setName("AnalysisTaskThread");
-        runner.setDaemon(true);
-
-        jobSubmissionThreads = new ArrayList<Thread>();
-        for (int i=0; i<numJobSubmissionThreads; ++i) { 
-            Thread jobSubmissionThread = new Thread(THREAD_GROUP, new ProcessingJobsHandler(pendingJobQueue));
-            jobSubmissionThread.setName("AnalysisTaskJobSubmissionThread-"+i);
-            jobSubmissionThread.setDaemon(true);
-            jobSubmissionThreads.add(jobSubmissionThread);
-            jobSubmissionThread.start();
-        }
+        runner.setDaemon(false);
         runner.start();
     }
     
@@ -100,14 +87,6 @@ public class AnalysisJobScheduler implements Runnable {
             runner.interrupt();
             runner = null;
         }
-        for(Thread jobSubmissionThread : jobSubmissionThreads) {
-            if (jobSubmissionThread != null) {
-                //TODO: we could set the status back to PENDING for any jobs left on the queue
-                jobSubmissionThread.interrupt();
-                jobSubmissionThread = null;
-            }
-        }
-        jobSubmissionThreads.clear();
         shutdownJobTerminationService();
     }
     
@@ -131,6 +110,14 @@ public class AnalysisJobScheduler implements Runnable {
     public void run() {
         log.info("Starting AnalysisTask thread ... ");
         
+        //reset any stuck 'dispatching' jobs, this covers jobs which were in the middle of being dispatched
+        //at the time of a server shutdown
+        //TODO: logging statements
+        //int numUpdated=JobQueueUtil.changeJobStatus(JobQueue.Status.DISPATCHING, JobQueue.Status.PENDING);
+        //if (numUpdated >0) {
+        //    log.info("reset "+numUpdated+" jobs from "+JobQueue.Status.DISPATCHING+" to "+JobQueue.Status.PENDING);
+        //}
+        
         //the monitor polls the pendingJobQueue and starts jobs as they are added to the DB
         final Thread monitor=new Thread(new Runnable() {
             final ExecutorService jobSubmissionService=Executors.newCachedThreadPool();
@@ -138,14 +125,15 @@ public class AnalysisJobScheduler implements Runnable {
 
             @Override
             public void run() {
+                boolean interrupted=false;
                 try {
                     while(true) {
                         final Integer jobId=pendingJobQueue.take();
                         try {
                             // start a new thread for adding the job to the queue,
-                            // don't wait, because if necessary, input files will be downloaded before
-                            // calling GPAT.onJob
-                            jobSubmissionService.submit(new JobSubmitter(genePattern, jobId));
+                            // if necessary, input files will be downloaded to the cache before starting the job
+                            JobSubmitter jobSubmitter=new JobSubmitter(genePattern, jobId);
+                            jobSubmissionService.submit(jobSubmitter);
                         }
                         catch (Throwable t) {
                             //log an error here because it's not expected
@@ -154,15 +142,20 @@ public class AnalysisJobScheduler implements Runnable {
                     }
                 }
                 catch (InterruptedException e) {
+                    interrupted=true;
+                }
+                jobSubmissionService.shutdownNow();
+                if (interrupted) {
                     Thread.currentThread().interrupt();
                 }
-                jobSubmissionService.shutdown();
             }
         });
         monitor.start();
         
-        //the while loop polls the DB and adds job ids to the pendingJobQueue as they become available
+        //the batch size, the max number of pending jobs to fetch from the db at a time
+        final int batchSize = 20;
         try {
+            //the while loop polls the DB and adds job ids to the pendingJobQueue as they become available
             while (true) {
                 // Load input data to input queue
                 synchronized (jobQueueWaitObject) {
@@ -190,7 +183,7 @@ public class AnalysisJobScheduler implements Runnable {
                                     }
                                     else {
                                         try {
-                                            JobQueueUtil.deleteJobQueueStatusRecord(jobId);
+                                            JobQueueUtil.setJobStatus(jobId, JobQueue.Status.DISPATCHING);
                                             pendingJobQueue.put(jobId);
                                         }
                                         catch (Throwable t) {
@@ -213,8 +206,9 @@ public class AnalysisJobScheduler implements Runnable {
             Thread.currentThread().interrupt();
         }
         // on shutdown
-        monitor.interrupt();
-        log.debug("Exited AnalysisTask thread.");
+        if (monitor != null) {
+            monitor.interrupt();
+        }
     }
 
 //    static private List<Integer> getJobsWithStatusId(int statusId, int maxJobCount) {
