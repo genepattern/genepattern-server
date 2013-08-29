@@ -502,8 +502,9 @@ the user is saved typing and cannot make a mistake by choosing an invalid settin
 on some other parameter). To enter the choices, click the "add drop-down list" link and enter the
 choices in the Create drop-down list window.
 <br><br>
-For Text fields, you can create only a static drop-down list. Enter the value required by the program (Value) and, optionally, a more
-human-readable value (Display Value). When you exit from the Create drop-down list window,
+For text fields, you can create only a static drop-down list. Enter the value required by the program (Value) and, optionally, a more
+human-readable value (Display Value). You can also specify which item you want to be the default value. If the item you want to be the
+default has only a display value and no command line value then you must make this item the first in the list. When you exit from the Create drop-down list window,
 the total number of choices is listed. For example:
 <br><br>
 
