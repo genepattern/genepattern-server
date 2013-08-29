@@ -2948,7 +2948,7 @@ public class GenePatternAnalysisTask {
                     }
                 }
 
-		// if the parameter is part of a choice list, verify that the default is on the list
+                // if the parameter is part of a choice list, verify that the default is on the list
                 String dflt = (String) hmAttributes.get(PARAM_INFO_DEFAULT_VALUE[PARAM_INFO_NAME_OFFSET]);
                 String actualValue = actualParams[actual].getValue();
                 String choices = formalParams[formal].getValue();
@@ -2998,8 +2998,11 @@ public class GenePatternAnalysisTask {
                         }
                     }
                     if (!foundActual) {
-                        vProblems.add("Value '" + actualValue + "' for parameter " + name + " was not found in the choice list '"
+                        if (actualValue != null && actualValue.length() > 0) {
+                            // only a problem if it's not an empty string
+                            vProblems.add("Value '" + actualValue + "' for parameter " + name + " was not found in the choice list '"
                                 + choices + "'.");
+                        }
                     }
                 }
             }
