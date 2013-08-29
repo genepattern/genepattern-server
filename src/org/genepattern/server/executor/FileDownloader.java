@@ -5,15 +5,17 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.dm.GpFilePath;
 import org.genepattern.server.eula.GetTaskStrategy;
 import org.genepattern.server.eula.GetTaskStrategyDefault;
+import org.genepattern.server.job.input.cache.FileCache;
 import org.genepattern.server.job.input.choice.Choice;
 import org.genepattern.server.job.input.choice.ChoiceInfo;
-import org.genepattern.server.job.input.choice.ChoiceInfoFileCache;
 import org.genepattern.server.job.input.choice.ChoiceInfoHelper;
 import org.genepattern.server.rest.ParameterInfoRecord;
 import org.genepattern.server.webservice.server.dao.AnalysisDAO;
@@ -129,7 +131,7 @@ public class FileDownloader {
     /**
      * Call this method before running the job, it takes care of downloading any input files selected from a 
      * drop-down menu. The main purpose of this method is to wait, if necessary, for each of the files to download 
-     * into the cache before proceeding. The ChoiceInfoCache manages the download process.
+     * into the cache before proceeding.
      * 
      * @see ChoiceInfoCache
      * @throws InterruptedException
@@ -154,7 +156,9 @@ public class FileDownloader {
             for(final Choice selectedCopy : copy) {
                 try {
                     //this method throws a TimeoutException if the download is not complete
-                    final GpFilePath cachedFile=ChoiceInfoFileCache.instance().getCachedGpFilePath(selectedCopy);
+                    //final GpFilePath cachedFile=ChoiceInfoFileCache.instance().getCachedGpFilePath(selectedCopy);
+                    Future<GpFilePath> f = FileCache.instance().getFutureObj(selectedCopy.getValue());
+                    f.get(100, TimeUnit.MILLISECONDS);
                     toRemove.add(selectedCopy);
                 }
                 catch (TimeoutException e) {
@@ -174,4 +178,5 @@ public class FileDownloader {
         //    final GpFilePath cachedFile=ChoiceInfoFileCache.instance().getCachedGpFilePathWait(selectedChoice);
         //}
     }
+
 }

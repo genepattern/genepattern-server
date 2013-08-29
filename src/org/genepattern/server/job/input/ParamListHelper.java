@@ -1,35 +1,20 @@
 package org.genepattern.server.job.input;
 
-import java.io.BufferedInputStream;
 import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.regex.Pattern;
 
-import org.apache.commons.httpclient.Header;
-import org.apache.commons.httpclient.HttpClient;
-import org.apache.commons.httpclient.HttpMethod;
-import org.apache.commons.httpclient.methods.HeadMethod;
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.FilenameUtils;
-import org.apache.commons.net.ftp.FTPClient;
 import org.apache.log4j.Logger;
-import org.genepattern.server.DataManager;
 import org.genepattern.server.config.ServerConfiguration;
 import org.genepattern.server.config.ServerConfiguration.Context;
 import org.genepattern.server.dm.GpFileObjFactory;
 import org.genepattern.server.dm.GpFilePath;
 import org.genepattern.server.dm.serverfile.ServerFileObjFactory;
-import org.genepattern.server.dm.userupload.UserUploadManager;
 import org.genepattern.server.job.input.JobInput.Param;
 import org.genepattern.server.job.input.JobInput.ParamId;
 import org.genepattern.server.job.input.JobInput.ParamValue;
@@ -705,332 +690,349 @@ public class ParamListHelper {
         }
     }
     
-    /**
-     * Given the real path for the download, get the temp path
-     * @param realPath
-     * @return
-     * @throws Exception 
-     */
-    private static GpFilePath getTempPath(GpFilePath realPath) throws Exception {
-        Context userContext = ServerConfiguration.Context.getContextForUser(".cache");
-        //String tempPath = realPath.getRelativePath() + ".downloading";
-        String tempPath = FilenameUtils.getPath(realPath.getRelativePath()) + ".downloading/" + FilenameUtils.getName(realPath.getRelativePath());
-        File tempFile = new File(tempPath);
-
-        return GpFileObjFactory.getUserUploadFile(userContext, tempFile);
-    }
+//    /**
+//     * Given the real path for the download, get the temp path
+//     * @param realPath
+//     * @return
+//     * @throws Exception 
+//     */
+//    private static GpFilePath getTempPath(GpFilePath realPath) throws DownloadException {
+//        Context userContext = ServerConfiguration.Context.getContextForUser(".cache");
+//        //String tempPath = realPath.getRelativePath() + ".downloading";
+//        String tempPath = FilenameUtils.getPath(realPath.getRelativePath()) + ".downloading/" + FilenameUtils.getName(realPath.getRelativePath());
+//        File tempFile = new File(tempPath);
+//        try {
+//            GpFilePath gpFilePath=GpFileObjFactory.getUserUploadFile(userContext, tempFile);
+//            return gpFilePath;
+//        }
+//        catch (Exception e) {
+//            log.error(e);
+//            throw new DownloadException("GP server error initializing temp path: "+tempPath);
+//        }
+//    }
     
-    /**
-     * Compare last modified with cached versions for FTP files
-     * @param realPath
-     * @param url
-     * @return
-     * @throws Exception
-     */
-    private static boolean needToRedownloadFTP(GpFilePath realPath, URL url) throws Exception {
-        FTPClient ftp = new FTPClient();
-        ftp.connect(url.getHost(), url.getPort() > 0 ? url.getPort() : 21);
-        ftp.login("anonymous", "");
-        String filename = FilenameUtils.getName(url.getFile());
-        String filepath = FilenameUtils.getPath(url.getFile());
-        boolean success = ftp.changeWorkingDirectory(filepath);
-        String lastModifiedString = ftp.getModificationTime(filename);
-        
-        // Trouble changing directory or last modified not supported by FTP server, assume cache is good
-        if (!success || lastModifiedString == null) {
-            return false;
-        }
-        
-        Date lastModified = new SimpleDateFormat("yyyyMMddhhmmss", Locale.ENGLISH).parse(lastModifiedString.substring(lastModifiedString.indexOf(" ")));
-        return lastModified.after(realPath.getLastModified());
-    }
+//    /**
+//     * Compare last modified with cached versions for FTP files
+//     * @param realPath
+//     * @param url
+//     * @return
+//     * @throws Exception
+//     */
+//    private static boolean needToRedownloadFTP(GpFilePath realPath, URL url) throws Exception {
+//        FTPClient ftp = new FTPClient();
+//        ftp.connect(url.getHost(), url.getPort() > 0 ? url.getPort() : 21);
+//        ftp.login("anonymous", "");
+//        String filename = FilenameUtils.getName(url.getFile());
+//        String filepath = FilenameUtils.getPath(url.getFile());
+//        boolean success = ftp.changeWorkingDirectory(filepath);
+//        String lastModifiedString = ftp.getModificationTime(filename);
+//        
+//        // Trouble changing directory or last modified not supported by FTP server, assume cache is good
+//        if (!success || lastModifiedString == null) {
+//            return false;
+//        }
+//        
+//        Date lastModified = new SimpleDateFormat("yyyyMMddhhmmss", Locale.ENGLISH).parse(lastModifiedString.substring(lastModifiedString.indexOf(" ")));
+//        return lastModified.after(realPath.getLastModified());
+//    }
     
-    /**
-     * Compare last modified with cached versions for HTTP files
-     * @param realPath
-     * @param url
-     * @return
-     * @throws Exception
-     */
-    private static boolean needToRedownloadHTTP(GpFilePath realPath, URL url) throws Exception {
-        HttpClient client = new HttpClient();
-        HttpMethod method = new HeadMethod(url.toString());
-        client.executeMethod(method);
-        Header lastModifiedHeader = method.getResponseHeader("Last-Modified");
-        String lastModifiedString = lastModifiedHeader.getValue();
-        // Example format: Mon, 05 Aug 2013 18:02:28 GMT
-        Date lastModified = new SimpleDateFormat("EEEE, dd MMMM yyyy kk:mm:ss zzzz", Locale.ENGLISH).parse(lastModifiedString);
-        return lastModified.after(realPath.getLastModified());
-    }
+//    /**
+//     * Compare last modified with cached versions for HTTP files
+//     * @param realPath
+//     * @param url
+//     * @return
+//     * @throws Exception
+//     */
+//    private static boolean needToRedownloadHTTP(GpFilePath realPath, URL url) throws Exception {
+//        HttpClient client = new HttpClient();
+//        HttpMethod method = new HeadMethod(url.toString());
+//        client.executeMethod(method);
+//        Header lastModifiedHeader = method.getResponseHeader("Last-Modified");
+//        String lastModifiedString = lastModifiedHeader.getValue();
+//        // Example format: Mon, 05 Aug 2013 18:02:28 GMT
+//        Date lastModified = new SimpleDateFormat("EEEE, dd MMMM yyyy kk:mm:ss zzzz", Locale.ENGLISH).parse(lastModifiedString);
+//        return lastModified.after(realPath.getLastModified());
+//    }
     
-    /**
-     * Do an HTTP HEAD or FTP Modification Time on the URL and see if it is out of date
-     * @param realPath
-     * @param url
-     * @return
-     */
-    private static boolean needToRedownload(GpFilePath realPath, URL url) throws Exception {
-        // If the last modified isn't set for this path, assume it's not out of date
-        realPath.initMetadata();
-        if (realPath.getLastModified() == null) {
-            log.debug("Last modified not set for: " + realPath.getName());
-            return false;
-        }
-        
-        String protocol = url.getProtocol().toLowerCase();   
-        if (protocol.equals("http") || protocol.equals("https")) {
-            return needToRedownloadHTTP(realPath, url);
-        }
-        else if (protocol.equals("ftp")) {
-            return needToRedownloadFTP(realPath, url);
-        }
-        else {
-            // The protocol is unknown, assume it's not out of date 
-            log.debug("Unknown protocol in URL passed into needToRedownload(): " + protocol);
-            return false;
-        }
-    }
+//    /**
+//     * Do an HTTP HEAD or FTP Modification Time on the URL and see if it is out of date
+//     * @param realPath
+//     * @param url
+//     * @return
+//     */
+//    private static boolean needToRedownload(GpFilePath realPath, URL url) throws Exception {
+//        // If the last modified isn't set for this path, assume it's not out of date
+//        realPath.initMetadata();
+//        if (realPath.getLastModified() == null) {
+//            log.debug("Last modified not set for: " + realPath.getName());
+//            return false;
+//        }
+//        
+//        String protocol = url.getProtocol().toLowerCase();   
+//        if (protocol.equals("http") || protocol.equals("https")) {
+//            return needToRedownloadHTTP(realPath, url);
+//        }
+//        else if (protocol.equals("ftp")) {
+//            return needToRedownloadFTP(realPath, url);
+//        }
+//        else {
+//            // The protocol is unknown, assume it's not out of date 
+//            log.debug("Unknown protocol in URL passed into needToRedownload(): " + protocol);
+//            return false;
+//        }
+//    }
 
-    /**
-     * Download from the url into a file, creating the file and all parent directories if necessary.
-     * This is implemented using basic Java I/O capabilities (pre Java 7 NIO).
-     * 
-     * see: http://www.ibm.com/developerworks/java/library/j-jtp05236/index.html
-     * 
-     * @param fromUrl
-     * @param toFile
-     * @throws IOException
-     */
-    public static void downloadFile(final URL fromUrl, final File toFile) throws IOException, InterruptedException {
-        final boolean replaceExisting=true;
-        downloadFile(fromUrl, toFile, replaceExisting);
-    }
-    public static boolean downloadFile(final URL fromUrl, final File toFile, final boolean deleteExisting) throws IOException, InterruptedException {
-        if (toFile==null) {
-            throw new IllegalArgumentException("toFile==null");
-        }
-        if (toFile.exists()) {
-            if (deleteExisting) {
-                boolean success=toFile.delete();
-                if (!success) {
-                    throw new IllegalArgumentException("failed to delete existing file: "+toFile.getAbsolutePath());
-                }
-            }
-            else {
-                throw new IllegalArgumentException("file already exists: "+toFile.getAbsolutePath());
-            }
-        }
-
-        //if necessary, create parent download directory
-        final File parentDir=toFile.getParentFile();
-        if (parentDir != null) {
-            if (!parentDir.exists()) {
-                boolean success=parentDir.mkdirs();
-                if (!success) {
-                    throw new IllegalArgumentException("Failed to create parent download directory for file: "+toFile.getAbsolutePath());
-                }
-            }
-        }
-        boolean interrupted=false;
-        BufferedInputStream in = null;
-        FileOutputStream fout = null;
-        try {
-            final int BUFSIZE=1024;
-            in = new BufferedInputStream(fromUrl.openStream());
-            fout = new FileOutputStream(toFile);
-
-            final byte data[] = new byte[BUFSIZE];
-            int count;
-            while (!interrupted && (count = in.read(data, 0, BUFSIZE)) != -1) {
-                fout.write(data, 0, count);
-                if (Thread.interrupted()) {
-                    interrupted=true;
-                }
-            }
-        }
-        finally {
-            if (in != null) {
-                in.close();
-            }
-            if (fout != null) {
-                fout.close();
-            }
-        }
-        if (interrupted) {
-            //Thread.currentThread().interrupt();
-            throw new InterruptedException();
-        }
-        return true;
-    }
+//    /**
+//     * Download from the url into a file, creating the file and all parent directories if necessary.
+//     * This is implemented using basic Java I/O capabilities (pre Java 7 NIO).
+//     * 
+//     * see: http://www.ibm.com/developerworks/java/library/j-jtp05236/index.html
+//     * 
+//     * @param fromUrl
+//     * @param toFile
+//     * @throws IOException
+//     */
+//    public static void downloadFile(final URL fromUrl, final File toFile) throws IOException, InterruptedException {
+//        final boolean replaceExisting=true;
+//        downloadFile(fromUrl, toFile, replaceExisting);
+//    }
+//    public static boolean downloadFile(final URL fromUrl, final File toFile, final boolean deleteExisting) throws IOException, InterruptedException {
+//        if (toFile==null) {
+//            throw new IllegalArgumentException("toFile==null");
+//        }
+//        if (toFile.exists()) {
+//            if (deleteExisting) {
+//                boolean success=toFile.delete();
+//                if (!success) {
+//                    throw new IllegalArgumentException("failed to delete existing file: "+toFile.getAbsolutePath());
+//                }
+//            }
+//            else {
+//                throw new IllegalArgumentException("file already exists: "+toFile.getAbsolutePath());
+//            }
+//        }
+//
+//        //if necessary, create parent download directory
+//        final File parentDir=toFile.getParentFile();
+//        if (parentDir != null) {
+//            if (!parentDir.exists()) {
+//                boolean success=parentDir.mkdirs();
+//                if (!success) {
+//                    throw new IllegalArgumentException("Failed to create parent download directory for file: "+toFile.getAbsolutePath());
+//                }
+//            }
+//        }
+//        boolean interrupted=false;
+//        BufferedInputStream in = null;
+//        FileOutputStream fout = null;
+//        try {
+//            final int BUFSIZE=1024;
+//            in = new BufferedInputStream(fromUrl.openStream());
+//            fout = new FileOutputStream(toFile);
+//
+//            final byte data[] = new byte[BUFSIZE];
+//            int count;
+//            while (!interrupted && (count = in.read(data, 0, BUFSIZE)) != -1) {
+//                fout.write(data, 0, count);
+//                if (Thread.interrupted()) {
+//                    interrupted=true;
+//                }
+//            }
+//        }
+//        finally {
+//            if (in != null) {
+//                in.close();
+//            }
+//            if (fout != null) {
+//                fout.close();
+//            }
+//        }
+//        if (interrupted) {
+//            //Thread.currentThread().interrupt();
+//            throw new InterruptedException();
+//        }
+//        return true;
+//    }
     
-    /**
-     * Copy data from an external URL into a file in the GP user's uploads directory.
-     * This method blocks until the data file has been transferred. If the file has 
-     * already been cached, and the cached copy is up to date, it doesn't transfer 
-     * the file at all, but relies on the cached copy.
-     * 
-     * TODO: limit the size of the file which can be transferred
-     * TODO: implement a timeout
-     * 
-     * Notes:
-     *     Is it possible to interrupt FileUtils.copyURLToFile? I'm not sure. This thread is inconclusive.
-     *     http://stackoverflow.com/questions/10535335/apache-commons-copyurltofile-possible-to-stop-copying
-     * 
-     * @param realPath
-     * @param url
-     * @throws Exception
-     */
-    public static void copyExternalUrlToUserUploads(final GpFilePath realPath, final URL url) throws Exception {
-        // If the real path exists, assume it's up to date
-        final File realFile = realPath.getServerFile();
-        if (realFile.exists()) {
-            return;
-        }
-
-        // otherwise, download to tmp location
-        final GpFilePath tempPath = getTempPath(realPath);
-        final File tempFile = tempPath.getServerFile();
-
-        boolean deleteExisting=true;
-        boolean interrupted=false;
-        try {
-            boolean success=downloadFile(url, tempFile, deleteExisting);
-            if (!success) {
-                throw new Exception("Error downloading from '"+url.toExternalForm()+"' to temp file: "+tempFile.getAbsolutePath());
-            }
-        }
-        catch (InterruptedException e) {
-            interrupted=true;
-        }
-        if (interrupted) {
-            // blow away the partial download
-            // Note: we may want to leave it around so that we can pick up from where we left off
-            tempFile.delete();
-            Thread.currentThread().interrupt();
-            return;
-        }
-
-        // Add it to the database
-        JobInputFileUtil.__addUploadFileToDb(realPath);
-        // Once complete, move the file to the real location and return
-        boolean success = tempFile.renameTo(realFile);
-        if (!success) {
-            String message = "Error moving temp file to real location: temp=" + tempFile.getPath() + ", real=" + realFile.getPath();
-            log.error(message);
-            throw new Exception(message);
-        }
-    }
-
-    /**
-     * Copy data from an external URL into a file in the GP user's uploads directory.
-     * This method blocks until the data file has been transferred. If the file has 
-     * already been cached, and the cached copy is up to date, it doesn't transfer 
-     * the file at all, but relies on the cached copy.
-     * 
-     * TODO: turn this into a task which can be cancelled.
-     * TODO: limit the size of the file which can be transferred
-     * TODO: implement a timeout
-     * 
-     * @param realPath
-     * @param url
-     * @throws Exception
-     */
-    private static void origCopyExternalUrlToUserUploads(final GpFilePath realPath, final URL url) throws Exception {
-        try {
-            // If the real path exists, check to see if it is out of date and return if it is not
-            File realFile = realPath.getServerFile();
-            if (realFile.exists()) {
-                log.debug("realFile already exists: " + realFile.getPath());
-                boolean outOfDate = needToRedownload(realPath, url);
-                if (!outOfDate) {
-                    return;
-                }
-                else {
-                    // Delete out of date copy and update database
-                    realFile.delete();
-                    boolean deleted = DataManager.deleteUserUploadFile(realPath.getOwner(), realPath);
-                    if (!deleted) {
-                        String message="Error deleting expired copy of file: " + realPath.getRelativePath();
-                        log.error(message);
-                        throw new Exception(message);
-                    }
-                }
-            }
     
-            // If not, create the temp path
-            GpFilePath tempPath = getTempPath(realPath);
-            File tempFile = tempPath.getServerFile();
-            
-            // If the temp path exists, blow away the temp file
-            if (tempFile.exists()) {
-                boolean deleted = tempFile.delete();
-                if (!deleted) {
-                    String message = "Unable to delete temp file: " + tempPath.getRelativePath();
-                    log.error(message);
-                    throw new Exception(message);
-                }
-            }
-            
-            // If necessary, delete the record of the actual file from the DB
-            try {
-                int numDeleted = UserUploadManager.deleteUploadFile(realPath);
-                if (numDeleted > 0) {
-                    log.debug("Deleted record from DB: ");
-                }
-            }
-            catch (Throwable t) {
-                log.error("Unable to delete record from DB: "+realPath.getRelativeUri().toString(), t);
-            }
-    
-            // If the temp path does not exist, lazily create the parent dir, then do the download and return
-            if (!tempFile.exists()) {
-                File parentDir = realPath.getServerFile().getParentFile();
-                if (!parentDir.exists()) {
-                    boolean success = parentDir.mkdirs();
-                    if (!success) {
-                        String message = "Error creating upload directory for external url: dir=" + parentDir.getPath() + ", url=" + url.toExternalForm();
-                        log.error(message);
-                        throw new Exception(message);
-                    }
-                }
-                
-                // Add to currently downloading cache, download and then remove from cache
-                FileUtils.copyURLToFile(url, tempFile);
-                
-                // Add it to the database
-                JobInputFileUtil.__addUploadFileToDb(realPath);
-                
-                // Once complete, move the file to the real location and return
-                boolean success = tempFile.renameTo(realFile);
-                if (!success) {
-                    String message = "Error moving temp file to real location: temp=" + tempFile.getPath() + ", real=" + realFile.getPath();
-                    log.error(message);
-                    throw new Exception(message);
-                }
-                return;
-            }
-        }
-        catch (InterruptedException e) {
-            log.debug("copyExternalUrlToUserUploads() received an InterruptedException and the download was aborted: " + realPath.getRelativePath());
-            
-            // Check for file in database
-            Context userContext = ServerConfiguration.Context.getContextForUser(".cache");
-            boolean inDatabase = UserUploadManager.getUploadFileObj(userContext, realPath.getRelativeFile(), false) != null;
-            
-            // Check for file on file system
-            boolean inFileSystem = realPath.getServerFile().exists();
-            
-            // Take appropriate actions
-            if (inFileSystem && !inDatabase) {
-                JobInputFileUtil.__addUploadFileToDb(realPath);
-            }
-            else if (inDatabase && !inFileSystem) {
-                UserUploadManager.deleteUploadFile(realPath);
-            }
-        }
-        finally {
-            
-        }
-    }
+//    /**
+//     * Copy data from an external URL into a file in the GP user's uploads directory.
+//     * This method blocks until the data file has been transferred. If the file has 
+//     * already been cached, and the cached copy is up to date, it doesn't transfer 
+//     * the file at all, but relies on the cached copy.
+//     * 
+//     * TODO: limit the size of the file which can be transferred
+//     * TODO: implement a timeout
+//     * 
+//     * Notes:
+//     *     Is it possible to interrupt FileUtils.copyURLToFile? I'm not sure. This thread is inconclusive.
+//     *     http://stackoverflow.com/questions/10535335/apache-commons-copyurltofile-possible-to-stop-copying
+//     * 
+//     * @param realPath
+//     * @param url
+//     * @throws Exception
+//     */
+//    public static void copyExternalUrlToUserUploads(final GpFilePath realPath, final URL url) throws DownloadException {
+//        // If the real path exists, assume it's up to date
+//        final File realFile = realPath.getServerFile();
+//        if (realFile.exists()) {
+//            return;
+//        }
+//
+//        // otherwise, download to tmp location
+//        final GpFilePath tempPath = getTempPath(realPath);
+//        final File tempFile = tempPath.getServerFile();
+//
+//        boolean deleteExisting=true;
+//        boolean interrupted=false;
+//        try {
+//            boolean success=downloadFile(url, tempFile, deleteExisting);
+//            if (!success) {
+//                throw new DownloadException("Error downloading from '"+url.toExternalForm()+"' to temp file: "+tempFile.getAbsolutePath());
+//            }
+//        }
+//        catch (IOException e) {
+//            log.error("I/O Exception while downloading file: "+url.toExternalForm(), e);
+//            throw new DownloadException("I/O Exception while downloading file: "+url.toExternalForm());
+//        }
+//        catch (InterruptedException e) {
+//            interrupted=true;
+//        }
+//        if (interrupted) {
+//            // blow away the partial download
+//            // Note: we may want to leave it around so that we can pick up from where we left off
+//            tempFile.delete();
+//            Thread.currentThread().interrupt();
+//            return;
+//        }
+//
+//        // Add it to the database
+//        try {
+//            JobInputFileUtil.__addUploadFileToDb(realPath);
+//        }
+//        catch (Exception e) {
+//            //ignore this, because we don't rely on the DB entry for managing cached data files
+//            log.error(e);
+//        }
+//        // Once complete, move the file to the real location and return
+//        boolean success = tempFile.renameTo(realFile);
+//        if (!success) {
+//            String message = "Error moving temp file to real location: temp=" + tempFile.getPath() + ", real=" + realFile.getPath();
+//            log.error(message);
+//            throw new DownloadException(message);
+//        }
+//    }
+
+//    /**
+//     * Copy data from an external URL into a file in the GP user's uploads directory.
+//     * This method blocks until the data file has been transferred. If the file has 
+//     * already been cached, and the cached copy is up to date, it doesn't transfer 
+//     * the file at all, but relies on the cached copy.
+//     * 
+//     * TODO: turn this into a task which can be cancelled.
+//     * TODO: limit the size of the file which can be transferred
+//     * TODO: implement a timeout
+//     * 
+//     * @param realPath
+//     * @param url
+//     * @throws Exception
+//     */
+//    private static void origCopyExternalUrlToUserUploads(final GpFilePath realPath, final URL url) throws Exception {
+//        try {
+//            // If the real path exists, check to see if it is out of date and return if it is not
+//            File realFile = realPath.getServerFile();
+//            if (realFile.exists()) {
+//                log.debug("realFile already exists: " + realFile.getPath());
+//                boolean outOfDate = needToRedownload(realPath, url);
+//                if (!outOfDate) {
+//                    return;
+//                }
+//                else {
+//                    // Delete out of date copy and update database
+//                    realFile.delete();
+//                    boolean deleted = DataManager.deleteUserUploadFile(realPath.getOwner(), realPath);
+//                    if (!deleted) {
+//                        String message="Error deleting expired copy of file: " + realPath.getRelativePath();
+//                        log.error(message);
+//                        throw new Exception(message);
+//                    }
+//                }
+//            }
+//    
+//            // If not, create the temp path
+//            GpFilePath tempPath = getTempPath(realPath);
+//            File tempFile = tempPath.getServerFile();
+//            
+//            // If the temp path exists, blow away the temp file
+//            if (tempFile.exists()) {
+//                boolean deleted = tempFile.delete();
+//                if (!deleted) {
+//                    String message = "Unable to delete temp file: " + tempPath.getRelativePath();
+//                    log.error(message);
+//                    throw new Exception(message);
+//                }
+//            }
+//            
+//            // If necessary, delete the record of the actual file from the DB
+//            try {
+//                int numDeleted = UserUploadManager.deleteUploadFile(realPath);
+//                if (numDeleted > 0) {
+//                    log.debug("Deleted record from DB: ");
+//                }
+//            }
+//            catch (Throwable t) {
+//                log.error("Unable to delete record from DB: "+realPath.getRelativeUri().toString(), t);
+//            }
+//    
+//            // If the temp path does not exist, lazily create the parent dir, then do the download and return
+//            if (!tempFile.exists()) {
+//                File parentDir = realPath.getServerFile().getParentFile();
+//                if (!parentDir.exists()) {
+//                    boolean success = parentDir.mkdirs();
+//                    if (!success) {
+//                        String message = "Error creating upload directory for external url: dir=" + parentDir.getPath() + ", url=" + url.toExternalForm();
+//                        log.error(message);
+//                        throw new Exception(message);
+//                    }
+//                }
+//                
+//                // Add to currently downloading cache, download and then remove from cache
+//                FileUtils.copyURLToFile(url, tempFile);
+//                
+//                // Add it to the database
+//                JobInputFileUtil.__addUploadFileToDb(realPath);
+//                
+//                // Once complete, move the file to the real location and return
+//                boolean success = tempFile.renameTo(realFile);
+//                if (!success) {
+//                    String message = "Error moving temp file to real location: temp=" + tempFile.getPath() + ", real=" + realFile.getPath();
+//                    log.error(message);
+//                    throw new Exception(message);
+//                }
+//                return;
+//            }
+//        }
+//        catch (InterruptedException e) {
+//            log.debug("copyExternalUrlToUserUploads() received an InterruptedException and the download was aborted: " + realPath.getRelativePath());
+//            
+//            // Check for file in database
+//            Context userContext = ServerConfiguration.Context.getContextForUser(".cache");
+//            boolean inDatabase = UserUploadManager.getUploadFileObj(userContext, realPath.getRelativeFile(), false) != null;
+//            
+//            // Check for file on file system
+//            boolean inFileSystem = realPath.getServerFile().exists();
+//            
+//            // Take appropriate actions
+//            if (inFileSystem && !inDatabase) {
+//                JobInputFileUtil.__addUploadFileToDb(realPath);
+//            }
+//            else if (inDatabase && !inFileSystem) {
+//                UserUploadManager.deleteUploadFile(realPath);
+//            }
+//        }
+//        finally {
+//            
+//        }
+//    }
     
 }

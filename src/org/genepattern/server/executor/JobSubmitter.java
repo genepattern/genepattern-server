@@ -6,6 +6,7 @@ import java.util.concurrent.ExecutionException;
 
 import org.apache.log4j.Logger;
 import org.genepattern.server.genepattern.GenePatternAnalysisTask;
+import org.genepattern.server.jobqueue.JobQueueUtil;
 
 /**
  * Helper class used by the AnalysisJobScheduler, this replaces the ProcessingJobsHandler class.
@@ -19,21 +20,29 @@ public class JobSubmitter implements Runnable {
 
     private final GenePatternAnalysisTask genePattern;
     private final Integer jobId;
+    private final FileDownloader downloader;
     
-    public JobSubmitter(final GenePatternAnalysisTask genePattern, final Integer jobId) {
+    public JobSubmitter(final GenePatternAnalysisTask genePattern, final Integer jobId) throws JobDispatchException {
+        if (genePattern==null) {
+            throw new IllegalArgumentException("job #"+jobId+" not run because genePattern instance is null!");
+        }
         this.genePattern=genePattern;
         this.jobId=jobId;
+        this.downloader=FileDownloader.fromJobId(jobId);
+    }
+    
+    public boolean hasSelectedChoices() {
+        return downloader != null && downloader.hasSelectedChoices();
     }
     
     @Override
     public void run() {
-        if (genePattern == null) {
-            log.error("job not run, genePattern == null!");
-            return;
-        }
         try {
+            log.debug("submitting job "+jobId);
             startDownloadAndWait();
+            log.debug("calling genePattern.onJob("+jobId+")");
             genePattern.onJob(jobId);
+            JobQueueUtil.deleteJobQueueStatusRecord(jobId);
         }
         catch (JobDispatchException e) {
             handleJobDispatchException(jobId, e);
@@ -51,11 +60,11 @@ public class JobSubmitter implements Runnable {
     }
     
     private void startDownloadAndWait() throws JobDispatchException, ExecutionException, InterruptedException {
-        final FileDownloader downloader=FileDownloader.fromJobId(jobId);
         if (!downloader.hasSelectedChoices()) {
             log.debug("No selected choices");
             return;
         }
+        log.debug("downloading files for jobId="+jobId+" ...");
         downloader.startDownloadAndWait();
     }
 

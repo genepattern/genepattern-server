@@ -30,6 +30,7 @@ import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.domain.JobStatus;
 import org.genepattern.server.executor.CommandProperties.Value;
 import org.genepattern.server.genepattern.GenePatternAnalysisTask;
+import org.genepattern.server.job.input.cache.FileCache;
 import org.genepattern.server.jobqueue.JobQueue;
 import org.genepattern.server.jobqueue.JobQueueUtil;
 import org.genepattern.server.webservice.server.dao.AnalysisDAO;
@@ -87,6 +88,7 @@ public class AnalysisJobScheduler implements Runnable {
             runner.interrupt();
             runner = null;
         }
+        FileCache.instance().shutdownNow();
         shutdownJobTerminationService();
     }
     

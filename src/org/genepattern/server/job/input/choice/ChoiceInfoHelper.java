@@ -15,7 +15,6 @@ import org.genepattern.server.config.ServerConfiguration.Context;
 import org.genepattern.server.dm.GpFileObjFactory;
 import org.genepattern.server.dm.GpFilePath;
 import org.genepattern.server.job.input.JobInputHelper;
-import org.genepattern.server.job.input.ParamListHelper;
 import org.genepattern.server.rest.ParameterInfoRecord;
 import org.genepattern.server.webapp.rest.api.v1.task.TasksResource;
 import org.genepattern.webservice.ParameterInfo;
@@ -177,73 +176,7 @@ public class ChoiceInfoHelper {
             return null;
         }
     }
-    
-    /**
-     * Check for local copy of file from external url, download if necessary.
-     * 
-     * @param jobContext
-     * @param choiceInfo
-     * @param selectedChoice
-     * @return
-     */
-    public static GpFilePath getCachedValue(final Context jobContext, final Choice selectedChoice) throws Ex {
-        if (jobContext==null) {
-            log.warn("jobContext==null");
-        }
-        if (selectedChoice==null) {
-            throw new IllegalArgumentException("choice==null");
-        }
-        final GpFilePath fromCache;
-        if (selectedChoice.isRemoteDir()) {
-            fromCache = getSelectedValueAsUserUploadDir(selectedChoice);
-        }
-        else {
-            fromCache = getSelectedValueAsUserUploadFile(selectedChoice);
-        }
-        return fromCache;
-    }
-    
 
-    /**
-     * If necessary transfer the file from the external URL into the uploads directory for the '.cache'
-     * user account.
-     * 
-     * @param selectedChoice
-     * @return
-     * @throws InterruptedException
-     * @throws Ex
-     */
-    private static GpFilePath getSelectedValueAsUserUploadFile(final Choice selectedChoice) throws Ex {
-        final URL url=JobInputHelper.initExternalUrl(selectedChoice.getValue());
-        if (url==null) {
-            //it's not an external url
-            return null;
-        }
-        
-        GpFilePath selectedGpFilePath=null;
-        try {
-            selectedGpFilePath=getLocalPath(url);
-        }
-        catch (Throwable t) {
-            log.error(t);
-            return null;
-        }
-
-        // Make sure the URL is copied to the right directory, caching as necessary
-        try {
-            ParamListHelper.copyExternalUrlToUserUploads(selectedGpFilePath, url);
-            return selectedGpFilePath;
-        }
-        catch (Throwable t) {
-            log.error(t);
-            throw new Ex(t.getLocalizedMessage());
-        }
-    }
-    
-    private static GpFilePath getSelectedValueAsUserUploadDir(final Choice selectedChoice) throws Ex {
-        throw new Ex("Caching not implemented for remote directory");
-    }
-    
     /**
      * Helper class, initialize a GpFilePath instance for the external url.
      * This method does not download the file, it does define the path
