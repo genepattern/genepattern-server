@@ -543,6 +543,8 @@ FTP directory:  <span class="example">ftp://ftp.broadinstitute.org/pub/genepatte
     </table>
 </form>
 <br>
+For a dynamic drop-down list, there is also the option of having an alternative static drop-down list. This alternative static drop-down list will only be displayed in the event that
+there was an error in obtaining the list of files in the ftp directory URL. This alternative static drop-down list works the same way as described above.
 
 </body>
 </html>
