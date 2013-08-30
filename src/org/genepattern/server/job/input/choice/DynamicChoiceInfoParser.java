@@ -186,7 +186,7 @@ public class DynamicChoiceInfoParser implements ChoiceInfoParser {
         
         private Type type=Type.file;
         final private String choiceDirFilter;
-        final private FindFileFilter globs;
+        final private FindFileFilter globs=new FindFileFilter();
         
         public ChoiceDirFilter(final ParameterInfo param) {
             if (param==null) {
@@ -197,11 +197,11 @@ public class DynamicChoiceInfoParser implements ChoiceInfoParser {
             }
             choiceDirFilter = (String) param.getAttributes().get(ChoiceInfo.PROP_CHOICE_DIR_FILTER);
             if (!ChoiceInfoHelper.isSet(choiceDirFilter)) {
-                globs=null;
+                //by default, ignore '*.md5' and 'readme.*' files
+                globs.addGlob("!*.md5");
+                globs.addGlob("!readme.*");
             }
             else {
-                globs = new FindFileFilter();
-            
                 //parse this as a ';' separated list of patterns
                 String[] patterns=choiceDirFilter.split(Pattern.quote(";"));
                 for(final String pattern : patterns) {
@@ -223,6 +223,7 @@ public class DynamicChoiceInfoParser implements ChoiceInfoParser {
                     }
                 }
             }
+            
         }
 
         @Override
