@@ -569,7 +569,7 @@ function loadParameterInfo(parameters, initialValues)
             //set the default value
             choice.children("option").each(function()
             {
-                if($(this).val() == parameters[q].default_value)
+                if(parameters[q].default_value != "" && $(this).val() == parameters[q].default_value)
                 {
                     $(this).parent().val(parameters[q].default_value);
                     $(this).parent().data("default_value", parameters[q].default_value);
@@ -588,7 +588,7 @@ function loadParameterInfo(parameters, initialValues)
                     {
                         choice.find("option").each(function()
                         {
-                            if(initialValuesList[n] == $(this).val())
+                            if(initialValuesList[n] != "" && initialValuesList[n] == $(this).val())
                             {
                                 matchingValueList.push(initialValuesList[n]);
                             }
@@ -603,7 +603,10 @@ function loadParameterInfo(parameters, initialValues)
                     //will be selected since the choice is not multiselect
                     if(initialValuesList.length > 0)
                     {
-                        choice.val( initialValuesList[0]);
+                        if(initialValuesList[0] != "")
+                        {
+                            choice.val( initialValuesList[0]);
+                        }
                     }
                 }
                 choice.multiselect("refresh");
