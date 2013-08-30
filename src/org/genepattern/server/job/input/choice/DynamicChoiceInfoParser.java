@@ -1,6 +1,5 @@
 package org.genepattern.server.job.input.choice;
 
-import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -8,7 +7,6 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
-import java.util.regex.Pattern;
 
 import org.apache.commons.net.ftp.FTP;
 import org.apache.commons.net.ftp.FTPClient;
@@ -18,8 +16,8 @@ import org.apache.commons.net.ftp.FTPReply;
 import org.apache.log4j.Logger;
 import org.genepattern.server.dm.UrlUtil;
 import org.genepattern.server.job.input.choice.ChoiceInfo.Status.Flag;
-import org.genepattern.server.util.FindFileFilter;
 import org.genepattern.webservice.ParameterInfo;
+
 
 /**
  * Initialize the list of choices for a given parameter from a remote ftp server.
@@ -31,7 +29,7 @@ import org.genepattern.webservice.ParameterInfo;
  *
  */
 public class DynamicChoiceInfoParser implements ChoiceInfoParser {
-    final static private Logger log = Logger.getLogger(DynamicChoiceInfoParser.class);
+    private final static Logger log = Logger.getLogger(DynamicChoiceInfoParser.class);
     
     @Override
     public boolean hasChoiceInfo(ParameterInfo param) {
@@ -176,77 +174,6 @@ public class DynamicChoiceInfoParser implements ChoiceInfoParser {
         log.debug("initial selection: "+choiceInfo.getSelected());
         return choiceInfo;
     }
-
-    public static class ChoiceDirFilter implements FTPFileFilter {
-        public static enum Type {
-            file,
-            dir,
-            any
-        }
-        
-        private Type type=Type.file;
-        final private String choiceDirFilter;
-        final private FindFileFilter globs=new FindFileFilter();
-        
-        public ChoiceDirFilter(final ParameterInfo param) {
-            if (param==null) {
-                throw new IllegalArgumentException("param==null");
-            }
-            if (param.getAttributes()==null) {
-                throw new IllegalArgumentException("param.attributes==null");
-            }
-            choiceDirFilter = (String) param.getAttributes().get(ChoiceInfo.PROP_CHOICE_DIR_FILTER);
-            if (!ChoiceInfoHelper.isSet(choiceDirFilter)) {
-                //by default, ignore '*.md5' and 'readme.*' files
-                globs.addGlob("!*.md5");
-                globs.addGlob("!readme.*");
-            }
-            else {
-                //parse this as a ';' separated list of patterns
-                String[] patterns=choiceDirFilter.split(Pattern.quote(";"));
-                for(final String pattern : patterns) {
-                    if (!ChoiceInfoHelper.isSet(pattern)) {
-                        //skip empty pattern
-                    }
-                    else if (pattern.startsWith("type="+Type.dir)) {
-                        type=Type.dir;
-                    }
-                    else if (pattern.startsWith("type="+Type.file)) {
-                        type=Type.file;
-                    }
-                    else if (pattern.startsWith("type="+Type.any)) {
-                        type=Type.any;
-                    }
-                    else {
-                        //it's a glob pattern
-                        globs.addGlob(pattern);
-                    }
-                }
-            }
-            
-        }
-
-        @Override
-        public boolean accept(final FTPFile ftpFile) {
-            if (type==Type.file) {
-                if (!ftpFile.isFile()) {
-                    return false;
-                }
-            }
-            else if (type==Type.dir) {
-                if (!ftpFile.isDirectory()) {
-                    return false;
-                }
-            }
-            
-            //check for glob patterns
-            if (globs==null) {
-                return true;
-            }
-            return globs.accept(new File(ftpFile.getName()));
-        }
-
-    }
     
     /**
      * Initialize the ChoiceInfo from an ftp directory.
@@ -257,6 +184,23 @@ public class DynamicChoiceInfoParser implements ChoiceInfoParser {
     private ChoiceInfo initChoicesFromFtp(final ParameterInfo param, final String ftpDir) throws ChoiceInfoException {
         final ChoiceInfo choiceInfo=new ChoiceInfo(param.getName());
         choiceInfo.setChoiceDir(ftpDir);
+        
+        //special-case, local.choiceDir
+        LocalChoiceObj localChoice = new LocalChoiceObj(param, ftpDir);
+        if (localChoice.hasLocalChoiceDir()) {
+            for(final Choice choice : localChoice.getLocalChoices()) {
+                choiceInfo.add(choice);
+            }
+            if (choiceInfo.getChoices().size()==0) {
+                choiceInfo.setStatus(Flag.WARNING, "No matching files in "+ftpDir);
+            }
+            else {
+                final String statusMessage="Initialized "+choiceInfo.getChoices().size()+" choices from local dir="+localChoice.getLocalChoiceDir()+", mapped to remote dir="+ftpDir;
+                choiceInfo.setStatus(Flag.OK, statusMessage);
+            }
+            return choiceInfo;
+        }
+        
         final URL ftpUrl;
         try {
             ftpUrl=new URL(ftpDir);
@@ -342,7 +286,7 @@ public class DynamicChoiceInfoParser implements ChoiceInfoParser {
         }
         
         //optionally filter
-        final FTPFileFilter choiceDirFilter = new ChoiceDirFilter(param);
+        final FTPFileFilter choiceDirFilter = new FtpDirFilter(param);
         for(FTPFile ftpFile : files) {
             if (!choiceDirFilter.accept(ftpFile)) {
                 log.debug("Skipping '"+ftpFile.getName()+ "' from ftpDir="+ftpDir);
