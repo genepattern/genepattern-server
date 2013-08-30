@@ -59,11 +59,20 @@ public class CommandProperties {
                 }
                 return new Value( s );
             }
+            
+            //special-case (added for storing repository details in config file), a map of values
+            //e.g. repositoryDetails: { <actual url>: {}, <another url>: {}, ... }
+            if (object instanceof Map<?,?>) {
+                return new Value( (Map<?,?>) object );
+            }
+
             throw new ConfigurationException("Illegal arg, object is not instanceof String or Collection<?>: '"+object.toString()+"'");
         }
         
         private boolean fromCollection=false;
         private List<String> values = new ArrayList<String>();
+        
+        private Map<?,?> mapValue=null;
         
         public Value(final String value) {
             fromCollection=false;
@@ -73,6 +82,10 @@ public class CommandProperties {
         public Value(final Collection<String> from) {
             fromCollection=true;
             values.addAll(from);
+        }
+        
+        public Value(final Map<?,?> from) {
+            this.mapValue=from;
         }
         
         public String getValue() {
@@ -110,6 +123,20 @@ public class CommandProperties {
          */
         public boolean isFromCollection() {
             return fromCollection;
+        }
+
+        /**
+         * Helper method, to allow for more complicated values (other than String and List<String>).
+         * Added to make it easier to configure details for module repositories.
+         * 
+         * @return
+         */
+        public boolean isMap() {
+            return mapValue != null;
+        }
+        
+        public Map<?,?> getMap() {
+            return mapValue;
         }
     }
     
