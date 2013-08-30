@@ -1,5 +1,6 @@
 package org.genepattern.server.job.input;
 
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -13,6 +14,7 @@ import org.genepattern.junitutil.JobInfoLoaderFromMap;
 import org.genepattern.junitutil.TaskLoader;
 import org.genepattern.server.config.ServerConfiguration;
 import org.genepattern.server.config.ServerConfiguration.Context;
+import org.genepattern.server.dm.GpFilePath;
 import org.genepattern.server.job.JobInfoLoader;
 import org.genepattern.webservice.ParameterInfo;
 import org.genepattern.webservice.TaskInfo;
@@ -35,6 +37,7 @@ public class TestLoadModuleHelper {
     private static JobInfoLoader jobInfoLoader;
     private static String adminUserId;
     private static Context userContext;
+    private static URL gpUrl;
 
     final private static String cmsLsid="urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00044:9";    
     final private static String ecmrLsid="urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00046:2"; 
@@ -54,6 +57,8 @@ public class TestLoadModuleHelper {
         taskLoader.addTask(TestLoadModuleHelper.class, "ExtractComparativeMarkerResults_v2.zip");
 
         jobInfoLoader = new JobInfoLoaderFromMap();
+        
+        gpUrl=GpFilePath.getGenePatternUrl();
     }
     
     @Before
@@ -62,13 +67,13 @@ public class TestLoadModuleHelper {
         _fileParam=null; //not from a sendTo file menu
         _formatParam=null; //not from a sendTo file menu
         parameterMap=Collections.emptyMap();
-    }
-    
+    }    
+
     private LinkedHashMap<String,List<String>> initCms() {
         LinkedHashMap<String,List<String>> expectedValues=new LinkedHashMap<String,List<String>>();
-        initVal(expectedValues, "input.file", "");
-        initVal(expectedValues, "cls.file", "");
-        initVal(expectedValues, "confounding.variable.cls.file", "");
+        //initVal(expectedValues, "input.file", "");
+        //initVal(expectedValues, "cls.file", "");
+        //initVal(expectedValues, "confounding.variable.cls.file", "");
         initVal(expectedValues, "test.direction", "2");
         initVal(expectedValues, "test.statistic","0");
         initVal(expectedValues, "min.std", "");
@@ -86,8 +91,8 @@ public class TestLoadModuleHelper {
     
     private LinkedHashMap<String,List<String>> initEcmr() {
         LinkedHashMap<String,List<String>> expectedValues=new LinkedHashMap<String,List<String>>();
-        initVal(expectedValues, "comparative.marker.selection.filename", "");
-        initVal(expectedValues, "dataset.filename", "");
+        //initVal(expectedValues, "comparative.marker.selection.filename", "");
+        //initVal(expectedValues, "dataset.filename", "");
         initVal(expectedValues, "field", "");
         initVal(expectedValues, "min", "");
         initVal(expectedValues, "max", "");
@@ -146,7 +151,7 @@ public class TestLoadModuleHelper {
     @Test
     public void testFromSendToMenu() throws Exception {
         final TaskInfo taskInfo=taskLoader.getTaskInfo(cmsLsid);
-        _fileParam="http://127.0.0.1:8080/gp/jobResults/688040/CEL_IK50.cvt.gct";
+        _fileParam=gpUrl.toExternalForm()+"/jobResults/688040/CEL_IK50.cvt.gct";
         _formatParam="gct";
         //expecting input.file to match the _fileParam
         final LinkedHashMap<String,List<String>> cmsExpectedValues=initCms();
@@ -161,7 +166,7 @@ public class TestLoadModuleHelper {
     @Test
     public void testFromSendToMenuFormatParamNotSet() throws Exception {
         final TaskInfo taskInfo=taskLoader.getTaskInfo(cmsLsid);
-        _fileParam="http://127.0.0.1:8080/gp/jobResults/688040/CEL_IK50.cvt.gct";
+        _fileParam=gpUrl.toExternalForm()+"/jobResults/688040/CEL_IK50.cvt.gct";
         //expecting input.file to match the _fileParam
         final LinkedHashMap<String,List<String>> cmsExpectedValues=initCms();
         cmsExpectedValues.put("input.file", new ArrayList<String>(Arrays.asList( _fileParam )));
@@ -179,14 +184,14 @@ public class TestLoadModuleHelper {
     @Test
     public void testFromRecendJobsTab() throws Exception {
         //&_file=http%3A%2F%2Fgpdev.broadinstitute.org%2Fgp%2FjobResults%2F50043%2Fall_aml_test.comp.marker.odf&_format=Comparative%20Marker%20Selection
-        _fileParam="http://127.0.0.1:8080/gp/jobResults/50043/all_aml_test.comp.marker.odf";
+        _fileParam=gpUrl.toExternalForm()+"/jobResults/50043/all_aml_test.comp.marker.odf";
         _formatParam="Comparative Marker Selection";
     }
     
     @Test
     public void testSendFromUploadsTab() throws Exception {
         final TaskInfo taskInfo=taskLoader.getTaskInfo(cmsLsid);
-        _fileParam="http://127.0.0.1:8080/gp/users/test/all_aml_test.cls";
+        _fileParam=gpUrl.toExternalForm()+"/users/test/all_aml_test.cls";
         _formatParam="cls";
         final LinkedHashMap<String,List<String>> cmsExpectedValues=initCms();
         cmsExpectedValues.put("cls.file", new ArrayList<String>(Arrays.asList( _fileParam )));
@@ -233,7 +238,7 @@ public class TestLoadModuleHelper {
      */
     @Test
     public void testSendOdfAsComparativeMarkerSelection() throws Exception {
-        _fileParam="http://127.0.0.1:8080/gp/jobResults/50043/all_aml_test.comp.marker.odf";
+        _fileParam=gpUrl.toExternalForm()+"/jobResults/50043/all_aml_test.comp.marker.odf";
         _formatParam="Comparative Marker Selection";
         final LinkedHashMap<String,List<String>> expectedValues=initEcmr();
         expectedValues.put("comparative.marker.selection.filename", new ArrayList<String>(Arrays.asList( _fileParam )));
