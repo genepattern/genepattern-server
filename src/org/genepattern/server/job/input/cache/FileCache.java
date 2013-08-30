@@ -7,10 +7,9 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
-
-import org.genepattern.server.dm.GpFilePath;
 
 /**
  * Maintain a cache of input files downloaded from an external source. 
@@ -43,7 +42,8 @@ public class FileCache {
     //max number of simultaneous downloads
     int maxNumOfThreads=5;
     private final ExecutorService downloadService=Executors.newFixedThreadPool(maxNumOfThreads);
-    private final ConcurrentMap<String, Future<GpFilePath>> cache = new ConcurrentHashMap<String, Future<GpFilePath>>();
+    private final ScheduledExecutorService scheduledService = Executors.newSingleThreadScheduledExecutor();
+    private final ConcurrentMap<String, Future<CachedFileObj>> cache = new ConcurrentHashMap<String, Future<CachedFileObj>>();
     
     public CachedFileObj initCachedFileObj(final String externalUrl) {
         return new CachedFileObj(externalUrl);
@@ -51,13 +51,14 @@ public class FileCache {
     
     public void shutdownNow() {
         downloadService.shutdownNow();
+        scheduledService.shutdownNow();
     }
     
-    public synchronized Future<GpFilePath> getFutureObj(final String externalUrl) {
+    public synchronized Future<CachedFileObj> getFutureObj(final String externalUrl) {
         final CachedFileObj obj = initCachedFileObj(externalUrl);
         if (obj.isDownloaded()) {
             //already downloaded
-            return new Future<GpFilePath>() {
+            return new Future<CachedFileObj>() {
 
                 @Override
                 public boolean cancel(boolean mayInterruptIfRunning) {
@@ -65,13 +66,13 @@ public class FileCache {
                 }
 
                 @Override
-                public GpFilePath get() throws InterruptedException, ExecutionException {
-                    return obj.getLocalPath();
+                public CachedFileObj get() throws InterruptedException, ExecutionException {
+                    return obj;
                 }
 
                 @Override
-                public GpFilePath get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
-                    return obj.getLocalPath();
+                public CachedFileObj get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
+                    return obj;
                 }
 
                 @Override
@@ -90,22 +91,35 @@ public class FileCache {
             return cache.get(key);
         }
         //otherwise start the download and add to the cache
-        Future<GpFilePath> f = downloadService.submit(new Callable<GpFilePath>() {
+        Future<CachedFileObj> f = downloadService.submit(new Callable<CachedFileObj>() {
             @Override
-            public GpFilePath call() throws Exception {
-                GpFilePath gpFilePath = obj.download();
-                //TODO: schedule removal of Future from cache
-                //executorService.schedule(new Runnable() {
-                //    @Override
-                //    public void run() {
-                //        cache.remove(key);
-                //    }
-                //},
-                //300, TimeUnit.SECONDS);
-                return gpFilePath;
+            public CachedFileObj call() throws Exception {
+                DownloadException ex=null;
+                try {
+                    obj.download();
+                }
+                catch (DownloadException e) {                    
+                    //swallow it, we'll deal later
+                    ex=e;
+                }
+                //schedule removal of Future from cache
+                scheduledService.schedule(new Runnable() {
+                    @Override
+                    public void run() {
+                        cache.remove(key);
+                    }
+                },
+                //remove from cache 5 minutes from now
+                300, TimeUnit.SECONDS);
+                
+                if (ex != null) {
+                    //TODO: implement pause and retry
+                    throw ex;
+                }
+                return obj;
             }
         });
-        Future<GpFilePath> f2 = cache.putIfAbsent(key, f);
+        Future<CachedFileObj> f2 = cache.putIfAbsent(key, f);
         if (f2 == null) {
             f2 = f;
         }

@@ -16,9 +16,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadFactory;
@@ -52,6 +55,7 @@ public class AnalysisJobScheduler implements Runnable {
     
     private static final int BOUND = 20000;
     private final BlockingQueue<Integer> pendingJobQueue = new LinkedBlockingQueue<Integer>(BOUND);
+    private final ConcurrentMap<Integer,Future<JobSubmitter>> dispatchingJobsMap = new ConcurrentHashMap<Integer,Future<JobSubmitter>>();
     private static ExecutorService jobTerminationService=null;
     private Object jobQueueWaitObject = new Object();
     private boolean suspended = false;
@@ -133,8 +137,25 @@ public class AnalysisJobScheduler implements Runnable {
                         try {
                             // start a new thread for adding the job to the queue,
                             // if necessary, input files will be downloaded to the cache before starting the job
-                            JobSubmitter jobSubmitter=new JobSubmitter(genePattern, jobId);
-                            jobSubmissionService.submit(jobSubmitter);
+                            final JobSubmitter jobSubmitter=new JobSubmitter(genePattern, jobId); 
+                            Future<JobSubmitter> f = jobSubmissionService.submit(new Runnable() {
+                                @Override
+                                public void run() {
+                                    try {
+                                        jobSubmitter.run();
+                                    }
+                                    finally {
+                                        dispatchingJobsMap.remove(jobId);
+                                    }
+                                } 
+                            },
+                            jobSubmitter);
+                            Future<JobSubmitter> f2 = dispatchingJobsMap.putIfAbsent(jobId, f);
+                            if (f2 != null) {
+                                log.error("duplicate dispatch for jobId="+jobId);
+                                f.cancel(true);
+                                f = f2;
+                            }
                         }
                         catch (Throwable t) {
                             //log an error here because it's not expected
@@ -174,9 +195,7 @@ public class AnalysisJobScheduler implements Runnable {
                         catch (Exception e) {
                             log.error(e);
                         }
-                        //waitingJobs = AnalysisJobScheduler.getJobsWithStatusId(JobStatus.JOB_PENDING, batchSize);
                         if (waitingJobs != null && !waitingJobs.isEmpty()) {
-                            //waitingJobs = changeJobStatus(waitingJobs, JobStatus.JOB_PENDING, JobStatus.JOB_DISPATCHING);
                             if (waitingJobs != null) {
                                 for(Integer jobId : waitingJobs) { 
                                     if (pendingJobQueue.contains(jobId)) {
@@ -211,48 +230,6 @@ public class AnalysisJobScheduler implements Runnable {
             monitor.interrupt();
         }
     }
-
-//    static private List<Integer> getJobsWithStatusId(int statusId, int maxJobCount) {
-//        try {
-//            String hql = "select jobNo from org.genepattern.server.domain.AnalysisJob where deleted = :deleted and jobStatus.statusId = :statusId order by submittedDate ";
-//            HibernateUtil.beginTransaction();
-//            Session session = HibernateUtil.getSession();
-//            Query query = session.createQuery(hql);
-//            if (maxJobCount > 0) {
-//                query.setMaxResults(maxJobCount);
-//            }
-//            query.setInteger("statusId", statusId);
-//            query.setBoolean("deleted", false);
-//            List<Integer> jobIds = query.list();
-//            return jobIds;
-//        }
-//        catch (Throwable t) {
-//            log.error("Error getting list of pending jobs from queue", t);
-//            return new ArrayList<Integer>();
-//        }
-//        finally {
-//            HibernateUtil.closeCurrentSession();
-//        }
-//    }
-//
-//    static private List<Integer> changeJobStatus(List<Integer> jobIds, int fromStatusId, int toStatusId) {
-//        List<Integer> updatedJobIds = new ArrayList<Integer>();
-//        HibernateUtil.beginTransaction();
-//        try {
-//            for(Integer jobId : jobIds) {
-//                AnalysisJobScheduler.changeJobStatus(jobId, fromStatusId, toStatusId);
-//                updatedJobIds.add(jobId);
-//            }
-//            HibernateUtil.commitTransaction();
-//        }
-//        catch (Throwable t) {
-//            // don't add it to updated jobs, record the failure and move on
-//            updatedJobIds.clear();
-//            log.error("Error updating job status to processing", t);
-//            HibernateUtil.rollbackTransaction();
-//        } 
-//        return updatedJobIds;
-//    }
 
     /**
      * Change the statusId for the given job, only if the job's current status id is the same as the fromStatusId.
@@ -326,7 +303,7 @@ public class AnalysisJobScheduler implements Runnable {
      * @param jobId
      * @throws JobTerminationException
      */
-    public static void terminateJob(Integer jobId) throws JobTerminationException {
+    public void terminateJob(Integer jobId) throws JobTerminationException {
         if (jobId == null) {
             throw new JobTerminationException("Invalid null arg");
         }
@@ -341,7 +318,7 @@ public class AnalysisJobScheduler implements Runnable {
         finally {
             HibernateUtil.closeCurrentSession();
         }
-        AnalysisJobScheduler.terminateJob(jobInfo);
+        terminateJob(jobInfo);
     }
     
     /**
@@ -350,7 +327,7 @@ public class AnalysisJobScheduler implements Runnable {
      * @param jobInfo
      * @throws JobTerminationException
      */
-    public static void terminateJob(JobInfo jobInfo) throws JobTerminationException {
+    public void terminateJob(JobInfo jobInfo) throws JobTerminationException {
         if (jobInfo == null) {
             log.error("invalid null arg to terminateJob");
             return;
@@ -363,6 +340,21 @@ public class AnalysisJobScheduler implements Runnable {
             return;
         }
 
+        final Integer jobId=jobInfo.getJobNumber();
+        Future<JobSubmitter> f = dispatchingJobsMap.remove(jobId);
+        if (f != null) {
+            if (!f.isDone()) {
+                boolean isCancelled=f.cancel(true);
+                log.info("cancelled jobId="+jobId+", isCancelled="+isCancelled);
+                try {
+                    JobQueueUtil.deleteJobQueueStatusRecord(jobId);
+                }
+                catch (Exception ex) {
+                    log.error("Error removing record from JOB_QUEUE for job_no="+jobId, ex);
+                }
+            }
+        }
+        
         //terminate pending jobs immediately
         boolean isPending = isPending(jobInfo);
         if (isPending) {

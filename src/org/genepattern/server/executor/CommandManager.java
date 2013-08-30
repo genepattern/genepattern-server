@@ -2,6 +2,8 @@ package org.genepattern.server.executor;
 
 import java.util.Map;
 
+import org.genepattern.webservice.JobInfo;
+
 /**
  * This is the core service for managing GenePattern job execution. It is responsible for polling the internal database for
  * new user job submissions and executing each job on the appropriate queue. 
@@ -56,4 +58,13 @@ public interface CommandManager extends CommandExecutorMapper {
     void resumeJobQueue();
     
     boolean isSuspended();
+    
+    /**
+     * Cancel a job.
+     * @param jobId
+     * @throws JobTerminationException
+     */
+    void terminateJob(final Integer jobId) throws JobTerminationException;
+    void terminateJob(final JobInfo jobInfo) throws JobTerminationException;
+
 }

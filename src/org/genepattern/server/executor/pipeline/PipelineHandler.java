@@ -165,7 +165,7 @@ public class PipelineHandler {
         }
         if (processingJobId >= 0) {
             try {
-                AnalysisJobScheduler.terminateJob(processingJobId);
+                CommandManagerFactory.getCommandManager().terminateJob(processingJobId);
             }
             catch (JobTerminationException e) {
                 log.error("Error terminating job #"+processingJobId+" in pipeline "+jobInfo.getJobNumber(), e);

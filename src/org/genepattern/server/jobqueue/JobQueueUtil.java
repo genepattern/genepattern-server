@@ -134,10 +134,9 @@ public class JobQueueUtil {
         boolean inTransaction = HibernateUtil.isInTransaction();
         try {
             HibernateUtil.beginTransaction();
-            String hql = "delete "+JobQueue.class.getName()+" jq where jq.jobNo = :jobNo and jq.status = :status";
+            String hql = "delete "+JobQueue.class.getName()+" jq where jq.jobNo = :jobNo";
             Query query = HibernateUtil.getSession().createQuery( hql );
             query.setInteger("jobNo", jobNo);
-            query.setString("status", JobQueue.Status.PENDING.toString());
             int numDeleted = query.executeUpdate();
             if (numDeleted == 1) {
                 if (!inTransaction) {
@@ -145,13 +144,23 @@ public class JobQueueUtil {
                 }
             }
             else {
-                //TODO: log error
                 HibernateUtil.rollbackTransaction();
+                if (numDeleted==0) {
+                    log.debug("No entry in JOB_QUEUE with jobNo="+jobNo);
+                }
+                else {
+                    log.error("Deleted more than one entry from JOB_QUEUE with jobNo="+jobNo+", numDeleted="+numDeleted);
+                }
             }
         }
         catch (Throwable t) {
             HibernateUtil.rollbackTransaction();
             throw new Exception(t);
+        }
+        finally {
+            if (!inTransaction) {
+                HibernateUtil.closeCurrentSession();
+            }
         }
     }
     

@@ -408,4 +408,20 @@ public class BasicCommandManager implements CommandManager {
         }
         return true;
     }
+    
+    public void terminateJob(final Integer jobId) throws JobTerminationException {
+        if (analysisTaskScheduler == null) {
+            throw new JobTerminationException("Did not terminate jobId="+jobId+", analysisTaskScheduler not instantiated!");
+        }
+        analysisTaskScheduler.terminateJob(jobId);
+    }
+    
+    public void terminateJob(final JobInfo jobInfo) throws JobTerminationException {
+        if (analysisTaskScheduler == null) {
+            throw new JobTerminationException("Did not terminate jobId="+jobInfo.getJobNumber()+", analysisTaskScheduler not instantiated!");
+        }
+        analysisTaskScheduler.terminateJob(jobInfo);
+    }
+    
+    
 }

@@ -9,10 +9,11 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
+import org.apache.log4j.Logger;
 import org.genepattern.server.database.HibernateUtil;
-import org.genepattern.server.dm.GpFilePath;
 import org.genepattern.server.eula.GetTaskStrategy;
 import org.genepattern.server.eula.GetTaskStrategyDefault;
+import org.genepattern.server.job.input.cache.CachedFileObj;
 import org.genepattern.server.job.input.cache.FileCache;
 import org.genepattern.server.job.input.choice.Choice;
 import org.genepattern.server.job.input.choice.ChoiceInfo;
@@ -31,43 +32,17 @@ import org.genepattern.webservice.TaskInfo;
  *
  */
 public class FileDownloader {
-    final List<Choice> selectedChoices;
+    private static final Logger log = Logger.getLogger(FileDownloader.class);
+
+    private final List<Choice> selectedChoices;
     
     /**
-     * Create a new downloader for the given job based on the jobId.
-     * 
-     * @param jobId
-     * @return
-     * @throws JobDispatchException
-     */
-    public static final FileDownloader fromJobId(final Integer jobId) throws JobDispatchException {
-        return new FileDownloader(jobId);
-    }
-                
-    private FileDownloader(final Integer jobId) throws JobDispatchException {
-        this(jobId, null);
-    }
-    private FileDownloader(final Integer jobId, final GetTaskStrategy getTaskStrategyIn) throws JobDispatchException {
-        final JobInfo jobInfo=initJobInfo(jobId);
-        final GetTaskStrategy getTaskStrategy;
-        if (getTaskStrategyIn == null) {
-            getTaskStrategy=new GetTaskStrategyDefault();
-        }
-        else {
-            getTaskStrategy=getTaskStrategyIn;
-        }
-        final TaskInfo taskInfo=getTaskStrategy.getTaskInfo(jobInfo.getTaskLSID());
-        this.selectedChoices=initSelectedChoices(taskInfo, jobInfo);
-    }
-
-    /**
      * Initialize a JobInfo instance for the given jobId.
-     * Note: could be refactored into a publicly available helper method.
      * @param jobId
      * @return
      * @throws JobDispatchException
      */
-    private static JobInfo initJobInfo(final Integer jobId) throws JobDispatchException {
+    public static final JobInfo initJobInfo(final Integer jobId) throws JobDispatchException {
         JobInfo jobInfo = null;
         final boolean isInTransaction=HibernateUtil.isInTransaction();
         try {
@@ -84,6 +59,33 @@ public class FileDownloader {
         }
         return jobInfo;
     }
+    
+    /**
+     * Create a new downloader for the given job based on the jobId.
+     * 
+     * @param jobId
+     * @return
+     * @throws JobDispatchException
+     */
+    public static final FileDownloader fromJobInfo(final JobInfo jobInfo) throws JobDispatchException {
+        return new FileDownloader(jobInfo);
+    }
+                
+    private FileDownloader(final JobInfo jobInfo) {
+        this(jobInfo, null);
+    }
+    private FileDownloader(final JobInfo jobInfo, final GetTaskStrategy getTaskStrategyIn) {
+        final GetTaskStrategy getTaskStrategy;
+        if (getTaskStrategyIn == null) {
+            getTaskStrategy=new GetTaskStrategyDefault();
+        }
+        else {
+            getTaskStrategy=getTaskStrategyIn;
+        }
+        final TaskInfo taskInfo=getTaskStrategy.getTaskInfo(jobInfo.getTaskLSID());
+        this.selectedChoices=initSelectedChoices(taskInfo, jobInfo);        
+    }
+
 
     /**
      * Initialize a list of selected Choices for the given job. For each input parameter, if it has a file drop-down
@@ -98,9 +100,14 @@ public class FileDownloader {
         final Map<String,ParameterInfoRecord> paramInfoMap=ParameterInfoRecord.initParamInfoMap(taskInfo);
         for(final ParameterInfo pinfo : jobInfo.getParameterInfoArray()) {
             final ParameterInfoRecord pinfoRecord=paramInfoMap.get( pinfo.getName() );
-            final ChoiceInfo choiceInfo=ChoiceInfoHelper.initChoiceInfo(pinfoRecord, pinfo);
-            final Choice selectedChoice= choiceInfo == null ? null : choiceInfo.getValue(pinfo.getValue());
-            final boolean isFileChoiceSelection=
+            if (pinfoRecord==null) {
+                //skip, probably here because it's a completed job
+                log.debug("skipping param="+pinfo.getName());
+            }
+            else {
+                final ChoiceInfo choiceInfo=ChoiceInfoHelper.initChoiceInfo(pinfoRecord, pinfo);
+                final Choice selectedChoice= choiceInfo == null ? null : choiceInfo.getValue(pinfo.getValue());
+                final boolean isFileChoiceSelection=
                     pinfoRecord.getFormal().isInputFile()
                     &&
                     selectedChoice != null && 
@@ -113,6 +120,7 @@ public class FileDownloader {
                         }
                         selectedChoices.add(selectedChoice);
                     }
+            }
         }
         if (selectedChoices==null) {
             return Collections.emptyList();
@@ -156,8 +164,7 @@ public class FileDownloader {
             for(final Choice selectedCopy : copy) {
                 try {
                     //this method throws a TimeoutException if the download is not complete
-                    //final GpFilePath cachedFile=ChoiceInfoFileCache.instance().getCachedGpFilePath(selectedCopy);
-                    Future<GpFilePath> f = FileCache.instance().getFutureObj(selectedCopy.getValue());
+                    Future<CachedFileObj> f = FileCache.instance().getFutureObj(selectedCopy.getValue());
                     f.get(100, TimeUnit.MILLISECONDS);
                     toRemove.add(selectedCopy);
                 }

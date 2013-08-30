@@ -9,6 +9,7 @@ import org.genepattern.server.config.ServerConfiguration;
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.domain.BatchJobDAO;
 import org.genepattern.server.executor.AnalysisJobScheduler;
+import org.genepattern.server.executor.CommandManagerFactory;
 import org.genepattern.server.executor.JobDeletionException;
 import org.genepattern.server.executor.JobSubmissionException;
 import org.genepattern.server.executor.JobTerminationException;
@@ -143,7 +144,7 @@ public class JobManager {
             log.error(e);
             throw new JobTerminationException(e.getLocalizedMessage());
         }
-        AnalysisJobScheduler.terminateJob(jobId);
+        CommandManagerFactory.getCommandManager().terminateJob(jobId);
     }
     
     static private boolean canWriteJob(boolean isAdmin, String userId, int jobId) throws WebServiceException {
@@ -172,7 +173,7 @@ public class JobManager {
         canDeleteJob(isAdmin, currentUser, jobId);
         try {
             //first terminate the job including child jobs
-            AnalysisJobScheduler.terminateJob(jobId);
+            CommandManagerFactory.getCommandManager().terminateJob(jobId);
             //then delete the job including child jobs
             return deleteJobNoCheck(jobId);
         }

@@ -153,6 +153,7 @@ import org.genepattern.server.job.input.JobInput.Param;
 import org.genepattern.server.job.input.JobInput.ParamId;
 import org.genepattern.server.job.input.JobInput.ParamValue;
 import org.genepattern.server.job.input.ParamListHelper;
+import org.genepattern.server.job.input.cache.CachedFileObj;
 import org.genepattern.server.job.input.cache.FileCache;
 import org.genepattern.server.job.input.choice.Choice;
 import org.genepattern.server.job.input.choice.ChoiceInfo;
@@ -842,8 +843,8 @@ public class GenePatternAnalysisTask {
                     final GpFilePath cachedFile;
                     try {
                         // this method waits, if necessary, for the file to be transferred to a local path
-                        Future<GpFilePath> f = FileCache.instance().getFutureObj(selectedChoice.getValue());
-                        cachedFile = f.get();
+                        Future<CachedFileObj> f = FileCache.instance().getFutureObj(selectedChoice.getValue());
+                        cachedFile=f.get().getLocalPath();
                     }
                     catch (Throwable t) {
                         final String errorMessage="Error getting cached value for "+pinfo.getName()+"="+pinfo.getValue();

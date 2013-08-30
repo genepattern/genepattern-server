@@ -7,6 +7,7 @@ import java.util.concurrent.ExecutionException;
 import org.apache.log4j.Logger;
 import org.genepattern.server.genepattern.GenePatternAnalysisTask;
 import org.genepattern.server.jobqueue.JobQueueUtil;
+import org.genepattern.webservice.JobInfo;
 
 /**
  * Helper class used by the AnalysisJobScheduler, this replaces the ProcessingJobsHandler class.
@@ -20,29 +21,54 @@ public class JobSubmitter implements Runnable {
 
     private final GenePatternAnalysisTask genePattern;
     private final Integer jobId;
-    private final FileDownloader downloader;
     
-    public JobSubmitter(final GenePatternAnalysisTask genePattern, final Integer jobId) throws JobDispatchException {
+    public JobSubmitter(final GenePatternAnalysisTask genePattern, final Integer jobId) {
         if (genePattern==null) {
             throw new IllegalArgumentException("job #"+jobId+" not run because genePattern instance is null!");
         }
         this.genePattern=genePattern;
         this.jobId=jobId;
-        this.downloader=FileDownloader.fromJobId(jobId);
     }
     
-    public boolean hasSelectedChoices() {
-        return downloader != null && downloader.hasSelectedChoices();
+    public Integer getJobId() {
+        return jobId;
     }
     
     @Override
     public void run() {
+        JobInfo jobInfo=null;
+        try {
+            jobInfo=FileDownloader.initJobInfo(jobId);
+        }
+        catch (Throwable t) {
+            //log below
+            log.debug(t);
+        }
+        if (jobInfo == null || AnalysisJobScheduler.isFinished(jobInfo)) {
+            //special-case, no record of the job the the DB, most likely because it was deleted
+            if (jobInfo==null) {
+                log.info("No record of job in the ANALYSIS_JOB table, job_no="+jobId+", removing from JOB_QUEUE");
+            }
+            //special-case, job has already completed
+            else if (AnalysisJobScheduler.isFinished(jobInfo)) {
+                log.info("job already completed, jobId="+jobId+", removing from JOB_QUEUE");
+            }
+        
+            try {
+                JobQueueUtil.deleteJobQueueStatusRecord(jobId);
+            }
+            catch (Exception ex) {
+                log.error("Error removing record from JOB_QUEUE for job_no="+jobId, ex);
+            }
+            return;
+        }
+
+        boolean interrupted=false;
         try {
             log.debug("submitting job "+jobId);
-            startDownloadAndWait();
+            startDownloadAndWait(jobInfo);
             log.debug("calling genePattern.onJob("+jobId+")");
             genePattern.onJob(jobId);
-            JobQueueUtil.deleteJobQueueStatusRecord(jobId);
         }
         catch (JobDispatchException e) {
             handleJobDispatchException(jobId, e);
@@ -51,15 +77,30 @@ public class JobSubmitter implements Runnable {
             handleJobDispatchException(jobId, e);
         }
         catch (InterruptedException e) {
+            interrupted=true;
             Thread.currentThread().interrupt();
         }
         catch (Throwable t) {
             log.error("Unexpected error thrown by GenePatternAnalysisTask.onJob: "+t.getLocalizedMessage());
             handleJobDispatchException(jobId, t);
         }
+        finally {
+            if (!interrupted) {
+                try {
+                    JobQueueUtil.deleteJobQueueStatusRecord(jobId);
+                }
+                catch (Exception ex) {
+                    log.error("Error removing record from JOB_QUEUE for job_no="+jobId, ex);
+                }
+            }
+            else {
+                Thread.currentThread().interrupt();
+            }
+        }
     }
     
-    private void startDownloadAndWait() throws JobDispatchException, ExecutionException, InterruptedException {
+    private void startDownloadAndWait(final JobInfo jobInfo) throws JobDispatchException, ExecutionException, InterruptedException {
+        FileDownloader downloader=FileDownloader.fromJobInfo(jobInfo);
         if (!downloader.hasSelectedChoices()) {
             log.debug("No selected choices");
             return;

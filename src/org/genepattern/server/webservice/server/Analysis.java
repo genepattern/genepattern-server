@@ -37,6 +37,7 @@ import org.genepattern.server.config.ServerConfiguration;
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.domain.JobStatus;
 import org.genepattern.server.executor.AnalysisJobScheduler;
+import org.genepattern.server.executor.CommandManagerFactory;
 import org.genepattern.server.executor.JobTerminationException;
 import org.genepattern.server.genepattern.GenePatternAnalysisTask;
 import org.genepattern.server.handler.AddNewJobHandler;
@@ -636,7 +637,7 @@ public class Analysis extends GenericWebService {
      */
     private void terminateJob(JobInfo jobInfo) throws WebServiceException {
         try {
-            AnalysisJobScheduler.terminateJob(jobInfo);
+            CommandManagerFactory.getCommandManager().terminateJob(jobInfo);
         }
         catch (JobTerminationException e) {
             throw new WebServiceException(e);
