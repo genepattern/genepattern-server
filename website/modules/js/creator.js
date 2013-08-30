@@ -892,7 +892,7 @@ function changeParameterType(element)
                         table.find("input[name='cradio']").last().removeAttr("disabled");
 
                         //check if this should be set as the default
-                        if(element.parents(".parameter").find(".defaultValue").val() == value)
+                        if(value != "" && element.parents(".parameter").find(".defaultValue").val() == value)
                         {
                             table.find("input[name='cradio']").last().attr("checked", "checked");
                         }
