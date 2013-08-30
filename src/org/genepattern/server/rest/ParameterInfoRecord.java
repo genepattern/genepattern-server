@@ -1,6 +1,6 @@
 package org.genepattern.server.rest;
 
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.genepattern.webservice.ParameterInfo;
@@ -23,7 +23,7 @@ public class ParameterInfoRecord {
      * @return
      */
     final static public Map<String,ParameterInfoRecord> initParamInfoMap(final TaskInfo taskInfo) {
-        Map<String,ParameterInfoRecord> paramInfoMap=new HashMap<String,ParameterInfoRecord>();
+        Map<String,ParameterInfoRecord> paramInfoMap=new LinkedHashMap<String,ParameterInfoRecord>();
         for(ParameterInfo pinfo : taskInfo.getParameterInfoArray()) {
             ParameterInfoRecord record = new ParameterInfoRecord(pinfo);
             paramInfoMap.put(pinfo.getName(), record);
