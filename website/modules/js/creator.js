@@ -1076,15 +1076,17 @@ function changeParameterType(element)
                     //set default value
                     if(choicelist.length > 0)
                     {
-                        element.parents(".parameter").find(".defaultValue").find("option:selected").removeAttr("selected");
+                        //element.parents(".parameter").find(".defaultValue").find("option:selected").removeAttr("selected");
                         element.parents(".parameter").find(".defaultValue").val(newDefault);
 
-                        if(element.parents(".parameter").find(".defaultValue").val() != newDefault)
+                        if(newDefault != "" && element.parents(".parameter").find(".defaultValue").val() != newDefault)
                         {
                             element.parents(".parameter").find(".defaultValue").append("<option value='" + newDefault + "'>" +
                                 newDefault + "</option>");
                             element.parents(".parameter").find(".defaultValue").val(newDefault);
                         }
+
+                        element.parents(".parameter").find(".defaultValue").multiselect("refresh");
                     }
 
                     $(this).dialog( "destroy" );
@@ -1144,6 +1146,11 @@ function changeParameterType(element)
                 for(var t=0;t<choicelistArray.length;t++)
                 {
                     var result = choicelistArray[t].split("=");
+                    if(result[0] == "" )
+                    {
+                        continue;
+                    }
+
                     defaultValueSelect.append("<option value='" + result[0]+ "'>" + result[0]+ "</option>");
 
                     if(result[0] == currentDefaultValue)
