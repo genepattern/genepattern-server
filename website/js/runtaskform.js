@@ -17,6 +17,7 @@ var fileId = 0;
 //contains the json of parameters received when loading a module
 //saved so it can reused when for the reset operation
 var parametersJson = null;
+var initialValues = null;
 
 var Request = {
     parameter: function(name)
@@ -127,7 +128,8 @@ function loadModule(taskId, reloadId)
                 else
                 {
                     parametersJson = response["parameters"];
-                    loadParameterInfo(parametersJson, response["initialValues"]);
+                    initialValues = response["initialValues"];
+                    loadParameterInfo(parametersJson, initialValues);
                 }
                 //the parameter form elements have been created now make the form visible
                 $("#submitJob").css('visibility', 'visible');
@@ -1223,7 +1225,7 @@ function reset()
     //remove all input file parameter file listings
     param_file_listing = {};
 
-    loadParameterInfo(parametersJson, null);
+    loadParameterInfo(parametersJson, initialValues);
 }
 
 function isText(param)
