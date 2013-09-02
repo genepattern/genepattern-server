@@ -558,10 +558,7 @@ function loadParameterInfo(parameters, initialValues)
                 }
                 else
                 {
-                    if($(this).val() != "")
-                    {
-                        valueList.push($(this).val());
-                    }
+                    valueList.push($(this).val());
                 }
 
                 var paramName = $(this).data("cname");
@@ -605,7 +602,7 @@ function loadParameterInfo(parameters, initialValues)
                     //will be selected since the choice is not multiselect
                     if(initialValuesList.length > 0)
                     {
-                        if(initialValuesList[0] != "")
+                        if(!(parameters[q].default_value == "" && initialValuesList[0] == ""))
                         {
                             choice.val( initialValuesList[0]);
                         }
@@ -877,10 +874,7 @@ function loadParameterInfo(parameters, initialValues)
                 textField.change(function()
                 {
                     var valueList = [];
-                    if($(this).val() != "")
-                    {
-                        valueList.push($(this).val());
-                    }
+                    valueList.push($(this).val());
 
                     var paramName = $(this).attr("name");
                     parameter_and_val_obj[paramName] = valueList;
