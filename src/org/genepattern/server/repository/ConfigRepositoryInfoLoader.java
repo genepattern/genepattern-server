@@ -265,7 +265,7 @@ public class ConfigRepositoryInfoLoader implements RepositoryInfoLoader {
         else {
             this.userContext=userContext;
             if (userContext.getUserId()==null || userContext.getUserId().length()==0) {
-                log.error("userContext.userId is not set");
+                log.debug("userContext.userId is not set");
             }
             else {
                 boolean inTransaction=HibernateUtil.isInTransaction();
