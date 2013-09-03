@@ -666,7 +666,7 @@ public class JobInfoWrapper implements Serializable {
     private JobInfo jobInfo = null;
     private TaskInfo taskInfo = null;
     private PipelineModel pipelineModel = null;
-    private SourceInfo sourceInfo = null;
+    transient private SourceInfo sourceInfo = null;
     private Long size = null;
     private boolean includeInputFilesInSize = false;
     
