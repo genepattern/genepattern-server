@@ -1208,7 +1208,7 @@ function changeParameterType(element)
             var newFtpDir = ftpDir;
             if(newFtpDir.length > 60)
             {
-                newFtpDir = newFtpDir.substring(0, 59) + "...";
+                newFtpDir = newFtpDir.substring(0, 20) + "..." + newFtpDir.substring(newFtpDir.length-20, newFtpDir.length);
             }
             $(this).parents(".parameter").find(".dynamicChoicesInfo").append("Dynamic directory URL: "
                 + newFtpDir);
