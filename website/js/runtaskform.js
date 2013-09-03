@@ -770,10 +770,6 @@ function loadParameterInfo(parameters, initialValues)
                         //change the id to the parameter name since the upload your own file is the current view
                         $(this).parents("td:first").find(".choice").removeAttr("id");
                         $(this).parents("td:first").find(".fileDiv").find("input[type='file']").attr("id", pname);
-                        //remove the selected value
-                        $(this).parents("td:first").find(".choice").val("");
-                        $(this).parents("td:first").find(".choice").trigger("change");
-                        $(this).parents("td:first").find(".choice").multiselect("refresh");
                     }
                 });
 
