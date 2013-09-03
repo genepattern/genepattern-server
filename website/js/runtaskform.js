@@ -558,7 +558,10 @@ function loadParameterInfo(parameters, initialValues)
                 }
                 else
                 {
-                    valueList.push($(this).val());
+                    if(value != "")
+                    {
+                        valueList.push(value);
+                    }
                 }
 
                 var paramName = $(this).data("cname");
