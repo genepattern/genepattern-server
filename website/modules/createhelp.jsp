@@ -94,6 +94,8 @@ Lists the support files packaged with the module, such as executable programs, d
 		<a name="Parameters_brief"></a><strong>Parameters</strong><br>
 Lists the module parameters, including the file formats of any input files required by the module.</p>
 
+<hr>
+
 <a name="editingPropertiesHelp"></a><h2>Creating and Editing Modules</h2>
 
 <strong>Note:</strong> Only the <%=messages.get("ApplicationName")%> team can create, edit or install modules on the <%=messages.get("ApplicationName")%> public server.
@@ -113,7 +115,7 @@ the program that you have written.
 It takes just a few minutes to enter the necessary information in the module integrator.
 You can decide which parameters from the algorithm to expose to the user and
 can replace command line parameter names that are hard to remember with names
-that are self-explanatory. You can also create drop-down list choices for parameters
+that are self-explanatory. You can also create a drop-down list of choices for parameters
 to reduce the possibility of invoking the module with incorrect values.
 </li>
 <li>Run the module several times, testing it thoroughly before making it available to other <%=messages.get("ApplicationName")%> users.</li>
@@ -128,9 +130,21 @@ If everything checks out, the uploaded files are saved in the
 <%=messages.get("ApplicationName")%> module library and the module registered
 in the module database. The module and its uploaded files are indexed in the background
 so that they are available for searching. You can run the module immediately and can
-share it with others.  <br><br>
+share it with others.  <br>
 
-The following sections describe each module property in detail:
+<h3>Module Integrator Overview</h3>
+
+<h4>Help</h4>
+Click Help to display this text.
+<h4>Save</h4>
+Click Save to save your changes, creating a new version of the module, and remain in the module integrator.
+<h4>Save and Run</h4>
+Click Save and Run to save your changes, creating a new version of the module,
+exit from the module integrator and run the module.
+
+<br><br>
+
+<h4>The following sections describe each module property in detail:  </h4>
 <ul>
 <li><a href="#taskLevelAttributes">Title Bar</a></li>
 <li><a href="#details">Details</a></li>
@@ -155,15 +169,6 @@ ConsensusClustering example: <span class="example">ConsensusClustering</span>
 Each time you update a module, you create a new version of the module.
 Typically, you want to edit the most recent version of a module.
 If you want to edit an earlier version, select that version from the drop-down list of versions.
-
-<h4>Help</h4>
-Click Help to display this text.
-<h4>Save</h4>
-Click Save to save your changes, creating a new version of the module, and remain in the module integrator.
-<h4>Save and Run</h4>
-Click Save and Run to save your changes, creating a new version of the module,
-exit from the module integrator and run the module.
-
 <br><br><hr>
 
 <a name="details"></a><h3>Details</h3>
@@ -177,8 +182,7 @@ ConsensusClustering example: <span class="example">urn:lsid:broad.mit.edu:cancer
 <a name="Description"></a><h4>Description</h4>
 The description is where to explain what your module does, and why someone would want to use it.
 It can be anywhere from a sentence to a short paragraph in length.
-The description, sometimes in abridged form, is displayed in the pipeline designer module choice list,
-in generated code when creating scripts from pipelines, and in the web client.
+The description, sometimes in abridged form, is displayed at the top of the form where the parameter values for the module are entered during run time in the web client.
 It's a very good way for you to document succinctly why your module exists.<br><br>
 
 ConsensusClustering example: <span class="example">Resampling-based clustering method</span>
@@ -200,7 +204,7 @@ Upload a text file containing the End-User license agreement. Users will be prom
 before running the module. <br>
 
 <a name="VersionComment"></a><h4>Version Comment</h4>
-Enter a brief description of the changes that you have made to the module. When GenePattern clients display a drop-down list of versions, the comments for each version are visible in the drop-down list.
+Enter a brief description of the changes that you have made to the module. When GenePattern clients display a drop-down list of versions on the Install from Repository page, the comments for each version are visible in the drop-down list.
 <br><br>
 ConsensusClustering example: <span class="example"><i>Added ability to create heatmap images of clusters</i></span>
 
@@ -221,7 +225,6 @@ ConsensusClustering example: <span class="example">Clustering</span>
 
 <a name="Privacy"></a><h4>Privacy</h4>
 Modules may be marked as either public or private.
-When a module is first created, the default is to mark it private.
 When a module is first created, the default is to mark it private.
 <ul>
 <li>Public modules are accessible to everyone who uses the server
@@ -278,18 +281,17 @@ If your module generates an output file format not included in the list, click N
 Any files required by your module, such as scripts, libraries, property files, DLLs, executable programs, etc.
 must be uploaded to the server. These files may be referenced in the command line field
 using the <span class="example">&lt;libdir&gt;<i>filename</i></span> nomenclature.
-There is no upper limit on the number of files which may be uploaded, assuming there is enough space.
+There is no upper limit on the number of files which may be uploaded, assuming there is enough disk space.
 
 <ul>
-<li>To add a file, click Add Files and select the file to add. When you save the module,
+<li>To add a file, either click Add Files and select the file to add or drag and drop a file from your local file system. When you save the module,
 GenePattern copies the file to the server and adds it to the Current Files list.</li>
 
-<li>To remove a file, select the check box next to the file in the Current Files list.
-When you save the module, GenePattern removes the file from the server and the Current Files list.</li>
+<li>To remove a newly added file, click the x icon to the left of the file. To remove a file from Current Files list, select the check box next to the file.
+This file will be deleted when the module is saved. When you save the module, GenePattern removes the file from the server and the Current Files list.</li>
 </ul>
 
-Files that
-have been uploaded appear as links in this section.  You may view or download them by clicking appropriately
+Files that have been previously uploaded appear as links in the Current Files section. You may view or download them by clicking appropriately
 in your browser.
 <br><br>
 
@@ -301,10 +303,10 @@ explains it.
 in the list of Support Files.
 </li></ul>
 When a user selects your module, GenePattern displays a form that includes the
-module parameters and a Help button. When the user clicks the Help button, GenePattern examines the list of
+module parameters and a documentation link. When the user clicks the documentation link, GenePattern examines the list of
 support files for the module and displays the first file that has a standard documentation file extension.
 If no documentation file was provided, GenePattern displays a message indicating that no information is
-available. (By default, the standard documentation file extensions are html, htm, xhtml, pdf, rtf, and txt.
+available. (By default, the supported documentation file extensions are html, htm, xhtml, pdf, rtf, and txt.
 You can modify this list of extensions by editing the files.doc property in the
 GenePattern /resources/genepattern.properties file.)<br><br>
 
@@ -419,38 +421,6 @@ Do you have any advice about what is a reasonable range of settings for it?  The
 ConsensusClustering example: <span class="example">Type of clustering algorithm</span>
 
 
-<a name="paramDefault"></a><h4>Default Value</h4>
-
-Some parameters should have a default value which will be supplied on the module's command line if no setting
-is supplied by the user when invoking the module.  This is not the same as the defaults defined in the
-program invoked by the module.
-Instead, this allows the module author to create a default, even when none exists in the program being invoked by the module.<br><br>
-
-The default value may use substitution variables, just like the rest of the command line.  So
-a valid default for an output file might be <span class="example">&lt;input.filename_basename&gt;.foo</span>,
-meaning that the output file will have the same stem as the input.filename parameter, but will have a .foo extension.
-<br><br>
-Default values for parameters that have a static drop-down list must be either blank or one of the values from the choice list.
-Any other setting will result in an error message.  If no default for a choice list is provided, the first entry
-on the list will be the default. For any item in the list where the value to pass on the command line is blank, it will need to be the first item
-in the list in order to be the default selection.
-<br><br>
-For file parameters which have a dynamic drop-down list, the default value can only be a url to a file found in the provided ftp directory URL.
-<br>
-For example:
-<br>
-<ul><li>
-FTP directory:  <span class="example">ftp://ftp.broadinstitute.org/pub/genepattern/rna_seq/referenceAnnotation/gtf/</span>
-<br>
-Default value: <span class="example">ftp://ftp.broadinstitute.org/pub/genepattern/rna_seq/referenceAnnotation/gtf/Homo_sapiens_UCSC_hg18.gtf</span>
-</li></ul>
-
-For file parameters which have a static drop-down list only, the default value can be any ftp, http, or https URL.
-<br><br>
-
-ConsensusClustering examples: <span class="example">NMF</span>, <span class="example">5</span>, <span class="example">&lt;input.filename_basename&gt;</span>
-
-
 <a name="paramFlag"></a><h4>Flag</h4>
 
 Some parameters need to have extra text prefixing them on the command line when they are specified.
@@ -462,17 +432,12 @@ example (with space): <span class="example">-F <i>inputfile</i></span>
 <br>
 example (without space): <span class="example">-F<i>inputfile</i></span>
 
-
-<a name="paramType"></a><h4>Type of field</h4>
-
-Declaration of the type of an input parameter allows the client to make a smarter UI presentation of the input to the
-user.  (As of <%=messages.get("ApplicationName")%> 1.2, all parameters are being treated as either text or input file types).  Parameter field type
-choices are:
+<a name="paramType"></a><h4>Type of field to display</h4>
+Select whether parameter input field is a text field or file field. A text field should be used for any input parameter
+other than an input file. If a user selects Text Field, a drop-down list for selecting how the text should be interpreted will appear.
+The available choices are:
 
 <ul>
-<li>Text Field</li>
-    When text is selected "A type of data to enter" field is displayed where you can select the following options:
-    <ul>
     <li> Text </li>
         This option will provide the user with a standard text input field where any input can be entered.
     <li>Integer</li>
@@ -480,20 +445,18 @@ choices are:
     <li>Floating Point</li>
         This option will provide the user with a text field where only a floating point number should be entered.
     <li>Directory</li>
-        This option will provide the user with a text field where the input will be interpreted as a directory path available on the server file system.
+        This option will provide the user with a text field where the input will be interpreted as a directory path available
+        on the server file system.
     <li>Password</li>
         This option will provide the user with a text field where the input will be masked with dots.
-    </ul>
-<li>File Field
-<p>
-When you select a parameter type of input file, a drop-down list of file formats appears in the third column. Select the valid file format(s) for this parameter. If your module requires an input file format not included in the list, click New to add that format to the list. The new file format will be appended to the end of the list.
-For this type of parameter, when the user enters the name of the file, the
-<%=messages.get("ApplicationName")%> clients pass along the entire
-file rather than just the file name.<br><br>
-
-</p>
-</li>
 </ul>
+<p>
+    If <i>File Field</i> is chosen for <i>Type of field to display</i>, the parameter will specify an input file.  When an input parameter
+    is identified as a File Field, GenePattern will pass to the module the path to the file.
+    When <i>File Field</i> is chosen, a <i>File Format</i> drop-down check list will appear in the third column.  Use this to select the
+    valid file format(s) for this input file parameter.  If your module requires an input file format not included in the
+    check list, click <i>New</i> to add that format to the list.  The new file format will be appended to the end of the list.
+</p>
 
 <h4> Drop-down list </h4>
 <p>
@@ -529,7 +492,7 @@ for text fields but the command line values must be urls in ftp, http, or https 
 Dynamic drop-down lists are drop-down lists that are populated using files available on an ftp directory URL. For example:
 <br>
 <p>
-FTP directory:  <span class="example">ftp://ftp.broadinstitute.org/pub/genepattern/rna_seq/referenceAnnotation/gtf/</span>
+FTP directory:  <span class="example">ftp://gpftp.broadinstitute.org/pub/rna_seq/referenceAnnotation/gtf/</span>
 
 <form>
     <table>
@@ -544,8 +507,75 @@ FTP directory:  <span class="example">ftp://ftp.broadinstitute.org/pub/genepatte
     </table>
 </form>
 <br>
+
+By default all files in the top level ftp directory will be included in the drop-down list. Optionally, you can filter items in the drop-down list by name or type.
+<br>
+An example of filtering by name using a glob pattern:
+<ol>
+    <li>
+        <i>*.gtf </i> - include only items whose names end with the .gtf
+    </li>
+    <li>
+        <i>!*.gtf</i> - include all items except those whose name ends with .gtf
+    </li>
+    <li>
+        <i>*.gtf, *.fasta, *.txt</i> - include only items whose names end with .gtf, .fasta, or .txt
+    </li>
+</ol>
+
+An example of filtering by type:
+<ol>
+    <li>
+        <i>type=file</i> - include all files in the top level directory
+    </li>
+    <li>
+        <i>type=dir</i> - only include matching directories
+    </li>
+    <li>
+        <i>type=all</i> - include both files and directories
+    </li>
+</ol>
+
+You can also combine name and type filters. The following is an example of filter based both on name and type:
+<ol>
+    <li>
+        <i>type=dir&human*</i>  - include only directories whose name starts with human
+    </li>
+</ol>
+
 For a dynamic drop-down list, there is also the option of having an alternative static drop-down list. This alternative static drop-down list will only be displayed in the event that
 there was an error in obtaining the list of files in the ftp directory URL. This alternative static drop-down list works the same way as described above.
+
+
+<a name="paramDefault"></a><h4>Default Value</h4>
+
+Some parameters should have a default value which will be supplied on the module's command line if no setting
+is supplied by the user when invoking the module.  This is not the same as the defaults defined in the
+program invoked by the module.
+Instead, this allows the module author to create a default, even when none exists in the program being invoked by the module.<br><br>
+
+The default value may use substitution variables, just like the rest of the command line.  So
+a valid default for an output file might be <span class="example">&lt;input.filename_basename&gt;.foo</span>,
+meaning that the output file will have the same stem as the input.filename parameter, but will have a .foo extension.
+<br><br>
+Default values for parameters that have a static drop-down list must be either blank or one of the values from the choice list.
+Any other setting will result in an error message.  If no default for a drop-down list is provided, the first entry
+on the list will be the default.
+<br><br>
+<b>NOTE:</b> For any item in a static drop list where the value to pass on the command line is blank, it will need to be the first item
+in the list in order to be the default selection.
+<br><br>
+For file parameters that have a dynamic drop-down list, the default value can only be a url to a file found in the provided ftp directory URL.
+<br>
+For example:
+<br>
+<ul><li>
+    FTP directory:  <span class="example">ftp://gpftp.broadinstitute.org/pub/rna_seq/referenceAnnotation/gtf/</span>
+    <br>
+    Default value: <span class="example">ftp://gpftp.broadinstitute.org/pub/rna_seq/referenceAnnotation/gtf/Homo_sapiens_UCSC_hg18.gtf</span>
+</li></ul>
+
+<br><br>
 
 </body>
 </html>
