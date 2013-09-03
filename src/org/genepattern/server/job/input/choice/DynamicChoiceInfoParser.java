@@ -186,7 +186,7 @@ public class DynamicChoiceInfoParser implements ChoiceInfoParser {
         choiceInfo.setChoiceDir(ftpDir);
         
         //special-case, local.choiceDir
-        LocalChoiceObj localChoice = new LocalChoiceObj(param, ftpDir);
+        LocalChoiceInfoObj localChoice = new LocalChoiceInfoObj(param, ftpDir);
         if (localChoice.hasLocalChoiceDir()) {
             for(final Choice choice : localChoice.getLocalChoices()) {
                 choiceInfo.add(choice);

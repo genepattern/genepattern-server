@@ -84,8 +84,8 @@ default.properties:
  * @author pcarr
  *
  */
-public class LocalChoiceObj {
-    private final static Logger log = Logger.getLogger(LocalChoiceObj.class);
+public class LocalChoiceInfoObj {
+    private final static Logger log = Logger.getLogger(LocalChoiceInfoObj.class);
 
     public static final String PROP_LOCAL_CHOICE_DIRS="local.choiceDirs";
 
@@ -104,7 +104,7 @@ public class LocalChoiceObj {
      * @param param
      * @param choiceDir
      */
-    public LocalChoiceObj(final ParameterInfo param, final String choiceDir) {
+    public LocalChoiceInfoObj(final ParameterInfo param, final String choiceDir) {
         this.param=param;
         this.choiceDir=choiceDir;
         
