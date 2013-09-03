@@ -39,10 +39,18 @@ public class ChoiceInfo {
      * When creating a drop-down menu from a remote directory, optionally filter the list of
      * values based on a glob pattern. This filter applies only to the remote 'choiceDir' setting.
      * 
-     * By default, directory values are ignored, override the default setting by ...
-     *     p4_choiceDirFilterType= all | file | dir
-     *     p4_choiceDir
+     * By default, 'readme.*' and '*.md5' files are ignored. Override the default setting by adding a
+     * comma separated list of glob (e.g. '*.gtf') or anti-glob (e.g. '!*.md5') patterns.
+     *     p4_choiceDirFilter=*.gtf
+     *     p4_choiceDirFilter=!*.md5
      * 
+     * By default, directory values are ignored, override the default setting by adding an optional 'type=<all | dir | file>'.
+     *     p4_choiceDirFilter=type=all
+     *     p4_choiceDirFilter=type=file
+     *     p4_choiceDirFilter=type=dir
+     * 
+     * These two can be combined, but you must only set one type= value.
+     *     p4_choiceDirFilter=type=dir&human*
      */
     public static final String PROP_CHOICE_DIR_FILTER="choiceDirFilter";
     /**
