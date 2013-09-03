@@ -37,7 +37,7 @@ public class ServerFilePath extends GpFilePath {
             throw new IllegalArgumentException("invalid null arg, serverFile");
         }
         if (!file.isAbsolute()) {
-            log.warn("Relative file arg to ServerFilePath constructor: "+file.getPath());
+            log.warn("Relative file arg to ServerFilePath constructor: "+file.getPath(), new Exception("Relative paths are relative to the working directory"));
         }
         this.serverFile = file;
         //init the relativeUri
