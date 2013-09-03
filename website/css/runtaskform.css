@@ -4,9 +4,10 @@
 
 #paramsTable
 {
-    width: 100%;
+    width: 98%;
     height: 100%;
     border-spacing: 0;
+    table-layout:fixed;
 }
 
 #paramsTable tr.pRow td
@@ -21,7 +22,7 @@
 
 #paramsTable td
 {
-    padding: 7px 4px 6px 4px;
+    padding: 7px 0 6px 0;
 }
 
 #paramsTable tr.paramDescription td
@@ -135,6 +136,22 @@ button.urlButton
 {
     font-size: 11px;
     padding: 0;
+}
+
+
+#paramsTable td:first-child
+{
+    width: 30%;
+}
+
+#paramsTable td:nth-child(2)
+{
+    width: 70%;
+}
+
+.pTitleDiv
+{
+    white-space: normal;
 }
 
 #paramsTable tr:nth-child(odd)

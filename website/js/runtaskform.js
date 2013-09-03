@@ -417,7 +417,7 @@ function loadParameterInfo(parameters, initialValues)
 
         //replace . with spaces in parameter name
         parameterName = parameterName.replace(/\./g,' ');
-        paramRow.append("<td class='pTitle'>" + parameterName + "</td>");
+        paramRow.append("<td class='pTitle'><div class='pTitleDiv'>" + parameterName + "</div></td>");
         paramRow.data("pname", parameters[q].name);
 
         var rowId = "pRow" + (q+1);
