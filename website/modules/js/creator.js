@@ -953,13 +953,13 @@ function changeParameterType(element)
                         {
                             altStaticChoiceToggle.click();
                         }
-                        dynamicChoiceButton.click();
+                        dynamicChoiceButton.attr("checked", "checked");
                     }
                     else
                     {
                         $(this).find(".choicesURLDiv").hide();
                         $(this).find(".staticChoicesDiv").show();
-                        staticChoiceButton.click();
+                        staticChoiceButton.attr("checked", "checked");
                     }
 
                     dynamicChoiceButton.click(function()
