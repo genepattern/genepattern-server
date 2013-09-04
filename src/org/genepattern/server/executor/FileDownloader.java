@@ -151,38 +151,25 @@ public class FileDownloader {
         if (selectedChoices.size()==0) {
             return;
         }
-
-        //
-        // use a while loop so that we can initiate the download for each file in the list
-        // then poll for completion
-        //
-        final List<Choice> copy=new ArrayList<Choice>(selectedChoices);
-        final List<Choice> toRemove=new ArrayList<Choice>();
-        while (copy.size()>0) {
-            toRemove.clear();
-            for(final Choice selectedCopy : copy) {
-                try {
-                    //this method throws a TimeoutException if the download is not complete
-                    Future<?> f = FileCache.instance().getFutureObj(selectedCopy.getValue());
-                    f.get(100, TimeUnit.MILLISECONDS);
-                    toRemove.add(selectedCopy);
-                }
-                catch (TimeoutException e) {
-                    //skip, it means the file is still downloading
-                }
-            }
-            for(Choice choiceToRemove : toRemove) {
-                copy.remove(choiceToRemove);
-            }
-            // sleep a second, so that we can be interrupted (job cancellation) 
-            //     and so that we don't throttle the server
-            Thread.sleep(1000);
-        }
         
-        // another option would be to download them sequentially, e.g.
-        //for(final Choice selectedChoice : selectedChoices) {
-        //    final GpFilePath cachedFile=ChoiceInfoFileCache.instance().getCachedGpFilePathWait(selectedChoice);
-        //}
+        // loop through all the choices and start downloading ...
+        for(final Choice selectedChoice : selectedChoices) {
+            try {
+                final String selectedValue=selectedChoice.getValue();
+                final Future<?> f = FileCache.instance().getFutureObj(selectedValue);
+                f.get(100, TimeUnit.MILLISECONDS);
+            }
+            catch (TimeoutException e) {
+                //skip, it means the file is still downloading
+            }
+            Thread.yield();
+        }
+        // now loop through all of the choices and wait for each download to complete
+        for(final Choice selectedChoice : selectedChoices) {
+            final String selectedValue=selectedChoice.getValue();
+            final Future<?> f = FileCache.instance().getFutureObj(selectedValue);
+            f.get();
+        }    
     }
 
 }
