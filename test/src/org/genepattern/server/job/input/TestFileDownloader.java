@@ -277,5 +277,31 @@ public class TestFileDownloader {
             }
         });
     }
+    
+    /**
+     * The edtFtp downloader does not respond to an interrupt.
+     * @throws MalformedURLException
+     * @throws InterruptedException
+     */
+    @Test
+    public void testCancelDownloadEdtFtp()  throws MalformedURLException, InterruptedException {
+        final URL fromUrl=new URL(largeFile);
+        final File tmpDir=newTmpDir();
+        final File toFile=new File(tmpDir, fromUrl.getFile());
+        final File toParent=toFile.getParentFile();
+        if (!toParent.exists()) {
+            boolean success=toFile.getParentFile().mkdirs();
+            if (!success) {
+                Assert.fail("failed to create parent dir before download, parentDir="+toParent);
+            }
+        }
+        cancellationTest(false, toFile, new Callable<File>() {
+            @Override
+            public File call() throws Exception {
+                FileTransferClient.downloadURLFile(toFile.getAbsolutePath(), fromUrl.toExternalForm());
+                return toFile;
+            }
+        });
+    }
 
 }
