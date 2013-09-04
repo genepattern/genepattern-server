@@ -1,0 +1,113 @@
+
+<!-- =================================================================== -->
+<!-- $Id: build.xml.distrib,v 1.3 2007-05-29 06:07:03 bruceb Exp $   	 -->
+<!-- =================================================================== -->
+
+<project name="ftp" default="all" basedir=".">
+
+  <!-- ================================================== -->
+  <!-- Set up properties                                  -->
+  <!-- ================================================== -->
+  <target name="init">
+    <!-- The root directory of the workspace -->
+    <property name="ftp.home" value=".."/>
+    
+    <!-- version numbers -->
+    <property name="major_ver" value="2"/> 
+    <property name="middle_ver" value="4"/>
+    <property name="minor_ver" value="0"/>   
+
+    <!-- The current version  -->
+    <property name="ftp.version" value="2.4.0"/>
+    
+    <!-- The destination directory for the build -->
+    <property name="ftp.build" value="${ftp.home}/build"/>
+
+	<!-- Where the source is -->
+    <property name="ftp.src" value="."/>
+        
+    <!-- The destination directory for all the compiled classes. -->
+    <property name="ftp.classbindir" value="${ftp.build}/classes"/>
+
+    <!-- The destination directory for all the javadocs. -->
+    <property name="ftp.dstdocdir" value="${ftp.build}/doc/api"/>
+
+    <!-- The classpath used for building the workspace. -->
+    <property name="ftp.classpath" value="${ftp.home}/lib/junit.jar"/>
+
+    <!-- The jar file holding the package. -->    
+    <property name="ftp.jarfile" value="edtftpj-${ftp.version}.jar"/>
+
+    <!-- The jar file holding the package. -->    
+    <property name="ftp.jar" value="${ftp.build}/${ftp.jarfile}"/>
+    
+    <!-- The jar file holding the package. -->    
+    <property name="ftp.distdir" value="${ftp.home}/dist"/>   
+    
+    <tstamp>
+      <format pattern="d-MMM-yyyy HH:mm:ss z" property="date_time"/>
+    </tstamp>
+  </target>
+
+  <!-- ================================================== -->
+  <!-- Compile source                                     -->
+  <!-- ================================================== -->
+  <target name="compile" depends="init">	
+	<!-- now compile it -->
+    <mkdir dir="${ftp.classbindir}"/>
+    <javac debug="on" srcdir="${ftp.src}"
+           destdir="${ftp.classbindir}"
+           classpath="${ftp.classpath}"
+           includes="**/*.*"/>
+  </target>
+
+  <!-- ================================================== -->
+  <!-- Archive java source into a jar file                -->
+  <!-- ================================================== -->
+  <target name="jar" depends="compile">
+    <jar jarfile="${ftp.jar}" basedir="${ftp.classbindir}">
+      <manifest>
+        <attribute name="Version" value="${ftp.version}"/>
+        <attribute name="Release-Date" value="${date_time}"/>
+        <attribute name="Built-By" value="${user.name}"/>
+        <attribute name="Compiler-Vendor" value="${java.vm.vendor}"/>
+        <attribute name="Compiler-Version" value="${java.vm.version}"/>
+      </manifest>
+    </jar>
+    
+    <!-- copy the jar to the lib directory to make sure we don't forget -->
+    <copy file="${ftp.jar}" tofile="../lib/edtftpj.jar"/>
+    
+  </target>
+
+  <!-- ================================================== -->
+  <!-- Create Javadoc                                     -->
+  <!-- ================================================== -->
+  <target name="javadocs" depends="init">
+    <mkdir dir="${ftp.dstdocdir}"/>
+    <javadoc packagenames="com.enterprisedt.net.ftp.*,com.enterprisedt.util.*"
+             sourcepath="${ftp.src}"
+             classpath="${ftp.classpath}"
+             destdir="${ftp.dstdocdir}"
+             author="true"
+             version="true"
+             use="true"
+             windowtitle="edtFTPj by Enterprise Distributed Technologies Ltd"
+             doctitle="edtFTPj API"
+             bottom="Copyright (c) 2001-2007 Enterprise Distributed Technologies Ltd. All Rights Reserved." />
+  </target>
+
+  <!-- ================================================== -->
+  <!-- Clean build                                        -->
+  <!-- ================================================== -->
+  <target name="clean" depends="init">
+    <delete dir="${ftp.build}"/>
+    <delete dir="${ftp.distdir}"/>
+  </target>
+
+  <!-- ================================================== -->
+  <!-- Build everthing                                    -->
+  <!-- ================================================== -->  
+  <target name="all" depends="clean,jar,javadocs"/>
+
+</project>

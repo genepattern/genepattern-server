@@ -1,0 +1,54 @@
+<html><head>
+   <title>How to FTP through other proxy servers</title>
+</head>
+
+
+<body style="background-color: rgb(255, 255, 255);">
+
+<table cellpadding="0" cellspacing="0" width="100%">
+
+  <tbody>
+
+    <tr>
+
+      <td style="background-image: url(../images/bk_tl.jpg); background-repeat: repeat-x;"><img src="../images/space.gif" height="4" width="4"></td>
+
+      <td style="background-image: url(../images/bk_t.jpg); background-repeat: repeat-x;"><img src="../images/space.gif" height="4" width="4"></td>
+
+      <td style="background-image: url(../images/bk_tr.jpg); background-repeat: repeat-x;"><img src="../images/space.gif" height="4" width="4"></td>
+
+    </tr>
+
+    <tr>
+
+      <td style="background-image: url(../images/bk_l.jpg); background-repeat: repeat-y;" width="4"><img src="../images/space.gif" height="4" width="4"></td>
+
+      <td style="font-family: sans-serif; font-weight: bold; font-size: 14pt; background-image: url(../images/bk_c.jpg); background-repeat: repeat;" width="100%"> &nbsp;How to FTP through other proxy servers </td>
+
+      <td style="background-image: url(../images/bk_r.jpg); background-repeat: repeat-y;" width="4"><img src="../images/space.gif" height="4" width="4"></td>
+
+    </tr>
+
+    <tr>
+
+      <td style="background-image: url(../images/bk_bl.jpg); background-repeat: repeat-x;" height="4"><img src="../images/space.gif" height="4" width="4"></td>
+
+      <td style="background-image: url(../images/bk_b.jpg); background-repeat: repeat-x;"><img src="../images/space.gif" height="4" width="4"></td>
+
+      <td style="background-image: url(../images/bk_br.jpg); background-repeat: repeat-x;"><img src="../images/space.gif" height="4" width="4"></td>
+
+    </tr>
+
+  </tbody>
+</table>
+   
+<br>
+   <p style="margin-left:0mm; margin-right:0mm; text-indent:0mm; margin-top:0mm; margin-bottom:2mm;" ><font face="Arial" ><span style="font-size:10pt" >Many firewalls support a means of forming proxy connections other than SOCKS.</span></font><br><p style="margin-left:0mm; margin-right:0mm; text-indent:0mm; margin-top:0mm; margin-bottom:2mm;" ><font face="Arial" ><span style="font-size:10pt" >When of supplying the remote hostname, the name of the firewall is supplied instead. Instead 
+of supplying the remote user as the user, a string is supplied in the form of 
+remoteuser@remotehost.com. The remote password is supplied as normal.</span></font><br><p align="justify"  style="margin-left:0mm; margin-right:0mm; text-indent:0mm; margin-top:0mm; margin-bottom:2mm;" ><font face="Arial" ><span style="font-size:10pt" >For example:</span></font><br><p style="margin-left:13mm; margin-right:0mm; text-indent:0mm; margin-top:0mm; margin-bottom:2mm;" ><font face="Lucida Console"  size="1" ><span style="font-size:8pt" >ftp.setUserName(&quot;remoteuser@remotehost.com&quot;);</span></font><br><font face="Lucida Console"  size="1" ><span style="font-size:8pt" >ftp.setPassword(&quot;remotePassword&quot;);<br>
+ftp.setRemoteHost(&quot;firewallhostname&quot;);</span></font><br><p style="margin-left:0mm; margin-right:0mm; text-indent:0mm; margin-top:0mm; margin-bottom:2mm;" ><font face="Arial" ><span style="font-size:10pt" >Firewalls we have confirmed support this syntax at the time of writing include Check Point 
+Firewall-1 and WinProxy.</span></font><br><div align="left" ></div>
+
+</html>
+
+</body></html>

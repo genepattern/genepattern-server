@@ -1,0 +1,183 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html>
+<head>
+  <title>How to use active or passive mode</title>
+  <meta name="generator" content="HelpMaker.net">
+</head>
+
+
+<body style="background-color: rgb(255, 255, 255);">
+
+
+<table cellpadding="0" cellspacing="0" width="100%">
+
+
+  <tbody>
+
+
+    <tr>
+
+
+      <td style="background-image: url(../images/bk_tl.jpg); background-repeat: repeat-x;"><img src="../images/space.gif" height="4" width="4"></td>
+
+
+      <td style="background-image: url(../images/bk_t.jpg); background-repeat: repeat-x;"><img src="../images/space.gif" height="4" width="4"></td>
+
+
+      <td style="background-image: url(../images/bk_tr.jpg); background-repeat: repeat-x;"><img src="../images/space.gif" height="4" width="4"></td>
+
+
+    </tr>
+
+
+    <tr>
+
+
+      <td style="background-image: url(../images/bk_l.jpg); background-repeat: repeat-y;" width="4"><img src="../images/space.gif" height="4" width="4"></td>
+
+
+      <td style="font-family: sans-serif; font-weight: bold; font-size: 14pt; background-image: url(../images/bk_c.jpg); background-repeat: repeat;" width="100%"> &nbsp;How to use active or passive mode </td>
+
+
+      <td style="background-image: url(../images/bk_r.jpg); background-repeat: repeat-y;" width="4"><img src="../images/space.gif" height="4" width="4"></td>
+
+
+    </tr>
+
+
+    <tr>
+
+
+      <td style="background-image: url(../images/bk_bl.jpg); background-repeat: repeat-x;" height="4"><img src="../images/space.gif" height="4" width="4"></td>
+
+
+      <td style="background-image: url(../images/bk_b.jpg); background-repeat: repeat-x;"><img src="../images/space.gif" height="4" width="4"></td>
+
+
+      <td style="background-image: url(../images/bk_br.jpg); background-repeat: repeat-x;"><img src="../images/space.gif" height="4" width="4"></td>
+
+
+    </tr>
+
+
+  
+  </tbody>
+</table>
+
+
+<br>
+
+
+<div align="left"> <font color="#010101" face="Arial"><span style="font-size: 10pt;">In
+the FTP protocol, data transfers are made on a different
+connection to the control connection - and a new connection is made for
+each data transfer or directory listing. </span></font> </div>
+
+
+<div align="left"> <br>
+
+
+<font color="#010101" face="Arial"><span style="font-size: 10pt;">Data connections
+can be made in two different ways - the server initiating the
+connection (active mode) or the client initiating the connection
+(passive mode). For more discussion on connect modes, see <a href="activeandpassivemodes.html"><font color="#0000ff" face="Arial"><span style="font-size: 10pt;"><u>
+Active and Passive Modes.</u></span></font></a>
+The connect mode has certain implications for FTP'ing through firewalls. If problems are experienced
+using one mode, the alternative mode should be tried.</span></font>
+</div>
+
+
+<div align="left"> <br>
+
+
+</div>
+
+
+<div align="left"> <font color="#010101" face="Arial"><span style="font-size: 10pt;"><b>Active
+Mode</b></span></font> </div>
+
+
+<div align="left"> <br>
+
+
+<font color="#010101" face="Arial"><span style="font-size: 10pt;">To use active mode, the 
+advanced settings object must be obtained via <a href="../../api/com/enterprisedt/net/ftp/FileTransferClient.html#getAdvancedFTPSettings()"><font color="#0000ff" face="Lucida Console" size="1"><span style="font-size: 8pt;"><u>getAdvancedFTPSettings()</u></span></font></a>,
+followed by <a href="../../api/com/enterprisedt/net/ftp/AdvancedFTPSettings.html#setConnectMode(com.enterprisedt.net.ftp.FTPConnectMode)"><font color="#0000ff" face="Lucida Console" size="1"><span style="font-size: 8pt;"><u>setConnectMode()</u></span></font></a>, 
+supplying the ACTIVE mode as shown:</span></font>
+</div>
+
+<div style="margin-left: 13mm; margin-right: 0mm; text-indent: 0mm;" align="left"> <br>
+
+<font color="#010101" face="Lucida Console" size="1"><span style="font-size: 8pt;">ftp.getAdvancedFTPSettings().setConnectMode(FTPConnectMode.ACTIVE);</span></font><br>
+
+
+<br>
+
+
+</span></font> </div>
+
+<div align="left">
+<font color="#010101" face="Arial"><span style="font-size: 10pt;">In active mode, the client supplies the port number to which the server connects.
+This is normally a random port, but a port range can be specified (for example a
+permissable range that is configured in a firewall). Use the 
+<a href="../../api/com/enterprisedt/net/ftp/AdvancedFTPSettings.html#setActivePortRange(int,%20int)"><font color="#0000ff" face="Lucida Console" size="1"><span style="font-size: 8pt;"><u>AdvancedFTPSettings.setActivePortRange()</u></span></font></a>
+method to set the range, e.g.
+</div>
+
+<div style="margin-left: 13mm; margin-right: 0mm; text-indent: 0mm;" align="left"> <br>
+<font color="#010101" face="Lucida Console" size="1"><span style="font-size: 8pt;">ftp.getAdvancedFTPSettings().setActivePortRange(61500, 61510);</span></font><br>
+<br>
+</span></font> </div>
+
+
+<div align="left">
+<font color="#010101" face="Arial"><span style="font-size: 10pt;">
+The port number being sent to the server can be found from
+the log file (in DEBUG mode), looking for the PORT command, e.g.
+</div>
+
+<div style="margin-left: 13mm; margin-right: 0mm; text-indent: 0mm;" align="left"> <br>
+<font color="#010101" face="Lucida Console" size="1"><span style="font-size: 8pt;">PORT 151,134,10,195,240,68</span></font><br>
+</span></font> </div>
+
+<div align="left"> <br>
+
+<div align="left">
+<font color="#010101" face="Arial"><span style="font-size: 10pt;">
+The first four numbers are the IP address, and the last two form the port number. To calculate the port number
+that the server will try to connect to, multiple the first port number by 256 (2^8), and then add the second port number.
+In the example it will be 240*(2^8) + 68, yielding a port number of 61508.
+</div>
+
+<div align="left"> <br>
+
+<div align="left"> <font color="#010101" face="Arial"><span style="font-size: 10pt;"><b>Passive
+Mode</b></span></font> </div>
+
+
+<div align="left"> <br>
+
+
+<font color="#010101" face="Arial"><span style="font-size: 10pt;">To use passive mode, the&nbsp;</span></font><a href="../../api/com/enterprisedt/net/ftp/AdvancedFTPSettings.html#setConnectMode(com.enterprisedt.net.ftp.FTPConnectMode)"><font color="#0000ff" face="Lucida Console" size="1"><span style="font-size: 8pt;"><u>setConnectMode()</u></span></font></a></font></u></font><font color="#010101" face="Arial"><span style="font-size: 10pt;">
+method should be used, supplying the PASV type as shown.</span></font>
+</div>
+
+
+<div style="margin-left: 13mm; margin-right: 0mm; text-indent: 0mm;" align="left"> <br>
+<font color="#010101" face="Lucida Console" size="1"><span style="font-size: 8pt;">ftp.getAdvancedFTPSettings().setConnectMode(FTPConnectMode.PASV);</span></font><br>
+</span></font> </div>
+
+
+<div align="left"> <br>
+
+
+<font color="#010101" face="Arial"><span style="font-size: 10pt;">If
+problems are being experienced with file transfers and directory
+listings (both of which use a new data connection each time), it is likely that a
+firewall is preventing the creation of the data connection. Try
+swapping from active to passive modes, or vice versa.</span></font><br>
+</div>
+
+
+</body>
+</html>

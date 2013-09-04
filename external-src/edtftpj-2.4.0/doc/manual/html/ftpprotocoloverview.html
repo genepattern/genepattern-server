@@ -1,0 +1,45 @@
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><head>
+   <title>FTP Protocol Overview</title>
+   <meta name="generator"  content="HelpMaker.net" >
+   <meta name="keywords"  content="Chapter 1," ><LINK REL="stylesheet" TYPE="text/css" HREF="ms-help://Hx/HxRuntime/HxLink.css"><LINK REL="stylesheet" TYPE="text/css" HREF="ms-help://Hx/HxRuntime/HxLinkDefault.css"></head>
+<body bgcolor="FFFFFF" >
+    <table cellpadding="0" cellspacing="0" width="100%">
+      <tr>
+        <td style="background-image:url(../images/bk_tl.jpg); background-repeat: repeat-x"><img src="../images/space.gif" width=4 height=4></td>
+        <td style="background-image:url(../images/bk_t.jpg); background-repeat: repeat-x"><img src="../images/space.gif" width=4 height=4></td>
+        <td style="background-image:url(../images/bk_tr.jpg); background-repeat: repeat-x"><img src="../images/space.gif" width=4 height=4></td>
+      </tr>
+      <tr>
+        <td width="4" style="background-image:url(../images/bk_l.jpg); background-repeat: repeat-y"><img src="../images/space.gif" width=4 height=4></td>
+        <td width="100%" style="font-family: sans-serif; font-weight: bold; font-size: 14pt; background-image:url(../images/bk_c.jpg); background-repeat: repeat">
+          &nbsp;FTP Protocol Overview
+        </td>
+        <td width="4" style="background-image:url(../images/bk_r.jpg); background-repeat: repeat-y"><img src="../images/space.gif" width=4 height=4></td>
+      </tr>
+      <tr>
+        <td height="4" style="background-image:url(../images/bk_bl.jpg); background-repeat: repeat-x"><img src="../images/space.gif" width=4 height=4></td>
+        <td style="background-image:url(../images/bk_b.jpg); background-repeat: repeat-x"><img src="../images/space.gif" width=4 height=4></td>
+        <td style="background-image:url(../images/bk_br.jpg); background-repeat: repeat-x"><img src="../images/space.gif" width=4 height=4></td>
+      </tr>
+    </table>
+<br>
+<p align="justify" ><font face="Arial"  color="#010101" ><span style="font-size:10pt" >FTP (File Transfer Protocol) is a well established Internet protocol designed to transfer files
+(and information about files) across networks using TCP (Transmission Control Protocol). </span></font><font color="#010101" ></font><br><p align="justify" ><font face="Arial"  color="#010101" ><span style="font-size:10pt" >FTP is defined in the Request For Comments 959 document (RFC 959), which can be
+obtained from the </span></font><a href="http://www.ietf.org/"><font face="Arial"  color="#000080" ><span style="font-size:10pt" ><u>Internet Engineering Task Force</u></span></font></a><font face="Arial"  color="#010101" ><span style="font-size:10pt" >.</span></font><font color="#010101" ></font><br><p align="justify" ><font face="Arial"  color="#010101" ><span style="font-size:10pt" >FTP requires a client program (FTP client) and a server program (FTP server). The client can
+fetch files and file details from the server, and also upload files to the server. The server is
+generally password protected.</span></font><font color="#010101" ></font><br>
+
+<p align="justify" ><font face="Arial"  color="#010101" ><span style="font-size:10pt" >
+You can download a free trial of <b>CompleteFTP</b>, a Windows FTP server, from <a href="http://www.enterprisedt.com/products/completeftp/overview.html" target="_blank">this link</a>. CompleteFTP also supports various secure file transfer protocols such as SCP, SFTP and FTPS.</span></font>
+
+<p align="justify" ><font face="Arial"  color="#010101" ><span style="font-size:10pt" >FTP commands are initiated by the client, which opens a TCP connection called the control
+connection to the server. This control connection is used for the entire duration of a session
+between the client and server. A session typically begins when the client logs in, and ends
+when the quit command is sent to the server. The control connection is used exclusively for
+sending FTP commands and reading server replies - it is never used to transfer files.</span></font><font color="#010101" ></font><br><p align="justify" ><font face="Arial"  color="#010101" ><span style="font-size:10pt" >Transient TCP connections called data connections are set up whenever data (normally a
+file's contents) is to be transferred. For example, the client issues a command to retrieve a file
+from the server via the control channel. A data connection is then established, and the file's
+contents transferred to the client across it. Once the transfer is complete, the data connection
+is closed. Meanwhile, the control connection is maintained.</span></font><font color="#010101" ></font><br><p align="justify" ><br><br><font color="#010101" ><p align="justify" ></font><font face="Arial"  color="#010101" ><span style="font-size:10pt" >See also:</span></font><font color="#010101" ></font><br><p align="justify"  style="margin-left:6mm; margin-right:0mm; text-indent:-6mm; " ><font face="Symbol"  color="#010101" ><span style="font-size:12pt" >&middot;&nbsp;&nbsp;&nbsp;&nbsp;</span></font><a href="activeandpassivemodes.html"><font face="Arial"  color="#0000ff" ><span style="font-size:10pt" ><u>Active and Passive Modes</u></span></font></a><font color="#010101" ></font><br><p align="justify"  style="margin-left:6mm; margin-right:0mm; text-indent:-6mm; " ><font face="Symbol"  color="#010101" ><span style="font-size:12pt" >&middot;&nbsp;&nbsp;&nbsp;&nbsp;</span></font><a href="ftpcommands.html"><font face="Arial"  color="#0000ff" ><span style="font-size:10pt" ><u>FTP Commands</u></span></font></a><font color="#010101" ></font><br><p align="justify"  style="margin-left:6mm; margin-right:0mm; text-indent:-6mm; " ><font face="Symbol"  color="#010101" ><span style="font-size:12pt" >&middot;&nbsp;&nbsp;&nbsp;&nbsp;</span></font><a href="samplescenarios.html"><font face="Arial"  color="#0000ff" ><span style="font-size:10pt" ><u>Sample Scenarios</u></span></font></a><font color="#010101" ></font><br><p align="justify"  style="margin-left:6mm; margin-right:0mm; text-indent:-6mm; " ><font face="Symbol"  color="#010101" ><span style="font-size:12pt" >&middot;&nbsp;&nbsp;&nbsp;&nbsp;</span></font><a href="datatypes.html"><font face="Arial"  color="#0000ff" ><span style="font-size:10pt" ><u>Data Types</u></span></font></a><font color="#010101" ></font><br><p align="justify"  style="margin-left:6mm; margin-right:0mm; text-indent:-6mm; " ><font face="Symbol"  color="#010101" ><span style="font-size:12pt" >&middot;&nbsp;&nbsp;&nbsp;&nbsp;</span></font><a href="sessioncommands.html"><font face="Arial"  color="#0000ff" ><span style="font-size:10pt" ><u>Session Commands</u></span></font></a><font color="#010101" ></font><br><p align="justify"  style="margin-left:6mm; margin-right:0mm; text-indent:-6mm; " ><font face="Symbol"  color="#010101" ><span style="font-size:12pt" >&middot;&nbsp;&nbsp;&nbsp;&nbsp;</span></font><a href="filecommands.html"><font face="Arial"  color="#0000ff" ><span style="font-size:10pt" ><u>File Commands</u></span></font></a><font color="#010101" ></font><br><p align="justify"  style="margin-left:6mm; margin-right:0mm; text-indent:-6mm; " ><font face="Symbol"  color="#010101" ><span style="font-size:12pt" >&middot;&nbsp;&nbsp;&nbsp;&nbsp;</span></font><a href="directorycommands.html"><font face="Arial"  color="#0000ff" ><span style="font-size:10pt" ><u>Directory Commands</u></span></font></a><font color="#010101" ></font><br><p align="justify"  style="margin-left:6mm; margin-right:0mm; text-indent:-6mm; " ><font face="Symbol"  color="#010101" ><span style="font-size:12pt" >&middot;&nbsp;&nbsp;&nbsp;&nbsp;</span></font><a href="socksproxies.html"><font face="Arial"  color="#0000ff" ><span style="font-size:10pt" ><u>SOCKS Proxies</u></span></font></a><font color="#010101" ></font><br>
+
+</body></html>

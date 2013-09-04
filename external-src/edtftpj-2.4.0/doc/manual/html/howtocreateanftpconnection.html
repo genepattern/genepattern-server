@@ -1,0 +1,117 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML>
+  <HEAD>
+    <TITLE>
+      How to connect to an FTP server
+    </TITLE>
+    <META name="generator" content="HelpMaker.net">
+    <META name="keywords" content="Chapter 3,">
+    <LINK rel="stylesheet" type="text/css" href="ms-help://Hx/HxRuntime/HxLink.css">
+    <LINK rel="stylesheet" type="text/css" href="ms-help://Hx/HxRuntime/HxLinkDefault.css">
+  </HEAD>
+  <BODY bgcolor="FFFFFF">
+    <table cellpadding="0" cellspacing="0" width="100%">
+      <tr>
+        <td style="background-image:url(../images/bk_tl.jpg); background-repeat: repeat-x"><img src="../images/space.gif" width=4 height=4></td>
+        <td style="background-image:url(../images/bk_t.jpg); background-repeat: repeat-x"><img src="../images/space.gif" width=4 height=4></td>
+        <td style="background-image:url(../images/bk_tr.jpg); background-repeat: repeat-x"><img src="../images/space.gif" width=4 height=4></td>
+      </tr>
+      <tr>
+        <td width="4" style="background-image:url(../images/bk_l.jpg); background-repeat: repeat-y"><img src="../images/space.gif" width=4 height=4></td>
+        <td width="100%" style="font-family: sans-serif; font-weight: bold; font-size: 14pt; background-image:url(../images/bk_c.jpg); background-repeat: repeat">
+          &nbsp;How to connect to an FTP server
+        </td>
+        <td width="4" style="background-image:url(../images/bk_r.jpg); background-repeat: repeat-y"><img src="../images/space.gif" width=4 height=4></td>
+      </tr>
+      <tr>
+        <td height="4" style="background-image:url(../images/bk_bl.jpg); background-repeat: repeat-x"><img src="../images/space.gif" width=4 height=4></td>
+        <td style="background-image:url(../images/bk_b.jpg); background-repeat: repeat-x"><img src="../images/space.gif" width=4 height=4></td>
+        <td style="background-image:url(../images/bk_br.jpg); background-repeat: repeat-x"><img src="../images/space.gif" width=4 height=4></td>
+      </tr>
+    </table>
+<br>
+    <DIV align="left">
+      <FONT face="Arial" color="#010101"><SPAN style="font-size:10pt">Connecting to an FTP server with edtFTPj/Free is simply a matter of:</SPAN></FONT>
+      <BR><BR>
+	</DIV>
+    <DIV align="left" style="margin-left:6mm; margin-right:0mm; text-indent:-6mm; ">
+      <FONT face="Arial" color="#010101"><SPAN style="font-size:10pt">1.&nbsp;&nbsp;&nbsp;&nbsp;Creating an</SPAN></FONT> <A href= 
+      "../../api/com/enterprisedt/net/ftp/FileTransferClient.html"><FONT face="Arial" color="#0000ff"><SPAN style="font-size:10pt"><U>FileTransferClient</U></SPAN></FONT></A><FONT
+      face="Arial" color="#010101"><SPAN style="font-size:10pt"> object</SPAN></FONT>
+    </DIV>
+    <DIV align="left" style="margin-left:13mm; margin-right:0mm; text-indent:0mm; ">
+      <BR>
+      <FONT face="Lucida Console" size="1"><SPAN style="font-size:8pt">FileTransferClient ftp =</SPAN></FONT> <FONT face="Lucida Console" color="#0000ff" size="1"><SPAN style="font-size:8pt">
+      new</SPAN></FONT><FONT face="Lucida Console" size="1"><SPAN style="font-size:8pt"> FileTransferClient();<BR>
+      <BR>
+      </SPAN></FONT>
+    </DIV>
+    <DIV align="left" style="margin-left:6mm; margin-right:0mm; text-indent:-6mm; ">
+      <FONT face="Arial" color="#010101"><SPAN style="font-size:10pt">2.&nbsp;&nbsp;&nbsp;&nbsp;Setting the remote host and user credentials</SPAN></FONT>
+	   <BR>
+    </DIV>
+    <DIV align="left" style="margin-left:13mm; margin-right:0mm; text-indent:0mm; ">
+	<BR>
+      <FONT face="Lucida Console" size="1"><SPAN style="font-size:8pt">ftp.setRemoteHost(host);<BR>
+      ftp.setUserName(username);<BR>
+      ftp.setPassword(password);</SPAN></FONT>
+	  <BR><BR>
+    </DIV>
+	<DIV align="left" style="margin-left:6mm; margin-right:0mm; text-indent:-6mm; ">
+      <FONT face="Arial" color="#010101"><SPAN style="font-size:10pt">3.&nbsp;&nbsp;&nbsp;&nbsp;Calling the
+      connect() method, which connects to the server and logs in.</SPAN></FONT>
+	   <BR>
+    </DIV>
+    <DIV align="left" style="margin-left:13mm; margin-right:0mm; text-indent:0mm; ">
+      <BR>
+      <FONT face="Lucida Console" size="1"><SPAN style="font-size:8pt">ftp.connect();<BR>
+      <BR>
+      </SPAN></FONT>
+    </DIV>
+	<DIV align="left" style="margin-left:6mm; margin-right:0mm; text-indent:-6mm; ">
+      <FONT face="Arial" color="#010101"><SPAN style="font-size:10pt">4.&nbsp;&nbsp;&nbsp;&nbsp;Logging out and closing the connection.</SPAN></FONT>
+	   <BR>
+    </DIV>
+    <DIV align="left" style="margin-left:13mm; margin-right:0mm; text-indent:0mm; ">
+      <BR>
+      <FONT face="Lucida Console" size="1"><SPAN style="font-size:8pt">ftp.disconnect();<BR>
+      <BR>
+      </SPAN></FONT>
+    </DIV>
+    <DIV align="left">
+      <BR>
+    </DIV>
+    <DIV align="left">
+      <FONT face="Arial" color="#010101"><SPAN style="font-size:10pt">The connect() call will return when successfully connected and logged in, or throw an exception if it fails to
+      connect or log in. </SPAN></FONT>
+    </DIV>
+    <DIV align="left">
+      <BR>
+    </DIV>
+    <DIV align="left">
+      <FONT face="Arial" color="#010101"><SPAN style="font-size:10pt">
+      Note that the automatic login can be disabled using the advanced settings, 
+      which must be obtained via <a href="../../api/com/enterprisedt/net/ftp/FileTransferClient.html#getAdvancedSettings()"><font color="#0000ff" face="Lucida Console" size="1"><span style="font-size: 8pt;"><u>getAdvancedFTPSettings()</u></span></font></a>.</SPAN></FONT>
+    </DIV>
+    <div style="margin-left: 13mm; margin-right: 0mm; text-indent: 0mm;" align="left"> <br>
+    <font color="#010101" face="Lucida Console" size="1"><span style="font-size: 8pt;">
+    ftp.getAdvancedFTPSettings().setAutoLogin(false);</span></font>
+    <br></span></font> </div>
+    <DIV align="left">
+      <BR>
+    </DIV>
+    <DIV align="left">
+      <FONT face="Arial" color="#010101"><SPAN style="font-size:10pt">
+      If autologin is disabled, 
+      <a href="../../api/com/enterprisedt/net/ftp/FileTransferClient.html#manualLogin()"><font color="#0000ff" face="Lucida Console" size="1"><span style="font-size: 8pt;"><u>manualLogin()</u></span></font></a>
+      must be be used to log into the server after connect() has been called (and prior to any remote operations
+      being performed): 
+      </DIV>
+    <div style="margin-left: 13mm; margin-right: 0mm; text-indent: 0mm;" align="left"> <br>
+    <font color="#010101" face="Lucida Console" size="1"><span style="font-size: 8pt;">
+    ftp.connect();<br>
+    ftp.manualLogin();</span></font><br>
+    <br></span></font> </div>
+  </BODY>
+</HTML>
+

@@ -1,0 +1,73 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML>
+  <HEAD>
+    <TITLE>
+      How to change directories
+    </TITLE>
+  </HEAD>
+  <BODY bgcolor="FFFFFF">
+    <table cellpadding="0" cellspacing="0" width="100%">
+      <tr>
+        <td style="background-image:url(../images/bk_tl.jpg); background-repeat: repeat-x"><img src="../images/space.gif" width=4 height=4></td>
+        <td style="background-image:url(../images/bk_t.jpg); background-repeat: repeat-x"><img src="../images/space.gif" width=4 height=4></td>
+        <td style="background-image:url(../images/bk_tr.jpg); background-repeat: repeat-x"><img src="../images/space.gif" width=4 height=4></td>
+      </tr>
+      <tr>
+        <td width="4" style="background-image:url(../images/bk_l.jpg); background-repeat: repeat-y"><img src="../images/space.gif" width=4 height=4></td>
+        <td width="100%" style="font-family: sans-serif; font-weight: bold; font-size: 14pt; background-image:url(../images/bk_c.jpg); background-repeat: repeat">
+          &nbsp;How to change directories
+        </td>
+        <td width="4" style="background-image:url(../images/bk_r.jpg); background-repeat: repeat-y"><img src="../images/space.gif" width=4 height=4></td>
+      </tr>
+      <tr>
+        <td height="4" style="background-image:url(../images/bk_bl.jpg); background-repeat: repeat-x"><img src="../images/space.gif" width=4 height=4></td>
+        <td style="background-image:url(../images/bk_b.jpg); background-repeat: repeat-x"><img src="../images/space.gif" width=4 height=4></td>
+        <td style="background-image:url(../images/bk_br.jpg); background-repeat: repeat-x"><img src="../images/space.gif" width=4 height=4></td>
+      </tr>
+    </table>
+<br>
+    <DIV align="left">
+      <FONT face="Arial" color="#010101"><SPAN style="font-size:10pt">While you are connected to an FTP server, the server keeps track of your <I>working directory</I>. The server assumes you are
+      referring to this directory whenever you perform a file operation without specifying an absolute path. In fact many FTP servers do not support the use of absolute paths.</SPAN></FONT>
+    </DIV>
+    <DIV align="left">
+      <BR>
+    </DIV>
+    <DIV align="left">
+      <FONT face="Arial" color="#010101"><SPAN style="font-size:10pt">The current working directory is available by calling the </SPAN></FONT> <A href= 
+      "../../api/com/enterprisedt/net/ftp/FileTransferClient.html#getRemoteDirectory()"><FONT face="Arial" color="#0000ff"><SPAN style="font-size:10pt"><U>
+      getRemoteDirectory()</U></SPAN></FONT></A><FONT face="Arial" color="#010101"><SPAN style="font-size:10pt"> method:</SPAN></FONT>
+    </DIV>
+    <DIV align="left" style="margin-left:13mm; margin-right:0mm; text-indent:0mm; ">
+      <BR>
+        <FONT face="Lucida Console" size="1"><SPAN style="font-size:8pt">String directory =</SPAN></FONT>
+      <A href="../../api/com/enterprisedt/net/ftp/FileTransferClient.html#getRemoteDirectory()"><FONT face="Lucida Console" color="#0000ff" size="1"><SPAN style="font-size:8pt">
+      <U>ftp.getRemoteDirectory()</U></SPAN></FONT></A><FONT face="Lucida Console" color="#010101" size="1"><SPAN style="font-size:8pt">;<BR>
+      <BR>
+      </SPAN></FONT>
+    </DIV>
+    <DIV align="left">
+      <FONT face="Arial" color="#010101"><SPAN style="font-size:10pt">This may be changed using:</SPAN></FONT>
+    </DIV>
+    <DIV align="left" style="margin-left:13mm; margin-right:0mm; text-indent:0mm; ">
+      <BR>
+      <FONT face="Lucida Console" color="#010101" size="1"><SPAN style="font-size:8pt">ftp.</SPAN></FONT><A href= 
+      "../../api/com/enterprisedt/net/ftp/FileTransferClient.html#changeDirectory(java.lang.String)"><FONT face="Lucida Console" color="#0000ff" size="1"><SPAN style=
+      "font-size:8pt"><U>changeDirectory(directory)</U></SPAN></FONT></A><FONT face="Lucida Console" color="#010101" size="1"><SPAN style="font-size:8pt">;<BR>
+      <BR>
+      </SPAN></FONT>
+    </DIV>
+    <DIV align="left">
+      <FONT face="Arial" color="#010101"><SPAN style="font-size:10pt">Or to simply go up to the parent directory:</SPAN></FONT>
+    </DIV>
+    <DIV align="left" style="margin-left:13mm; margin-right:0mm; text-indent:0mm; ">
+      <BR>
+      <FONT face="Lucida Console" color="#010101" size="1"><SPAN style="font-size:8pt">ftp.</SPAN></FONT><A href= 
+      "../../api/com/enterprisedt/net/ftp/FileTransferClient.html#changeToParentDirectory()"><FONT face="Lucida Console" color="#0000ff" size="1"><SPAN style=
+      "font-size:8pt"><U>changeToParentDirectory()</U></SPAN></FONT></A><FONT face="Lucida Console" color="#010101" size="1"><SPAN style="font-size:8pt">;<BR>
+      <BR>
+      </SPAN></FONT>
+    </DIV>
+  </BODY>
+</HTML>
+

@@ -1,0 +1,78 @@
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><head>
+   <title>FTP Commands</title>
+ <body bgcolor="FFFFFF" >
+    <table cellpadding="0" cellspacing="0" width="100%">
+      <tr>
+        <td style="background-image:url(../images/bk_tl.jpg); background-repeat: repeat-x"><img src="../images/space.gif" width=4 height=4></td>
+        <td style="background-image:url(../images/bk_t.jpg); background-repeat: repeat-x"><img src="../images/space.gif" width=4 height=4></td>
+        <td style="background-image:url(../images/bk_tr.jpg); background-repeat: repeat-x"><img src="../images/space.gif" width=4 height=4></td>
+      </tr>
+      <tr>
+        <td width="4" style="background-image:url(../images/bk_l.jpg); background-repeat: repeat-y"><img src="../images/space.gif" width=4 height=4></td>
+        <td width="100%" style="font-family: sans-serif; font-weight: bold; font-size: 14pt; background-image:url(../images/bk_c.jpg); background-repeat: repeat">
+          &nbsp;FTP Commands
+        </td>
+        <td width="4" style="background-image:url(../images/bk_r.jpg); background-repeat: repeat-y"><img src="../images/space.gif" width=4 height=4></td>
+      </tr>
+      <tr>
+        <td height="4" style="background-image:url(../images/bk_bl.jpg); background-repeat: repeat-x"><img src="../images/space.gif" width=4 height=4></td>
+        <td style="background-image:url(../images/bk_b.jpg); background-repeat: repeat-x"><img src="../images/space.gif" width=4 height=4></td>
+        <td style="background-image:url(../images/bk_br.jpg); background-repeat: repeat-x"><img src="../images/space.gif" width=4 height=4></td>
+      </tr>
+    </table>
+<br>
+<p align="justify" ><font face="Arial" ><span style="font-size:10pt" >FTP commands sent across the control connection consist of simple text strings (and follow
+the Telnet protocol - see RFC 854). For example, to retrieve a file, the client sends &quot;RETR
+filename&quot; on the control connection to the FTP server. To transfer a file, the client sends
+&quot;STOR filename&quot;. </span></font><font color="#010101" ></font><br><p align="justify" ><font face="Arial" ><span style="font-size:10pt" >The FTP server acknowledges each command with an FTP reply, which consists of a three
+digit number followed by human-readable text. The first digit indicates if the response is good,
+bad, or incomplete. If an error occurred, the second digit may be used to indicate what type of
+error occurred. Similarly, the third digit can indicate more details of the error.</span></font><font color="#010101" ></font><br><p align="justify" ><font face="Arial" ><span style="font-size:10pt" >The first digit is the most important, and the five possible values are described below:</span></font><font color="#010101" ></font><br><p align="justify" ><font color="#010101" ></font><br><table border="1"  bordercolor="#000000"  width="669"  cellpadding="4"  cellspacing="0"  style="border-collapse: collapse; border: none" >
+    <tr>
+    <td valign="top"  width="64"  style="border: solid #000000 1px;" >
+    <div align="justify" ><font face="Arial" ><span style="font-size:10pt" ><b>Reply</b></span></font><font color="#010101" ></font></div>
+    </td>
+    <td valign="top"  width="583"  style="border: solid #000000 1px;" >
+    <div align="justify" ><font face="Arial" ><span style="font-size:10pt" ><b>Description</b></span></font><font color="#010101" ></font></div>
+    </td></tr>
+    <tr>
+    <td valign="top"  width="64"  style="border: solid #000000 1px;" >
+    <div align="justify" ><font face="Arial" ><span style="font-size:10pt" >1yz</span></font><font color="#010101" ></font></div>
+    </td>
+    <td valign="top"  width="583"  style="border: solid #000000 1px;" >
+    <div align="justify" ><font face="Arial" ><span style="font-size:10pt" >Positive Preliminary reply. The request action has been initiated, but another
+    reply is to be expected before the client issues another command.</span></font><font color="#010101" ></font></div>
+    </td></tr>
+    <tr>
+    <td valign="top"  width="64"  style="border: solid #000000 1px;" >
+    <div align="justify" ><font face="Arial" ><span style="font-size:10pt" >2yz</span></font><font color="#010101" ></font></div>
+    </td>
+    <td valign="top"  width="583"  style="border: solid #000000 1px;" >
+    <div align="justify" ><font face="Arial" ><span style="font-size:10pt" >Positive Completion reply. The requested action has successfully completed,
+    and the client may issue another command.</span></font><font color="#010101" ></font></div>
+    </td></tr>
+    <tr>
+    <td valign="top"  width="64"  style="border: solid #000000 1px;" >
+    <div align="justify" ><font face="Arial" ><span style="font-size:10pt" >3yz</span></font><font color="#010101" ></font></div>
+    </td>
+    <td valign="top"  width="583"  style="border: solid #000000 1px;" >
+    <div align="justify" ><font face="Arial" ><span style="font-size:10pt" >Positive Intermediate reply. The command has been accepted, but more
+    information is required. The client should send another command in reply.</span></font><font color="#010101" ></font></div>
+    </td></tr>
+    <tr>
+    <td valign="top"  width="64"  style="border: solid #000000 1px;" >
+    <div align="justify" ><font face="Arial" ><span style="font-size:10pt" >4yz</span></font><font color="#010101" ></font></div>
+    </td>
+    <td valign="top"  width="583"  style="border: solid #000000 1px;" >
+    <div align="justify" ><font face="Arial" ><span style="font-size:10pt" >Transient Negative reply. The command failed, but it can be retried.</span></font><font color="#010101" ></font></div>
+    </td></tr>
+    <tr>
+    <td valign="top"  width="64"  style="border: solid #000000 1px;" >
+    <div align="justify" ><font face="Arial" ><span style="font-size:10pt" >5yz</span></font><font color="#010101" ></font></div>
+    </td>
+    <td valign="top"  width="583"  style="border: solid #000000 1px;" >
+    <div align="justify" ><font face="Arial" ><span style="font-size:10pt" >Permanent Negative Completion reply. The command failed, and should not be
+    repeated.</span></font><font color="#010101" ></font></div>
+    </td></tr></table><div align="left" ><br></div><font color="#010101" ><div align="left" ><br></font></div><font color="#010101" ><div align="left" ></font><font face="Arial" ><span style="font-size:10pt" >Next: </span></font><a href="samplescenarios.html"><font face="Arial"  color="#0000ff" ><span style="font-size:10pt" ><u>Sample Scenarios</u></span></font></a><font color="#010101" ></font></div>
+
+</body></html>

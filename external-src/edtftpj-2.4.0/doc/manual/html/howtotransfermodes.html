@@ -1,0 +1,144 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html>
+<head>
+  <title>How to use binary or ASCII mode</title>
+
+
+  <meta name="generator" content="HelpMaker.net">
+
+  <meta name="keywords" content="Chapter 3,">
+
+  <link rel="stylesheet" type="text/css" href="ms-help://Hx/HxRuntime/HxLink.css">
+
+  <link rel="stylesheet" type="text/css" href="ms-help://Hx/HxRuntime/HxLinkDefault.css">
+
+</head>
+
+
+<body style="background-color: rgb(255, 255, 255);">
+
+<table cellpadding="0" cellspacing="0" width="100%">
+
+  <tbody>
+
+    <tr>
+
+      <td style="background-image: url(../images/bk_tl.jpg); background-repeat: repeat-x;"><img src="../images/space.gif" height="4" width="4"></td>
+
+      <td style="background-image: url(../images/bk_t.jpg); background-repeat: repeat-x;"><img src="../images/space.gif" height="4" width="4"></td>
+
+      <td style="background-image: url(../images/bk_tr.jpg); background-repeat: repeat-x;"><img src="../images/space.gif" height="4" width="4"></td>
+
+    </tr>
+
+    <tr>
+
+      <td style="background-image: url(../images/bk_l.jpg); background-repeat: repeat-y;" width="4"><img src="../images/space.gif" height="4" width="4"></td>
+
+      <td style="font-family: sans-serif; font-weight: bold; font-size: 14pt; background-image: url(../images/bk_c.jpg); background-repeat: repeat;" width="100%"> &nbsp;How to use binary or ASCII mode </td>
+
+      <td style="background-image: url(../images/bk_r.jpg); background-repeat: repeat-y;" width="4"><img src="../images/space.gif" height="4" width="4"></td>
+
+    </tr>
+
+    <tr>
+
+      <td style="background-image: url(../images/bk_bl.jpg); background-repeat: repeat-x;" height="4"><img src="../images/space.gif" height="4" width="4"></td>
+
+      <td style="background-image: url(../images/bk_b.jpg); background-repeat: repeat-x;"><img src="../images/space.gif" height="4" width="4"></td>
+
+      <td style="background-image: url(../images/bk_br.jpg); background-repeat: repeat-x;"><img src="../images/space.gif" height="4" width="4"></td>
+
+    </tr>
+
+  </tbody>
+</table>
+
+<br>
+
+<div align="left"> <font color="#010101" face="Arial"><span style="font-size: 10pt;">Files
+and data can be transferred in two different modes with all client
+classes - binary mode and ASCII mode. The transfer mode should always be
+set explicitly to ensure the correct mode is used.</span></font>
+</div>
+
+<div align="left">
+<br>
+</div>
+
+<div align="left"> <font color="#010101" face="Arial"><span style="font-size: 10pt;">
+Binary mode is the default for 
+<A href="../../api/com/enterprisedt/net/ftp/FileTransferClient.html"><FONT face="Arial" color="#0000ff"><SPAN style="font-size:10pt"><U>FileTransferClient</U></SPAN></FONT></A>.</span></font>
+</div>
+
+<div align="left">
+<br>
+</div>
+
+<div align="left"> <font color="#010101" face="Arial"><span style="font-size: 10pt;"><b>ASCII
+Mode</b></span></font> </div>
+
+<div align="left"> <br>
+
+<font color="#010101" face="Arial"><span style="font-size: 10pt;">ASCII mode should be used when
+end-of-line character translation is required. When using ASCII mode,
+files are <b>not</b>
+transferred byte-for-byte. Instead, the newline
+character(s) on the source platform (e.g. in Windows, CR+LF) are
+replaced with the newline character(s) on the target platform (e.g. on
+Unix, LF). This means the source file may not be the same size as the
+end result if the platforms differ. If binary mode is used, for
+example, to transfer Unix text files to a Windows platform, many
+Windows text editors will not recognize the Unix newline characters,
+and the file will be difficult to read. To use ASCII mode, the <a href="../../api/com/enterprisedt/net/ftp/FileTransferClient.html#setContentType%28com.enterprisedt.net.ftp.FTPTransferType%29"><font color="#0000ff" face="Lucida Console" size="1"><span style="font-size: 8pt;"><u>setContentType()</u></span></font></a>
+method should be used, supplying the ASCII type as shown.</span></font>
+</div>
+
+<div style="margin-left: 13mm; margin-right: 0mm; text-indent: 0mm;" align="left"> <br>
+
+<font color="#010101" face="Lucida Console" size="1"><span style="font-size: 8pt;">ftp.</span></font><a href="../../api/com/enterprisedt/net/ftp/FileTransferClient.html#setContentType%28com.enterprisedt.net.ftp.FTPTransferType%29"><font color="#0000ff" face="Lucida Console" size="1"><span style="font-size: 8pt;"><u>setContentType(FTPTransferType.ASCII)</u></span></font></a><font face="Lucida Console" size="1"><span style="font-size: 8pt;">;<br>
+
+<br>
+
+</span></font> </div>
+
+It's important to note that it is often acceptable to transfer text
+files in binary mode since most modern text editors are able to deal
+with UNIX and Windows end-of-line characters interchangably.
+&nbsp;Furthermore, text files that appear to be ASCII files often
+contain "extended ASCII" characters which may be incompatible between
+different platforms. &nbsp;It is therefore advisable to use binary
+mode
+unless end-of-line character translation is definitely required.<br>
+
+<br>
+
+</span></font>
+<div align="left"> <br>
+
+</div>
+
+<div align="left"> <font color="#010101" face="Arial"><span style="font-size: 10pt;"><b>Binary
+Mode</b></span></font> </div>
+
+<div align="left"> <br>
+
+<font color="#010101" face="Arial"><span style="font-size: 10pt;">Binary mode (a.k.a. image mode)
+should be used whenever no end-of-line translation is required.
+&nbsp;In
+binary mode, the file is transferred byte-for-byte, i.e. an exact copy
+of the file or data is transferred. Typically, binary mode is used for
+files such as executables, compressed files, media files and non-text
+document formats such as OpenOffice or Microsoft Office files. To use
+binary mode, the <a href="../../api/com/enterprisedt/net/ftp/FileTransferClient.html#setContentType%28com.enterprisedt.net.ftp.FTPTransferType%29"><font color="#0000ff" face="Lucida Console" size="1"><span style="font-size: 8pt;"><u>setContentType()</u></span></font></a>
+method should be used, supplying the BINARY type as shown.</span></font><font color="#010101" face="Arial"><span style="font-size: 10pt;"></span></font>
+<div style="margin-left: 13mm; margin-right: 0mm; text-indent: 0mm;" align="left"> <br>
+
+<font color="#010101" face="Lucida Console" size="1"><span style="font-size: 8pt;">ftp</span></font><font color="#010101" face="Lucida Console" size="1"><span style="font-size: 8pt;">.</span></font><a href="../../api/com/enterprisedt/net/ftp/FileTransferClient.html#setContentType%28com.enterprisedt.net.ftp.FTPTransferType%29"><font color="#0000ff" face="Lucida Console" size="1"><span style="font-size: 8pt;"><u>setContentType(FTPTransferType.BINARY)</u></span></font></a><font face="Lucida Console" size="1"><span style="font-size: 8pt;">;</span></font> </div>
+
+</div>
+
+</div>
+
+</body>
+</html>

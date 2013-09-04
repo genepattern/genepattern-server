@@ -1,0 +1,51 @@
+---> USER javaftp
+331 User name okay, Need password.
+---> PASS javaftp
+230 User  logged in.
+---> CWD remote/test
+250 "/remote/test" is current directory.
+---> QUIT
+221 Goodbye. Control connection closed. 
+---> USER javaftp
+331 User name okay, Need password.
+---> PASS javaftp
+230 User  logged in.
+---> CWD remote/test
+250 "/remote/test" is current directory.
+---> MDTM test1.txt
+213 20021017160858
+test1.txt: 2002/10/17 @ 16:08:58
+Modtime on non-existent file
+---> MDTM 1037654052376
+550 Access denied.
+Expected exception: Access denied.
+---> QUIT
+221 Goodbye. Control connection closed. 
+---> USER javaftp
+331 User name okay, Need password.
+---> PASS javaftp
+230 User  logged in.
+---> CWD remote/test
+250 "/remote/test" is current directory.
+---> RNFR test1.txt
+350 RNFR Ok. Ready for destination name.
+---> RNTO test1.txt.renamed
+250 Requested file action okay, completed.
+---> MDTM test1.txt.renamed
+213 20021017160858
+test1.txt.renamed: 2002/10/17 @ 16:08:58
+---> MDTM test1.txt
+550 Access denied.
+Expected exception: Access denied.
+---> RNFR test1.txt.renamed
+350 RNFR Ok. Ready for destination name.
+---> RNTO test1.txt
+250 Requested file action okay, completed.
+---> MDTM test1.txt
+213 20021017160858
+test1.txt: 2002/10/17 @ 16:08:58
+---> MDTM test1.txt.renamed
+550 Access denied.
+Expected exception: Access denied.
+---> QUIT
+221 Goodbye. Control connection closed.

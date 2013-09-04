@@ -18,6 +18,10 @@ import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import com.enterprisedt.net.ftp.FTPConnectMode;
+import com.enterprisedt.net.ftp.FTPException;
+import com.enterprisedt.net.ftp.FTPTransferType;
+import com.enterprisedt.net.ftp.FileTransferClient;
 import com.google.common.io.Files;
 
 
@@ -31,7 +35,9 @@ public class TestFileDownloader {
     //large file (3073525 KB, ~2.9G)
     final String largeFile="ftp://ftp.broadinstitute.org/pub/genepattern/rna_seq/whole_genomes/Homo_sapiens_Ensembl_GRCh37.fa";
     //smaller file (118811 KB)
-    final String smallFile="ftp://ftp.broadinstitute.org/pub/genepattern/rna_seq/whole_genomes/Arabidopsis_thaliana_Ensembl_TAIR10.fa";
+    final String smallFileFromBroadFtp="ftp://ftp.broadinstitute.org/pub/genepattern/rna_seq/whole_genomes/Arabidopsis_thaliana_Ensembl_TAIR10.fa";
+    //smaller file on gpftp site (116036 KB)
+    final String gpftpFile="ftp://gpftp.broadinstitute.org/rna_seq/referenceAnnotation/gtf/Homo_sapiens_UCSC_hg18.gtf";
 
     /*
      * this class creates tmp dirs, but cleans up after itself. 
@@ -104,8 +110,8 @@ public class TestFileDownloader {
     }
 
     @Test
-    public void testDownloadSmallFile() throws MalformedURLException, InterruptedException {
-        final URL fromUrl=new URL(smallFile);
+    public void testDownloadFromBroadFtp() throws MalformedURLException, InterruptedException {
+        final URL fromUrl=new URL(smallFileFromBroadFtp);
         final File tmpDir=newTmpDir();
         final File toFile=new File(tmpDir, fromUrl.getFile());
         try {
@@ -121,6 +127,117 @@ public class TestFileDownloader {
         Assert.assertEquals("size check", expectedLength, toFile.length());
     }
     
+    @Test
+    public void testDownloadFromGpFtp() throws MalformedURLException, InterruptedException {
+        final URL fromUrl=new URL(gpftpFile);
+        final File tmpDir=newTmpDir();
+        final File toFile=new File(tmpDir, fromUrl.getFile());
+        try {
+            CachedFtpFile.downloadFile(fromUrl, toFile);
+        }
+        catch (IOException e) {
+            Assert.fail("IOException downloading file: "+e.getLocalizedMessage());
+        }
+        
+        //size check
+        long expectedLength=118820495L;
+        Assert.assertEquals("name check", "Homo_sapiens_UCSC_hg18.gtf", toFile.getName());
+        Assert.assertEquals("size check", expectedLength, toFile.length());
+    }
+    
+    @Test
+    public void testDownload_apacheCommons() throws MalformedURLException {
+        final URL fromUrl=new URL(gpftpFile);
+        final File tmpDir=newTmpDir();
+        final File toFile=new File(tmpDir, fromUrl.getFile());
+        try {
+            FileUtils.copyURLToFile(fromUrl, toFile);
+        }
+        catch (Throwable e) {
+            Assert.fail("Error downloading file: "+e.getClass().getName()+" - "+e.getLocalizedMessage());
+        }
+        
+        //size check
+        long expectedLength=118820495L;
+        Assert.assertEquals("name check", "Homo_sapiens_UCSC_hg18.gtf", toFile.getName());
+        Assert.assertEquals("size check", expectedLength, toFile.length());
+    }
+
+    @Test
+    public void testDownload_EdtFtp_simple() throws MalformedURLException {
+        final URL fromUrl=new URL(gpftpFile);
+        final File tmpDir=newTmpDir();
+        final File toFile=new File(tmpDir, fromUrl.getFile());
+        
+        //Note: must create download dir or the ftp transfer will fail ... after a long interval (200 s or so)
+        final File toParent=toFile.getParentFile();
+        if (!toParent.exists()) {
+            boolean success=toFile.getParentFile().mkdirs();
+            if (!success) {
+                Assert.fail("failed to create parent dir before download, parentDir="+toParent);
+            }
+        }
+        
+        try {
+            FileTransferClient.downloadURLFile(toFile.getAbsolutePath(), fromUrl.toExternalForm());
+        }
+        catch (IOException e) {
+            Assert.fail(e.getClass().getName()+" - " + e.getLocalizedMessage());
+        }
+        catch (FTPException e) {
+            Assert.fail(e.getClass().getName()+" - " + e.getLocalizedMessage());
+        }
+        //size check
+        long expectedLength=118820495L;
+        Assert.assertEquals("name check", "Homo_sapiens_UCSC_hg18.gtf", toFile.getName());
+        Assert.assertEquals("size check", expectedLength, toFile.length());
+    }
+
+    @Test
+    public void testDownload_EdtFtp_advanced() throws MalformedURLException {
+        final URL fromUrl=new URL(gpftpFile);
+        final File tmpDir=newTmpDir();
+        final File toFile=new File(tmpDir, fromUrl.getFile());
+        
+        final File toParent=toFile.getParentFile();
+        if (!toParent.exists()) {
+            boolean success=toFile.getParentFile().mkdirs();
+            if (!success) {
+                Assert.fail("failed to create parent dir before download, parentDir="+toParent);
+            }
+        }
+
+        FileTransferClient ftp = new FileTransferClient();
+        try {
+            ftp.setRemoteHost("gpftp.broadinstitute.org");
+            ftp.setUserName("anonymous");
+            ftp.setPassword("gp-help@broadinstute.org");
+            ftp.connect();
+            ftp.setContentType(FTPTransferType.BINARY);
+            ftp.getAdvancedFTPSettings().setConnectMode(FTPConnectMode.PASV);
+            ftp.changeDirectory("/rna_seq/referenceAnnotation/gtf");
+            ftp.downloadFile(toFile.getAbsolutePath(), "Homo_sapiens_UCSC_hg18.gtf");
+        } 
+        catch (Exception e) {
+            Assert.fail(e.getClass().getName()+" - " + e.getLocalizedMessage());
+        } 
+        finally {
+            if (ftp.isConnected()) {
+                try {
+                    ftp.disconnect();
+                } 
+                catch (Exception e) {
+                    Assert.fail(e.getClass().getName()+" - " + e.getLocalizedMessage());
+                }
+            }
+        }
+        //size check
+        long expectedLength=118820495L;
+        Assert.assertEquals("name check", "Homo_sapiens_UCSC_hg18.gtf", toFile.getName());
+        Assert.assertEquals("size check", expectedLength, toFile.length());
+    }
+
+
     /**
      * The java std library based downloader (pre nio) is interruptible, so it does stop
      * downloading when the task is cancelled.
@@ -160,5 +277,5 @@ public class TestFileDownloader {
             }
         });
     }
-    
+
 }

@@ -1,0 +1,136 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML>
+  <HEAD>
+    <TITLE>
+      How to upload, download and delete a file
+    </TITLE>
+    <META name="generator" content="HelpMaker.net">
+    <META name="keywords" content="Chapter 3,">
+    <LINK rel="stylesheet" type="text/css" href="ms-help://Hx/HxRuntime/HxLink.css">
+    <LINK rel="stylesheet" type="text/css" href="ms-help://Hx/HxRuntime/HxLinkDefault.css">
+  </HEAD>
+  <BODY bgcolor="FFFFFF">
+    <table cellpadding="0" cellspacing="0" width="100%">
+      <tr>
+        <td style="background-image:url(../images/bk_tl.jpg); background-repeat: repeat-x"><img src="../images/space.gif" width=4 height=4></td>
+        <td style="background-image:url(../images/bk_t.jpg); background-repeat: repeat-x"><img src="../images/space.gif" width=4 height=4></td>
+        <td style="background-image:url(../images/bk_tr.jpg); background-repeat: repeat-x"><img src="../images/space.gif" width=4 height=4></td>
+      </tr>
+      <tr>
+        <td width="4" style="background-image:url(../images/bk_l.jpg); background-repeat: repeat-y"><img src="../images/space.gif" width=4 height=4></td>
+        <td width="100%" style="font-family: sans-serif; font-weight: bold; font-size: 14pt; background-image:url(../images/bk_c.jpg); background-repeat: repeat">
+          &nbsp;How to upload, download and delete a file
+        </td>
+        <td width="4" style="background-image:url(../images/bk_r.jpg); background-repeat: repeat-y"><img src="../images/space.gif" width=4 height=4></td>
+      </tr>
+      <tr>
+        <td height="4" style="background-image:url(../images/bk_bl.jpg); background-repeat: repeat-x"><img src="../images/space.gif" width=4 height=4></td>
+        <td style="background-image:url(../images/bk_b.jpg); background-repeat: repeat-x"><img src="../images/space.gif" width=4 height=4></td>
+        <td style="background-image:url(../images/bk_br.jpg); background-repeat: repeat-x"><img src="../images/space.gif" width=4 height=4></td>
+      </tr>
+    </table>
+<br>
+    <DIV align="left">
+      <FONT face="Arial" color="#010101"><SPAN style="font-size:10pt">Uploading, downloading and deletion of files is all done through simple method calls on the</SPAN></FONT> <A href= 
+      "../../api/com/enterprisedt/net/ftp/FileTransferClient.html"><FONT face="Arial" color="#0000ff"><SPAN style="font-size:10pt"><U>FileTransferClient</U></SPAN></FONT></A>
+      </DIV></SPAN></FONT>
+    </DIV>
+    <DIV align="left">
+      <BR>
+    </DIV>
+    <DIV align="left">
+      <FONT face="Arial" color="#010101"><SPAN style="font-size:10pt"><B>Uploading Files</B></SPAN></FONT>
+    </DIV>
+    <DIV align="left">
+	<BR>
+      <FONT face="Arial" color="#010101"><SPAN style="font-size:10pt">Uploading of a file is done by the following method-call:</SPAN></FONT>
+    </DIV>
+    <DIV align="left" style="margin-left:13mm; margin-right:0mm; text-indent:0mm; ">
+      <BR>
+      <FONT face="Lucida Console" color="#010101" size="1"><SPAN style="font-size:8pt">ftp.</SPAN></FONT><A href= 
+      "../../api/com/enterprisedt/net/ftp/FileTransferClient.html#uploadFile(java.lang.String,%20java.lang.String)"><FONT face="Lucida Console" color="#0000ff" size="1"><SPAN style=
+      "font-size:8pt"><U>uploadFile(localFilePath, remoteFileName)</U></SPAN></FONT></A><FONT face="Lucida Console" size="1"><SPAN style="font-size:8pt">;<BR>
+      <BR>
+      </SPAN></FONT>
+    </DIV>
+    <DIV align="left">
+      <FONT face="Arial" color="#010101"><SPAN style="font-size:10pt">This method uploads the file specified by the first argument and saves it on the server with the name specified by the second
+      argument.&nbsp; If the file is already present on the server then it is usually overwritten, though this depends on the server configuration.</SPAN></FONT>
+    </DIV>
+    <DIV align="left">
+      <BR>
+    </DIV>
+    <DIV align="left">
+      <FONT face="Arial" color="#010101"><SPAN style="font-size:10pt">File appending is also supported, whereby the contents of the local file are appended to the end of  
+      the remote file.&nbsp; Appending is done by passing a third parameter to the uploadFile() method:</SPAN></FONT>
+    </DIV>
+    <DIV align="left" style="margin-left:13mm; margin-right:0mm; text-indent:0mm; ">
+      <BR>
+      <FONT face="Lucida Console" color="#010101" size="1"><SPAN style="font-size:8pt">ftp.</SPAN></FONT><A href= 
+      "../../api/com/enterprisedt/net/ftp/FileTransferClient.html#uploadFile(java.lang.String, java.lang.String, com.enterprisedt.net.ftp.WriteMode)"><FONT face="Lucida Console" color="#0000ff" size="1"><SPAN style=
+      "font-size:8pt"><U>uploadFile(localFilePath, remoteFileName, WriteMode.APPEND)</U></SPAN></FONT></A><FONT face="Lucida Console" color="#010101" size="1"><SPAN style="font-size:8pt">;<BR>
+      </SPAN></FONT>
+    </DIV>
+    <DIV align="left">
+      <BR>
+    </DIV>
+    <DIV align="left">
+      <FONT face="Arial" color="#010101"><SPAN style="font-size:10pt"><B>Downloading Files</B></SPAN></FONT>
+    </DIV>
+    <DIV align="left">
+	<BR>
+      <FONT face="Arial" color="#010101"><SPAN style="font-size:10pt">Downloading of a file is done by the following method-call:</SPAN></FONT>
+    </DIV>
+    <DIV align="left" style="margin-left:13mm; margin-right:0mm; text-indent:0mm; ">
+      <BR>
+      <FONT face="Lucida Console" color="#010101" size="1"><SPAN style="font-size:8pt">ftp.</SPAN></FONT><A href= 
+      "../../api/com/enterprisedt/net/ftp/FileTransferClient.html#downloadFile(java.lang.String,%20java.lang.String)"><FONT face="Lucida Console" color="#0000ff" size="1"><SPAN style=
+      "font-size:8pt"><U>downloadFile(localFilePath, remoteFileName)</U></SPAN></FONT></A><FONT face="Lucida Console" color="#010101" size="1"><SPAN style="font-size:8pt">;<BR>
+      <BR>
+      </SPAN></FONT>
+    </DIV>
+    <DIV align="left">
+      <FONT face="Arial" color="#010101"><SPAN style="font-size:10pt">This method downloads the file specified by the second argument and saves it locally with the name specified by the first
+      argument.&nbsp; If the file is already present on the local storage medium then it is overwritten.</SPAN></FONT>
+    </DIV>
+    <DIV align="left">
+      <BR>
+    </DIV>
+    <DIV align="left">
+      <FONT face="Arial" color="#010101"><SPAN style="font-size:10pt">A remote file can also be downloaded into memory as a byte
+      array:</SPAN></FONT>
+    </DIV>
+    <DIV align="left">
+      <BR>
+    </DIV>
+    <DIV align="left" style="margin-left:13mm; margin-right:0mm; text-indent:0mm; ">
+       <FONT face="Lucida Console" color="#010101" size="1"><SPAN style="font-size:8pt">ftp.</SPAN></FONT><A href= 
+      "../../api/com/enterprisedt/net/ftp/FileTransferClient.html#downloadByteArray(java.lang.String)"><FONT face="Lucida Console" color="#0000ff" size="1"><SPAN style=
+      "font-size:8pt"><U>downloadByteArray(remoteFileName)</U></SPAN></FONT></A><FONT face="Lucida Console" color="#010101" size="1"><SPAN style="font-size:8pt">;<BR>
+      <BR>
+      </SPAN></FONT>
+    </DIV>
+    <DIV align="left">
+      <FONT face="Arial" color="#010101"><SPAN style="font-size:10pt"><B>Deleting Files</B></SPAN></FONT>
+    </DIV>
+    <DIV align="left">
+	<BR>
+      <FONT face="Arial" color="#010101"><SPAN style="font-size:10pt">A file may be deleted by calling the</SPAN></FONT> <A href= 
+      "../../api/com/enterprisedt/net/ftp/FileTransferClient.html#deleteFile(java.lang.String)"><FONT face="Arial" color="#0000ff"><SPAN style="font-size:10pt"><U>
+      deleteFile()</U></SPAN></FONT></A><FONT face="Arial" color="#010101"><SPAN style="font-size:10pt"> method.</SPAN></FONT>
+    </DIV>
+    <DIV align="left">
+      <BR>
+    </DIV>
+    <DIV align="left">
+      <FONT face="Arial" color="#010101"><SPAN style="font-size:10pt"><B>Notes:</B></SPAN></FONT>
+    </DIV>
+    <DIV align="left">
+	<BR>
+      <FONT face="Arial" color="#010101"><SPAN style="font-size:10pt">(1) It is often useful to use streams to transfer data directly to and from memory. The topic</SPAN></FONT> <A href= 
+      "howtotransferstreams.html"><FONT face="Arial" color="#0000ff"><SPAN style="font-size:10pt"><U>How to transfer using FTP streams</U></SPAN></FONT></A><FONT face="Arial" color=
+      "#010101"><SPAN style="font-size:10pt"> explains how to do this.</SPAN></FONT>
+    </DIV>
+  </BODY>
+</HTML>
+

@@ -1,0 +1,159 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html>
+<head>
+  <title>How to transfer using FTP streams</title>
+</head>
+
+
+<body style="background-color: rgb(255, 255, 255);">
+
+<table cellpadding="0" cellspacing="0" width="100%">
+
+  <tbody>
+
+    <tr>
+
+      <td style="background-image: url(../images/bk_tl.jpg); background-repeat: repeat-x;"><img src="../images/space.gif" height="4" width="4"></td>
+
+      <td style="background-image: url(../images/bk_t.jpg); background-repeat: repeat-x;"><img src="../images/space.gif" height="4" width="4"></td>
+
+      <td style="background-image: url(../images/bk_tr.jpg); background-repeat: repeat-x;"><img src="../images/space.gif" height="4" width="4"></td>
+
+    </tr>
+
+    <tr>
+
+      <td style="background-image: url(../images/bk_l.jpg); background-repeat: repeat-y;" width="4"><img src="../images/space.gif" height="4" width="4"></td>
+
+      <td style="font-family: sans-serif; font-weight: bold; font-size: 14pt; background-image: url(../images/bk_c.jpg); background-repeat: repeat;" width="100%"> &nbsp;How to transfer using FTP streams </td>
+
+      <td style="background-image: url(../images/bk_r.jpg); background-repeat: repeat-y;" width="4"><img src="../images/space.gif" height="4" width="4"></td>
+
+    </tr>
+
+    <tr>
+
+      <td style="background-image: url(../images/bk_bl.jpg); background-repeat: repeat-x;" height="4"><img src="../images/space.gif" height="4" width="4"></td>
+
+      <td style="background-image: url(../images/bk_b.jpg); background-repeat: repeat-x;"><img src="../images/space.gif" height="4" width="4"></td>
+
+      <td style="background-image: url(../images/bk_br.jpg); background-repeat: repeat-x;"><img src="../images/space.gif" height="4" width="4"></td>
+
+    </tr>
+
+  </tbody>
+</table>
+
+<br>
+
+<div align="left"> <font color="#010101" face="Arial"><span style="font-size: 10pt;">One
+of the advantages of integrating FTP functionality directly into a
+product rather than using stand-alone FTP applications is that data can
+be transferred directly to and from memory. This is particularly useful
+when transferring dynamic content needs, such as the results of
+database queries and other application data.</span></font> </div>
+
+<div align="left"> <br>
+
+</div>
+
+<div align="left"> <a href="../../api/com/enterprisedt/net/ftp/FileTransferClient.html"><font color="#0000ff" face="Arial"><span style="font-size: 10pt;"><u> FileTransferClient</u></span></font></a><font color="#010101" face="Arial"><span style="font-size: 10pt;"> 
+allows users to use InputStreams and OutputStreams to read and write to FTP servers, in the same
+way that a file or socket can be read from or written to. This is done using 
+<a href="../../api/com/enterprisedt/net/ftp/FileTransferClient.html#downloadStream(java.lang.String)"><font color="#0000ff" face="Arial"><span style="font-size: 10pt;"><u> FileTransferClient.downloadStream()</u></span></font></a>
+and <a href="../../api/com/enterprisedt/net/ftp/FileTransferClient.html#uploadStream(java.lang.String)"><font color="#0000ff" face="Arial"><span style="font-size: 10pt;"><u> FileTransferClient.uploadStream()</u></span></font></a> methods.</span></font> </div>
+
+<div align="left"> <br>
+</div>
+
+<div align="left"> <font color="#010101" face="Arial"><span style="font-size: 10pt;">
+To upload a string:</span></font> </div>
+
+<div align="left"> <br>
+
+</div>
+
+<div style="margin-left: 13mm; margin-right: 0mm; text-indent: 0mm;" align="left"> 
+<font face="Lucida Console" size="1"><span style="font-size: 8pt;">String s = "Hello world";</span></font>
+</div>
+
+<div style="margin-left: 13mm; margin-right: 0mm; text-indent: 0mm;" align="left"> <font face="Lucida Console" size="1"><span style="font-size: 8pt;">OutputStream out = ftp.uploadStream("Hello.txt");</span></font>
+</div>
+
+<div style="margin-left: 13mm; margin-right: 0mm; text-indent: 0mm;" align="left"> <font face="Lucida Console" size="1"><span style="font-size: 8pt;">try {<br>
+</span></font> </div>
+
+<div style="margin-left: 13mm; margin-right: 0mm; text-indent: 0mm;" align="left"> <font face="Lucida Console" size="1"><span style="font-size: 8pt;">&nbsp;&nbsp;&nbsp;&nbsp;out.write(s.getBytes());<br>
+</span></font> </div>
+
+<div style="margin-left: 13mm; margin-right: 0mm; text-indent: 0mm;" align="left"> <font face="Lucida Console" size="1"><span style="font-size: 8pt;">}<br>
+</span></font> </div>
+
+<div style="margin-left: 13mm; margin-right: 0mm; text-indent: 0mm;" align="left"> <font face="Lucida Console" size="1"><span style="font-size: 8pt;">finally {<br>
+</span></font> </div>
+
+<div style="margin-left: 13mm; margin-right: 0mm; text-indent: 0mm;" align="left"> <font face="Lucida Console" size="1"><span style="font-size: 8pt;">&nbsp;&nbsp;&nbsp;&nbsp;out.close();<br>
+</span></font> </div>
+
+<div style="margin-left: 13mm; margin-right: 0mm; text-indent: 0mm;" align="left"> <font face="Lucida Console" size="1"><span style="font-size: 8pt;">}<br>
+</span></font> </div>
+
+<div align="left"> <br>
+</div>
+
+<div align="left"> <font color="#010101" face="Arial"><span style="font-size: 10pt;">
+It is <b>essential</b> to close the stream before performing any other FTP operations, as this completes the transfer.</span></font> </div>
+
+<div align="left"> <br>
+</div>
+
+<div align="left"> <font color="#010101" face="Arial"><span style="font-size: 10pt;">
+Similarly, to download from an FTP server, an InputStream is used. This can be read and written anywhere:</span></font> </div>
+
+<div align="left"> <br>
+</div>
+
+<div style="margin-left: 13mm; margin-right: 0mm; text-indent: 0mm;" align="left"> <font face="Lucida Console" size="1"><span style="font-size: 8pt;">StringBuffer s = new StringBuffer();</span></font>
+</div>
+
+<div style="margin-left: 13mm; margin-right: 0mm; text-indent: 0mm;" align="left"> <font face="Lucida Console" size="1"><span style="font-size: 8pt;">InputStream in = ftp.downloadStream("Hello.txt");<br>
+</span></font> </div>
+
+<div style="margin-left: 13mm; margin-right: 0mm; text-indent: 0mm;" align="left"> <font face="Lucida Console" size="1"><span style="font-size: 8pt;">try {<br>
+</span></font> </div>
+
+<div style="margin-left: 13mm; margin-right: 0mm; text-indent: 0mm;" align="left"> <font face="Lucida Console" size="1"><span style="font-size: 8pt;">&nbsp;&nbsp;&nbsp;&nbsp;int ch = 0;<br>
+</span></font> </div>
+
+<div style="margin-left: 13mm; margin-right: 0mm; text-indent: 0mm;" align="left"> <font face="Lucida Console" size="1"><span style="font-size: 8pt;">&nbsp;&nbsp;&nbsp;&nbsp;while ((ch = in.read()) >= 0) {<br>
+</span></font> </div>
+
+<div style="margin-left: 13mm; margin-right: 0mm; text-indent: 0mm;" align="left"> <font face="Lucida Console" size="1"><span style="font-size: 8pt;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;s.append((char)ch);<br>
+</span></font> </div>
+
+<div style="margin-left: 13mm; margin-right: 0mm; text-indent: 0mm;" align="left"> <font face="Lucida Console" size="1"><span style="font-size: 8pt;">&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+</span></font> </div>
+
+<div style="margin-left: 13mm; margin-right: 0mm; text-indent: 0mm;" align="left"> <font face="Lucida Console" size="1"><span style="font-size: 8pt;">}<br>
+</span></font> </div>
+
+<div style="margin-left: 13mm; margin-right: 0mm; text-indent: 0mm;" align="left"> <font face="Lucida Console" size="1"><span style="font-size: 8pt;">finally {<br>
+</span></font> </div>
+
+<div style="margin-left: 13mm; margin-right: 0mm; text-indent: 0mm;" align="left"> <font face="Lucida Console" size="1"><span style="font-size: 8pt;">&nbsp;&nbsp;&nbsp;&nbsp;in.close();<br>
+</span></font> </div>
+
+<div style="margin-left: 13mm; margin-right: 0mm; text-indent: 0mm;" align="left"> <font face="Lucida Console" size="1"><span style="font-size: 8pt;">}<br>
+</span></font> </div>
+
+<div align="left"> <br>
+</div>
+
+<div align="left"> <font color="#010101" face="Arial"><span style="font-size: 10pt;">
+Again, it is <b>essential</b> to close the stream before performing any other FTP operations.</span></font> </div>
+
+<div align="left"> <br>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,146 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html xmlns:mshelp="http://msdn.microsoft.com/mshelp">
+<head>
+
+  
+
+
+  
+  <title>How to use different character encodings</title>
+  <meta name="generator" content="HelpMaker.net">
+
+
+  
+  <meta name="keywords" content="Chapter 3,">
+
+
+  
+  <link rel="stylesheet" type="text/css" href="ms-help://Hx/HxRuntime/HxLink.css">
+
+
+  
+  <link rel="stylesheet" type="text/css" href="ms-help://Hx/HxRuntime/HxLinkDefault.css">
+</head>
+
+
+<body style="background-color: rgb(255, 255, 255);">
+
+    
+<table cellpadding="0" cellspacing="0" width="100%">
+
+      <tbody>
+    <tr>
+
+        <td style="background-image: url(../images/bk_tl.jpg); background-repeat: repeat-x;"><img src="../images/space.gif" height="4" width="4"></td>
+
+        <td style="background-image: url(../images/bk_t.jpg); background-repeat: repeat-x;"><img src="../images/space.gif" height="4" width="4"></td>
+
+        <td style="background-image: url(../images/bk_tr.jpg); background-repeat: repeat-x;"><img src="../images/space.gif" height="4" width="4"></td>
+
+      </tr>
+
+      <tr>
+
+        <td style="background-image: url(../images/bk_l.jpg); background-repeat: repeat-y;" width="4"><img src="../images/space.gif" height="4" width="4"></td>
+
+        <td style="font-family: sans-serif; font-weight: bold; font-size: 14pt; background-image: url(../images/bk_c.jpg); background-repeat: repeat;" width="100%">
+          &nbsp;How to use different character encodings
+        </td>
+
+        <td style="background-image: url(../images/bk_r.jpg); background-repeat: repeat-y;" width="4"><img src="../images/space.gif" height="4" width="4"></td>
+
+      </tr>
+
+      <tr>
+
+        <td style="background-image: url(../images/bk_bl.jpg); background-repeat: repeat-x;" height="4"><img src="../images/space.gif" height="4" width="4"></td>
+
+        <td style="background-image: url(../images/bk_b.jpg); background-repeat: repeat-x;"><img src="../images/space.gif" height="4" width="4"></td>
+
+        <td style="background-image: url(../images/bk_br.jpg); background-repeat: repeat-x;"><img src="../images/space.gif" height="4" width="4"></td>
+
+      </tr>
+
+    
+  </tbody>
+</table>
+
+<br>
+
+<div align="left"><font color="#010101" face="Arial"><span style="font-size: 10pt;">Officially
+the FTP protocol (RFC959) only supports 7-bit ASCII characters. This
+means that file and directory names transferred across the control channel can only be
+ASCII. </span></font></div>
+
+
+<div align="left"><br></div>
+
+
+<div align="left"><font color="#010101" face="Arial"><span style="font-size: 10pt;">However,
+most FTP servers do support extended (i.e. 8-bit) ASCII. Unfortunately there are many types of extended ASCII and there is no
+standard
+for what extended ASCII encoding is to be used. As a result, the
+meaning of characters 0 to
+127 is well-defined, but the meaning of characters 128 to 255 varies
+from one server to the
+other. For example, one server might interpret character 193 as an accented A,
+whereas another might
+interpret it as an accented E. </span></font></div>
+
+
+<div align="left"><br>
+
+
+</div>
+
+
+<div align="left"><font color="#010101" face="Arial"><span style="font-size: 10pt;">By
+default, 7-bit ASCII is supported. If a
+character is encountered whose code is 128 to 255 it will be
+represented as a question mark. The
+<a href="../../api/com/enterprisedt/net/ftp/AdvancedGeneralSettings.html#setControlEncoding%28java.lang.String%29">setControlEncoding()</a>
+method on the advanced settings object allows the developer to select an 8-bit
+character encoding that matches that of the server. Unfortunately many servers do not state
+what 8-bit ASCII character set they are using, so it is often necessary to use trial and
+error to find out. Some common character encodings to try for western European languages are </span></font><font color="#010101" face="Arial"><span style="font-size: 10pt;"><i>windows-1252</i></span></font><font color="#010101" face="Arial"><span style="font-size: 10pt;">
+and <i>ISO-8859-1</i>.</span></font></div>
+
+
+<div align="left"><br>
+</div>
+
+
+<div align="left"><font color="#010101" face="Arial"><span style="font-size: 10pt;">For
+example, to set the command encoding to <i>windows-1252</i>:</span></font></div>
+
+
+<div style="margin-left: 13mm; margin-right: 0mm; text-indent: 0mm;" align="left"><br>
+
+
+<font color="#010101" face="Lucida Console" size="1"><span style="font-size: 9pt;">ftp.getAdvancedSettings().<a href="../../api/com/enterprisedt/net/ftp/AdvancedGeneralSettings.html#setControlEncoding%28java.lang.String%29">setControlEncoding</a>("Windows-1252");</span></font></div>
+
+
+<div align="left"><br>
+
+
+</div>
+
+
+<div align="left"><font color="#010101" face="Arial"><span style="font-size: 10pt;">For
+Chinese, try using an encoding such as&nbsp;<i>Big5</i>.<br>
+
+
+</span></font></div>
+
+
+<div align="left"><br>
+
+
+</div>
+
+
+<div align="left"></div>
+
+
+</body>
+</html>

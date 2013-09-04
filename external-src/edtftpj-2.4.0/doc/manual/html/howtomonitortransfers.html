@@ -1,0 +1,71 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html>
+<head>
+  <title>How to monitor transfers and commands</title>
+
+
+  <meta name="generator" content="HelpMaker.net">
+
+  <meta name="keywords" content="Chapter 3,">
+
+  <link rel="stylesheet" type="text/css" href="ms-help://Hx/HxRuntime/HxLink.css">
+
+  <link rel="stylesheet" type="text/css" href="ms-help://Hx/HxRuntime/HxLinkDefault.css">
+
+</head>
+
+
+<body style="background-color: rgb(255, 255, 255);">
+    <table cellpadding="0" cellspacing="0" width="100%">
+      <tr>
+        <td style="background-image:url(../images/bk_tl.jpg); background-repeat: repeat-x"><img src="../images/space.gif" width=4 height=4></td>
+        <td style="background-image:url(../images/bk_t.jpg); background-repeat: repeat-x"><img src="../images/space.gif" width=4 height=4></td>
+        <td style="background-image:url(../images/bk_tr.jpg); background-repeat: repeat-x"><img src="../images/space.gif" width=4 height=4></td>
+      </tr>
+      <tr>
+        <td width="4" style="background-image:url(../images/bk_l.jpg); background-repeat: repeat-y"><img src="../images/space.gif" width=4 height=4></td>
+        <td width="100%" style="font-family: sans-serif; font-weight: bold; font-size: 14pt; background-image:url(../images/bk_c.jpg); background-repeat: repeat">
+          &nbsp;How to monitor transfers and commands
+        </td>
+        <td width="4" style="background-image:url(../images/bk_r.jpg); background-repeat: repeat-y"><img src="../images/space.gif" width=4 height=4></td>
+      </tr>
+      <tr>
+        <td height="4" style="background-image:url(../images/bk_bl.jpg); background-repeat: repeat-x"><img src="../images/space.gif" width=4 height=4></td>
+        <td style="background-image:url(../images/bk_b.jpg); background-repeat: repeat-x"><img src="../images/space.gif" width=4 height=4></td>
+        <td style="background-image:url(../images/bk_br.jpg); background-repeat: repeat-x"><img src="../images/space.gif" width=4 height=4></td>
+      </tr>
+    </table>
+<br>
+<div align="left"> <font color="#010101" face="Arial"><span style="font-size: 10pt;">It
+can be very useful to be able to monitor file transfers, that is, to
+receive programmatic feedback on how the transfer is progressing.
+Similarly, it can be useful to obtain the commands that are being sent
+back and forth.&nbsp;</span></font>
+</div>
+
+<div align="left"> <br>
+</div>
+
+<div align="left"> <font color="#010101" face="Arial"><span style="font-size: 10pt;">The
+<a href="../../api/com/enterprisedt/net/ftp/EventListener.html">EventListener</a>
+interface is used for this purpose.&nbsp;Typically, the developer
+implements this interface in their own class (perhaps as an anonymous
+class). An instance is set via <a href="../../api/com/enterprisedt/net/ftp/FileTransferClient.html#ftp.setEventListener(com.enterprisedt.net.ftp.EventListener)">setEventListener()</a>,
+and once the transfer begins, the instance is notified of the start and end of the transfer, as well as periodically
+during the transfer of how many bytes have been transferred so far. The commands sent back and forth to the server are also available.</span></font> </div>
+
+<div align="left"> <br>
+</div>
+
+<div align="left"><font color="#010101" face="Arial"><span style="font-size: 10pt;">
+The frequency of notifications of bytes transferred is controlled in the <a href="../../api/com/enterprisedt/net/ftp/AdvancedGeneralSettings.html">AdvancedGeneralSettings</a>,
+via <a href="../../api/com/enterprisedt/net/ftp/AdvancedGeneralSettings.html#setTransferNotifyInterval(int)">setTransferNotifyInterval()</a>, which takes the number of bytes in between callbacks. 
+Note that this value must be greater than
+the transfer buffer size, which can be changed via <a href="../../api/com/enterprisedt/net/ftp/AdvancedGeneralSettings.html#setTransferBufferSize(int)">setTransferBufferSize()</a>.
+This is because for efficiency, checks for the notification interval are only performed after each buffer has been transferred. 
+
+ </span></font>
+</div>
+
+</body>
+</html>

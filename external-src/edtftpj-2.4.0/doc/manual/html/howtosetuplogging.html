@@ -1,0 +1,227 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html xmlns:mshelp="http://msdn.microsoft.com/mshelp">
+<head>
+  <title>How to set up logging</title>
+</head>
+<body style="background-color: rgb(255, 255, 255);">
+    <table cellpadding="0" cellspacing="0" width="100%">
+      <tr>
+        <td style="background-image:url(../images/bk_tl.jpg); background-repeat: repeat-x"><img src="../images/space.gif" width=4 height=4></td>
+        <td style="background-image:url(../images/bk_t.jpg); background-repeat: repeat-x"><img src="../images/space.gif" width=4 height=4></td>
+        <td style="background-image:url(../images/bk_tr.jpg); background-repeat: repeat-x"><img src="../images/space.gif" width=4 height=4></td>
+      </tr>
+      <tr>
+        <td width="4" style="background-image:url(../images/bk_l.jpg); background-repeat: repeat-y"><img src="../images/space.gif" width=4 height=4></td>
+        <td width="100%" style="font-family: sans-serif; font-weight: bold; font-size: 14pt; background-image:url(../images/bk_c.jpg); background-repeat: repeat">
+          &nbsp;How to set up logging
+        </td>
+        <td width="4" style="background-image:url(../images/bk_r.jpg); background-repeat: repeat-y"><img src="../images/space.gif" width=4 height=4></td>
+      </tr>
+      <tr>
+        <td height="4" style="background-image:url(../images/bk_bl.jpg); background-repeat: repeat-x"><img src="../images/space.gif" width=4 height=4></td>
+        <td style="background-image:url(../images/bk_b.jpg); background-repeat: repeat-x"><img src="../images/space.gif" width=4 height=4></td>
+        <td style="background-image:url(../images/bk_br.jpg); background-repeat: repeat-x"><img src="../images/space.gif" width=4 height=4></td>
+      </tr>
+    </table>
+<br>
+<div align="left"><font face="Arial"><span style="font-size: 10pt;">Often, it can be very helpful to
+look at edtFTPj/Free's extensive logging output if any
+problems are experienced communicating with FTP servers. edtFTPj/Free
+has a powerful logging API modelled on the popular log4j library
+&ndash; in fact full integration with log4j is supported.</span></font></div>
+
+<div align="left"><br>
+
+</div>
+
+<div align="left"><font face="Arial"><span style="font-size: 10pt;">All commands sent to the FTP server
+and subsequent replies are logged, and can be made
+available on the console or directed to a log file. Much other useful
+information is also logged.</span></font></div>
+
+<div align="left"><br>
+
+</div>
+
+<div align="left"><font face="Arial"><span style="font-size: 10pt;">Statements within edtFTPj/Free are
+logged at different levels, ranging from least verbose (FATAL), to most
+verbose (DEBUG). Intermediate levels are ERROR, WARN<span style="font-style: italic;">,</span><i> </i>and
+INFO. An overall level can be set for the library, and all statements up to and
+including that level will be outputted.</span></font></div>
+
+<div align="left"><br>
+
+</div>
+
+<div align="left"><font face="Arial"><span style="font-size: 10pt;">For example, if the overall level
+is set to&nbsp;</span></font><font face="Arial"><span style="font-size: 10pt;">INFO</span></font><font face="Arial"><span style="font-size: 10pt;">
+then&nbsp;</span></font><font face="Arial"><span style="font-size: 10pt;">FATAL,</span></font><font face="Arial"><span style="font-size: 10pt;">&nbsp;</span></font><font face="Arial"><span style="font-size: 10pt;">ERROR,</span></font><font face="Arial"><span style="font-size: 10pt;">&nbsp;</span></font><font face="Arial"><span style="font-size: 10pt;">WARN<span style="font-style: italic;"></span></span></font><font face="Arial"><span style="font-size: 10pt;"><i>
+</i>and&nbsp;</span></font><font face="Arial"><span style="font-size: 10pt;"></span></font><font face="Arial"><span style="font-size: 10pt;">INFO</span></font><font face="Arial"><span style="font-size: 10pt;"> </span></font><font face="Arial"><span style="font-size: 10pt;"><i>
+</i>log statements will be outputted, but&nbsp;<span style="font-style: italic;"></span></span></font><font face="Arial"><span style="font-size: 10pt;">DEBUG
+</span></font><font face="Arial"><span style="font-size: 10pt;"><span style="font-style: italic;"></span>statements
+will not be.</span></font></div>
+
+<div align="left"><br>
+
+</div>
+
+<div align="left"><font face="Arial"><span style="font-size: 10pt;">There are also two additional
+levels - OFF which means no
+logging will occur, and ALL which means all log statements will be
+outputted, no matter what
+level they are. The<span style="font-style: italic;"> </span>ALL
+level is actually an additional level which is used for extremely
+verbose
+output - so when the level is set to ALL more log statements may be
+outputted than at &nbsp;DEBUG.<br>
+
+<br>
+
+Logging levels are encapsulated in the <a href="../../api/com/enterprisedt/util/debug/Level.html">Level</a>
+class. For example, the WARN level is represented by
+Level.WARN.&nbsp;</span></font></div>
+
+<div align="left"><br>
+
+</div>
+
+<div align="left"><font face="Arial"><span style="font-size: 10pt;">By default, the log level is
+switched to OFF, so that no logging will appear.<br>
+
+<br>
+
+The log level can be changed in two ways. Firstly, it can be changed
+explicitly by calling the<br>
+
+<a href="../../api/com/enterprisedt/util/debug/Logger.html#setLevel%28com.enterprisedt.util.debug.Level%29">setLevel</a>
+method on the <a href="../../api/com/enterprisedt/util/debug/Logger.html">Logger</a>
+class. For example:</span></font></div>
+
+<div align="left"><br>
+
+</div>
+
+<div style="margin-left: 13mm; margin-right: 0mm; text-indent: 0mm;" align="left"><font color="#010101" face="Lucida Console" size="1"><span style="font-size: 8pt;">Logger.<a href="../../api/com/enterprisedt/util/debug/Logger.html#setLevel%28com.enterprisedt.util.debug.Level%29">setLevel</a>(Level.<a href="../../api/com/enterprisedt/util/debug/Level.html#DEBUG">DEBUG</a>);</span></font><font color="#010101" face="Lucida Console" size="1"><span style="font-size: 8pt;"></span></font></div>
+
+<div align="left"><br>
+
+</div>
+
+<div align="left"><font face="Arial"><span style="font-size: 10pt;">will set the global logging level
+to DEBUG. </span></font></div>
+
+<div align="left"><br>
+
+</div>
+
+<div align="left"><font face="Arial"><span style="font-size: 10pt;">A System property, <span style="font-style: italic;">edtftp.log.level</span>,
+can also
+be used to set the logging level. For example, using the -D option to
+set an application's System property, you could
+use:</span></font></div>
+
+<div align="left"><br>
+
+</div>
+
+<div style="margin-left: 13mm; margin-right: 0mm; text-indent: 0mm;" align="left"><font color="#010101" face="Lucida Console" size="1"><span style="font-size: 8pt;">java -Dedtftp.log.level=INFO
+com.mypackage.myclass</span></font><font color="#010101" face="Lucida Console" size="1"><span style="font-size: 8pt;"></span></font></div>
+
+<div align="left"><br>
+
+</div>
+
+<div align="left"><font face="Arial"><span style="font-size: 10pt;">Using edtFTPj/Free's logging in your
+own application is very similar to using log4j. A logger is created,
+and its methods used to write logging information. Rather than use the
+Level class, the Logger class has convenience methods for logging at
+each level. An example is shown below:<br>
+
+</span></font></div>
+
+<div align="left"><br>
+
+</div>
+
+<div style="margin-left: 13mm; margin-right: 0mm; text-indent: 0mm;" align="left"><font color="#010101" face="Lucida Console" size="1"><span style="font-size: 8pt;">Logger log =
+Logger.getLogger(MyClass.class);</span></font><font color="#010101" face="Lucida Console" size="1"><span style="font-size: 8pt;"></span></font></div>
+
+<div style="margin-left: 13mm; margin-right: 0mm; text-indent: 0mm;" align="left"><font color="#010101" face="Lucida Console" size="1"><span style="font-size: 8pt;">log.info("Connecting to server " +
+host);</span></font></div>
+
+<div align="left"><br>
+
+</div>
+
+<div align="left"><font color="#010101" face="Arial"><span style="font-size: 10pt;"><b>Logging
+to a file</b></span></font></div>
+
+<div align="left"><br>
+
+</div>
+
+<div align="left"><font face="Arial"><span style="font-size: 10pt;">As noted, all logging by default
+goes to standard output. A <a href="../../api/com/enterprisedt/util/debug/FileAppender.html">FileAppender</a>
+must be added if logging is to go to a file (and this will disable
+logging to standard out). An example is shown below:<br>
+
+</span></font></div>
+
+<div align="left"><br>
+
+</div>
+
+<div style="margin-left: 13mm; margin-right: 0mm; text-indent: 0mm;" align="left"><font color="#010101" face="Lucida Console" size="1"><span style="font-size: 8pt;">Logger.<a href="../../api/com/enterprisedt/util/debug/Logger.html#addAppender%28com.enterprisedt.util.debug.Appender%29">addAppender</a>(new
+FileAppender(myLogFileName));</span></font><font color="#010101" face="Lucida Console" size="1"><span style="font-size: 8pt;"></span></font></div>
+
+<div align="left"><br>
+
+</div>
+
+<div align="left"><font face="Arial"><span style="font-size: 10pt;">Now all logging output will go to
+the FileAppender's file, and no logging will go to standard output.
+Multiple FileAppenders can be added. If the <a href="../../api/com/enterprisedt/util/debug/StandardOutputAppender.html">StandardOutputAppender</a>
+is added to the Logger as well, logging will be directed to the file
+and to standard output.<br>
+
+<div align="left"><br>
+</div>
+
+<div align="left"><font face="Arial"><span style="font-size: 10pt;">Log files can get too large, especially if all
+logging levels are being logged. The <a href="../../api/com/enterprisedt/util/debug/RollingFileAppender.html">RollingFileAppender</a>
+can be used to limit the size of files, and also the number of files used.<br></span></font></div>
+
+<div align="left"><br>
+
+</div>
+
+<div align="left"><font color="#010101" face="Arial"><span style="font-size: 10pt;"><b>Log4j
+integration</b></span></font></div>
+
+<div align="left"><br>
+
+</div>
+
+<div align="left"><font face="Arial"><span style="font-size: 10pt;">
+Full integration with <a href="http://logging.apache.org/log4j/index.html">log4j</a> is possible. A System property, <span style="font-style: italic;">edtftp.log.log4j</span>,
+is used to indicate that log4j integration should be attempted. It must
+be set to &ldquo;true&rdquo;. Also, the log4j jar file must be
+available in the CLASSPATH. Once this is done all logging calls are
+directed via log4j, using reflection, and the standard log4j settings are used. <br><br>
+
+Because of obfuscation, package names are not used in the logger names for edtFTPj/Free. Logger names are hard coded
+to the class name only. Sometimes it is convenient to have a package prefix with log4j integration, as all the 
+edtFTPj/Free logging settings can then be controlled together. A System property, 
+<span style="font-style: italic;">edtftp.log.prefix</span>, can be used to set a prefix for all logger names
+used in edtFTPj/Free. For example, "edtftp.log.prefix=com.enterprisedt." could be used to set a prefix of 'com.enterprisedt.'
+for all edtFTPj/Free loggers.
+
+</span></font></div>
+
+<div align="left"><br>
+
+</div>
+
+
+</body>
+</html>

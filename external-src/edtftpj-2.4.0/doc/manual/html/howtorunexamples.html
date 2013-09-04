@@ -1,0 +1,194 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html>
+<head>
+  <title>How to run the examples</title>
+
+
+  <meta name="generator" content="HelpMaker.net">
+
+  <meta name="keywords" content="Chapter 3,">
+
+  <link rel="stylesheet" type="text/css" href="ms-help://Hx/HxRuntime/HxLink.css">
+
+  <link rel="stylesheet" type="text/css" href="ms-help://Hx/HxRuntime/HxLinkDefault.css">
+
+</head>
+
+
+<body style="background-color: rgb(255, 255, 255);">
+
+<table cellpadding="0" cellspacing="0" width="100%">
+
+  <tbody>
+
+    <tr>
+
+      <td style="background-image: url(../images/bk_tl.jpg); background-repeat: repeat-x;"><img src="../images/space.gif" height="4" width="4"></td>
+
+      <td style="background-image: url(../images/bk_t.jpg); background-repeat: repeat-x;"><img src="../images/space.gif" height="4" width="4"></td>
+
+      <td style="background-image: url(../images/bk_tr.jpg); background-repeat: repeat-x;"><img src="../images/space.gif" height="4" width="4"></td>
+
+    </tr>
+
+    <tr>
+
+      <td style="background-image: url(../images/bk_l.jpg); background-repeat: repeat-y;" width="4"><img src="../images/space.gif" height="4" width="4"></td>
+
+      <td style="font-family: sans-serif; font-weight: bold; font-size: 14pt; background-image: url(../images/bk_c.jpg); background-repeat: repeat;" width="100%"> &nbsp;How to run the examples </td>
+
+      <td style="background-image: url(../images/bk_r.jpg); background-repeat: repeat-y;" width="4"><img src="../images/space.gif" height="4" width="4"></td>
+
+    </tr>
+
+    <tr>
+
+      <td style="background-image: url(../images/bk_bl.jpg); background-repeat: repeat-x;" height="4"><img src="../images/space.gif" height="4" width="4"></td>
+
+      <td style="background-image: url(../images/bk_b.jpg); background-repeat: repeat-x;"><img src="../images/space.gif" height="4" width="4"></td>
+
+      <td style="background-image: url(../images/bk_br.jpg); background-repeat: repeat-x;"><img src="../images/space.gif" height="4" width="4"></td>
+
+    </tr>
+
+  </tbody>
+</table>
+
+<br>
+
+<div align="left"> <font face="Arial"><span style="font-size: 10pt;">edtFTPj/Free has a wide range of
+examples available in the <span style="font-style: italic;">howto</span>
+directory of the distribution.</span></font> </div>
+
+<div align="left"> <br>
+
+</div>
+
+<div align="left"> <font face="Arial"><span style="font-size: 10pt;">There is one example per
+subdirectory. Each subdirectory is clearly labelled after its <span style="font-style: italic;">how to</span>
+example, and contains at the minimum a Java file and <span style="font-style: italic;">run.bat</span>. The
+<span style="font-style: italic;">run.bat</span>
+file is used to compile and run the example Java class on
+Windows platforms. It can be easily converted to a shell script on
+Unix. </span></font> </div>
+
+<div align="left"> <br>
+
+</div>
+
+<div align="left"> <font face="Arial"><span style="font-size: 10pt;">To run the examples, your
+environment must be set up. In the <span style="font-style: italic;">howto</span>
+directory, there is an <span style="font-style: italic;">env.bat</span>
+file that
+is called by all <span style="font-style: italic;">run.bat</span> files
+to set up their environment. This file checks that
+JAVA_HOME is set correctly, and&nbsp;sets the&nbsp;CP variable for
+these examples (which is used to set the CLASSPATH). The CP variable is
+set as below:</span></font>
+</div>
+
+<div align="left"> <br>
+
+</div>
+
+<div style="margin-left: 13mm; margin-right: 0mm; text-indent: 0mm;" align="left"><font face="Lucida Console" size="1"><span style="font-size: 8pt;">set
+CP=.;..\..\..\..\lib\edtftpj.jar</span></font><font color="#010101" face="Lucida Console" size="1"><span style="font-size: 8pt;"></span></font></div>
+
+<div align="left"><br>
+
+</div>
+
+<div align="left"> <font face="Arial"><span style="font-size: 10pt;">Normally, <span style="font-style: italic;">env.bat</span> should not
+need to be modified. If the CP variable is changed,
+ensure that "." is left in so that the compiled class file can be
+found. The path of <span style="font-style: italic;">edtftpj-pro.jar</span>
+and <span style="font-style: italic;">license.jar</span>
+files must be set in
+CP as shown.&nbsp;</span></font></div>
+
+<div align="left"><br>
+
+</div>
+
+<div align="left"> <font face="Arial"><span style="font-size: 10pt;">To actually run an example after
+<span style="font-style: italic;">env.bat</span> has
+been set up correctly, open a DOS window and cd into the subdirectory
+of the
+example you wish to run. Then simply type "run", and the Java file will
+be compiled and a usage message displayed:</span></font><br>
+
+</div>
+
+<div align="left"> <br>
+
+</div>
+
+<div style="margin-left: 13mm; margin-right: 0mm; text-indent: 0mm;" align="left"><font face="Lucida Console" size="1"><span style="font-size: 8pt;">Usage: ConnectToServer remote-host
+username password</span></font><font color="#010101" face="Lucida Console" size="1"><span style="font-size: 8pt;"></span></font></div>
+
+<div align="left"> <br>
+
+</div>
+
+<div align="left"> <font face="Arial"><span style="font-size: 10pt;">In the example above, the message
+is saying that the remote hostname, username and password need to be
+supplied as arguments to run.bat. So to run the example, you would
+use:&nbsp;</span></font></div>
+
+<div align="left"> <br>
+
+</div>
+
+<div style="margin-left: 13mm; margin-right: 0mm; text-indent: 0mm;" align="left"><font face="Lucida Console" size="1"><span style="font-size: 8pt;">run myhost myuser mypassword</span></font><font color="#010101" face="Lucida Console" size="1"><span style="font-size: 8pt;"></span></font></div>
+
+<div align="left"> <br>
+
+</div>
+
+<div align="left"> <font face="Arial"><span style="font-size: 10pt;">The result (if successful) should
+be a few lines of debug, something like that shown below:</span></font><br>
+
+<div align="left"> <br>
+
+<div style="margin-left: 13mm; margin-right: 0mm; text-indent: 0mm;" align="left"><font face="Lucida Console" size="1"><span style="font-size: 8pt;">
+INFO [ConnectToServer] 3 Oct 2006 17:05:49.139 : Creating FTP client<br>
+
+INFO [ConnectToServer] 3 Oct 2006 17:05:49.219 : Setting remote host<br>
+
+INFO [ConnectToServer] 3 Oct 2006 17:05:49.239 : Connecting to server
+edtmobile<br>
+
+INFO [ConnectToServer] 3 Oct 2006 17:05:49.259 : Connected to server
+edtmobile<br>
+
+INFO [ConnectToServer] 3 Oct 2006 17:05:49.259 : Logging in with
+username=javaftp and password=javaftp<br>
+
+INFO [ConnectToServer] 3 Oct 2006 17:05:49.259 : Logged in<br>
+
+INFO [ConnectToServer] 3 Oct 2006 17:05:49.269 : Quitting client<br>
+
+INFO [ConnectToServer] 3 Oct 2006 17:05:49.279 : Example complete<br>
+
+</span></font><font color="#010101" face="Lucida Console" size="1"><span style="font-size: 8pt;"></span></font></div>
+
+<div align="left"> <br>
+
+</div>
+
+<div align="left"> <font face="Arial"><span style="font-size: 10pt;">Other
+examples may require additional arguments. These should always be
+clearly shown in the usage message displayed when <span style="font-style: italic;">run.bat</span> is called
+with no arguments. Also, for each example, consult the corresponding <a href="howto.html">How to</a> documentation in this
+guide for detailed explanation of the concept.</span></font></div>
+
+<div align="left"> <br>
+
+</div>
+
+</div>
+
+</div>
+
+</body>
+</html>

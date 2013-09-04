@@ -1,0 +1,56 @@
+<html><head>
+   <title>How to FTP through an HTTP proxy</title>
+
+   </head>
+
+
+<body style="background-color: rgb(255, 255, 255);">
+
+<table cellpadding="0" cellspacing="0" width="100%">
+
+  <tbody>
+
+    <tr>
+
+      <td style="background-image: url(../images/bk_tl.jpg); background-repeat: repeat-x;"><img src="../images/space.gif" height="4" width="4"></td>
+
+      <td style="background-image: url(../images/bk_t.jpg); background-repeat: repeat-x;"><img src="../images/space.gif" height="4" width="4"></td>
+
+      <td style="background-image: url(../images/bk_tr.jpg); background-repeat: repeat-x;"><img src="../images/space.gif" height="4" width="4"></td>
+
+    </tr>
+
+    <tr>
+
+      <td style="background-image: url(../images/bk_l.jpg); background-repeat: repeat-y;" width="4"><img src="../images/space.gif" height="4" width="4"></td>
+
+      <td style="font-family: sans-serif; font-weight: bold; font-size: 14pt; background-image: url(../images/bk_c.jpg); background-repeat: repeat;" width="100%"> &nbsp;How to FTP through an HTTP proxy </td>
+
+      <td style="background-image: url(../images/bk_r.jpg); background-repeat: repeat-y;" width="4"><img src="../images/space.gif" height="4" width="4"></td>
+
+    </tr>
+
+    <tr>
+
+      <td style="background-image: url(../images/bk_bl.jpg); background-repeat: repeat-x;" height="4"><img src="../images/space.gif" height="4" width="4"></td>
+
+      <td style="background-image: url(../images/bk_b.jpg); background-repeat: repeat-x;"><img src="../images/space.gif" height="4" width="4"></td>
+
+      <td style="background-image: url(../images/bk_br.jpg); background-repeat: repeat-x;"><img src="../images/space.gif" height="4" width="4"></td>
+
+    </tr>
+
+  </tbody>
+</table>
+
+<br><div align="left" ><font face="Arial" ><span style="font-size:10pt" >Many HTTP servers support HTTP proxying. Clients send an HTTP CONNECT request to the 
+server, asking that a connection be set up to a machine on the other side of the firewall. A 
+tunnel is set up through the HTTP server. Please refer to the topic </span></font><a href="socksproxies.html"><font face="Arial" ><span style="font-size:10pt" >Proxies</span></font></a><font face="Arial" ><span style="font-size:10pt" > for more 
+information on this.</span></font></div><div align="left" ><font face="Arial" ><span style="font-size:10pt" ><br></span></font></div><div align="left" ><font face="Arial" ><span style="font-size:10pt" >HTTP proxying is set up using the </span></font><font face="Arial"  color="#0000ff" ><span style="font-size:10pt" >ProxySettings </span></font><font face="Arial" ><span style="font-size:10pt" >group of properties. </span></font></div><div align="left" ><font face="Arial" ><span style="font-size:10pt" ><br></span></font></div><div align="left" ><font face="Arial" ><span style="font-size:10pt" >Firstly, the protocol must be chosen via the </span></font><font face="Arial"  color="#0000ff" ><span style="font-size:10pt" >ProxyType</span></font><font face="Arial" ><span style="font-size:10pt" >. The default is <i>NoProxy</i>. The <i>Http</i> 
+option should be chosen out of the list of supported protocols. </span></font></div><div align="left" ><font face="Arial" ><span style="font-size:10pt" ><br></span></font></div><div align="left" ><font face="Arial" ><span style="font-size:10pt" >The </span></font><font face="Arial"  color="#0000ff" ><span style="font-size:10pt" >ProxyAddress </span></font><font face="Arial" ><span style="font-size:10pt" >must be set, and optionally the </span></font><font face="Arial"  color="#0000ff" ><span style="font-size:10pt" >ProxyPort</span></font><font face="Arial" ><span style="font-size:10pt" >. Generally the </span></font><font face="Arial"  color="#0000ff" ><span style="font-size:10pt" >UserName </span></font><font face="Arial" ><span style="font-size:10pt" >and </span></font><font face="Arial"  color="#0000ff" ><span style="font-size:10pt" >Password </span></font><font face="Arial" ><span style="font-size:10pt" >properties must also be set, although some HTTP proxies are configured to not 
+required a user name and password.</span></font></div><div align="left" ><font face="Arial" ><span style="font-size:10pt" ><br></span></font></div><div align="left" ><font face="Arial" ><span style="font-size:10pt" >It should be noted that HTTP proxies do not support client requests to listen on an externally 
+accessible port. This means only passive mode transfers are supported. Active mode 
+transfers involve the FTP server connecting back to the client, and this is not possible via an 
+HTTP proxy.</span></font></div></html>
+
+</body></html>

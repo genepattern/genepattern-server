@@ -1,0 +1,80 @@
+<html><head>
+   <title>How to FTP through a NAT router/firewall</title>
+</head>
+
+
+<body style="background-color: rgb(255, 255, 255);">
+
+<table cellpadding="0" cellspacing="0" width="100%">
+
+  <tbody>
+
+    <tr>
+
+      <td style="background-image: url(../images/bk_tl.jpg); background-repeat: repeat-x;"><img src="../images/space.gif" height="4" width="4"></td>
+
+      <td style="background-image: url(../images/bk_t.jpg); background-repeat: repeat-x;"><img src="../images/space.gif" height="4" width="4"></td>
+
+      <td style="background-image: url(../images/bk_tr.jpg); background-repeat: repeat-x;"><img src="../images/space.gif" height="4" width="4"></td>
+
+    </tr>
+
+    <tr>
+
+      <td style="background-image: url(../images/bk_l.jpg); background-repeat: repeat-y;" width="4"><img src="../images/space.gif" height="4" width="4"></td>
+
+      <td style="font-family: sans-serif; font-weight: bold; font-size: 14pt; background-image: url(../images/bk_c.jpg); background-repeat: repeat;" width="100%"> &nbsp;How to FTP through a NAT router/firewall </td>
+
+      <td style="background-image: url(../images/bk_r.jpg); background-repeat: repeat-y;" width="4"><img src="../images/space.gif" height="4" width="4"></td>
+
+    </tr>
+
+    <tr>
+
+      <td style="background-image: url(../images/bk_bl.jpg); background-repeat: repeat-x;" height="4"><img src="../images/space.gif" height="4" width="4"></td>
+
+      <td style="background-image: url(../images/bk_b.jpg); background-repeat: repeat-x;"><img src="../images/space.gif" height="4" width="4"></td>
+
+      <td style="background-image: url(../images/bk_br.jpg); background-repeat: repeat-x;"><img src="../images/space.gif" height="4" width="4"></td>
+
+    </tr>
+
+  </tbody>
+</table>
+   
+   
+   
+   <div align="left" ><br><font face="Arial" ><span style="font-size:10pt" >Network Address Translating (NAT) routers/firewalls present challenges for users of FTP. </span></font></div><div align="left" ><font face="Arial" ><span style="font-size:10pt" ><br></span></font></div><div align="left" ><font face="Arial" ><span style="font-size:10pt" >As described in the </span></font><a href="ftpprotocoloverview.html"><font face="Arial" ><span style="font-size:10pt" >FTP Protocol Overview</span></font></a><font face="Arial" ><span style="font-size:10pt" >, FTP uses multiple TCP/IP connections; one for 
+sending the commands on, the rest for transferring data.&#160; The following diagram illustrates a 
+typical session:</span></font></div>
+
+<div align="left" ><font face="Arial" ><span style="font-size:10pt" ><br></span></font></div><div align="center" ><img src="howtoftpthroughafilewallb1.PNG"  width="246"  height="154"  border="0"  alt="graphic" ></div><div align="left" ><font face="Arial" ><span style="font-size:10pt" ><br></span></font></div><div align="left" ><font face="Arial" ><span style="font-size:10pt" >The three arrows indicate separate TCP/IP connections, with the commands being sent on the 
+main FTP connection.</span></font></div>
+
+<div align="left" ><font face="Arial" ><span style="font-size:10pt" ><br></span></font></div><div align="left" ><font face="Arial" ><span style="font-size:10pt" >Problems can arise when a NAT router is introduced:</span></font></div><div align="left" ><font face="Arial" ><span style="font-size:10pt" ><br></span></font></div><div align="center" ><img src="howtoftpthroughafilewallb2.PNG"  width="431"  height="154"  border="0"  alt="graphic" ></div><div align="left" ><font face="Arial" ><span style="font-size:10pt" ><br></span></font></div><div align="left" ><font face="Arial" ><span style="font-size:10pt" >Since the main connection is outgoing the NAT firewall allows this connection to be made, but 
+when the server tries to connect back to the client it is blocked by the firewall.</span></font></div><div align="left" ><font face="Arial" ><span style="font-size:10pt" ><br></span></font></div><div align="left" ><font face="Arial" ><span style="font-size:10pt" >The technique called &quot;passive mode&quot; or PASV was introduced to reduce this problem.&#160; In this 
+scheme connections are always made from the client to the server and not vice-versa.</span></font></div><div align="left" ><font face="Arial" ><span style="font-size:10pt" ><br></span></font></div><div align="center" ><img src="howtoftpthroughafilewallb3.PNG"  width="431"  height="155"  border="0"  alt="graphic" ></div><div align="left" ><font face="Arial" ><span style="font-size:10pt" ><br></span></font></div><div align="left" ><font face="Arial" ><span style="font-size:10pt" >This is why passive mode is generally preferable when NAT firewalls are involved.</span></font></div><div align="left" ><font face="Arial" ><span style="font-size:10pt" ><br></span></font></div>
+
+<div align="left"> <br>
+
+
+<font color="#010101" face="Arial"><span style="font-size: 10pt;">To use passive mode, the&nbsp;</span></font><a href="../../api/com/enterprisedt/net/ftp/AdvancedFTPSettings.html#setConnectMode(com.enterprisedt.net.ftp.FTPConnectMode)"><font color="#0000ff" face="Lucida Console" size="1"><span style="font-size: 8pt;"><u>setConnectMode()</u></span></font></a></font></u></font><font color="#010101" face="Arial"><span style="font-size: 10pt;">
+method should be used, supplying the PASV type as shown.</span></font>
+</div>
+
+<div style="margin-left: 13mm; margin-right: 0mm; text-indent: 0mm;" align="left"> <br>
+<font color="#010101" face="Lucida Console" size="1"><span style="font-size: 8pt;">ftp.getAdvancedFTPSettings().setConnectMode(FTPConnectMode.PASV);</span></font><br>
+</span></font> </div>
+
+<div align="left" ><font face="Arial" ><span style="font-size:10pt" ><br>In fact, in plain FTP active mode often works due to some magic in many NAT routers&#160; - they 
+actually parse the FTP commands being sent and know what to do with the data transfer 
+connections.&#160; </span></font></div>
+
+<div align="left" ><font face="Arial" ><span style="font-size:10pt" ><br></span></font></div><div align="left" ><font face="Arial" ><span style="font-size:11pt" ><b>Dealing with dual NATs</b></span></font></div><div align="left" ><font face="Arial" ><span style="font-size:10pt" ><br></span></font></div><div align="left" ><font face="Arial" ><span style="font-size:10pt" >Unfortunately, some FTP sessions involve two NATs:</span></font></div><div align="left" ><font face="Arial" ><span style="font-size:10pt" ><br></span></font></div><div align="left" ><img src="howtoftpthroughafilewallb4.PNG"  width="616"  height="155"  border="0"  alt="graphic" ></div><div align="left" ><font face="Arial" ><span style="font-size:10pt" >Usually, the main connection succeeds because the standard FTP port (21) is routed through 
+to the correct FTP server, but then the file transfers failed because the ports that they use are 
+not set up to forward to the server.</span></font></div>
+
+<div align="left" ><font face="Arial" ><span style="font-size:10pt" ><br></span></font></div><div align="left" ><font face="Arial" ><span style="font-size:10pt" >In this scenario, the server may be set up to only use particular ports for data transfers.&#160; The 
+server-side NAT may then be configured to forward these ports to the server.</span></font></div></html>
+
+</body></html>

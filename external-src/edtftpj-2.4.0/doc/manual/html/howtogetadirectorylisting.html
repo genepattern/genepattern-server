@@ -1,0 +1,157 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html>
+<head>
+  <title>How to get a directory listing</title>
+</head>
+
+
+  <body style="background-color: rgb(255, 255, 255);">
+
+<table cellpadding="0" cellspacing="0" width="100%">
+
+  <tbody>
+
+    <tr>
+
+      <td style="background-image: url(../images/bk_tl.jpg); background-repeat: repeat-x;"><img src="../images/space.gif" height="4" width="4"></td>
+
+      <td style="background-image: url(../images/bk_t.jpg); background-repeat: repeat-x;"><img src="../images/space.gif" height="4" width="4"></td>
+
+      <td style="background-image: url(../images/bk_tr.jpg); background-repeat: repeat-x;"><img src="../images/space.gif" height="4" width="4"></td>
+
+    </tr>
+
+    <tr>
+
+      <td style="background-image: url(../images/bk_l.jpg); background-repeat: repeat-y;" width="4"><img src="../images/space.gif" height="4" width="4"></td>
+
+      <td style="font-family: sans-serif; font-weight: bold; font-size: 14pt; background-image: url(../images/bk_c.jpg); background-repeat: repeat;" width="100%"> &nbsp;How to get a directory listing </td>
+
+      <td style="background-image: url(../images/bk_r.jpg); background-repeat: repeat-y;" width="4"><img src="../images/space.gif" height="4" width="4"></td>
+
+    </tr>
+
+    <tr>
+
+      <td style="background-image: url(../images/bk_bl.jpg); background-repeat: repeat-x;" height="4"><img src="../images/space.gif" height="4" width="4"></td>
+
+      <td style="background-image: url(../images/bk_b.jpg); background-repeat: repeat-x;"><img src="../images/space.gif" height="4" width="4"></td>
+
+      <td style="background-image: url(../images/bk_br.jpg); background-repeat: repeat-x;"><img src="../images/space.gif" height="4" width="4"></td>
+
+    </tr>
+
+  </tbody>
+</table>
+
+<br>
+
+<div align="left"> <font color="#010101" face="Arial"><span style="font-size: 10pt;">There
+are two basic ways to get a list of the files in a particular directory
+on an FTP server. The simpler way gets the names of the files using the</span></font>
+<a href="../../api/com/enterprisedt/net/ftp/FileTransferClient.html#directoryNameList%28%29"><font color="#0000ff" face="Arial"><span style="font-size: 10pt;"><u>directoryNameList()</u></span></font></a><font color="#010101" face="Arial"><span style="font-size: 10pt;"> method:</span></font> </div>
+
+<div style="margin-left: 13mm; margin-right: 0mm; text-indent: 0mm;" align="left"> <br>
+
+<font face="Lucida Console" size="1"><span style="font-size: 8pt;">String[] files = ftp.directoryNameList();<br>
+
+<br>
+
+</span></font> </div>
+
+<div align="left"> <font color="#010101" face="Arial"><span style="font-size: 10pt;">This
+results in the files array containing the name of the files and
+directories in the current working directory on the server.&nbsp;</span></font>
+</div>
+
+<div align="left"> <br>
+
+</div>
+
+<div align="left"> <font color="#010101" face="Arial"><span style="font-size: 10pt;">FTP
+servers can return more information than just the names of the files
+and directories. This information can be returned as an array of
+strings by using an overloaded <a href="../../api/com/enterprisedt/net/ftp/FileTransferClient.html#directoryNameList%28java.lang.String,%20boolean%29">directoryNameList()</a>
+method. The 'full' boolean flag must be set to true to get the full
+listing:</span></font>
+</div>
+
+<div style="margin-left: 13mm; margin-right: 0mm; text-indent: 0mm;" align="left"> <br>
+
+<font face="Lucida Console" size="1"><span style="font-size: 8pt;">String[] descriptions = ftp.directoryNameList("mydirname", true);<br>
+
+</span></font> </div>
+
+<div align="left"> <br>
+
+</div>
+
+<div align="left"> <font color="#010101" face="Arial"><span style="font-size: 10pt;">For
+convenience, the detailed file and directory information can be
+interpreted and returned as an object, in&nbsp;the</span></font>
+<a href="../../api/com/enterprisedt/net/ftp/FileTransferClient.html#directoryList%28java.lang.String%29"><font color="#0000ff" face="Arial"><span style="font-size: 10pt;"><u> directoryList()</u></span></font></a><font color="#010101" face="Arial"><span style="font-size: 10pt;"> method:</span></font>
+</div>
+
+<div style="margin-left: 13mm; margin-right: 0mm; text-indent: 0mm;" align="left"> <br>
+
+<font face="Lucida Console" size="1"><span style="font-size: 8pt;">FTPFile[] files =
+ftp.directoryList();<br>
+
+<br>
+
+</span></font> </div>
+
+<div align="left"> <font color="#010101" face="Arial"><span style="font-size: 10pt;">This
+method returns an array of</span></font> <a href="../../api/com/enterprisedt/net/ftp/FTPFile.html"><font color="#0000ff" face="Arial"><span style="font-size: 10pt;"><u>FTPFile</u></span></font></a><font color="#010101" face="Arial"><span style="font-size: 10pt;"> objects containing information
+about the files in the directory - details such as the size of the file
+and whether or not it is a directory.&nbsp;</span></font>
+</div>
+
+<div align="left"> <br>
+
+</div>
+
+<div align="left"> <font color="#010101" face="Arial"><span style="font-size: 10pt;">If
+a listing of a directory other than the current working directory is
+required it is recommended that the remote working directory be changed
+to that directory, as described in <a href="howtochangedirectories.html"><font color="#0000ff" face="Arial"><span style="font-size: 10pt;"><u>How
+to change directories</u></span></font></a>.
+The relative or absolute path may be passed to either method, but
+some FTP servers do not support this feature. In these cases changing
+directories should work.</span></font><br>
+
+</div>
+
+<div align="left"> <br>
+
+<font color="#010101" face="Arial"><span style="font-size: 10pt;"><span style="font-weight: bold;">Changing
+locale</span> </span></font>
+</div>
+
+<div align="left"> <br>
+
+</div>
+
+<div align="left"> <font color="#010101" face="Arial"><span style="font-size: 10pt;">Sometimes
+the directoryList() method will fail with a
+ParseException, citing a date string that it cannot interpret. This is
+often because the FTP server is in a different locale to the client.
+It may be returning month names that cannot be understood in the
+client's locale. For example, an FTP server in a German locale will
+return German month names, which cannot be interpreted by a client in a
+locale that uses English. To solve this, the server's locale should be
+set in the client, before connecting, via the <a href="../../api/com/enterprisedt/net/ftp/AdvancedFTPSettings.html#setParserLocales(java.util.Locale[])">setParserLocales</a>
+method:</span></font> </div>
+
+<div style="margin-left: 13mm; margin-right: 0mm; text-indent: 0mm;" align="left"> <br>
+
+<font color="#0000ff" face="Lucida Console" size="1"><span style="font-size: 8pt;"></span></font><font face="Lucida Console" size="1"><span style="font-size: 8pt;">
+Locale[] locales = new Locale[2];<br>
+locales[0] = = Locale.GERMAN; <br>
+locales[1] = Locale.getDefault();<br>
+ftp.getAdvancedFTPSettings().setParserLocales(locales);<br>
+
+</span></font> </div>
+
+</body>
+</html>
