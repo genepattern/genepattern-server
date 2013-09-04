@@ -18,6 +18,7 @@ public class TestMapLocalEntry {
     public void testInitLocalValue() {
         MapLocalEntry obj=new MapLocalEntry("ftp://gpftp.broadinstitute.org/", "/Volumes/xchip_gpdev/gpftp/pub/");
         File localFile=obj.initLocalValue("ftp://gpftp.broadinstitute.org/rna_seq/referenceAnnotation/gtf/Homo_sapiens_UCSC_hg18.gtf");
+        Assert.assertNotNull("localFile is null", localFile);
         Assert.assertEquals("/Volumes/xchip_gpdev/gpftp/pub/rna_seq/referenceAnnotation/gtf/Homo_sapiens_UCSC_hg18.gtf", localFile.getPath());
     }
 
@@ -25,6 +26,7 @@ public class TestMapLocalEntry {
     public void testInitLocalValue_missingSlashes() {
         MapLocalEntry obj=new MapLocalEntry("ftp://gpftp.broadinstitute.org", "/Volumes/xchip_gpdev/gpftp/pub");
         File localFile=obj.initLocalValue("ftp://gpftp.broadinstitute.org/rna_seq/referenceAnnotation/gtf/Homo_sapiens_UCSC_hg18.gtf");
+        Assert.assertNotNull("localFile is null", localFile);
         Assert.assertEquals("/Volumes/xchip_gpdev/gpftp/pub/rna_seq/referenceAnnotation/gtf/Homo_sapiens_UCSC_hg18.gtf", localFile.getPath());
     }
 
@@ -32,6 +34,7 @@ public class TestMapLocalEntry {
     public void testInitLocalValueMissingSlashInUrl() {
         MapLocalEntry obj=new MapLocalEntry("ftp://gpftp.broadinstitute.org", "/Volumes/xchip_gpdev/gpftp/pub/");
         File localFile=obj.initLocalValue("ftp://gpftp.broadinstitute.org/rna_seq/referenceAnnotation/gtf/Homo_sapiens_UCSC_hg18.gtf");
+        Assert.assertNotNull("localFile is null", localFile);
         Assert.assertEquals("/Volumes/xchip_gpdev/gpftp/pub/rna_seq/referenceAnnotation/gtf/Homo_sapiens_UCSC_hg18.gtf", localFile.getPath());
     }
 
@@ -39,6 +42,7 @@ public class TestMapLocalEntry {
     public void testInitLocalValueMissingSlashInFile() {
         MapLocalEntry obj=new MapLocalEntry("ftp://gpftp.broadinstitute.org/", "/Volumes/xchip_gpdev/gpftp/pub");
         File localFile=obj.initLocalValue("ftp://gpftp.broadinstitute.org/rna_seq/referenceAnnotation/gtf/Homo_sapiens_UCSC_hg18.gtf");
+        Assert.assertNotNull("localFile is null", localFile);
         Assert.assertEquals("/Volumes/xchip_gpdev/gpftp/pub/rna_seq/referenceAnnotation/gtf/Homo_sapiens_UCSC_hg18.gtf", localFile.getPath());
     }
     
