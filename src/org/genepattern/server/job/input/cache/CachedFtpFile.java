@@ -5,7 +5,6 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.URL;
-import java.util.Date;
 
 import org.apache.commons.io.FilenameUtils;
 import org.apache.log4j.Logger;
@@ -27,10 +26,6 @@ public class CachedFtpFile implements CachedFile {
     private final URL url;
     private final GpFilePath localPath;
     
-    private long downloadCompletionTime=-1L;
-    private boolean downloadInterrupted;    
-    private Exception downloadException=null;
-    
     public CachedFtpFile(final String urlString) {
         this.url=JobInputHelper.initExternalUrl(urlString);
         if (url==null) {
@@ -43,9 +38,6 @@ public class CachedFtpFile implements CachedFile {
     }
     
     private GpFilePath getLocalPath(final URL url) {
-        final Context serverContext=ServerConfiguration.Context.getServerContext();
-        
-        
         final Context userContext=ServerConfiguration.Context.getContextForUser(".cache");
         final String relPath="cache/"+url.getHost()+"/"+url.getPath();
         final File relFile=new File(relPath);
@@ -83,15 +75,12 @@ public class CachedFtpFile implements CachedFile {
     public GpFilePath download() throws DownloadException {
         try {
             copyExternalUrlToUserUploads(localPath, url);
-            this.downloadCompletionTime=new Date().getTime();
             return localPath;
         }
         catch (DownloadException e) {
-            downloadException=e;
             throw e;
         }
         catch (InterruptedException e) {
-            downloadInterrupted=true;
             Thread.currentThread().interrupt();
         }
         return localPath;
@@ -236,7 +225,10 @@ public class CachedFtpFile implements CachedFile {
         if (interrupted) {
             // blow away the partial download
             // Note: we may want to leave it around so that we can pick up from where we left off
-            tempFile.delete();
+            boolean deleted=tempFile.delete();
+            if (!deleted) {
+                log.error("failed to delete tempFile: "+tempFile);
+            }
             throw new InterruptedException();
         }
 
