@@ -525,13 +525,13 @@ function updateparameter(parameter, updateCmdLine)
     pelement.data('oldVal',  pname_newval );
     felement.data('oldVal',  pflag_newval );
 
-    var paramExists = true;
+    var paramExists = false;
     //check if parameter exists
-    $("input[name='p_name']").each(function()
+    parameter.siblings().find("input[name='p_name']").each(function()
     {
-        if($(this).val() == pname_newval)
+        if(!paramExists && $(this).val() != "" && $(this).val() == pname_newval)
         {
-            paramExists = !paramExists;
+            paramExists = true;
         }
     });
 
