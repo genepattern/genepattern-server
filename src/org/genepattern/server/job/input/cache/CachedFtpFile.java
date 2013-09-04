@@ -22,6 +22,9 @@ import org.genepattern.server.job.input.JobInputHelper;
  */
 public class CachedFtpFile implements CachedFile {
     private static Logger log = Logger.getLogger(CachedFtpFile.class);
+    
+    // this is the same default as edtFTP
+    final public static int DEFAULT_BUFFER_SIZE = 16384;
 
     private final URL url;
     private final GpFilePath localPath;
@@ -151,17 +154,20 @@ public class CachedFtpFile implements CachedFile {
         BufferedInputStream in = null;
         FileOutputStream fout = null;
         try {
-            final int BUFSIZE=1024;
+            final int bufsize=DEFAULT_BUFFER_SIZE;
+
             in = new BufferedInputStream(fromUrl.openStream());
             fout = new FileOutputStream(toFile);
 
-            final byte data[] = new byte[BUFSIZE];
+            final byte data[] = new byte[bufsize];
             int count;
-            while (!interrupted && (count = in.read(data, 0, BUFSIZE)) != -1) {
+            while (!interrupted && (count = in.read(data, 0, bufsize)) != -1) {
                 fout.write(data, 0, count);
                 if (Thread.interrupted()) {
                     interrupted=true;
                 }
+                //sleep for a bit so that we can allow other threads to move along
+                Thread.sleep(100);
             }
         }
         finally {
