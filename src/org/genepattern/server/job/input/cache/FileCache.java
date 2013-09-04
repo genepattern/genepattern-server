@@ -1,5 +1,7 @@
 package org.genepattern.server.job.input.cache;
 
+import java.io.File;
+import java.net.MalformedURLException;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -10,6 +12,8 @@ import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+
+import org.apache.log4j.Logger;
 
 /**
  * Maintain a cache of input files downloaded from an external source. 
@@ -32,6 +36,8 @@ import java.util.concurrent.TimeoutException;
  *
  */
 public class FileCache {
+    private static Logger log = Logger.getLogger(FileCache.class);
+
     private static final FileCache instance=new FileCache();
     public static FileCache instance() {
         return instance;
@@ -43,10 +49,36 @@ public class FileCache {
     int maxNumOfThreads=5;
     private final ExecutorService downloadService=Executors.newFixedThreadPool(maxNumOfThreads);
     private final ScheduledExecutorService scheduledService = Executors.newSingleThreadScheduledExecutor();
-    private final ConcurrentMap<String, Future<CachedFileObj>> cache = new ConcurrentHashMap<String, Future<CachedFileObj>>();
+    private final ConcurrentMap<String, Future<CachedFile>> cache = new ConcurrentHashMap<String, Future<CachedFile>>();
     
-    public CachedFileObj initCachedFileObj(final String externalUrl) {
-        return new CachedFileObj(externalUrl);
+    /**
+     * For the given url, we have some options:
+     *     a) it's mapped (by the gp-admin) to a local path
+     *     b) it's cached data file in one of the following states:
+     *         i) not yet downloaded
+     *         ii) downloading
+     *         iii) already downloaded (and up to date)
+     *         iv) already downloaded (but out of date, which is equivalent to not yet downloaded)
+     * 
+     * @param externalUrl
+     * @return
+     */
+    private CachedFile initCachedFileObj(final String externalUrl) {
+        final File mappedFile=MapLocalEntry.initLocalFileSelection(externalUrl);
+        if (mappedFile!=null) {
+            if (!mappedFile.exists()) {
+                log.error("mappedFile does not exist, mapping from "+externalUrl+" to "+mappedFile);
+            }
+            else {
+                try {
+                    return new MapLocalFile(externalUrl, mappedFile);
+                }
+                catch (MalformedURLException e) {
+                    log.error("Invalid externalUrl="+externalUrl, e);
+                }
+            }
+        }
+        return new CachedFtpFile(externalUrl);
     }
     
     public void shutdownNow() {
@@ -54,11 +86,11 @@ public class FileCache {
         scheduledService.shutdownNow();
     }
     
-    public synchronized Future<CachedFileObj> getFutureObj(final String externalUrl) {
-        final CachedFileObj obj = initCachedFileObj(externalUrl);
+    public synchronized Future<CachedFile> getFutureObj(final String externalUrl) {
+        final CachedFile obj = initCachedFileObj(externalUrl);
         if (obj.isDownloaded()) {
             //already downloaded
-            return new Future<CachedFileObj>() {
+            return new Future<CachedFile>() {
 
                 @Override
                 public boolean cancel(boolean mayInterruptIfRunning) {
@@ -66,12 +98,12 @@ public class FileCache {
                 }
 
                 @Override
-                public CachedFileObj get() throws InterruptedException, ExecutionException {
+                public CachedFile get() throws InterruptedException, ExecutionException {
                     return obj;
                 }
 
                 @Override
-                public CachedFileObj get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
+                public CachedFile get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
                     return obj;
                 }
 
@@ -91,9 +123,9 @@ public class FileCache {
             return cache.get(key);
         }
         //otherwise start the download and add to the cache
-        Future<CachedFileObj> f = downloadService.submit(new Callable<CachedFileObj>() {
+        Future<CachedFile> f = downloadService.submit(new Callable<CachedFile>() {
             @Override
-            public CachedFileObj call() throws Exception {
+            public CachedFile call() throws Exception {
                 DownloadException ex=null;
                 try {
                     obj.download();
@@ -119,7 +151,7 @@ public class FileCache {
                 return obj;
             }
         });
-        Future<CachedFileObj> f2 = cache.putIfAbsent(key, f);
+        Future<CachedFile> f2 = cache.putIfAbsent(key, f);
         if (f2 == null) {
             f2 = f;
         }

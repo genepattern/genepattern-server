@@ -12,7 +12,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
 import org.apache.commons.io.FileUtils;
-import org.genepattern.server.job.input.cache.CachedFileObj;
+import org.genepattern.server.job.input.cache.CachedFtpFile;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
@@ -109,7 +109,7 @@ public class TestFileDownloader {
         final File tmpDir=newTmpDir();
         final File toFile=new File(tmpDir, fromUrl.getFile());
         try {
-            CachedFileObj.downloadFile(fromUrl, toFile);
+            CachedFtpFile.downloadFile(fromUrl, toFile);
         }
         catch (IOException e) {
             Assert.fail("IOException downloading file: "+e.getLocalizedMessage());
@@ -136,7 +136,7 @@ public class TestFileDownloader {
         cancellationTest(true, toFile, new Callable<File>() {
             @Override
             public File call() throws Exception {
-                CachedFileObj.downloadFile(fromUrl, toFile);
+                CachedFtpFile.downloadFile(fromUrl, toFile);
                 return toFile;
             }
         });

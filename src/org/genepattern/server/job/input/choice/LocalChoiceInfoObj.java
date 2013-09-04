@@ -2,21 +2,13 @@ package org.genepattern.server.job.input.choice;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.regex.Pattern;
 
-import org.apache.commons.io.FilenameUtils;
 import org.apache.log4j.Logger;
-import org.genepattern.server.config.ServerConfiguration;
-import org.genepattern.server.config.ServerConfiguration.Context;
-import org.genepattern.server.dm.UrlUtil;
-import org.genepattern.server.executor.CommandProperties.Value;
+import org.genepattern.server.job.input.cache.MapLocalEntry;
 import org.genepattern.webservice.ParameterInfo;
-
-import scala.actors.threadpool.Arrays;
 
 /**
  * Helper class for by-passing a remote choiceDir with a local directory path.
@@ -87,13 +79,15 @@ default.properties:
 public class LocalChoiceInfoObj {
     private final static Logger log = Logger.getLogger(LocalChoiceInfoObj.class);
 
-    public static final String PROP_LOCAL_CHOICE_DIRS="local.choiceDirs";
-
+    /** the input parameter */
     private final ParameterInfo param;
+    /** the initial choiceDir */
     private final String choiceDir;
+    /** help class which maintains the mapping between external urls and local file paths */
+    private final MapLocalEntry mapLocalEntry;
+    /** the local directory (if it exists) which maps to the choiceDir url for the param. */
     private final File localChoiceDir;
-    private String externalUrlRoot;
-    private String localPathRoot;
+    /** the list of drop-down items */
     private final List<Choice> localChoices;
 
     /**
@@ -107,17 +101,49 @@ public class LocalChoiceInfoObj {
     public LocalChoiceInfoObj(final ParameterInfo param, final String choiceDir) {
         this.param=param;
         this.choiceDir=choiceDir;
-        
         if (choiceDir==null || choiceDir.length()==0) {
-            localChoiceDir=null;
-            localChoices=Collections.emptyList();
+            mapLocalEntry=null;
         }
         else {
-            this.localChoiceDir=initLocalChoiceDir();
+            this.mapLocalEntry=MapLocalEntry.initLocalChoiceDir(choiceDir);
+        }
+        if (mapLocalEntry==null) {
+            this.localChoiceDir=null;
+            this.localChoices=Collections.emptyList();
+        }
+        else {
+            this.localChoiceDir=mapLocalEntry.initLocalValue(choiceDir);
             this.localChoices=initLocalChoices();
         }
     }
     
+    private List<Choice> initLocalChoices() {
+        if (localChoiceDir == null) {
+            return Collections.emptyList();
+        }
+        if (!localChoiceDir.exists()) {
+            throw new IllegalArgumentException("localChoiceDir does not exist: "+localChoiceDir);
+        }
+        if (!localChoiceDir.canRead()) {
+            throw new IllegalArgumentException("can't read localChoiceDir: "+localChoiceDir);
+        }
+        final LocalDirFilter filter=new LocalDirFilter(param);
+        final File[] localFiles=localChoiceDir.listFiles(filter);
+        if (localFiles.length == 0) {
+            return Collections.emptyList();
+        }
+        List<Choice> choices = new ArrayList<Choice>();
+        Arrays.sort(localFiles);
+        for(final File localFile : localFiles) {
+            final String actualValue=mapLocalEntry.initUrlValue(localFile);
+            final String displayValue=localFile.getName();
+            final Choice choice=new Choice(displayValue, actualValue, localFile.isDirectory());
+            choices.add(choice);                
+        }
+        log.debug("initialized drop-down from local directory, "+choiceDir+" is mapped to "+localChoiceDir);
+        return choices;
+    }
+
     /**
      * Get the local directory path, or null if there is none.
      * @return
@@ -140,123 +166,4 @@ public class LocalChoiceInfoObj {
         return localChoices;
     }
 
-    /**
-     * Check the config for a matching local dir and initialize the localChoiceDir field.
-     * @return
-     */
-    private File initLocalChoiceDir() {
-        final Context serverContext=Context.getServerContext();
-        final Value value=ServerConfiguration.instance().getValue(serverContext, PROP_LOCAL_CHOICE_DIRS);
-        final Map<?,?> map=value.getMap();
-        if (map != null) {
-            //find matching prefix
-            for(final Entry<?,?> entry : map.entrySet()) {
-                final Object key=entry.getKey();
-                final Object val=entry.getValue();
-                if (key instanceof String && val instanceof String) {
-                    this.externalUrlRoot = (String) key;
-                    this.localPathRoot = (String) val;
-                    if (choiceDir.startsWith(externalUrlRoot)) {
-                        final File match=initLocalChoiceDir((String) key, (String) val);
-                        if (match != null) {
-                            this.externalUrlRoot = (String) key;
-                            this.localPathRoot = (String) val;
-                            return match;
-                        }
-                        else {
-                            log.debug("No matching local path found for choiceDir="+choiceDir+", localChoiceDirs[ '"+externalUrlRoot+"' ] = '"+localPathRoot+"'");
-                            this.externalUrlRoot = null;
-                            this.localPathRoot = null;
-                        }
-                    }
-                }
-            }
-        }
-        //no match
-        return null;
-    }
-    
-    /**
-     * For each entry in the 'local.choiceDirs' map, check to see if the parameter's 'choiceDir' field is a good match.
-     * This also checks for the existence and ability to read the file on the local path. 
-     * It will return null
-     *  
-     * @param choiceDir,       e.g. ftp://ftp.broadinstitute.org/pub/genepattern/rna_seq/whole_genomes
-     * @param externalUrlRoot, e.g. ftp://ftp.broadinstitute.org/pub/genepattern/
-     * @param localPathRoot,   e.g. /web/ftp/pub/genepattern/
-     * 
-     * @return a valid local File or null if there is no match.
-     */
-    private File initLocalChoiceDir(final String externalUrlRoot, final String localPathRoot) {
-        if (externalUrlRoot==null) {
-            throw new IllegalArgumentException("externalUrlRoot==null");
-        }
-        if (localPathRoot==null) {
-            throw new IllegalArgumentException("localPathRoot==null");
-        }
-        //simple implementation is case-sensitive and only works with unix file paths for the localPathRoot
-        final String localDirPath=choiceDir.replaceFirst(Pattern.quote(externalUrlRoot), localPathRoot);
-        final File localDir=new File(localDirPath);
-        if (!localDir.exists()) {
-            //TODO: handle exception
-            log.error("localDir does not exist: "+localDir);
-            return null;
-        }
-        if (!localDir.canRead()) {
-            //TODO: handle exception
-            log.error("cannot read localDir: "+localDir);
-            return null;
-        }
-        return localDir;
-    }
-
-    private List<Choice> initLocalChoices() {
-        if (localChoiceDir == null) {
-            return Collections.emptyList();
-        }
-        if (!localChoiceDir.exists()) {
-            throw new IllegalArgumentException("localChoiceDir does not exist: "+localChoiceDir);
-        }
-        if (!localChoiceDir.canRead()) {
-            throw new IllegalArgumentException("can't read localChoiceDir: "+localChoiceDir);
-        }
-        final LocalDirFilter filter=new LocalDirFilter(param);
-        final File[] localFiles=localChoiceDir.listFiles(filter);
-        if (localFiles.length == 0) {
-            return Collections.emptyList();
-        }
-        List<Choice> choices = new ArrayList<Choice>();
-        Arrays.sort(localFiles);
-        for(final File localFile : localFiles) {
-            final String actualValue=initUrlValue(localFile);
-            final String displayValue=localFile.getName();
-            final Choice choice=new Choice(displayValue, actualValue, localFile.isDirectory());
-            choices.add(choice);                
-        }
-        return choices;
-    }
-
-    /**
-     * We want to use the remote URL as a the value in the drop-down menu. This helper method converts
-     * the local file path back to the remote URL value. E.g.
-     *     localPathActual /Volumes/xchip_gpdev/gpftp/pub/test/file_1.txt
-     *     externalUrlRoot ftp://gpftp.broadinstitute.org/
-     *     localPathRoot   /Volumes/xchip_gpdev/gpftp/pub/
-     *     
-     *     actualValue: ftp://gpftp.broadinstitute.org/test/file_1.txt
-     *      
-     *     Drop localPathRoot from the beginning of localPathActual to get 'test/file_1.txt'
-     *     Then append externalUrlRoot to that result to get ftp://gpftp.broadinstitute.org/test/file_1.txt.
-     */
-    private String initUrlValue(final File localFile) {
-        String localPath=FilenameUtils.separatorsToUnix(localFile.getPath());
-        if (localPath.startsWith(localPathRoot)) {
-            String tail=localPath.substring(localPathRoot.length());
-            String tailEncoded=UrlUtil.encodeFilePath(new File(tail));
-            String rval = externalUrlRoot + tailEncoded;
-            return rval;
-        }
-        log.error("Didn't create url value for localFile: "+localFile);
-        return null;
-    }
 }

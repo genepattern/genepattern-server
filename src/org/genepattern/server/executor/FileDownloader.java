@@ -13,7 +13,6 @@ import org.apache.log4j.Logger;
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.eula.GetTaskStrategy;
 import org.genepattern.server.eula.GetTaskStrategyDefault;
-import org.genepattern.server.job.input.cache.CachedFileObj;
 import org.genepattern.server.job.input.cache.FileCache;
 import org.genepattern.server.job.input.choice.Choice;
 import org.genepattern.server.job.input.choice.ChoiceInfo;
@@ -164,7 +163,7 @@ public class FileDownloader {
             for(final Choice selectedCopy : copy) {
                 try {
                     //this method throws a TimeoutException if the download is not complete
-                    Future<CachedFileObj> f = FileCache.instance().getFutureObj(selectedCopy.getValue());
+                    Future<?> f = FileCache.instance().getFutureObj(selectedCopy.getValue());
                     f.get(100, TimeUnit.MILLISECONDS);
                     toRemove.add(selectedCopy);
                 }

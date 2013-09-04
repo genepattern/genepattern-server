@@ -17,13 +17,12 @@ import org.genepattern.server.job.input.JobInputFileUtil;
 import org.genepattern.server.job.input.JobInputHelper;
 
 /**
- * Helper class for managing cached file downloads.
- * (Copied methods originally implemented in the ParamListHelper class.)
- * @author pcarr
- *
+ * A file downloader for an external FTP file. 
+ * It saves the file as a virtual user upload file for the hidden, '.cache', user account.
+ * 
  */
-public class CachedFileObj {
-    private static Logger log = Logger.getLogger(CachedFileObj.class);
+public class CachedFtpFile implements CachedFile {
+    private static Logger log = Logger.getLogger(CachedFtpFile.class);
 
     private final URL url;
     private final GpFilePath localPath;
@@ -32,7 +31,7 @@ public class CachedFileObj {
     private boolean downloadInterrupted;    
     private Exception downloadException=null;
     
-    public CachedFileObj(final String urlString) {
+    public CachedFtpFile(final String urlString) {
         this.url=JobInputHelper.initExternalUrl(urlString);
         if (url==null) {
             throw new IllegalArgumentException("value is not an external url: "+urlString);
@@ -44,6 +43,9 @@ public class CachedFileObj {
     }
     
     private GpFilePath getLocalPath(final URL url) {
+        final Context serverContext=ServerConfiguration.Context.getServerContext();
+        
+        
         final Context userContext=ServerConfiguration.Context.getContextForUser(".cache");
         final String relPath="cache/"+url.getHost()+"/"+url.getPath();
         final File relFile=new File(relPath);
