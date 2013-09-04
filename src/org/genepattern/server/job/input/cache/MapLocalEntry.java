@@ -1,6 +1,7 @@
 package org.genepattern.server.job.input.cache;
 
 import java.io.File;
+import java.util.Collections;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.regex.Pattern;
@@ -25,16 +26,33 @@ public class MapLocalEntry {
     public static final String PROP_LOCAL_CHOICE_DIRS="local.choiceDirs";
 
     /**
+     * Get the Map<?,?> of url->localFile from the config.yaml file.
+     * 
+     * @return an empty Map if there is no valid entry in the config file. 
+     *     For a default gp install this will return an empty map.
+     */
+    private static Map<?,?> getLocalChoiceDirsMap() {
+        final Context serverContext=Context.getServerContext();
+        final Value value=ServerConfiguration.instance().getValue(serverContext, PROP_LOCAL_CHOICE_DIRS);
+        if (value==null || !value.isMap()) {
+            return Collections.emptyMap();
+        }
+        final Map<?,?> map=value.getMap();
+        if (map==null) {
+            return Collections.emptyMap();
+        }
+        return map;
+    }
+
+    /**
      * This returns a File object if there is a matching entry in the 'local.choiceDirs' map of the config.yaml file.
      * 
      * @param selectedUrlValue
      * @return
      */
     public static File initLocalFileSelection(final String selectedUrlValue) {
-        final Context serverContext=Context.getServerContext();
-        final Value value=ServerConfiguration.instance().getValue(serverContext, MapLocalEntry.PROP_LOCAL_CHOICE_DIRS);
-        final Map<?,?> map=value.getMap();
-        if (map==null || map.size()==0) {
+        final Map<?,?> map=getLocalChoiceDirsMap();
+        if (map.isEmpty()) {
             log.debug("No map configured");
             return null;
         }
@@ -61,11 +79,8 @@ public class MapLocalEntry {
      * @return
      */
     public static MapLocalEntry initLocalChoiceDir(final String choiceDir) {
-        final Context serverContext=Context.getServerContext();
-        final Value value=ServerConfiguration.instance().getValue(serverContext, PROP_LOCAL_CHOICE_DIRS);
-        final Map<?,?> map=value.getMap();
-        if (map==null || map.size()==0) {
-            log.debug("No map configured");
+        final Map<?,?> map=getLocalChoiceDirsMap();
+        if (map.isEmpty()) {
             return null;
         }
         //find matching prefix
@@ -210,6 +225,5 @@ public class MapLocalEntry {
         log.error("Didn't create url value for localFile: "+localFile);
         return null;
     }
-
 
 }
