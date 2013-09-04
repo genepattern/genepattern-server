@@ -166,8 +166,7 @@ public class CachedFtpFile implements CachedFile {
                 if (Thread.interrupted()) {
                     interrupted=true;
                 }
-                //sleep for a bit so that we can allow other threads to move along
-                Thread.sleep(100);
+                Thread.yield();
             }
         }
         finally {
