@@ -189,7 +189,6 @@ public class ChoiceInfo {
             throw new IllegalArgumentException("param==null");
         }
         final String defaultValue=param.getDefaultValue();
-        final boolean isOptional=param.isOptional();
         final boolean hasDefaultValue = ChoiceInfoHelper.isSet(defaultValue);
         
         //1) check for an existing empty valued item 
@@ -199,7 +198,12 @@ public class ChoiceInfo {
             emptyChoice = getFirstMatchingLabel("");
         }
         if (emptyChoice == null) {
-            if (isOptional || (!isOptional && !hasDefaultValue )) {
+            final boolean appendEmptyChoice=!hasDefaultValue;
+            //Note: this is a workaround for GP-4615, a more natural rule would be to include the 
+            //    'Choose...' menu for all optional parameters as well as required parameters which don't have a default value
+            //    e.g.
+            //    final boolean appendEmptyChoice=( param.isOptional() || (!param.isOptional() && !hasDefaultValue) );
+            if (appendEmptyChoice) {
                 //check manifest for displayValue for the first item on the list
                 String emptyDisplayValue= (String) param.getAttributes().get(PROP_CHOICE_EMPTY_DISPLAY_VALUE);
                 if (emptyDisplayValue==null) {
