@@ -1247,12 +1247,26 @@ function updatemodulecategories()
 
                 for(i=0;i < result.length;i++)
                 {
-                    mcat.append($("<option>" + result[i] + "</option>"));
+                    mcat.append($("<option value='"  + result[i] + "'>" + escapeHTML(result[i]) + "</option>"));
                 }
                 mcat.multiselect("refresh");
             }
         },
         dataType: "json"
+    });
+}
+
+function escapeHTML(str)
+{
+    return str.replace(/[&"'<>]/g, function(c)
+    {
+        return {
+            "&": "&amp;",
+            '"': "&quot;",
+            "'": "&apos;",
+            "<": "&lt;",
+            ">": "&gt;"
+        }[c];
     });
 }
 
@@ -2478,10 +2492,14 @@ jQuery(document).ready(function() {
 
     $("select[name='category'], select[name='privacy'], select[name='quality'], " +
         "select[name='c_type'], select[name='cpu'], select[name='language'], select[name='modversion']").multiselect({
-            multiple: false,
-            header: false,
-            selectedList: 1
-        });
+        multiple: false,
+        header: false,
+        selectedList: 1
+    });
+
+    $( "select[name='category']" ).multiselect().data( "multiselect" )._setButtonValue = function( value ) {
+        this.buttonlabel.html( value );
+    };
 
     $("#helpbtn").button().click(function()
     {
