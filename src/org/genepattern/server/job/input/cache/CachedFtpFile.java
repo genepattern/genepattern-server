@@ -4,7 +4,9 @@ import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URL;
+import java.net.URLConnection;
 
 import org.apache.commons.io.FilenameUtils;
 import org.apache.log4j.Logger;
@@ -155,8 +157,15 @@ public class CachedFtpFile implements CachedFile {
         FileOutputStream fout = null;
         try {
             final int bufsize=DEFAULT_BUFFER_SIZE;
-
-            in = new BufferedInputStream(fromUrl.openStream());
+            
+            URLConnection connection=fromUrl.openConnection();
+            final int connectTimeout_ms=60*1000; //wait up to 60 seconds to establish a connection
+            final int readTimeout_ms=60*1000; //wait up to 60 seconds when reading from the input 
+            connection.setConnectTimeout(connectTimeout_ms);
+            connection.setReadTimeout(readTimeout_ms);
+            connection.connect();
+            InputStream urlIn=connection.getInputStream();
+            in = new BufferedInputStream(urlIn);
             fout = new FileOutputStream(toFile);
 
             final byte data[] = new byte[bufsize];
