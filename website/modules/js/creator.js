@@ -1074,7 +1074,7 @@ function changeParameterType(element)
                     element.parents(".parameter").find("input[name='choicelist']").trigger("change");
 
                     //set default value
-                    if(choicelist.length > 0)
+                    if(choiceURL == "" &&  choicelist.length > 0)
                     {
                         //element.parents(".parameter").find(".defaultValue").find("option:selected").removeAttr("selected");
                         element.parents(".parameter").find(".defaultValue").val(newDefault);
