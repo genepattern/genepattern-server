@@ -177,10 +177,13 @@ public class ChoiceInfo {
      * If necessary add an empty item to the top of the choice list and select the default value.
      * Must call this method after the list of choices is initialized.
      * 
-     * If there is an empty valued item on the list don't create a new 'Choose...' entry.
-     * Otherwise,
-     *     If the param is optional, always add a 'Choose...' option as the 1st item on the list
-     *     If the param is required, include a 'Choose...' option only if there is no default value
+     * If there is no default value AND if there is not an existing empty-valued item on the list
+     * append a new 'Choose...' option as the 1st item on the list.
+     * 
+     * The author the module can override the default ('Choose...') display value in one of two ways.
+     * 1) add an empty valued item to the list of choices, fill in the custom display value, or
+     * 2) set the choiceEmptyDisplayValue property in the manifest, e.g.
+     *     p4_choiceEmptyDisplayValue=Make a selection...
      * 
      * @param defaultValue
      */
