@@ -18,19 +18,12 @@ import org.apache.log4j.Logger;
 /**
  * Maintain a cache of input files downloaded from an external source. 
  * 
+ * Note: May want to replace this hand-coded class with an implementation from the 
+ * Google guava library (https://code.google.com/p/guava-libraries/wiki/CachesExplained).
+ * 
  * Use-cases:
  * 1) a single run of a job with a cached input file
  * 2) two different jobs (running concurrently) each using the same exact cached input file.
- * 
- * States of a File Choice file
- * 1) INIT (no local copy)
- * 2) TRANSFERRING
- * 2a)     TRANSFERRING_TO_TMP
- * 2b)     MOVING_FROM_TMP_TO_ACTUAL
- * 2c)     RECORDING_TO_DB
- * 3) CACHED (an up-to-date local copy)
- * 4) OUT_OF_DATE (the local copy is older than the remote version)
- * 5) DOWNLOAD_ERROR (there was an error during the TRANSFER)
  * 
  * @author pcarr
  *
@@ -54,11 +47,12 @@ public class FileCache {
     /**
      * For the given url, we have some options:
      *     a) it's mapped (by the gp-admin) to a local path
-     *     b) it's cached data file in one of the following states:
+     *     b) it's a cached data file in one of the following states:
      *         i) not yet downloaded
      *         ii) downloading
-     *         iii) already downloaded (and up to date)
-     *         iv) already downloaded (but out of date, which is equivalent to not yet downloaded)
+     *         iii) download complete, with error
+     *         iv) download complete, no errors
+     *         v) download complete, out of date (Note: this state is not implemented)
      * 
      * @param externalUrl
      * @return
@@ -86,37 +80,43 @@ public class FileCache {
         scheduledService.shutdownNow();
     }
     
+    static class AlreadyDownloaded implements Future<CachedFile> {
+        final CachedFile obj;
+        public AlreadyDownloaded(final CachedFile obj) {
+            this.obj=obj;
+        }
+
+        @Override
+        public boolean cancel(boolean mayInterruptIfRunning) {
+            return false;
+        }
+
+        @Override
+        public CachedFile get() throws InterruptedException, ExecutionException {
+            return obj;
+        }
+
+        @Override
+        public CachedFile get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
+            return obj;
+        }
+
+        @Override
+        public boolean isCancelled() {
+            return false;
+        }
+
+        @Override
+        public boolean isDone() {
+            return true;
+        }
+    }
+
     public synchronized Future<CachedFile> getFutureObj(final String externalUrl) {
         final CachedFile obj = initCachedFileObj(externalUrl);
         if (obj.isDownloaded()) {
             //already downloaded
-            return new Future<CachedFile>() {
-
-                @Override
-                public boolean cancel(boolean mayInterruptIfRunning) {
-                    return false;
-                }
-
-                @Override
-                public CachedFile get() throws InterruptedException, ExecutionException {
-                    return obj;
-                }
-
-                @Override
-                public CachedFile get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
-                    return obj;
-                }
-
-                @Override
-                public boolean isCancelled() {
-                    return false;
-                }
-
-                @Override
-                public boolean isDone() {
-                    return true;
-                }
-            };
+            return new AlreadyDownloaded(obj);
         }
         final String key=obj.getUrl().toExternalForm();
         if (cache.containsKey(key)) {
