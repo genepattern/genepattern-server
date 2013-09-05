@@ -877,7 +877,11 @@ function loadParameterInfo(parameters, initialValues)
                 textField.change(function()
                 {
                     var valueList = [];
-                    valueList.push($(this).val());
+
+                    if($(this).val() != "")
+                    {
+                        valueList.push($(this).val());
+                    }
 
                     var paramName = $(this).attr("name");
                     parameter_and_val_obj[paramName] = valueList;
