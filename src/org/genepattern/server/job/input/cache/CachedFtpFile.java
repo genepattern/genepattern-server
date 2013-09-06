@@ -5,6 +5,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.SocketTimeoutException;
 import java.net.URL;
 import java.net.URLConnection;
 
@@ -127,6 +128,12 @@ public class CachedFtpFile implements CachedFile {
         downloadFile(fromUrl, toFile, replaceExisting);
     }
     public static boolean downloadFile(final URL fromUrl, final File toFile, final boolean deleteExisting) throws IOException, InterruptedException {
+        final int connectTimeout_ms=60*1000; //wait up to 60 seconds to establish a connection
+        final int readTimeout_ms=60*1000; //wait up to 60 seconds when reading from the input 
+        return downloadFile(fromUrl, toFile, deleteExisting, connectTimeout_ms, readTimeout_ms);
+    }
+
+    public static boolean downloadFile(final URL fromUrl, final File toFile, final boolean deleteExisting, final int connectTimeout_ms, final int readTimeout_ms) throws IOException, InterruptedException {
         if (toFile==null) {
             throw new IllegalArgumentException("toFile==null");
         }
@@ -159,8 +166,6 @@ public class CachedFtpFile implements CachedFile {
             final int bufsize=DEFAULT_BUFFER_SIZE;
             
             URLConnection connection=fromUrl.openConnection();
-            final int connectTimeout_ms=60*1000; //wait up to 60 seconds to establish a connection
-            final int readTimeout_ms=60*1000; //wait up to 60 seconds when reading from the input 
             connection.setConnectTimeout(connectTimeout_ms);
             connection.setReadTimeout(readTimeout_ms);
             connection.connect();
