@@ -148,7 +148,6 @@ import org.genepattern.server.genomespace.GenomeSpaceClient;
 import org.genepattern.server.genomespace.GenomeSpaceClientFactory;
 import org.genepattern.server.genomespace.GenomeSpaceException;
 import org.genepattern.server.genomespace.GenomeSpaceFileManager;
-import org.genepattern.server.job.event.JobEventDispatcher;
 import org.genepattern.server.job.input.JobInput.Param;
 import org.genepattern.server.job.input.JobInput.ParamId;
 import org.genepattern.server.job.input.JobInput.ParamValue;
@@ -1629,6 +1628,7 @@ public class GenePatternAnalysisTask {
     }
 
     private static JobInfoWrapper getJobInfoWrapper(String userId, int jobNumber) {
+        final boolean isInTransaction=HibernateUtil.isInTransaction();
         try {
             JobInfoManager m = new JobInfoManager();
             String contextPath = System.getProperty("GP_Path", "/gp");
@@ -1639,7 +1639,9 @@ public class GenePatternAnalysisTask {
             return m.getJobInfo(cookie, contextPath, userId, jobNumber);
         }
         finally {
-            HibernateUtil.closeCurrentSession();
+            if (!isInTransaction) {
+                HibernateUtil.closeCurrentSession();
+            }
         }
     }
     
@@ -1663,37 +1665,27 @@ public class GenePatternAnalysisTask {
 
     public static void handleJobCompletion(final int jobId, final int exitValue, final String errorMessage, final File jobDir, final File stdoutFile, final File stderrFile) {
         log.debug("job "+jobId+" completed with exitValue="+exitValue);
-        AnalysisDAO dao = new AnalysisDAO();
-        final JobInfo jobInfo = dao.getJobInfo(jobId);
-        //handle special-case when the job is deleted before we get to handle the job results, e.g. a running pipeline was deleted
-        if (jobInfo == null) {
-            log.error("job #"+jobId+"was deleted before handleJobCompletion");
-            return;
+        final boolean isInTransaction=HibernateUtil.isInTransaction();
+        try {
+            final JobInfo jobInfo = new AnalysisDAO().getJobInfo(jobId);
+            //handle special-case when the job is deleted before we get to handle the job results, e.g. a running pipeline was deleted
+            if (jobInfo == null) {
+                log.error("job #"+jobId+"was deleted before handleJobCompletion");
+                return;
+            }
+            handleJobCompletionInThread(jobInfo, exitValue, errorMessage, jobDir, stdoutFile, stderrFile);
         }
-        ServerConfiguration.Context jobContext = ServerConfiguration.Context.getContextForJob(jobInfo);
-        boolean isParallelExec=PipelineHandler.isParallelExec(jobContext);
-        if (isParallelExec) {
-            JobEventDispatcher.invokeLater(new Runnable() {
-
-                @Override
-                public void run() {
-                    HibernateUtil.beginTransaction();
-                    try {
-                        GenePatternAnalysisTask.handleJobCompletionInThread(jobInfo, exitValue, errorMessage, jobDir, stdoutFile, stderrFile);
-                        HibernateUtil.commitTransaction();
-                    }
-                    catch (Throwable t) {
-                        log.error(t);
-                        HibernateUtil.rollbackTransaction();
-                    }
-                }
-            });
-            return;
+        catch (Throwable t) {
+            log.error("Unexpected exception in handleJobCompletion for jobId="+jobId, t);
         }
-        handleJobCompletionInThread(jobInfo, exitValue, errorMessage, jobDir, stdoutFile, stderrFile);
+        finally {
+            if (!isInTransaction) {
+                HibernateUtil.closeCurrentSession();
+            }
+        }
     }
 
-    public static void handleJobCompletionInThread(final JobInfo jobInfo, int exitValue, String errorMessage, File jobDir, File stdoutFile, File stderrFile) {
+    private static void handleJobCompletionInThread(final JobInfo jobInfo, int exitValue, String errorMessage, File jobDir, File stdoutFile, File stderrFile) {
         //handle special-case when the job is deleted before we get to handle the job results, e.g. a running pipeline was deleted
         if (jobInfo == null) {
             log.error("jobInfo==null");
@@ -1702,15 +1694,7 @@ public class GenePatternAnalysisTask {
         final int jobId=jobInfo.getJobNumber();
         log.debug("job "+jobId+" completed with exitValue="+exitValue);
 
-        AnalysisDAO dao = new AnalysisDAO();
-        //JobInfo jobInfo = dao.getJobInfo(jobId);
-        JobInfo parentJobInfo = dao.getParent(jobId);
-
-        //handle special-case when the job is deleted before we get to handle the job results, e.g. a running pipeline was deleted
-        if (jobInfo == null) {
-            log.error("job #"+jobId+"was deleted before handleJobCompletion");
-            return;
-        }
+        JobInfo parentJobInfo = new AnalysisDAO().getParent(jobId);
         
         //handle special-case when handleJobCompletion has already been called for this job
         if (isFinished(jobInfo)) {

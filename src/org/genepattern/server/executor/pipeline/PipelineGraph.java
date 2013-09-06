@@ -92,16 +92,22 @@ public class PipelineGraph {
 
     //factory methods
     static public PipelineGraph getDependencyGraph(final JobInfo pipelineJobInfo) {
+        final boolean isInTransaction=HibernateUtil.isInTransaction();
         //rebuild the graph for the pipeline
-        List<JobInfo> childJobInfos;
         HibernateUtil.beginTransaction();
         try {
-            childJobInfos = getChildJobInfos(pipelineJobInfo);
+            final List<JobInfo> childJobInfos = getChildJobInfos(pipelineJobInfo);
+            return getDependencyGraph(pipelineJobInfo, childJobInfos);
+        }
+        catch (Throwable t) {
+            log.error("Error getting dependency graph for pipeline #"+pipelineJobInfo.getJobNumber(), t);
+            return new PipelineGraph();
         }
         finally {
-            HibernateUtil.closeCurrentSession();
+            if (!isInTransaction) {
+                HibernateUtil.closeCurrentSession();
+            }
         }
-        return getDependencyGraph(pipelineJobInfo, childJobInfos);
     }
 
     /**
@@ -136,6 +142,11 @@ public class PipelineGraph {
                 childJobs.add(jobInfo);
             }
             return childJobs;
+        }
+        catch (Throwable t) {
+            log.error("Error getting child jobInfos for pipeline #"+pipelineJobInfo.getJobNumber(), t);
+            HibernateUtil.closeCurrentSession();
+            return Collections.emptyList();
         }
         finally {
             if (!inTransaction) {

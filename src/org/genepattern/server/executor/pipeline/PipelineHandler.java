@@ -270,6 +270,7 @@ public class PipelineHandler {
         JobInfo completedJobInfo = null;
         JobInfo parentJobInfo=null;
         int parentJobId = -1;
+        final boolean isInTransaction=HibernateUtil.isInTransaction();
         try {
             AnalysisDAO ds = new AnalysisDAO();
             completedJobInfo = ds.getJobInfo(completedJobId);
@@ -278,8 +279,13 @@ public class PipelineHandler {
                 parentJobInfo = ds.getJobInfo(parentJobId);
             }
         }
+        catch (Throwable t) {
+            log.error("Unexpected exception in handleJobCompletion("+completedJobId+")", t);
+        }
         finally {
-            HibernateUtil.closeCurrentSession();
+            if (!isInTransaction) {
+                HibernateUtil.closeCurrentSession();
+            }
         }
         return handleJobCompletion(parentJobInfo, completedJobInfo);
     }
