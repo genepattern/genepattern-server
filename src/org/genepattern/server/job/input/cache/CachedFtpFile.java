@@ -97,7 +97,7 @@ public class CachedFtpFile implements CachedFile {
      * @return
      * @throws Exception 
      */
-    private GpFilePath getTempPath(GpFilePath realPath) throws DownloadException {
+    public GpFilePath getTempPath(GpFilePath realPath) throws DownloadException {
         Context userContext = ServerConfiguration.Context.getContextForUser(".cache");
         //String tempPath = realPath.getRelativePath() + ".downloading";
         String tempPath = FilenameUtils.getPath(realPath.getRelativePath()) + ".downloading/" + FilenameUtils.getName(realPath.getRelativePath());
@@ -137,8 +137,13 @@ public class CachedFtpFile implements CachedFile {
             throw new IllegalArgumentException("toFile==null");
         }
         if (toFile.exists()) {
+            if (log.isDebugEnabled()) { log.debug("toFile exists: "+toFile.getAbsolutePath()); }
             if (deleteExisting) {
-                boolean success=toFile.delete();
+                if (log.isDebugEnabled()) { 
+                    log.debug("deleting existing file: "+toFile.getAbsolutePath());
+                }
+                final boolean success=toFile.delete();
+                log.debug("success="+success);
                 if (!success) {
                     throw new IllegalArgumentException("failed to delete existing file: "+toFile.getAbsolutePath());
                 }
@@ -150,13 +155,22 @@ public class CachedFtpFile implements CachedFile {
 
         //if necessary, create parent download directory
         final File parentDir=toFile.getParentFile();
+        if (log.isDebugEnabled()) { log.debug("parentDir="+parentDir.getAbsolutePath()); }
         if (parentDir != null) {
             if (!parentDir.exists()) {
-                boolean success=parentDir.mkdirs();
+                if (log.isDebugEnabled()) {
+                    log.debug("parentDir doesn't exist, mkdirs for "+parentDir.getAbsolutePath());
+                }
+                final boolean success=parentDir.mkdirs();
+                log.debug("mkdirs result="+success);
                 if (!success) {
-                    throw new IllegalArgumentException("Failed to create parent download directory for file: "+toFile.getAbsolutePath());
+                    log.warn("mkdirs result="+success+", for parentDir="+parentDir.getAbsolutePath());
                 }
             }
+        }
+        if (!parentDir.exists()) {
+            log.error("Error downloading file from '"+fromUrl+"' to '"+toFile.getAbsolutePath()+"', parentDir doesn't exist: "+parentDir.getAbsolutePath());
+            throw new IllegalArgumentException("Error creating parent download directory: "+parentDir.getAbsolutePath());
         }
         boolean interrupted=false;
         BufferedInputStream in = null;
