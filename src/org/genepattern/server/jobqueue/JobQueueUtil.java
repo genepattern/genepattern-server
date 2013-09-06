@@ -38,7 +38,7 @@ public class JobQueueUtil {
 
         try {
             HibernateUtil.beginTransaction();
-            HibernateUtil.getSession().save( record );
+            HibernateUtil.getSession().saveOrUpdate( record );
             if (!isInTransaction) {
                 HibernateUtil.commitTransaction();
             }
