@@ -219,7 +219,11 @@ public class DynamicChoiceInfoParser implements ChoiceInfoParser {
         FTPFile[] files;
         final FTPClient ftpClient = new FTPClient();
         try {
+            final int default_timeout_ms=15*1000; //15 seconds
+            final int socket_timeout_ms=15*1000; //15 seconds
+            ftpClient.setDataTimeout(default_timeout_ms);
             ftpClient.connect(ftpUrl.getHost());
+            ftpClient.setSoTimeout(socket_timeout_ms);
             // After connection attempt, you should check the reply code to verify success.
             final int reply = ftpClient.getReplyCode();
             if(!FTPReply.isPositiveCompletion(reply)) {
