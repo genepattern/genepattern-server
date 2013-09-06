@@ -1752,6 +1752,7 @@ function loadModule(taskId)
             loadModuleInfo(response["module"]);
             loadParameterInfo(response["parameters"]);
             setDirty(false);
+            $(this).resize();
         },
         dataType: "json"
     });
