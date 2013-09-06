@@ -151,9 +151,8 @@ public class FileCache {
                     //swallow it, we'll deal later
                     ex=e;
                 }  
-                if (ex != null) {
-                    //TODO: implement pause and retry
-                    throw ex;
+                catch (Throwable t) {
+                    ex = new DownloadException("Unexpected exception during download - "+t.getClass().getName(), t);
                 }
                 //schedule removal of Future from cache
                 final int evictionInterval_sec = ex!=null ? 
@@ -161,6 +160,11 @@ public class FileCache {
                         : 
                         300; //otherwise after 5 minutes
                 scheduleForEviction(key, evictionInterval_sec);
+
+                if (ex != null) {
+                    //TODO: implement pause and retry
+                    throw ex;
+                }
                 
                 return obj;
             }
