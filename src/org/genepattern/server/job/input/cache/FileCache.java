@@ -10,6 +10,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
@@ -40,8 +41,24 @@ public class FileCache {
 
     //max number of simultaneous downloads
     int maxNumOfThreads=5;
-    private final ExecutorService downloadService=Executors.newFixedThreadPool(maxNumOfThreads);
-    private final ScheduledExecutorService scheduledService = Executors.newSingleThreadScheduledExecutor();
+    private final ExecutorService downloadService=Executors.newFixedThreadPool(maxNumOfThreads, new ThreadFactory() {
+        long i=0;
+        @Override
+        public Thread newThread(final Runnable r) {
+            final Thread t = new Thread(r);
+            t.setName("DownloadService-"+i++);
+            return t;
+        }
+    });
+    private final ScheduledExecutorService evictionService = Executors.newSingleThreadScheduledExecutor(new ThreadFactory() {
+        @Override
+        public Thread newThread(final Runnable r) {
+            final Thread t = new Thread(r);
+            t.setDaemon(true);
+            t.setName(""+FileCache.class.getSimpleName()+"-EvictionService");
+            return t;
+        }
+    });
     private final ConcurrentMap<String, Future<CachedFile>> cache = new ConcurrentHashMap<String, Future<CachedFile>>();
     
     /**
@@ -77,7 +94,7 @@ public class FileCache {
     
     public void shutdownNow() {
         downloadService.shutdownNow();
-        scheduledService.shutdownNow();
+        evictionService.shutdownNow();
     }
     
     static class AlreadyDownloaded implements Future<CachedFile> {
@@ -134,24 +151,17 @@ public class FileCache {
                     //swallow it, we'll deal later
                     ex=e;
                 }  
+                if (ex != null) {
+                    //TODO: implement pause and retry
+                    throw ex;
+                }
                 //schedule removal of Future from cache
                 final int evictionInterval_sec = ex!=null ? 
                         30 //evict after 30 seconds if there was an Exception during the file download
                         : 
                         300; //otherwise after 5 minutes
-                scheduledService.schedule(new Runnable() {
-                    @Override
-                    public void run() {
-                        cache.remove(key);
-                    }
-                },
-                //remove from cache N seconds from now (30 for failed downloades, 300 for successful downloads)
-                evictionInterval_sec, TimeUnit.SECONDS);
+                scheduleForEviction(key, evictionInterval_sec);
                 
-                if (ex != null) {
-                    //TODO: implement pause and retry
-                    throw ex;
-                }
                 return obj;
             }
         });
@@ -161,10 +171,22 @@ public class FileCache {
         }
         return f2;
     }
-
+    
     /**
-     * TODO: Evict objects from the cache
+     * Remove the item from the cache at some time in the future, roughly 
+     * equivalent to the secondsFromNow value.
+     * 
+     * @param key, an externalUrl as a string
+     * @param secondsFromNow, the amount of time to wait before removing from the cache
      */
-    private void evict() {
+    private void scheduleForEviction(final String key, int secondsFromNow) {
+        evictionService.schedule(new Runnable() {
+            @Override
+            public void run() {
+                cache.remove(key);
+            }
+        },
+        //remove from cache N seconds from now (30 for failed downloades, 300 for successful downloads)
+        secondsFromNow, TimeUnit.SECONDS);
     }
 }
