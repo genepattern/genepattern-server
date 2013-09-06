@@ -703,7 +703,7 @@ function changeParameterType(element)
                 var choiceButton = $("<button class='choiceadd'>Add Menu Item</button>");
                 choiceButton.button().click(function()
                 {
-                    var choicerow = $("<tr> <td> <div class='sortHandle'>move</div></td><td class='defaultChoiceCol'> <input type='radio' name='cradio'/></td>" +
+                    var choicerow = $("<tr> <td> <div class='sortHandle'><div class='frictionBox'/><div class='frictionBox'/></div></td><td class='defaultChoiceCol'> <input type='radio' name='cradio'/></td>" +
                         "<td> <input type='text' name='choicev' class='choiceFields'/> </td>" +
                         "<td> <input type='text' name='choicen' class='choiceFields'/> </td>" +
                         "<td> <button> X </button></td></tr>");

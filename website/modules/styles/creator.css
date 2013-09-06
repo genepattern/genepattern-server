@@ -862,12 +862,12 @@ p.editChoicesHeading {
     background-color: #DFDFAC;
     max-height: 18px;
     min-height: 18px;
-    max-width: 31px;
-    min-width: 31px;
+    max-width: 21px;
+    min-width: 21px;
     vertical-align: middle;
     font-size: 9px;
     text-align: center;
-    padding-top: 4px;
+    padding-top: 3px;
 }
 
 .sortHandle:hover
@@ -879,4 +879,14 @@ p.editChoicesHeading {
 {
     font-size: 10px;
     font-style: italic;
+}
+
+.frictionBox
+{
+    width: 20%;
+    height: 40%;
+    background-color: #ADAD7A;
+    min-width: 2px;
+    min-height: 6px;
+    margin: 1px auto 2px auto;
 }
