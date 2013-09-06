@@ -133,16 +133,20 @@ public class FileCache {
                 catch (DownloadException e) {                    
                     //swallow it, we'll deal later
                     ex=e;
-                }
+                }  
                 //schedule removal of Future from cache
+                final int evictionInterval_sec = ex!=null ? 
+                        30 //evict after 30 seconds if there was an Exception during the file download
+                        : 
+                        300; //otherwise after 5 minutes
                 scheduledService.schedule(new Runnable() {
                     @Override
                     public void run() {
                         cache.remove(key);
                     }
                 },
-                //remove from cache 5 minutes from now
-                300, TimeUnit.SECONDS);
+                //remove from cache N seconds from now (30 for failed downloades, 300 for successful downloads)
+                evictionInterval_sec, TimeUnit.SECONDS);
                 
                 if (ex != null) {
                     //TODO: implement pause and retry
@@ -156,5 +160,11 @@ public class FileCache {
             f2 = f;
         }
         return f2;
+    }
+
+    /**
+     * TODO: Evict objects from the cache
+     */
+    private void evict() {
     }
 }
