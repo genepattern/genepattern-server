@@ -1,6 +1,8 @@
 package org.genepattern.server.job.input;
 
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -13,6 +15,7 @@ import java.util.concurrent.Future;
 
 import org.apache.commons.io.FileUtils;
 import org.genepattern.server.job.input.cache.CachedFtpFile;
+import org.genepattern.server.job.input.cache.DownloadException;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
@@ -35,9 +38,12 @@ public class TestFileDownloader {
     //large file (3073525 KB, ~2.9G)
     final String largeFile="ftp://ftp.broadinstitute.org/pub/genepattern/rna_seq/whole_genomes/Homo_sapiens_Ensembl_GRCh37.fa";
     //smaller file (118811 KB)
-    final String smallFileFromBroadFtp="ftp://ftp.broadinstitute.org/pub/genepattern/rna_seq/whole_genomes/Arabidopsis_thaliana_Ensembl_TAIR10.fa";
+    //final String smallFileFromBroadFtp="ftp://ftp.broadinstitute.org/pub/genepattern/rna_seq/whole_genomes/Arabidopsis_thaliana_Ensembl_TAIR10.fa";
+    final String smallFileFromBroadFtp="ftp://gpftp.broadinstitute.org/chet/dummy_file_2.txt";
     //smaller file on gpftp site (116036 KB)
-    final String gpftpFile="ftp://gpftp.broadinstitute.org/rna_seq/referenceAnnotation/gtf/Homo_sapiens_UCSC_hg18.gtf";
+    //final String gpftpFile="ftp://gpftp.broadinstitute.org/rna_seq/referenceAnnotation/gtf/Homo_sapiens_UCSC_hg18.gtf";
+    //tiny file on gpftp site
+    final String gpftpFile="ftp://gpftp.broadinstitute.org/chet/dummy_file_3.txt";
 
     /*
      * this class creates tmp dirs, but cleans up after itself. 
@@ -56,6 +62,24 @@ public class TestFileDownloader {
         return tmpDir;
     }
     
+    private static final void saveToFile(final File file, final String contents) throws IOException {
+        FileWriter fw=null;
+        BufferedWriter out=null;
+        try {
+            fw = new FileWriter(file);
+            out = new BufferedWriter(new FileWriter(file));
+            out.write(contents);
+        } 
+        finally {
+            if (out != null) {
+                out.close();
+            }
+            else if (fw != null) {
+                fw.close();
+            }
+        }
+    }
+    
     @BeforeClass
     public static void initTest() {
         cleanupDirs=new ArrayList<File>();
@@ -72,7 +96,7 @@ public class TestFileDownloader {
             }
         }
     }
-    
+
     private void cancellationTest(boolean expected, final File toFile, final Callable<File> downloader) throws MalformedURLException, InterruptedException {
         final ExecutorService service=Executors.newSingleThreadExecutor();
         final Future<File> future=service.submit( downloader );
@@ -108,9 +132,34 @@ public class TestFileDownloader {
             }
         }
     }
+    
+//    @Test
+//    public void testDownloadFromBroadFtp_fileAlreadyExists() throws MalformedURLException, DownloadException {
+//        final File userUploadDir=newTmpDir();
+//        File userRootDir=new File(userUploadDir, "users");
+//        boolean success=userRootDir.mkdirs();
+//        if (!success) {
+//            Assert.fail("userRootDir already exists or could not be created: "+userRootDir);
+//        }
+//        System.setProperty("user.root.dir", userUploadDir.getAbsolutePath());
+//        //File f=new File(userRootDir, ".cache/uploads/cache");
+//
+//        CachedFtpFile cachedFile=new CachedFtpFile("ftp://gpftp.broadinstitute.org/chet/dummy_file_3.txt");
+//        
+//        try {
+//            GpFilePath tempPath=cachedFile.getTempPath(cachedFile.getLocalPath());
+//            success=tempPath.getServerFile().getParentFile().mkdirs();
+//            saveToFile(tempPath.getServerFile(), "Blow away partial download");
+//        }
+//        catch (IOException e) {
+//            Assert.fail("error initializing partial download file: "+cachedFile.getLocalPath().getServerFile());
+//        }
+//        GpFilePath downloaded=cachedFile.download();
+//        
+//    }
 
     @Test
-    public void testDownloadFromBroadFtp() throws MalformedURLException, InterruptedException {
+    public void testDownloadFromBroadFtp() throws MalformedURLException, InterruptedException, DownloadException {
         final URL fromUrl=new URL(smallFileFromBroadFtp);
         final File tmpDir=newTmpDir();
         final File toFile=new File(tmpDir, fromUrl.getFile());
@@ -128,7 +177,7 @@ public class TestFileDownloader {
     }
     
     @Test
-    public void testDownloadFromGpFtp() throws MalformedURLException, InterruptedException {
+    public void testDownloadFromGpFtp() throws MalformedURLException, InterruptedException, DownloadException {
         final URL fromUrl=new URL(gpftpFile);
         final File tmpDir=newTmpDir();
         final File toFile=new File(tmpDir, fromUrl.getFile());
@@ -303,5 +352,167 @@ public class TestFileDownloader {
             }
         });
     }
+    
+    
+/*
+ * Experimental code ...
+    //test a connection timeout
+    private static InputStream getMockInputStream() {
+        final InputStream is=Mockito.mock(InputStream.class);
+        //BDDMockito.given(is.read()).w
+        return is;
+    }
 
+    public static URL getMockUrl(final String filename) throws MalformedURLException {
+        final URLConnection mockConnection = Mockito.mock(URLConnection.class);
+        //BDDMockito.given(mockConnection.getInputStream()).willReturn( new FileInputStream(file) );
+        
+//        try {
+//            BDDMockito.given(mockConnection.getInputStream()).willReturn( getMockInputStream() );
+//            BDDMockito.given(mockConnection.getInputStream()).willThrow(new Throwable("Should directly invoke "));
+//        }
+//        catch (IOException e) {
+//            Assert.fail("Unexpected IOException initializing mockUrl( "+filename+" )");
+//        }
+
+        final URLStreamHandler handler = new URLStreamHandler() {
+
+            @Override
+            protected URLConnection openConnection(final URL arg0) throws IOException {
+                try {
+                    Thread.sleep(120*1000);
+                    //throw new IOException("connection timeout");
+                    return mockConnection;
+                }
+                catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    return mockConnection;
+                }
+            }
+            
+        };
+        URL actual=new URL(filename);
+        final URL url = new URL(actual.getProtocol(), actual.getHost(), actual.getPort(), actual.getFile(), handler);
+        return url;
+    }
+
+     //URLConnection connection=fromUrl.openConnection();
+     //   connection.setConnectTimeout(connectTimeout_ms);
+     //   connection.setReadTimeout(readTimeout_ms);
+     //   connection.connect();
+    static class MockUrlConnection extends URLConnection {
+        private final URLConnection actualUrlConnection;
+        private final int wait_ms;
+        
+        public MockUrlConnection(final URLConnection actualUrlConnection) {
+            this(actualUrlConnection, 60*1000);
+        }
+        public MockUrlConnection(final URLConnection actualUrlConnection, final int wait_ms) {
+            super(actualUrlConnection.getURL());
+            this.actualUrlConnection=actualUrlConnection;
+            this.wait_ms=wait_ms;
+        }
+        
+        @Override
+        public void setConnectTimeout(int connectTimeout) {
+            this.actualUrlConnection.setConnectTimeout(connectTimeout);
+        }
+        
+        @Override
+        public void setReadTimeout(int readTimeout) {
+            this.actualUrlConnection.setReadTimeout(readTimeout);
+        }
+
+        @Override
+        public void connect() throws IOException {
+            try {
+                Thread.sleep(wait_ms);
+                actualUrlConnection.connect();
+            }
+            catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                throw new IOException("we were interrupted!");
+            }            
+        }
+    }
+
+    private static URL getMockUrlLongConnectionTime(final int connectionTime_ms, final String urlStr) throws MalformedURLException, IOException {
+        final URL actual=new URL(urlStr);
+        //final URLConnection mockConnection = Mockito.mock(URLConnection.class);
+//        doAnswer(new Answer<Object>() {
+//            @Override
+//            public Object answer(InvocationOnMock invocation) throws Throwable {
+//                Thread.sleep(connectionTime_ms);
+//                actual.openConnection().connect();
+//                return null;
+//            }
+//        })
+//        .when(mockConnection).connect();
+
+        final URLStreamHandler handler = new URLStreamHandler() {
+            URLConnection urlConnection=null;
+            @Override
+            protected URLConnection openConnection(final URL arg0) throws IOException {
+                if (urlConnection==null) {
+                    actual.openConnection();
+                    urlConnection=new MockUrlConnection(actual.openConnection(), connectionTime_ms);
+                }
+                return urlConnection;
+                
+//                final URLConnection urlConnection = spy(actual.openConnection());
+//                doAnswer(new Answer<Object>() {
+//                    @Override
+//                    public Object answer(InvocationOnMock invocation) throws Throwable {
+//                        Thread.sleep(connectionTime_ms);
+//                        actual.openConnection().connect();
+//                        return null;
+//                    }
+//                })
+//                .when(urlConnection).connect();
+                
+                
+//                return mockConnection;
+//                try {
+//                    Thread.sleep(connectionTime_ms);
+//                    return actual.openConnection();
+//                }
+//                catch (InterruptedException e) {
+//                    Thread.currentThread().interrupt();
+//                }
+//                return null;
+            }
+        };
+
+        final URL url = new URL(actual.getProtocol(), actual.getHost(), actual.getPort(), actual.getFile(), handler);
+        return url;
+    }
+
+//    @Test
+//    public void testConnectionTimeout() throws IOException, MalformedURLException, InterruptedException {
+//        // the amount of time to wait before cancelling the download
+//        final boolean deleteExisting=true;
+//        final int connectTimeout_ms=5000;
+//        final int readTimeout_ms=5000;
+//
+//        // the actual amount of time to delay the connection, to force the issue
+//        final int actualConnectTimeout_ms=60*1000;
+//        
+//        final URL fromUrl=getMockUrlLongConnectionTime(actualConnectTimeout_ms, gpftpFile);
+//        final File tmpDir=newTmpDir();
+//        final File toFile=new File(tmpDir, fromUrl.getFile());
+//        
+//        try {
+//            CachedFtpFile.downloadFile(fromUrl, toFile, deleteExisting, connectTimeout_ms, readTimeout_ms);
+//            Assert.fail("Expecting connect timeout after 5 sec");
+//        }
+//        catch (IOException e) {
+//            //expected
+//        }
+//        finally {
+//            //do we need to clean up?
+//        }
+//    }
+ * 
+ *  end experimental code block comment.
+ */
 }

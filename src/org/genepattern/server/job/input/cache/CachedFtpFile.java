@@ -122,19 +122,20 @@ public class CachedFtpFile implements CachedFile {
      * @param toFile
      * @throws IOException
      */
-    public static void downloadFile(final URL fromUrl, final File toFile) throws IOException, InterruptedException {
+    public static void downloadFile(final URL fromUrl, final File toFile) throws IOException, InterruptedException, DownloadException {
         final boolean replaceExisting=true;
         downloadFile(fromUrl, toFile, replaceExisting);
     }
-    public static boolean downloadFile(final URL fromUrl, final File toFile, final boolean deleteExisting) throws IOException, InterruptedException {
+    public static boolean downloadFile(final URL fromUrl, final File toFile, final boolean deleteExisting) throws IOException, InterruptedException, DownloadException {
         final int connectTimeout_ms=60*1000; //wait up to 60 seconds to establish a connection
         final int readTimeout_ms=60*1000; //wait up to 60 seconds when reading from the input 
         return downloadFile(fromUrl, toFile, deleteExisting, connectTimeout_ms, readTimeout_ms);
     }
 
-    public static boolean downloadFile(final URL fromUrl, final File toFile, final boolean deleteExisting, final int connectTimeout_ms, final int readTimeout_ms) throws IOException, InterruptedException {
+    public static boolean downloadFile(final URL fromUrl, final File toFile, final boolean deleteExisting, final int connectTimeout_ms, final int readTimeout_ms) 
+    throws IOException, InterruptedException, DownloadException {
         if (toFile==null) {
-            throw new IllegalArgumentException("toFile==null");
+            throw new DownloadException("Invalid arg: toFile==null");
         }
         if (toFile.exists()) {
             if (log.isDebugEnabled()) { log.debug("toFile exists: "+toFile.getAbsolutePath()); }
@@ -145,11 +146,11 @@ public class CachedFtpFile implements CachedFile {
                 final boolean success=toFile.delete();
                 log.debug("success="+success);
                 if (!success) {
-                    throw new IllegalArgumentException("failed to delete existing file: "+toFile.getAbsolutePath());
+                    throw new DownloadException("failed to delete existing file: "+toFile.getAbsolutePath());
                 }
             }
             else {
-                throw new IllegalArgumentException("file already exists: "+toFile.getAbsolutePath());
+                throw new DownloadException("file already exists: "+toFile.getAbsolutePath());
             }
         }
 
@@ -170,7 +171,7 @@ public class CachedFtpFile implements CachedFile {
         }
         if (!parentDir.exists()) {
             log.error("Error downloading file from '"+fromUrl+"' to '"+toFile.getAbsolutePath()+"', parentDir doesn't exist: "+parentDir.getAbsolutePath());
-            throw new IllegalArgumentException("Error creating parent download directory: "+parentDir.getAbsolutePath());
+            throw new DownloadException("Error creating parent download directory: "+parentDir.getAbsolutePath());
         }
         boolean interrupted=false;
         BufferedInputStream in = null;
