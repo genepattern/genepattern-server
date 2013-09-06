@@ -877,11 +877,7 @@ function loadParameterInfo(parameters, initialValues)
                 textField.change(function()
                 {
                     var valueList = [];
-
-                    if($(this).val() != "")
-                    {
-                        valueList.push($(this).val());
-                    }
+                    valueList.push($(this).val());
 
                     var paramName = $(this).attr("name");
                     parameter_and_val_obj[paramName] = valueList;
@@ -1226,7 +1222,7 @@ function reset()
     //remove all input file parameter file listings
     param_file_listing = {};
 
-    loadParameterInfo(parametersJson, initialValues);
+    loadParameterInfo(parametersJson, null);
 }
 
 function isText(param)
@@ -1269,8 +1265,16 @@ function validate()
         var required = $(paramId).hasClass("requiredParam");
         //check if it is required and there is no value specified
         if(required && (value == undefined || value == null
-            || value.length == 0))
+            || value.length == 0 || value.length == 1))
         {
+            if(value.length == 1)
+            {
+                if(value[0] != "")
+                {
+                   break;
+                }
+            }
+
             missingReqParameters.push(paramNames[p]);
         }
     }
