@@ -21,10 +21,6 @@ import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import com.enterprisedt.net.ftp.FTPConnectMode;
-import com.enterprisedt.net.ftp.FTPException;
-import com.enterprisedt.net.ftp.FTPTransferType;
-import com.enterprisedt.net.ftp.FileTransferClient;
 import com.google.common.io.Files;
 
 
@@ -35,15 +31,24 @@ import com.google.common.io.Files;
  *
  */
 public class TestFileDownloader {
-    //large file (3073525 KB, ~2.9G)
-    final String largeFile="ftp://ftp.broadinstitute.org/pub/genepattern/rna_seq/whole_genomes/Homo_sapiens_Ensembl_GRCh37.fa";
     //smaller file (118811 KB)
-    //final String smallFileFromBroadFtp="ftp://ftp.broadinstitute.org/pub/genepattern/rna_seq/whole_genomes/Arabidopsis_thaliana_Ensembl_TAIR10.fa";
-    final String smallFileFromBroadFtp="ftp://gpftp.broadinstitute.org/chet/dummy_file_2.txt";
+    private static final String aThalianaUrl="ftp://ftp.broadinstitute.org/pub/genepattern/rna_seq/whole_genomes/Arabidopsis_thaliana_Ensembl_TAIR10.fa";
+    private static final String aThaliana_expectedName="Arabidopsis_thaliana_Ensembl_TAIR10.fa";
+    private static final long aThaliana_expectedLength=121662238L;
+    
+    //large file (3073525 KB, ~2.9G)
+    private static final String largeFile="ftp://ftp.broadinstitute.org/pub/genepattern/rna_seq/whole_genomes/Homo_sapiens_Ensembl_GRCh37.fa";
+    private static final String largeFile_expectedName="Homo_sapiens_Ensembl_GRCh37.fa";
+    private static final long largeFile_expectedLength=118820495L;
+    
+    //tiny file on gpftp site
+    final String smallFileUrl="ftp://gpftp.broadinstitute.org/chet/dummy_file_2.txt";
+    final long smallFile_expectedLength=13L;
+    final String smallFile_expectedName="dummy_file_2.txt";
+
     //smaller file on gpftp site (116036 KB)
     //final String gpftpFile="ftp://gpftp.broadinstitute.org/rna_seq/referenceAnnotation/gtf/Homo_sapiens_UCSC_hg18.gtf";
-    //tiny file on gpftp site
-    final String gpftpFile="ftp://gpftp.broadinstitute.org/chet/dummy_file_3.txt";
+    //long expectedLength=118820495L;
 
     /*
      * this class creates tmp dirs, but cleans up after itself. 
@@ -98,10 +103,11 @@ public class TestFileDownloader {
     }
 
     private void cancellationTest(boolean expected, final File toFile, final Callable<File> downloader) throws MalformedURLException, InterruptedException {
+        final int sleep_interval_ms=4000;
         final ExecutorService service=Executors.newSingleThreadExecutor();
         final Future<File> future=service.submit( downloader );
 
-        Thread.sleep(2000);
+        Thread.sleep(sleep_interval_ms);
         final boolean mayInterruptIfRunning=true;
         final boolean isCancelled=future.cancel(mayInterruptIfRunning);
         if (!isCancelled) {
@@ -110,17 +116,16 @@ public class TestFileDownloader {
         
         //does cancel have any effect?
         long ts01=toFile.lastModified();
-        Thread.sleep(2000);
+        Thread.sleep(sleep_interval_ms);
         long ts02=toFile.lastModified();
         boolean cancelWorked=ts02==ts01;
-        
-        
+
         //does shutdown have any effect? Note: always shut down, even if cancel worked
         service.shutdownNow();
         if (!cancelWorked) {
-            Thread.sleep(4000);
+            Thread.sleep(sleep_interval_ms);
             long ts03=toFile.lastModified();
-            Thread.sleep(4000);
+            Thread.sleep(sleep_interval_ms);
             long ts04=toFile.lastModified();
             boolean shutdownWorked=ts04==ts03;
             
@@ -160,130 +165,91 @@ public class TestFileDownloader {
 
     @Test
     public void testDownloadFromBroadFtp() throws MalformedURLException, InterruptedException, DownloadException {
-        final URL fromUrl=new URL(smallFileFromBroadFtp);
+        final URL fromUrl=new URL(smallFileUrl);
         final File tmpDir=newTmpDir();
         final File toFile=new File(tmpDir, fromUrl.getFile());
         try {
-            CachedFtpFile.downloadFile(fromUrl, toFile);
+            CachedFtpFile cachedFtpFile = CachedFtpFile.Factory.instance().newStdJava6Impl(fromUrl.toExternalForm());
+            cachedFtpFile.downloadFile(fromUrl, toFile);
         }
         catch (IOException e) {
             Assert.fail("IOException downloading file: "+e.getLocalizedMessage());
         }
         
         //size check
-        long expectedLength=121662238L;
-        Assert.assertEquals("name check", "Arabidopsis_thaliana_Ensembl_TAIR10.fa", toFile.getName());
-        Assert.assertEquals("size check", expectedLength, toFile.length());
+        Assert.assertEquals("name check", smallFile_expectedName, toFile.getName());
+        Assert.assertEquals("size check", smallFile_expectedLength, toFile.length());
     }
     
     @Test
     public void testDownloadFromGpFtp() throws MalformedURLException, InterruptedException, DownloadException {
-        final URL fromUrl=new URL(gpftpFile);
+        final URL fromUrl=new URL(smallFileUrl);
         final File tmpDir=newTmpDir();
         final File toFile=new File(tmpDir, fromUrl.getFile());
         try {
-            CachedFtpFile.downloadFile(fromUrl, toFile);
+            CachedFtpFile cachedFtpFile = CachedFtpFile.Factory.instance().newStdJava6Impl(fromUrl.toExternalForm());
+            cachedFtpFile.downloadFile(fromUrl, toFile);
         }
         catch (IOException e) {
             Assert.fail("IOException downloading file: "+e.getLocalizedMessage());
         }
         
         //size check
-        long expectedLength=118820495L;
-        Assert.assertEquals("name check", "Homo_sapiens_UCSC_hg18.gtf", toFile.getName());
-        Assert.assertEquals("size check", expectedLength, toFile.length());
+        Assert.assertEquals("name check", smallFile_expectedName, toFile.getName());
+        Assert.assertEquals("size check", smallFile_expectedLength, toFile.length());
     }
     
     @Test
     public void testDownload_apacheCommons() throws MalformedURLException {
-        final URL fromUrl=new URL(gpftpFile);
+        final URL fromUrl=new URL(smallFileUrl);
         final File tmpDir=newTmpDir();
         final File toFile=new File(tmpDir, fromUrl.getFile());
         try {
-            FileUtils.copyURLToFile(fromUrl, toFile);
+            CachedFtpFile cachedFtpFile = CachedFtpFile.Factory.instance().newApacheCommonsImpl(fromUrl.toExternalForm());
+            cachedFtpFile.downloadFile(fromUrl, toFile);
         }
         catch (Throwable e) {
             Assert.fail("Error downloading file: "+e.getClass().getName()+" - "+e.getLocalizedMessage());
         }
         
         //size check
-        long expectedLength=118820495L;
-        Assert.assertEquals("name check", "Homo_sapiens_UCSC_hg18.gtf", toFile.getName());
-        Assert.assertEquals("size check", expectedLength, toFile.length());
+        Assert.assertEquals("name check", smallFile_expectedName, toFile.getName());
+        Assert.assertEquals("size check", smallFile_expectedLength, toFile.length());
     }
 
     @Test
     public void testDownload_EdtFtp_simple() throws MalformedURLException {
-        final URL fromUrl=new URL(gpftpFile);
+        final URL fromUrl=new URL(smallFileUrl);
         final File tmpDir=newTmpDir();
         final File toFile=new File(tmpDir, fromUrl.getFile());
-        
-        //Note: must create download dir or the ftp transfer will fail ... after a long interval (200 s or so)
-        final File toParent=toFile.getParentFile();
-        if (!toParent.exists()) {
-            boolean success=toFile.getParentFile().mkdirs();
-            if (!success) {
-                Assert.fail("failed to create parent dir before download, parentDir="+toParent);
-            }
-        }
-        
         try {
-            FileTransferClient.downloadURLFile(toFile.getAbsolutePath(), fromUrl.toExternalForm());
+            CachedFtpFile cachedFtpFile = CachedFtpFile.Factory.instance().newEdtFtpJImpl_simple(fromUrl.toExternalForm());
+            cachedFtpFile.downloadFile(fromUrl, toFile);
         }
-        catch (IOException e) {
-            Assert.fail(e.getClass().getName()+" - " + e.getLocalizedMessage());
+        catch (Throwable e) {
+            Assert.fail("Error downloading file: "+e.getClass().getName()+" - "+e.getLocalizedMessage());
         }
-        catch (FTPException e) {
-            Assert.fail(e.getClass().getName()+" - " + e.getLocalizedMessage());
-        }
+
         //size check
-        long expectedLength=118820495L;
-        Assert.assertEquals("name check", "Homo_sapiens_UCSC_hg18.gtf", toFile.getName());
-        Assert.assertEquals("size check", expectedLength, toFile.length());
+        Assert.assertEquals("name check", smallFile_expectedName, toFile.getName());
+        Assert.assertEquals("size check", smallFile_expectedLength, toFile.length());
     }
 
     @Test
     public void testDownload_EdtFtp_advanced() throws MalformedURLException {
-        final URL fromUrl=new URL(gpftpFile);
+        final URL fromUrl=new URL(smallFileUrl);
         final File tmpDir=newTmpDir();
         final File toFile=new File(tmpDir, fromUrl.getFile());
-        
-        final File toParent=toFile.getParentFile();
-        if (!toParent.exists()) {
-            boolean success=toFile.getParentFile().mkdirs();
-            if (!success) {
-                Assert.fail("failed to create parent dir before download, parentDir="+toParent);
-            }
-        }
-
-        FileTransferClient ftp = new FileTransferClient();
         try {
-            ftp.setRemoteHost("gpftp.broadinstitute.org");
-            ftp.setUserName("anonymous");
-            ftp.setPassword("gp-help@broadinstute.org");
-            ftp.connect();
-            ftp.setContentType(FTPTransferType.BINARY);
-            ftp.getAdvancedFTPSettings().setConnectMode(FTPConnectMode.PASV);
-            ftp.changeDirectory("/rna_seq/referenceAnnotation/gtf");
-            ftp.downloadFile(toFile.getAbsolutePath(), "Homo_sapiens_UCSC_hg18.gtf");
-        } 
-        catch (Exception e) {
-            Assert.fail(e.getClass().getName()+" - " + e.getLocalizedMessage());
-        } 
-        finally {
-            if (ftp.isConnected()) {
-                try {
-                    ftp.disconnect();
-                } 
-                catch (Exception e) {
-                    Assert.fail(e.getClass().getName()+" - " + e.getLocalizedMessage());
-                }
-            }
+            CachedFtpFile cachedFtpFile = CachedFtpFile.Factory.instance().newEdtFtpJImpl(fromUrl.toExternalForm());
+            cachedFtpFile.downloadFile(fromUrl, toFile);
+        }
+        catch (Throwable e) {
+            Assert.fail("Error downloading file: "+e.getClass().getName()+" - "+e.getLocalizedMessage());
         }
         //size check
-        long expectedLength=118820495L;
-        Assert.assertEquals("name check", "Homo_sapiens_UCSC_hg18.gtf", toFile.getName());
-        Assert.assertEquals("size check", expectedLength, toFile.length());
+        Assert.assertEquals("name check", smallFile_expectedName, toFile.getName());
+        Assert.assertEquals("size check", smallFile_expectedLength, toFile.length());
     }
 
 
@@ -302,7 +268,8 @@ public class TestFileDownloader {
         cancellationTest(true, toFile, new Callable<File>() {
             @Override
             public File call() throws Exception {
-                CachedFtpFile.downloadFile(fromUrl, toFile);
+            CachedFtpFile cachedFtpFile = CachedFtpFile.Factory.instance().newStdJava6Impl(fromUrl.toExternalForm());
+                cachedFtpFile.downloadFile(fromUrl, toFile);
                 return toFile;
             }
         });
@@ -312,6 +279,8 @@ public class TestFileDownloader {
      * The apache commons downloader does not respond to an interrupt, so it will continue to
      * download until the thread is killed, in jUnit I assume it is because it's created as a daemon
      * thread. In the GP server, the thread runs to completion before the server JVM exits.
+     * 
+     * See: https://issues.apache.org/jira/browse/NET-419, for a description of the problem
      */
     @Test
     public void testCancelDownloadApacheCommons() throws MalformedURLException, InterruptedException {
@@ -321,14 +290,15 @@ public class TestFileDownloader {
         cancellationTest(false, toFile, new Callable<File>() {
             @Override
             public File call() throws Exception {
-                FileUtils.copyURLToFile(fromUrl, toFile);
+                CachedFtpFile cachedFtpFile = CachedFtpFile.Factory.instance().newApacheCommonsImpl(fromUrl.toExternalForm());
+                cachedFtpFile.downloadFile(fromUrl, toFile);
                 return toFile;
             }
         });
     }
     
     /**
-     * The edtFtp downloader does not respond to an interrupt.
+     * When wrapped in a helper method, the edtFtp downloader can respond to an interrupt.
      * @throws MalformedURLException
      * @throws InterruptedException
      */
@@ -344,10 +314,11 @@ public class TestFileDownloader {
                 Assert.fail("failed to create parent dir before download, parentDir="+toParent);
             }
         }
-        cancellationTest(false, toFile, new Callable<File>() {
+        cancellationTest(true, toFile, new Callable<File>() {
             @Override
             public File call() throws Exception {
-                FileTransferClient.downloadURLFile(toFile.getAbsolutePath(), fromUrl.toExternalForm());
+                CachedFtpFile cachedFtpFile = CachedFtpFile.Factory.instance().newEdtFtpJImpl(fromUrl.toExternalForm());
+                cachedFtpFile.downloadFile(fromUrl, toFile);
                 return toFile;
             }
         });
