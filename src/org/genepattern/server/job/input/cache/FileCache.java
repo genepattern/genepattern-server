@@ -59,6 +59,8 @@ public class FileCache {
             return t;
         }
     });
+    
+    
     private final ConcurrentMap<String, Future<CachedFile>> cache = new ConcurrentHashMap<String, Future<CachedFile>>();
     
     /**
@@ -89,12 +91,21 @@ public class FileCache {
                 }
             }
         }
-        return new CachedFtpFile(externalUrl);
-    }
+        
+        /*
+         * change the default ftp downloader by making an edit to the config.yaml file, e.g.  
+         *     ftpDownloader.type: JAVA_6
+         *     ftpDownloader.type: COMMONS_NET_3_3
+         *     ftpDownloader.type: EDT_FTP_J
+         *     ftpDownloader.type: EDT_FTP_J_SIMPLE
+         */
+        return CachedFtpFile.Factory.instance().newCachedFtpFile(externalUrl);
+     }
     
     public void shutdownNow() {
         downloadService.shutdownNow();
         evictionService.shutdownNow();
+        CachedFtpFile.Factory.instance().shutdownNow();
     }
     
     static class AlreadyDownloaded implements Future<CachedFile> {
