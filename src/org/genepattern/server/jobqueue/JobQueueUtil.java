@@ -130,32 +130,36 @@ public class JobQueueUtil {
         }
     }
     
-    static public void deleteJobQueueStatusRecord(int jobNo) throws Exception {
+    /**
+     * Remove the entry for the given job from the JOB_QUEUE table.
+     * 
+     * @param jobNo
+     * @return the number of deleted records, should be 1 for a successful delete or 0 if there was no record in the DB.
+     * @throws Exception if there were an unexpected number of records in the DB
+     */
+    static public int deleteJobQueueStatusRecord(int jobNo) {
         boolean inTransaction = HibernateUtil.isInTransaction();
+        log.debug("job #"+jobNo+", isInTransaction="+inTransaction);
         try {
             HibernateUtil.beginTransaction();
             String hql = "delete "+JobQueue.class.getName()+" jq where jq.jobNo = :jobNo";
             Query query = HibernateUtil.getSession().createQuery( hql );
             query.setInteger("jobNo", jobNo);
             int numDeleted = query.executeUpdate();
-            if (numDeleted == 1) {
-                if (!inTransaction) {
-                    HibernateUtil.commitTransaction();
-                }
+            log.debug("for job #"+jobNo+", numDeleted="+numDeleted);
+            if (!inTransaction) {
+                log.debug("for job #"+jobNo+", DB commit");
+                HibernateUtil.commitTransaction();
             }
-            else {
-                HibernateUtil.rollbackTransaction();
-                if (numDeleted==0) {
-                    log.debug("No entry in JOB_QUEUE with jobNo="+jobNo);
-                }
-                else {
-                    log.error("Deleted more than one entry from JOB_QUEUE with jobNo="+jobNo+", numDeleted="+numDeleted);
-                }
+            if (numDeleted>1) {
+                log.error("Deleted more than one entry from JOB_QUEUE with jobNo="+jobNo+", numDeleted="+numDeleted);
             }
+            return numDeleted;
         }
         catch (Throwable t) {
+            log.error("Error removing record from JOB_QUEUE for job_no="+jobNo, t);
             HibernateUtil.rollbackTransaction();
-            throw new Exception(t);
+            return 0;
         }
         finally {
             if (!inTransaction) {

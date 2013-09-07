@@ -346,12 +346,8 @@ public class AnalysisJobScheduler implements Runnable {
             if (!f.isDone()) {
                 boolean isCancelled=f.cancel(true);
                 log.info("cancelled jobId="+jobId+", isCancelled="+isCancelled);
-                try {
-                    JobQueueUtil.deleteJobQueueStatusRecord(jobId);
-                }
-                catch (Exception ex) {
-                    log.error("Error removing record from JOB_QUEUE for job_no="+jobId, ex);
-                }
+                int numDeleted=JobQueueUtil.deleteJobQueueStatusRecord(jobId);
+                if (log.isDebugEnabled()) { log.debug("numDeleted="+numDeleted); }
             }
         }
         

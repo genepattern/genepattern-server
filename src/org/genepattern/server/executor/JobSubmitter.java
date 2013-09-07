@@ -54,12 +54,8 @@ public class JobSubmitter implements Runnable {
                 log.info("job already completed, jobId="+jobId+", removing from JOB_QUEUE");
             }
         
-            try {
-                JobQueueUtil.deleteJobQueueStatusRecord(jobId);
-            }
-            catch (Exception ex) {
-                log.error("Error removing record from JOB_QUEUE for job_no="+jobId, ex);
-            }
+            int numDeleted=JobQueueUtil.deleteJobQueueStatusRecord(jobId);
+            if (log.isDebugEnabled()) { log.debug("numDeleted="+numDeleted); }
             return;
         }
 
@@ -86,12 +82,8 @@ public class JobSubmitter implements Runnable {
         }
         finally {
             if (!interrupted) {
-                try {
-                    JobQueueUtil.deleteJobQueueStatusRecord(jobId);
-                }
-                catch (Exception ex) {
-                    log.error("Error removing record from JOB_QUEUE for job_no="+jobId, ex);
-                }
+                int numDeleted=JobQueueUtil.deleteJobQueueStatusRecord(jobId);
+                if (log.isDebugEnabled()) { log.debug("numDeleted="+numDeleted); }
             }
             else {
                 Thread.currentThread().interrupt();

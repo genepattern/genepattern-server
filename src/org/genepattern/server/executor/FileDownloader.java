@@ -44,15 +44,19 @@ public class FileDownloader {
     public static final JobInfo initJobInfo(final Integer jobId) throws JobDispatchException {
         JobInfo jobInfo = null;
         final boolean isInTransaction=HibernateUtil.isInTransaction();
+        log.debug("job #"+jobId+", isInTransaction="+isInTransaction);
         try {
             AnalysisDAO dao = new AnalysisDAO();
             jobInfo = dao.getJobInfo(jobId);
         }
         catch (Throwable t) {
+            final String message="Server error: Not able to load jobInfo for jobId: "+jobId;
+            log.debug(message, t);
             throw new JobDispatchException("Server error: Not able to load jobInfo for jobId: "+jobId, t);
         }
         finally {
             if (!isInTransaction) {
+                log.debug("job #"+jobId+", closing DB session");
                 HibernateUtil.closeCurrentSession();
             }
         }
