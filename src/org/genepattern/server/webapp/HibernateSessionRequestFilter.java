@@ -14,11 +14,15 @@ package org.genepattern.server.webapp;
 
 import java.io.IOException;
 
-import javax.servlet.*;
+import javax.servlet.Filter;
+import javax.servlet.FilterChain;
+import javax.servlet.FilterConfig;
+import javax.servlet.ServletException;
+import javax.servlet.ServletRequest;
+import javax.servlet.ServletResponse;
 
 import org.apache.log4j.Logger;
 import org.genepattern.server.database.HibernateUtil;
-import org.hibernate.SessionFactory;
 import org.hibernate.StaleObjectStateException;
 
 public class HibernateSessionRequestFilter implements Filter {
@@ -29,15 +33,23 @@ public class HibernateSessionRequestFilter implements Filter {
             ServletException {
 
         try {
+            if (log.isDebugEnabled()) {
+                final boolean alreadyInTransaction=HibernateUtil.isInTransaction();
+                log.debug("about to begin transaction, alreadyInTransaction="+alreadyInTransaction);
+            }
             HibernateUtil.beginTransaction();
 
             // Call the next filter (continue request processing)
             chain.doFilter(request, response);
 
             // Commit and cleanup
-            HibernateUtil.commitTransaction();
-            
-
+            final boolean stillInTransaction=HibernateUtil.isInTransaction();
+            if (log.isDebugEnabled()) {
+                log.debug("end of filter, stillInTransaction="+stillInTransaction);
+            }
+            if (stillInTransaction) {
+                HibernateUtil.commitTransaction();
+            }
         }
         catch (StaleObjectStateException staleEx) {
             log.error("This interceptor does not implement optimistic concurrency control!");
@@ -55,12 +67,11 @@ public class HibernateSessionRequestFilter implements Filter {
             catch (Throwable rbEx) {
                 log.error("Could not rollback transaction after exception!", rbEx);
             }
-            finally {
-                HibernateUtil.closeCurrentSession();
-            }
-
             // Let others handle it... maybe another interceptor for exceptions?
             throw new ServletException(ex);
+        }
+        finally {
+            HibernateUtil.closeCurrentSession();
         }
     }
 
