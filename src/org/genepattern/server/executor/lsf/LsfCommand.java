@@ -3,12 +3,14 @@ package org.genepattern.server.executor.lsf;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import org.apache.log4j.Logger;
+import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.executor.CommandProperties;
 import org.genepattern.server.executor.CommandProperties.Value;
 import org.genepattern.server.genepattern.GenePatternAnalysisTask;
@@ -124,7 +126,8 @@ class LsfCommand {
             extraBsubArgs.add("select["+host+"]");
         }
         
-        extraBsubArgs.addAll(getPreExecCommand(jobInfo));
+        final List<String> preExecArgs=getPreExecCommand(jobInfo);
+        extraBsubArgs.addAll(preExecArgs);
         this.lsfJob.setExtraBsubArgs(extraBsubArgs);
 
         String commandLineStr = wrapCommandLineArgsInSingleQuotes(commandLine);
@@ -190,11 +193,10 @@ class LsfCommand {
      * @return a List of extra args to include with the bsub command, an empty list if no pre_exec_command is required.
      */
     private List<String> getPreExecCommand(final JobInfo jobInfo) { 
-        final List<String> rval = new ArrayList<String>();
-        
         if (!Boolean.valueOf(this.lsfProperties.getProperty(LsfProperties.Key.USE_PRE_EXEC_COMMAND.getKey()))) {
-            return rval;
+            return Collections.emptyList();
         }
+        final List<String> rval = new ArrayList<String>();
 
         final Set<String> filePaths = new HashSet<String>();
         
@@ -204,7 +206,8 @@ class LsfCommand {
         }
         
         // add libdir
-		filePaths.add(getLibDir(jobInfo));
+        final String libDir=getLibDir(jobInfo);
+		filePaths.add(libDir);
 
         //add the working directory for the job
         final String jobDirName = GenePatternAnalysisTask.getJobDir(""+jobInfo.getJobNumber());
@@ -248,10 +251,27 @@ class LsfCommand {
     }
 
     private String getLibDir(final JobInfo jobInfo) {
-    	try {
-    		return new File(DirectoryManager.getLibDir(jobInfo.getTaskLSID())).getAbsolutePath() + File.separator;
-    	} catch (final Exception e) {
-    		throw new RuntimeException("Exception getting libdir", e);
-    	}
+        final boolean isInTransaction=HibernateUtil.isInTransaction();
+        if (log.isDebugEnabled()) {
+            log.debug("getting libDir for job #"+jobInfo.getJobNumber()+", isInTransaction="+isInTransaction);
+        }
+        try {
+            final String lsid=jobInfo.getTaskLSID();
+            final String libDir=DirectoryManager.getLibDir(lsid);
+            File file = new File(libDir);
+            return file.getAbsolutePath() + File.separator;
+        } 
+        catch (Throwable t) {
+            log.error("Error getting libDir for job #"+jobInfo.getJobNumber(), t);
+            throw new RuntimeException("Exception getting libdir", t); 
+        }
+        finally {
+            if (!isInTransaction) {
+                if (log.isDebugEnabled()) {
+                    log.debug("job #"+jobInfo.getJobNumber()+", isInTransaction was "+isInTransaction+", closing DB session");
+                }
+                HibernateUtil.closeCurrentSession();
+            }
+        }
     }
 }
