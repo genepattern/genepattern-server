@@ -2377,10 +2377,10 @@ jQuery(document).ready(function() {
         }
 
         if (!hasDocFiles()) {
-            dialogHTML += '<img src="styles/images/alert.gif" alt="Alert" /> <span style="color:red;">This module does not have attached PDF documentation.</span><br/><br/>';
+            dialogHTML += '<img src="styles/images/alert.gif" alt="Alert" /> <span style="color:red;">This module does not have attached documentation.</span><br/><br/>';
         }
 
-        dialogHTML += '<ol><li>To submit a module to GParc the module will need to have attached documentation in PDF format.</li>' + 
+        dialogHTML += '<ol><li>To submit a module to GParc the module will need to have attached documentation.</li>' + 
         	'<li>Click the Submit to GParc button below and wait for your module to be uploaded.</li>' +
             '<li><strong>You will need a GParc account and will need to be logged in. This account is different from your GenePattern account.</strong>' +
             '<ul><li>To register for a GParc account <a href="http://www.broadinstitute.org/software/gparc/user/register" target="_blank" style="text-decoration: underline; color: #000099;">click here</a>.</li>' +
