@@ -966,7 +966,7 @@ function changeParameterType(element)
                     {
                         //remove any values specified for static or dynamic drop-down lists
                         $(this).parents(".editChoicesDialog").find("input[name='choiceURL']").val("");
-                        $(this).parents(".editChoicesDialog").find("input[name='choiceURL']").val("");
+                        $(this).parents(".editChoicesDialog").find("input[name='choiceURLFilter']").val("");
 
                         $(this).parents(".editChoicesDialog").find(".choicesURLDiv").show();
                         $(this).parents(".editChoicesDialog").find(".staticChoicesDiv").hide();
