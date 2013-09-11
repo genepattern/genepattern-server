@@ -964,6 +964,12 @@ function changeParameterType(element)
 
                     dynamicChoiceButton.click(function()
                     {
+                        if($(this).data("prevSelection") == "dynamic")
+                        {
+                            //do nothing since no change from previous selection
+                            return;
+                        }
+
                         //remove any values specified for static or dynamic drop-down lists
                         $(this).parents(".editChoicesDialog").find("input[name='choiceURL']").val("");
                         $(this).parents(".editChoicesDialog").find("input[name='choiceURLFilter']").val("");
@@ -971,10 +977,20 @@ function changeParameterType(element)
                         $(this).parents(".editChoicesDialog").find(".choicesURLDiv").show();
                         $(this).parents(".editChoicesDialog").find(".staticChoicesDiv").hide();
                         $(this).parents(".editChoicesDialog").find(".staticChoiceLink").removeAttr("checked");
+
+                        //keep track of previously selected drop-down list types
+                        $(this).parents(".selectChoiceTypeDiv").find(".staticChoice").data("prevSelection", "dynamic");
+                        $(this).data("prevSelection", "dynamic");
                     });
 
                     staticChoiceButton.click(function()
                     {
+                        if($(this).data("prevSelection") == "static")
+                        {
+                            //do nothing since no change from previous selection
+                            return;
+                        }
+
                         //remove any values specified for static or dynamic drop-down lists
                         $(this).parents(".editChoicesDialog").find("input[name='choiceURL']").val("");
                         $(this).parents(".editChoicesDialog").find("input[name='choiceURLFilter']").val("");
@@ -982,6 +998,10 @@ function changeParameterType(element)
                         $(this).parents(".editChoicesDialog").find(".choicesURLDiv").hide();
                         $(this).parents(".editChoicesDialog").find(".staticChoicesDiv").show();
                         $(this).parents(".editChoicesDialog").find(".staticChoiceLink").removeAttr("checked");
+
+                        //keep track of previously selected choices
+                        $(this).parents(".selectChoiceTypeDiv").find(".dynamicChoice").data("prevSelection", "static");
+                        $(this).data("prevSelection", "static");
                     });
 
                     var selectChoiceTypeDiv = $("<div class='selectChoiceTypeDiv hcontent'/>");
