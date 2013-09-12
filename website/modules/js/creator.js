@@ -941,6 +941,16 @@ function changeParameterType(element)
                     altStaticChoiceToggle.click(function(event)
                     {
                         $(this).parents(".editChoicesDialog").find(".staticChoicesDiv").toggle();
+
+                        //hide the default value column
+                        $(this).parents(".editChoicesDialog").find(".staticChoiceTable").find("tr").each(function()
+                        {
+                            var numElements = $(this).find("td").length;
+                            if(numElements > 2)
+                            {
+                                $(this).find("td:nth-child(2)").hide();
+                            }
+                        });
                     });
                     $("<span>Specify alternative static drop-down list</span>").prepend(altStaticChoiceToggle).appendTo(choiceURLDiv);
 
@@ -986,6 +996,7 @@ function changeParameterType(element)
 
                         $(this).parents(".editChoicesDialog").find(".choicesURLDiv").show();
                         $(this).parents(".editChoicesDialog").find(".staticChoicesDiv").hide();
+
                         $(this).parents(".editChoicesDialog").find(".staticChoiceLink").removeAttr("checked");
 
                         //keep track of previously selected drop-down list types
@@ -1007,6 +1018,7 @@ function changeParameterType(element)
 
                         $(this).parents(".editChoicesDialog").find(".choicesURLDiv").hide();
                         $(this).parents(".editChoicesDialog").find(".staticChoicesDiv").show();
+                        $(this).parents(".editChoicesDialog").find(".staticChoicesDiv").find(".staticChoiceTable").find("td").show();
                         $(this).parents(".editChoicesDialog").find(".staticChoiceLink").removeAttr("checked");
 
                         //keep track of previously selected choices
