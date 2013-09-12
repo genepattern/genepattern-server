@@ -1735,7 +1735,6 @@ function loadParameterInfo(parameters)
         {
 
             newParameter.find('input[name="choicelist"]').val(choices);
-            newParameter.find('input[name="choicelist"]').trigger("change");
         }
 
         var choiceDir = parameters[i].choiceDir;
@@ -1751,6 +1750,8 @@ function loadParameterInfo(parameters)
             newParameter.find('input[name="choiceDirFilter"]').val(choiceDirFilter);
             newParameter.find('input[name="choiceDirFilter"]').trigger("change");
         }
+
+        newParameter.find('input[name="choicelist"]').trigger("change");
 
         var allAttrs = {};
         $.each(parameters[i], function(keyName, value) {
