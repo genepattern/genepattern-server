@@ -389,7 +389,6 @@ public class ChoiceInfo {
         }
         //otherwise select the first item from the list
         selected=choices.get(0);
-        selected=defaultChoice;
         log.debug("Initial selection is "+selected);
     }
     
