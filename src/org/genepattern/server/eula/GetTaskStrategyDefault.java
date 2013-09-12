@@ -1,5 +1,6 @@
 package org.genepattern.server.eula;
 
+import org.apache.log4j.Logger;
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.webservice.TaskInfo;
 import org.genepattern.webservice.TaskInfoCache;
@@ -11,10 +12,14 @@ import org.genepattern.webservice.TaskInfoCache;
  * @author pcarr
  */
 public class GetTaskStrategyDefault implements GetTaskStrategy {
-    //@Override
+    private static final Logger log = Logger.getLogger(GetTaskStrategyDefault.class);
+    @Override
     public TaskInfo getTaskInfo(final String lsid) {
         //must be in a DB transaction before using TaskInfoCache
         boolean isInTransaction=HibernateUtil.isInTransaction();
+        if (log.isDebugEnabled()) {
+            log.debug("load taskInfo from DB for lsid="+lsid+", isInTransaction="+isInTransaction);
+        }
         try {
             HibernateUtil.beginTransaction();
             TaskInfo taskInfo=TaskInfoCache.instance().getTask(lsid);
