@@ -3,6 +3,7 @@ package org.genepattern.server.job.input.choice;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.log4j.Logger;
 import org.genepattern.webservice.ParameterInfo;
@@ -15,7 +16,7 @@ import org.genepattern.webservice.ParameterInfo;
  */
 public class ChoiceInfo {
     final static private Logger log = Logger.getLogger(ChoiceInfo.class);
-
+    
     /**
      * ParameterInfo attribute for the module manifest. Set the list of choices for a drop-down menu for this parameter.
      * This is in the same format as the 'value' parameter for GP <=3.6.1 'Choice' parameter.
@@ -63,7 +64,7 @@ public class ChoiceInfo {
      * E.g. 'Choose...'.
      */
     public static final String PROP_CHOICE_EMPTY_DISPLAY_VALUE="choiceEmptyDisplayValue";
-    public static final String CHOICE_EMPTY_DISPLAY_VALUE_DEFAULT="Choose ...";
+    public static final String CHOICE_EMPTY_DISPLAY_VALUE_DEFAULT="";
 
     /**
      * Get the status of the choiceInfo to indicate to the end-user if there were problems initializing 
@@ -111,13 +112,60 @@ public class ChoiceInfo {
         }
     }
 
+    public static enum Type {
+        NotSet,  //no declared drop-down menu
+        StaticText, //a static text drop-down menu
+        StaticFile, //a static file drop-down menu
+        DynamicFile; //a dynamic file drop-down menu
+    }
     
-    final static ChoiceInfoParser choiceInfoParser= new DynamicChoiceInfoParser();
+    public static Type initType(final ParameterInfo param) {
+        //the new way (>= 3.7.0), check for remote ftp directory
+        final String choiceDir = (String) param.getAttributes().get(ChoiceInfo.PROP_CHOICE_DIR);
+        final String declaredChoicesStr= (String) param.getAttributes().get(ChoiceInfo.PROP_CHOICE);
+        if (param.isInputFile()) {
+            if (choiceDir != null) {
+                return Type.DynamicFile;
+            }
+            if (declaredChoicesStr != null) {
+                return Type.StaticFile;
+            }
+        }
+        //the new way (>= 3.7.0), check for 'choice' attribute in manifest
+        if (declaredChoicesStr != null) {
+            return Type.StaticText;
+        }
+        //the old way (<= 3.6.1, based on 'values' attribute in manifest)
+        final String choicesString=param.getValue();
+        final List<Choice> choiceList=ChoiceInfoHelper.initChoicesFromManifestEntry(choicesString);
+        if (choiceList != null && choiceList.size() > 0) {
+            return Type.StaticText;
+        }
+        return Type.NotSet;
+    }
+
+    public static final boolean hasChoiceInfo(ParameterInfo param) {
+        final String choiceDir = (String) param.getAttributes().get(ChoiceInfo.PROP_CHOICE_DIR);
+        if (choiceDir != null) {
+            return true;
+        }
+        final String declaredChoicesStr= (String) param.getAttributes().get(ChoiceInfo.PROP_CHOICE);
+        if (declaredChoicesStr != null) {
+            return true;
+        }
+        Map<String,String> legacy=param.getChoices();
+        if (legacy != null && legacy.size()>0) {
+            return true;
+        }
+        return false;
+    }
+    
+    private static final ChoiceInfoParser choiceInfoParser= new DynamicChoiceInfoParser();
     public static ChoiceInfoParser getChoiceInfoParser() {
         return choiceInfoParser;
     }
-    
-    final private String paramName;
+
+    private final String paramName;
     
     private String choiceDir=null;
     private List<Choice> choices=null;
@@ -127,6 +175,41 @@ public class ChoiceInfo {
     
     public ChoiceInfo(final String paramName) {
         this.paramName=paramName;
+    }
+    
+    /**
+     * Helper method to set the choiceInfo.allowCustomValue flag based on the
+     *     properties in the manifest file.
+     * 
+     * @param choiceInfo
+     * @param param
+     */
+    public void initAllowCustomValue(final ParameterInfo param) {
+        final String allowCustomValueStr;
+        if (param==null) {
+            allowCustomValueStr=null;
+        }
+        else {
+            allowCustomValueStr= (String) param.getAttributes().get( ChoiceInfo.PROP_CHOICE_ALLOW_CUSTOM_VALUE );
+        }
+        if (ChoiceInfoHelper.isSet(allowCustomValueStr)) {
+            // if it's 'on' then it's true
+            if ("on".equalsIgnoreCase(allowCustomValueStr.trim())) {
+                setAllowCustomValue(true);
+            }
+            else {
+                //otherwise, false
+                setAllowCustomValue(false);
+            }
+        }
+        else if (param.isInputFile()) {
+            //by default, a file choice parameter allows a custom value
+            setAllowCustomValue(true);
+        }
+        else {
+            //by default, a text choice parameter does not allow a custom value
+            setAllowCustomValue(false);
+        }
     }
     
     public String getParamName() {
@@ -158,6 +241,10 @@ public class ChoiceInfo {
         return allowCustomValue;
     }
     
+    public void setStatus(final ChoiceInfo.Status.Flag statusFlag, final String statusMessage) {
+        this.status=new ChoiceInfo.Status(statusFlag, statusMessage);
+    }
+    
     public ChoiceInfo.Status getStatus() {
         return status;
     }
@@ -169,8 +256,98 @@ public class ChoiceInfo {
         choices.add(choice);
     }
     
-    public void setStatus(final ChoiceInfo.Status.Flag statusFlag, final String statusMessage) {
-        this.status=new ChoiceInfo.Status(statusFlag, statusMessage);
+    /**
+     * If there is a default_value which matches one of the drop-down items return
+     * the matching Choice, or null if none set or no match.
+     * 
+     * @param param
+     * @return
+     */
+    private Choice getDeclaredDefaultChoice(final ParameterInfo param) {
+        if (param==null) {
+            throw new IllegalArgumentException("param==null");
+        }
+        final String defaultValue=param.getDefaultValue();
+        final boolean hasDefaultValue = ChoiceInfoHelper.isSet(defaultValue);
+        if (!hasDefaultValue) {
+            return null;
+        }
+        // if we're here, it means there is a default value
+        Choice defaultChoice = getFirstMatchingValue(defaultValue);
+        if (defaultChoice==null) {
+            //try to match by name
+            defaultChoice = getFirstMatchingLabel(defaultValue);
+            if (defaultChoice != null) {
+                log.debug("No match by value, but found match by displayName="+defaultValue);
+            }
+        }
+        return defaultChoice;
+    }
+
+    /**
+     * When to add an empty choice to the list?
+     * If it's a File drop-down AND there is not an existing empty item on the list
+     * 
+     * use-cases:
+     * - a text drop-down, never append an empty choice
+     * - a file drop-down which already has an empty actual value, never append an empty choice
+     * - an optional file drop-down with no default value, yes
+     * - an optional file drop-down with a default value, yes
+     * - a required file drop-down with no default value, yes
+     * - a required file drop-down with a default value, maybe ... but we will go with yes
+     * 
+     * @param param
+     */
+    private Choice getChoiceToAppend(final Type type, final ParameterInfo param) {
+        if (type==Type.NotSet || type==Type.StaticText) {
+            return null;
+        }
+        
+        //1) check for an existing empty valued item 
+        //final Choice emptyMatchingValue=getFirstMatchingValue("");
+        //final Choice emptyMatchingLabel=getFirstMatchingLabel("");
+        final boolean appendEmptyChoice =
+                getFirstMatchingValue("") == null &&
+                getFirstMatchingLabel("") == null;
+        if (appendEmptyChoice) {
+            //check manifest for displayValue for the first item on the list
+            String emptyDisplayValue= (String) param.getAttributes().get(PROP_CHOICE_EMPTY_DISPLAY_VALUE);
+            if (emptyDisplayValue==null) {
+                emptyDisplayValue=CHOICE_EMPTY_DISPLAY_VALUE_DEFAULT;
+            }
+            final Choice choiceToAppend=new Choice(emptyDisplayValue, "");
+            return choiceToAppend;
+        } 
+        return null;
+    }
+
+    public void initDefaultValue(final ParameterInfo param) {
+        if (param==null) {
+            throw new IllegalArgumentException("param==null");
+        }
+        //special-case: choices not initialized
+        if (choices==null) {
+            log.warn("choices==null, for param.name="+param.getName());
+            return;
+        }
+        //special-case: no choices
+        if (choices.size()==0) {
+            log.warn("choices.size==0, for param.name="+param.getName());
+            return;
+        }
+
+        final Type type=initType(param);
+        Choice choiceToAppend=getChoiceToAppend(type,param);
+        if (choiceToAppend != null) {
+            choices.add(0, choiceToAppend);
+        }
+        Choice defaultChoice=getDeclaredDefaultChoice(param);
+        if (defaultChoice == null) {
+            defaultChoice=choices.get(0);
+        }
+        selected=defaultChoice;
+        log.debug("Initial selection is "+selected);
+
     }
     
     /**
@@ -187,61 +364,50 @@ public class ChoiceInfo {
      * 
      * @param defaultValue
      */
-    public void initDefaultValue(final ParameterInfo param) {
+    public void _initDefaultValue(final ParameterInfo param) {
+        if (param.isInputFile()) {
+            _initDefaultValue_FileType(param);
+        }
+        _initDefaultValue_TextType(param); 
+    }
+
+    public void _initDefaultValue_FileType(final ParameterInfo param) {
         if (param==null) {
             throw new IllegalArgumentException("param==null");
         }
-        final String defaultValue=param.getDefaultValue();
-        final boolean hasDefaultValue = ChoiceInfoHelper.isSet(defaultValue);
-        
-        //1) check for an existing empty valued item 
-        Choice emptyChoice = getFirstMatchingValue("");
-        if (emptyChoice == null) {
-            // otherwise, check for an existing item with an empty displayValue
-            emptyChoice = getFirstMatchingLabel("");
-        }
-        if (emptyChoice == null) {
-            final boolean appendEmptyChoice=!hasDefaultValue;
-            //Note: this is a workaround for GP-4615, a more natural rule would be to include the 
-            //    'Choose...' menu for all optional parameters as well as required parameters which don't have a default value
-            //    e.g.
-            //    final boolean appendEmptyChoice=( param.isOptional() || (!param.isOptional() && !hasDefaultValue) );
-            if (appendEmptyChoice) {
-                //check manifest for displayValue for the first item on the list
-                String emptyDisplayValue= (String) param.getAttributes().get(PROP_CHOICE_EMPTY_DISPLAY_VALUE);
-                if (emptyDisplayValue==null) {
-                    emptyDisplayValue=CHOICE_EMPTY_DISPLAY_VALUE_DEFAULT;
-                }
-                emptyChoice=new Choice(emptyDisplayValue, "");
-                if (choices==null) {
-                    log.error("Can't set default value on an empty list");
-                }
-                else {
-                    //insert at top of the list
-                    choices.add(0, emptyChoice);
-                } 
-            }
+        //special-case: no choices
+        if (choices==null || choices.size()==0) {
+            return;
         }
         
-        //2) select either the default value or the empty value if there is no default value
-        Choice defaultChoice;
-        if (!hasDefaultValue) {
-            defaultChoice=emptyChoice;
+        //1) check for a default value in the list
+        final Choice defaultChoice=getDeclaredDefaultChoice(param);
+        if (defaultChoice != null) {
+            selected=defaultChoice;
+            log.debug("Initial selection is "+selected);
+            
         }
-        else {
-            // if we're here, it means there is a default value
-            defaultChoice = getFirstMatchingValue(defaultValue);
-            if (defaultChoice==null) {
-                //try to match by name
-                defaultChoice = getFirstMatchingLabel(defaultValue);
-                if (defaultChoice != null) {
-                    log.debug("No match by value, but found match by displayName="+defaultValue);
-                }
-            }
-            if (defaultChoice==null) {
-                log.debug("No match in choice for defaultValue="+defaultValue);
-                defaultChoice=emptyChoice;
-            }
+        //otherwise select the first item from the list
+        selected=choices.get(0);
+        selected=defaultChoice;
+        log.debug("Initial selection is "+selected);
+    }
+    
+    /**
+     * Legacy mode for default choice
+     */
+    public void _initDefaultValue_TextType(final ParameterInfo param) {
+        if (param==null) {
+            throw new IllegalArgumentException("param==null");
+        }
+        //special-case: no choices
+        if (choices==null || choices.size()==0) {
+            return;
+        }
+        
+        Choice defaultChoice=getDeclaredDefaultChoice(param);
+        if (defaultChoice == null) {
+            defaultChoice=choices.get(0);
         }
         selected=defaultChoice;
         log.debug("Initial selection is "+selected);

@@ -6,7 +6,6 @@ import java.net.URL;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
-import java.util.Map;
 
 import org.apache.commons.net.ftp.FTP;
 import org.apache.commons.net.ftp.FTPClient;
@@ -33,57 +32,7 @@ public class DynamicChoiceInfoParser implements ChoiceInfoParser {
     
     @Override
     public boolean hasChoiceInfo(ParameterInfo param) {
-        final String choiceDir = (String) param.getAttributes().get(ChoiceInfo.PROP_CHOICE_DIR);
-        if (choiceDir != null) {
-            return true;
-        }
-        final String declaredChoicesStr= (String) param.getAttributes().get(ChoiceInfo.PROP_CHOICE);
-        if (declaredChoicesStr != null) {
-            return true;
-        }
-        Map<String,String> legacy=param.getChoices();
-        if (legacy != null && legacy.size()>0) {
-            return true;
-        }
-        return false;
-    }
-
-    /**
-     * Helper method to set the choiceInfo.allowCustomValue flag based on the
-     *     properties in the manifest file.
-     * 
-     * @param choiceInfo
-     * @param param
-     */
-    private static void initAllowCustomValue(final ChoiceInfo choiceInfo, final ParameterInfo param) {
-        if (choiceInfo==null) {
-            throw new IllegalArgumentException("choiceInfo==null");
-        }
-        final String allowCustomValueStr;
-        if (param==null) {
-            allowCustomValueStr=null;
-        }
-        else {
-            allowCustomValueStr= (String) param.getAttributes().get( ChoiceInfo.PROP_CHOICE_ALLOW_CUSTOM_VALUE );
-        }
-        if (ChoiceInfoHelper.isSet(allowCustomValueStr)) {
-            // if it's 'on' then it's true
-            if ("on".equalsIgnoreCase(allowCustomValueStr.trim())) {
-                choiceInfo.setAllowCustomValue(true);
-            }
-            else {
-                //otherwise, false
-                choiceInfo.setAllowCustomValue(false);
-            }
-        }
-        else if (param.isInputFile()) {
-            //by default, a file choice parameter allows a custom value
-            choiceInfo.setAllowCustomValue(true);
-        }
-        else {
-            //by default, a text choice parameter does not allow a custom value
-            choiceInfo.setAllowCustomValue(false);
-        }
+        return ChoiceInfo.hasChoiceInfo(param);
     }
 
     private List<Choice> getAltChoices(final ParameterInfo param) {
@@ -99,7 +48,6 @@ public class DynamicChoiceInfoParser implements ChoiceInfoParser {
     @Override
     public ChoiceInfo initChoiceInfo(final ParameterInfo param) {
         final List<Choice> choiceList;
-        //final Map<String,String> choices;
         //the new way (>= 3.7.0), check for remote ftp directory
         final String choiceDir = (String) param.getAttributes().get(ChoiceInfo.PROP_CHOICE_DIR);
         if (choiceDir != null) {
@@ -109,7 +57,7 @@ public class DynamicChoiceInfoParser implements ChoiceInfoParser {
                 log.debug(choiceInfoFromFtp.getStatus());
                 choiceInfoFromFtp.initDefaultValue(param);
                 log.debug("initial selection: "+choiceInfoFromFtp.getSelected());
-                DynamicChoiceInfoParser.initAllowCustomValue(choiceInfoFromFtp, param);
+                choiceInfoFromFtp.initAllowCustomValue(param);
                 log.debug("isAllowCustomValue: "+choiceInfoFromFtp.isAllowCustomValue());
                 
                 if (ChoiceInfo.Status.Flag.ERROR==choiceInfoFromFtp.getStatus().getFlag()) {
@@ -128,7 +76,6 @@ public class DynamicChoiceInfoParser implements ChoiceInfoParser {
                 final ChoiceInfo choiceInfo = new ChoiceInfo(param.getName());
                 choiceInfo.setChoiceDir(choiceDir);
                 choiceInfo.setStatus(Flag.ERROR, userMessage);
-                //TODO: optionally return alternate static drop-down
                 return choiceInfo;
             }
         }
@@ -158,10 +105,6 @@ public class DynamicChoiceInfoParser implements ChoiceInfoParser {
         }
         
         final ChoiceInfo choiceInfo=new ChoiceInfo(param.getName());
-//        for(final Entry<String,String> choiceEntry : choices.entrySet()) {
-//            Choice choice = new Choice(choiceEntry.getKey(), choiceEntry.getValue());
-//            choiceInfo.add(choice);
-//        }
         for(final Choice choice : choiceList) {
             choiceInfo.add(choice);
         }
@@ -169,7 +112,7 @@ public class DynamicChoiceInfoParser implements ChoiceInfoParser {
         
         //initialize default value for choice, must do this after the list of choices is initialized
         choiceInfo.initDefaultValue(param);
-        DynamicChoiceInfoParser.initAllowCustomValue(choiceInfo, param);
+        choiceInfo.initAllowCustomValue(param);
         
         log.debug("initial selection: "+choiceInfo.getSelected());
         return choiceInfo;

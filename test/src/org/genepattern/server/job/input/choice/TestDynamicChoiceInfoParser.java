@@ -1,11 +1,14 @@
 package org.genepattern.server.job.input.choice;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.genepattern.junitutil.TaskUtil;
+import org.genepattern.server.job.input.TestLoadModuleHelper;
 import org.genepattern.server.rest.ParameterInfoRecord;
+import org.genepattern.webservice.ParameterInfo;
 import org.genepattern.webservice.TaskInfo;
 import org.junit.Assert;
 import org.junit.BeforeClass;
@@ -127,6 +130,45 @@ public class TestDynamicChoiceInfoParser {
         Assert.assertNotNull("Expecting a non-null choiceInfo", choiceInfo);
         final List<Choice> choices=choiceInfo.getChoices();
         Assert.assertThat("", choices, is(gseaGeneSetsDatabaseChoices));
+    }
+    
+    /**
+     * Legacy test, for some existing modules, such as ExtractComparativeMarkerResults, text drop-down with no default
+     * value must default to the 1st item on the list, regardless of whether or not it is optional.
+     */
+    @Test
+    public void testLegacyChoiceExtractComparativeMarkerResults() {
+        final TaskInfo taskInfo=TaskUtil.getTaskInfoFromZip(TestLoadModuleHelper.class, "ExtractComparativeMarkerResults_v4.zip");
+        final Map<String,ParameterInfoRecord> paramInfoMap=ParameterInfoRecord.initParamInfoMap(taskInfo);
+        final ParameterInfoRecord pinfoRecord=paramInfoMap.get("statistic");
+        
+        final DynamicChoiceInfoParser choiceInfoParser=new DynamicChoiceInfoParser();
+        final ChoiceInfo choiceInfo=choiceInfoParser.initChoiceInfo(pinfoRecord.getFormal());
+        Assert.assertNotNull("Expecting a non-null choiceInfo", choiceInfo);
+        Choice selected=choiceInfo.getSelected();
+        Assert.assertNotNull("Expecting a non-null choiceInfo#selected", selected);
+        Assert.assertEquals("Checking default label", "Bonferroni", selected.getLabel());
+        Assert.assertEquals("Checking default value", "Bonferroni", selected.getValue());
+    }
+    
+    @Test
+    public void testLegacyOptionalDropdown() {
+        final String value="arg1;arg2;arg3;arg4";
+        
+        ParameterInfo pinfo=new ParameterInfo("my.param", value, "A choice parameter with no default value");
+        pinfo.setAttributes(new HashMap<String,String>());
+        pinfo.getAttributes().put("default_value", "");
+        pinfo.getAttributes().put("optional", "on");
+        pinfo.getAttributes().put("prefix_when_specified", "");
+        pinfo.getAttributes().put("type", "java.lang.String");
+        
+        final DynamicChoiceInfoParser choiceInfoParser=new DynamicChoiceInfoParser();
+        final ChoiceInfo choiceInfo=choiceInfoParser.initChoiceInfo(pinfo);
+        Assert.assertNotNull("Expecting a non-null choiceInfo", choiceInfo);
+        Choice selected=choiceInfo.getSelected();
+        Assert.assertNotNull("Expecting a non-null choiceInfo#selected", selected);
+        Assert.assertEquals("Checking default label", "arg1", selected.getLabel());
+        Assert.assertEquals("Checking default value", "arg1", selected.getValue());
     }
 
 }
