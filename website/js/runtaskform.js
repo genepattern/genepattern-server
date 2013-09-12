@@ -575,6 +575,7 @@ function loadParameterInfo(parameters, initialValues)
                 {
                     $(this).parent().val(parameters[q].default_value);
                     $(this).parent().data("default_value", parameters[q].default_value);
+                    $(this).parent().multiselect("refresh");
                 }
             });
 
