@@ -714,17 +714,11 @@ function changeParameterType(element)
 
                     choicerow.find("input[name='cradio']").click(function()
                     {
-                        //check if this is the null row
-                        if($(this).data("nullRow") == true)
-                        {
-                            return;
-                        }
-
                         //check if this is the first item in the list
-                        var firstListItem = $(this).parents("tr:first").prev();
-                        if(firstListItem == undefined || firstListItem == null || firstListItem.length < 1)
+                        var firstListItem = $(this).parents("tr :first").index();
+                        if(firstListItem == 1)
                         {
-                            //this is the first item in the list so allow it to be set as the default
+                            //this is the first data item in the list so allow it to be set as the default
                             return;
                         }
 
@@ -761,7 +755,24 @@ function changeParameterType(element)
                                 choicerow.find("input[name='choicen']").val(displayVal);
                             }
                         }
+                        else
+                        {
+                            //check if this was marked as the default and do not allow since
+                            //the actual value is blank
+                            if($(this).parents("tr :first").index() > 1 && choicerow.find("input[name='cradio']").is(":checked"))
+                            {
+                                alert("Please either specify a value to pass on the command line or make this item the first selection" +
+                                    " in the list in order to make it the default");
+                                $(this).parents(".editChoicesDialog").find("input[name='cradio']").first().click();
+                            }
+                        }
                     });
+
+                    //if this is the only item in the list set it as the default
+                    if($(this).parents(".editChoicesDialog").find(".staticChoiceTable").find("input[name='cradio']:checked").length == 0)
+                    {
+                        $(this).parents(".editChoicesDialog").find(".staticChoiceTable").find("input[name='cradio']:first").click();
+                    }
 
                     $(this).parent().find("table").find("tbody").append(choicerow);
 
@@ -821,7 +832,7 @@ function changeParameterType(element)
 
                 var table = $("<table class='staticChoiceTable'>" +
                     "<thead><tr class='choiceHeaderRow'><td></td><td><span class='staticTableHeader'> Default </span> " +
-                    "<input type='radio' name='cradio' checked='checked'/> </td>" +
+                    "<br/><span class='shortDescription'> The default selection </span></td>" +
                     "<td> <span class='staticTableHeader'>" + valueColHeader + "</span>" +
                     "<br/>" +
                     "<span class='shortDescription'>" + valueColHeaderDescription + "</span>" +
@@ -830,8 +841,6 @@ function changeParameterType(element)
                     "<br/>" +
                     "<span class='shortDescription'>" + dValueColHeaderDescription + "</span>" +
                     " </td> </tr> </thead><tbody></tbody></table>");
-
-                table.find("input[name='cradio']").data("nullRow", true);
 
                 staticChoiceDiv.prepend(table);
 
@@ -894,6 +903,7 @@ function changeParameterType(element)
                         //check if this should be set as the default
                         if(value != "" && element.parents(".parameter").find(".defaultValue").val() == value)
                         {
+                            table.find("input[name='cradio']:checked").removeAttr("checked");
                             table.find("input[name='cradio']").last().attr("checked", "checked");
                         }
 
