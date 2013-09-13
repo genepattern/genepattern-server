@@ -2146,9 +2146,10 @@ jQuery(document).ready(function() {
             }
         }
 
-        $(".ui-layout-center").animate({
+        var position = parseInt($(".ui-layout-center").scrollTop()) + parseInt(firstParameterDiv.position().top);
 
-            scrollTop: parameterDiv.offset().top
+        $(".ui-layout-center").animate({
+            scrollTop: position
 
         },2000);
 
