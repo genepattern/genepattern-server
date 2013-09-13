@@ -88,7 +88,8 @@ public class JobsResource {
         try {
             //TODO: add support for batch jobs to REST API
             final JobInput jobInput=parseJobInput(jobInputValues);
-            final JobInputApi impl = JobInputApiFactory.createJobInputApi(jobContext);
+            final boolean initDefault=true;
+            final JobInputApi impl = JobInputApiFactory.createJobInputApi(jobContext, initDefault);
             final String jobId = impl.postJob(jobContext, jobInput);
             //JobReceipt receipt=impl.postBatchJob(jobContext, jobInput);
             //TODO: if necessary, add batch details to the JSON representation

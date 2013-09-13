@@ -26,10 +26,22 @@ public class JobInputApiImpl implements JobInputApi {
     final static private Logger log = Logger.getLogger(JobInputApiImpl.class);
     
     private GetTaskStrategy getTaskStrategy;
+    /**
+     * special-case, as a convenience, for input parameters which have not been set, initialize them from their default value.
+     * By default, this value is false.
+     */
+    private boolean initDefault=false;
     protected JobInputApiImpl() {
     }
-    public JobInputApiImpl(final GetTaskStrategy getTaskStrategy) {
+    protected JobInputApiImpl(final boolean initDefault) {
+        this.initDefault=initDefault;
+    }
+    protected JobInputApiImpl(final GetTaskStrategy getTaskStrategy) {
         this.getTaskStrategy=getTaskStrategy;
+    }
+    protected JobInputApiImpl(final GetTaskStrategy getTaskStrategy, final boolean initDefault) {
+        this.getTaskStrategy=getTaskStrategy;
+        this.initDefault=initDefault;
     }
     
     /**
@@ -56,7 +68,7 @@ public class JobInputApiImpl implements JobInputApi {
             throw new IllegalArgumentException("jobInput.lsid==null");
         }
         try {
-            JobInputApiLegacy jobInputHelper=new JobInputApiLegacy(jobContext, jobInput, getTaskStrategy);
+            JobInputApiLegacy jobInputHelper=new JobInputApiLegacy(jobContext, jobInput, getTaskStrategy, initDefault);
             final String jobId=jobInputHelper.submitJob();
             return jobId;
         }

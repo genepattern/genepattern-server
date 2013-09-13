@@ -11,4 +11,8 @@ public class JobInputApiFactory {
     static public JobInputApi createJobInputApi(ServerConfiguration.Context context) {
         return new JobInputApiImpl();
     }
+    
+    static public JobInputApi createJobInputApi(ServerConfiguration.Context context, boolean initDefault) {
+        return new JobInputApiImpl(initDefault);
+    }
 }

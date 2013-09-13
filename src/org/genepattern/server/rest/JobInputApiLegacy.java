@@ -24,12 +24,16 @@ public class JobInputApiLegacy {
     private Context jobContext;
     private JobInput jobInput;
     private TaskInfo taskInfo;
+    private boolean initDefault;
     
 
     public JobInputApiLegacy(final Context jobContext, final JobInput jobInput) {
         this(jobContext, jobInput, null);
     }
     public JobInputApiLegacy(final Context jobContext, final JobInput jobInput, final GetTaskStrategy getTaskStrategyIn) {
+        this(jobContext, jobInput, getTaskStrategyIn, false);
+    }
+    public JobInputApiLegacy(final Context jobContext, final JobInput jobInput, final GetTaskStrategy getTaskStrategyIn, final boolean initDefault) {
         this.jobContext=jobContext;
         this.jobInput=jobInput;
         
@@ -60,11 +64,10 @@ public class JobInputApiLegacy {
 
         //for each formal input parameter ... set the actual value to be used on the command line
         for(Entry<String,ParameterInfoRecord> entry : paramInfoMap.entrySet()) {
-            // set default values for any parameters which were not set by the user
             // validate num values
             // and initialize input file (or parameter) lists as needed
             Param inputParam=jobInput.getParam( entry.getKey() );
-            ParamListHelper plh=new ParamListHelper(jobContext, entry.getValue(), inputParam);
+            ParamListHelper plh=new ParamListHelper(jobContext, entry.getValue(), inputParam, initDefault);
             plh.validateNumValues();
             plh.updatePinfoValue();
         }

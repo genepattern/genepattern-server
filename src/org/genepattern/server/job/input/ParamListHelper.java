@@ -147,6 +147,9 @@ public class ParamListHelper {
     final ListMode listMode;
 
     public ParamListHelper(final Context jobContext, final ParameterInfoRecord record, final Param inputValues) {
+        this(jobContext, record, inputValues, false);
+    }
+    public ParamListHelper(final Context jobContext, final ParameterInfoRecord record, final Param inputValues, final boolean initDefault) {
         if (jobContext==null) {
             throw new IllegalArgumentException("jobContext==null");
         }
@@ -162,8 +165,12 @@ public class ParamListHelper {
         //initialize list mode
         this.listMode=initListMode(record);
         
-        //initialize from default value
-        if (inputValues == null) {
+        //if necessary create a 'null' value for the param
+        if (inputValues == null && !initDefault) {
+            if (log.isDebugEnabled()) { log.debug("null value for param: "+record.getFormal().getName()); }
+            actualValues=new Param(new ParamId(record.getFormal().getName()), false);
+        }
+        else if (inputValues == null && initDefault) {
             actualValues=initFromDefault();
         }
         else {
