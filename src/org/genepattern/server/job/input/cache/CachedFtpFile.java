@@ -170,6 +170,9 @@ abstract public class CachedFtpFile implements CachedFile {
     private final GpFilePath localPath;
     
     private CachedFtpFile(final String urlString) {
+        if (log.isDebugEnabled()) {
+            log.debug("Initializing CachedFtpFile, type="+this.getClass().getName());
+        }
         this.url=JobInputHelper.initExternalUrl(urlString);
         if (url==null) {
             throw new IllegalArgumentException("value is not an external url: "+urlString);
@@ -177,6 +180,10 @@ abstract public class CachedFtpFile implements CachedFile {
         this.localPath=getLocalPath(url);
         if (this.localPath==null) {
             throw new IllegalArgumentException("error initializing local path for external url: "+urlString);
+        }
+        if (log.isDebugEnabled()) {
+            log.debug("url="+url.toExternalForm());
+            log.debug("localPath.serverFile="+localPath.getServerFile());
         }
     }
     
@@ -405,6 +412,7 @@ abstract public class CachedFtpFile implements CachedFile {
             BufferedInputStream in = null;
             FileOutputStream fout = null;
             try {
+                if (log.isDebugEnabled()) { log.debug("starting download from "+fromUrl); }
                 final int bufsize=DEFAULT_BUFFER_SIZE;
 
                 URLConnection connection=fromUrl.openConnection();
@@ -422,7 +430,9 @@ abstract public class CachedFtpFile implements CachedFile {
                     if (Thread.interrupted()) {
                         interrupted=true;
                     }
-                    Thread.yield();
+                    else {
+                        Thread.yield();
+                    }
                 }
             }
             finally {
@@ -434,8 +444,12 @@ abstract public class CachedFtpFile implements CachedFile {
                 }
             }
             if (interrupted) {
+                if (log.isDebugEnabled()) {
+                    log.debug("interrupted download from "+fromUrl);
+                }
                 throw new InterruptedException();
             }
+            if (log.isDebugEnabled()) { log.debug("completed download from "+fromUrl); }
             return true;
         }
     }
