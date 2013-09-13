@@ -1232,7 +1232,7 @@ function changeParameterType(element)
                 $(this).parents(".parameter").find(".choicelink").text("add a drop down list");
             }
 
-            prevDefaultField.after("<input name='p_defaultvalue' class='defaultValue'/>");
+            prevDefaultField.after("<input name='p_defaultvalue' class='defaultValue' size='40'/>");
             prevDefaultField.remove();
         }
     });
