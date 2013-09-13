@@ -24,7 +24,7 @@ public class JobInputApiLegacy {
     private Context jobContext;
     private JobInput jobInput;
     private TaskInfo taskInfo;
-    private boolean initDefault;
+    private final boolean initDefault;
     
 
     public JobInputApiLegacy(final Context jobContext, final JobInput jobInput) {
@@ -36,6 +36,7 @@ public class JobInputApiLegacy {
     public JobInputApiLegacy(final Context jobContext, final JobInput jobInput, final GetTaskStrategy getTaskStrategyIn, final boolean initDefault) {
         this.jobContext=jobContext;
         this.jobInput=jobInput;
+        this.initDefault=initDefault;
         
         final GetTaskStrategy getTaskStrategy;
         if (getTaskStrategyIn == null) {
