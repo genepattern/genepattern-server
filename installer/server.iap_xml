@@ -13899,6 +13899,36 @@ Can be separated by colons (Mac OS/Unix) or semicolons (Windows)]]></string>
 												<int>0</int>
 											</property>
 										</object>
+                                        <object refID="4e2d83cb878e"/>
+                                        <object class="com.zerog.ia.installer.actions.InstallFile" objectID="4e2d83cb878e">
+                                            <property name="unixPermissions">
+                                                <string><![CDATA[664]]></string>
+                                            </property>
+                                            <property name="sourceName">
+                                                <string><![CDATA[c3p0.properties]]></string>
+                                            </property>
+                                            <property name="overrideUnixPermissions">
+                                                <boolean>false</boolean>
+                                            </property>
+                                            <property name="sourcePath">
+                                                <string><![CDATA[$IA_PROJECT_DIR$/../src/]]></string>
+                                            </property>
+                                            <property name="shouldUninstall">
+                                                <boolean>true</boolean>
+                                            </property>
+                                            <property name="destinationName">
+                                                <string><![CDATA[c3p0.properties]]></string>
+                                            </property>
+                                            <property name="fileSize">
+                                                <long>614</long>
+                                            </property>
+                                            <property name="macBinary">
+                                                <boolean>false</boolean>
+                                            </property>
+                                            <property name="targetCheckKind">
+                                                <int>0</int>
+                                            </property>
+                                        </object>
 										<object class="com.zerog.ia.installer.actions.MoveFileAction" objectID="4e2e7e2d878f">
 											<property name="targetAction">
 												<object refID="4e2d83cb878d"/>
