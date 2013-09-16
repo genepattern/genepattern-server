@@ -97,7 +97,7 @@ public class BasicAuthUtil {
             //if we are here, it means the gp user_id / password doesn't match
             //for GP-4540, it could be a GenomeSpace account
             log.debug("checking GenomeSpace credentials");
-            gpUserId=gs_authenticateUser(userIdFromAuthorizationHeader, password);
+            gpUserId = gs_authenticateUser(userIdFromAuthorizationHeader, password);
             if (gpUserId != null) {
                 //we have valid GS credentials and a linked GP account
                 authenticated=true;
@@ -125,10 +125,15 @@ public class BasicAuthUtil {
      * @throws AuthenticationException
      */
     static private String gs_authenticateUser(final String gsUsername, final byte[] gsPassword) throws AuthenticationException {
+        // Protect against nulls
+        if (gsUsername == null || gsPassword == null) {
+            return null;
+        }
+        
         try {
             final Context serverContext = ServerConfiguration.Context.getServerContext();
             final String env = ServerConfiguration.instance().getGPProperty(serverContext, "genomeSpaceEnvironment", "prod");
-            final GenomeSpaceClient gsClient=GenomeSpaceClientFactory.getGenomeSpaceClient();
+            final GenomeSpaceClient gsClient = GenomeSpaceClientFactory.getGenomeSpaceClient();
             final GenomeSpaceLogin login = gsClient.submitLogin(env, gsUsername, new String(gsPassword));
             final String gpUserId=GenomeSpaceDatabaseManager.getGPUsername(gsUsername);
             return gpUserId;
