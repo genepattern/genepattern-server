@@ -597,7 +597,7 @@ public class JobInputHelper {
         
         if (inputValue.isDirectory()) {
             //the value is a directory, but the parameter type is not a directory
-            log.error("Not implemented!");
+            log.debug("Not implemented!");
             return false;
         }
         
