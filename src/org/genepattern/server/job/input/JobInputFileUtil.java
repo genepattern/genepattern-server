@@ -108,7 +108,12 @@ public class JobInputFileUtil {
             if (!parentDirFile.exists()) {
                 boolean success=parentDirFile.mkdirs();
                 if (!success) {
-                    log.error("false return value from mkdirs( "+parentDirFile.getAbsolutePath()+" )");
+                    //to make the code thread-safe, don't throw an exception here ... 
+                    // ... a different thread could have created the file
+                    log.debug("false return value from mkdirs( "+parentDirFile.getAbsolutePath()+" )");
+                }
+                //if it still doesn't exist, throw the exception
+                if (!parentDirFile.exists()) {
                     throw new Exception("Unable to create parent upload dir for job: "+parentDirFile.getPath());
                 }
             }
