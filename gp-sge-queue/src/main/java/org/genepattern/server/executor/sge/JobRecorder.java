@@ -82,7 +82,9 @@ public class JobRecorder {
     }
 
     private void saveOrUpdate(JobSge jobRecord) { 
+        log.debug("saveOrUpdate JOB_SGE, gpJobNo="+jobRecord.getGpJobNo());
         boolean alreadyInTransaction = HibernateUtil.isInTransaction();
+        log.debug("alreadyInTransaction: "+alreadyInTransaction);
         try {
             JobSgeDAO dao = new JobSgeDAO();
             dao.saveOrUpdate(jobRecord);
@@ -96,17 +98,21 @@ public class JobRecorder {
         }
         finally {
             if (!alreadyInTransaction) {
+                log.debug("alreadyInTransaction: "+alreadyInTransaction+". closeCurrentSession");
                 HibernateUtil.closeCurrentSession();
             }
         }
     }
     
     private void delete(JobSge jobRecord) {
+        log.debug("delete JOB_SGE, gpJobNo="+jobRecord.getGpJobNo());
         boolean alreadyInTransaction = HibernateUtil.isInTransaction();
+        log.debug("alreadyInTransaction: "+alreadyInTransaction);
         JobSgeDAO dao = new JobSgeDAO();
         try {
             dao.delete(jobRecord);
             if (!alreadyInTransaction) {
+                log.debug("alreadyInTransaction: "+alreadyInTransaction+". commitTransaction");
                 HibernateUtil.commitTransaction();
             }
         }
