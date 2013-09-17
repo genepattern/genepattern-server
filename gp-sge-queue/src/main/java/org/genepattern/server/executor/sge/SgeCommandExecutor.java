@@ -190,6 +190,10 @@ public class SgeCommandExecutor implements CommandExecutor {
             log.debug("stdinFile: "+stdinFile);
         }
         
+        if (sgeBatchSystem == null) {
+            throw new CommandExecutorException("Server Error: sgeBatchSystem == null");
+        }
+        
         try {
             log.debug("creating batch job ...");
             BatchJob sgeJob = BatchJobUtil.createBatchJob(sgeBatchSystem, jobInfo); 
