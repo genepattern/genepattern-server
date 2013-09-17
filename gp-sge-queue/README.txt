@@ -6,6 +6,23 @@ Special thanks to Alec Wysoker who assisted with the implementation of this plug
 and the rest of the team who developed the code in Zamboni on which it is based: 
 Ben Weisburd, Jonathan Burke, Kathleen Tibbetts, Tim Fennell, and Alec Wysoker.
 
+
+========================================
+Table of Contents:
+1. Using the SGE plugin
+2. Building / modifying the plugin
+========================================
+
+
+----------------------------------------
+1. Using the SGE plugin
+----------------------------------------
+The GP server installer includes a pre-built jar file gp-sge-queue_<scala_version>.jar.
+If you want to use the default build, skip ahead to step 7.
+
+----------------------------------------
+2. Building / modifying the plugin
+----------------------------------------
 Project dependencies:
 * requires an installation of GenePattern Server. Tested with GP 3.3.3-beta; Byte compatible with GP 3.3.2-production.
   This project includes a copy of the GP 3.3.2 library (gp-full.jar, renamed to gp-full-3.3.2.prod.jar). 

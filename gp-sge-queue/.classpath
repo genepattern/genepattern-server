@@ -8,5 +8,6 @@
 	<classpathentry kind="lib" path="lib/sge-drmaa.jar"/>
 	<classpathentry kind="lib" path="lib/hibernate3.jar"/>
 	<classpathentry kind="lib" path="lib/gp-full.jar"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/gp-trunk"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

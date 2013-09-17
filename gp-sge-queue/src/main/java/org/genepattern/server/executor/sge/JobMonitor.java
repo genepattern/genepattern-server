@@ -66,14 +66,13 @@ class JobMonitor {
     
     private void handleJobCompletion(BatchJob sgeJob) {
         int gpJobId = BatchJobUtil.getGpJobId(sgeJob);
+        log.debug("SGE handleJobCompletion: gpJobId="+gpJobId);
         if (gpJobId == -1) {
             log.error("Unable to handleJobCompletion for jobName="+ (sgeJob.getJobName().isDefined() ? sgeJob.getJobName().get() : ""));
             return;
         }
 
-        int exitCode = JobStatus.JOB_PROCESSING;
         String errorMessage = null;
-
         boolean success = false;
         scala.Enumeration.Value succeeded = JobCompletionStatus.withName( "SUCCEEDED" ); 
         scala.Option<scala.Enumeration.Value> jobCompletionStatusWrapper = sgeJob.getCompletionStatus();
@@ -86,14 +85,26 @@ class JobMonitor {
                 errorMessage = "SGE job completed with jobCompletionStatus: "+jobCompletionStatus.toString();
             }
         }
-            
-        if (success) {
-            exitCode = JobStatus.JOB_FINISHED;
-            GenePatternAnalysisTask.handleJobCompletion(gpJobId, exitCode);
+        else {
+            log.error("sgeJob.completionStatus is not defined");
+        }
+
+        int returnCode= success ? 0 : -1;
+        Object returnCodeObj=sgeJob.getReturnCode().get();
+        if (returnCodeObj!=null && returnCodeObj instanceof Integer) {
+            returnCode=(Integer) returnCodeObj;
         }
         else {
-            exitCode = JobStatus.JOB_ERROR;
-            GenePatternAnalysisTask.handleJobCompletion(gpJobId, exitCode, errorMessage);
+            log.debug("Invalid returnCodeObj="+returnCodeObj);
+        }
+        log.debug("returnCode="+returnCode);
+        
+        if (success) {
+            GenePatternAnalysisTask.handleJobCompletion(gpJobId, returnCode);
+        }
+        else {
+            log.debug(errorMessage);
+            GenePatternAnalysisTask.handleJobCompletion(gpJobId, returnCode, errorMessage);
         } 
         BatchJobUtil.updateJobRecord(gpJobId, sgeJob);
     } 
