@@ -2527,12 +2527,16 @@ jQuery(document).ready(function() {
 
     $(".supportfile").live("change", function()
     {
-        addToSupportFileList(this.files[0]);
+        for(var i=0;i<this.files.length;i++)
+        {
+            addToSupportFileList(this.files[i]);
+
+        }
 
         //add a new file input field
-        $(this).attr('name', "name" + module_editor.filestoupload.length);
+        $(this).attr('name', "name" + module_editor.filestoupload.length + "[]");
         var parent = $(this).parent();
-        parent.append('<input type="file" class="supportfile">');
+        parent.append('<input type="file" class="supportfile" multiple="multiple" >');
         $(this).detach();
     });
 
