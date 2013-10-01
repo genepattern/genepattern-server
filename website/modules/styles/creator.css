@@ -777,6 +777,30 @@ table.deloptions
     margin-right: 3px;
 }
 
+
+#currentDocumentationSpan span
+{
+    font-size: 75%;
+    padding: 2px 6px 2px 6px;
+}
+
+#currentDocumentationSpan button
+{
+    margin-right: 3px;
+}
+
+#documentationFileNameSpan span
+{
+    font-size: 75%;
+    padding: 2px 6px 2px 6px;
+}
+
+#mainDocumentationSpan button
+{
+    margin-right: 3px;
+}
+
+
 .parameter table td.dragIndicator
 {
     background-image: url(images/drag_drop_indicator.png);

@@ -22,6 +22,7 @@ var module_editor = {
     filesToDelete: [],
     currentUploadedFiles: [],
     licensefile: "",
+    documentationfile: "",
     otherModAttrs: {}
 };
 
@@ -179,6 +180,13 @@ function saveModule()
     }
 
     var description = $('textarea[name="description"]').val();
+
+    var documentationFile = module_editor.documentationfile;
+    if(documentationFile == null || documentationFile == undefined)
+    {
+        documentationFile = "";
+    }
+
     var author = $('input[name="author"]').val();
     var organization = $('input[name="organization"]').val();
 
@@ -224,7 +232,7 @@ function saveModule()
         "author": author, "privacy": privacy, "quality": quality,
         "language": language, "JVMLevel": lang_version, "cpuType": cpu, "taskType": tasktype, "version": version,
         "os": os, "commandLine": commandLine, "LSID": lsid, "supportFiles": supportFiles,
-        "filesToDelete": filesToDelete, "fileFormat": fileFormats, "license":licenseFile};
+        "filesToDelete": filesToDelete, "fileFormat": fileFormats, "license":licenseFile, "taskDoc":documentationFile};
 
     //add other remaining attributes
     $.each(module_editor.otherModAttrs, function(keyName, value) {
@@ -1421,6 +1429,47 @@ function loadModuleInfo(module)
         $('textarea[name="description"]').val(module["description"]);
     }
 
+    if(module["taskDoc"] !== undefined && module["taskDoc"] !== "")
+    {
+        var documentation = module["taskDoc"];
+        module_editor.documentationfile = documentation;
+
+        //keep track of files that are already part of this module
+        module_editor.currentUploadedFiles.push(documentation);
+
+        var currentDocumentationSpan = $("<span class='clear' id='currentDocumentationSpan'></span>");
+
+        var delbutton = $('<button value="' + documentation + '">x</button>&nbsp;');
+        delbutton.button().click(function()
+        {
+            //set this so that module will update version when save button is clicked
+            setDirty(true);
+
+            var fileName = $(this).val();
+
+            var confirmed = confirm("Are you sure you want to delete the documentation file: " + fileName);
+            if(confirmed)
+            {
+                module_editor.documentationfile = "";
+
+                module_editor.filesToDelete.push(fileName);
+
+                //remove display of uploaded license file
+                $("#currentDocumentationSpan").remove();
+
+                $("#documentationSpan").show();
+            }
+        });
+
+        currentDocumentationSpan.append(delbutton);
+        var documentationFileURL = "<a href=\"/gp/getTaskDoc.jsp?name=" + module_editor.lsid + "\" target=\"new\">" + htmlEncode(documentation) + "</a> ";
+        currentDocumentationSpan.append(documentationFileURL);
+
+        $("#documentationSpan").hide();
+        $("#mainDocumentationDiv").prepend(currentDocumentationSpan);
+
+    }
+
     if(module["author"] !== undefined)
     {
         var author = module["author"];
@@ -1580,7 +1629,7 @@ function loadModuleInfo(module)
             && keyName != "LSID" && keyName != "lsidVersions" && keyName != "cpuType"
             && keyName != "privacy" && keyName != "language" && keyName != "version"
             && keyName != "supportFiles" && keyName != "taskType"
-            && keyName != "quality" && keyName != "license")
+            && keyName != "quality" && keyName != "license" && keyName != "taskDoc")
         {
             module_editor.otherModAttrs[keyName] = module[keyName];
         }
@@ -2523,6 +2572,39 @@ jQuery(document).ready(function() {
 
         $("#licenseDiv").append(licenseFileNameDiv);
 
+    });
+
+    $(".documentationfile").change(function()
+    {
+        //add to list of files to upload files
+        addFileToUpload(this.files[0]);
+
+        var delbutton = $('<button value="' + this.files[0].name + '">x</button>&nbsp;');
+
+        delbutton.button().click(function()
+        {
+            //remove the license file from the list of files to upload
+            removeFileToUpload($(this).val());
+
+            module_editor.documentationfile = "";
+
+            //remove display of uploaded license file
+            $("#documentationFileNameSpan").remove();
+
+            //show the button to upload a new file
+            $(".documentationfile").parents("span").show();
+        });
+
+        module_editor.documentationfile = this.files[0].name;
+
+        var documentationFileNameSpan = $("<span id='documentationFileNameSpan' class='clear'>" + this.files[0].name
+            + " (" + bytesToSize(this.files[0].size) + ")" +"</div>");
+        documentationFileNameSpan.prepend(delbutton);
+
+        $("#documentationSpan").after(documentationFileNameSpan);
+
+        //hide the button to upload a new file
+        $("#documentationSpan").hide();
     });
 
     $(".supportfile").live("change", function()

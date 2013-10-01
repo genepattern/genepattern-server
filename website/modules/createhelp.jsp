@@ -187,6 +187,11 @@ It's a very good way for you to document succinctly why your module exists.<br><
 
 ConsensusClustering example: <span class="example">Resampling-based clustering method</span>
 
+<a name="Documentation"></a><h4>Documentation</h4>
+Upload a pdf, txt, html, htm, xhtml, or rtf file describing the module and how to use it.
+A link to this file will be available when users go to run the module. <br>
+
+
 <a name="Author"></a><h4>Author</h4>
 Enter the author&apos;s name.  If you share this module
 with others, they will know how to give the author credit and whom to contact with questions, suggestions,
