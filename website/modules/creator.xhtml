@@ -25,6 +25,7 @@
     <link type="text/css" rel="stylesheet"  href="../css/style.css"  />
     <link  type="text/css" rel="stylesheet" media="screen" href="styles/creator.css" />
     <link href="../skin/favicon.ico" rel="shortcut icon" />
+    <link href="/gp/css/menu.css" type="text/css" rel="stylesheet" />
 
     <script src="/gp/js/jquery/jquery-1.8.3.js" type="text/javascript" />
     <script src="/gp/js/jquery/jquery-ui-1.9.2.js" type="text/javascript" />
@@ -32,6 +33,10 @@
     <script type="text/javascript" src="js/creator.js"></script>
     <script type="text/javascript" src="js/combobox.js"></script>
     <script type="text/javascript" src="#{facesContext.externalContext.requestContextPath}/js/jquery/jquery.multiselect.js"></script>
+    <script type="text/javascript" src="/gp/js/genepattern.js"/>
+    <script type="text/javascript" src="/gp/js/mainMenu.js"/>
+    <script src="/gp/js/jquery/ddsmoothmenu.js" type="text/javascript" />
+    <script src="/gp/js/menu.js" type="text/javascript" />
 
    <script type="text/javascript" language="javascript">
         var contextRoot = '#{facesContext.externalContext.requestContextPath}';
@@ -40,24 +45,20 @@
         var createPrivatePipelineAllowed = #{authorizationBean.createPrivatePipelineAllowed};
         var createPublicSuiteAllowed = #{authorizationBean.createPublicSuiteAllowed};
         var createPrivateSuiteAllowed = #{authorizationBean.createPrivateSuiteAllowed};
-        var genomeSpaceLoggedIn = #{genomeSpaceBean.loggedIn};
+        var adminServerAllowed = #{authorizationBean.adminServerAllowed};
+        var genomeSpaceEnabled = #{genomeSpaceBean.genomeSpaceEnabled};
+        var genomeSpaceLoggedIn =  #{genomeSpaceBean.loggedIn};
+        var userLoggedIn = !("${requestScope.userID}" === "null" || "${requestScope.userID}" === "");
 
-        function showCorrectGSLink() {
-            if (genomeSpaceLoggedIn) {
-                MM_showMenu(window.mm_menu_genomespaceloggedin,x,y,null,'link24;');
-            }
-            else {
-                MM_showMenu(window.mm_menu_genomespace,x,y,null,'link24');
-            }
+        // Build the nav menu
+        if (userLoggedIn) {
+            Menu.buildNavMenu();
         }
-        
+
         $(document).ready(function () {
         	$("body").tooltip();
         });
     </script>
-    <script type="text/javascript" src="/gp/js/genepattern.js"/>
-    <script type="text/javascript" src="/gp/js/mm_menu.js"/>
-    <script type="text/javascript" src="/gp/js/mainMenu.js"/>
 
     <!--[if IE]>
         <script type="text/javascript" language="javascript">
@@ -66,14 +67,16 @@
     <![endif]-->
 </head>
 <body>
-<script language="JavaScript1.2" type="text/javascript">
-    var agt = navigator.userAgent.toLowerCase();
-    var isSafari2 = agt.indexOf("safari/4") != -1;
-    var x = isSafari2 ? -10 : 0;
-    var y =  isSafari2 ? 8 : 18;
-    mmLoadMenus();
-</script>
 
+
+<script type="text/javascript">
+    if (userLoggedIn) {
+        $("#navband1").ready(function() {
+            Menu.initNavMenu();
+        });
+
+    }
+</script>
 
 <!--<div id="content" class="content"> -->
 
@@ -110,18 +113,79 @@
         </div>
 
         <!-- horizontal navigation band -->
-        <div id="modnavband1" class="modnavband1" style="white-space: nowrap;">
-            <a name="link17" id="link6" href="/gp/pages/index.jsf" onclick="MM_showMenu(window.mm_menu_tasks,x,y,null,'link17')" onmouseover="MM_showMenu(window.mm_menu_tasks,x,y,null,'link17')" onmouseout="MM_startTimeout();">Modules &amp; Pipelines</a> &#160;&#160;&#160;&#160;&#160;&#160;
-            <a name="link14" id="link9" href="/gp/pages/manageSuite.jsf" onclick="MM_showMenu(window.mm_menu_suites,x,y,null,'link14')" onmouseover="MM_showMenu(window.mm_menu_suites,x,y,null,'link14')" onmouseout="MM_startTimeout();">Suites</a> &#160;&#160;&#160;&#160;&#160;&#160;
-            <a name="link15" id="link10" href="/gp/jobResults" onclick="MM_showMenu(window.mm_menu_jobResults,x,y,null,'link15')" onmouseover="MM_showMenu(window.mm_menu_jobResults,x,y,null,'link15')" onmouseout="MM_startTimeout();">Job Results</a> &#160;&#160;&#160;&#160;&#160;&#160;
-            <a name="link12" id="link3" href="/gp/pages/index.jsf?splash=resources" onclick="MM_showMenu(window.mm_menu_resources,x,y,null,'link12')" onmouseover="MM_showMenu(window.mm_menu_resources,x,y,null,'link12')" onmouseout="MM_startTimeout();">Resources</a> &#160;&#160;&#160;&#160;&#160;&#160;
-            <a name="link2" id="link5" href="/gp/pages/index.jsf?splash=downloads" onclick="MM_showMenu(window.mm_menu_downloads,x,y,null,'link2')" onmouseover="MM_showMenu(window.mm_menu_downloads,x,y,null,'link2')" onmouseout="MM_startTimeout();">Downloads</a> &#160;&#160;&#160;&#160;&#160;&#160;
-            <a name="link13" id="link4" href="/gp/pages/serverSettings.jsf" onclick="MM_showMenu(window.mm_menu_administration,x,y,null,'link13')" onmouseover="MM_showMenu(window.mm_menu_administration,x,y,null,'link13')" onmouseout="MM_startTimeout();">Administration</a>&#160;&#160;&#160;&#160;&#160;&#160;
-            <a name="link11" id="link1" href="/gp/pages/index.jsf" onclick="MM_showMenu(window.mm_menu_documentation,x,y,null,'link11')" onmouseover="MM_showMenu(window.mm_menu_documentation,x,y,null,'link11')" onmouseout="MM_startTimeout();">Help</a>&#160;&#160;&#160;&#160;&#160;&#160;
-            <a name="link24" id="link24" href="/gp/pages/index.jsf" onclick="showCorrectGSLink()" onmouseover="showCorrectGSLink()" onmouseout="MM_startTimeout();">
-                <img style="vertical-align:middle" alt="GenomeSpace" src="/gp/pages/genomespace/genomespace_icon.gif" height="14px" width="14px" border="0" />&#160;GenomeSpace
-            </a>
+        <div id="navband1" class="navband1 ddsmoothmenu" style="white-space: nowrap; display:none;">
+            <ul>
+                <li><a href="/gp/pages/index.jsf">Modules &#38; Pipelines</a>
+                    <ul>
+                        <li class="createPrivatePipelineAllowed"><a href="JavaScript:Menu.denyIE('/gp/pipeline/index.jsf');">New Pipeline</a></li>
+                        <li class="createTaskAllowed"><a href="JavaScript:Menu.denyIE('/gp/modules/creator.jsf');">New Module</a></li>
+                        <li class="createTaskAllowed"><a href="/gp/pages/taskCatalog.jsf">Install From Repository</a></li>
+                        <li><a href="/gp/pages/importTask.jsf">Install From ZIP</a></li>
+                        <li><a href="/gp/pages/manageTasks.jsf">Manage</a></li>
+                    </ul>
+                </li>
+                <li><a href="/gp/pages/manageSuite.jsf">Suites</a>
+                    <ul>
+                        <li class="createPrivateSuiteAllowed"><a href="/gp/pages/createSuite.jsf">New Suite</a></li>
+                        <li class="createPublicSuiteAllowed"><a href="/gp/pages/suiteCatalog.jsf">Install From Repository</a></li>
+                        <li><a href="/gp/pages/importTask.jsf?suite=1">Install From ZIP</a></li>
+                        <li><a href="/gp/pages/manageSuite.jsf">Manage</a></li>
+                    </ul>
+                </li>
+                <li><a href="/gp/jobResults">Job Results</a>
+                    <ul>
+                        <li><a href="/gp/jobResults">Results Summary</a></li>
+                    </ul>
+                </li>
+                <li><a href="/gp/pages/index.jsf?splash=resources">Resources</a>
+                    <ul>
+                        <li><a href="JavaScript:Menu.go('http://www.broadinstitute.org/cancer/software/genepattern/gp_mail.html')">Mailing List</a></li>
+                        <li><a href="/gp/pages/contactUs.jsf">Report Bugs</a></li>
+                        <li><a href="/gp/pages/contactUs.jsf">Contact Us</a></li>
+                    </ul>
+                </li>
+                <li><a href="/gp/pages/index.jsf?splash=downloads">Downloads</a>
+                    <ul>
+                        <li><a href="/gp/pages/downloadProgrammingLibaries.jsf">Programming Languages</a></li>
+                        <li><a href="JavaScript:Menu.go('http://www.broadinstitute.org/cancer/software/genepattern/datasets/')">Public Datasets</a></li>
+                        <li><a href="JavaScript:Menu.go('http://www.broadinstitute.org/software/gparc/')">GParc</a></li>
+                    </ul>
+                </li>
+                <li class="adminServerAllowed"><a href="/gp/pages/serverSettings.jsf">Administration</a>
+                    <ul>
+                        <li><a href="/gp/pages/serverSettings.jsf">Server Settings</a></li>
+                    </ul>
+                </li>
+                <li><a href="/gp/pages/index.jsf">Help</a>
+                    <ul>
+                        <li><a href="JavaScript:Menu.go('http://www.broadinstitute.org/cancer/software/genepattern/tutorial/gp_tutorial.html')">Tutorial</a></li>
+                        <li><a href="JavaScript:Menu.go('http://www.broadinstitute.org/cancer/software/genepattern/desc/videos')">Video Tutorial</a></li>
+                        <li><a href="JavaScript:Menu.go('http://www.broadinstitute.org/cancer/software/genepattern/tutorial/gp_web_client.html')">User Guide</a></li>
+                        <li><a href="JavaScript:Menu.go('http://www.broadinstitute.org/cancer/software/genepattern/tutorial/gp_programmer.html')">Programmers Guide</a></li>
+                        <li><a href="/gp/getTaskDoc.jsp">Module Documentation</a></li>
+                        <li><a href="JavaScript:Menu.go('http://www.broadinstitute.org/cancer/software/genepattern/gp_guides/file-formats')">File Formats</a></li>
+                        <li><a href="JavaScript:Menu.go('http://www.broadinstitute.org/cancer/software/genepattern/doc/relnotes/current/')">Release Notes</a></li>
+                        <li><a href="JavaScript:Menu.go('http://www.broadinstitute.org/cancer/software/genepattern/doc/faq/')">FAQ</a></li>
+                        <li><a href="/gp/pages/about.jsf">About</a></li>
+                    </ul>
+                </li>
+                <li class="genomeSpaceMenu">
+                    <a href="/gp/pages/index.jsf"><img src="/gp/pages/genomespace/genomespace_icon.gif" class="genomeSpaceIcon" alt="GenomeSpace"></img>GenomeSpace</a>
+                    <ul>
+                        <li class="genomeSpaceLoggedOut"><a href="/gp/pages/genomespace/signon.jsf">Login</a></li>
+                        <li class="genomeSpaceLoggedIn"><a href="/gp/pages/genomespace/signon.jsf">Logout</a></li>
+                        <li class="genomeSpaceLoggedOut"><a href="/gp/pages/genomespace/userRegistration.jsf">Register</a></li>
+                        <li class="genomeSpaceLoggedIn"><a href="/gp/pages/genomespace/privateTool.jsf">Add as Private Tool</a></li>
+                        <li><a href="JavaScript:Menu.go('https://gsui.genomespace.org/jsui/')">GenomeSpace UI</a></li>
+                        <li><a href="JavaScript:Menu.go('http://www.genomespace.org/')">About</a></li>
+                    </ul>
+                </li>
+            </ul>
+            <br style="clear: left"/>
         </div>
+
+        <div class="clear"></div>
+
         <div id="modheader">
             <span>
                 Name*: <input type="text" id="modtitle" name="title" size="50"/>
@@ -129,7 +193,7 @@
                     <img src="styles/images/help_small.gif" width="12" height="12" alt="help" class="helpbutton" />
                 </a>
             </span>
-            <span>
+            <span id="modversion">
                 version
                 <select name="modversion">
                     <option value="unversioned">unversioned</option>
@@ -145,7 +209,8 @@
                 <button id="saveRunbtn"><img src="styles/images/save_run.gif" width="16" height="16" alt="save and run" class="buttonIcon" />Save &amp; Run</button> 
             </span>
         </div>
-   </div>
+    </div>
+
     <div class="ui-layout-center">
         <p class="heading">Details</p>
         <div class ="hcontent">

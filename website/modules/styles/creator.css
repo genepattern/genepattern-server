@@ -593,12 +593,18 @@ img.imgexpand {
 	background-image: url(images/export_gparc_btn_over.png);
 }
 
+#navband1
+{
+    width: 100%;;
+}
+
 #modheader {
 	background-color: #cddcf1;
-	padding: 10px 15px 10px 15px;
-	border-bottom: solid 1px #a5c3e6;
+    padding: 11px 6px 10px 6px;
+    border-top: solid 1px #a5c3e6;
+    border-bottom: solid 1px #a5c3e6;
     height: 28px;
-    margin: 0;
+    margin-top: 21px;
 }
 
 #modheader button{
@@ -609,6 +615,11 @@ img.imgexpand {
 	padding-right: 5px;
 	margin-left: -5px;
 	vertical-align:top;
+}
+
+#modversion
+{
+    margin-left: 22px;
 }
 
 .ui-layout-south {
