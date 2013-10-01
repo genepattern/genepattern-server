@@ -22,7 +22,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.log4j.Logger;
 import org.genepattern.server.domain.Suite;
 import org.genepattern.server.domain.SuiteDAO;
 import org.genepattern.server.user.UserDAO;
@@ -32,7 +31,7 @@ import org.genepattern.util.GPConstants;
 import org.genepattern.webservice.TaskInfo;
 
 public class ModuleHelper {
-    private static Logger log = Logger.getLogger(ModuleHelper.class);
+    //private static Logger log = Logger.getLogger(ModuleHelper.class);
 
     private TaskInfo[] tasks;
 
@@ -70,10 +69,69 @@ public class ModuleHelper {
         return new ModuleCategory("All", tasks);
     }
 
+
+    /**
+     * Helper method, added for GP-4672, abstraction layer for getting the list of one or more categories for a given task.
+     * In GP <= 3.7.0 there is one and only one category for a task.
+     * In GP > 3.7.0 there can optionally be an additional category for a pipeline.
+     * 
+     * @param taskInfo
+     * @return
+     */
+    private List<String> getCategoriesForTask(final TaskInfo taskInfo) {
+        String taskType = taskInfo.getTaskInfoAttributes().get("taskType");
+        if (taskType == null || taskType.length() == 0) {
+            taskType = "Uncategorized";
+        }
+        final List<String> rval=new ArrayList<String>();
+        rval.add(taskType);
+        
+        //hack: for testing, put all test* pipelines into the Test category
+        final boolean addTestPipelinesToTestCategory=false;
+        if (addTestPipelinesToTestCategory) {
+            if (taskType.equalsIgnoreCase("pipeline")) {
+                if (taskInfo.getName().toLowerCase().startsWith("test")) {
+                    rval.add("Test");
+                }
+            }
+        }
+        return rval;
+    }
+    
     /**
      * @return
      */
     public List<ModuleCategory> getTasksByType() {
+
+        final List<ModuleCategory> categories = new ArrayList<ModuleCategory>();
+        final Map<String, List<TaskInfo>> taskMap = new HashMap<String, List<TaskInfo>>();
+        
+        for(final TaskInfo taskInfo : tasks) {
+            final List<String> taskTypes=getCategoriesForTask(taskInfo);
+            for(final String taskType : taskTypes) {
+                List<TaskInfo> taskMapEntries = taskMap.get(taskType);
+                if (taskMapEntries == null) {
+                    taskMapEntries = new ArrayList<TaskInfo>();
+                    taskMap.put(taskType, taskMapEntries);
+                }
+                taskMapEntries.add(taskInfo);
+            }
+        }
+
+        List<String> categoryNames = new ArrayList<String>(taskMap.keySet());
+        Collections.sort(categoryNames, new PipelineOrder());
+        for (String categoryName : categoryNames) {
+            TaskInfo[] modules = new TaskInfo[taskMap.get(categoryName).size()];
+            modules = taskMap.get(categoryName).toArray(modules);
+            categories.add(new ModuleCategory(categoryName, modules));
+        }
+        return categories;
+    }
+
+    /**
+     * @return
+     */
+    public List<ModuleCategory> getTasksByType_orig() {
 
         List<ModuleCategory> categories = new ArrayList<ModuleCategory>();
         Map<String, List<TaskInfo>> taskMap = new HashMap<String, List<TaskInfo>>();
@@ -101,7 +159,6 @@ public class ModuleHelper {
         }
         return categories;
     }
-
     /**
      * Gets all module categories for the modules in this <tt>ModuleHelper</tt>
      * instance.
