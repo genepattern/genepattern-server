@@ -78,7 +78,12 @@ public class ModuleHelper {
      * @param taskInfo
      * @return
      */
-    private List<String> getCategoriesForTask(final TaskInfo taskInfo) {
+    protected final static List<String> getCategoriesForTask(final TaskInfo taskInfo) {
+        final boolean defaultEnableCustomCategories=false;
+        return getCategoriesForTask(taskInfo, defaultEnableCustomCategories);
+    }
+
+    protected final static List<String> getCategoriesForTask(final TaskInfo taskInfo, final boolean enableCustomCategories) {
         String taskType = taskInfo.getTaskInfoAttributes().get("taskType");
         if (taskType == null || taskType.length() == 0) {
             taskType = "Uncategorized";
@@ -86,12 +91,14 @@ public class ModuleHelper {
         final List<String> rval=new ArrayList<String>();
         rval.add(taskType);
         
-        //hack: for testing, put all test* pipelines into the Test category
-        final boolean addTestPipelinesToTestCategory=false;
-        if (addTestPipelinesToTestCategory) {
-            if (taskType.equalsIgnoreCase("pipeline")) {
-                if (taskInfo.getName().toLowerCase().startsWith("test")) {
-                    rval.add("Test");
+        if (enableCustomCategories) {
+            if (taskType.equalsIgnoreCase("pipeline") || taskType.equalsIgnoreCase("visualizer")) {
+                String customCategory = taskInfo.getTaskInfoAttributes().get("category");
+                if (customCategory != null) {
+                    customCategory = customCategory.trim();
+                    if (customCategory.length() > 0) {
+                        rval.add(customCategory);
+                    }                
                 }
             }
         }
