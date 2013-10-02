@@ -841,6 +841,8 @@ public class ModuleQueryServlet extends HttpServlet {
             LocalTaskIntegratorClient taskIntegratorClient = new LocalTaskIntegratorClient(username);
             File[] allFiles = taskIntegratorClient.getAllFiles(taskInfo);
 
+            //Get documentation file name
+            String taskDoc = (String)taskInfo.getAttributes().get("taskDoc");
             //Exclude license from list of support files
             String licenseFileName=null;
             List<EulaInfo> eulas=EulaManager.instance(taskContext).getEulas(taskInfo);
@@ -857,7 +859,8 @@ public class ModuleQueryServlet extends HttpServlet {
                 ArrayList<File> supportFiles = new ArrayList<File>();
                 for(File file : allFiles)
                 {
-                    if(!file.getName().equals(licenseFileName))
+                    if(!file.getName().equals(licenseFileName)
+                            && !file.getName().equals(taskDoc))
                     {
                         supportFiles.add(file);
                     }
