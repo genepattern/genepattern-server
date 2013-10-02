@@ -515,7 +515,7 @@ FTP directory:  <span class="example">ftp://gpftp.broadinstitute.org/pub/rna_seq
 
 By default all files in the top level ftp directory will be included in the drop-down list. Optionally, you can filter items in the drop-down list by name or type.
 <br>
-An example of filtering by name using a glob pattern:
+An example of filtering by name using a case-sensitive glob pattern:
 <ol>
     <li>
         <i>*.gtf </i> - include only items whose names end with the .gtf
