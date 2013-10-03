@@ -281,6 +281,9 @@ function saveModule()
             docPromptDialog.dialog(
             {
                 title: "Please select documentation",
+                maxWidth: 380,
+                maxHeight: 320,
+                modal: true,
                 buttons:
                 {
                     OK: function(event, ui)
