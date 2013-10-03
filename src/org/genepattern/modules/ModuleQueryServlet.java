@@ -27,7 +27,6 @@ import java.util.List;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
-import javax.activation.MimetypesFileTypeMap;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -842,7 +841,7 @@ public class ModuleQueryServlet extends HttpServlet {
             File[] allFiles = taskIntegratorClient.getAllFiles(taskInfo);
 
             //Get documentation file name
-            String taskDoc = (String)taskInfo.getAttributes().get("taskDoc");
+            String taskDoc = (String)taskInfo.getAttributes().get(GPConstants.TASK_DOC);
             //Exclude license from list of support files
             String licenseFileName=null;
             List<EulaInfo> eulas=EulaManager.instance(taskContext).getEulas(taskInfo);
@@ -855,7 +854,7 @@ public class ModuleQueryServlet extends HttpServlet {
             if (eulas!=null && eulas.size()>0) {
                 licenseFileName=eulas.get(0).getLicense();
             }
-            if (licenseFileName != null) {
+            if (licenseFileName != null || taskDoc != null) {
                 ArrayList<File> supportFiles = new ArrayList<File>();
                 for(File file : allFiles)
                 {
@@ -876,6 +875,13 @@ public class ModuleQueryServlet extends HttpServlet {
 
             JSONArray parametersObject = getParameterList(taskInfo, taskInfo.getParameterInfoArray());
             responseObject.addChild(ParametersJSON.KEY, parametersObject);
+
+            //return the list of potential documentation files if the taskDoc property does not exist
+            if(!moduleObject.has(GPConstants.TASK_DOC))
+            {
+                List <String> docFiles = TaskInfoCache.instance().getDocFilenames(taskInfo.getID(), taskInfo.getLsid());
+                responseObject.addChild("docFileNames", new JSONArray(docFiles));
+            }
             this.write(response, responseObject);
         }
         catch(Exception e)

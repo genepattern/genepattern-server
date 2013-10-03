@@ -23,7 +23,8 @@ var module_editor = {
     currentUploadedFiles: [],
     licensefile: "",
     documentationfile: "",
-    otherModAttrs: {}
+    otherModAttrs: {},
+    promptForTaskDoc: false
 };
 
 var Request = {
@@ -242,10 +243,70 @@ function saveModule()
 
     json["parameters"] = getParametersJSON();
 
+    //check if the doc was implicit and so know whether now we should prompt for the correct doc
+    if(module_editor.promptForTaskDoc && (json["module"].taskDoc == undefined || json["module"].taskDoc == null
+        || json["module"].taskDoc.length < 1))
+    {
+        var docPromptDialog = $("<div/>");
+        //get list of all current support files that could be interpreted as doc
+        if(module_editor.docFileNames != undefined && module_editor.docFileNames != null
+            && module_editor.docFileNames.length > 0)
+        {
+            for(var s=0;s<module_editor.docFileNames.length+1;s++)
+            {
+                var docCheckBox = null;
+
+                if(s != module_editor.docFileNames.length)
+                {
+                    docCheckBox = $("<input type='radio' name='docGroup' value='" + module_editor.docFileNames[s]+ "'>");
+                    docCheckBox.after(module_editor.docFileNames[s]);
+                    docPromptDialog.append(docCheckBox);
+                    docPromptDialog.append("<br/>");
+                }
+                else
+                {
+                    docCheckBox = $("<input type='radio' name='docGroup' value='' checked>");
+                    docCheckBox.after("No documentation");
+                    docPromptDialog.prepend("<br/>");
+                    docPromptDialog.prepend(docCheckBox);
+                }
+                docCheckBox.click(function()
+                {
+                    json["module"].taskDoc = $(this).val();
+                });
+            }
+
+            docPromptDialog.prepend("<p>Please indicate if any of the following support files is the documentation for this module.</p>");
+
+            docPromptDialog.dialog(
+            {
+                title: "Please select documentation",
+                buttons:
+                {
+                    OK: function(event, ui)
+                    {
+                        $(this).dialog("close");
+                    }
+                },
+                close: function( event, ui )
+                {
+                    saveModulePost(json);
+                }
+            });
+        }
+    }
+    else
+    {
+        saveModulePost(json);
+    }
+}
+
+function saveModulePost(moduleJson)
+{
     $.ajax({
         type: "POST",
         url: "/gp/ModuleCreator/save",
-        data: { "bundle" : JSON.stringify(json) },
+        data: { "bundle" : JSON.stringify(moduleJson) },
         success: function(response) {
             $("#savingDialog").dialog("destroy");
 
@@ -324,7 +385,6 @@ function saveModule()
 
     module_editor.filesToDelete = [];
 }
-
 function editModule()
 {
     var lsid = Request.parameter('lsid');
@@ -1429,45 +1489,51 @@ function loadModuleInfo(module)
         $('textarea[name="description"]').val(module["description"]);
     }
 
-    if(module["taskDoc"] !== undefined && module["taskDoc"] !== "")
+    if(module["taskDoc"] !== undefined)
     {
-        var documentation = module["taskDoc"];
-        module_editor.documentationfile = documentation;
-
-        //keep track of files that are already part of this module
-        module_editor.currentUploadedFiles.push(documentation);
-
-        var currentDocumentationSpan = $("<span class='clear' id='currentDocumentationSpan'></span>");
-
-        var delbutton = $('<button value="' + documentation + '">x</button>&nbsp;');
-        delbutton.button().click(function()
+        if(module["taskDoc"] !== "")
         {
-            //set this so that module will update version when save button is clicked
-            setDirty(true);
+            var documentation = module["taskDoc"];
+            module_editor.documentationfile = documentation;
 
-            var fileName = $(this).val();
+            //keep track of files that are already part of this module
+            module_editor.currentUploadedFiles.push(documentation);
 
-            var confirmed = confirm("Are you sure you want to delete the documentation file: " + fileName);
-            if(confirmed)
+            var currentDocumentationSpan = $("<span class='clear' id='currentDocumentationSpan'></span>");
+
+            var delbutton = $('<button value="' + documentation + '">x</button>&nbsp;');
+            delbutton.button().click(function()
             {
-                module_editor.documentationfile = "";
+                //set this so that module will update version when save button is clicked
+                setDirty(true);
 
-                module_editor.filesToDelete.push(fileName);
+                var fileName = $(this).val();
 
-                //remove display of uploaded license file
-                $("#currentDocumentationSpan").remove();
+                var confirmed = confirm("Are you sure you want to delete the documentation file: " + fileName);
+                if(confirmed)
+                {
+                    module_editor.documentationfile = "";
 
-                $("#documentationSpan").show();
-            }
-        });
+                    module_editor.filesToDelete.push(fileName);
 
-        currentDocumentationSpan.append(delbutton);
-        var documentationFileURL = "<a href=\"/gp/getTaskDoc.jsp?name=" + module_editor.lsid + "\" target=\"new\">" + htmlEncode(documentation) + "</a> ";
-        currentDocumentationSpan.append(documentationFileURL);
+                    //remove display of uploaded license file
+                    $("#currentDocumentationSpan").remove();
 
-        $("#documentationSpan").hide();
-        $("#mainDocumentationDiv").prepend(currentDocumentationSpan);
+                    $("#documentationSpan").show();
+                }
+            });
 
+            currentDocumentationSpan.append(delbutton);
+            var documentationFileURL = "<a href=\"/gp/getTaskDoc.jsp?name=" + module_editor.lsid + "\" target=\"new\">" + htmlEncode(documentation) + "</a> ";
+            currentDocumentationSpan.append(documentationFileURL);
+
+            $("#documentationSpan").hide();
+            $("#mainDocumentationDiv").prepend(currentDocumentationSpan);
+        }
+    }
+    else
+    {
+        module_editor.promptForTaskDoc = true;
     }
 
     if(module["author"] !== undefined)
@@ -1848,6 +1914,12 @@ function loadModule(taskId)
             if (message !== undefined && message !== null) {
                 alert(message);
             }
+
+            if(response["docFileNames"] != null)
+            {
+                module_editor.docFileNames = response["docFileNames"];
+            }
+
             loadModuleInfo(response["module"]);
             loadParameterInfo(response["parameters"]);
             setDirty(false);
