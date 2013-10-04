@@ -6,6 +6,7 @@ import java.util.List;
 import org.genepattern.junitutil.FileUtil;
 import org.genepattern.junitutil.TaskUtil;
 import org.genepattern.server.eula.TestEulaInfo;
+import org.genepattern.util.GPConstants;
 import org.genepattern.webservice.TaskInfo;
 import org.junit.Assert;
 import org.junit.Test;
@@ -59,6 +60,50 @@ public class TestModuleHelper {
         Assert.assertEquals("num categories", 2, categories.size());
         Assert.assertEquals("category[0]", "pipeline", categories.get(0));
         Assert.assertEquals("category[1]", "MIT_701X", categories.get(1));
+    }
+
+    /**
+     * Move the module from the Visualizer category into a custom category.
+     */
+    @Test
+    public void testMoveVisualizer() {
+        TaskInfo taskInfo=new TaskInfo();
+        taskInfo.giveTaskInfoAttributes();
+        taskInfo.getTaskInfoAttributes().put(GPConstants.TASK_TYPE, GPConstants.TASK_TYPE_VISUALIZER);
+        taskInfo.getTaskInfoAttributes().put(GPConstants.CATEGORIES, "MIT_701X");
+        final List<String> categories=ModuleHelper.getCategoriesForTask(taskInfo, true);
+        Assert.assertNotNull("Expecting non-null value from getCategoriesForTask", categories);
+        Assert.assertEquals("num categories", 1, categories.size());
+        Assert.assertEquals("category[0]", "MIT_701X", categories.get(0));
+        
+    }
+    
+    /**
+     * Remove the module from all categories.
+     */
+    @Test
+    public void testHideVisualizer() {
+        TaskInfo taskInfo=new TaskInfo();
+        taskInfo.giveTaskInfoAttributes();
+        taskInfo.getTaskInfoAttributes().put(GPConstants.TASK_TYPE, GPConstants.TASK_TYPE_VISUALIZER);
+        taskInfo.getTaskInfoAttributes().put(GPConstants.CATEGORIES, "");
+        final List<String> categories=ModuleHelper.getCategoriesForTask(taskInfo, true);
+        Assert.assertNotNull("Expecting non-null value from getCategoriesForTask", categories);
+        Assert.assertEquals("num categories", 0, categories.size());
+    }
+
+    /**
+     * Remove the module from all categories.
+     */
+    @Test
+    public void testHidePipeline() {
+        TaskInfo taskInfo=new TaskInfo();
+        taskInfo.giveTaskInfoAttributes();
+        taskInfo.getTaskInfoAttributes().put(GPConstants.TASK_TYPE, GPConstants.TASK_TYPE_PIPELINE);
+        taskInfo.getTaskInfoAttributes().put(GPConstants.CATEGORIES, "");
+        final List<String> categories=ModuleHelper.getCategoriesForTask(taskInfo, true);
+        Assert.assertNotNull("Expecting non-null value from getCategoriesForTask", categories);
+        Assert.assertEquals("num categories", 0, categories.size());
     }
 
 }

@@ -66,6 +66,10 @@ default.properties:
     #    from the Pipeline Designer page
     pipelineDependencyCache.enable: false
     
+    # enable custom categories for pipelines and visualizers
+    # New feature added in GP 3.7.1 
+    org.genepattern.server.webapp.jsf.ModuleHelper.enableCustomCategories: false
+
 
 # a list of command executors
 # The executor id, 'org.genepattern.server.executor.PipelineExecutor', is reserved for the default executor which runs all GP pipelines.

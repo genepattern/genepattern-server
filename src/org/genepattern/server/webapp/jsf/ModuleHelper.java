@@ -22,6 +22,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.genepattern.server.config.ServerConfiguration;
 import org.genepattern.server.domain.Suite;
 import org.genepattern.server.domain.SuiteDAO;
 import org.genepattern.server.user.UserDAO;
@@ -72,14 +73,24 @@ public class ModuleHelper {
 
     /**
      * Helper method, added for GP-4672, abstraction layer for getting the list of one or more categories for a given task.
-     * In GP <= 3.7.0 there is one and only one category for a task.
-     * In GP > 3.7.0 there can optionally be an additional category for a pipeline.
+     * In GP <= 3.7.0 there is one and only one category for a task, as set by the 'taskType' property in the manifest file.
+     * In GP > 3.7.0 there can optionally be additional categories for a visualizer or pipeline, as set by the 'categories' property
+     * in the manifest file. E.g.
+     * <pre>
+     *     # pipeline in a custom category
+     *     categories=pipeline;RNA-seq
+     *     # visualizer in a custom category
+     *     categories=Visualizer;RNA-seq
+     *     # pipeline moved to a custom category, it won't be in the pipeline category
+     *     categories=RNA-seq
+     * </pre>
      * 
      * @param taskInfo
      * @return
      */
     protected final static List<String> getCategoriesForTask(final TaskInfo taskInfo) {
-        final boolean defaultEnableCustomCategories=false;
+        final boolean defaultEnableCustomCategories=ServerConfiguration.instance().getGPBooleanProperty(
+                ServerConfiguration.Context.getServerContext(), ModuleHelper.class.getName()+".enableCustomCategories", false);
         return getCategoriesForTask(taskInfo, defaultEnableCustomCategories);
     }
 
@@ -90,15 +101,21 @@ public class ModuleHelper {
         }
         final List<String> rval=new ArrayList<String>();
         rval.add(taskType);
-        
+
         if (enableCustomCategories) {
             if (taskType.equalsIgnoreCase("pipeline") || taskType.equalsIgnoreCase("visualizer")) {
-                String customCategory = taskInfo.getTaskInfoAttributes().get("category");
-                if (customCategory != null) {
-                    customCategory = customCategory.trim();
-                    if (customCategory.length() > 0) {
-                        rval.add(customCategory);
-                    }                
+                if (taskInfo.getTaskInfoAttributes().containsKey("categories")) {
+                    //found a match, start with zero categories
+                    rval.remove(taskType);
+                    String customCategories = taskInfo.getTaskInfoAttributes().get("categories");
+                    String[] arr=customCategories.split(";");
+                    for(String category : arr) {
+                        //trim whitespace from each category
+                        category=category.trim();
+                        if (category.length() > 0) {
+                            rval.add(category);
+                        }
+                    }                    
                 }
             }
         }
