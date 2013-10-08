@@ -2230,6 +2230,8 @@ jQuery(document).ready(function() {
         ,	useStateCookie:			true
     });
 
+    mainLayout.allowOverflow("north");
+
     $( "#parameters" ).sortable(
         {
             change: function(event, ui)
