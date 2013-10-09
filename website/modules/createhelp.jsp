@@ -524,7 +524,7 @@ An example of filtering by name using a case-sensitive glob pattern:
         <i>!*.gtf</i> - include all items except those whose name ends with .gtf
     </li>
     <li>
-        <i>*.gtf, *.fasta, *.txt</i> - include only items whose names end with .gtf, .fasta, or .txt
+        <i>*.gtf;*.fasta;*.txt</i> - include only items whose names end with .gtf, .fasta, or .txt
     </li>
 </ol>
 
