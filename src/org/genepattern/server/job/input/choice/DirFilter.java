@@ -31,7 +31,12 @@ public class DirFilter {
         if (param.getAttributes()==null) {
             throw new IllegalArgumentException("param.attributes==null");
         }
-        choiceDirFilter = (String) param.getAttributes().get(ChoiceInfo.PROP_CHOICE_DIR_FILTER);
+        if ( param.getAttributes().containsKey(ChoiceInfo.PROP_CHOICE_DIR_FILTER) )
+            //trim if necessary
+            choiceDirFilter = ((String) param.getAttributes().get(ChoiceInfo.PROP_CHOICE_DIR_FILTER)).trim();
+        else {
+            choiceDirFilter = "";
+        }
         if (!ChoiceInfoHelper.isSet(choiceDirFilter)) {
             //by default, ignore '*.md5' and 'readme.*' files
             globs.addGlob("!*.md5");
@@ -40,7 +45,9 @@ public class DirFilter {
         else {
             //parse this as a ';' separated list of patterns
             String[] patterns=choiceDirFilter.split(Pattern.quote(";"));
-            for(final String pattern : patterns) {
+            for(final String patternIn : patterns) {
+                //trim if necessary
+                final String pattern=patternIn.trim();
                 if (!ChoiceInfoHelper.isSet(pattern)) {
                     //skip empty pattern
                 }
