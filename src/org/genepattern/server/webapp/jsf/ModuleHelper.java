@@ -90,7 +90,7 @@ public class ModuleHelper {
      */
     protected final static List<String> getCategoriesForTask(final TaskInfo taskInfo) {
         final boolean defaultEnableCustomCategories=ServerConfiguration.instance().getGPBooleanProperty(
-                ServerConfiguration.Context.getServerContext(), ModuleHelper.class.getName()+".enableCustomCategories", false);
+                ServerConfiguration.Context.getServerContext(), ModuleHelper.class.getName()+".enableCustomCategories", true);
         return getCategoriesForTask(taskInfo, defaultEnableCustomCategories);
     }
 
