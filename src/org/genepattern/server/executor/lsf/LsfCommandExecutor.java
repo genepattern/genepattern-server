@@ -3,6 +3,7 @@ package org.genepattern.server.executor.lsf;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -34,8 +35,8 @@ public class LsfCommandExecutor implements CommandExecutor {
 
     //for submitting jobs to the LSF queue
     private Main broadCore = null;
-    private static ExecutorService jobSubmissionService = null;
-    private static ExecutorService jobCompletionService = null;
+    private static volatile ExecutorService jobSubmissionService = null;
+    private static volatile ExecutorService jobCompletionService = null;
     private static int numJobSubmissionThreads = 3;
     private static int numJobCompletionThreads = 3;
     
@@ -255,13 +256,17 @@ public class LsfCommandExecutor implements CommandExecutor {
 	}
     
     //NOTE: based on assumption that the GenePattern ANALYSIS_JOB.JOB_NO is stored in the LSF_JOB.JOB_NAME column
-	/**
-	 * gets the list of all lsf jobs related to this gp job id in the order in which they were submitted.
-	 */
+    /**
+     * gets the list of all lsf jobs related to this gp job id in the order in which they were submitted.
+     */
     private List<LsfJob> getLsfJobByGpJobId(final String gpJobId) {
-        final Session session = this.broadCore.getHibernateSession();
-        session.beginTransaction();
+        final Session session= this.broadCore.getHibernateSession();
+        if (session == null) {
+            log.error("broadCore.hibernateSession is null");
+            return Collections.emptyList();
+        }
         try {
+            session.beginTransaction();
             final Query query = session.createQuery("from LsfJob as lsfJob where lsfJob.name = ? order by lsfJob.internalJobId");
             query.setString(0, gpJobId);
             return query.list();
