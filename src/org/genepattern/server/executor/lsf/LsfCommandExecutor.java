@@ -272,9 +272,7 @@ public class LsfCommandExecutor implements CommandExecutor {
             return query.list();
         }
         finally {
-            if (session != null) {
-                session.close();
-            }
+            session.close();
         }
     }
     
