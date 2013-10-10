@@ -691,12 +691,14 @@ public class GenePatternAnalysisTask {
         catch (ServerConfiguration.Exception e) {
             throw new JobDispatchException("Error getting root job directory for jobId="+jobId, e);
         }
-        File outDir = null;
+        final File outDir;
         try {
             //even though the job directory gets created when the job is added to the queue,
             //create it again, if necessary, to deal with resubmitted jobs
             //TODO: improve this by requiring the job dir to be cleared (but not created) before running the job
-            outDir = JobManager.createJobDirectory(jobInfo);
+            final File path = JobManager.createJobDirectory(jobInfo);
+            //require absolute path
+            outDir = path.getAbsoluteFile();
         }
         catch (JobSubmissionException e) {
             throw new JobDispatchException("Error getting job directory for jobId="+jobId, e);
@@ -1475,8 +1477,8 @@ public class GenePatternAnalysisTask {
             return;
         } 
 
-        File stdoutFile;
-        File stderrFile;
+        final File stdoutFile;
+        final File stderrFile;
         boolean renameStdout = stdoutFilename == null;
         boolean renameStderr = stderrFilename == null;
         try {
