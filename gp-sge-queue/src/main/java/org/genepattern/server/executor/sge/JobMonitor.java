@@ -15,7 +15,7 @@ import scala.Option;
  * Helper class which monitors SgeBatchSystem for job completion events and posts them to GP server.
  * @author pcarr
  */
-class JobMonitor {
+public class JobMonitor {
     public static Logger log = Logger.getLogger(SgeCommandExecutor.class);
 
     private final SgeBatchSystem sgeBatchSystem;
@@ -38,22 +38,20 @@ class JobMonitor {
     private void startJobCompletionService() {
         jobCompletionService = Executors.newSingleThreadExecutor(); 
         
-        //TODO: this code is a bit convoluted; sgeBatchSystem maintains a LinkedBlockingQueue (see AbstractBatchSystem);
-        //    there is probably a cleaner way to implement this
-        final int numSecondsToWait = 60;
         jobCompletionService.execute(new Runnable() {
             public void run() {
-                //log.info("starting jobCompletionService ... (numSecondsToWait="+numSecondsToWait+")");
                 log.info("starting jobCompletionService ... ");
                 while(!jobCompletionService.isShutdown()) {
-                    if (log.isDebugEnabled()) {
-                        final int numCompletedJobs=sgeBatchSystem.numCompletedJobsInQueue();
-                        log.debug("polling ended jobs queue ... (numCompletedJobsInQueue="+numCompletedJobs+")");
-                    }
                     try {
-                        Option<BatchJob> jobOrNull = sgeBatchSystem.pollEndedJobsQueue(numSecondsToWait);
+                        // sgeBatchSystem maintains a LinkedBlockingQueue (see AbstractBatchSystem) of completedJobs
+                        if (log.isDebugEnabled()) {
+                            final int numCompletedJobs=sgeBatchSystem.numCompletedJobsInQueue();
+                            log.debug("polling ended jobs queue ... (numCompletedJobsInQueue="+numCompletedJobs+")");
+                        }
+                        final int numSecondsToWait = 60;
+                        final Option<BatchJob> jobOrNull = sgeBatchSystem.pollEndedJobsQueue(numSecondsToWait);
                         if (jobOrNull.isDefined()) { 
-                            BatchJob job = jobOrNull.get();
+                            final BatchJob job = jobOrNull.get();
                             log.debug("jobId="+job.getJobId()+", jobName="+job.getJobName());
                             handleJobCompletion(job);
                         }
@@ -64,6 +62,7 @@ class JobMonitor {
                     catch (Throwable t) {
                         if (t instanceof InterruptedException) {
                             log.debug("caught InterruptedException, try again");
+                            Thread.currentThread().interrupt();
                         }
                         else {
                             log.error("Unexpected error while processing next entry from the completedJobsQueue", t);
