@@ -1,0 +1,64 @@
+/*
+ * Copyright 2013 The Broad Institute, Inc.
+ * SOFTWARE COPYRIGHT NOTICE
+ * This software and its documentation are the copyright of the Broad Institute, Inc. All rights are reserved.
+ *
+ * This software is supplied without any warranty or guaranteed support whatsoever. The Broad Institute is not responsible for its use, misuse, or functionality.
+ */
+
+.module-listing {
+    margin-top: 10px;
+    border-style: solid;
+    border-width: 1px;
+    border-color: #BBBBEE;
+    padding: 2px;
+    cursor: pointer;
+}
+
+.module-listing:hover {
+    background-color: #BBBBEE;
+}
+
+.module-name {
+    font-size: 11pt;
+    overflow: hidden;
+}
+
+.module-version {
+    color:gray;
+    float:right;
+    font-size:8pt;
+    vertical-align:bottom;
+    margin-top:3px;
+}
+
+.module-description {
+    font-size:8pt;
+    color: gray;
+    white-space:nowrap;
+    max-height: 26px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+
+}
+
+.module-tag {
+    font-size:8pt;
+    color: #666699;
+}
+
+.module-tag span {
+    text-decoration: underline;
+}
+
+
+
+
+
+
+
+
+
+
+
+
