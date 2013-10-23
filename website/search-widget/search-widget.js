@@ -86,3 +86,134 @@ $.widget( "gp.module", {
         this._super(key, value);
     }
 });
+
+$.widget( "gp.modulelist", {
+    // default options
+    options: {
+        title: null,
+        breadcrumbs: {},            // TODO: Implement
+        data: {}
+    },
+
+    // the constructor
+    _create: function() {
+        this.element.addClass('module-list');
+
+        if (this.options.title) {
+            this.title = $('<h4>', {
+                'class': 'module-list-title',
+                'text': this.options.title
+            }).appendTo(this.element);
+        }
+
+        this.listings = [];
+        for (var id in this.options.data) {
+            this.listings.push($('<div>').module({
+                data: this.options.data[id]
+            }).appendTo(this.element));
+        }
+    },
+
+    filter: function(filter) {
+        var numberHidden = 0
+        for (var i = 0; i < this.listings.length; i++) {
+            var listing = this.listings[i];
+            if (listing.text().toLowerCase().indexOf(filter.toLowerCase()) < 0) {
+                listing.hide();
+                numberHidden++;
+            }
+            else {
+                listing.show();
+            }
+        }
+        if (numberHidden >= this.listings.length) {
+            // All hidden, hide title as well
+            this.title.hide();
+        }
+        else {
+            this.title.show();
+        }
+    },
+
+    // events bound via _on are removed automatically
+    // revert other modifications here
+    _destroy: function() {
+        // remove generated elements
+        this.title.remove();
+        for (var i in this.listings) {
+            i.remove();
+        }
+        this.element
+            .removeClass('module-list');
+    },
+
+    // _setOptions is called with a hash of all options that are changing
+    _setOptions: function() {
+        // _super and _superApply handle keeping the right this-context
+        this._superApply(arguments);
+    },
+
+    // _setOption is called for each individual option that is changing
+    _setOption: function(key, value) {
+        this._super(key, value);
+    }
+});
+
+$.widget( "gp.searchslider", {
+    // default options
+    options: {
+        lists: []
+    },
+
+    // the constructor
+    _create: function() {
+        var slider = this.element;
+        this.element.addClass('search-widget');
+
+        // Add the close button
+        this.close = $('<button>', {
+            'class': 'slider-close',
+            'text': 'Close' })
+            .button()
+            .click(function() {
+                slider.searchslider('hide');
+            })
+            .appendTo(this.element);
+
+        // Add the module lists
+        $(this.options.lists).each(function(index, list) {
+            slider.append(list);
+        });
+    },
+
+    show: function() {
+        this.element.show('slide', {}, 400);
+    },
+
+    hide: function() {
+        this.element.hide('slide', {}, 400);
+    },
+
+    // events bound via _on are removed automatically
+    // revert other modifications here
+    _destroy: function() {
+        // remove generated elements
+        this.title.remove();
+        for (var i in this.listings) {
+            i.remove();
+        }
+        this.element
+            .removeClass('module-list');
+    },
+
+    // _setOptions is called with a hash of all options that are changing
+    _setOptions: function() {
+        // _super and _superApply handle keeping the right this-context
+        this._superApply(arguments);
+    },
+
+    // _setOption is called for each individual option that is changing
+    _setOption: function(key, value) {
+        this._super(key, value);
+    }
+});

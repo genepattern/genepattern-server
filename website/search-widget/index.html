@@ -18,18 +18,38 @@
             $(document).ready(function() {
                 $("#left-nav").tabs();
                 $("#module-browse button").button();
+                $(document).tooltip();
 
                 $.ajax({
                     url: 'modules.json',
                     dataType: 'json',
                     success: function(data, status, xhr) {
-                        for (id in data) {
-                            console.log(data[id]);
-                            $('<div>').module({
-                                data: data[id]
-                            }).appendTo('#left-nav-modules');
-                        }
+                        var pinned = $('#pinned-modules').modulelist({
+                            title: "Pinned Modules",
+                            data: data
+                        });
+                        pinned.modulelist("filter", "pinned");
+
+                        var recent = $('#recent-modules').modulelist({
+                            title: "Recent Modules",
+                            data: data
+                        });
+                        recent.modulelist("filter", "recent");
+
+                        var search = $('<div>').modulelist({
+                            title: 'Search Modules & Pipelines',
+                            id: 'module-list-search',
+                            data: data
+                        });
+
+                        var modsearch = $('#module-search').searchslider({
+                            lists: [search]
+                        });
                     }
+                });
+
+                $("#module-search-box").focus(function() {
+                    $("#module-search").searchslider("show");
                 });
             });
         </script>
@@ -128,12 +148,14 @@
                     <li><a href="#left-nav-files">Files</a></li>
                 </ul>
                 <div id="left-nav-modules" class="left-nav-tab">
-                    <div id="module-search">
-                        <input type="search" class="search-box" placeholder="Search Modules & Pipelines" />
+                    <div id="module-search-block">
+                        <input id="module-search-box" type="search" class="search-box" placeholder="Search Modules & Pipelines" />
                     </div>
                     <div id="module-browse">
                         <button>Browse Modules &rsaquo;</button>
                     </div>
+                    <div id="pinned-modules"></div>
+                    <div id="recent-modules"></div>
                 </div>
                 <div id="left-nav-jobs" class="left-nav-tab">
                     Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam
@@ -160,7 +182,7 @@
                     futurum.
                 </div>
             </div>
-            <div id="nav-search" class="search-widget"></div>
+            <div id="module-search"></div>
             <div id="main-pane">
                 <img src="protocols.png" style="width: 100%;"/>
                 Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam
