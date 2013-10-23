@@ -1,0 +1,9 @@
+TODO
+* Add doc link to module listings
+* Add event to clicking on tags
+* Paginate slider lists
+* Make arrow keys + enter work for search
+* Make drag & drop work for pinning modules
+* Implement list breadcrumbs
+* Add second list to browsing modules
+* Handle module category clicks

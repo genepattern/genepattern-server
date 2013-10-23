@@ -23,6 +23,10 @@ $.widget( "gp.module", {
     _create: function() {
         this.element.addClass('module-listing');
 
+        // Save the lsid
+        this.lsid = this.options.data.lsid;
+
+        // Add the ui elements
         this.version = $('<div>', {
             'class': 'module-version',
             'text': 'v'+ this.options.data.version
@@ -43,6 +47,14 @@ $.widget( "gp.module", {
         }).appendTo(this.element);
 
         // Add tag links
+        for (var category in this.options.data.categories) {
+            $('<a>', {
+                'class': 'tag',
+                'text': this.options.data.categories[category],
+                'href': '#'
+            }).appendTo(this.tags);
+            this.tags.append(', ');
+        }
         for (var tag in this.options.data.tags) {
             $('<a>', {
                 'class': 'tag',
@@ -92,7 +104,8 @@ $.widget( "gp.modulelist", {
     options: {
         title: null,
         breadcrumbs: {},            // TODO: Implement
-        data: {}
+        data: {},
+        click: function() {}
     },
 
     // the constructor
@@ -109,7 +122,8 @@ $.widget( "gp.modulelist", {
         this.listings = [];
         for (var id in this.options.data) {
             this.listings.push($('<div>').module({
-                data: this.options.data[id]
+                data: this.options.data[id],
+                click: this.options.click
             }).appendTo(this.element));
         }
     },
@@ -187,11 +201,25 @@ $.widget( "gp.searchslider", {
     },
 
     show: function() {
+        var visible = $(".search-widget:visible");
         this.element.show('slide', {}, 400);
+        setTimeout(function() {
+            visible.each(function(id, slider) {
+                if (slider !== this) {
+                    $(slider).hide();
+                }
+            });
+        }, 400);
     },
 
     hide: function() {
         this.element.hide('slide', {}, 400);
+    },
+
+    filter: function(filter) {
+        $(this.options.lists).each(function(index, list) {
+            list.modulelist("filter", filter);
+        });
     },
 
     // events bound via _on are removed automatically

@@ -17,41 +17,78 @@
         <script type="text/javascript">
             $(document).ready(function() {
                 $("#left-nav").tabs();
-                $("#module-browse button").button();
                 $(document).tooltip();
 
                 $.ajax({
                     url: 'modules.json',
                     dataType: 'json',
                     success: function(data, status, xhr) {
+                        // Initialize the displays on the left nav bar
                         var pinned = $('#pinned-modules').modulelist({
                             title: "Pinned Modules",
-                            data: data
+                            data: data,
+                            click: function() {
+                                mockRunTaskForm();
+                            }
                         });
                         pinned.modulelist("filter", "pinned");
 
                         var recent = $('#recent-modules').modulelist({
                             title: "Recent Modules",
-                            data: data
+                            data: data,
+                            click: function() {
+                                mockRunTaskForm();
+                            }
                         });
                         recent.modulelist("filter", "recent");
 
-                        var search = $('<div>').modulelist({
+                        // Initialize the search box and slider
+                        var search = $('<div id="module-list-search">').modulelist({
                             title: 'Search Modules & Pipelines',
-                            id: 'module-list-search',
-                            data: data
+                            data: data,
+                            click: function() {
+                                mockRunTaskForm();
+                            }
                         });
 
                         var modsearch = $('#module-search').searchslider({
                             lists: [search]
                         });
+
+                        // Initialize the module browse button and slider
+                        var browse = $('<div id="module-list-browse">').modulelist({
+                            title: 'Browse Modules & Pipelines',
+                            data: data,
+                            click: function() {
+                                mockRunTaskForm();
+                            }
+                        });
+
+                        var modbrowse = $('#module-browse').searchslider({
+                            lists: [browse]
+                        });
                     }
                 });
 
-                $("#module-search-box").focus(function() {
-                    $("#module-search").searchslider("show");
+                // Search box controls
+                $("#module-search-box").keyup(function() {
+                    if ($(".search-widget:visible").length < 1) {
+                        $("#module-search").searchslider("show");
+                    }
+                    $(".search-widget:visible").searchslider("filter", $(this).val());
+                });
+
+                // Browse button controls
+                $("#module-browse-button button").button().click(function() {
+                    $("#module-search-box").val("");
+                    $("#module-browse").searchslider("show");
                 });
             });
+
+            function mockRunTaskForm() {
+                $(".search-widget").searchslider("hide");
+                $("#main-pane img").attr("src", "runtaskform.png");
+            }
         </script>
         <style type="text/css">
             body {
@@ -102,7 +139,6 @@
             }
 
             .left-nav-tab {
-                overflow-y: scroll;
                 overflow-x: hidden;
                 position: absolute;
                 bottom: 0px;
@@ -119,11 +155,8 @@
                 width: 100%;
             }
 
-            #module-browse {
+            #module-browse-button {
                 text-align: right;
-            }
-
-            #module-browse button {
                 font-size: 8pt;
             }
 
@@ -151,7 +184,7 @@
                     <div id="module-search-block">
                         <input id="module-search-box" type="search" class="search-box" placeholder="Search Modules & Pipelines" />
                     </div>
-                    <div id="module-browse">
+                    <div id="module-browse-button">
                         <button>Browse Modules &rsaquo;</button>
                     </div>
                     <div id="pinned-modules"></div>
@@ -182,7 +215,10 @@
                     futurum.
                 </div>
             </div>
+
             <div id="module-search"></div>
+            <div id="module-browse"></div>
+
             <div id="main-pane">
                 <img src="protocols.png" style="width: 100%;"/>
                 Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam

@@ -1,0 +1,28 @@
+// The search widget consumes a list of JSON objects with a standard structure.
+// This document should describe that structure's requirements
+
+
+// The returned format should be a JSON list object, containing a list of JSON objects representing modules
+[
+    {
+        "lsid": "the full lsid of the module should be here",               // This is the full lsid
+        "name": "TheModuleNameGoesHere",                                    // This is the name of the module
+        "description": "The description of the module should go here",      // This is the description, the UI should automatically truncate this when appropriate
+        "version": "14.1.2",                                                // This is the version string, the string type is important
+        "documentation": "url",                                             // The url to the doc should go here so it can be linked
+        "categories": ["yyy", "zzz", "www"],                                // This is a list of categories to which the module belongs
+                                                                            //     If it should be marked as a pipeline or visualizer list when as categories
+                                                                            //     The search widget treats all categories also as tags
+        "tags": ["xxx", "xxx"]                                              // Any other tags should go here, if the module is pinned or listed as a recent module
+                                                                            //     give it the "pinned" and/or "recent" tag
+    },
+
+    {
+        "lsid": "xxx",
+        "name": "name",
+        "description": "xxx",
+        "version": "xxx",
+        "categories": ["yyy", "zzz", "www"],
+        "tags": ["xxx", "xxx"]
+    }
+]

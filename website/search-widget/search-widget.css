@@ -85,6 +85,8 @@
     padding: 20px;
     font-family: Lucida Grande,Lucida Sans,Arial,sans-serif;
     font-size: 1.1em;
+    max-height: 100%;
+    overflow: hidden;
 }
 
 .slider-close {
