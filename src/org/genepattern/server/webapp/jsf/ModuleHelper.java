@@ -88,13 +88,13 @@ public class ModuleHelper {
      * @param taskInfo
      * @return
      */
-    protected final static List<String> getCategoriesForTask(final TaskInfo taskInfo) {
+    public final static List<String> getCategoriesForTask(final TaskInfo taskInfo) {
         final boolean defaultEnableCustomCategories=ServerConfiguration.instance().getGPBooleanProperty(
                 ServerConfiguration.Context.getServerContext(), ModuleHelper.class.getName()+".enableCustomCategories", true);
         return getCategoriesForTask(taskInfo, defaultEnableCustomCategories);
     }
 
-    protected final static List<String> getCategoriesForTask(final TaskInfo taskInfo, final boolean enableCustomCategories) {
+    public final static List<String> getCategoriesForTask(final TaskInfo taskInfo, final boolean enableCustomCategories) {
         String taskType = taskInfo.getTaskInfoAttributes().get("taskType");
         if (taskType == null || taskType.length() == 0) {
             taskType = "Uncategorized";
