@@ -805,6 +805,13 @@ public class PipelineQueryServlet extends HttpServlet {
                 model = new PipelineModel();
                 model.setUserID(username); 
                 
+                // add the categories to the model
+                // note: this is a new feature added in GP >= 3.7.3
+                //     if it's null, it means don't add 'categories=' to the manifest (defer to legacy taskType=pipeline)
+                //     if it's an empty string it means the pipeline is hidden
+                //     if it's a ';' separated string it means the pipeline is in multiple categories
+                model.setCategories(pipelineObject.getCategories());
+                
                 // if there is a license, add it to the model
                 String license = pipelineObject.getLicense();
                 if (license != null && license.length() > 0) {

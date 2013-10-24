@@ -70,6 +70,7 @@ public class PipelineModel implements Serializable {
     public static final String DESC = "_description";
 
     protected String name = "";
+    protected String categories = null;
     protected String description = "";
     protected String author = "";
     protected boolean privacy = true;
@@ -183,6 +184,14 @@ public class PipelineModel implements Serializable {
         else if (privacy.equalsIgnoreCase(GPConstants.PUBLIC)) {
             setPrivacy(false);
         }
+    }
+    
+    public String getCategories() {
+        return categories;
+    }
+    
+    public void setCategories(final String categories) {
+        this.categories=categories;
     }
 
     public String getDescription() {

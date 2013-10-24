@@ -164,6 +164,10 @@ public abstract class AbstractPipelineCodeGenerator {
         tia.put(GPConstants.VERSION, model.getVersion());
         tia.put(GPConstants.LSID, model.getLsid());
         
+        if (model.getCategories() != null) {
+            tia.put(GPConstants.CATEGORIES, model.getCategories());
+        }
+
         if (model.getLicense() != null && model.getLicense().length() > 0) {
             tia.put(GetEulaAsManifestProperty.LICENSE, model.getLicense());
             addLicensePlugin(tia);

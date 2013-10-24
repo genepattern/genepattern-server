@@ -16,6 +16,7 @@ import org.genepattern.data.pipeline.PipelineModel;
 import org.genepattern.server.config.ServerConfiguration.Context;
 import org.genepattern.server.eula.EulaInfo;
 import org.genepattern.server.eula.EulaManager;
+import org.genepattern.server.webapp.jsf.ModuleHelper;
 import org.genepattern.webservice.TaskInfo;
 import org.genepattern.webservice.TaskInfoCache;
 import org.json.JSONArray;
@@ -31,6 +32,7 @@ public class PipelineJSON extends JSONObject {
     public static final String PRIVACY = "pipelinePrivacy";
     public static final String VERSION = "pipelineVersion";
     public static final String VERSION_COMMENT = "pipelineVersionComment";
+    public static final String CATEGORIES = "pipelineCategories";
     public static final String DOCUMENTATION = "pipelineDocumentation";
     public static final String LICENSE = "pipelineLicense";
     public static final String LSID = "pipelineLsid";
@@ -49,6 +51,31 @@ public class PipelineJSON extends JSONObject {
             this.put(PRIVACY, object.get(PRIVACY));
             this.put(VERSION, object.get(VERSION));
             this.put(VERSION_COMMENT, object.get(VERSION_COMMENT));
+            if (object.has(CATEGORIES)) {
+                //mode 2 (not yet implemented, it's an array of String, create ';' delimited String)
+                JSONArray categoriesArray=null;
+                try {
+                    categoriesArray=object.getJSONArray(CATEGORIES);
+                    log.debug("object has an array of categories");
+                }
+                catch (JSONException e) {
+                    //ignore, not necessarily getting an array from the client
+                }
+                if (categoriesArray != null) {
+                    try {
+                        String categories=categoriesArray.join(";");
+                        this.put(CATEGORIES, categories);
+                    }
+                    catch (Throwable t) {
+                        log.error("Unexpected error joining categoriesArray for "+object.get(NAME)+", categories="+object.get(CATEGORIES), t);
+                    }
+                }
+                else {
+                    String categories=object.getString(CATEGORIES);
+                    //mode 1 (early prototype, it's a String, assume a ';' delimited String)
+                    this.put(CATEGORIES, categories);
+                }
+            }
             this.put(DOCUMENTATION, object.get(DOCUMENTATION));
             this.put(LICENSE, object.get(LICENSE));
             this.put(LSID, object.get(LSID));
@@ -59,6 +86,27 @@ public class PipelineJSON extends JSONObject {
         }
     }
 
+    private static String join(List<String> in, final String sep) {
+        if (in==null) {
+            return "";
+        }
+        if (in.size()==0) {
+            return "";
+        }
+        final StringBuffer buf=new StringBuffer();
+        boolean first=true;
+        for(final String next : in) {
+            if (first) {
+                first = false;
+            }
+            else {
+                buf.append(sep);
+            }
+            buf.append(next);
+        }
+        return buf.toString();
+    }
+    
     public PipelineJSON(String username, PipelineModel pipeline, TaskInfo info) {
         try {
             this.put(NAME, pipeline.getName());
@@ -67,6 +115,20 @@ public class PipelineJSON extends JSONObject {
             this.put(PRIVACY, pipeline.isPrivate() ? PRIVATE : PUBLIC);
             this.put(VERSION, extractVersion(pipeline.getLsid()));
             this.put(VERSION_COMMENT, pipeline.getVersion());
+            try {
+                final List<String> categories=ModuleHelper.getCategoriesForTask(info);
+                String categoriesStr=join(categories,";");
+                //Note: to return an actual list of values to the client (instead of a ';' separated string)
+                //JSONArray categoriesJson=new JSONArray();
+                //for(final String category : categories) {
+                //    categoriesJson.put(category);
+                //}
+                //this.put(CATEGORIES, categoriesJson);
+                this.put(CATEGORIES, categoriesStr);
+            }
+            catch (Throwable t) {
+                log.error(t);
+            }
             this.put(LICENSE, getLicense(username, pipeline, info));
             this.put(DOCUMENTATION, getDocumentation(pipeline, info));
             this.put(LSID, pipeline.getLsid());
@@ -106,6 +168,14 @@ public class PipelineJSON extends JSONObject {
 
     public String getVersionComment() throws JSONException {
         return this.getString(VERSION_COMMENT);
+    }
+    
+    public String getCategories() throws JSONException {
+        if (this.isNull(CATEGORIES)) {
+            //special-case: not set
+            return "";
+        }
+        return this.getString(CATEGORIES);
     }
     
     public String getLsid() throws JSONException {
