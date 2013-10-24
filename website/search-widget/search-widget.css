@@ -25,17 +25,25 @@
 }
 
 .module-version {
-    color:gray;
-    float:right;
-    font-size:8pt;
-    vertical-align:bottom;
-    margin-top:3px;
+    display: none;
+    color: gray;
+    float: right;
+    font-size: 8pt;
+    vertical-align: bottom;
+    margin-top: 3px;
+}
+
+.module-doc {
+    display:block;
+    float: right;
+    margin-left: 3px;
+    margin-right: 3px;
 }
 
 .module-description {
-    font-size:8pt;
+    font-size: 8pt;
     color: gray;
-    white-space:nowrap;
+    white-space: nowrap;
     max-height: 26px;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -62,6 +70,16 @@
     font-weight: bold;
     border-bottom-width: 1px;
     border-bottom-style: solid;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    margin-right: 80px;
+}
+
+.module-list-empty {
+    display: none;
+    margin-left: 30px;
+    color: darkgray;
 }
 
 /*
@@ -93,6 +111,7 @@
     position: absolute;
     top: 10px;
     right: 10px;
+    font-size: 12pt;
 }
 
 .search-widget .module-list {

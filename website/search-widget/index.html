@@ -44,7 +44,7 @@
 
                         // Initialize the search box and slider
                         var search = $('<div id="module-list-search">').modulelist({
-                            title: 'Search Modules & Pipelines',
+                            title: 'Search: Modules & Pipelines',
                             data: data,
                             click: function() {
                                 mockRunTaskForm();
@@ -54,13 +54,22 @@
                         var modsearch = $('#module-search').searchslider({
                             lists: [search]
                         });
+                    }
+                });
 
+                $.ajax({
+                    url: 'categories.json',
+                    dataType: 'json',
+                    success: function(data, status, xhr) {
                         // Initialize the module browse button and slider
                         var browse = $('<div id="module-list-browse">').modulelist({
                             title: 'Browse Modules & Pipelines',
                             data: data,
-                            click: function() {
-                                mockRunTaskForm();
+                            click: function(event) {
+                                var filter = $(event.currentTarget).find(".module-name").text();
+                                $("#module-search").searchslider("show");
+                                $("#module-search").searchslider("tagfilter", filter);
+                                $("#module-search").searchslider("set_title", "Browsing Category: " + filter);
                             }
                         });
 
@@ -74,8 +83,10 @@
                 $("#module-search-box").keyup(function() {
                     if ($(".search-widget:visible").length < 1) {
                         $("#module-search").searchslider("show");
+                        setModuleSearchTitle($(this).val())
                     }
                     $(".search-widget:visible").searchslider("filter", $(this).val());
+                    setModuleSearchTitle($(this).val())
                 });
 
                 // Browse button controls
@@ -84,6 +95,15 @@
                     $("#module-browse").searchslider("show");
                 });
             });
+
+            function setModuleSearchTitle(filter) {
+                if (filter === '') {
+                    $("#module-search").searchslider("set_title", "Search: Modules & Pipelines");
+                }
+                else {
+                    $("#module-search").searchslider("set_title", "Search: " + filter);
+                }
+            }
 
             function mockRunTaskForm() {
                 $(".search-widget").searchslider("hide");
@@ -101,7 +121,7 @@
                 right: 0px;
                 top: 0px;
                 height: 71px;                           /* Set to final actual height of header */
-                z-index: 1;
+                z-index: 3;
                 background-color: #556699;
             }
 
@@ -111,7 +131,7 @@
                 right: 0px;
                 bottom: 0px;
                 height: 56px;                           /* Set to final actual height of footer */
-                z-index: 1;
+                z-index: 3;
                 background-color: #deedf7;
                 border-top: #556699 solid 1px;
             }

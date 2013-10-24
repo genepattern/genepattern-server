@@ -27,9 +27,11 @@ $.widget( "gp.module", {
         this.lsid = this.options.data.lsid;
 
         // Add the ui elements
+        this.docicon = $('<a href="' + this.options.data.documentation + '" target="_blank" class="module-doc"><img src="doc.png"></a>').appendTo(this.element);
+
         this.version = $('<div>', {
             'class': 'module-version',
-            'text': 'v'+ this.options.data.version
+            'text': this.options.data.version ? 'v'+ this.options.data.version : ''
         }).appendTo(this.element);
 
         this.name = $('<div>', {
@@ -80,6 +82,7 @@ $.widget( "gp.module", {
         // remove generated elements
         this.name.remove();
         this.version.remove();
+        this.docicon.remove();
         this.description.remove();
         this.tags.remove();
 
@@ -126,6 +129,11 @@ $.widget( "gp.modulelist", {
                 click: this.options.click
             }).appendTo(this.element));
         }
+
+        this.empty = $('<h4>', {
+            'class': 'module-list-empty',
+            'text': "No Results Found"
+        }).appendTo(this.element);
     },
 
     filter: function(filter) {
@@ -142,11 +150,37 @@ $.widget( "gp.modulelist", {
         }
         if (numberHidden >= this.listings.length) {
             // All hidden, hide title as well
-            this.title.hide();
+            this.empty.show();
         }
         else {
-            this.title.show();
+            this.empty.hide();
         }
+    },
+
+    tagfilter: function(filter) {
+        var numberHidden = 0
+        for (var i = 0; i < this.listings.length; i++) {
+            var listing = this.listings[i];
+            var listing_tags = listing.find(".module-tag");
+            if (listing_tags.text().toLowerCase().indexOf(filter.toLowerCase()) < 0) {
+                listing.hide();
+                numberHidden++;
+            }
+            else {
+                listing.show();
+            }
+        }
+        if (numberHidden >= this.listings.length) {
+            // All hidden, hide title as well
+            this.empty.show();
+        }
+        else {
+            this.empty.hide();
+        }
+    },
+
+    set_title: function(title) {
+        this.element.find(".module-list-title").text(title);
     },
 
     // events bound via _on are removed automatically
@@ -202,10 +236,15 @@ $.widget( "gp.searchslider", {
 
     show: function() {
         var visible = $(".search-widget:visible");
+        visible.each(function(id, slider) {
+            $(slider).css("z-index", 1);
+        });
+        var shown = this;
+        this.element.css("z-index", 2);
         this.element.show('slide', {}, 400);
         setTimeout(function() {
             visible.each(function(id, slider) {
-                if (slider !== this) {
+                if (slider !== shown) {
                     $(slider).hide();
                 }
             });
@@ -220,6 +259,18 @@ $.widget( "gp.searchslider", {
         $(this.options.lists).each(function(index, list) {
             list.modulelist("filter", filter);
         });
+    },
+
+    tagfilter: function(filter) {
+        $(this.options.lists).each(function(index, list) {
+            list.modulelist("tagfilter", filter);
+        });
+    },
+
+    set_title: function(title) {
+        if (this.options.lists.length >= 1) {
+            $(this.options.lists[0]).modulelist("set_title", title);
+        }
     },
 
     // events bound via _on are removed automatically
