@@ -1,7 +1,4 @@
 TODO
-* Add event to clicking on tags
-* Paginate slider lists
 * Make arrow keys + enter work for search
-* Make drag & drop work for pinning modules
-* Add second list to browsing modules
+* Make drag & drop work for removing a pinned module
 * Cross-browser testing

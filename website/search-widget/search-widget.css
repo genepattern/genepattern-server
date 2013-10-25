@@ -73,7 +73,6 @@
     white-space: nowrap;
     text-overflow: ellipsis;
     overflow: hidden;
-    margin-right: 80px;
 }
 
 .module-list-empty {
@@ -100,11 +99,23 @@
     margin-right: 50px;
     border-right: lightgray solid 2px;
     margin-top: 0px;
-    padding: 20px;
     font-family: Lucida Grande,Lucida Sans,Arial,sans-serif;
     font-size: 1.1em;
     max-height: 100%;
     overflow: hidden;
+}
+
+.search-inner {
+    height: 100%;
+    overflow: auto;
+    padding-left: 20px;
+}
+
+.slider-close-block {
+    height: 0px;
+    width: 0px;
+    float: right;
+    position: relative;
 }
 
 .slider-close {

@@ -6,17 +6,24 @@
  * This software is supplied without any warranty or guaranteed support whatsoever. The Broad Institute is not responsible for its use, misuse, or functionality.
  */
 
-$.widget( "gp.module", {
+$.widget("gp.module", {
     // default options
     options: {
         display: true,
         data: {},
-        draggable: false,   // TODO: Implement
+        draggable: true,
 
         // callbacks
         click: function() {},
-        drag: null,         // TODO: Implement
-        drop: null          // TODO: Implement
+        tagclick: function(event) {
+            $('#module-search')
+                .searchslider('show')
+                .searchslider('tagfilter', $(event.currentTarget).text())
+                .searchslider('set_title', "Search Tag: " + $(event.currentTarget).text());
+            $(event.currentTarget)
+                .closest('.module-listing')
+                .module('stopProp', event);
+        }
     },
 
     // the constructor
@@ -27,7 +34,12 @@ $.widget( "gp.module", {
         this.lsid = this.options.data.lsid;
 
         // Add the ui elements
-        this.docicon = $('<a href="' + this.options.data.documentation + '" target="_blank" class="module-doc"><img src="doc.png"></a>').appendTo(this.element);
+        this.docicon = $('<a><img src="doc.png"></a>')
+            .attr("href", this.options.data.documentation)
+            .attr("target", "_blank")
+            .attr("class", "module-doc")
+            .attr("onclick", "$(this).closest('.module-listing').module('stopProp', event)")
+            .appendTo(this.element);
 
         this.version = $('<div>', {
             'class': 'module-version',
@@ -53,16 +65,18 @@ $.widget( "gp.module", {
             $('<a>', {
                 'class': 'tag',
                 'text': this.options.data.categories[category],
-                'href': '#'
-            }).appendTo(this.tags);
+                'href': '#'})
+                .attr("onclick", "$(this).closest('.module-listing').module('tagClick', event);")
+                .appendTo(this.tags);
             this.tags.append(', ');
         }
         for (var tag in this.options.data.tags) {
             $('<a>', {
                 'class': 'tag',
                 'text': this.options.data.tags[tag],
-                'href': '#'
-            }).appendTo(this.tags);
+                'href': '#'})
+                .attr("onclick", "$(this).closest('.module-listing').module('tagClick', event);")
+                .appendTo(this.tags);
             this.tags.append(', ');
         }
 
@@ -70,10 +84,43 @@ $.widget( "gp.module", {
             this.element.hide();
         }
 
+        if (this.options.draggable) {
+            var module = this;
+            this.element.draggable({
+                helper:'clone',
+                connectToSortable:'#pinned-modules',
+                scroll: false,
+                start: function(event, ui) {
+                    ui.helper.data('dropped', false);
+                },
+                stop: function(event, ui) {
+                    if (ui.helper.data('dropped') !== false) {
+                        // This means the module has been dropped into pinned modules, do something
+                        // TODO: Implement the ajax callback to save pinned modules here
+                    }
+                }
+            });
+        }
+
         // bind events on the widget
         this._on(this.element, {
             click: this.options.click
         });
+    },
+
+    _isValid: function(toElement) {
+        if (!toElement) return false;
+        var modlist = $(toElement).closest(".module-list");
+        if (modlist.length < 1) return false;
+        return $(modlist[0]).hasClass("ui-sortable");
+    },
+
+    tagClick: function(event) {
+        this.options.tagclick(event);
+    },
+
+    stopProp: function(event) {
+        event.stopPropagation();
     },
 
     // events bound via _on are removed automatically
@@ -102,12 +149,13 @@ $.widget( "gp.module", {
     }
 });
 
-$.widget( "gp.modulelist", {
+$.widget("gp.modulelist", {
     // default options
     options: {
         title: null,
-        breadcrumbs: {},            // TODO: Implement
         data: {},
+        droppable: false,
+        draggable: true,
         click: function() {}
     },
 
@@ -126,7 +174,8 @@ $.widget( "gp.modulelist", {
         for (var id in this.options.data) {
             this.listings.push($('<div>').module({
                 data: this.options.data[id],
-                click: this.options.click
+                click: this.options.click,
+                draggable: this.options.draggable
             }).appendTo(this.element));
         }
 
@@ -134,6 +183,17 @@ $.widget( "gp.modulelist", {
             'class': 'module-list-empty',
             'text': "No Results Found"
         }).appendTo(this.element);
+
+        if (this.options.droppable) {
+            $(this.element).sortable({
+                connectWith: '.module-list',
+                scroll: false,
+                drop: function(event, ui) {
+                    ui.draggable.data('dropped', true);
+                }
+            });
+            $(this.element).disableSelection();
+        }
     },
 
     filter: function(filter) {
@@ -207,7 +267,7 @@ $.widget( "gp.modulelist", {
     }
 });
 
-$.widget( "gp.searchslider", {
+$.widget("gp.searchslider", {
     // default options
     options: {
         lists: []
@@ -215,22 +275,31 @@ $.widget( "gp.searchslider", {
 
     // the constructor
     _create: function() {
-        var slider = this.element;
         this.element.addClass('search-widget');
 
+        // Add the inner div
+        this.inner = $('<div>', {
+            'class': 'search-inner'})
+            .appendTo(this.element);
+        var inner = this.inner;
+        var slider = this.element;
+
         // Add the close button
-        this.close = $('<button>', {
+        this.close = $("<div>", {
+            class: 'slider-close-block'})
+            .appendTo(this.inner);;
+        $('<button></button>', {
             'class': 'slider-close',
             'text': 'Close' })
             .button()
             .click(function() {
                 slider.searchslider('hide');
             })
-            .appendTo(this.element);
+            .appendTo(this.close);
 
         // Add the module lists
         $(this.options.lists).each(function(index, list) {
-            slider.append(list);
+            inner.append(list);
         });
     },
 
@@ -239,12 +308,12 @@ $.widget( "gp.searchslider", {
         visible.each(function(id, slider) {
             $(slider).css("z-index", 1);
         });
-        var shown = this;
+        var shown = this.element;
         this.element.css("z-index", 2);
         this.element.show('slide', {}, 400);
         setTimeout(function() {
             visible.each(function(id, slider) {
-                if (slider !== shown) {
+                if (slider !== shown[0]) {
                     $(slider).hide();
                 }
             });
@@ -277,10 +346,7 @@ $.widget( "gp.searchslider", {
     // revert other modifications here
     _destroy: function() {
         // remove generated elements
-        this.title.remove();
-        for (var i in this.listings) {
-            i.remove();
-        }
+        this.inner.remove();
         this.element
             .removeClass('module-list');
     },

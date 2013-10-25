@@ -27,6 +27,8 @@
                         var pinned = $('#pinned-modules').modulelist({
                             title: "Pinned Modules",
                             data: data,
+                            droppable: true,
+                            draggable: true,
                             click: function() {
                                 mockRunTaskForm();
                             }
@@ -36,6 +38,8 @@
                         var recent = $('#recent-modules').modulelist({
                             title: "Recent Modules",
                             data: data,
+                            droppable: false,
+                            draggable: true,
                             click: function() {
                                 mockRunTaskForm();
                             }
@@ -46,6 +50,8 @@
                         var search = $('<div id="module-list-search">').modulelist({
                             title: 'Search: Modules & Pipelines',
                             data: data,
+                            droppable: false,
+                            draggable: true,
                             click: function() {
                                 mockRunTaskForm();
                             }
@@ -62,9 +68,43 @@
                     dataType: 'json',
                     success: function(data, status, xhr) {
                         // Initialize the module browse button and slider
-                        var browse = $('<div id="module-list-browse">').modulelist({
+                        var allnsuite = $('<div id="module-list-allnsuite">').modulelist({
                             title: 'Browse Modules & Pipelines',
+                            data: [
+                                {
+                                    "lsid": "the full lsid of the module should be here",
+                                    "name": "All Modules",
+                                    "description": "The description of the category can go here, blah, blah, blah",
+                                    "version": "",
+                                    "documentation": "http://www.google.com",
+                                    "categories": [],
+                                    "tags": []
+                                },
+
+                                {
+                                    "lsid": "the full lsid of the module should be here",
+                                    "name": "Browse by Suite",
+                                    "description": "The description of the category can go here, blah, blah, blah",
+                                    "version": "",
+                                    "documentation": "http://www.google.com",
+                                    "categories": [],
+                                    "tags": []
+                                }
+                            ],
+                            droppable: false,
+                            draggable: false,
+                            click: function(event) {
+                                var filter = $(event.currentTarget).find(".module-name").text();
+                                $("#module-search").searchslider("show");
+                                $("#module-search").searchslider("set_title", filter);
+                            }
+                        });
+
+                        var browse = $('<div id="module-list-browse">').modulelist({
+                            title: 'Browse Modules by Category',
                             data: data,
+                            droppable: false,
+                            draggable: false,
                             click: function(event) {
                                 var filter = $(event.currentTarget).find(".module-name").text();
                                 $("#module-search").searchslider("show");
@@ -74,7 +114,7 @@
                         });
 
                         var modbrowse = $('#module-browse').searchslider({
-                            lists: [browse]
+                            lists: [allnsuite, browse]
                         });
                     }
                 });
@@ -113,6 +153,7 @@
         <style type="text/css">
             body {
                 margin: 0px;
+                overflow: hidden;
             }
 
             #header{
