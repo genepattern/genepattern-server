@@ -1,0 +1,25 @@
+#
+# configuration options for the CategoryManager
+#
+default.properties:
+    #
+    # when this property is set, it means, check the server DB for optional override of the default
+    # categories set in the manifest file for the module
+    #
+    "org.genepattern.server.cm.CategoryManager.checkCustomCategories": true
+    #
+    # add category names to this array to hide them from the Modules & Pipelines panel
+    #
+    "org.genepattern.server.cm.CategoryManager.hiddenCategories": [ ]
+#  config.yaml file must have at least one executor    
+executors:
+    RuntimeExec: 
+        classname: org.genepattern.server.executor.RuntimeCommandExecutor
+        configuration.properties:
+            test.prop: BY_EXEC_CONFIG
+        default.properties:
+            test.prop: BY_EXEC_DEFAULT
+user.properties:
+    customUser:
+        org.genepattern.server.cm.CategoryManager.checkCustomCategories: true
+        org.genepattern.server.cm.CategoryManager.hiddenCategories: ["MIT_701X", "Test"]

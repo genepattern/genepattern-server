@@ -1,7 +1,7 @@
 /*
  The Broad Institute
  SOFTWARE COPYRIGHT NOTICE AGREEMENT
- This software and its documentation are copyright (2003-2011) by the
+ This software and its documentation are copyright (2003-2013) by the
  Broad Institute/Massachusetts Institute of Technology. All rights are
  reserved.
  
@@ -22,7 +22,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.genepattern.server.config.ServerConfiguration;
+import org.genepattern.server.cm.CategoryManager;
+import org.genepattern.server.config.ServerConfiguration.Context;
 import org.genepattern.server.domain.Suite;
 import org.genepattern.server.domain.SuiteDAO;
 import org.genepattern.server.user.UserDAO;
@@ -32,9 +33,8 @@ import org.genepattern.util.GPConstants;
 import org.genepattern.webservice.TaskInfo;
 
 public class ModuleHelper {
-    //private static Logger log = Logger.getLogger(ModuleHelper.class);
-
-    private TaskInfo[] tasks;
+    private final TaskInfo[] tasks;
+    private final Context userContext;
 
     public ModuleHelper() {
         this(false);
@@ -44,11 +44,12 @@ public class ModuleHelper {
      * 
      */
     public ModuleHelper(boolean allVersions) {
+        this.userContext=UIBeanHelper.getUserContext();
         if (allVersions) {
-            tasks = (new AdminDAO()).getAllTasksForUser(getUserId());
+            tasks = (new AdminDAO()).getAllTasksForUser(this.userContext.getUserId());
         }
         else {
-            tasks = (new AdminDAO()).getLatestTasks(getUserId());
+            tasks = (new AdminDAO()).getLatestTasks(this.userContext.getUserId());
         }
     }
 
@@ -69,58 +70,6 @@ public class ModuleHelper {
         AdminDAO dao = new AdminDAO();
         return new ModuleCategory("All", tasks);
     }
-
-
-    /**
-     * Helper method, added for GP-4672, abstraction layer for getting the list of one or more categories for a given task.
-     * In GP <= 3.7.0 there is one and only one category for a task, as set by the 'taskType' property in the manifest file.
-     * In GP > 3.7.0 there can optionally be additional categories for a visualizer or pipeline, as set by the 'categories' property
-     * in the manifest file. E.g.
-     * <pre>
-     *     # pipeline in a custom category
-     *     categories=pipeline;RNA-seq
-     *     # visualizer in a custom category
-     *     categories=Visualizer;RNA-seq
-     *     # pipeline moved to a custom category, it won't be in the pipeline category
-     *     categories=RNA-seq
-     * </pre>
-     * 
-     * @param taskInfo
-     * @return
-     */
-    public final static List<String> getCategoriesForTask(final TaskInfo taskInfo) {
-        final boolean defaultEnableCustomCategories=ServerConfiguration.instance().getGPBooleanProperty(
-                ServerConfiguration.Context.getServerContext(), ModuleHelper.class.getName()+".enableCustomCategories", true);
-        return getCategoriesForTask(taskInfo, defaultEnableCustomCategories);
-    }
-
-    public final static List<String> getCategoriesForTask(final TaskInfo taskInfo, final boolean enableCustomCategories) {
-        String taskType = taskInfo.getTaskInfoAttributes().get("taskType");
-        if (taskType == null || taskType.length() == 0) {
-            taskType = "Uncategorized";
-        }
-        final List<String> rval=new ArrayList<String>();
-        rval.add(taskType);
-
-        if (enableCustomCategories) {
-            if (taskType.equalsIgnoreCase("pipeline") || taskType.equalsIgnoreCase("visualizer")) {
-                if (taskInfo.getTaskInfoAttributes().containsKey("categories")) {
-                    //found a match, start with zero categories
-                    rval.remove(taskType);
-                    String customCategories = taskInfo.getTaskInfoAttributes().get("categories");
-                    String[] arr=customCategories.split(";");
-                    for(String category : arr) {
-                        //trim whitespace from each category
-                        category=category.trim();
-                        if (category.length() > 0) {
-                            rval.add(category);
-                        }
-                    }                    
-                }
-            }
-        }
-        return rval;
-    }
     
     /**
      * @return
@@ -131,7 +80,7 @@ public class ModuleHelper {
         final Map<String, List<TaskInfo>> taskMap = new HashMap<String, List<TaskInfo>>();
         
         for(final TaskInfo taskInfo : tasks) {
-            final List<String> taskTypes=getCategoriesForTask(taskInfo);
+            final List<String> taskTypes=CategoryManager.getCategoriesForTask(userContext, taskInfo);
             for(final String taskType : taskTypes) {
                 List<TaskInfo> taskMapEntries = taskMap.get(taskType);
                 if (taskMapEntries == null) {
@@ -152,37 +101,6 @@ public class ModuleHelper {
         return categories;
     }
 
-    /**
-     * @return
-     */
-    public List<ModuleCategory> getTasksByType_orig() {
-
-        List<ModuleCategory> categories = new ArrayList<ModuleCategory>();
-        Map<String, List<TaskInfo>> taskMap = new HashMap<String, List<TaskInfo>>();
-
-        for (int i = 0; i < tasks.length; i++) {
-            TaskInfo ti = tasks[i];
-            String taskType = ti.getTaskInfoAttributes().get("taskType");
-            if (taskType == null || taskType.length() == 0) {
-                taskType = "Uncategorized";
-            }
-            List<TaskInfo> tasks = taskMap.get(taskType);
-            if (tasks == null) {
-                tasks = new ArrayList<TaskInfo>();
-                taskMap.put(taskType, tasks);
-            }
-            tasks.add(ti);
-        }
-
-        List<String> categoryNames = new ArrayList<String>(taskMap.keySet());
-        Collections.sort(categoryNames, new PipelineOrder());
-        for (String categoryName : categoryNames) {
-            TaskInfo[] modules = new TaskInfo[taskMap.get(categoryName).size()];
-            modules = taskMap.get(categoryName).toArray(modules);
-            categories.add(new ModuleCategory(categoryName, modules));
-        }
-        return categories;
-    }
     /**
      * Gets all module categories for the modules in this <tt>ModuleHelper</tt>
      * instance.
@@ -253,7 +171,6 @@ public class ModuleHelper {
             categories.add(new ModuleCategory(suite.getName(), taskArray, false, suite.getLsid()));
         }
         return categories;
-
     }
 
     /**
