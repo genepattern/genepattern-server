@@ -68,11 +68,26 @@ default.properties:
     #org.genepattern.server.eula.EulaManager.remoteUrl: []
     
     #
-    # for experimental features with pipeline execution
+    # by default run pipeline steps in parallel
+    # Set this to 'false' to revert back to the GP <=3.7.0 behavior
     #
-    org.genepattern.server.executor.pipeline.parallelExec: false
+    org.genepattern.server.executor.pipeline.parallelExec: true
 
-
+    #
+    # Settings for the 'Modules & Pipelines' panel
+    #
+    # By default, all categories are shown, to  hide a category add it to the list of hiddenCategories
+    # (feature added in 3.7.3)
+    org.genepattern.server.cm.CategoryManager.hiddenCategories: [ ]
+    #
+    # Check the GP database for custom categories.  
+    # To get the list of custom categories ...  go to the /gp/sql.jsp page
+    #     select * from task_category
+    # To add a custom category, use the base lsid of the module
+    #     insert into task_category (task_category) values ('<baseLsid>', '<categoryName>')
+    # (added in 3.7.3)
+    org.genepattern.server.cm.CategoryManager.checkCustomCategories: true
+    
 executors:
     # default executor for all jobs, it is included in GenePattern
     RuntimeExec:
