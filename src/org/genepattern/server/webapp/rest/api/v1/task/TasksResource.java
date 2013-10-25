@@ -1,5 +1,7 @@
 package org.genepattern.server.webapp.rest.api.v1.task;
 
+import java.net.MalformedURLException;
+import java.util.List;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
@@ -13,17 +15,22 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 
 import org.apache.log4j.Logger;
+import org.genepattern.server.cm.CategoryManager;
 import org.genepattern.server.config.ServerConfiguration;
+import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.dm.UrlUtil;
 import org.genepattern.server.job.input.choice.ChoiceInfo;
 import org.genepattern.server.job.input.choice.ChoiceInfoHelper;
 import org.genepattern.server.rest.ParameterInfoRecord;
 import org.genepattern.server.webapp.rest.api.v1.Util;
+import org.genepattern.server.webservice.server.dao.AdminDAO;
 import org.genepattern.server.webservice.server.local.LocalAdminClient;
+import org.genepattern.util.LSID;
 import org.genepattern.webservice.ParameterInfo;
 import org.genepattern.webservice.TaskInfo;
 import org.genepattern.webservice.WebServiceException;
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import com.sun.jersey.api.Responses;
@@ -116,6 +123,107 @@ public class TasksResource {
         String path = getTaskInfoPath(request, taskInfo) + "/" + pname  + "/choiceInfo.json";
         return path;
     }
+    
+    /**
+     * Rapid prototype method to get the latest version of all installed tasks in json format,
+     * for use by the new Modules & Pipelines search panel.
+     * 
+     * Example usage:
+     * <pre>
+     * curl -u test:test http://127.0.0.1:8080/gp/rest/v1/tasks/all.json >> all_modules.json
+     * </pre>
+     * 
+     *  
+     * @param request
+     * @return
+     */
+    @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    @Path("all.json")
+    public Response getAllTasks(
+            final @Context HttpServletRequest request
+            ) {
+        ServerConfiguration.Context userContext=Util.getUserContext(request);
+        final String userId=userContext.getUserId();
+        
+        final boolean isInTransaction=HibernateUtil.isInTransaction();
+        try {
+            final AdminDAO adminDao = new AdminDAO();
+            final TaskInfo[] latestTasks = adminDao.getLatestTasks(userContext.getUserId());
+            JSONArray jsonArray=new JSONArray();
+            for(final TaskInfo taskInfo : latestTasks) {
+                JSONObject jsonObj = asJson(taskInfo);
+                jsonArray.put(jsonObj);
+            }
+            return Response.ok().entity(jsonArray.toString()).build();
+        }
+        catch (Throwable t) {
+            log.error(t);
+            final String errorMessage="Error constructing json response for all.json: "+
+                    t.getLocalizedMessage();
+            return Response.serverError().entity(errorMessage).build();
+        }
+        finally {
+            if (!isInTransaction) {
+                HibernateUtil.closeCurrentSession();
+            }
+        }
+    }
+    
+    /**
+     * 
+     * <pre>
+     * {
+        "lsid": "the full lsid of the module should be here",
+        "name": "TheModuleNameGoesHere",
+        "description": "The description of the module should go here",
+        "version": "14.1.2",
+        "documentation": "http://www.google.com",
+        "categories": ["yyy", "zzz", "www"],
+        "tags": ["xxx", "xxx"]
+      }
+     * </pre>
+     * @param taskInfo
+     * @return
+     */
+    private JSONObject asJson(final TaskInfo taskInfo) throws JSONException {
+        JSONObject jsonObj = new JSONObject();
+        jsonObj.put("lsid", taskInfo.getLsid());
+        jsonObj.put("name", taskInfo.getName());
+        jsonObj.put("description", taskInfo.getDescription());
+        try {
+            final LSID lsid=new LSID(taskInfo.getLsid());
+            jsonObj.put("version", lsid.getVersion());
+        }
+        catch (MalformedURLException e) {
+            log.error("Error getting lsid for task.name="+taskInfo.getName(), e);
+        }
+        jsonObj.put("documentation", getDocLink(taskInfo));
+        jsonObj.put("categories", getCategories(taskInfo));
+        jsonObj.put("tags", getTags(taskInfo));
+        return jsonObj;
+    }
+
+    private JSONArray getCategories(final TaskInfo taskInfo) {
+        ServerConfiguration.Context userContext=null;
+        List<String> categories=CategoryManager.getCategoriesForTask(userContext, taskInfo);
+        JSONArray json=new JSONArray();
+        for(final String cat : categories) {
+            json.put(cat);
+        }
+        return json;
+    }
+    
+    private JSONArray getTags(final TaskInfo taskInfo) {
+        //TODO: implement tags
+        return new JSONArray();
+    }
+
+    private String getDocLink(final TaskInfo taskInfo) {
+        //https://www.google.com/#q=comparativemarkerselection
+        return "http://www.google.com/#q="+taskInfo.getName().toLowerCase();
+    }
+    
 
     @GET
     @Produces(MediaType.APPLICATION_JSON)
