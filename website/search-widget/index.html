@@ -96,6 +96,7 @@
                             click: function(event) {
                                 var filter = $(event.currentTarget).find(".module-name").text();
                                 $("#module-search").searchslider("show");
+                                $("#module-search").searchslider("filter", '');
                                 $("#module-search").searchslider("set_title", filter);
                             }
                         });
