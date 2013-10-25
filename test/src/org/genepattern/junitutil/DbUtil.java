@@ -15,7 +15,7 @@ public class DbUtil {
     public static void initDb() throws Exception { 
         final File hsqlDbDir=new File("junitdb");
         final String hsqlDbName="GenePatternDB";
-        final String gpVersion="3.6.1";
+        final String gpVersion="3.7.3";
         initDb(hsqlDbDir, hsqlDbName, gpVersion);
     }
 
