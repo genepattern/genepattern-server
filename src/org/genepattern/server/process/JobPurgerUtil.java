@@ -19,10 +19,98 @@ import java.util.Date;
 import java.util.GregorianCalendar;
 
 import org.apache.log4j.Logger;
+import org.genepattern.server.config.ServerConfiguration;
+import org.genepattern.server.config.ServerConfiguration.Context;
 
 public class JobPurgerUtil {
     private static Logger log = Logger.getLogger(JobPurgerUtil.class);
 
+    /**
+     * Allow customization of the purge interval by checking for the 'purgeJobsAfter' and 'purgeTime' properties
+     * on a per-user basis. Defaults to the server setting if there are no user customizations.
+     * 
+     * @param userContext
+     * @param now
+     * @return
+     */
+    public Date getCutoffForUser(final Context userContext, final Date now) {
+        if (userContext==null) {
+            //use the system defaults
+            return getCutoffForUser(ServerConfiguration.Context.getServerContext(), now);
+        }
+        final int purgeJobsAfter=ServerConfiguration.instance().getGPIntegerProperty(userContext, "purgeJobsAfter", -1);
+        final String purgeTime=ServerConfiguration.instance().getGPProperty(userContext, "purgeTime", "23:00");
+        return getCutoff(now, purgeJobsAfter, purgeTime);
+    }
+    
+    /**
+     * Given the current timestamp (now) a purgeTime (time of day) and a purgeJobsAfter interval
+     * (the number of days to keep jobs before purging them) get a cutoff date.
+     * Any job older than this cutoff date should be purged from the system.
+     * 
+     * @param now
+     * @param purgeJobsAfter
+     * @param purgeTime
+     * @return
+     */
+    public static Date getCutoff(final Date now, final int purgeJobsAfter, final String purgeTime) {
+        if (now==null) {
+            throw new IllegalArgumentException("Must pass in a valid date arg");
+        }
+        if (purgeJobsAfter<0) {
+            return null;
+        }
+        int hourOfDay=JobPurger.DEFAULT_PURGE_HOUR;
+        int minute=JobPurger.DEFAULT_PURGE_MINUTE;
+        try {
+            if (purgeTime==null) {
+                throw new Exception("purgeTime is null");
+            }
+            // expecting purgeTime=HH:mm, e.g. purgeTime=23:00
+            final String[] split=purgeTime.trim().split(":");
+            if (split.length==2) {
+                hourOfDay=Integer.parseInt(split[0]);
+                if (hourOfDay < 0 || hourOfDay >= 24) {
+                    throw new Exception("Invalid format for purgeTime="+purgeTime+", hourOfDay must be between 0 and 23");
+                }
+                minute=Integer.parseInt(split[1]);
+                if (minute < 0 || minute >= 60) {
+                    throw new Exception("Invalid format for purgeTime="+purgeTime+", minute must be between 0 and 59");
+                }                
+            }
+            else {
+                throw new Exception("Invalid format for purgeTime="+purgeTime+", expecting purgeTime=HH:mm, e.g. purgeTime=23:00");
+            }
+        }
+        catch (Exception e) {
+            log.error(e);
+            hourOfDay=JobPurger.DEFAULT_PURGE_HOUR;
+            minute=JobPurger.DEFAULT_PURGE_MINUTE;
+        }
+        catch (Throwable t) {
+            log.error("Unexpected exception for purgeJobsAfter="+purgeJobsAfter+", purgeTime="+purgeTime, t);
+            hourOfDay=JobPurger.DEFAULT_PURGE_HOUR;
+            minute=JobPurger.DEFAULT_PURGE_MINUTE;
+        }
+        
+        
+        Calendar c = Calendar.getInstance();
+        c.setTime(now);
+        c.set(Calendar.HOUR_OF_DAY, hourOfDay);
+        c.set(Calendar.MINUTE, minute);
+        //round to the nearest minute
+        c.set(Calendar.SECOND, 0);
+        c.set(Calendar.MILLISECOND, 0);
+
+        //account for when the purgeTime is after now
+        long cutoffTime=c.getTime().getTime();
+        if (now.getTime() < cutoffTime) {
+            //move the cutoff date back one day
+            c.add(Calendar.DATE, -1);
+        }
+        c.add(Calendar.DATE, -purgeJobsAfter);
+        return c.getTime();
+    }
 
    /**
     * Helper method which gives the next time that the purger will run based on the current time.
@@ -108,7 +196,6 @@ public class JobPurgerUtil {
         }
         return jobPurgeCal.getTime();
     }
-
 
     private static int lookupPurgeInterval() {
         String purgeJobsAfter = System.getProperty("purgeJobsAfter", "-1");
