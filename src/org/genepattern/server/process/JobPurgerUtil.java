@@ -33,7 +33,7 @@ public class JobPurgerUtil {
      * @param now
      * @return
      */
-    public Date getCutoffForUser(final Context userContext, final Date now) {
+    public static Date getCutoffForUser(final Context userContext, final Date now) {
         if (userContext==null) {
             //use the system defaults
             return getCutoffForUser(ServerConfiguration.Context.getServerContext(), now);

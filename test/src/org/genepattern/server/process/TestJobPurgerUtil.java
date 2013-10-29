@@ -5,7 +5,11 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
+import org.genepattern.junitutil.ConfigUtil;
+import org.genepattern.server.config.ServerConfiguration;
+import org.genepattern.server.config.ServerConfiguration.Context;
 import org.junit.Assert;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 /**
@@ -15,7 +19,12 @@ import org.junit.Test;
  */
 public class TestJobPurgerUtil {
     final private static DateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-    
+
+    @BeforeClass
+    public static void beforeClass() {
+        ConfigUtil.loadConfigFile(TestJobPurgerUtil.class, "config.yaml");
+    }
+
     @Test
     public void testNextPurgeTimeToday() throws ParseException {
         String purgeTime = "09:00";
@@ -349,4 +358,46 @@ public class TestJobPurgerUtil {
                 df.parse("2013-10-25 23:00:00"),
                 cutoff);
     }
+
+    //
+    // test related to custom configuration of purgeInterval
+    //
+    /**
+     * jUnit test for userContext specific cutoff date, using default settings.
+     * @throws ParseException
+     */
+    @Test public void getCutoffForUser_defaultConfig() throws ParseException {
+        final Context userContext=ServerConfiguration.Context.getContextForUser("test");
+        final Date now=df.parse("2013-11-01 23:05:23");
+        final Date cutoff=JobPurgerUtil.getCutoffForUser(userContext, now);
+        
+        Assert.assertNull("Expecting null cutoffDate, by default the purge interval is '-1', which means don't purge files", cutoff);
+    }
+    
+    /**
+     * jUnit test for userContext specific cutoff date, using default settings.
+     * @throws ParseException
+     */
+    @Test public void getCutoffForUser_defaultPurgeTime() throws ParseException {
+        final Context userContext=ServerConfiguration.Context.getContextForUser("customInterval");
+        final Date now=df.parse("2013-11-01 23:05:23");
+        final Date cutoff=JobPurgerUtil.getCutoffForUser(userContext, now);
+        Assert.assertEquals("customInterval is 3",
+                df.parse("2013-10-29 23:00:00"),
+                cutoff);
+    }
+
+    /**
+     * jUnit test for userContext specific purgeJobsAfter and purgeTime.
+     * @throws ParseException
+     */
+    @Test public void getCutoffForUser_customConfig() throws ParseException {
+        final Context userContext=ServerConfiguration.Context.getContextForUser("customUser");
+        final Date now=df.parse("2013-11-01 23:05:23");
+        final Date cutoff=JobPurgerUtil.getCutoffForUser(userContext, now);
+        Assert.assertEquals("Expecting purgeTime=09:00 and purgeInterval=3",
+                df.parse("2013-10-29 09:00:00"),
+                cutoff);
+    }
+
 }

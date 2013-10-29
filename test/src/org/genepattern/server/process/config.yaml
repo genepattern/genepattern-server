@@ -1,0 +1,27 @@
+#
+# configuration options for the JobPurger
+#
+default.properties:
+    ## purge jobs older than given number of days (-1 means don't purge)
+    #purgeJobsAfter: "3"
+    ## purge time
+    #purgeTime: "23:00"
+
+#  config.yaml file must have at least one executor    
+executors:
+    RuntimeExec: 
+        classname: org.genepattern.server.executor.RuntimeCommandExecutor
+        configuration.properties:
+            test.prop: BY_EXEC_CONFIG
+        default.properties:
+            test.prop: BY_EXEC_DEFAULT
+user.properties:
+    customInterval:
+        # purge jobs older than 3 days
+        purgeJobsAfter: "3"
+    customUser:
+        # purge jobs at 9:00 am
+        purgeTime: "09:00"
+        # purge jobs older than 3 days
+        purgeJobsAfter: "3"
+        
