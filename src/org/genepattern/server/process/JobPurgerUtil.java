@@ -92,8 +92,7 @@ public class JobPurgerUtil {
             hourOfDay=JobPurger.DEFAULT_PURGE_HOUR;
             minute=JobPurger.DEFAULT_PURGE_MINUTE;
         }
-        
-        
+
         Calendar c = Calendar.getInstance();
         c.setTime(now);
         c.set(Calendar.HOUR_OF_DAY, hourOfDay);
@@ -145,24 +144,43 @@ public class JobPurgerUtil {
         log.debug("next purge will be at " + nextPurgeTime.getTime());
         return nextPurgeTime.getTime();
     }
-   
+
+    /**
+     * @deprecated, should pass in a valid userContext
+     */
+    public static Date getJobPurgeDate(final Date jobCompletionDate) {
+        //final String purgeTime = System.getProperty("purgeTime", "23:00");
+        //int purgeJobsAfter = lookupPurgeInterval();
+        //return getJobPurgeDate(purgeJobsAfter, purgeTime, jobCompletionDate);
+        final Context userContext=null;
+        return getJobPurgeDate(userContext, jobCompletionDate);
+    }
+
     /**
      * Helper method which gives the date at which a given job will be purged,  
      * based on the job completion date.
      * 
+     * Allows for customization via the 'purgeJobsAfter' and 'purgeTime' configuration properties. 
+     * 
      * @param jobCompletionDate
      * @return the purge date, or null if the date is unknown or if the purger is not configured to purge jobs.
      */
-    public static Date getJobPurgeDate(Date jobCompletionDate) {
+    public static final Date getJobPurgeDate(final Context userContext, final Date jobCompletionDate) {
+        final int purgeJobsAfter=ServerConfiguration.instance().getGPIntegerProperty(userContext, "purgeJobsAfter", -1);
+        final String purgeTime=ServerConfiguration.instance().getGPProperty(userContext, "purgeTime", "23:00");
+
+        return getJobPurgeDate(purgeJobsAfter, purgeTime, jobCompletionDate);
+    }
+    
+    private static final Date getJobPurgeDate(final int purgeJobsAfter, final String purgeTime, final Date jobCompletionDate) {
         if (jobCompletionDate == null) {
             return null;
         }
         
-        int purgeInterval = lookupPurgeInterval();
-        if (purgeInterval < 0) {
+        if (purgeJobsAfter < 0) {
             return null;
         }
-        String purgeTime = System.getProperty("purgeTime", "23:00");
+
         GregorianCalendar purgeTOD = new GregorianCalendar();
         SimpleDateFormat dateFormat = new SimpleDateFormat("HH:mm");
         try {
@@ -175,7 +193,7 @@ public class JobPurgerUtil {
         
         Calendar jobPurgeCal = new GregorianCalendar();
         jobPurgeCal.setTime(jobCompletionDate);
-        jobPurgeCal.add(Calendar.DATE, purgeInterval);
+        jobPurgeCal.add(Calendar.DATE, purgeJobsAfter);
         // if the purgeTime is less than the job completion time, add another day
         Date jobPurgeDateInit = jobPurgeCal.getTime();
         jobPurgeCal.set(GregorianCalendar.HOUR_OF_DAY, purgeTOD.get(GregorianCalendar.HOUR_OF_DAY));
@@ -195,20 +213,6 @@ public class JobPurgerUtil {
             return getNextPurgeTime(now, purgeTime);
         }
         return jobPurgeCal.getTime();
-    }
-
-    private static int lookupPurgeInterval() {
-        String purgeJobsAfter = System.getProperty("purgeJobsAfter", "-1");
-        return lookupPurgeInterval(purgeJobsAfter);
-    }
-    
-    private static int lookupPurgeInterval(String purgeJobsAfter) {
-        try {
-            return Integer.parseInt(purgeJobsAfter);
-        } 
-        catch (NumberFormatException nfe) {
-            return JobPurger.DEFAULT_PURGE_JOBS_INTERVAL;
-        }
     }
 
 }

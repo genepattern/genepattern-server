@@ -369,7 +369,7 @@ public class TestJobPurgerUtil {
      * jUnit test for userContext specific cutoff date, using default settings.
      * @throws ParseException
      */
-    @Test public void getCutoffForUser_defaultConfig() throws ParseException {
+    @Test public void testCutoffForUser_defaultConfig() throws ParseException {
         final Context userContext=ServerConfiguration.Context.getContextForUser("test");
         final Date now=parseDateFormat("2013-11-01 23:05:23");
         final Date cutoff=JobPurgerUtil.getCutoffForUser(userContext, now);
@@ -381,7 +381,7 @@ public class TestJobPurgerUtil {
      * jUnit test for userContext specific cutoff date, using default settings.
      * @throws ParseException
      */
-    @Test public void getCutoffForUser_defaultPurgeTime() throws ParseException {
+    @Test public void testCutoffForUser_defaultPurgeTime() throws ParseException {
         final Context userContext=ServerConfiguration.Context.getContextForUser("customInterval");
         final Date now=parseDateFormat("2013-11-01 23:05:23");
         final Date cutoff=JobPurgerUtil.getCutoffForUser(userContext, now);
@@ -394,13 +394,48 @@ public class TestJobPurgerUtil {
      * jUnit test for userContext specific purgeJobsAfter and purgeTime.
      * @throws ParseException
      */
-    @Test public void getCutoffForUser_customConfig() throws ParseException {
+    @Test public void testCutoffForUser_customConfig() throws ParseException {
         final Context userContext=ServerConfiguration.Context.getContextForUser("customUser");
         final Date now=parseDateFormat("2013-11-01 23:05:23");
         final Date cutoff=JobPurgerUtil.getCutoffForUser(userContext, now);
         Assert.assertEquals("Expecting purgeTime=09:00 and purgeInterval=3",
                 parseDateFormat("2013-10-29 09:00:00"),
                 cutoff);
+    }
+    
+    @Test public void testNextPurgeTime_defaultConfig() throws ParseException {
+        final Context userContext=ServerConfiguration.Context.getContextForUser("test");
+        //by default there is no cutoff 
+        final Date completionDate=parseDateFormat("2013-10-25 13:25:00");
+        final Date purgeDate=JobPurgerUtil.getJobPurgeDate(userContext, completionDate);
+        Assert.assertNull("By default, jobs are not purged", purgeDate);
+    }
+
+    @Test public void testNextPurgeTime_customConfig_before() throws ParseException {
+        final Context userContext=ServerConfiguration.Context.getContextForUser("customUser");
+        //See config.yaml for 'customUser' customizations
+        //purge jobs after 3 days, purgeTime is 9:00 am
+        
+        //0) job completed before purgeTime
+        final Date completionDate=parseDateFormat("2013-10-29 08:23:57");
+        final Date purgeDate=JobPurgerUtil.getJobPurgeDate(userContext, completionDate);
+        Assert.assertEquals("custom config, a job which completed before the purgeTime", parseDateFormat("2013-11-01 09:00:00"), purgeDate);
+    }
+
+    @Test public void testNextPurgeTime_customConfig_at() throws ParseException {
+        final Context userContext=ServerConfiguration.Context.getContextForUser("customUser");
+        //1) job completed at purgeTime
+        final Date completionDate=parseDateFormat("2013-10-29 09:00:00");
+        final Date purgeDate=JobPurgerUtil.getJobPurgeDate(userContext, completionDate);
+        Assert.assertEquals("custom config, a job which completed at purgeTime", parseDateFormat("2013-11-01 09:00:00"), purgeDate);
+    }
+
+    @Test public void testNextPurgeTime_customConfig_after() throws ParseException {
+        final Context userContext=ServerConfiguration.Context.getContextForUser("customUser");
+        //2) job completed after purgeTime
+        final Date completionDate=parseDateFormat("2013-10-29 17:33:59");
+        final Date purgeDate=JobPurgerUtil.getJobPurgeDate(userContext, completionDate);
+        Assert.assertEquals("custom config, a job which completed after purgeTime", parseDateFormat("2013-11-02 09:00:00"), purgeDate);
     }
 
 }
