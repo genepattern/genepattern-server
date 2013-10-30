@@ -20,7 +20,7 @@ public class DefaultPurgerImpl01 implements Purger {
     public void start() {
         log.info("Starting purger...");
         final Properties props=System.getProperties();
-        thread=JobPurger.startJobPurger(props);
+        this.thread=JobPurger.startJobPurger(props);
         log.info("started");
     }
 
@@ -32,10 +32,11 @@ public class DefaultPurgerImpl01 implements Purger {
 
     @Override
     public void stop() {
-        log.info("Stopping purger...");
         //no-op method, the JobPurger creates a daemon thread which will naturally be destroyed
         //when the JVM is terminated.
-        if (thread != null) {
+        log.info("Stopping purger...");
+        if (thread == null) {
+            log.debug("thread is null");
         }
     }
 
