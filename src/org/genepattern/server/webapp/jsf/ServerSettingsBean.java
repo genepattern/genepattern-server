@@ -35,8 +35,8 @@ import javax.faces.event.ActionEvent;
 import javax.faces.model.SelectItem;
 
 import org.apache.log4j.Logger;
+import org.genepattern.server.purger.PurgerFactory;
 import org.genepattern.server.util.PropertiesManager_3_2;
-import org.genepattern.server.webapp.StartupServlet;
 
 public class ServerSettingsBean implements Serializable {
     private static Logger log = Logger.getLogger("ServerSettingsBean.class");
@@ -809,8 +809,8 @@ public class ServerSettingsBean implements Serializable {
     }
 
     public void savePurgeSettings(ActionEvent event) {
-	saveSettings(event);
-	StartupServlet.startJobPurger();
+        saveSettings(event);
+        PurgerFactory.instance().restart();
     }
 
 }

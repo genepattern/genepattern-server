@@ -40,7 +40,7 @@ import org.genepattern.server.database.HsqlDbUtil;
 import org.genepattern.server.dm.userupload.MigrationTool;
 import org.genepattern.server.executor.CommandManagerFactory;
 import org.genepattern.server.message.SystemAlertFactory;
-import org.genepattern.server.process.JobPurger;
+import org.genepattern.server.purger.PurgerFactory;
 import org.genepattern.server.util.JobResultsFilenameFilter;
 import org.genepattern.server.webapp.jsf.AboutBean;
 import org.genepattern.webservice.TaskInfoCache;
@@ -129,8 +129,6 @@ public class StartupServlet extends HttpServlet {
         
         CommandManagerFactory.startJobQueue();
         
-        log.info("\tstarting daemons...");
-        startDaemons(System.getProperties(), application);
         Security.addProvider(new com.sun.net.ssl.internal.ssl.Provider());
         HttpsURLConnection.setDefaultHostnameVerifier(new SessionHostnameVerifier());
 
@@ -174,6 +172,9 @@ public class StartupServlet extends HttpServlet {
             log.error("Error listing categories from TaskInfoCache: "+t.getLocalizedMessage());
         }
         }
+        
+        //start the JobPurger
+        PurgerFactory.instance().start();
 
         announceReady();
     }
@@ -223,26 +224,6 @@ public class StartupServlet extends HttpServlet {
         }
     }
 
-    protected void startDaemons(Properties props, ServletContext application) {
-        startJobPurger(props);
-        // allow a bit of runtime to the independent threads
-        Thread.yield();
-    }
-
-    protected void startJobPurger(Properties props) {
-        Thread tJobPurger = JobPurger.startJobPurger(props);
-        addDaemonThread(tJobPurger);
-    }
-
-    public static void startJobPurger() {
-        Thread tJobPurger = JobPurger.startJobPurger(System.getProperties());
-        addDaemonThread(tJobPurger);
-    }
-
-    protected static void addDaemonThread(Thread t) {
-        vThreads.add(t);
-    }
-    
     private void announceStartup() {
         final String NL = System.getProperty("line.separator");
         final String STARS = "****************************************************************************";
@@ -290,6 +271,9 @@ public class StartupServlet extends HttpServlet {
 
     public void destroy() {
         log.info("StartupServlet: destroy called");
+        
+        //stop the job purger
+        PurgerFactory.instance().stop();
 
         try {
             log.info("stopping job queue ...");
