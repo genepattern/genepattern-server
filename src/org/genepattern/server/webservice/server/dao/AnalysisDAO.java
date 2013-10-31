@@ -482,6 +482,18 @@ public class AnalysisDAO extends BaseDAO {
         return jobIds;
         
     }
+    public List<Integer> getAnalysisJobIdsForUser(final String userId, final Date date) {
+        String hql = "select jobNo from org.genepattern.server.domain.AnalysisJob as j where j.userId = :userId and j.completedDate < :completedDate";
+        hql += " ORDER BY jobNo ASC";
+        Query query = getSession().createQuery(hql);
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(date);
+        query.setCalendar("completedDate", cal);
+        query.setString("userId", userId);
+        List<Integer> jobIds = query.list();
+        return jobIds;
+        
+    }
     public List<AnalysisJob> getAnalysisJobs(Date date) {
         String hql = "from org.genepattern.server.domain.AnalysisJob as j where j.completedDate < :completedDate";
         hql += " ORDER BY jobNo ASC";
@@ -512,7 +524,7 @@ public class AnalysisDAO extends BaseDAO {
     /** 
      * Get the total number of all top-level, non deleted jobs.
      * Top level means the job is not a step in a pipeline.
-     * @param userId
+
      * @return
      */
     public int getNumJobsTotal() {
@@ -528,7 +540,7 @@ public class AnalysisDAO extends BaseDAO {
      * @param userId
      * @return
      */
-    public int getNumJobsByUser(String userId) {
+    public int getNumJobsByUser(final String userId) {
         Query query = getSession().getNamedQuery("getNumJobsByUser");
         query.setBoolean("deleted", false);
         query.setString("userId", userId);
