@@ -1,0 +1,515 @@
+#task_versions {
+	margin-top: 0 !important;
+}
+
+#paramsTable
+{
+    width: 100%;
+    height: 100%;
+    border-spacing: 0;
+}
+
+#paramsTable tr.pRow td
+{
+    border-top: 2px solid #F0F0F0;
+}
+
+#paramsTable tr:first-child td
+{
+    border: none;
+}
+
+#paramsTable td
+{
+    padding: 7px 0 6px 0;
+}
+
+#paramsTable tr.paramDescription td
+{
+    padding-top: 0;
+    padding-bottom: 2px;
+}
+
+#paramsTable td:nth-child(odd)
+{
+    white-space: nowrap;
+}
+
+#paramsTable td:nth-child(even)
+{
+    padding-left: 14px;
+}
+
+.task_header
+{
+    clear: both;
+	font-weight: bold;
+	font-size: 15px;
+	/*color: #333366;*/
+	/*background-color: #CCDFFF;*/
+    /*background-color: #B8C9E6; preferred */
+    background-color: #CCCCFF;
+	text-indent: 6px;
+	height: 21px;
+	width: 100%;
+	line-height: 20px;
+	vertical-align: bottom !important;
+    padding-top: 1px !important;
+    padding-bottom: 0 !important;
+}
+
+.task_header select
+{
+    padding: 0 !important;
+    margin-bottom: 0 !important;
+    vertical-align: top !important;
+}
+
+.task_header div
+{
+    padding: 0 !important;
+    margin-bottom: 0 !important;
+}
+
+.task_header span
+{
+    padding: 0 !important;
+    margin-bottom: 0 !important;
+}
+
+.task_header label
+{
+    font-weight: normal;
+    font-size: 13px;
+    padding: 0;
+    margin-bottom: 0;
+}
+
+.clear
+{
+    clear: both;
+}
+
+.paramDescription
+{
+    white-space: normal;
+    font-size: 11px;
+}
+
+.hidden
+{
+    clear: both;
+    display: none;
+}
+
+.highlight
+{
+    background-color: #cddcf1;
+}
+
+.paramFilesTable
+{
+    text-align:left;
+    width: 100%;
+}
+
+table.paramFilesTable tr td
+{
+    height: 10px !important;
+    padding: 4px !important;;
+}
+
+table.paramFilesTable tr td.pfileAction
+{
+    width: 19px;
+    padding-left: 1px;
+    text-align: center;
+}
+
+table.paramFilesTable tr:nth-child(odd)
+{
+    background-color: #eee;
+}
+
+button.urlButton
+{
+    font-size: 11px;
+    padding: 0;
+}
+
+#paramsTable td:first-child
+{
+    width: 15px;
+}
+
+#paramsTable tr:nth-child(odd)
+{
+    border-bottom: 1px solid #7898c7;
+}
+
+#paramsTable input[type=text]
+{
+    width: 60%;
+    height: 17px;
+}
+
+.fileDiv
+{
+    vertical-align: bottom;
+    border: 2px solid #DDD;
+    -moz-border-radius: 8px;
+    -webkit-border-radius: 8px;
+    padding: 9px 10px 10px 10px;
+    min-width: 490px;
+    margin-bottom: 0;
+    display: inline-block;
+    white-space: nowrap;
+}
+
+.fileDiv button img
+{
+    margin-left: 5px;
+    margin-right: 5px;
+}
+
+.uploadBtn
+{
+    vertical-align: bottom;
+    margin-right: 7px;
+}
+
+.errorMessage
+{
+    font-weight: bold;
+    color: red;
+}
+
+.elemSpacing
+{
+    margin: 0 7px 0 7px;
+}
+
+.floatLeft
+{
+    float: left;
+}
+
+.floatRight
+{
+    float: right;
+}
+
+#fileUploadDiv
+{
+    padding: 2px;
+    margin-bottom: 10px;
+}
+
+.progress-label
+{
+    float: left;
+    margin-left: 50%;
+    text-shadow: 1px 1px 0 #fff;
+    margin-top: 6px;
+}
+
+.fileDetails
+{
+    margin: 10px 0 6px 0;
+}
+
+.otherControlsDiv
+{
+    padding: 3px !important;
+    margin-bottom: 5px !important;
+    vertical-align: bottom !important;    
+}
+
+.submitControlsDiv
+{
+    margin-bottom: 5px !important;
+}
+
+.links
+{
+    margin-left: 2px;
+    margin-right: 2px;
+}
+
+/* styling for name of parameter in run task form */
+.pTitle
+{
+    font-weight: bold;
+}
+
+img.buttonIcon {
+	padding-right: 5px;
+	margin-left: -5px;
+	vertical-align:top;
+}
+
+#mod_description
+{
+    float: left;
+}
+
+#mod_description_toggle
+{
+    vertical-align: 2%;
+}
+
+
+#description_main
+{
+    font-size: 12px;
+    width: 100%;
+}
+
+
+#source_info
+{
+    margin: 2px 5px 5px 5px;
+    text-align: right;
+    white-space:nowrap;
+}
+
+#source_info img
+{
+    margin-right: 2px;
+    vertical-align:middle;
+}
+
+#source_info_details
+{
+    margin: 2px 5px 5px 30px;
+}
+
+#source_info_tooltip
+{
+    z-index: 9000;
+    position: absolute;
+    float: right;
+    background-color: white;
+    max-width: 280px;
+    padding: 10px;
+    margin-top: -17px;
+    /*margin: -17px -5px -5px -50px; */
+    -webkit-box-shadow:0 0 5px #aaa;
+    box-shadow:0 0 5px #aaa;
+    text-align: left;
+    white-space: normal;
+}
+
+#paramsListingDiv .ui-state-default
+{
+	background-image:url(images/btnBG.jpg);
+	background-repeat:repeat-x;
+    color: #0c1922;
+	border: solid 1px #466eb6;
+	background-color:#dae4f4;
+	-webkit-border-radius: 5px;
+	-moz-border-radius: 5px;
+	-o-border-radius: 5px;
+	border-radius: 5px;
+	padding:1px;
+	font-size:11px;
+}
+
+#paramsListingDiv .ui-state-hover
+{
+    background: #80a7d0 url(images/ui-bg_glass_75_B2D1F0_1x400.png) 50% 50% repeat-x;     
+}
+
+#paramsListingDiv .ui-state-active
+{
+    background: #80a7d0 url(images/ui-bg_glass_65_ffffff_1x400.png) 50% 50% repeat-x;
+}
+
+#paramsListingDiv .ui-widget-header .ui-icon
+{
+	background-image: url(images/ui-icons_0c1922_256x240.png);
+}
+
+#paramsListingDiv .ui-state-default .ui-icon
+{
+	background-image: url(images/ui-icons_0c1922_256x240.png);
+}
+
+.center
+{
+    width: 185px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.inputFileBtn
+{
+    position:absolute;
+    z-index:-1000;
+}
+
+.ui-multiselect.mSelect 
+{
+    padding: 2px 3px 1px 10px !important;
+    text-align: left;
+    color: green;
+    border: 2px solid #ff1493;
+}
+
+.errorHighlight
+{
+    text-align: left;
+    border: 2px dotted #ff1493 !important;
+}
+
+#paramsListingDiv .images
+{
+    border: none !important;    
+}
+
+#paramsListingDiv .scroll
+{
+    max-height:160px;
+    overflow:auto;
+}
+
+hr
+{
+    color: #D0D0D0;
+    background-color: #D0D0D0;
+}
+
+#task_version_main
+{
+    margin-left: 17px;
+}
+
+.ui-iconbutton
+{
+    background: transparent;
+    border: none;
+}
+
+.ui-menu
+{
+    width: 220px;
+}
+
+#documentation 
+{
+    text-decoration:underline;
+}
+
+#otherOptionsSubMenu {
+	font-size: 8pt;
+}
+
+#otherOptionsSubMenu label {
+	font-size: 8pt !important;
+}
+
+#otherOptionsDiv
+{
+    padding: 0;
+}
+
+#otherOptions
+{
+    margin: 0 0 0 30px;
+}
+
+#otherOptions:hover
+{
+    cursor: pointer;
+}
+
+.normal
+{
+    font-weight: normal;
+    font-size: 12px;
+}
+
+#documentation
+{
+    font-weight: normal;
+    font-size: 11px;
+}
+
+#viewCodeDiv
+{
+    border: 2px solid #80a7d0;
+    margin: 14px 0 14px 0;
+    padding: 5px 5px 5px 14px;
+}
+
+#viewCodeHeader
+{
+    font-size: 11px;
+    font-weight: bold;
+}
+
+.fileDiv .batchBox {
+	float: right;
+	top: 0px;
+	position: relative;
+	margin-top: -10px;
+	padding: 0px;
+}
+
+.fileDiv .batchBox label {
+	font-size: 8pt !important;
+	background-image: none !important;
+	padding: 0px !important;
+}
+
+.fileDiv .ui-buttonset label.ui-corner-left {
+	border-top-right-radius: 0px !important;
+	border-bottom-right-radius: 0px !important;
+	border-bottom-left-radius: 5px !important;
+	border-top-left-radius: 5px !important;
+}
+
+.fileDiv .ui-buttonset label.ui-corner-right {
+	border-top-right-radius: 5px !important;
+	border-bottom-right-radius: 5px !important;
+	border-top-left-radius: 0px !important;
+	border-bottom-left-radius: 0px !important;
+}
+
+.fileDiv .ui-buttonset label.ui-state-default {
+	background: #FFFFFF !important;
+	color: #999999 !important;
+}
+
+.fileDiv .ui-buttonset label.ui-state-active {
+	background: #dae4f4 !important;
+	color: #000000 !important;
+}
+
+span.drop-box
+{
+    font-family: Helvetica, Arial, sans-serif;
+    font-size:13px;
+    background-color:#eee;
+    border: 1px dashed #466eb6;
+    width: 120px;
+    height: 20px;
+    text-align:center;
+    padding-top:5px;
+    -moz-border-radius: 5px;
+    -webkit-border-radius: 5px;
+    -o-border-radius: 5px;
+    border-radius: 5px;
+    margin-left: 9px;
+    padding: 5px 10px 5px 10px;
+}
+
+.fileChoiceOptions .ui-button-text
+{
+    padding: 2px;
+    margin: 1px;
+    font-size: 11px;
+}
+
+
+
