@@ -228,6 +228,11 @@
   <managed-bean-scope>session</managed-bean-scope>
  </managed-bean>
  <managed-bean>
+  <managed-bean-name>uiBean</managed-bean-name>
+  <managed-bean-class>org.genepattern.server.webapp.jsf.UIBean</managed-bean-class>
+  <managed-bean-scope>session</managed-bean-scope>
+ </managed-bean>
+ <managed-bean>
   <managed-bean-name>mySettingsBean</managed-bean-name>
   <managed-bean-class>org.genepattern.server.webapp.jsf.MySettingsBean</managed-bean-class>
   <managed-bean-scope>session</managed-bean-scope>

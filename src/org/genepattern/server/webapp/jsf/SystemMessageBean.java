@@ -137,9 +137,4 @@ public class SystemMessageBean implements Serializable {
     public void show(ActionEvent evt) {
         this.isOpen = true;
     }
-    
-    public String getSkin() {
-        String env = ServerConfiguration.instance().getGPProperty(UIBeanHelper.getUserContext(), "display.skin", ".");
-        return env;
-    }
 }
