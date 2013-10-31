@@ -29,6 +29,12 @@
       batchJob.submittedDate &lt; :olderThanDate
   </query>
   
+  <query name="getOlderThanDateForUser">
+    from BatchJob as batchJob where
+      (batchJob.userId = :userId) and
+      batchJob.submittedDate &lt; :olderThanDate
+  </query>
+
   <sql-query name="getJobsInBatch">
     <return alias="AnalysisJob" class="org.genepattern.server.domain.AnalysisJob"/>
     SELECT * from ANALYSIS_JOB join batch_analysis ON

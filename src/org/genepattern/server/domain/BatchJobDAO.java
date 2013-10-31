@@ -27,6 +27,15 @@ public class BatchJobDAO extends BaseDAO {
         }
     }
 
+    public List<BatchJob> getOlderThanDateForUser(final String userId, final Date date) {
+        Query query = HibernateUtil.getSession().getNamedQuery("getOlderThanDateForUser");
+        query.setString("userId", userId);
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(date);
+        query.setCalendar("olderThanDate", cal);
+        return query.list();
+    }
+    
     public List<BatchJob> getOlderThanDate(Date date) {
         Query query = HibernateUtil.getSession().getNamedQuery("getOlderThanDate");
         Calendar cal = Calendar.getInstance();
