@@ -8,13 +8,18 @@ package org.genepattern.server.purger;
  */
 public class PurgerFactory {
     public static final Purger instance() {
-        return Singleton.instance;
+        return Singleton02.instance;
     }
     
     private PurgerFactory() {
     }
     
-    private static class Singleton {
+    //this is the original (GP <= 3.7.3 implementation)
+    private static class Singleton01 {
         static Purger instance=new DefaultPurgerImpl01();
+    }
+
+    private static class Singleton02 {
+        static Purger instance=new DefaultPurgerImpl02();
     }
 }
