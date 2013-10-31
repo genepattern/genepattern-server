@@ -3,6 +3,7 @@ package org.genepattern.server.process;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.concurrent.Callable;
@@ -50,12 +51,22 @@ public class UserUploadPurger {
 
     final private ExecutorService exec;
     final private Context userContext;
-    final private long dateCutoff;
+    final private Date cutoffDate;
     final private boolean purgeAll;
     final private boolean purgeTmp;
     final private boolean purgePartial;
 
+    /**
+     * @deprecated - for GP <= 3.7.2, pass in a global dateCutoff as a long
+     * @param exec
+     * @param userContext
+     * @param dateCutoff
+     */
     public UserUploadPurger(final ExecutorService exec, final Context userContext, final long dateCutoff) {
+        this(exec, userContext, new Date(dateCutoff));
+    }
+    
+    public UserUploadPurger(final ExecutorService exec, final Context userContext, final Date cutoffDate) {
         if (userContext == null) {
             throw new IllegalArgumentException("userContext == null");
         }
@@ -64,7 +75,8 @@ public class UserUploadPurger {
         }
 
         this.userContext = userContext;
-        this.dateCutoff = dateCutoff;
+        this.cutoffDate = cutoffDate;
+
         this.purgeAll=ServerConfiguration.instance().getGPBooleanProperty(userContext, PROP_PURGE_ALL, false);
         this.purgeTmp=ServerConfiguration.instance().getGPBooleanProperty(userContext, PROP_PURGE_TMP, true);
         this.purgePartial=ServerConfiguration.instance().getGPBooleanProperty(userContext, PROP_PURGE_PARTIAL, true);
@@ -80,10 +92,6 @@ public class UserUploadPurger {
     
     public Context getUserContext() {
         return userContext;
-    }
-    
-    public long getDateCutoff() {
-        return dateCutoff;
     }
 
     public void purge() throws Exception { 
@@ -121,12 +129,20 @@ public class UserUploadPurger {
     }
 
     private void purgePartialUploadsFromDb(Date maxModDate) {
-        UserUploadDao dao = new UserUploadDao();
-        List<UserUpload> userUploads = dao.selectStalledPartialUploadsForUser(userContext.getUserId(), maxModDate);
-        
-        for(UserUpload userUpload : userUploads) {
+        List<UserUpload> userUploads;
+        try {
+            UserUploadDao dao = new UserUploadDao();
+            userUploads = dao.selectStalledPartialUploadsForUser(userContext.getUserId(), maxModDate);
+        }
+        catch (Throwable t) {
+            userUploads=Collections.emptyList();
+        }
+        finally {
+            HibernateUtil.closeCurrentSession();
+        }
+        for(final UserUpload userUpload : userUploads) {
             try {
-                GpFilePath gpFilePath = initGpFilePath(userUpload);
+                final GpFilePath gpFilePath = initGpFilePath(userUpload);
                 purgeUserUploadFile(gpFilePath); 
             }
             catch (Throwable t) {
@@ -152,17 +168,33 @@ public class UserUploadPurger {
      * This implementation matches functionality in <= GP 3.5.0.
      * We crudely delete all temp files whose timestamp is greater than the cutoff date
      * set by the 'Purge Jobs After' field in the File Purge Settings of the admin page.
+     * 
+     * Note: this method opens a DB connection and doesn't close it.
      */
     private void purgeTmpFilesByDateCutoff() {
         if (userContext==null) {
             log.error("userContext==null");
             return;
         }
-        final String userId=userContext.getUserId();
-        log.debug("purging tmp files for user: "+userId);
-        final Date olderThanDate=new Date(dateCutoff);
-        UserUploadDao dao = new UserUploadDao();
-        List<UserUpload> tmpFiles = dao.selectTmpUserUploadsToPurge(userId, olderThanDate);
+        if (cutoffDate == null) {
+            log.debug("No cutoff date for user="+userContext.getUserId());
+            return;
+        }
+        
+        List<UserUpload> tmpFiles;
+        try {
+            final String userId=userContext.getUserId();
+            log.debug("purging tmp files for user: "+userId+", cutoffDate="+cutoffDate);
+            UserUploadDao dao = new UserUploadDao();
+            tmpFiles = dao.selectTmpUserUploadsToPurge(userId, cutoffDate);
+        }
+        catch (Throwable t) {
+            log.error("Unexpected error selecting tmp user uploads to purge", t);
+            tmpFiles=Collections.emptyList();
+        }
+        finally {
+            HibernateUtil.closeCurrentSession();
+        }
         purgeFiles(tmpFiles);
     }
     
@@ -179,12 +211,26 @@ public class UserUploadPurger {
             log.error("userContext==null");
             return;
         }
+        if (cutoffDate == null) {
+            log.debug("No cutoff date for user="+userContext.getUserId());
+            return;
+        }
         final String userId=userContext.getUserId();
         log.debug("purging tmp files for user: "+userId);
-        final Date olderThanDate=new Date(dateCutoff);
-        UserUploadDao dao = new UserUploadDao();
-        final boolean includeTempFiles=false;
-        List<UserUpload> selectedFiles=dao.selectAllUserUpload(userId, includeTempFiles, olderThanDate);
+        
+        List<UserUpload> selectedFiles;
+        try {
+            UserUploadDao dao = new UserUploadDao();
+            final boolean includeTempFiles=false;
+            selectedFiles=dao.selectAllUserUpload(userId, includeTempFiles, cutoffDate);
+        }
+        catch (Throwable t) {
+            log.error("Unexpeted error getting selectedFiles", t);
+            selectedFiles=Collections.emptyList();
+        }
+        finally {
+            HibernateUtil.closeCurrentSession();
+        }
         purgeFiles(selectedFiles);
     }
 
