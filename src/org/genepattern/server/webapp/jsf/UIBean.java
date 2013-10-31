@@ -8,7 +8,7 @@ public class UIBean {
         return env;
     }
     
-    public boolean newUI() {
+    public boolean getNewUI() {
         boolean env = ServerConfiguration.instance().getGPBooleanProperty(UIBeanHelper.getUserContext(), "display.ui", false);
         return env;
     }
