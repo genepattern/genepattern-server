@@ -51,11 +51,28 @@
                 <td>File purge settings define how often and, at what time of day,
                     intermediate result files <br />
                     created on the server are deleted (purged).
-                    To never delete files set the purge frequency <br />
-                    to -1. Note that
-                    this could result in large amounts of hard drive space being
+                    To never delete files set the purgeJobsAfter <br />
+                    to -1. Note that this could result in large amounts of hard drive space being
                     used over time.
                 </td>
+            </tr>
+            <tr valign="top">
+                <td>&#160;</td>
+                <td>You can <b>customize</b> the 'purgeJobsAfter' setting by user or by group by making an edit <br />
+                to the config yaml file (#{jobConfigurationBean.configurationFilepath}) for your server.<br />
+                <pre>
+# keep all jobs and job input files for users in 'my.group' for 28 days
+group.properties:
+    my.group:
+        purgeJobsAfter: 28
+# keep all jobs and job input files for user 'my.user' for 14 days
+user.properties:
+    my.user:
+        purgeJobsAfter: 14
+                </pre>
+                Note: The server level 'purgeTime' defines the time of day, each day, that the 
+                purger will start. There is not much of a need to customize this setting.
+                </td>            
             </tr>
         </table>
         <p />
