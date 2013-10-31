@@ -21,6 +21,7 @@ import org.apache.log4j.Logger;
 import org.genepattern.data.pipeline.JobSubmission;
 import org.genepattern.data.pipeline.PipelineModel;
 import org.genepattern.server.config.ServerConfiguration;
+import org.genepattern.server.config.ServerConfiguration.Context;
 import org.genepattern.server.dm.UrlUtil;
 import org.genepattern.server.domain.JobStatus;
 import org.genepattern.server.genepattern.GenePatternAnalysisTask;
@@ -882,7 +883,9 @@ public class JobInfoWrapper implements Serializable {
 
     private void initPurgeDate() {
         if (jobInfo != null) {
-            purgeDate = JobPurgerUtil.getJobPurgeDate(jobInfo.getDateCompleted());
+            final String userId=jobInfo.getUserId();
+            final Context userContext=ServerConfiguration.Context.getContextForUser(userId);
+            purgeDate = JobPurgerUtil.getJobPurgeDate(userContext, jobInfo.getDateCompleted());
         }
         if (purgeDate != null) {
             formattedPurgeDate = purgeDateFormat.format(purgeDate);
