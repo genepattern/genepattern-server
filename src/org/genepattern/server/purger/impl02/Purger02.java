@@ -115,9 +115,11 @@ public class Purger02 extends TimerTask {
     }
 
     private void purge(final File dir, final long dateCutoff) {
-        if (dir != null) {
-            log.debug("purging files from directory: "+dir.getPath());
+        if (dir==null) {
+            log.error("dir==null");
+            return;
         }
+        log.debug("purging files from directory: "+dir.getPath());
         final File[] files = dir.listFiles();
         if (files != null) {
             for (int i = 0; i < files.length; i++) {
