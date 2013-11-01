@@ -1003,10 +1003,12 @@ function changeParameterType(element)
                     var choiceURLTableFilterTR = $("<tr/>");
                     choiceURLTableFilterTR.append("<td>File filter:</td>");
                     choiceURLTable.append(choiceURLTableFilterTR);
+                    var globDoc="Enter comma-separated list if one or more glob patterns (e.g. '*.gct') or anti-patterns (e.g. '!*.cls'). By default, 'readme.*' and '*.md5' files are ignored. "+
+                        "By default, sub-directories are ignored. To include sub-directories instead of files set 'type=dir'. "+
+                        "To include both files and directories set 'type=all'. The two can be combined (e.g. 'type=dir&hg*').";
                     var fileFilter = $("<input name='choiceURLFilter' type='text'/>");
                     fileFilter.val(element.parents(".parameter").find("input[name='choiceDirFilter']").val());
-                    $("<td/>").append(fileFilter).append("<div class='shortDescription'>Enter a glob expression pattern (i.e *.gct) " +
-                        "for filtering the files found on the ftp directory</div>").appendTo(choiceURLTableFilterTR);
+                    $("<td/>").append(fileFilter).append("<div class='shortDescription'>"+globDoc+"</div>").appendTo(choiceURLTableFilterTR);
 
                     var altStaticChoiceToggle = $("<input type='checkbox' class='staticChoiceLink'/>");
                     altStaticChoiceToggle.click(function(event)
