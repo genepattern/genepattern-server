@@ -20,7 +20,7 @@
                 $(document).tooltip();
 
                 $.ajax({
-                    url: 'modules.json',
+                    url: 'all_modules.json',
                     dataType: 'json',
                     success: function(data, status, xhr) {
                         // Initialize the displays on the left nav bar
@@ -220,6 +220,7 @@
             #module-browse-button {
                 text-align: right;
                 font-size: 8pt;
+                margin-top: 3px;
             }
 
             #main-pane {
