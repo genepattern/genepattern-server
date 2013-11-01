@@ -4,7 +4,7 @@ import org.genepattern.server.config.ServerConfiguration;
 
 public class UIBean {
     public String getSkin() {
-        String env = ServerConfiguration.instance().getGPProperty(UIBeanHelper.getUserContext(), "display.skin", ".");
+        String env = ServerConfiguration.instance().getGPProperty(UIBeanHelper.getUserContext(), "display.skin", "pbj");
         return env;
     }
     
