@@ -8,7 +8,7 @@
 	color: #FFFFFF;
 	text-decoration: none;
 	background-color: #CCCC99;
-	background-image: url(/gp/images/header.png);
+	background-image: url(../../images/header.png);
 	background-repeat: repeat-x;
 }
 .modtopband a {
@@ -40,7 +40,7 @@
 	vertical-align: top;
 	text-indent: 77px;
 	white-space: nowrap;
-    background-image: url(/gp/images/menubarBG.png);
+    background-image: url(../../images/menubarBG.png);
 	background-repeat: repeat-x;
 }
 .modnavband1 a {

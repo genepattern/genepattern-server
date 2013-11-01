@@ -1,0 +1,25 @@
+.modtopband {
+	left:0px;
+	top:0px;
+	width:100%;
+	height:48px;
+	font-size: 10px;
+	font-weight: bold;
+	color: #FFFFFF;
+	text-decoration: none;
+	background-color: #CCCC99;
+	background-image: url(/gp/images/headerbar-bkg.gif);
+	background-repeat: repeat-x;
+}
+.modtopband a {
+	color: #000099;
+	text-decoration: none;
+}
+.modtopband a:hover {
+	color: #000099;
+	text-decoration:  none;
+}
+.modtopband a:active {
+	color: #000099;
+	text-decoration: none;
+}

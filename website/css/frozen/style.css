@@ -5,7 +5,7 @@ body {
 	color: #000000;
 	text-decoration: none;
 	background-color: #FFFFFF;
-	background-image: url(/gp/images/bkg1.gif);
+	background-image: url(images/bkg1.gif);
 	background-repeat: repeat-x;
 }
 a {
@@ -58,6 +58,15 @@ img {
 	width: 400px;
 }
 
+#systemMessageLink table {
+	font-size: 8pt;
+	text-shadow: 1px 1px #000000;
+}
+
+#showSystemMessageSpan a {
+	color: #FF8888 !important;
+}
+
 .topband {
 	position:absolute;
 	left:0px;
@@ -69,7 +78,7 @@ img {
 	font-weight: bold;
 	color: #FFFFFF;
 	text-decoration: none;
-	background-image: url(/gp/images/header.png);
+	background-image: url(images/header.png);
 	background-repeat:no-repeat;
 }
 .topband a {
@@ -83,6 +92,10 @@ img {
 .topband a:active {
 	color: #000099;
 	text-decoration: none;
+}
+
+#topband img {
+	opacity: 0;
 }
 
 
@@ -492,14 +505,14 @@ img {
 	height: 55px;
     border:none;
 	border-bottom: solid 1px #A3B1DA;
-    background-image: url(/gp/images/sidebar-topBG.png);
+    background-image: url(images/sidebar-topBG.png);
 	background-repeat: repeat-x;
 }
 .sidebarhead {
 	font-weight: bold;
 	font-size: 11px;
 	line-height: 15px;
-	color: #666633;
+	color: #333366;
 	text-decoration: none;
 	text-indent: 10px;
 }
@@ -516,7 +529,7 @@ img {
 	height: 32px;
     border:none;
 	border-bottom: solid 1px #A3B1DA;
-    background-image: url(/gp/images/sidebar-topBG.png);
+    background-image: url(images/sidebar-topBG.png);
 	background-repeat: repeat-x;
 }
 
@@ -562,7 +575,7 @@ img {
 	color: #666666;
 	text-decoration: none;
 	background-color: #CED8DD;
-    background-image: url(/gp/images/bottom-band.png);
+    background-image: url(images/bottom-band.png);
     background-repeat: repeat-x;
 	vertical-align: middle;
 	padding: 10px;
@@ -722,7 +735,7 @@ img {
 
 h1 {
 	font-family: Verdana, Arial, Helvetica, sans-serif;
-	color: #666633;
+	color: #333366;
 	font-weight: bold;
 	font-size: 20px;
 	line-height: 22px;
@@ -736,7 +749,7 @@ h2 {
 }
 h3 {
 	font-family: Verdana, Arial, Helvetica, sans-serif;
-	color: #666633;
+	color: #333366;
 	font-weight: bold;
 	font-size: 15px;
 	line-height: 17px;
@@ -750,7 +763,7 @@ h4 {
 }
 h5 {
 	font-family: Verdana, Arial, Helvetica, sans-serif;
-	color: #666633;
+	color: #333366;
 	font-weight: bold;
 	font-size: 12px;
 	line-height: 14px;

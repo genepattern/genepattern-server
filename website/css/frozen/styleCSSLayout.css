@@ -32,7 +32,7 @@ a:active {
 	color: #FFFFFF;
 	text-decoration: none;
 	background-color: #6666FF;
-	background-image: url(/gp/images/headerbar-bkg.gif);
+	background-image: url(images/headerbar-bkg.gif);
 	background-repeat: repeat-x;
 }
 .topband a {

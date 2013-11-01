@@ -37,7 +37,7 @@
     z-index: 5000;
     top: 48px;
     padding-left: 77px;
-    background-image: url(/gp/images/menubarBG.png);
+    background-image: url(images/menubarBG.png);
 	background-repeat: repeat-x;
 }
 
@@ -64,7 +64,7 @@
     border-right: 1px solid #446688;
     color: #2d2b2b;
     text-decoration: none;
-    background-image: url(/gp/images/menubarBG.png);
+    background-image: url(images/menubarBG.png);
 	background-repeat: repeat-x;
 }
 
@@ -81,13 +81,13 @@
     /*CSS class that's dynamically added to the currently active menu items' LI A element*/
     background: #999999;
     color: white;
-    background-image: url(/gp/images/menubarBG-over.png);
+    background-image: url(images/menubarBG-over.png);
 }
 
 .ddsmoothmenu ul li a:hover {
     background: #999999; /*background of menu items during onmouseover (hover state)*/
     color: white;
-    background-image: url(/gp/images/menubarBG-over.png);
+    background-image: url(images/menubarBG-over.png);
 }
 
 /*1st sub level menu*/
