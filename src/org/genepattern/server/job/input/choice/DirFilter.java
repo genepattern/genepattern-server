@@ -7,7 +7,7 @@ import org.genepattern.webservice.ParameterInfo;
 
 /**
  * Helper class for filtering directory listings for dynamic drop-down parameters.
- * This is similar to a Java FilenameFilter, execpt that in some cases we want to filter 
+ * This is similar to a Java FilenameFilter, except that in some cases we want to filter 
  * apache commons FTPFiles.
  * 
  * 
