@@ -1451,8 +1451,8 @@ function addsectioncollapseimages()
     {
         if($(this).find(".imgcollapse").length == 0 || $(this).find(".imgexpand").length == 0)
         {
-            var imagecollapse = $("<img class='imgcollapse' src='styles/images/section_collapsearrow.png' alt='some_text' width='11' height='11'/>");
-            var imageexpand = $("<img class='imgexpand' src='styles/images/section_expandarrow.png' alt='some_text' width='11' height='11'/>");
+            var imagecollapse = $("<img class='imgcollapse' src='/gp/css/frozen/modules/styles/images/section_collapsearrow.png' alt='some_text' width='11' height='11'/>");
+            var imageexpand = $("<img class='imgexpand' src='/gp/css/frozen/modules/styles/images/section_expandarrow.png' alt='some_text' width='11' height='11'/>");
 
             $(this).prepend(imageexpand);
             $(this).prepend(imagecollapse);
