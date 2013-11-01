@@ -1,6 +1,9 @@
 package org.genepattern.server.job.input.choice;
 
+import static org.hamcrest.Matchers.is;
+
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -13,8 +16,6 @@ import org.genepattern.webservice.TaskInfo;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
-
-import static org.hamcrest.Matchers.*;
 
 
 /**
@@ -169,6 +170,64 @@ public class TestDynamicChoiceInfoParser {
         Assert.assertNotNull("Expecting a non-null choiceInfo#selected", selected);
         Assert.assertEquals("Checking default label", "arg1", selected.getLabel());
         Assert.assertEquals("Checking default value", "arg1", selected.getValue());
+    }
+    
+    private Choice makeChoice(final String choiceDir, final String entry, final boolean isDir) {
+        return new Choice(entry, choiceDir+""+entry, isDir);
+    }
+    
+    @Test
+    public void testFtpDirectoryDropdown() {
+        final String name="input.dir";
+        final String value="";
+        final String description="A directory drop-down";
+        final String choiceDir="ftp://gpftp.broadinstitute.org/example_data/gpservertest/DemoFileDropdown/input.dir/";
+        final String choiceDirFilter="type=dir";
+        
+        ParameterInfo pinfo=new ParameterInfo(name, value, description);
+        pinfo.setAttributes(new HashMap<String,String>());
+        pinfo.getAttributes().put("MODE", "IN");
+        pinfo.getAttributes().put("TYPE", "FILE");
+        pinfo.getAttributes().put("choiceDir", choiceDir);
+        pinfo.getAttributes().put("choiceDirFilter", choiceDirFilter);
+        pinfo.getAttributes().put("default_value", "");
+        pinfo.getAttributes().put("fileFormat", "");
+        pinfo.getAttributes().put("flag", "");
+        pinfo.getAttributes().put("optional", "");
+        pinfo.getAttributes().put("prefix", "");
+        pinfo.getAttributes().put("prefix_when_specified", "");
+        pinfo.getAttributes().put("type", "java.io.File");
+
+        
+        final DynamicChoiceInfoParser choiceInfoParser=new DynamicChoiceInfoParser();
+        final ChoiceInfo choiceInfo=choiceInfoParser.initChoiceInfo(pinfo);
+        
+        Assert.assertNotNull("choiceInfo.choices", choiceInfo.getChoices());
+        Assert.assertEquals("num choices", choiceInfo.getChoices().size(), 11);
+        final List<Choice> expected=Arrays.asList(new Choice[] {
+                new Choice("", ""),
+                makeChoice(choiceDir, "A", true), 
+                makeChoice(choiceDir, "B", true), 
+                makeChoice(choiceDir, "C", true), 
+                makeChoice(choiceDir, "D", true), 
+                makeChoice(choiceDir, "E", true), 
+                makeChoice(choiceDir, "F", true), 
+                makeChoice(choiceDir, "G", true), 
+                makeChoice(choiceDir, "H", true), 
+                makeChoice(choiceDir, "I", true), 
+                makeChoice(choiceDir, "J", true), 
+        });
+        
+        listCompare("drop-down items", expected, choiceInfo.getChoices());
+    }
+    
+    private void listCompare(final String message, final List<Choice> expected, final List<Choice> actual) {
+        Assert.assertEquals(message+", num elements", expected.size(), actual.size());
+        for(int i=0; i<expected.size(); ++i) {
+            Choice expectedChoice=expected.get(i);
+            Choice actualChoice=actual.get(i);
+            Assert.assertEquals(message+" ["+i+"] equals", expectedChoice, actualChoice);
+        }
     }
 
 }

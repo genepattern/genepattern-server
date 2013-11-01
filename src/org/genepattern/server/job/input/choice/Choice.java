@@ -58,9 +58,9 @@ public class Choice {
     
     public String toString() {
         if (label != null) {
-            return label+"="+value;
+            return label+"="+value + ", isDir="+remoteDir;
         }
-        return value;
+        return value+", isDir="+remoteDir;
     }
     
     public boolean equals(Object obj) {
