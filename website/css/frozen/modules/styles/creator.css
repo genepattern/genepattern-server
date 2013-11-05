@@ -341,8 +341,17 @@ div.editChoicesDialog
 	margin-top:5px;
 }
 
-.hcontent table td{
+.hcontent table td {
 	vertical-align:top;
+}
+
+.hcontent .ui-widget, .hcontent .fileinput-button {
+	color: black;
+}
+
+.hcontent .ui-state-default .ui-icon 
+{
+	background-image: url(../../images/ui-icons_0c1922_256x240.png) !important;
 }
 
 #modcontrols
@@ -443,7 +452,7 @@ div.editChoicesDialog
 	}
 
 .btn-primary,.btn-primary:hover,.btn-:hover,.btn-success,.btn-success:hover,.btn-info,.btn-info:hover{
-	text-shadow:0 -1px 0 rgba(0, 0, 0, 0.25);
+	text-shadow: none;
 	color:#ffffff;
 	}
 
@@ -726,9 +735,10 @@ table.deloptions
 	margin-bottom: 10px;
 }
 
-.helpbutton
-{
-    margin-left: 2px;
+.helpbutton {
+    margin-right: 5px;
+    top: 3px;
+    position: relative;
 }
 
 #dropbox

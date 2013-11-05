@@ -156,9 +156,7 @@ button.urlButton
 .fileDiv
 {
     vertical-align: bottom;
-    border: 2px solid #DDD;
-    -moz-border-radius: 8px;
-    -webkit-border-radius: 8px;
+    border: 2px dashed lightgray;
     padding: 9px 10px 10px 10px;
     min-width: 490px;
     margin-bottom: 0;
@@ -492,9 +490,7 @@ hr
 span.drop-box
 {
     font-family: Helvetica, Arial, sans-serif;
-    font-size:13px;
-    background-color:#eee;
-    border: 1px dashed #466eb6;
+    font-size: 16px;
     width: 120px;
     height: 20px;
     text-align:center;
@@ -505,6 +501,8 @@ span.drop-box
     border-radius: 5px;
     margin-left: 9px;
     padding: 5px 10px 5px 10px;
+    color: lightgray;
+    letter-spacing: 1px;
 }
 
 .fileChoiceOptions .ui-button-text
