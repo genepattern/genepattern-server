@@ -2548,15 +2548,15 @@ jQuery(document).ready(function() {
                 });
             }
         };
-        var dialogHTML = '<div><a href="http://gparc.org"><img src="styles/images/gparc.png" alt="GParc" style="margin-bottom: 10px;" /></a><br />\
+        var dialogHTML = '<div><a href="http://gparc.org"><img src="/gp/css/frozen/modules/styles/images/gparc.png" alt="GParc" style="margin-bottom: 10px;" /></a><br />\
 			<strong>GParc</strong> is a repository and community where users can share and discuss their own GenePattern modules.<br/><br/>';
 
         if (isDirty()) {
-            dialogHTML += '<img src="styles/images/alert.gif" alt="Alert" /> <span style="color:red;">Changes to this module must be saved before it can be submitted to GParc.</span><br/><br/>';
+            dialogHTML += '<img src="/gp/css/frozen/modules/styles/images/alert.gif" alt="Alert" /> <span style="color:red;">Changes to this module must be saved before it can be submitted to GParc.</span><br/><br/>';
         }
 
         if (!hasDocFiles()) {
-            dialogHTML += '<img src="styles/images/alert.gif" alt="Alert" /> <span style="color:red;">This module does not have attached documentation.</span><br/><br/>';
+            dialogHTML += '<img src="/gp/css/frozen/modules/styles/images/alert.gif" alt="Alert" /> <span style="color:red;">This module does not have attached documentation.</span><br/><br/>';
         }
 
         dialogHTML += '<ol><li>To submit a module to GParc the module will need to have attached documentation.</li>' + 
@@ -2573,7 +2573,7 @@ jQuery(document).ready(function() {
     });
 
     $('#whatIsGparc').click(function(event) {
-        showDialog("What is GParc?", '<a href="http://gparc.org"><img src="styles/images/gparc.png" alt="GParc" style="margin-bottom: 10px;"'+
+        showDialog("What is GParc?", '<a href="http://gparc.org"><img src="/gp/css/frozen/modules/styles/images/gparc.png" alt="GParc" style="margin-bottom: 10px;"'+
             '/></a><br /><strong>GParc</strong> is a repository and community where users can share and discuss their own GenePattern modules.'+
             '<br/><br/>Unregistered users can download modules and rate them.  Registered GParc users can:<ul><li>Submit modules</li>'+
             '<li>Download modules</li><li>Rate modules</li><li>Comment on modules</li><li>Access the GParc forum</ul>');
