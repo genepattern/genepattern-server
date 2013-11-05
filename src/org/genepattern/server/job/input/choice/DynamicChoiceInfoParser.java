@@ -29,11 +29,6 @@ import org.genepattern.webservice.ParameterInfo;
  */
 public class DynamicChoiceInfoParser implements ChoiceInfoParser {
     private final static Logger log = Logger.getLogger(DynamicChoiceInfoParser.class);
-    
-    @Override
-    public boolean hasChoiceInfo(ParameterInfo param) {
-        return ChoiceInfo.hasChoiceInfo(param);
-    }
 
     private List<Choice> getAltChoices(final ParameterInfo param) {
         final String declaredChoicesStr= (String) param.getAttributes().get(ChoiceInfo.PROP_CHOICE);

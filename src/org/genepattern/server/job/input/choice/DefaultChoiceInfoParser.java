@@ -10,19 +10,6 @@ public class DefaultChoiceInfoParser implements ChoiceInfoParser {
     final static private Logger log = Logger.getLogger(DefaultChoiceInfoParser.class);
 
     @Override
-    public boolean hasChoiceInfo(ParameterInfo param) {
-        final String declaredChoicesStr= (String) param.getAttributes().get("choice");
-        if (declaredChoicesStr != null) {
-            return true;
-        }
-        Map<String,String> legacy=param.getChoices();
-        if (legacy != null && legacy.size()>0) {
-            return true;
-        }
-        return false;
-    }
-
-    @Override
     public ChoiceInfo initChoiceInfo(ParameterInfo param) {
         final Map<String,String> choices;
         //the new way (>= 3.7.0), check for choice= in manifest

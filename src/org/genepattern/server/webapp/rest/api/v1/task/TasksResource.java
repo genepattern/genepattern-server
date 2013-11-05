@@ -354,7 +354,7 @@ public class TasksResource {
         }
         
         ParameterInfoRecord pinfoRecord=paramInfoMap.get(pname);
-        if (!ChoiceInfo.getChoiceInfoParser().hasChoiceInfo(pinfoRecord.getFormal())) {
+        if (!ChoiceInfo.hasChoiceInfo(pinfoRecord.getFormal())) {
             return Responses.notFound().entity(taskInfo.getName()+"."+pname + " does not have a choiceInfo").build();
         }
         

@@ -1535,7 +1535,7 @@ public class GenePatternAnalysisTask {
     }
     
     private ChoiceInfo initChoiceInfo(final ParameterInfoRecord pinfoRecord, final ParameterInfo pinfo) {
-        if (ChoiceInfo.getChoiceInfoParser().hasChoiceInfo(pinfoRecord.getFormal())) {
+        if (ChoiceInfo.hasChoiceInfo(pinfoRecord.getFormal())) {
             //it's a file choice
             log.debug("Checking for cached value for File Choice, "+pinfo.getName()+"="+pinfo.getValue());
             ChoiceInfo choiceInfo = ChoiceInfo.getChoiceInfoParser().initChoiceInfo(pinfoRecord.getFormal());
