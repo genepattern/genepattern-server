@@ -161,8 +161,7 @@ public class InputJSON extends JSONObject {
     }
     
     public void determineFileChoice(ParameterInfo info) throws JSONException {
-        ChoiceInfoParser choiceInfoParser = ChoiceInfo.getChoiceInfoParser();
-        boolean hasChoice = choiceInfoParser.hasChoiceInfo(info); 
+        final boolean hasChoice=ChoiceInfo.hasChoiceInfo(info);
         this.setFileChoice(hasChoice);
     }
     
