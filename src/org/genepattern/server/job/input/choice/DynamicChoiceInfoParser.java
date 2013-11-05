@@ -30,16 +30,6 @@ import org.genepattern.webservice.ParameterInfo;
 public class DynamicChoiceInfoParser implements ChoiceInfoParser {
     private final static Logger log = Logger.getLogger(DynamicChoiceInfoParser.class);
 
-    private List<Choice> getAltChoices(final ParameterInfo param) {
-        final String declaredChoicesStr= (String) param.getAttributes().get(ChoiceInfo.PROP_CHOICE);
-        if (declaredChoicesStr != null) {
-            log.debug("Initializing "+ChoiceInfo.PROP_CHOICE+" entry from manifest for parm="+param.getName());
-            //choices=ParameterInfo._initChoicesFromString(declaredChoicesStr);
-            return ChoiceInfoHelper.initChoicesFromManifestEntry(declaredChoicesStr);
-        }
-        return Collections.emptyList();
-    }
-    
     @Override
     public ChoiceInfo initChoiceInfo(final ParameterInfo param) {
         final List<Choice> choiceList;
@@ -57,7 +47,7 @@ public class DynamicChoiceInfoParser implements ChoiceInfoParser {
                 
                 if (ChoiceInfo.Status.Flag.ERROR==choiceInfoFromFtp.getStatus().getFlag()) {
                     //check for alternative static drop-down
-                    List<Choice> altChoices=getAltChoices(param);
+                    final List<Choice> altChoices=ChoiceInfo.getDeclaredChoices(param);
                     for(final Choice choice : altChoices) {
                         choiceInfoFromFtp.add(choice);
                     }

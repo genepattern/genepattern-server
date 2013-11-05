@@ -144,7 +144,7 @@ public class ChoiceInfo {
         return Type.NotSet;
     }
 
-    public static final boolean hasChoiceInfo(ParameterInfo param) {
+    public static final boolean hasChoiceInfo(final ParameterInfo param) {
         final String choiceDir = (String) param.getAttributes().get(ChoiceInfo.PROP_CHOICE_DIR);
         if (choiceDir != null) {
             return true;
@@ -160,6 +160,23 @@ public class ChoiceInfo {
         return false;
     }
     
+    /**
+     * Get the list of choices declared directly in the manifest with the newer 'choices' attribute.
+     * 
+     * @param param
+     * @return
+     */
+    public static final List<Choice> getDeclaredChoices(final ParameterInfo param) {
+        final String declaredChoicesStr= (String) param.getAttributes().get(ChoiceInfo.PROP_CHOICE);
+        if (declaredChoicesStr != null) {
+            log.debug("Initializing "+ChoiceInfo.PROP_CHOICE+" entry from manifest for parm="+param.getName());
+            //choices=ParameterInfo._initChoicesFromString(declaredChoicesStr);
+            return ChoiceInfoHelper.initChoicesFromManifestEntry(declaredChoicesStr);
+        }
+        return Collections.emptyList();
+    }
+
+
     private static final ChoiceInfoParser choiceInfoParser= new DynamicChoiceInfoParser();
     public static ChoiceInfoParser getChoiceInfoParser() {
         return choiceInfoParser;
