@@ -3,16 +3,14 @@ package org.genepattern.server.job.input.choice;
 import java.io.File;
 import java.io.FileFilter;
 
-import org.genepattern.webservice.ParameterInfo;
-
 /**
  * A filter for local directory listings.
  * @author pcarr
  *
  */
 public class LocalDirFilter extends DirFilter implements FileFilter {
-    public LocalDirFilter(final ParameterInfo param) {
-        super(param);
+    public LocalDirFilter(final String choiceDirFilter) {
+        super(choiceDirFilter);
     }
 
     @Override

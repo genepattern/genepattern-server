@@ -196,7 +196,8 @@ public class DynamicChoiceInfoParser implements ChoiceInfoParser {
         choiceInfo.setChoiceDir(ftpDir);
         
         //special-case, local.choiceDir
-        LocalChoiceInfoObj localChoice = new LocalChoiceInfoObj(param, ftpDir);
+        final String choiceDirFilter=DirFilter.getChoiceDirFilter(param);
+        final LocalChoiceInfoObj localChoice = new LocalChoiceInfoObj(ftpDir, choiceDirFilter);
         if (localChoice.hasLocalChoiceDir()) {
             for(final Choice choice : localChoice.getLocalChoices()) {
                 choiceInfo.add(choice);
@@ -230,9 +231,9 @@ public class DynamicChoiceInfoParser implements ChoiceInfoParser {
         }
         
         //optionally filter
-        final FTPFileFilter choiceDirFilter = new FtpDirFilter(param);
+        final FTPFileFilter ftpDirFilter = new FtpDirFilter(choiceDirFilter);
         for(FTPFile ftpFile : files) {
-            if (!choiceDirFilter.accept(ftpFile)) {
+            if (!ftpDirFilter.accept(ftpFile)) {
                 log.debug("Skipping '"+ftpFile.getName()+ "' from ftpDir="+ftpDir);
             }
             else {

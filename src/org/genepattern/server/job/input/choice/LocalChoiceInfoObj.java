@@ -8,7 +8,6 @@ import java.util.List;
 
 import org.apache.log4j.Logger;
 import org.genepattern.server.job.input.cache.MapLocalEntry;
-import org.genepattern.webservice.ParameterInfo;
 
 /**
  * Helper class for by-passing a remote choiceDir with a local directory path.
@@ -79,10 +78,10 @@ default.properties:
 public class LocalChoiceInfoObj {
     private final static Logger log = Logger.getLogger(LocalChoiceInfoObj.class);
 
-    /** the input parameter */
-    private final ParameterInfo param;
     /** the initial choiceDir */
     private final String choiceDir;
+    /** optional choiceDirFilter */
+    private final String choiceDirFilter;
     /** help class which maintains the mapping between external urls and local file paths */
     private final MapLocalEntry mapLocalEntry;
     /** the local directory (if it exists) which maps to the choiceDir url for the param. */
@@ -91,16 +90,16 @@ public class LocalChoiceInfoObj {
     private final List<Choice> localChoices;
 
     /**
-     * Initialize a LocalChoiceObj for the given param and choiceDir. May be a no-op
-     * if the param doesn't have a dynamic file drop-down, or if there is no local path
-     * entered in the config file.
+     * Initialize a LocalChoiceObj for the given choiceDir and choiceDirFilter. 
+     * May be a no-op if the param doesn't have a dynamic file drop-down, 
+     * or if there is no local path in the config file.
      * 
-     * @param param
      * @param choiceDir
+     * @param choiceDirFilter
      */
-    public LocalChoiceInfoObj(final ParameterInfo param, final String choiceDir) {
-        this.param=param;
+    public LocalChoiceInfoObj(final String choiceDir, final String choiceDirFilter) {
         this.choiceDir=choiceDir;
+        this.choiceDirFilter=choiceDirFilter;
         if (choiceDir==null || choiceDir.length()==0) {
             mapLocalEntry=null;
         }
@@ -116,7 +115,7 @@ public class LocalChoiceInfoObj {
             this.localChoices=initLocalChoices();
         }
     }
-    
+
     private List<Choice> initLocalChoices() {
         if (localChoiceDir == null) {
             return Collections.emptyList();
@@ -127,7 +126,7 @@ public class LocalChoiceInfoObj {
         if (!localChoiceDir.canRead()) {
             throw new IllegalArgumentException("can't read localChoiceDir: "+localChoiceDir);
         }
-        final LocalDirFilter filter=new LocalDirFilter(param);
+        final LocalDirFilter filter=new LocalDirFilter(choiceDirFilter);
         final File[] localFiles=localChoiceDir.listFiles(filter);
         if (localFiles.length == 0) {
             return Collections.emptyList();

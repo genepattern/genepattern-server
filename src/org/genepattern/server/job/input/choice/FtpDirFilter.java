@@ -4,7 +4,6 @@ import java.io.File;
 
 import org.apache.commons.net.ftp.FTPFile;
 import org.apache.commons.net.ftp.FTPFileFilter;
-import org.genepattern.webservice.ParameterInfo;
 
 /**
  * A filter for apache commons FTPFile listings.
@@ -12,9 +11,9 @@ import org.genepattern.webservice.ParameterInfo;
  *
  */
 public class FtpDirFilter extends DirFilter implements FTPFileFilter {
-     public FtpDirFilter(final ParameterInfo param) {
-         super(param);
-     }
+    public FtpDirFilter(final String choiceDirFilter) {
+        super(choiceDirFilter);
+    }
 
     @Override
     public boolean accept(final FTPFile ftpFile) {
