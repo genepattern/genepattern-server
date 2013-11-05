@@ -176,6 +176,29 @@ public class ChoiceInfo {
         return Collections.emptyList();
     }
 
+    /**
+     * Called from the DirFilter(ParameterInfo param) constructor to extract the
+     * 'choiceDirFilter' value from the parameter.
+     * 
+     * @param param
+     * @return
+     */
+    public static String getChoiceDirFilter(final ParameterInfo param) {
+        if (param==null) {
+            throw new IllegalArgumentException("param==null");
+        }
+        if (param.getAttributes()==null) {
+            throw new IllegalArgumentException("param.attributes==null");
+        }
+        final String choiceDirFilter;
+        if ( param.getAttributes().containsKey(ChoiceInfo.PROP_CHOICE_DIR_FILTER) )
+            //trim if necessary
+            choiceDirFilter = ((String) param.getAttributes().get(ChoiceInfo.PROP_CHOICE_DIR_FILTER)).trim();
+        else {
+            choiceDirFilter = "";
+        }
+        return choiceDirFilter;
+    }
 
     private static final ChoiceInfoParser choiceInfoParser= new DynamicChoiceInfoParser();
     public static ChoiceInfoParser getChoiceInfoParser() {

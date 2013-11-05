@@ -23,33 +23,9 @@ public class DirFilter {
     protected DirFilter.Type type=Type.file;
     final protected String choiceDirFilter;
     final protected FindFileFilter globs=new FindFileFilter();
-
-    /**
-     * Called from the DirFilter(ParameterInfo param) constructor to extract the
-     * 'choiceDirFilter' value from the parameter.
-     * 
-     * @param param
-     * @return
-     */
-    public static String getChoiceDirFilter(final ParameterInfo param) {
-        if (param==null) {
-            throw new IllegalArgumentException("param==null");
-        }
-        if (param.getAttributes()==null) {
-            throw new IllegalArgumentException("param.attributes==null");
-        }
-        final String choiceDirFilter;
-        if ( param.getAttributes().containsKey(ChoiceInfo.PROP_CHOICE_DIR_FILTER) )
-            //trim if necessary
-            choiceDirFilter = ((String) param.getAttributes().get(ChoiceInfo.PROP_CHOICE_DIR_FILTER)).trim();
-        else {
-            choiceDirFilter = "";
-        }
-        return choiceDirFilter;
-    }
     
     public DirFilter(final ParameterInfo param) {
-        this(getChoiceDirFilter(param));
+        this(ChoiceInfo.getChoiceDirFilter(param));
     }
     public DirFilter(final String choiceDirFilter) {
         this.choiceDirFilter=choiceDirFilter;
