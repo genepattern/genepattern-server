@@ -6,8 +6,9 @@
   ~ This software is supplied without any warranty or guaranteed support whatsoever. The Broad Institute is not responsible for its use, misuse, or functionality.
   --%>
 <%@ page import="org.genepattern.server.webapp.jsf.AuthorizationHelper" %>
-<link href="<%=request.getContextPath()%>/css/style.css" rel="stylesheet" type="text/css" />
-<link href="/gp/css/menu.css" type="text/css" rel="stylesheet" />
+<%@ page import="org.genepattern.server.webapp.jsf.UIBean" %>
+<link href="<%=request.getContextPath()%>/css/<%=UIBean.skin()%>/style.css" rel="stylesheet" type="text/css" />
+<link href="/gp/css/<%=UIBean.skin()%>/menu.css" type="text/css" rel="stylesheet" />
 <script type="text/javascript" language="javascript">
     var contextRoot = "<%=request.getContextPath()%>/";
     <% String username = (String) request.getAttribute("userid"); %>

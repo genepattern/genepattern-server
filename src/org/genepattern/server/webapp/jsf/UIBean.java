@@ -12,4 +12,8 @@ public class UIBean {
         boolean env = ServerConfiguration.instance().getGPBooleanProperty(UIBeanHelper.getUserContext(), "display.ui", false);
         return env;
     }
+    
+    public static String skin() {
+        return (new UIBean()).getSkin();
+    }
 }
