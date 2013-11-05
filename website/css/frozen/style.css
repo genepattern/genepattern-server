@@ -689,37 +689,37 @@ img {
 }
 
 .tableheader-row2 {
-	color: #666633;
+	color: #333366;
 	font-weight: bold;
 	line-height: 18px;
 	font-size: 11px;
 }
 .tableheader-row2 td{
-	color: #666633;
+	color: #333366;
 	font-weight: bold;
 	border-top-style: solid;
 	border-top-width: 2px;
-	border-top-color: #CCCC99;
+	border-top-color: #9999CC;
 	border-bottom-style: solid;
 	border-bottom-width: 2px;
-	border-bottom-color: #CCCC99;
+	border-bottom-color: #9999CC;
 	background-color: #FFFFFF;
 }
 .tableheader-row3 {
-	color: #666633;
+	color: #333366;
 	font-weight: bold;
 	line-height: 13px;
 	font-size: 11px;
 }
 .tableheader-row3 td{
-	color: #666633;
+	color: #333366;
 	font-weight: bold;
 	border-top-style: solid;
 	border-top-width: 2px;
-	border-top-color: #CCCC99;
+	border-top-color: #9999CC;
 	border-bottom-style: solid;
 	border-bottom-width: 2px;
-	border-bottom-color: #CCCC99;
+	border-bottom-color: #9999CC;
 	background-color: #FFFFFF;
 }
 
@@ -789,7 +789,7 @@ h6 {
 /* This is the content wrapper for the tan border at the top of create pipeline */
 .pipeline_top {
 	border-style: solid;
-	border-color: #CCCC99;
+	border-color: #9999CC;
 	border-width: 2px;
 }
 
@@ -800,13 +800,13 @@ h6 {
 
 .prompt-window {
 	background-color: #FFFFFF;
-	border: solid #666633 2px;
+	border: solid #333366 2px;
 	position:absolute;
 	z-index:300;
 	width: 300px;
 	height: auto;
 	padding: 10px;
-	color: #666633;
+	color: #333366;
 	font-size: 10px;
 	font-weight: normal;
 	line-height: 13px;
@@ -818,7 +818,7 @@ h6 {
 	background-color: #FFFFFF;
 	border: solid #CCCCFF 2px;
 	padding: 10px;
-	color: #666633;
+	color: #333366;
 	font-size: 10px;
 	font-weight: normal;
 	line-height: 13px;
@@ -857,7 +857,7 @@ input.error, select.error {
 	font-weight: bold;
 	font-size: 11px;
 	color: #333366;
-	background-color: #CCCC99;
+	background-color: #9999CC;
 	text-indent: 6px;
 	height: 19px;
 	width: 100%;
