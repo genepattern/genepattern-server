@@ -3,7 +3,6 @@ package org.genepattern.server.job.input.choice;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
@@ -103,6 +102,89 @@ public class DynamicChoiceInfoParser implements ChoiceInfoParser {
         return choiceInfo;
     }
     
+    static class ListFtpDirException extends Exception {
+        public ListFtpDirException(final String message) {
+            super(message);
+        }
+    }
+
+    private FTPFile[] listFiles(final String ftpDir) throws ListFtpDirException {
+        final URL ftpUrl;
+        try {
+            ftpUrl=new URL(ftpDir);
+            if (!"ftp".equalsIgnoreCase(ftpUrl.getProtocol())) {
+                log.error("Invalid ftpDir="+ftpDir);
+                throw new ListFtpDirException("Module error, Invalid ftpDir="+ftpDir);
+            }
+        }
+        catch (MalformedURLException e) {
+            log.error("Invalid ftpDir="+ftpDir, e);
+            throw new ListFtpDirException("Module error, Invalid ftpDir="+ftpDir);
+        }
+
+        FTPFile[] files;
+        final FTPClient ftpClient = new FTPClient();
+        try {
+            final int default_timeout_ms=15*1000; //15 seconds
+            final int socket_timeout_ms=15*1000; //15 seconds
+            ftpClient.setDataTimeout(default_timeout_ms);
+            ftpClient.connect(ftpUrl.getHost());
+            ftpClient.setSoTimeout(socket_timeout_ms);
+            // After connection attempt, you should check the reply code to verify success.
+            final int reply = ftpClient.getReplyCode();
+            if(!FTPReply.isPositiveCompletion(reply)) {
+                ftpClient.disconnect();
+                log.error("Connection refused, ftpDir="+ftpDir);
+                throw new ListFtpDirException("Connection refused, ftpDir="+ftpDir);
+            }
+            // anonymous login
+            final String ftpUsername="anonymous";
+            final String ftpPassword="gp-help@broadinstitute.org";
+            boolean success=ftpClient.login(ftpUsername, ftpPassword);
+            if (!success) {
+                final String errorMessage="Login error, ftpDir="+ftpDir;
+                log.error(errorMessage);
+                throw new ListFtpDirException(errorMessage);
+            }
+            ftpClient.setFileType(FTP.ASCII_FILE_TYPE);
+            //ftpClient.setFileType(FTP.BINARY_FILE_TYPE);
+            ftpClient.enterLocalPassiveMode();
+            
+            //check for valid path
+            success=ftpClient.changeWorkingDirectory(ftpUrl.getPath());
+            if (!success) {
+                final String errorMessage="Error CWD="+ftpUrl.getPath()+", ftpDir="+ftpDir;
+                log.error(errorMessage);
+                throw new ListFtpDirException(errorMessage);
+            }
+            
+            log.debug("listing files from directory: "+ftpClient.printWorkingDirectory());
+            files = ftpClient.listFiles();
+            return files;
+        }
+        catch (IOException e) {
+            String errorMessage="Error listing files from "+ftpDir;
+            log.error(errorMessage, e);
+            throw new ListFtpDirException(errorMessage);
+        }
+        catch (Throwable t) {
+            String errorMessage="Unexpected error listing files from "+ftpDir+", "+t.getClass().getName();
+            log.error(errorMessage, t);
+            throw new ListFtpDirException(errorMessage);
+        }
+        finally {
+            if(ftpClient.isConnected()) {
+                try {
+                    ftpClient.disconnect();
+                } 
+                catch(IOException ioe) {
+                    // do nothing
+                    log.warn("Error disconnecting from ftp client, ftpDir="+ftpDir, ioe);
+                }
+            }
+        }
+    }
+    
     /**
      * Initialize the ChoiceInfo from an ftp directory.
      * 
@@ -128,88 +210,18 @@ public class DynamicChoiceInfoParser implements ChoiceInfoParser {
             }
             return choiceInfo;
         }
-        
-        final URL ftpUrl;
-        try {
-            ftpUrl=new URL(ftpDir);
-            if (!"ftp".equalsIgnoreCase(ftpUrl.getProtocol())) {
-                log.error("Invalid ftpDir="+ftpDir);
-                choiceInfo.setStatus(Flag.ERROR, "Module error, Invalid ftpDir="+ftpDir);
-                return choiceInfo;
-            }
-        }
-        catch (MalformedURLException e) {
-            log.error("Invalid ftpDir="+ftpDir, e);
-            choiceInfo.setStatus(Flag.ERROR, "Module error, Invalid ftpDir="+ftpDir);
-            return choiceInfo;
-        }
 
-        FTPFile[] files;
-        final FTPClient ftpClient = new FTPClient();
+        FTPFile[] files=null;
         try {
-            final int default_timeout_ms=15*1000; //15 seconds
-            final int socket_timeout_ms=15*1000; //15 seconds
-            ftpClient.setDataTimeout(default_timeout_ms);
-            ftpClient.connect(ftpUrl.getHost());
-            ftpClient.setSoTimeout(socket_timeout_ms);
-            // After connection attempt, you should check the reply code to verify success.
-            final int reply = ftpClient.getReplyCode();
-            if(!FTPReply.isPositiveCompletion(reply)) {
-                ftpClient.disconnect();
-                log.error("Connection refused, ftpDir="+ftpDir);
-                choiceInfo.setStatus(Flag.ERROR, "Connection refused, ftpDir="+ftpDir);
-                return choiceInfo;
-            }
-            // anonymous login
-            final String ftpUsername="anonymous";
-            final String ftpPassword="gp-help@broadinstitute.org";
-            boolean success=ftpClient.login(ftpUsername, ftpPassword);
-            if (!success) {
-                final String errorMessage="Login error, ftpDir="+ftpDir;
-                log.error(errorMessage);
-                choiceInfo.setStatus(Flag.ERROR, errorMessage);
-                return choiceInfo;
-            }
-            ftpClient.setFileType(FTP.ASCII_FILE_TYPE);
-            //ftpClient.setFileType(FTP.BINARY_FILE_TYPE);
-            ftpClient.enterLocalPassiveMode();
-            
-            //check for valid path
-            success=ftpClient.changeWorkingDirectory(ftpUrl.getPath());
-            if (!success) {
-                final String errorMessage="Error CWD="+ftpUrl.getPath()+", ftpDir="+ftpDir;
-                log.error(errorMessage);
-                choiceInfo.setStatus(Flag.ERROR, errorMessage);
-                return choiceInfo;
-            }
-            
-            log.debug("listing files from directory: "+ftpClient.printWorkingDirectory());
-            files = ftpClient.listFiles();
+            files=listFiles(ftpDir);
         }
-        catch (IOException e) {
-            String errorMessage="Error listing files from "+ftpDir;
-            log.error(errorMessage, e);
-            choiceInfo.setStatus(Flag.ERROR, errorMessage);
+        catch (ListFtpDirException e) {
+            choiceInfo.setStatus(Flag.ERROR, e.getLocalizedMessage());
             return choiceInfo;
         }
         catch (Throwable t) {
-            String errorMessage="Unexpected error listing files from "+ftpDir+", "+t.getClass().getName();
-            log.error(errorMessage, t);
-            choiceInfo.setStatus(Flag.ERROR, errorMessage);
-            return choiceInfo;
+            log.error("Unexpected exception",t);
         }
-        finally {
-            if(ftpClient.isConnected()) {
-                try {
-                    ftpClient.disconnect();
-                } 
-                catch(IOException ioe) {
-                    // do nothing
-                    log.warn("Error disconnecting from ftp client, ftpDir="+ftpDir, ioe);
-                }
-            }
-        }
-        
         if (files==null) {
             final String errorMessage="Error listing files from "+ftpDir;
             log.error(errorMessage);

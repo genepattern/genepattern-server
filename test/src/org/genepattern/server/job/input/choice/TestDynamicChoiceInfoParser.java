@@ -19,7 +19,7 @@ import org.junit.Test;
 
 
 /**
- * jUnit tests for the ChoiceInfoHelper class.
+ * jUnit tests for the DynamicChoiceInfoParser class.
  * @author pcarr
  *
  */
@@ -172,38 +172,147 @@ public class TestDynamicChoiceInfoParser {
         Assert.assertEquals("Checking default value", "arg1", selected.getValue());
     }
     
-    private Choice makeChoice(final String choiceDir, final String entry, final boolean isDir) {
-        return new Choice(entry, choiceDir+""+entry, isDir);
-    }
-    
-    @Test
-    public void testFtpDirectoryDropdown() {
-        final String name="input.dir";
+    private ParameterInfo initFtpParam(final String choiceDir) {
+        final String name="input.file";
         final String value="";
-        final String description="A directory drop-down";
-        final String choiceDir="ftp://gpftp.broadinstitute.org/example_data/gpservertest/DemoFileDropdown/input.dir/";
-        final String choiceDirFilter="type=dir";
-        
-        ParameterInfo pinfo=new ParameterInfo(name, value, description);
+        final String description="A file drop-down";
+
+        final ParameterInfo pinfo=new ParameterInfo(name, value, description);
         pinfo.setAttributes(new HashMap<String,String>());
         pinfo.getAttributes().put("MODE", "IN");
         pinfo.getAttributes().put("TYPE", "FILE");
         pinfo.getAttributes().put("choiceDir", choiceDir);
-        pinfo.getAttributes().put("choiceDirFilter", choiceDirFilter);
         pinfo.getAttributes().put("default_value", "");
-        pinfo.getAttributes().put("fileFormat", "");
+        pinfo.getAttributes().put("fileFormat", "txt");
         pinfo.getAttributes().put("flag", "");
         pinfo.getAttributes().put("optional", "");
         pinfo.getAttributes().put("prefix", "");
         pinfo.getAttributes().put("prefix_when_specified", "");
         pinfo.getAttributes().put("type", "java.io.File");
 
+        return pinfo;
+    }
+    
+    private Choice makeChoice(final String choiceDir, final String entry, final boolean isDir) {
+        return new Choice(entry, choiceDir+""+entry, isDir);
+    }
+    
+    private void listCompare(final String message, final List<Choice> expected, final List<Choice> actual) {
+        Assert.assertEquals(message+", num elements", expected.size(), actual.size());
+        for(int i=0; i<expected.size(); ++i) {
+            Choice expectedChoice=expected.get(i);
+            Choice actualChoice=actual.get(i);
+            Assert.assertEquals(message+" ["+i+"] equals", expectedChoice, actualChoice);
+        }
+    }
+
+    @Test
+    public void testFtpFileDropdown() {
+        final String choiceDir="ftp://gpftp.broadinstitute.org/example_data/gpservertest/DemoFileDropdown/input.dir/";
+        final ParameterInfo pinfo=initFtpParam(choiceDir);
         
         final DynamicChoiceInfoParser choiceInfoParser=new DynamicChoiceInfoParser();
         final ChoiceInfo choiceInfo=choiceInfoParser.initChoiceInfo(pinfo);
         
         Assert.assertNotNull("choiceInfo.choices", choiceInfo.getChoices());
-        Assert.assertEquals("num choices", choiceInfo.getChoices().size(), 11);
+        final List<Choice> expected=Arrays.asList(new Choice[] {
+                new Choice("", ""),
+                makeChoice(choiceDir, "a.txt", false), 
+                makeChoice(choiceDir, "b.txt", false), 
+                makeChoice(choiceDir, "c.txt", false), 
+                makeChoice(choiceDir, "d.txt", false), 
+        });
+        
+        listCompare("drop-down items", expected, choiceInfo.getChoices());
+        Assert.assertEquals("selected", new Choice("", ""), choiceInfo.getSelected());
+    }
+
+    /**
+     * A required parameter with a default value should have an empty item at the start of the drop-down.
+     */
+    @Test
+    public void testFtpFileDropdown_requiredWithDefaultValue() {
+        final String choiceDir="ftp://gpftp.broadinstitute.org/example_data/gpservertest/DemoFileDropdown/input.dir/";
+        final ParameterInfo pinfo=initFtpParam(choiceDir);
+        pinfo.getAttributes().put("default_value", choiceDir+"a.txt");
+
+        final DynamicChoiceInfoParser choiceInfoParser=new DynamicChoiceInfoParser();
+        final ChoiceInfo choiceInfo=choiceInfoParser.initChoiceInfo(pinfo);
+        
+        Assert.assertNotNull("choiceInfo.choices", choiceInfo.getChoices());
+        final List<Choice> expected=Arrays.asList(new Choice[] {
+                new Choice("", ""), 
+                makeChoice(choiceDir, "a.txt", false), 
+                makeChoice(choiceDir, "b.txt", false), 
+                makeChoice(choiceDir, "c.txt", false), 
+                makeChoice(choiceDir, "d.txt", false), 
+        });
+        listCompare("drop-down items", expected, choiceInfo.getChoices());
+        Assert.assertEquals("selected", makeChoice(choiceDir, "a.txt", false), choiceInfo.getSelected());
+    }
+
+    /**
+     * An optional parameter with a default value should have an empty item at the start of the drop-down.
+     */
+    @Test
+    public void testFtpFileDropdown_optionalWithDefaultValue() {
+        final String choiceDir="ftp://gpftp.broadinstitute.org/example_data/gpservertest/DemoFileDropdown/input.dir/";
+        final ParameterInfo pinfo=initFtpParam(choiceDir);
+        pinfo.getAttributes().put("default_value", choiceDir+"a.txt");
+        pinfo.getAttributes().put("optional", "on");
+        
+        final DynamicChoiceInfoParser choiceInfoParser=new DynamicChoiceInfoParser();
+        final ChoiceInfo choiceInfo=choiceInfoParser.initChoiceInfo(pinfo);
+        
+        Assert.assertNotNull("choiceInfo.choices", choiceInfo.getChoices());
+        final List<Choice> expected=Arrays.asList(new Choice[] {
+                new Choice("", ""), 
+                makeChoice(choiceDir, "a.txt", false), 
+                makeChoice(choiceDir, "b.txt", false), 
+                makeChoice(choiceDir, "c.txt", false), 
+                makeChoice(choiceDir, "d.txt", false), 
+        });
+        listCompare("drop-down items", expected, choiceInfo.getChoices());
+        Assert.assertEquals("selected", makeChoice(choiceDir, "a.txt", false), choiceInfo.getSelected());
+    }
+
+    /**
+     * Test with a default value which doesn't match any items in the remote directory.
+     */
+    @Test
+    public void testFtpFileDropdown_defaultValue_noMatch() {
+        final String choiceDir="ftp://gpftp.broadinstitute.org/example_data/gpservertest/DemoFileDropdown/input.dir/";
+        final ParameterInfo pinfo=initFtpParam(choiceDir);
+        pinfo.getAttributes().put("default_value", choiceDir+"no_match.txt");
+
+        final DynamicChoiceInfoParser choiceInfoParser=new DynamicChoiceInfoParser();
+        final ChoiceInfo choiceInfo=choiceInfoParser.initChoiceInfo(pinfo);
+        
+        Assert.assertNotNull("choiceInfo.choices", choiceInfo.getChoices());
+        final List<Choice> expected=Arrays.asList(new Choice[] {
+                new Choice("", ""), 
+                makeChoice(choiceDir, "a.txt", false), 
+                makeChoice(choiceDir, "b.txt", false), 
+                makeChoice(choiceDir, "c.txt", false), 
+                makeChoice(choiceDir, "d.txt", false), 
+        });
+        listCompare("drop-down items", expected, choiceInfo.getChoices());
+        Assert.assertEquals("selected", new Choice("",""), choiceInfo.getSelected());
+    }
+
+
+
+    @Test
+    public void testFtpDirectoryDropdown() {
+        final String choiceDir="ftp://gpftp.broadinstitute.org/example_data/gpservertest/DemoFileDropdown/input.dir/";
+        final String choiceDirFilter="type=dir";
+        final ParameterInfo pinfo=initFtpParam(choiceDir);
+        pinfo.getAttributes().put("choiceDirFilter", choiceDirFilter);
+
+        final DynamicChoiceInfoParser choiceInfoParser=new DynamicChoiceInfoParser();
+        final ChoiceInfo choiceInfo=choiceInfoParser.initChoiceInfo(pinfo);
+
+        Assert.assertNotNull("choiceInfo.choices", choiceInfo.getChoices());
         final List<Choice> expected=Arrays.asList(new Choice[] {
                 new Choice("", ""),
                 makeChoice(choiceDir, "A", true), 
@@ -221,13 +330,4 @@ public class TestDynamicChoiceInfoParser {
         listCompare("drop-down items", expected, choiceInfo.getChoices());
     }
     
-    private void listCompare(final String message, final List<Choice> expected, final List<Choice> actual) {
-        Assert.assertEquals(message+", num elements", expected.size(), actual.size());
-        for(int i=0; i<expected.size(); ++i) {
-            Choice expectedChoice=expected.get(i);
-            Choice actualChoice=actual.get(i);
-            Assert.assertEquals(message+" ["+i+"] equals", expectedChoice, actualChoice);
-        }
-    }
-
 }
