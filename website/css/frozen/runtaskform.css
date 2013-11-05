@@ -149,7 +149,7 @@ button.urlButton
 
 #paramsTable input[type=text]
 {
-    width: 60%;
+    width: 295px;
     height: 17px;
 }
 
@@ -329,9 +329,13 @@ img.buttonIcon {
 	background-image: url(images/ui-icons_0c1922_256x240.png);
 }
 
-#paramsListingDiv .ui-state-default .ui-icon
+#paramsListingDiv .ui-state-default .ui-icon 
 {
-	background-image: url(images/ui-icons_0c1922_256x240.png);
+	background-image: url(images/ui-icons_0c1922_256x240.png) !important;
+}
+
+.selectChoice .ui-multiselect {
+	width: 300px !important;
 }
 
 .center
