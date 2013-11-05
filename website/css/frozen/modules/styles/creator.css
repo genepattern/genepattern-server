@@ -345,15 +345,6 @@ div.editChoicesDialog
 	vertical-align:top;
 }
 
-.hcontent .ui-widget, .hcontent .fileinput-button {
-	color: black;
-}
-
-.hcontent .ui-state-default .ui-icon 
-{
-	background-image: url(../../images/ui-icons_0c1922_256x240.png) !important;
-}
-
 #modcontrols
 {
     float: right;

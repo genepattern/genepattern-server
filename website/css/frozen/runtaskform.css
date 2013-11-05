@@ -301,7 +301,6 @@ img.buttonIcon {
 #paramsListingDiv .ui-state-default
 {
 	background-repeat:repeat-x;
-    color: #0c1922;
 	border: solid 1px #466eb6;
 	background-color:#dae4f4;
 	-webkit-border-radius: 5px;
@@ -314,11 +313,13 @@ img.buttonIcon {
 
 #paramsListingDiv .ui-state-hover
 {
+	color: black;
     background: #80a7d0 url(images/ui-bg_glass_75_B2D1F0_1x400.png) 50% 50% repeat-x;     
 }
 
 #paramsListingDiv .ui-state-active
 {
+	color: black;
     background: #80a7d0 url(images/ui-bg_glass_65_ffffff_1x400.png) 50% 50% repeat-x;
 }
 
@@ -353,7 +354,7 @@ img.buttonIcon {
 {
     padding: 2px 3px 1px 10px !important;
     text-align: left;
-    color: green;
+    color: white;
     border: 2px solid #ff1493;
 }
 
