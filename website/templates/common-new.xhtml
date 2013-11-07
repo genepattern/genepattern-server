@@ -1,0 +1,417 @@
+<!--
+  ~ Copyright 2013 The Broad Institute, Inc.
+  ~ SOFTWARE COPYRIGHT NOTICE
+  ~ This software and its documentation are the copyright of the Broad Institute, Inc. All rights are reserved.
+  ~
+  ~ This software is supplied without any warranty or guaranteed support whatsoever. The Broad Institute is not responsible for its use, misuse, or functionality.
+  -->
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:t="http://myfaces.apache.org/tomahawk"
+      xmlns:c="http://java.sun.com/jstl/core">
+    <f:view contentType="text/html">
+        <head>
+            <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+            <meta http-equiv="refresh" content="#{session.maxInactiveInterval}" />
+            <meta http-equiv="x-ua-compatible" content="IE=edge" />
+
+            <title><ui:insert name="pageTitle">GenePattern </ui:insert></title>
+            
+            <link type="text/css" rel="stylesheet" href="#{facesContext.externalContext.requestContextPath}/css/#{uiBean.skin}/jquery-ui-1.9.2.css" />
+            <link type="text/css" rel="stylesheet" href="#{facesContext.externalContext.requestContextPath}/css/#{uiBean.skin}/style.css" />
+            <link type="text/css" rel="stylesheet" href="#{facesContext.externalContext.requestContextPath}/css/#{uiBean.skin}/themes/base/jquery.ui.all.css" />
+            <link type="text/css" rel="stylesheet" href="#{facesContext.externalContext.requestContextPath}/css/#{uiBean.skin}/jobSharing.css" />
+            <link type="text/css" rel="stylesheet" href="#{facesContext.externalContext.requestContextPath}/css/#{uiBean.skin}/protocols.css" />
+            <link type="text/css" rel="stylesheet" href="#{facesContext.externalContext.requestContextPath}/css/#{uiBean.skin}/style-jobresults.css" />
+            <link type="text/css" rel="stylesheet" href="#{facesContext.externalContext.requestContextPath}/css/#{uiBean.skin}/popupMenu.css" />
+            <link type="text/css" rel="stylesheet" href="#{facesContext.externalContext.requestContextPath}/css/#{uiBean.skin}/menu.css" />
+            <link type="text/css" rel="stylesheet" href="/gp/js/themes/default/style.css" />
+            <link type="text/css" rel="stylesheet" href="#{facesContext.externalContext.requestContextPath}/css/#{uiBean.skin}/new-layout.css" />
+            <link rel="shortcut icon" href="#{facesContext.externalContext.requestContextPath}/skin/favicon.ico" />
+
+            <script type="text/javascript" language="javascript">
+                var contextRoot = '#{facesContext.externalContext.requestContextPath}';
+                var createTaskAllowed = #{authorizationBean.createModuleAllowed};
+                var createPublicPipelineAllowed = #{authorizationBean.createPublicPipelineAllowed};
+                var createPrivatePipelineAllowed = #{authorizationBean.createPrivatePipelineAllowed};
+                var createPublicSuiteAllowed = #{authorizationBean.createPublicSuiteAllowed};
+                var createPrivateSuiteAllowed = #{authorizationBean.createPrivateSuiteAllowed};
+                var adminServerAllowed = #{authorizationBean.adminServerAllowed};
+                var genomeSpaceEnabled = #{genomeSpaceBean.genomeSpaceEnabled};
+                var genomeSpaceLoggedIn = #{genomeSpaceBean.loggedIn};
+                var userLoggedIn = !("${requestScope.userID}" === "null" || "${requestScope.userID}" === "");
+            </script>
+            
+            <script type="text/javascript" src="/gp/js/jquery/jquery-1.8.3.js" />
+            <script type="text/javascript" src="/gp/js/jquery/jquery-ui-1.9.2.js" />
+            <script type="text/javascript" src="#{facesContext.externalContext.requestContextPath}/js/jquery/jquery.cookie.official.js" />
+            <script type="text/javascript" src="#{facesContext.externalContext.requestContextPath}/js/jquery/jquery.cookie.js" />
+            <script type="text/javascript" src="#{facesContext.externalContext.requestContextPath}/js/jquery/jquery.jstree.js" />
+            <script type="text/javascript" src="#{facesContext.externalContext.requestContextPath}/js/jquery/jquery.blockUI.js"></script> 
+            <script type="text/javascript" src="#{facesContext.externalContext.requestContextPath}/js/jquery/jquery.leftnav.js" /> 
+            <script type="text/javascript" src="/gp/js/jquery/ddsmoothmenu.js" />
+            <script type="text/javascript">var jq = jQuery.noConflict();</script>
+
+            <script type="text/javascript" src="#{facesContext.externalContext.requestContextPath}/js/genepattern.js" />
+            <script type="text/javascript" src="#{facesContext.externalContext.requestContextPath}/js/mm_menu.js" />
+            <script type="text/javascript" src="#{facesContext.externalContext.requestContextPath}/js/popupMenu.js" />
+            <script type="text/javascript" src="#{facesContext.externalContext.requestContextPath}/js/commons-validator-1.3.0.js" />
+            <script type="text/javascript" src="#{facesContext.externalContext.requestContextPath}/js/protocol.js" />
+            <script type="text/javascript" src="/gp/js/menu.js" />
+
+            <script type="text/javascript" language="javascript">
+            	var $ = jq;
+	            // Build the nav menu
+	            if (userLoggedIn) {
+	                Menu.buildNavMenu();
+	            }
+				
+            	// IE layout hack
+            	if (navigator.userAgent.indexOf("MSIE") !== -1) {
+            		jq("#systemMessageLink").css("right", "");
+            		jq("#systemMessageLink").css("left", (jq(document).width() - 500) + "px");
+            	}
+            	 
+            	// Init jQuery components
+            	jq(document).ready(function() {
+            		jq("#left-nav").tabs(); 
+            		
+            		// TODO: Begin prototype AJAX
+            		
+            		$.ajax({
+	                    url: '/gp/search-widget/all_modules.json',
+	                    dataType: 'json',
+	                    success: function(data, status, xhr) {
+	                        // Initialize the displays on the left nav bar
+	                        var pinned = $('#pinned-modules').modulelist({
+	                            title: "Pinned Modules",
+	                            data: data,
+	                            droppable: true,
+	                            draggable: true,
+	                            click: function() {
+	                                mockRunTaskForm();
+	                            }
+	                        });
+	                        pinned.modulelist("filter", "pinned");
+	
+	                        var recent = $('#recent-modules').modulelist({
+	                            title: "Recent Modules",
+	                            data: data,
+	                            droppable: false,
+	                            draggable: true,
+	                            click: function() {
+	                                mockRunTaskForm();
+	                            }
+	                        });
+	                        recent.modulelist("filter", "recent");
+	
+	                        // Initialize the search box and slider
+	                        var search = $('<div id="module-list-search"></div>').modulelist({
+	                            title: 'Search: Modules &amp; Pipelines',
+	                            data: data,
+	                            droppable: false,
+	                            draggable: true,
+	                            click: function() {
+	                                mockRunTaskForm();
+	                            }
+	                        });
+	
+	                        var modsearch = $('#module-search').searchslider({
+	                            lists: [search]
+	                        });
+	                    }
+	                });
+	
+	                $.ajax({
+	                    url: '/gp/search-widget/categories.json',
+	                    dataType: 'json',
+	                    success: function(data, status, xhr) {
+	                        // Initialize the module browse button and slider
+	                        var allnsuite = $('<div id="module-list-allnsuite"></div>').modulelist({
+	                            title: 'Browse Modules &amp; Pipelines',
+	                            data: [
+	                                {
+	                                    "lsid": "the full lsid of the module should be here",
+	                                    "name": "All Modules",
+	                                    "description": "The description of the category can go here, blah, blah, blah",
+	                                    "version": "",
+	                                    "documentation": "http://www.google.com",
+	                                    "categories": [],
+	                                    "tags": []
+	                                },
+	
+	                                {
+	                                    "lsid": "the full lsid of the module should be here",
+	                                    "name": "Browse by Suite",
+	                                    "description": "The description of the category can go here, blah, blah, blah",
+	                                    "version": "",
+	                                    "documentation": "http://www.google.com",
+	                                    "categories": [],
+	                                    "tags": []
+	                                }
+	                            ],
+	                            droppable: false,
+	                            draggable: false,
+	                            click: function(event) {
+	                                var filter = $(event.currentTarget).find(".module-name").text();
+	                                $("#module-search").searchslider("show");
+	                                $("#module-search").searchslider("filter", '');
+	                                $("#module-search").searchslider("set_title", filter);
+	                            }
+	                        });
+	
+	                        var browse = $('<div id="module-list-browse"></div>').modulelist({
+	                            title: 'Browse Modules by Category',
+	                            data: data,
+	                            droppable: false,
+	                            draggable: false,
+	                            click: function(event) {
+	                                var filter = $(event.currentTarget).find(".module-name").text();
+	                                $("#module-search").searchslider("show");
+	                                $("#module-search").searchslider("tagfilter", filter);
+	                                $("#module-search").searchslider("set_title", "Browsing Category: " + filter);
+	                            }
+	                        });
+	
+	                        var modbrowse = $('#module-browse').searchslider({
+	                            lists: [allnsuite, browse]
+	                        });
+	                    }
+	                });
+            		
+            		// TODO: End Prototype AJAX
+                	
+                	// Search box controls
+                    jq("#module-search-box").keyup(function() {
+                        if (jq(".search-widget:visible").length === 0) {
+                        	jq("#module-search").searchslider("show");
+                            setModuleSearchTitle($(this).val())
+                        }
+                        jq(".search-widget:visible").searchslider("filter", $(this).val());
+                        setModuleSearchTitle($(this).val())
+                    });
+
+                    // Browse button controls
+                    jq("#module-browse-button button").button().click(function() {
+                    	jq("#module-search-box").val("");
+                    	jq("#module-browse").searchslider("show");
+                    });
+            	});
+            	
+            	function setModuleSearchTitle(filter) {
+                    if (filter === '') {
+                        $("#module-search").searchslider("set_title", "Search: Modules &amp; Pipelines");
+                    }
+                    else {
+                        $("#module-search").searchslider("set_title", "Search: " + filter);
+                    }
+                }
+
+                function mockRunTaskForm() {
+                    $(".search-widget").searchslider("hide");
+                    $("#main-pane img").attr("src", "runtaskform.png");
+                }
+            </script>
+
+            <!-- Use this insert to override the "onLoad" initialization method.  This function is triggered from the body onload event.  -->
+            <ui:insert name="validationInit">
+                <script type="text/javascript" language="javascript"> function onLoad() {} </script>
+            </ui:insert>
+
+            <ui:insert name="headText" />
+
+        </head>
+        <body onload="onLoad();">
+			<!-- Floating header  -->
+			<div id="header">
+				<!-- User settings area -->
+            <t:div id="systemMessageLink">
+                <t:div rendered="#{!empty requestScope.userID}">
+                    <table height="30" border="0" cellpadding="0" cellspacing="0" class="loginsettings">
+                        <tr valign="top">
+                            <td>
+                            	<span id="showSystemMessageSpan" style="display:none;"><a href="#" onclick="showSystemMessage();" style="color:red">System Message</a> | </span>
+                                <h:outputLink value="#{facesContext.externalContext.requestContextPath}/pages/accountInfo.jsf">
+                                    My Settings </h:outputLink> | <h:form style="display: inline;">
+                                <h:outputLink id="logoutLink" value="#{facesContext.externalContext.request.contextPath}/logout"> Sign out </h:outputLink>
+                            </h:form> &#160;${requestScope.userID}&#160;&#160;&#160;</td>
+                        </tr>
+                    </table>
+                </t:div>
+            </t:div>
+				<!-- top band with the logo -->
+	            <div id="topband" class="topband">
+	                <h:outputLink value="#{facesContext.externalContext.requestContextPath}/pages/index.jsf" target="_top">
+	                    <t:graphicImage value="/images/GP-logo.gif" alt="GenePattern" width="229" height="48" style="border: 0;" />
+	                </h:outputLink>
+	            </div>
+	            <!-- horizontal navigation band -->
+	           	<div id="navband1" class="navband1 ddsmoothmenu" style="white-space: nowrap; display:none;">
+		            <ul>
+		                <li><a href="/gp/pages/index.jsf">Modules &#38; Pipelines</a>
+		                    <ul>
+		                        <li class="createPrivatePipelineAllowed"><a href="JavaScript:Menu.denyIE('/gp/pipeline/index.jsf');">New Pipeline</a></li>
+		                        <li class="createTaskAllowed"><a href="JavaScript:Menu.denyIE('/gp/modules/creator.jsf');">New Module</a></li>
+		                        <li class="createTaskAllowed"><a href="/gp/pages/taskCatalog.jsf">Install From Repository</a></li>
+		                        <li><a href="/gp/pages/importTask.jsf">Install From ZIP</a></li>
+		                        <li><a href="/gp/pages/manageTasks.jsf">Manage</a></li>
+		                    </ul>
+		                </li>
+		                <li><a href="/gp/pages/manageSuite.jsf">Suites</a>
+		                    <ul>
+		                        <li class="createPrivateSuiteAllowed"><a href="/gp/pages/createSuite.jsf">New Suite</a></li>
+		                        <li class="createPublicSuiteAllowed"><a href="/gp/pages/suiteCatalog.jsf">Install From Repository</a></li>
+		                        <li><a href="/gp/pages/importTask.jsf?suite=1">Install From ZIP</a></li>
+		                        <li><a href="/gp/pages/manageSuite.jsf">Manage</a></li>
+		                    </ul>
+		                </li>
+		                <li><a href="/gp/jobResults">Job Results</a>
+		                    <ul>
+		                        <li><a href="/gp/jobResults">Results Summary</a></li>
+		                    </ul>
+		                </li>
+		                <li><a href="/gp/pages/index.jsf?splash=resources">Resources</a>
+		                    <ul>
+		                        <li><a href="JavaScript:Menu.go('http://www.broadinstitute.org/cancer/software/genepattern/gp_mail.html')">Mailing List</a></li>
+		                        <li><a href="/gp/pages/contactUs.jsf">Report Bugs</a></li>
+		                        <li><a href="/gp/pages/contactUs.jsf">Contact Us</a></li>
+		                    </ul>
+		                </li>
+		                <li><a href="/gp/pages/index.jsf?splash=downloads">Downloads</a>
+		                    <ul>
+		                        <li><a href="/gp/pages/downloadProgrammingLibaries.jsf">Programming Languages</a></li>
+		                        <li><a href="JavaScript:Menu.go('http://www.broadinstitute.org/cancer/software/genepattern/datasets/')">Public Datasets</a></li>
+		                        <li><a href="JavaScript:Menu.go('http://www.broadinstitute.org/software/gparc/')">GParc</a></li>
+		                    </ul>
+		                </li>
+		                <li class="adminServerAllowed"><a href="/gp/pages/serverSettings.jsf">Administration</a>
+		                    <ul>
+		                        <li><a href="/gp/pages/serverSettings.jsf">Server Settings</a></li>
+		                    </ul>
+		                </li>
+		                <li><a href="/gp/pages/index.jsf">Help</a>
+		                    <ul>
+		                        <li><a href="JavaScript:Menu.go('http://www.broadinstitute.org/cancer/software/genepattern/tutorial/gp_tutorial.html')">Tutorial</a></li>
+		                        <li><a href="JavaScript:Menu.go('http://www.broadinstitute.org/cancer/software/genepattern/desc/videos')">Video Tutorial</a></li>
+		                        <li><a href="JavaScript:Menu.go('http://www.broadinstitute.org/cancer/software/genepattern/tutorial/gp_web_client.html')">User Guide</a></li>
+		                        <li><a href="JavaScript:Menu.go('http://www.broadinstitute.org/cancer/software/genepattern/tutorial/gp_programmer.html')">Programmers Guide</a></li>
+		                        <li><a href="/gp/getTaskDoc.jsp">Module Documentation</a></li>
+		                        <li><a href="JavaScript:Menu.go('http://www.broadinstitute.org/cancer/software/genepattern/gp_guides/file-formats')">File Formats</a></li>
+		                        <li><a href="JavaScript:Menu.go('http://www.broadinstitute.org/cancer/software/genepattern/doc/relnotes/current/')">Release Notes</a></li>
+		                        <li><a href="JavaScript:Menu.go('http://www.broadinstitute.org/cancer/software/genepattern/doc/faq/')">FAQ</a></li>
+		                        <li><a href="/gp/pages/about.jsf">About</a></li>
+		                    </ul>
+		                </li>
+		                <li class="genomeSpaceMenu">
+		                	<a href="/gp/pages/index.jsf"><img src="/gp/pages/genomespace/genomespace_icon.gif" class="genomeSpaceIcon" alt="GenomeSpace"></img>GenomeSpace</a>
+		                    <ul>
+		                        <li class="genomeSpaceLoggedOut"><a href="/gp/pages/genomespace/signon.jsf">Login</a></li>
+		                        <li class="genomeSpaceLoggedIn"><a href="/gp/pages/genomespace/signon.jsf">Logout</a></li>
+		                        <li class="genomeSpaceLoggedOut"><a href="/gp/pages/genomespace/userRegistration.jsf">Register</a></li>
+		                        <li class="genomeSpaceLoggedIn"><a href="/gp/pages/genomespace/privateTool.jsf">Add as Private Tool</a></li>
+		                        <li><a href="JavaScript:Menu.go('https://gsui.genomespace.org/jsui/')">GenomeSpace UI</a></li>
+		                        <li><a href="JavaScript:Menu.go('http://www.genomespace.org/')">About</a></li>
+		                    </ul>
+		                </li>
+		            </ul>
+		            <br style="clear: left"/>
+		            <script type="text/javascript">
+		            	if (userLoggedIn) {
+		            		jq("#navband1").ready(function() {
+		            			Menu.initNavMenu();
+		            		});	
+		            	}
+		            	
+						// Stub out old embeded javascript calls
+		                function MM_swapImage() { return true; }
+		                function MM_swapImgRestore() { return true; }
+		            </script>
+		        </div>
+			</div>
+            
+            <!--  Main content area -->
+            <div id="content" class="content">
+            
+            	<!-- Insert the left nav -->
+            	<div id="left-nav">
+            		<ul id="left-nav-tabs">
+	                    <li><a href="#left-nav-modules">Modules</a></li>
+	                    <li><a href="#left-nav-jobs">Jobs</a></li>
+	                    <li><a href="#left-nav-files">Files</a></li>
+	                </ul>
+	                <div id="left-nav-modules" class="left-nav-tab">
+	                	<div class="left-nav-top">
+		                    <div id="module-search-block">
+		                        <input id="module-search-box" type="search" class="search-box" placeholder="Search Modules &amp; Pipelines" />
+		                    </div>
+		                    <div id="module-browse-button">
+		                        <button>Browse Modules &#x203a;</button>
+		                    </div>
+	                    </div>
+	                    <div id="pinned-modules"></div>
+	                    <div id="recent-modules"></div>
+	                </div>
+		            <div id="left-nav-jobs" class="left-nav-tab">
+	                    <ui:insert name="jobs-tab" />
+	                </div>
+	                <div id="left-nav-files" class="left-nav-tab">
+	                    <ui:insert name="files-tab" />
+	                </div>
+            	</div>
+            	
+				<div id="module-search"></div>
+	            <div id="module-browse"></div>
+	
+	            <div id="main-pane">
+	            	<!-- Error message area -->
+	            	<div id="errorMessageDiv" style="display:none;">
+		            	<span id="errorMessageHeader" style="font-weight:bold">
+		                	Please correct the following errors before proceeding:
+		              	</span>
+	                    <div id="errorMessageContent"></div>
+	               </div>
+               
+	               <!-- Include System Alert Message  -->
+	               <t:div id="systemAlertMessage" rendered="#{systemMessageBean.systemMessage != null}">
+	                   <ui:include src="../pages/systemMessage.xhtml" />
+	               </t:div>
+	
+	               <!-- JSF (Server side) errors or messages -->
+	               <ui:include src="../pages/messages.xhtml" />
+	               <h:outputText rendered="#{!empty facesContext.maximumSeverity}"><br /></h:outputText>
+	            
+	            	<ui:insert name="body" />
+	            </div>
+	        </div>
+			
+			<!-- Top-level popup menus -->
+            <ui:insert name="popupMenus" />
+            
+            <!-- Floating footer area -->
+            <div id="footer">
+            	<table width="100%" border="0" cellspacing="0" cellpadding="0">
+	                <tr>
+	                    <td>
+	                        <h:outputLink value="#{facesContext.externalContext.requestContextPath}/pages/about.jsf">About GenePattern</h:outputLink>&#160;|&#160;<h:outputLink value="#{facesContext.externalContext.requestContextPath}/pages/contactUs.jsf">Contact Us</h:outputLink>
+	                    </td>
+	                    <td>
+	                        <div align="right">&#169;2003-2013&#160; <h:outputLink value="http://www.broadinstitute.org" target="_blank">Broad Institute, MIT</h:outputLink>
+	                        </div>
+	                    </td>
+	                    <td width="10">&#160;</td>
+	                    <td width="27">
+	                        <h:outputLink value="http://www.broadinstitute.org" target="_blank">
+	                            <t:graphicImage value="/images/broad-symbol.gif" alt="Broad Institute" width="27" height="30" style="border: 0;" />
+	                        </h:outputLink>
+	                    </td>
+	                </tr>
+	            </table>
+            </div>
+        </body>
+    </f:view>
+</html>

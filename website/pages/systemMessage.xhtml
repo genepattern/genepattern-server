@@ -17,7 +17,7 @@
 
         <t:div forceId="true" id="systemMessage">
             <t:div id="systemMessageForm" forceId="true" styleClass="systemMessageForm" style="display: none;">
-				<img src="#{facesContext.externalContext.requestContextPath}/css/#{uiBean.skin}/modules/styles/images/delete.gif" style="float:right;" id="systemMessageClose" />
+				<img src="#{facesContext.externalContext.requestContextPath}/css/#{uiBean.skin}/modules/styles/images/delete.gif" style="float:right; position: relative; right: 2px; top: 2px;" id="systemMessageClose" />
                 <h:outputText escape="false" value="#{systemMessageBean.messageAsHtmlString} " />
 				<script type="text/javascript" language="javascript">
 					var showMessage = jq.cookie("showSystemMessage");

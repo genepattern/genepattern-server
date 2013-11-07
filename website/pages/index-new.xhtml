@@ -13,5 +13,44 @@
       xmlns:f="http://java.sun.com/jsf/core"
       xmlns:t="http://myfaces.apache.org/tomahawk"
       xmlns:c="http://java.sun.com/jstl/core">
-    xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+    <ui:composition template="/templates/common-new.xhtml">
+    
+    	<ui:define name="pageTitle">GenePattern</ui:define>
+    
+    	<ui:define name="headText">
+    		xxx
+    	</ui:define>
+    	
+    	<ui:define name="body">
+    		<!-- Error messages -->
+            <div id="errorMessageDiv" style="display: none;">
+                <div id="errorMessage" />
+            </div>
+
+            <t:div><ui:include src="eulaTaskForm.xhtml" /></t:div>
+            <t:div rendered="#{!empty runTaskBean.lsid and !eulaTaskBean.prompt}">
+                <ui:include src="runTaskFormJQuery.xhtml" />
+            </t:div>
+
+            <h:outputText rendered="#{genomeSpaceBean.loggedIn and not genomeSpaceBean.loading}">
+                <ui:include src="/pages/genomespace/genomespaceDialog.xhtml" />
+            </h:outputText>
+
+            <t:div rendered="#{empty runTaskBean.lsid}">
+                <f:subview rendered="#{empty runTaskBean.splashPage}">
+                    <ui:include src="splashpage.xhtml" />
+                </f:subview>
+                <f:subview rendered="#{runTaskBean.splashPage == 'resources'}">
+                    <ui:include src="splashpageResources.xhtml" />
+                </f:subview>
+                <f:subview rendered="#{runTaskBean.splashPage == 'downloads'}">
+                    <ui:include src="splashpageDownloads.xhtml" />
+                </f:subview>
+                <f:subview rendered="#{runTaskBean.splashPage == 'help'}">
+                    <ui:include src="splashpageHelp.xhtml" />
+                </f:subview>
+            </t:div>
+    	</ui:define>
+
+    </ui:composition>
 </html>
