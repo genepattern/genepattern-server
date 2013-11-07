@@ -1,0 +1,279 @@
+/*
+ * Copyright 2013 The Broad Institute, Inc.
+ * SOFTWARE COPYRIGHT NOTICE
+ * This software and its documentation are the copyright of the Broad Institute, Inc. All rights are reserved.
+ *
+ * This software is supplied without any warranty or guaranteed support whatsoever. The Broad Institute is not responsible for its use, misuse, or functionality.
+ */
+
+.module-listing {
+    margin-top: 10px;
+    border-style: solid;
+    border-width: 1px;
+    border-color: #BBBBEE;
+    padding: 2px;
+    cursor: pointer;
+    height: 60px;
+}
+
+.module-listing:hover {
+    background-image: url(images/sidebar-topBG.png);
+	background-repeat: repeat-x;
+}
+
+.module-name {
+	color: gray;
+    font-size: 11pt;
+    line-height: 13pt;
+    overflow: hidden;
+}
+
+.module-version {
+    display: none;
+    color: gray;
+    float: right;
+    font-size: 8pt;
+    vertical-align: bottom;
+    margin-top: 3px;
+}
+
+.module-doc {
+    display:block;
+    height: 0px;
+    float: right;
+    margin-left: 3px;
+    margin-right: 3px;
+}
+
+.module-description {
+    font-size: 8pt;
+    color: #333366;
+    max-height: 26px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+	margin-top: 2px;
+}
+
+.module-tag {
+    font-size:8pt;
+    color: #000099 !important;
+}
+
+.module-tag a {
+    text-decoration: underline;
+}
+
+/*
+--------------------------------------------------------
+*/
+
+.module-list-title {
+    margin-top: 0px;
+    margin-bottom: 0px;
+    margin-right: 20px;
+    color: #333366;
+    font-weight: bold;
+    border-bottom-width: 1px;
+    border-bottom-style: solid;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+}
+
+.module-list-empty {
+    display: none;
+    margin-left: 30px;
+    color: darkgray;
+}
+
+/*
+--------------------------------------------------------
+*/
+
+.search-widget {
+    display:none;
+    position: absolute;
+    z-index: 1;
+    top: 0px;
+    left: 351px;
+    background-color: #FCFCFC;
+    height: 100%;
+    width: 50%;
+    margin-left: 0px;
+    margin-right: 50px;
+    border-right: lightgray solid 2px;
+    margin-top: 0px;
+    font-family: Lucida Grande,Lucida Sans,Arial,sans-serif;
+    font-size: 1.1em;
+    max-height: 100%;
+}
+
+.search-inner {
+    height: 100%;
+    overflow: auto;
+    padding-left: 20px;
+}
+
+.slider-close-block {
+    height: 0px;
+    width: 0px;
+    float: right;
+    position: relative;
+}
+
+.slider-close {
+    position: absolute;
+    top: 5px;
+    right: 10px;
+    font-size: 8pt;
+}
+
+.search-widget .module-list-title {
+    margin-top: 20px;
+}
+
+.search-widget .module-list {
+    overflow: auto;
+}
+
+.search-widget .module-listing {
+    float: left;
+    width: 300px;
+    margin-right: 10px;
+    height: 60px;
+    overflow: hidden;
+}
+
+/* ---------------------- SCAFFOLDING ------------------------- */
+
+body {
+    margin: 0px;
+    overflow: hidden;
+}
+
+#header {
+    position: absolute;
+    left: 0px;
+    right: 0px;
+    top: 0px;
+    height: 71px;                           /* Set to final actual height of header */
+    z-index: 3;
+}
+
+#footer {
+    position: fixed;
+    left: 0px;
+    right: 0px;
+    bottom: 0px;
+    height: 30px;                           /* Set to final actual height of footer */
+    z-index: 3;
+    padding-top: 3px;
+    padding-left: 10px;
+    padding-bottom: 3px;
+    padding-right: 3px;
+    background-color: #CED8DD;
+	background-image: url(images/bottom-band.png);
+	background-repeat: repeat-x;
+    border-top: solid 1px #A3B1DA;
+}
+
+#content {
+    position: absolute;
+    left: 0px;
+    right: 0px;
+    bottom: 0px;
+    top: 0px;
+    margin-top: 71px;
+    margin-bottom: 36px;
+	height: initial;
+}
+
+#left-nav {
+    position: absolute;
+    color: #333366;
+    background-color: #F1F2F2;
+    overflow: hidden;
+    width: 348px;
+    top: 0px;
+    bottom: 0px;
+    padding: 0px;
+    margin: 0px;
+    border-radius: 0px;
+    border-top-width: 1px;
+	border-top-color: #F1F2F2;
+	border-right-width: 1px;
+	border-right-color: #A3B1DA;
+	border-top-style: solid;
+	border-right-style: solid;
+	border-left-color: #F1F2F2;
+	border-left-style: solid;
+	border-left-width: 1px;
+}
+
+.left-nav-tab {
+    overflow-x: hidden;
+    position: absolute;
+    bottom: 0px;
+    top: 33px;
+    width: 350px;
+    padding: 0px !important;
+}
+
+#left-nav-tabs {
+	padding-left: 2px !important;
+    border-top: none;
+	border-right: none;
+	border-left: none;
+	border-bottom: solid 1px #A3B1DA;
+}
+
+.left-nav-top {
+	background-color: #BDD3E9;
+	border: none;
+	border-bottom: solid 1px #A3B1DA;
+	background-image: url(images/sidebar-topBG.png);
+	background-repeat: repeat-x;
+	padding: 10px;
+	top: 33px;
+}
+
+.ui-widget-content {
+    background: none;
+}
+
+#left-nav-modules.ui-widget-content a {
+	color: #000099;
+}
+
+#left-nav-modules.ui-widget-content a:hover {
+	color: #6666FF;
+}
+
+.search-box {
+    width: 100%;
+}
+
+#pinned-modules, #recent-modules {
+	padding: 10px;
+}
+
+#module-browse-button {
+    text-align: right;
+    font-size: 8pt;
+    margin-top: 3px;
+}
+
+#main-pane {
+    position: absolute;
+    overflow-y: scroll;
+    overflow: auto;
+    left: 350px;
+    right: 0px;
+    padding-top: 10px;
+    padding-bottom: 10px;
+    padding-right: 30px;
+	padding-left: 30px;
+    top: 0px;
+    bottom: 0px;
+    background-color: white;
+}
