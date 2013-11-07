@@ -1,6 +1,5 @@
 package org.genepattern.server.job.input.choice;
 
-import java.io.File;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -10,11 +9,9 @@ import java.util.regex.Pattern;
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.log4j.Logger;
-import org.genepattern.server.config.ServerConfiguration;
-import org.genepattern.server.config.ServerConfiguration.Context;
-import org.genepattern.server.dm.GpFileObjFactory;
 import org.genepattern.server.dm.GpFilePath;
 import org.genepattern.server.job.input.JobInputHelper;
+import org.genepattern.server.job.input.cache.CachedFtpFile;
 import org.genepattern.server.rest.ParameterInfoRecord;
 import org.genepattern.server.webapp.rest.api.v1.task.TasksResource;
 import org.genepattern.webservice.ParameterInfo;
@@ -177,25 +174,6 @@ public class ChoiceInfoHelper {
         }
     }
 
-    /**
-     * Helper class, initialize a GpFilePath instance for the external url.
-     * This method does not download the file, it does define the path
-     * to where the external URL is to be downloaded.
-     * 
-     * This method was created for the specific use-case of caching an external url
-     * selected from a File Choice parameter.
-     * 
-     * @param url
-     * @return
-     */
-    private static GpFilePath getLocalPath(final URL url) throws Exception {
-        final Context userContext=ServerConfiguration.Context.getContextForUser(".cache");
-        final String relPath="cache/"+url.getHost()+"/"+url.getPath();
-        final File relFile=new File(relPath);
-        GpFilePath localPath=GpFileObjFactory.getUserUploadFile(userContext, relFile);
-        return localPath;
-    }
-    
     public static GpFilePath getLocalPathFromSelection(final Choice selectedChoice) throws Exception {
         final URL url=JobInputHelper.initExternalUrl(selectedChoice.getValue());
         if (url==null) {
@@ -203,10 +181,8 @@ public class ChoiceInfoHelper {
             return null;
         }
         
-        GpFilePath localPath=getLocalPath(url);
+        GpFilePath localPath=CachedFtpFile.getLocalPath(url);
         return localPath;
     }
-    
-
 
 }

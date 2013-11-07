@@ -187,8 +187,19 @@ abstract public class CachedFtpFile implements CachedFile {
         }
     }
     
-    protected GpFilePath getLocalPath(final URL url) {
-        final Context userContext=ServerConfiguration.Context.getContextForUser(".cache");
+    /**
+     * Initialize a GpFilePath instance from the external url.
+     * This method does not download the file, it does define the path
+     * to where the external URL is to be downloaded.
+     * 
+     * This method was created for the specific use-case of caching an external url
+     * selected from a File Choice parameter.
+     * 
+     * @param url
+     * @return
+     */
+    public static final GpFilePath getLocalPath(final URL url) {
+        final Context userContext=ServerConfiguration.Context.getContextForUser(FileCache.CACHE_USER_ID);
         final String relPath="cache/"+url.getHost()+"/"+url.getPath();
         final File relFile=new File(relPath);
         try {
@@ -226,10 +237,12 @@ abstract public class CachedFtpFile implements CachedFile {
 
     }
 
+    @Override
     public URL getUrl() {
         return url;
     }
-    
+
+    @Override
     public GpFilePath getLocalPath() {
         return localPath;
     }
@@ -238,6 +251,7 @@ abstract public class CachedFtpFile implements CachedFile {
      * Do we already have a local copy of the file?
      * @return
      */
+    @Override
     public boolean isDownloaded() {
         return localPath.getServerFile().exists();
     }
@@ -247,6 +261,7 @@ abstract public class CachedFtpFile implements CachedFile {
      * @return
      * @throws DownloadException
      */
+    @Override
     public GpFilePath download() throws DownloadException {
         try {
             doDownload(localPath, url);
@@ -268,7 +283,7 @@ abstract public class CachedFtpFile implements CachedFile {
      * @throws Exception 
      */
     public GpFilePath getTempPath(GpFilePath realPath) throws DownloadException {
-        Context userContext = ServerConfiguration.Context.getContextForUser(".cache");
+        Context userContext = ServerConfiguration.Context.getContextForUser(FileCache.CACHE_USER_ID);
         String tempPath = FilenameUtils.getPath(realPath.getRelativePath()) + ".downloading/" + FilenameUtils.getName(realPath.getRelativePath());
         File tempFile = new File(tempPath);
         try {

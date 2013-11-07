@@ -31,6 +31,12 @@ import org.apache.log4j.Logger;
  */
 public class FileCache {
     private static Logger log = Logger.getLogger(FileCache.class);
+    
+    /**
+     * Special userid for cached data files from external URL.
+     * These shared files are saved in the user uploads tab for the '.cache' user account. 
+     */
+    public static final String CACHE_USER_ID=".cache";
 
     private static final FileCache instance=new FileCache();
     public static FileCache instance() {

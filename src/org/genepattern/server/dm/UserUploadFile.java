@@ -5,6 +5,7 @@ import java.net.URI;
 
 import org.apache.log4j.Logger;
 import org.genepattern.server.config.ServerConfiguration.Context;
+import org.genepattern.server.job.input.cache.FileCache;
 
 
 public class UserUploadFile extends GpFilePath {
@@ -59,7 +60,7 @@ public class UserUploadFile extends GpFilePath {
         }
 
         //HACK: special-case for cached data files from external URL
-        if (owner.equals( ".cache" )) {
+        if (owner.equals( FileCache.CACHE_USER_ID )) {
             //TODO: implement access permissions for user data files
             return true;
         }
