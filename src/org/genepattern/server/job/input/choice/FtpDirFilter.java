@@ -11,6 +11,9 @@ import org.apache.commons.net.ftp.FTPFileFilter;
  *
  */
 public class FtpDirFilter extends DirFilter implements FTPFileFilter {
+    public FtpDirFilter() {
+        super();
+    }
     public FtpDirFilter(final String choiceDirFilter) {
         super(choiceDirFilter);
     }

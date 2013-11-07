@@ -2,6 +2,7 @@ package org.genepattern.server.job.input.choice;
 
 import java.util.regex.Pattern;
 
+import org.apache.log4j.Logger;
 import org.genepattern.server.util.FindFileFilter;
 import org.genepattern.webservice.ParameterInfo;
 
@@ -15,6 +16,8 @@ import org.genepattern.webservice.ParameterInfo;
  *
  */
 public class DirFilter {
+    private static Logger log = Logger.getLogger(DirFilter.class);
+
     public static enum Type {
         file,
         dir,
@@ -24,11 +27,26 @@ public class DirFilter {
     final protected String choiceDirFilter;
     final protected FindFileFilter globs=new FindFileFilter();
     
+    public DirFilter() {
+        this.choiceDirFilter=null; //not set
+        _init();
+    }
     public DirFilter(final ParameterInfo param) {
-        this(ChoiceInfo.getChoiceDirFilter(param));
+        this.choiceDirFilter=ChoiceInfo.getChoiceDirFilter(param);
+        _init();
     }
     public DirFilter(final String choiceDirFilter) {
         this.choiceDirFilter=choiceDirFilter;
+        _init();
+    }
+
+    // should only call this once, from the constructor
+    private boolean inited=false;
+    private void _init() {
+        if (inited) {
+            log.error("Must call this method once and only once, from the constructor");
+        }
+        inited=true;
         if (!ChoiceInfoHelper.isSet(choiceDirFilter)) {
             //by default, ignore '*.md5' and 'readme.*' files
             globs.addGlob("!*.md5");
