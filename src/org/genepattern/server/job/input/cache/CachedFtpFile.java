@@ -199,8 +199,20 @@ abstract public class CachedFtpFile implements CachedFile {
      * @return
      */
     public static final GpFilePath getLocalPath(final URL url) {
+        return getLocalPathForFile(url);
+    }
+    
+    public static final GpFilePath getLocalPathForFile(final URL url) {
+        return getLocalPath(url, "cache");
+    }
+    
+    public static final GpFilePath getLocalPathForDir(final URL url) {
+        return getLocalPath(url, "cache.dir");
+    }
+    
+    private static final GpFilePath getLocalPath(final URL fromExternalUrl, final String toRootDir) {
         final Context userContext=ServerConfiguration.Context.getContextForUser(FileCache.CACHE_USER_ID);
-        final String relPath="cache/"+url.getHost()+"/"+url.getPath();
+        final String relPath= toRootDir+"/"+fromExternalUrl.getHost()+"/"+fromExternalUrl.getPath();
         final File relFile=new File(relPath);
         try {
             GpFilePath localPath=GpFileObjFactory.getUserUploadFile(userContext, relFile);
@@ -211,6 +223,7 @@ abstract public class CachedFtpFile implements CachedFile {
         }
         return null;
     }
+
     
     /**
      * If necessary, create the parent directory.

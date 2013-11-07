@@ -102,13 +102,15 @@ public class DynamicChoiceInfoParser implements ChoiceInfoParser {
         return choiceInfo;
     }
     
-    static class ListFtpDirException extends Exception {
+    public static final class ListFtpDirException extends Exception {
         public ListFtpDirException(final String message) {
             super(message);
         }
     }
 
-    private FTPFile[] listFiles(final String ftpDir) throws ListFtpDirException {
+    //TODO: add final int connectTimeout_ms, final int readTimeout_ms args, so that
+    //      we can cancel the file listing after a given timeout
+    public static final FTPFile[] listFiles(final String ftpDir) throws ListFtpDirException {
         final URL ftpUrl;
         try {
             ftpUrl=new URL(ftpDir);

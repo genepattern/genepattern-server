@@ -111,18 +111,17 @@ public class FileDownloader {
                 final ChoiceInfo choiceInfo=ChoiceInfoHelper.initChoiceInfo(pinfoRecord, pinfo);
                 final Choice selectedChoice= choiceInfo == null ? null : choiceInfo.getValue(pinfo.getValue());
                 final boolean isFileChoiceSelection=
-                    pinfoRecord.getFormal().isInputFile()
-                    &&
-                    selectedChoice != null && 
-                    selectedChoice.getValue() != null && 
-                    selectedChoice.getValue().length() > 0;
-                    if (isFileChoiceSelection) {
-                        //lazy-init the list
-                        if (selectedChoices==null) {
-                            selectedChoices=new ArrayList<Choice>();
-                        }
-                        selectedChoices.add(selectedChoice);
+                        pinfoRecord.getFormal().isInputFile() &&
+                        selectedChoice != null && 
+                        selectedChoice.getValue() != null && 
+                        selectedChoice.getValue().length() > 0;
+                if (isFileChoiceSelection) {
+                    //lazy-init the list
+                    if (selectedChoices==null) {
+                        selectedChoices=new ArrayList<Choice>();
                     }
+                    selectedChoices.add(selectedChoice);
+                }
             }
         }
         if (selectedChoices==null) {
@@ -160,7 +159,8 @@ public class FileDownloader {
         for(final Choice selectedChoice : selectedChoices) {
             try {
                 final String selectedValue=selectedChoice.getValue();
-                final Future<?> f = FileCache.instance().getFutureObj(selectedValue);
+                final boolean isDir=selectedChoice.isRemoteDir();
+                final Future<?> f = FileCache.instance().getFutureObj(selectedValue, isDir);
                 f.get(100, TimeUnit.MILLISECONDS);
             }
             catch (TimeoutException e) {
@@ -171,9 +171,10 @@ public class FileDownloader {
         // now loop through all of the choices and wait for each download to complete
         for(final Choice selectedChoice : selectedChoices) {
             final String selectedValue=selectedChoice.getValue();
-            final Future<?> f = FileCache.instance().getFutureObj(selectedValue);
+            final boolean isDir=selectedChoice.isRemoteDir();
+            final Future<?> f = FileCache.instance().getFutureObj(selectedValue, isDir);
             f.get();
         }    
     }
-
+    
 }

@@ -82,7 +82,7 @@ public class FileCache {
      * @param externalUrl
      * @return
      */
-    private CachedFile initCachedFileObj(final String externalUrl) {
+    private CachedFile initCachedFileObj(final String externalUrl, final boolean isRemoteDir) {
         final File mappedFile=MapLocalEntry.initLocalFileSelection(externalUrl);
         if (mappedFile!=null) {
             if (!mappedFile.exists()) {
@@ -105,7 +105,12 @@ public class FileCache {
          *     ftpDownloader.type: EDT_FTP_J
          *     ftpDownloader.type: EDT_FTP_J_SIMPLE
          */
-        return CachedFtpFile.Factory.instance().newCachedFtpFile(externalUrl);
+        if (!isRemoteDir) {
+            return CachedFtpFile.Factory.instance().newCachedFtpFile(externalUrl);
+        }
+        else {
+            return new CachedFtpDir(externalUrl);
+        }
      }
     
     public void shutdownNow() {
@@ -146,8 +151,12 @@ public class FileCache {
         }
     }
 
-    public synchronized Future<CachedFile> getFutureObj(final String externalUrl) {
-        final CachedFile obj = initCachedFileObj(externalUrl);
+    //public synchronized Future<CachedFile> getFutureObj(final String externalUrl) {
+    //    final boolean isRemoteDir=false;
+    //    return getFutureObj(externalUrl, isRemoteDir);
+    //}
+    public synchronized Future<CachedFile> getFutureObj(final String externalUrl, final boolean isRemoteDir) {
+        final CachedFile obj = initCachedFileObj(externalUrl, isRemoteDir);
         if (obj.isDownloaded()) {
             //already downloaded
             return new AlreadyDownloaded(obj);
