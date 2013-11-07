@@ -13,6 +13,7 @@
 	line-height: 5px;
 	left: 0px;
 	min-width: 1000px;
+	margin-left: 15px;
 }
 
 #navband1 > ul {
@@ -33,12 +34,11 @@
 
 .ddsmoothmenu {
     font: bold 11px Verdana;
-    background: #446688;
     z-index: 5000;
     top: 48px;
-    padding-left: 77px;
     background-image: url(images/menubarBG.png);
 	background-repeat: repeat-x;
+	width: 100%;
 }
 
 .ddsmoothmenu ul {
