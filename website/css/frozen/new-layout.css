@@ -70,7 +70,6 @@
 .module-list-title {
     margin-top: 0px;
     margin-bottom: 0px;
-    margin-right: 20px;
     color: #333366;
     font-weight: bold;
     border-bottom-width: 1px;
@@ -117,14 +116,12 @@
 .slider-close-block {
     height: 0px;
     width: 0px;
-    float: right;
-    position: relative;
 }
 
 .slider-close {
     position: absolute;
     top: 5px;
-    right: 10px;
+    right: 20px;
     font-size: 8pt;
 }
 
@@ -148,7 +145,7 @@
 
 body {
     margin: 0px;
-    overflow: hidden;
+    overflow-x: hidden;
 }
 
 #header {
@@ -216,7 +213,7 @@ body {
     bottom: 0px;
     top: 33px;
     width: 350px;
-    padding: 0px !important;
+    background-color: #F1F2F2 !important;
 }
 
 #left-nav-tabs {
@@ -228,6 +225,7 @@ body {
 }
 
 .left-nav-top {
+	display: none;
 	background-color: #BDD3E9;
 	border: none;
 	border-bottom: solid 1px #A3B1DA;
@@ -237,8 +235,22 @@ body {
 	top: 33px;
 }
 
-.ui-widget-content {
-    background: none;
+.ui-widget-content.popupMenu {
+    background: white;
+}
+
+#left-nav-modules {
+	padding: 0px !important;
+}
+
+#left-nav-jobs {
+	padding: 0px !important;
+	width: 349px;
+}
+
+#left-nav-files, #left-nav-genomespace {
+	padding: 10px !important;
+	width: 329px;
 }
 
 #left-nav-modules.ui-widget-content a {
@@ -255,6 +267,10 @@ body {
 
 #pinned-modules, #recent-modules {
 	padding: 10px;
+}
+
+.search-widget .module-list-title {
+	margin-right: 20px;
 }
 
 #module-browse-button {
@@ -276,4 +292,9 @@ body {
     top: 0px;
     bottom: 0px;
     background-color: white;
+}
+
+.jstree-leaf a {
+	max-width: 260px;
+	text-overflow: ellipsis;
 }
