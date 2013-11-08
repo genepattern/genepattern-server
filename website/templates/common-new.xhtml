@@ -111,7 +111,8 @@
 	                            droppable: false,
 	                            draggable: true,
 	                            click: function() {
-	                            	runTaskForm();
+	                            	var lsid = $(event.target).closest(".module-listing").module("get_lsid");
+	                            	runTaskForm(lsid);
 	                            }
 	                        });
 	                        recent.modulelist("filter", "recent");
@@ -123,7 +124,8 @@
 	                            droppable: false,
 	                            draggable: true,
 	                            click: function() {
-	                            	runTaskForm();
+	                            	var lsid = $(event.target).closest(".module-listing").module("get_lsid");
+	                            	runTaskForm(lsid);
 	                            }
 	                        });
 	
