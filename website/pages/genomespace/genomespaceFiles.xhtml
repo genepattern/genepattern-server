@@ -23,7 +23,12 @@
                 }
 
                 function showCorrectArrows() {
-                    jq.each(jq("#genomeSpace .menuArrow").parent(), function (index, value) {
+                	// Support old UI
+                	var menuPanel = null;
+                	if (jq("#left-nav-genomespace").length === 0) { menuPanel = "#genomeSpace"; }
+                	else { menuPanel = "#left-nav-genomespace"; }
+                	
+                    jq.each(jq(menuPanel + " .menuArrow").parent(), function (index, value) {
                         var fileID = jq(value).attr("id");
                         var menuID = "#menuDiv_" + fileID;
                         if (jq(menuID).length > 0) {    // Check to see if the file menu exists

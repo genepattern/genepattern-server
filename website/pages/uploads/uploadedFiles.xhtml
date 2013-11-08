@@ -22,7 +22,12 @@
                 }
 
                 function showCorrectArrows() {
-                    jq.each(jq("#uploads .menuArrow").parent(), function (index, value) {
+                	// Support old UI
+                	var menuPanel = null;
+                	if (jq("#left-nav-files").length === 0) { menuPanel = "#uploads"; }
+                	else { menuPanel = "#left-nav-files"; }
+                	
+                    jq.each(jq(menuPanel + " .menuArrow").parent(), function (index, value) {
                         var fileID = jq(value).attr("id");
                         var menuID = "#menuDiv_" + fileID;
                         if (jq(menuID).length > 0) {    // Check to see if the file menu exists
@@ -60,7 +65,7 @@
                     else {
                         uploadWindow.focus();
                     }
-                    jq("#uploads").block({message:"<h5 style='line-height:14pt;'>You must <a href='#' style='font-weight:bold;' onclick='JavaScript:location.href = location.href;'>refresh</a> the page before uploads are updated.</h5>"});
+                    jq("#left-nav-files").block({message:"<h5 style='line-height:14pt;'>You must <a href='#' style='font-weight:bold;' onclick='JavaScript:location.href = location.href;'>refresh</a> the page before uploads are updated.</h5>"});
                 }
                 /* ]]> */
             </script>
