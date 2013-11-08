@@ -78,8 +78,13 @@
             	}
             	 
             	// Init jQuery components
-            	jq(document).ready(function() {
-            		jq("#left-nav").tabs(); 
+            	$(document).ready(function() {
+            		$("#left-nav").tabs({
+                        cookie:{
+                            expires:1
+                        }
+                    });
+            		$(".left-nav-top").show();
             		
             		// TODO: Begin prototype AJAX
             		
@@ -93,8 +98,9 @@
 	                            data: data,
 	                            droppable: true,
 	                            draggable: true,
-	                            click: function() {
-	                                mockRunTaskForm();
+	                            click: function(event) {
+	                            	var lsid = $(event.target).closest(".module-listing").module("get_lsid");
+	                                runTaskForm(lsid);
 	                            }
 	                        });
 	                        pinned.modulelist("filter", "pinned");
@@ -105,7 +111,7 @@
 	                            droppable: false,
 	                            draggable: true,
 	                            click: function() {
-	                                mockRunTaskForm();
+	                            	runTaskForm();
 	                            }
 	                        });
 	                        recent.modulelist("filter", "recent");
@@ -117,7 +123,7 @@
 	                            droppable: false,
 	                            draggable: true,
 	                            click: function() {
-	                                mockRunTaskForm();
+	                            	runTaskForm();
 	                            }
 	                        });
 	
@@ -212,9 +218,9 @@
                     }
                 }
 
-                function mockRunTaskForm() {
+                function runTaskForm(lsid) {
                     $(".search-widget").searchslider("hide");
-                    $("#main-pane img").attr("src", "runtaskform.png");
+                    $(location).attr("href", "/gp/pages/index.jsf?lsid=" + encodeURIComponent(lsid));
                 }
             </script>
 
@@ -343,6 +349,9 @@
 	                    <li><a href="#left-nav-modules">Modules</a></li>
 	                    <li><a href="#left-nav-jobs">Jobs</a></li>
 	                    <li><a href="#left-nav-files">Files</a></li>
+	                    <h:outputText rendered="#{genomeSpaceBean.loggedIn}">
+                        	<li><a href="#left-nav-genomespace">GenomeSpace</a></li>
+                        </h:outputText>
 	                </ul>
 	                <div id="left-nav-modules" class="left-nav-tab">
 	                	<div class="left-nav-top">
@@ -357,11 +366,16 @@
 	                    <div id="recent-modules"></div>
 	                </div>
 		            <div id="left-nav-jobs" class="left-nav-tab">
-	                    <ui:insert name="jobs-tab" />
+	                    <ui:include src="/pages/recentJobs.xhtml" />
 	                </div>
 	                <div id="left-nav-files" class="left-nav-tab">
-	                    <ui:insert name="files-tab" />
+	                    <ui:include src="/pages/uploads/uploadedFiles.xhtml" />
 	                </div>
+	                <h:outputText rendered="#{genomeSpaceBean.loggedIn}">
+		                <div id="left-nav-genomespace" class="left-nav-tab">
+		                    <ui:include src="/pages/genomespace/genomespaceFiles.xhtml" />
+		                </div>
+		            </h:outputText>
             	</div>
             	
 				<div id="module-search"></div>

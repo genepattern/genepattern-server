@@ -114,6 +114,10 @@ $.widget("gp.module", {
         if (modlist.length < 1) return false;
         return $(modlist[0]).hasClass("ui-sortable");
     },
+    
+    get_lsid: function(event) {
+        return this.options.data.lsid;
+    },
 
     tagClick: function(event) {
         this.options.tagclick(event);
