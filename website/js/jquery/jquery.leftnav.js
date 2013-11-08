@@ -38,7 +38,9 @@ $.widget("gp.module", {
             .attr("href", this.options.data.documentation)
             .attr("target", "_blank")
             .attr("class", "module-doc")
+            .attr("title", "Documentation")
             .attr("onclick", "$(this).closest('.module-listing').module('stopProp', event)")
+            .tooltip()
             .appendTo(this.element);
 
         this.version = $('<div>', {
