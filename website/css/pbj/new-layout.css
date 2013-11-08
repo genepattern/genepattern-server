@@ -26,6 +26,7 @@
     font-size: 11pt;
     line-height: 13pt;
     overflow: hidden;
+    width: 93%;
 }
 
 .module-version {
@@ -116,10 +117,11 @@
 .slider-close-block {
     height: 0px;
     width: 0px;
+    float: right;
 }
 
 .slider-close {
-    position: absolute;
+    float: right;
     top: 5px;
     right: 20px;
     font-size: 8pt;
@@ -127,10 +129,12 @@
 
 .search-widget .module-list-title {
     margin-top: 20px;
+    margin-right: 20px;
 }
 
 .search-widget .module-list {
     overflow: auto;
+    padding-bottom: 20px;
 }
 
 .search-widget .module-listing {
@@ -214,6 +218,7 @@ body {
     top: 33px;
     width: 350px;
     background-color: #F1F2F2 !important;
+    display: none;
 }
 
 #left-nav-tabs {
@@ -225,7 +230,6 @@ body {
 }
 
 .left-nav-top {
-	display: none;
 	background-color: #BDD3E9;
 	border: none;
 	border-bottom: solid 1px #A3B1DA;
@@ -267,10 +271,6 @@ body {
 
 #pinned-modules, #recent-modules {
 	padding: 10px;
-}
-
-.search-widget .module-list-title {
-	margin-right: 20px;
 }
 
 #module-browse-button {
