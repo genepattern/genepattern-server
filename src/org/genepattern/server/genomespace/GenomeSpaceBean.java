@@ -742,7 +742,7 @@ public class GenomeSpaceBean {
                     log.error("Error getting url in getDirectory() from " + i.getName());
                     continue;
                 }
-                if (url.equals(iUrl)) {
+                if (url.toString().equals(iUrl.toString())) {
                     return i;
                 }
             }
