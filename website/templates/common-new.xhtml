@@ -67,6 +67,8 @@
             <script type="text/javascript" language="javascript">
             	var $ = jq;
             	var all_modules = null;
+            	var all_categories = null;
+            	var all_suites = null;
             	
 	            // Build the nav menu
 	            if (userLoggedIn) {
@@ -97,48 +99,12 @@
 	                    success: function(data, status, xhr) {
 	                    	all_modules = data;
 	                    	
-	                        // Initialize the displays on the left nav bar
-	                        var pinned = $('#pinned-modules').modulelist({
-	                            title: "Pinned Modules",
-	                            data: data,
-	                            droppable: true,
-	                            draggable: true,
-	                            click: function(event) {
-	                            	var lsid = $(event.target).closest(".module-listing").module("get_lsid");
-	                                runTaskForm(lsid);
-	                            }
-	                        });
-	                        pinned.modulelist("filter", "pinned");
-	                        $('#pinned-modules .module-list-empty').text("Drag Modules Here");
-	
-	                        var recent = $('#recent-modules').modulelist({
-	                            title: "Recent Modules",
-	                            data: data,
-	                            droppable: false,
-	                            draggable: true,
-	                            click: function() {
-	                            	var lsid = $(event.target).closest(".module-listing").module("get_lsid");
-	                            	runTaskForm(lsid);
-	                            }
-	                        });
-	                        recent.modulelist("filter", "recent");
-	                        $('#recent-modules .module-list-empty').text("No Recent Modules");
-	
-	                        // Initialize the search box and slider
-	                        var search = $('<div id="module-list-search"></div>').modulelist({
-	                            title: 'Search: Modules &amp; Pipelines',
-	                            data: data,
-	                            droppable: false,
-	                            draggable: true,
-	                            click: function() {
-	                            	var lsid = $(event.target).closest(".module-listing").module("get_lsid");
-	                            	runTaskForm(lsid);
-	                            }
-	                        });
-	
-	                        var modsearch = $('#module-search').searchslider({
-	                            lists: [search]
-	                        });
+	                    	// Initialize the displays on the left nav bar
+	                    	initPinned();
+	                    	initRecent();
+	                    	
+	                    	// Initialize the search slider
+	                    	initSearchSlider();
 	                    }
 	                });
 	
@@ -146,61 +112,19 @@
 	                    url: '/gp/rest/v1/tasks/categories.json',
 	                    dataType: 'json',
 	                    success: function(data, status, xhr) {
+	                    	all_categories = data;
+	                    	
 	                        // Initialize the module browse button and slider
-	                        var allnsuite = $('<div id="module-list-allnsuite"></div>').modulelist({
-	                            title: 'Browse Modules &amp; Pipelines',
-	                            data: [
-	                                {
-	                                    "lsid": "the full lsid of the module should be here",
-	                                    "name": "All Modules",
-	                                    "description": "The description of the category can go here, blah, blah, blah",
-	                                    "version": "",
-	                                    "documentation": "http://www.google.com",
-	                                    "categories": [],
-	                                    "tags": []
-	                                },
-	
-	                                {
-	                                    "lsid": "the full lsid of the module should be here",
-	                                    "name": "Browse by Suite",
-	                                    "description": "The description of the category can go here, blah, blah, blah",
-	                                    "version": "",
-	                                    "documentation": "http://www.google.com",
-	                                    "categories": [],
-	                                    "tags": []
-	                                }
-	                            ],
-	                            droppable: false,
-	                            draggable: false,
-	                            click: function(event) {
-	                                var filter = $(event.currentTarget).find(".module-name").text();
-	                                $("#module-search").searchslider("show");
-	                                $("#module-search").searchslider("filter", '');
-	                                $("#module-search").searchslider("set_title", filter);
-	                            }
-	                        });
-	
-	                        var browse = $('<div id="module-list-browse"></div>').modulelist({
-	                            title: 'Browse Modules by Category',
-	                            data: data,
-	                            droppable: false,
-	                            draggable: false,
-	                            click: function(event) {
-	                                var filter = $(event.currentTarget).find(".module-name").text();
-	                                $("#module-search").searchslider("show");
-	                                $("#module-search").searchslider("tagfilter", filter);
-	                                $("#module-search").searchslider("set_title", "Browsing Category: " + filter);
-	                            }
-	                        });
-	
+	                        var allnsuite = initBrowseTop();
+	                        var browse = initBrowseModules();
+	                        
+	                        // Initialize the slider
 	                        var modbrowse = $('#module-browse').searchslider({
 	                            lists: [allnsuite, browse]
 	                        });
 	                    }
 	                });
             		
-            		// TODO: End Prototype AJAX
-                	
                 	// Search box controls
                     jq("#module-search-box").keyup(function() {
                         if (jq(".search-widget:visible").length === 0) {
@@ -217,6 +141,135 @@
                     	jq("#module-browse").searchslider("show");
                     });
             	});
+            	
+            	function getPinnedModules() {
+            		var pinned = [];
+            		
+            		$.each(all_modules, function(i, v) {
+            		    if (v.tags.indexOf("pinned") !== -1) {
+            		        pinned.push(v);
+            		    }
+            		});
+            		
+            		return pinned;
+            	}
+            	
+            	function getRecentModules() {
+            		var recent = [];
+            		
+            		$.each(all_modules, function(i, v) {
+            		    if (v.tags.indexOf("recent") !== -1) {
+            		    	recent.push(v);
+            		    }
+            		});
+            		
+            		return recent;
+            	}
+            	
+            	function initBrowseModules() {
+            		var browse = $('<div id="module-list-browse"></div>').modulelist({
+                        title: 'Browse Modules by Category',
+                        data: all_categories,
+                        droppable: false,
+                        draggable: false,
+                        click: function(event) {
+                            var filter = $(event.currentTarget).find(".module-name").text();
+                            $("#module-search").searchslider("show");
+                            $("#module-search").searchslider("tagfilter", filter);
+                            $("#module-search").searchslider("set_title", "Browsing Category: " + filter);
+                        }
+                    });
+            		
+            		return browse;
+            	}
+            	
+            	function initBrowseTop() {
+            		var allnsuite = $('<div id="module-list-allnsuite"></div>').modulelist({
+                        title: 'Browse Modules &amp; Pipelines',
+                        data: [
+                            {
+                                "lsid": "the full lsid of the module should be here",
+                                "name": "All Modules",
+                                "description": "The description of the category can go here, blah, blah, blah",
+                                "version": "",
+                                "documentation": "http://www.google.com",
+                                "categories": [],
+                                "tags": []
+                            },
+
+                            {
+                                "lsid": "the full lsid of the module should be here",
+                                "name": "Browse by Suite",
+                                "description": "The description of the category can go here, blah, blah, blah",
+                                "version": "",
+                                "documentation": "http://www.google.com",
+                                "categories": [],
+                                "tags": []
+                            }
+                        ],
+                        droppable: false,
+                        draggable: false,
+                        click: function(event) {
+                            var filter = $(event.currentTarget).find(".module-name").text();
+                            $("#module-search").searchslider("show");
+                            $("#module-search").searchslider("filter", '');
+                            $("#module-search").searchslider("set_title", filter);
+                        }
+                    });
+            		
+            		return allnsuite;
+            	}
+            	
+            	function initSearchSlider() {
+            		var search = $('<div id="module-list-search"></div>').modulelist({
+                        title: 'Search: Modules &amp; Pipelines',
+                        data: all_modules,
+                        droppable: false,
+                        draggable: true,
+                        click: function() {
+                        	var lsid = $(event.target).closest(".module-listing").module("get_lsid");
+                        	runTaskForm(lsid);
+                        }
+                    });
+
+                    var modsearch = $('#module-search').searchslider({
+                        lists: [search]
+                    });
+            	}
+            	
+            	function initRecent() {
+            		var recent_modules = getRecentModules();
+            		
+            		var recent = $('#recent-modules').modulelist({
+                        title: "Recent Modules",
+                        data: recent_modules,
+                        droppable: false,
+                        draggable: true,
+                        click: function() {
+                        	var lsid = $(event.target).closest(".module-listing").module("get_lsid");
+                        	runTaskForm(lsid);
+                        }
+                    });
+                    recent.modulelist("filter", "recent");
+                    $('#recent-modules .module-list-empty').text("No Recent Modules");
+            	}
+            	
+            	function initPinned() {
+            		var pinned_modules = getPinnedModules();
+            		
+            		var pinned = $('#pinned-modules').modulelist({
+                        title: "Pinned Modules",
+                        data: pinned_modules,
+                        droppable: true,
+                        draggable: true,
+                        click: function(event) {
+                        	var lsid = $(event.target).closest(".module-listing").module("get_lsid");
+                            runTaskForm(lsid);
+                        }
+                    });
+            		pinned.modulelist("filter", "pinned");
+                    $('#pinned-modules .module-list-empty').text("Drag Modules Here");
+            	}
             	
             	function setModuleSearchTitle(filter) {
                     if (filter === '') {
