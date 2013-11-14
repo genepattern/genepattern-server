@@ -319,11 +319,11 @@ abstract public class CachedFtpFile implements CachedFile {
      * @param toFile
      * @throws IOException
      */
-    public void downloadFile(final URL fromUrl, final File toFile) throws IOException, InterruptedException, DownloadException {
+    public final void downloadFile(final URL fromUrl, final File toFile) throws IOException, InterruptedException, DownloadException {
         final boolean replaceExisting=true;
         downloadFile(fromUrl, toFile, replaceExisting);
     }
-    public boolean downloadFile(final URL fromUrl, final File toFile, final boolean deleteExisting) throws IOException, InterruptedException, DownloadException {
+    public final boolean downloadFile(final URL fromUrl, final File toFile, final boolean deleteExisting) throws IOException, InterruptedException, DownloadException {
         final int connectTimeout_ms=60*1000; //wait up to 60 seconds to establish a connection
         final int readTimeout_ms=60*1000; //wait up to 60 seconds when reading from the input 
         return downloadFile(fromUrl, toFile, deleteExisting, connectTimeout_ms, readTimeout_ms);
@@ -349,7 +349,7 @@ abstract public class CachedFtpFile implements CachedFile {
      * @param url
      * @throws Exception
      */
-    public void doDownload(final GpFilePath realPath, final URL url) throws DownloadException, InterruptedException {
+    private void doDownload(final GpFilePath realPath, final URL url) throws DownloadException, InterruptedException {
         // If the real path exists, assume it's up to date
         final File realFile = realPath.getServerFile();
         if (realFile.exists()) {
@@ -389,9 +389,9 @@ abstract public class CachedFtpFile implements CachedFile {
         try {
             JobInputFileUtil.__addUploadFileToDb(realPath);
         }
-        catch (Exception e) {
+        catch (Throwable t) {
             //ignore this, because we don't rely on the DB entry for managing cached data files
-            log.error(e);
+            log.error("Unexpected error recording uploaded file to DB for realPath="+realPath, t);
         }
         // Once complete, move the file to the real location and return
         boolean success = tempFile.renameTo(realFile);

@@ -170,7 +170,7 @@ public class CachedFtpDir implements CachedFile {
         writeToFile("Finished", new File(tmpDir.getServerFile(), "complete"));
     }
 
-    private List<String> getFilesToDownload() throws DownloadException {
+    public List<String> getFilesToDownload() throws DownloadException {
         final String ftpDir=url.toExternalForm();
         //1) get the listing of data files
         FTPFile[] files=null;
@@ -187,7 +187,7 @@ public class CachedFtpDir implements CachedFile {
         
         final List<String> filesToDownload=new ArrayList<String>();
         // filter
-        final FTPFileFilter ftpDirFilter = new FtpDirFilter("type=file");
+        final FTPFileFilter ftpDirFilter = new FtpDirFilter();
         for(FTPFile ftpFile : files) {
             if (!ftpDirFilter.accept(ftpFile)) {
                 log.debug("Skipping '"+ftpFile.getName()+ "' from ftpDir="+ftpDir);

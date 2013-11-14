@@ -14,6 +14,8 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
 import org.apache.commons.io.FileUtils;
+import org.genepattern.server.dm.GpFilePath;
+import org.genepattern.server.job.input.cache.CachedFtpDir;
 import org.genepattern.server.job.input.cache.CachedFtpFile;
 import org.genepattern.server.job.input.cache.DownloadException;
 import org.junit.AfterClass;
@@ -32,19 +34,21 @@ import com.google.common.io.Files;
  */
 public class TestFileDownloader {
     //smaller file (118811 KB)
-    private static final String aThalianaUrl="ftp://ftp.broadinstitute.org/pub/genepattern/rna_seq/whole_genomes/Arabidopsis_thaliana_Ensembl_TAIR10.fa";
-    private static final String aThaliana_expectedName="Arabidopsis_thaliana_Ensembl_TAIR10.fa";
-    private static final long aThaliana_expectedLength=121662238L;
+    //private static final String aThalianaUrl="ftp://ftp.broadinstitute.org/pub/genepattern/rna_seq/whole_genomes/Arabidopsis_thaliana_Ensembl_TAIR10.fa";
+    //private static final String aThaliana_expectedName="Arabidopsis_thaliana_Ensembl_TAIR10.fa";
+    //private static final long aThaliana_expectedLength=121662238L;
     
     //large file (3073525 KB, ~2.9G)
     private static final String largeFile="ftp://ftp.broadinstitute.org/pub/genepattern/rna_seq/whole_genomes/Homo_sapiens_Ensembl_GRCh37.fa";
-    private static final String largeFile_expectedName="Homo_sapiens_Ensembl_GRCh37.fa";
-    private static final long largeFile_expectedLength=118820495L;
+    //private static final String largeFile_expectedName="Homo_sapiens_Ensembl_GRCh37.fa";
+    //private static final long largeFile_expectedLength=118820495L;
     
     //tiny file on gpftp site
-    final String smallFileUrl="ftp://gpftp.broadinstitute.org/chet/dummy_file_2.txt";
+    final String smallFileUrl="ftp://gpftp.broadinstitute.org/example_data/gpservertest/DemoFileDropdown/input.file/dummy_file_2.txt";
     final long smallFile_expectedLength=13L;
     final String smallFile_expectedName="dummy_file_2.txt";
+    
+    //small directory on gpftp site
 
     //smaller file on gpftp site (116036 KB)
     //final String gpftpFile="ftp://gpftp.broadinstitute.org/rna_seq/referenceAnnotation/gtf/Homo_sapiens_UCSC_hg18.gtf";
@@ -67,23 +71,23 @@ public class TestFileDownloader {
         return tmpDir;
     }
     
-    private static final void saveToFile(final File file, final String contents) throws IOException {
-        FileWriter fw=null;
-        BufferedWriter out=null;
-        try {
-            fw = new FileWriter(file);
-            out = new BufferedWriter(new FileWriter(file));
-            out.write(contents);
-        } 
-        finally {
-            if (out != null) {
-                out.close();
-            }
-            else if (fw != null) {
-                fw.close();
-            }
-        }
-    }
+//    private static final void saveToFile(final File file, final String contents) throws IOException {
+//        FileWriter fw=null;
+//        BufferedWriter out=null;
+//        try {
+//            fw = new FileWriter(file);
+//            out = new BufferedWriter(new FileWriter(file));
+//            out.write(contents);
+//        } 
+//        finally {
+//            if (out != null) {
+//                out.close();
+//            }
+//            else if (fw != null) {
+//                fw.close();
+//            }
+//        }
+//    }
     
     @BeforeClass
     public static void initTest() {
@@ -149,7 +153,7 @@ public class TestFileDownloader {
 //        System.setProperty("user.root.dir", userUploadDir.getAbsolutePath());
 //        //File f=new File(userRootDir, ".cache/uploads/cache");
 //
-//        CachedFtpFile cachedFile=new CachedFtpFile("ftp://gpftp.broadinstitute.org/chet/dummy_file_3.txt");
+//        CachedFtpFile cachedFile=new CachedFtpFile("ftp://gpftp.broadinstitute.org/example_data/gpservertest/DemoFileDropdown/input.file/dummy_file_3.txt");
 //        
 //        try {
 //            GpFilePath tempPath=cachedFile.getTempPath(cachedFile.getLocalPath());
@@ -323,7 +327,23 @@ public class TestFileDownloader {
             }
         });
     }
+
+//    @Test
+//    public void testCachedFtpDir_getFilesToDownload() {
+//        final String dirUrl="ftp://gpftp.broadinstitute.org/example_data/gpservertest/DemoFileDropdown/input.dir/";
+//        final CachedFtpDir cachedFtpDir=new CachedFtpDir(dirUrl);
+//        //final List<String> cachedFtpDir.getFilesToDownload();
+//    }
     
+    @Test
+    public void testDirectoryDownload() throws DownloadException {
+        final String dirUrl="ftp://gpftp.broadinstitute.org/example_data/gpservertest/DemoFileDropdown/input.dir/";
+        CachedFtpDir cachedFtpDir = new CachedFtpDir(dirUrl);
+
+        Assert.assertFalse("before: isDownloaded", cachedFtpDir.isDownloaded());
+        GpFilePath localDir=cachedFtpDir.download();
+        
+    }
     
 /*
  * Experimental code ...
