@@ -34,6 +34,7 @@ import org.genepattern.server.webservice.server.dao.AdminDAO.TaskNameComparator;
 import org.genepattern.server.webservice.server.local.LocalAdminClient;
 import org.genepattern.util.LSID;
 import org.genepattern.webservice.ParameterInfo;
+import org.genepattern.webservice.SuiteInfo;
 import org.genepattern.webservice.TaskInfo;
 import org.genepattern.webservice.WebServiceException;
 import org.json.JSONArray;
@@ -167,7 +168,7 @@ public class TasksResource {
             
             // Return the JSON object
             JSONArray jsonArray = new JSONArray();
-            for(final TaskInfo taskInfo : latestTasks.values()) {
+            for(final TaskInfo taskInfo : tasksArray) {
                 JSONObject jsonObj = asJson(taskInfo);
                 jsonArray.put(jsonObj);
             }
@@ -177,6 +178,46 @@ public class TasksResource {
             log.error(t);
             final String errorMessage="Error constructing json response for all.json: "+
                     t.getLocalizedMessage();
+            return Response.serverError().entity(errorMessage).build();
+        }
+        finally {
+            if (!isInTransaction) {
+                HibernateUtil.closeCurrentSession();
+            }
+        }
+    }
+    
+    /**
+     * Prototype method to get a json array of suites
+     * May belong in this servlet or may later be moved elsewhere?
+     * Is a suite a task like a module or pipeline? It is a resource with an LSID.
+     * @param request
+     * @return
+     */
+    @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    @Path("suites.json")
+    public Response getAllSuites(@Context HttpServletRequest request) {
+        ServerConfiguration.Context userContext = Util.getUserContext(request);
+        final String userId = userContext.getUserId();
+        
+        final boolean isInTransaction = HibernateUtil.isInTransaction();
+        try {
+            // Get the map of the latest suites
+            final AdminDAO adminDao = new AdminDAO();
+            SuiteInfo[] allSuites = adminDao.getLatestSuites();
+            
+            // Return the JSON object
+            JSONArray jsonArray = new JSONArray();
+            for (final SuiteInfo suiteInfo : allSuites) {
+                JSONObject jsonObj = asJson(suiteInfo);
+                jsonArray.put(jsonObj);
+            }
+            return Response.ok().entity(jsonArray.toString()).build();
+        }
+        catch (Throwable t) {
+            log.error(t);
+            final String errorMessage="Error constructing json response for suites.json: " + t.getLocalizedMessage();
             return Response.serverError().entity(errorMessage).build();
         }
         finally {
@@ -217,6 +258,24 @@ public class TasksResource {
         jsonObj.put("documentation", getDocLink(taskInfo));
         jsonObj.put("categories", getCategories(taskInfo));
         jsonObj.put("tags", getTags(taskInfo));
+        return jsonObj;
+    }
+    
+    private JSONObject asJson(SuiteInfo suiteInfo) throws JSONException {
+        JSONObject jsonObj = new JSONObject();
+        jsonObj.put("lsid", suiteInfo.getLsid());
+        jsonObj.put("name", suiteInfo.getName());
+        jsonObj.put("description", suiteInfo.getDescription());
+        try {
+            final LSID lsid=new LSID(suiteInfo.getLsid());
+            jsonObj.put("version", lsid.getVersion());
+        }
+        catch (MalformedURLException e) {
+            log.error("Error getting lsid for suite.name=" + suiteInfo.getName(), e);
+        }
+        jsonObj.put("documentation", "");
+        jsonObj.put("categories", new JSONArray());
+        jsonObj.put("tags", new JSONArray());
         return jsonObj;
     }
 
