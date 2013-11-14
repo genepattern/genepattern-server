@@ -380,7 +380,7 @@ public class AdminDAO extends BaseDAO {
      * @return
      * @throws MalformedURLException
      */
-    private static Map getLatestTasks(TaskInfo[] tasks) throws MalformedURLException {
+    public static Map getLatestTasks(TaskInfo[] tasks) throws MalformedURLException {
         Map<String, TaskInfo> latestTasks = new HashMap<String, TaskInfo>();
         for (int i = 0; i < tasks.length; i++) {
             TaskInfo ti = tasks[i];
@@ -653,7 +653,7 @@ public class AdminDAO extends BaseDAO {
         return suites.toArray(new SuiteInfo[suites.size()]);
     }
 
-    static class TaskNameComparator implements Comparator<TaskInfo> {
+    public static class TaskNameComparator implements Comparator<TaskInfo> {
         public int compare(TaskInfo t1, TaskInfo t2) {
             return t1.getName().compareToIgnoreCase(t2.getName());
         }

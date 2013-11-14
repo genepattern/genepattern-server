@@ -1,6 +1,10 @@
 package org.genepattern.server.webapp.rest.api.v1.task;
 
+import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
+import java.net.URLEncoder;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -22,8 +26,11 @@ import org.genepattern.server.dm.UrlUtil;
 import org.genepattern.server.job.input.choice.ChoiceInfo;
 import org.genepattern.server.job.input.choice.ChoiceInfoHelper;
 import org.genepattern.server.rest.ParameterInfoRecord;
+import org.genepattern.server.user.UserDAO;
+import org.genepattern.server.user.UserPropKey;
 import org.genepattern.server.webapp.rest.api.v1.Util;
 import org.genepattern.server.webservice.server.dao.AdminDAO;
+import org.genepattern.server.webservice.server.dao.AdminDAO.TaskNameComparator;
 import org.genepattern.server.webservice.server.local.LocalAdminClient;
 import org.genepattern.util.LSID;
 import org.genepattern.webservice.ParameterInfo;
@@ -140,18 +147,27 @@ public class TasksResource {
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     @Path("all.json")
-    public Response getAllTasks(
-            final @Context HttpServletRequest request
-            ) {
-        ServerConfiguration.Context userContext=Util.getUserContext(request);
-        final String userId=userContext.getUserId();
+    public Response getAllTasks(final @Context HttpServletRequest request) {
+        ServerConfiguration.Context userContext = Util.getUserContext(request);
+        final String userId = userContext.getUserId();
         
-        final boolean isInTransaction=HibernateUtil.isInTransaction();
+        final boolean isInTransaction = HibernateUtil.isInTransaction();
         try {
+            // Get the map of the latest tasks
             final AdminDAO adminDao = new AdminDAO();
-            final TaskInfo[] latestTasks = adminDao.getLatestTasks(userContext.getUserId());
-            JSONArray jsonArray=new JSONArray();
-            for(final TaskInfo taskInfo : latestTasks) {
+            TaskInfo[] allTasks = adminDao.getAllTasksForUser(userId);
+            final Map<String, TaskInfo> latestTasks = adminDao.getLatestTasks(allTasks);
+            
+            // Apply tags to the taskInfos
+            applyTaskTags(latestTasks, userContext);
+            
+            // Transform the latest task map to an array and sort it
+            TaskInfo[] tasksArray = (TaskInfo[]) latestTasks.values().toArray(new TaskInfo[0]);
+            Arrays.sort(tasksArray, new AdminDAO.TaskNameComparator());
+            
+            // Return the JSON object
+            JSONArray jsonArray = new JSONArray();
+            for(final TaskInfo taskInfo : latestTasks.values()) {
                 JSONObject jsonObj = asJson(taskInfo);
                 jsonArray.put(jsonObj);
             }
@@ -215,13 +231,41 @@ public class TasksResource {
     }
     
     private JSONArray getTags(final TaskInfo taskInfo) {
-        //TODO: implement tags
-        return new JSONArray();
+        List<String> tags = (List<String>) taskInfo.getAttributes().get("tags");
+        if (tags != null) {
+            return new JSONArray(tags);
+        }
+        else {
+            return new JSONArray();
+        }
+    }
+    
+    private void applyTaskTags(Map<String, TaskInfo> tasks, ServerConfiguration.Context context) {
+        AdminDAO adminDao = new AdminDAO();
+        int recentJobsToShow = Integer.parseInt(new UserDAO().getPropertyValue(context.getUserId(), UserPropKey.RECENT_JOBS_TO_SHOW, "4"));
+        TaskInfo[] recentModules = adminDao.getRecentlyRunTasksForUser(context.getUserId(), recentJobsToShow);
+        
+        for (TaskInfo recent : recentModules) {
+            try {
+                String baseLsid = new LSID(recent.getLsid()).toStringNoVersion();
+                List<String> tagList = new ArrayList<String>();
+                tagList.add("recent");
+                tasks.get(baseLsid).getAttributes().put("tags", tagList);
+            }
+            catch (MalformedURLException e) {
+                log.error("Error getting an LSID object for: " + recent.getLsid());
+            }
+        }
     }
 
     private String getDocLink(final TaskInfo taskInfo) {
-        //https://www.google.com/#q=comparativemarkerselection
-        return "http://www.google.com/#q="+taskInfo.getName().toLowerCase();
+        try {
+            return "/gp/getTaskDoc.jsp?name=" + URLEncoder.encode(taskInfo.getLsid(), "UTF-8");
+        }
+        catch (UnsupportedEncodingException e) {
+            log.error("Error encoding lsid: " + taskInfo.getLsid());
+            return "/gp/getTaskDoc.jsp?name=" + taskInfo.getLsid();
+        }
     }
     
 
