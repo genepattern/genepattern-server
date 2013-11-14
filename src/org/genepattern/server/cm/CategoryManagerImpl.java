@@ -25,6 +25,7 @@ import org.genepattern.server.task.category.dao.TaskCategoryRecorder;
 import org.genepattern.util.GPConstants;
 import org.genepattern.util.LSID;
 import org.genepattern.webservice.TaskInfo;
+import org.genepattern.webservice.TaskInfoCache;
 
 /**
  * Helper class for managing categories for installed modules and pipelines.
@@ -158,6 +159,10 @@ public class CategoryManagerImpl {
             log.error("Error checking 'task_category' table for "+taskInfo.getName()+" ("+taskInfo.getLsid()+")", t);
             return null;
         }
+    }
+    
+    public static List<String> getAllCategories() {
+        return new ArrayList<String>(TaskInfoCache.instance().getAllCategories());
     }
     
 }

@@ -64,4 +64,7 @@ public class CategoryManager {
         return cmImpl.getCategoriesFromManifest(taskInfo);
     }
     
+    public static List<String> getAllCategories() {
+        return cmImpl.getAllCategories();
+    }
 }
