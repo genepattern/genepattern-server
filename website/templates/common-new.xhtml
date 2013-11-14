@@ -66,6 +66,8 @@
 
             <script type="text/javascript" language="javascript">
             	var $ = jq;
+            	var all_modules = null;
+            	
 	            // Build the nav menu
 	            if (userLoggedIn) {
 	                Menu.buildNavMenu();
@@ -84,14 +86,17 @@
                             expires:1
                         }
                     });
+            		
+            		// Display nicely at load hack
             		$($("#left-nav-tabs .ui-tabs-active a").attr("href")).show();
             		
-            		// TODO: Begin prototype AJAX
-            		
+            		// Load the modules
             		$.ajax({
-	                    url: '/gp/search-widget/all_modules.json',
+	                    url: '/gp/rest/v1/tasks/all.json',
 	                    dataType: 'json',
 	                    success: function(data, status, xhr) {
+	                    	all_modules = data;
+	                    	
 	                        // Initialize the displays on the left nav bar
 	                        var pinned = $('#pinned-modules').modulelist({
 	                            title: "Pinned Modules",
@@ -104,6 +109,7 @@
 	                            }
 	                        });
 	                        pinned.modulelist("filter", "pinned");
+	                        $('#pinned-modules .module-list-empty').text("Drag Modules Here");
 	
 	                        var recent = $('#recent-modules').modulelist({
 	                            title: "Recent Modules",
@@ -116,6 +122,7 @@
 	                            }
 	                        });
 	                        recent.modulelist("filter", "recent");
+	                        $('#recent-modules .module-list-empty').text("No Recent Modules");
 	
 	                        // Initialize the search box and slider
 	                        var search = $('<div id="module-list-search"></div>').modulelist({

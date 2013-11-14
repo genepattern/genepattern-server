@@ -273,6 +273,13 @@ body {
 	padding: 10px;
 }
 
+#pinned-modules .module-list-empty {
+	border: dashed;
+	margin-left: 0px;
+	padding: 15px;
+	text-align: center;
+}
+
 #module-browse-button {
     text-align: right;
     font-size: 8pt;
