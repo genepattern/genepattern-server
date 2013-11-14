@@ -286,6 +286,10 @@ body {
     margin-top: 3px;
 }
 
+#module-browse .module-doc {
+	display: none;
+}
+
 #main-pane {
     position: absolute;
     overflow-y: scroll;
