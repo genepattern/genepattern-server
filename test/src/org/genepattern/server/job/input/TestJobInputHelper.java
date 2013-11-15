@@ -138,7 +138,7 @@ public class TestJobInputHelper {
         final List<JobInput> inputs=jobInputHelper.prepareBatch();
         Assert.assertEquals("num jobs", 1, inputs.size());
     }
-    
+
     @Test
     public void testAddBatchDirectory() throws GpServerException {
         final File batchDir=FileUtil.getDataFile("all_aml/");
@@ -336,6 +336,50 @@ public class TestJobInputHelper {
         catch (GpServerException e) {
             //expected
         }
+    }
+
+    /**
+     * Test case for list of files provided as input to one batch input parameter
+     */
+    @Test
+    public void testMultipleFilePerBatchParam() throws GpServerException
+    {
+        final File file1 = FileUtil.getSourceFile(TestJobInputHelper.class, "batch_03/a_test.cls");
+        final File file2 = FileUtil.getSourceFile(TestJobInputHelper.class, "batch_03/c_test.gct");
+        final File file3 = FileUtil.getSourceFile(TestJobInputHelper.class, "batch_02/01/b.txt");
+        final File file4 = FileUtil.getSourceFile(TestJobInputHelper.class, "batch_01/cls/all_aml_test.cls");
+        final File file5 = FileUtil.getSourceFile(TestJobInputHelper.class, "batch_02/03/i.txt");
+
+        final JobInputHelper jobInputHelper=new JobInputHelper(userContext, cleLsid, null, taskLoader);
+        jobInputHelper.addBatchValue("input.filename", file1.getAbsolutePath());
+        jobInputHelper.addBatchValue("input.filename", file2.getAbsolutePath());
+        jobInputHelper.addBatchValue("input.filename", file3.getAbsolutePath());
+        jobInputHelper.addBatchValue("input.filename", file4.getAbsolutePath());
+        jobInputHelper.addBatchValue("input.filename", file5.getAbsolutePath());
+
+        //Here we expect 5 batch jobs to be created
+        final List<JobInput> inputs=jobInputHelper.prepareBatch();
+        Assert.assertEquals("num batch jobs", 5, inputs.size());
+    }
+
+    /**
+     * Test case for list of directories provided as input to one batch input parameter
+     */
+    @Test
+    public void testMultipleDirsPerBatchParam() throws GpServerException
+    {
+        final File dir1 = FileUtil.getSourceFile(TestJobInputHelper.class, "batch_02/01");
+        final File dir2 = FileUtil.getSourceFile(TestJobInputHelper.class, "batch_02/02/");
+        final File dir3 = FileUtil.getSourceFile(TestJobInputHelper.class, "batch_02/03/");
+
+        final JobInputHelper jobInputHelper=new JobInputHelper(userContext, cleLsid, null, taskLoader);
+        jobInputHelper.addBatchDirectory("input.filename", dir1.getAbsolutePath());
+        jobInputHelper.addBatchDirectory("input.filename", dir2.getAbsolutePath());
+        jobInputHelper.addBatchDirectory("input.filename", dir3.getAbsolutePath());
+
+        //Here we expect 9 batch jobs to be created, one for each file in the directory
+        final List<JobInput> inputs=jobInputHelper.prepareBatch();
+        Assert.assertEquals("num batch jobs", 9, inputs.size());
     }
 
 //    /**
