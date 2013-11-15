@@ -31,11 +31,11 @@ $.widget("gp.module", {
         this.element.addClass('module-listing');
 
         // Save the lsid
-        this.lsid = this.options.data.lsid;
+        this.lsid = this._protect(this.options.data.lsid, "");
 
         // Add the ui elements
         this.docicon = $('<a><img src="/gp/css/frozen/modules/styles/images/file_add.gif"></a>')
-            .attr("href", this.options.data.documentation)
+            .attr("href", this._protect(this.options.data.documentation, ""))
             .attr("target", "_blank")
             .attr("class", "module-doc")
             .attr("title", "Documentation")
@@ -50,12 +50,12 @@ $.widget("gp.module", {
 
         this.name = $('<div>', {
             'class': 'module-name',
-            'text': this.options.data.name
+            'text': this._protect(this.options.data.name, "UNNAMED")
         }).appendTo(this.element);
 
         this.description = $('<div>', {
             'class': 'module-description',
-            'text': this.options.data.description
+            'text': this._protect(this.options.data.description, "")
         }).appendTo(this.element);
 
         this.tags = $('<div>', {
@@ -64,9 +64,9 @@ $.widget("gp.module", {
 
         // Add tag links
         var all_tags_raw = [];
-        $.merge(all_tags_raw, this.options.data.categories);
-        $.merge(all_tags_raw, this.options.data.suites);
-        $.merge(all_tags_raw, this.options.data.tags);
+        $.merge(all_tags_raw, this._protect(this.options.data.categories, []));
+        $.merge(all_tags_raw, this._protect(this.options.data.suites, []));
+        $.merge(all_tags_raw, this._protect(this.options.data.tags, []));
         var all_tags = [];
         $.each(all_tags_raw, function(i, el) { // Remove duplicates
             if($.inArray(el, all_tags) === -1) all_tags.push(el);
@@ -110,6 +110,15 @@ $.widget("gp.module", {
             click: this.options.click
         });
     },
+    
+    _protect: function(string, blankReturn) {
+    	if (string === null || string === undefined) {
+    		return blankReturn;
+    	}
+    	else {
+    		return string;
+    	}
+    },
 
     _isValid: function(toElement) {
         if (!toElement) return false;
@@ -119,7 +128,7 @@ $.widget("gp.module", {
     },
     
     get_lsid: function(event) {
-        return this.options.data.lsid;
+        return this._protect(this.options.data.lsid, "");
     },
 
     tagClick: function(event) {

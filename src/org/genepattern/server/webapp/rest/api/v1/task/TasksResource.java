@@ -191,77 +191,6 @@ public class TasksResource {
     }
     
     /**
-     * Prototype method to get a json array of suites
-     * May belong in this servlet or may later be moved elsewhere?
-     * Is a suite a task like a module or pipeline? It is a resource with an LSID.
-     * @param request
-     * @return
-     */
-    @GET
-    @Produces(MediaType.APPLICATION_JSON)
-    @Path("suites.json")
-    public Response getAllSuites(@Context HttpServletRequest request) {
-        final boolean isInTransaction = HibernateUtil.isInTransaction();
-        try {
-            // Get the latest suites
-            final AdminDAO adminDao = new AdminDAO();
-            SuiteInfo[] allSuites = adminDao.getLatestSuites();
-            
-            // Return the JSON object
-            JSONArray jsonArray = new JSONArray();
-            for (SuiteInfo suiteInfo : allSuites) {
-                JSONObject jsonObj = asJson(suiteInfo);
-                jsonArray.put(jsonObj);
-            }
-            return Response.ok().entity(jsonArray.toString()).build();
-        }
-        catch (Throwable t) {
-            log.error(t);
-            final String errorMessage="Error constructing json response for suites.json: " + t.getLocalizedMessage();
-            return Response.serverError().entity(errorMessage).build();
-        }
-        finally {
-            if (!isInTransaction) {
-                HibernateUtil.closeCurrentSession();
-            }
-        }
-    }
-    
-    /**
-     * Prototype call to get a list of all categories
-     * @param request
-     * @return
-     */
-    @GET
-    @Produces(MediaType.APPLICATION_JSON)
-    @Path("categories.json")
-    public Response getAllCategories(@Context HttpServletRequest request) {
-        final boolean isInTransaction = HibernateUtil.isInTransaction();
-        try {
-            // Get the map of the latest suites
-            List<String> categories = CategoryManager.getAllCategories();
-            
-            // Return the JSON object
-            JSONArray jsonArray = new JSONArray();
-            for (String category : categories) {
-                JSONObject jsonObj = asJson(category);
-                jsonArray.put(jsonObj);
-            }
-            return Response.ok().entity(jsonArray.toString()).build();
-        }
-        catch (Throwable t) {
-            log.error(t);
-            final String errorMessage="Error constructing json response for categories.json: " + t.getLocalizedMessage();
-            return Response.serverError().entity(errorMessage).build();
-        }
-        finally {
-            if (!isInTransaction) {
-                HibernateUtil.closeCurrentSession();
-            }
-        }
-    }
-    
-    /**
      * 
      * <pre>
      * {
@@ -293,51 +222,6 @@ public class TasksResource {
         jsonObj.put("categories", getCategories(taskInfo));
         jsonObj.put("suites", getSuites(taskInfo));
         jsonObj.put("tags", getTags(taskInfo));
-        return jsonObj;
-    }
-    
-    /**
-     * Wrap suites for the JSON call
-     * @param suiteInfo
-     * @return
-     * @throws JSONException
-     */
-    private JSONObject asJson(SuiteInfo suiteInfo) throws JSONException {
-        JSONObject jsonObj = new JSONObject();
-        jsonObj.put("lsid", suiteInfo.getLsid());
-        jsonObj.put("name", suiteInfo.getName());
-        jsonObj.put("description", suiteInfo.getDescription());
-        try {
-            final LSID lsid=new LSID(suiteInfo.getLsid());
-            jsonObj.put("version", lsid.getVersion());
-        }
-        catch (MalformedURLException e) {
-            log.error("Error getting lsid for suite.name=" + suiteInfo.getName(), e);
-        }
-        jsonObj.put("documentation", "");
-        jsonObj.put("categories", new JSONArray());
-        jsonObj.put("suites", new JSONArray());
-        jsonObj.put("tags", new JSONArray());
-        return jsonObj;
-    }
-    
-    /**
-     * Wrap a single string as a JSON object to be returned.
-     * Currently used for wrapping module categories
-     * @param string
-     * @return
-     * @throws JSONException
-     */
-    private JSONObject asJson(String category) throws JSONException {
-        JSONObject jsonObj = new JSONObject();
-        jsonObj.put("lsid", "");
-        jsonObj.put("name", category);
-        jsonObj.put("description", "");
-        jsonObj.put("version", "");
-        jsonObj.put("documentation", "");
-        jsonObj.put("categories", new JSONArray());
-        jsonObj.put("suites", new JSONArray());
-        jsonObj.put("tags", new JSONArray());
         return jsonObj;
     }
 

@@ -109,7 +109,7 @@
 	                });
 	
 	                $.ajax({
-	                    url: '/gp/rest/v1/tasks/categories.json',
+	                    url: '/gp/rest/v1/categories/all.json',
 	                    dataType: 'json',
 	                    success: function(data, status, xhr) {
 	                    	all_categories = data;
@@ -126,7 +126,7 @@
 	                });
 	                
 	                $.ajax({
-	                    url: '/gp/rest/v1/tasks/suites.json',
+	                    url: '/gp/rest/v1/suites/all.json',
 	                    dataType: 'json',
 	                    success: function(data, status, xhr) {
 	                    	all_suites = data;
