@@ -1,12 +1,11 @@
 package org.genepattern.server.job.input;
 
-import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
@@ -71,27 +70,11 @@ public class TestFileDownloader {
         return tmpDir;
     }
     
-//    private static final void saveToFile(final File file, final String contents) throws IOException {
-//        FileWriter fw=null;
-//        BufferedWriter out=null;
-//        try {
-//            fw = new FileWriter(file);
-//            out = new BufferedWriter(new FileWriter(file));
-//            out.write(contents);
-//        } 
-//        finally {
-//            if (out != null) {
-//                out.close();
-//            }
-//            else if (fw != null) {
-//                fw.close();
-//            }
-//        }
-//    }
-    
     @BeforeClass
     public static void initTest() {
         cleanupDirs=new ArrayList<File>();
+        final File userRootDir=newTmpDir();
+        System.setProperty("user.root.dir", userRootDir.getAbsolutePath());
     }
     
     @AfterClass
@@ -328,21 +311,47 @@ public class TestFileDownloader {
         });
     }
 
-//    @Test
-//    public void testCachedFtpDir_getFilesToDownload() {
-//        final String dirUrl="ftp://gpftp.broadinstitute.org/example_data/gpservertest/DemoFileDropdown/input.dir/";
-//        final CachedFtpDir cachedFtpDir=new CachedFtpDir(dirUrl);
-//        //final List<String> cachedFtpDir.getFilesToDownload();
-//    }
+    @Test
+    public void testCachedFtpDir_getFilesToDownload() throws DownloadException {
+        final String dirUrl="ftp://gpftp.broadinstitute.org/example_data/gpservertest/DemoFileDropdown/input.dir/A";
+        final CachedFtpDir cachedFtpDir=new CachedFtpDir(dirUrl);
+        final List<String> files=cachedFtpDir.getFilesToDownload();
+        
+        final List<String> expected=new ArrayList<String>();
+        expected.add("ftp://gpftp.broadinstitute.org/example_data/gpservertest/DemoFileDropdown/input.dir/A/01.txt");
+        expected.add("ftp://gpftp.broadinstitute.org/example_data/gpservertest/DemoFileDropdown/input.dir/A/02.txt");
+        expected.add("ftp://gpftp.broadinstitute.org/example_data/gpservertest/DemoFileDropdown/input.dir/A/03.txt");
+        expected.add("ftp://gpftp.broadinstitute.org/example_data/gpservertest/DemoFileDropdown/input.dir/A/04.txt");
+        
+        Assert.assertEquals("filesToDownload", expected, files);
+    }
     
+    /**
+     * Test case for sync'ing a directory based on a user selection from a drop-down menu. 
+     * @throws DownloadException
+     */
     @Test
     public void testDirectoryDownload() throws DownloadException {
-        final String dirUrl="ftp://gpftp.broadinstitute.org/example_data/gpservertest/DemoFileDropdown/input.dir/";
-        CachedFtpDir cachedFtpDir = new CachedFtpDir(dirUrl);
+        final String dirUrl="ftp://gpftp.broadinstitute.org/example_data/gpservertest/DemoFileDropdown/input.dir/A/";
+        final CachedFtpDir cachedFtpDir = new CachedFtpDir(dirUrl);
+        cachedFtpDir.getLocalPath();
 
         Assert.assertFalse("before: isDownloaded", cachedFtpDir.isDownloaded());
-        GpFilePath localDir=cachedFtpDir.download();
+        final GpFilePath localDirPath=cachedFtpDir.download();
+        Assert.assertTrue("after: isDownloaded", cachedFtpDir.isDownloaded());
+        final File localDir=localDirPath.getServerFile();
+        Assert.assertTrue("localDir.exists", localDir.exists());
+        Assert.assertEquals("localDir.name", "A", localDir.getName());
+        Assert.assertTrue("localDir.isDirectory", localDir.isDirectory());
+
+        final File[] localFiles=localDir.listFiles();
+        Arrays.sort(localFiles);
         
+        Assert.assertEquals("expecting 4 files", 4, localFiles.length);
+        Assert.assertEquals("localFiles[0].name", "01.txt", localFiles[0].getName());
+        Assert.assertEquals("localFiles[1].name", "02.txt", localFiles[1].getName());
+        Assert.assertEquals("localFiles[2].name", "03.txt", localFiles[2].getName());
+        Assert.assertEquals("localFiles[3].name", "04.txt", localFiles[3].getName());
     }
     
 /*

@@ -14,7 +14,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.FilenameUtils;
 import org.apache.log4j.Logger;
 import org.genepattern.server.config.ServerConfiguration;
 import org.genepattern.server.config.ServerConfiguration.Context;
@@ -202,6 +201,10 @@ abstract public class CachedFtpFile implements CachedFile {
         return getLocalPathForFile(url);
     }
     
+    public static final GpFilePath getLocalPathForDownloadingFile(final URL url) {
+        return getLocalPath(url, "cache.downloading");
+    }
+    
     public static final GpFilePath getLocalPathForFile(final URL url) {
         return getLocalPath(url, "cache");
     }
@@ -290,26 +293,6 @@ abstract public class CachedFtpFile implements CachedFile {
     }
     
     /**
-     * Given the real path for the download, get the temp path
-     * @param realPath
-     * @return
-     * @throws Exception 
-     */
-    public GpFilePath getTempPath(GpFilePath realPath) throws DownloadException {
-        Context userContext = ServerConfiguration.Context.getContextForUser(FileCache.CACHE_USER_ID);
-        String tempPath = FilenameUtils.getPath(realPath.getRelativePath()) + ".downloading/" + FilenameUtils.getName(realPath.getRelativePath());
-        File tempFile = new File(tempPath);
-        try {
-            GpFilePath gpFilePath=GpFileObjFactory.getUserUploadFile(userContext, tempFile);
-            return gpFilePath;
-        }
-        catch (Exception e) {
-            log.error(e);
-            throw new DownloadException("GP server error initializing temp path: "+tempPath);
-        }
-    }
-    
-    /**
      * Download from the url into a file, creating the file and all parent directories if necessary.
      * This is implemented using basic Java I/O capabilities (pre Java 7 NIO).
      * 
@@ -357,7 +340,7 @@ abstract public class CachedFtpFile implements CachedFile {
         }
 
         // otherwise, download to tmp location
-        final GpFilePath tempPath = getTempPath(realPath);
+        final GpFilePath tempPath = getLocalPathForDownloadingFile(url);
         final File tempFile = tempPath.getServerFile();
 
         boolean deleteExisting=true;
@@ -394,6 +377,13 @@ abstract public class CachedFtpFile implements CachedFile {
             log.error("Unexpected error recording uploaded file to DB for realPath="+realPath, t);
         }
         // Once complete, move the file to the real location and return
+        final File realParent=realFile.getParentFile();
+        if (realParent != null && !realParent.exists()) {
+            boolean createdDir=realParent.mkdirs();
+            if (log.isDebugEnabled()) {
+                log.debug(realParent+".mkdirs returned "+createdDir);
+            }
+        }
         boolean success = tempFile.renameTo(realFile);
         if (!success) {
             String message = "Error moving temp file to real location: temp=" + tempFile.getPath() + ", real=" + realFile.getPath();

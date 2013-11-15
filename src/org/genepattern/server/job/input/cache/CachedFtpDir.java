@@ -32,7 +32,12 @@ import org.genepattern.server.job.input.choice.FtpDirFilter;
 public class CachedFtpDir implements CachedFile {
     private static Logger log = Logger.getLogger(CachedFtpDir.class);
 
-    public static void writeToFile(final String message, final File toFile) {
+    /**
+     * Utility method for creating a new file with the given message as it's content.
+     * @param message
+     * @param toFile
+     */
+    private static void writeToFile(final String message, final File toFile) {
         toFile.getParentFile().mkdirs();
         BufferedWriter writer = null;
         try {
@@ -90,7 +95,7 @@ public class CachedFtpDir implements CachedFile {
     }
 
     /**
-     * Download the file. This method blocks until the transfer is complete.
+     * Download the file. This method blocks until cancelled or the transfer is complete.
      * @return
      * @throws DownloadException
      */
@@ -110,13 +115,7 @@ public class CachedFtpDir implements CachedFile {
     }
 
     private GpFilePath doDownload() throws DownloadException, InterruptedException {
-        try {
-            clean();
-        }
-        catch (Throwable t) {
-            log.error("Error preparing tmp dir before directory download from url="+url+" to "+localPath, t);
-            throw new DownloadException(t.getLocalizedMessage());
-        }
+        setStatusToDownloading();
         
         final List<String> filesToDownload = getFilesToDownload();
         // loop through all of the files and start downloading ...
@@ -160,9 +159,15 @@ public class CachedFtpDir implements CachedFile {
         }
         return false;
     }
-    
-    private void clean() throws IOException {
-        FileUtils.deleteDirectory(tmpDir.getServerFile());
+
+    private void setStatusToDownloading() throws DownloadException {
+        try {
+            FileUtils.deleteDirectory(tmpDir.getServerFile());
+        }
+        catch (Throwable t) {
+            log.error("Error preparing tmp dir before directory download from url="+url+" to "+localPath, t);
+            throw new DownloadException(t.getLocalizedMessage());
+        }
     }
 
     private void setStatusToFinished() {
