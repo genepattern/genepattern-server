@@ -147,7 +147,7 @@ public class JobInputHelper {
     private JobInput inputTemplate=new JobInput();
     private boolean deduceBatchValues=false;
     private Map<ParamId,Integer> numBatchValuesMap=new HashMap<ParamId,Integer>();
-    private Map<ParamId, String> batchInputDirStrs=new LinkedHashMap<ParamId, String>();
+    private Map<ParamId, List<String>> batchInputDirStrs=new LinkedHashMap<ParamId, List<String>>();
     private Map<ParamId,List<GpFilePath>> batchValues=new LinkedHashMap<ParamId,List<GpFilePath>>();
     
     public JobInputHelper(final Context userContext, final String lsid) {
@@ -189,7 +189,7 @@ public class JobInputHelper {
     /**
      * Add a value for a non-batch parameter. 
      * 
-     * @param paramId
+     * @param name
      * @param value
      */
     public void addValue(final String name, final String value) {
@@ -208,7 +208,7 @@ public class JobInputHelper {
     
     /**
      * Add a value for a batch parameter.
-     * @param paramId
+     * @param name
      * @param value
      */
     public void addBatchValue(final String name, final String value) {
@@ -239,16 +239,27 @@ public class JobInputHelper {
      * A file matches based on the file extension of the file and the list of accepted fileFormats for the parameter,
      * as declared in the module manifest.
      * 
-     * Extra steps are required if you have more than one batch directory.
-     * 
-     * Don't call this more than once per input parameter.
+     *
      */
     public void addBatchDirectory(final String name, final String value) {
         addBatchDirectory(new ParamId(name), value);
     }
     
     public void addBatchDirectory(final ParamId id, final String value) {
-        batchInputDirStrs.put(id, value);
+        //if the value is empty then do not add it
+        if(value == null || value.length() < 1)
+        {
+            return;
+        }
+
+        List values = batchInputDirStrs.get(id);
+        if(values == null)
+        {
+            values = new ArrayList();
+            batchInputDirStrs.put(id, values);
+        }
+
+        values.add(value);
     }
     
     /**
@@ -390,7 +401,8 @@ public class JobInputHelper {
 
     /**
      * 
-     * @param batchInputDirStr
+     * @param formalParam
+     * @param initialValue
      * @return
      */
     private List<GpFilePath> listBatchDir(final ParameterInfo formalParam, final String initialValue) throws GpServerException {
@@ -439,17 +451,21 @@ public class JobInputHelper {
             taskInfo=getTaskStrategy.getTaskInfo(inputTemplate.getLsid());
             paramInfoMap=ParameterInfoRecord.initParamInfoMap(taskInfo);
         }
-        for(final Entry<ParamId,String> entry : batchInputDirStrs.entrySet()) {
+        for(final Entry<ParamId,List<String>> entry : batchInputDirStrs.entrySet()) {
             final ParamId paramId=entry.getKey();
-            final String initialValue=entry.getValue();
+            final List<String> initialValues=entry.getValue();
             final ParameterInfoRecord record=paramInfoMap.get(paramId.getFqName());
             if (record==null) {
                 //invalid parameter name, the module does not have a parameter with this name
-                throw new GpServerException("Invalid parameter name for batch input directory, "+paramId.getFqName()+"="+initialValue);
+                throw new GpServerException("Invalid parameter name for batch, "+paramId.getFqName());
             }
             final ParameterInfo formalParam=record.getFormal();
-            
-            List<GpFilePath> fileList=this.listBatchDir(formalParam, initialValue);
+
+            List<GpFilePath> fileList = new ArrayList();
+            for(String batchDir : initialValues)
+            {
+                fileList.addAll(this.listBatchDir(formalParam, batchDir));
+            }
             //TODO: get rid of the batchValues map
             batchValues.put(paramId, fileList);
         }
@@ -581,7 +597,7 @@ public class JobInputHelper {
      *    otherwise, it's not a match
      * 
      * @param pinfo
-     * @param in
+     * @param inputValue
      * @return
      */
     private static boolean accept(final ParameterInfo pinfo, final GpFilePath inputValue) {
