@@ -63,19 +63,20 @@ $.widget("gp.module", {
         }).appendTo(this.element);
 
         // Add tag links
-        for (var category in this.options.data.categories) {
+        var all_tags_raw = [];
+        $.merge(all_tags_raw, this.options.data.categories);
+        $.merge(all_tags_raw, this.options.data.suites);
+        $.merge(all_tags_raw, this.options.data.tags);
+        var all_tags = [];
+        $.each(all_tags_raw, function(i, el) { // Remove duplicates
+            if($.inArray(el, all_tags) === -1) all_tags.push(el);
+        });
+        all_tags.sort(); // Sort
+        
+        for (var tag in all_tags) {
             $('<a>', {
                 'class': 'tag',
-                'text': this.options.data.categories[category],
-                'href': '#'})
-                .attr("onclick", "$(this).closest('.module-listing').module('tagClick', event);")
-                .appendTo(this.tags);
-            this.tags.append(', ');
-        }
-        for (var tag in this.options.data.tags) {
-            $('<a>', {
-                'class': 'tag',
-                'text': this.options.data.tags[tag],
+                'text': all_tags[tag],
                 'href': '#'})
                 .attr("onclick", "$(this).closest('.module-listing').module('tagClick', event);")
                 .appendTo(this.tags);

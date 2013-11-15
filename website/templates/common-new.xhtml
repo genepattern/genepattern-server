@@ -218,22 +218,24 @@
                         title: 'Browse Modules &amp; Pipelines',
                         data: [
                             {
-                                "lsid": "the full lsid of the module should be here",
+                                "lsid": "",
                                 "name": "All Modules",
                                 "description": "Browse an alphabetical listing of all installed GenePattern modules and pipelines.",
                                 "version": "",
                                 "documentation": "http://genepattern.org",
                                 "categories": [],
+                                "suites": [],
                                 "tags": []
                             },
 
                             {
-                                "lsid": "the full lsid of the module should be here",
+                                "lsid": "",
                                 "name": "Browse by Suite",
                                 "description": "Browse available modules and pipelines by associated suites.",
                                 "version": "",
                                 "documentation": "http://genepattern.org",
                                 "categories": [],
+                                "suites": [],
                                 "tags": []
                             }
                         ],
@@ -244,7 +246,7 @@
                             if (button == 'All Modules') {
 	                            $("#module-search").searchslider("show");
 	                            $("#module-search").searchslider("filter", '');
-	                            $("#module-search").searchslider("set_title", filter);
+	                            $("#module-search").searchslider("set_title", button);
                             }
                             else {
                             	$("#module-suites").searchslider("show");
