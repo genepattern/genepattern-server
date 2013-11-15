@@ -5,8 +5,10 @@ import java.net.MalformedURLException;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.GET;
@@ -30,7 +32,7 @@ import org.genepattern.server.user.UserDAO;
 import org.genepattern.server.user.UserPropKey;
 import org.genepattern.server.webapp.rest.api.v1.Util;
 import org.genepattern.server.webservice.server.dao.AdminDAO;
-import org.genepattern.server.webservice.server.dao.AdminDAO.TaskNameComparator;
+import org.genepattern.server.webservice.server.dao.AdminDAOSysException;
 import org.genepattern.server.webservice.server.local.LocalAdminClient;
 import org.genepattern.util.LSID;
 import org.genepattern.webservice.ParameterInfo;
@@ -159,8 +161,9 @@ public class TasksResource {
             TaskInfo[] allTasks = adminDao.getAllTasksForUser(userId);
             final Map<String, TaskInfo> latestTasks = adminDao.getLatestTasks(allTasks);
             
-            // Apply tags to the taskInfos
+            // Apply tags and suites to the taskInfos
             applyTaskTags(latestTasks, userContext);
+            applyTaskSuites(latestTasks, userContext);
             
             // Transform the latest task map to an array and sort it
             TaskInfo[] tasksArray = (TaskInfo[]) latestTasks.values().toArray(new TaskInfo[0]);
@@ -288,6 +291,7 @@ public class TasksResource {
         }
         jsonObj.put("documentation", getDocLink(taskInfo));
         jsonObj.put("categories", getCategories(taskInfo));
+        jsonObj.put("suites", getSuites(taskInfo));
         jsonObj.put("tags", getTags(taskInfo));
         return jsonObj;
     }
@@ -312,6 +316,7 @@ public class TasksResource {
         }
         jsonObj.put("documentation", "");
         jsonObj.put("categories", new JSONArray());
+        jsonObj.put("suites", new JSONArray());
         jsonObj.put("tags", new JSONArray());
         return jsonObj;
     }
@@ -331,6 +336,7 @@ public class TasksResource {
         jsonObj.put("version", "");
         jsonObj.put("documentation", "");
         jsonObj.put("categories", new JSONArray());
+        jsonObj.put("suites", new JSONArray());
         jsonObj.put("tags", new JSONArray());
         return jsonObj;
     }
@@ -355,6 +361,16 @@ public class TasksResource {
         }
     }
     
+    private JSONArray getSuites(final TaskInfo taskInfo) {
+        Set<String> tags = (HashSet<String>) taskInfo.getAttributes().get("suites");
+        if (tags != null) {
+            return new JSONArray(tags);
+        }
+        else {
+            return new JSONArray();
+        }
+    }
+    
     private void applyTaskTags(Map<String, TaskInfo> tasks, ServerConfiguration.Context context) {
         AdminDAO adminDao = new AdminDAO();
         int recentJobsToShow = Integer.parseInt(new UserDAO().getPropertyValue(context.getUserId(), UserPropKey.RECENT_JOBS_TO_SHOW, "4"));
@@ -370,6 +386,34 @@ public class TasksResource {
             catch (MalformedURLException e) {
                 log.error("Error getting an LSID object for: " + recent.getLsid());
             }
+        }
+    }
+    
+    @SuppressWarnings("unchecked")
+    private void applyTaskSuites(Map<String, TaskInfo> tasks, ServerConfiguration.Context context) {
+        AdminDAO adminDao = new AdminDAO();
+        try {
+            SuiteInfo[] suites = adminDao.getLatestSuites();
+            
+            for (SuiteInfo suite : suites) {
+                for (String moduleLsid : suite.getModuleLsids()) {
+                    try {
+                        String baseLsid = new LSID(moduleLsid).toStringNoVersion();
+                        TaskInfo taskInfo = tasks.get(baseLsid);
+                        if (taskInfo == null) continue;
+                        Set<String> suiteList = (HashSet<String>) taskInfo.getAttributes().get("suites");
+                        if (suiteList == null) suiteList = new HashSet<String>();
+                        suiteList.add(suite.getName());
+                        tasks.get(baseLsid).getAttributes().put("suites", suiteList);
+                    }
+                    catch (MalformedURLException e) {
+                        log.error("Error getting an LSID object for: " + moduleLsid);
+                    }
+                }            
+            }
+        }
+        catch (AdminDAOSysException e1) {
+            log.error(e1);
         }
     }
 
