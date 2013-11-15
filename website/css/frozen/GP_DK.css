@@ -1,10 +1,6 @@
 @charset "UTF-8";
 /* CSS Document */
 
-body.jobResults {
-	min-width:1024px;
-}
-
 img {
 	border:0;
 }
@@ -143,7 +139,6 @@ table.parameter th{
 
 .jobResults {
 	color:#333;
-	min-width:1024px;
 	font-size:12px;
 	font-family:Arial, verdana, Helvetica, sans-serif;
 }
