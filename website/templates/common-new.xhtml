@@ -124,6 +124,17 @@
 	                        });
 	                    }
 	                });
+	                
+	                $.ajax({
+	                    url: '/gp/rest/v1/tasks/suites.json',
+	                    dataType: 'json',
+	                    success: function(data, status, xhr) {
+	                    	all_suites = data;
+	                    	
+	                        // Initialize suites slider
+	                    	initBrowseSuites();
+	                    }
+	                });
             		
                 	// Search box controls
                     jq("#module-search-box").keyup(function() {
@@ -166,6 +177,25 @@
             		return recent;
             	}
             	
+            	function initBrowseSuites() {
+            		var browse = $('<div id="module-list-suites"></div>').modulelist({
+                        title: 'Browse Modules by Suite',
+                        data: all_suites,
+                        droppable: false,
+                        draggable: false,
+                        click: function(event) {
+                            var filter = $(event.currentTarget).find(".module-name").text();
+                            $("#module-search").searchslider("show");
+                            $("#module-search").searchslider("tagfilter", filter);
+                            $("#module-search").searchslider("set_title", "Browsing Suite: " + filter);
+                        }
+                    });
+            		
+            		var modsearch = $('#module-suites').searchslider({
+                        lists: [browse]
+                    });
+            	}
+            	
             	function initBrowseModules() {
             		var browse = $('<div id="module-list-browse"></div>').modulelist({
                         title: 'Browse Modules by Category',
@@ -190,9 +220,9 @@
                             {
                                 "lsid": "the full lsid of the module should be here",
                                 "name": "All Modules",
-                                "description": "The description of the category can go here, blah, blah, blah",
+                                "description": "Browse an alphabetical listing of all installed GenePattern modules and pipelines.",
                                 "version": "",
-                                "documentation": "http://www.google.com",
+                                "documentation": "http://genepattern.org",
                                 "categories": [],
                                 "tags": []
                             },
@@ -200,9 +230,9 @@
                             {
                                 "lsid": "the full lsid of the module should be here",
                                 "name": "Browse by Suite",
-                                "description": "The description of the category can go here, blah, blah, blah",
+                                "description": "Browse available modules and pipelines by associated suites.",
                                 "version": "",
-                                "documentation": "http://www.google.com",
+                                "documentation": "http://genepattern.org",
                                 "categories": [],
                                 "tags": []
                             }
@@ -210,10 +240,15 @@
                         droppable: false,
                         draggable: false,
                         click: function(event) {
-                            var filter = $(event.currentTarget).find(".module-name").text();
-                            $("#module-search").searchslider("show");
-                            $("#module-search").searchslider("filter", '');
-                            $("#module-search").searchslider("set_title", filter);
+                            var button = $(event.currentTarget).find(".module-name").text();
+                            if (button == 'All Modules') {
+	                            $("#module-search").searchslider("show");
+	                            $("#module-search").searchslider("filter", '');
+	                            $("#module-search").searchslider("set_title", filter);
+                            }
+                            else {
+                            	$("#module-suites").searchslider("show");
+                            }
                         }
                     });
             		
@@ -442,6 +477,7 @@
             	
 				<div id="module-search"></div>
 	            <div id="module-browse"></div>
+	            <div id="module-suites"></div>
 	
 	            <div id="main-pane">
 	            	<!-- Error message area -->
