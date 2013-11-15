@@ -65,35 +65,30 @@
             <script type="text/javascript" src="/gp/js/menu.js" />
 
             <script type="text/javascript" language="javascript">
-            	var $ = jq;
-            	var all_modules = null;
-            	var all_categories = null;
-            	var all_suites = null;
-            	
-	            // Build the nav menu
-	            if (userLoggedIn) {
-	                Menu.buildNavMenu();
-	            }
-				
-            	// IE layout hack
-            	if (navigator.userAgent.indexOf("MSIE") !== -1) {
-            		jq("#systemMessageLink").css("right", "");
-            		jq("#systemMessageLink").css("left", (jq(document).width() - 500) + "px");
-            	}
-            	 
-            	// Init jQuery components
-            	$(document).ready(function() {
-            		$("#left-nav").tabs({
-                        cookie:{
-                            expires:1
-                        }
-                    });
-            		
-            		// Display nicely at load hack
-            		$($("#left-nav-tabs .ui-tabs-active a").attr("href")).show();
-            		
-            		// Load the modules
-            		$.ajax({
+	         	// Init jQuery components
+	            $(document).ready(function() {
+	            	$("#left-nav").tabs({
+	                    cookie:{
+	                        expires:1
+	                    }
+	                });
+	            	
+	            	// Build the nav menu
+	            	if (userLoggedIn) {
+	            	    Menu.buildNavMenu();
+	            	}
+	
+	            	// IE layout hack
+	            	if (navigator.userAgent.indexOf("MSIE") !== -1) {
+	            		jq("#systemMessageLink").css("right", "");
+	            		jq("#systemMessageLink").css("left", (jq(document).width() - 500) + "px");
+	            	}
+	            	
+	            	// Display nicely at load hack
+	            	$($("#left-nav-tabs .ui-tabs-active a").attr("href")).show();
+	            	
+	            	// Load the modules
+	            	$.ajax({
 	                    url: '/gp/rest/v1/tasks/all.json',
 	                    dataType: 'json',
 	                    success: function(data, status, xhr) {
@@ -135,192 +130,23 @@
 	                    	initBrowseSuites();
 	                    }
 	                });
-            		
-                	// Search box controls
-                    jq("#module-search-box").keyup(function() {
-                        if (jq(".search-widget:visible").length === 0) {
-                        	jq("#module-search").searchslider("show");
-                            setModuleSearchTitle($(this).val())
-                        }
-                        jq(".search-widget:visible").searchslider("filter", $(this).val());
-                        setModuleSearchTitle($(this).val())
-                    });
-
-                    // Browse button controls
-                    jq("#module-browse-button button").button().click(function() {
-                    	jq("#module-search-box").val("");
-                    	jq("#module-browse").searchslider("show");
-                    });
-            	});
-            	
-            	function getPinnedModules() {
-            		var pinned = [];
-            		
-            		$.each(all_modules, function(i, v) {
-            		    if (v.tags.indexOf("pinned") !== -1) {
-            		        pinned.push(v);
-            		    }
-            		});
-            		
-            		return pinned;
-            	}
-            	
-            	function getRecentModules() {
-            		var recent = [];
-            		
-            		$.each(all_modules, function(i, v) {
-            		    if (v.tags.indexOf("recent") !== -1) {
-            		    	recent.push(v);
-            		    }
-            		});
-            		
-            		return recent;
-            	}
-            	
-            	function initBrowseSuites() {
-            		var browse = $('<div id="module-list-suites"></div>').modulelist({
-                        title: 'Browse Modules by Suite',
-                        data: all_suites,
-                        droppable: false,
-                        draggable: false,
-                        click: function(event) {
-                            var filter = $(event.currentTarget).find(".module-name").text();
-                            $("#module-search").searchslider("show");
-                            $("#module-search").searchslider("tagfilter", filter);
-                            $("#module-search").searchslider("set_title", "Browsing Suite: " + filter);
-                        }
-                    });
-            		
-            		var modsearch = $('#module-suites').searchslider({
-                        lists: [browse]
-                    });
-            	}
-            	
-            	function initBrowseModules() {
-            		var browse = $('<div id="module-list-browse"></div>').modulelist({
-                        title: 'Browse Modules by Category',
-                        data: all_categories,
-                        droppable: false,
-                        draggable: false,
-                        click: function(event) {
-                            var filter = $(event.currentTarget).find(".module-name").text();
-                            $("#module-search").searchslider("show");
-                            $("#module-search").searchslider("tagfilter", filter);
-                            $("#module-search").searchslider("set_title", "Browsing Category: " + filter);
-                        }
-                    });
-            		
-            		return browse;
-            	}
-            	
-            	function initBrowseTop() {
-            		var allnsuite = $('<div id="module-list-allnsuite"></div>').modulelist({
-                        title: 'Browse Modules &amp; Pipelines',
-                        data: [
-                            {
-                                "lsid": "",
-                                "name": "All Modules",
-                                "description": "Browse an alphabetical listing of all installed GenePattern modules and pipelines.",
-                                "version": "",
-                                "documentation": "http://genepattern.org",
-                                "categories": [],
-                                "suites": [],
-                                "tags": []
-                            },
-
-                            {
-                                "lsid": "",
-                                "name": "Browse by Suite",
-                                "description": "Browse available modules and pipelines by associated suites.",
-                                "version": "",
-                                "documentation": "http://genepattern.org",
-                                "categories": [],
-                                "suites": [],
-                                "tags": []
-                            }
-                        ],
-                        droppable: false,
-                        draggable: false,
-                        click: function(event) {
-                            var button = $(event.currentTarget).find(".module-name").text();
-                            if (button == 'All Modules') {
-	                            $("#module-search").searchslider("show");
-	                            $("#module-search").searchslider("filter", '');
-	                            $("#module-search").searchslider("set_title", button);
-                            }
-                            else {
-                            	$("#module-suites").searchslider("show");
-                            }
-                        }
-                    });
-            		
-            		return allnsuite;
-            	}
-            	
-            	function initSearchSlider() {
-            		var search = $('<div id="module-list-search"></div>').modulelist({
-                        title: 'Search: Modules &amp; Pipelines',
-                        data: all_modules,
-                        droppable: false,
-                        draggable: true,
-                        click: function() {
-                        	var lsid = $(event.target).closest(".module-listing").module("get_lsid");
-                        	runTaskForm(lsid);
-                        }
-                    });
-
-                    var modsearch = $('#module-search').searchslider({
-                        lists: [search]
-                    });
-            	}
-            	
-            	function initRecent() {
-            		var recent_modules = getRecentModules();
-            		
-            		var recent = $('#recent-modules').modulelist({
-                        title: "Recent Modules",
-                        data: recent_modules,
-                        droppable: false,
-                        draggable: true,
-                        click: function() {
-                        	var lsid = $(event.target).closest(".module-listing").module("get_lsid");
-                        	runTaskForm(lsid);
-                        }
-                    });
-                    recent.modulelist("filter", "recent");
-                    $('#recent-modules .module-list-empty').text("No Recent Modules");
-            	}
-            	
-            	function initPinned() {
-            		var pinned_modules = getPinnedModules();
-            		
-            		var pinned = $('#pinned-modules').modulelist({
-                        title: "Pinned Modules",
-                        data: pinned_modules,
-                        droppable: true,
-                        draggable: true,
-                        click: function(event) {
-                        	var lsid = $(event.target).closest(".module-listing").module("get_lsid");
-                            runTaskForm(lsid);
-                        }
-                    });
-            		pinned.modulelist("filter", "pinned");
-                    $('#pinned-modules .module-list-empty').text("Drag Modules Here");
-            	}
-            	
-            	function setModuleSearchTitle(filter) {
-                    if (filter === '') {
-                        $("#module-search").searchslider("set_title", "Search: Modules &amp; Pipelines");
-                    }
-                    else {
-                        $("#module-search").searchslider("set_title", "Search: " + filter);
-                    }
-                }
-
-                function runTaskForm(lsid) {
-                    $(".search-widget").searchslider("hide");
-                    $(location).attr("href", "/gp/pages/index.jsf?lsid=" + encodeURIComponent(lsid));
-                }
+	            	
+	            	// Search box controls
+	                jq("#module-search-box").keyup(function() {
+	                    if (jq(".search-widget:visible").length === 0) {
+	                    	jq("#module-search").searchslider("show");
+	                        setModuleSearchTitle($(this).val())
+	                    }
+	                    jq(".search-widget:visible").searchslider("filter", $(this).val());
+	                    setModuleSearchTitle($(this).val())
+	                });
+	
+	                // Browse button controls
+	                jq("#module-browse-button button").button().click(function() {
+	                	jq("#module-search-box").val("");
+	                	jq("#module-browse").searchslider("show");
+	                });
+	            });	
             </script>
 
             <!-- Use this insert to override the "onLoad" initialization method.  This function is triggered from the body onload event.  -->
@@ -505,6 +331,59 @@
 			
 			<!-- Top-level popup menus -->
             <ui:insert name="popupMenus" />
+            <h:form id="menuForm" forceId="true">
+                <f:param />
+                <t:dataList var="jobInfo" value="#{jobsBean.recentJobs}" rowIndexVar="jobIndex">
+                    <ui:include src="../pages/jobsMenu.xhtml">
+                        <ui:param name="job" value="#{jobInfo}" />
+                    </ui:include>
+                    <t:dataList var="fileInfo" value="#{jobInfo.allFileInfos}" rowIndexVar="paramIndex">
+                        <ui:include src="../pages/jobFileMenu.xhtml">
+                            <ui:param name="job" value="#{jobInfo}" />
+                            <ui:param name="fileInfo" value="#{fileInfo}" />
+                        </ui:include>
+                    </t:dataList>
+                </t:dataList>
+                <t:dataList var="aFile" value="#{uploadFilesBean.files}" rowIndexVar="dirIndex">
+                    <ui:include src="../pages/uploads/uploadFileMenu.xhtml">
+                        <ui:param name="aFile" value="#{aFile}" />
+                    </ui:include>
+                </t:dataList>
+                <t:dataList var="aFile" value="#{uploadFilesBean.directories}" rowIndexVar="dirIndex">
+                    <ui:include src="../pages/uploads/uploadFileMenu.xhtml">
+                        <ui:param name="aFile" value="#{aFile}" />
+                    </ui:include>
+                </t:dataList>
+                <t:div id="genomeSpaceMenus" forceId="true">
+                    <h:outputText rendered="#{genomeSpaceBean.loggedIn and not genomeSpaceBean.loading}">
+                        <t:dataList var="file" value="#{genomeSpaceBean.allFiles}" rowIndexVar="fileIndex">
+                            <ui:include src="../pages/genomespace/fileMenu.xhtml">
+                                <ui:param name="file" value="#{file}" />
+                            </ui:include>
+                            <script type="text/javascript" language="javascript">menuRegistry._create("#Image_#{file.formattedId}", "#menuDiv_#{file.formattedId}");</script>
+                        </t:dataList>
+                        <t:dataList var="file" value="#{genomeSpaceBean.allDirectories}" rowIndexVar="fileIndex">
+                            <ui:include src="../pages/genomespace/fileMenu.xhtml">
+                                <ui:param name="file" value="#{file}" />
+                            </ui:include>
+                            <script type="text/javascript" language="javascript">menuRegistry._create("#Image_#{file.formattedId}", "#menuDiv_#{file.formattedId}");</script>
+                        </t:dataList>
+                    </h:outputText>
+                </t:div>
+            </h:form>
+            <script type="text/javascript">
+            	$(document).ready(function() {
+            		// Hide menus after click
+                	jq(".popupMenu a").click(function() {
+                		jq(".popupMenu").hide();
+                	});
+                
+                	// Fix Create Pipeline links in IE
+                	if (navigator.userAgent.indexOf("MSIE") !== -1) {
+                		jq("a").filter(function(index) { return jq(this).text() === "Create Pipeline"; }).attr("onclick","JavaScript:Menu.denyIE(null);");
+                	}
+            	});
+            </script>
             
             <!-- Floating footer area -->
             <div id="footer">

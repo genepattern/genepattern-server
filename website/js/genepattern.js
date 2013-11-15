@@ -182,3 +182,181 @@ function showDialog(title, message, button) {
 
 	return alert;
 }
+
+/////////////////////////////////////////////////////////////////////////////////////////
+//////////////      NEW UI FUNCTIONS
+/////////////////////////////////////////////////////////////////////////////////////////
+
+var $ = jq;
+var all_modules = null;
+var all_categories = null;
+var all_suites = null;
+
+function getPinnedModules() {
+	var pinned = [];
+	
+	$.each(all_modules, function(i, v) {
+	    if (v.tags.indexOf("pinned") !== -1) {
+	        pinned.push(v);
+	    }
+	});
+	
+	return pinned;
+}
+
+function getRecentModules() {
+	var recent = [];
+	
+	$.each(all_modules, function(i, v) {
+	    if (v.tags.indexOf("recent") !== -1) {
+	    	recent.push(v);
+	    }
+	});
+	
+	return recent;
+}
+
+function initBrowseSuites() {
+	var browse = $('<div id="module-list-suites"></div>').modulelist({
+        title: 'Browse Modules by Suite',
+        data: all_suites,
+        droppable: false,
+        draggable: false,
+        click: function(event) {
+            var filter = $(event.currentTarget).find(".module-name").text();
+            $("#module-search").searchslider("show");
+            $("#module-search").searchslider("tagfilter", filter);
+            $("#module-search").searchslider("set_title", "Browsing Suite: " + filter);
+        }
+    });
+	
+	var modsearch = $('#module-suites').searchslider({
+        lists: [browse]
+    });
+}
+
+function initBrowseModules() {
+	var browse = $('<div id="module-list-browse"></div>').modulelist({
+        title: 'Browse Modules by Category',
+        data: all_categories,
+        droppable: false,
+        draggable: false,
+        click: function(event) {
+            var filter = $(event.currentTarget).find(".module-name").text();
+            $("#module-search").searchslider("show");
+            $("#module-search").searchslider("tagfilter", filter);
+            $("#module-search").searchslider("set_title", "Browsing Category: " + filter);
+        }
+    });
+	
+	return browse;
+}
+
+function initBrowseTop() {
+	var allnsuite = $('<div id="module-list-allnsuite"></div>').modulelist({
+        title: 'Browse Modules &amp; Pipelines',
+        data: [
+            {
+                "lsid": "",
+                "name": "All Modules",
+                "description": "Browse an alphabetical listing of all installed GenePattern modules and pipelines.",
+                "version": "",
+                "documentation": "http://genepattern.org",
+                "categories": [],
+                "suites": [],
+                "tags": []
+            },
+
+            {
+                "lsid": "",
+                "name": "Browse by Suite",
+                "description": "Browse available modules and pipelines by associated suites.",
+                "version": "",
+                "documentation": "http://genepattern.org",
+                "categories": [],
+                "suites": [],
+                "tags": []
+            }
+        ],
+        droppable: false,
+        draggable: false,
+        click: function(event) {
+            var button = $(event.currentTarget).find(".module-name").text();
+            if (button == 'All Modules') {
+                $("#module-search").searchslider("show");
+                $("#module-search").searchslider("filter", '');
+                $("#module-search").searchslider("set_title", button);
+            }
+            else {
+            	$("#module-suites").searchslider("show");
+            }
+        }
+    });
+	
+	return allnsuite;
+}
+
+function initSearchSlider() {
+	var search = $('<div id="module-list-search"></div>').modulelist({
+        title: 'Search: Modules &amp; Pipelines',
+        data: all_modules,
+        droppable: false,
+        draggable: true,
+        click: function() {
+        	var lsid = $(event.target).closest(".module-listing").module("get_lsid");
+        	runTaskForm(lsid);
+        }
+    });
+
+    var modsearch = $('#module-search').searchslider({
+        lists: [search]
+    });
+}
+
+function initRecent() {
+	var recent_modules = getRecentModules();
+	
+	var recent = $('#recent-modules').modulelist({
+        title: "Recent Modules",
+        data: recent_modules,
+        droppable: false,
+        draggable: true,
+        click: function() {
+        	var lsid = $(event.target).closest(".module-listing").module("get_lsid");
+        	runTaskForm(lsid);
+        }
+    });
+    recent.modulelist("filter", "recent");
+    $('#recent-modules .module-list-empty').text("No Recent Modules");
+}
+
+function initPinned() {
+	var pinned_modules = getPinnedModules();
+	
+	var pinned = $('#pinned-modules').modulelist({
+        title: "Pinned Modules",
+        data: pinned_modules,
+        droppable: true,
+        draggable: true,
+        click: function(event) {
+        	var lsid = $(event.target).closest(".module-listing").module("get_lsid");
+            runTaskForm(lsid);
+        }
+    });
+	pinned.modulelist("filter", "pinned");
+    $('#pinned-modules .module-list-empty').text("Drag Modules Here");
+}
+
+function setModuleSearchTitle(filter) {
+    if (filter === '') {
+        $("#module-search").searchslider("set_title", "Search: Modules &amp; Pipelines");
+    }
+    else {
+        $("#module-search").searchslider("set_title", "Search: " + filter);
+    }
+}
+
+function runTaskForm(lsid) {
+    $(".search-widget").searchslider("hide");
+    $(location).attr("href", "/gp/pages/index.jsf?lsid=" + encodeURIComponent(lsid));
+}
