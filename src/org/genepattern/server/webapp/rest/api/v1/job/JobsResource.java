@@ -1,6 +1,9 @@
 package org.genepattern.server.webapp.rest.api.v1.job;
 
 import java.net.URI;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
@@ -17,6 +20,7 @@ import javax.ws.rs.core.UriInfo;
 
 import org.apache.log4j.Logger;
 import org.genepattern.server.config.ServerConfiguration;
+import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.job.input.JobInput;
 import org.genepattern.server.rest.GpServerException;
 import org.genepattern.server.rest.JobInputApi;
@@ -24,6 +28,11 @@ import org.genepattern.server.rest.JobInputApiFactory;
 import org.genepattern.server.rest.JobReceipt;
 import org.genepattern.server.webapp.rest.api.v1.Util;
 import org.genepattern.server.webapp.rest.api.v1.job.JobInputValues.Param;
+import org.genepattern.server.webservice.server.dao.AdminDAO;
+import org.genepattern.server.webservice.server.dao.AnalysisDAO;
+import org.genepattern.webservice.JobInfo;
+import org.genepattern.webservice.TaskInfo;
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -195,6 +204,43 @@ public class JobsResource {
         return Response.ok()
                 .entity(jsonStr)
                 .build();
+    }
+    
+    /**
+     * Returns a list of job numbers for currently pending or running jobs
+     * @param request
+     * @return
+     */
+    @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    @Path("/incomplete")
+    public Response isJobRunning(@Context HttpServletRequest request) {
+        ServerConfiguration.Context userContext = Util.getUserContext(request);
+        final String userId = userContext.getUserId();
+        
+        final boolean isInTransaction = HibernateUtil.isInTransaction();
+        try {
+            // Get the map of the latest tasks
+            AnalysisDAO analysisDao = new AnalysisDAO();
+            List<JobInfo> jobs = analysisDao.getIncompleteJobsForUser(userId);
+            
+            // Return the JSON object
+            JSONArray jsonArray = new JSONArray();
+            for (JobInfo jobInfo : jobs) {
+                jsonArray.put(jobInfo.getJobNumber());
+            }
+            return Response.ok().entity(jsonArray.toString()).build();
+        }
+        catch (Throwable t) {
+            log.error(t);
+            String errorMessage = "Error constructing json response for /jobs/incomplete: " + t.getLocalizedMessage();
+            return Response.serverError().entity(errorMessage).build();
+        }
+        finally {
+            if (!isInTransaction) {
+                HibernateUtil.closeCurrentSession();
+            }
+        }
     }
 
 }

@@ -75,6 +75,23 @@ public class AnalysisDAO extends BaseDAO {
         final boolean ascending = false;
         return getPagedJobsOwnedByUser(userId, pageNum, numJobsToShow, jobSortOrder, ascending);
     }
+    
+    /**
+     * Get the list of recent jobs for the current user. Jobs are sorted in descending order.
+     * 
+     * @param userId - jobs owned by this user
+     * @param numJobsToShow - the total number of jobs to show
+     * @param jobSortOrder - the sort order
+     * @return
+     */
+    public List<JobInfo> getIncompleteJobsForUser(String userId) {
+        String hql = "from org.genepattern.server.domain.AnalysisJob where user_id = :userId and deleted = false and parent = -1 and (status_id = 1 or status_id = 2)";
+        Query query = getSession().createQuery(hql);
+        query.setString("userId", userId);
+        List<AnalysisJob> results = query.list();
+        List<JobInfo> jobInfos = convertResults(results);
+        return jobInfos;
+    }
 
     /**
      * For an admin user, get the list of all jobs, paged and sorted.
