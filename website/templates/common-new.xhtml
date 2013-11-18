@@ -65,6 +65,8 @@
             <script type="text/javascript" src="/gp/js/menu.js" />
 
             <script type="text/javascript" language="javascript">
+            	/* <![CDATA[ */
+                         
 	         	// Init jQuery components
 	            $(document).ready(function() {
 	            	$("#left-nav").tabs({
@@ -130,6 +132,22 @@
 	                    	initBrowseSuites();
 	                    }
 	                });
+	                
+	             	// Load the running jobs
+	            	$.ajax({
+	                    url: '/gp/rest/v1/jobs/incomplete',
+	                    dataType: 'json',
+	                    success: function(data, status, xhr) {
+	                    	if (data.length > 0) {
+	                    		$("#footer-center").text(" " + data.length + " jobs currently waiting");
+	                    		$("#footer-center").prepend("<img src='/gp/images/runningJob.gif' alt='Jobs Currently Waiting' />");
+	                    	}
+	                    	else {
+	                    		$("#footer-center").text(" all jobs currently complete");
+	                    		$("#footer-center").prepend("<img src='/gp/images/complete.gif' alt='All Jobs Complete' />");
+	                    	}
+	                    }
+	                });
 	            	
 	            	// Search box controls
 	                jq("#module-search-box").keyup(function() {
@@ -147,6 +165,8 @@
 	                	jq("#module-browse").searchslider("show");
 	                });
 	            });	
+            	
+	            /* ]]> */
             </script>
 
             <!-- Use this insert to override the "onLoad" initialization method.  This function is triggered from the body onload event.  -->
@@ -271,11 +291,11 @@
             	<!-- Insert the left nav -->
             	<div id="left-nav">
             		<ul id="left-nav-tabs">
-	                    <li><a href="#left-nav-modules">Modules</a></li>
-	                    <li><a href="#left-nav-jobs">Jobs</a></li>
-	                    <li><a href="#left-nav-files">Files</a></li>
+	                    <li id="left-nav-modules-tab"><a href="#left-nav-modules">Modules</a></li>
+	                    <li id="left-nav-jobs-tab"><a href="#left-nav-jobs">Jobs</a></li>
+	                    <li id="left-nav-files-tab"><a href="#left-nav-files">Files</a></li>
 	                    <h:outputText rendered="#{genomeSpaceBean.loggedIn}">
-                        	<li><a href="#left-nav-genomespace">GenomeSpace</a></li>
+                        	<li id="left-nav-genomespace-tab"><a href="#left-nav-genomespace">GenomeSpace</a></li>
                         </h:outputText>
 	                </ul>
 	                <div id="left-nav-modules" class="left-nav-tab">
@@ -392,6 +412,7 @@
 	                    <td>
 	                        <h:outputLink value="#{facesContext.externalContext.requestContextPath}/pages/about.jsf">About GenePattern</h:outputLink>&#160;|&#160;<h:outputLink value="#{facesContext.externalContext.requestContextPath}/pages/contactUs.jsf">Contact Us</h:outputLink>
 	                    </td>
+	                    <td id="footer-center"></td>
 	                    <td>
 	                        <div align="right">&#169;2003-2013&#160; <h:outputLink value="http://www.broadinstitute.org" target="_blank">Broad Institute, MIT</h:outputLink>
 	                        </div>
