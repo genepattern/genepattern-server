@@ -194,7 +194,9 @@ public class TestDynamicChoiceInfoParser {
     }
     
     private Choice makeChoice(final String choiceDir, final String entry, final boolean isDir) {
-        return new Choice(entry, choiceDir+""+entry, isDir);
+        final String label=entry;
+        final String value=choiceDir+""+entry;
+        return new Choice(label, value, isDir);
     }
     
     private void listCompare(final String message, final List<Choice> expected, final List<Choice> actual) {
@@ -330,4 +332,36 @@ public class TestDynamicChoiceInfoParser {
         listCompare("drop-down items", expected, choiceInfo.getChoices());
     }
     
+    /**
+     * test case: a directory selected from the drop-down, where the value does not include a trailing slash.
+     */
+    @Test
+    public void testChoiceInfoGetValue_noTrailingSlash() {
+        final String choiceDir="ftp://gpftp.broadinstitute.org/example_data/gpservertest/DemoFileDropdown/input.dir/";
+        final String valueNoSlash="ftp://gpftp.broadinstitute.org/example_data/gpservertest/DemoFileDropdown/input.dir/A";
+        final String choiceDirFilter="type=dir";
+        final ParameterInfo pinfo=initFtpParam(choiceDir);
+        pinfo.getAttributes().put("choiceDirFilter", choiceDirFilter);
+        final ChoiceInfo choiceInfo = ChoiceInfo.getChoiceInfoParser().initChoiceInfo(pinfo);
+        
+        final Choice expected=makeChoice(choiceDir, "A", true);
+        Assert.assertEquals("getValue, no slash", expected, choiceInfo.getValue(valueNoSlash));
+    }
+ 
+    /**
+     * test case: a directory selected from the drop-down, where the value includes a trailing slash.
+     */
+    @Test
+    public void testChoiceInfoGetValue_withTrailingSlash() {
+        final String choiceDir="ftp://gpftp.broadinstitute.org/example_data/gpservertest/DemoFileDropdown/input.dir/";
+        final String value="ftp://gpftp.broadinstitute.org/example_data/gpservertest/DemoFileDropdown/input.dir/A/";
+        final String choiceDirFilter="type=dir";
+        final ParameterInfo pinfo=initFtpParam(choiceDir);
+        pinfo.getAttributes().put("choiceDirFilter", choiceDirFilter);
+        final ChoiceInfo choiceInfo = ChoiceInfo.getChoiceInfoParser().initChoiceInfo(pinfo);
+        
+        final Choice expected=makeChoice(choiceDir, "A", true);
+        Assert.assertEquals("getValue, no slash", expected, choiceInfo.getValue(value));
+    }
+
 }

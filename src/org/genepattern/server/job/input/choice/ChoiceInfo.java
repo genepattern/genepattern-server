@@ -450,19 +450,32 @@ public class ChoiceInfo {
         }
         selected=defaultChoice;
         log.debug("Initial selection is "+selected);
-    }
-    
-    public Choice getValue(final String value) {
-        if (value==null) {
+    } 
+
+    public Choice getValue(final String lvalue) {
+        if (lvalue==null) {
             throw new IllegalArgumentException("value==null");
         }
         if (choices==null) {
             return null;
         }
+        
+        Choice altMatch=null; //double check for trailing slash ('/') 
         for(Choice choice : choices) {
-            if (value.equals(choice.getValue())) {
+            final String rvalue=choice.getValue();
+            if (lvalue.equals(rvalue)) {
                 return choice;
             }
+            if (altMatch == null) {
+                if (Choice.equalsIgnoreTrailingSlash(lvalue,rvalue, false)) {
+                    //special-case, matched without trailing slash
+                    altMatch=choice;
+                }
+            }
+        }
+        
+        if (altMatch != null) {
+            return altMatch;
         }
         return null; 
     }

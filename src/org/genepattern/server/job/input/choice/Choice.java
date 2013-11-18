@@ -26,17 +26,38 @@ public class Choice {
     
     private final HashCodeBuilder hcb;
 
-    public Choice(final String value) {
-        this(value, value);
+    /**
+     * Create a new Choice, by default the label and the value will be the same.
+     * @param valueIn
+     */
+    public Choice(final String valueIn) {
+        this(valueIn, valueIn);
+    }
+
+    /**
+     * Create a new Choice with the given label and value.
+     * @param labelIn
+     * @param valueIn
+     */
+    public Choice(final String labelIn, final String valueIn) {
+        this(labelIn,valueIn,false);
     }
     
-    public Choice(final String label, final String value) {
-        this(label,value,false);
-    }
-    
-    public Choice(final String label, final String value, final boolean isRemoteDir) {
-        this.label=label;
-        this.value=value;
+    /**
+     * Create a new Choice instance with the given label, value, and isRemoteDir flag.
+     * You must explicitly declare when you are creating a directory selection.
+     * 
+     * If necessary append a trailing slash ('/') to directory values.
+     * For example, the value 'ftp://hostname.com/input.dir/A' will be converted to 'ftp://hostname.com/input.dir/A/'
+     * when isRemoteDir is true.
+     * 
+     * @param labelIn
+     * @param valueIn
+     * @param isRemoteDir
+     */
+    public Choice(final String labelIn, final String valueIn, final boolean isRemoteDir) {
+        this.label=labelIn;
+        this.value=initValue(valueIn, isRemoteDir);
         this.remoteDir=isRemoteDir;
         this.hcb = new HashCodeBuilder(17,31).
                 append(label).
@@ -56,6 +77,51 @@ public class Choice {
         return remoteDir;
     }
     
+    private String initValue(final String valueIn, final boolean isRemoteDirIn) {
+        //special-case, always append a '/' character to directory values
+        if (!isRemoteDirIn) {
+            return valueIn;
+        }
+        if (valueIn.endsWith("/")) {
+            return valueIn;
+        }
+        return valueIn+"/";
+    }
+    
+    /**
+     * For example,
+     *     "A" == "A",
+     *     "A" == "A/"
+     *     "A/" == "A"
+     *     "A/" == "A/"
+     *     "" == "/"
+     * @param lvalueIn
+     * @param rvalueIn
+     * @return
+     */
+    public static final boolean equalsIgnoreTrailingSlash(final String lvalueIn, final String rvalueIn, final boolean ignoreCase) {
+        final String lvalue;
+        final String rvalue;
+        if (!lvalueIn.endsWith("/")) {
+            lvalue=lvalueIn+"/";
+        }
+        else {
+            lvalue=lvalueIn;
+        }
+        if (!rvalueIn.endsWith("/")) {
+            rvalue=rvalueIn+"/";
+        }
+        else {
+            rvalue=rvalueIn;
+        }
+        if (ignoreCase) {
+            return lvalue.equalsIgnoreCase(rvalue);
+        }
+        else {
+            return lvalue.equals(rvalue);
+        }
+    }
+    
     public String toString() {
         if (label != null) {
             return label+"="+value + ", isDir="+remoteDir;
@@ -63,6 +129,9 @@ public class Choice {
         return value+", isDir="+remoteDir;
     }
     
+    /**
+     * Equality is based on the value and the isRemoteDir flag. The label is ignored.
+     */
     public boolean equals(Object obj) {
         if (!(obj instanceof Choice)) {
             return false;
@@ -72,7 +141,6 @@ public class Choice {
         }
         Choice rhs = (Choice) obj;
         return new EqualsBuilder().
-                append(label, rhs.label).
                 append(value, rhs.value).
                 append(remoteDir, rhs.remoteDir).
                 isEquals();
