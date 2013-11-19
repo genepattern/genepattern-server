@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN" "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<hibernate-mapping package="org.genepattern.server.domain">
+    <class name="PinModule" optimistic-lock="none" table="PIN_MODULE">
+        <id name="id" type="integer">
+            <column name="id" not-null="true" unique="true"/>
+            <generator class="native"/>
+        </id>
+        
+		<property name="user" column="user" type="string" />
+        <property name="lsid" column="lsid" type="string" />
+		<property name="position" column="index" type="double" />
+    </class>
+    
+</hibernate-mapping>
