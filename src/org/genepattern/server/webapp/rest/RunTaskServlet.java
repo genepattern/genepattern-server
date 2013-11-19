@@ -382,17 +382,24 @@ public class RunTaskServlet extends HttpServlet
                 throw new Exception("User not logged in");
             }
 
+            if(jobSubmitInfo.getLsid() == null)
+            {
+                throw new Exception("No lsid received");
+            }
+
             final boolean initIsAdmin=true;
             final ServerConfiguration.Context userContext=ServerConfiguration.Context.getContextForUser(username, initIsAdmin);
             final JobInputHelper jobInputHelper=new JobInputHelper(userContext, jobSubmitInfo.getLsid());
 
+            TaskInfo taskInfo = getTaskInfo(jobSubmitInfo.getLsid(), username);
+
             JSONObject parameters = new JSONObject(jobSubmitInfo.getParameters());
-            Iterator<String> paramNames = parameters.keys();
-            while(paramNames.hasNext())
+            ParameterInfo[] pInfoArray = taskInfo.getParameterInfoArray();
+
+            for(ParameterInfo pInfo : pInfoArray)
             {
-                String parameterName = paramNames.next();
+                String parameterName = pInfo.getName();
                 boolean isBatch = isBatchParam(jobSubmitInfo, parameterName);
-                //JSONArray valueList = new JSONArray((String)parameters.get(parameterName));
                 JSONArray valueList;
                 Object val=parameters.get(parameterName);
                 if (val instanceof JSONArray) {
@@ -403,12 +410,7 @@ public class RunTaskServlet extends HttpServlet
                 }
                 for(int v=0; v<valueList.length();v++)
                 {
-                    if (isBatch) {
-                        jobInputHelper.addBatchDirectory(parameterName, valueList.getString(v));
-                    }
-                    else {
-                        jobInputHelper.addValue(parameterName, valueList.getString(v));
-                    }
+                    jobInputHelper.addSingleOrBatchValue(pInfo, valueList.getString(v), isBatch);
                 }
             }
 

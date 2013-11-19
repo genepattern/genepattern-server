@@ -231,7 +231,47 @@ public class JobInputHelper {
             numBatchValuesMap.put(paramId, n);
         }
     }
-    
+
+    /*
+     * Add a value for a parameter which could be either a single or batch parameter
+     * @param pInfo - A ParameterInfo object
+     * @param value - The value to set the parameter identified by pInfo
+     * @param isBatch  - Whether the parameter is a batch parameter
+     */
+    public void addSingleOrBatchValue(final ParameterInfo pInfo, String value, boolean isBatch)
+    {
+        //No pInfo or value found so do nothing
+        if(pInfo == null || value == null)
+        {
+            return;
+        }
+
+        String pName = pInfo.getName();
+
+        //No parameter name found so do nothing
+        if(pName == null)
+        {
+            return;
+        }
+        //determine if this is a directory
+        GpFilePath filepath = getBatchInputDir(value);
+        if(isBatch)
+        {
+            if(filepath != null && filepath.isDirectory())
+            {
+                addBatchDirectory(pName, value);
+            }
+            else
+            {
+                addBatchValue(pName, value);
+            }
+        }
+        else
+        {
+            addValue(pName, value);
+        }
+    }
+
     /**
      * When you assign an input parameter (e.g. 'input.file') to a batch directory, you are telling the server to
      * automatically generate a batch of jobs, one for each matching file in the batch directory.
