@@ -248,9 +248,6 @@ $.widget("gp.modulelist", {
 //                	ui.item.css("top", top + 95);
 //                	ui.item.css("left", left + 10);
 //                	ui.item.appendTo("body");
-                },
-                helper: function(element, ui) { 
-                	return $(ui.item).clone().appendTo('body').show(); 
                 }
             });
             $(this.element).disableSelection();
