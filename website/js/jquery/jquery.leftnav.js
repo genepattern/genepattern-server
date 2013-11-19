@@ -172,7 +172,10 @@ $.widget("gp.modulelist", {
         data: {},
         droppable: false,
         draggable: true,
-        click: function() {}
+        click: function() {},
+        add: function(event, ui) {},
+        remove: function(event, ui) {},
+        reposition: function(event, ui) {}
     },
 
     // the constructor
@@ -201,8 +204,10 @@ $.widget("gp.modulelist", {
         }).appendTo(this.element);
 
         if (this.options.droppable) {
+        	var thisModuleList = this;
         	var thisList = $(this.element);
         	var sortableIn = 1;
+        	var target = null;
             $(this.element).sortable({
             	items: '> .module-listing',
                 connectWith: '.module-list',
@@ -217,7 +222,7 @@ $.widget("gp.modulelist", {
                 	}
                 	else {
                 		thisList.find(".module-list-empty").hide();
-                	}
+                	}  	
                 },
                 receive: function(event, ui) { 
                 	sortableIn = 1;       	
@@ -231,7 +236,16 @@ $.widget("gp.modulelist", {
                 },
                 beforeStop: function(event, ui) {
                    if (sortableIn == 0) { 
-                      ui.item.remove(); 
+                      ui.item.remove();
+                      thisModuleList.options.remove(event, ui);
+                   }
+                   else {
+                	   if (target === 'pinned-modules') {
+                		   thisModuleList.options.reposition(event, ui);
+                	   }
+                	   else {
+                		   thisModuleList.options.add(event, ui);
+                	   }	   
                    }
                 },
                 stop: function(event, ui) {
@@ -248,6 +262,8 @@ $.widget("gp.modulelist", {
 //                	ui.item.css("top", top + 95);
 //                	ui.item.css("left", left + 10);
 //                	ui.item.appendTo("body");
+                	
+                	target = $(event.currentTarget).attr('id');
                 }
             });
             $(this.element).disableSelection();
