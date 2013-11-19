@@ -641,57 +641,60 @@ function loadParameterInfo(parameters, initialValues)
             var fileDiv = $("<div id='"+ rowId +"' class='fileDiv'>");
             var fileInput = $("<input class='uploadedinputfile' id='" + parameters[q].name + "' name='"+ parameters[q].name +"' type='file'/>");
 
-            // Create the mode toggle
-            if (parseInt(parameters[q].maxValue) == 1) {
-                var rowNum = q + 1;
-                var batchBox = $("<div class='batchBox' title='If a directory is selected and this box is checked, a job will be launched for every file in the directory with a matching type.'></div>");
-                // Add the checkbox
-                batchBox.append("<input type='checkbox' id='batchCheck" + rowNum + "' />");
-                batchBox.append("<label for='batchCheck" + rowNum + "'>Batch</label>");
-                batchBox.find("input[type=checkbox]").change(function() {
-                    if ($(this).is(":checked")) {
-                        $(this).parent().find("input[type=radio]:last").click();
-                    }
-                    else {
-                        $(this).parent().find("input[type=radio]:first").click();
-                    }
-                });
+            // Create the single/batch run mode toggle
+            var rowNum = q + 1;
+            var batchBox = $("<div class='batchBox' title='A job will be launched for every file with a matching type.'></div>");
+            // Add the checkbox
+            batchBox.append("<input type='checkbox' id='batchCheck" + rowNum + "' />");
+            batchBox.append("<label for='batchCheck" + rowNum + "'>Batch</label>");
+            batchBox.find("input[type=checkbox]").change(function() {
+                if ($(this).is(":checked")) {
+                    $(this).parent().find("input[type=radio]:last").click();
+                }
+                else {
+                    $(this).parent().find("input[type=radio]:first").click();
+                }
+            });
 
-                // Add the old toggle buttons
-                var modeToggle = $("<div id='modeToggle" + rowNum + "' style='display:none'></div>");
-                modeToggle.append("<input type='radio' value='normal' name='mode" + rowNum + "' id='singleMode" + rowNum + "' checked='true'><label title='This is the default and typical mode of operation for GenePattern. A single job will be started using the given input.' for='singleMode" + (q+1) + "'>Single</label></input>");
-                modeToggle.append("<input type='radio' value='batch' name='mode" + rowNum + "'id='batchMode" + rowNum + "'><label title='This will launch a job for every file in the directory sent to this parameter, provided the file is of a matching type.' for='batchMode" + rowNum + "'>Batch</label></input>");
+            // Add the old toggle buttons
+            var modeToggle = $("<div id='modeToggle" + rowNum + "' style='display:none'></div>");
+            modeToggle.append("<input type='radio' value='normal' name='mode" + rowNum + "' id='singleMode" + rowNum + "' checked='true'><label title='This is the default and typical mode of operation for GenePattern. A single job will be started using the given input.' for='singleMode" + (q+1) + "'>Single</label></input>");
+            modeToggle.append("<input type='radio' value='batch' name='mode" + rowNum + "'id='batchMode" + rowNum + "'><label title='This will launch a job for every file in the directory sent to this parameter, provided the file is of a matching type.' for='batchMode" + rowNum + "'>Batch</label></input>");
 
-                batchBox.append(modeToggle);
-                fileDiv.append(batchBox);
+            batchBox.append(modeToggle);
+            fileDiv.append(batchBox);
 
-                modeToggle.buttonset();
-                batchBox.tooltip();
-                modeToggle.find("input[type=radio]").change(function() {
-                    if ($(this).parent().find("input:checked").val() === "batch") {
-                        $(this).closest(".pRow").css("background-color", "#F5F5F5");
-                        $(this).closest(".pRow").next().css("background-color", "#F5F5F5");
-                        $(this).closest(".fileDiv").find(".uploadBtn").button("disable");
+            modeToggle.buttonset();
+            batchBox.tooltip();
+            modeToggle.find("input[type=radio]").change(function() {
+                var paramName = $(this).closest(".fileDiv").find("input[type='file']").attr("id");
 
-                        // Check the box
-                        $(this).parent().parent().find("input[type=checkbox]").prop('checked', true);
-                    }
-                    else {
-                        $(this).closest(".pRow").css("background-color", "#FFFFFF");
-                        $(this).closest(".pRow").next().css("background-color", "#FFFFFF");
-                        $(this).closest(".fileDiv").find(".uploadBtn").button("enable");
+                if ($(this).parent().find("input:checked").val() === "batch") {
+                    $(this).closest(".pRow").css("background-color", "#F5F5F5");
+                    $(this).closest(".pRow").next().css("background-color", "#F5F5F5");
 
-                        // Check the box
-                        $(this).parent().parent().find("input[type=checkbox]").prop('checked', false);
-                    }
+                    var idPName = paramName.replace(/\./g,'_');
+                    idPName = "#" + idPName + "FileDiv";
+                    var div = $(idPName).closest(".fileDiv");
+                    div.find("> button, > span").show();
+
+                    // Check the box
+                    $(this).parent().parent().find("input[type=checkbox]").prop('checked', true);
+                }
+                else {
+                    $(this).closest(".pRow").css("background-color", "#FFFFFF");
+                    $(this).closest(".pRow").next().css("background-color", "#FFFFFF");
 
                     // Clear the files from the parameter
-                    var paramName = $(this).closest(".fileDiv").find("input[type='file']").attr("id");
                     param_file_listing[paramName] = [];
                     updateParamFileTable(paramName);
-                });
-            }
-            else
+
+                    // Uncheck the box
+                    $(this).parent().parent().find("input[type=checkbox]").prop('checked', false);
+                }
+            });
+
+            if (parseInt(parameters[q].maxValue) > 1)
             {
                 //make the file input field multiselect, so you can select more than one file
                 fileInput.attr("multiple", "multiple");
@@ -977,7 +980,6 @@ function loadParameterInfo(parameters, initialValues)
                 param_file_listing[paramName] = fileObjListings;
             }
 
-            //check if max file length will be violated
             var totalFileLength = fileObjListings.length + 1;
             validateMaxFiles(paramName, totalFileLength);
 
@@ -1064,7 +1066,6 @@ jQuery(document).ready(function()
 
         checkFileSizes(uploadedFiles);
 
-        //check if max file length will be violated
         var totalFileLength = fileObjListings.length + uploadedFiles.length;
         validateMaxFiles(paramName, totalFileLength);
 
@@ -1563,7 +1564,6 @@ function handleFiles(files, paramName)
         param_file_listing[paramName] = fileObjListings;
     }
 
-    //check if max file length will be vialoated
     var totalFileLength = fileObjListings.length + files.length;
     validateMaxFiles(paramName, totalFileLength);
 
@@ -1585,6 +1585,13 @@ function handleFiles(files, paramName)
 
 function validateMaxFiles(paramName, numFiles)
 {
+    //check if max file length will be violated only if this not a batch parameter
+    //in the case of batch we want to allow specifying any number of files
+    if(isBatch(paramName))
+    {
+        return;
+    }
+
     var paramJSON = null;
     for(var p=0;p<parametersJson.length; p++)
     {
@@ -1785,7 +1792,7 @@ function updateParamFileTable(paramName)
 
     // Hide or show the buttons if something is selected
     var div = $(idPName).closest(".fileDiv");
-    if (atMaxFiles(paramName)) {
+    if (!isBatch(paramName) && atMaxFiles(paramName)) {
         div.find("> button, > span").hide();
     }
     else {
@@ -1794,6 +1801,12 @@ function updateParamFileTable(paramName)
 }
 
 function atMaxFiles(paramName) {
+    //if this ia a batch parameter then allow mutiple files to be provided
+    if(isBatch(paramName))
+    {
+        return false;
+    }
+
     var currentNum = param_file_listing[paramName].length;
 
     var maxNum = null;
