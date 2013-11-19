@@ -201,11 +201,56 @@ $.widget("gp.modulelist", {
         }).appendTo(this.element);
 
         if (this.options.droppable) {
+        	var thisList = $(this.element);
+        	var sortableIn = 1;
             $(this.element).sortable({
+            	items: '> .module-listing',
                 connectWith: '.module-list',
                 scroll: false,
                 drop: function(event, ui) {
                     ui.draggable.data('dropped', true);
+                },
+                update: function(event, ui) {
+                	// Hide and show "drop here"
+                	if ($(event.target).find(".module-listing").length < 1) {
+                		thisList.find(".module-list-empty").show();
+                	}
+                	else {
+                		thisList.find(".module-list-empty").hide();
+                	}
+                },
+                receive: function(event, ui) { 
+                	sortableIn = 1;       	
+                },
+                over: function(event, ui) { 
+                	sortableIn = 1;
+                	thisList.find(".module-list-empty").hide();
+                },
+                out: function(event, ui) { 
+                	sortableIn = 0; 
+                },
+                beforeStop: function(event, ui) {
+                   if (sortableIn == 0) { 
+                      ui.item.remove(); 
+                   }
+                },
+                stop: function(event, ui) {
+                	if (thisList.find(".module-listing").length < 1) {
+                 	   thisList.find(".module-list-empty").show();
+                    }
+//                	ui.item.css("position", "static");
+                },
+                start: function(event, ui) {
+//                	var top = ui.item.offset().top;
+//                	var left = ui.item.offset().left;
+//                	
+//                	ui.item.css("position", "absolute");
+//                	ui.item.css("top", top + 95);
+//                	ui.item.css("left", left + 10);
+//                	ui.item.appendTo("body");
+                },
+                helper: function(element, ui) { 
+                	return $(ui.item).clone().appendTo('body').show(); 
                 }
             });
             $(this.element).disableSelection();
