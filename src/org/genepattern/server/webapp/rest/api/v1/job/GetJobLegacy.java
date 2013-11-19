@@ -131,22 +131,32 @@ class GetJobLegacy implements GetJob {
         }
         
         //manually create a JSONObject representing the job
-        JSONObject job = new JSONObject();
+        final JSONObject job = initJsonObject(jobInfo);
+        return job;
+    }
+
+    /**
+     * Create a JSONObject representing the job
+     * @param jobInfo
+     * @return
+     */
+    private JSONObject initJsonObject(final JobInfo jobInfo) throws GetJobException {
+        final JSONObject job = new JSONObject();
         try {
-            job.put("jobId", jobId);
+            job.put("jobId", ""+jobInfo.getJobNumber());
             
             //init jobStatus
-            JSONObject jobStatus = new JSONObject();
-            boolean isFinished=isFinished(jobInfo);
+            final JSONObject jobStatus = new JSONObject();
+            final boolean isFinished=isFinished(jobInfo);
             jobStatus.put("isFinished", isFinished);
-            boolean hasError=hasError(jobInfo);
+            final boolean hasError=hasError(jobInfo);
             jobStatus.put("hasError", hasError);
             URL stderr=null;
             try {
                 stderr=getStderrLocation(jobInfo);
             }
             catch (Throwable t) {
-                log.error("Error getting stderr file for jobId="+jobId, t);
+                log.error("Error getting stderr file for jobId="+jobInfo.getJobNumber(), t);
             }
             if (stderr != null) {
                 //TODO: come up with a standard JSON representation of a gp job result file
@@ -155,9 +165,9 @@ class GetJobLegacy implements GetJob {
             job.put("status", jobStatus);
             
             //init resultFiles
-            JSONArray outputFiles=new JSONArray();
+            final JSONArray outputFiles=new JSONArray();
             int numFiles=0;
-            for(ParameterInfo pinfo : getOutputFiles(jobInfo)) {
+            for(final ParameterInfo pinfo : getOutputFiles(jobInfo)) {
                 final GpFilePath outputFile = getOutputFile(jobInfo, pinfo);
                 boolean isExecutionLog=isExecutionLog(pinfo);
                 if (isExecutionLog) {
@@ -176,7 +186,7 @@ class GetJobLegacy implements GetJob {
                         outputFiles.put(outputFileJson);
                     }
                     catch (Exception e) {
-                        throw new GetJobException("Error serializing JSON object for jobId="+jobId);
+                        throw new GetJobException("Error serializing JSON object for jobId="+jobInfo.getJobNumber());
                     }
                 }
             }
@@ -184,10 +194,11 @@ class GetJobLegacy implements GetJob {
             job.put("outputFiles", outputFiles);
         }
         catch (JSONException e) {
-            log.error("Error initializing JSON representation for jobId="+jobId, e);
-            throw new GetJobException("Error initializing JSON representation for jobId="+jobId+
+            log.error("Error initializing JSON representation for jobId="+jobInfo.getJobNumber(), e);
+            throw new GetJobException("Error initializing JSON representation for jobId="+jobInfo.getJobNumber()+
                     ": "+e.getLocalizedMessage());
         }
         return job;
+
     }
 }
