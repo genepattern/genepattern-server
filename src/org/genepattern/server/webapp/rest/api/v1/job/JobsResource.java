@@ -1,9 +1,7 @@
 package org.genepattern.server.webapp.rest.api.v1.job;
 
 import java.net.URI;
-import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
@@ -25,13 +23,10 @@ import org.genepattern.server.job.input.JobInput;
 import org.genepattern.server.rest.GpServerException;
 import org.genepattern.server.rest.JobInputApi;
 import org.genepattern.server.rest.JobInputApiFactory;
-import org.genepattern.server.rest.JobReceipt;
 import org.genepattern.server.webapp.rest.api.v1.Util;
 import org.genepattern.server.webapp.rest.api.v1.job.JobInputValues.Param;
-import org.genepattern.server.webservice.server.dao.AdminDAO;
 import org.genepattern.server.webservice.server.dao.AnalysisDAO;
 import org.genepattern.webservice.JobInfo;
-import org.genepattern.webservice.TaskInfo;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -176,10 +171,12 @@ public class JobsResource {
         
         final ServerConfiguration.Context userContext=Util.getUserContext(request);
         JSONObject job=null;
-        GetJob getJobImpl = new GetJobLegacy();
+        final GetJobLegacy getJobImpl = new GetJobLegacy();
         String jsonStr;
         try {
-            job=getJobImpl.getJob(userContext, jobId);
+            //TODO: make this a configurable flag
+            final boolean includeChildren=true;
+            job=getJobImpl.getJob(userContext, jobId, includeChildren);
             if (job==null) {
                 throw new Exception("Unexpected null return value");
             }

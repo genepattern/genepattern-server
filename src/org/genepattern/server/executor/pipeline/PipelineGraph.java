@@ -27,7 +27,7 @@ import org.jgrapht.graph.SimpleDirectedGraph;
 public class PipelineGraph {
     private static Logger log = Logger.getLogger(PipelineGraph.class);
     
-    static class MyVertex {
+    public static class MyVertex {
         final private String stepId;
         private JobInfo jobInfo=null;
 
@@ -63,7 +63,7 @@ public class PipelineGraph {
         }
     }
 
-    static class MyEdge {
+    public static class MyEdge {
         private MyVertex from;
         private MyVertex to;
         

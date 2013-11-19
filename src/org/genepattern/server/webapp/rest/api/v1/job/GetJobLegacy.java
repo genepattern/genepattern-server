@@ -11,6 +11,8 @@ import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.dm.GpFilePath;
 import org.genepattern.server.dm.jobresult.JobResultFile;
 import org.genepattern.server.domain.JobStatus;
+import org.genepattern.server.webapp.rest.api.v1.job.pipeline.JobInfoVisitorUtil;
+import org.genepattern.server.webapp.rest.api.v1.job.pipeline.JobInfoVisitorUtil.InitChildJobs;
 import org.genepattern.server.webservice.server.dao.AnalysisDAO;
 import org.genepattern.util.GPConstants;
 import org.genepattern.webservice.JobInfo;
@@ -19,7 +21,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-class GetJobLegacy implements GetJob {
+public class GetJobLegacy implements GetJob {
     final static private Logger log = Logger.getLogger(GetJobLegacy.class);
     /**
      * helper method which indicates if the job has completed processing.
@@ -96,6 +98,12 @@ class GetJobLegacy implements GetJob {
     public JSONObject getJob(final ServerConfiguration.Context userContext, final String jobId) 
     throws GetJobException
     {
+        final boolean includeChildren=false; //legacy support
+        return getJob(userContext, jobId, includeChildren);
+    }
+    public JSONObject getJob(final ServerConfiguration.Context userContext, final String jobId, final boolean includeChildren) 
+    throws GetJobException
+    {
         if (userContext==null) {
             throw new IllegalArgumentException("userContext==null");
         }
@@ -132,6 +140,20 @@ class GetJobLegacy implements GetJob {
         
         //manually create a JSONObject representing the job
         final JSONObject job = initJsonObject(jobInfo);
+        
+        //for debugging, get children job infos
+        if (includeChildren) {
+            try {
+                InitChildJobs listener=new InitChildJobs(userContext);
+                JobInfoVisitorUtil.walkPipelineGraph(listener, jobInfo);
+                job.put("children",listener.getChildren());
+            }
+            catch (Throwable t) {
+                final String errorMessage="Error get JSON representation for children of jobId="+jobInfo.getJobNumber();
+                log.error(errorMessage, t);
+                throw new GetJobException(errorMessage + ": "+t.getLocalizedMessage());
+            }
+        }
         return job;
     }
 
