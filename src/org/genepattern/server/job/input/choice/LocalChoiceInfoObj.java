@@ -48,16 +48,16 @@ default.properties:
     p1_choiceDir=ftp://gpftp.broadinstitute.org/rna_seq/whole_genomes
 </pre>
 
-  Because there is a matching entry in 'local.choice.dirs', the matching local directory would be, '/xchip/gpdev/gpftp/pub/rna_seq/whole_genomes'.
+  Because there is a matching entry in 'local.choiceDirs', the matching local directory would be, '/xchip/gpdev/gpftp/pub/rna_seq/whole_genomes'.
   The server generates a list of 'virtual' URL values into the drop-down. Each value is an FTP url, e.g.
       ftp://gpftp.broadinstitute.org/rna_seq/whole_genomes/Arabidopsis_thaliana_Ensembl_TAIR10.fa
   When job is run, the GP server will find the matching local path to the file, thus avoiding the FTP download.
   The command line value would be,
       /xchip/gpdev/gpftp/pub/rna_seq/whole_genomes/Arabidopsis_thaliana_Ensembl_TAIR10.fa
 
-  Caveats: Duplicate matching keys in the 'local.choice.dirs' map are not allowed. E.g.
+  Caveats: Duplicate matching keys in the 'local.choiceDirs' map are not allowed. E.g.
   <pre>
-    local.choice.dirs: {
+    local.choiceDirs: {
         "ftp://ftp.broadinstitute.org/pub/genepattern/": "/web/ftp/pub/genepattern/",
         "ftp://ftp.broadinstitute.org/pub/genepattern/rna_seq": "/web/ftp/pub/genepattern/rna_seq",
     }
@@ -66,7 +66,7 @@ default.properties:
 
   It's possible to map two different external urls to the same local path. E.g.
   <pre>
-    local.choice.dirs: {
+    local.choiceDirs: {
         "ftp://ftp.broadinstitute.org/pub/genepattern/": "/xchip/gpdev/gpftp/pub/",
         "ftp://gpftp.broadinstitute.org/": "/xchip/gpdev/gpftp/pub/"
     }
