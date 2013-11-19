@@ -17,13 +17,13 @@ import org.genepattern.server.job.input.cache.MapLocalEntry;
  *   /xchip/gpdev/gpftp/pub/
  * you can configure your server to avoid making the FTP calls to list and download the files.
  * 
- * To do so, make an edit to the config.yaml file for your server. Define a 'local.choice.dirs' 
+ * To do so, make an edit to the config.yaml file for your server. Define a 'local.choiceDirs' 
  * property in the 'default.properties' section of the config file. 
  * Do not customize this on a per-user or per-module basis! This defines a shared resource and 
  * we must use the same setting for all users.
  * 
  * When the GP server initializes the menu for a module with a dynamic drop-down, it will first check 
- * for a matching entry in the 'local.choice.dirs' map. If there is one, it will use the local path
+ * for a matching entry in the 'local.choiceDirs' map. If there is one, it will use the local path
  * instead of making FTP calls. When a user selects a value from the drop-down the server will use 
  * the local path on the command line, and will not do an FTP transfer.
  * 
@@ -38,7 +38,7 @@ default.properties:
     #
     # create a map of "<externalDir>": "<localDir>"
     #
-    local.choice.dirs: {
+    local.choiceDirs: {
         "ftp://gpftp.broadinstitute.org/": "/xchip/gpdev/gpftp/pub/"
     }
 </pre>
