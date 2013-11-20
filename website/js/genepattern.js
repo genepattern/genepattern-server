@@ -196,9 +196,12 @@ function getPinnedModules() {
 	var pinned = [];
 	
 	$.each(all_modules, function(i, v) {
-	    if (v.tags.indexOf("pinned") !== -1) {
-	        pinned.push(v);
-	    }
+		for (var j = 0; j < v.tags.length; j++) {
+			var tagObj = v.tags[j];
+			if (tagObj.tag == "pinned") {
+				pinned.push(v);
+			}
+		}
 	});
 	
 	return pinned;
