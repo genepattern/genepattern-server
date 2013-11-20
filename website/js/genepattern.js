@@ -366,10 +366,34 @@ function initPinned() {
             });
         },
         remove: function(event, ui) {
-        	alert("remove");
+        	$.ajax({
+        		type: 'DELETE',
+                url: '/gp/rest/v1/tags/unpin',
+                dataType: 'text',
+                data: JSON.stringify({
+                	user: username,
+                	lsid: baseLsid($(ui.item).find(".module-lsid").text()),
+                	position: 0
+                }),
+                success: function(data, status, xhr) {
+                	console.log("unpinned");
+                }
+            });
         },
         reposition: function(event, ui) {
-        	alert("reposition");
+        	$.ajax({
+        		type: 'PUT',
+                url: '/gp/rest/v1/tags/repin',
+                dataType: 'text',
+                data: JSON.stringify({
+                	user: username,
+                	lsid: baseLsid($(ui.item).find(".module-lsid").text()),
+                	position: calcPosition(ui.placeholder)
+                }),
+                success: function(data, status, xhr) {
+                	console.log("repinned");
+                }
+            });
         }
     });
 	pinned.modulelist("filter", "pinned");

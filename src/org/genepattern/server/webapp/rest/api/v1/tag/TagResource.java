@@ -1,7 +1,6 @@
 package org.genepattern.server.webapp.rest.api.v1.tag;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
@@ -11,7 +10,6 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
-import javax.xml.bind.annotation.XmlRootElement;
 
 import org.apache.log4j.Logger;
 import org.genepattern.server.database.HibernateUtil;
@@ -49,12 +47,12 @@ public class TagResource {
     }
     
     @PUT
-    @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @Path("repin")
-    public Response repinModule(@Context HttpServletRequest request, PinModuleObject pinObj) {
+    public Response repinModule(@Context HttpServletRequest request, String body) {
         final boolean isInTransaction = HibernateUtil.isInTransaction();
         try {
+            PinModuleObject pinObj = new PinModuleObject(body);
             PinModuleDAO pmDao = new PinModuleDAO();
             pmDao.repinModule(pinObj.getUser(), pinObj.getLsid(), pinObj.getPosition());
             
@@ -73,12 +71,12 @@ public class TagResource {
     }
     
     @DELETE
-    @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @Path("unpin")
-    public Response unpinModule(@Context HttpServletRequest request, PinModuleObject pinObj) {
+    public Response unpinModule(@Context HttpServletRequest request, String body) {
         final boolean isInTransaction = HibernateUtil.isInTransaction();
         try {
+            PinModuleObject pinObj = new PinModuleObject(body);
             PinModuleDAO pmDao = new PinModuleDAO();
             pmDao.unpinModule(pinObj.getUser(), pinObj.getLsid());
             
@@ -96,7 +94,6 @@ public class TagResource {
         }
     }
     
-    @XmlRootElement
     public class PinModuleObject {
         String user;
         String lsid;
