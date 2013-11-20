@@ -330,6 +330,14 @@ function initRecent() {
     $('#recent-modules .module-list-empty').text("No Recent Modules");
 }
 
+function calcPosition(placeholder) {
+	return placeholder.index() - 2;
+}
+
+function baseLsid(lsid) {
+	return lsid.substr(0, lsid.lastIndexOf(":"));
+}
+
 function initPinned() {
 	var pinned_modules = getPinnedModules();
 	
@@ -341,6 +349,27 @@ function initPinned() {
         click: function(event) {
         	var lsid = $(event.target).closest(".module-listing").module("get_lsid");
             runTaskForm(lsid);
+        },
+        add: function(event, ui) {
+        	$.ajax({
+        		type: 'POST',
+                url: '/gp/rest/v1/tags/pin',
+                dataType: 'text',
+                data: JSON.stringify({
+                	user: username,
+                	lsid: baseLsid($(ui.item).find(".module-lsid").text()),
+                	position: calcPosition(ui.placeholder)
+                }),
+                success: function(data, status, xhr) {
+                	console.log("pinned");
+                }
+            });
+        },
+        remove: function(event, ui) {
+        	alert("remove");
+        },
+        reposition: function(event, ui) {
+        	alert("reposition");
         }
     });
 	pinned.modulelist("filter", "pinned");

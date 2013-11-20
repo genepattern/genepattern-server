@@ -32,6 +32,11 @@ $.widget("gp.module", {
 
         // Save the lsid
         this.lsid = this._protect(this.options.data.lsid, "");
+        $('<div>', {
+            'class': 'module-lsid',
+            'style': 'display:none;',
+            'text': this.lsid
+        }).appendTo(this.element);
 
         // Add the ui elements
         this.docicon = $('<a><img src="/gp/css/frozen/modules/styles/images/file_add.gif"></a>')
@@ -225,7 +230,7 @@ $.widget("gp.modulelist", {
                 	}  	
                 },
                 receive: function(event, ui) { 
-                	sortableIn = 1;       	
+                	sortableIn = 1;    
                 },
                 over: function(event, ui) { 
                 	sortableIn = 1;
@@ -243,7 +248,11 @@ $.widget("gp.modulelist", {
                 	   if (target === 'pinned-modules') {
                 		   thisModuleList.options.reposition(event, ui);
                 	   }
-                	   else {
+                	   else {              		   
+                		   if (thisModuleList._lsidInstances(ui.item) > 1) {
+                			   ui.item.remove();
+                			   return;
+                		   }
                 		   thisModuleList.options.add(event, ui);
                 	   }	   
                    }
@@ -315,6 +324,18 @@ $.widget("gp.modulelist", {
 
     set_title: function(title) {
         this.element.find(".module-list-title").html(title);
+    },
+    
+    _lsidInstances: function(listing) {
+    	var lsid = $(listing).find(".module-lsid").text();
+    	var lsid_list = $(this.element).find(".module-lsid");
+    	var found = 0;
+    	for (var i = 0; i < lsid_list.length; i++) {
+    		if ($(lsid_list[i]).text() == lsid) {
+    			found++;
+    		}
+    	}
+    	return found;
     },
 
     // events bound via _on are removed automatically
