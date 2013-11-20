@@ -16,8 +16,15 @@ public class PinModuleDAO extends BaseDAO {
         pinned.setLsid(lsid);
         pinned.setPosition(position);
         this.save(pinned);
-        
-        return true;
+
+        return incrementPosition(user, position) != 0;
+    }
+    
+    public int incrementPosition(String user, double greaterThanThis) {
+        Query query = HibernateUtil.getSession().createQuery("update org.genepattern.server.domain.PinModule set INDEX = INDEX + 1 where USER = :username and INDEX > :gtt");
+        query.setString("username", user);
+        query.setString("gtt", new Double(greaterThanThis).toString());
+        return query.executeUpdate();
     }
     
     @SuppressWarnings("unchecked")
