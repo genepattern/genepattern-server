@@ -28,6 +28,8 @@ import org.genepattern.server.dm.UrlUtil;
 import org.genepattern.server.job.input.choice.ChoiceInfo;
 import org.genepattern.server.job.input.choice.ChoiceInfoHelper;
 import org.genepattern.server.rest.ParameterInfoRecord;
+import org.genepattern.server.tags.TagManager;
+import org.genepattern.server.tags.TagManager.Tag;
 import org.genepattern.server.user.UserDAO;
 import org.genepattern.server.user.UserPropKey;
 import org.genepattern.server.webapp.rest.api.v1.Util;
@@ -161,8 +163,7 @@ public class TasksResource {
             TaskInfo[] allTasks = adminDao.getAllTasksForUser(userId);
             final Map<String, TaskInfo> latestTasks = adminDao.getLatestTasks(allTasks);
             
-            // Apply tags and suites to the taskInfos
-            applyTaskTags(latestTasks, userContext);
+            // Apply suites to the taskInfos
             applyTaskSuites(latestTasks, userContext);
             
             // Transform the latest task map to an array and sort it
@@ -172,7 +173,8 @@ public class TasksResource {
             // Return the JSON object
             JSONArray jsonArray = new JSONArray();
             for(final TaskInfo taskInfo : tasksArray) {
-                JSONObject jsonObj = asJson(taskInfo);
+                
+                JSONObject jsonObj = asJson(taskInfo, userContext);
                 jsonArray.put(jsonObj);
             }
             return Response.ok().entity(jsonArray.toString()).build();
@@ -206,7 +208,7 @@ public class TasksResource {
      * @param taskInfo
      * @return
      */
-    private JSONObject asJson(final TaskInfo taskInfo) throws JSONException {
+    private JSONObject asJson(final TaskInfo taskInfo, ServerConfiguration.Context userContext) throws JSONException {
         JSONObject jsonObj = new JSONObject();
         jsonObj.put("lsid", taskInfo.getLsid());
         jsonObj.put("name", taskInfo.getName());
@@ -221,7 +223,7 @@ public class TasksResource {
         jsonObj.put("documentation", getDocLink(taskInfo));
         jsonObj.put("categories", getCategories(taskInfo));
         jsonObj.put("suites", getSuites(taskInfo));
-        jsonObj.put("tags", getTags(taskInfo));
+        jsonObj.put("tags", getTags(taskInfo, userContext));
         return jsonObj;
     }
 
@@ -235,14 +237,20 @@ public class TasksResource {
         return json;
     }
     
-    private JSONArray getTags(final TaskInfo taskInfo) {
-        List<String> tags = (List<String>) taskInfo.getAttributes().get("tags");
-        if (tags != null) {
-            return new JSONArray(tags);
+    private JSONArray getTags(final TaskInfo taskInfo, ServerConfiguration.Context userContext) {
+        Set<Tag> tags = TagManager.instance().getTags(userContext, taskInfo);
+        
+        JSONArray array = new JSONArray();
+        for (Tag tag : tags) {
+            try {
+                array.put(tag.toJSON());
+            }
+            catch (JSONException e) {
+                log.error("Error adding tag to array: " + tag);
+            }
         }
-        else {
-            return new JSONArray();
-        }
+        
+        return array;
     }
     
     private JSONArray getSuites(final TaskInfo taskInfo) {
