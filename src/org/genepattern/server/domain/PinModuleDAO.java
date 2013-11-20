@@ -17,13 +17,14 @@ public class PinModuleDAO extends BaseDAO {
         pinned.setPosition(position);
         this.save(pinned);
 
-        return incrementPosition(user, position) != 0;
+        return modifyPositions(user, position, 1) != 0;
     }
     
-    public int incrementPosition(String user, double greaterThanThis) {
-        Query query = HibernateUtil.getSession().createQuery("update org.genepattern.server.domain.PinModule set INDEX = INDEX + 1 where USER = :username and INDEX > :gtt");
+    public int modifyPositions(String user, double greaterThanThis, int modification) {
+        Query query = HibernateUtil.getSession().createQuery("update org.genepattern.server.domain.PinModule set INDEX = INDEX + :mod where USER = :username and INDEX > :gtt");
         query.setString("username", user);
         query.setString("gtt", new Double(greaterThanThis).toString());
+        query.setString("mod", new Integer(modification).toString());
         return query.executeUpdate();
     }
     
@@ -34,10 +35,15 @@ public class PinModuleDAO extends BaseDAO {
         query.setString("lsid", lsid);
         List<PinModule> deleteList = query.list();
         
-        for (PinModule i : deleteList) {
-            this.delete(i);
+        if (deleteList.size() > 1) {
+            log.error("Too many modules matching LSID " + lsid + " found for user " + user + " with unpin");
         }
         
+        for (PinModule i : deleteList) {
+            this.delete(i);
+            modifyPositions(user, i.getPosition(), -1);
+        }
+
         return deleteList.size() > 0;
     }
     
