@@ -61,5 +61,10 @@ public class PinModuleDAO extends BaseDAO {
 
         return goodSoFar;
     }
-
+    
+    public List<PinModule> getPinsForUser(String user) {
+        Query query = HibernateUtil.getSession().createQuery("from org.genepattern.server.domain.PinModule where USER = :username");
+        query.setString("username", user);
+        return query.list();
+    }
 }

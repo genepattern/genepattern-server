@@ -3,6 +3,7 @@ package org.genepattern.server.tags;
 import java.net.MalformedURLException;
 import java.util.Date;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -10,6 +11,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.apache.log4j.Logger;
 import org.genepattern.server.config.ServerConfiguration.Context;
+import org.genepattern.server.domain.PinModule;
+import org.genepattern.server.domain.PinModuleDAO;
 import org.genepattern.server.user.UserDAO;
 import org.genepattern.server.user.UserPropKey;
 import org.genepattern.server.webservice.server.dao.AdminDAO;
@@ -86,6 +89,7 @@ public class TagManager {
         
         // Add tags for the user
         addRecent(context);
+        addPinned(context);
         
         // Update the user's update time
         userCacheMap.put(context.getUserId(), new Date());
@@ -115,6 +119,25 @@ public class TagManager {
             // Add the tag
             Tag recentTag = new Tag("recent");
             tags.add(recentTag);
+            tagMap.put(key, tags);
+        }
+    }
+    
+    private void addPinned(Context context) {
+        PinModuleDAO pinDao = new PinModuleDAO();
+        List<PinModule> pins = pinDao.getPinsForUser(context.getUserId());
+
+        for (PinModule pin : pins) {
+            TagCacheKey key = new TagCacheKey(context.getUserId(), pin.getLsid());
+            Set<Tag> tags = tagMap.get(key);
+            
+            // Protect against null
+            if (tags == null) tags = new HashSet<Tag>();
+            
+            // Add the tag
+            Tag pinTag = new Tag("pinned");
+            pinTag.setMetadata(new Double(pin.getPosition()).toString());
+            tags.add(pinTag);
             tagMap.put(key, tags);
         }
     }
