@@ -45,6 +45,7 @@
                 var genomeSpaceEnabled = #{genomeSpaceBean.genomeSpaceEnabled};
                 var genomeSpaceLoggedIn = #{genomeSpaceBean.loggedIn};
                 var userLoggedIn = !("${requestScope.userID}" === "null" || "${requestScope.userID}" === "");
+                var username = "${requestScope.userID}";
             </script>
             
             <script type="text/javascript" src="/gp/js/jquery/jquery-1.8.3.js" />
