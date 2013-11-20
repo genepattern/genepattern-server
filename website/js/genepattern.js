@@ -208,9 +208,12 @@ function getRecentModules() {
 	var recent = [];
 	
 	$.each(all_modules, function(i, v) {
-	    if (v.tags.indexOf("recent") !== -1) {
-	    	recent.push(v);
-	    }
+		for (var j = 0; j < v.tags.length; j++) {
+			var tagObj = v.tags[j];
+			if (tagObj.tag == "recent") {
+				recent.push(v);
+			}
+		}
 	});
 	
 	return recent;

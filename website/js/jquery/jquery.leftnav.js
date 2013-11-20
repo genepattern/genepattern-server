@@ -71,7 +71,7 @@ $.widget("gp.module", {
         var all_tags_raw = [];
         $.merge(all_tags_raw, this._protect(this.options.data.categories, []));
         $.merge(all_tags_raw, this._protect(this.options.data.suites, []));
-        $.merge(all_tags_raw, this._protect(this.options.data.tags, []));
+        $.merge(all_tags_raw, this._protect(this._getTags(this.options.data.tags), []));
         var all_tags = [];
         $.each(all_tags_raw, function(i, el) { // Remove duplicates
             if($.inArray(el, all_tags) === -1) all_tags.push(el);
@@ -114,6 +114,14 @@ $.widget("gp.module", {
         this._on(this.element, {
             click: this.options.click
         });
+    },
+    
+    _getTags: function(tagObjList) {
+    	var tagList = [];
+    	for (var i = 0; i < tagObjList.length; i++) {
+    		tagList.push(tagObjList[i].tag);
+    	}
+    	return tagList;
     },
     
     _protect: function(string, blankReturn) {
