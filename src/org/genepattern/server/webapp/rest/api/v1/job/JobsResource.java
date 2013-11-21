@@ -70,9 +70,10 @@ import org.json.JSONObject;
  * @author pcarr
  *
  */
-@Path("/v1/jobs")
+@Path("/"+JobsResource.URI_PATH)
 public class JobsResource {
     final static private Logger log = Logger.getLogger(JobsResource.class);
+    final static public String URI_PATH="v1/jobs";
     
     ////////////////////////////////////////
     // adding a job
@@ -170,20 +171,76 @@ public class JobsResource {
     ) {
         
         final ServerConfiguration.Context userContext=Util.getUserContext(request);
-        JSONObject job=null;
-        final GetJobLegacy getJobImpl = new GetJobLegacy();
+        
+        final String self=uriInfo.getAbsolutePath().toString();
+        final URI baseUri=uriInfo.getBaseUri();
+        final String jobsResourcePath=baseUri.toString()+URI_PATH;
+        final GetPipelineJobLegacy getJobImpl = new GetPipelineJobLegacy(jobsResourcePath);
         String jsonStr;
         try {
             //TODO: make this a configurable flag
             final boolean includeChildren=true;
+            JSONObject job=null;
             job=getJobImpl.getJob(userContext, jobId, includeChildren);
             if (job==null) {
                 throw new Exception("Unexpected null return value");
             }
             //decorate with 'self'
-            final String self=uriInfo.getAbsolutePath().toString();
             job.put("self", self);
             jsonStr=job.toString();
+        }
+        catch (Throwable t) {
+            //TODO: customize the response errors, e.g.
+            //    404 Not found, when the job with given job_id is no longer in the DB
+            //    ?, when job_id is not set
+            //    ?, when job_id is invalid, e.g. not an integer
+            //    ?, when current user does not have read access to the job
+            final String message="Error creating JSON representation for jobId="+jobId+": "+t.getLocalizedMessage();            
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+                    .entity(message)
+                    .build();
+        }
+
+        //return the JSON representation of the job
+        return Response.ok()
+                .entity(jsonStr)
+                .build();
+    }
+    
+    /**
+     * GET children for the given jobId.
+     * 
+     * Example
+     * <pre>
+       curl -D headers.txt -u test:test http://127.0.0.1:8080/gp/rest/v1/jobs/9140/children
+     * </pre>
+     * @param request
+     * @param jobId
+     * @return
+     */
+    @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    @Path("/{jobId}/children")
+    public Response getChildren(
+            final @Context UriInfo uriInfo,
+            final @Context HttpServletRequest request,
+            final @PathParam("jobId") String jobId
+    ) {
+        
+        final ServerConfiguration.Context userContext=Util.getUserContext(request);
+        final String self=uriInfo.getAbsolutePath().toString();
+        final URI baseUri=uriInfo.getBaseUri();
+        final String jobsResourcePath=baseUri.toString()+URI_PATH;
+        final GetPipelineJobLegacy getJobImpl = new GetPipelineJobLegacy(jobsResourcePath);
+        String jsonStr;
+        try {
+            JSONObject children=getJobImpl.getChildren(userContext, jobId);
+            if (children==null) {
+                throw new Exception("Unexpected null return value");
+            }
+            //decorate with 'self'
+            children.put("href", self);
+            jsonStr=children.toString();
         }
         catch (Throwable t) {
             //TODO: customize the response errors, e.g.
