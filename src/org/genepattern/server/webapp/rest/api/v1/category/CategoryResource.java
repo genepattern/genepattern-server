@@ -12,7 +12,9 @@ import javax.ws.rs.core.Response;
 
 import org.apache.log4j.Logger;
 import org.genepattern.server.cm.CategoryManager;
+import org.genepattern.server.config.ServerConfiguration;
 import org.genepattern.server.database.HibernateUtil;
+import org.genepattern.server.webapp.rest.api.v1.Util;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -31,10 +33,12 @@ public class CategoryResource {
     @Produces(MediaType.APPLICATION_JSON)
     @Path("all.json")
     public Response getAllCategories(@Context HttpServletRequest request) {
+        ServerConfiguration.Context userContext = Util.getUserContext(request);
         final boolean isInTransaction = HibernateUtil.isInTransaction();
         try {
             // Get the map of the latest suites
-            List<String> categories = CategoryManager.getAllCategories();
+            final boolean includeHidden=false;
+            List<String> categories = CategoryManager.getAllCategories(userContext, includeHidden);
             
             // Return the JSON object
             JSONArray jsonArray = new JSONArray();
