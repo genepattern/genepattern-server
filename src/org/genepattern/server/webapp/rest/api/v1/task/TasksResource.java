@@ -8,6 +8,7 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
@@ -162,7 +163,21 @@ public class TasksResource {
             final AdminDAO adminDao = new AdminDAO();
             TaskInfo[] allTasks = adminDao.getAllTasksForUser(userId);
             final Map<String, TaskInfo> latestTasks = adminDao.getLatestTasks(allTasks);
-            
+            //filter out the hidden tasks
+            final List<String> hiddenTasks=new ArrayList<String>();
+            for(final Entry<String,TaskInfo> entry : latestTasks.entrySet()) {
+                final String baseLsid=entry.getKey();
+                final TaskInfo taskInfo=entry.getValue();
+                final List<String> taskTypes=CategoryManager.getCategoriesForTask(userContext, taskInfo);
+                if (taskTypes==null || taskTypes.size()==0) {
+                    //it's hidden
+                    hiddenTasks.add(baseLsid);
+                }
+            }
+            for(final String baseLsid : hiddenTasks) {
+                latestTasks.remove(baseLsid);
+            }
+
             // Apply suites to the taskInfos
             applyTaskSuites(latestTasks, userContext);
             
