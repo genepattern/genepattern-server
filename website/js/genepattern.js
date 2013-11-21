@@ -193,7 +193,7 @@ var all_categories = null;
 var all_suites = null;
 
 function getPinnedModules() {
-	var pinned = [];
+	var pinned = [];	
 	
 	$.each(all_modules, function(i, v) {
 		for (var j = 0; j < v.tags.length; j++) {
@@ -202,6 +202,18 @@ function getPinnedModules() {
 				pinned.push(v);
 			}
 		}
+	});
+	
+	// Sort by position
+	pinned = pinned.sort(function (a, b) {
+		if (a.metadata > b.metadata) {
+			return 1;
+		}
+		if (a.metadata < b.metadata) {
+			return -1;
+		}
+
+		return 0;
 	});
 	
 	return pinned;
