@@ -65,6 +65,6 @@ public class CategoryManager {
     }
     
     public static List<String> getAllCategories() {
-        return cmImpl.getAllCategories();
+        return CategoryManagerImpl.getAllCategories();
     }
 }
