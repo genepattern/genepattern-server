@@ -85,10 +85,17 @@ public class AnalysisDAO extends BaseDAO {
      * @return
      */
     public List<JobInfo> getIncompleteJobsForUser(String userId) {
-        String hql = "from org.genepattern.server.domain.AnalysisJob where user_id = :userId and deleted = false and parent = -1 and (status_id = 1 or status_id = 2)";
+        String hql = "from org.genepattern.server.domain.AnalysisJob where user_id = :userId and deleted = false and parent = -1 and (status_id = 1 or status_id = 2) and date_submitted > :date";
         Query query = getSession().createQuery(hql);
         query.setString("userId", userId);
-        List<AnalysisJob> results = query.list();
+        
+        // Within the last 30 days
+        Date date = new Date();
+        Calendar cal = Calendar.getInstance();
+        cal.add(Calendar.DATE, -30);
+        query.setDate("date", cal.getTime());
+
+        List<AnalysisJob> results = query.list(); 
         List<JobInfo> jobInfos = convertResults(results);
         return jobInfos;
     }
