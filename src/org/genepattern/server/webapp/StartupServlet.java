@@ -158,20 +158,6 @@ public class StartupServlet extends HttpServlet {
         catch (Throwable t) {
             log.error("Error migrating job upload directories: "+t.getLocalizedMessage(), t);
         }
-
-        //TODO: this is for debugging, delete this before deploying to production
-        if (false) {
-        try {
-            log.info("\tloading categories from TaskInfoCache...");
-            SortedSet<String> categories = TaskInfoCache.instance().getAllCategories();
-            for(String category : categories) {
-                log.info("\t\t"+category);
-            }
-        }
-        catch (Throwable t) {
-            log.error("Error listing categories from TaskInfoCache: "+t.getLocalizedMessage());
-        }
-        }
         
         //start the JobPurger
         PurgerFactory.instance().start();
