@@ -201,6 +201,11 @@ $.widget("gp.modulelist", {
                 'html': this.options.title
             }).appendTo(this.element);
         }
+        
+        this.empty = $('<h4>', {
+            'class': 'module-list-empty',
+            'text': "No Results Found"
+        }).appendTo(this.element);
 
         this.listings = [];
         for (var id in this.options.data) {
@@ -209,12 +214,7 @@ $.widget("gp.modulelist", {
                 click: this.options.click,
                 draggable: this.options.draggable
             }).appendTo(this.element));
-        }
-
-        this.empty = $('<h4>', {
-            'class': 'module-list-empty',
-            'text': "No Results Found"
-        }).appendTo(this.element);
+        }        
 
         if (this.options.droppable) {
         	var thisModuleList = this;

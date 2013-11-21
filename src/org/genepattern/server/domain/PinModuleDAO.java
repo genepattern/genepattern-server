@@ -11,17 +11,19 @@ public class PinModuleDAO extends BaseDAO {
     private static Logger log = Logger.getLogger(PinModuleDAO.class);
     
     public boolean pinModule(String user, String lsid, double position) {
+        modifyPositions(user, position, 1);
+        
         PinModule pinned = new PinModule();
         pinned.setUser(user);
         pinned.setLsid(lsid);
         pinned.setPosition(position);
         this.save(pinned);
 
-        return modifyPositions(user, position, 1) != 0;
+        return true;
     }
     
     public int modifyPositions(String user, double greaterThanThis, int modification) {
-        Query query = HibernateUtil.getSession().createQuery("update org.genepattern.server.domain.PinModule set INDEX = INDEX + :mod where USER = :username and INDEX > :gtt");
+        Query query = HibernateUtil.getSession().createQuery("update org.genepattern.server.domain.PinModule set INDEX = INDEX + :mod where USER = :username and INDEX >= :gtt");
         query.setString("username", user);
         query.setString("gtt", new Double(greaterThanThis).toString());
         query.setString("mod", new Integer(modification).toString());
