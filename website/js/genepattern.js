@@ -206,10 +206,26 @@ function getPinnedModules() {
 	
 	// Sort by position
 	pinned = pinned.sort(function (a, b) {
-		if (a.metadata > b.metadata) {
+		var a_pos = 0;
+		for (var j = 0; j < a.tags.length; j++) {
+			var tagObj = a.tags[j];
+			if (tagObj.tag == "pinned") {
+				a_pos = tagObj.metadata;
+			}
+		}
+		
+		var b_pos = 0;
+		for (var j = 0; j < b.tags.length; j++) {
+			var tagObj = b.tags[j];
+			if (tagObj.tag == "pinned") {
+				b_pos = tagObj.metadata;
+			}
+		}
+		
+		if (a_pos > b_pos) {
 			return 1;
 		}
-		if (a.metadata < b.metadata) {
+		if (a_pos < b_pos) {
 			return -1;
 		}
 
