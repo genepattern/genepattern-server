@@ -141,7 +141,7 @@
 	                    success: function(data, status, xhr) {
 	                    	if (data.length > 0) {
 	                    		$("#footer-center").text(" " + data.length + " jobs currently waiting");
-	                    		$("#footer-center").prepend("<img src='/gp/images/runningJob.gif' alt='Jobs Currently Waiting' />");
+	                    		$("#footer-center").prepend("<img src='/gp/images/spin.gif' alt='Jobs Currently Waiting' />");
 	                    	}
 	                    	else {
 	                    		$("#footer-center").text(" all jobs currently complete");
