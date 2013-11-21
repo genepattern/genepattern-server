@@ -1525,7 +1525,7 @@ public class PipelineHandler {
         }
     }
     
-    private static List<ParameterInfo> getOutputParameterInfos(JobInfo jobInfo) {
+    public static final List<ParameterInfo> getOutputParameterInfos(JobInfo jobInfo) {
         List<ParameterInfo> outs = new ArrayList<ParameterInfo>();
         ParameterInfo[] childParams = jobInfo.getParameterInfoArray();
         for (ParameterInfo childParam : childParams) {
