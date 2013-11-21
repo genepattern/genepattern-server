@@ -96,13 +96,7 @@ public class JobInputHelper {
     }
 
     //added these static methods to support batch jobs
-    /**
-     * Get the GpFilePath for a batch input directory, if and only if, the given value
-     * is a valid batch input directory. Otherwise, return null.
-     * @param value
-     * @return
-     */
-    private static GpFilePath getBatchInputDir(final String value) {
+    private static GpFilePath initGpFilePath(final String value) {
         GpFilePath gpPath=null;
         URL externalUrl=initExternalUrl(value);
         if (externalUrl!=null) {
@@ -112,9 +106,7 @@ public class JobInputHelper {
 
         try {
             gpPath = GpFileObjFactory.getRequestedGpFileObj(value);
-            if (gpPath.isDirectory()) {
-                return gpPath;
-            }
+            return gpPath;
         }
         catch (Exception e) {
             log.debug("getRequestedGpFileObj("+value+") threw an exception: "+e.getLocalizedMessage(), e);
@@ -124,7 +116,18 @@ public class JobInputHelper {
         //if we are here, it could be a server file path
         File serverFile=new File(value);
         gpPath = ServerFileObjFactory.getServerFile(serverFile);
-        if (gpPath.isDirectory()) {
+        return gpPath;
+    }
+    
+    /**
+     * Get the GpFilePath for a batch input directory, if and only if, the given value
+     * is a valid batch input directory. Otherwise, return null.
+     * @param value
+     * @return
+     */
+    private static GpFilePath getBatchInputDir(final String value) {
+        final GpFilePath gpPath=initGpFilePath(value);
+        if (gpPath != null && gpPath.isDirectory()) {
             return gpPath;
         }
         return null;
