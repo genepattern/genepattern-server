@@ -382,11 +382,62 @@ public class TestJobInputHelper {
         Assert.assertEquals("num batch jobs", 9, inputs.size());
     }
 
+
+    /**
+     * Test case for list of files provided as input to multiple batch input parameters
+     */
+   /* @Test
+    public void testMultipleFilesForMultipleBatchParam() throws GpServerException
+    {
+        final File param1_file1 = FileUtil.getSourceFile(TestJobInputHelper.class, "batch_01/gct/all_aml_test.gct");
+        final File param1_file2 = FileUtil.getSourceFile(TestJobInputHelper.class, "batch_01/res/all_aml_train.res");
+        final File param1_file3 = FileUtil.getSourceFile(TestJobInputHelper.class, "batch_01/gct/b_test.gct");
+
+        final File param2_file1 = FileUtil.getSourceFile(TestJobInputHelper.class, "batch_01/cls/all_aml_train.cls");
+        final File param2_file2 = FileUtil.getSourceFile(TestJobInputHelper.class, "batch_01/cls/all_aml_test.cls");
+
+
+        final JobInputHelper jobInputHelper=new JobInputHelper(userContext, cmsLsid, null, taskLoader);
+        jobInputHelper.addBatchValue("input.file", param1_file1.getAbsolutePath());
+        jobInputHelper.addBatchValue("input.file", param1_file2.getAbsolutePath());
+        jobInputHelper.addBatchValue("input.file", param1_file3.getAbsolutePath());
+        jobInputHelper.addBatchValue("cls.file", param2_file1.getAbsolutePath());
+        jobInputHelper.addBatchValue("cls.file", param2_file2.getAbsolutePath());
+
+        //Here we expect 2 batch jobs to be created since there are only two pairs of matching file base names
+        final List<JobInput> inputs=jobInputHelper.prepareBatch();
+        Assert.assertEquals("num batch jobs", 2, inputs.size());
+    }*/
+
+    /**
+     * Test case for list of directories provided as input to multiple batch input parameters
+     */
+    /*@Test
+    public void testMultipleDirsForMultipleBatchParam() throws GpServerException
+    {
+        final File param1_dir1 = FileUtil.getSourceFile(TestJobInputHelper.class, "batch_01/gct/");
+        final File param1_dir2 = FileUtil.getSourceFile(TestJobInputHelper.class, "batch_03/");
+
+        final File param2_dir1 = FileUtil.getSourceFile(TestJobInputHelper.class, "batch_04/cls/");
+        final File param2_dir2 = FileUtil.getSourceFile(TestJobInputHelper.class, "batch_01/cls/");
+
+
+        final JobInputHelper jobInputHelper=new JobInputHelper(userContext, cmsLsid, null, taskLoader);
+        jobInputHelper.addBatchDirectory("input.file", param1_dir1.getAbsolutePath());
+        jobInputHelper.addBatchDirectory("input.file", param1_dir2.getAbsolutePath());
+        jobInputHelper.addBatchValue("cls.file", param2_dir1.getAbsolutePath());
+        jobInputHelper.addBatchValue("cls.file", param2_dir2.getAbsolutePath());
+
+        //Here we expect 2 batch jobs to be created since there are only two pairs of matching file base names
+        final List<JobInput> inputs=jobInputHelper.prepareBatch();
+        Assert.assertEquals("num batch jobs", 4, inputs.size());
+    }*/
+
 //    /**
 //     * Test case for a batch input directory, make sure the current user can ready the input directory.
 //     * 
 //     *     TODO: non-admin user using a folder in a different user's upload tab
-//     *     TODO: non-amdin user looking at a server file path, which is not in their allowed list of available server file paths
+//     *     TODO: non-admin user looking at a server file path, which is not in their allowed list of available server file paths
 //     *     TODO: non-admin user who doesn't have permission to look at server file paths
 //     */
 //    @Test
