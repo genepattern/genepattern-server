@@ -351,7 +351,7 @@ function initPinned() {
         title: "Pinned Modules",
         data: pinned_modules,
         droppable: true,
-        draggable: true,
+        draggable: false,
         click: function(event) {
         	var lsid = $(event.target).closest(".module-listing").module("get_lsid");
             runTaskForm(lsid);
