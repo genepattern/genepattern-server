@@ -47,13 +47,10 @@ public class CategoryManagerImpl {
         checkCustomCategories=ServerConfiguration.instance().getGPBooleanProperty(
                 userContext, CategoryManager.class.getName()+".checkCustomCategories", true);
 
-        final List<String> hiddenCategories;
+        final List<String> hiddenCategories=new ArrayList<String>();
         final Value value=ServerConfiguration.instance().getValue(userContext, CategoryManager.class.getName()+".hiddenCategories");
         if (value != null) {
-            hiddenCategories=value.getValues();
-        }
-        else {
-            hiddenCategories=Collections.emptyList();
+            hiddenCategories.addAll(value.getValues());
         }
         
         List<String> categories=null;
@@ -63,10 +60,29 @@ public class CategoryManagerImpl {
         if (categories==null) {
             categories=getCategoriesFromManifest(taskInfo);
         }
+        //check for '.' categories
+        for(final String category : categories) {
+            if (isHidden(category)) {
+                hiddenCategories.add(category);
+            }
+        }
         for(final String hidden : hiddenCategories) {
             categories.remove(hidden);
         }
         return categories;
+    }
+    
+    public boolean isHidden(final String category) {
+        if (category==null) {
+            return true;
+        }
+        if (category.length()==0) {
+            return true;
+        }
+        if (category.startsWith(".")) {
+            return true;
+        }
+        return false;
     }
 
     /**
