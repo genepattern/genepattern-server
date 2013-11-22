@@ -415,10 +415,6 @@ public class RunTaskServlet extends HttpServlet
             }
 
             final List<JobInput> batchInputs;
-            // experimental, when deduceBatch is true, it means ignore the 'Single' or 'Batch' selection from the end user
-            //    instead automatically set batch inputs when the input value is a directory (instead of a file)
-            final boolean deduceBatchValues=false;
-            jobInputHelper.setDeduceBatchValues(deduceBatchValues);
             batchInputs=jobInputHelper.prepareBatch();
             final JobReceipt receipt=jobInputHelper.submitBatch(batchInputs);
 
