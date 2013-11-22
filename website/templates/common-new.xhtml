@@ -135,28 +135,30 @@
 	                });
 	                
 	             	// Load the running jobs, poll every 10 seconds
-	             	setInterval(function() {
-	             		var continuePolling = true;
-	             		
-	             		if (continuePolling) {
-		             		$.ajax({
-			                    url: '/gp/rest/v1/jobs/incomplete',
-			                    dataType: 'json',
-			                    success: function(data, status, xhr) {
-			                    	$("#footer-center a").empty();
-			                    	if (data.length > 0) {
-			                    		$("#footer-center a").text(" " + data.length + " Jobs Processing");
-			                    		$("#footer-center a").prepend("<img src='/gp/images/spin.gif' alt='Jobs Currently Processing' />");
-			                    	}
-			                    	else {
-			                    		$("#footer-center a").text(" All Jobs Complete");
-			                    		$("#footer-center a").prepend("<img src='/gp/images/complete.gif' alt='All Jobs Complete' />");
-			                    		continuePolling = false;
-			                    	}
-			                    }
-			                });
-	             		}
-	             	}, 10000);
+	             	if (userLoggedIn) {
+		             	setInterval(function() {
+		             		var continuePolling = true;
+		             		
+		             		if (continuePolling) {
+			             		$.ajax({
+				                    url: '/gp/rest/v1/jobs/incomplete',
+				                    dataType: 'json',
+				                    success: function(data, status, xhr) {
+				                    	$("#footer-center a").empty();
+				                    	if (data.length > 0) {
+				                    		$("#footer-center a").text(" " + data.length + " Jobs Processing");
+				                    		$("#footer-center a").prepend("<img src='/gp/images/spin.gif' alt='Jobs Currently Processing' />");
+				                    	}
+				                    	else {
+				                    		$("#footer-center a").text(" All Jobs Complete");
+				                    		$("#footer-center a").prepend("<img src='/gp/images/complete.gif' alt='All Jobs Complete' />");
+				                    		continuePolling = false;
+				                    	}
+				                    }
+				                });
+		             		}
+		             	}, 10000);
+	             	}
 	            	
 	            	// Search box controls
 	                jq("#module-search-box").keyup(function() {
