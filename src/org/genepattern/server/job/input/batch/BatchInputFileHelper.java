@@ -46,11 +46,27 @@ public class BatchInputFileHelper {
      * @return
      */
     public static GpFilePath initGpFilePath(final String value) {
+        final boolean includeExternalUrl=false;
+        return initGpFilePath(value, includeExternalUrl);
+    }
+
+    /**
+     * Get the GpFilePath for a batch input directory, if and only if, the given value
+     * is a valid batch input directory. Otherwise, return null.
+     * @param value
+     * @return
+     */
+    public static GpFilePath initGpFilePath(final String value, final boolean includeExternalUrl) {
         GpFilePath gpPath=null;
         URL externalUrl=JobInputHelper.initExternalUrl(value);
         if (externalUrl!=null) {
             //it's an externalURL
-            return null;
+            if (!includeExternalUrl) {
+                return null;
+            }
+            else {
+                return new ExternalFile(externalUrl);
+            }
         }
 
         try {
