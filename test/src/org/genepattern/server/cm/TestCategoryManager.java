@@ -135,7 +135,7 @@ public class TestCategoryManager {
     }
     
     /**
-     * Test a module which has a mis-matched taskType and categories property.
+     * Test a module is more than one category.
      */
     @Test
     public void testMultipleCategories() {
@@ -189,7 +189,7 @@ public class TestCategoryManager {
      * Hide the module from all categories.
      */
     @Test
-    public void testHiddenModule() {
+    public void testHiddenModule_emptyCategories() {
         TaskInfo taskInfo=new TaskInfo();
         taskInfo.giveTaskInfoAttributes();
         taskInfo.getTaskInfoAttributes().put(GPConstants.TASK_TYPE, "Preprocess & Utilities");
@@ -198,6 +198,21 @@ public class TestCategoryManager {
         Assert.assertNotNull("Expecting non-null value from getCategoriesForTask", categories);
         Assert.assertEquals("num categories", 0, categories.size());
     }
+    
+    /**
+     * Hide the module from all categories.
+     */
+    @Test
+    public void testHiddenModule_dot() {
+        TaskInfo taskInfo=new TaskInfo();
+        taskInfo.giveTaskInfoAttributes();
+        taskInfo.getTaskInfoAttributes().put(GPConstants.TASK_TYPE, "Preprocess & Utilities");
+        taskInfo.getTaskInfoAttributes().put(GPConstants.CATEGORIES, ".");
+        final List<String> categories=CategoryManager.getCategoriesForTask(userContext, taskInfo);
+        Assert.assertNotNull("Expecting non-null value from getCategoriesForTask", categories);
+        Assert.assertEquals("num categories", 0, categories.size());
+    }
+
 
     /**
      * Hide the visualizer from all categories.
