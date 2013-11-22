@@ -37,7 +37,7 @@
         font-weight: normal;
         font-size: 10px;
         line-height: 22px;
-        color: #333399;
+        color: white;
         text-decoration: none;
         position: absolute;
         right: 30px;
@@ -49,30 +49,32 @@
     }
 
     .loginsettings2 a {
-        color: #000099;
+        /* color: #000099; */
         text-decoration: none;
         font-weight: bold;
     }
 
     .loginsettings2 a:hover {
-        color: #6666FF;
+        /* color: #6666FF; */
         text-decoration: none;
         font-weight: bold;
     }
 
     .loginsettings2 a:active {
-        color: #FFFFFF;
+        /* color: #FFFFFF; */
         text-decoration: none;
         font-weight: bold;
     }
 </style>
 <!-- top of page login and search items -->
-<table height="30" border="0" cellpadding="0" cellspacing="0">
-    <tr valign="top">
-        <td class="loginsettings2">
-            <a href="<%=request.getContextPath()%>/pages/accountInfo.jsf">My Settings</a>
-            &nbsp;&nbsp;|&nbsp;&nbsp;
-            <a href="<%=request.getContextPath()%>/logout">Sign out</a>&nbsp;&nbsp;<%=request.getAttribute("userID")%>
-            &nbsp;&nbsp;&nbsp;&nbsp;</td>
-    </tr>
-</table>
+<div id="systemMessageLink">
+	<table height="30" border="0" cellpadding="0" cellspacing="0">
+	    <tr valign="top">
+	        <td class="loginsettings2">
+	            <a href="<%=request.getContextPath()%>/pages/accountInfo.jsf">My Settings</a>
+	            &nbsp;&nbsp;|&nbsp;&nbsp;
+	            <a href="<%=request.getContextPath()%>/logout">Sign out</a>&nbsp;&nbsp;<%=request.getAttribute("userID")%>
+	            &nbsp;&nbsp;&nbsp;&nbsp;</td>
+	    </tr>
+	</table>
+</div>
