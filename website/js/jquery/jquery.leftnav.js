@@ -147,6 +147,14 @@ $.widget("gp.module", {
     get_lsid: function(event) {
         return this._protect(this.options.data.lsid, "");
     },
+    
+    get_data: function() {
+    	return this.options.data;
+    },
+    
+    get_click: function() {
+    	return this.options.click;
+    },
 
     tagClick: function(event) {
         this.options.tagclick(event);
@@ -332,6 +340,18 @@ $.widget("gp.modulelist", {
 
     set_title: function(title) {
         this.element.find(".module-list-title").html(title);
+    },
+    
+    get_module: function(lsid) {
+        for (var i = 0; i < this.listings.length; i++) {
+            var listing = this.listings[i];
+            var listing_lsid = listing.find(".module-lsid");
+            if (listing_lsid.text().indexOf(lsid) >= 0) {
+                return listing;
+            }
+        }
+        
+        return null;
     },
     
     _lsidInstances: function(listing) {

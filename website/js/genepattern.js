@@ -400,6 +400,18 @@ function initPinned() {
                 	console.log("pinned");
                 }
             });
+        	
+        	// Reinitialize the widget as a module
+        	var lsid = $(ui.item).find(".module-lsid").text();							// Get the lsid
+        	var source = $("#module-list-search").modulelist("get_module", lsid);		// Get the source widget
+        	var data = source.module("get_data");										// Get the JSON data
+        	var click = source.module("get_click");										// Get the click event	
+        	$(ui.item).empty();															// Empty the div
+        	$(ui.item).module({															// Reinitialize
+        		data: data,
+        		draggable: false,
+        		click: click
+        	});
         },
         remove: function(event, ui) {
         	$.ajax({
