@@ -169,6 +169,10 @@ img {
 	padding-top: 71px;
 }
 
+#content > table > tbody {
+	background-color: white;
+}
+
 
 .tasks {
 	left:0px;
