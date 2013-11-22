@@ -5,13 +5,8 @@ import java.io.FilenameFilter;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-import java.util.SortedMap;
-import java.util.TreeMap;
 
 import org.apache.log4j.Logger;
 import org.genepattern.server.config.ServerConfiguration.Context;
@@ -22,7 +17,6 @@ import org.genepattern.server.dm.UrlUtil;
 import org.genepattern.server.dm.serverfile.ServerFileObjFactory;
 import org.genepattern.server.job.input.JobInput;
 import org.genepattern.server.job.input.JobInput.Param;
-import org.genepattern.server.job.input.JobInput.ParamValue;
 import org.genepattern.server.job.input.JobInputHelper;
 import org.genepattern.server.rest.GpServerException;
 import org.genepattern.server.rest.ParameterInfoRecord;
@@ -345,129 +339,9 @@ public class BatchInputFileHelper {
         return batchInputFiles;
     }
 
-
-    //
-    // code for dealing with multiple batch parameters
-    //
     public List<JobInput> prepareBatch() throws GpServerException {
-        if (batchValues.size()==0) {
-            //no batch params
-            List<JobInput> rval=new ArrayList<JobInput>();
-            rval.add( new JobInput(jobInput) );
-            return rval;
-        }
-        else if (batchValues.size()==1) {
-            //one batch param
-            final boolean isBatchParam=true;
-            for(final Entry<String,List<GpFilePath>> entry : batchValues.entrySet()) {
-                for(final GpFilePath inputFile : entry.getValue()) {
-                    final String value;
-                    try {
-                        value=inputFile.getUrl().toExternalForm();
-                    }
-                    catch (Throwable t) {
-                        throw new GpServerException(t.getLocalizedMessage(),t);
-                    }
-                    jobInput.addValue(entry.getKey(), value, isBatchParam);
-                }
-            }
-        }
-        else {
-            //multi batch params
-            Set<String> commonBasenames=computeCommonBasenames();
-            //special-case: no matching parameters, because commonBasenames is empty
-            if (commonBasenames.isEmpty()) {
-                throw new GpServerException("No matching input files for multi-batch job.");
-            }
-            appendBatchValuesToJobInputTemplate(commonBasenames);
-        }
-        return prepareBatch(jobInput);
-    }
-
-    /**
-     * For multi batch parameters ... first get the intersection of common basenames.
-     * @return
-     */
-    public Set<String> computeCommonBasenames() {
-        boolean first=true;
-        final Set<String> commonBasenames = new LinkedHashSet<String>();
-        for(final Entry<String,List<GpFilePath>> entry : batchValues.entrySet()) {
-            final Set<String> basenames=new LinkedHashSet<String>();
-            for(GpFilePath inputFile : entry.getValue()) {
-                final String basename = BatchInputFileHelper.getBaseFilename(inputFile);
-                basenames.add(basename);
-            }
-            if (first) {
-                first=false;
-                commonBasenames.addAll(basenames);
-            }
-            else {
-                commonBasenames.retainAll(basenames);
-                if (commonBasenames.isEmpty()) {
-                    //no matching basenames!
-                    break;
-                }
-            }
-        }
-        return commonBasenames;
-    }
-
-    /**
-     * After all user input values have been added from the web input form 
-     * update the jobInput template by adding any matching batch values.
-     */
-    public void appendBatchValuesToJobInputTemplate(final Set<String> commonBasenames) throws GpServerException {
-        //if there are any common basenames, only add the parameters which match
-        //ensure the values are added in the correct order
-        for(final Entry<String,List<GpFilePath>> entry : batchValues.entrySet()) {
-            SortedMap<String, GpFilePath> sortedValues=new TreeMap<String, GpFilePath>();
-            for(final GpFilePath inputFile : entry.getValue()) {
-                final String basename=BatchInputFileHelper.getBaseFilename(inputFile);
-                if (commonBasenames.contains(basename)) {
-                    sortedValues.put(basename,inputFile);
-                }
-            }
-            for(final Entry<String,GpFilePath> next : sortedValues.entrySet()) {
-                final GpFilePath inputFile = next.getValue();
-                final String value;
-                try {
-                    value=inputFile.getUrl().toExternalForm();
-                }
-                catch (Throwable t) {
-                    throw new GpServerException(t.getLocalizedMessage(),t);
-                }
-                final boolean isBatchParam=true;
-                jobInput.addValue(entry.getKey(), value, isBatchParam);
-            }
-        }
-    }
-
-    public static List<JobInput> prepareBatch(final JobInput jobInput) throws GpServerException {
-        List<JobInput> batchInputs=new ArrayList<JobInput>();
-        int numJobs=jobInput.getNumBatchJobs();
-        if (numJobs==1) {
-            batchInputs.add(jobInput);
-            return batchInputs;
-        }
-
-        //it is a batch of jobs
-        for(int idx=0; idx<numJobs; ++idx) {
-            JobInput nextJob=prepareJobInput(idx, jobInput);
-            batchInputs.add(nextJob);
-        }
-        return batchInputs;
-    }
-
-    private static JobInput prepareJobInput(final int idx, final JobInput template) {
-        //start with a copy of the jobInput template
-        final JobInput nextJobInput = new JobInput(template);
-        //then replace batch parameters with the values for this particular (idx) batch job
-        for(final Param batchParamIn : template.getBatchParams()) {
-            final Param batchParam=new Param(batchParamIn.getParamId(), false);
-            final ParamValue batchParamValue = template.getParam(batchParamIn.getParamId()).getValues().get(idx);
-            batchParam.addValue(batchParamValue);
-            nextJobInput.setValue(batchParamIn.getParamId(), batchParam);
-        }
-        return nextJobInput;
+        FilenameBatchGenerator batchGenerator=new FilenameBatchGenerator(batchValues);
+        final List<JobInput> batchJobs=batchGenerator.prepareBatch(jobInput);
+        return batchJobs;
     }
 }
