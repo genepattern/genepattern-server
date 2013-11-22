@@ -134,7 +134,7 @@ public class BatchInputFileHelper {
      *    if the pinfo is of type DIRECTORY, accept only input values which are directories
      *    if the pinfo is of type FILE,
      *        if it has fileFormats, accept any file which matches one of the file formats
-     *        if it has not fileFormats, match any file which is not a directory
+     *        if it has no fileFormats, match any file which is not a directory
      *    otherwise, it's not a match
      * 
      * @param pinfo
@@ -212,6 +212,8 @@ public class BatchInputFileHelper {
     
     private final Context userContext;
     private final JobInputApi jobInputApi;
+    private final BatchGenerator batchGenerator;
+    
     private final JobInput jobInput;    
     private Map<String,List<GpFilePath>> batchValues=new LinkedHashMap<String,List<GpFilePath>>();
     private final Map<String,ParameterInfoRecord> paramInfoMap;
@@ -220,6 +222,9 @@ public class BatchInputFileHelper {
         this(userContext, taskInfo, null);
     }
     public BatchInputFileHelper(final Context userContext, final TaskInfo taskInfo, final JobInputApi jobInputApiIn) {
+        this(userContext, taskInfo, jobInputApiIn, null);
+    }
+    public BatchInputFileHelper(final Context userContext, final TaskInfo taskInfo, final JobInputApi jobInputApiIn, final BatchGenerator batchGeneratorIn) {
         this.userContext=userContext;
         if (jobInputApiIn == null) {
             this.jobInputApi=JobInputApiFactory.createJobInputApi(userContext);
@@ -227,10 +232,17 @@ public class BatchInputFileHelper {
         else {
             this.jobInputApi=jobInputApiIn;
         }
+        if (batchGeneratorIn == null) {
+            this.batchGenerator=new FilenameBatchGenerator(batchValues);
+        }
+        else {
+            this.batchGenerator=batchGeneratorIn;
+        }
         this.jobInput=new JobInput();
         this.jobInput.setLsid(taskInfo.getLsid());
         this.paramInfoMap=ParameterInfoRecord.initParamInfoMap(taskInfo);
     }
+
 
     public void addValue(final String id, final String value) {
         final boolean isBatchParam=false;
@@ -354,7 +366,6 @@ public class BatchInputFileHelper {
     }
 
     public List<JobInput> prepareBatch() throws GpServerException {
-        BatchGenerator batchGenerator=new FilenameBatchGenerator(batchValues);
         final List<JobInput> batchJobs=batchGenerator.prepareBatch(jobInput);
         return batchJobs;
     }
