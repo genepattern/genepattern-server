@@ -590,7 +590,7 @@ public class JobInputHelper {
         }
     }
 
-    private String getBaseFilename(GpFilePath file) {
+    public static String getBaseFilename(GpFilePath file) {
         int periodIndex = file.getName().lastIndexOf('.');
         if (periodIndex > 0) {
             return file.getName().substring(0, periodIndex);
