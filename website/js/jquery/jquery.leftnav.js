@@ -114,7 +114,7 @@ $.widget("gp.module", {
         this._on(this.element, {
         	click: function(event) {
             	if (!$(this.element).hasClass('noclick')) {
-            		(event);
+            		this.options.click(event);
             	}
             }
         });
