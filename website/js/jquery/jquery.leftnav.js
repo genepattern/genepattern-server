@@ -100,23 +100,21 @@ $.widget("gp.module", {
                 scroll: false,
                 start: function(event, ui) {
                     ui.helper.data('dropped', false);
-                    $(this).addClass('noclick');
                 },
                 stop: function(event, ui) {
                     if (ui.helper.data('dropped') !== false) {
                         // This means the module has been dropped into pinned modules, do something
                         // TODO: Implement the ajax callback to save pinned modules here
-                    }
-                    $(this).removeClass('noclick');
+                    }  
                 }
             });
         }
 
         // bind events on the widget
         this._on(this.element, {
-            click: function() {
-            	if (!$(this).hasClass('noclick')) {
-            		this.options.click();
+        	click: function(event) {
+            	if (!$(this.element).hasClass('noclick')) {
+            		(event);
             	}
             }
         });
@@ -275,18 +273,14 @@ $.widget("gp.modulelist", {
                 	if (thisList.find(".module-listing").length < 1) {
                  	   thisList.find(".module-list-empty").show();
                     }
-//                	ui.item.css("position", "static");
+                	$(ui.item).addClass('noclick');
+                	setTimeout(function() {
+                		$(ui.item).removeClass('noclick');
+                	}, 100);
                 },
                 start: function(event, ui) {
-//                	var top = ui.item.offset().top;
-//                	var left = ui.item.offset().left;
-//                	
-//                	ui.item.css("position", "absolute");
-//                	ui.item.css("top", top + 95);
-//                	ui.item.css("left", left + 10);
-//                	ui.item.appendTo("body");
-                	
                 	target = $(event.currentTarget).attr('id');
+                	$(ui.item).addClass('noclick');
                 }
             });
             $(this.element).disableSelection();
