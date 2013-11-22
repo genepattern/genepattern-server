@@ -9,7 +9,7 @@ public class UIBean {
     }
     
     public boolean getNewUI() {
-        boolean env = ServerConfiguration.instance().getGPBooleanProperty(UIBeanHelper.getUserContext(), "display.ui", false);
+        boolean env = ServerConfiguration.instance().getGPBooleanProperty(UIBeanHelper.getUserContext(), "display.ui", true);
         return env;
     }
     
