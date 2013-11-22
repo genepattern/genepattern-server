@@ -63,7 +63,7 @@ public class JobInputHelper {
      * 
      * @return the URL if it's an external url, otherwise return null.
      */
-    static public URL initExternalUrl(final String value) {
+    public static URL initExternalUrl(final String value) {
         log.debug("intialize external URL for value="+value);
         if (value==null) {
             throw new IllegalArgumentException("value==null");
@@ -96,7 +96,13 @@ public class JobInputHelper {
     }
 
     //added these static methods to support batch jobs
-    private static GpFilePath initGpFilePath(final String value) {
+    /**
+     * Get the GpFilePath for a batch input directory, if and only if, the given value
+     * is a valid batch input directory. Otherwise, return null.
+     * @param value
+     * @return
+     */
+    public static GpFilePath initGpFilePath(final String value) {
         GpFilePath gpPath=null;
         URL externalUrl=initExternalUrl(value);
         if (externalUrl!=null) {
@@ -125,7 +131,7 @@ public class JobInputHelper {
      * @param value
      * @return
      */
-    private static GpFilePath getBatchInputDir(final String value) {
+    public static GpFilePath getBatchInputDir(final String value) {
         final GpFilePath gpPath=initGpFilePath(value);
         if (gpPath != null && gpPath.isDirectory()) {
             return gpPath;
@@ -603,7 +609,7 @@ public class JobInputHelper {
      * @return
      * @throws GpServerException
      */
-    private List<GpFilePath> getBatchInputFiles(final ParameterInfo pinfo, final GpFilePath batchDir) throws GpServerException {
+    public static List<GpFilePath> getBatchInputFiles(final ParameterInfo pinfo, final GpFilePath batchDir) throws GpServerException {
         final String parentUrl;
         try {
             parentUrl=batchDir.getUrl().toExternalForm();
