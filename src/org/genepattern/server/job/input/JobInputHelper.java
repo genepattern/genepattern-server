@@ -6,18 +6,13 @@ import java.util.List;
 
 import org.apache.log4j.Logger;
 import org.genepattern.server.config.ServerConfiguration.Context;
-import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.dm.GpFilePath;
-import org.genepattern.server.domain.AnalysisJobDAO;
-import org.genepattern.server.domain.BatchJob;
-import org.genepattern.server.domain.BatchJobDAO;
 import org.genepattern.server.eula.GetTaskStrategy;
 import org.genepattern.server.eula.GetTaskStrategyDefault;
 import org.genepattern.server.job.input.JobInput.ParamId;
 import org.genepattern.server.job.input.batch.BatchInputFileHelper;
 import org.genepattern.server.rest.GpServerException;
 import org.genepattern.server.rest.JobInputApi;
-import org.genepattern.server.rest.JobInputApiFactory;
 import org.genepattern.server.rest.JobReceipt;
 import org.genepattern.webservice.ParameterInfo;
 import org.genepattern.webservice.TaskInfo;
@@ -78,8 +73,6 @@ public class JobInputHelper {
         return url;
     }
 
-    private Context userContext=null;
-    private final JobInputApi singleJobInputApi;
     private final GetTaskStrategy getTaskStrategy;
     private final BatchInputFileHelper batchInputFileHelper;
     
@@ -89,24 +82,16 @@ public class JobInputHelper {
     public JobInputHelper(final Context userContext, final String lsid, final JobInputApi singleJobInputApi) {
         this(userContext, lsid, singleJobInputApi, null);
     }
-    public JobInputHelper(final Context userContext, final String lsid, final JobInputApi singleJobInputApiIn, final GetTaskStrategy getTaskStrategyIn) {
-        this.userContext=userContext;
-        //inputTemplate.setLsid(lsid);
+    public JobInputHelper(final Context userContext, final String lsid, final JobInputApi jobInputApi, final GetTaskStrategy getTaskStrategyIn) {
         if (getTaskStrategyIn == null) {
             getTaskStrategy=new GetTaskStrategyDefault();
         }
         else {
             getTaskStrategy=getTaskStrategyIn;
         }
-        if (singleJobInputApiIn == null) {
-            this.singleJobInputApi=JobInputApiFactory.createJobInputApi(userContext);
-        }
-        else {
-            this.singleJobInputApi=singleJobInputApiIn;
-        }
 
         final TaskInfo taskInfo = getTaskStrategy.getTaskInfo(lsid);
-        this.batchInputFileHelper=new BatchInputFileHelper(userContext, taskInfo);
+        this.batchInputFileHelper=new BatchInputFileHelper(userContext, taskInfo, jobInputApi);
     }
     
     /**
@@ -201,47 +186,7 @@ public class JobInputHelper {
      * @throws GpServerException
      */
     public JobReceipt submitBatch(final List<JobInput> batchInputs) throws GpServerException {
-        JobReceipt receipt=new JobReceipt();
-        for(JobInput batchInput : batchInputs) {
-            String jobId = singleJobInputApi.postJob(userContext, batchInput);
-            receipt.addJobId(jobId);
-        }
-        
-        if (receipt.getJobIds().size()>1) {
-            //record batch job to DB, optionally assign custom batch id
-            final String batchId=recordBatchJob(userContext, receipt);
-            receipt.setBatchId(batchId);
-        }
-        return receipt;
-    }
-
-    private String recordBatchJob(final Context userContext, final JobReceipt jobReceipt) throws GpServerException {
-        //legacy implementation, based on code in SubmitJobServlet
-        String batchId="";
-        final boolean isInTransaction=HibernateUtil.isInTransaction();
-        try {
-            BatchJob batchJob = new BatchJob(userContext.getUserId());
-
-            for(final String jobId : jobReceipt.getJobIds()) {
-                int jobNumber = Integer.parseInt(jobId);
-                batchJob.getBatchJobs().add(new AnalysisJobDAO().findById(jobNumber));
-            }
-            new BatchJobDAO().save(batchJob);
-            batchId = ""+batchJob.getJobNo();
-            if (!isInTransaction) {
-                HibernateUtil.commitTransaction();
-            }
-        }
-        catch (Throwable t) {
-            HibernateUtil.rollbackTransaction();
-            throw new GpServerException("Error recording batch jobs to DB", t);
-        }
-        finally {
-            if (!isInTransaction) {
-                HibernateUtil.closeCurrentSession();
-            }
-        }
-        return batchId;
+        return batchInputFileHelper.submitBatch(batchInputs);
     }
 
 }

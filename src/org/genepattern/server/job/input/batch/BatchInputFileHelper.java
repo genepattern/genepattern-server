@@ -19,6 +19,9 @@ import org.genepattern.server.job.input.JobInput;
 import org.genepattern.server.job.input.JobInput.Param;
 import org.genepattern.server.job.input.JobInputHelper;
 import org.genepattern.server.rest.GpServerException;
+import org.genepattern.server.rest.JobInputApi;
+import org.genepattern.server.rest.JobInputApiFactory;
+import org.genepattern.server.rest.JobReceipt;
 import org.genepattern.server.rest.ParameterInfoRecord;
 import org.genepattern.util.SemanticUtil;
 import org.genepattern.webservice.ParameterInfo;
@@ -26,6 +29,7 @@ import org.genepattern.webservice.TaskInfo;
 
 /**
  * Helper class for preparing a batch of jobs, when batching over input files and directories.
+ * 
  * 
  * @author pcarr
  *
@@ -207,12 +211,22 @@ public class BatchInputFileHelper {
     }
     
     private final Context userContext;
-    private final JobInput jobInput;
+    private final JobInputApi jobInputApi;
+    private final JobInput jobInput;    
     private Map<String,List<GpFilePath>> batchValues=new LinkedHashMap<String,List<GpFilePath>>();
     private final Map<String,ParameterInfoRecord> paramInfoMap;
 
     public BatchInputFileHelper(final Context userContext, final TaskInfo taskInfo) {
+        this(userContext, taskInfo, null);
+    }
+    public BatchInputFileHelper(final Context userContext, final TaskInfo taskInfo, final JobInputApi jobInputApiIn) {
         this.userContext=userContext;
+        if (jobInputApiIn == null) {
+            this.jobInputApi=JobInputApiFactory.createJobInputApi(userContext);
+        }
+        else {
+            this.jobInputApi=jobInputApiIn;
+        }
         this.jobInput=new JobInput();
         this.jobInput.setLsid(taskInfo.getLsid());
         this.paramInfoMap=ParameterInfoRecord.initParamInfoMap(taskInfo);
@@ -340,8 +354,23 @@ public class BatchInputFileHelper {
     }
 
     public List<JobInput> prepareBatch() throws GpServerException {
-        FilenameBatchGenerator batchGenerator=new FilenameBatchGenerator(batchValues);
+        BatchGenerator batchGenerator=new FilenameBatchGenerator(batchValues);
         final List<JobInput> batchJobs=batchGenerator.prepareBatch(jobInput);
         return batchJobs;
     }
+    
+    /**
+     * Submit your jobs to the GP server.
+     * Use the list of JobInput from the prepareBatch() method as input to this method.
+     * 
+     * @param batchInputs
+     * @return
+     * @throws GpServerException
+     */
+    public JobReceipt submitBatch(final List<JobInput> batchInputs) throws GpServerException {
+        BatchSubmitter batchSubmitter = new BatchSubmitterImpl(userContext, jobInputApi);
+        JobReceipt receipt= batchSubmitter.submitBatch(batchInputs);
+        return receipt;
+    }
+
 }
