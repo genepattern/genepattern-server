@@ -10,6 +10,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import org.apache.log4j.Logger;
+import org.genepattern.server.rest.GpServerException;
 
 /**
  * Representation of user-supplied input parameters for a new job to be added to the GP server.
@@ -378,5 +379,30 @@ public class JobInput {
         }
         return batchParams;
     }
+    
+    /**
+     * Get the number of batch jobs to run, account for multiple batch parameters.
+     * 
+     * @return
+     * @throws GpServerException
+     */
+    public int getNumBatchJobs() throws GpServerException {
+        int numJobs=1; //always run at least one job
+        for(final Param param : getBatchParams()) {
+            if (numJobs==1) {
+                numJobs=param.getNumValues();
+            }
+            else if (param.getNumValues()>1) {
+                //validate
+                if (numJobs != param.getNumValues()) {
+                    //error
+                    throw new GpServerException("Number of batch parameters doesn't match");
+                }
+            }
+            return numJobs;
+        }
+        return numJobs;
+    }
+
     
 }
