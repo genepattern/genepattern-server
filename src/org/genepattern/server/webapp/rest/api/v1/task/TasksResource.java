@@ -137,35 +137,6 @@ public class TasksResource {
         return path;
     }
     
-    private boolean parseForHiddenFlag(HttpServletRequest request) {
-        String found = null;
-        while (request.getParameterNames().hasMoreElements()) {
-            String param = (String) request.getParameterNames().nextElement();
-            if (param.equalsIgnoreCase("hidden")) {
-                found = request.getParameter(param);
-                break;
-            }
-        }
-        
-        return Boolean.parseBoolean(found);
-    }
-    
-    private boolean isHidden(TaskInfo taskInfo, ServerConfiguration.Context userContext) {
-        boolean hidden = false;
-        List<String> categories = CategoryManager.getCategoriesForTask(userContext, taskInfo);
-        for (String category : categories) {
-            if (category != null) {
-                category = category.trim();
-                if (category.length() == 0 || category.startsWith(".")) {
-                    hidden = true;
-                    break;
-                }
-            }
-        }
-        
-        return hidden;
-    }
-    
     /**
      * Rapid prototype method to get the latest version of all installed tasks in json format,
      * for use by the new Modules & Pipelines search panel.
@@ -187,8 +158,6 @@ public class TasksResource {
         final String userId = userContext.getUserId();
         
         // Check for "return hidden modules" flag
-        boolean showHidden = parseForHiddenFlag(request);
-        
         final boolean isInTransaction = HibernateUtil.isInTransaction();
         try {
             // Get the map of the latest tasks
@@ -220,10 +189,8 @@ public class TasksResource {
             // Return the JSON object
             JSONArray jsonArray = new JSONArray();
             for (final TaskInfo taskInfo : tasksArray) {
-                if (showHidden || !isHidden(taskInfo, userContext)) {
-                    JSONObject jsonObj = asJson(taskInfo, userContext);
-                    jsonArray.put(jsonObj);
-                }
+                JSONObject jsonObj = asJson(taskInfo, userContext);
+                jsonArray.put(jsonObj);
             }
             return Response.ok().entity(jsonArray.toString()).build();
         }
