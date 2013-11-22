@@ -336,7 +336,7 @@ function initSearchSlider() {
         data: all_modules,
         droppable: false,
         draggable: true,
-        click: function() {
+        click: function(event) {
         	var lsid = $(event.target).closest(".module-listing").module("get_lsid");
         	runTaskForm(lsid);
         }
@@ -355,7 +355,7 @@ function initRecent() {
         data: recent_modules,
         droppable: false,
         draggable: true,
-        click: function() {
+        click: function(event) {
         	var lsid = $(event.target).closest(".module-listing").module("get_lsid");
         	runTaskForm(lsid);
         }
