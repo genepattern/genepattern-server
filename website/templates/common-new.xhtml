@@ -136,9 +136,8 @@
 	                
 	             	// Load the running jobs, poll every 10 seconds
 	             	if (userLoggedIn) {
+	             		var continuePolling = true;
 		             	setInterval(function() {
-		             		var continuePolling = true;
-		             		
 		             		if (continuePolling) {
 			             		$.ajax({
 				                    url: '/gp/rest/v1/jobs/incomplete',
