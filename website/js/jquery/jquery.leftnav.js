@@ -100,19 +100,25 @@ $.widget("gp.module", {
                 scroll: false,
                 start: function(event, ui) {
                     ui.helper.data('dropped', false);
+                    $(this).addClass('noclick');
                 },
                 stop: function(event, ui) {
                     if (ui.helper.data('dropped') !== false) {
                         // This means the module has been dropped into pinned modules, do something
                         // TODO: Implement the ajax callback to save pinned modules here
                     }
+                    $(this).removeClass('noclick');
                 }
             });
         }
 
         // bind events on the widget
         this._on(this.element, {
-            click: this.options.click
+            click: function() {
+            	if (!$(this).hasClass('noclick')) {
+            		this.options.click();
+            	}
+            }
         });
     },
     
