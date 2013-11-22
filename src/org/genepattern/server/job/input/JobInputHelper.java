@@ -1,6 +1,5 @@
 package org.genepattern.server.job.input;
 
-import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.List;
@@ -216,42 +215,6 @@ public class JobInputHelper {
         return receipt;
     }
 
-//    public static String getBaseFilename(final GpFilePath file) {
-//        if (file==null) {
-//            log.error("file==null");
-//            return "";
-//        }
-//        String filename=null;       
-//        if (file.getName()!=null) {
-//            filename=file.getName();
-//        }
-//        else {
-//            try {
-//                URL url=file.getUrl();
-//                if (url != null) {
-//                    String path=url.getPath();
-//                    if (path != null) {
-//                        filename=new File(path).getName();
-//                    }
-//                }
-//            }
-//            catch (Exception e) {
-//                log.error(e);
-//            }
-//        }
-//        if (filename==null) {
-//            log.error("error getting filename for file="+file);
-//            return "";
-//        }
-//        int periodIndex = filename.lastIndexOf('.');
-//        if (periodIndex > 0) {
-//            return filename.substring(0, periodIndex);
-//        }
-//        else {
-//            return filename;
-//        }
-//    }
-//    
     private String recordBatchJob(final Context userContext, final JobReceipt jobReceipt) throws GpServerException {
         //legacy implementation, based on code in SubmitJobServlet
         String batchId="";
