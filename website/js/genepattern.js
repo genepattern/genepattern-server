@@ -187,7 +187,9 @@ function showDialog(title, message, button) {
 //////////////      NEW UI FUNCTIONS
 /////////////////////////////////////////////////////////////////////////////////////////
 
-var $ = jq;
+if (typeof $ === 'undefined') {
+	var $ = jq;
+}
 var all_modules = null;
 var all_categories = null;
 var all_suites = null;
