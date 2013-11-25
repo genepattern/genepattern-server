@@ -401,6 +401,12 @@ public class RunTaskServlet extends HttpServlet
                 String parameterName = pInfo.getName();
                 boolean isBatch = isBatchParam(jobSubmitInfo, parameterName);
                 JSONArray valueList;
+
+                if(!parameters.has(parameterName))
+                {
+                    continue;
+                }
+
                 Object val=parameters.get(parameterName);
                 if (val instanceof JSONArray) {
                     valueList=(JSONArray) val;
