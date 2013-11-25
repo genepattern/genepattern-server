@@ -7,9 +7,9 @@
             <generator class="native"/>
         </id>
         
-		<property name="user" column="user" type="string" />
+		<property name="user" column="username" type="string" />
         <property name="lsid" column="lsid" type="string" />
-		<property name="position" column="index" type="double" />
+		<property name="position" column="pin_position" type="double" />
     </class>
     
 </hibernate-mapping>

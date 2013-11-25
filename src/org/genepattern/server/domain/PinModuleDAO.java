@@ -23,7 +23,7 @@ public class PinModuleDAO extends BaseDAO {
     }
     
     public int modifyPositions(String user, double greaterThanThis, int modification) {
-        Query query = HibernateUtil.getSession().createQuery("update org.genepattern.server.domain.PinModule set INDEX = INDEX + :mod where USER = :username and INDEX >= :gtt");
+        Query query = HibernateUtil.getSession().createQuery("update org.genepattern.server.domain.PinModule set PIN_POSITION = PIN_POSITION + :mod where USERNAME = :username and PIN_POSITION >= :gtt");
         query.setString("username", user);
         query.setString("gtt", new Double(greaterThanThis).toString());
         query.setString("mod", new Integer(modification).toString());
@@ -32,7 +32,7 @@ public class PinModuleDAO extends BaseDAO {
     
     @SuppressWarnings("unchecked")
     public boolean unpinModule(String user, String lsid) {
-        Query query = HibernateUtil.getSession().createQuery("from org.genepattern.server.domain.PinModule where USER = :username and LSID = :lsid");
+        Query query = HibernateUtil.getSession().createQuery("from org.genepattern.server.domain.PinModule where USERNAME = :username and LSID = :lsid");
         query.setString("username", user);
         query.setString("lsid", lsid);
         List<PinModule> deleteList = query.list();
@@ -65,7 +65,7 @@ public class PinModuleDAO extends BaseDAO {
     }
     
     public List<PinModule> getPinsForUser(String user) {
-        Query query = HibernateUtil.getSession().createQuery("from org.genepattern.server.domain.PinModule where USER = :username");
+        Query query = HibernateUtil.getSession().createQuery("from org.genepattern.server.domain.PinModule where USERNAME = :username");
         query.setString("username", user);
         return query.list();
     }

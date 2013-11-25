@@ -1,8 +1,8 @@
 create table PIN_MODULE (
     id integer NOT NULL,
-    "user" varchar(511),
+    username varchar(511),
     lsid varchar(511),
-    "index" binary_double,
+    pin_position binary_double,
     primary key (id)
 );
 
@@ -17,4 +17,3 @@ CREATE SEQUENCE PIN_MODULE_SEQ
 
 -- update schema version
 update props set value='3.7.5' where key='schemaVersion';
-
