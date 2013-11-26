@@ -80,7 +80,7 @@
                             <td>
                                 <h:outputLink value="#" onclick="setInputField('#{p.name}', '#{aFile.fullUrl}');">
                                     <h:outputText>
-                                        Send to #{p.name}
+                                        Send to #{p.displayName}
                                     </h:outputText>
                                 </h:outputLink>
                             </td>
@@ -91,7 +91,7 @@
                             <td>
                                 <h:outputLink value="#" onclick="checkBatch('#{p.name}');setInputField('#{p.name}', '#{aFile.fullUrl}');">
                                     <h:outputText>
-                                        Send Batch to #{p.name}
+                                        Send Batch to #{p.displayName}
                                     </h:outputText>
                                 </h:outputLink>
                             </td>
