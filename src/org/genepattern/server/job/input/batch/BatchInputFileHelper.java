@@ -360,7 +360,18 @@ public class BatchInputFileHelper {
 
         final List<GpFilePath> batchInputFiles=BatchInputFileHelper.getBatchInputFiles(formalParam, batchInputDir);
         if (batchInputFiles.size()==0) {
-            throw new GpServerException("No matching input files in batch input directory: "+batchInputDir);
+
+            String externalUrlMsg = "";
+            try
+            {
+                externalUrlMsg = "in directory " + batchInputDir.getUrl().toExternalForm();
+            }
+            catch(Exception e)
+            {
+                //do nothing here
+            }
+
+            throw new GpServerException("No matching input files for batch parameter " + formalParam.getName() + " " + externalUrlMsg);
         }
         return batchInputFiles;
     }
