@@ -347,7 +347,7 @@ public class TestJobInputHelper {
      * Test case for list of files provided as input to one batch input parameter
      */
     @Test
-    public void testMultipleFilePerBatchParam() throws GpServerException
+    public void testMultipleFilesOneBatchParam() throws GpServerException
     {
         final File file1 = FileUtil.getSourceFile(TestJobInputHelper.class, "batch_03/a_test.cls");
         final File file2 = FileUtil.getSourceFile(TestJobInputHelper.class, "batch_03/c_test.gct");
@@ -371,7 +371,7 @@ public class TestJobInputHelper {
      * Test case for list of directories provided as input to one batch input parameter
      */
     @Test
-    public void testMultipleDirsPerBatchParam() throws GpServerException
+    public void testMultipleDirsOneBatchParam() throws GpServerException
     {
         final File dir1 = FileUtil.getSourceFile(TestJobInputHelper.class, "batch_02/01");
         final File dir2 = FileUtil.getSourceFile(TestJobInputHelper.class, "batch_02/02/");
@@ -391,8 +391,8 @@ public class TestJobInputHelper {
     /**
      * Test case for list of files provided as input to multiple batch input parameters
      */
-   /* @Test
-    public void testMultipleFilesForMultipleBatchParam() throws GpServerException
+    @Test
+    public void testMultipleFilesForMultipleBatchParams() throws GpServerException
     {
         final File param1_file1 = FileUtil.getSourceFile(TestJobInputHelper.class, "batch_01/gct/all_aml_test.gct");
         final File param1_file2 = FileUtil.getSourceFile(TestJobInputHelper.class, "batch_01/res/all_aml_train.res");
@@ -412,13 +412,13 @@ public class TestJobInputHelper {
         //Here we expect 2 batch jobs to be created since there are only two pairs of matching file base names
         final List<JobInput> inputs=jobInputHelper.prepareBatch();
         Assert.assertEquals("num batch jobs", 2, inputs.size());
-    }*/
+    }
 
     /**
      * Test case for list of directories provided as input to multiple batch input parameters
      */
-    /*@Test
-    public void testMultipleDirsForMultipleBatchParam() throws GpServerException
+    @Test
+    public void testMultipleDirsForMultipleBatchParams() throws GpServerException
     {
         final File param1_dir1 = FileUtil.getSourceFile(TestJobInputHelper.class, "batch_01/gct/");
         final File param1_dir2 = FileUtil.getSourceFile(TestJobInputHelper.class, "batch_03/");
@@ -436,7 +436,48 @@ public class TestJobInputHelper {
         //Here we expect 2 batch jobs to be created since there are only two pairs of matching file base names
         final List<JobInput> inputs=jobInputHelper.prepareBatch();
         Assert.assertEquals("num batch jobs", 4, inputs.size());
-    }*/
+    }
+
+    /**
+     * Test case for list of files or directories provided as input to multiple batch input parameters
+     * where the basenames do not match
+     */
+    @Test
+    public void testMultipleFilesOrDirsForMultipleBatchParamsNoMatch() throws Exception
+    {
+        final File param1_file1 = FileUtil.getSourceFile(TestJobInputHelper.class, "batch_01/gct/all_aml_train.gct");
+        final File param1_file2 = FileUtil.getSourceFile(TestJobInputHelper.class, "batch_01/b.txt");
+        final File param1_dir1 = FileUtil.getSourceFile(TestJobInputHelper.class, "batch_04/cls/");
+
+
+        final File param2_file1 = FileUtil.getSourceFile(TestJobInputHelper.class, "batch_03/a_test.cls");
+        final File param2_file2 = FileUtil.getSourceFile(TestJobInputHelper.class, "batch_01/gct/all_aml_train.gct");
+
+        try
+        {
+            final JobInputHelper jobInputHelper=new JobInputHelper(userContext, cmsLsid, null, taskLoader);
+            jobInputHelper.addBatchDirectory("input.file", param1_file1.getAbsolutePath());
+            jobInputHelper.addBatchDirectory("input.file", param1_file2.getAbsolutePath());
+            jobInputHelper.addBatchDirectory("input.file", param1_dir1.getAbsolutePath());
+            jobInputHelper.addBatchValue("cls.file", param2_file1.getAbsolutePath());
+            jobInputHelper.addBatchValue("cls.file", param2_file2.getAbsolutePath());
+
+            jobInputHelper.prepareBatch();
+            Assert.fail("Expecting GpServerException: No matching input files for batch parameter");
+        }
+        catch(GpServerException e)
+        {
+            String errMsg = e.getLocalizedMessage();
+            if(errMsg != null)
+            {
+                Assert.assertTrue(errMsg.contains("No matching input files for batch parameter"));
+            }
+            else
+            {
+                Assert.fail("Expecting GpServerException: No matching input files for batch parameter");
+            }
+        }
+    }
 
 //    /**
 //     * Test case for a batch input directory, make sure the current user can ready the input directory.
