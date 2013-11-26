@@ -680,6 +680,10 @@ function loadParameterInfo(parameters, initialValues)
 
                     // Check the box
                     $(this).parent().parent().find("input[type=checkbox]").prop('checked', true);
+
+                    //allow multi-select from file browser when in batch mode
+                    $(this).parents(".fileDiv").find(".uploadedinputfile").attr("multiple", "multiple");
+
                 }
                 else {
                     $(this).closest(".pRow").css("background-color", "#FFFFFF");
@@ -689,12 +693,26 @@ function loadParameterInfo(parameters, initialValues)
                     param_file_listing[paramName] = [];
                     updateParamFileTable(paramName);
 
+                    var maxNum;
+                    jq(parametersJson).each(function(i) {
+                        var param = parametersJson[i];
+                        if (param.name === paramName) {
+                            maxNum = param.maxValue;
+                        }
+                    });
+
+                    //disable multiselect for this param if it is not file list param
+                    if(maxNum <= 1)
+                    {
+                        $(this).parents(".fileDiv").find(".uploadedinputfile").removeAttr("multiple");
+                    }
+
                     // Uncheck the box
                     $(this).parent().parent().find("input[type=checkbox]").prop('checked', false);
                 }
             });
 
-            if (parseInt(parameters[q].maxValue) > 1)
+            if (allowMultiple)
             {
                 //make the file input field multiselect, so you can select more than one file
                 fileInput.attr("multiple", "multiple");
