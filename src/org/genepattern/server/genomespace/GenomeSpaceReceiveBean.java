@@ -19,6 +19,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.log4j.Logger;
 import org.genepattern.server.dm.ExternalFile;
 import org.genepattern.server.dm.GpFilePath;
+import org.genepattern.server.webapp.ParameterInfoWrapper;
 import org.genepattern.server.webapp.jsf.UIBeanHelper;
 import org.genepattern.server.webapp.uploads.UploadFilesBean;
 import org.genepattern.server.webapp.uploads.UploadFilesBean.DirectoryInfoWrapper;
@@ -216,10 +217,10 @@ public class GenomeSpaceReceiveBean {
         String redirectURL = "/gp/pages/index.jsf?lsid=" + lsid;
         
         for (GpFilePath file : receivedFiles) {
-            ParameterInfo selectedParam = null;
+            ParameterInfoWrapper selectedParam = null;
             String url = URLEncoder.encode(file.getUrl().toString(), "UTF-8");
             
-            List<ParameterInfo> relevantParams = null;
+            List<ParameterInfoWrapper> relevantParams = null;
             
             if (file instanceof GenomeSpaceFile) {
                 for (String format : ((GenomeSpaceFile) file).getConversions()) {
@@ -236,7 +237,7 @@ public class GenomeSpaceReceiveBean {
             
             // Protect against null
             if (relevantParams == null) {
-                relevantParams = new ArrayList<ParameterInfo>();
+                relevantParams = new ArrayList<ParameterInfoWrapper>();
             }
             
             module._getKindToParameterInfoMap().get(file.getKind());

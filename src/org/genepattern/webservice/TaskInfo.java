@@ -29,6 +29,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
 
+import org.genepattern.server.webapp.ParameterInfoWrapper;
 import org.genepattern.util.GPConstants;
 
 public class TaskInfo implements Serializable {
@@ -227,7 +228,7 @@ public class TaskInfo implements Serializable {
     }
 
     private transient Set<String> _inputFileTypes = null;
-    private transient Map<String, List<ParameterInfo>> _kindToParameterInfoMap = null;
+    private transient Map<String, List<ParameterInfoWrapper>> _kindToParameterInfoMap = null;
     
     /**
      * Get the map of kinds to relevant parameters
@@ -236,7 +237,7 @@ public class TaskInfo implements Serializable {
      *     This method deliberately named using a non JavaBean naming convention so that the axis serializer does not
      *     include the inputFileTypes parameter in the serialized bean.
      */
-    public Map<String, List<ParameterInfo>> _getKindToParameterInfoMap() {
+    public Map<String, List<ParameterInfoWrapper>> _getKindToParameterInfoMap() {
         //initialize
         _getInputFileTypes();
         
@@ -267,10 +268,10 @@ public class TaskInfo implements Serializable {
      * @param inputFileType
      * @return
      */
-    public List<ParameterInfo> _getSendToParameterInfos(String inputFileType) {
+    public List<ParameterInfoWrapper> _getSendToParameterInfos(String inputFileType) {
         //initialize
         _getInputFileTypes();
-        List<ParameterInfo> rval = _kindToParameterInfoMap.get(inputFileType);
+        List<ParameterInfoWrapper> rval = _kindToParameterInfoMap.get(inputFileType);
         if (rval == null) {
             return Collections.emptyList();
         }
@@ -279,7 +280,7 @@ public class TaskInfo implements Serializable {
     
     private Set<String> initInputFileTypes() {
         Set<String> inputFileTypes = new HashSet<String>(); 
-        _kindToParameterInfoMap = new HashMap<String,List<ParameterInfo>>();
+        _kindToParameterInfoMap = new HashMap<String,List<ParameterInfoWrapper>>();
 
         ParameterInfo[] paramInfos = getParameterInfoArray();
         if (paramInfos == null) {
@@ -297,22 +298,22 @@ public class TaskInfo implements Serializable {
                     String type = st.nextToken();
                     inputFileTypes.add(type);
                     
-                    List<ParameterInfo> pinfosForMap = _kindToParameterInfoMap.get(type);
+                    List<ParameterInfoWrapper> pinfosForMap = _kindToParameterInfoMap.get(type);
                     if (pinfosForMap == null) {
-                        pinfosForMap = new ArrayList<ParameterInfo>();
+                        pinfosForMap = new ArrayList<ParameterInfoWrapper>();
                         _kindToParameterInfoMap.put(type, pinfosForMap);
                     }
-                    pinfosForMap.add(paramInfo);
+                    pinfosForMap.add(new ParameterInfoWrapper(paramInfo));
                 }
             }
             if (paramInfo._isDirectory()) {
                 inputFileTypes.add("directory");
-                List<ParameterInfo> pinfosForMap = _kindToParameterInfoMap.get("directory");
+                List<ParameterInfoWrapper> pinfosForMap = _kindToParameterInfoMap.get("directory");
                 if (pinfosForMap == null) {
-                    pinfosForMap = new ArrayList<ParameterInfo>();
+                    pinfosForMap = new ArrayList<ParameterInfoWrapper>();
                     _kindToParameterInfoMap.put("directory", pinfosForMap);
                 }
-                pinfosForMap.add(paramInfo);
+                pinfosForMap.add(new ParameterInfoWrapper(paramInfo));
             }
         }
         return inputFileTypes;

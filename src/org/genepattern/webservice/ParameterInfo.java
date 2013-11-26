@@ -78,6 +78,24 @@ public class ParameterInfo implements Serializable {
     public String getName() {
         return name;
     }
+    
+    @SuppressWarnings("rawtypes")
+    public String _getDisplayName() {
+        Map attributes = this.getAttributes();
+        if (attributes == null) return this.getName();
+        String altName = (String) attributes.get("altName");
+        if (altName == null) return this.getName();
+        return altName;
+    }
+    
+    @SuppressWarnings("rawtypes")
+    public String _getDisplayDescription() {
+        Map attributes = this.getAttributes();
+        if (attributes == null) return this.getDescription();
+        String altDesc = (String) attributes.get("altDescription");
+        if (altDesc == null) return this.getDescription();
+        return altDesc;
+    }
 
     public void setValue(String value) {
         this.value = value;

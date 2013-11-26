@@ -34,6 +34,7 @@ import org.genepattern.server.dm.UrlUtil;
 import org.genepattern.server.dm.UserUploadFile;
 import org.genepattern.server.dm.userupload.UserUploadManager;
 import org.genepattern.server.webapp.FileDownloader;
+import org.genepattern.server.webapp.ParameterInfoWrapper;
 import org.genepattern.server.webapp.jsf.JobHelper;
 import org.genepattern.server.webapp.jsf.RunTaskBean;
 import org.genepattern.server.webapp.jsf.UIBeanHelper;
@@ -472,7 +473,7 @@ public class UploadFilesBean {
 
         private void initParamName() {
             String kind = sendFile.getKind();
-            List<ParameterInfo> l = toTask._getSendToParameterInfos(kind);
+            List<ParameterInfoWrapper> l = toTask._getSendToParameterInfos(kind);
             if (l != null && l.size() > 0) {
                 paramName = l.get(0).getName();
             }
@@ -494,7 +495,6 @@ public class UploadFilesBean {
             return link;
         }
     }
-
     public class FileInfoWrapper {
         final private GpFilePath file;
         final private String url;
@@ -630,7 +630,7 @@ public class UploadFilesBean {
             return file.getNumParts() != file.getNumPartsRecd();
         }
         
-        public List<ParameterInfo> getSendToBatch() {
+        public List<ParameterInfoWrapper> getSendToBatch() {
             if (currentTaskInfo == null && currentTaskLsid != null) {
                 initCurrentLsid(new AdminDAO());
             }
@@ -641,7 +641,7 @@ public class UploadFilesBean {
                 initBatchList();
             }
             
-            return batchParams;
+            return ParameterInfoWrapper.wrapList(batchParams);
         }
         
         private void initBatchList() {
@@ -684,7 +684,7 @@ public class UploadFilesBean {
          * @param file
          * @return
          */
-        public List<ParameterInfo> getSendToParameters() {
+        public List<ParameterInfoWrapper> getSendToParameters() {
             if (currentTaskInfo == null && currentTaskLsid != null) {
                 AdminDAO adminDao = new AdminDAO();
                 initCurrentLsid(adminDao);
@@ -696,9 +696,10 @@ public class UploadFilesBean {
             
             //nice to have a map of kind -> inputParameters for the current task
             String kind = file.getKind();
-            return currentTaskInfo._getSendToParameterInfos(kind); 
+            List<ParameterInfoWrapper> infos = currentTaskInfo._getSendToParameterInfos(kind); 
+            return infos;
         }
-        
+
         //--- JSF actions
         
         /**

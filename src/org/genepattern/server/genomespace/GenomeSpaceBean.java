@@ -31,6 +31,7 @@ import org.genepattern.server.dm.GpFileObjFactory;
 import org.genepattern.server.dm.GpFilePath;
 import org.genepattern.server.dm.userupload.UserUploadManager;
 import org.genepattern.server.webapp.LoginManager;
+import org.genepattern.server.webapp.ParameterInfoWrapper;
 import org.genepattern.server.webapp.jsf.UIBeanHelper;
 import org.genepattern.server.webapp.uploads.UploadFilesBean;
 import org.genepattern.server.webapp.uploads.UploadFilesBean.DirectoryInfoWrapper;
@@ -872,7 +873,7 @@ public class GenomeSpaceBean {
      * This is iterated over to display send to parameters.
      * @return
      */
-    public Map<String, List<ParameterInfo>> getSendToParameters() {
+    public Map<String, List<ParameterInfoWrapper>> getSendToParameters() {
         if (currentTaskInfo != null) {
             return currentTaskInfo._getKindToParameterInfoMap();
         }
