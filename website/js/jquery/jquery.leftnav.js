@@ -258,6 +258,14 @@ $.widget("gp.modulelist", {
                 },
                 out: function(event, ui) { 
                 	sortableIn = 0; 
+                	
+                	// Hide and show "drop here"
+                	if ($(event.target).find(".module-listing:visible:not(.ui-sortable-placeholder)").length < 1) {
+                		thisList.find(".module-list-empty").show();
+                	}
+                	else {
+                		thisList.find(".module-list-empty").hide();
+                	}  
                 },
                 beforeStop: function(event, ui) {
                    if (sortableIn == 0) { 
