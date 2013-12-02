@@ -78,15 +78,15 @@ $.widget("gp.module", {
         });
         all_tags.sort(); // Sort
         
-        for (var tag in all_tags) {
-            $('<a>', {
+        for (var i = 0; i < all_tags.length; i++) {
+        	all_tags[i] = $("<div>").append($('<a>', {
                 'class': 'tag',
-                'text': all_tags[tag],
+                'text': all_tags[i],
                 'href': '#'})
-                .attr("onclick", "$(this).closest('.module-listing').module('tagClick', event);")
-                .appendTo(this.tags);
-            this.tags.append(', ');
+                .attr("onclick", "$(this).closest('.module-listing').module('tagClick', event);")).html();
         }
+        
+        this.tags.append(all_tags.join(", "));
 
         if (!this.options.display) {
             this.element.hide();
