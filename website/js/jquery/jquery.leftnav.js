@@ -109,6 +109,31 @@ $.widget("gp.module", {
                 }
             });
         }
+        else {
+        	$(this.element).mousedown(function() {
+        	    $(window).mousemove(function() {
+        	        $("body").css( 'cursor', 'no-drop' );
+        	        $("body").addClass("disable-select");
+        	        $(".module-listing").css( 'cursor', 'no-drop' );
+        	        $(window).unbind("mousemove");
+        	    });
+        	})
+        	.mouseup(function() {
+        		$("body").css('cursor', '');
+        		$("body").removeClass("disable-select");
+    	        $(".module-listing").css('cursor', '');
+        	    $(window).unbind("mousemove");
+        	})
+        	.mouseout(function() {
+        		$(window).mouseup(function() {
+        			$("body").css('cursor', '');
+            		$("body").removeClass("disable-select");
+        	        $(".module-listing").css('cursor', '');
+            	    $(window).unbind("mousemove");
+        	        $(window).unbind("mouseup");
+        	    });
+        	});
+        }
 
         // bind events on the widget
         this._on(this.element, {
