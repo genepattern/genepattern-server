@@ -14,6 +14,8 @@
     padding: 2px;
     cursor: pointer;
     height: 60px;
+    overflow: hidden;
+    z-index: 100;
 }
 
 .module-listing:hover {
@@ -58,6 +60,9 @@
 .module-tag {
     font-size:8pt;
     color: #000099 !important;
+    text-overflow: ellipsis;
+	overflow: hidden;
+	white-space: nowrap;
 }
 
 .module-tag a {
@@ -193,7 +198,6 @@ body {
     position: absolute;
     color: #333366;
     background-color: #F1F2F2;
-    overflow: hidden;
     width: 348px;
     top: 0px;
     bottom: 0px;
