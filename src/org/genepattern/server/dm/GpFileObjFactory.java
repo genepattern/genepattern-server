@@ -12,6 +12,10 @@ import org.apache.log4j.Logger;
 import org.genepattern.server.config.ServerConfiguration;
 import org.genepattern.server.dm.jobresult.JobResultFile;
 import org.genepattern.server.dm.serverfile.ServerFileObjFactory;
+import org.genepattern.server.dm.tasklib.TasklibPath;
+import org.genepattern.util.LSID;
+import org.genepattern.webservice.TaskInfo;
+import org.genepattern.webservice.TaskInfoCache;
 
 public class GpFileObjFactory {
     private static Logger log = Logger.getLogger(GpFileObjFactory.class);
@@ -244,17 +248,35 @@ public class GpFileObjFactory {
 
     /**
      * Get the GpFilePath reference from a GP URL request.
-     * 
+     *
      * This method does the same stuff that the servlet engine is doing for us.
      * It extracts the servletPath and decoded pathInfo from the URL.
-     * 
+     *
      * The rest of the work is done by {@link GpFileObjFactory#getRequestedGpFileObj(String, String)}
-     * 
+     *
      * @param url, requires a valid url
      * @return a GpFilePath
      * @throws Exception
      */
-    static public GpFilePath getRequestedGpFileObj(String urlStr) throws Exception { 
+    static public GpFilePath getRequestedGpFileObj(String urlStr) throws Exception
+    {
+        return getRequestedGpFileObj(urlStr, (LSID)null);
+    }
+
+    /**
+     * Get the GpFilePath reference from a GP URL request.
+     *
+     * This method does the same stuff that the servlet engine is doing for us.
+     * It extracts the servletPath and decoded pathInfo from the URL.
+     *
+     * The rest of the work is done by {@link GpFileObjFactory#getRequestedGpFileObj(String, String)}
+     *
+     * @param url, requires a valid url
+     * @param lsid, the lsid of the task
+     * @return a GpFilePath
+     * @throws Exception
+     */
+    static public GpFilePath getRequestedGpFileObj(String urlStr, LSID lsid) throws Exception {
         //special-case for <GenePatternURL> substitution
         if (urlStr.startsWith("<GenePatternURL>")) {
             URL url = ServerConfiguration.instance().getGenePatternURL();
@@ -271,6 +293,18 @@ public class GpFileObjFactory {
             }
             urlStr+=path;
         }
+
+        if(urlStr.startsWith("<libdir>"))
+        {
+           // taskLibDir = DirectoryManager.getTaskLibDir(taskInfo);
+           // File f = new File(taskLibDir);
+            TaskInfo taskinfo = TaskInfoCache.instance().getTask(lsid.toString());
+
+            //strip out the <libdir> substitution to get the relative path
+            String path = urlStr.replace("<libdir>", "");
+            return new TasklibPath(taskinfo, path);
+        }
+
         //create a uri, which automatically decodes the url
         URI uri = null;
         try {
@@ -291,7 +325,7 @@ public class GpFileObjFactory {
     }
 
     static public GpFilePath getRequestedGpFileObj(String servletPath, String pathInfo) throws Exception {
-        if ("/users".equals(servletPath)) {
+         if ("/users".equals(servletPath)) {
             String userId = extractUserId(pathInfo);
             //drop the wrapping slashes from '/user_id/'
             String relativePath = pathInfo.substring( userId.length() + 2 );

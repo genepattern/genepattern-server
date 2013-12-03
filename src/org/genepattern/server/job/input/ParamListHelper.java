@@ -19,6 +19,7 @@ import org.genepattern.server.job.input.JobInput.Param;
 import org.genepattern.server.job.input.JobInput.ParamId;
 import org.genepattern.server.job.input.JobInput.ParamValue;
 import org.genepattern.server.rest.ParameterInfoRecord;
+import org.genepattern.util.LSID;
 import org.genepattern.webservice.ParameterInfo;
 
 /**
@@ -171,14 +172,14 @@ public class ParamListHelper {
             actualValues=new Param(new ParamId(record.getFormal().getName()), false);
         }
         else if (inputValues == null && initDefault) {
-            actualValues=initFromDefault();
+            actualValues=initFromDefault(jobContext.getJobInfo().getTaskLSID());
         }
         else {
             actualValues=inputValues;
         }
     }
     
-    private Param initFromDefault() {
+    private Param initFromDefault(String lsid) {
         final List<String> defaultValues=ParamListHelper.getDefaultValues(record.getFormal());
         if (defaultValues==null) {
             //return a param with no value
@@ -198,13 +199,13 @@ public class ParamListHelper {
                 return noValue;
             }
             Param emptyStringValue=new Param(new ParamId(record.getFormal().getName()), false);
-            emptyStringValue.addValue(new ParamValue(""));
+            emptyStringValue.addValue(new ParamValue("", lsid));
             return emptyStringValue;
         }
         else {
             Param listValue=new Param(new ParamId(record.getFormal().getName()), false);
             for(final String value : defaultValues) {
-                listValue.addValue(new ParamValue(value));
+                listValue.addValue(new ParamValue(value, lsid));
             }
             return listValue;
         }
@@ -587,7 +588,7 @@ public class ParamListHelper {
         }
 
         try {
-            GpFilePath gpPath = GpFileObjFactory.getRequestedGpFileObj(value);
+            GpFilePath gpPath = GpFileObjFactory.getRequestedGpFileObj(value, new LSID(pval.getLSID()));
             return new Record(Record.Type.SERVER_URL, gpPath, null);
         }
         catch (Exception e) {

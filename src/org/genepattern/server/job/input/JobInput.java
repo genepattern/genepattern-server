@@ -11,6 +11,7 @@ import java.util.Set;
 
 import org.apache.log4j.Logger;
 import org.genepattern.server.rest.GpServerException;
+import org.genepattern.util.LSID;
 
 /**
  * Representation of user-supplied input parameters for a new job to be added to the GP server.
@@ -158,15 +159,23 @@ public class JobInput {
 
     public static class ParamValue {
         private String value;
-        public ParamValue(final String value) {
+        private String lsid;
+        public ParamValue(final String value, final String lsid){
             this.value=value;
+            this.lsid = lsid;
         }
         //copy constructor
         public ParamValue(final ParamValue in) {
             this.value=in.value;
+            this.lsid = in.lsid;
         }
         public String getValue() {
             return value;
+        }
+
+        public String getLSID()
+        {
+            return lsid;
         }
     }
     
@@ -270,7 +279,7 @@ public class JobInput {
             param=new Param(id, batchParam);
             params.put(id, param);
         }
-        param.addValue(new ParamValue(value));
+        param.addValue(new ParamValue(value, lsid));
     }
 
     

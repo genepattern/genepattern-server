@@ -819,7 +819,7 @@ public class GenePatternAnalysisTask {
                     //check permissions and optionally convert value from url to server file path
                     final String pname=pinfoRecord.getFormal().getName();
                     final Param inputParam=new Param(new ParamId(pname), false);
-                    inputParam.addValue(new ParamValue(pinfo.getValue()));
+                    inputParam.addValue(new ParamValue(pinfo.getValue(), jobInfo.getTaskLSID()));
                     ParamListHelper plh=new ParamListHelper(jobContext, pinfoRecord, inputParam);
                     GpFilePath directory=null;
                     try {
@@ -1139,7 +1139,7 @@ public class GenePatternAnalysisTask {
                                     //check permissions and optionally convert value from url to server file path
                                     final String pname=pinfoRecord.getFormal().getName();
                                     final Param inputParam=new Param(new ParamId(pname), false);
-                                    inputParam.addValue(new ParamValue(pinfo.getValue()));
+                                    inputParam.addValue(new ParamValue(pinfo.getValue(), jobInfo.getTaskLSID()));
                                     ParamListHelper plh=new ParamListHelper(jobContext, pinfoRecord, inputParam);
                                     GpFilePath gpFilePath=null;
                                     try {
