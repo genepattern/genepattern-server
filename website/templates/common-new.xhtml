@@ -138,27 +138,10 @@
 	                
 	             	// Load the running jobs, poll every 10 seconds
 	             	if (userLoggedIn) {
-	             		var continuePolling = true;
+	             		jobStatusPoll();
 		             	setInterval(function() {
-		             		if (continuePolling) {
-			             		$.ajax({
-				                    url: '/gp/rest/v1/jobs/incomplete',
-				                    dataType: 'json',
-				                    success: function(data, status, xhr) {
-				                    	$(".current-job-status a").empty();
-				                    	if (data.length > 0) {
-				                    		$(".current-job-status a").text(" " + data.length + " Jobs Processing");
-				                    		$(".current-job-status a").prepend("<img src='/gp/images/spin.gif' alt='Jobs Currently Processing' />");
-				                    	}
-				                    	else {
-				                    		$(".current-job-status a").text(" No Jobs Processing");
-				                    		$(".current-job-status a").prepend("<img src='/gp/images/complete.gif' alt='No Jobs Processing' />");
-				                    		continuePolling = false;
-				                    	}
-				                    }
-				                });
-		             		}
-		             	}, 10000);
+		             		jobStatusPoll();
+		             	}, 30000);
 	             	}
 	            	
 	            	// Search box controls

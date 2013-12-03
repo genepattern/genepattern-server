@@ -461,3 +461,26 @@ function runTaskForm(lsid) {
     $(".search-widget").searchslider("hide");
     $(location).attr("href", "/gp/pages/index.jsf?lsid=" + encodeURIComponent(lsid));
 }
+
+function jobStatusPoll() {
+	var continuePolling = $.data($(".current-job-status")[0], "continuePolling");
+	if (continuePolling == undefined || continuePolling) {
+ 		$.ajax({
+            url: '/gp/rest/v1/jobs/incomplete',
+            dataType: 'json',
+            success: function(data, status, xhr) {
+            	$(".current-job-status a").empty();
+            	if (data.length > 0) {
+            		$(".current-job-status a").text(" " + data.length + " Jobs Processing");
+            		$(".current-job-status a").prepend("<img src='/gp/images/spin.gif' alt='Jobs Currently Processing' />");
+            		$.data($(".current-job-status")[0], "continuePolling", true);
+            	}
+            	else {
+            		$(".current-job-status a").text(" No Jobs Processing");
+            		$(".current-job-status a").prepend("<img src='/gp/images/complete.gif' alt='No Jobs Processing' />");
+            		$.data($(".current-job-status")[0], "continuePolling", false);
+            	}
+            }
+        });
+		}
+}
