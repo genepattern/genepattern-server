@@ -3,18 +3,16 @@ package org.genepattern.server.job.input;
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.StringTokenizer;
+
 import org.genepattern.server.dm.ExternalFile;
 import org.apache.log4j.Logger;
 import org.genepattern.server.config.ServerConfiguration.Context;
 import org.genepattern.server.dm.GpFileObjFactory;
 import org.genepattern.server.dm.GpFilePath;
 import org.genepattern.server.dm.jobresult.JobResultFile;
+import org.genepattern.server.dm.tasklib.TasklibPath;
 import org.genepattern.server.eula.GetTaskStrategy;
 import org.genepattern.server.eula.GetTaskStrategyDefault;
 import org.genepattern.server.job.JobInfoLoader;
@@ -22,9 +20,14 @@ import org.genepattern.server.job.JobInfoLoaderDefault;
 import org.genepattern.server.job.input.JobInput.Param;
 import org.genepattern.server.job.input.JobInput.ParamId;
 import org.genepattern.server.job.input.JobInput.ParamValue;
+import org.genepattern.server.job.input.choice.Choice;
+import org.genepattern.server.job.input.choice.ChoiceInfo;
+import org.genepattern.server.job.input.choice.ChoiceInfoHelper;
 import org.genepattern.util.GPConstants;
 import org.genepattern.webservice.JobInfo;
 import org.genepattern.webservice.ParameterInfo;
+import org.genepattern.webservice.TaskInfo;
+import org.genepattern.webservice.TaskInfoCache;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -238,12 +241,45 @@ public class LoadModuleHelper {
                 final List<ParamValue> paramValues=reloadedValues.getParamValues(pname);
                 if (paramValues != null) {
                     for(final ParamValue reloadedValue : paramValues) {
+
+                        String rvalue = reloadedValue.getValue();
+                        //check if this a drop-down list and if any value is a file from the module taskLib
+                        ChoiceInfo cInfo = ChoiceInfoHelper.initChoiceInfo(pinfo);
+                        List<Choice> choices = null;
+
+                        if(cInfo != null)
+                        {
+                            choices = cInfo.getChoices();
+                        }
+                        if(choices != null && choices.size() > 0)
+                        {
+                            for(Choice choice : choices)
+                            {
+                                String value = choice.getValue();
+                                if(value.contains("<libdir>"))
+                                {
+                                    //Value is expected to refer to a file if we get here
+                                    //so extract the name of the file
+                                    String name = value.substring(value.indexOf("<libdir>")+8);
+                                    if(reloadedValue.getValue().endsWith(name))
+                                    {
+                                        TaskInfo info = TaskInfoCache.instance().getTask(reloadedValue.getLSID());
+                                        TasklibPath tp = new TasklibPath(info, name);
+                                        if(reloadedValue.getValue().endsWith(tp.getUrl().toExternalForm()))
+                                        {
+                                            rvalue = value;
+                                        }
+                                    }
+                                }
+                            }
+
+                        }
                         if (first) {
-                            initialValues.addOrReplaceValue(pname, reloadedValue.getValue());
+                            initialValues.addOrReplaceValue(pname, rvalue);
                             first=false;
                         }
                         else {
-                            initialValues.addValue(pname, reloadedValue.getValue());
+                            initialValues.addValue(pname, rvalue);
                         }
                     }
                 }
