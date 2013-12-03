@@ -338,6 +338,10 @@ body {
 	height: 17px;
 }
 
+.current-job-status a {
+	color: black;
+}
+
 .ui-draggable-dragging {
 	background-image: url(images/sidebar-topBG.png);
 	width: 322px;

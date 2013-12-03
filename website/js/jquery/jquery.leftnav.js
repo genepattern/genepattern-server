@@ -451,6 +451,7 @@ $.widget("gp.searchslider", {
             'text': 'Close' })
             .button()
             .click(function() {
+            	$("#module-search-box").val("");
                 slider.searchslider('hide');
             })
             .appendTo(this.close);

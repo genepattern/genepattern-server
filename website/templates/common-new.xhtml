@@ -150,7 +150,8 @@
 	                    	jq("#module-search").searchslider("show");
 	                        setModuleSearchTitle($(this).val())
 	                    }
-	                    jq(".search-widget:visible").searchslider("filter", $(this).val());
+	                    jq("#module-search").searchslider("show");
+	                    jq("#module-search").searchslider("filter", $(this).val());
 	                    setModuleSearchTitle($(this).val())
 	                });
 	
