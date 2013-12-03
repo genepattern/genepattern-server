@@ -239,6 +239,7 @@ body {
 	border-right: none;
 	border-left: none;
 	border-bottom: solid 1px #A3B1DA;
+	display: none;
 }
 
 .left-nav-top {
@@ -340,4 +341,14 @@ body {
 .ui-draggable-dragging {
 	background-image: url(images/sidebar-topBG.png);
 	width: 322px;
+}
+
+#loading-modules {
+	color: darkgray;
+	padding: 15px;
+	text-align: center;
+}
+
+#loading-modules h4 {
+	color: darkgray;
 }

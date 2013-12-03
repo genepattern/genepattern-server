@@ -88,7 +88,8 @@
 	            	}
 	            	
 	            	// Display nicely at load hack
-	            	$($("#left-nav-tabs .ui-tabs-active a").attr("href")).show();
+	            	$("#left-nav-tabs").show();
+	            	//$($("#left-nav-tabs .ui-tabs-active a").attr("href")).show();
 	            	
 	            	// Load the modules
 	            	$.ajax({
@@ -98,9 +99,10 @@
 	                    	all_modules = data;
 	                    	
 	                    	// Initialize the displays on the left nav bar
+	                    	$("#loading-modules").hide();
 	                    	initPinned();
 	                    	initRecent();
-	                    	
+
 	                    	// Initialize the search slider
 	                    	initSearchSlider();
 	                    }
@@ -317,6 +319,9 @@
 		                    	<div class="current-job-status"><a href="/gp/jobResults"></a></div>
 		                        <button>Browse Modules &#x203a;</button>
 		                    </div>
+	                    </div>
+	                    <div id="loading-modules">
+	                    	<h4>Loading GenePattern Modules...</h4>
 	                    </div>
 	                    <div id="pinned-modules"></div>
 	                    <div id="recent-modules"></div>
