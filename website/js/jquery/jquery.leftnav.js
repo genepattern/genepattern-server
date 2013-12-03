@@ -39,14 +39,16 @@ $.widget("gp.module", {
         }).appendTo(this.element);
 
         // Add the ui elements
-        this.docicon = $('<a><img src="/gp/css/frozen/modules/styles/images/file_add.gif"></a>')
-            .attr("href", this._protect(this.options.data.documentation, ""))
-            .attr("target", "_blank")
-            .attr("class", "module-doc")
-            .attr("title", "Documentation")
-            .attr("onclick", "$(this).closest('.module-listing').module('stopProp', event)")
-            .tooltip()
-            .appendTo(this.element);
+        if (this.options.data.documentation) {
+	        this.docicon = $('<a><img src="/gp/css/frozen/modules/styles/images/file_add.gif"></a>')
+	            .attr("href", this._protect(this.options.data.documentation, ""))
+	            .attr("target", "_blank")
+	            .attr("class", "module-doc")
+	            .attr("title", "Documentation")
+	            .attr("onclick", "$(this).closest('.module-listing').module('stopProp', event)")
+	            .tooltip()
+	            .appendTo(this.element);
+        }
 
         this.version = $('<div>', {
             'class': 'module-version',

@@ -41,6 +41,7 @@ import org.genepattern.util.LSID;
 import org.genepattern.webservice.ParameterInfo;
 import org.genepattern.webservice.SuiteInfo;
 import org.genepattern.webservice.TaskInfo;
+import org.genepattern.webservice.TaskInfoCache;
 import org.genepattern.webservice.WebServiceException;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -325,12 +326,18 @@ public class TasksResource {
     }
 
     private String getDocLink(final TaskInfo taskInfo) {
-        try {
-            return "/gp/getTaskDoc.jsp?name=" + URLEncoder.encode(taskInfo.getLsid(), "UTF-8");
+        List<String> docs = TaskInfoCache.instance().getDocFilenames(taskInfo.getID(), taskInfo.getLsid());
+        if (docs.size() > 0) {
+            try {
+                return "/gp/getTaskDoc.jsp?name=" + URLEncoder.encode(taskInfo.getLsid(), "UTF-8");
+            }
+            catch (UnsupportedEncodingException e) {
+                log.error("Error encoding lsid: " + taskInfo.getLsid());
+                return "/gp/getTaskDoc.jsp?name=" + taskInfo.getLsid();
+            }
         }
-        catch (UnsupportedEncodingException e) {
-            log.error("Error encoding lsid: " + taskInfo.getLsid());
-            return "/gp/getTaskDoc.jsp?name=" + taskInfo.getLsid();
+        else {
+            return "";
         }
     }
     
