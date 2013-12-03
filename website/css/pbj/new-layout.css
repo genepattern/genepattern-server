@@ -322,15 +322,16 @@ body {
 	text-overflow: ellipsis;
 }
 
-#footer-center {
-	text-align: center;
+.current-job-status {
+	float:left;
 	font-size: 8pt;
 	position: relative;
-	top: -4px;
-	width: 33%;
+	width: 150px;
+	text-align: left;
+	top: 2px;
 }
 
-#footer-center img {
+.current-job-status img {
 	position: relative;
 	top: 5px;
 	height: 17px;

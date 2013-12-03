@@ -143,14 +143,14 @@
 				                    url: '/gp/rest/v1/jobs/incomplete',
 				                    dataType: 'json',
 				                    success: function(data, status, xhr) {
-				                    	$("#footer-center a").empty();
+				                    	$(".current-job-status a").empty();
 				                    	if (data.length > 0) {
-				                    		$("#footer-center a").text(" " + data.length + " Jobs Processing");
-				                    		$("#footer-center a").prepend("<img src='/gp/images/spin.gif' alt='Jobs Currently Processing' />");
+				                    		$(".current-job-status a").text(" " + data.length + " Jobs Processing");
+				                    		$(".current-job-status a").prepend("<img src='/gp/images/spin.gif' alt='Jobs Currently Processing' />");
 				                    	}
 				                    	else {
-				                    		$("#footer-center a").text(" No Jobs Processing");
-				                    		$("#footer-center a").prepend("<img src='/gp/images/complete.gif' alt='No Jobs Processing' />");
+				                    		$(".current-job-status a").text(" No Jobs Processing");
+				                    		$(".current-job-status a").prepend("<img src='/gp/images/complete.gif' alt='No Jobs Processing' />");
 				                    		continuePolling = false;
 				                    	}
 				                    }
@@ -314,6 +314,7 @@
 		                        <input id="module-search-box" type="search" class="search-box" placeholder="Search Modules &amp; Pipelines" />
 		                    </div>
 		                    <div id="module-browse-button">
+		                    	<div class="current-job-status"><a href="/gp/jobResults"></a></div>
 		                        <button>Browse Modules &#x203a;</button>
 		                    </div>
 	                    </div>
@@ -422,7 +423,6 @@
 	                    <td>
 	                        <h:outputLink value="#{facesContext.externalContext.requestContextPath}/pages/about.jsf">About GenePattern</h:outputLink>&#160;|&#160;<h:outputLink value="#{facesContext.externalContext.requestContextPath}/pages/contactUs.jsf">Contact Us</h:outputLink>
 	                    </td>
-	                    <td id="footer-center"><a href="/gp/jobResults"></a></td>
 	                    <td>
 	                        <div align="right">&#169;2003-2013&#160; <h:outputLink value="http://www.broadinstitute.org" target="_blank">Broad Institute, MIT</h:outputLink>
 	                        </div>
