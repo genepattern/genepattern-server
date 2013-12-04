@@ -22,40 +22,45 @@ import com.google.common.collect.HashBiMap;
 public class HashMapLookup implements DrmLookup {
     private static final Logger log = Logger.getLogger(HashMapLookup.class);
 
+    private final String jobRunnerClassname;
+    private final String jobRunnerId;
+    
+    public HashMapLookup(final String jobRunnerClassname, final String jobRunnerId) {
+        this.jobRunnerClassname=jobRunnerClassname;
+        this.jobRunnerId=jobRunnerId;
+    }
+    
     //map of gpJobId -> drmJobId
     private BiMap<String, String> lookup=HashBiMap.create();
 
     //table of details
-    private static class Row {
+    private static class ExternalJobRecord {
         private final String gpJobId;
         private final File workingDir;
+        private final String jobRunnerClassname;
+        private final String jobRunnerId;
         private final String extJobId;
         private final JobState extJobState;
         private final String extJobStatusMessage;
         private final Date timestamp=new Date();
         
-        public Row(final File workingDir, final JobInfo jobInfo) {
-            this(workingDir, ""+jobInfo.getJobNumber());
+        public ExternalJobRecord(final String jobRunnerClassname, final String jobRunnerId, final File workingDir, final JobInfo jobInfo) {
+            this(jobRunnerClassname, jobRunnerId, workingDir, ""+jobInfo.getJobNumber());
         }
         
-        public Row(final File workingDir, final String gpJobId) {
+        public ExternalJobRecord(final String jobRunnerClassname, final String jobRunnerId, final File workingDir, final String gpJobId) {
+            this.jobRunnerClassname=jobRunnerClassname;
+            this.jobRunnerId=jobRunnerId;
             this.gpJobId=gpJobId;
             this.workingDir=workingDir;
             this.extJobId=null;
             this.extJobState=JobState.UNDETERMINED;
             this.extJobStatusMessage=extJobState.toString();
         }
-
-//        public Row(final Row in) {
-//            this.gpJobId=in.gpJobId;
-//            this.workingDir=in.workingDir;
-//            this.extJobId=in.extJobId;
-//            this.extJobState=in.extJobState;
-//            this.extJobStatusMessage=in.extJobStatusMessage;
-//            
-//        }
         
-        public Row(final Row in, final DrmJobStatus updated) {
+        public ExternalJobRecord(final ExternalJobRecord in, final DrmJobStatus updated) {
+            this.jobRunnerClassname=in.jobRunnerClassname;
+            this.jobRunnerId=in.jobRunnerId;
             this.gpJobId=in.gpJobId;
             this.workingDir=in.workingDir;
             this.extJobId=updated.getDrmJobId();
@@ -64,7 +69,7 @@ public class HashMapLookup implements DrmLookup {
         }
     }
     
-    private Map<String, Row> detailsTable=new HashMap<String,Row>();
+    private Map<String, ExternalJobRecord> detailsTable=new HashMap<String,ExternalJobRecord>();
 
     @Override
     public List<String> getRunningDrmJobIds() {
@@ -83,12 +88,12 @@ public class HashMapLookup implements DrmLookup {
 
     @Override
     public void updateDrmRecord(String gpJobId, DrmJobStatus drmJobStatus) {
-        Row rowOrig=detailsTable.get(gpJobId);
+        ExternalJobRecord rowOrig=detailsTable.get(gpJobId);
         if (rowOrig==null) {
             log.error("Row not initialized for gpJobId="+gpJobId);
-            rowOrig=new Row(null, gpJobId);
+            rowOrig=new ExternalJobRecord(jobRunnerClassname, jobRunnerId, null, gpJobId);
         }
-        final Row updated=new Row(rowOrig, drmJobStatus);
+        final ExternalJobRecord updated=new ExternalJobRecord(rowOrig, drmJobStatus);
         if (DrmExecutor.isSet(updated.extJobId)) {
             lookup.put(updated.gpJobId, updated.extJobId);
         }
@@ -97,7 +102,7 @@ public class HashMapLookup implements DrmLookup {
 
     @Override
     public void insertDrmRecord(final File workingDir, final JobInfo jobInfo) {
-        Row row=new Row(workingDir, jobInfo);
+        ExternalJobRecord row=new ExternalJobRecord(jobRunnerClassname, jobRunnerId, workingDir, jobInfo);
         //lookup.put(row.gpJobId, row.extJobId);
         detailsTable.put(row.gpJobId, row);
     }
