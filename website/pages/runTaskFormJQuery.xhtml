@@ -21,6 +21,11 @@
 		$(window).bind("beforeunload", function() { 
             history.pushState(null, document.title, location.href);
         });
+		
+		$(document).ready(function() {
+			// Select last nav tab
+			$("#left-nav-tabs li:last a").trigger("click");
+		});
 	</script>
 	
 <div id="submitJob" style="visibility: hidden;">
