@@ -19,7 +19,7 @@ $.widget("gp.module", {
             $('#module-search')
                 .searchslider('show')
                 .searchslider('tagfilter', $(event.currentTarget).text())
-                .searchslider('set_title', "Search Tag: " + $(event.currentTarget).text());
+                .searchslider('set_title', '<a href="#" onclick="$(\'#module-browse\').searchslider(\'show\');">Browse Modules</a> &raquo; ' + $(event.currentTarget).text());
             $(event.currentTarget)
                 .closest('.module-listing')
                 .module('stopProp', event);

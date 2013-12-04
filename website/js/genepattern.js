@@ -24,8 +24,7 @@ function stopJob(button, jobId) {
 	var really = confirm('Really stop this Job?');
 	if (!really)
 		return;
-	window
-			.alert('Job not stopped, stopJob should not be called from this page!');
+	window.alert('Job not stopped, stopJob should not be called from this page!');
 }
 
 // POST /jobResults/<job>/requestEmailNotification
@@ -254,7 +253,7 @@ function getRecentModules() {
 
 function initBrowseSuites() {
 	var browse = $('<div id="module-list-suites"></div>').modulelist({
-        title: 'Browse Modules by Suite',
+        title: '<a href="#" onclick="$(\'#module-browse\').searchslider(\'show\');">Browse Modules</a> &raquo; Browse Suites',
         data: all_suites,
         droppable: false,
         draggable: false,
@@ -262,7 +261,7 @@ function initBrowseSuites() {
             var filter = $(event.currentTarget).find(".module-name").text();
             $("#module-search").searchslider("show");
             $("#module-search").searchslider("tagfilter", filter);
-            $("#module-search").searchslider("set_title", "Browsing Suite: " + filter);
+            $("#module-search").searchslider("set_title", '<a href="#" onclick="$(\'#module-browse\').searchslider(\'show\');">Browse Modules</a> &raquo; <a href="#" onclick="$(\'#module-suites\').searchslider(\'show\');">Browse Suites</a> &raquo; ' + filter);
         }
     });
 	
@@ -281,7 +280,7 @@ function initBrowseModules() {
             var filter = $(event.currentTarget).find(".module-name").text();
             $("#module-search").searchslider("show");
             $("#module-search").searchslider("tagfilter", filter);
-            $("#module-search").searchslider("set_title", "Browsing Category: " + filter);
+            $("#module-search").searchslider("set_title", '<a href="#" onclick="$(\'#module-browse\').searchslider(\'show\');">Browse Modules</a> &raquo; ' + filter);
         }
     });
 	
@@ -321,7 +320,7 @@ function initBrowseTop() {
             if (button == 'All Modules') {
                 $("#module-search").searchslider("show");
                 $("#module-search").searchslider("filter", '');
-                $("#module-search").searchslider("set_title", button);
+                $("#module-search").searchslider("set_title", '<a href="#" onclick="$(\'#module-browse\').searchslider(\'show\');">Browse Modules</a> &raquo; All Modules');
             }
             else {
             	$("#module-suites").searchslider("show");
