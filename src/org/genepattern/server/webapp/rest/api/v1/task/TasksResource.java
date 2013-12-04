@@ -155,7 +155,7 @@ public class TasksResource {
     @Produces(MediaType.APPLICATION_JSON)
     @Path("all.json")
     public Response getAllTasks(final @Context HttpServletRequest request) {
-        ServerConfiguration.Context userContext = Util.getUserContext(request);
+        final ServerConfiguration.Context userContext = Util.getUserContext(request);
         final String userId = userContext.getUserId();
         
         // Check for "return hidden modules" flag
@@ -181,7 +181,7 @@ public class TasksResource {
             }
 
             // Apply suites to the taskInfos
-            applyTaskSuites(latestTasks, userContext);
+            applyTaskSuites(userContext, latestTasks);
             
             // Transform the latest task map to an array and sort it
             TaskInfo[] tasksArray = (TaskInfo[]) latestTasks.values().toArray(new TaskInfo[0]);
@@ -237,14 +237,13 @@ public class TasksResource {
             log.error("Error getting lsid for task.name="+taskInfo.getName(), e);
         }
         jsonObj.put("documentation", getDocLink(taskInfo));
-        jsonObj.put("categories", getCategories(taskInfo));
+        jsonObj.put("categories", getCategories(userContext, taskInfo));
         jsonObj.put("suites", getSuites(taskInfo));
         jsonObj.put("tags", getTags(taskInfo, userContext));
         return jsonObj;
     }
 
-    private JSONArray getCategories(final TaskInfo taskInfo) {
-        ServerConfiguration.Context userContext=null;
+    private JSONArray getCategories(final ServerConfiguration.Context userContext, final TaskInfo taskInfo) {
         List<String> categories=CategoryManager.getCategoriesForTask(userContext, taskInfo);
         JSONArray json=new JSONArray();
         for(final String cat : categories) {
@@ -298,7 +297,7 @@ public class TasksResource {
     }
     
     @SuppressWarnings("unchecked")
-    private void applyTaskSuites(Map<String, TaskInfo> tasks, ServerConfiguration.Context context) {
+    private void applyTaskSuites(final ServerConfiguration.Context context, final Map<String, TaskInfo> tasks) {
         AdminDAO adminDao = new AdminDAO();
         try {
             SuiteInfo[] suites = adminDao.getLatestSuites();
