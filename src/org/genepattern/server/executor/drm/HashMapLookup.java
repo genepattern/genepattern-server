@@ -2,12 +2,12 @@ package org.genepattern.server.executor.drm;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
+import org.genepattern.server.executor.drm.dao.JobRunnerJob;
 import org.genepattern.webservice.JobInfo;
 
 import com.google.common.collect.BiMap;
@@ -31,45 +31,9 @@ public class HashMapLookup implements DrmLookup {
     }
     
     //map of gpJobId -> drmJobId
-    private BiMap<String, String> lookup=HashBiMap.create();
+    private BiMap<Integer, String> lookup=HashBiMap.create();
 
-    //table of details
-    private static class ExternalJobRecord {
-        private final String gpJobId;
-        private final File workingDir;
-        private final String jobRunnerClassname;
-        private final String jobRunnerId;
-        private final String extJobId;
-        private final JobState extJobState;
-        private final String extJobStatusMessage;
-        private final Date timestamp=new Date();
-        
-        public ExternalJobRecord(final String jobRunnerClassname, final String jobRunnerId, final File workingDir, final JobInfo jobInfo) {
-            this(jobRunnerClassname, jobRunnerId, workingDir, ""+jobInfo.getJobNumber());
-        }
-        
-        public ExternalJobRecord(final String jobRunnerClassname, final String jobRunnerId, final File workingDir, final String gpJobId) {
-            this.jobRunnerClassname=jobRunnerClassname;
-            this.jobRunnerId=jobRunnerId;
-            this.gpJobId=gpJobId;
-            this.workingDir=workingDir;
-            this.extJobId=null;
-            this.extJobState=JobState.UNDETERMINED;
-            this.extJobStatusMessage=extJobState.toString();
-        }
-        
-        public ExternalJobRecord(final ExternalJobRecord in, final DrmJobStatus updated) {
-            this.jobRunnerClassname=in.jobRunnerClassname;
-            this.jobRunnerId=in.jobRunnerId;
-            this.gpJobId=in.gpJobId;
-            this.workingDir=in.workingDir;
-            this.extJobId=updated.getDrmJobId();
-            this.extJobState=updated.getJobState();
-            this.extJobStatusMessage=updated.getJobStatusMessage();
-        }
-    }
-    
-    private Map<String, ExternalJobRecord> detailsTable=new HashMap<String,ExternalJobRecord>();
+    private Map<Integer, JobRunnerJob> detailsTable=new HashMap<Integer, JobRunnerJob>();
 
     @Override
     public List<String> getRunningDrmJobIds() {
@@ -82,28 +46,27 @@ public class HashMapLookup implements DrmLookup {
     }
     
     @Override
-    public String lookupGpJobId(final String drmJobId) {
+    public Integer lookupGpJobNo(final String drmJobId) {
         return lookup.inverse().get(drmJobId);
     }
 
     @Override
-    public void updateDrmRecord(String gpJobId, DrmJobStatus drmJobStatus) {
-        ExternalJobRecord rowOrig=detailsTable.get(gpJobId);
+    public void updateDrmRecord(Integer gpJobNo, DrmJobStatus drmJobStatus) {
+        JobRunnerJob rowOrig=detailsTable.get(gpJobNo);
         if (rowOrig==null) {
-            log.error("Row not initialized for gpJobId="+gpJobId);
-            rowOrig=new ExternalJobRecord(jobRunnerClassname, jobRunnerId, null, gpJobId);
+            log.error("Row not initialized for gpJobId="+gpJobNo);
+            rowOrig=new JobRunnerJob(jobRunnerClassname, jobRunnerId, null, gpJobNo);
         }
-        final ExternalJobRecord updated=new ExternalJobRecord(rowOrig, drmJobStatus);
-        if (DrmExecutor.isSet(updated.extJobId)) {
-            lookup.put(updated.gpJobId, updated.extJobId);
+        final JobRunnerJob updated=new JobRunnerJob(rowOrig, drmJobStatus);
+        if (DrmExecutor.isSet(updated.getExtJobId())) {
+            lookup.put(updated.getGpJobNo(), updated.getExtJobId());
         }
-        detailsTable.put(gpJobId, updated);
+        detailsTable.put(gpJobNo, updated);
     }
 
     @Override
     public void insertDrmRecord(final File workingDir, final JobInfo jobInfo) {
-        ExternalJobRecord row=new ExternalJobRecord(jobRunnerClassname, jobRunnerId, workingDir, jobInfo);
-        //lookup.put(row.gpJobId, row.extJobId);
-        detailsTable.put(row.gpJobId, row);
+        JobRunnerJob row=new JobRunnerJob(jobRunnerClassname, jobRunnerId, workingDir, jobInfo);
+        detailsTable.put(row.getGpJobNo(), row);
     }
 }

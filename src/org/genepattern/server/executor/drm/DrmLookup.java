@@ -41,7 +41,7 @@ public interface DrmLookup {
      * @param drmJobId
      * @return
      */
-    String lookupGpJobId(final String drmJobId);
+    Integer lookupGpJobNo(final String drmJobId);
     
     /**
      * Insert a record into the DB for a given GenePattern job;
@@ -58,5 +58,5 @@ public interface DrmLookup {
      * @param gpJobId, the GenePattern job id.
      * @param drmJobStatus, the current status as reported by the external JobRunner.
      */
-    void updateDrmRecord(final String gpJobId, final DrmJobStatus drmJobStatus);
+    void updateDrmRecord(final Integer gpJobNo, final DrmJobStatus drmJobStatus);
 }

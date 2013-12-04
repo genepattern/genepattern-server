@@ -27,19 +27,19 @@ public class DbLookup implements DrmLookup {
     }
 
     @Override
-    public String lookupGpJobId(String drmJobId) {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    @Override
     public void insertDrmRecord(File workingDir, JobInfo jobInfo) {
         // TODO Auto-generated method stub
         
     }
 
     @Override
-    public void updateDrmRecord(String gpJobId, DrmJobStatus drmJobStatus) {
+    public Integer lookupGpJobNo(String drmJobId) {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    @Override
+    public void updateDrmRecord(Integer gpJobNo, DrmJobStatus drmJobStatus) {
         // TODO Auto-generated method stub
         
     }

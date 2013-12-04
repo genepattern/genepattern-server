@@ -76,9 +76,8 @@ public class DrmExecutor implements CommandExecutor {
     }
     
     private void handleCompletedJob(final DrmJobStatus jobStatus) {
-        final String gpJobId=jobLookupTable.lookupGpJobId(jobStatus.getDrmJobId());
+        final Integer gpJobNo=jobLookupTable.lookupGpJobNo(jobStatus.getDrmJobId());
         try {
-            final int jobNumber=new Integer(gpJobId);
             final int exitCode;
             if (jobStatus.getExitCode()==null) {
                 exitCode=-1;
@@ -86,13 +85,13 @@ public class DrmExecutor implements CommandExecutor {
             else {
                 exitCode=jobStatus.getExitCode();
             }
-            GenePatternAnalysisTask.handleJobCompletion(jobNumber, exitCode);
+            GenePatternAnalysisTask.handleJobCompletion(gpJobNo, exitCode);
         }
         catch (NumberFormatException e) {
-            log.error("Unexpected error getting gp job number as an integer, gpJobId="+gpJobId, e);
+            log.error("Unexpected error getting gp job number as an integer, gpJobId="+gpJobNo, e);
         }
         catch (Throwable t) {
-            log.error("Unexpected error in handleCompletedJob for drmJobId="+jobStatus.getDrmJobId()+", gpJobId="+gpJobId, t);
+            log.error("Unexpected error in handleCompletedJob for drmJobId="+jobStatus.getDrmJobId()+", gpJobId="+gpJobNo, t);
         }
     }
     
@@ -159,9 +158,9 @@ public class DrmExecutor implements CommandExecutor {
             return;
         }
         
-        final String gpJobId=jobLookupTable.lookupGpJobId(drmJobStatus.getDrmJobId());
+        final Integer gpJobNo=jobLookupTable.lookupGpJobNo(drmJobStatus.getDrmJobId());
         if (log.isDebugEnabled()) {
-            log.debug("recording status for gpJobId="+gpJobId+
+            log.debug("recording status for gpJobId="+gpJobNo+
                     ", drmJobId="+drmJobStatus.getDrmJobId()+
                     ", exitCode="+drmJobStatus.getExitCode()+
                     ", jobState="+drmJobStatus.getJobState()+
@@ -169,7 +168,7 @@ public class DrmExecutor implements CommandExecutor {
         }
         
         //record this to the DB (aka lookup table)
-        jobLookupTable.updateDrmRecord(gpJobId, drmJobStatus);
+        jobLookupTable.updateDrmRecord(gpJobNo, drmJobStatus);
     }
     
     private void initJobHandler() {
@@ -230,17 +229,17 @@ public class DrmExecutor implements CommandExecutor {
     
     @Override
     public void runCommand(String[] commandLine, Map<String, String> environmentVariables, File runDir, File stdoutFile, File stderrFile, JobInfo jobInfo, File stdinFile) throws CommandExecutorException {
-        final String gpJobId=""+jobInfo.getJobNumber();
+        final Integer gpJobNo=jobInfo.getJobNumber();
         jobLookupTable.insertDrmRecord(runDir, jobInfo);
         //TODO: consider modifying the API so that startJob returns a DrmJobStatus instance
         String drmJobId=jobRunner.startJob(commandLine, environmentVariables, runDir, stdoutFile, stderrFile, jobInfo, stdinFile);
         if (!isSet(drmJobId)) {
             final DrmJobStatus drmJobStatus = new DrmJobStatus(drmJobId, JobState.FAILED);
-            jobLookupTable.updateDrmRecord(gpJobId, drmJobStatus);
+            jobLookupTable.updateDrmRecord(gpJobNo, drmJobStatus);
             throw new CommandExecutorException("invalid drmJobId returned from startJob, gpJobId="+jobInfo.getJobNumber());
         }
         else {
-            jobLookupTable.updateDrmRecord(gpJobId, new DrmJobStatus(drmJobId, JobState.QUEUED));
+            jobLookupTable.updateDrmRecord(gpJobNo, new DrmJobStatus(drmJobId, JobState.QUEUED));
             try {
                 runningJobs.put(drmJobId);
             }
