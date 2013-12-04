@@ -1,15 +1,20 @@
 package org.genepattern.server.executor.drm;
 
+import java.io.File;
 import java.util.List;
 
 import org.genepattern.webservice.JobInfo;
 
 /**
- * API calls for recording the lookup table between GenePattern jobIds
- * and drm jobIds.
+ * API calls for recording the lookup table between GenePattern jobIds and external jobIds.
  * 
  * This is so the lookup table can be persisted to an external system such
  * as a database or a file system.
+ * 
+ * You may need to create multiple instances of this interface, one for each specific JobRunner
+ * instance. Otherwise, there will be no way to return the list of running jobs on a per-JobRunner
+ * basis.
+ * 
  * @author pcarr
  *
  */
@@ -37,20 +42,21 @@ public interface DrmLookup {
      * @return
      */
     String lookupGpJobId(final String drmJobId);
-
+    
     /**
-     * Initialize a record into the DB for a given GenePattern job;
+     * Insert a record into the DB for a given GenePattern job;
      * this allows us to store a gp job id which has not yet been mapped to 
      * a drm job id.
      * 
      * @param jobInfo
      */
-    void initDrmRecord(final JobInfo jobInfo);
-
+    void insertDrmRecord(final File workingDir, final JobInfo jobInfo);
+    
     /**
-     * Update the lookup table to map the given drm jobId to the given GenePattern jobId.
-     * @param drmJobId
-     * @param jobInfo
+     * Update the record for a job.
+     * 
+     * @param gpJobId, the GenePattern job id.
+     * @param drmJobStatus, the current status as reported by the external JobRunner.
      */
-    void recordDrmId(final String drmJobId, final JobInfo jobInfo);
+    void updateDrmRecord(final String gpJobId, final DrmJobStatus drmJobStatus);
 }

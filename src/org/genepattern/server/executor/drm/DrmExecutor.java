@@ -35,9 +35,11 @@ import org.genepattern.webservice.JobStatus;
  */
 public class DrmExecutor implements CommandExecutor {
     private static final Logger log = Logger.getLogger(DrmExecutor.class);
+    
+    private String jobRunnerId;
+    private QueuingSystem jobRunner;
+    private DrmLookup jobLookupTable;
 
-    private QueuingSystem queuingSystem;
-    private DrmLookup jobLookupTable=new HashMapLookup();
     private static final int BOUND = 20000;
     private BlockingQueue<String> runningJobs;
     private Thread jobHandlerThread;
@@ -57,31 +59,32 @@ public class DrmExecutor implements CommandExecutor {
      * @param classname
      * @return
      */
-    void initQueuingSystem(final String classname) {
+    private static QueuingSystem initQueuingSystem(final String classname) {        
         try {
             final ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
             final Class<?> svcClass = Class.forName(classname, false, classLoader);
             if (!QueuingSystem.class.isAssignableFrom(svcClass)) {
                 log.error(""+svcClass.getCanonicalName()+" does not implement "+QueuingSystem.class.getCanonicalName());
             }
-            this.queuingSystem = (QueuingSystem) svcClass.newInstance();
+            final QueuingSystem queuingSystem = (QueuingSystem) svcClass.newInstance();
+            return queuingSystem;
         }
         catch (Throwable t) {
             log.error("Error loading QueuingSystem for classname: "+classname+", "+t.getLocalizedMessage(), t);
-            this.queuingSystem=new ExampleQueuingSystem();
+            return new ExampleQueuingSystem();
         }
     }
     
-    void handleCompletedJob(final DrmJobStatus jobStatus) {
-        final String gpJobId=jobLookupTable.lookupGpJobId(jobStatus.drmJobId);
+    private void handleCompletedJob(final DrmJobStatus jobStatus) {
+        final String gpJobId=jobLookupTable.lookupGpJobId(jobStatus.getDrmJobId());
         try {
             final int jobNumber=new Integer(gpJobId);
             final int exitCode;
-            if (jobStatus.exitCode==null) {
+            if (jobStatus.getExitCode()==null) {
                 exitCode=-1;
             }
             else {
-                exitCode=jobStatus.exitCode;
+                exitCode=jobStatus.getExitCode();
             }
             GenePatternAnalysisTask.handleJobCompletion(jobNumber, exitCode);
         }
@@ -89,7 +92,7 @@ public class DrmExecutor implements CommandExecutor {
             log.error("Unexpected error getting gp job number as an integer, gpJobId="+gpJobId, e);
         }
         catch (Throwable t) {
-            log.error("Unexpected error in handleCompletedJob for drmJobId="+jobStatus.drmJobId+", gpJobId="+gpJobId, t);
+            log.error("Unexpected error in handleCompletedJob for drmJobId="+jobStatus.getDrmJobId()+", gpJobId="+gpJobId, t);
         }
     }
     
@@ -125,8 +128,10 @@ public class DrmExecutor implements CommandExecutor {
     
     @Override
     public void setConfigurationProperties(final CommandProperties properties) {
-        final String queuingSystemClass=properties.getProperty("classname", ExampleQueuingSystem.class.getName());
-        initQueuingSystem(queuingSystemClass);
+        final String jobRunnerClassname=properties.getProperty("classname", ExampleQueuingSystem.class.getName());
+        this.jobRunnerId=properties.getProperty("id", "0");
+        this.jobRunner=DrmExecutor.initQueuingSystem(jobRunnerClassname);        
+        this.jobLookupTable=DrmLookupFactory.initializeDrmLookup(jobRunnerClassname, jobRunnerId);
     }
 
     @Override
@@ -147,6 +152,26 @@ public class DrmExecutor implements CommandExecutor {
         }
     }
     
+    private void updateStatus(final DrmJobStatus drmJobStatus) {
+        if (drmJobStatus==null) {
+            //ignore
+            log.debug("drmJobStatus==null");
+            return;
+        }
+        
+        final String gpJobId=jobLookupTable.lookupGpJobId(drmJobStatus.getDrmJobId());
+        if (log.isDebugEnabled()) {
+            log.debug("recording status for gpJobId="+gpJobId+
+                    ", drmJobId="+drmJobStatus.getDrmJobId()+
+                    ", exitCode="+drmJobStatus.getExitCode()+
+                    ", jobState="+drmJobStatus.getJobState()+
+                    ", jobStatusMessage="+drmJobStatus.getJobStatusMessage());
+        }
+        
+        //record this to the DB (aka lookup table)
+        jobLookupTable.updateDrmRecord(gpJobId, drmJobStatus);
+    }
+    
     private void initJobHandler() {
         jobHandlerThread=new Thread(new Runnable() {
 
@@ -157,8 +182,9 @@ public class DrmExecutor implements CommandExecutor {
                         //take the next job from the queue
                         final String drmJobId=runningJobs.take();
                         //check it's status
-                        final DrmJobStatus drmJobStatus=queuingSystem.getStatus(drmJobId);
-                        if (drmJobStatus != null && drmJobStatus.jobState.is(JobState.TERMINATED)) {
+                        final DrmJobStatus drmJobStatus=jobRunner.getStatus(drmJobId);
+                        updateStatus(drmJobStatus);
+                        if (drmJobStatus != null && drmJobStatus.getJobState().is(JobState.TERMINATED)) {
                             handleCompletedJob(drmJobStatus);
                         }
                         else {
@@ -204,14 +230,17 @@ public class DrmExecutor implements CommandExecutor {
     
     @Override
     public void runCommand(String[] commandLine, Map<String, String> environmentVariables, File runDir, File stdoutFile, File stderrFile, JobInfo jobInfo, File stdinFile) throws CommandExecutorException {
-        jobLookupTable.initDrmRecord(jobInfo);
-        String drmJobId=queuingSystem.startJob(commandLine, environmentVariables, runDir, stdoutFile, stderrFile, jobInfo, stdinFile);
+        final String gpJobId=""+jobInfo.getJobNumber();
+        jobLookupTable.insertDrmRecord(runDir, jobInfo);
+        //TODO: consider modifying the API so that startJob returns a DrmJobStatus instance
+        String drmJobId=jobRunner.startJob(commandLine, environmentVariables, runDir, stdoutFile, stderrFile, jobInfo, stdinFile);
         if (!isSet(drmJobId)) {
-            //TODO: handle error
+            final DrmJobStatus drmJobStatus = new DrmJobStatus(drmJobId, JobState.FAILED);
+            jobLookupTable.updateDrmRecord(gpJobId, drmJobStatus);
             throw new CommandExecutorException("invalid drmJobId returned from startJob, gpJobId="+jobInfo.getJobNumber());
         }
         else {
-            jobLookupTable.recordDrmId(drmJobId, jobInfo);
+            jobLookupTable.updateDrmRecord(gpJobId, new DrmJobStatus(drmJobId, JobState.QUEUED));
             try {
                 runningJobs.put(drmJobId);
             }
@@ -227,7 +256,7 @@ public class DrmExecutor implements CommandExecutor {
     @Override
     public void terminateJob(JobInfo jobInfo) throws Exception {
         final String drmJobId=jobLookupTable.lookupDrmJobId(jobInfo);
-        queuingSystem.cancelJob(drmJobId, jobInfo);
+        jobRunner.cancelJob(drmJobId, jobInfo);
     }
 
     /**
@@ -242,13 +271,14 @@ public class DrmExecutor implements CommandExecutor {
             return JobStatus.JOB_ERROR;
         }
         
-        final DrmJobStatus drmJobStatus=queuingSystem.getStatus(drmJobId);
+        final DrmJobStatus drmJobStatus=jobRunner.getStatus(drmJobId);
+        
         if (drmJobStatus==null) {
             log.error("No matching drmJobStatus for gpJobId="+jobInfo.getJobNumber()+", drmJobId="+drmJobId);
             return JobStatus.JOB_ERROR;
         }
         // an rval < 0 indicates to the calling method to ignore this
-        if (drmJobStatus.jobState.is(JobState.TERMINATED)) {
+        if (drmJobStatus.getJobState().is(JobState.TERMINATED)) {
             handleCompletedJob(drmJobStatus);
             return -1;
         }
