@@ -56,10 +56,10 @@ public class LocalQueuingSystem implements QueuingSystem {
                 cmd.runCommand(commandLine, environmentVariables, runDir, stdoutFile, stderrFile, jobInfo, stdinFile);
                 final DrmJobStatus drmJobStatus;
                 if (cmd.getExitValue()==0) {
-                    drmJobStatus=new DrmJobStatus(drmJobId, JobState.DONE, cmd.getExitValue());
+                    drmJobStatus=new DrmJobStatus.Builder(drmJobId, JobState.DONE).exitCode(cmd.getExitValue()).build();
                 }
                 else {
-                    drmJobStatus=new DrmJobStatus(drmJobId, JobState.FAILED, cmd.getExitValue());
+                    drmJobStatus=new DrmJobStatus.Builder(drmJobId, JobState.FAILED).exitCode(cmd.getExitValue()).build();
                 }
                 return drmJobStatus;                
             }
@@ -73,18 +73,18 @@ public class LocalQueuingSystem implements QueuingSystem {
         final Future<DrmJobStatus> task=runningTasks.get(drmJobId);
         if (task==null) {
             //TODO: could look at the file system for evidence of job completion
-            DrmJobStatus drmJobStatus=new DrmJobStatus(drmJobId, JobState.UNDETERMINED);
+            DrmJobStatus drmJobStatus=new DrmJobStatus.Builder(drmJobId, JobState.UNDETERMINED).build();
             return drmJobStatus;
         }
         
         if (!task.isDone()) {
-            DrmJobStatus drmJobStatus=new DrmJobStatus(drmJobId, JobState.RUNNING);
+            DrmJobStatus drmJobStatus=new DrmJobStatus.Builder(drmJobId, JobState.RUNNING).build();
             return drmJobStatus;
         }
 
         if (task.isCancelled()) {
             //TODO: need to clearly indicate a user-cancelled job, from a job which failed because of a non-zero exit code
-            return new DrmJobStatus(drmJobId, JobState.FAILED, -1);
+            return new DrmJobStatus.Builder(drmJobId, JobState.FAILED).exitCode(-1).build();
         }
         try {
             return  task.get();
@@ -92,11 +92,11 @@ public class LocalQueuingSystem implements QueuingSystem {
         catch (InterruptedException e) {
             log.error(e);
             Thread.currentThread().interrupt();
-            return new DrmJobStatus(drmJobId, JobState.FAILED, -1);
+            return new DrmJobStatus.Builder(drmJobId, JobState.FAILED).exitCode(-1).build();
         }
         catch (Exception e) {
             log.error(e);
-            return new DrmJobStatus(drmJobId, JobState.UNDETERMINED);
+            return new DrmJobStatus.Builder(drmJobId, JobState.UNDETERMINED).build();
         }
     }
 

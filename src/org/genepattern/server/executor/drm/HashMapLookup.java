@@ -23,11 +23,11 @@ public class HashMapLookup implements DrmLookup {
     private static final Logger log = Logger.getLogger(HashMapLookup.class);
 
     private final String jobRunnerClassname;
-    private final String jobRunnerId;
+    private final String jobRunnerName;
     
-    public HashMapLookup(final String jobRunnerClassname, final String jobRunnerId) {
+    public HashMapLookup(final String jobRunnerClassname, final String jobRunnerName) {
         this.jobRunnerClassname=jobRunnerClassname;
-        this.jobRunnerId=jobRunnerId;
+        this.jobRunnerName=jobRunnerName;
     }
     
     //map of gpJobId -> drmJobId
@@ -41,8 +41,8 @@ public class HashMapLookup implements DrmLookup {
     }
 
     @Override
-    public String lookupDrmJobId(JobInfo jobInfo) {
-        return lookup.get(""+jobInfo.getJobNumber());
+    public String lookupDrmJobId(final Integer gpJobNo) {
+        return lookup.get(""+gpJobNo);
     }
     
     @Override
@@ -51,13 +51,15 @@ public class HashMapLookup implements DrmLookup {
     }
 
     @Override
-    public void updateDrmRecord(Integer gpJobNo, DrmJobStatus drmJobStatus) {
+    public void updateDrmRecord(final Integer gpJobNo, final DrmJobStatus drmJobStatus) {
         JobRunnerJob rowOrig=detailsTable.get(gpJobNo);
         if (rowOrig==null) {
             log.error("Row not initialized for gpJobId="+gpJobNo);
-            rowOrig=new JobRunnerJob(jobRunnerClassname, jobRunnerId, null, gpJobNo);
+            //TODO: figure out how to initialize the workingDir
+            final File workingDir=new File(""+gpJobNo);
+            rowOrig=new JobRunnerJob.Builder(jobRunnerClassname, workingDir, gpJobNo).drmJobStatus(drmJobStatus).build();
         }
-        final JobRunnerJob updated=new JobRunnerJob(rowOrig, drmJobStatus);
+        final JobRunnerJob updated=new JobRunnerJob.Builder(rowOrig).drmJobStatus(drmJobStatus).build();
         if (DrmExecutor.isSet(updated.getExtJobId())) {
             lookup.put(updated.getGpJobNo(), updated.getExtJobId());
         }
@@ -66,7 +68,7 @@ public class HashMapLookup implements DrmLookup {
 
     @Override
     public void insertDrmRecord(final File workingDir, final JobInfo jobInfo) {
-        JobRunnerJob row=new JobRunnerJob(jobRunnerClassname, jobRunnerId, workingDir, jobInfo);
+        JobRunnerJob row=new JobRunnerJob.Builder(jobRunnerClassname, workingDir, jobInfo.getJobNumber()).jobRunnerName(jobRunnerName).build();
         detailsTable.put(row.getGpJobNo(), row);
     }
 }

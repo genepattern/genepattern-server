@@ -36,7 +36,8 @@ import org.genepattern.webservice.JobStatus;
 public class DrmExecutor implements CommandExecutor {
     private static final Logger log = Logger.getLogger(DrmExecutor.class);
     
-    private String jobRunnerId;
+    private String jobRunnerClassname;
+    private String jobRunnerName;
     private QueuingSystem jobRunner;
     private DrmLookup jobLookupTable;
 
@@ -127,10 +128,18 @@ public class DrmExecutor implements CommandExecutor {
     
     @Override
     public void setConfigurationProperties(final CommandProperties properties) {
-        final String jobRunnerClassname=properties.getProperty("classname", ExampleQueuingSystem.class.getName());
-        this.jobRunnerId=properties.getProperty("id", "0");
-        this.jobRunner=DrmExecutor.initQueuingSystem(jobRunnerClassname);        
-        this.jobLookupTable=DrmLookupFactory.initializeDrmLookup(jobRunnerClassname, jobRunnerId);
+        this.jobRunnerClassname=properties.getProperty("jobRunnerClassname", ExampleQueuingSystem.class.getName());
+        this.jobRunnerName=properties.getProperty("jobRunnerName", "0");
+        this.jobRunner=DrmExecutor.initQueuingSystem(jobRunnerClassname);
+        String lookupTypeStr=properties.getProperty("lookupType", DrmLookupFactory.Type.DB.name());
+        DrmLookupFactory.Type lookupType=null;
+        try {
+            lookupType=DrmLookupFactory.Type.valueOf(lookupTypeStr);
+        }
+        catch (Throwable t) {
+            log.error("Error initializing lookupType from config file, lookupType="+lookupTypeStr, t);
+        }
+        this.jobLookupTable=DrmLookupFactory.initializeDrmLookup(lookupType, jobRunnerClassname, jobRunnerName);
     }
 
     @Override
@@ -213,6 +222,7 @@ public class DrmExecutor implements CommandExecutor {
                 }
             }
         });
+        jobHandlerThread.setDaemon(true);
         jobHandlerThread.start();
     }
     
@@ -234,12 +244,12 @@ public class DrmExecutor implements CommandExecutor {
         //TODO: consider modifying the API so that startJob returns a DrmJobStatus instance
         String drmJobId=jobRunner.startJob(commandLine, environmentVariables, runDir, stdoutFile, stderrFile, jobInfo, stdinFile);
         if (!isSet(drmJobId)) {
-            final DrmJobStatus drmJobStatus = new DrmJobStatus(drmJobId, JobState.FAILED);
+            final DrmJobStatus drmJobStatus = new DrmJobStatus.Builder(drmJobId, JobState.FAILED).build();
             jobLookupTable.updateDrmRecord(gpJobNo, drmJobStatus);
             throw new CommandExecutorException("invalid drmJobId returned from startJob, gpJobId="+jobInfo.getJobNumber());
         }
         else {
-            jobLookupTable.updateDrmRecord(gpJobNo, new DrmJobStatus(drmJobId, JobState.QUEUED));
+            jobLookupTable.updateDrmRecord(gpJobNo, new DrmJobStatus.Builder(drmJobId, JobState.QUEUED).build());
             try {
                 runningJobs.put(drmJobId);
             }
@@ -254,7 +264,7 @@ public class DrmExecutor implements CommandExecutor {
 
     @Override
     public void terminateJob(JobInfo jobInfo) throws Exception {
-        final String drmJobId=jobLookupTable.lookupDrmJobId(jobInfo);
+        final String drmJobId=jobLookupTable.lookupDrmJobId(jobInfo.getJobNumber());
         jobRunner.cancelJob(drmJobId, jobInfo);
     }
 
@@ -263,7 +273,7 @@ public class DrmExecutor implements CommandExecutor {
      */
     @Override
     public int handleRunningJob(JobInfo jobInfo) throws Exception {
-        final String drmJobId=jobLookupTable.lookupDrmJobId(jobInfo);
+        final String drmJobId=jobLookupTable.lookupDrmJobId(jobInfo.getJobNumber());
         if (drmJobId==null) {
             //no match found, what to do?
             log.error("No matching drmJobId found for gpJobId="+jobInfo.getJobNumber());

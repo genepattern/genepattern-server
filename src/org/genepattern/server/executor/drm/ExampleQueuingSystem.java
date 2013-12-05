@@ -14,7 +14,7 @@ public class ExampleQueuingSystem implements QueuingSystem {
     public String startJob(String[] commandLine, Map<String, String> environmentVariables, File runDir, File stdoutFile, File stderrFile, JobInfo jobInfo, File stdinFile) throws CommandExecutorException {
         // TODO Auto-generated method stub
         final String drmJobId="DRM_"+jobInfo.getJobNumber();
-        final DrmJobStatus drmJobStatus=new DrmJobStatus(drmJobId, JobState.QUEUED);
+        final DrmJobStatus drmJobStatus=new DrmJobStatus.Builder(drmJobId, JobState.QUEUED).build();
         statusMap.put(drmJobId, drmJobStatus);
         return drmJobId;
     }

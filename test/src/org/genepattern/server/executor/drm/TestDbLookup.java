@@ -18,6 +18,8 @@ import org.junit.Test;
 public class TestDbLookup {
     private static final String jobRunnerClassname=LocalQueuingSystem.class.getName();
     private static final String jobRunnerName="LocalQueuingSystem-1";
+    final Integer gpJobNo=0;
+    final String drmJobId="DRM_"+gpJobNo;
 
     @BeforeClass
     public static void beforeClass() throws Exception{
@@ -32,21 +34,35 @@ public class TestDbLookup {
     
     @Test
     public void testCreate() {
-        final Integer gpJobNo=0;
         final File workingDir=new File("jobResults/"+gpJobNo);
         
         DbLookup dbLookup = new DbLookup(jobRunnerClassname, jobRunnerName);
         dbLookup.insertDrmRecord(workingDir, gpJobNo);
         
-        List<JobRunnerJob> all=dbLookup.getAll();
-        Assert.assertEquals("all.size", 1, all.size());
+        // simulate setting the drmJobId
+        
+        DrmJobStatus drmJobStatus = new DrmJobStatus.Builder(drmJobId, JobState.QUEUED).build();
+        dbLookup.updateDrmRecord(gpJobNo, drmJobStatus);
+        
+        //List<JobRunnerJob> all=dbLookup.getAll();
+        //Assert.assertEquals("all.size", 1, all.size());
     }
     
     @Test
     public void testQuery() {
         DbLookup dbLookup=new DbLookup(jobRunnerClassname, jobRunnerName);
-        List<String> runningJobIds=dbLookup.getRunningDrmJobIds();
-        Assert.assertEquals("num running jobs", 1, runningJobIds.size());
+        final String actualDrmJobId=dbLookup.lookupDrmJobId(gpJobNo);
+        Assert.assertEquals("lookupDrmJobId("+gpJobNo+")", drmJobId, actualDrmJobId);
+        
+        //List<String> runningJobIds=dbLookup.getRunningDrmJobIds();
+        //Assert.assertEquals("num running jobs", 1, runningJobIds.size());
+    }
+    
+    @Test
+    public void testLookupGpJobNo() {
+        DbLookup dbLookup=new DbLookup(jobRunnerClassname, jobRunnerName);
+        Integer actualGpJobNo=dbLookup.lookupGpJobNo(drmJobId);
+        Assert.assertEquals("lookupGpJobNo("+drmJobId+")", gpJobNo, actualGpJobNo);
     }
 
 }

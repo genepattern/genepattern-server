@@ -21,33 +21,12 @@ public class DbLookup implements DrmLookup {
         this.jobRunnerName=jobRunnerName;
     }
     
-    //for debugging, get all records
-    public List<JobRunnerJob> getAll() {
-        final boolean isInTransaction=HibernateUtil.isInTransaction();
-        try {
-            HibernateUtil.beginTransaction();
-            final String hql="from org.genepattern.server.executor.drm.dao.JobRunnerJob";
-            Query query=HibernateUtil.getSession().createQuery(hql);
-            List<JobRunnerJob> rval=query.list();
-            return rval;
-        }
-        catch (Throwable t) {
-            log.error(t);
-            return Collections.emptyList();
-        }
-        finally {
-            if (!isInTransaction) {
-                HibernateUtil.closeCurrentSession();
-            }
-        }
-    }
-
     @Override
     public List<String> getRunningDrmJobIds() {
         final boolean isInTransaction=HibernateUtil.isInTransaction();
         try {
             HibernateUtil.beginTransaction();
-            final String hql="select extJobId from org.genepattern.server.executor.drm.dao.JobRunnerJob where jobRunnerClassname = :jobRunnerClassname and jobRunnerName = :jobRunnerName";
+            final String hql="select extJobId from "+JobRunnerJob.class.getName()+" where jobRunnerClassname = :jobRunnerClassname and jobRunnerName = :jobRunnerName";
             Query query=HibernateUtil.getSession().createQuery(hql);
             query.setString("jobRunnerClassname", jobRunnerClassname);
             query.setString("jobRunnerName", jobRunnerName);
@@ -66,9 +45,51 @@ public class DbLookup implements DrmLookup {
     }
 
     @Override
-    public String lookupDrmJobId(JobInfo jobInfo) {
-        // TODO Auto-generated method stub
+    public String lookupDrmJobId(final Integer gpJobNo) {
+        JobRunnerJob jobRunnerJob=selectJobRunnerJob(gpJobNo);
+        if (jobRunnerJob != null) {
+            final String extJobId=jobRunnerJob.getExtJobId();
+            if (extJobId != null) {
+                return extJobId;
+            }
+            else {
+                //empty string means, there is a record, but the extJobId was not set
+                return "";
+            }
+        }
+        //null means there is not record in the db
         return null;
+    }
+
+    @Override
+    public Integer lookupGpJobNo(final String drmJobId) {
+        final boolean isInTransaction=HibernateUtil.isInTransaction();
+        try {
+            HibernateUtil.beginTransaction();
+            final String hql="select jrj.gpJobNo from "+JobRunnerJob.class.getName()+" jrj where jrj.jobRunnerClassname = :jobRunnerClassname and jrj.jobRunnerName = :jobRunnerName and jrj.extJobId = :extJobId";
+            Query query=HibernateUtil.getSession().createQuery(hql);
+            query.setString("jobRunnerClassname", jobRunnerClassname);
+            query.setString("jobRunnerName", jobRunnerName);
+            query.setString("extJobId", drmJobId);
+            List<Integer> rval=query.list();
+            if (rval != null && rval.size()>0) {
+                if (rval.size()>1) {
+                    log.error("Unexpected result from query, should not have more than 1 entry into table, but found "+rval.size());
+                }
+                return rval.get(0);
+            }
+            //null means no entry found in db
+            return null;
+        }
+        catch (Throwable t) {
+            log.error(t);
+            return null;
+        }
+        finally {
+            if (!isInTransaction) {
+                HibernateUtil.closeCurrentSession();
+            }
+        }
     }
 
     @Override
@@ -77,23 +98,82 @@ public class DbLookup implements DrmLookup {
     }
 
     @Override
-    public Integer lookupGpJobNo(String drmJobId) {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    @Override
     public void updateDrmRecord(Integer gpJobNo, DrmJobStatus drmJobStatus) {
-        // TODO Auto-generated method stub
-        
-    }
-    
-    public void insertDrmRecord(File workingDir, Integer gpJobNo) {
         final boolean isInTransaction=HibernateUtil.isInTransaction();
         try {
             HibernateUtil.beginTransaction();
-            final JobRunnerJob job = new JobRunnerJob(jobRunnerClassname, jobRunnerName, workingDir, gpJobNo);
-            HibernateUtil.getSession().save(job);
+            JobRunnerJob existing = (JobRunnerJob) HibernateUtil.getSession().get(JobRunnerJob.class, gpJobNo);
+            if (existing==null) {
+                //TODO: should throw an exception?
+                log.error("No existing record for "+gpJobNo);
+                return;
+            }
+            //JobRunnerJob is immutable ... so evict it from the session before saving a new instance as an update
+            HibernateUtil.getSession().evict(existing);
+            JobRunnerJob update = new JobRunnerJob.Builder(existing).drmJobStatus(drmJobStatus).build();
+            HibernateUtil.getSession().saveOrUpdate(update);
+            HibernateUtil.commitTransaction();
+        }
+        catch (Throwable t) {
+            log.error("Error updating entry for gpJobNo="+gpJobNo,t);
+            HibernateUtil.rollbackTransaction();
+        }
+        finally {
+            if (!isInTransaction) {
+                HibernateUtil.closeCurrentSession();
+            }
+        }
+    }
+    
+    /**
+     * For debugging, get all records
+     * @return
+     */
+    protected List<JobRunnerJob> getAll() {
+        final boolean isInTransaction=HibernateUtil.isInTransaction();
+        try {
+            HibernateUtil.beginTransaction();
+            final String hql="from "+JobRunnerJob.class.getName();
+            Query query=HibernateUtil.getSession().createQuery(hql);
+            List<JobRunnerJob> rval=query.list();
+            return rval;
+        }
+        catch (Throwable t) {
+            log.error(t);
+            return Collections.emptyList();
+        }
+        finally {
+            if (!isInTransaction) {
+                HibernateUtil.closeCurrentSession();
+            }
+        }
+    }
+
+    protected JobRunnerJob selectJobRunnerJob(final Integer gpJobNo) {
+        final boolean isInTransaction=HibernateUtil.isInTransaction();
+        try {
+            HibernateUtil.beginTransaction();
+            JobRunnerJob existing = (JobRunnerJob) HibernateUtil.getSession().get(JobRunnerJob.class, gpJobNo);
+            return existing;
+        }
+        catch (Throwable t) {
+            log.error("Error getting entry for gpJobNo="+gpJobNo,t);
+            return null;
+        }
+        finally {
+            if (!isInTransaction) {
+                HibernateUtil.closeCurrentSession();
+            }
+        }
+    }
+    
+    protected void insertDrmRecord(File workingDir, Integer gpJobNo) {
+        //final JobRunnerJob job = new JobRunnerJob(jobRunnerClassname, jobRunnerName, workingDir, gpJobNo);
+        final JobRunnerJob job = new JobRunnerJob.Builder(jobRunnerClassname, workingDir, gpJobNo).jobRunnerName(jobRunnerName).build();
+        final boolean isInTransaction=HibernateUtil.isInTransaction();
+        try {
+            HibernateUtil.beginTransaction();
+            HibernateUtil.getSession().saveOrUpdate(job);
             if (!isInTransaction) {
                 HibernateUtil.commitTransaction();
             }
@@ -108,6 +188,5 @@ public class DbLookup implements DrmLookup {
             }
         }
     }
-
 
 }

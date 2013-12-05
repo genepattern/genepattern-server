@@ -10,7 +10,7 @@ public enum JobState {
     /** The job status cannot be determined. This is a permanent issue, not being solvable by asking again for the job state. */
     UNDETERMINED(null),
     IS_QUEUED(null),
-      /** The job is queued for being scheduled and executed. */
+      /** The job is queued or being scheduled and executed. */
       QUEUED(IS_QUEUED),
       /** The job has been placed on hold by the system, the administrator, or the submitting user. */
       QUEUED_HELD(IS_QUEUED),
@@ -19,15 +19,19 @@ public enum JobState {
       RUNNING(STARTED),
       /** The job has been suspended by the user, the system or the administrator. */
       SUSPENDED(STARTED),
-      /** The job was re-queued by the DRM system, and is eligible to run. */
+      /** The job was re-queued by the system, and is eligible to run. */
       REQUEUED(STARTED),
-      /** The job was re-queued by the DRM system, and is currently placed on hold by the system, the administrator, or the submitting user. */
+      /** The job was re-queued by the system, and is currently placed on hold by the system, the administrator, or the submitting user. */
       REQUEUED_HELD(STARTED),
     TERMINATED(null),
       /** The job finished without an error. */
       DONE(TERMINATED),
-      /** The job exited abnormally before finishing. */
-      FAILED(TERMINATED)
+      /** The job exited abnormally before finishing, for example by exceeding a resource usage limit. */
+      FAILED(TERMINATED),
+        /** The job was cancelled by the user before entering the running state. */
+        ABORTED(FAILED),
+        /** The job was cancelled by the user after entering the running state. */
+        CANCELLED(FAILED)
     ;
     
     private final JobState parent;

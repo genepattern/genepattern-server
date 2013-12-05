@@ -30,14 +30,18 @@ public interface DrmLookup {
     List<String> getRunningDrmJobIds();
 
     /**
-     * Get the drmJob id for the given GenePattern job.
+     * Get the drmJob id for the given GenePattern job id.
      * @param jobInfo
      * @return
      */
-    String lookupDrmJobId(final JobInfo jobInfo);
+    String lookupDrmJobId(final Integer gpJobNo);
 
     /**
-     * Get the GenePattern jobId for the given drm job.
+     * Get the GenePattern jobId for the given drm job. The system uses one table to store records for an arbitrary number
+     * of job runner instances. The DB model allows for duplicate drmJobIds. The uniqueness constraint is on three columns.
+     * 
+     * @param jobRunnerClassname
+     * @param jobRunnerName
      * @param drmJobId
      * @return
      */
