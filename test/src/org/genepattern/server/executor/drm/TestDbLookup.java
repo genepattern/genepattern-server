@@ -4,6 +4,7 @@ import java.io.File;
 
 import org.genepattern.drm.DrmJobState;
 import org.genepattern.drm.DrmJobStatus;
+import org.genepattern.drm.DrmJobSubmission;
 import org.genepattern.drm.impl.local.LocalJobRunner;
 import org.genepattern.junitutil.DbUtil;
 import org.junit.AfterClass;
@@ -21,6 +22,7 @@ public class TestDbLookup {
     private static final String jobRunnerName="LocalQueuingSystem-1";
     final Integer gpJobNo=0;
     final String drmJobId="DRM_"+gpJobNo;
+    final String[] commandLine={ "echo", "Hello, World!" };
 
     @BeforeClass
     public static void beforeClass() throws Exception{
@@ -36,17 +38,14 @@ public class TestDbLookup {
     @Test
     public void testCreate() {
         final File workingDir=new File("jobResults/"+gpJobNo);
+        final DrmJobSubmission jobSubmission=new DrmJobSubmission.Builder(gpJobNo, workingDir)
+            .commandLine(commandLine)
+            .build();
         
         DbLookup dbLookup = new DbLookup(jobRunnerClassname, jobRunnerName);
-        dbLookup.insertDrmRecord(workingDir, gpJobNo);
-        
-        // simulate setting the drmJobId
-        
+        dbLookup.insertDrmRecord(jobSubmission);
         DrmJobStatus drmJobStatus = new DrmJobStatus.Builder(drmJobId, DrmJobState.QUEUED).build();
-        dbLookup.updateDrmRecord(gpJobNo, drmJobStatus);
-        
-        //List<JobRunnerJob> all=dbLookup.getAll();
-        //Assert.assertEquals("all.size", 1, all.size());
+        dbLookup.updateJobStatus(gpJobNo, drmJobStatus);
     }
     
     @Test
@@ -54,9 +53,6 @@ public class TestDbLookup {
         DbLookup dbLookup=new DbLookup(jobRunnerClassname, jobRunnerName);
         final String actualDrmJobId=dbLookup.lookupDrmJobId(gpJobNo);
         Assert.assertEquals("lookupDrmJobId("+gpJobNo+")", drmJobId, actualDrmJobId);
-        
-        //List<String> runningJobIds=dbLookup.getRunningDrmJobIds();
-        //Assert.assertEquals("num running jobs", 1, runningJobIds.size());
     }
     
     @Test

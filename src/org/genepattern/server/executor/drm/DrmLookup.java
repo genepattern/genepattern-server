@@ -1,10 +1,9 @@
 package org.genepattern.server.executor.drm;
 
-import java.io.File;
 import java.util.List;
 
 import org.genepattern.drm.DrmJobStatus;
-import org.genepattern.webservice.JobInfo;
+import org.genepattern.drm.DrmJobSubmission;
 
 /**
  * API calls for recording the lookup table between GenePattern jobIds and external jobIds.
@@ -55,7 +54,7 @@ public interface DrmLookup {
      * 
      * @param jobInfo
      */
-    void insertDrmRecord(final File workingDir, final JobInfo jobInfo);
+    void insertJobRecord(final DrmJobSubmission jobSubmission);
     
     /**
      * Update the record for a job.
@@ -63,5 +62,5 @@ public interface DrmLookup {
      * @param gpJobId, the GenePattern job id.
      * @param drmJobStatus, the current status as reported by the external JobRunner.
      */
-    void updateDrmRecord(final Integer gpJobNo, final DrmJobStatus drmJobStatus);
+    void updateJobStatus(final Integer gpJobNo, final DrmJobStatus drmJobStatus);
 }

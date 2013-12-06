@@ -1,14 +1,13 @@
 package org.genepattern.server.executor.drm;
 
-import java.io.File;
 import java.util.Collections;
 import java.util.List;
 
 import org.apache.log4j.Logger;
 import org.genepattern.drm.DrmJobStatus;
+import org.genepattern.drm.DrmJobSubmission;
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.executor.drm.dao.JobRunnerJob;
-import org.genepattern.webservice.JobInfo;
 import org.hibernate.Query;
 
 public class DbLookup implements DrmLookup {
@@ -93,13 +92,18 @@ public class DbLookup implements DrmLookup {
         }
     }
 
+    //@Override
+    //public void insertDrmRecord(File workingDir, JobInfo jobInfo) {
+    //    insertDrmRecord(workingDir, jobInfo.getJobNumber());
+    //}
     @Override
-    public void insertDrmRecord(File workingDir, JobInfo jobInfo) {
-        insertDrmRecord(workingDir, jobInfo.getJobNumber());
+    public void insertJobRecord(DrmJobSubmission jobSubmission) {
+        insertDrmRecord(jobSubmission);
     }
 
+
     @Override
-    public void updateDrmRecord(Integer gpJobNo, DrmJobStatus drmJobStatus) {
+    public void updateJobStatus(Integer gpJobNo, DrmJobStatus drmJobStatus) {
         final boolean isInTransaction=HibernateUtil.isInTransaction();
         try {
             HibernateUtil.beginTransaction();
@@ -168,9 +172,10 @@ public class DbLookup implements DrmLookup {
         }
     }
     
-    protected void insertDrmRecord(File workingDir, Integer gpJobNo) {
+    //protected void insertDrmRecord(final File workingDir, final Integer gpJobNo) {
+    protected void insertDrmRecord(final DrmJobSubmission jobSubmission) {
         //final JobRunnerJob job = new JobRunnerJob(jobRunnerClassname, jobRunnerName, workingDir, gpJobNo);
-        final JobRunnerJob job = new JobRunnerJob.Builder(jobRunnerClassname, workingDir, gpJobNo).jobRunnerName(jobRunnerName).build();
+        final JobRunnerJob job = new JobRunnerJob.Builder(jobRunnerClassname, jobSubmission).jobRunnerName(jobRunnerName).build();
         final boolean isInTransaction=HibernateUtil.isInTransaction();
         try {
             HibernateUtil.beginTransaction();
@@ -180,7 +185,7 @@ public class DbLookup implements DrmLookup {
             }
         }
         catch (Throwable t) {
-            log.error("Error adding record for gpJobNo="+gpJobNo, t);
+            log.error("Error adding record for gpJobNo="+jobSubmission.getGpJobNo(), t);
             HibernateUtil.rollbackTransaction();
         }
         finally {

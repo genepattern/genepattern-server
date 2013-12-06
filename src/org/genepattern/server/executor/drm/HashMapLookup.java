@@ -8,8 +8,8 @@ import java.util.Map;
 
 import org.apache.log4j.Logger;
 import org.genepattern.drm.DrmJobStatus;
+import org.genepattern.drm.DrmJobSubmission;
 import org.genepattern.server.executor.drm.dao.JobRunnerJob;
-import org.genepattern.webservice.JobInfo;
 
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
@@ -52,7 +52,7 @@ public class HashMapLookup implements DrmLookup {
     }
 
     @Override
-    public void updateDrmRecord(final Integer gpJobNo, final DrmJobStatus drmJobStatus) {
+    public void updateJobStatus(final Integer gpJobNo, final DrmJobStatus drmJobStatus) {
         JobRunnerJob rowOrig=detailsTable.get(gpJobNo);
         if (rowOrig==null) {
             log.error("Row not initialized for gpJobId="+gpJobNo);
@@ -68,8 +68,8 @@ public class HashMapLookup implements DrmLookup {
     }
 
     @Override
-    public void insertDrmRecord(final File workingDir, final JobInfo jobInfo) {
-        JobRunnerJob row=new JobRunnerJob.Builder(jobRunnerClassname, workingDir, jobInfo.getJobNumber()).jobRunnerName(jobRunnerName).build();
+    public void insertJobRecord(final DrmJobSubmission jobSubmission) {
+        JobRunnerJob row=new JobRunnerJob.Builder(jobRunnerClassname, jobSubmission.getWorkingDir(), jobSubmission.getGpJobNo()).jobRunnerName(jobRunnerName).build();
         detailsTable.put(row.getGpJobNo(), row);
     }
 }

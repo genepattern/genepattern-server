@@ -210,7 +210,7 @@ public class DrmExecutor implements CommandExecutor {
         }
         
         //record this to the DB (aka lookup table)
-        jobLookupTable.updateDrmRecord(gpJobNo, drmJobStatus);
+        jobLookupTable.updateJobStatus(gpJobNo, drmJobStatus);
     }
     
     private void initJobHandler() {
@@ -272,7 +272,8 @@ public class DrmExecutor implements CommandExecutor {
     }
     
     @Override
-    public void runCommand(String[] commandLine, Map<String, String> environmentVariables, File runDir, File stdoutFile, File stderrFile, JobInfo jobInfo, File stdinFile) throws CommandExecutorException {
+    public void runCommand(final String[] commandLine, final Map<String, String> environmentVariables, final File runDir, final File stdoutFile, final File stderrFile, final JobInfo jobInfo, final File stdinFile) throws CommandExecutorException {
+        final Integer gpJobNo=jobInfo.getJobNumber();
         final DrmJobSubmission drmJobSubmit=new DrmJobSubmission.Builder(jobInfo, runDir)
             .commandLine(commandLine)
             .environmentVariables(environmentVariables)
@@ -281,18 +282,20 @@ public class DrmExecutor implements CommandExecutor {
             .stdinFile(stdinFile)
             .build();
         
-        final Integer gpJobNo=jobInfo.getJobNumber();
-        jobLookupTable.insertDrmRecord(runDir, jobInfo);
+        //final Integer gpJobNo=jobInfo.getJobNumber();
+        //jobLookupTable.insertDrmRecord(runDir, jobInfo);
+        jobLookupTable.insertJobRecord(drmJobSubmit);
+        //TODO: make fault tolerant in the event that (1) startJob gets hung or (2) startJob throws an exception
         //TODO: consider modifying the API so that startJob returns a DrmJobStatus instance
         //String drmJobId=jobRunner.startJob(commandLine, environmentVariables, runDir, stdoutFile, stderrFile, jobInfo, stdinFile);
         String drmJobId=jobRunner.startJob(drmJobSubmit);
         if (!isSet(drmJobId)) {
             final DrmJobStatus drmJobStatus = new DrmJobStatus.Builder(drmJobId, DrmJobState.FAILED).build();
-            jobLookupTable.updateDrmRecord(gpJobNo, drmJobStatus);
+            jobLookupTable.updateJobStatus(gpJobNo, drmJobStatus);
             throw new CommandExecutorException("invalid drmJobId returned from startJob, gpJobId="+jobInfo.getJobNumber());
         }
         else {
-            jobLookupTable.updateDrmRecord(gpJobNo, new DrmJobStatus.Builder(drmJobId, DrmJobState.QUEUED).build());
+            jobLookupTable.updateJobStatus(gpJobNo, new DrmJobStatus.Builder(drmJobId, DrmJobState.QUEUED).build());
             try {
                 runningJobs.put(drmJobId);
             }

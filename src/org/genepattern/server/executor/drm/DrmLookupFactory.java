@@ -1,12 +1,11 @@
 package org.genepattern.server.executor.drm;
 
-import java.io.File;
 import java.util.Collections;
 import java.util.List;
 
 import org.apache.log4j.Logger;
 import org.genepattern.drm.DrmJobStatus;
-import org.genepattern.webservice.JobInfo;
+import org.genepattern.drm.DrmJobSubmission;
 
 public class DrmLookupFactory {
     private static final Logger log = Logger.getLogger(DrmLookupFactory.class);
@@ -28,7 +27,7 @@ public class DrmLookupFactory {
             return new DbLookup(jobRunnerClassname, jobRunnerName);
         }
         
-        log.error("Unspecified DrmLookup Type, creating anonymous default implementations");   
+        log.error("Unspecified DrmLookup Type, creating anonymous default implementation");   
         return new DrmLookup() {
             @Override
             public List<String> getRunningDrmJobIds() {
@@ -53,14 +52,15 @@ public class DrmLookupFactory {
             }
 
             @Override
-            public void insertDrmRecord(final File workingDir, final JobInfo jobInfo) {
+            public void insertJobRecord(DrmJobSubmission jobSubmission) {
                 //no-op
             }
 
             @Override
-            public void updateDrmRecord(final Integer gpJobNo, final DrmJobStatus drmJobStatus) {
+            public void updateJobStatus(final Integer gpJobNo, final DrmJobStatus drmJobStatus) {
                 //no-op
             }
+
         };
     }
     

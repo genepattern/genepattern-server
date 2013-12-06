@@ -11,6 +11,7 @@ import javax.persistence.UniqueConstraint;
 
 import org.genepattern.drm.DrmJobState;
 import org.genepattern.drm.DrmJobStatus;
+import org.genepattern.drm.DrmJobSubmission;
 
 /**
  * An record (for the the DB or in a runtime cache) used by the DrmLookup class for recording the status of an
@@ -99,6 +100,28 @@ public class JobRunnerJob {
         private String stderrFile;
         private String stdinFile;
         private String logFile;
+        
+        public Builder(final String jobRunnerClassname, final DrmJobSubmission in) {
+            this.gpJobNo=in.getGpJobNo();
+            this.jobRunnerClassname=jobRunnerClassname;
+            this.workingDir=in.getWorkingDir().getAbsolutePath();
+            this.stdoutFile=fileAsString(in.getStdoutFile());
+            this.stderrFile=fileAsString(in.getStderrFile());
+            this.stdinFile=fileAsString(in.getStdinFile());
+            this.logFile=fileAsString(in.getLogFile());
+        }
+        
+        /**
+         * Convert the given File (which might be null) into a String.
+         * @param in
+         * @return null if the in file is null, otherwise file#path.
+         */
+        private static final String fileAsString(final File in) {
+            if (in==null) {
+                return null;
+            }
+            return in.getPath();
+        }
         
         public Builder(final String jobRunnerClassname, final File workingDir, final Integer gpJobNo) {
             this.gpJobNo=gpJobNo;
