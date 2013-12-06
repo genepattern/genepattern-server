@@ -3,6 +3,7 @@ package org.genepattern.server.executor.drm;
 import java.io.File;
 import java.util.List;
 
+import org.genepattern.drm.DrmJobStatus;
 import org.genepattern.webservice.JobInfo;
 
 /**

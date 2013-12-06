@@ -5,6 +5,7 @@ import java.util.Collections;
 import java.util.List;
 
 import org.apache.log4j.Logger;
+import org.genepattern.drm.DrmJobStatus;
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.executor.drm.dao.JobRunnerJob;
 import org.genepattern.webservice.JobInfo;

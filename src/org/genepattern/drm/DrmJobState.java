@@ -1,4 +1,4 @@
-package org.genepattern.server.executor.drm;
+package org.genepattern.drm;
 
 /**
  * Based on the DRMAA state model (http://www.ogf.org/documents/GFD.194.pdf).
@@ -6,7 +6,7 @@ package org.genepattern.server.executor.drm;
  * @author pcarr
  *
  */
-public enum JobState {
+public enum DrmJobState {
     /** The job status cannot be determined. This is a permanent issue, not being solvable by asking again for the job state. */
     UNDETERMINED(null),
     IS_QUEUED(null),
@@ -26,7 +26,7 @@ public enum JobState {
     TERMINATED(null),
       /** The job finished without an error. */
       DONE(TERMINATED),
-      /** The job exited abnormally before finishing, for example by exceeding a resource usage limit. */
+      /** The job exited abnormally before finishing, for example if the command exited with a non-zero exit code or by exceeding a resource usage limit. */
       FAILED(TERMINATED),
         /** The job was cancelled by the user before entering the running state. */
         ABORTED(FAILED),
@@ -34,8 +34,8 @@ public enum JobState {
         CANCELLED(FAILED)
     ;
     
-    private final JobState parent;
-    private JobState(JobState parent) {
+    private final DrmJobState parent;
+    private DrmJobState(DrmJobState parent) {
         this.parent=parent;
     }
 
@@ -46,11 +46,11 @@ public enum JobState {
      * @param other
      * @return
      */
-    public boolean is(JobState other) {
+    public boolean is(DrmJobState other) {
         if (other==null) {
             return false;
         }
-        for (JobState jobState = this; jobState != null; jobState = jobState.parent) {
+        for (DrmJobState jobState = this; jobState != null; jobState = jobState.parent) {
             if (other==jobState) {
                 return true;
             }

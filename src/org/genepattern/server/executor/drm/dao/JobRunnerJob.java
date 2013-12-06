@@ -9,8 +9,8 @@ import javax.persistence.Id;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
 
-import org.genepattern.server.executor.drm.DrmJobStatus;
-import org.genepattern.server.executor.drm.JobState;
+import org.genepattern.drm.DrmJobState;
+import org.genepattern.drm.DrmJobStatus;
 
 /**
  * An record (for the the DB or in a runtime cache) used by the DrmLookup class for recording the status of an
@@ -152,7 +152,7 @@ public class JobRunnerJob {
             return this;
         }
         
-        public Builder jobState(final JobState jobState) {
+        public Builder jobState(final DrmJobState jobState) {
             this.jobState=jobState.name();
             return this;
         }
@@ -191,39 +191,6 @@ public class JobRunnerJob {
             return new JobRunnerJob(this);
         }
     }
-    
-//    public JobRunnerJob(final String jobRunnerClassname, final String jobRunnerId, final File workingDir, final JobInfo jobInfo) {
-//        this(jobRunnerClassname, jobRunnerId, workingDir, jobInfo.getJobNumber());
-//    }
-//    
-//    public JobRunnerJob(final String jobRunnerClassname, final String jobRunnerName, final File workingDir, final Integer gpJobNo) {
-//        this.jobRunnerClassname=jobRunnerClassname;
-//        this.jobRunnerName=jobRunnerName;
-//        this.gpJobNo=gpJobNo;
-//        this.workingDir=workingDir.getAbsolutePath();
-//        this.extJobId="";
-//        this.exitCode=null;
-//        this.jobState=JobState.UNDETERMINED.name();
-//        this.statusMessage=jobState.toString();
-//    }
-//    
-//    public JobRunnerJob(final JobRunnerJob in, final DrmJobStatus updated) {
-//        this.jobRunnerClassname=in.jobRunnerClassname;
-//        this.jobRunnerName=in.jobRunnerName;
-//        this.gpJobNo=in.gpJobNo;
-//        this.workingDir=in.workingDir;
-//        this.extJobId=updated.getDrmJobId();
-//        this.exitCode=updated.getExitCode();
-//        this.terminatingSignal=updated.getTerminatingSignal();
-//        this.jobState=updated.getJobState().name();
-//        this.statusMessage=updated.getJobStatusMessage();
-//        this.statusDate=new Date();
-//        
-//        this.stdoutFile=in.stdoutFile;
-//        this.stderrFile=in.stderrFile;
-//        this.stdinFile=in.stdinFile;
-//        this.logFile=in.logFile;
-//    }
     
     public Integer getGpJobNo() {
         return gpJobNo;

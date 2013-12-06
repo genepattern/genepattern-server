@@ -1,13 +1,10 @@
-package org.genepattern.server.executor.drm;
-
-import java.io.File;
-import java.util.Map;
+package org.genepattern.drm;
 
 import org.genepattern.server.executor.CommandExecutorException;
 import org.genepattern.webservice.JobInfo;
 
 /**
- * API method calls for integrating a queuing system, aka job runner, into GenePattern, for example for PBS/Torque.
+ * Service provider interface for integrating a queuing system, aka job runner, into GenePattern, for example for PBS/Torque.
  * 
  * The GenePattern Server will call startJob for each new GP job. It will poll for completion status by calling the
  * getStatus method, until the returned status indicates job completion.
@@ -17,7 +14,7 @@ import org.genepattern.webservice.JobInfo;
  * @author pcarr
  *
  */
-public interface QueuingSystem {
+public interface JobRunner {
     /** 
      * Service shutdown, clean up resources. 
      * This is called when the parent DrmExecutor is shut down.
@@ -32,7 +29,7 @@ public interface QueuingSystem {
      * 
      * @return the drm jobId resulting from adding the job to the queue.
      */
-    String startJob(String[] commandLine, Map<String, String> environmentVariables, File runDir, File stdoutFile, File stderrFile, JobInfo jobInfo, File stdinFile) throws CommandExecutorException;
+    String startJob(JobSubmission drmJobSubmit) throws CommandExecutorException;
 
     /**
      * Get the status of the job.
@@ -50,4 +47,5 @@ public interface QueuingSystem {
      * @throws Exception
      */
     void cancelJob(String drmJobId, JobInfo jobInfo) throws Exception;
+
 }

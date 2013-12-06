@@ -1,10 +1,11 @@
 package org.genepattern.server.executor.drm;
 
 import java.io.File;
-import java.util.List;
 
+import org.genepattern.drm.DrmJobState;
+import org.genepattern.drm.DrmJobStatus;
+import org.genepattern.drm.impl.local.LocalJobRunner;
 import org.genepattern.junitutil.DbUtil;
-import org.genepattern.server.executor.drm.dao.JobRunnerJob;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
@@ -16,7 +17,7 @@ import org.junit.Test;
  *
  */
 public class TestDbLookup {
-    private static final String jobRunnerClassname=LocalQueuingSystem.class.getName();
+    private static final String jobRunnerClassname=LocalJobRunner.class.getName();
     private static final String jobRunnerName="LocalQueuingSystem-1";
     final Integer gpJobNo=0;
     final String drmJobId="DRM_"+gpJobNo;
@@ -41,7 +42,7 @@ public class TestDbLookup {
         
         // simulate setting the drmJobId
         
-        DrmJobStatus drmJobStatus = new DrmJobStatus.Builder(drmJobId, JobState.QUEUED).build();
+        DrmJobStatus drmJobStatus = new DrmJobStatus.Builder(drmJobId, DrmJobState.QUEUED).build();
         dbLookup.updateDrmRecord(gpJobNo, drmJobStatus);
         
         //List<JobRunnerJob> all=dbLookup.getAll();

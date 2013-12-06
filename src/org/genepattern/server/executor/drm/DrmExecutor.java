@@ -10,6 +10,10 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadFactory;
 
 import org.apache.log4j.Logger;
+import org.genepattern.drm.DrmJobState;
+import org.genepattern.drm.DrmJobStatus;
+import org.genepattern.drm.JobRunner;
+import org.genepattern.drm.JobSubmission;
 import org.genepattern.server.executor.CommandExecutor;
 import org.genepattern.server.executor.CommandExecutorException;
 import org.genepattern.server.executor.CommandProperties;
@@ -38,7 +42,12 @@ public class DrmExecutor implements CommandExecutor {
     
     private String jobRunnerClassname;
     private String jobRunnerName;
-    private QueuingSystem jobRunner;
+    /** 
+     * optional param, when set it is the name of a log file (e.g. '.lsf.out') for saving meta data about the completed job.
+     *  For the LSF executor the outpout from the bsub command is streamed from stdout into this file.
+     */
+    private String logFilename;
+    private JobRunner jobRunner;
     private DrmLookup jobLookupTable;
 
     private static final int BOUND = 20000;
@@ -54,25 +63,45 @@ public class DrmExecutor implements CommandExecutor {
         }
     });
 
-    //helper methods
     /**
-     * Load queuing system from classname.
+     * Load JobRunner from classname.
      * @param classname
      * @return
      */
-    private static QueuingSystem initQueuingSystem(final String classname) {        
+    private static JobRunner initJobRunner(final String classname) {        
         try {
             final ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
             final Class<?> svcClass = Class.forName(classname, false, classLoader);
-            if (!QueuingSystem.class.isAssignableFrom(svcClass)) {
-                log.error(""+svcClass.getCanonicalName()+" does not implement "+QueuingSystem.class.getCanonicalName());
+            if (!JobRunner.class.isAssignableFrom(svcClass)) {
+                log.error(""+svcClass.getCanonicalName()+" does not implement "+JobRunner.class.getCanonicalName());
             }
-            final QueuingSystem queuingSystem = (QueuingSystem) svcClass.newInstance();
-            return queuingSystem;
+            final JobRunner jobRunner = (JobRunner) svcClass.newInstance();
+            return jobRunner;
         }
         catch (Throwable t) {
-            log.error("Error loading QueuingSystem for classname: "+classname+", "+t.getLocalizedMessage(), t);
-            return new ExampleQueuingSystem();
+            log.error("Error loading JobRunner for classname: "+classname+", "+t.getLocalizedMessage(), t);
+            //TODO: refactor into abstract job runner
+            return new JobRunner() {
+
+                @Override
+                public void stop() {
+                }
+
+                @Override
+                public String startJob(JobSubmission drmJobSubmit) throws CommandExecutorException {
+                    throw new CommandExecutorException("Server configuration error: the jobRunner was not initialized from classname="+classname);
+                }
+
+                @Override
+                public DrmJobStatus getStatus(String drmJobId) {
+                    return null;
+                }
+
+                @Override
+                public void cancelJob(String drmJobId, JobInfo jobInfo) throws Exception {
+                    throw new Exception("Server configuration error: the jobRunner was not initialized from classname="+classname);
+                }
+            };
         }
     }
     
@@ -128,9 +157,13 @@ public class DrmExecutor implements CommandExecutor {
     
     @Override
     public void setConfigurationProperties(final CommandProperties properties) {
-        this.jobRunnerClassname=properties.getProperty("jobRunnerClassname", ExampleQueuingSystem.class.getName());
+        this.jobRunnerClassname=properties.getProperty("jobRunnerClassname");
+        if (jobRunnerClassname==null || jobRunnerClassname.length()==0) {
+            throw new IllegalArgumentException("jobRunnerClassname is not set!");
+        }
         this.jobRunnerName=properties.getProperty("jobRunnerName", "0");
-        this.jobRunner=DrmExecutor.initQueuingSystem(jobRunnerClassname);
+        this.logFilename=properties.getProperty("logFilename", null);
+        this.jobRunner=DrmExecutor.initJobRunner(jobRunnerClassname);
         String lookupTypeStr=properties.getProperty("lookupType", DrmLookupFactory.Type.DB.name());
         DrmLookupFactory.Type lookupType=null;
         try {
@@ -192,7 +225,7 @@ public class DrmExecutor implements CommandExecutor {
                         //check it's status
                         final DrmJobStatus drmJobStatus=jobRunner.getStatus(drmJobId);
                         updateStatus(drmJobStatus);
-                        if (drmJobStatus != null && drmJobStatus.getJobState().is(JobState.TERMINATED)) {
+                        if (drmJobStatus != null && drmJobStatus.getJobState().is(DrmJobState.TERMINATED)) {
                             handleCompletedJob(drmJobStatus);
                         }
                         else {
@@ -239,17 +272,26 @@ public class DrmExecutor implements CommandExecutor {
     
     @Override
     public void runCommand(String[] commandLine, Map<String, String> environmentVariables, File runDir, File stdoutFile, File stderrFile, JobInfo jobInfo, File stdinFile) throws CommandExecutorException {
+        final JobSubmission drmJobSubmit=new JobSubmission.Builder(jobInfo, runDir)
+            .commandLine(commandLine)
+            .environmentVariables(environmentVariables)
+            .stdoutFile(stdoutFile)
+            .stderrFile(stderrFile)
+            .stdinFile(stdinFile)
+            .build();
+        
         final Integer gpJobNo=jobInfo.getJobNumber();
         jobLookupTable.insertDrmRecord(runDir, jobInfo);
         //TODO: consider modifying the API so that startJob returns a DrmJobStatus instance
-        String drmJobId=jobRunner.startJob(commandLine, environmentVariables, runDir, stdoutFile, stderrFile, jobInfo, stdinFile);
+        //String drmJobId=jobRunner.startJob(commandLine, environmentVariables, runDir, stdoutFile, stderrFile, jobInfo, stdinFile);
+        String drmJobId=jobRunner.startJob(drmJobSubmit);
         if (!isSet(drmJobId)) {
-            final DrmJobStatus drmJobStatus = new DrmJobStatus.Builder(drmJobId, JobState.FAILED).build();
+            final DrmJobStatus drmJobStatus = new DrmJobStatus.Builder(drmJobId, DrmJobState.FAILED).build();
             jobLookupTable.updateDrmRecord(gpJobNo, drmJobStatus);
             throw new CommandExecutorException("invalid drmJobId returned from startJob, gpJobId="+jobInfo.getJobNumber());
         }
         else {
-            jobLookupTable.updateDrmRecord(gpJobNo, new DrmJobStatus.Builder(drmJobId, JobState.QUEUED).build());
+            jobLookupTable.updateDrmRecord(gpJobNo, new DrmJobStatus.Builder(drmJobId, DrmJobState.QUEUED).build());
             try {
                 runningJobs.put(drmJobId);
             }
@@ -287,7 +329,7 @@ public class DrmExecutor implements CommandExecutor {
             return JobStatus.JOB_ERROR;
         }
         // an rval < 0 indicates to the calling method to ignore this
-        if (drmJobStatus.getJobState().is(JobState.TERMINATED)) {
+        if (drmJobStatus.getJobState().is(DrmJobState.TERMINATED)) {
             handleCompletedJob(drmJobStatus);
             return -1;
         }

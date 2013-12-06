@@ -1,8 +1,9 @@
-package org.genepattern.server.executor.drm;
+package org.genepattern.drm;
 
 import java.util.Date;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
+
 
 import com.google.common.collect.ImmutableMap;
 
@@ -14,20 +15,25 @@ import com.google.common.collect.ImmutableMap;
  */
 public class DrmJobStatus {
     
+    /**
+     * Representation of an amount of time.
+     * @author pcarr
+     *
+     */
     public static class Duration {
-        private final long l;
+        private final long time;
         private final TimeUnit timeUnit;
         
         public Duration() {
             this(0, TimeUnit.MILLISECONDS);
         }
-        public Duration(long l, TimeUnit timeUnit) {
-            this.l=l;
+        public Duration(long time, TimeUnit timeUnit) {
+            this.time=time;
             this.timeUnit=timeUnit;
         }
         
-        public long getDuration() {
-            return l;
+        public long getTime() {
+            return time;
         }
         public TimeUnit getTimeUnit() {
             return timeUnit;
@@ -35,8 +41,10 @@ public class DrmJobStatus {
     }
     
     private final String drmJobId;
-    private final JobState jobState;
+    private final DrmJobState jobState;
+    private final Date submitTime;
     private final Date startTime;
+    private final Date endTime;
     private final Duration cpuTime;
     private final String jobStatusMessage;
     private final Integer exitCode;
@@ -46,7 +54,9 @@ public class DrmJobStatus {
     private DrmJobStatus(final Builder builder) {
         this.drmJobId=builder.drmJobId;
         this.jobState=builder.jobState;
+        this.submitTime=builder.submitTime;
         this.startTime=builder.startTime;
+        this.endTime=builder.endTime;
         this.jobStatusMessage=builder.jobStatusMessage;
         this.exitCode=builder.exitCode;
         this.terminatingSignal=builder.terminatingSignal;
@@ -66,8 +76,16 @@ public class DrmJobStatus {
      * Get the current status of the job.
      * @return
      */
-    public JobState getJobState() {
+    public DrmJobState getJobState() {
         return jobState;
+    }
+
+    /**
+     * Get the time that the job was added to the queue, e.g. for LSF the time that the bsub command was issued.
+     * @return
+     */
+    public Date getSubmitTime() {
+        return submitTime;
     }
     
     /**
@@ -76,6 +94,14 @@ public class DrmJobStatus {
      */
     public Date getStartTime() {
         return startTime;
+    }
+
+    /**
+     * Get the time that the job completed, can be null of the job hasn't finished.
+     * @return
+     */
+    public Date getEndTime() {
+        return endTime;
     }
 
     /**
@@ -128,21 +154,33 @@ public class DrmJobStatus {
      */
     public static class Builder {
         private final String drmJobId;
-        private final JobState jobState;
+        private final DrmJobState jobState;
+        private Date submitTime=null;
         private Date startTime=null;
+        private Date endTime=null;
         private Duration cpuTime=new Duration();
         private String jobStatusMessage="";
         private Integer exitCode=null;
         private String terminatingSignal="";
         private ImmutableMap<String,String> resourceUsage=null;
         
-        public Builder(final String drmJobId, final JobState jobState) {
+        public Builder(final String drmJobId, final DrmJobState jobState) {
             this.drmJobId=drmJobId;
             this.jobState=jobState;
         }
         
+        public Builder submitTime(final Date submitTime) {
+            this.submitTime=submitTime;
+            return this;
+        }
+        
         public Builder startTime(final Date startTime) {
             this.startTime=startTime;
+            return this;
+        }
+        
+        public Builder endTime(final Date endTime) {
+            this.endTime=endTime;
             return this;
         }
         
@@ -180,6 +218,5 @@ public class DrmJobStatus {
             return new DrmJobStatus(this);
         }
     }
-
     
 }

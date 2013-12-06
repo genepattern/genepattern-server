@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
+import org.genepattern.drm.DrmJobStatus;
 import org.genepattern.server.executor.drm.dao.JobRunnerJob;
 import org.genepattern.webservice.JobInfo;
 
