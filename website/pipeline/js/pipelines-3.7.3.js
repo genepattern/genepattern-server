@@ -2673,7 +2673,7 @@ var properties = {
 
                 if ($(this).is(":checked")) {
                     properties._showDisplaySettingsButton($(label), labelText);
-                    input.makePWR(input.name, input.description);
+                    input.makePWR(input.name, input.description, input.required);
                 }
                 else {
                     properties._hideDisplaySettingsButton(labelText);
@@ -2747,7 +2747,7 @@ var properties = {
                 if ($(this).is(":checked")) {
                     $("select.propertyValue[name='" + labelText + "']").hide();
                     properties._showDisplaySettingsButton($("select.propertyValue[name='" + labelText + "']").parent(), labelText);
-                    input.makePWR(input.name, input.description);
+                    input.makePWR(input.name, input.description, input.required);
                 }
                 else {
                 	var inputParam = properties.current.getInputByName(properties._stripTrailingAstrik(labelText));
@@ -2781,34 +2781,42 @@ var properties = {
 
         var dName = null;
         var dDesc = null;
+        var dReq = null;
 
         var input = module.getInputByName(name);
         if (input.promptWhenRun !== null) {
             dName = input.promptWhenRun.name;
             dDesc = input.promptWhenRun.description;
+            dReq = input.promptWhenRun.required;
         }
         else {
             dName = name;
             dDesc = input.description;
+            dReq = input.required;
         }
 
         var inner = "Define alternative name and description to display when prompting for this input." +
-        		"<br /> <table><tr><td>Display Name</td><td><input type='text' id='pwrDisplayName' value=''/>" + 
-        		"</td></tr><tr><td>Display Description</td><td><input type='text' id='pwrDisplayDesc' value=''/>" +
-        		"</td></tr></table>";
+			"<br /> <table><tr><td>Display Name</td><td><input type='text' id='pwrDisplayName' value=''/>" + 
+			"</td></tr><tr><td>Display Description</td><td><input type='text' id='pwrDisplayDesc' value=''/>" +
+			"</td></tr><tr><td>Parameter Required</td><td><input type='checkbox' id='pwrRequired' " + 
+			(input.required ? "disabled='disabled'" : '') + " /></td></tr></table>";
         var button = { "OK": function(event) {
             var displayName = $("#pwrDisplayName").val();
             var displayDesc = $("#pwrDisplayDesc").val();
-            module.getInputByName(name).makePWR(displayName, displayDesc);
+            var required = $("#pwrRequired").is(":checked");
+            module.getInputByName(name).makePWR(displayName, displayDesc, required);
 
             $(this).dialog("close");
             $(this).dialog("destroy");
             if (event.preventDefault) event.preventDefault();
             if (event.stopPropagation) event.stopPropagation();
         }};
-        editor.showDialog("Set Prompt When Run Display Settings", inner, button);
+        editor.showDialog("Prompt When Run Settings", inner, button);
         $("#pwrDisplayName").val(dName);
         $("#pwrDisplayDesc").val(dDesc);
+        if (dReq) {
+        	$("#pwrRequired").attr("checked", "checked");
+        }
     },
 
     _showDeletePipeButton: function(parent, name) {
@@ -2856,7 +2864,7 @@ var properties = {
     _showDisplaySettingsButton: function(parent, name) {
         if ($(parent).find("button.pwrDisplayButton[name='" + name + "']").size() === 0) {
             var button = document.createElement("button");
-            button.innerHTML = "Set Prompt When Run Display Settings";
+            button.innerHTML = "Prompt When Run Settings";
             button.setAttribute("name", name);
             button.setAttribute("class", "pwrDisplayButton");
             parent.append(button);
@@ -2929,7 +2937,7 @@ var properties = {
                 if ($(this).is(":checked")) {
                     $(".propertyValue[type='text'][name='" + labelText + "']").hide();
                     properties._showDisplaySettingsButton($(".propertyValue[type='text'][name='" + labelText + "']").parent(), labelText);
-                    input.makePWR(input.name, input.description);
+                    input.makePWR(input.name, input.description, input.required);
                 }
                 else {
                 	var inputParam = properties.current.getInputByName(properties._stripTrailingAstrik(labelText));
@@ -3251,14 +3259,15 @@ var properties = {
  * @param name - The display name of the PWR parameter
  * @param description - The display description of the PWR parameter
  */
-function PWRParam(module, param, name, description) {
+function PWRParam(module, param, name, description, required) {
     this.module = module;
     this.param = param;
     this.name = name;
     this.description = description;
+    this.required = required;
 
     this.prepTransport = function() {
-        return [this.name, this.description];
+        return [this.name, this.description, this.required];
     };
 }
 
@@ -4350,7 +4359,7 @@ function InputParam(module, paramJSON) {
 
     this.initPWR = function(pwrJSON) {
         if (pwrJSON !== undefined && pwrJSON !== null) {
-            this.makePWR(pwrJSON[0], pwrJSON[1]);
+            this.makePWR(pwrJSON[0], pwrJSON[1], pwrJSON[2]);
         }
         else {
         	this.promptWhenRun = null;
@@ -4361,11 +4370,12 @@ function InputParam(module, paramJSON) {
     };
     this.initPWR(paramJSON.promptWhenRun);
 
-    this.makePWR = function(name, desc) {
+    this.makePWR = function(name, desc, required) {
         if (name === undefined) name = this.name;
         if (desc === undefined) desc = this.description;
+        if (required === undefined) required = this.required;
 
-        this.promptWhenRun = new PWRParam(this.module, this.name, name, desc);
+        this.promptWhenRun = new PWRParam(this.module, this.name, name, desc, required);
         this.value = properties.PROMPT_WHEN_RUN;
 
         // Update the port's icon

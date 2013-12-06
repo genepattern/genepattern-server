@@ -57,6 +57,16 @@ public class InputJSON extends JSONObject {
         }
     }
     
+    private boolean determineForceRequired(Object optional) {
+        String value = (String) optional;
+        if ("on".equals(value)) {
+            return false;
+        }
+        else {
+            return true;
+        }
+    }
+    
     public InputJSON(final ParameterInfo param, final boolean promptWhenRun) {
         if (param==null) {
             throw new IllegalArgumentException("param==null");
@@ -70,6 +80,7 @@ public class InputJSON extends JSONObject {
                 pwrArray = new JSONArray();
                 pwrArray.put(param.getAttributes().get("altName"));
                 pwrArray.put(param.getAttributes().get("altDescription"));
+                pwrArray.put(determineForceRequired(param.getAttributes().get("optional")));
             }
             
             this.setName(param.getName());

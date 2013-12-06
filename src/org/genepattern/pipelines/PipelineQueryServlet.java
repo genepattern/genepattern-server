@@ -392,9 +392,11 @@ public class PipelineQueryServlet extends HttpServlet {
                     ParameterInfo modelParam = pipeline.getInputParameters().get(i.getName());
                     String altName = (String) i.getAttributes().get("altName");
                     String altDescription = (String) i.getAttributes().get("altDescription");
+                    String forceOptional = (String) i.getAttributes().get("optional");
                     
                     modelParam.getAttributes().put("altName", altName);
                     modelParam.getAttributes().put("altDescription", altDescription);
+                    modelParam.getAttributes().put("optional", forceOptional);
                 }
             }
         }
@@ -580,6 +582,16 @@ public class PipelineQueryServlet extends HttpServlet {
         toReturn.add((String) pwr.get(1));
         return toReturn;
     }
+    
+    private String determineIfOptional(Object get) {
+        boolean required = (Boolean) get;
+        if (required) {
+            return "";
+        }
+        else {
+            return "on";
+        }
+    }
 	
 	@SuppressWarnings("unchecked")
     private void setModuleInfo(PipelineModel model, List<ModuleJSON> modulesList) throws Exception {
@@ -601,6 +613,7 @@ public class PipelineQueryServlet extends HttpServlet {
 	            if (pwr != null) {
 	                ParameterInfo pInfo = setParameter(input.getName(), taskInfo.getParameterInfoArray()[i].getValue(), moduleParams, toPWRList(pwr));
 	                pInfo.getAttributes().put("name", taskInfo.getName() + taskNum + "." + input.getName());
+	                pInfo.getAttributes().put("optional", determineIfOptional(pwr.get(2)));
 	                model.addInputParameter(taskInfo.getName() + taskNum + "." + input.getName(), pInfo);
 	            }
 	            else {

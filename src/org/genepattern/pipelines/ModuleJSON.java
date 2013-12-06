@@ -62,7 +62,6 @@ public class ModuleJSON extends JSONObject {
             this.setId(id);
             this.setLsid(job.getLSID());
             this.constructInputs(job.getParameters(), job.getRuntimePrompt());
-            // TODO: Set top and left here once supported
         }
         catch (JSONException e) {
             log.error("Error parsing JSON and initializing ModuleJSON from JobSubmission: " + job.getName());
