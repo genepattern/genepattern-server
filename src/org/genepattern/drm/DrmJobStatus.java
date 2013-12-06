@@ -85,7 +85,10 @@ public class DrmJobStatus {
      * @return
      */
     public Date getSubmitTime() {
-        return submitTime;
+        if (submitTime==null) {
+            return null;
+        }
+        return new Date(submitTime.getTime());
     }
     
     /**
@@ -93,7 +96,10 @@ public class DrmJobStatus {
      * @return
      */
     public Date getStartTime() {
-        return startTime;
+        if (startTime==null) {
+            return null;
+        }
+        return new Date(startTime.getTime());
     }
 
     /**
@@ -101,7 +107,10 @@ public class DrmJobStatus {
      * @return
      */
     public Date getEndTime() {
-        return endTime;
+        if (endTime==null) {
+            return null;
+        }
+        return new Date(endTime.getTime());
     }
 
     /**
@@ -170,17 +179,32 @@ public class DrmJobStatus {
         }
         
         public Builder submitTime(final Date submitTime) {
-            this.submitTime=submitTime;
+            if (submitTime==null) {
+                this.submitTime=null;
+            }
+            else {
+                this.submitTime=new Date(submitTime.getTime());
+            }
             return this;
         }
         
         public Builder startTime(final Date startTime) {
-            this.startTime=startTime;
+            if (startTime==null) {
+                this.startTime=null;
+            }
+            else {
+                this.startTime=new Date(startTime.getTime());
+            }
             return this;
         }
         
         public Builder endTime(final Date endTime) {
-            this.endTime=endTime;
+            if (endTime==null) {
+                this.endTime=null;
+            }
+            else {
+                this.endTime=new Date(endTime.getTime());
+            }
             return this;
         }
         
