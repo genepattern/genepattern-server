@@ -69,6 +69,9 @@ public class JobRunnerJob {
     private String logFile;
 
     private JobRunnerJob(final Builder builder) {
+        this(builder, new Date());
+    }
+    private JobRunnerJob(final Builder builder, final Date statusDate) {
         this.gpJobNo=builder.gpJobNo;
         this.jobRunnerClassname=builder.jobRunnerClassname;
         this.jobRunnerName=builder.jobRunnerName;
@@ -77,12 +80,13 @@ public class JobRunnerJob {
         this.terminatingSignal=builder.terminatingSignal;
         this.jobState=builder.jobState;
         this.statusMessage=builder.statusMessage;
-        this.statusDate=builder.statusDate;
         this.workingDir=builder.workingDir;
         this.stdoutFile=builder.stdoutFile;
         this.stderrFile=builder.stderrFile;
         this.stdinFile=builder.stdinFile;
         this.logFile=builder.logFile;
+        
+        this.statusDate=statusDate;
     }
 
     public static final class Builder {
@@ -94,7 +98,6 @@ public class JobRunnerJob {
         private String terminatingSignal;
         private String jobState;
         private String statusMessage;
-        private Date statusDate=new Date();
         private final String workingDir;
         private String stdoutFile;
         private String stderrFile;
@@ -138,7 +141,6 @@ public class JobRunnerJob {
             this.terminatingSignal=in.terminatingSignal;
             this.jobState=in.jobState;
             this.statusMessage=in.statusMessage;
-            this.statusDate=in.statusDate;
             this.workingDir=in.workingDir;
             this.stdoutFile=in.stdoutFile;
             this.stderrFile=in.stderrFile;
@@ -182,11 +184,6 @@ public class JobRunnerJob {
         
         public Builder statusMessage(final String statusMessage) {
             this.statusMessage=statusMessage;
-            return this;
-        }
-        
-        public Builder statusDate(final Date statusDate) {
-            this.statusDate=statusDate;
             return this;
         }
         
