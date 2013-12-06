@@ -1,5 +1,9 @@
 package org.genepattern.drm.impl.local;
 
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.Callable;
@@ -27,6 +31,8 @@ import org.genepattern.webservice.JobInfo;
         configuration.properties:
             jobRunnerClassname: org.genepattern.drm.impl.local.LocalJobRunner
             jobRunnerName: LocalJobRunner
+            # when 'logFilename' is set the command line args will be logged to the file
+            logFilename: .rte.out
  * </pre>
  * 
  * @author pcarr
@@ -51,21 +57,25 @@ public class LocalJobRunner implements JobRunner {
     }
 
     @Override
-    public String startJob(final DrmJobSubmission drmJobSubmit) throws CommandExecutorException {
-        final String drmJobId=""+drmJobSubmit.getGpJobNo();
+    public String startJob(final DrmJobSubmission drmJobSubmission) throws CommandExecutorException {
+        final String drmJobId=""+drmJobSubmission.getGpJobNo();
         final Future<DrmJobStatus> future=executor.submit(new Callable<DrmJobStatus>() {
             @Override
             public DrmJobStatus call() throws Exception {
                 RuntimeExecCommand cmd = new RuntimeExecCommand();
-                final String[] commandLine=drmJobSubmit.getCommandLine().toArray(new String[0]);
+                final String[] commandLine=drmJobSubmission.getCommandLine().toArray(new String[0]);
                 cmd.runCommand(commandLine, 
-                        drmJobSubmit.getEnvironmentVariables(), 
-                        drmJobSubmit.getWorkingDir(), 
-                        drmJobSubmit.getStdoutFile(), 
-                        drmJobSubmit.getStderrFile(), 
-                        drmJobSubmit.getJobInfo(), 
-                        drmJobSubmit.getStdinFile());
+                        drmJobSubmission.getEnvironmentVariables(), 
+                        drmJobSubmission.getWorkingDir(), 
+                        drmJobSubmission.getStdoutFile(), 
+                        drmJobSubmission.getStderrFile(), 
+                        drmJobSubmission.getJobInfo(), 
+                        drmJobSubmission.getStdinFile());
                 final DrmJobStatus drmJobStatus;
+                
+                //after the job completes, if the logfile param was set, write the command line to the logfile
+                logCommandLine(drmJobSubmission);
+                    
                 if (cmd.getExitValue()==0) {
                     drmJobStatus=new DrmJobStatus.Builder(drmJobId, DrmJobState.DONE).exitCode(cmd.getExitValue()).build();
                 }
@@ -120,5 +130,84 @@ public class LocalJobRunner implements JobRunner {
             log.debug("success="+success);
         }
     }
+    
+    /**
+     * If configured by the server admin, write the command line into a log file in the working directory for the job.
+     * <pre>
+     *     # flag, if true save the command line into a log file in the working directory for each job
+           rte.save.logfile: false
+           # the name of the command line log file
+           rte.logfile: .rte.out
+     * </pre>
+     * 
+     * @author pcarr
+     */
+    private void logCommandLine(final DrmJobSubmission drmJobSubmission) {
+        if (drmJobSubmission.getLogFile()==null) {
+            // a null logfile means "don't write the log file"
+            return;
+        }
+        
+        final File commandLogFile;
+        if (!drmJobSubmission.getLogFile().isAbsolute()) {
+            //relative path is relative to the working directory for the job
+            commandLogFile=new File(drmJobSubmission.getWorkingDir(), drmJobSubmission.getLogFile().getPath());
+        }
+        else {
+            commandLogFile=drmJobSubmission.getLogFile();
+        }
+        
+        log.debug("saving command line to log file ...");
+        String commandLineStr = "";
+        boolean first = true;
+        for(final String arg : drmJobSubmission.getCommandLine()) {
+            if (first) {
+                commandLineStr = arg;
+                first = false;
+            }
+            else {
+                commandLineStr += (" "+arg);
+            }
+        }
+
+        if (commandLogFile.exists()) {
+            log.error("log file already exists: "+commandLogFile.getAbsolutePath());
+            return;
+        }
+
+        BufferedWriter bw = null;
+        try {
+            FileWriter fw = new FileWriter(commandLogFile);
+            bw = new BufferedWriter(fw);
+            bw.write(commandLineStr);
+            bw.newLine();
+            int i=0;
+            for(final String arg : drmJobSubmission.getCommandLine()) {
+                bw.write("    arg["+i+"]: '"+arg+"'");
+                bw.newLine();
+                ++i;
+            }
+            bw.close();
+        }
+        catch (IOException e) {
+            log.error("error writing log file: "+commandLogFile.getAbsolutePath(), e);
+            return;
+        }
+        catch (Throwable t) {
+            log.error("error writing log file: "+commandLogFile.getAbsolutePath(), t);
+            log.error(t);
+        }
+        finally {
+            if (bw != null) {
+                try {
+                    bw.close();
+                }
+                catch (IOException e) {
+                    log.error(e);
+                }
+            }
+        }
+    }
+
 }
 
