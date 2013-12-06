@@ -154,6 +154,12 @@ public class DrmJobSubmission {
             return this;
         }
         
+        public Builder logFilename(final String logFilename) {
+            if (logFilename==null || logFilename.length()==0) {
+                return this;
+            }
+            return logFile(new File(logFilename));
+        }
         public Builder logFile(final File logFile) {
             this.logFile=logFile;
             return this;
