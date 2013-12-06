@@ -11,7 +11,7 @@ import org.apache.log4j.Logger;
 import org.genepattern.drm.DrmJobState;
 import org.genepattern.drm.DrmJobStatus;
 import org.genepattern.drm.JobRunner;
-import org.genepattern.drm.JobSubmission;
+import org.genepattern.drm.DrmJobSubmission;
 import org.genepattern.server.executor.CommandExecutorException;
 import org.genepattern.server.executor.RuntimeExecCommand;
 import org.genepattern.webservice.JobInfo;
@@ -51,7 +51,7 @@ public class LocalJobRunner implements JobRunner {
     }
 
     @Override
-    public String startJob(final JobSubmission drmJobSubmit) throws CommandExecutorException {
+    public String startJob(final DrmJobSubmission drmJobSubmit) throws CommandExecutorException {
         final String drmJobId=""+drmJobSubmit.getGpJobNo();
         final Future<DrmJobStatus> future=executor.submit(new Callable<DrmJobStatus>() {
             @Override

@@ -29,7 +29,7 @@ public interface JobRunner {
      * 
      * @return the drm jobId resulting from adding the job to the queue.
      */
-    String startJob(JobSubmission drmJobSubmit) throws CommandExecutorException;
+    String startJob(DrmJobSubmission drmJobSubmit) throws CommandExecutorException;
 
     /**
      * Get the status of the job.

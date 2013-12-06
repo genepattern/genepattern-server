@@ -15,7 +15,7 @@ import org.genepattern.webservice.JobInfo;
  * @author pcarr
  *
  */
-public class JobSubmission {
+public class DrmJobSubmission {
     private final Integer gpJobNo;
     private final JobInfo jobInfo;
     private final List<String> commandLine;
@@ -27,7 +27,7 @@ public class JobSubmission {
     private final File stdinFile;
     private final File logFile;
     
-    private JobSubmission(Builder builder) {
+    private DrmJobSubmission(Builder builder) {
         this.gpJobNo=builder.gpJobNo;
         this.jobInfo=builder.jobInfo;
         if (builder.commandLine == null || builder.commandLine.size()==0) {
@@ -174,8 +174,8 @@ public class JobSubmission {
             return this;
         }
         
-        public JobSubmission build() {
-            return new JobSubmission(this);
+        public DrmJobSubmission build() {
+            return new DrmJobSubmission(this);
         }
     }
 

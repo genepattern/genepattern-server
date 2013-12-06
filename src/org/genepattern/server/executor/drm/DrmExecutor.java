@@ -13,7 +13,7 @@ import org.apache.log4j.Logger;
 import org.genepattern.drm.DrmJobState;
 import org.genepattern.drm.DrmJobStatus;
 import org.genepattern.drm.JobRunner;
-import org.genepattern.drm.JobSubmission;
+import org.genepattern.drm.DrmJobSubmission;
 import org.genepattern.server.executor.CommandExecutor;
 import org.genepattern.server.executor.CommandExecutorException;
 import org.genepattern.server.executor.CommandProperties;
@@ -88,7 +88,7 @@ public class DrmExecutor implements CommandExecutor {
                 }
 
                 @Override
-                public String startJob(JobSubmission drmJobSubmit) throws CommandExecutorException {
+                public String startJob(DrmJobSubmission drmJobSubmit) throws CommandExecutorException {
                     throw new CommandExecutorException("Server configuration error: the jobRunner was not initialized from classname="+classname);
                 }
 
@@ -253,6 +253,7 @@ public class DrmExecutor implements CommandExecutor {
                 catch (InterruptedException e) {
                     Thread.currentThread().interrupt();
                 }
+                jobRunner.stop();
             }
         });
         jobHandlerThread.setDaemon(true);
@@ -272,7 +273,7 @@ public class DrmExecutor implements CommandExecutor {
     
     @Override
     public void runCommand(String[] commandLine, Map<String, String> environmentVariables, File runDir, File stdoutFile, File stderrFile, JobInfo jobInfo, File stdinFile) throws CommandExecutorException {
-        final JobSubmission drmJobSubmit=new JobSubmission.Builder(jobInfo, runDir)
+        final DrmJobSubmission drmJobSubmit=new DrmJobSubmission.Builder(jobInfo, runDir)
             .commandLine(commandLine)
             .environmentVariables(environmentVariables)
             .stdoutFile(stdoutFile)
