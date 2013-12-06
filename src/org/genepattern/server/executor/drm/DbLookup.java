@@ -92,15 +92,10 @@ public class DbLookup implements DrmLookup {
         }
     }
 
-    //@Override
-    //public void insertDrmRecord(File workingDir, JobInfo jobInfo) {
-    //    insertDrmRecord(workingDir, jobInfo.getJobNumber());
-    //}
     @Override
     public void insertJobRecord(DrmJobSubmission jobSubmission) {
         insertDrmRecord(jobSubmission);
     }
-
 
     @Override
     public void updateJobStatus(Integer gpJobNo, DrmJobStatus drmJobStatus) {
