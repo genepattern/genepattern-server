@@ -1,13 +1,15 @@
 package org.genepattern.server.executor.drm;
 
 import java.io.File;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.log4j.Logger;
 import org.genepattern.drm.DrmJobState;
@@ -53,7 +55,8 @@ public class DrmExecutor implements CommandExecutor {
     private static final int BOUND = 20000;
     private BlockingQueue<String> runningJobs;
     private Thread jobHandlerThread;
-    private ExecutorService svc=Executors.newSingleThreadExecutor(new ThreadFactory() {
+    
+    private ScheduledExecutorService svc=Executors.newSingleThreadScheduledExecutor(new ThreadFactory() {
         @Override
         public Thread newThread(final Runnable r) {
             final Thread t=new Thread(r);
@@ -125,6 +128,9 @@ public class DrmExecutor implements CommandExecutor {
         }
     }
     
+    private static final long SEC=1000L; 
+    private static final long MINUTE=60L*SEC;
+    
     /**
      * For a running job, get the amount of time to wait before putting it back
      * onto the runningJobs queue.
@@ -135,19 +141,44 @@ public class DrmExecutor implements CommandExecutor {
      * @return the number of milliseconds to sleep before adding the job back to the runningJobsQueue
      */
     private long getDelay(final String drmJobId, final DrmJobStatus drmJobStatus) {
-        //TODO: implement a better way to throttle the queue, so that we aren't
-        //    calling getStatus too frequently.
-        //    At the moment it is hard-coded to 1 second
-
-        //if (drmJobStatus==null) {
-        //}
-        //else {
-        //    Date now=new Date();
-        //    Date lastTry;
-        //    int retryCount=0;
-        //}
-        final long delay=1000L;
-        return delay;
+        return 1000L;
+    }
+    
+    // more intelligent delay
+    private long getDelay_proposed(final String drmJobId, final DrmJobStatus drmJobStatus) {
+        if (drmJobStatus==null) {
+            log.error("drmJobStatus==null, returning hard-coded value");
+            return 1000L;
+        }
+        final Date now=new Date();
+        final Date submitTime=drmJobStatus.getSubmitTime();
+        final Date startTime=drmJobStatus.getStartTime();
+        long delta;
+        if (startTime != null) {
+            delta=now.getTime()-startTime.getTime();
+        }
+        else if (submitTime != null) {
+            delta=now.getTime()-startTime.getTime();
+        }
+        else {
+            //TODO: save the timestamp of the last time we called getStatus for this particular job
+            delta=SEC;
+        }
+        
+        //hard-coded rule as a function of how long the job has been 'pending' or 'running'
+        if (delta < MINUTE) {
+            return SEC;
+        }
+        else if (delta < 2L*MINUTE) {
+            return 2L * SEC;
+        }
+        else if (delta < 5L*MINUTE) {
+            return 10L * SEC;
+        }
+        else if (delta < 10L*MINUTE) {
+            return 30L * SEC;
+        }
+        return 60L * SEC;
     }
     
     @Override
@@ -234,19 +265,19 @@ public class DrmExecutor implements CommandExecutor {
                             }
                             //put it back onto the queue
                             final long delay=getDelay(drmJobId, drmJobStatus);
-                            svc.submit(new Runnable() {
+                            svc.schedule(new Runnable() {
                                 @Override
                                 public void run() {
                                     try {
-                                        //wait a bit (in ms) before putting the same job back on the queue
-                                        Thread.sleep(delay);
                                         runningJobs.put(drmJobId);
                                     }
                                     catch (InterruptedException e) {
                                         Thread.currentThread().interrupt();
                                     }
                                 }
-                            });
+                            },
+                            delay,
+                            TimeUnit.MILLISECONDS);
                        }
                     }
                 }
@@ -286,8 +317,7 @@ public class DrmExecutor implements CommandExecutor {
         jobLookupTable.insertJobRecord(drmJobSubmission);
         //TODO: make fault tolerant in the event that (1) startJob gets hung or (2) startJob throws an exception
         //TODO: consider modifying the API so that startJob returns a DrmJobStatus instance
-        //String drmJobId=jobRunner.startJob(commandLine, environmentVariables, runDir, stdoutFile, stderrFile, jobInfo, stdinFile);
-        String drmJobId=jobRunner.startJob(drmJobSubmission);
+        final String drmJobId=jobRunner.startJob(drmJobSubmission);
         if (!isSet(drmJobId)) {
             final DrmJobStatus drmJobStatus = new DrmJobStatus.Builder(drmJobId, DrmJobState.FAILED).build();
             jobLookupTable.updateJobStatus(gpJobNo, drmJobStatus);
