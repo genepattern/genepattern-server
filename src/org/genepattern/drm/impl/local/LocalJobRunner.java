@@ -18,7 +18,6 @@ import org.genepattern.drm.JobRunner;
 import org.genepattern.drm.DrmJobSubmission;
 import org.genepattern.server.executor.CommandExecutorException;
 import org.genepattern.server.executor.RuntimeExecCommand;
-import org.genepattern.webservice.JobInfo;
 
 /**
  * An implementation of the JobRunner interface for local execution.
@@ -31,6 +30,8 @@ import org.genepattern.webservice.JobInfo;
         configuration.properties:
             jobRunnerClassname: org.genepattern.drm.impl.local.LocalJobRunner
             jobRunnerName: LocalJobRunner
+            lookupType: DB
+            #lookupType: HASHMAP
             # when 'logFilename' is set the command line args will be logged to the file
             logFilename: .rte.out
  * </pre>
@@ -90,7 +91,7 @@ public class LocalJobRunner implements JobRunner {
     }
 
     @Override
-    public DrmJobStatus getStatus(String drmJobId) {
+    public DrmJobStatus getStatus(final String drmJobId) {
         final Future<DrmJobStatus> task=runningTasks.get(drmJobId);
         if (task==null) {
             //TODO: could look at the file system for evidence of job completion
@@ -122,7 +123,7 @@ public class LocalJobRunner implements JobRunner {
     }
 
     @Override
-    public void cancelJob(String drmJobId, JobInfo jobInfo) throws Exception {
+    public void cancelJob(final String drmJobId, final DrmJobSubmission drmJobSubmission) throws Exception {
         final Future<DrmJobStatus> task=runningTasks.get(drmJobId);
         if (task != null) {
             final boolean mayInterruptIfRunning=true;

@@ -43,7 +43,7 @@ public class HashMapLookup implements DrmLookup {
 
     @Override
     public String lookupDrmJobId(final Integer gpJobNo) {
-        return lookup.get(""+gpJobNo);
+        return lookup.get(gpJobNo);
     }
     
     @Override

@@ -1,7 +1,6 @@
 package org.genepattern.drm;
 
 import org.genepattern.server.executor.CommandExecutorException;
-import org.genepattern.webservice.JobInfo;
 
 /**
  * Service provider interface for integrating a queuing system, aka job runner, into GenePattern, for example for PBS/Torque.
@@ -23,13 +22,14 @@ public interface JobRunner {
     void stop();
     
     /**
+     * The GenePattern Server calls this when it is ready to submit the job to the queue.
      * Submit the job to the queue and return immediately.
      * The drm jobId returned by this method is used as the key into a 
      * lookup table mapping the gp jobId to the drm jobId.
      * 
      * @return the drm jobId resulting from adding the job to the queue.
      */
-    String startJob(DrmJobSubmission drmJobSubmit) throws CommandExecutorException;
+    String startJob(DrmJobSubmission drmJobSubmission) throws CommandExecutorException;
 
     /**
      * Get the status of the job.
@@ -46,6 +46,6 @@ public interface JobRunner {
      * @param jobInfo
      * @throws Exception
      */
-    void cancelJob(String drmJobId, JobInfo jobInfo) throws Exception;
+    void cancelJob(String drmJobId, DrmJobSubmission drmJobSubmission) throws Exception;
 
 }

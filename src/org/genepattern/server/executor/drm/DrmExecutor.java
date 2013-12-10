@@ -91,7 +91,7 @@ public class DrmExecutor implements CommandExecutor {
                 }
 
                 @Override
-                public String startJob(DrmJobSubmission drmJobSubmit) throws CommandExecutorException {
+                public String startJob(final DrmJobSubmission drmJobSubmission) throws CommandExecutorException {
                     throw new CommandExecutorException("Server configuration error: the jobRunner was not initialized from classname="+classname);
                 }
 
@@ -101,7 +101,7 @@ public class DrmExecutor implements CommandExecutor {
                 }
 
                 @Override
-                public void cancelJob(String drmJobId, JobInfo jobInfo) throws Exception {
+                public void cancelJob(final String drmJobId, final DrmJobSubmission jobSubmission) throws Exception {
                     throw new Exception("Server configuration error: the jobRunner was not initialized from classname="+classname);
                 }
             };
@@ -338,9 +338,18 @@ public class DrmExecutor implements CommandExecutor {
     }
 
     @Override
-    public void terminateJob(JobInfo jobInfo) throws Exception {
+    public void terminateJob(final JobInfo jobInfo) throws Exception {
+        //TODO: load DrmJobSubmission from jobLookupTable
         final String drmJobId=jobLookupTable.lookupDrmJobId(jobInfo.getJobNumber());
-        jobRunner.cancelJob(drmJobId, jobInfo);
+        final File workingDir = new File(GenePatternAnalysisTask.getJobDir(""+jobInfo.getJobNumber()));
+        final String[] commandLine={ "echo", "Hello, World!" };
+        final DrmJobSubmission jobSubmission=new DrmJobSubmission.Builder(jobInfo.getJobNumber(), workingDir)
+            .gpUserId(jobInfo.getUserId())
+            .lsid(jobInfo.getTaskLSID())
+            .taskName(jobInfo.getTaskName())
+            .commandLine(commandLine)
+            .build();
+        jobRunner.cancelJob(drmJobId, jobSubmission);
     }
 
     /**
