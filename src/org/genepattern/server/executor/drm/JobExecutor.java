@@ -25,22 +25,21 @@ import org.genepattern.webservice.JobStatus;
 
 
 /**
- * Generic implementation of the CommandExecutor interface which makes it easier to integrate a queuing system 
- * into GenePattern without the need to fully implement the CommandExecutor API.
+ * A generic CommandExecutor which uses the newer JobRunner API for submitting jobs to a queuing systems.
  * 
  * To integrate a queuing system (aka job runner aka distributed resource manager (drm)) into GP, create a new java class 
- * which implements the QueuingSystem interface. 
+ * which implements the JobRunner interface. 
  * 
- * This DrmExecutor class will take care of the rest. This executor takes care of the mapping between GenePattern job id 
- * and the job id on a specific queuing system (such as LSF, SGE, or PBS). It saves the state of the lookup table (to a DB or the file system). 
+ * This executor will take care of the mapping between GenePattern job id and the job id on a specific queuing system 
+ * (such as LSF, SGE, or PBS). It saves the state of the lookup table (to a DB or the file system). 
  * It also polls for job status and calls back to the GP server on job completion. 
  * 
  * 
  * @author pcarr
  *
  */
-public class DrmExecutor implements CommandExecutor {
-    private static final Logger log = Logger.getLogger(DrmExecutor.class);
+public class JobExecutor implements CommandExecutor {
+    private static final Logger log = Logger.getLogger(JobExecutor.class);
     
     private String jobRunnerClassname;
     private String jobRunnerName;
@@ -194,7 +193,7 @@ public class DrmExecutor implements CommandExecutor {
         }
         this.jobRunnerName=properties.getProperty("jobRunnerName", "0");
         this.logFilename=properties.getProperty("logFilename", null);
-        this.jobRunner=DrmExecutor.initJobRunner(jobRunnerClassname);
+        this.jobRunner=JobExecutor.initJobRunner(jobRunnerClassname);
         String lookupTypeStr=properties.getProperty("lookupType", DrmLookupFactory.Type.DB.name());
         DrmLookupFactory.Type lookupType=null;
         try {

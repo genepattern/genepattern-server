@@ -26,7 +26,7 @@ import org.genepattern.server.executor.RuntimeExecCommand;
  * 
  * <pre>
  * LocalJobRunner:
-        classname: org.genepattern.server.executor.drm.DrmExecutor
+        classname: org.genepattern.server.executor.drm.JobExecutor
         configuration.properties:
             jobRunnerClassname: org.genepattern.drm.impl.local.LocalJobRunner
             jobRunnerName: LocalJobRunner

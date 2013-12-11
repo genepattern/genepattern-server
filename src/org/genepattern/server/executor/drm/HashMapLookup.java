@@ -61,7 +61,7 @@ public class HashMapLookup implements DrmLookup {
             rowOrig=new JobRunnerJob.Builder(jobRunnerClassname, workingDir, gpJobNo).drmJobStatus(drmJobStatus).build();
         }
         final JobRunnerJob updated=new JobRunnerJob.Builder(rowOrig).drmJobStatus(drmJobStatus).build();
-        if (DrmExecutor.isSet(updated.getExtJobId())) {
+        if (JobExecutor.isSet(updated.getExtJobId())) {
             lookup.put(updated.getGpJobNo(), updated.getExtJobId());
         }
         detailsTable.put(gpJobNo, updated);
