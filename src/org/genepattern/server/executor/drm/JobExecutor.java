@@ -295,6 +295,9 @@ public class JobExecutor implements CommandExecutor {
         if (jobHandlerThread!=null) {
             jobHandlerThread.interrupt();
         }
+        if (jobRunner != null) {
+            jobRunner.stop();
+        }
     }
     
     public static final boolean isSet(final String str) {
