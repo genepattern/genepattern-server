@@ -30,7 +30,18 @@ public class StringUtils {
     /** Prevent instantation */
     private StringUtils() {
     }
-    
+
+    /**
+     * @param in
+     * @return true if the string is not null AND it's not the empty string.
+     */
+    public static final boolean isSet(final String in) {
+        if (in == null || in.length()==0) {
+            return false;
+        }
+        return true;
+    }
+
     /**
      * Get the first index of the file separator from the given String.
      * Based on {@link #lastIndexOfFileSeparator(String)}.
