@@ -1,6 +1,10 @@
 package org.genepattern.server.job.input;
 
+import org.apache.log4j.Logger;
+import org.genepattern.util.StringUtils;
 import org.genepattern.webservice.ParameterInfo;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 /**
  * Data structure for indicating how a particular module input parameter can be organized into groups.
@@ -13,26 +17,35 @@ import org.genepattern.webservice.ParameterInfo;
  * <pre>
    p1_numValues=0+
    p1_numGroups=1+
+   p1_groupColumnLabel=sample
+   p1_groupFileLabel=replicate
+   p1_groupNumValuesMustMatch=false
  * </pre>
  * 
  * Proposed JSON representation:
  * <pre>
    groupInfo: {
-       numGroups: 0+,
-       columnLabel: "",
-       fileLabel: "",
+       minNumGroups: 0,
+       maxNumGroups: 2,
+       groupColumnLabel: "",
+       fileColumnLabel: "",
        numValuesMustMatch: false
    }
  * </pre>
+ * If there is no 'groupInfo' key then it means the grouping feature should not be enabled in the UI.
+ * If maxNumGroups is not set, it means there can be an unlimited number of groups.
  * 
  * @author pcarr
  *
  */
 public class GroupInfo {
+    final static private Logger log = Logger.getLogger(GroupInfo.class);
+
     /** manifest file property name */
     public static final String PROP_NUM_GROUPS="numGroups";
-    public static final String PROP_GROUP_COLUMN_LABEL="groupsColumnLabel";
-    public static final String PROP_GROUP_FILE_LABEL="groupsFileLabel";
+    public static final String PROP_GROUP_COLUMN_LABEL="groupColumnLabel";
+    public static final String PROP_FILE_COLUMN_LABEL="fileColumnLabel";
+    public static final String PROP_NUM_VALUES_MUST_MATCH="groupNumValuesMustMatch";
     
     private final Integer minNumGroups;
     private final Integer maxNumGroups;
@@ -82,6 +95,32 @@ public class GroupInfo {
         return fileColumnLabel;
     }
     
+    public boolean getNumValuesMustMatch() {
+        return this.numValuesMustMatch;
+    }
+    
+    /**
+     * Get the json representation of the given groupInfo instance.
+     * @param groupInfo
+     * @return null if the groupInfo is null.
+     */
+    public static JSONObject toJson(final GroupInfo groupInfo) throws JSONException {
+        if (groupInfo==null) {
+            return null;
+        }
+        JSONObject json=new JSONObject();
+        if (groupInfo.getMinNumGroups() != null) {
+            json.put("minNumGroups", groupInfo.getMinNumGroups());
+        }
+        if (groupInfo.getMaxNumGroups() != null) {
+            json.put("maxNumGroups", groupInfo.getMaxNumGroups());
+        }
+        json.put("groupColumnLabel", groupInfo.getGroupColumnLabel());
+        json.put("fileColumnLabel", groupInfo.getFileColumnLabel());
+        json.put("numValuesMustMatch", groupInfo.getNumValuesMustMatch());
+        return json;
+    }
+    
     public static class Builder {
         private Integer minNumGroups=0;
         private Integer maxNumGroups=0;
@@ -89,7 +128,13 @@ public class GroupInfo {
         private String fileColumnLabel="file";
         private boolean numValuesMustMatch=false;
         
+        //quick and messy way to communicate parse error as a null objecect
+        private boolean returnNull=false;
+        
         public GroupInfo build() {
+            if (returnNull) {
+                return null;
+            }
             return new GroupInfo(this);
         }
         
@@ -119,9 +164,50 @@ public class GroupInfo {
         }
         
         public Builder fromParameterInfo(final ParameterInfo pinfo) {
-            //TODO: implement manifest format parser
-            throw new IllegalArgumentException("Method not implemented!");
-            //return this;
+            if (pinfo==null) {
+                throw new IllegalArgumentException("pinfo==null");
+            }
+            if (pinfo.getAttributes()==null) {
+                log.error("pinfo.getAttributes()==null, can't parse");
+                returnNull=true;
+                return this;
+            }
+            
+            //parse numGroups string 
+            final String numGroupsStr = (String) pinfo.getAttributes().get(PROP_NUM_GROUPS); 
+            if (StringUtils.isSet(numGroupsStr)) {
+                final NumValuesParser nvParser=new NumValuesParserImpl();
+                try { 
+                    final NumValues numGroups = nvParser.parseNumValues(numGroupsStr);
+                    this.minNumGroups=numGroups.getMin();
+                    this.maxNumGroups=numGroups.getMax();
+                }
+                catch (Exception e) {
+                    String message="Error parsing numGroups="+numGroupsStr;
+                    log.error(message,e);
+                    returnNull=true;
+                    return this;
+                }
+            }
+            else {
+                //ignore everything else
+                returnNull=true;
+                return this;
+            }
+            
+            final String groupColumnLabel = (String) pinfo.getAttributes().get(PROP_GROUP_COLUMN_LABEL);
+            if (groupColumnLabel!=null) {
+                this.groupColumnLabel=groupColumnLabel;
+            }
+            final String fileColumnLabel = (String) pinfo.getAttributes().get(PROP_FILE_COLUMN_LABEL);
+            if (fileColumnLabel!=null) {
+                this.fileColumnLabel=fileColumnLabel;
+            }
+            final String groupNumValuesMustMatchStr = (String) pinfo.getAttributes().get(PROP_NUM_VALUES_MUST_MATCH);
+            if (StringUtils.isSet(groupNumValuesMustMatchStr)) {
+                this.numValuesMustMatch=Boolean.valueOf(groupNumValuesMustMatchStr);
+            }
+            return this;
         }
     }
 

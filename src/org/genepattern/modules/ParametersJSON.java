@@ -19,6 +19,7 @@ import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.log4j.Logger;
+import org.genepattern.server.job.input.GroupInfo;
 import org.genepattern.server.job.input.NumValues;
 import org.genepattern.server.job.input.ParamListHelper;
 import org.genepattern.server.job.input.choice.ChoiceInfo;
@@ -144,6 +145,26 @@ public class ParametersJSON extends JSONObject {
         }
         catch (JSONException e) {
             log.error("Error creating parameter JSON from ParameterInfo object");
+        }
+    }
+
+    /**
+     * Helper method to parse the optional group info attributes for the given parameter.
+     * @param pInfo
+     */
+    public void addGroupInfo(final ParameterInfo pinfo) {
+        if (pinfo==null) {
+            throw new IllegalArgumentException("pinfo==null");
+        }
+        try {
+            final GroupInfo groupInfo=new GroupInfo.Builder().fromParameterInfo(pinfo).build();
+            if (groupInfo != null) {
+                final JSONObject groupInfoJson=GroupInfo.toJson(groupInfo);
+                this.put("groupInfo", groupInfoJson);
+            }
+        }
+        catch (Throwable t) {
+            log.error("Error initializing group info for param="+pinfo.getName(), t);
         }
     }
     
