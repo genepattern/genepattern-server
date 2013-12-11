@@ -123,13 +123,17 @@ public class LocalJobRunner implements JobRunner {
     }
 
     @Override
-    public void cancelJob(final String drmJobId, final DrmJobSubmission drmJobSubmission) throws Exception {
+    public boolean cancelJob(final String drmJobId, final DrmJobSubmission drmJobSubmission) throws Exception {
         final Future<DrmJobStatus> task=runningTasks.get(drmJobId);
         if (task != null) {
             final boolean mayInterruptIfRunning=true;
             final boolean success=task.cancel(mayInterruptIfRunning);
             log.debug("success="+success);
+            return success;
         }
+        log.debug("No entry in 'runningTasks' map for drmJobId="+drmJobId);
+        //TODO: job may have already completed ... successfully or already cancelled successfully,
+        return false;
     }
     
     /**

@@ -44,8 +44,9 @@ public interface JobRunner {
      * 
      * @param drmJobId
      * @param jobInfo
+     * @return true if the job was successfully cancelled, false otherwise.
      * @throws Exception
-     */
-    void cancelJob(String drmJobId, DrmJobSubmission drmJobSubmission) throws Exception;
+     */  
+    boolean cancelJob(String drmJobId, DrmJobSubmission drmJobSubmission) throws Exception;
 
 }

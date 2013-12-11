@@ -101,7 +101,7 @@ public class DrmExecutor implements CommandExecutor {
                 }
 
                 @Override
-                public void cancelJob(final String drmJobId, final DrmJobSubmission jobSubmission) throws Exception {
+                public boolean cancelJob(final String drmJobId, final DrmJobSubmission jobSubmission) throws Exception {
                     throw new Exception("Server configuration error: the jobRunner was not initialized from classname="+classname);
                 }
             };
