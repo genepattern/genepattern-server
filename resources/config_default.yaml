@@ -53,7 +53,7 @@ default.properties:
     pipeline.max.file.size: 256000000
     
     genomeSpaceEnabled: true
-    genomeSpaceUrl: https://identity.genomespace.org:8444/identityServer/xrd.jsp
+    genomeSpaceUrl: https://identity.genomespace.org/identityServer/xrd.jsp
     genomeSpaceEnvironment: prod
     
     # 
