@@ -199,7 +199,7 @@ function getPinnedModules() {
 	$.each(all_modules, function(i, v) {
 		for (var j = 0; j < v.tags.length; j++) {
 			var tagObj = v.tags[j];
-			if (tagObj.tag == "pinned") {
+			if (tagObj.tag == "favorite") {
 				pinned.push(v);
 			}
 		}
@@ -210,7 +210,7 @@ function getPinnedModules() {
 		var a_pos = 0;
 		for (var j = 0; j < a.tags.length; j++) {
 			var tagObj = a.tags[j];
-			if (tagObj.tag == "pinned") {
+			if (tagObj.tag == "favorite") {
 				a_pos = tagObj.metadata;
 			}
 		}
@@ -218,7 +218,7 @@ function getPinnedModules() {
 		var b_pos = 0;
 		for (var j = 0; j < b.tags.length; j++) {
 			var tagObj = b.tags[j];
-			if (tagObj.tag == "pinned") {
+			if (tagObj.tag == "favorite") {
 				b_pos = tagObj.metadata;
 			}
 		}
@@ -377,7 +377,7 @@ function initPinned() {
 	var pinned_modules = getPinnedModules();
 	
 	var pinned = $('#pinned-modules').modulelist({
-        title: "Pinned Modules",
+        title: "Favorite Modules",
         data: pinned_modules,
         droppable: true,
         draggable: false,
@@ -443,7 +443,7 @@ function initPinned() {
             });
         }
     });
-	pinned.modulelist("filter", "pinned");
+	pinned.modulelist("filter", "favorite");
     $('#pinned-modules .module-list-empty').text("Drag Modules Here");
 }
 

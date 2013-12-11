@@ -135,7 +135,7 @@ public class TagManager {
             if (tags == null) tags = new HashSet<Tag>();
             
             // Add the tag
-            Tag pinTag = new Tag("pinned");
+            Tag pinTag = new Tag("favorite");
             pinTag.setMetadata(new Double(pin.getPosition()).toString());
             tags.add(pinTag);
             tagMap.put(key, tags);
