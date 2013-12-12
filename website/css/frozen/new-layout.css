@@ -354,7 +354,7 @@ body {
 }
 
 #module-list-allnsuite .module-listing {
-    background-image: linear-gradient(rgb(238, 238, 238), rgb(221, 221, 221));
+    background-image: linear-gradient(#F4F5F5, #EDEEEE);
 }
 
 #module-list-allnsuite .module-listing:hover {
