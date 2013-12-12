@@ -352,3 +352,12 @@ body {
 #loading-modules h4 {
 	color: darkgray;
 }
+
+#module-list-allnsuite .module-listing {
+    background-image: linear-gradient(rgb(238, 238, 238), rgb(221, 221, 221));
+}
+
+#module-list-allnsuite .module-listing:hover {
+    background-image: url(images/sidebar-topBG.png);
+    background-repeat: repeat-x;
+}

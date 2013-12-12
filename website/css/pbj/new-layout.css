@@ -20,11 +20,11 @@
 
 .module-listing:hover {
     background-image: url(images/sidebar-topBG.png);
-	background-repeat: repeat-x;
+    background-repeat: repeat-x;
 }
 
 .module-name {
-	color: gray;
+    color: gray;
     font-size: 11pt;
     line-height: 13pt;
     overflow: hidden;
@@ -54,15 +54,15 @@
     max-height: 26px;
     overflow: hidden;
     text-overflow: ellipsis;
-	margin-top: 2px;
+    margin-top: 2px;
 }
 
 .module-tag {
     font-size:8pt;
     color: #000099 !important;
     text-overflow: ellipsis;
-	overflow: hidden;
-	white-space: nowrap;
+    overflow: hidden;
+    white-space: nowrap;
 }
 
 .module-tag a {
@@ -70,11 +70,11 @@
 }
 
 .disable-select {
-  -webkit-user-select: none;  
-  -moz-user-select: none;    
-  -ms-user-select: none;     
-  -o-user-select: none; 
-  user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    -o-user-select: none;
+    user-select: none;
 }
 
 /*
@@ -186,8 +186,8 @@ body {
     padding-bottom: 3px;
     padding-right: 3px;
     background-color: #CED8DD;
-	background-image: url(images/bottom-band.png);
-	background-repeat: repeat-x;
+    background-image: url(images/bottom-band.png);
+    background-repeat: repeat-x;
     border-top: solid 1px #A3B1DA;
 }
 
@@ -199,7 +199,7 @@ body {
     top: 0px;
     margin-top: 71px;
     margin-bottom: 36px;
-	height: initial;
+    height: initial;
 }
 
 #left-nav {
@@ -213,14 +213,14 @@ body {
     margin: 0px;
     border-radius: 0px;
     border-top-width: 1px;
-	border-top-color: #F1F2F2;
-	border-right-width: 1px;
-	border-right-color: #A3B1DA;
-	border-top-style: solid;
-	border-right-style: solid;
-	border-left-color: #F1F2F2;
-	border-left-style: solid;
-	border-left-width: 1px;
+    border-top-color: #F1F2F2;
+    border-right-width: 1px;
+    border-right-color: #A3B1DA;
+    border-top-style: solid;
+    border-right-style: solid;
+    border-left-color: #F1F2F2;
+    border-left-style: solid;
+    border-left-width: 1px;
 }
 
 .left-nav-tab {
@@ -234,22 +234,22 @@ body {
 }
 
 #left-nav-tabs {
-	padding-left: 2px !important;
+    padding-left: 2px !important;
     border-top: none;
-	border-right: none;
-	border-left: none;
-	border-bottom: solid 1px #A3B1DA;
-	display: none;
+    border-right: none;
+    border-left: none;
+    border-bottom: solid 1px #A3B1DA;
+    display: none;
 }
 
 .left-nav-top {
-	background-color: #BDD3E9;
-	border: none;
-	border-bottom: solid 1px #A3B1DA;
-	background-image: url(images/sidebar-topBG.png);
-	background-repeat: repeat-x;
-	padding: 10px;
-	top: 33px;
+    background-color: #BDD3E9;
+    border: none;
+    border-bottom: solid 1px #A3B1DA;
+    background-image: url(images/sidebar-topBG.png);
+    background-repeat: repeat-x;
+    padding: 10px;
+    top: 33px;
 }
 
 .ui-widget-content.popupMenu {
@@ -257,25 +257,25 @@ body {
 }
 
 #left-nav-modules {
-	padding: 0px !important;
+    padding: 0px !important;
 }
 
 #left-nav-jobs {
-	padding: 0px !important;
-	width: 349px;
+    padding: 0px !important;
+    width: 349px;
 }
 
 #left-nav-files, #left-nav-genomespace {
-	padding: 10px !important;
-	width: 329px;
+    padding: 10px !important;
+    width: 329px;
 }
 
 #left-nav-modules.ui-widget-content a {
-	color: #000099;
+    color: #000099;
 }
 
 #left-nav-modules.ui-widget-content a:hover {
-	color: #6666FF;
+    color: #6666FF;
 }
 
 .search-box {
@@ -283,14 +283,14 @@ body {
 }
 
 #pinned-modules, #recent-modules {
-	padding: 10px;
+    padding: 10px;
 }
 
 #pinned-modules .module-list-empty {
-	border: dashed;
-	margin-left: 0px;
-	padding: 15px;
-	text-align: center;
+    border: dashed;
+    margin-left: 0px;
+    padding: 15px;
+    text-align: center;
 }
 
 #module-browse-button {
@@ -300,7 +300,7 @@ body {
 }
 
 #module-browse .module-doc {
-	display: none;
+    display: none;
 }
 
 #main-pane {
@@ -312,47 +312,52 @@ body {
     padding-top: 10px;
     padding-bottom: 10px;
     padding-right: 30px;
-	padding-left: 30px;
+    padding-left: 30px;
     top: 0px;
     bottom: 0px;
     background-color: white;
 }
 
 .jstree-leaf a {
-	max-width: 260px;
-	text-overflow: ellipsis;
+    max-width: 260px;
+    text-overflow: ellipsis;
 }
 
 .current-job-status {
-	float:left;
-	font-size: 8pt;
-	position: relative;
-	width: 150px;
-	text-align: left;
-	top: 2px;
+    float:left;
+    font-size: 8pt;
+    position: relative;
+    width: 150px;
+    text-align: left;
+    top: 2px;
 }
 
 .current-job-status img {
-	position: relative;
-	top: 5px;
-	height: 17px;
-}
-
-.current-job-status a {
-	color: black;
+    position: relative;
+    top: 5px;
+    height: 17px;
 }
 
 .ui-draggable-dragging {
-	background-image: url(images/sidebar-topBG.png);
-	width: 322px;
+    background-image: url(images/sidebar-topBG.png);
+    width: 322px;
 }
 
 #loading-modules {
-	color: darkgray;
-	padding: 15px;
-	text-align: center;
+    color: darkgray;
+    padding: 15px;
+    text-align: center;
 }
 
 #loading-modules h4 {
-	color: darkgray;
+    color: darkgray;
+}
+
+#module-list-allnsuite .module-listing {
+    background-image: linear-gradient(rgb(238, 238, 238), rgb(221, 221, 221));
+}
+
+#module-list-allnsuite .module-listing:hover {
+    background-image: url(images/sidebar-topBG.png);
+    background-repeat: repeat-x;
 }
