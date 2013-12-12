@@ -124,8 +124,8 @@ public class GroupInfo {
     public static class Builder {
         private Integer minNumGroups=0;
         private Integer maxNumGroups=0;
-        private String groupColumnLabel="group";
-        private String fileColumnLabel="file";
+        private String groupColumnLabel=null;
+        private String fileColumnLabel=null;
         private boolean numValuesMustMatch=false;
         
         //quick and messy way to communicate parse error as a null objecect
