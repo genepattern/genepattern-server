@@ -361,3 +361,11 @@ body {
     background-image: url(images/sidebar-topBG.png);
     background-repeat: repeat-x;
 }
+
+.module-list-title a {
+    color: #5555CC;
+}
+
+.module-list-title a:hover {
+    color: #7777FF;
+}
