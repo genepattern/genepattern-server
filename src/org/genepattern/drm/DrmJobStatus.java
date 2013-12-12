@@ -114,7 +114,7 @@ public class DrmJobStatus {
     }
 
     /**
-     * Get the amount of cpu time used by the job.
+     * Get the amount of cpu time used by the job, can be null of this is not known.
      * @return
      */
     public Duration getCpuTime() {
@@ -122,8 +122,8 @@ public class DrmJobStatus {
     }
 
     /**
-     * For completed jobs, get the exit code.
-     * @return null if the job has not completed or if for some other reason the exit code is not available.
+     * For completed jobs, get the exit code, can be null of the job is not finished or if for some other reason the exit code is not available.
+     * @return 
      */
     public Integer getExitCode() {
         return exitCode;

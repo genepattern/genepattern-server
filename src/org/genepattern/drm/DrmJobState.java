@@ -9,11 +9,13 @@ package org.genepattern.drm;
 public enum DrmJobState {
     /** The job status cannot be determined. This is a permanent issue, not being solvable by asking again for the job state. */
     UNDETERMINED(null),
+    /** Outer state, use one of the nested states.  */
     IS_QUEUED(null),
       /** The job is queued or being scheduled and executed. */
       QUEUED(IS_QUEUED),
       /** The job has been placed on hold by the system, the administrator, or the submitting user. */
       QUEUED_HELD(IS_QUEUED),
+    /** Outer state for a job which has been started, use one of the nested states when creating new job status instances. */
     STARTED(null),
       /** The job is running on an execution host. */
       RUNNING(STARTED),
@@ -23,6 +25,7 @@ public enum DrmJobState {
       REQUEUED(STARTED),
       /** The job was re-queued by the system, and is currently placed on hold by the system, the administrator, or the submitting user. */
       REQUEUED_HELD(STARTED),
+    /** Outer state for a completed job, use one of the nested states. */
     TERMINATED(null),
       /** The job finished without an error. */
       DONE(TERMINATED),
