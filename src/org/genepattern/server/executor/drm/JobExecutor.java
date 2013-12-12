@@ -51,7 +51,7 @@ public class JobExecutor implements CommandExecutor {
     private JobRunner jobRunner;
     private DrmLookup jobLookupTable;
 
-    private static final int BOUND = 20000;
+    private static final int BOUND = 100000;
     private BlockingQueue<String> runningJobs;
     private Thread jobHandlerThread;
     
@@ -82,7 +82,6 @@ public class JobExecutor implements CommandExecutor {
         }
         catch (Throwable t) {
             log.error("Error loading JobRunner for classname: "+classname+", "+t.getLocalizedMessage(), t);
-            //TODO: refactor into abstract job runner
             return new JobRunner() {
 
                 @Override
@@ -117,7 +116,16 @@ public class JobExecutor implements CommandExecutor {
             else {
                 exitCode=jobStatus.getExitCode();
             }
-            GenePatternAnalysisTask.handleJobCompletion(gpJobNo, exitCode);
+            String errorMessage=null;
+            if (exitCode != 0) {
+                errorMessage=jobStatus.getJobStatusMessage();
+            }
+            if (errorMessage != null) {
+                GenePatternAnalysisTask.handleJobCompletion(gpJobNo, exitCode, errorMessage);
+            }
+            else {
+                GenePatternAnalysisTask.handleJobCompletion(gpJobNo, exitCode);
+            }
         }
         catch (NumberFormatException e) {
             log.error("Unexpected error getting gp job number as an integer, gpJobId="+gpJobNo, e);
@@ -212,7 +220,6 @@ public class JobExecutor implements CommandExecutor {
         initJobsOnStartup(runningJobs);
     }
 
-    //should call this in a new thread because it can 
     private void initJobsOnStartup(final BlockingQueue<String> toQueue) {
         final List<String> jobs=jobLookupTable.getRunningDrmJobIds();
         for(final String drmJobId : jobs) {
@@ -351,7 +358,8 @@ public class JobExecutor implements CommandExecutor {
             .taskName(jobInfo.getTaskName())
             .commandLine(commandLine)
             .build();
-        jobRunner.cancelJob(drmJobId, jobSubmission);
+        boolean cancelled=jobRunner.cancelJob(drmJobId, jobSubmission);
+        log.debug("terminateJob(gpJobId="+jobInfo.getJobNumber()+", drmJobId="+drmJobId+"): cancelled="+cancelled);
     }
 
     /**

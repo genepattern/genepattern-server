@@ -105,11 +105,12 @@ public class LocalJobRunner implements JobRunner {
         }
 
         if (task.isCancelled()) {
-            //TODO: need to clearly indicate a user-cancelled job, from a job which failed because of a non-zero exit code
-            return new DrmJobStatus.Builder(drmJobId, DrmJobState.FAILED).exitCode(-1).build();
+            return new DrmJobStatus.Builder(drmJobId, DrmJobState.CANCELLED)
+                .jobStatusMessage("Job was terminated by user")
+                .exitCode(-1).build();
         }
         try {
-            return  task.get();
+            return task.get();
         }
         catch (InterruptedException e) {
             log.error(e);
