@@ -369,3 +369,5 @@ body {
 .module-list-title a:hover {
     color: #7777FF;
 }
+
+.highlight { background-color: yellow }

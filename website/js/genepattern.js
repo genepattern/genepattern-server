@@ -443,7 +443,7 @@ function initPinned() {
             });
         }
     });
-	pinned.modulelist("filter", "favorite");
+	pinned.modulelist("tagfilter", "favorite");
     $('#pinned-modules .module-list-empty').text("Drag Modules Here");
 }
 

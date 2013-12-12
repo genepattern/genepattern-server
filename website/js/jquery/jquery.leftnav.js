@@ -340,6 +340,8 @@ $.widget("gp.modulelist", {
             }
             else {
                 listing.show();
+                $(listing).removeHighlight();
+                $(listing).highlight(filter);
             }
         }
         if (numberHidden >= this.listings.length) {
