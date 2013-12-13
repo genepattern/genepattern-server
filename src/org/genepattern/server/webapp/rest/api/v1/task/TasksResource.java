@@ -182,11 +182,11 @@ public class TasksResource {
 
             // Apply suites to the taskInfos
             applyTaskSuites(userContext, latestTasks);
-            
+
             // Transform the latest task map to an array and sort it
             TaskInfo[] tasksArray = (TaskInfo[]) latestTasks.values().toArray(new TaskInfo[0]);
             Arrays.sort(tasksArray, new AdminDAO.TaskNameComparator());
-            
+
             // Return the JSON object
             JSONArray jsonArray = new JSONArray();
             for (final TaskInfo taskInfo : tasksArray) {
