@@ -390,6 +390,34 @@ $.widget("gp.modulelist", {
         
         return null;
     },
+
+    select_default: function(filter) {
+        var first = null;
+        var exact = null;
+
+        $(this.element).find(".module-listing:visible").each(function() {
+            if (first === null) {
+                first = $(this);
+            }
+
+            if (exact === null && $(this).find(".module-name").text().toLowerCase() === filter.toLowerCase()) {
+                exact = $(this);
+            }
+        });
+
+        // Call click on the module & return
+        if (exact !== null) {
+            exact.trigger("click");
+            return exact;
+        }
+        else if (first !== null) {
+            first.trigger("click");
+            return first;
+        }
+        else {
+            return false;
+        }
+    },
     
     _lsidInstances: function(listing) {
     	var lsid = $(listing).find(".module-lsid").text();
@@ -500,6 +528,16 @@ $.widget("gp.searchslider", {
     set_title: function(title) {
         if (this.options.lists.length >= 1) {
             $(this.options.lists[0]).modulelist("set_title", title);
+        }
+    },
+
+    select_default: function(filter) {
+        for (var i = 0; i < this.options.lists.length; i++) {
+            var list = this.options.lists[i];
+            var selected = $(list).modulelist("select_default", filter);
+            if (selected) {
+                break;
+            }
         }
     },
 

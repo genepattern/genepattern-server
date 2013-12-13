@@ -151,7 +151,7 @@
 	             	}
 	            	
 	            	// Search box controls
-	                jq("#module-search-box").keyup(function() {
+	                jq("#module-search-box").keyup(function(event) {
 	                    if (jq(".search-widget:visible").length === 0) {
 	                    	jq("#module-search").searchslider("show");
 	                        setModuleSearchTitle($(this).val())
@@ -159,6 +159,11 @@
 	                    jq("#module-search").searchslider("show");
 	                    jq("#module-search").searchslider("filter", $(this).val());
 	                    setModuleSearchTitle($(this).val())
+
+                        // Handle enter key
+                        if (event.originalEvent.keyIdentifier == "Enter") {
+                            jq("#module-search").searchslider("select_default", $(this).val());
+                        }
 	                });
 	
 	                // Browse button controls
