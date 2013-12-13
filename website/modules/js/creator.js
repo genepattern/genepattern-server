@@ -245,58 +245,56 @@ function saveModule()
 
     //check if the doc was implicit and so know whether now we should prompt for the correct doc
     if(module_editor.promptForTaskDoc && (json["module"].taskDoc == undefined || json["module"].taskDoc == null
-        || json["module"].taskDoc.length < 1))
+        || json["module"].taskDoc.length < 1) &&  (module_editor.docFileNames != undefined && module_editor.docFileNames != null
+        && module_editor.docFileNames.length > 0))
     {
         var docPromptDialog = $("<div/>");
         //get list of all current support files that could be interpreted as doc
-        if(module_editor.docFileNames != undefined && module_editor.docFileNames != null
-            && module_editor.docFileNames.length > 0)
+
+        for(var s=0;s<module_editor.docFileNames.length+1;s++)
         {
-            for(var s=0;s<module_editor.docFileNames.length+1;s++)
-            {
-                var docCheckBox = null;
+            var docCheckBox = null;
 
-                if(s != module_editor.docFileNames.length)
-                {
-                    docCheckBox = $("<input type='radio' name='docGroup' value='" + module_editor.docFileNames[s]+ "'>");
-                    docCheckBox.after(module_editor.docFileNames[s]);
-                    docPromptDialog.append(docCheckBox);
-                    docPromptDialog.append("<br/>");
-                }
-                else
-                {
-                    docCheckBox = $("<input type='radio' name='docGroup' value='' checked>");
-                    docCheckBox.after("No documentation");
-                    docPromptDialog.prepend("<br/>");
-                    docPromptDialog.prepend(docCheckBox);
-                }
-                docCheckBox.click(function()
-                {
-                    json["module"].taskDoc = $(this).val();
-                });
+            if(s != module_editor.docFileNames.length)
+            {
+                docCheckBox = $("<input type='radio' name='docGroup' value='" + module_editor.docFileNames[s]+ "'>");
+                docCheckBox.after(module_editor.docFileNames[s]);
+                docPromptDialog.append(docCheckBox);
+                docPromptDialog.append("<br/>");
             }
-
-            docPromptDialog.prepend("<p>Please indicate if any of the following support files is the documentation for this module.</p>");
-
-            docPromptDialog.dialog(
+            else
             {
-                title: "Please select documentation",
-                maxWidth: 380,
-                maxHeight: 320,
-                modal: true,
-                buttons:
-                {
-                    OK: function(event, ui)
-                    {
-                        $(this).dialog("close");
-                    }
-                },
-                close: function( event, ui )
-                {
-                    saveModulePost(json);
-                }
+                docCheckBox = $("<input type='radio' name='docGroup' value='' checked>");
+                docCheckBox.after("No documentation");
+                docPromptDialog.prepend("<br/>");
+                docPromptDialog.prepend(docCheckBox);
+            }
+            docCheckBox.click(function()
+            {
+                json["module"].taskDoc = $(this).val();
             });
         }
+
+        docPromptDialog.prepend("<p>Please indicate if any of the following support files is the documentation for this module.</p>");
+
+        docPromptDialog.dialog(
+        {
+            title: "Please select documentation",
+            maxWidth: 380,
+            maxHeight: 320,
+            modal: true,
+            buttons:
+            {
+                OK: function(event, ui)
+                {
+                    $(this).dialog("close");
+                }
+            },
+            close: function( event, ui )
+            {
+                saveModulePost(json);
+            }
+        });
     }
     else
     {
