@@ -300,7 +300,7 @@ public class TasksResource {
     private void applyTaskSuites(final ServerConfiguration.Context context, final Map<String, TaskInfo> tasks) {
         AdminDAO adminDao = new AdminDAO();
         try {
-            SuiteInfo[] suites = adminDao.getLatestSuites();
+            SuiteInfo[] suites = adminDao.getLatestSuitesForUser(context.getUserId());
             
             for (SuiteInfo suite : suites) {
                 for (String moduleLsid : suite.getModuleLsids()) {
