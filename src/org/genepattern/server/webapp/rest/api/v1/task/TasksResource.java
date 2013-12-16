@@ -190,8 +190,14 @@ public class TasksResource {
             // Return the JSON object
             JSONArray jsonArray = new JSONArray();
             for (final TaskInfo taskInfo : tasksArray) {
-                JSONObject jsonObj = asJson(taskInfo, userContext);
-                jsonArray.put(jsonObj);
+                try {
+                    JSONObject jsonObj = asJson(taskInfo, userContext);
+                    jsonArray.put(jsonObj);
+                }
+                catch (Exception e) {
+                    log.error("Exception thrown rendering to JSON (" + taskInfo.getLsid() + "): " + e.getMessage());
+                    continue;
+                }
             }
             return Response.ok().entity(jsonArray.toString()).build();
         }
