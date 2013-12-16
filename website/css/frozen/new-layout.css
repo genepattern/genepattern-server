@@ -371,3 +371,7 @@ body {
 }
 
 .highlight { background-color: yellow }
+
+.jstree li {
+    white-space: normal !important;
+}
