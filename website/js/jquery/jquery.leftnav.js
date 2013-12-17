@@ -30,14 +30,6 @@ $.widget("gp.module", {
     _create: function() {
         this.element.addClass('module-listing');
 
-        // Save the lsid
-        this.lsid = this._protect(this.options.data.lsid, "");
-        $('<div>', {
-            'class': 'module-lsid',
-            'style': 'display:none;',
-            'text': this.lsid
-        }).appendTo(this.element);
-
         // Add the ui elements
         if (this.options.data.lsid) {
             this.gear = $('<img src="/gp/images/gear.png" />')
@@ -45,7 +37,6 @@ $.widget("gp.module", {
                 .attr("class", "module-gear")
                 .attr("title", "Module Options")
                 .attr("onclick", "$(this).parent().module('showMenu').module('stopProp', event)")
-                .tooltip()
                 .appendTo(this.element);
         }
 
@@ -64,13 +55,13 @@ $.widget("gp.module", {
                 .wrap("<li/>");
         }
 
-        this.expand = $('<a>Expand</a>')
+        this.expandModule = $('<a>Expand</a>')
             .attr("href", "#")
-            .attr("onclick", "$(this).closest('.module-listing').module('stopProp', event)")
+            .attr("onclick", "$(this).closest('.module-listing').module('expand').module('stopProp', event)")
             .appendTo(this.menu[0])
             .wrap("<li/>");
 
-        this.remove = $('<a>Remove Favorite</a>')
+        this.removeFavorite = $('<a>Remove Favorite</a>')
             .attr("href", "#")
             .attr("onclick", "$(this).closest('.module-listing').module('stopProp', event)")
             .appendTo(this.menu[0])
@@ -88,6 +79,13 @@ $.widget("gp.module", {
         this.name = $('<div>', {
             'class': 'module-name',
             'text': this._protect(this.options.data.name, "UNNAMED")
+        }).appendTo(this.element);
+
+        // Save the lsid
+        this.lsid = this._protect(this.options.data.lsid, "");
+        $('<div>', {
+            'class': 'module-lsid',
+            'text': this.lsid
         }).appendTo(this.element);
 
         this.description = $('<div>', {
@@ -233,6 +231,30 @@ $.widget("gp.module", {
 
         $(document).click(function() {
             menu.hide();
+            $(document).unbind("click");
+        });
+    },
+
+    expand: function() {
+        $(".module-menu").hide();
+
+        var offset = $(this.element).offset();
+        var width = $(this.element).width();
+
+        var clone = $(this.element).clone()
+            .attr("class", "module-expanded")
+            .css("top", offset.top)
+            .css("left", offset.left)
+            .css("width", width)
+            .css("display", "none")
+            .appendTo("body")
+            .show("blind", 300);
+
+        $(document).click(function() {
+            clone.hide("blind", 300);
+            setTimeout(function() {
+                clone.remove();
+            }, 301);
             $(document).unbind("click");
         });
     },

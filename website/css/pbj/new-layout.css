@@ -40,6 +40,10 @@
     margin-top: 3px;
 }
 
+.module-lsid {
+    display: none;
+}
+
 .module-doc {
     display:block;
     height: 0px;
@@ -406,4 +410,40 @@ body {
 
 .module-menu li a {
     color: black !important;
+}
+
+.module-expanded {
+    position: absolute;
+    background-image: url(images/sidebar-topBG.png);
+    background-size: 100% 100%;
+    background-repeat: no-repeat;
+    padding: 2px;
+    z-index: 9;
+    min-height: 60px;
+    border-style: solid;
+    border-width: 1px;
+    border-color: #BBBBEE;
+}
+
+.module-expanded .module-gear {
+    display: none;
+}
+
+.module-expanded .module-lsid {
+    display: block;
+    width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    color: #999999;
+}
+
+.module-expanded .module-version {
+    display: block;
+}
+
+.module-expanded .module-tag, .module-expanded .module-description {
+    text-overflow: initial;
+    white-space: normal;
+    overflow: visible;
+    max-height: none;
 }
