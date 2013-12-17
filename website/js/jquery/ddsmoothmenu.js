@@ -30,7 +30,7 @@ var ddsmoothmenu={
 arrowimages: {down:['downarrowclass', '/gp/images/down.gif', 23], right:['rightarrowclass', '/gp/images/right.gif']},
 transition: {overtime:300, outtime:300}, //duration of slide in/ out animation, in milliseconds
 shadow: {enable:true, offsetx:5, offsety:5}, //enable shadow?
-showhidedelay: {showdelay: 100, hidedelay: 200}, //set delay in milliseconds before sub menus appear and disappear, respectively
+showhidedelay: {showdelay: 400, hidedelay: 200}, //set delay in milliseconds before sub menus appear and disappear, respectively
 
 ///////Stop configuring beyond here///////////////////////////
 
