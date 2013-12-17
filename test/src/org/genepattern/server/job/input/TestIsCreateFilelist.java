@@ -7,7 +7,9 @@ import org.genepattern.server.config.ServerConfiguration;
 import org.genepattern.server.config.ServerConfiguration.Context;
 import org.genepattern.server.job.input.JobInput.Param;
 import org.genepattern.server.job.input.JobInput.ParamId;
+import org.genepattern.server.job.input.ParamListHelper.ListMode;
 import org.genepattern.server.rest.ParameterInfoRecord;
+import org.genepattern.webservice.ParameterInfo;
 import org.genepattern.webservice.TaskInfo;
 import org.junit.Assert;
 import org.junit.BeforeClass;
@@ -19,6 +21,18 @@ import org.junit.Test;
  *
  */
 public class TestIsCreateFilelist {
+    private static final ParameterInfo createFilelistParam(final String numValues, final ListMode listMode) {
+        final boolean optional=false;
+        final ParameterInfo pinfo=ParameterInfoUtil.initFileParam("input.files", "Demo filelist parameter", optional);
+        if (numValues != null) {
+            pinfo.getAttributes().put(NumValues.PROP_NUM_VALUES, numValues);
+        }
+        if (listMode != null) {
+            pinfo.getAttributes().put(NumValues.PROP_LIST_MODE, listMode.name());
+        }
+        return pinfo;
+    }
+
     private static TaskInfo taskInfo;
     private static Map<String,ParameterInfoRecord> paramInfoMap;
     private static Context jobContext;
@@ -74,159 +88,90 @@ public class TestIsCreateFilelist {
         Assert.assertFalse(paramName+".isCreateFilelist", plh.isCreateFilelist());
     }
     
+    /*
+     * test cases
+     * 
+     * 7) accepts a file list, actual num value is 2, mode is ..
+     * 8) accepts a file list, actual num value is 2, mode is ..
+     * 9) accepts a file list, actual num value is 2, mode is ..
 
-//
-//    @Test
-//    public void numValuesNotSet() {
-//        doTest(false, false, 1, 1);
-//    }
-//    
-//    @Test
-//    public void emptyString() {
-//        pinfo.getAttributes().put("numValues", "");
-//        doTest(false, false, 1, 1);
-//    }
-//
-//    @Test
-//    public void optionalNumValuesNotSet() {
-//        pinfo.getAttributes().put("optional", "on");
-//        doTest(true, false, 0, 1);
-//    }
-//    
-//    @Test
-//    public void one() {
-//        pinfo.getAttributes().put("numValues", "1");
-//        doTest(false, false, 1, 1);
-//    }
-//
-//    @Test
-//    public void two() {
-//        pinfo.getAttributes().put("numValues", "2");
-//        doTest(false, true, 2, 2);
-//    }
-//    
-//    @Test
-//    public void zeroPlus() {
-//        pinfo.getAttributes().put("numValues", "0+");
-//        doTest(true, true, 0, null);
-//    }
-//    
-//    @Test
-//    public void onePlus() {
-//        pinfo.getAttributes().put("numValues", "1+");
-//        doTest(false, true, 1, null);
-//    }
-//    
-//    @Test
-//    public void twoPlus() {
-//        pinfo.getAttributes().put("numValues", "2+");
-//        doTest(false, true, 2, null);
-//    }
-//    
-//    @Test
-//    public void zeroThroughOne() {
-//        pinfo.getAttributes().put("numValues", "0..1");
-//        doTest(true, false, 0, 1);
-//    }
-//    
-//    @Test
-//    public void zeroThroughTwo() {
-//        pinfo.getAttributes().put("numValues", "0..2");
-//        doTest(true, true, 0, 2);
-//    }
-//    
-//    @Test
-//    public void oneThroughTwo() {
-//        pinfo.getAttributes().put("numValues", "1..2");
-//        doTest(false, true, 1, 2);
-//    }
-//    
-//    //what about when optional and numValues conflict?
-//    //... numValues takes precedence
-//    @Test
-//    public void optional_NumValues_1() {
-//        pinfo.getAttributes().put("optional", "on");
-//        pinfo.getAttributes().put("numValues", "1");
-//        doTest(false, false, 1, 1);
-//    }
-//    
-//    @Test
-//    public void optional_NumValues_4() {
-//        pinfo.getAttributes().put("optional", "on");
-//        pinfo.getAttributes().put("numValues", "4");
-//        doTest(false, true, 4, 4);
-//    }
-//
-//    @Test
-//    public void nullAttributes() {
-//        pinfo.setAttributes(null);
-//        doTest(false, false, 1, 1);
-//    }
-//    
-//    //some bogus test cases
-//    @Test
-//    public void syntaxError_invalidSeparator() {
-//        final String numValues="1-2";
-//        try {
-//            pinfo.getAttributes().put("numValues", numValues);
-//            doTest(false, false, 1, 1);
-//            Assert.fail("expecting IllegalArgumentException for numValues="+numValues);
-//        }
-//        catch (IllegalArgumentException e) {
-//            //expected
-//        }
-//    }
-//
-//    @Test
-//    public void syntaxError_invalidNumber() {
-//        final String numValues="one";
-//        try {
-//            pinfo.getAttributes().put("numValues", numValues);
-//            doTest(false, false, 1, 1);
-//            Assert.fail("expecting IllegalArgumentException for numValues="+numValues);
-//        }
-//        catch (IllegalArgumentException e) {
-//            //expected
-//        }
-//    }
-//    
-//    @Test
-//    public void error_lessThanZero() {
-//        final String numValues="-1";
-//        try {
-//            pinfo.getAttributes().put("numValues", numValues);
-//            doTest(false, false, 1, 1);
-//            Assert.fail("expecting IllegalArgumentException for numValues="+numValues);
-//        }
-//        catch (IllegalArgumentException e) {
-//            //expected
-//        }
-//    }
-//
-//    @Test
-//    public void error_zero() {
-//        final String numValues="0";
-//        try {
-//            pinfo.getAttributes().put("numValues", numValues);
-//            doTest(false, false, 1, 1);
-//            Assert.fail("expecting IllegalArgumentException for numValues="+numValues);
-//        }
-//        catch (IllegalArgumentException e) {
-//            //expected
-//        }
-//    }
-//    
-//    @Test
-//    public void error_minGreaterThanMax() {
-//        final String numValues="5..1";
-//        try {
-//            pinfo.getAttributes().put("numValues", numValues);
-//            doTest(false, false, 1, 1);
-//            Assert.fail("expecting IllegalArgumentException for numValues="+numValues);
-//        }
-//        catch (IllegalArgumentException e) {
-//            //expected
-//        }
-//    }
+     * 
+     */
+    
+    /**
+     *  accepts a file list, actual num values is 0, mode is LEGACY
+     */
+    @Test
+    public void testNoValuesLegacyMode() {
+        doTest(false, 0, ParamListHelper.ListMode.LEGACY);
+    }
+    /**
+     *  accepts a file list, actual num values is 0, mode is LIST
+     */
+    @Test
+    public void testNoValuesListMode() {
+        doTest(false, 0, ParamListHelper.ListMode.LIST);
+    }
+    /**
+     *  accepts a file list, actual num values is 0, mode is LIST_INCLUDE_EMPTY
+     */
+    @Test
+    public void testNoValuesListIncludeEmptyMode() {
+        doTest(true, 0, ParamListHelper.ListMode.LIST_INCLUDE_EMPTY);
+    }
+    /**
+     *  accepts a file list, actual num values is 1, mode is LEGACY
+     */
+    @Test
+    public void testOneValueLegacyMode() {
+        doTest(false, 1, ParamListHelper.ListMode.LEGACY);
+    }
+    /**
+     *  accepts a file list, actual num values is 1, mode is LIST
+     */
+    @Test
+    public void testOneValuesListMode() {
+        doTest(true, 1, ParamListHelper.ListMode.LIST);
+    }
+    /**
+     *  accepts a file list, actual num values is 1, mode is LIST_INCLUDE_EMPTY
+     */
+    @Test
+    public void testOneValueListIncludeEmptyMode() {
+        doTest(true, 1, ParamListHelper.ListMode.LIST_INCLUDE_EMPTY);
+    }
+    /**
+     *  accepts a file list, multi input values, mode is LEGACY
+     */
+    @Test
+    public void testMultiValuesLegacyMode() {
+        doTest(true, 2, ParamListHelper.ListMode.LEGACY);
+    }
+    /**
+     *  accepts a file list, multi input values, mode is LIST
+     */
+    @Test
+    public void testMultiValuesListMode() {
+        doTest(true, 3, ParamListHelper.ListMode.LIST);
+    }
+    /**
+     *  accepts a file list, multi input values, mode is LIST_INCLUDE_EMPTY
+     */
+    @Test
+    public void testMultiValuesListIncludeEmptyMode() {
+        doTest(true, 4, ParamListHelper.ListMode.LIST_INCLUDE_EMPTY);
+    }
+    
+    private void doTest(final boolean expectedCreateFilelist, final int actualNumValues, final ParamListHelper.ListMode mode) {
+        final ParameterInfo formalParam=createFilelistParam("0+", mode);
+        final ParameterInfoRecord record=new ParameterInfoRecord(formalParam);
+        final JobInput jobInput = new JobInput();
+        for(int i=0; i<actualNumValues; ++i) {
+            jobInput.addValue(formalParam.getName(), "arg_"+i);
+        }
+        final Param param=jobInput.getParam(formalParam.getName());
+        final ParamListHelper plh = new ParamListHelper(jobContext, record, param);
+        Assert.assertEquals("isCreateFilelist", expectedCreateFilelist, plh.isCreateFilelist());
+    }
 
 }
