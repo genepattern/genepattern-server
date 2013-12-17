@@ -9,6 +9,7 @@ package org.genepattern.server.job.input;
  */
 public class NumValues {
     public static final String PROP_NUM_VALUES="numValues";
+    public static final String PROP_LIST_MODE="listMode";
     
     private Integer min=null;
     private Integer max=null;
