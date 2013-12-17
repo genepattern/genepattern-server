@@ -56,7 +56,7 @@
 					
 					jq("#serverFileTreeDialog").parent().find(".ui-dialog-buttonpane button:first").button("disable");
 					jq(selectedFile).removeClass("serverFileTreeSelected");
-					selectedInput = jq(node).parent().find(".uploadedinputfile").attr("id")
+					selectedInput = jq(node).closest(".pRow").attr("id");
                     jq('#serverFileTreeDialog').dialog('open');
                     return false;
                 }

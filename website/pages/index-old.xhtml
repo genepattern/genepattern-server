@@ -145,7 +145,7 @@
             			toggleFileButtons(elementId);
                     }
                     else { // Otherwise, assume it's a directory
-                    	var selected = jq("#" + escapeJquerySelector(elementId));
+                        var selected = jq("#" + escapeJquerySelector(elementId)).find(".paramValueTd").find(".textDiv").find(".pValue").first();
                     	selected.val(value);
                     	parameter_and_val_obj[elementId] = [value];
                     }
