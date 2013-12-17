@@ -9,9 +9,8 @@
 package org.genepattern.pipelines;
 
 import org.apache.log4j.Logger;
+import org.genepattern.server.job.input.NumValues;
 import org.genepattern.server.job.input.choice.ChoiceInfo;
-import org.genepattern.server.job.input.choice.ChoiceInfoHelper;
-import org.genepattern.server.job.input.choice.ChoiceInfoParser;
 import org.genepattern.webservice.ParameterInfo;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -28,7 +27,6 @@ public class InputJSON extends JSONObject {
     public static final String PROMPT_WHEN_RUN = "promptWhenRun";
     public static final String DEFAULT_VALUE = "defaultValue";
     public static final String CHOICES = "choices";
-    public static final String NUM_VALUES = "numValues";
     public static final String FILE_CHOICE = "fileChoice";
     
     public static final String VALUE = "value";
@@ -49,7 +47,7 @@ public class InputJSON extends JSONObject {
             this.determinePromptWhenRun();
             this.setDefaultValue((String) param.getAttributes().get("default_value"));
             this.buildChoices(param.getValue(), this.getDefaultValue());
-            this.determineNumValues((String) param.getAttributes().get("numValues"));
+            this.determineNumValues((String) param.getAttributes().get(NumValues.PROP_NUM_VALUES));
             this.determineFileChoice(param);
         }
         catch (JSONException e) {
@@ -85,7 +83,7 @@ public class InputJSON extends JSONObject {
             
             this.setName(param.getName());
             this.setPromptWhenRun(pwrArray);
-            this.determineNumValues((String) param.getAttributes().get("numValues"));
+            this.determineNumValues((String) param.getAttributes().get(NumValues.PROP_NUM_VALUES));
             this.determineFileChoice(param);
             
             // Hack to fix broken GP 3.3.3 pipelines
@@ -146,7 +144,7 @@ public class InputJSON extends JSONObject {
             }
             
             this.setValue(param.getString(VALUE));
-            final String numValues = getStringOrNull(param, NUM_VALUES, null);
+            final String numValues = getStringOrNull(param, NumValues.PROP_NUM_VALUES, null);
             this.determineNumValues(numValues);
             this.setFileChoice(param.getBoolean(FILE_CHOICE));
         }
@@ -156,11 +154,11 @@ public class InputJSON extends JSONObject {
     }
     
     public String getNumValues() throws JSONException {
-        return this.getString(NUM_VALUES);
+        return this.getString(NumValues.PROP_NUM_VALUES);
     }
     
     public void setNumValues(String numValues) throws JSONException {
-        this.put(NUM_VALUES, numValues);
+        this.put(NumValues.PROP_NUM_VALUES, numValues);
     }
     
     public boolean getFileChoice() throws JSONException {
