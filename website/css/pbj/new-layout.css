@@ -139,6 +139,7 @@
     white-space: normal;
     overflow: visible;
     max-height: none;
+    word-wrap: break-word;
 }
 
 /*
