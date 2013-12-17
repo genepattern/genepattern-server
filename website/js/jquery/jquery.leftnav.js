@@ -63,10 +63,9 @@ $.widget("gp.module", {
 
         this.removeFavorite = $('<a>Remove Favorite</a>')
             .attr("href", "#")
-            .attr("onclick", "$(this).closest('.module-listing').module('stopProp', event)")
+            .attr("onclick", "$(this).closest('.module-listing').module('remove').module('stopProp', event)")
             .appendTo(this.menu[0])
-            .wrap("<li/>")
-            .css("display", "none");
+            .wrap("<li class='module-remove' />");
 
         // Init the menu UI component
         this.menu.menu();
@@ -83,7 +82,7 @@ $.widget("gp.module", {
 
         // Save the lsid
         this.lsid = this._protect(this.options.data.lsid, "");
-        $('<div>', {
+        this.lsidBox = $('<div>', {
             'class': 'module-lsid',
             'text': this.lsid
         }).appendTo(this.element);
@@ -259,18 +258,29 @@ $.widget("gp.module", {
         });
     },
 
+    remove: function() {
+        $(".module-menu").hide();
+
+        var moduleList = $(this.element).closest(".module-list");
+        moduleList.modulelist("remove", null, {item: this.element});
+
+        $(this.element).remove();
+    },
+
     // events bound via _on are removed automatically
     // revert other modifications here
     _destroy: function() {
         // remove generated elements
         this.name.remove();
         this.version.remove();
-        this.docicon.remove();
+        this.doc.remove();
         this.description.remove();
+        this.gear.remove();
+        this.menu.remove();
         this.tags.remove();
+        this.lsidBox.remove();
 
-        this.element
-            .removeClass('module-listing');
+        this.element.removeClass('module-listing');
     },
 
     // _setOptions is called with a hash of all options that are changing
@@ -485,6 +495,10 @@ $.widget("gp.modulelist", {
         else {
             return false;
         }
+    },
+
+    remove: function(event, ui) {
+        this.options.remove(event, ui);
     },
     
     _lsidInstances: function(listing) {
