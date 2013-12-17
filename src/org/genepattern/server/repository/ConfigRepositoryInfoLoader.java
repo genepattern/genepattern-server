@@ -86,7 +86,7 @@ public class ConfigRepositoryInfoLoader implements RepositoryInfoLoader {
     }
     
     final static private List<String> getModuleRepositoryUrlsFromGpProps() { 
-        final String moduleRepositoryUrls=System.getProperty(RepositoryInfo.PROP_MODULE_REPOSITORY_URLS, RepositoryInfo.BROAD_PROD_URL);
+        final String moduleRepositoryUrls=System.getProperty(RepositoryInfo.PROP_MODULE_REPOSITORY_URLS, RepositoryInfo.DEFAULT_MODULE_REPOSITORY_URLS);
         if (moduleRepositoryUrls==null) {
             return Collections.emptyList();
         }

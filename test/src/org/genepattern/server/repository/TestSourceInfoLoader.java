@@ -1,8 +1,6 @@
 package org.genepattern.server.repository;
 
 import org.genepattern.junitutil.TaskLoader;
-import org.genepattern.server.config.ServerConfiguration;
-import org.genepattern.server.config.ServerConfiguration.Context;
 import org.genepattern.server.job.input.TestJobInputHelper;
 import org.genepattern.server.taskinstall.InstallInfo;
 import org.genepattern.webservice.TaskInfo;
@@ -19,7 +17,6 @@ import org.junit.Test;
 public class TestSourceInfoLoader {
     private static TaskLoader taskLoader;
     private static SourceInfoLoader sourceInfoLoader;
-    private static Context serverContext;
 
     //ConvertLineEndings v1
     final String cleLsid="urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00002:1";
@@ -32,8 +29,6 @@ public class TestSourceInfoLoader {
     
     @BeforeClass
     static public void init() {
-        serverContext = ServerConfiguration.Context.getServerContext();
-        //sourceInfoLoader=SourceInfo.getSourceInfoLoader(serverContext);
         sourceInfoLoader=new StubSourceInfoLoader();
 
         taskLoader=new TaskLoader();
@@ -49,7 +44,7 @@ public class TestSourceInfoLoader {
         final SourceInfo fromBroadProd=sourceInfoLoader.getSourceInfo(cleTaskInfo);
         Assert.assertNotNull("expecting non-null sourceInfo", fromBroadProd);
         Assert.assertEquals("sourceInfo.type", InstallInfo.Type.REPOSITORY, fromBroadProd.getType());
-        Assert.assertEquals("sourceInfo.label", "Broad public", fromBroadProd.getLabel());
+        Assert.assertEquals("sourceInfo.label", "Broad production", fromBroadProd.getLabel());
         Assert.assertNotNull("sourceInfo.iconImgSrc, unexpected null value", fromBroadProd.getIconImgSrc());
         Assert.assertNotNull("sourceInfo.briefDescription, unexpected null value", fromBroadProd.getBriefDescription());
         Assert.assertNotNull("sourceInfo.fullDescription, unexpected null value", fromBroadProd.getFullDescription());
@@ -87,7 +82,7 @@ public class TestSourceInfoLoader {
         Assert.assertEquals("sourceInfo.type", InstallInfo.Type.UNKNOWN, fromUnknown.getType());
         Assert.assertEquals("sourceInfo.label", "N/A", fromUnknown.getLabel());
         Assert.assertNotNull("sourceInfo.iconImgSrc, expecting non-null value", fromUnknown.getIconImgSrc());
-        Assert.assertNull("sourceInfo.briefDescription, expecting null value", fromUnknown.getBriefDescription());
+        Assert.assertEquals("sourceInfo.briefDescription", "Installation source not known, module was installed before the GP 3.6.1 update", fromUnknown.getBriefDescription());
         Assert.assertNull("sourceInfo.fullDescription, expecting null value", fromUnknown.getFullDescription());
     }
 

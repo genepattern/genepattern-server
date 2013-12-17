@@ -19,6 +19,9 @@ public class RepositoryInfo {
     //internal path to gparc, http://vgpprod01.broadinstitute.org:4542/gparcModuleRepository
     final static public String GPARC_URL="http://www.broadinstitute.org/webservices/gparcModuleRepository";
     
+    final static public String DEFAULT_MODULE_REPOSITORY_URLS=
+            BROAD_PROD_URL+","+GPARC_URL+","+BROAD_BETA_URL;
+    
     /**
      * RepositoryInfoFactory implementation
      */
