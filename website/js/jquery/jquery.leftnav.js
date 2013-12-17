@@ -39,16 +39,46 @@ $.widget("gp.module", {
         }).appendTo(this.element);
 
         // Add the ui elements
-        if (this.options.data.documentation) {
-	        this.docicon = $('<a><img src="/gp/css/frozen/modules/styles/images/file_add.gif"></a>')
-	            .attr("href", this._protect(this.options.data.documentation, ""))
-	            .attr("target", "_blank")
-	            .attr("class", "module-doc")
-	            .attr("title", "Documentation")
-	            .attr("onclick", "$(this).closest('.module-listing').module('stopProp', event)")
-	            .tooltip()
-	            .appendTo(this.element);
+        if (this.options.data.lsid) {
+            this.gear = $('<img src="/gp/images/gear.png" />')
+                .css("height", "15px")
+                .attr("class", "module-gear")
+                .attr("title", "Module Options")
+                .attr("onclick", "$(this).parent().module('showMenu').module('stopProp', event)")
+                .tooltip()
+                .appendTo(this.element);
         }
+
+        // Build the menu
+        this.menu = $('<ul></ul>')
+            .css("display", "none")
+            .attr("class", "module-menu")
+            .appendTo(this.element);
+
+        if (this.options.data.documentation) {
+            this.doc = $('<a>Documentation</a>')
+                .attr("href", this._protect(this.options.data.documentation, ""))
+                .attr("target", "_blank")
+                .attr("onclick", "$(this).closest('.module-listing').module('stopProp', event)")
+                .appendTo(this.menu[0])
+                .wrap("<li/>");
+        }
+
+        this.expand = $('<a>Expand</a>')
+            .attr("href", "#")
+            .attr("onclick", "$(this).closest('.module-listing').module('stopProp', event)")
+            .appendTo(this.menu[0])
+            .wrap("<li/>");
+
+        this.remove = $('<a>Remove Favorite</a>')
+            .attr("href", "#")
+            .attr("onclick", "$(this).closest('.module-listing').module('stopProp', event)")
+            .appendTo(this.menu[0])
+            .wrap("<li/>")
+            .css("display", "none");
+
+        // Init the menu UI component
+        this.menu.menu();
 
         this.version = $('<div>', {
             'class': 'module-version',
@@ -189,6 +219,22 @@ $.widget("gp.module", {
 
     stopProp: function(event) {
         event.stopPropagation();
+    },
+
+    showMenu: function() {
+        var menu = $(this.element).find('.module-menu');
+        var top = $(this.element).position().top + 30;
+        var left = $(this.element).position().left + $(this.element).width() - menu.width();
+
+        menu.css("position", "absolute");
+        menu.css("top", top);
+        menu.css("left", left);
+        menu.show();
+
+        $(document).click(function() {
+            menu.hide();
+            $(document).unbind("click");
+        });
     },
 
     // events bound via _on are removed automatically

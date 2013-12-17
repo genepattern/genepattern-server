@@ -375,3 +375,35 @@ body {
 .jstree li {
     white-space: normal !important;
 }
+
+#recent-modules .module-listing {
+    height: 17px;
+}
+
+#recent-modules .module-listing .module-description {
+    display: none;
+}
+
+#recent-modules .module-listing .module-tag {
+    display: none;
+}
+
+.module-gear {
+    display:block;
+    float: right;
+    margin-left: 3px;
+    margin-right: 3px;
+    opacity: 0.5;
+}
+
+.module-gear:hover {
+    opacity: 1;
+}
+
+.module-menu {
+    z-index: 5;
+}
+
+.module-menu li a {
+    color: black !important;
+}
