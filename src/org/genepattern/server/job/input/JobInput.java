@@ -7,11 +7,16 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Collection;
 import java.util.Set;
 
-import org.apache.log4j.Logger;
+
+//import org.apache.log4j.Logger;
 import org.genepattern.server.rest.GpServerException;
-import org.genepattern.util.LSID;
+
+import com.google.common.base.Objects;
+import com.google.common.collect.LinkedListMultimap;
+import com.google.common.collect.ListMultimap;
 
 /**
  * Representation of user-supplied input parameters for a new job to be added to the GP server.
@@ -27,7 +32,7 @@ import org.genepattern.util.LSID;
  *
  */
 public class JobInput {
-    final static private Logger log = Logger.getLogger(JobInput.class);
+    //final static private Logger log = Logger.getLogger(JobInput.class);
 
     /**
      * Unique identifier for a step in a pipeline.
@@ -68,7 +73,7 @@ public class JobInput {
 
     public static class Param {
         private ParamId id;
-        private List<ParamValue> values=new ArrayList<ParamValue>();
+        private ListMultimap<GroupId,ParamValue> groupedValues=LinkedListMultimap.create(1);
         private boolean batchParam=false;
 
         public Param(final ParamId id, final boolean batchParam) {
@@ -79,23 +84,15 @@ public class JobInput {
         public Param(final Param in) {
             this.id=new ParamId(in.id);
             this.batchParam=in.batchParam;
-            
-            //clone the list of values
-            this.values=new ArrayList<ParamValue>();
-            for(final ParamValue inValue : in.values) {
-                this.values.add(new ParamValue(inValue));
-            }
+            this.groupedValues=LinkedListMultimap.create(in.groupedValues);
         }
         
-        public void addValue(ParamValue val) {
-            values.add(val);
+        public void addValue(final ParamValue val) {
+            addValue(GroupId.EMPTY, val);
         }
         
-        /**
-         * Only needed when transforming an initial JobInput into a batch of JobInputs.
-         */
-        public void clear() {
-            values.clear();
+        public void addValue(final GroupId groupId, final ParamValue val) {
+            groupedValues.put(groupId, val);
         }
         
         public ParamId getParamId() {
@@ -103,11 +100,16 @@ public class JobInput {
         }
         
         public List<ParamValue> getValues() {
-            return values;
+            //return allValues;
+            return Collections.unmodifiableList( new ArrayList<ParamValue>( groupedValues.values() ) );
         }
         
         public int getNumValues() {
-            return values.size();
+            return groupedValues.size();
+        }
+        
+        public int getNumGroups() {
+            return groupedValues.keySet().size();
         }
         
         public void setBatchParam(boolean batchParam) {
@@ -117,8 +119,70 @@ public class JobInput {
         public boolean isBatchParam() {
             return batchParam;
         }
+        
+        public Map<GroupId,Collection<ParamValue>> getGroupedValues() {
+            return groupedValues.asMap();
+        }
+        
+        public List<GroupId> getGroups() {
+            return new ArrayList<GroupId>( groupedValues.keySet() );
+        }
+        public ParamValue getValue(final GroupId groupId, final int idx) {
+            return groupedValues.get(groupId).get(idx);
+        }
+        public List<ParamValue> getValues(final GroupId groupId) {
+            return groupedValues.get(groupId);
+        }
     }
 
+    /**
+     * Unique identifier for a group of input ParamValue.
+     * @author pcarr
+     *
+     */
+    public static class GroupId {
+        public static final GroupId EMPTY=new GroupId();
+        
+        private final String name;
+        private final String groupId;
+        private GroupId() {
+            this.name="";
+            this.groupId="";
+        }
+        public GroupId(final String nameIn) {
+            if (nameIn==null || nameIn.length()==0) {
+                throw new IllegalArgumentException("name not set");
+            }
+            this.name=nameIn.trim();
+            this.groupId=this.name.toLowerCase();
+        }
+
+        //copy constructor
+        public GroupId(final GroupId in) {
+            this.name=in.name;
+            this.groupId=in.groupId;
+        }
+        
+        @Override
+        public int hashCode() {
+            return Objects.hashCode(groupId);
+        }
+
+        @Override
+        public boolean equals(final Object obj){
+            if (obj==null) {
+                return false;
+            }
+            if (!(obj instanceof GroupId)) {
+                return false;
+            }
+            final GroupId other = (GroupId) obj;
+            final boolean eq = Objects.equal(groupId, other.groupId);
+            return eq;
+        }
+
+    }
+    
     /**
      * Unique identifier for a parameter in a module.
      * @author pcarr
@@ -126,7 +190,7 @@ public class JobInput {
      */
     public static class ParamId {
         transient int hashCode;
-        private String fqName;
+        private final String fqName;
         public ParamId(final String fqName) {
             if (fqName==null) {
                 throw new IllegalArgumentException("fqName==null");
@@ -156,7 +220,7 @@ public class JobInput {
             return hashCode;
         }
     }
-
+    
     public static class ParamValue {
         private String value;
         private String lsid;
@@ -249,27 +313,34 @@ public class JobInput {
      * @param value, the user provided input value, cannot be null.
      */
     public void addValue(final String name, final String value) {
-        addValue(new ParamId(name), value);
+        addValue(GroupId.EMPTY, new ParamId(name), value);
     }
     
-    public void addValue(final ParamId id, final String value) {
-        addValue(id, value, false);
+    public void addValue(final GroupId groupId, final String name, final String value) {
+        addValue(groupId, new ParamId(name), value);
+    }
+    
+    public void addValue(final GroupId groupId, final ParamId paramId, final String value) {
+        addValue(groupId, paramId, value, false);
     }
     
     public void addValue(final String name, final String value, final boolean batchParam) {
         if (name==null) {
             throw new IllegalArgumentException("name==null");
         }
-        ParamId id = new ParamId(name);
-        addValue(id, value, batchParam);
+        final ParamId paramId = new ParamId(name);
+        addValue(GroupId.EMPTY, paramId, value, batchParam);
     }
 
-    public void addValue(final ParamId id, final String value, final boolean batchParam) {
+    public void addValue(final GroupId groupId, final ParamId id, final String value, final boolean batchParam) {
         if (id==null) {
             throw new IllegalArgumentException("id==null");
         }
         if (value==null) {
             throw new IllegalArgumentException("value==null");
+        }
+        if (groupId==null) {
+            throw new IllegalArgumentException("groupId==null");
         }
         Param param;
         if (params.containsKey(id)){
@@ -279,7 +350,7 @@ public class JobInput {
             param=new Param(id, batchParam);
             params.put(id, param);
         }
-        param.addValue(new ParamValue(value, lsid));
+        param.addValue(groupId, new ParamValue(value, lsid));
     }
 
     
@@ -412,6 +483,5 @@ public class JobInput {
         }
         return numJobs;
     }
-
     
 }
