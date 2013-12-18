@@ -7,7 +7,7 @@ import org.genepattern.junitutil.FileUtil;
 import org.genepattern.junitutil.TaskLoader;
 import org.genepattern.server.config.ServerConfiguration;
 import org.genepattern.server.config.ServerConfiguration.Context;
-import org.genepattern.server.job.input.JobInput.Param;
+import org.genepattern.server.job.input.Param;
 import org.genepattern.server.rest.GpServerException;
 import org.junit.Assert;
 import org.junit.BeforeClass;

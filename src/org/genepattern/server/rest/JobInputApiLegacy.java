@@ -12,7 +12,7 @@ import org.genepattern.server.eula.GetTaskStrategyDefault;
 import org.genepattern.server.executor.JobSubmissionException;
 import org.genepattern.server.handler.AddNewJobHandler;
 import org.genepattern.server.job.input.JobInput;
-import org.genepattern.server.job.input.JobInput.Param;
+import org.genepattern.server.job.input.Param;
 import org.genepattern.server.job.input.ParamListHelper;
 import org.genepattern.webservice.JobInfo;
 import org.genepattern.webservice.ParameterInfo;

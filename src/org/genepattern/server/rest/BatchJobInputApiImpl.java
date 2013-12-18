@@ -7,9 +7,9 @@ import org.apache.log4j.Logger;
 import org.genepattern.server.config.ServerConfiguration.Context;
 import org.genepattern.server.job.input.JobInputHelper;
 import org.genepattern.server.job.input.JobInput;
-import org.genepattern.server.job.input.JobInput.Param;
-import org.genepattern.server.job.input.JobInput.ParamId;
-import org.genepattern.server.job.input.JobInput.ParamValue;
+import org.genepattern.server.job.input.Param;
+import org.genepattern.server.job.input.ParamId;
+import org.genepattern.server.job.input.ParamValue;
 
 public class BatchJobInputApiImpl implements JobInputApi {
     final static private Logger log = Logger.getLogger(BatchJobInputApiImpl.class);

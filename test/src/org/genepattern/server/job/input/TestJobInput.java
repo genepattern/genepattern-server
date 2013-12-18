@@ -2,8 +2,8 @@ package org.genepattern.server.job.input;
 
 import junit.framework.Assert;
 
-import org.genepattern.server.job.input.JobInput.GroupId;
-import org.genepattern.server.job.input.JobInput.Param;
+import org.genepattern.server.job.input.GroupId;
+import org.genepattern.server.job.input.Param;
 import org.junit.Test;
 
 /**

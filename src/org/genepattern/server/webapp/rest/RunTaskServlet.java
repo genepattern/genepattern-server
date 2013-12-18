@@ -35,7 +35,7 @@ import org.genepattern.modules.ResponseJSON;
 import org.genepattern.server.config.ServerConfiguration;
 import org.genepattern.server.dm.GpFilePath;
 import org.genepattern.server.job.input.JobInput;
-import org.genepattern.server.job.input.JobInput.Param;
+import org.genepattern.server.job.input.Param;
 import org.genepattern.server.job.input.JobInputFileUtil;
 import org.genepattern.server.job.input.JobInputHelper;
 import org.genepattern.server.job.input.LoadModuleHelper;

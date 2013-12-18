@@ -9,7 +9,7 @@ import org.genepattern.server.config.ServerConfiguration.Context;
 import org.genepattern.server.dm.GpFilePath;
 import org.genepattern.server.eula.GetTaskStrategy;
 import org.genepattern.server.eula.GetTaskStrategyDefault;
-import org.genepattern.server.job.input.JobInput.ParamId;
+import org.genepattern.server.job.input.ParamId;
 import org.genepattern.server.job.input.batch.BatchInputFileHelper;
 import org.genepattern.server.rest.GpServerException;
 import org.genepattern.server.rest.JobInputApi;

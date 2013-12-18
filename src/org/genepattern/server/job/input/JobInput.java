@@ -1,22 +1,14 @@
 package org.genepattern.server.job.input;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Collection;
 import java.util.Set;
 
-
-//import org.apache.log4j.Logger;
 import org.genepattern.server.rest.GpServerException;
-
-import com.google.common.base.Objects;
-import com.google.common.collect.LinkedListMultimap;
-import com.google.common.collect.ListMultimap;
 
 /**
  * Representation of user-supplied input parameters for a new job to be added to the GP server.
@@ -32,216 +24,7 @@ import com.google.common.collect.ListMultimap;
  *
  */
 public class JobInput {
-    //final static private Logger log = Logger.getLogger(JobInput.class);
-
-    /**
-     * Unique identifier for a step in a pipeline.
-     * @author pcarr
-     */
-    public static class StepId {
-        private String id;
-        
-        public StepId(final String id) {
-            this.id=id;
-        }
-        
-        //copy constructor
-        public StepId(final StepId in) {
-            this.id=in.id;
-        }
-        
-        public String getId() {
-            return id;
-        }
-        
-        public int hashCode() {
-            if (id==null) {
-                return "".hashCode();
-            }
-            return id.hashCode();
-        }
-        public boolean equals(Object obj) {
-            if (!(obj instanceof StepId)) {
-                return false;
-            }
-            if (id==null) {
-                return ((StepId)obj).id==null;
-            }
-            return id.equals(((StepId)obj).id);
-        }
-    }
-
-    public static class Param {
-        private ParamId id;
-        private ListMultimap<GroupId,ParamValue> groupedValues=LinkedListMultimap.create(1);
-        private boolean batchParam=false;
-
-        public Param(final ParamId id, final boolean batchParam) {
-            this.id=id;
-            this.batchParam=batchParam;
-        }
-        //copy constructor
-        public Param(final Param in) {
-            this.id=new ParamId(in.id);
-            this.batchParam=in.batchParam;
-            this.groupedValues=LinkedListMultimap.create(in.groupedValues);
-        }
-        
-        public void addValue(final ParamValue val) {
-            addValue(GroupId.EMPTY, val);
-        }
-        
-        public void addValue(final GroupId groupId, final ParamValue val) {
-            groupedValues.put(groupId, val);
-        }
-        
-        public ParamId getParamId() {
-            return id;
-        }
-        
-        public List<ParamValue> getValues() {
-            //return allValues;
-            return Collections.unmodifiableList( new ArrayList<ParamValue>( groupedValues.values() ) );
-        }
-        
-        public int getNumValues() {
-            return groupedValues.size();
-        }
-        
-        public int getNumGroups() {
-            return groupedValues.keySet().size();
-        }
-        
-        public void setBatchParam(boolean batchParam) {
-            this.batchParam=batchParam;
-        }
-        
-        public boolean isBatchParam() {
-            return batchParam;
-        }
-        
-        public Map<GroupId,Collection<ParamValue>> getGroupedValues() {
-            return groupedValues.asMap();
-        }
-        
-        public List<GroupId> getGroups() {
-            return new ArrayList<GroupId>( groupedValues.keySet() );
-        }
-        public ParamValue getValue(final GroupId groupId, final int idx) {
-            return groupedValues.get(groupId).get(idx);
-        }
-        public List<ParamValue> getValues(final GroupId groupId) {
-            return groupedValues.get(groupId);
-        }
-    }
-
-    /**
-     * Unique identifier for a group of input ParamValue.
-     * @author pcarr
-     *
-     */
-    public static class GroupId {
-        public static final GroupId EMPTY=new GroupId();
-        
-        private final String name;
-        private final String groupId;
-        private GroupId() {
-            this.name="";
-            this.groupId="";
-        }
-        public GroupId(final String nameIn) {
-            if (nameIn==null || nameIn.length()==0) {
-                throw new IllegalArgumentException("name not set");
-            }
-            this.name=nameIn.trim();
-            this.groupId=this.name.toLowerCase();
-        }
-
-        //copy constructor
-        public GroupId(final GroupId in) {
-            this.name=in.name;
-            this.groupId=in.groupId;
-        }
-        
-        @Override
-        public int hashCode() {
-            return Objects.hashCode(groupId);
-        }
-
-        @Override
-        public boolean equals(final Object obj){
-            if (obj==null) {
-                return false;
-            }
-            if (!(obj instanceof GroupId)) {
-                return false;
-            }
-            final GroupId other = (GroupId) obj;
-            final boolean eq = Objects.equal(groupId, other.groupId);
-            return eq;
-        }
-
-    }
-    
-    /**
-     * Unique identifier for a parameter in a module.
-     * @author pcarr
-     *
-     */
-    public static class ParamId {
-        transient int hashCode;
-        private final String fqName;
-        public ParamId(final String fqName) {
-            if (fqName==null) {
-                throw new IllegalArgumentException("fqName==null");
-            }
-            if (fqName.length()==0) {
-                throw new IllegalArgumentException("fqName is empty");
-            }
-            this.fqName=fqName;
-            this.hashCode=fqName.hashCode();
-        }
-        //copy constructor
-        public ParamId(final ParamId in) {
-            this.fqName=in.fqName;
-            this.hashCode=fqName.hashCode();
-        }
-        public String getFqName() {
-            return fqName;
-        }
-        
-        public boolean equals(Object obj) {
-            if (obj instanceof ParamId) {
-                return fqName.equals( ((ParamId) obj).fqName );
-            }
-            return false;
-        }
-        public int hashCode() {
-            return hashCode;
-        }
-    }
-    
-    public static class ParamValue {
-        private String value;
-        private String lsid;
-        public ParamValue(final String value, final String lsid){
-            this.value=value;
-            this.lsid = lsid;
-        }
-        //copy constructor
-        public ParamValue(final ParamValue in) {
-            this.value=in.value;
-            this.lsid = in.lsid;
-        }
-        public String getValue() {
-            return value;
-        }
-
-        public String getLSID()
-        {
-            return lsid;
-        }
-    }
+    //private static final Logger log = Logger.getLogger(JobInput.class);
     
     private String lsid;
     private Map<ParamId, Param> params=new LinkedHashMap<ParamId, Param>();
@@ -440,7 +223,7 @@ public class JobInput {
             return false;
         }
         for (final Param param : params.values()) {
-            if (param.batchParam) {
+            if (param.isBatchParam()) {
                 return true;
             }
         }
@@ -453,7 +236,7 @@ public class JobInput {
         }
         Set<Param> batchParams = new LinkedHashSet<Param>();
         for (final Param param : params.values()) {
-            if (param.batchParam) {
+            if (param.isBatchParam()) {
                 batchParams.add(param);
             }
         }
