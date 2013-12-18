@@ -197,7 +197,7 @@ public class ReloadJobHelper {
         }
         if (valuesMap.size() == 0) {
             //special-case for reloading and empty file list
-            if (formalParam.getAttributes().containsKey("listMode")) {
+            if (formalParam.getAttributes().containsKey(NumValues.PROP_LIST_MODE)) {
                 if (isReloadEmpty(formalParam)) {
                     return Collections.emptyList();
                 }
@@ -258,7 +258,7 @@ public class ReloadJobHelper {
      * @return
      */
     private boolean isReloadEmpty(final ParameterInfo formalParam) { 
-        String listModeStr = (String) formalParam.getAttributes().get("listMode");
+        String listModeStr = (String) formalParam.getAttributes().get(NumValues.PROP_LIST_MODE);
         if (listModeStr != null && listModeStr.length()>0) {
             listModeStr = listModeStr.toUpperCase().trim();
             try {
