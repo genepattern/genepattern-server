@@ -1,5 +1,9 @@
 package org.genepattern.server.job.input;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map.Entry;
+
 import junit.framework.Assert;
 
 import org.genepattern.server.job.input.GroupId;
@@ -114,22 +118,45 @@ public class TestJobInput {
         //check values
         Assert.assertEquals("inputList[train][0]",
                 DATA_URL+"all_aml_train.res",
-                param.getValues(new GroupId("train")).get(0).getValue());
+                param.getValuesInGroup(new GroupId("train")).get(0).getValue());
         Assert.assertEquals("inputList[train][1]",
                 DATA_URL+"all_aml_train.cls",
-                param.getValues(new GroupId("train")).get(1).getValue());
+                param.getValuesInGroup(new GroupId("train")).get(1).getValue());
         Assert.assertEquals("inputList[train][2]",
                 DATA_URL+"all_aml_train.gct",
-                param.getValues(new GroupId("train")).get(2).getValue());
+                param.getValuesInGroup(new GroupId("train")).get(2).getValue());
         Assert.assertEquals("inputList[test][0]",
                 DATA_URL+"all_aml_test.res",
-                param.getValues(new GroupId("test")).get(0).getValue());
+                param.getValuesInGroup(new GroupId("test")).get(0).getValue());
         Assert.assertEquals("inputList[test][1]",
                 DATA_URL+"all_aml_test.cls",
-                param.getValues(new GroupId("test")).get(1).getValue());
+                param.getValuesInGroup(new GroupId("test")).get(1).getValue());
         Assert.assertEquals("inputList[test][2]",
                 DATA_URL+"all_aml_test.gct",
-                param.getValues(new GroupId("test")).get(2).getValue());
+                param.getValuesInGroup(new GroupId("test")).get(2).getValue());
+        
+        //entries are in order
+        final List<ParamValue> expectedValues=new ArrayList<ParamValue>();
+        expectedValues.add(new ParamValue(DATA_URL+"all_aml_train.res"));
+        expectedValues.add(new ParamValue(DATA_URL+"all_aml_test.res"));
+        expectedValues.add(new ParamValue(DATA_URL+"all_aml_test.cls"));
+        expectedValues.add(new ParamValue(DATA_URL+"all_aml_test.gct"));
+        expectedValues.add(new ParamValue(DATA_URL+"all_aml_train.cls"));
+        expectedValues.add(new ParamValue(DATA_URL+"all_aml_train.gct"));
+        final List<GroupId> expectedGroups=new ArrayList<GroupId>();
+        expectedGroups.add(new GroupId("train"));
+        expectedGroups.add(new GroupId("test"));
+        expectedGroups.add(new GroupId("test"));
+        expectedGroups.add(new GroupId("test"));
+        expectedGroups.add(new GroupId("train"));
+        expectedGroups.add(new GroupId("train"));
+        
+        int i=0;
+        for(final Entry<GroupId,ParamValue> entry : param.getValuesAsEntries()) {
+            Assert.assertEquals("entry["+i+"].group", expectedGroups.remove(0), entry.getKey());
+            Assert.assertEquals("entry["+i+"]", expectedValues.remove(0), entry.getValue());
+            ++i;
+        }
     }
 
 }

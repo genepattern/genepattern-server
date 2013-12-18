@@ -141,39 +141,39 @@ public class ParamListHelper {
     
     //inputs
     final Context jobContext;
-    final ParameterInfoRecord record;
+    final ParameterInfoRecord parameterInfoRecord;
     final Param actualValues;
     //outputs
     final NumValues allowedNumValues;
     final GroupInfo groupInfo;
     final ListMode listMode;
 
-    public ParamListHelper(final Context jobContext, final ParameterInfoRecord record, final Param inputValues) {
-        this(jobContext, record, inputValues, false);
+    public ParamListHelper(final Context jobContext, final ParameterInfoRecord parameterInfoRecord, final Param inputValues) {
+        this(jobContext, parameterInfoRecord, inputValues, false);
     }
-    public ParamListHelper(final Context jobContext, final ParameterInfoRecord record, final Param inputValues, final boolean initDefault) {
+    public ParamListHelper(final Context jobContext, final ParameterInfoRecord parameterInfoRecord, final Param inputValues, final boolean initDefault) {
         if (jobContext==null) {
             throw new IllegalArgumentException("jobContext==null");
         }
-        if (record==null) {
-            throw new IllegalArgumentException("record==null");
+        if (parameterInfoRecord==null) {
+            throw new IllegalArgumentException("parameterInfoRecord==null");
         }
         this.jobContext=jobContext;
-        this.record=record;
+        this.parameterInfoRecord=parameterInfoRecord;
 
         //initialize allowedNumValues
         this.allowedNumValues=initAllowedNumValues();
 
         //initialize list mode
-        this.listMode=initListMode(record);
+        this.listMode=initListMode(parameterInfoRecord);
         
         //initialize group info
         this.groupInfo=initGroupInfo();
         
         //if necessary create a 'null' value for the param
         if (inputValues == null && !initDefault) {
-            if (log.isDebugEnabled()) { log.debug("null value for param: "+record.getFormal().getName()); }
-            actualValues=new Param(new ParamId(record.getFormal().getName()), false);
+            if (log.isDebugEnabled()) { log.debug("null value for param: "+parameterInfoRecord.getFormal().getName()); }
+            actualValues=new Param(new ParamId(parameterInfoRecord.getFormal().getName()), false);
         }
         else if (inputValues == null && initDefault) {
             actualValues=initFromDefault(jobContext.getJobInfo().getTaskLSID());
@@ -183,31 +183,31 @@ public class ParamListHelper {
         }
     }
     
-    private Param initFromDefault(String lsid) {
-        final List<String> defaultValues=ParamListHelper.getDefaultValues(record.getFormal());
+    private Param initFromDefault(final String lsid) {
+        final List<String> defaultValues=ParamListHelper.getDefaultValues(parameterInfoRecord.getFormal());
         if (defaultValues==null) {
             //return a param with no value
-            Param noValue=new Param(new ParamId(record.getFormal().getName()), false);
+            Param noValue=new Param(new ParamId(parameterInfoRecord.getFormal().getName()), false);
             return noValue;
         }
         else if (defaultValues.size()==0) {
             //special-case, an empty list is the 'default_value'
-            Param noValue=new Param(new ParamId(record.getFormal().getName()), false);
+            Param noValue=new Param(new ParamId(parameterInfoRecord.getFormal().getName()), false);
             return noValue;
         }
         else if (defaultValues.size()==1 && "".equals(defaultValues.get(0))) {
             //special-case, an empty string is the 'default_value'
-            if (record.getFormal().isInputFile()) {
+            if (parameterInfoRecord.getFormal().isInputFile()) {
                 //special-case, an empty string for a file param is the 'default_value'
-                Param noValue=new Param(new ParamId(record.getFormal().getName()), false);
+                Param noValue=new Param(new ParamId(parameterInfoRecord.getFormal().getName()), false);
                 return noValue;
             }
-            Param emptyStringValue=new Param(new ParamId(record.getFormal().getName()), false);
+            Param emptyStringValue=new Param(new ParamId(parameterInfoRecord.getFormal().getName()), false);
             emptyStringValue.addValue(new ParamValue(""));
             return emptyStringValue;
         }
         else {
-            Param listValue=new Param(new ParamId(record.getFormal().getName()), false);
+            Param listValue=new Param(new ParamId(parameterInfoRecord.getFormal().getName()), false);
             for(final String value : defaultValues) {
                 listValue.addValue(new ParamValue(value));
             }
@@ -215,9 +215,9 @@ public class ParamListHelper {
         }
     }
     
-    private ListMode initListMode(final ParameterInfoRecord record) {
+    private static ListMode initListMode(final ParameterInfoRecord parameterInfoRecord) {
         //initialize list mode
-        String listModeStr = (String) record.getFormal().getAttributes().get(NumValues.PROP_LIST_MODE);
+        String listModeStr = (String) parameterInfoRecord.getFormal().getAttributes().get(NumValues.PROP_LIST_MODE);
         if (listModeStr != null && listModeStr.length()>0) {
             listModeStr = listModeStr.toUpperCase().trim();
             try {
@@ -234,21 +234,21 @@ public class ParamListHelper {
     }
     
     private NumValues initAllowedNumValues() {
-        final String numValuesStr = (String) record.getFormal().getAttributes().get(NumValues.PROP_NUM_VALUES);
+        final String numValuesStr = (String) parameterInfoRecord.getFormal().getAttributes().get(NumValues.PROP_NUM_VALUES);
         //parse num values string
         NumValuesParser nvParser=new NumValuesParserImpl();
         try { 
             return nvParser.parseNumValues(numValuesStr);
         }
         catch (Exception e) {
-            String message="Error parsing numValues="+numValuesStr+" for "+record.getFormal().getName();
+            String message="Error parsing numValues="+numValuesStr+" for "+parameterInfoRecord.getFormal().getName();
             log.error(message,e);
             throw new IllegalArgumentException(message);
         }
     }
 
     private GroupInfo initGroupInfo() {
-        final GroupInfo groupInfo=new GroupInfo.Builder().fromParameterInfo(record.getFormal()).build();
+        final GroupInfo groupInfo=new GroupInfo.Builder().fromParameterInfo(parameterInfoRecord.getFormal()).build();
         return groupInfo;
     }
 
@@ -302,8 +302,8 @@ public class ParamListHelper {
         //when allowedNumValues is not set or if minNumValues is not set, it means there is no 'numValues' attribute for the parameter, assume it's not a filelist
         if (allowedNumValues==null || allowedNumValues.getMin()==null) {
             if (numValuesSet==0) {
-                if (!record.getFormal().isOptional()) {
-                    throw new IllegalArgumentException("Missing required parameter: "+record.getFormal().getName());
+                if (!parameterInfoRecord.getFormal().isOptional()) {
+                    throw new IllegalArgumentException("Missing required parameter: "+parameterInfoRecord.getFormal().getName());
                 }
             }
             //everything else is valid
@@ -313,13 +313,13 @@ public class ParamListHelper {
         //if we're here, it means numValues is set, need to check for filelists
         //are we in range?
         if (numValuesSet < allowedNumValues.getMin()) {
-            throw new IllegalArgumentException("Not enough values for "+record.getFormal().getName()+
+            throw new IllegalArgumentException("Not enough values for "+parameterInfoRecord.getFormal().getName()+
                     ", num="+numValuesSet+", min="+allowedNumValues.getMin());
         }
         if (allowedNumValues.getMax() != null) {
             //check upper bound
             if (numValuesSet > allowedNumValues.getMax()) {
-                throw new IllegalArgumentException("Too many values for "+record.getFormal().getName()+
+                throw new IllegalArgumentException("Too many values for "+parameterInfoRecord.getFormal().getName()+
                         ", num="+numValuesSet+", max="+allowedNumValues.getMax());
             }
         }
@@ -396,10 +396,10 @@ public class ParamListHelper {
     }
     
     public boolean isFileInputParam() {
-        return record.getFormal().isInputFile();
+        return parameterInfoRecord.getFormal().isInputFile();
     }
     public boolean isDirectoryInputParam() {
-        return record.getFormal()._isDirectory();
+        return parameterInfoRecord.getFormal()._isDirectory();
     }
 
     /**
@@ -416,15 +416,15 @@ public class ParamListHelper {
      */
     public GpFilePath initDirectoryInputValue(final ParamValue paramValueIn) throws Exception {
         if (!isDirectoryInputParam()) {
-            throw new Exception("Input parameter is not DIRECTORY type: "+record.getFormal().getName()+"="+paramValueIn.getValue());
+            throw new Exception("Input parameter is not DIRECTORY type: "+parameterInfoRecord.getFormal().getName()+"="+paramValueIn.getValue());
         } 
         if (paramValueIn==null) {
-            log.error("paramValueIn==null"+record.getFormal().getName());
+            log.error("paramValueIn==null"+parameterInfoRecord.getFormal().getName());
             return null;
         } 
         //ignore empty input
         if (paramValueIn.getValue()==null || paramValueIn.getValue().length()==0) {
-            log.debug("value not set for DIRECTORY: "+record.getFormal().getName());
+            log.debug("value not set for DIRECTORY: "+parameterInfoRecord.getFormal().getName());
             return null;            
         }
         
@@ -432,11 +432,11 @@ public class ParamListHelper {
         final Record inputRecord=initFromValue(paramValueIn);
         //special-case: external urls are not allowed
         if (inputRecord.type==Record.Type.EXTERNAL_URL) {
-            throw new Exception("External url not allowed for DIRECTORY: "+record.getFormal().getName()+"="+paramValueIn.getValue());
+            throw new Exception("External url not allowed for DIRECTORY: "+parameterInfoRecord.getFormal().getName()+"="+paramValueIn.getValue());
         }
         //special-case: it's not a directory
         if (!inputRecord.gpFilePath.isDirectory()) {
-            throw new Exception("Value is not a directory: "+record.getFormal().getName()+"="+paramValueIn.getValue());
+            throw new Exception("Value is not a directory: "+parameterInfoRecord.getFormal().getName()+"="+paramValueIn.getValue());
         }
         directory=inputRecord.gpFilePath;
         return directory;
@@ -451,15 +451,15 @@ public class ParamListHelper {
      */
     public GpFilePath initGpFilePath(final ParamValue paramValueIn) throws Exception {
         if (!isFileInputParam() & !isDirectoryInputParam()) {
-            throw new Exception("Input parameter is not a FILE or DIRECTORY: "+record.getFormal().getName()+"="+paramValueIn.getValue());
+            throw new Exception("Input parameter is not a FILE or DIRECTORY: "+parameterInfoRecord.getFormal().getName()+"="+paramValueIn.getValue());
         }
         if (paramValueIn==null) {
-            log.error("paramValueIn==null"+record.getFormal().getName());
+            log.error("paramValueIn==null"+parameterInfoRecord.getFormal().getName());
             return null;
         } 
         //ignore empty input
         if (paramValueIn.getValue()==null || paramValueIn.getValue().length()==0) {
-            log.debug("value not set for FILE: "+record.getFormal().getName());
+            log.debug("value not set for FILE: "+parameterInfoRecord.getFormal().getName());
             return null;            
         } 
         GpFilePath file=null;
@@ -468,24 +468,40 @@ public class ParamListHelper {
         return file;
     }
 
+//    private GpFilePath createGroupfile(final Param inputParam) throws Exception {
+//        ParamGroupHelper pgh=ParamGroupHelper.create(jobContext, inputParam);
+//        List<GpFilePath> gpFilePaths=pgh.downloadExternalUrl(jobContext);
+//        pgh.writeGroupFile(gpFilePaths);
+//        return pgh.getToFile();
+//    }
+    
     public void updatePinfoValue() throws Exception {
         final int numValues=actualValues.getNumValues();
         final boolean createFilelist=isCreateFilelist();
-        //TODO: final boolean createGroupFile=isCreateGroupFile();
+        final boolean createGroupFile=isCreateGroupFile();
         
-        if (record.getFormal()._isDirectory() || record.getFormal().isInputFile()) {
-            HashMap attrs = record.getActual().getAttributes();
+        if (parameterInfoRecord.getFormal()._isDirectory() || parameterInfoRecord.getFormal().isInputFile()) {
+            HashMap attrs = parameterInfoRecord.getActual().getAttributes();
             attrs.put(ParameterInfo.MODE, ParameterInfo.URL_INPUT_MODE);
             attrs.remove(ParameterInfo.TYPE);
         }
 
-        if (createFilelist) {
+        //Note: createFilelist is true when createGroupFile is true, so check for createGroupFile first
+        if (createGroupFile) {
+            //final boolean downloadExternalFiles=true;
+            //final List<GpFilePath> listOfValues=getListOfValues(downloadExternalFiles);
+            //final GpFilePath groupFile=createGroupfile(actualValues);
+            //String groupFileValue=groupFile.getUrl().toExternalForm();
+            //parameterInfoRecord.getActual().setValue(groupFileValue);
+            throw new IllegalArgumentException("parameter groups not implementede!");
+        }
+        else if (createFilelist) {
             final boolean downloadExternalFiles=true;
             final List<GpFilePath> listOfValues=getListOfValues(downloadExternalFiles);
             final GpFilePath filelistFile=createFilelist(listOfValues);
 
             String filelist=filelistFile.getUrl().toExternalForm();
-            record.getActual().setValue(filelist);
+            parameterInfoRecord.getActual().setValue(filelist);
             
             //TODO: fix this HACK
             //    instead of storing the input values in the filelist or in the DB, store them in the parameter info CLOB
@@ -494,17 +510,17 @@ public class ParamListHelper {
                 final String key="values_"+idx;
                 //String value=url.toExternalForm();
                 final String value="<GenePatternURL>"+inputValue.getRelativeUri().toString();
-                record.getActual().getAttributes().put(key, value);
+                parameterInfoRecord.getActual().getAttributes().put(key, value);
                 ++idx;
             } 
         }
         else if (numValues==0) {
-            record.getActual().setValue("");
+            parameterInfoRecord.getActual().setValue("");
         }
         else if (numValues==1) {
             final ParamValue paramValueIn=actualValues.getValues().get(0);
             //special-case for FILE type with server file paths, check file access permissions and if necessary convert value to URL form
-            if (record.getFormal().isInputFile()) {
+            if (parameterInfoRecord.getFormal().isInputFile()) {
                 final Record inputRecord=initFromValue(paramValueIn);
                 if (inputRecord.type==Record.Type.SERVER_PATH || inputRecord.type==Record.Type.SERVER_URL) {
                     final GpFilePath file=inputRecord.gpFilePath;
@@ -512,28 +528,28 @@ public class ParamListHelper {
                     if (!canRead) {
                         throw new Exception("You are not permitted to access the file: "+paramValueIn.getValue());
                     }
-                    record.getActual().setValue(file.getUrl().toExternalForm());
+                    parameterInfoRecord.getActual().setValue(file.getUrl().toExternalForm());
                 }
                 else {
-                    record.getActual().setValue(actualValues.getValues().get(0).getValue());
+                    parameterInfoRecord.getActual().setValue(actualValues.getValues().get(0).getValue());
                 }
             }
             //special-case for DIRECTORY type, check file access permissions and if necessary convert value to URL form
-            else if (record.getFormal()._isDirectory()) {
+            else if (parameterInfoRecord.getFormal()._isDirectory()) {
                 final GpFilePath directory=initDirectoryInputValue(paramValueIn);
                 if (directory != null) {                    
                     boolean canRead=directory.canRead(jobContext.isAdmin(), jobContext);
                     if (!canRead) {
                         throw new Exception("You are not permitted to access the directory: "+paramValueIn.getValue());
                     }
-                    record.getActual().setValue(directory.getUrl().toExternalForm());
+                    parameterInfoRecord.getActual().setValue(directory.getUrl().toExternalForm());
                 }
                 else {
-                    record.getActual().setValue(paramValueIn.getValue());
+                    parameterInfoRecord.getActual().setValue(paramValueIn.getValue());
                 }
             }
             else {
-                record.getActual().setValue(actualValues.getValues().get(0).getValue());
+                parameterInfoRecord.getActual().setValue(actualValues.getValues().get(0).getValue());
             }
         }
         else {
@@ -543,30 +559,30 @@ public class ParamListHelper {
         //special-case: for a choice, if necessary, replace the UI value with the command line value
         // the key is the UI value
         // the value is the command line value
-        Map<String,String> choices = record.getFormal().getChoices();
+        Map<String,String> choices = parameterInfoRecord.getFormal().getChoices();
         if (choices != null && choices.size() > 0) {
-            final String origValue=record.getActual().getValue();
+            final String origValue=parameterInfoRecord.getActual().getValue();
             if (choices.containsValue(origValue)) {
                 //the value is a valid command line value
             }
             else if (choices.containsKey(origValue)) {
                 //TODO: log this?
                 String newValue=choices.get(origValue);
-                record.getActual().setValue(newValue);
+                parameterInfoRecord.getActual().setValue(newValue);
             }
             //finally, validate
-            if (!choices.containsValue(record.getActual().getValue())) {
+            if (!choices.containsValue(parameterInfoRecord.getActual().getValue())) {
                 log.error("Invalid value for choice parameter");
             }
         }
         
         //special-case for input files and directories, if necessary replace actual URL with '<GenePatternURL>'
-        if (record.getFormal()._isDirectory() || record.getFormal().isInputFile()) {
+        if (parameterInfoRecord.getFormal()._isDirectory() || parameterInfoRecord.getFormal().isInputFile()) {
             boolean replaceGpUrl=true;
             if (replaceGpUrl) {
-                final String in=record.getActual().getValue();
+                final String in=parameterInfoRecord.getActual().getValue();
                 final String out=ParamListHelper.insertGpUrlSubstitution(in);
-                record.getActual().setValue(out);
+                parameterInfoRecord.getActual().setValue(out);
             }
         }
     }
@@ -578,7 +594,7 @@ public class ParamListHelper {
         //now, create a new filelist file, add it into the user uploads directory for the given job
         JobInputFileUtil fileUtil = new JobInputFileUtil(jobContext);
         final int index=-1;
-        final String pname=record.getFormal().getName();
+        final String pname=parameterInfoRecord.getFormal().getName();
         final String filename=".list.txt";
         GpFilePath gpFilePath=fileUtil.initUploadFileForInputParam(index, pname, filename);
 
@@ -612,7 +628,10 @@ public class ParamListHelper {
         return values;
     }
     
-    private Record initFromValue(final ParamValue pval) throws Exception 
+    private Record initFromValue(final ParamValue pval) throws Exception {
+        return ParamListHelper.initFromValue(jobContext, pval);
+    }
+    public static Record initFromValue(final Context jobContext, final ParamValue pval) throws Exception 
     {
         final String value=pval.getValue();
         URL externalUrl=JobInputHelper.initExternalUrl(value);
@@ -675,8 +694,8 @@ public class ParamListHelper {
         throw new Exception("Error initializing gpFilePath for value="+value);
     }
 
-    private static class Record {
-        enum Type {
+    public static class Record {
+        public enum Type {
             SERVER_PATH,
             EXTERNAL_URL,
             SERVER_URL
@@ -689,6 +708,16 @@ public class ParamListHelper {
             this.type=type;
             this.gpFilePath=gpFilePath;
             this.url=url;
+        }
+        
+        public Type getType() {
+            return type;
+        }
+        public GpFilePath getGpFilePath() {
+            return gpFilePath;
+        }
+        public URL getUrl() {
+            return url;
         }
     }
     
@@ -707,6 +736,24 @@ public class ParamListHelper {
      * @deprecated - should replace this with a static call
      */
     private void forFileListCopyExternalUrlToUserUploads(final GpFilePath gpPath, final URL url) throws Exception {
+        forFileListCopyExternalUrlToUserUploads(jobContext, gpPath, url);
+    }
+    /**
+     * Copy data from an external URL into a file in the GP user's uploads directory.
+     * This method blocks until the data file has been transferred.
+     * 
+     * TODO: turn this into a task which can be cancelled.
+     * TODO: limit the size of the file which can be transferred
+     * TODO: implement a timeout
+     * 
+     * @param jobContext, must have a valid userId and should have a valid jobInfo
+     * @param gpPath
+     * @param url
+     * @throws Exception
+     * 
+     * @deprecated - should replace this with a static call
+     */
+    public static void forFileListCopyExternalUrlToUserUploads(final Context jobContext, final GpFilePath gpPath, final URL url) throws Exception {
         final File parentDir=gpPath.getServerFile().getParentFile();
         if (!parentDir.exists()) {
             boolean success=parentDir.mkdirs();

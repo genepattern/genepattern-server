@@ -26,6 +26,7 @@ public class TestGroupInfo {
         Assert.assertNotNull("", groupInfo);
         Assert.assertEquals("minNumGroups", 0, (int) groupInfo.getMinNumGroups());
         Assert.assertEquals("maxNumGroups", (Integer) null, (Integer) groupInfo.getMaxNumGroups());
+        //if the columnLabel is not set in the manifest,it's value will be null
         Assert.assertEquals("groupColumnLabel", (String) null, groupInfo.getGroupColumnLabel());
         Assert.assertEquals("fileColumnLabel", (String) null, groupInfo.getFileColumnLabel());
     }
@@ -50,9 +51,31 @@ public class TestGroupInfo {
     public void testGroupRange() {
         final ParameterInfo pinfo=createGroupParam("1..10");
         final GroupInfo groupInfo=new GroupInfo.Builder().fromParameterInfo(pinfo).build();
-        Assert.assertNotNull("", groupInfo);
+        Assert.assertNotNull("groupInfo", groupInfo);
         Assert.assertEquals("minNumGroups", Integer.valueOf(1), groupInfo.getMinNumGroups());
         Assert.assertEquals("maxNumGroups", Integer.valueOf(10), groupInfo.getMaxNumGroups());        
+    }
+    
+    @Test
+    public void testColumnLabelEmptyString() {
+        final ParameterInfo pinfo=createGroupParam("0+");
+        pinfo.getAttributes().put(GroupInfo.PROP_GROUP_COLUMN_LABEL, "");
+        pinfo.getAttributes().put(GroupInfo.PROP_FILE_COLUMN_LABEL, "");
+        final GroupInfo groupInfo=new GroupInfo.Builder().fromParameterInfo(pinfo).build();
+        Assert.assertNotNull("groupInfo", groupInfo);
+        Assert.assertEquals("groupInfo.groupColumnLabel", "", groupInfo.getGroupColumnLabel());
+        Assert.assertEquals("groupInfo.fileColumnLabel", "", groupInfo.getFileColumnLabel());
+    }
+
+    @Test
+    public void testCustomColumnLabel() {
+        final ParameterInfo pinfo=createGroupParam("0+");
+        pinfo.getAttributes().put(GroupInfo.PROP_GROUP_COLUMN_LABEL, "sample type");
+        pinfo.getAttributes().put(GroupInfo.PROP_FILE_COLUMN_LABEL, "replicate");
+        final GroupInfo groupInfo=new GroupInfo.Builder().fromParameterInfo(pinfo).build();
+        Assert.assertNotNull("groupInfo", groupInfo);
+        Assert.assertEquals("groupInfo.groupColumnLabel", "sample type", groupInfo.getGroupColumnLabel());
+        Assert.assertEquals("groupInfo.fileColumnLabel", "replicate", groupInfo.getFileColumnLabel());
     }
 
 }
