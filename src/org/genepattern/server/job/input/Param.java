@@ -9,6 +9,12 @@ import java.util.Map;
 import com.google.common.collect.LinkedListMultimap;
 import com.google.common.collect.ListMultimap;
 
+/**
+ * The list of zero or more input values for a given parameter for a given job submission.
+ * Also store batch and group information.
+ * @author pcarr
+ *
+ */
 public class Param {
     private ParamId id;
     private ListMultimap<GroupId,ParamValue> groupedValues=LinkedListMultimap.create(1);
