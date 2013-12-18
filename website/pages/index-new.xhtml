@@ -20,6 +20,14 @@
     	</ui:define>
     
     	<ui:define name="headText">
+            <link  type="text/css" rel="stylesheet" media="screen" href="#{facesContext.externalContext.requestContextPath}/css/#{uiBean.skin}/modules/styles/jquery.multiselect.css" />
+            <link  type="text/css" rel="stylesheet" media="screen" href="#{facesContext.externalContext.requestContextPath}/css/#{uiBean.skin}/jMenu.jquery.css" />
+            <link  type="text/css" rel="stylesheet" media="screen" href="#{facesContext.externalContext.requestContextPath}/css/#{uiBean.skin}/runtaskform.css" />
+
+            <script type="text/javascript" src="#{facesContext.externalContext.requestContextPath}/js/jquery/jquery.multiselect.js"></script>
+            <script type="text/javascript" src="#{facesContext.externalContext.requestContextPath}/js/jquery/jquery.validate.js"></script>
+            <script type="text/javascript" src="#{facesContext.externalContext.requestContextPath}/js/runtaskform.js"></script>
+
     		<script type="text/javascript" language="javascript">
                 /* <![CDATA[ */
                 function callManagedBean(elExpression, parameters) {
@@ -236,15 +244,14 @@
             </div>
 
             <t:div><ui:include src="eulaTaskForm.xhtml" /></t:div>
-            <t:div rendered="#{!empty runTaskBean.lsid and !eulaTaskBean.prompt}">
-                <ui:include src="runTaskFormJQuery.xhtml" />
-            </t:div>
+
+            <ui:include src="/pages/serverFileDialog.xhtml" />
 
             <h:outputText rendered="#{genomeSpaceBean.loggedIn and not genomeSpaceBean.loading}">
                 <ui:include src="/pages/genomespace/genomespaceDialog.xhtml" />
             </h:outputText>
 
-            <t:div rendered="#{empty runTaskBean.lsid}">
+            <t:div id="protocols" style="display: none;">
                 <f:subview rendered="#{empty runTaskBean.splashPage}">
                     <ui:include src="splashpage.xhtml" />
                 </f:subview>
@@ -258,6 +265,155 @@
                     <ui:include src="splashpageHelp.xhtml" />
                 </f:subview>
             </t:div>
+
+            <div id="submitJob" style="display: none;">
+                <!-- <ul>
+                     <li><a href="#submitForm">Run Task</a></li>
+                     <li><a href="#documentation">Documentation</a></li>
+                 </ul>
+
+                 <div id="properties"></div>
+
+                 <div id="documentation"></div>
+                 -->
+                <div id="submitForm">
+                    <div>
+                        <div>
+                            <button class="floatRight" id="cancelUpload">
+                                Cancel
+                            </button>
+                        </div>
+                        <div id="fileUploadDiv" class="clear"></div>
+                    </div>
+
+                    <div id="runTaskSettingsDiv">
+                        <div class="task_header" id="taskHeaderDiv">
+                            <span id='task_name' class='module_header '/>
+                <span id="task_version_main">
+                    <label for="task_versions">
+                        version
+                    </label>
+                    <select name='task_versions' id='task_versions'/>
+                </span>
+
+                            <div id="otherOptionsDiv" class="floatRight">
+                                <img id="otherOptions" alt="other options" src="#{facesContext.externalContext.requestContextPath}/images/gear_blue_and_white.png" height="20"/>
+                                <div id="otherOptionsSubMenu" class="popupMenu" style="display:none;">
+                                    <table>
+                                        <tr>
+                                            <td>
+                                                <a id="properties" href="#" onclick="jq('.popupMenu').hide();">Properties</a>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                <a id="clone" href="#" onclick="cloneTask();jq('.popupMenu').hide();">Clone</a>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                <a id="export" target="_blank" href="#" onclick="jq('.popupMenu').hide();">Export</a>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                <a id="javaCode" class="viewCode" href="#" onclick="jq('.popupMenu').hide();">Java code</a>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                <a id="matlabCode" class="viewCode" href="#" onclick="jq('.popupMenu').hide();">MATLAB code</a>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                <a id="rCode" class="viewCode" href="#" onclick="jq('.popupMenu').hide();">R code</a>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                <input name="toggleDesc" id="toggleDesc" type="checkbox" checked="checked"  onclick="jq('.popupMenu').hide();" />
+                                                <label for="toggleDesc" onclick="jq('.popupMenu').hide();">
+                                                    Show parameter descriptions
+                                                </label>
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </div>
+                                <script type="text/javascript">
+                                    menuRegistry._create("#otherOptions", "#otherOptionsSubMenu");
+                                </script>
+                            </div>
+                            <a class="floatRight" id ="documentation" href="#" target="_blank">Documentation</a>
+
+                        </div>
+                        <div class="clear" id="viewCodeDiv">
+                            <img class="floatRight" alt="close view code text" id='removeViewCode' src='#{facesContext.externalContext.requestContextPath}/images/delete-blue.png'/>
+                        </div>
+
+                        <table id="description_main">
+                            <tbody>
+                            <tr>
+                                <td id="mod_description">
+
+                                </td>
+                                <td id="source_info">
+                                    <div id="source_info_tooltip"></div>
+                                </td>
+                            </tr>
+                            </tbody>
+                        </table>
+
+                        <hr class="clear"/>
+
+                        <div>
+                <span class="otherControlsDiv">
+                    * required field
+                </span>
+                <span class="submitControlsDiv floatRight">
+                    <button class="Reset"><img src="#{facesContext.externalContext.requestContextPath}/images/reset.gif" width="16" height="16" alt="Reset" class="buttonIcon"/> Reset </button>
+                    <button class="Run"><img src="#{facesContext.externalContext.requestContextPath}/images/run-green.gif" width="16" height="16" alt="Run" class="buttonIcon"/> Run </button>
+                </span>
+                        </div>
+
+                        <hr class="clear"/>
+
+                        <div id="missingTasksDiv"></div>
+                        <div id="paramsListingDiv">
+                            <form id="runTaskForm" action="#">
+                                <table id="paramsTable"/>
+                            </form>
+                        </div>
+
+                        <hr/>
+
+                        <div style="height: 40px;">
+                <span class="floatLeft otherControlsDiv">
+                </span>
+                <span class="floatRight submitControlsDiv">
+                    <button class="Reset"><img src="#{facesContext.externalContext.requestContextPath}/images/reset.gif" width="16" height="16" alt="Reset" class="buttonIcon"/> Reset </button>
+                    <button class="Run"><img src="#{facesContext.externalContext.requestContextPath}/images/run-green.gif" width="16" height="16" alt="Run" class="buttonIcon"/> Run </button>
+                </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <h:outputText rendered="#{!empty runTaskBean.lsid and !eulaTaskBean.prompt}">
+                <script type="text/javascript">
+                    $(document).ready(function() {
+                        loadRunTaskForm();
+                    });
+                </script>
+            </h:outputText>
+            <h:outputText rendered="#{empty runTaskBean.lsid}">
+                <script type="text/javascript">
+                    $(document).ready(function() {
+                        $("#protocols").show();
+                    });
+                </script>
+            </h:outputText>
+
     	</ui:define>
     	
     	<!-- Pop-up menus  -->

@@ -50,7 +50,9 @@ var Request = {
             result[parameter[0]] = parameter[1];
         }
         return result;
-    }
+    },
+
+    cleanJobSubmit: null
 };
 
 function htmlEncode(value)
@@ -73,6 +75,7 @@ function loadModule(taskId, reloadId)
 {
     var url = window.location.href;
     var getParameters = url.slice(url.indexOf('?') + 1);
+    getParameters = getParameters.replace(Request.parameter("lsid"), taskId);
     var queryString = "?" + getParameters;
 
     $.ajax({
@@ -139,8 +142,12 @@ function loadModule(taskId, reloadId)
                     loadParameterInfo(response["parameters"], response["initialValues"]);
                 }
                 //the parameter form elements have been created now make the form visible
-                $("#submitJob").css('visibility', 'visible');
+                $("#protocols").hide();
+                $("#submitJob").show();
 
+                // Update the history & title
+                document.title = "GenePattern - " + run_task_info.name
+                history.pushState(null, document.title, location.protocol + "//" + location.host + location.pathname + "?lsid=" + module.LSID);
             }
         },
         error: function(xhr, ajaxOptions, thrownError)
@@ -148,7 +155,7 @@ function loadModule(taskId, reloadId)
             console.log("Response from server: status=" + xhr.status + " text=" + xhr.responseText);
             console.log(thrownError);
 
-            $("#submitJob").css('visibility', 'visible');
+            $("#submitJob").show();
             $("#submitJob").empty();
             $("#submitJob").append("An error occurred while loading the task " + taskId + ": <br/>" + xhr.responseText);
         },
@@ -1190,8 +1197,18 @@ function createParamDescriptionRow(parameterName)
     return $("<tr class='paramDescription'><td></td><td colspan='3'>" + pDescription +"</td></tr>");
 }
 
-jQuery(document).ready(function()
-{
+function loadRunTaskForm(lsid) {
+    // Hide the search slider if it is open
+    $(".search-widget").searchslider("hide");
+
+    // Lazily clone the blank jobSubmit div, and replace a dirty div with the clean one
+    if (Request.cleanJobSubmit === null) {
+        Request.cleanJobSubmit = $("#submitJob").clone();
+    }
+    else {
+        $("#submitJob").replaceWith(Request.cleanJobSubmit.clone());
+    }
+
     $("#toggleDesc").click(function()
     {
         //show descriptions
@@ -1206,14 +1223,15 @@ jQuery(document).ready(function()
         reloadJob = "";
     }
 
-    var lsid = Request.parameter('lsid');
-    var reloadJob = Request.parameter('reloadJob');
+    if (lsid === undefined || lsid === null) {
+        lsid = Request.parameter('lsid');
+    }
 
     if((lsid == undefined || lsid == null || lsid  == "")
         && (reloadJob == undefined || reloadJob == null || reloadJob  == ""))
     {
-        //redirect to splash page
-        window.location.replace("/gp/pages/index.jsf");
+        $("#protocols").show();
+        return;
     }
     else
     {
@@ -1394,7 +1412,7 @@ jQuery(document).ready(function()
             dataType: "json"
         });
     });
-});
+}
 
 function reset()
 {
@@ -2110,8 +2128,8 @@ function uploadFile(paramName, file, fileOrder, fileId)
 }
 
 /*
- add the list of file paths/urls specified for file parameters which will be sent to the server
- */
+add the list of file paths/urls specified for file parameters which will be sent to the server
+*/
 function setAllFileParamValues()
 {
     //now set the final file listing values for the file parameters

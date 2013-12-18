@@ -339,7 +339,7 @@ function initSearchSlider() {
         draggable: true,
         click: function(event) {
         	var lsid = $(event.target).closest(".module-listing").module("get_lsid");
-        	runTaskForm(lsid);
+        	loadRunTaskForm(lsid);
         }
     });
 
@@ -358,7 +358,7 @@ function initRecent() {
         draggable: true,
         click: function(event) {
         	var lsid = $(event.target).closest(".module-listing").module("get_lsid");
-        	runTaskForm(lsid);
+            loadRunTaskForm(lsid);
         }
     });
     recent.modulelist("filter", "recent");
@@ -383,7 +383,7 @@ function initPinned() {
         draggable: false,
         click: function(event) {
         	var lsid = $(event.target).closest(".module-listing").module("get_lsid");
-            runTaskForm(lsid);
+            loadRunTaskForm(lsid);
         },
         add: function(event, ui) {
         	$.ajax({
@@ -454,11 +454,6 @@ function setModuleSearchTitle(filter) {
     else {
         $("#module-search").searchslider("set_title", "Search: " + filter);
     }
-}
-
-function runTaskForm(lsid) {
-    $(".search-widget").searchslider("hide");
-    $(location).attr("href", "/gp/pages/index.jsf?lsid=" + encodeURIComponent(lsid));
 }
 
 function jobStatusPoll() {
