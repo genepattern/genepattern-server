@@ -29,6 +29,19 @@ public class GroupId {
         this.name=in.name;
         this.groupId=in.groupId;
     }
+    
+    public String getGroupId() {
+        return groupId;
+    }
+    
+    public String getName() {
+        return name;
+    }
+    
+    @Override
+    public String toString() {
+        return name;
+    }
 
     @Override
     public int hashCode() {
