@@ -27,7 +27,6 @@ var fileUploadRequests = [];
 var fileId = 0;
 //contains the json of parameters received when loading a module
 //saved so it can reused when for the reset operation
-var parametersJson = null;
 
 var Request = {
     parameter: function(name)
@@ -137,8 +136,7 @@ function loadModule(taskId, reloadId)
                 }
                 else
                 {
-                    parametersJson = response["parameters"];
-                    loadParameterInfo(parametersJson, response["initialValues"]);
+                    loadParameterInfo(response["parameters"], response["initialValues"]);
                 }
                 //the parameter form elements have been created now make the form visible
                 $("#submitJob").css('visibility', 'visible');
@@ -1096,21 +1094,43 @@ function createModeToggle(parameterName)
     return toggleChoiceFileDiv;
 }
 
-function loadParameterInfo(parameters, initialValues)
+//initialize the params object with info about the parameters
+function initParams(parameters, initialValues)
 {
-    var paramsTable = $("#paramsTable");
-    for(var q=0; q < parameters.length;q++)
+    if(parameters == undefined || parameters == null)
+    {
+        return;
+    }
+
+    for(var q=0;q < parameters.length;q++)
     {
         var parameterName = parameters[q].name;
         initParam(parameters[q], q, initialValues);
+    }
+}
+function loadParameterInfo(parameters, initialValues)
+{
+    var paramsTable = $("#paramsTable");
+
+    if(parameters != null)
+    {
+        initParams(parameters, initialValues);
+    }
+
+    if(run_task_info.params == null)
+    {
+        throw new Error("Error initialization parameters");
+    }
+
+    var parameterNames = Object.keys(run_task_info.params);
+    for(var q=0;q < parameterNames.length;q++)
+    {
+        var parameterName = parameterNames[q];
 
         var paramRow = $("<tr id='" + parameterName + "' class='pRow'/>");
         paramRow.data("pname", parameterName);
 
         paramsTable.append(paramRow);
-
-        //now we know what we need to build
-        //so add a row in the table for this parameter
 
         //add the display name of the parameter to the first column of the table
         var nameDiv = $("<div class='pTitleDiv'>");
@@ -1384,7 +1404,7 @@ function reset()
     //remove all input file parameter file listings
     param_file_listing = {};
 
-    loadParameterInfo(parametersJson, null);
+    loadParameterInfo(null, null);
 }
 
 function isText(param)
@@ -1745,23 +1765,16 @@ function validateMaxFiles(paramName, numFiles)
         return;
     }
 
-    var paramJSON = null;
-    for(var p=0;p<parametersJson.length; p++)
-    {
-        if(parametersJson[p].name == [paramName])
-        {
-            paramJSON = parametersJson[p];
-        }
-    }
+    var paramDetails = run_task_info.params[paramName];
 
     var maxFilesLimitExceeded = false;
 
-    if(paramJSON != null)
+    if(paramDetails != null)
     {
         //in this case the max num of files is not unlimited
-        if(paramJSON["maxValue"] != undefined || paramJSON["maxValue"] != null)
+        if(paramDetails.maxValue != undefined || paramDetails.maxValue != null)
         {
-            var maxValue = parseInt(paramJSON["maxValue"]);
+            var maxValue = parseInt(paramDetails.maxValue);
             if(numFiles > maxValue)
             {
                 maxFilesLimitExceeded =  true;
@@ -1972,15 +1985,9 @@ function atMaxFiles(paramName) {
 
     var currentNum = param_file_listing[paramName].length;
 
-    var maxNum = null;
-    jq(parametersJson).each(function(i) {
-        var param = parametersJson[i];
-        if (param.name === paramName) {
-            maxNum = param.maxValue
-        }
-    });
+    var paramDetails = run_task_info.params[paramName];
 
-    if (currentNum === maxNum) {
+    if (currentNum === paramDetails.maxValue) {
         return true;
     }
     else {
@@ -2214,49 +2221,16 @@ function setParameter(paramName, value)
     if($.inArray(field_types.TEXT, paramDetails.type) != -1)
     {
         paramRow.find(".paramValueTd").find(".textDiv").find(".pValue").first().val(value);
-    }
-
-}
-
-/*function setParameter(param, value) {
-    var selector = "#" + jqEscape(param);
-    var input = $(selector);
-    if (input.length === 0) return;
-
-    // Determine the input type
-    var isText = input.attr("type") === "text";
-    var isDropdown = input.get(0).tagName === "SELECT";
-    var isFile = input.attr("type") === "file";
-
-    if (isText) {
-        input.val(value);
-        return;
-    }
-
-    if (isDropdown) {
-        input.find("[value='" + value + "']").attr("selected", "true");
-        input.multiselect("refresh");
-        return;
-    }
-
-    if (isFile) {
-        setInputField(param, value);
         return;
     }
 
     throw new Error("Parameter type not recognized for: " + param);
-}*/
+}
 
 function toggleFileButtons(paramName) {
-    var paramJSON = null;
-    for(var p=0;p<parametersJson.length; p++)
-    {
-        if(parametersJson[p].name == [paramName])
-        {
-            paramJSON = parametersJson[p];
-        }
-    }
-    var maxValue = parseInt(paramJSON["maxValue"]);
+    var paramDetails = run_task_info.params[paramName];
+
+    var maxValue = parseInt(paramDetails.maxValue);
 }
 
 function getUsername() {
