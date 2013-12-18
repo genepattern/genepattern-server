@@ -88,16 +88,6 @@ public class TestIsCreateFilelist {
         Assert.assertFalse(paramName+".isCreateFilelist", plh.isCreateFilelist());
     }
     
-    /*
-     * test cases
-     * 
-     * 7) accepts a file list, actual num value is 2, mode is ..
-     * 8) accepts a file list, actual num value is 2, mode is ..
-     * 9) accepts a file list, actual num value is 2, mode is ..
-
-     * 
-     */
-    
     /**
      *  accepts a file list, actual num values is 0, mode is LEGACY
      */
