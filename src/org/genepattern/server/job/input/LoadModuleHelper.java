@@ -263,7 +263,7 @@ public class LoadModuleHelper {
                                     String name = value.substring(value.indexOf("<libdir>")+8);
                                     if(reloadedValue.getValue().endsWith(name))
                                     {
-                                        TaskInfo info = TaskInfoCache.instance().getTask(reloadedValue.getLSID());
+                                        TaskInfo info = TaskInfoCache.instance().getTask(reloadedValues.getLsid());
                                         TasklibPath tp = new TasklibPath(info, name);
                                         if(reloadedValue.getValue().endsWith(tp.getUrl().toExternalForm()))
                                         {

@@ -133,7 +133,7 @@ public class JobInput {
             param=new Param(id, batchParam);
             params.put(id, param);
         }
-        param.addValue(groupId, new ParamValue(value, lsid));
+        param.addValue(groupId, new ParamValue(value));
     }
 
     

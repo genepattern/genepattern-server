@@ -203,13 +203,13 @@ public class ParamListHelper {
                 return noValue;
             }
             Param emptyStringValue=new Param(new ParamId(record.getFormal().getName()), false);
-            emptyStringValue.addValue(new ParamValue("", lsid));
+            emptyStringValue.addValue(new ParamValue(""));
             return emptyStringValue;
         }
         else {
             Param listValue=new Param(new ParamId(record.getFormal().getName()), false);
             for(final String value : defaultValues) {
-                listValue.addValue(new ParamValue(value, lsid));
+                listValue.addValue(new ParamValue(value));
             }
             return listValue;
         }
@@ -623,7 +623,7 @@ public class ParamListHelper {
         }
 
         try {
-            GpFilePath gpPath = GpFileObjFactory.getRequestedGpFileObj(value, new LSID(pval.getLSID()));
+            GpFilePath gpPath = GpFileObjFactory.getRequestedGpFileObj(value, new LSID(jobContext.getJobInfo().getTaskLSID()));
             return new Record(Record.Type.SERVER_URL, gpPath, null);
         }
         catch (Exception e) {
