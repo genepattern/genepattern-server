@@ -43,8 +43,13 @@ public class Param {
         return id;
     }
 
+    /**
+     * Get the ordered list of values for this parameter, based on the order in which
+     * the values were added.
+     * @return
+     */
     public List<ParamValue> getValues() {
-        //return allValues;
+        //TODO: this createa a new list each time, perhaps there is a better way
         return Collections.unmodifiableList( new ArrayList<ParamValue>( groupedValues.values() ) );
     }
 
@@ -63,18 +68,45 @@ public class Param {
     public boolean isBatchParam() {
         return batchParam;
     }
-
+    
     public Map<GroupId,Collection<ParamValue>> getGroupedValues() {
         return groupedValues.asMap();
     }
 
+    /**
+     * Get the distinct list of groups, in the order in which the groups were added.
+     * @return
+     */
     public List<GroupId> getGroups() {
         return new ArrayList<GroupId>( groupedValues.keySet() );
     }
+    
+    /**
+     * Get the nth value in the given group, indexed by 0, based on the order
+     * in which the values were added to the group.
+     */
     public ParamValue getValue(final GroupId groupId, final int idx) {
         return groupedValues.get(groupId).get(idx);
     }
-    public List<ParamValue> getValues(final GroupId groupId) {
+    
+    /**
+     * Get the ordered list of values in the given group.
+     * @param groupId
+     * @return
+     */
+    public List<ParamValue> getValuesInGroup(final GroupId groupId) {
         return groupedValues.get(groupId);
+    }
+
+    /**
+     * Get the collection of all values as an Entry so that you can get both the groupId
+     * and the paramValue.
+     * 
+     * This collection is ordered by the order in which the values were added.
+     * 
+     * @return
+     */
+    public Collection<Map.Entry<GroupId,ParamValue>> getValuesAsEntries() {
+        return groupedValues.entries();
     }
 }
