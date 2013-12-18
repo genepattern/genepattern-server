@@ -31,7 +31,7 @@ import org.genepattern.webservice.ParameterInfo;
  */
 public class ParamListHelper {
     final static private Logger log = Logger.getLogger(ParamListHelper.class);
-
+    
     public enum ListMode { 
         /**
          * When listMode=legacy and num input files is ...
@@ -73,7 +73,7 @@ public class ParamListHelper {
             numValuesStr=null;
         }
         else {
-            numValuesStr = (String) pinfo.getAttributes().get("numValues");
+            numValuesStr = (String) pinfo.getAttributes().get(NumValues.PROP_NUM_VALUES);
         }
         NumValues numValues=null;
         
@@ -145,6 +145,7 @@ public class ParamListHelper {
     final Param actualValues;
     //outputs
     final NumValues allowedNumValues;
+    final GroupInfo groupInfo;
     final ListMode listMode;
 
     public ParamListHelper(final Context jobContext, final ParameterInfoRecord record, final Param inputValues) {
@@ -165,6 +166,9 @@ public class ParamListHelper {
 
         //initialize list mode
         this.listMode=initListMode(record);
+        
+        //initialize group info
+        this.groupInfo=initGroupInfo();
         
         //if necessary create a 'null' value for the param
         if (inputValues == null && !initDefault) {
@@ -213,7 +217,7 @@ public class ParamListHelper {
     
     private ListMode initListMode(final ParameterInfoRecord record) {
         //initialize list mode
-        String listModeStr = (String) record.getFormal().getAttributes().get("listMode");
+        String listModeStr = (String) record.getFormal().getAttributes().get(NumValues.PROP_LIST_MODE);
         if (listModeStr != null && listModeStr.length()>0) {
             listModeStr = listModeStr.toUpperCase().trim();
             try {
@@ -228,9 +232,9 @@ public class ParamListHelper {
         //default value
         return ListMode.LIST;
     }
-
+    
     private NumValues initAllowedNumValues() {
-        final String numValuesStr = (String) record.getFormal().getAttributes().get("numValues");
+        final String numValuesStr = (String) record.getFormal().getAttributes().get(NumValues.PROP_NUM_VALUES);
         //parse num values string
         NumValuesParser nvParser=new NumValuesParserImpl();
         try { 
@@ -241,6 +245,11 @@ public class ParamListHelper {
             log.error(message,e);
             throw new IllegalArgumentException(message);
         }
+    }
+
+    private GroupInfo initGroupInfo() {
+        final GroupInfo groupInfo=new GroupInfo.Builder().fromParameterInfo(record.getFormal()).build();
+        return groupInfo;
     }
 
     public static List<String> getDefaultValues(final ParameterInfo pinfo) {
@@ -360,6 +369,31 @@ public class ParamListHelper {
         }
         return true;
     }
+
+    /**
+     * Do we need to create a group file for this parameter? 
+     * Based on the following rules.
+     * 1) must be a normal fileList as returned by isCreateFilelist. Hint: numValues must be declared in the manifest.
+     * AND
+     * 2) groupInfo must be declared in the manifest.
+     * 
+     * By definition, if there is a groupInfo for the param, create a group file, regardless of the number of groups 
+     * for a particular run of the module. 
+     * Values without a groupId will be assigned to the empty group ("").
+     * 
+     * @return
+     */
+    public boolean isCreateGroupFile() {
+        if (!isCreateFilelist()) {
+            return false;
+        }
+        if (groupInfo==null) {
+            return false;
+        }
+        //by definition, if there is a groupInfo for the param, create a group file, regardless of the number of groups defined
+        //for a particular run of the modules. Args without a groupId will be assigned to the empty group ("").
+        return true;
+    }
     
     public boolean isFileInputParam() {
         return record.getFormal().isInputFile();
@@ -437,6 +471,7 @@ public class ParamListHelper {
     public void updatePinfoValue() throws Exception {
         final int numValues=actualValues.getNumValues();
         final boolean createFilelist=isCreateFilelist();
+        //TODO: final boolean createGroupFile=isCreateGroupFile();
         
         if (record.getFormal()._isDirectory() || record.getFormal().isInputFile()) {
             HashMap attrs = record.getActual().getAttributes();

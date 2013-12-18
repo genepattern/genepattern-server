@@ -10,8 +10,9 @@ import org.junit.Test;
  *
  */
 public class TestGroupInfo {
-    private static final ParameterInfo createGroupParam(final String numGroups) {
+    public static final ParameterInfo createGroupParam(final String numGroups) {
         final ParameterInfo pinfo=ParameterInfoUtil.initFileParam("input.file", "Demo file grouping parameter", false);
+        pinfo.getAttributes().put(NumValues.PROP_NUM_VALUES, "0+");
         pinfo.getAttributes().put(GroupInfo.PROP_NUM_GROUPS, numGroups);
         //pinfo.getAttributes().put(GroupInfo.PROP_GROUP_COLUMN_LABEL, "sample type");
         //pinfo.getAttributes().put(GroupInfo.PROP_FILE_COLUMN_LABEL, "replicate");
