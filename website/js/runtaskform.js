@@ -741,22 +741,22 @@ function createChoiceDiv(parameterName)
 
         if( initialValuesList != undefined &&  initialValuesList != null)
         {
+            var matchingValueList = [];
+            for(var n=0;n<initialValuesList.length;n++)
+            {
+                choice.find("option").each(function()
+                {
+                    if(initialValuesList[n] != "" && initialValuesList[n] == $(this).val())
+                    {
+                        matchingValueList.push(initialValuesList[n]);
+                    }
+                });
+            }
+
             //should only be one item in the list for now
             //but handle case when there is more than one item
             if(choice.multiselect("option", "multiple"))
             {
-                var matchingValueList = [];
-                for(var n=0;n<initialValuesList.length;n++)
-                {
-                    choice.find("option").each(function()
-                    {
-                        if(initialValuesList[n] != "" && initialValuesList[n] == $(this).val())
-                        {
-                            matchingValueList.push(initialValuesList[n]);
-                        }
-                    });
-                }
-
                 if(matchingValueList.length > 0)
                 {
                     //indicate initial value was found in drop-down list
