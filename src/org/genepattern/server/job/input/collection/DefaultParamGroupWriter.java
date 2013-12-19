@@ -18,7 +18,7 @@ import org.genepattern.server.job.input.ParamValue;
  */
 public class DefaultParamGroupWriter implements ParamGroupWriter {
     private final File toFile;
-    private final TableWriter tableFileWriter;
+    private final TableWriter writer;
     final Column[] columns={ Column.VALUE, Column.GROUP, Column.URL };
     final boolean includeHeader=true;
 
@@ -27,7 +27,7 @@ public class DefaultParamGroupWriter implements ParamGroupWriter {
             throw new IllegalArgumentException("toFile==null");
         }
         this.toFile=in.toFile;
-        this.tableFileWriter=new TsvWriter();
+        this.writer=new TsvWriter();
     }
 
     @Override
@@ -44,7 +44,7 @@ public class DefaultParamGroupWriter implements ParamGroupWriter {
                     ", "+files.size());
         }
         try {
-            tableFileWriter.init(toFile);
+            writer.init(toFile);
             if (includeHeader) {
                 writeHeader(groupInfo);
             }
@@ -63,7 +63,7 @@ public class DefaultParamGroupWriter implements ParamGroupWriter {
             throw new Exception("Unexpected error writing group file to "+toFile, t);
         }
         finally {
-            tableFileWriter.finish();
+            writer.finish();
         }
     }
 
@@ -78,7 +78,7 @@ public class DefaultParamGroupWriter implements ParamGroupWriter {
         for(Column col : columns) {
             header[i++]=getHeaderValue(groupInfo, col);
         }
-        tableFileWriter.writeRow(header);
+        writer.writeRow(header);
     }
     
     private String getHeaderValue(final GroupInfo groupInfo, final Column col) {
@@ -101,7 +101,7 @@ public class DefaultParamGroupWriter implements ParamGroupWriter {
             final String value = getRowValue(rowIdx, col, groupId, gpFilePath);
             row[i++]=value;
         }
-        tableFileWriter.writeRow(row);
+        writer.writeRow(row);
     } 
 
     private String getRowValue(final Integer rowIdx, final Column column, final GroupId groupId, final GpFilePath gpFilePath) {
@@ -109,7 +109,7 @@ public class DefaultParamGroupWriter implements ParamGroupWriter {
         case VALUE: return gpFilePath.getServerFile().getAbsolutePath();
         case GROUP: 
             try {
-                return groupId.toString();
+                return groupId.getGroupId();
             }
             catch (Throwable t) {
                 return "";
