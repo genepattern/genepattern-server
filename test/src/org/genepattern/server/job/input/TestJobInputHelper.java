@@ -75,6 +75,54 @@ public class TestJobInputHelper {
     }
 
     //////////////////////////////////////////
+    // test cases for group input handling
+    //
+    //////////////////////////////////////////
+    @Test
+    public void testAddGroupValue() throws GpServerException {
+        JobInputHelper jobInputHelper=new JobInputHelper(userContext, cleLsid, null, taskLoader);
+        jobInputHelper.addValue("input.filename", 
+                "ftp://ftp.broadinstitute.org/pub/genepattern/datasets/all_aml/all_aml_train.cls",
+                new GroupId("train"));
+        jobInputHelper.addValue("input.filename", 
+                "ftp://ftp.broadinstitute.org/pub/genepattern/datasets/all_aml/all_aml_train.gct",
+                new GroupId("train"));
+        jobInputHelper.addValue("input.filename", 
+                "ftp://ftp.broadinstitute.org/pub/genepattern/datasets/all_aml/all_aml_train.res",
+                new GroupId("train"));
+        jobInputHelper.addValue("input.filename", 
+                "ftp://ftp.broadinstitute.org/pub/genepattern/datasets/all_aml/all_aml_test.cls",
+                new GroupId("test"));
+        jobInputHelper.addValue("input.filename", 
+                "ftp://ftp.broadinstitute.org/pub/genepattern/datasets/all_aml/all_aml_test.gct",
+                new GroupId("test"));
+        jobInputHelper.addValue("input.filename", 
+                "ftp://ftp.broadinstitute.org/pub/genepattern/datasets/all_aml/all_aml_test.res",
+                new GroupId("test"));
+        
+        List<JobInput> inputs=jobInputHelper.prepareBatch();
+        Assert.assertEquals("num jobs", 1, inputs.size());
+        JobInput jobInput=inputs.get(0);
+        Param param=jobInput.getParam("input.filename");
+        Assert.assertEquals("numGroups", 2, param.getNumGroups());
+        Assert.assertEquals("numValues", 6, param.getNumValues());
+        
+        
+        //verify the groupings
+        final GroupId train=new GroupId("train");
+        final GroupId test=new GroupId("test");
+        Assert.assertEquals("group[0]", new GroupId("train"), param.getGroups().get(0));
+        Assert.assertEquals("group[1]", new GroupId("test"), param.getGroups().get(1));
+        
+        Assert.assertEquals("group[0][0]", "ftp://ftp.broadinstitute.org/pub/genepattern/datasets/all_aml/all_aml_train.cls", param.getValue(train, 0).getValue());
+        Assert.assertEquals("group[0][1]", "ftp://ftp.broadinstitute.org/pub/genepattern/datasets/all_aml/all_aml_train.gct", param.getValue(train, 1).getValue());
+        Assert.assertEquals("group[0][2]", "ftp://ftp.broadinstitute.org/pub/genepattern/datasets/all_aml/all_aml_train.res", param.getValue(train, 2).getValue());
+        Assert.assertEquals("group[1][0]", "ftp://ftp.broadinstitute.org/pub/genepattern/datasets/all_aml/all_aml_test.cls", param.getValue(test, 0).getValue());
+        Assert.assertEquals("group[1][1]", "ftp://ftp.broadinstitute.org/pub/genepattern/datasets/all_aml/all_aml_test.gct", param.getValue(test, 1).getValue());
+        Assert.assertEquals("group[1][2]", "ftp://ftp.broadinstitute.org/pub/genepattern/datasets/all_aml/all_aml_test.res", param.getValue(test, 2).getValue());
+    }
+    
+    //////////////////////////////////////////
     // test cases for batch input handling
     //
     //////////////////////////////////////////

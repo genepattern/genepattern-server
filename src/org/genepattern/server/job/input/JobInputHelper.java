@@ -109,7 +109,17 @@ public class JobInputHelper {
      * @param value
      */
     public void addValue(final String name, final String value) {
-        this.batchInputFileHelper.addValue(name, value);
+        addValue(name, value, GroupId.EMPTY);
+    }
+    
+    /**
+     * Add a value for a non-batch parameter, including optional groupId.
+     * @param name
+     * @param value
+     * @param groupId
+     */
+    public void addValue(final String name, final String value, final GroupId groupId) {
+        this.batchInputFileHelper.addValue(new ParamId(name), value, groupId);
     }
 
     /**
@@ -119,7 +129,11 @@ public class JobInputHelper {
      * @param value
      */
     public void addValue(final ParamId paramId, final String value) {
-        this.batchInputFileHelper.addValue(paramId.getFqName(), value);
+        addValue(paramId, value, GroupId.EMPTY);
+    }
+
+    public void addValue(final ParamId paramId, final String value, final GroupId groupId) {
+        this.batchInputFileHelper.addValue(paramId, value, groupId);
     }
     
     /**
@@ -137,23 +151,31 @@ public class JobInputHelper {
      * @param value
      */
     public void addBatchValue(final ParamId paramId, final String value) throws GpServerException {
-        this.batchInputFileHelper.addBatchValue(paramId.getFqName(), value);
+        this.batchInputFileHelper.addBatchValue(paramId, value);
     }
 
-    /*
+    public void addSingleOrBatchValue(final ParameterInfo pInfo, String value, boolean isBatch)
+    throws GpServerException 
+    {
+        addSingleOrBatchValue(pInfo, value, GroupId.EMPTY, isBatch);
+        
+    }
+
+    /**
      * Add a value for a parameter which could be either a single or batch parameter
      * @param pInfo - A ParameterInfo object
      * @param value - The value to set the parameter identified by pInfo
      * @param isBatch  - Whether the parameter is a batch parameter
      */
-    public void addSingleOrBatchValue(final ParameterInfo pInfo, String value, boolean isBatch)
+    public void addSingleOrBatchValue(final ParameterInfo pInfo, String value, final GroupId groupId, boolean isBatch)
     throws GpServerException
     {
         if (isBatch) {
-            batchInputFileHelper.addBatchValue(pInfo.getName(), value);
+            //TODO: implement support for groupId with batch values
+            batchInputFileHelper.addBatchValue(new ParamId(pInfo.getName()), value);
         }
         else {
-            batchInputFileHelper.addValue(pInfo.getName(), value);
+            batchInputFileHelper.addValue(new ParamId(pInfo.getName()), value, groupId);
         }
     }
 
@@ -171,7 +193,7 @@ public class JobInputHelper {
     }
     
     public void addBatchDirectory(final ParamId id, final String value) throws GpServerException {
-        this.batchInputFileHelper.addBatchValue(id.getFqName(), value);
+        this.batchInputFileHelper.addBatchValue(id, value);
     }
     
     /**

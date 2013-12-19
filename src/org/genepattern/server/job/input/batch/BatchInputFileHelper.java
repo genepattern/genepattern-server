@@ -15,9 +15,11 @@ import org.genepattern.server.dm.GpFileObjFactory;
 import org.genepattern.server.dm.GpFilePath;
 import org.genepattern.server.dm.UrlUtil;
 import org.genepattern.server.dm.serverfile.ServerFileObjFactory;
+import org.genepattern.server.job.input.GroupId;
 import org.genepattern.server.job.input.JobInput;
 import org.genepattern.server.job.input.JobInputHelper;
 import org.genepattern.server.job.input.Param;
+import org.genepattern.server.job.input.ParamId;
 import org.genepattern.server.rest.GpServerException;
 import org.genepattern.server.rest.JobInputApi;
 import org.genepattern.server.rest.JobInputApiFactory;
@@ -244,7 +246,7 @@ public class BatchInputFileHelper {
     }
 
 
-    public void addValue(final String id, final String value) {
+    public void addValue(final ParamId id, final String value, final GroupId groupId) {
         final boolean isBatchParam=false;
         Param param=jobInput.getParam(id);
         if (param != null) {
@@ -252,7 +254,7 @@ public class BatchInputFileHelper {
                 log.error("adding a non-batch value to an existing batch parameter");
             }
         }
-        jobInput.addValue(id, value, isBatchParam);
+        jobInput.addValue(id, value, groupId, isBatchParam);
     }
 
     /**
@@ -264,68 +266,68 @@ public class BatchInputFileHelper {
      * @param id
      * @param value
      */
-    public void addBatchValue(final String id, final String value) throws GpServerException {
+    public void addBatchValue(final ParamId paramId, final String value) throws GpServerException {
         URL externalUrl=JobInputHelper.initExternalUrl(value);
         if (externalUrl != null) {
-            addBatchExternalUrl(id, externalUrl);
+            addBatchExternalUrl(paramId, externalUrl);
             return;
         }
 
         final GpFilePath gpPath=BatchInputFileHelper.initGpFilePath(value);
         if (gpPath == null) {
-            throw new GpServerException("batch input not supported for param="+id+", value="+value);
+            throw new GpServerException("batch input not supported for param="+paramId.getFqName()+", value="+value);
         }
         if (!gpPath.getServerFile().exists()) {
-            throw new GpServerException("batch input file does not exist for param="+id+", value="+value);
+            throw new GpServerException("batch input file does not exist for param="+paramId.getFqName()+", value="+value);
         }
 
         if (gpPath.isDirectory()) {
-            addBatchDirectory(id, gpPath);
+            addBatchDirectory(paramId, gpPath);
             return;
         }
         else {
-            addBatchFile(id, gpPath);
+            addBatchFile(paramId, gpPath);
             return;
         }
     }
 
-    private void addBatchExternalUrl(final String id, final URL externalUrl) throws GpServerException {
-        addBatchFile(id, new ExternalFile(externalUrl));
+    private void addBatchExternalUrl(final ParamId paramId, final URL externalUrl) throws GpServerException {
+        addBatchFile(paramId, new ExternalFile(externalUrl));
     }
 
-    private void addBatchFile(final String id, final GpFilePath batchFile) throws GpServerException {
-        Param param=jobInput.getParam(id);
+    private void addBatchFile(final ParamId paramId, final GpFilePath batchFile) throws GpServerException {
+        Param param=jobInput.getParam(paramId);
         if (param!=null) {
             if (!param.isBatchParam()) {
                 throw new GpServerException("Error adding batch value to a non-batch parameter: ");
             }
         }
         final List<GpFilePath> batchFiles;
-        if (!batchValues.containsKey(id)) {
+        if (!batchValues.containsKey(paramId.getFqName())) {
             batchFiles=new ArrayList<GpFilePath>();
-            batchValues.put(id, batchFiles);
+            batchValues.put(paramId.getFqName(), batchFiles);
         }
         else {
-            batchFiles=batchValues.get(id);
+            batchFiles=batchValues.get(paramId.getFqName());
         }
         batchFiles.add(batchFile);
     }
 
-    private void addBatchDirectory(final String id, final GpFilePath batchDir) throws GpServerException {
-        final ParameterInfoRecord record=paramInfoMap.get(id);
+    private void addBatchDirectory(final ParamId paramId, final GpFilePath batchDir) throws GpServerException {
+        final ParameterInfoRecord record=paramInfoMap.get(paramId.getFqName());
         if (record==null) {
-            final String message="No matching parameter, '"+id+"', for task="+jobInput.getLsid();
+            final String message="No matching parameter, '"+paramId.getFqName()+"', for task="+jobInput.getLsid();
             log.error(message);
             throw new GpServerException(message);
         }
         final List<GpFilePath> batchValues=listBatchDir(record.getFormal(), batchDir);
         if (batchValues==null || batchValues.size()==0) {
-            log.debug("No matching batchValues for "+id+"="+batchDir);
+            log.debug("No matching batchValues for "+paramId.getFqName()+"="+batchDir);
             return;
         }
         for(final GpFilePath batchValue : batchValues) {
             try {
-                addBatchFile(id, batchValue);
+                addBatchFile(paramId, batchValue);
             }
             catch (Exception e) {
                 log.error(e);
