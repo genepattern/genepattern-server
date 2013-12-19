@@ -34,12 +34,7 @@ import org.genepattern.modules.ParametersJSON;
 import org.genepattern.modules.ResponseJSON;
 import org.genepattern.server.config.ServerConfiguration;
 import org.genepattern.server.dm.GpFilePath;
-import org.genepattern.server.job.input.JobInput;
-import org.genepattern.server.job.input.Param;
-import org.genepattern.server.job.input.JobInputFileUtil;
-import org.genepattern.server.job.input.JobInputHelper;
-import org.genepattern.server.job.input.LoadModuleHelper;
-import org.genepattern.server.job.input.ReloadJobHelper;
+import org.genepattern.server.job.input.*;
 import org.genepattern.server.repository.SourceInfo;
 import org.genepattern.server.repository.SourceInfoLoader;
 import org.genepattern.server.rest.GpServerException;
@@ -423,7 +418,14 @@ public class RunTaskServlet extends HttpServlet
                     }
                     for(int v=0; v<valueList.length();v++)
                     {
-                        jobInputHelper.addSingleOrBatchValue(pInfo, valueList.getString(v), isBatch);
+                        if(groupName != null && groupName.length() != 0)
+                        {
+                            jobInputHelper.addSingleOrBatchValue(pInfo, valueList.getString(v), new GroupId(groupName), isBatch);
+                        }
+                        else
+                        {
+                            jobInputHelper.addSingleOrBatchValue(pInfo, valueList.getString(v), isBatch);
+                        }
                     }
                 }
             }
