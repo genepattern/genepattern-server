@@ -1,22 +1,22 @@
 package org.genepattern.server.job.input.collection;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
 import junit.framework.Assert;
 
 import org.genepattern.junitutil.MockGpFilePath;
-import org.genepattern.junitutil.TempFileUtil;
 import org.genepattern.server.dm.GpFilePath;
 import org.genepattern.server.job.input.GroupId;
 import org.genepattern.server.job.input.GroupInfo;
 import org.genepattern.server.job.input.Param;
 import org.genepattern.server.job.input.ParamId;
 import org.genepattern.server.job.input.ParamValue;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 
 /**
  * junit test for writing the paramgroup file.
@@ -24,25 +24,18 @@ import org.junit.Test;
  *
  */
 public class TestDefaultParamGroupWriter {
-    private static TempFileUtil tempFileUtil;
-    private static File tmpDir;
 
-    private static void appendValue(final Param inputParam, final List<GpFilePath> gpFilePaths, final GroupId groupId, final String filepath) {
-        final File localFile = new File(tmpDir, filepath);
+    @Rule
+    public TemporaryFolder tmpDir = new TemporaryFolder();
+    
+    private void appendValue(final Param inputParam, final List<GpFilePath> gpFilePaths, final GroupId groupId, final String filepath) 
+    throws IOException
+    {
+        final File localFile = tmpDir.newFile(filepath);
+        //final File localFile = new File(tmpDir, filepath);
         GpFilePath gpFilePath=new MockGpFilePath.Builder(localFile).build();
         inputParam.addValue(new GroupId(groupId), new ParamValue(gpFilePath.getParamInfoValue())); 
         gpFilePaths.add(gpFilePath);
-    }
-    
-    @BeforeClass
-    public static void beforeClass() throws Exception {
-        tempFileUtil=new TempFileUtil();
-        tmpDir=tempFileUtil.newTmpDir();
-    }
-    
-    @AfterClass
-    public static void afterClass() throws Exception {
-        tempFileUtil.cleanup();
     }
 
     @Test
@@ -60,7 +53,7 @@ public class TestDefaultParamGroupWriter {
         appendValue(inputParam, gpFilePaths, new GroupId("train"), "all_aml_train.gct");
         appendValue(inputParam, gpFilePaths, new GroupId("train"), "all_aml_train.res");
         
-        final File toFile=new File(tmpDir, "exampleParamGroup_01.tsv");
+        final File toFile=tmpDir.newFile("exampleParamGroup_01.tsv");
         final DefaultParamGroupWriter writer=new DefaultParamGroupWriter.Builder(toFile).build();
         writer.writeParamGroup(groupInfo, inputParam, gpFilePaths);
         
@@ -90,7 +83,7 @@ public class TestDefaultParamGroupWriter {
         appendValue(inputParam, gpFilePaths, new GroupId("train"), "all_aml_train.gct");
         appendValue(inputParam, gpFilePaths, new GroupId("train"), "all_aml_train.res");
         
-        final File toFile=new File(tmpDir, "exampleParamGroup_02.tsv");
+        final File toFile=tmpDir.newFile("exampleParamGroup_02.tsv");
         final DefaultParamGroupWriter writer=new DefaultParamGroupWriter.Builder(toFile).build();
         writer.writeParamGroup(groupInfo, inputParam, gpFilePaths);
         Assert.assertEquals("toFile.exists", true, toFile.exists());
