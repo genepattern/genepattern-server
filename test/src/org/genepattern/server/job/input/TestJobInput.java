@@ -77,9 +77,9 @@ public class TestJobInput {
         jobInput.setLsid(lsid);
         jobInput.addValue("requiredFile", DATA_URL+"all_aml_test.cls");
         jobInput.addValue("optionalFile", DATA_URL+"all_aml_test.gct");
-        jobInput.addValue(new GroupId("single group"), "inputList", DATA_URL+"all_aml_train.res");
-        jobInput.addValue(new GroupId("single group"), "inputList", DATA_URL+"all_aml_train.cls");
-        jobInput.addValue(new GroupId("single group"), "inputList", DATA_URL+"all_aml_train.gct");
+        jobInput.addValue("inputList", DATA_URL+"all_aml_train.res", new GroupId("single group"));
+        jobInput.addValue("inputList", DATA_URL+"all_aml_train.cls", new GroupId("single group"));
+        jobInput.addValue("inputList", DATA_URL+"all_aml_train.gct", new GroupId("single group"));
         Assert.assertEquals("numParams", 3, jobInput.getParams().size());
         
         final Param param=jobInput.getParam("inputList");
@@ -98,12 +98,12 @@ public class TestJobInput {
     public void testMultipleGroups() {
         final JobInput jobInput = new JobInput();
         jobInput.setLsid(lsid);
-        jobInput.addValue(new GroupId("train"), "inputList", DATA_URL+"all_aml_train.res");
-        jobInput.addValue(new GroupId("test"), "inputList", DATA_URL+"all_aml_test.res");
-        jobInput.addValue(new GroupId("TEST"), "inputList", DATA_URL+"all_aml_test.cls");
-        jobInput.addValue(new GroupId(" test "), "inputList", DATA_URL+"all_aml_test.gct");
-        jobInput.addValue(new GroupId(" train "), "inputList", DATA_URL+"all_aml_train.cls");
-        jobInput.addValue(new GroupId("Train"), "inputList", DATA_URL+"all_aml_train.gct");
+        jobInput.addValue("inputList", DATA_URL+"all_aml_train.res", new GroupId("train"));
+        jobInput.addValue("inputList", DATA_URL+"all_aml_test.res", new GroupId("test"));
+        jobInput.addValue("inputList", DATA_URL+"all_aml_test.cls", new GroupId("TEST"));
+        jobInput.addValue("inputList", DATA_URL+"all_aml_test.gct", new GroupId(" test "));
+        jobInput.addValue("inputList", DATA_URL+"all_aml_train.cls", new GroupId(" train "));
+        jobInput.addValue("inputList", DATA_URL+"all_aml_train.gct", new GroupId("Train"));
         
         final Param param=jobInput.getParam("inputList");
         Assert.assertEquals("numGroups", 2, param.getNumGroups());

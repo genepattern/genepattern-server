@@ -96,15 +96,15 @@ public class JobInput {
      * @param value, the user provided input value, cannot be null.
      */
     public void addValue(final String name, final String value) {
-        addValue(GroupId.EMPTY, new ParamId(name), value);
+        addValue(new ParamId(name), value, GroupId.EMPTY);
     }
     
-    public void addValue(final GroupId groupId, final String name, final String value) {
-        addValue(groupId, new ParamId(name), value);
+    public void addValue(final String name, final String value, final GroupId groupId) {
+        addValue(new ParamId(name), value, groupId);
     }
     
-    public void addValue(final GroupId groupId, final ParamId paramId, final String value) {
-        addValue(groupId, paramId, value, false);
+    public void addValue(final ParamId paramId, final String value, final GroupId groupId) {
+        addValue(paramId, value, groupId, false);
     }
     
     public void addValue(final String name, final String value, final boolean batchParam) {
@@ -112,10 +112,10 @@ public class JobInput {
             throw new IllegalArgumentException("name==null");
         }
         final ParamId paramId = new ParamId(name);
-        addValue(GroupId.EMPTY, paramId, value, batchParam);
+        addValue(paramId, value, GroupId.EMPTY, batchParam);
     }
 
-    public void addValue(final GroupId groupId, final ParamId id, final String value, final boolean batchParam) {
+    public void addValue(final ParamId id, final String value, final GroupId groupId, final boolean batchParam) {
         if (id==null) {
             throw new IllegalArgumentException("id==null");
         }
