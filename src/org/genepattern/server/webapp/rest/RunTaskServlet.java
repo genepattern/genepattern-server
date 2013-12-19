@@ -407,16 +407,24 @@ public class RunTaskServlet extends HttpServlet
                     continue;
                 }
 
-                Object val=parameters.get(parameterName);
-                if (val instanceof JSONArray) {
-                    valueList=(JSONArray) val;
-                }
-                else {
-                    valueList = new JSONArray((String)parameters.get(parameterName));
-                }
-                for(int v=0; v<valueList.length();v++)
+                JSONArray groupNames = parameters.getJSONObject(parameterName).names();
+                JSONObject groups = parameters.getJSONObject(parameterName);
+
+                for(int g=0;g<groupNames.length();g++)
                 {
-                    jobInputHelper.addSingleOrBatchValue(pInfo, valueList.getString(v), isBatch);
+                    String groupName = groupNames.getString(g);
+                    Object val = groups.get(groupName);
+
+                    if (val instanceof JSONArray) {
+                        valueList=(JSONArray) val;
+                    }
+                    else {
+                        valueList = new JSONArray((String)parameters.get(parameterName));
+                    }
+                    for(int v=0; v<valueList.length();v++)
+                    {
+                        jobInputHelper.addSingleOrBatchValue(pInfo, valueList.getString(v), isBatch);
+                    }
                 }
             }
 
