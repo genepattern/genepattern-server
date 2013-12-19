@@ -22,6 +22,15 @@ import org.apache.log4j.Logger;
 public class TsvWriter implements TableWriter {
     private static final Logger log = Logger.getLogger(TsvWriter.class);
     
+    /**
+     * recommended mime-type for the generated file.
+     */
+    public static final String MIME_TYPE="text/tab-separated-values";
+    /**
+     * recommended extension for the generated file.
+     */
+    public static final String EXT="tsv";
+    
     public static final String TAB="\t";
     public static final String COMMENT_CHAR="#";
     public static final String NL="\n"; //newline
