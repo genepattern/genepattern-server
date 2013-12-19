@@ -2,9 +2,12 @@ package org.genepattern.server.job.input.collection;
 
 import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileWriter;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.io.Writer;
+import java.nio.charset.Charset;
+import java.nio.charset.CharsetEncoder;
 
 import org.apache.log4j.Logger;
 
@@ -27,8 +30,9 @@ public class TsvWriter implements TableWriter {
 
     @Override
     public void init(final File toFile) throws IOException {
-        FileWriter fw = new FileWriter(toFile);
-        writer = new BufferedWriter(fw);
+        final CharsetEncoder enc=Charset.forName("UTF-8").newEncoder();
+        writer = new BufferedWriter
+                (new OutputStreamWriter(new FileOutputStream(toFile),enc));
     }
 
     @Override
