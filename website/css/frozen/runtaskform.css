@@ -156,12 +156,12 @@ button.urlButton
 .fileDiv
 {
     vertical-align: bottom;
-    border: 2px dashed lightgray;
     padding: 9px 10px 10px 10px;
     min-width: 490px;
     margin-bottom: 0;
     display: inline-block;
     white-space: nowrap;
+    width: 100%;
 }
 
 .fileDiv button img
@@ -511,6 +511,31 @@ span.drop-box
     padding: 2px;
     margin: 1px;
     font-size: 11px;
+}
+
+.fieldTypeToggle
+{
+    margin-bottom: 8px;
+}
+
+.valueEntryDiv
+{
+    margin-top: 5px;
+    margin-bottom: 15px;
+}
+
+.groupingDiv
+{
+    margin-bottom: 7px;
+}
+
+.mainDivBorder
+{
+    vertical-align: bottom;
+    border: 2px dashed lightgray;
+    -moz-border-radius: 8px;
+    -webkit-border-radius: 8px;
+    padding: 8px 6px 6px 6px;
 }
 
 
