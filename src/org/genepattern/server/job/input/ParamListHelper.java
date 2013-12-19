@@ -18,6 +18,7 @@ import org.genepattern.server.dm.serverfile.ServerFileObjFactory;
 import org.genepattern.server.job.input.Param;
 import org.genepattern.server.job.input.ParamId;
 import org.genepattern.server.job.input.ParamValue;
+import org.genepattern.server.job.input.collection.ParamGroupHelper;
 import org.genepattern.server.rest.ParameterInfoRecord;
 import org.genepattern.util.LSID;
 import org.genepattern.webservice.ParameterInfo;
@@ -487,13 +488,15 @@ public class ParamListHelper {
         }
 
         //Note: createFilelist is true when createGroupFile is true, so check for createGroupFile first
-        if (createGroupFile) {
-            //final boolean downloadExternalFiles=true;
-            //final List<GpFilePath> listOfValues=getListOfValues(downloadExternalFiles);
-            //final GpFilePath groupFile=createGroupfile(actualValues);
-            //String groupFileValue=groupFile.getUrl().toExternalForm();
-            //parameterInfoRecord.getActual().setValue(groupFileValue);
-            throw new IllegalArgumentException("parameter groups not implementede!");
+        if (createGroupFile) { 
+            final GpFilePath toFile=ParamGroupHelper.initToFile(jobContext, actualValues);
+            ParamGroupHelper pgh=new ParamGroupHelper(toFile, actualValues);
+            List<GpFilePath> gpFilePaths=pgh.downloadExternalUrl(jobContext);
+            pgh.writeGroupFile(gpFilePaths);
+            
+            parameterInfoRecord.getActual().setValue(toFile.getUrl().toExternalForm());
+            //TODO: figure out how to reload the values, the current plan is to read the contents of the 
+            //    group file from the file system
         }
         else if (createFilelist) {
             final boolean downloadExternalFiles=true;
