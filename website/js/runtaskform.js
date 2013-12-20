@@ -971,8 +971,6 @@ function createFileDiv(parameterName, groupId, enableBatch)
     //check if there are predefined file values
     var fileObjListings = getFilesForGroup(groupId, parameterName);
 
-    updateValuesForGroup(groupId, parameterName, []);
-
     var initialValuesList = paramDetails.initialValues;
     //also check if this parameter is also a choice parameter
     if( initialValuesList != undefined &&  initialValuesList != null
@@ -999,6 +997,11 @@ function createFileDiv(parameterName, groupId, enableBatch)
 
         updateFilesForGroup(groupId, parameterName, fileObjListings);
         updateParamFileTable(parameterName, fileDiv, groupId);
+    }
+    else
+    {
+        //set the value of the parameter to empty array since no initial values were specified
+        updateValuesForGroup(groupId, parameterName, []);
     }
 
     //get the HTMLElement
@@ -2052,7 +2055,6 @@ function updateParamFileTable(paramName, fileDiv, groupId)
 
     if(files != null && files != undefined && files.length > 0)
     {
-
         //if there is one file and it is null or en empty string then do nothing and return
         if(files.length == 1 && (files[0].name == null || files[0].name == ""))
         {
@@ -2066,7 +2068,6 @@ function updateParamFileTable(paramName, fileDiv, groupId)
             //switch view to custom file view
             fileChoiceToggle.click();
 
-            var groupId = getGroupId(fileDiv);
             updateFilesForGroup(groupId, paramName, files);
         }
 
@@ -2100,6 +2101,8 @@ function updateParamFileTable(paramName, fileDiv, groupId)
         fileListingDiv.append(pData);
 
         var table = $("<table class='paramFilesTable'/>");
+        var tbody = $("<tbody/>");
+        table.append(tbody);
         for(var i=0;i<files.length;i++)
         {
             //ignore any file names that are empty or null
@@ -2155,14 +2158,35 @@ function updateParamFileTable(paramName, fileDiv, groupId)
 
             fileTData.append(delButton);
             fileRow.append(fileTData);
-            table.append(fileRow);
+            tbody.append(fileRow);
         }
 
         var div = $("<div class='scroll'/>");
         div.append(table);
         fileListingDiv.append(div);
 
-        table.find("tr").draggable();
+        tbody.find("tr").draggable({
+            helper: function(event) {
+                return $('<div class="drag-row"><table class="paramFilesTable"></table></div>')
+                    .find('table').append($(event.target).closest('tr').clone()).end();
+            }
+        });
+
+       /* table.find("tbody").droppable(
+        {
+            hoverClass: 'highlight',
+            drop: function(event, ui)
+            {
+                var target = $(event.target);
+                var draggable = ui.draggable;
+
+                draggable.insertBefore(target);
+            }
+        });*/
+
+        //table.find("tbody").sortable();
+        //table.find("tbody").droppable().draggable();
+
         //set visibility of the file listing to hidden if that was its previous state
         // by default the file listing is visible
         if(hideFiles)
