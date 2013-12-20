@@ -9,6 +9,12 @@ import java.io.File;
  */
 public interface TableWriter {
     /**
+     * Get the suggesting file extension for the generated file.
+     * @return
+     */
+    String getExtension();
+
+    /**
      * Initialize the writer, called before the first write operation.
      * @param toFile
      * @throws Exception

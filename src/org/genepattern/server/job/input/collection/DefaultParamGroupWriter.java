@@ -1,8 +1,10 @@
 package org.genepattern.server.job.input.collection;
 import java.io.File;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map.Entry;
 
+import org.apache.log4j.Logger;
 import org.genepattern.server.dm.GpFilePath;
 import org.genepattern.server.job.input.GroupId;
 import org.genepattern.server.job.input.GroupInfo;
@@ -17,19 +19,44 @@ import org.genepattern.server.job.input.ParamValue;
  *
  */
 public class DefaultParamGroupWriter implements ParamGroupWriter {
+    private static final Logger log = Logger.getLogger(ParamGroupWriter.class);
+
     private final File toFile;
     private final TableWriter writer;
-    final Column[] columns={ Column.VALUE, Column.GROUP, Column.URL };
-    final boolean includeHeader=true;
+    /**
+     * The columnSpec defines the number of columns to included in the generated file.
+     * For example, a filelist file would be,
+     * <pre>
+       columnSpec = new Column[] { Column.VALUE };
+     * </pre>
+     * For example, a grouplist file would be,
+     * <pre>
+       columnSpec = new Column[] { Column.VALUE, Column.GROUP, Column.URL };
+     * </pre> 
+     */
+    final Column[] columns;
+    final boolean includeHeader;
 
     private DefaultParamGroupWriter(final Builder in) {
         if (in.toFile==null) {
             throw new IllegalArgumentException("toFile==null");
         }
+        if (in.columns==null) {
+            this.columns=new Column[]{ Column.VALUE, Column.GROUP, Column.URL };
+        }
+        else {
+            this.columns=in.columns.toArray(new Column[in.columns.size()]);
+        }
+        this.includeHeader=in.includeHeader;
         this.toFile=in.toFile;
-        this.writer=new TsvWriter();
+        if (in.writer==null) {
+            this.writer=new TsvWriter();
+        }
+        else {
+            this.writer=in.writer;
+        }
     }
-
+    
     @Override
     public void writeParamGroup(final GroupInfo groupInfo, final Param inputParam, final List<GpFilePath> files) throws Exception {
         if (inputParam==null) {
@@ -119,17 +146,38 @@ public class DefaultParamGroupWriter implements ParamGroupWriter {
                 return gpFilePath.getUrl().toExternalForm();
             }
             catch (Exception e) {
-
+                log.error(e);
             }
         }
+        log.error("did not initialize value from column="+column+", rowIdx="+rowIdx+", groupId="+groupId);
         return "";
     }
     
     public static class Builder {
         private File toFile=null;
+        private List<Column> columns=null;
+        private boolean includeHeader=false;
+        private TableWriter writer=null;
+
         public Builder(final File toFile) {
             this.toFile=toFile;
         }
+        public Builder addColumn(final Column column) {
+            if (columns==null) {
+                columns=new ArrayList<Column>();
+            }
+            columns.add(column);
+            return this;
+        }
+        public Builder includeHeader(final boolean includeHeader) {
+            this.includeHeader=includeHeader;
+            return this;
+        }
+        public Builder tableWriter(final TableWriter writer) {
+            this.writer=writer;
+            return this;
+        }
+        
         DefaultParamGroupWriter build() {
             return new DefaultParamGroupWriter(this);
         }

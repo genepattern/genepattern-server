@@ -76,4 +76,9 @@ public class TsvWriter implements TableWriter {
             writer.close();
         }
     }
+
+    @Override
+    public String getExtension() {
+        return EXT;
+    }
 }

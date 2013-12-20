@@ -468,13 +468,6 @@ public class ParamListHelper {
         file=inputRecord.gpFilePath;
         return file;
     }
-
-//    private GpFilePath createGroupfile(final Param inputParam) throws Exception {
-//        ParamGroupHelper pgh=ParamGroupHelper.create(jobContext, inputParam);
-//        List<GpFilePath> gpFilePaths=pgh.downloadExternalUrl(jobContext);
-//        pgh.writeGroupFile(gpFilePaths);
-//        return pgh.getToFile();
-//    }
     
     public void updatePinfoValue() throws Exception {
         final int numValues=actualValues.getNumValues();
@@ -489,11 +482,12 @@ public class ParamListHelper {
 
         //Note: createFilelist is true when createGroupFile is true, so check for createGroupFile first
         if (createGroupFile) { 
-            final GpFilePath toFile=ParamGroupHelper.initToFile(jobContext, actualValues);
-            ParamGroupHelper pgh=new ParamGroupHelper(toFile, actualValues);
-            List<GpFilePath> gpFilePaths=pgh.downloadExternalUrl(jobContext);
-            pgh.writeGroupFile(gpFilePaths);
-            
+            ParamGroupHelper pgh=new ParamGroupHelper.Builder(actualValues)
+                .jobContext(jobContext)
+                .groupInfo(groupInfo)
+                .build();
+            //final ParamGroupHelper pgh=ParamGroupHelper.create(jobContext, actualValues, groupInfo);
+            final GpFilePath toFile=pgh.createFilelist();
             parameterInfoRecord.getActual().setValue(toFile.getUrl().toExternalForm());
             //TODO: figure out how to reload the values, the current plan is to read the contents of the 
             //    group file from the file system
