@@ -1764,7 +1764,13 @@ function submitTask()
 
         //sort the groups by their numeric id to retain order of groups
         //since the ids are generated sequentially
-        groupIds.sort();
+        groupIds.sort(function(a, b) {
+            a = parseInt(a);
+            b = parseInt(b);
+
+            return a < b ? -1 : (a > b ? 1 : 0);
+        });
+
         for(var g=0;g<groupIds.length;g++)
         {
             var groupInfo = parameter_and_val_groups[paramName].groups[groupIds[g]];
