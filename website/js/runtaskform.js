@@ -1386,6 +1386,13 @@ function loadRunTaskForm(lsid) {
         $("#submitJob").replaceWith(Request.cleanJobSubmit.clone());
     }
 
+    // Clean the run_task_info variable
+    run_task_info = {
+        lsid: null, //lsid of the module
+        name: null, //name of the module
+        params: {} //contains parameter info necessary to build the job submit form, see the initParam() function for details
+    };
+
     $("#toggleDesc").click(function()
     {
         //show descriptions
