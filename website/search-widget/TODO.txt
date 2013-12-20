@@ -1,4 +1,0 @@
-TODO
-* Make arrow keys + enter work for search
-* Make drag & drop work for removing a pinned module
-* Cross-browser testing
