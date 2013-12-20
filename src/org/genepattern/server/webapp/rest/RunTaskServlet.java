@@ -402,13 +402,13 @@ public class RunTaskServlet extends HttpServlet
                     continue;
                 }
 
-                JSONArray groupNames = parameters.getJSONObject(parameterName).names();
-                JSONObject groups = parameters.getJSONObject(parameterName);
+                JSONArray groupInfos = parameters.getJSONArray(parameterName);
 
-                for(int g=0;g<groupNames.length();g++)
+                for(int g=0;g<groupInfos.length();g++)
                 {
-                    String groupName = groupNames.getString(g);
-                    Object val = groups.get(groupName);
+                    JSONObject groupInfo = groupInfos.getJSONObject(g);
+                    String groupName = groupInfo.getString("name");
+                    Object val = groupInfo.get("values");
 
                     if (val instanceof JSONArray) {
                         valueList=(JSONArray) val;

@@ -1752,14 +1752,19 @@ function submitTask()
     for(var p=0;p<parameterNames.length;p++)
     {
         var paramName = parameterNames[p];
-        param_values_by_group[paramName] = {};
+        param_values_by_group[paramName] = [];
         var groupIds = Object.keys(parameter_and_val_groups[paramName].groups);
+
+        //sort the groups by their numeric id to retain order of groups
+        //since the ids are generated sequentially
+        groupIds.sort();
         for(var g=0;g<groupIds.length;g++)
         {
             var groupInfo = parameter_and_val_groups[paramName].groups[groupIds[g]];
             var groupName = groupInfo.name;
             if(groupName == undefined || groupName == null)
             {
+                //if there is more than one group defined then they must be named
                 if(groupIds.length > 1)
                 {
                     javascript_abort("A group name is not set for " + paramName);
@@ -1768,9 +1773,11 @@ function submitTask()
                 {
                     groupName = "";
                 }
-
             }
-            param_values_by_group[paramName][groupName] = groupInfo.values;
+            var newGroupInfo = {};
+            newGroupInfo.name = groupName;
+            newGroupInfo.values = groupInfo.values;
+            param_values_by_group[paramName].push(newGroupInfo);
         }
     }
 
