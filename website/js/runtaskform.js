@@ -1170,6 +1170,25 @@ function updateValuesForGroup(groupId, paramName, valueList)
     parameter_and_val_groups[paramName].groups[groupId].values = valueList;
 }
 
+function getFileGroupIdByIndex(paramName, index)
+{
+    if(parameter_and_val_groups[paramName] == undefined || parameter_and_val_groups[paramName] == null
+        || parameter_and_val_groups[paramName].groups == undefined
+        || parameter_and_val_groups[paramName].groups == null )
+    {
+        javascript_abort("Error retrieving first group for parameter " + paramName);
+    }
+
+    var groupIds = Object.keys(parameter_and_val_groups[paramName].groups);
+    //check if index is out of range
+    if(index < groupIds.length )
+    {
+        return groupIds[index];
+    }
+
+    javascript_abort("Error retrieving group: index out of range " + index);
+}
+
 function getFilesForGroup(groupId, paramName)
 {
     if(parameter_and_val_groups[paramName].groups[groupId] == undefined
@@ -2044,8 +2063,13 @@ function checkFileSizes(files)
 
 function updateParamFileTable(paramName, fileDiv, groupId)
 {
-    if(groupId == null)
+    if(groupId == undefined || groupId == null)
     {
+        if(fileDiv == undefined || fileDiv == null)
+        {
+            javascript_abort("Not able to update file listing for " + paramName);
+        }
+
         groupId = getGroupId(fileDiv);
     }
 

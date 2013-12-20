@@ -130,17 +130,23 @@
                 // sets the value of a URL input field to specified value
                 // elementId input parameter id.
                 // value value to set field to.
-                function setInputField(elementId, value) {
+                function setInputField(elementId, value, groupId) {
                 	// See if the field is a file
-                	var fileObjListings = param_file_listing[elementId];
-                	
+                    if(groupId == undefined || groupId == null)
+                    {
+                        //no groupId was specified so just get the first group
+                        groupId = getFileGroupIdByIndex(elementId,  0);
+                    }
+
+                    var fileObjListings = getFilesForGroup(groupId, elementId);
+
                 	// If it is a file
                     if (fileObjListings !== null && fileObjListings !== undefined) {
                     	validateMaxFiles(elementId, fileObjListings.length + 1);
                         
                         fileObjListings.push({"name": value});
-                        param_file_listing[elementId] = fileObjListings;
-            			updateParamFileTable(elementId);
+                        updateFilesForGroup(groupId, elementId, fileObjListings);
+            			updateParamFileTable(elementId, null, groupId);
             			toggleFileButtons(elementId);
                     }
                     else { // Otherwise, assume it's a directory
