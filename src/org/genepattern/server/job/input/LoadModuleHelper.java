@@ -189,9 +189,22 @@ public class LoadModuleHelper {
                 _fileParam,
                 _formatParam,
                 parameterMap);
-            
+        
+        JSONObject json = asJsonV1(initialValues);
+        return json;
+    }
+    
+    /**
+     * Get the json representation of the given JobInput instance, 
+     * the v1 format pre GP 3.7.6 does not include group information.
+     * 
+     * @param jobInput
+     * @return
+     * @throws JSONException
+     */
+    public static JSONObject asJsonV1(final JobInput jobInput) throws JSONException {
         final JSONObject values=new JSONObject();
-        for(Entry<ParamId, Param> entry : initialValues.getParams().entrySet()) {
+        for(Entry<ParamId, Param> entry : jobInput.getParams().entrySet()) {
             final String pname=entry.getKey().getFqName();
             final JSONArray jsonArray = new JSONArray();
             for(final ParamValue val : entry.getValue().getValues()) {
