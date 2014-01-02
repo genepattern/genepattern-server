@@ -269,17 +269,18 @@ public class RunTaskServlet extends HttpServlet
                     _formatParam=parameterMap.get("_format")[0];
                 }
             } 
-            LoadModuleHelper loadModuleHelper=new LoadModuleHelper(userContext);
-            JSONObject initialValues=loadModuleHelper.getInitialValuesJson(
-                    lsid,
+            final LoadModuleHelper loadModuleHelper=new LoadModuleHelper(userContext);
+            final JobInput initialValues=loadModuleHelper.getInitialValues(lsid, 
                     taskInfo.getParameterInfoArray(), 
                     reloadJobInput, 
                     _fileParam, 
                     _formatParam, 
                     parameterMap);
-
-
-            responseObject.put("initialValues", initialValues);
+            
+            //TODO: change the call to v2 in order to get the grouping information for reloaded jobs
+            final JSONObject initialValuesJson=LoadModuleHelper.asJsonV1(initialValues);
+            //final JSONObject initialValuesJson=LoadModuleHelper.asJsonV2(initialValues);
+            responseObject.put("initialValues", initialValuesJson);
 
             return Response.ok().entity(responseObject.toString()).build();
         }
