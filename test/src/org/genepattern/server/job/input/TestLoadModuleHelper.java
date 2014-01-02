@@ -41,6 +41,7 @@ public class TestLoadModuleHelper {
 
     final private static String cmsLsid="urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00044:9";    
     final private static String ecmrLsid="urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00046:2"; 
+    final private static String testLsid="urn:lsid:broad.mit.edu:cancer.software.genepatterntest.module.analysis:00001:1";
     
     private JobInput reloadedValues;
     private String _fileParam;
@@ -329,5 +330,112 @@ public class TestLoadModuleHelper {
         final LinkedHashMap<String,List<String>> cmsExpectedValues=initCms();
         checkResults(cmsExpectedValues, actualInitialValues);
     }
+
+    /**
+     * Test case for new (circa 3.8.0) file group feature.
+     */
+    @Test
+    public void testAsJsonV2_singleValue() throws Exception {
+        JobInput jobInput=new JobInput();
+        jobInput.setLsid(testLsid);
+        jobInput.addValue("input.file", "ftp://gpftp.broadinstitute.org/example_data/datasets/all_aml/all_aml_test.cls");
+        JSONObject actual=LoadModuleHelper.asJsonV2(jobInput);
+        
+        Assert.assertNotNull(actual);
+        
+        JSONArray groupArray=actual.getJSONArray("input.file");
+        Assert.assertEquals("num groups", 1, groupArray.length());
+        JSONObject groupObj=groupArray.getJSONObject(0);
+        Assert.assertEquals("group[0].groupid", "", groupObj.getString("groupid"));
+        Assert.assertEquals("group[0].values.length", 1, groupObj.getJSONArray("values").length());
+        Assert.assertEquals("group[0].value[0]", "ftp://gpftp.broadinstitute.org/example_data/datasets/all_aml/all_aml_test.cls", 
+                groupObj.getJSONArray("values").get(0));
+    }
     
+    @Test
+    public void testAsJsonV2_singleAnonymousGroup() throws Exception {
+        JobInput jobInput=new JobInput();
+        jobInput.setLsid(testLsid);
+        jobInput.addValue("input.file", "ftp://gpftp.broadinstitute.org/example_data/datasets/all_aml/all_aml_test.cls");
+        jobInput.addValue("input.file", "ftp://gpftp.broadinstitute.org/example_data/datasets/all_aml/all_aml_test.gct");
+        jobInput.addValue("input.file", "ftp://gpftp.broadinstitute.org/example_data/datasets/all_aml/all_aml_train.cls");
+        jobInput.addValue("input.file", "ftp://gpftp.broadinstitute.org/example_data/datasets/all_aml/all_aml_train.gct");
+        JSONObject actual=LoadModuleHelper.asJsonV2(jobInput);
+        
+        Assert.assertNotNull(actual);
+
+        JSONArray groupArray=actual.getJSONArray("input.file");
+        Assert.assertEquals("num groups", 1, groupArray.length());
+        JSONObject groupObj=groupArray.getJSONObject(0);
+        Assert.assertEquals("group[0].groupid", "", groupObj.getString("groupid"));
+        Assert.assertEquals("group[0].length", 4, groupObj.getJSONArray("values").length());
+        Assert.assertEquals("group[0].value[0]", "ftp://gpftp.broadinstitute.org/example_data/datasets/all_aml/all_aml_test.cls", 
+                groupObj.getJSONArray("values").get(0));
+        Assert.assertEquals("group[0].value[1]", "ftp://gpftp.broadinstitute.org/example_data/datasets/all_aml/all_aml_test.gct", 
+                groupObj.getJSONArray("values").get(1));
+        Assert.assertEquals("group[0].value[2]", "ftp://gpftp.broadinstitute.org/example_data/datasets/all_aml/all_aml_train.cls", 
+                groupObj.getJSONArray("values").get(2));
+        Assert.assertEquals("group[0].value[3]", "ftp://gpftp.broadinstitute.org/example_data/datasets/all_aml/all_aml_train.gct", 
+                groupObj.getJSONArray("values").get(3));
+    }
+
+    @Test
+    public void testAsJsonV2_singleNamedGroup() throws Exception {
+        final JobInput jobInput=new JobInput();
+        jobInput.setLsid(testLsid);
+        final GroupId groupId=new GroupId("normal");
+        jobInput.addValue("input.file", "ftp://gpftp.broadinstitute.org/example_data/datasets/all_aml/all_aml_test.cls", groupId);
+        jobInput.addValue("input.file", "ftp://gpftp.broadinstitute.org/example_data/datasets/all_aml/all_aml_test.gct", groupId);
+        jobInput.addValue("input.file", "ftp://gpftp.broadinstitute.org/example_data/datasets/all_aml/all_aml_train.cls", groupId);
+        jobInput.addValue("input.file", "ftp://gpftp.broadinstitute.org/example_data/datasets/all_aml/all_aml_train.gct", groupId);
+        JSONObject actual=LoadModuleHelper.asJsonV2(jobInput);
+        
+        Assert.assertNotNull(actual);
+
+        JSONArray groupArray=actual.getJSONArray("input.file");
+        Assert.assertEquals("num groups", 1, groupArray.length());
+        JSONObject groupObj=groupArray.getJSONObject(0);
+        Assert.assertEquals("group[0].groupid", groupId.getGroupId(), groupObj.getString("groupid"));
+        Assert.assertEquals("group[0].length", 4, groupObj.getJSONArray("values").length());
+        Assert.assertEquals("group[0].value[0]", "ftp://gpftp.broadinstitute.org/example_data/datasets/all_aml/all_aml_test.cls", 
+                groupObj.getJSONArray("values").get(0));
+        Assert.assertEquals("group[0].value[1]", "ftp://gpftp.broadinstitute.org/example_data/datasets/all_aml/all_aml_test.gct", 
+                groupObj.getJSONArray("values").get(1));
+        Assert.assertEquals("group[0].value[2]", "ftp://gpftp.broadinstitute.org/example_data/datasets/all_aml/all_aml_train.cls", 
+                groupObj.getJSONArray("values").get(2));
+        Assert.assertEquals("group[0].value[3]", "ftp://gpftp.broadinstitute.org/example_data/datasets/all_aml/all_aml_train.gct", 
+                groupObj.getJSONArray("values").get(3));
+    }
+
+    @Test
+    public void testAsJsonV2_groups() throws Exception {
+        final JobInput jobInput=new JobInput();
+        jobInput.setLsid(testLsid);
+        final GroupId testGroup=new GroupId("test");
+        final GroupId trainGroup=new GroupId("train");
+        jobInput.addValue("input.file", "ftp://gpftp.broadinstitute.org/example_data/datasets/all_aml/all_aml_test.cls", testGroup);
+        jobInput.addValue("input.file", "ftp://gpftp.broadinstitute.org/example_data/datasets/all_aml/all_aml_test.gct", testGroup);
+        jobInput.addValue("input.file", "ftp://gpftp.broadinstitute.org/example_data/datasets/all_aml/all_aml_train.cls", trainGroup);
+        jobInput.addValue("input.file", "ftp://gpftp.broadinstitute.org/example_data/datasets/all_aml/all_aml_train.gct", trainGroup);
+        JSONObject actual=LoadModuleHelper.asJsonV2(jobInput);
+        
+        Assert.assertNotNull(actual);
+
+        JSONArray groupArray=actual.getJSONArray("input.file");
+        Assert.assertEquals("num groups", 2, groupArray.length());
+        Assert.assertEquals("group[0].groupid", testGroup.getGroupId(), groupArray.getJSONObject(0).getString("groupid"));
+        Assert.assertEquals("group[0].length", 2, groupArray.getJSONObject(0).getJSONArray("values").length());
+        Assert.assertEquals("group[0].value[0]", "ftp://gpftp.broadinstitute.org/example_data/datasets/all_aml/all_aml_test.cls", 
+                groupArray.getJSONObject(0).getJSONArray("values").get(0));
+        Assert.assertEquals("group[0].value[1]", "ftp://gpftp.broadinstitute.org/example_data/datasets/all_aml/all_aml_test.gct", 
+                groupArray.getJSONObject(0).getJSONArray("values").get(1));
+        
+        Assert.assertEquals("group[1].groupid", trainGroup.getGroupId(), groupArray.getJSONObject(1).getString("groupid"));
+        Assert.assertEquals("group[1].length", 2, groupArray.getJSONObject(1).getJSONArray("values").length());
+        Assert.assertEquals("group[1].value[0]", "ftp://gpftp.broadinstitute.org/example_data/datasets/all_aml/all_aml_train.cls", 
+                groupArray.getJSONObject(1).getJSONArray("values").get(0));
+        Assert.assertEquals("group[1].value[1]", "ftp://gpftp.broadinstitute.org/example_data/datasets/all_aml/all_aml_train.gct", 
+                groupArray.getJSONObject(1).getJSONArray("values").get(1));
+    }
+
 }

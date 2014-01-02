@@ -215,6 +215,44 @@ public class LoadModuleHelper {
         }
         return values;
     }
+    
+    /**
+     * Get the v2 json representation of the given JobInput instance,
+     * this version includes group information for optionally organizing lists of input values 
+     * into groups.
+     * 
+     (a) groupid is not declared at all, e.g.
+        "input.file": [ { "values": [ "<url1>" ] } ]
+    (b) groupid is null, e.g.
+        "input.file": [ { "groupid": null, "values": [ "<url1>" ] } ]
+    (c) groupid is empty string, e.g.
+        "input.file": [ {"groupid": "", "values": [ "<url1>" ] } ]
+
+     * 
+     * @param jobInput
+     * @return
+     * @throws JSONException
+     */
+    public static JSONObject asJsonV2(final JobInput jobInput) throws JSONException {
+        final JSONObject jsonObj=new JSONObject();
+        for(final Entry<ParamId, Param> paramEntry : jobInput.getParams().entrySet()) {            
+            final Param param=paramEntry.getValue();
+            final JSONArray groupArray=new JSONArray();
+            //step through the groups in order
+            for(final GroupId groupId : param.getGroups()) {
+                final JSONObject groupObj = new JSONObject();
+                final JSONArray values=new JSONArray();
+                for(final ParamValue paramValue : param.getValuesInGroup(groupId)) {
+                    values.put(paramValue.getValue());
+                }
+                groupObj.put("groupid", groupId.getGroupId());
+                groupObj.put("values", values);
+                groupArray.put(groupObj);
+            }
+            jsonObj.put(paramEntry.getKey().getFqName(), groupArray);
+        }
+        return jsonObj;
+    }
 
     public JobInput getInitialValues(
             final String lsid, //the lsid for the module or pipeline
