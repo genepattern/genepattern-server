@@ -1,9 +1,10 @@
 package org.genepattern.server.job.input.collection;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
-//import org.apache.log4j.Logger;
+import org.apache.log4j.Logger;
 import org.genepattern.server.config.ServerConfiguration.Context;
 import org.genepattern.server.dm.GpFilePath;
 import org.genepattern.server.job.input.GroupInfo;
@@ -29,11 +30,12 @@ import org.genepattern.server.job.input.collection.ParamGroupWriter.Column;
  *
  */
 public class ParamGroupHelper {
-    //private static final Logger log = Logger.getLogger(ParamGroupHelper.class);
+    private static final Logger log = Logger.getLogger(ParamGroupHelper.class);
     
     private final Context jobContext;
     private final GroupInfo groupInfo;
     private final Param param;
+    private final List<GpFilePath> gpFilePaths;
     
     /**
      * The automatically generated name for the file list file is the <param.name>+<filenameSuffix>,
@@ -61,6 +63,13 @@ public class ParamGroupHelper {
         this.groupInfo=in.groupInfo;
         this.filenameSuffix=in.filenameSuffix;
         this.downloadExternalFiles=in.downloadExternalFiles;
+        try {
+            this.gpFilePaths=initFilelist(jobContext, downloadExternalFiles);
+        }
+        catch (Exception e) {
+            log.error(e);
+            throw new IllegalArgumentException("Error initializing gpFilePaths for param");
+        }
     }
     
     private GpFilePath initToFile() throws Exception {
@@ -73,10 +82,13 @@ public class ParamGroupHelper {
     }
 
     public GpFilePath createFilelist() throws Exception {
-        final List<GpFilePath> gpFilePaths=initFilelist(jobContext, downloadExternalFiles);
         final GpFilePath toFile=initToFile();
         writeGroupFile(toFile, gpFilePaths);
         return toFile;
+    }
+    
+    public List<GpFilePath> getGpFilePaths() {
+        return Collections.unmodifiableList(gpFilePaths);
     }
     
     /**
@@ -86,7 +98,9 @@ public class ParamGroupHelper {
      * @param jobContext
      * @return
      */
-    private List<GpFilePath> initFilelist(final Context jobContext, final boolean downloadExternalFiles) throws Exception {
+    private List<GpFilePath> initFilelist(final Context jobContext, final boolean downloadExternalFiles) 
+    throws Exception 
+    {
         final List<GpFilePath> gpFilePaths=new ArrayList<GpFilePath>();
         
         for(final ParamValue value : param.getValues()) {

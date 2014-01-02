@@ -132,22 +132,20 @@ public class ReloadJobHelper {
             if (paramInfoMap.containsKey(pname)) {
                 formalParam=paramInfoMap.get(pname).getFormal();
             }
-            //if formalParam is null, it's probably an output file, as opposed to an initial input param
-            final List<String> values=getOriginalInputValues(""+reloadJob.getJobNumber(), formalParam, actualParam);
-            if (values != null) {
-                for(final String value : values) {
-                    jobInput.addValue(pname, value);
-                }
+            final Param param=getOriginalParam(""+reloadJob.getJobNumber(), formalParam, actualParam);
+            if (param != null) {
+                jobInput.setValue(param.getParamId(), param);
             }
         }
         return jobInput;
     }
     
     /**
-     * Get the list of previous input values for the given parameter, this is to be called 
+     * Get the original input value or list of values for the given parameter, this is to be called 
      * when reloading a job.
      * 
      * Has special-handling for parameter lists, when the original run has a list of values for the parameter.
+     * Has special-handling for grouped parameter lists.
      * Has special-handling for '<GenePatternURL>', when the formalParam is a File or Directory, always replace the
      *     '<GenePatternURL>' substitution variable with the actual GenePatternURL.
      *     
@@ -162,7 +160,116 @@ public class ReloadJobHelper {
      * 
      * @return the list of zero or more values, if any, that were set for the original job.
      */
-    private List<String> getOriginalInputValues(final String reloadJobId, final ParameterInfo formalParam, final ParameterInfo paramValue) {
+    private Param getOriginalParam(final String reloadJobId, final ParameterInfo formalParam, final ParameterInfo paramValue) {
+        if (paramValue==null) {
+            throw new IllegalArgumentException("paramValue == null");
+        }
+        HashMap<?,?> attrs=paramValue.getAttributes();
+        if (attrs==null) {
+            log.error("paramValue.attributes==null");
+            //return Collections.emptyList();
+            return new Param(new ParamId(formalParam.getName()), false);
+        }
+        
+        if (paramValue.isOutputFile()) {
+            //ignore output files
+            log.debug("pinfo.isOutputFile == true");
+            return null;
+        }
+        
+        log.debug("reloadJobId="+reloadJobId+", "+paramValue.getName()+"="+paramValue.getValue());
+        //extract all 'values_' 
+        SortedMap<Integer,String> valuesMap=new TreeMap<Integer,String>();
+        SortedMap<Integer,String> groupMap=new TreeMap<Integer,String>();
+        for(Entry<?,?> entry : attrs.entrySet()) {
+            String key=entry.getKey().toString();
+            if (key.startsWith("values_")) {
+                try {
+                    int idx=Integer.parseInt( key.split("_")[1] );
+                    String value=entry.getValue().toString();
+                    value=replaceGpUrl(value);
+                    valuesMap.put(idx, value);
+                }
+                catch (Throwable t) {
+                    log.error("Can't parse pinfo.attribute, key="+key, t);
+                }
+            }
+            else if (key.startsWith("valuesGroup_")) {
+                try {
+                    int idx=Integer.parseInt( key.split("_")[1] );
+                    String groupId=entry.getValue().toString();
+                    groupMap.put(idx, groupId);
+                }
+                catch (Throwable t) {
+                    log.error("Can't parse pinfo.attribute, key="+key, t);
+                }
+            }
+        }
+        if (valuesMap.size() == 0) {
+            //special-case for reloading an empty file list
+            if (formalParam.getAttributes().containsKey(NumValues.PROP_LIST_MODE)) {
+                if (isReloadEmpty(formalParam)) {
+                    //return Collections.emptyList();
+                    return new Param(new ParamId(formalParam.getName()), false);
+                }
+            }
+        }
+        
+        if (valuesMap.size() > 0) {
+            Param param=new Param(new ParamId(formalParam.getName()), false);
+            for(final Entry<Integer,String> entry : valuesMap.entrySet()) {
+                final String groupId=groupMap.get(entry.getKey());
+                if (groupId != null) {
+                    param.addValue(new GroupId(groupId), new ParamValue(entry.getValue()));
+                }
+                else {
+                    param.addValue(new ParamValue(entry.getValue()));
+                }
+            }            
+            return param;
+        }
+        
+        //List<String> values=new ArrayList<String>();
+        //if necessary, replace <GenePatternURL> with actual value
+        String value=paramValue.getValue();
+        
+        //special-case for form upload reloaded from a previous GP version (<=3.5.0)
+        boolean fileFromPrevGpVersion=false;
+        if (formalParam.isInputFile()) {
+            ReloadFromPreviousVersion r=new ReloadFromPreviousVersion(reloadJobId, paramValue);
+            if (r.isWebUpload()) {
+                log.debug("is previous form upload: "+paramValue.getValue());
+                fileFromPrevGpVersion=true;
+                value=r.getInputFormValue();
+            }
+            else if (r.isSoapUpload()) {
+                log.debug("is previous SOAP upload: "+paramValue.getValue());
+                fileFromPrevGpVersion=true;
+                value=r.getInputFormValue();
+            }
+        }
+        //special-case for input files and directories, if necessary replace actual URL with '<GenePatternURL>'
+        if (!fileFromPrevGpVersion && formalParam != null) {
+            if (formalParam.isInputFile() || formalParam._isDirectory()) {
+                value=replaceGpUrl(paramValue.getValue());
+            }
+        }
+        //values.add(value);
+        log.debug("value: "+value);
+        //return values;
+        Param param = new Param(new ParamId(formalParam.getName()), false);
+        param.addValue(new ParamValue(value));
+        return param;
+    }
+
+    /**
+     * @deprecated
+     * @param reloadJobId
+     * @param formalParam
+     * @param paramValue
+     * @return
+     */
+    private List<String> _getOriginalInputValues(final String reloadJobId, final ParameterInfo formalParam, final ParameterInfo paramValue) {
         if (paramValue==null) {
             throw new IllegalArgumentException("paramValue == null");
         }
@@ -196,7 +303,7 @@ public class ReloadJobHelper {
             }
         }
         if (valuesMap.size() == 0) {
-            //special-case for reloading and empty file list
+            //special-case for reloading an empty file list
             if (formalParam.getAttributes().containsKey(NumValues.PROP_LIST_MODE)) {
                 if (isReloadEmpty(formalParam)) {
                     return Collections.emptyList();

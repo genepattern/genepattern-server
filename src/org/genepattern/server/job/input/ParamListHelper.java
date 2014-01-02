@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.regex.Pattern;
 
 import org.apache.log4j.Logger;
@@ -265,18 +266,14 @@ public class ParamListHelper {
             if (pinfo.isInputFile()) {
                 log.debug(pinfo.getName()+" input file and default_value is empty string");
                 return null;
-                //return Collections.emptyList();
             }
         }
         
         //parse default_values param ... 
         //TODO: implement support for default values as a list of values
-        if (defaultValue != null) {
-            List<String> defaultValues=new ArrayList<String>();
-            defaultValues.add(pinfo.getDefaultValue());
-            return defaultValues;
-        }
-        return null;
+        List<String> defaultValues=new ArrayList<String>();
+        defaultValues.add(pinfo.getDefaultValue());
+        return defaultValues;
     }
 
     public NumValues getAllowedNumValues() {
@@ -486,11 +483,23 @@ public class ParamListHelper {
                 .jobContext(jobContext)
                 .groupInfo(groupInfo)
                 .build();
-            //final ParamGroupHelper pgh=ParamGroupHelper.create(jobContext, actualValues, groupInfo);
             final GpFilePath toFile=pgh.createFilelist();
             parameterInfoRecord.getActual().setValue(toFile.getUrl().toExternalForm());
-            //TODO: figure out how to reload the values, the current plan is to read the contents of the 
-            //    group file from the file system
+            
+            //save the filelist and groupids to the parameter info CLOB
+            final List<GpFilePath> listOfValues=pgh.getGpFilePaths();
+            int idx=0;
+            for(final Entry<GroupId, ParamValue> entry : actualValues.getValuesAsEntries()) {
+                final String groupId = entry.getKey().getGroupId();
+                final GpFilePath gpFilePath=listOfValues.get(idx);
+                
+                final String key="values_"+idx;
+                final String value="<GenePatternURL>"+gpFilePath.getRelativeUri().toString();
+                parameterInfoRecord.getActual().getAttributes().put(key, value);
+                final String groupKey="valuesGroup_"+idx;
+                parameterInfoRecord.getActual().getAttributes().put(groupKey, groupId);
+                ++idx;
+            }
         }
         else if (createFilelist) {
             final boolean downloadExternalFiles=true;
