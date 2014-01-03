@@ -151,8 +151,9 @@
                             if (selectedUrl === "") {
                                 return;
                             }						// Prevent submitting if no file is selected
-                            
-							setParameter(selectedInput, selectedUrl);
+
+                            var groupId = jq("#dialogUrlDiv").data("groupId");
+							setParameter(selectedInput, selectedUrl, groupId);
 
                             jq("#serverFileTreeDialog").dialog("close"); 			// Close the dialog
                         }

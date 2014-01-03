@@ -814,7 +814,7 @@ function createChoiceDiv(parameterName, groupId)
     return selectChoiceDiv;
 }
 
-function createFileDiv(parameterName, groupId, enableBatch)
+function createFileDiv(parameterName, groupId, enableBatch, setInitialValues)
 {
     var fileDiv = $("<div class='fileDiv mainDivBorder'>");
 
@@ -904,6 +904,7 @@ function createFileDiv(parameterName, groupId, enableBatch)
 
     var urlButton = $("<button type='button' class='urlButton'>"+ addUrlText +"</button>");
     fileDiv.append(urlButton);
+    urlButton.data("groupId", groupId);
     urlButton.button().click(function()
     {
         var urlDiv = $("<div class='urlDiv'/>");
@@ -946,7 +947,7 @@ function createFileDiv(parameterName, groupId, enableBatch)
             updateFilesForGroup(groupId, paramName, fileObjListings);
 
             // add to file listing for the specified parameter
-            updateParamFileTable(paramName, $(this).closest(".fileDiv"));
+            updateParamFileTable(paramName, $(this).closest(".fileDiv"), groupId);
             toggleFileButtons(paramName);
 
         });
@@ -961,6 +962,7 @@ function createFileDiv(parameterName, groupId, enableBatch)
         urlActionDiv.append(cancelButton);
         urlDiv.append(urlActionDiv);
 
+        $("#dialogUrlDiv").data("groupId", groupId);
         $("#dialogUrlDiv").append(urlDiv);
         openServerFileDialog(this);
     });
@@ -973,7 +975,7 @@ function createFileDiv(parameterName, groupId, enableBatch)
 
     var initialValuesList = paramDetails.initialValues;
     //also check if this parameter is also a choice parameter
-    if( initialValuesList != undefined &&  initialValuesList != null
+    if(setInitialValues && initialValuesList != undefined &&  initialValuesList != null
         && initialValuesList.length > 0 && !run_task_info.params[parameterName].initialChoiceValues)
     {
         //check if max file length will be violated
@@ -1216,7 +1218,7 @@ function updateFilesForGroup(groupId, paramName, filesList)
     parameter_and_val_groups[paramName].groups[groupId].files = filesList;
 }
 
-function createParamValueEntryDiv(parameterName)
+function createParamValueEntryDiv(parameterName, setInitialValues)
 {
     var contentDiv = $("<div class='valueEntryDiv'/>");
     var groupId = getNextGroupId(parameterName);
@@ -1243,7 +1245,7 @@ function createParamValueEntryDiv(parameterName)
 
     if($.inArray(field_types.FILE, run_task_info.params[parameterName].type) != -1)
     {
-        contentDiv.append(createFileDiv(parameterName, groupId, enableBatch));
+        contentDiv.append(createFileDiv(parameterName, groupId, enableBatch, setInitialValues));
     }
 
     if($.inArray(field_types.TEXT, run_task_info.params[parameterName].type) != -1)
@@ -1270,7 +1272,7 @@ function createParamValueEntryDiv(parameterName)
         }
 
         var groupingDiv = $("<div class='groupingDiv'/>");
-        var groupTextField = $("<input type='text'/>");
+        var groupTextField = $("<input class='groupingTextField' type='text'/>");
         groupTextField.change(function()
         {
             var paramName = $(this).parents(".pRow").first().attr("id");
@@ -1365,7 +1367,7 @@ function loadParameterInfo(parameters, initialValues)
                 event.preventDefault();
 
                 var parameterName = $(this).parents(".pRow").attr("id");
-                $(this).parents(".pRow").first().find(".paramValueTd").find(".valueEntryDiv").last().after(createParamValueEntryDiv(parameterName));
+                $(this).parents(".pRow").first().find(".paramValueTd").find(".valueEntryDiv").last().after(createParamValueEntryDiv(parameterName, false));
                 //TODO: Add another of these input fields
 
             });
@@ -1659,7 +1661,7 @@ function isFile(param)
 function validate()
 {
     var missingReqParameters = [];
-
+    var missingGroupNames = [];
     var paramNames = Object.keys(parameter_and_val_groups);
     for(var p=0;p<paramNames.length;p++)
     {
@@ -1669,11 +1671,11 @@ function validate()
             continue;
         }
 
-        var groupNames = Object.keys(groups);
-        for(var g=0;g<groupNames.length;g++)
+        var groupIds = Object.keys(groups);
+        for(var g=0;g<groupIds.length;g++)
         {
-            var values = parameter_and_val_groups[paramNames[p]].groups[groupNames[g]].values;
-            var files = parameter_and_val_groups[paramNames[p]].groups[groupNames[g]].files;
+            var values = parameter_and_val_groups[paramNames[p]].groups[groupIds[g]].values;
+            var files = parameter_and_val_groups[paramNames[p]].groups[groupIds[g]].files;
 
             var required = run_task_info.params[paramNames[p]].required;
             //check if it is required and there is no value specified
@@ -1682,6 +1684,16 @@ function validate()
                 && (files == undefined || files == null || files.length == 0))
             {
                 missingReqParameters.push(paramNames[p]);
+                break;
+            }
+
+            //check that group names were specified if there is more than one group
+            var groupName = parameter_and_val_groups[paramNames[p]].groups[groupIds[g]].name;
+            if((groupName == undefined || groupName == null) && groupIds.length > 1)
+            {
+                //if there is more than one group defined then they must be named
+                missingGroupNames.push(paramNames[p]);
+                break;
             }
         }
     }
@@ -1698,6 +1710,7 @@ function validate()
     {
         //create div to list of all parameters with missing values
         var missingReqParamsDiv = $("<div id='missingRequiredParams'/>");
+        $("#submitJob").before(missingReqParamsDiv);
         missingReqParamsDiv.append("<p class='errorMessage'>Please provide a value for the following parameter(s):</p>");
 
         var pListing = $("<ul class='errorMessage'/>");
@@ -1720,6 +1733,39 @@ function validate()
 
             $("#" + jqEscape(missingReqParameters[p])).find(".paramValueTd").addClass("errorHighlight");
             $("#" + jqEscape(missingReqParameters[p])).find(".paramValueTd").append(errorMessage);
+        }
+
+        return false;
+    }
+
+    //do something similar if missing group names were found
+    if(missingGroupNames.length > 0)
+    {
+        //create div to list of all parameters with missing values
+        var missingGroupNamesDiv = $("<div id='missingGroupNamesParams'/>");
+        $("#submitJob").before(missingGroupNamesDiv);
+        missingGroupNamesDiv.append("<p class='errorMessage'>Please provide labels for the following parameter(s):</p>");
+
+        var pListing = $("<ul class='errorMessage'/>");
+        missingGroupNamesDiv.append(pListing);
+
+        var errorMessage = "<div class='errorMessage'>This value is required</div>";
+
+        for(p=0;p<missingGroupNames.length;p++)
+        {
+            var displayname = missingGroupNames[p];
+
+            //check if the parameter has an alternate name
+            if(run_task_info.params[missingGroupNames[p]].displayname != undefined
+                && run_task_info.params[missingGroupNames[p]].displayname!= "")
+            {
+                displayname = run_task_info.params[missingGroupNames[p]].displayname;
+            }
+
+            pListing.append("<li>"+displayname+"</li>");
+
+            $("#" + jqEscape(missingGroupNames[p])).find(".paramValueTd").addClass("errorHighlight");
+            $("#" + jqEscape(missingGroupNames[p])).find(".paramValueTd").find(".groupingTextField").after(errorMessage);
         }
 
         return false;
@@ -1797,11 +1843,7 @@ function submitTask()
             if(groupName == undefined || groupName == null)
             {
                 //if there is more than one group defined then they must be named
-                if(groupIds.length > 1)
-                {
-                    javascript_abort("A group name is not set for " + paramName);
-                }
-                else
+                if(groupIds.length == 1)
                 {
                     groupName = "";
                 }
@@ -2078,7 +2120,21 @@ function updateParamFileTable(paramName, fileDiv, groupId)
     if(fileDiv == null)
     {
         var paramRow = $("#" + jqEscape(paramName));
-        fileDiv = paramRow.find(".fileDiv").first();
+        //check if a groupId was given
+        if(groupId != undefined && groupId != null)
+        {
+            paramRow.find(".valueEntryDiv").each(function()
+            {
+                if($(this).data("groupId") == groupId)
+                {
+                    fileDiv = $(this).find(".fileDiv");
+                }
+            });
+        }
+        else
+        {
+            fileDiv = paramRow.find(".fileDiv").first();
+        }
 
         if(fileDiv == null)
         {
@@ -2504,6 +2560,7 @@ function javascript_abort(message)
     if(message != undefined && message != null && message != "")
     {
         abortMsg = "Request to abort javascript execution: " + message;
+        alert(abortMsg);
     }
 
     console.log(abortMsg);
@@ -2515,7 +2572,7 @@ function jqEscape(str) {
     return str.replace(/([;&,\.\+\*\~':"\!\^$%@\[\]\(\)=>\|])/g, '\\$1');
 }
 
-function setParameter(paramName, value)
+function setParameter(paramName, value, groupId)
 {
     var paramDetails = run_task_info.params[paramName];
 
@@ -2534,7 +2591,7 @@ function setParameter(paramName, value)
 
     if($.inArray(field_types.FILE, paramDetails.type) != -1)
     {
-        setInputField(paramName, value);
+        setInputField(paramName, value, groupId);
         return;
     }
 
