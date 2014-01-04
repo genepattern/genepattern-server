@@ -2481,7 +2481,6 @@ function setAllFileParamValues()
     for(var p=0;p<paramNames.length;p++)
     {
         var paramName = paramNames[p];
-        var fileList = [];
         var groups = parameter_and_val_groups[paramName].groups;
         if(groups == null)
         {
@@ -2502,6 +2501,8 @@ function setAllFileParamValues()
                 //check if value already set from a choice list
                 continue;
             }
+
+            var fileList = [];
 
             for(var f=0; f < param_files.length; f++)
             {
