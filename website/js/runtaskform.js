@@ -1294,12 +1294,11 @@ function createParamValueEntryDiv(parameterName, setInitialValues)
         var delButton = $("<img class='images floatRight' src='/gp/images/delete-blue.png'/>");
         delButton.button().click(function()
         {
-            $(this).parents(".valueEntryDiv").remove();
-
             //TODO remove the grouping;
             var paramName = $(this).parents(".pRow").first().attr("id");
             var groupId = getGroupId($(this));
             updateFilesForGroup(groupId, paramName, []);
+            $(this).parents(".valueEntryDiv").remove();
         });
 
         if($("#"+jqEscape(parameterName)).find(".valueEntryDiv").length != 0)
