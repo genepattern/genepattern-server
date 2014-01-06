@@ -47,6 +47,7 @@ public class JobInputApiLegacy {
         }
         this.taskInfo=getTaskStrategy.getTaskInfo(jobInput.getLsid());
         this.taskInfo.getParameterInfoArray();
+        userContext.setTaskInfo(taskInfo);
     }
 
     public TaskInfo getTaskInfo() {
