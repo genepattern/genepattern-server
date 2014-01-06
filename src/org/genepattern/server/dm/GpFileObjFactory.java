@@ -276,7 +276,15 @@ public class GpFileObjFactory {
      * @return a GpFilePath
      * @throws Exception
      */
-    static public GpFilePath getRequestedGpFileObj(String urlStr, LSID lsid) throws Exception {
+    static public GpFilePath getRequestedGpFileObj(String urlStr, final LSID lsid) throws Exception {
+        //special-case for <libdir> substitution
+        if (urlStr.startsWith("<libdir>")) {
+            final TaskInfo taskinfo = TaskInfoCache.instance().getTask(lsid.toString());
+            //strip out the <libdir> substitution to get the relative path
+            final String path = urlStr.replace("<libdir>", "");
+            return new TasklibPath(taskinfo, path);
+        }
+
         //special-case for <GenePatternURL> substitution
         if (urlStr.startsWith("<GenePatternURL>")) {
             URL url = ServerConfiguration.instance().getGenePatternURL();
@@ -292,17 +300,6 @@ public class GpFileObjFactory {
                 urlStr+="/";
             }
             urlStr+=path;
-        }
-
-        if(urlStr.startsWith("<libdir>"))
-        {
-           // taskLibDir = DirectoryManager.getTaskLibDir(taskInfo);
-           // File f = new File(taskLibDir);
-            TaskInfo taskinfo = TaskInfoCache.instance().getTask(lsid.toString());
-
-            //strip out the <libdir> substitution to get the relative path
-            String path = urlStr.replace("<libdir>", "");
-            return new TasklibPath(taskinfo, path);
         }
 
         //create a uri, which automatically decodes the url
