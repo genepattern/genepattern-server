@@ -135,6 +135,16 @@ public class ServerConfiguration {
         public boolean isAdmin() {
             return isAdmin;
         }
+        
+        public String getLsid() {
+            if (taskInfo != null) {
+                return taskInfo.getLsid();
+            }
+            if (jobInfo != null) {
+                return jobInfo.getTaskLSID();
+            }
+            return null;
+        }
     }
 
     private static ServerConfiguration singleton = new ServerConfiguration();
