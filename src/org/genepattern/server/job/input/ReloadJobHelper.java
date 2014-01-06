@@ -219,11 +219,11 @@ public class ReloadJobHelper {
             Param param=new Param(new ParamId(formalParam.getName()), false);
             for(final Entry<Integer,String> entry : valuesMap.entrySet()) {
                 final String groupId=groupMap.get(entry.getKey());
-                if (groupId != null) {
+                if (groupId != null && groupId.trim().length() > 0) {
                     param.addValue(new GroupId(groupId), new ParamValue(entry.getValue()));
                 }
                 else {
-                    param.addValue(new ParamValue(entry.getValue()));
+                    param.addValue(GroupId.EMPTY, new ParamValue(entry.getValue()));
                 }
             }            
             return param;
