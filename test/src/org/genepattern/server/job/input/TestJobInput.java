@@ -167,7 +167,7 @@ public class TestJobInput {
         final JobInput jobInput = new JobInput();
         jobInput.setLsid(lsid);
         jobInput.addValue("inputList", DATA_URL+"all_aml_train.res", new GroupId(""));
-        jobInput.addValue("inputList", DATA_URL+"all_aml_test.res", new GroupId(""));
+        jobInput.addValue("inputList", DATA_URL+"all_aml_test.res", new GroupId(" "));
         jobInput.addValue("inputList", DATA_URL+"all_aml_test.cls", new GroupId(""));
         jobInput.addValue("inputList", DATA_URL+"all_aml_test.gct", new GroupId(""));
         jobInput.addValue("inputList", DATA_URL+"all_aml_train.cls", new GroupId(""));
