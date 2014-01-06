@@ -17,7 +17,7 @@ public class GroupId {
         this.groupId="";
     }
     public GroupId(final String nameIn) {
-        if (nameIn==null || nameIn.length()==0) {
+        if (nameIn==null) {
             throw new IllegalArgumentException("name not set");
         }
         this.name=nameIn.trim();
