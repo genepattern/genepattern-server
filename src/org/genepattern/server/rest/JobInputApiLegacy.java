@@ -21,20 +21,20 @@ import org.genepattern.webservice.TaskInfo;
 public class JobInputApiLegacy {
     final static private Logger log = Logger.getLogger(JobInputApiLegacy.class);
 
-    private Context jobContext;
+    private Context userContext;
     private JobInput jobInput;
     private TaskInfo taskInfo;
     private final boolean initDefault;
     
 
-    public JobInputApiLegacy(final Context jobContext, final JobInput jobInput) {
-        this(jobContext, jobInput, null);
+    public JobInputApiLegacy(final Context userContext, final JobInput jobInput) {
+        this(userContext, jobInput, null);
     }
-    public JobInputApiLegacy(final Context jobContext, final JobInput jobInput, final GetTaskStrategy getTaskStrategyIn) {
-        this(jobContext, jobInput, getTaskStrategyIn, false);
+    public JobInputApiLegacy(final Context userContext, final JobInput jobInput, final GetTaskStrategy getTaskStrategyIn) {
+        this(userContext, jobInput, getTaskStrategyIn, false);
     }
-    public JobInputApiLegacy(final Context jobContext, final JobInput jobInput, final GetTaskStrategy getTaskStrategyIn, final boolean initDefault) {
-        this.jobContext=jobContext;
+    public JobInputApiLegacy(final Context userContext, final JobInput jobInput, final GetTaskStrategy getTaskStrategyIn, final boolean initDefault) {
+        this.userContext=userContext;
         this.jobInput=jobInput;
         this.initDefault=initDefault;
         
@@ -68,7 +68,7 @@ public class JobInputApiLegacy {
             // validate num values
             // and initialize input file (or parameter) lists as needed
             Param inputParam=jobInput.getParam( entry.getKey() );
-            ParamListHelper plh=new ParamListHelper(jobContext, entry.getValue(), inputParam, initDefault);
+            ParamListHelper plh=new ParamListHelper(userContext, entry.getValue(), inputParam, initDefault);
             plh.validateNumValues();
             plh.updatePinfoValue();
         }
@@ -90,7 +90,7 @@ public class JobInputApiLegacy {
     }
 
     public JobInfo submitJob(final int taskID, final ParameterInfo[] parameters) throws JobSubmissionException {
-        AddNewJobHandler req = new AddNewJobHandler(taskID, jobContext.getUserId(), parameters);
+        AddNewJobHandler req = new AddNewJobHandler(taskID, userContext.getUserId(), parameters);
         JobInfo jobInfo = req.executeRequest();
         return jobInfo;
     }
