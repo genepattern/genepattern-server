@@ -178,7 +178,7 @@ public class ParamListHelper {
             actualValues=new Param(new ParamId(parameterInfoRecord.getFormal().getName()), false);
         }
         else if (inputValues == null && initDefault) {
-            actualValues=initFromDefault(jobContext.getJobInfo().getTaskLSID());
+            actualValues=initFromDefault(jobContext.getLsid());
         }
         else {
             actualValues=inputValues;
@@ -647,8 +647,17 @@ public class ParamListHelper {
             return new Record(Record.Type.EXTERNAL_URL, gpPath, externalUrl);
         }
 
+        LSID lsid=null;
         try {
-            GpFilePath gpPath = GpFileObjFactory.getRequestedGpFileObj(value, new LSID(jobContext.getJobInfo().getTaskLSID()));
+            lsid=new LSID(jobContext.getLsid());
+        }
+        catch (Throwable t) {
+            log.debug("LSID not set", t);
+            lsid=null;
+        }
+        
+        try {
+            final GpFilePath gpPath = GpFileObjFactory.getRequestedGpFileObj(value, lsid);
             return new Record(Record.Type.SERVER_URL, gpPath, null);
         }
         catch (Exception e) {
