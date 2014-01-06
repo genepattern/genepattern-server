@@ -1237,6 +1237,35 @@ function createParamValueEntryDiv(parameterName, setInitialValues)
         enableBatch = false;
     }
 
+    var initialValuesByGroup = run_task_info.params[parameterName].initialValues;
+    if(initialValuesByGroup != undefined && initialValuesByGroup != null)
+    {
+        for(var g=0;g<initialValuesByGroup.length;g++)
+        {
+            var groupid = initialValuesByGroup[g].groupid;
+            if(groupid == undefined || groupid == null)
+            {
+                groupid = "";
+            }
+
+            contentDiv.find(".groupingTextField").last().val(groupid);
+            var initialValues = initialValuesByGroup[g].values;
+
+            if(!setInitialValues)
+            {
+                //do not set initial values since we do want to set any values
+                //this is really only for files since we can add additional groups right now
+                initialValues = null;
+            }
+
+            populateContentDiv(parameterName, contentDiv, groupId, initialValues, enableBatch);
+        }
+    }
+    else
+    {
+        populateContentDiv(parameterName, contentDiv, groupId, null, enableBatch);
+    }
+
     //check if grouping is enabled
     if(groupingEnabled)
     {
@@ -1283,34 +1312,6 @@ function createParamValueEntryDiv(parameterName, setInitialValues)
         }
     }
 
-    var initialValuesByGroup = run_task_info.params[parameterName].initialValues;
-    if(initialValuesByGroup != undefined && initialValuesByGroup != null)
-    {
-        for(var g=0;g<initialValuesByGroup.length;g++)
-        {
-            var groupid = initialValuesByGroup[g].groupid;
-            if(groupid == undefined || groupid == null)
-            {
-                groupid = "";
-            }
-
-            contentDiv.find(".groupingTextField").last().val(groupid);
-            var initialValues = initialValuesByGroup[g].values;
-
-            if(!setInitialValues)
-            {
-                //do not set initial values since we do want to set any values
-                //this is really only for files since we can add additional groups right now
-                initialValues = null;
-            }
-
-            populateContentDiv(parameterName, contentDiv, groupId, initialValues, enableBatch);
-        }
-    }
-    else
-    {
-        populateContentDiv(parameterName, contentDiv, groupId, null, enableBatch);
-    }
     return contentDiv;
 }
 
