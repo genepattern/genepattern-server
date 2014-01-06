@@ -524,14 +524,15 @@ function initParam(parameterInfo, index, initialValues)
     run_task_info.params[parameterInfo.name].isBatch = false;
 }
 
-function createTextDiv(parameterName, groupId, maskInput)
+function createTextDiv(parameterName, groupId, initialValuesList)
 {
     var textDiv = $("<div class='textDiv'/>");
 
     var paramDetails = run_task_info.params[parameterName];
 
     var textField = null;
-    if(maskInput)
+    var isPassword = $.inArray(field_types.PASSWORD, run_task_info.params[parameterName].type) != -1;
+    if(isPassword)
     {
         textField = $("<input type='password' class='pValue' />");
     }
@@ -583,8 +584,6 @@ function createTextDiv(parameterName, groupId, maskInput)
     }
 
     //select initial values if there are any
-    var initialValuesList = paramDetails.initialValues;
-
     if( initialValuesList != undefined &&  initialValuesList != null)
     {
         var inputFieldValue = "";
@@ -606,7 +605,7 @@ function createTextDiv(parameterName, groupId, maskInput)
     return textDiv;
 }
 
-function createChoiceDiv(parameterName, groupId)
+function createChoiceDiv(parameterName, groupId, initialValuesList)
 {
     var selectChoiceDiv = $("<div class='selectChoice'/>");
 
@@ -745,8 +744,6 @@ function createChoiceDiv(parameterName, groupId)
         });
 
         //select initial values if there are any
-        var initialValuesList = paramDetails.initialValues;
-
         if( initialValuesList != undefined &&  initialValuesList != null)
         {
             var matchingValueList = [];
@@ -814,7 +811,7 @@ function createChoiceDiv(parameterName, groupId)
     return selectChoiceDiv;
 }
 
-function createFileDiv(parameterName, groupId, enableBatch, setInitialValues)
+function createFileDiv(parameterName, groupId, enableBatch, initialValuesList)
 {
     var fileDiv = $("<div class='fileDiv mainDivBorder'>");
 
@@ -973,32 +970,34 @@ function createFileDiv(parameterName, groupId, enableBatch, setInitialValues)
     //check if there are predefined file values
     var fileObjListings = getFilesForGroup(groupId, parameterName);
 
-    var initialValuesList = paramDetails.initialValues;
     //also check if this parameter is also a choice parameter
-    if(setInitialValues && initialValuesList != undefined &&  initialValuesList != null
-        && initialValuesList.length > 0 && !run_task_info.params[parameterName].initialChoiceValues)
+    if(initialValuesList != undefined &&  initialValuesList != null
+        && initialValuesList.length > 0)
     {
-        //check if max file length will be violated
-        var totalFileLength = fileObjListings.length +  initialValuesList.length;
-        validateMaxFiles(parameterName, totalFileLength);
-
-        for(var v=0; v < initialValuesList.length; v++)
+        if(!run_task_info.params[parameterName].initialChoiceValues)
         {
-            //check if the file name is not empty
-            if( initialValuesList[v] != null &&  initialValuesList[v] != "")
+            //check if max file length will be violated
+            var totalFileLength = fileObjListings.length +  initialValuesList.length;
+            validateMaxFiles(parameterName, totalFileLength);
+
+            for(var v=0; v < initialValuesList.length; v++)
             {
-                var fileObj =
+                //check if the file name is not empty
+                if( initialValuesList[v] != null &&  initialValuesList[v] != "")
                 {
-                    name:  initialValuesList[v],
-                    id: fileId++
-                };
+                    var fileObj =
+                    {
+                        name:  initialValuesList[v],
+                        id: fileId++
+                    };
 
-                fileObjListings.push(fileObj);
+                    fileObjListings.push(fileObj);
+                }
             }
-        }
 
-        updateFilesForGroup(groupId, parameterName, fileObjListings);
-        updateParamFileTable(parameterName, fileDiv, groupId);
+            updateFilesForGroup(groupId, parameterName, fileObjListings);
+            updateParamFileTable(parameterName, fileDiv, groupId);
+        }
     }
     else
     {
@@ -1237,30 +1236,6 @@ function createParamValueEntryDiv(parameterName, setInitialValues)
         //do not allow batch if grouping is enabled
         enableBatch = false;
     }
-    //create the necessary field types for this parameter
-    if($.inArray(field_types.CHOICE, run_task_info.params[parameterName].type) != -1)
-    {
-        contentDiv.append(createChoiceDiv(parameterName, groupId));
-    }
-
-    if($.inArray(field_types.FILE, run_task_info.params[parameterName].type) != -1)
-    {
-        contentDiv.append(createFileDiv(parameterName, groupId, enableBatch, setInitialValues));
-    }
-
-    if($.inArray(field_types.TEXT, run_task_info.params[parameterName].type) != -1)
-    {
-        //this must be a text entry
-        var maskInput = $.inArray(field_types.PASSWORD, run_task_info.params[parameterName].type) != -1;
-        contentDiv.append(createTextDiv(parameterName, groupId, maskInput));
-    }
-
-    if(run_task_info.params[parameterName].type.length > 1)
-    {
-        //multiple field types specified so add a toggle buttons
-        //right now this would only be for a file drop-down parameter
-        contentDiv.prepend(createModeToggle(parameterName));
-    }
 
     //check if grouping is enabled
     if(groupingEnabled)
@@ -1273,6 +1248,7 @@ function createParamValueEntryDiv(parameterName, setInitialValues)
 
         var groupingDiv = $("<div class='groupingDiv'/>");
         var groupTextField = $("<input class='groupingTextField' type='text'/>");
+        groupTextField.val("");
         groupTextField.change(function()
         {
             var paramName = $(this).parents(".pRow").first().attr("id");
@@ -1306,10 +1282,64 @@ function createParamValueEntryDiv(parameterName, setInitialValues)
             contentDiv.prepend(delButton);
         }
     }
+
+    var initialValuesByGroup = run_task_info.params[parameterName].initialValues;
+    if(initialValuesByGroup != undefined && initialValuesByGroup != null)
+    {
+        for(var g=0;g<initialValuesByGroup.length;g++)
+        {
+            var groupid = initialValuesByGroup[g].groupid;
+            if(groupid == undefined || groupid == null)
+            {
+                groupid = "";
+            }
+
+            contentDiv.find(".groupingTextField").last().val(groupid);
+            var initialValues = initialValuesByGroup[g].values;
+
+            if(!setInitialValues)
+            {
+                //do not set initial values since we do want to set any values
+                //this is really only for files since we can add additional groups right now
+                initialValues = null;
+            }
+
+            populateContentDiv(parameterName, contentDiv, groupId, initialValues, enableBatch);
+        }
+    }
+    else
+    {
+        populateContentDiv(parameterName, contentDiv, groupId, null, enableBatch);
+    }
     return contentDiv;
 }
 
+function populateContentDiv(parameterName, contentDiv, groupId, initialValues, enableBatch)
+{
+    //create the necessary field types for this parameter
+    if($.inArray(field_types.CHOICE, run_task_info.params[parameterName].type) != -1)
+    {
+        contentDiv.append(createChoiceDiv(parameterName, groupId, initialValues));
+    }
 
+    if($.inArray(field_types.FILE, run_task_info.params[parameterName].type) != -1)
+    {
+        contentDiv.append(createFileDiv(parameterName, groupId, enableBatch, initialValues));
+    }
+
+    if($.inArray(field_types.TEXT, run_task_info.params[parameterName].type) != -1)
+    {
+        //this must be a text entry
+        contentDiv.append(createTextDiv(parameterName, groupId, initialValues));
+    }
+
+    if(run_task_info.params[parameterName].type.length > 1)
+    {
+        //multiple field types specified so add a toggle buttons
+        //right now this would only be for a file drop-down parameter
+        contentDiv.prepend(createModeToggle(parameterName));
+    }
+}
 function loadParameterInfo(parameters, initialValues)
 {
     var paramsTable = $("#paramsTable");
@@ -1347,7 +1377,7 @@ function loadParameterInfo(parameters, initialValues)
 
         var valueTd = $("<td class='paramValueTd'/>");
         paramRow.append(valueTd);
-        valueTd.append(createParamValueEntryDiv(parameterName));
+        valueTd.append(createParamValueEntryDiv(parameterName, true));
 
         //check if grouping is enabled
         var groupInfo = run_task_info.params[parameterName].groupInfo;
@@ -2492,10 +2522,17 @@ function setAllFileParamValues()
             var param_value_listing = parameter_and_val_groups[paramName].groups[groupNames[g]].values;
 
             //if there is a value set from a choice already for this file then continue
-            if(param_files == undefined || param_files == null || param_files.length == 0
+           /* if(param_files == undefined || param_files == null || param_files.length == 0
                 || (param_value_listing != null &&
                 param_value_listing != undefined &&
                 param_value_listing.length > 0))
+            {
+                //check if value already set from a choice list
+                continue;
+            }*/
+            if(param_value_listing != null &&
+                param_value_listing != undefined &&
+                param_value_listing.length > 0)
             {
                 //check if value already set from a choice list
                 continue;

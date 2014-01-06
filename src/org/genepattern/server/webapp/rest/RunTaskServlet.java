@@ -33,13 +33,7 @@ import org.genepattern.modules.ParametersJSON;
 import org.genepattern.modules.ResponseJSON;
 import org.genepattern.server.config.ServerConfiguration;
 import org.genepattern.server.dm.GpFilePath;
-import org.genepattern.server.job.input.GroupId;
-import org.genepattern.server.job.input.JobInput;
-import org.genepattern.server.job.input.JobInputFileUtil;
-import org.genepattern.server.job.input.JobInputHelper;
-import org.genepattern.server.job.input.LoadModuleHelper;
-import org.genepattern.server.job.input.Param;
-import org.genepattern.server.job.input.ReloadJobHelper;
+import org.genepattern.server.job.input.*;
 import org.genepattern.server.repository.SourceInfo;
 import org.genepattern.server.repository.SourceInfoLoader;
 import org.genepattern.server.rest.GpServerException;
@@ -270,16 +264,16 @@ public class RunTaskServlet extends HttpServlet
                 }
             } 
             final LoadModuleHelper loadModuleHelper=new LoadModuleHelper(userContext);
-            final JobInput initialValues=loadModuleHelper.getInitialValues(lsid, 
-                    taskInfo.getParameterInfoArray(), 
-                    reloadJobInput, 
-                    _fileParam, 
-                    _formatParam, 
+            final JobInput initialValues=loadModuleHelper.getInitialValues(lsid,
+                    taskInfo.getParameterInfoArray(),
+                    reloadJobInput,
+                    _fileParam,
+                    _formatParam,
                     parameterMap);
             
             //TODO: change the call to v2 in order to get the grouping information for reloaded jobs
-            final JSONObject initialValuesJson=LoadModuleHelper.asJsonV1(initialValues);
-            //final JSONObject initialValuesJson=LoadModuleHelper.asJsonV2(initialValues);
+            //final JSONObject initialValuesJson=LoadModuleHelper.asJsonV1(initialValues);
+            final JSONObject initialValuesJson=LoadModuleHelper.asJsonV2(initialValues);
             responseObject.put("initialValues", initialValuesJson);
 
             return Response.ok().entity(responseObject.toString()).build();
@@ -587,7 +581,7 @@ public class RunTaskServlet extends HttpServlet
             
             ParameterInfo[] jobParameters=null;
             if (parameters != null) {
-                //JobInput initialValues=ParamListHelper.getInitialValues(
+                //JobInput initialValues= ParamListHelper.getInitialValues(
                 //        lsid, parameters, reloadJobInput, _fileParam, _formatParam, request.getParameterMap());
                 LoadModuleHelper loadModuleHelper=new LoadModuleHelper(userContext);
                 JobInput initialValues=loadModuleHelper.getInitialValues(
