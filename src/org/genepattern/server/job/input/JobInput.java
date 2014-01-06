@@ -61,34 +61,6 @@ public class JobInput {
     public Map<ParamId, Param> getParams() {
         return Collections.unmodifiableMap(params);
     }
-    
-    /**
-     * Replaces the value for the given parameter with a new value.
-     * @param name
-     * @param value
-     */
-    public void addOrReplaceValue(final String name, final String value) {
-        addOrReplaceValue(name, value, false);
-    }
-
-    /**
-     * Replaces the value for the given parameter with a new value,
-     * also declaring the batchParam flag.
-     * 
-     * @param name
-     * @param value
-     * @param batchParam
-     */
-    public void addOrReplaceValue(final String name, final String value, final boolean batchParam) {
-        if (name==null) {
-            throw new IllegalArgumentException("name==null");
-        }
-        if (value==null) {
-            throw new IllegalArgumentException("value==null");
-        }
-        params.remove(new ParamId(name));
-        addValue(name, value, batchParam);
-    }
 
     /**
      * Add a value for the param.

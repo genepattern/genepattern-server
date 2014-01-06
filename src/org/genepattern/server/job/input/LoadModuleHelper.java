@@ -277,25 +277,22 @@ public class LoadModuleHelper {
                 boolean first=true;
                 for(final String defaultValue : defaultValues) {
                     if (first) {
-                        initialValues.addOrReplaceValue(pname, defaultValue);
+                        initialValues.removeValue(new ParamId(pname));
                         first=false;
                     }
-                    else {
-                        initialValues.addValue(pname, defaultValue);
-                    }
+                    initialValues.addValue(pname, defaultValue);
                 }
             }
             
             //2) if it's a reloaded job, use that
             if (reloadedValues != null) {
                 boolean first=true;
-                final List<ParamValue> paramValues=reloadedValues.getParamValues(pname);
-                if (paramValues != null) {
-                    for(final ParamValue reloadedValue : paramValues) {
-
-                        String rvalue = reloadedValue.getValue();
+                final Param param=reloadedValues.getParam(pname);
+                if (param != null) {
+                    for(final Entry<GroupId,ParamValue> entry : param.getValuesAsEntries()) {
+                        String rvalue = entry.getValue().getValue();
                         //check if this a drop-down list and if any value is a file from the module taskLib
-                        ChoiceInfo cInfo = ChoiceInfoHelper.initChoiceInfo(pinfo);
+                        final ChoiceInfo cInfo = ChoiceInfoHelper.initChoiceInfo(pinfo);
                         List<Choice> choices = null;
 
                         if(cInfo != null)
@@ -312,28 +309,27 @@ public class LoadModuleHelper {
                                     //Value is expected to refer to a file if we get here
                                     //so extract the name of the file
                                     String name = value.substring(value.indexOf("<libdir>")+8);
-                                    if(reloadedValue.getValue().endsWith(name))
+                                    if(entry.getValue().getValue().endsWith(name))
                                     {
                                         TaskInfo info = TaskInfoCache.instance().getTask(reloadedValues.getLsid());
                                         TasklibPath tp = new TasklibPath(info, name);
-                                        if(reloadedValue.getValue().endsWith(tp.getUrl().toExternalForm()))
+                                        if(entry.getValue().getValue().endsWith(tp.getUrl().toExternalForm()))
                                         {
                                             rvalue = value;
                                         }
                                     }
                                 }
                             }
-
                         }
+                        
                         if (first) {
-                            initialValues.addOrReplaceValue(pname, rvalue);
+                            initialValues.removeValue(new ParamId(pname));
                             first=false;
                         }
-                        else {
-                            initialValues.addValue(pname, rvalue);
-                        }
+                        final GroupId groupId=entry.getKey();
+                        initialValues.addValue(pname, rvalue, groupId);
                     }
-                }
+                } 
                 else {
                     log.error("no values in previous job for, pname="+pname);
                 }
@@ -341,16 +337,13 @@ public class LoadModuleHelper {
 
             //3) if there's a matching request parameter, use that
             if (parameterMap.containsKey(pname)) {
-                //List<String> fromRequestParam=new ArrayList<String>();
                 boolean first=true;
                 for(String requestParam : parameterMap.get(pname)) {
                     if (first) {
-                        initialValues.addOrReplaceValue(pname, requestParam);
+                        initialValues.removeValue(new ParamId(pname));
                         first=false;
                     }
-                    else {
-                        initialValues.addValue(pname, requestParam);
-                    }
+                    initialValues.addValue(pname, requestParam);
                 }
             }
             
@@ -497,7 +490,8 @@ public class LoadModuleHelper {
                             try {
                                 final URL inputUrl=inputValue.getUrl();
                                 final String newInputValue=inputUrl.toExternalForm();
-                                initialValues.addOrReplaceValue(pinfo.getName(), newInputValue);
+                                initialValues.removeValue(new ParamId(pinfo.getName()));
+                                initialValues.addValue(pinfo.getName(), newInputValue);
                             }
                             catch (Exception e) {
                                 log.error(e);
