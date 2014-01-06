@@ -159,4 +159,36 @@ public class TestJobInput {
         }
     }
 
+    /**
+     * Test for when the groupid is the empty string.
+     */
+    @Test
+    public void testEmptyGroupId() {
+        final JobInput jobInput = new JobInput();
+        jobInput.setLsid(lsid);
+        jobInput.addValue("inputList", DATA_URL+"all_aml_train.res", new GroupId(""));
+        jobInput.addValue("inputList", DATA_URL+"all_aml_test.res", new GroupId(""));
+        jobInput.addValue("inputList", DATA_URL+"all_aml_test.cls", new GroupId(""));
+        jobInput.addValue("inputList", DATA_URL+"all_aml_test.gct", new GroupId(""));
+        jobInput.addValue("inputList", DATA_URL+"all_aml_train.cls", new GroupId(""));
+        jobInput.addValue("inputList", DATA_URL+"all_aml_train.gct", new GroupId(""));
+
+        final Param param=jobInput.getParam("inputList");
+        Assert.assertEquals("numGroups", 1, param.getNumGroups());
+        Assert.assertEquals("numValues", 6, param.getNumValues());
+    }
+    
+    @Test
+    public void testNullGroupId() {
+        final JobInput jobInput = new JobInput();
+        jobInput.setLsid(lsid);
+        try {
+            jobInput.addValue("inputList", DATA_URL+"all_aml_train.res", new GroupId( (String) null));
+            Assert.fail("null arg to GroupId constructor, should throw an IllegalArgumentException");
+        }
+        catch (IllegalArgumentException e) {
+            //expected
+        }
+    }
+
 }
