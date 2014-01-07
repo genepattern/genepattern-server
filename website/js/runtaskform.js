@@ -1267,7 +1267,7 @@ function updateFilesForGroup(groupId, paramName, filesList)
     parameter_and_val_groups[paramName].groups[groupId].files = filesList;
 }
 
-function createParamValueEntryDiv(parameterName, setInitialValues)
+function createParamValueEntryDiv(parameterName, initialValuesObj)
 {
     var contentDiv = $("<div class='valueEntryDiv'/>");
     var groupId = getNextGroupId(parameterName);
@@ -1275,7 +1275,6 @@ function createParamValueEntryDiv(parameterName, setInitialValues)
 
     var enableBatch = true;
     var groupingEnabled = false;
-
 
     var groupInfo = run_task_info.params[parameterName].groupInfo;
     if(groupInfo != null && (groupInfo.maxValue == null || groupInfo.maxValue == undefined
@@ -1287,34 +1286,15 @@ function createParamValueEntryDiv(parameterName, setInitialValues)
         enableBatch = false;
     }
 
-    var initialValuesByGroup = run_task_info.params[parameterName].initialValues;
-    if(initialValuesByGroup != undefined && initialValuesByGroup != null)
+    var initialValues = null;
+    var groupid = null;
+    if(initialValuesObj != undefined && initialValuesObj != null)
     {
-        for(var g=0;g<initialValuesByGroup.length;g++)
-        {
-            var groupid = initialValuesByGroup[g].groupid;
-            if(groupid == undefined || groupid == null)
-            {
-                groupid = "";
-            }
-
-            contentDiv.find(".groupingTextField").last().val(groupid);
-            var initialValues = initialValuesByGroup[g].values;
-
-            if(!setInitialValues)
-            {
-                //do not set initial values since we do want to set any values
-                //this is really only for files since we can add additional groups right now
-                initialValues = null;
-            }
-
-            populateContentDiv(parameterName, contentDiv, groupId, initialValues, enableBatch);
-        }
+        initialValues = initialValuesObj.values;
+        groupid = initialValuesObj.groupid;
     }
-    else
-    {
-        populateContentDiv(parameterName, contentDiv, groupId, null, enableBatch);
-    }
+
+    populateContentDiv(parameterName, contentDiv, groupId, initialValues, enableBatch);
 
     //check if grouping is enabled
     if(groupingEnabled)
@@ -1327,7 +1307,6 @@ function createParamValueEntryDiv(parameterName, setInitialValues)
 
         var groupingDiv = $("<div class='groupingDiv'/>");
         var groupTextField = $("<input class='groupingTextField' type='text'/>");
-        groupTextField.val("");
         groupTextField.change(function()
         {
             var paramName = $(this).parents(".pRow").first().attr("id");
@@ -1336,6 +1315,16 @@ function createParamValueEntryDiv(parameterName, setInitialValues)
             var value = $.trim($(this).val());
             parameter_and_val_groups[paramName].groups[groupId].name = value;
         });
+
+        if(groupid == undefined || groupid == null)
+        {
+            groupid = "";
+        }
+        else
+        {
+            groupTextField.val(groupid);
+            parameter_and_val_groups[parameterName].groups[groupId].name = groupid;
+        }
 
         var groupTextLabel = $("<label>" + groupColumnLabel + ": <label/>");
         groupTextLabel.append(groupTextField);
@@ -1428,8 +1417,19 @@ function loadParameterInfo(parameters, initialValues)
 
         var valueTd = $("<td class='paramValueTd'/>");
         paramRow.append(valueTd);
-        valueTd.append(createParamValueEntryDiv(parameterName, true));
-
+        var initialValuesByGroup = run_task_info.params[parameterName].initialValues;
+        if(initialValuesByGroup != undefined && initialValuesByGroup != null)
+        {
+            for(var g=0;g<initialValuesByGroup.length;g++)
+            {
+                valueTd.append(createParamValueEntryDiv(parameterName, initialValuesByGroup[g]));
+                //check if grouping is enabled
+            }
+        }
+        else
+        {
+            valueTd.append(createParamValueEntryDiv(parameterName, null));
+        }
         //check if grouping is enabled
         var groupInfo = run_task_info.params[parameterName].groupInfo;
         if(groupInfo != null && (groupInfo.maxValue == null || groupInfo.maxValue == undefined
@@ -1447,7 +1447,7 @@ function loadParameterInfo(parameters, initialValues)
                 event.preventDefault();
 
                 var parameterName = $(this).parents(".pRow").attr("id");
-                $(this).parents(".pRow").first().find(".paramValueTd").find(".valueEntryDiv").last().after(createParamValueEntryDiv(parameterName, false));
+                $(this).parents(".pRow").first().find(".paramValueTd").find(".valueEntryDiv").last().after(createParamValueEntryDiv(parameterName, null));
                 //TODO: Add another of these input fields
 
             });
