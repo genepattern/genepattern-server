@@ -29,6 +29,7 @@ import org.genepattern.server.dm.UrlUtil;
 import org.genepattern.server.job.input.choice.ChoiceInfo;
 import org.genepattern.server.job.input.choice.ChoiceInfoHelper;
 import org.genepattern.server.rest.ParameterInfoRecord;
+import org.genepattern.server.tags.SuiteTagManager;
 import org.genepattern.server.tags.TagManager;
 import org.genepattern.server.tags.TagManager.Tag;
 import org.genepattern.server.user.UserDAO;
@@ -180,9 +181,6 @@ public class TasksResource {
                 latestTasks.remove(baseLsid);
             }
 
-            // Apply suites to the taskInfos
-            applyTaskSuites(userContext, latestTasks);
-
             // Transform the latest task map to an array and sort it
             TaskInfo[] tasksArray = (TaskInfo[]) latestTasks.values().toArray(new TaskInfo[0]);
             Arrays.sort(tasksArray, new AdminDAO.TaskNameComparator());
@@ -244,7 +242,7 @@ public class TasksResource {
         }
         jsonObj.put("documentation", getDocLink(taskInfo));
         jsonObj.put("categories", getCategories(userContext, taskInfo));
-        jsonObj.put("suites", getSuites(taskInfo));
+        jsonObj.put("suites", getSuites(taskInfo, userContext));
         jsonObj.put("tags", getTags(taskInfo, userContext));
         return jsonObj;
     }
@@ -274,60 +272,15 @@ public class TasksResource {
         return array;
     }
     
-    private JSONArray getSuites(final TaskInfo taskInfo) {
-        Set<String> tags = (HashSet<String>) taskInfo.getAttributes().get("suites");
-        if (tags != null) {
-            return new JSONArray(tags);
+    private JSONArray getSuites(final TaskInfo taskInfo, ServerConfiguration.Context userContext) {
+        Set<String> suites = SuiteTagManager.instance().getSuites(userContext, taskInfo);
+
+        JSONArray array = new JSONArray();
+        for (String suite : suites) {
+            array.put(suite);
         }
-        else {
-            return new JSONArray();
-        }
-    }
-    
-    private void applyTaskTags(Map<String, TaskInfo> tasks, ServerConfiguration.Context context) {
-        AdminDAO adminDao = new AdminDAO();
-        int recentJobsToShow = Integer.parseInt(new UserDAO().getPropertyValue(context.getUserId(), UserPropKey.RECENT_JOBS_TO_SHOW, "4"));
-        TaskInfo[] recentModules = adminDao.getRecentlyRunTasksForUser(context.getUserId(), recentJobsToShow);
-        
-        for (TaskInfo recent : recentModules) {
-            try {
-                String baseLsid = new LSID(recent.getLsid()).toStringNoVersion();
-                List<String> tagList = new ArrayList<String>();
-                tagList.add("recent");
-                tasks.get(baseLsid).getAttributes().put("tags", tagList);
-            }
-            catch (MalformedURLException e) {
-                log.error("Error getting an LSID object for: " + recent.getLsid());
-            }
-        }
-    }
-    
-    @SuppressWarnings("unchecked")
-    private void applyTaskSuites(final ServerConfiguration.Context context, final Map<String, TaskInfo> tasks) {
-        AdminDAO adminDao = new AdminDAO();
-        try {
-            SuiteInfo[] suites = adminDao.getLatestSuitesForUser(context.getUserId());
-            
-            for (SuiteInfo suite : suites) {
-                for (String moduleLsid : suite.getModuleLsids()) {
-                    try {
-                        String baseLsid = new LSID(moduleLsid).toStringNoVersion();
-                        TaskInfo taskInfo = tasks.get(baseLsid);
-                        if (taskInfo == null) continue;
-                        Set<String> suiteList = (HashSet<String>) taskInfo.getAttributes().get("suites");
-                        if (suiteList == null) suiteList = new HashSet<String>();
-                        suiteList.add(suite.getName());
-                        tasks.get(baseLsid).getAttributes().put("suites", suiteList);
-                    }
-                    catch (MalformedURLException e) {
-                        log.error("Error getting an LSID object for: " + moduleLsid);
-                    }
-                }            
-            }
-        }
-        catch (AdminDAOSysException e1) {
-            log.error(e1);
-        }
+
+        return array;
     }
 
     private String getDocLink(final TaskInfo taskInfo) {
