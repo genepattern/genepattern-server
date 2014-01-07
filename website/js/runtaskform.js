@@ -815,6 +815,47 @@ function createFileDiv(parameterName, groupId, enableBatch, initialValuesList)
 {
     var fileDiv = $("<div class='fileDiv mainDivBorder'>");
 
+    //enable dragging of file between groups
+    fileDiv.droppable(
+    {
+        hoverClass: 'highlight',
+        drop: function(event, ui)
+        {
+            var target = $(event.target);
+            //target.parents(".fileDiv").first().removeClass("highlight");
+
+            var draggable = ui.draggable;
+            var pRow = draggable.find("td").parents(".pRow").first();
+            if(pRow == undefined || pRow == null || pRow.size() == 0)
+            {
+                //do nothing since this is not expected
+                return;
+            }
+            var paramName = pRow.attr("id");
+
+            var filename = draggable.text();
+            filename = $.trim(filename);
+            var targetGroupId = target.parents(".valueEntryDiv").first().data("groupId");
+
+            var fileObjListings = getFilesForGroup(targetGroupId, paramName);
+            var fileObj = {
+                name: filename,
+                id: fileId++
+            };
+            fileObjListings.push(fileObj);
+            updateFilesForGroup(targetGroupId , paramName, fileObjListings);
+            updateParamFileTable(paramName, null, groupId);
+
+            var rowIndex = $(ui.helper).find("input[name='rowindex']").val();
+            var draggableGroupId = draggable.parents(".valueEntryDiv").first().data("groupId");
+            var dfileObjListings = getFilesForGroup(draggableGroupId, paramName);
+
+            dfileObjListings.splice(rowIndex, 1);
+            updateFilesForGroup(draggableGroupId , paramName, dfileObjListings);
+            updateParamFileTable(paramName, null, draggableGroupId);
+        }
+    });
+
     var paramDetails = run_task_info.params[parameterName];
 
     var uploadFileText = "Upload Files...";
@@ -2253,7 +2294,7 @@ function updateParamFileTable(paramName, fileDiv, groupId)
             {
                 fileRow.append("<td>" + files[i].name + "</td>");
             }
-            var delButton = $("<img class='images' src='/gp/images/delete-blue.png'/>");
+            var delButton = $("<img class='images delBtn' src='/gp/images/delete-blue.png'/>");
             delButton.data("pfile", files[i].name);
             delButton.data("pfileId", files[i].id);
 
@@ -2297,25 +2338,16 @@ function updateParamFileTable(paramName, fileDiv, groupId)
 
         tbody.find("tr").draggable({
             helper: function(event) {
-                return $('<div class="drag-row"><table class="paramFilesTable"></table></div>')
+                var object = $('<div class="drag-row"><table class="paramFilesTable"></table></div>')
                     .find('table').append($(event.target).closest('tr').clone()).end();
+                var rowIndex = $(event.target) // Get the closest tr parent element
+                    .closest('tr')
+                    .prevAll() // Find all sibling elements in front of it
+                    .length;
+                object.append("<input type='hidden' name='rowindex' value='" + rowIndex + "' />");
+                return object;
             }
         });
-
-       /* table.find("tbody").droppable(
-        {
-            hoverClass: 'highlight',
-            drop: function(event, ui)
-            {
-                var target = $(event.target);
-                var draggable = ui.draggable;
-
-                draggable.insertBefore(target);
-            }
-        });*/
-
-        //table.find("tbody").sortable();
-        //table.find("tbody").droppable().draggable();
 
         //set visibility of the file listing to hidden if that was its previous state
         // by default the file listing is visible
