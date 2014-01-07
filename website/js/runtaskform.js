@@ -825,34 +825,43 @@ function createFileDiv(parameterName, groupId, enableBatch, initialValuesList)
             //target.parents(".fileDiv").first().removeClass("highlight");
 
             var draggable = ui.draggable;
-            var pRow = draggable.find("td").parents(".pRow").first();
-            if(pRow == undefined || pRow == null || pRow.size() == 0)
+            var draggablePRow = draggable.find("td").parents(".pRow").first();
+            if(draggablePRow == undefined || draggablePRow == null || draggablePRow.size() == 0)
+            {
+                //do nothing since this is not droppable
+                return;
+            }
+            var draggableParamName = draggablePRow.attr("id");
+
+            var targetPRow = target.parents(".pRow").first();
+            if(targetPRow == undefined || targetPRow == null || targetPRow.size() == 0)
             {
                 //do nothing since this is not expected
                 return;
             }
-            var paramName = pRow.attr("id");
+            var targetParamName = targetPRow.attr("id");
 
             var filename = draggable.text();
             filename = $.trim(filename);
             var targetGroupId = target.parents(".valueEntryDiv").first().data("groupId");
 
-            var fileObjListings = getFilesForGroup(targetGroupId, paramName);
+            var fileObjListings = getFilesForGroup(targetGroupId, targetParamName);
             var fileObj = {
                 name: filename,
                 id: fileId++
             };
             fileObjListings.push(fileObj);
-            updateFilesForGroup(targetGroupId , paramName, fileObjListings);
-            updateParamFileTable(paramName, null, groupId);
+            updateFilesForGroup(targetGroupId , targetParamName, fileObjListings);
+            updateParamFileTable(targetParamName, null, groupId);
+
 
             var rowIndex = $(ui.helper).find("input[name='rowindex']").val();
             var draggableGroupId = draggable.parents(".valueEntryDiv").first().data("groupId");
-            var dfileObjListings = getFilesForGroup(draggableGroupId, paramName);
+            var dfileObjListings = getFilesForGroup(draggableGroupId, draggableParamName);
 
             dfileObjListings.splice(rowIndex, 1);
-            updateFilesForGroup(draggableGroupId , paramName, dfileObjListings);
-            updateParamFileTable(paramName, null, draggableGroupId);
+            updateFilesForGroup(draggableGroupId , draggableParamName, dfileObjListings);
+            updateParamFileTable(draggableParamName, null, draggableGroupId);
         }
     });
 
