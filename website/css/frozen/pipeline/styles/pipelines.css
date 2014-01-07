@@ -78,13 +78,17 @@ body {
     overflow-y: auto;
     overflow-x: hidden;
 	z-index: 3000;
-	padding: 5px 0 15px 5px;
+	padding: 0px;
 	height: 100%;
-	width: 183px;
+    position: fixed;
+    top: 112px;
+    left: 0px;
+    width: 191px;
 }
 
 #attachFile {
-    width: 80%;
+    margin: 10px;
+    width: 171px;
 }
 
 #libraryControls {
@@ -675,6 +679,30 @@ div.iconSpace {
 	margin-left: 20px;
 }
 
+#left-nav-top {
+    background-color: #BDD3E9;
+    border: none;
+    border-bottom: solid 1px #A3B1DA;
+    background-image: url(../../images/sidebar-topBG.png);
+    background-repeat: repeat-x;
+    padding: 10px;
+    top: 33px;
+}
+
+.search-box {
+    width: 100%;
+}
+
+#module-browse-block {
+    text-align: right;
+    font-size: 8pt;
+    margin-top: 3px;
+}
+
+#runButton {
+    display: none;
+}
+
 /*
  * jQuery UI Button 1.8.16
  *
@@ -742,3 +770,233 @@ button.ui-button::-moz-focus-inner { border: 0; padding: 0; } /* reset extra pad
 #navband1 {
     position: fixed !important;
 }
+
+
+/*
+----------------------------------------------------------------------------
+SEARCH SLIDER STUFF
+----------------------------------------------------------------------------
+*/
+
+.module-listing {
+    margin-top: 10px;
+    border-style: solid;
+    border-width: 1px;
+    border-color: #BBBBEE;
+    padding: 2px;
+    cursor: pointer;
+    height: 60px;
+    overflow: hidden;
+    z-index: 100;
+}
+
+.module-listing:hover {
+    background-image: url(../../images/sidebar-topBG.png);
+    background-repeat: repeat-x;
+}
+
+.module-name {
+    color: gray;
+    font-size: 11pt;
+    line-height: 13pt;
+    overflow: hidden;
+    width: 93%;
+}
+
+.module-version {
+    display: none;
+    color: gray;
+    float: right;
+    font-size: 8pt;
+    vertical-align: bottom;
+    margin-top: 3px;
+}
+
+.module-lsid {
+    display: none;
+}
+
+.module-remove {
+    display: none;
+}
+
+.module-gear {
+    display:block;
+    float: right;
+    margin-left: 3px;
+    margin-right: 3px;
+    opacity: 0.5;
+}
+
+.module-gear:hover {
+    opacity: 1;
+}
+
+.module-menu {
+    z-index: 5;
+}
+
+.module-menu li a {
+    color: black !important;
+}
+
+.module-doc {
+    display:block;
+    height: 0px;
+    float: right;
+    margin-left: 3px;
+    margin-right: 3px;
+}
+
+.module-description {
+    font-size: 8pt;
+    color: #333366;
+    max-height: 26px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin-top: 2px;
+}
+
+.module-tag {
+    font-size:8pt;
+    color: #000099 !important;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
+}
+
+.module-tag a {
+    text-decoration: underline;
+}
+
+.disable-select {
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    -o-user-select: none;
+    user-select: none;
+}
+
+.module-expanded {
+    position: absolute;
+    background-image: url(../../images/sidebar-topBG.png);
+    background-size: 100% 100%;
+    background-repeat: no-repeat;
+    padding: 2px;
+    z-index: 9;
+    min-height: 60px;
+    border-style: solid;
+    border-width: 1px;
+    border-color: #BBBBEE;
+}
+
+.module-expanded .module-gear {
+    display: none;
+}
+
+.module-expanded .module-lsid {
+    display: block;
+    width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    color: #999999;
+}
+
+.module-expanded .module-version {
+    display: block;
+}
+
+.module-expanded .module-tag, .module-expanded .module-description {
+    text-overflow: initial;
+    white-space: normal;
+    overflow: visible;
+    max-height: none;
+    word-wrap: break-word;
+}
+
+/*
+--------------------------------------------------------
+*/
+
+.module-list-title {
+    margin-top: 0px;
+    margin-bottom: 0px;
+    color: #333366;
+    font-weight: bold;
+    border-bottom-width: 1px;
+    border-bottom-style: solid;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+}
+
+.module-list-empty {
+    display: none;
+    margin-left: 30px;
+    color: darkgray;
+}
+
+/*
+--------------------------------------------------------
+*/
+
+.search-widget {
+    display:none;
+    position: fixed;
+    z-index: 3000;
+    top: 112px;
+    left: 192px;
+    background-color: #FCFCFC;
+    height: 100%;
+    width: 50%;
+    margin-left: 0px;
+    margin-right: 50px;
+    border-right: lightgray solid 2px;
+    margin-top: 0px;
+    font-family: Lucida Grande,Lucida Sans,Arial,sans-serif;
+    font-size: 1.1em;
+    max-height: 100%;
+}
+
+.search-inner {
+    height: 100%;
+    overflow: auto;
+    padding-left: 20px;
+}
+
+.slider-close-block {
+    height: 0px;
+    width: 0px;
+    float: right;
+}
+
+.slider-close {
+    float: right;
+    top: 5px;
+    right: 20px;
+    font-size: 8pt;
+}
+
+.search-widget .module-list-title {
+    margin-top: 20px;
+    margin-right: 20px;
+}
+
+.search-widget .module-list {
+    overflow: auto;
+    padding-bottom: 20px;
+}
+
+.search-widget .module-listing {
+    float: left;
+    width: 300px;
+    margin-right: 10px;
+    height: 60px;
+    overflow: hidden;
+}
+
+.module-expanded {
+    z-index: 7000;
+}
+
+.highlight { background-color: yellow }
