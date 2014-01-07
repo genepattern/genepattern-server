@@ -1494,6 +1494,8 @@ function loadRunTaskForm(lsid) {
         params: {} //contains parameter info necessary to build the job submit form, see the initParam() function for details
     };
 
+    parameter_and_val_groups = {}; //contains params and their values only
+
     $("#toggleDesc").click(function()
     {
         //show descriptions
@@ -1790,7 +1792,8 @@ function validate()
     {
         //create div to list of all parameters with missing values
         var missingReqParamsDiv = $("<div id='missingRequiredParams'/>");
-        $("#submitJob").before(missingReqParamsDiv);
+
+        $("#submitErrors").append(missingReqParamsDiv);
         missingReqParamsDiv.append("<p class='errorMessage'>Please provide a value for the following parameter(s):</p>");
 
         var pListing = $("<ul class='errorMessage'/>");
@@ -1823,7 +1826,7 @@ function validate()
     {
         //create div to list of all parameters with missing values
         var missingGroupNamesDiv = $("<div id='missingGroupNamesParams'/>");
-        $("#submitJob").before(missingGroupNamesDiv);
+        $("#submitErrors").append(missingGroupNamesDiv);
         missingGroupNamesDiv.append("<p class='errorMessage'>Please provide labels for the following parameter(s):</p>");
 
         var pListing = $("<ul class='errorMessage'/>");
