@@ -1769,7 +1769,7 @@ function validate()
 
             //check that group names were specified if there is more than one group
             var groupName = parameter_and_val_groups[paramNames[p]].groups[groupIds[g]].name;
-            if((groupName == undefined || groupName == null) && groupIds.length > 1)
+            if((groupName == undefined || groupName == null || groupName.length == 0) && groupIds.length > 1)
             {
                 //if there is more than one group defined then they must be named
                 missingGroupNames.push(paramNames[p]);
@@ -1845,7 +1845,13 @@ function validate()
             pListing.append("<li>"+displayname+"</li>");
 
             $("#" + jqEscape(missingGroupNames[p])).find(".paramValueTd").addClass("errorHighlight");
-            $("#" + jqEscape(missingGroupNames[p])).find(".paramValueTd").find(".groupingTextField").after(errorMessage);
+            $("#" + jqEscape(missingGroupNames[p])).find(".paramValueTd").find(".groupingTextField").each(function()
+            {
+                if($(this).val() == undefined || $(this).val() == null || $(this).val().length == 0)
+                {
+                    $(this).after(errorMessage);
+                }
+            });
         }
 
         return false;
