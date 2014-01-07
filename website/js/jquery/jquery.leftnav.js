@@ -577,10 +577,10 @@ $.widget("gp.searchslider", {
     show: function() {
         var visible = $(".search-widget:visible");
         visible.each(function(id, slider) {
-            $(slider).css("z-index", 1);
+            $(slider).css("z-index", 3001);
         });
         var shown = this.element;
-        this.element.css("z-index", 2);
+        this.element.css("z-index", 3002);
         this.element.show('slide', {}, 400);
         setTimeout(function() {
             visible.each(function(id, slider) {
