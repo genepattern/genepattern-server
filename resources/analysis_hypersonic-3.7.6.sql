@@ -5,7 +5,7 @@ create table job_runner_job (
     gp_job_no integer not null,
     jr_classname varchar(255) not null,
     jr_name varchar(255) not null,
-    ext_job_id varchar(255) not null,
+    ext_job_id varchar(255),
     job_state varchar(255),
     status_date timestamp not null,
     status_message varchar(255),
