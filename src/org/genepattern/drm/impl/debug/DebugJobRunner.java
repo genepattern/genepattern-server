@@ -21,7 +21,7 @@ import org.genepattern.server.executor.CommandExecutorException;
         classname: org.genepattern.server.executor.drm.JobExecutor
         configuration.properties:
             jobRunnerClassname: org.genepattern.drm.impl.debug.DebugJobRunner
-            jobRunnerName: LocalJobRunner
+            jobRunnerName: DebugJobRunner
             lookupType: DB
             #lookupType: HASHMAP
  * </pre>
