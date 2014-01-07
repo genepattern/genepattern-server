@@ -730,10 +730,11 @@ function changeParameterType(element)
     $("<td class='lasttd'/>").append(typeDetailsTable).insertAfter(element.parents(".pmoptions").parent());
     $("<tr/>").append(fieldDetailsTd).appendTo(typeDetailsTable);
 
+    var helpImgSrc = $(".helpbutton").first().attr("src");
     var defaultValueRow = $("<tr/>");
     var defaultValue = $("<input type='text' name='p_defaultvalue' class='defaultValue' size='40'/>");
     $("<td/>").append("Default value:<br/>").append(defaultValue).append("<a href='createhelp.jsp#paramDefault' target='help'> " +
-        " <img src='styles/images/help_small.gif' width='12' height='12' alt='help' class='buttonIcon' />"
+        " <img src='" + helpImgSrc + "' width='12' height='12' alt='help' class='buttonIcon' />"
         + "</a>").appendTo(defaultValueRow);
     typeDetailsTable.append(defaultValueRow);
 
@@ -1215,8 +1216,9 @@ function changeParameterType(element)
 
     $("<td/>").append(editChoicesLink).appendTo(specifyChoicesRow);
 
+    var helpImgSrc = $(".helpbutton").first().attr("src");
     editChoicesLink.parent().append("<a href='createhelp.jsp#paramType' target='help'> " +
-        " <img src='styles/images/help_small.gif' width='12' height='12' alt='help' class='buttonIcon' />"
+        " <img src='" + helpImgSrc + "' width='12' height='12' alt='help' class='buttonIcon' />"
         + "</a>");
 
     editChoicesLink.parent().append("<div class='staticChoicesInfo'/>");
