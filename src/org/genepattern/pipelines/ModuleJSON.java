@@ -13,6 +13,7 @@ import java.util.Vector;
 
 import org.apache.log4j.Logger;
 import org.genepattern.data.pipeline.JobSubmission;
+import org.genepattern.server.cm.CategoryManager;
 import org.genepattern.webservice.ParameterInfo;
 import org.genepattern.webservice.TaskInfo;
 import org.genepattern.webservice.TaskInfoAttributes;
@@ -47,7 +48,7 @@ public class ModuleJSON extends JSONObject {
             this.extractVersion(info.getLsid());
             this.determineWrite(info, username);
             this.determineType(info);
-            this.setCategory(info.getTaskInfoAttributes().get("taskType"));
+            this.setCategory(new JSONArray(CategoryManager.getCategoriesFromManifest(info)));
             this.constructInputs(info.getParameterInfoArray());
             this.constructOutputs(info.getTaskInfoAttributes());
         }
@@ -104,11 +105,11 @@ public class ModuleJSON extends JSONObject {
         this.put(INPUTS, inputs);
     }
     
-    public String getCategory() throws JSONException {
-        return this.getString(CATEGORY);
+    public JSONArray getCategory() throws JSONException {
+        return this.getJSONArray(CATEGORY);
     }
     
-    public void setCategory(String category) throws JSONException {
+    public void setCategory(JSONArray category) throws JSONException {
         this.put(CATEGORY, category);
     }
     

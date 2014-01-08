@@ -1553,7 +1553,7 @@ var editor = {
             name: editor.workspace["pipelineName"],
             lsid: editor.workspace["pipelineLsid"],
             version: editor.workspace["pipelineVersion"],
-            category: "pipeline",
+            category: ["pipeline"],
             write: true,
             outputs: [],
             inputs: []
@@ -1670,7 +1670,7 @@ var library = {
                 version: module.version,
                 description: "DESCRIPTION PLACEHOLDER GOES HERE",
                 documentation: "/gp/getTaskDoc.jsp?name=" + module.lsid,
-                categories: [module.category],
+                categories: module.category,
                 tags: [],
                 suites: []
             });
@@ -2122,14 +2122,17 @@ var library = {
     },
 
     _addModuleToCategoryMap: function(module) {
-        var category = module.category;
-        if (category === null || category === "") { category = "Uncategorized"; }
+        var categories = module.category;
+        if (categories === null || categories === "" || categories.length === 0) { categories = ["Uncategorized"]; }
 
-        if (this.moduleCategoryMap[category] === undefined || this.moduleCategoryMap[category] === null) {
-            this.moduleCategoryMap[category] = new Array();
+        for (var i = 0; i < categories.length; i++) {
+            var category = categories[i];
+            if (this.moduleCategoryMap[category] === undefined || this.moduleCategoryMap[category] === null) {
+                this.moduleCategoryMap[category] = new Array();
+            }
+
+            this.moduleCategoryMap[category].push(module);
         }
-
-        this.moduleCategoryMap[category].push(module);
     },
 
     _readModuleCategories: function() {
@@ -2232,7 +2235,7 @@ var library = {
             name: name,
             lsid: lsid,
             version: "",
-            category: "",
+            category: [],
             write: true,
             outputs: [],
             inputs: []
@@ -4329,7 +4332,7 @@ function File(name, path) {
         "name": "",
         "lsid": path,
         "version": "",
-        "category": "",
+        "category": [],
         "id": "",
         "write": true});
     file.type = "module file";
