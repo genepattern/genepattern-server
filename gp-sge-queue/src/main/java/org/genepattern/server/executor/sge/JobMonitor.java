@@ -56,7 +56,7 @@ public class JobMonitor {
                             handleJobCompletion(job);
                         }
                         else {
-                            log.error("job is not defined");
+                            log.debug("job is not defined");
                         }
                     }
                     catch (Throwable t) {
