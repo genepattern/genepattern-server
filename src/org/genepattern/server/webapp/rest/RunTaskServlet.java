@@ -112,8 +112,8 @@ public class RunTaskServlet extends HttpServlet
             if(reloadJobId != null && !reloadJobId.equals(""))
             {
                 //This is a reloaded job
-                ReloadJobHelper reloadJobHelper=new ReloadJobHelper(userContext);
-                reloadJobInput = reloadJobHelper.getInputValues(reloadJobId);
+                ReloadJobHelper reloadJobHelper=new ReloadJobHelper(userContext, reloadJobId);
+                reloadJobInput = reloadJobHelper.getInputValues();
 
                 String reloadedLsidString = reloadJobInput.getLsid();
 
@@ -547,8 +547,8 @@ public class RunTaskServlet extends HttpServlet
         if (reloadJob != null && !reloadJob.equals("")) {
             //This is a reloaded job
             try {
-                ReloadJobHelper reloadJobHelper=new ReloadJobHelper(userContext);
-                reloadJobInput = reloadJobHelper.getInputValues(reloadJob);
+                ReloadJobHelper reloadJobHelper=new ReloadJobHelper(userContext, reloadJob);
+                reloadJobInput = reloadJobHelper.getInputValues();
             }
             catch (Exception e) {
                 log.error("Error initializing from reloadJob="+reloadJob, e);

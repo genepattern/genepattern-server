@@ -9,7 +9,9 @@ import java.net.URLEncoder;
 import org.apache.log4j.Logger;
 import org.genepattern.server.config.ServerConfiguration.Context;
 import org.genepattern.server.dm.GpFilePath;
-import org.genepattern.server.webservice.server.DirectoryManager;
+import org.genepattern.server.eula.InitException;
+import org.genepattern.server.eula.LibdirLegacy;
+import org.genepattern.server.eula.LibdirStrategy;
 import org.genepattern.webservice.TaskInfo;
 
 /**
@@ -20,22 +22,43 @@ import org.genepattern.webservice.TaskInfo;
 public class TasklibPath extends GpFilePath {
     private static Logger log = Logger.getLogger(TasklibPath.class);
 
-    private String lsid;
-    private String relativePath;
-    private File serverFile;
-    private File relativeFile;
-    private URI relativeUri;
-    private boolean isPublic = false;
-    private String taskOwner = "";
+    private final File serverFile;
+    private final File relativeFile;
+    private final URI relativeUri;
+    private final boolean isPublic;
+    private final String taskOwner;
     
-    public TasklibPath(TaskInfo taskInfo, String relativePath) {
-        this.lsid = taskInfo.getLsid();
-        this.relativePath = relativePath;
-        this.relativeFile = new File(relativePath); 
+    public TasklibPath(final TaskInfo taskInfo, final String relativePath) {
+        this(null, taskInfo, relativePath);
+    }
+    public TasklibPath(LibdirStrategy libdirStrategy, final TaskInfo taskInfo, final String relativePath) {
+        if (taskInfo==null) {
+            throw new IllegalArgumentException("taskInfo==null");
+        }
+        if (libdirStrategy == null) {
+            libdirStrategy=new LibdirLegacy();
+        }
+        File taskLibDir=null;
+        try {
+            taskLibDir=libdirStrategy.getLibdir(taskInfo.getLsid());
+        }
+        catch (InitException e) {
+            taskLibDir=null;
+            log.error(e);
+            throw new IllegalArgumentException("Error initializing libdir for task="+taskInfo.getLsid());
+        }
+        
         super.setOwner(taskInfo.getUserId());
-        File taskLibDir = new File(DirectoryManager.getTaskLibDir(taskInfo)); 
+        this.relativeFile = new File(relativePath); 
         this.serverFile = new File(taskLibDir, relativePath);
         
+        this.isPublic = taskInfo.getAccessId() == 1;
+        this.taskOwner = taskInfo.getUserId();
+        this.relativeUri=initRelativeUri(taskInfo, relativePath);
+    }
+    
+    private final URI initRelativeUri(final TaskInfo taskInfo, final String relativePath) {
+        final String lsid=taskInfo.getLsid();
         String encodedFilepath = relativePath;
         try {
             encodedFilepath = URLEncoder.encode(relativePath, "UTF-8");
@@ -46,14 +69,12 @@ public class TasklibPath extends GpFilePath {
         }
         String uriStr = "/getFile.jsp?task="+lsid+"&file="+encodedFilepath;
         try {
-            relativeUri = new URI(uriStr);
+            return new URI(uriStr);
         }
         catch (URISyntaxException e) {
             log.error("Error constructiung uri from "+uriStr, e);
         }
-        
-        this.isPublic = taskInfo != null && taskInfo.getAccessId() == 1;
-        this.taskOwner = taskInfo.getUserId();
+        return null;
     }
 
     /**

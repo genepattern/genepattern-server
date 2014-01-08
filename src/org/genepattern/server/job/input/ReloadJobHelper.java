@@ -1,10 +1,7 @@
 package org.genepattern.server.job.input;
 
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.SortedMap;
@@ -13,8 +10,11 @@ import java.util.TreeMap;
 import org.apache.log4j.Logger;
 import org.genepattern.server.config.ServerConfiguration;
 import org.genepattern.server.config.ServerConfiguration.Context;
+import org.genepattern.server.dm.tasklib.TasklibPath;
 import org.genepattern.server.eula.GetTaskStrategy;
 import org.genepattern.server.eula.GetTaskStrategyDefault;
+import org.genepattern.server.eula.LibdirLegacy;
+import org.genepattern.server.eula.LibdirStrategy;
 import org.genepattern.server.job.JobInfoLoader;
 import org.genepattern.server.job.JobInfoLoaderDefault;
 import org.genepattern.server.job.input.ParamListHelper.ListMode;
@@ -53,18 +53,73 @@ public class ReloadJobHelper {
         return prefix +suffix;
     }
 
+    /**
+     * If this is a link to a libdir file, replace the actual url with the '<libdir>' substitution variable.
+     * Template url,
+     *     <GenePatternURL>getFile.jsp?task=<lsid>&file=<filename>
+     * Example url,
+     *     http://127.0.0.1:8080/gp/getFile.jsp?task=urn:lsid:8080.gp-trunk-dev.120.0.0.1:genepatternmodules:435:1&file=c.txt
+     *                 String uriStr = "/getFile.jsp?task="+lsid+"&file="+encodedFilepath;
+     *                 
+     * This method is called after the '<GenePatternURL>' has been substituted for the actual GenePattern URL.
+     */
+    private String insertLibdirSubstitution(final String in) {
+        final boolean doSub;
+        if (in.contains("/getFile.jsp?task=") && in.contains("&file=")) {
+            doSub=true;
+        }
+        else {
+            doSub=false;
+        }
+        if (!doSub) {
+            return in;
+        }
+        
+        // <GenePatternURL>getFile.jsp?task="+lsid+"&file="
+        final TasklibPath tasklibPath=new TasklibPath(libdirStrategy, taskInfo, "example.txt");
+        try {
+            String fullUrl=tasklibPath.getUrl().toExternalForm();
+            final String tasklibUrl=fullUrl.replace("example.txt", "");
+            if (in.startsWith(tasklibUrl)) {
+                return in.replace(tasklibUrl, "<libdir>");
+            }
+        }
+        catch (Exception e) {
+            log.error("Unexpected error checking for '<libdir>' substitution in value="+in, e);
+        }
+        return in;
+    }
 
     final Context userContext;
     final GetTaskStrategy getTaskStrategy;
+    final LibdirStrategy libdirStrategy;
     final JobInfoLoader jobInfoLoader;
+    final TaskInfo taskInfo;
+    final JobInfo jobInfo;
     
-    public ReloadJobHelper(final Context userContext) {
-        this(userContext, null);
+    public ReloadJobHelper(final Context userContext, final String reloadJobId) 
+    throws Exception
+    {
+        this(userContext, reloadJobId, null);
     }
-    public ReloadJobHelper(final Context userContext, final GetTaskStrategy getTaskStrategyIn) {
-        this(userContext, null, null);
+    public ReloadJobHelper(final Context userContext, final String reloadJobId, final GetTaskStrategy getTaskStrategyIn) 
+    throws Exception
+    {
+        this(userContext, reloadJobId, null, null);
     }
-    public ReloadJobHelper(final Context userContext, final GetTaskStrategy getTaskStrategyIn, final JobInfoLoader jobInfoLoaderIn) {
+    public ReloadJobHelper(final Context userContext, final String reloadJobId, final GetTaskStrategy getTaskStrategyIn, final JobInfoLoader jobInfoLoaderIn) 
+    throws Exception
+    {
+        this(userContext, reloadJobId, getTaskStrategyIn, jobInfoLoaderIn, null);
+    }
+    public ReloadJobHelper(
+            final Context userContext, 
+            final String reloadJobId, 
+            final GetTaskStrategy getTaskStrategyIn, 
+            final JobInfoLoader jobInfoLoaderIn, 
+            final LibdirStrategy libdirStrategyIn) 
+    throws Exception 
+    {
         if (userContext==null) {
             throw new IllegalArgumentException("userContext==null");
         }
@@ -81,6 +136,17 @@ public class ReloadJobHelper {
         else {
             this.jobInfoLoader=new JobInfoLoaderDefault();
         }
+        if (libdirStrategyIn != null) {
+            this.libdirStrategy=libdirStrategyIn;
+        }
+        else {
+            this.libdirStrategy=new LibdirLegacy();
+        }
+        this.jobInfo = jobInfoLoader.getJobInfo(userContext, reloadJobId);
+        if (jobInfo==null) {
+            throw new IllegalArgumentException("Error initializing jobInfo for reloadJobId="+reloadJobId);
+        }
+        this.taskInfo=getTaskStrategy.getTaskInfo(jobInfo.getTaskLSID());
     }
 
     /**
@@ -92,8 +158,7 @@ public class ReloadJobHelper {
      * @param jobId
      * @return
      */
-    public JobInput getInputValues(final String reloadJobId) throws Exception {
-        final JobInfo jobInfo = jobInfoLoader.getJobInfo(userContext, reloadJobId);
+    public JobInput getInputValues() throws Exception {
         return getInputValues(jobInfo);
     }
     
@@ -123,7 +188,6 @@ public class ReloadJobHelper {
         }
 
         //initialize a map of paramName to ParameterInfo 
-        final TaskInfo taskInfo=getTaskStrategy.getTaskInfo(reloadJob.getTaskLSID());
         final Map<String,ParameterInfoRecord> paramInfoMap=ParameterInfoRecord.initParamInfoMap(taskInfo);
 
         for (final ParameterInfo actualParam : params) {
@@ -167,7 +231,6 @@ public class ReloadJobHelper {
         HashMap<?,?> attrs=paramValue.getAttributes();
         if (attrs==null) {
             log.error("paramValue.attributes==null");
-            //return Collections.emptyList();
             return new Param(new ParamId(formalParam.getName()), false);
         }
         
@@ -229,7 +292,6 @@ public class ReloadJobHelper {
             return param;
         }
         
-        //List<String> values=new ArrayList<String>();
         //if necessary, replace <GenePatternURL> with actual value
         String value=paramValue.getValue();
         
@@ -254,106 +316,17 @@ public class ReloadJobHelper {
                 value=replaceGpUrl(paramValue.getValue());
             }
         }
-        //values.add(value);
+
+        //special-case for '<libdir>' substitution in input file (e.g. from a file drop-down)
+        if (formalParam.isInputFile() && !fileFromPrevGpVersion) {
+            value=insertLibdirSubstitution(value);
+        }
+        
         log.debug("value: "+value);
-        //return values;
         Param param = new Param(new ParamId(formalParam.getName()), false);
         param.addValue(new ParamValue(value));
         return param;
     }
-
-    /**
-     * @deprecated
-     * @param reloadJobId
-     * @param formalParam
-     * @param paramValue
-     * @return
-     */
-    private List<String> _getOriginalInputValues(final String reloadJobId, final ParameterInfo formalParam, final ParameterInfo paramValue) {
-        if (paramValue==null) {
-            throw new IllegalArgumentException("paramValue == null");
-        }
-        HashMap<?,?> attrs=paramValue.getAttributes();
-        if (attrs==null) {
-            log.error("paramValue.attributes==null");
-            return Collections.emptyList();
-        }
-        
-        if (paramValue.isOutputFile()) {
-            //ignore output files
-            log.debug("pinfo.isOutputFile == true");
-            return null;
-        }
-        
-        log.debug("reloadJobId="+reloadJobId+", "+paramValue.getName()+"="+paramValue.getValue());
-        //extract all 'values_' 
-        SortedMap<Integer,String> valuesMap=new TreeMap<Integer,String>();
-        for(Entry<?,?> entry : attrs.entrySet()) {
-            String key=entry.getKey().toString();
-            if (key.startsWith("values_")) {
-                try {
-                    int idx=Integer.parseInt( key.split("_")[1] );
-                    String value=entry.getValue().toString();
-                    value=replaceGpUrl(value);
-                    valuesMap.put(idx, value);
-                }
-                catch (Throwable t) {
-                    log.error("Can't parse pinfo.attribute, key="+key, t);
-                }
-            }
-        }
-        if (valuesMap.size() == 0) {
-            //special-case for reloading an empty file list
-            if (formalParam.getAttributes().containsKey(NumValues.PROP_LIST_MODE)) {
-                if (isReloadEmpty(formalParam)) {
-                    return Collections.emptyList();
-                }
-            }
-        }
-        
-        if (valuesMap.size() > 0) {
-            List<String> values=new ArrayList<String>(valuesMap.values());
-            if (log.isDebugEnabled()) {
-                log.debug("reloading a file list");
-                int i=0;
-                for(final String value : values) {
-                    log.debug("    ["+i+"]: "+value);
-                    ++i;
-                }
-            }
-            return values;
-        }
-        
-        List<String> values=new ArrayList<String>();
-        //if necessary, replace <GenePatternURL> with actual value
-        String value=paramValue.getValue();
-        
-        //special-case for form upload reloaded from a previous GP version (<=3.5.0)
-        boolean fileFromPrevGpVersion=false;
-        if (formalParam.isInputFile()) {
-            ReloadFromPreviousVersion r=new ReloadFromPreviousVersion(reloadJobId, paramValue);
-            if (r.isWebUpload()) {
-                log.debug("is previous form upload: "+paramValue.getValue());
-                fileFromPrevGpVersion=true;
-                value=r.getInputFormValue();
-            }
-            else if (r.isSoapUpload()) {
-                log.debug("is previous SOAP upload: "+paramValue.getValue());
-                fileFromPrevGpVersion=true;
-                value=r.getInputFormValue();
-            }
-        }
-        //special-case for input files and directories, if necessary replace actual URL with '<GenePatternURL>'
-        if (!fileFromPrevGpVersion && formalParam != null) {
-            if (formalParam.isInputFile() || formalParam._isDirectory()) {
-                value=replaceGpUrl(paramValue.getValue());
-            }
-        }
-        values.add(value);
-        log.debug("value: "+value);
-        return values;
-    }
-    
     
     /**
      * Helper method for the special-case of reloading a job with a parameter list (e.g. numValues=0+),

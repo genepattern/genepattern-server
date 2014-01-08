@@ -3,31 +3,26 @@ package org.genepattern.server.job.input;
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
+import java.util.StringTokenizer;
 
-import org.genepattern.server.dm.ExternalFile;
 import org.apache.log4j.Logger;
 import org.genepattern.server.config.ServerConfiguration.Context;
+import org.genepattern.server.dm.ExternalFile;
 import org.genepattern.server.dm.GpFileObjFactory;
 import org.genepattern.server.dm.GpFilePath;
 import org.genepattern.server.dm.jobresult.JobResultFile;
-import org.genepattern.server.dm.tasklib.TasklibPath;
 import org.genepattern.server.eula.GetTaskStrategy;
 import org.genepattern.server.eula.GetTaskStrategyDefault;
 import org.genepattern.server.job.JobInfoLoader;
 import org.genepattern.server.job.JobInfoLoaderDefault;
-import org.genepattern.server.job.input.Param;
-import org.genepattern.server.job.input.ParamId;
-import org.genepattern.server.job.input.ParamValue;
-import org.genepattern.server.job.input.choice.Choice;
-import org.genepattern.server.job.input.choice.ChoiceInfo;
-import org.genepattern.server.job.input.choice.ChoiceInfoHelper;
 import org.genepattern.util.GPConstants;
 import org.genepattern.webservice.JobInfo;
 import org.genepattern.webservice.ParameterInfo;
-import org.genepattern.webservice.TaskInfo;
-import org.genepattern.webservice.TaskInfoCache;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -291,37 +286,6 @@ public class LoadModuleHelper {
                 if (param != null) {
                     for(final Entry<GroupId,ParamValue> entry : param.getValuesAsEntries()) {
                         String rvalue = entry.getValue().getValue();
-                        //check if this a drop-down list and if any value is a file from the module taskLib
-                        final ChoiceInfo cInfo = ChoiceInfoHelper.initChoiceInfo(pinfo);
-                        List<Choice> choices = null;
-
-                        if(cInfo != null)
-                        {
-                            choices = cInfo.getChoices();
-                        }
-                        if(choices != null && choices.size() > 0)
-                        {
-                            for(Choice choice : choices)
-                            {
-                                String value = choice.getValue();
-                                if(value.contains("<libdir>"))
-                                {
-                                    //Value is expected to refer to a file if we get here
-                                    //so extract the name of the file
-                                    String name = value.substring(value.indexOf("<libdir>")+8);
-                                    if(entry.getValue().getValue().endsWith(name))
-                                    {
-                                        TaskInfo info = TaskInfoCache.instance().getTask(reloadedValues.getLsid());
-                                        TasklibPath tp = new TasklibPath(info, name);
-                                        if(entry.getValue().getValue().endsWith(tp.getUrl().toExternalForm()))
-                                        {
-                                            rvalue = value;
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                        
                         if (first) {
                             initialValues.removeValue(new ParamId(pname));
                             first=false;
