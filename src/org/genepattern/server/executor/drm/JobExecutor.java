@@ -60,7 +60,7 @@ public class JobExecutor implements CommandExecutor {
         public Thread newThread(final Runnable r) {
             final Thread t=new Thread(r);
             t.setDaemon(true);
-            t.setName("DrmExecutor-0");
+            t.setName("JobExecutor-0");
             return t;
         }
     });

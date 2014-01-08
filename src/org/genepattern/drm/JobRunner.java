@@ -16,7 +16,7 @@ import org.genepattern.server.executor.CommandExecutorException;
 public interface JobRunner {
     /** 
      * Service shutdown, clean up resources. 
-     * This is called when the parent DrmExecutor is shut down.
+     * This is called when the parent JobExecutor is shut down.
      * 
      */
     void stop();
