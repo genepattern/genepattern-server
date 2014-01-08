@@ -22,6 +22,8 @@ import org.genepattern.server.executor.CommandExecutorException;
         configuration.properties:
             jobRunnerClassname: org.genepattern.drm.impl.debug.DebugJobRunner
             jobRunnerName: DebugJobRunner
+            # lookupType: DB, requires GP server >= 3.7.6 build 12709 (or customization of the internal database and hibernate mapping files)
+            # the 'HASHMAP' option is a fallback for development (*but not production*). It does not save status of running jobs after a GP server restart)
             lookupType: DB
             #lookupType: HASHMAP
  * </pre>
