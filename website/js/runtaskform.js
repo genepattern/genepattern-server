@@ -143,7 +143,13 @@ function loadModule(taskId, reloadId)
 
                 // Update the history & title
                 document.title = "GenePattern - " + run_task_info.name
-                history.pushState(null, document.title, location.protocol + "//" + location.host + location.pathname + "?lsid=" + module.LSID);
+                if (reloadId) {
+                    var reloadJob = "&reloadJob=" + reloadId;
+                }
+                else {
+                    var reloadJob = "";
+                }
+                history.pushState(null, document.title, location.protocol + "//" + location.host + location.pathname + "?lsid=" + module.LSID + reloadJob);
             }
         },
         error: function(xhr, ajaxOptions, thrownError)
