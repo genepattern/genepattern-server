@@ -70,16 +70,15 @@ public class JobExecutor implements CommandExecutor {
      * @param classname
      * @return
      */
-    private static JobRunner initJobRunner(final String classname) {        
+    private static JobRunner initJobRunner(final String classname) { 
+        log.debug("initializing JobRunner from classname="+classname);
         try {
-            log.info("Initializing jobRunner from classname="+classname+" ... ");
             final ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
             final Class<?> svcClass = Class.forName(classname, false, classLoader);
             if (!JobRunner.class.isAssignableFrom(svcClass)) {
                 log.error(""+svcClass.getCanonicalName()+" does not implement "+JobRunner.class.getCanonicalName());
             }
             final JobRunner jobRunner = (JobRunner) svcClass.newInstance();
-            log.info("Initialized jobRunner from classname="+classname);
             return jobRunner;
         }
         catch (Throwable t) {
@@ -205,7 +204,6 @@ public class JobExecutor implements CommandExecutor {
         }
         this.jobRunnerName=properties.getProperty("jobRunnerName", "0");
         this.logFilename=properties.getProperty("logFilename", null);
-        this.jobRunner=JobExecutor.initJobRunner(jobRunnerClassname);
         String lookupTypeStr=properties.getProperty("lookupType", DrmLookupFactory.Type.DB.name());
         DrmLookupFactory.Type lookupType=null;
         try {
@@ -217,9 +215,13 @@ public class JobExecutor implements CommandExecutor {
         if (log.isDebugEnabled()) {
             log.debug("jobRunnerClassname="+jobRunnerClassname);
             log.debug("jobRunnerName="+jobRunnerName);
+            log.debug("logFilename="+logFilename);
             log.debug("lookupType="+lookupType);
         }
+
+        this.jobRunner=JobExecutor.initJobRunner(jobRunnerClassname);
         this.jobLookupTable=DrmLookupFactory.initializeDrmLookup(lookupType, jobRunnerClassname, jobRunnerName);
+        log.info("Initialized jobRunner from classname="+jobRunnerClassname+", jobRunnerName="+jobRunnerName+", lookupType="+lookupType);
     }
 
     @Override
