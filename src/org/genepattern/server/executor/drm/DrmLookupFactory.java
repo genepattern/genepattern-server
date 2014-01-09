@@ -20,6 +20,7 @@ public class DrmLookupFactory {
     }
     
     public static final DrmLookup initializeDrmLookup(final Type type, final String jobRunnerClassname, final String jobRunnerName) {
+        log.debug("Initializing drmLookup, type="+type+", jobRunnerClassname="+jobRunnerClassname+", jobRunnerName="+jobRunnerName);
         if (type==Type.HASHMAP) {
             return new HashMapLookup(jobRunnerClassname, jobRunnerName);
         }

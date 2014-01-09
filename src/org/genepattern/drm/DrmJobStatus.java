@@ -4,6 +4,8 @@ import java.util.Date;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.log4j.Logger;
+
 
 import com.google.common.collect.ImmutableMap;
 
@@ -14,7 +16,8 @@ import com.google.common.collect.ImmutableMap;
  *
  */
 public class DrmJobStatus {
-    
+     private static final Logger log = Logger.getLogger(DrmJobStatus.class);
+   
     /**
      * Representation of an amount of time.
      * @author pcarr
@@ -39,6 +42,11 @@ public class DrmJobStatus {
             return timeUnit;
         }
     }
+
+    @Override
+    public String toString() {
+        return this.toString;
+    }
     
     private final String drmJobId;
     private final DrmJobState jobState;
@@ -51,6 +59,8 @@ public class DrmJobStatus {
     private final String terminatingSignal;
     private final ImmutableMap<String,String> resourceUsage;
     
+    private final String toString;
+    
     private DrmJobStatus(final Builder builder) {
         this.drmJobId=builder.drmJobId;
         this.jobState=builder.jobState;
@@ -62,6 +72,22 @@ public class DrmJobStatus {
         this.terminatingSignal=builder.terminatingSignal;
         this.resourceUsage=builder.resourceUsage;
         this.cpuTime=builder.cpuTime;
+        
+        //for debugging
+        StringBuffer buf=new StringBuffer();
+        buf.append("drmJobId="); buf.append(drmJobId);
+        buf.append(", jobState="); buf.append(jobState); 
+        buf.append(", exitCode="); buf.append(exitCode);
+        if (log.isDebugEnabled()) {
+            buf.append("\n    submitTime="); buf.append(submitTime);
+            buf.append(", startTime="); buf.append(startTime);
+            buf.append(", endTime="); buf.append(endTime);
+            buf.append("\n    jobStatusMessage="); buf.append(jobStatusMessage);
+            buf.append(", terminatingSignal="); buf.append(terminatingSignal);
+            buf.append("\nresourceUsage="); buf.append(resourceUsage);
+            buf.append("\ncpuTime="+cpuTime);
+        }
+        this.toString=buf.toString();
     }
     
     /**
