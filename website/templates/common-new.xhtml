@@ -107,10 +107,13 @@
 	                    	// Initialize the search slider
 	                    	initSearchSlider();
 	                    },
-                        error: function() {
-                            $("#loading-modules").text("Error Loading Modules");
-                            $("#loading-modules").css("color", "red");
-                            $("#loading-modules").css("font-size", "14pt");
+                        error: function(data) {
+                            var userAborted = !data.getAllResponseHeaders();
+                            if (!userAborted) {
+                                $("#loading-modules").text("Error Loading Modules");
+                                $("#loading-modules").css("color", "red");
+                                $("#loading-modules").css("font-size", "14pt");
+                            }
                         }
 	                });
 	
