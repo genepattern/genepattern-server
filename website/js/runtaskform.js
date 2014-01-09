@@ -364,11 +364,10 @@ function loadModuleInfo(module)
 
         $("#source_info").hover(function(e)
         {
-            var x = e.pageX;
-            var y = e.pageY;
-            var width = $("#source_info_tooltip").width();
-            $("#source_info_tooltip").css("top", y -10);
-            $("#source_info_tooltip").css("left", x - width/2);
+            $("#source_info_tooltip").css("position", "absolute");
+            $("#source_info_tooltip").css("top", $("#source_info").position().top + 15);
+            $("#source_info_tooltip").css("right", 20);
+
             setTimeout(function()
             {
                 if($("#source_info").is(":hover"))
