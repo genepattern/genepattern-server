@@ -492,16 +492,6 @@ function initParam(parameterInfo, index, initialValues)
     //keep track of position of element in list
     run_task_info.params[parameterInfo.name].index = index;
 
-    //set the initial values
-    //can be null or undefined if this is not a job reload
-    var initialValuesList = null;
-
-    if(initialValues != null && initialValues != undefined)
-    {
-        initialValuesList = initialValues[parameterInfo.name];
-    }
-    run_task_info.params[parameterInfo.name].initialValues = initialValuesList;
-
     //set the display name for the parameter
     setParamDisplayName(parameterInfo);
 
@@ -513,8 +503,6 @@ function initParam(parameterInfo, index, initialValues)
 
     //check if more than one value can be assigned to this parameter
     setAllowMultipleValuesForParam(parameterInfo);
-
-    run_task_info.params[parameterInfo.name].initialValues = initialValuesList;
 
     //a flag to indicate whether the initial values are found in the drop down list if
     //this is a choice parameter
@@ -1422,6 +1410,17 @@ function loadParameterInfo(parameters, initialValues)
 
         var valueTd = $("<td class='paramValueTd'/>");
         paramRow.append(valueTd);
+
+        //set the initial values
+        //can be null or undefined if this is not a job reload
+        var initialValuesList = null;
+
+        if(initialValues != null && initialValues != undefined)
+        {
+            initialValuesList = initialValues[parameterName];
+        }
+        run_task_info.params[parameterName].initialValues = initialValuesList;
+
         var initialValuesByGroup = run_task_info.params[parameterName].initialValues;
         if(initialValuesByGroup != undefined && initialValuesByGroup != null)
         {
