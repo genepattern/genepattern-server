@@ -149,7 +149,7 @@ public class InputJSON extends JSONObject {
             this.setFileChoice(param.getBoolean(FILE_CHOICE));
         }
         catch (JSONException e) {
-            log.error("Error parsing JSON and initializing InputJSON from ParameterInfo: " + param);
+            log.error("Error initializing InputJSON from param=" + param +", "+e.getLocalizedMessage() );
         }
     }
     
