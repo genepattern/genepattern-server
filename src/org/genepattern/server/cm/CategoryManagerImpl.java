@@ -25,6 +25,7 @@ import org.genepattern.server.config.ServerConfiguration.Context;
 import org.genepattern.server.executor.CommandProperties.Value;
 import org.genepattern.server.task.category.dao.TaskCategory;
 import org.genepattern.server.task.category.dao.TaskCategoryRecorder;
+import org.genepattern.server.webservice.server.dao.AdminDAO;
 import org.genepattern.util.GPConstants;
 import org.genepattern.util.LSID;
 import org.genepattern.webservice.TaskInfo;
@@ -43,7 +44,7 @@ public class CategoryManagerImpl {
     private static Logger log = Logger.getLogger(CategoryManagerImpl.class);
 
     /**
-     * @see doc for {@link CategoryManager#getCategoriesForTask(Context, TaskInfo)}
+     * see doc for {@link CategoryManager#getCategoriesForTask(Context, TaskInfo)}
      */
     public static List<String> getCategoriesForTask(final Context userContext, final TaskInfo taskInfo) {
         final boolean includeHidden=false;
@@ -98,7 +99,7 @@ public class CategoryManagerImpl {
     }
 
     /**
-     * @see doc for {@link CategoryManager#getCategoriesFromManifest(TaskInfo)}
+     * see doc for {@link CategoryManager#getCategoriesFromManifest(TaskInfo)}
      */
     public static List<String> getCategoriesFromManifest(final TaskInfo taskInfo) {
         //check for custom 'categories' in the manifest ...
@@ -204,6 +205,30 @@ public class CategoryManagerImpl {
         });
 
         final TaskInfo[] taskInfos = TaskInfoCache.instance().getAllTasks();
+        for(final TaskInfo taskInfo : taskInfos) {
+            final List<String> categoriesForTask=getCategoriesForTask(userContext, taskInfo, includeHidden);
+            categories.addAll(categoriesForTask);
+        }
+        return new ArrayList<String>(categories);
+    }
+
+    public static List<String> getAllCategoriesForUser(final Context userContext, final boolean includeHidden) {
+        SortedSet<String> categories = new TreeSet<String>(new Comparator<String>() {
+            // sort categories alphabetically, ignoring case
+            public int compare(String arg0, String arg1) {
+                String arg0tl = arg0.toLowerCase();
+                String arg1tl = arg1.toLowerCase();
+                int rval = arg0tl.compareTo(arg1tl);
+                if (rval == 0) {
+                    rval = arg0.compareTo(arg1);
+                }
+                return rval;
+            }
+        });
+
+        final AdminDAO adminDao = new AdminDAO();
+        TaskInfo[] taskInfos = adminDao.getAllTasksForUser(userContext.getUserId());
+
         for(final TaskInfo taskInfo : taskInfos) {
             final List<String> categoriesForTask=getCategoriesForTask(userContext, taskInfo, includeHidden);
             categories.addAll(categoriesForTask);

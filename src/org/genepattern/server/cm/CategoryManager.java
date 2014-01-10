@@ -65,4 +65,8 @@ public class CategoryManager {
     public static List<String> getAllCategories(final Context userContext, final boolean includeHidden) {
         return CategoryManagerImpl.getAllCategories(userContext, includeHidden);
     }
+
+    public static List<String> getAllCategoriesForUser(final Context userContext, final boolean includeHidden) {
+        return CategoryManagerImpl.getAllCategoriesForUser(userContext, includeHidden);
+    }
 }

@@ -38,7 +38,7 @@ public class CategoryResource {
         try {
             // Get the map of the latest suites
             final boolean includeHidden=false;
-            List<String> categories = CategoryManager.getAllCategories(userContext, includeHidden);
+            List<String> categories = CategoryManager.getAllCategoriesForUser(userContext, includeHidden);
             
             // Return the JSON object
             JSONArray jsonArray = new JSONArray();
