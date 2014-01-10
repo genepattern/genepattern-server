@@ -410,15 +410,21 @@ out.println("<table cellspacing='0' width='100%' class='attribute'>");
 			String[] values = formalParam.getValue().split(GPConstants.PARAM_INFO_CHOICE_DELIMITER);
 			String[] eachValue;
 			value = informalParam.getValue();
-			for (int v = 0; v < values.length; v++) {
-				eachValue = values[v].split(GPConstants.PARAM_INFO_TYPE_SEPARATOR);
-				if (value.equals(eachValue[0])) {
-					if (eachValue.length == 2) {
-						value = eachValue[1];
-					}
-					break;
-				}
-			}
+            try {
+                for (int v = 0; v < values.length; v++) {
+                    eachValue = values[v].split(GPConstants.PARAM_INFO_TYPE_SEPARATOR);
+                    if (value.equals(eachValue[0])) {
+                        if (eachValue.length == 2) {
+                            value = eachValue[1];
+                        }
+                        break;
+                    }
+                }
+            }
+            catch (Throwable t) {
+                //TODO: log the error, for GP-4806
+                value= value + " (Error parsing choice list: "+t.getLocalizedMessage()+" )";
+            }
 			value = StringUtils.htmlEncode(value);
 		}
 
