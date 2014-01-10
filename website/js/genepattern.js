@@ -332,6 +332,8 @@ function initBrowseTop() {
 }
 
 function initSearchSlider() {
+    var still_loading = false;
+
 	var search = $('<div id="module-list-search"></div>').modulelist({
         title: 'Search: Modules &amp; Pipelines',
         data: all_modules,
@@ -339,7 +341,14 @@ function initSearchSlider() {
         draggable: true,
         click: function(event) {
         	var lsid = $(event.target).closest(".module-listing").module("get_lsid");
-        	loadRunTaskForm(lsid);
+            if (!still_loading) {
+                still_loading = true;
+                setTimeout(function() {
+                    console.log(still_loading);
+                    still_loading = false;
+                }, 400);
+                loadRunTaskForm(lsid);
+            }
         }
     });
 
@@ -349,6 +358,7 @@ function initSearchSlider() {
 }
 
 function initRecent() {
+    var still_loading = false;
 	var recent_modules = getRecentModules();
 	
 	var recent = $('#recent-modules').modulelist({
@@ -358,7 +368,14 @@ function initRecent() {
         draggable: true,
         click: function(event) {
         	var lsid = $(event.target).closest(".module-listing").module("get_lsid");
-            loadRunTaskForm(lsid);
+            if (!still_loading) {
+                still_loading = true;
+                setTimeout(function() {
+                    console.log(still_loading);
+                    still_loading = false;
+                }, 400);
+                loadRunTaskForm(lsid);
+            }
         }
     });
     recent.modulelist("filter", "recent");
@@ -374,6 +391,7 @@ function baseLsid(lsid) {
 }
 
 function initPinned() {
+    var still_loading = false;
 	var pinned_modules = getPinnedModules();
 	
 	var pinned = $('#pinned-modules').modulelist({
@@ -383,7 +401,14 @@ function initPinned() {
         draggable: false,
         click: function(event) {
         	var lsid = $(event.target).closest(".module-listing").module("get_lsid");
-            loadRunTaskForm(lsid);
+            if (!still_loading) {
+                still_loading = true;
+                setTimeout(function() {
+                    console.log(still_loading);
+                    still_loading = false;
+                }, 400);
+                loadRunTaskForm(lsid);
+            }
         },
         add: function(event, ui) {
         	$.ajax({
