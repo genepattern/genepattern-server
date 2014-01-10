@@ -412,7 +412,12 @@ out.println("<table cellspacing='0' width='100%' class='attribute'>");
             try {
                 for (int v = 0; v < values.length; v++) {
                     final String[] eachValue = values[v].split(GPConstants.PARAM_INFO_TYPE_SEPARATOR);
-                    if (eachValue.length>0 && value.equals(eachValue[0])) {
+                    if (eachValue.length==0) {
+                        if (value == "") {
+                            break;
+                        }
+                    }
+                    else if (value.equals(eachValue[0])) {
                         if (eachValue.length == 2) {
                             value = eachValue[1];
                         }
