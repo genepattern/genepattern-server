@@ -3167,7 +3167,7 @@ public class GenePatternAnalysisTask {
      * 
      * @author Jim Lerner
      */
-    public static Vector installTask(final String name, final String description, final ParameterInfo[] params, final TaskInfoAttributes taskInfoAttributes, final String requestedTaskOwner, final int requestedAccessId, final Status taskIntegrator, final InstallInfo taskInstallInfo)
+    public static Vector<String> installTask(final String name, final String description, final ParameterInfo[] params, final TaskInfoAttributes taskInfoAttributes, final String requestedTaskOwner, final int requestedAccessId, final Status taskIntegrator, final InstallInfo taskInstallInfo)
     throws OmnigeneException, RemoteException 
     {
         final String originalUsername = requestedTaskOwner;
@@ -3177,23 +3177,31 @@ public class GenePatternAnalysisTask {
         taskInfo.setUserId(requestedTaskOwner);
         taskInfo.setTaskInfoAttributes(taskInfoAttributes);
         taskInfo.setParameterInfoArray(params);
-        final Vector<String> vProblems = GenePatternAnalysisTask.validateInputs(taskInfo, name, taskInfoAttributes, params);
 
         try {
-            final String expected = taskInfoAttributes.get(OS);
-            if (validateOS(expected, "install " + name)) {
-                PluginManagerLegacy.validatePatches(taskInfo, taskIntegrator);
+            //validate the OS
+            final String os = taskInfoAttributes.get(OS);
+            boolean validOs=validateOS(os, "install " + name);
+            if (!validOs) {
+                Vector<String> v=new Vector<String>();
+                v.add("validOs==false, "+OS+"="+os);
+                return v;
             }
-        } 
-        catch (Throwable e) {
-            if (e.getCause() != null) {
-                e = e.getCause();
+            //if necessary, install patches
+            PluginManagerLegacy.validatePatches(taskInfo, taskIntegrator);
+            //validate input parameters, must call this after validatePatches because some patches add substitution parameters
+            final Vector<String> vProblems=GenePatternAnalysisTask.validateInputs(taskInfo, name, taskInfoAttributes, params);
+            if (vProblems != null && vProblems.size()>0) {
+                return vProblems;
             }
-            System.err.println(e.toString() + " while installing " + name);
-            vProblems.add(e.getMessage());
         }
-        if (vProblems.size() > 0) {
-            return vProblems;
+        catch (Throwable t) {
+            if (log.isDebugEnabled()) {
+                log.debug("Error while installing " + name, t);
+            }
+            Vector<String> v=new Vector<String>();
+            v.add(t.getLocalizedMessage());
+            return v;            
         }
 
         String lsid = taskInfoAttributes.get(LSID);
@@ -3461,7 +3469,7 @@ public class GenePatternAnalysisTask {
     public static String installNewTask(final String zipFilename, final String username, final int access_id, final boolean recursive, final Status taskIntegrator, final InstallInfo installInfo) 
     throws TaskInstallationException 
     {
-        Vector vProblems = new Vector();
+        Vector<String> vProblems = new Vector<String>();
         int i;
         ZipFile zipFile = null;
         InputStream is = null;
@@ -3627,7 +3635,7 @@ public class GenePatternAnalysisTask {
                 log.info("installing " + taskName + " into database");
                 vProblems = GenePatternAnalysisTask.installTask(taskName, taskDescription, params, tia, username, access_id, taskIntegrator, installInfo);
                 if (vProblems == null) {
-                    vProblems = new Vector();
+                    vProblems = new Vector<String>();
                 }
                 if (vProblems.size() == 0) {
                     // get the newly assigned LSID
@@ -3738,7 +3746,7 @@ public class GenePatternAnalysisTask {
             }
         }
         if ((vProblems != null) && (vProblems.size() > 0)) {
-            for (Enumeration eProblems = vProblems.elements(); eProblems.hasMoreElements();) {
+            for (Enumeration<String> eProblems = vProblems.elements(); eProblems.hasMoreElements();) {
                 log.error(eProblems.nextElement());
             }
             throw new TaskInstallationException(vProblems);
