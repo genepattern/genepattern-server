@@ -146,7 +146,9 @@ public class InputJSON extends JSONObject {
             this.setValue(param.getString(VALUE));
             final String numValues = getStringOrNull(param, NumValues.PROP_NUM_VALUES, null);
             this.determineNumValues(numValues);
-            this.setFileChoice(param.getBoolean(FILE_CHOICE));
+            if (param.has(FILE_CHOICE)) {
+                this.setFileChoice(param.getBoolean(FILE_CHOICE));
+            }
         }
         catch (JSONException e) {
             log.error("Error initializing InputJSON from param=" + param +", "+e.getLocalizedMessage() );
