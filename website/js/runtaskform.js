@@ -775,7 +775,6 @@ function createChoiceDiv(parameterName, groupId, initialValuesList)
                         && $.inArray(initialValuesList[0], matchingValueList) != -1)
                     {
                         choice.val( initialValuesList[0]);
-
                     }
 
                     if((paramDetails.default_value == "" && initialValuesList[0] == "")
@@ -783,7 +782,6 @@ function createChoiceDiv(parameterName, groupId, initialValuesList)
                     {
                         //indicate initial value was found in drop-down list
                         run_task_info.params[parameterName].initialChoiceValues = true;
-
                     }
                 }
             }
