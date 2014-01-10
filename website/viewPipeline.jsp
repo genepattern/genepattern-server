@@ -408,12 +408,11 @@ out.println("<table cellspacing='0' width='100%' class='attribute'>");
 
 		}  else {
 			String[] values = formalParam.getValue().split(GPConstants.PARAM_INFO_CHOICE_DELIMITER);
-			String[] eachValue;
 			value = informalParam.getValue();
             try {
                 for (int v = 0; v < values.length; v++) {
-                    eachValue = values[v].split(GPConstants.PARAM_INFO_TYPE_SEPARATOR);
-                    if (value.equals(eachValue[0])) {
+                    final String[] eachValue = values[v].split(GPConstants.PARAM_INFO_TYPE_SEPARATOR);
+                    if (eachValue.length>0 && value.equals(eachValue[0])) {
                         if (eachValue.length == 2) {
                             value = eachValue[1];
                         }
