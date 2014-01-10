@@ -464,29 +464,34 @@ public class ProvenanceFinder {
                 File inFile = new File(value);
                 
                 if (!inFile.exists()) {
-                    //this could be a user upload file
-                    try {
-                        GpFilePath inputFilePath = GpFileObjFactory.getRequestedGpFileObj(value);
-                        inFile = inputFilePath.getServerFile();
-                    }
-                    catch (Throwable t) {
-                        //it is expected that exceptions are thrown,
-                        //such as when the initial value is an inherited default value
+                    if (taskParam.isInputFile()) {
+                        //this could be a user upload file
+                        try {
+                            GpFilePath inputFilePath = GpFileObjFactory.getRequestedGpFileObj(value);
+                            inFile = inputFilePath.getServerFile();
+                        }
+                        catch (Throwable t) {
+                            //it is expected that exceptions are thrown,
+                            //such as when the initial value is an inherited default value
+                            log.debug("Error c");
+                        }
                     }
                 }
                 
                 if (!inFile.exists()) {
-                    //this could be a web upload file for a reloaded job
-                    try {
-                        GpFilePath inputFilePath = GetFileDotJspUtil.getRequestedGpFileObjFromGetFileDotJsp(value);
-                        if (inputFilePath != null) {
-                            inFile = inputFilePath.getServerFile();
+                    if (taskParam.isInputFile()) {
+                        //this could be a web upload file for a reloaded job
+                        try {
+                            GpFilePath inputFilePath = GetFileDotJspUtil.getRequestedGpFileObjFromGetFileDotJsp(value);
+                            if (inputFilePath != null) {
+                                inFile = inputFilePath.getServerFile();
+                            }
                         }
-                    }
-                    catch (Throwable t) {
-                        //because this is a hack, it is expected that exceptions are thrown, such as when the 
-                        //initial value is an inherited default value
-                        log.debug("Error creating pipeline parameter from previous job, "+taskParam.getName()+"="+value+": "+t.getLocalizedMessage(), t);
+                        catch (Throwable t) {
+                            //because this is a hack, it is expected that exceptions are thrown, such as when the 
+                            //initial value is an inherited default value
+                            log.debug("Error creating pipeline parameter from previous job, "+taskParam.getName()+"="+value+": "+t.getLocalizedMessage(), t);
+                        }
                     }
                 }
                 
