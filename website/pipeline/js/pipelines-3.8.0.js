@@ -3312,7 +3312,7 @@ var properties = {
         this._addTextBox("Author", editor.workspace["pipelineAuthor"], false, false);
 
         var privacyDropdown = null;
-        if (!adminServerAllowed) { privacyDropdown = ["private"]; }
+        if (!createPublicPipelineAllowed) { privacyDropdown = ["private"]; }
         else { privacyDropdown = ["private", "public"]; }
         this._addDropDown("Privacy", privacyDropdown, editor.workspace["pipelinePrivacy"], false, false);
 
