@@ -769,13 +769,21 @@ function createChoiceDiv(parameterName, groupId, initialValuesList)
                 //will be selected since the choice is not multiselect
                 if(initialValuesList.length > 0)
                 {
+                    run_task_info.params[parameterName].initialChoiceValues = true;
+
                     if(!(paramDetails.default_value == "" && initialValuesList[0] == "")
                         && $.inArray(initialValuesList[0], matchingValueList) != -1)
                     {
                         choice.val( initialValuesList[0]);
 
+                    }
+
+                    if((paramDetails.default_value == "" && initialValuesList[0] == "")
+                        || $.inArray(initialValuesList[0], matchingValueList) != -1)
+                    {
                         //indicate initial value was found in drop-down list
                         run_task_info.params[parameterName].initialChoiceValues = true;
+
                     }
                 }
             }
