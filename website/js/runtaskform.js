@@ -1339,7 +1339,9 @@ function createParamValueEntryDiv(parameterName, initialValuesObj)
             //TODO remove the grouping;
             var paramName = $(this).parents(".pRow").first().attr("id");
             var groupId = getGroupId($(this));
-            updateFilesForGroup(groupId, paramName, []);
+
+            //remove this group from the hash
+            delete parameter_and_val_groups[paramName].groups[groupId];
             $(this).parents(".valueEntryDiv").remove();
         });
 
