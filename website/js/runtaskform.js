@@ -821,7 +821,6 @@ function createFileDiv(parameterName, groupId, enableBatch, initialValuesList)
         drop: function(event, ui)
         {
             var target = $(event.target);
-            //target.parents(".fileDiv").first().removeClass("highlight");
 
             var draggable = ui.draggable;
             var draggablePRow = draggable.find("td").parents(".pRow").first();
@@ -831,6 +830,7 @@ function createFileDiv(parameterName, groupId, enableBatch, initialValuesList)
                 return;
             }
             var draggableParamName = draggablePRow.attr("id");
+            var draggableGroupId = draggable.parents(".valueEntryDiv").first().data("groupId");
 
             var targetPRow = target.parents(".pRow").first();
             if(targetPRow == undefined || targetPRow == null || targetPRow.size() == 0)
@@ -855,7 +855,6 @@ function createFileDiv(parameterName, groupId, enableBatch, initialValuesList)
 
 
             var rowIndex = $(ui.helper).find("input[name='rowindex']").val();
-            var draggableGroupId = draggable.parents(".valueEntryDiv").first().data("groupId");
             var dfileObjListings = getFilesForGroup(draggableGroupId, draggableParamName);
 
             dfileObjListings.splice(rowIndex, 1);
@@ -2372,6 +2371,7 @@ function updateParamFileTable(paramName, fileDiv, groupId)
                     .closest('tr')
                     .prevAll() // Find all sibling elements in front of it
                     .length;
+
                 object.append("<input type='hidden' name='rowindex' value='" + rowIndex + "' />");
                 return object;
             }
