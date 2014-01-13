@@ -845,6 +845,9 @@ function createFileDiv(parameterName, groupId, enableBatch, initialValuesList)
             var targetGroupId = target.parents(".valueEntryDiv").first().data("groupId");
 
             var fileObjListings = getFilesForGroup(targetGroupId, targetParamName);
+
+            validateMaxFiles(targetParamName, fileObjListings.length + 1);
+
             var fileObj = {
                 name: filename,
                 id: fileId++
