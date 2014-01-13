@@ -2587,20 +2587,11 @@ function setAllFileParamValues()
             var param_files = parameter_and_val_groups[paramName].groups[groupNames[g]].files;
             var param_value_listing = parameter_and_val_groups[paramName].groups[groupNames[g]].values;
 
-            //if there is a value set from a choice already for this file then continue
-           /* if(param_files == undefined || param_files == null || param_files.length == 0
-                || (param_value_listing != null &&
-                param_value_listing != undefined &&
-                param_value_listing.length > 0))
-            {
-                //check if value already set from a choice list
-                continue;
-            }*/
             if(param_value_listing != null &&
                 param_value_listing != undefined &&
                 param_value_listing.length > 0 || (param_files == undefined || param_files == null))
             {
-                //check if value already set from a choice list
+                //check if value already set from a choice list and this is a file parameter
                 continue;
             }
 
