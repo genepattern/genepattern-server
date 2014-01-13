@@ -2598,7 +2598,7 @@ function setAllFileParamValues()
             }*/
             if(param_value_listing != null &&
                 param_value_listing != undefined &&
-                param_value_listing.length > 0)
+                param_value_listing.length > 0 || (param_files == undefined || param_files == null))
             {
                 //check if value already set from a choice list
                 continue;
