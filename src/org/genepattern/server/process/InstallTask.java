@@ -280,47 +280,41 @@ public class InstallTask {
         return (taskInfo != null);
     }
 
-    // determine whether the website version of a module is newer than the
-    // currently installed one
-    // TODO: handle LSID version comparison
+    /**
+     * determine whether the website version of a module is newer than the
+     * currently installed one
+     * @return
+     */
     public boolean isNewer() {
-        boolean result = true;
         if (taskInfo == null) {
-            // System.out.println(getName() + " isNewer: TaskInfo doesn't exist:
-            // " + result);
-            return result; // newer because it doesn't exist on this system yet
-        }
-        String newLSID = module.get(GPConstants.LSID);
-        String oldLSID = tia.get(GPConstants.LSID);
-
-        // TODO: use LSID class to compare LSIDs
-        if (newLSID != null && oldLSID == null)
+            // newer because it doesn't exist on this system yet
             return true;
-
+        }
+        final String newLSID = module.get(GPConstants.LSID);
+        final String oldLSID = tia.get(GPConstants.LSID);
+        if (newLSID != null && oldLSID == null) {
+            return true;
+        }
+        
         if (newLSID != null && oldLSID != null && oldLSID.length() > 0
                 && newLSID.length() > 0) {
             try {
-                LSID l1 = new LSID(newLSID);
-                LSID l2 = new LSID(oldLSID);
-                if (!l1.isSimilar(l2)) {
-                    // different authority, namespace,or identifier
-                    result = (l1.compareTo(l2) > 0);
-                } else {
-                    // only different version number
-                    result = (l1.getVersion().compareTo(l2.getVersion()) > 0);
-                }
-                // System.out.println(getName() + " isNewer: LSID comparison: "
-                // + result + " for " + newLSID + " vs. " + oldLSID);
-                return result;
-            } catch (MalformedURLException mue) {
-                System.err.println("Bad LSID: " + newLSID + " or " + oldLSID);
+                final LSID l1 = new LSID(module.get(GPConstants.LSID));
+                final LSID l2 = new LSID(tia.get(GPConstants.LSID));
+                int result=l1.compareTo(l2);
+                return result > 0;
+            }
+            catch (MalformedURLException e) {
+                log.error("Bad LSID: " + newLSID + " or " + oldLSID, e);
+            }
+            catch (Throwable t) {
+                log.error("Unexpected exception", t);
             }
         }
-        String installedVersion = tia.get(GPConstants.VERSION);
-        String newVersion = module.get(GPConstants.VERSION);
-        result = (newVersion.compareTo(installedVersion) > 0);
-        // System.out.println(getName() + " isNewer: version comparison: " +
-        // result + " for " + newVersion + " vs. " + installedVersion);
+        //not sure how we get here
+        final String installedVersion = tia.get(GPConstants.VERSION);
+        final String newVersion = module.get(GPConstants.VERSION);
+        boolean result = (newVersion.compareTo(installedVersion) > 0);
         return result;
     }
 
