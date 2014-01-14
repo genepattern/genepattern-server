@@ -9,7 +9,8 @@ var field_types = {
 var run_task_info = {
     lsid: null, //lsid of the module
     name: null, //name of the module
-    params: {} //contains parameter info necessary to build the job submit form, see the initParam() function for details
+    params: {}, //contains parameter info necessary to build the job submit form, see the initParam() function for details
+    sendTo: {}
 };
 
 //contains json object with parameter to value pairing
@@ -149,7 +150,13 @@ function loadModule(taskId, reloadId)
                 else {
                     var reloadJob = "";
                 }
+
+                // Update the history so "back" works
                 history.pushState(null, document.title, location.protocol + "//" + location.host + location.pathname + "?lsid=" + module.LSID + reloadJob);
+
+                // Update send-to-param options in file menus
+                clearAllSendToParams();
+                sendToMapToMenu();
             }
         },
         error: function(xhr, ajaxOptions, thrownError)
@@ -162,6 +169,27 @@ function loadModule(taskId, reloadId)
             $("#submitJob").append("An error occurred while loading the task " + taskId + ": <br/>" + xhr.responseText);
         },
         dataType: "json"
+    });
+}
+
+function clearAllSendToParams() {
+    $(".send-to-param").remove();
+}
+
+function sendToMapToMenu() {
+    var starts = $(".send-to-param-start");
+    starts.each(function(index, start) {
+        var kind = $(start).attr("data-kind");
+        var url = $(start).attr("data-url");
+        var params = run_task_info.sendTo[kind];
+        if (params) {
+            params = params.slice(0).reverse(); // clone the array and reverse it
+            $(start).after($('<tr class="send-to-param"><td><img src="/gp/images/divider-pix2.gif" width="100%" height="1" /></td></tr>'));
+            for (var i = 0; i < params.length; i++) {
+                var param = params[i];
+                $(start).after($("<tr class='send-to-param'><td><a href='#' onclick='setInputField(\"" + param + "\", \"" + url + "\");'>Send to " + param + "</a></td></tr>"));
+            }
+        }
     });
 }
 
@@ -515,6 +543,22 @@ function initParam(parameterInfo, index, initialValues)
     run_task_info.params[parameterInfo.name].altDescription = parameterInfo.altDescription;
     run_task_info.params[parameterInfo.name].groupInfo = parameterInfo.groupInfo;
     run_task_info.params[parameterInfo.name].isBatch = false;
+
+    // Add parameter to send-to map
+    addSendToParam(parameterInfo);
+}
+
+function addSendToParam(parameterInfo) {
+    if (parameterInfo.fileFormat) {
+        var formats = parameterInfo.fileFormat.split(";");
+        for (var i = 0; i < formats.length; i++) {
+            var format = formats[i];
+            if (run_task_info.sendTo[format] === undefined) {
+                run_task_info.sendTo[format] = [];
+            }
+            run_task_info.sendTo[format].push(parameterInfo.name);
+        }
+    }
 }
 
 function createTextDiv(parameterName, groupId, initialValuesList)
@@ -1505,7 +1549,8 @@ function loadRunTaskForm(lsid, reloadJob) {
     run_task_info = {
         lsid: null, //lsid of the module
         name: null, //name of the module
-        params: {} //contains parameter info necessary to build the job submit form, see the initParam() function for details
+        params: {}, //contains parameter info necessary to build the job submit form, see the initParam() function for details
+        sendTo: {}
     };
 
     parameter_and_val_groups = {}; //contains params and their values only

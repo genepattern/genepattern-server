@@ -46,13 +46,13 @@
                         </tr>
                     </h:outputText>
                     <!--  END GENOMESPACE ADDITION  -->
-                    <tr>
+                    <tr class="send-to-param-start" data-kind="#{fileInfo.kind}" data-url="#{fileInfo.url}">
                         <td>
                             <img src="#{facesContext.externalContext.requestContextPath}/images/divider-pix2.gif" width="100%" height="1" />
                         </td>
                     </tr>
                     <t:dataList value="#{fileInfo.moduleInputParameters}" var="p">
-                        <tr>
+                        <tr class="send-to-param">
                             <td>
                                 <h:outputLink value="#" onclick="setInputField('#{p.key}', '#{fileInfo.url}');">
                                     <h:outputText>
@@ -63,7 +63,7 @@
                         </tr>
                     </t:dataList>
                     <h:outputText rendered="#{!empty fileInfo.moduleInputParameters}">
-                        <tr>
+                        <tr class="send-to-param">
                             <td>
                                 <img src="#{facesContext.externalContext.requestContextPath}/images/divider-pix2.gif" width="100%" height="1" />
                             </td>
