@@ -435,7 +435,9 @@ body {
     color: #7777FF;
 }
 
-.highlight { background-color: yellow }
+.highlight {
+    background-color: yellow !important;
+}
 
 .jstree li {
     white-space: normal !important;
