@@ -476,7 +476,7 @@ default has only a display value and no command line value then you must make th
 the total number of choices is listed. For example:
 <br><br>
 
-<span class="example"><img src='styles/images/create-static-choice.png' width='602' height='167'></span>
+<span class="example"><img src='/gp/css/frozen/modules/styles/images/create-static-choice.png' width='602' height='167'></span>
 <br>
 <form>
     <table>
@@ -485,7 +485,7 @@ the total number of choices is listed. For example:
                 would create a drop-down list that looks like this:
             </td>
             <td>
-                <img src='styles/images/static-choice-drop-down.png' width='265' height='150'>
+                <img src='/gp/css/frozen/modules/styles/images/static-choice-drop-down.png' width='265' height='150'>
             </td>
         </tr>
     </table>
@@ -506,7 +506,7 @@ FTP directory:  <span class="example">ftp://gpftp.broadinstitute.org/pub/rna_seq
             would create a drop-down list that looks like this:
             </td>
             <td>
-                <img src='styles/images/dynamic-drop-down.png' width='340' height='220'>
+                <img src='/gp/css/frozen/modules/styles/images/dynamic-drop-down.png' width='340' height='220'>
             </td>
         </tr>
     </table>
