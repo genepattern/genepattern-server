@@ -228,19 +228,40 @@ public class SuiteCatalogBean {
         }
     }
 
-    public boolean isNewer(String lsid) {
-
+    public boolean isNewer(final String reposLsidStr) {
+        log.debug("reposLsidStr="+reposLsidStr);
         try {
-            LSID reposLsid = new LSID(lsid);
-            List<SuiteInfo> suites = baseLsid2InstalledSuites.get(reposLsid.toStringNoVersion());
-            if (suites != null) {
-                SuiteInfo si = suites.get(0);
-                return Integer.parseInt(reposLsid.getVersion()) > Integer.parseInt(new LSID(si.getLsid()).getVersion());
+            final LSID reposLsid = new LSID(reposLsidStr);
+            if (!reposLsid.hasVersion()) {
+                //it's newer
+                log.error("reposLsid has no version, return true, reposLsidStr="+reposLsidStr);
+                return true;
             }
-        } catch (MalformedURLException e) {
-            log.error(e);
+            final List<SuiteInfo> suites = baseLsid2InstalledSuites.get(reposLsid.toStringNoVersion());
+            if (suites != null && suites.size()>0) {
+                final SuiteInfo si = suites.get(0);
+                final String installedLsidStr=si.getLsid();
+                log.debug("installedLsidStr="+installedLsidStr);
+                final LSID installedLsid=new LSID(installedLsidStr);
+                if (!installedLsid.hasVersion()) {
+                    //the installed version has no LSID
+                    log.error("installedLsid has no version, return false, installedLsidStr="+installedLsidStr);
+                    return false;
+                }
+                
+                Integer reposVersion=Integer.parseInt(reposLsid.getVersion().trim());
+                Integer installedVersion=Integer.parseInt(installedLsid.getVersion().trim());
+                return reposVersion > installedVersion;
+            }
+        } 
+        catch (NumberFormatException e) {
+            log.error("Unexpected number format exception, reposLsidStr="+reposLsidStr, e);
+            return false;
         }
-
+        catch (MalformedURLException e) {
+            log.error("Error with reposLsidStr="+reposLsidStr, e);
+            return false;
+        }
         return true;
     }
 
