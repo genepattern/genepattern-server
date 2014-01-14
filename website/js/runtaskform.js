@@ -2130,7 +2130,7 @@ function handleFiles(files, paramName, fileDiv)
 
     // add to file listing for the specified parameter
     updateFilesForGroup(groupId, paramName, fileObjListings);
-    updateParamFileTable(paramName, fileDiv);
+    updateParamFileTable(paramName, null, groupId);
     toggleFileButtons(paramName);
 }
 
