@@ -77,7 +77,12 @@ public class SuiteResource {
             jsonObj.put("version", lsid.getVersion());
         }
         catch (MalformedURLException e) {
-            log.error("Error getting lsid for suite.name=" + suiteInfo.getName(), e);
+            if (log.isDebugEnabled()) {
+                log.debug("Error getting lsid for suite.name=" + suiteInfo.getName(), e);
+            }
+            else {
+                log.error("Error getting lsid for suite.name=" + suiteInfo.getName());
+            }
         }
         jsonObj.put("documentation", getDocumentation(suiteInfo));
         jsonObj.put("tags", new JSONArray());

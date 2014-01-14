@@ -527,42 +527,66 @@ public class AdminDAO extends BaseDAO {
      *                    If an error occurs
      */
     public SuiteInfo[] getLatestSuites() throws AdminDAOSysException {
-        ArrayList latestSuites = _getLatestSuites();
+        ArrayList<SuiteInfo> latestSuites = _getLatestSuites();
         SuiteInfo[] latest = new SuiteInfo[latestSuites.size()];
-        int i = 0;
-        for (Iterator iter = latestSuites.iterator(); iter.hasNext(); i++) {
-            latest[i] = (SuiteInfo) iter.next();
-        }
+        latest=latestSuites.toArray(latest);
         return latest;
     }
 
-    private ArrayList _getLatestSuites() throws AdminDAOSysException {
+    private LSID getLsid(final SuiteInfo si) {
+        if (si==null) {
+            log.error("Unexpected null arg");
+            return null;
+        }
         try {
-            SuiteInfo[] allSuites = getAllSuites();
-            TreeMap latestSuites = new TreeMap();
+            final LSID siLsid = new LSID(si.getLsid());
+            return siLsid;
+        }
+        catch (MalformedURLException e) {
+            // it is possible for the lsid for an installed suite to be invalid
+            log.debug(e);
+        }
+        catch (Throwable t) {
+            log.error("Unexpected error for si.getLSID="+si.getLSID(), t);
+        }
+        return null;
+    }
+    
+    private ArrayList<SuiteInfo> _getLatestSuites() throws AdminDAOSysException {
+        try {
+            final SuiteInfo[] allSuites = getAllSuites();
+            final TreeMap<String,SuiteInfo> latestSuites = new TreeMap<String, SuiteInfo>();
             // loop through them placing them into a tree set based on their LSIDs
             for (int i = 0; i < allSuites.length; i++) {
-                SuiteInfo si = allSuites[i];
-                LSID siLsid = new LSID(si.getLSID());
-
-                SuiteInfo altSi = (SuiteInfo) latestSuites.get(siLsid.toStringNoVersion());
-
-                if (altSi == null) {
-                    latestSuites.put(siLsid.toStringNoVersion(), si);
-                } 
-                else {
-                    LSID altLsid = new LSID(altSi.getLSID());
-                    if (altLsid.compareTo(siLsid) > 0) {
-                        latestSuites.put(siLsid.toStringNoVersion(), si); // it is newer
+                final SuiteInfo si = allSuites[i];
+                final LSID siLsid=getLsid(si);
+                if (siLsid != null) {
+                    final String baseLsid=siLsid.toStringNoVersion();
+                    final SuiteInfo altSi = (SuiteInfo) latestSuites.get(baseLsid);
+                    if (altSi == null) {
+                        latestSuites.put(baseLsid, si);
                     } 
-                    // else it is older so leave it out
+                    else {
+                        final LSID altLsid = getLsid(altSi);
+                        if (altLsid != null) {
+                            if (altLsid.compareTo(siLsid) > 0) {
+                                latestSuites.put(siLsid.toStringNoVersion(), si); // it is newer
+                            }
+                        }
+                        // else it is older so leave it out
+                    }
+                }
+                else {
+                    //unexpected, but we can tolerate this error
+                    // if we are here is means that si.getLsid is not a properly formatted LSID
+                    log.debug("SuiteInfo.lsid is not a propery formatted LSID, lsid="+si.getLsid());
+                    latestSuites.put(si.getLsid(), si);
                 }
             }
 
-            ArrayList latest = new ArrayList();
-            int i = 0;
-            for (Iterator iter = latestSuites.keySet().iterator(); iter.hasNext(); i++) {
-                latest.add(latestSuites.get(iter.next()));
+            final ArrayList<SuiteInfo> latest = new ArrayList<SuiteInfo>();
+            for(final SuiteInfo suiteInfo : latestSuites.values()) {
+                latest.add(suiteInfo);
             }
             return latest;
         } 
