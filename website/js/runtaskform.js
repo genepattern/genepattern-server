@@ -1520,6 +1520,9 @@ function loadRunTaskForm(lsid, reloadJob) {
     if (reloadJob !== false) {
         reloadJob = Request.parameter('reloadJob');
     }
+    else {
+        reloadJob = "";
+    }
     if(reloadJob == undefined || reloadJob == null)
     {
         reloadJob = "";
