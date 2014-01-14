@@ -23,3 +23,5 @@ create index idx_jrj_ext_job_id on JOB_RUNNER_JOB (ext_job_id);
 
 -- update schema version
 update props set value='3.7.6' where key='schemaVersion';
+
+commit;
