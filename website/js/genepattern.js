@@ -347,7 +347,7 @@ function initSearchSlider() {
                     console.log(still_loading);
                     still_loading = false;
                 }, 400);
-                loadRunTaskForm(lsid);
+                loadRunTaskForm(lsid, false);
             }
         }
     });
@@ -374,7 +374,7 @@ function initRecent() {
                     console.log(still_loading);
                     still_loading = false;
                 }, 400);
-                loadRunTaskForm(lsid);
+                loadRunTaskForm(lsid, false);
             }
         }
     });
@@ -407,7 +407,7 @@ function initPinned() {
                     console.log(still_loading);
                     still_loading = false;
                 }, 400);
-                loadRunTaskForm(lsid);
+                loadRunTaskForm(lsid, false);
             }
         },
         add: function(event, ui) {

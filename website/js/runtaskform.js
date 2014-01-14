@@ -1489,7 +1489,7 @@ function createParamDescriptionRow(parameterName)
     return $("<tr class='paramDescription'><td></td><td colspan='3'>" + pDescription +"</td></tr>");
 }
 
-function loadRunTaskForm(lsid) {
+function loadRunTaskForm(lsid, reloadJob) {
     // Hide the search slider if it is open
     $(".search-widget").searchslider("hide");
 
@@ -1517,8 +1517,9 @@ function loadRunTaskForm(lsid) {
     });
 
     $("button").button();
-
-    var reloadJob = Request.parameter('reloadJob');
+    if (reloadJob !== false) {
+        reloadJob = Request.parameter('reloadJob');
+    }
     if(reloadJob == undefined || reloadJob == null)
     {
         reloadJob = "";
