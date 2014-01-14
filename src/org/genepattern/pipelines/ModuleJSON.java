@@ -30,6 +30,7 @@ public class ModuleJSON extends JSONObject {
     public static final String WRITE = "write";
     public static final String TYPE = "type";
     public static final String CATEGORY = "category";
+    public static final String DESCRIPTION = "description";
     public static final String TYPE_MODULE = "module";
     public static final String TYPE_VISUALIZER = "visualizer";
     public static final String TYPE_PIPELINE = "pipeline";
@@ -49,6 +50,7 @@ public class ModuleJSON extends JSONObject {
             this.determineWrite(info, username);
             this.determineType(info);
             this.setCategory(new JSONArray(CategoryManager.getCategoriesFromManifest(info)));
+            this.setDescription(info.getDescription());
             this.constructInputs(info.getParameterInfoArray());
             this.constructOutputs(info.getTaskInfoAttributes());
         }
@@ -111,6 +113,14 @@ public class ModuleJSON extends JSONObject {
     
     public void setCategory(JSONArray category) throws JSONException {
         this.put(CATEGORY, category);
+    }
+
+    public String getDescription() throws JSONException {
+        return this.getString(DESCRIPTION);
+    }
+
+    public void setDescription(String description) throws JSONException {
+        this.put(DESCRIPTION, description);
     }
     
     public Integer getId() throws JSONException {
