@@ -412,7 +412,7 @@ $.widget("gp.modulelist", {
         var numberHidden = 0
         for (var i = 0; i < this.listings.length; i++) {
             var listing = this.listings[i];
-            if (listing.text().toLowerCase().indexOf(filter.toLowerCase()) < 0) {
+            if (listing.children(":visible").text().toLowerCase().indexOf(filter.toLowerCase()) < 0) {
                 listing.hide();
                 numberHidden++;
             }
