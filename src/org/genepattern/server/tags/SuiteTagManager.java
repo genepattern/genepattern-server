@@ -1,23 +1,20 @@
 package org.genepattern.server.tags;
 
+import java.net.MalformedURLException;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+
 import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.apache.log4j.Logger;
 import org.genepattern.server.config.ServerConfiguration.Context;
-import org.genepattern.server.domain.PinModule;
-import org.genepattern.server.domain.PinModuleDAO;
-import org.genepattern.server.user.UserDAO;
-import org.genepattern.server.user.UserPropKey;
 import org.genepattern.server.webservice.server.dao.AdminDAO;
 import org.genepattern.server.webservice.server.dao.AdminDAOSysException;
 import org.genepattern.util.LSID;
 import org.genepattern.webservice.SuiteInfo;
 import org.genepattern.webservice.TaskInfo;
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import java.net.MalformedURLException;
-import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Singleton class for managing tags in GenePattern
