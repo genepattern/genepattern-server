@@ -1668,13 +1668,19 @@ var library = {
                 lsid: module.lsid,
                 name: module.name,
                 version: module.version,
-                description: "DESCRIPTION PLACEHOLDER GOES HERE",
+                description: module.description,
                 documentation: "/gp/getTaskDoc.jsp?name=" + module.lsid,
                 categories: module.category,
                 tags: [],
                 suites: []
             });
         }
+
+        returnFormat.sort(function(a, b) {
+            if (a.name.toLowerCase() < b.name.toLowerCase()) return -1;
+            else if (a.name.toLowerCase() > b.name.toLowerCase()) return 1;
+            else return 0;
+        });
 
         return returnFormat;
     },
@@ -1694,6 +1700,12 @@ var library = {
                 suites: []
             });
         }
+
+        returnFormat.sort(function(a, b) {
+            if (a.name.toLowerCase() < b.name.toLowerCase()) return -1;
+            else if (a.name.toLowerCase() > b.name.toLowerCase()) return 1;
+            else return 0;
+        });
 
         return returnFormat;
     },
@@ -3440,6 +3452,7 @@ function Module(moduleJSON) {
     this.lsid = moduleJSON.lsid;
     this.version = moduleJSON.version;
     this.category = moduleJSON.category;
+    this.description = moduleJSON.description;
     this.write = moduleJSON.write;
     this.outputs = moduleJSON.outputs;
     this.outputEnds = [];
