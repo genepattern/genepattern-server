@@ -890,23 +890,31 @@ function createFileDiv(parameterName, groupId, enableBatch, initialValuesList)
 
             var fileObjListings = getFilesForGroup(targetGroupId, targetParamName);
 
-            validateMaxFiles(targetParamName, fileObjListings.length + 1);
+            try
+            {
+                validateMaxFiles(targetParamName, fileObjListings.length + 1);
 
-            var fileObj = {
-                name: filename,
-                id: fileId++
-            };
-            fileObjListings.push(fileObj);
-            updateFilesForGroup(targetGroupId , targetParamName, fileObjListings);
-            updateParamFileTable(targetParamName, null, groupId);
+                var fileObj = {
+                    name: filename,
+                    id: fileId++
+                };
+                fileObjListings.push(fileObj);
+                updateFilesForGroup(targetGroupId , targetParamName, fileObjListings);
+                updateParamFileTable(targetParamName, null, groupId);
 
 
-            var rowIndex = $(ui.helper).find("input[name='rowindex']").val();
-            var dfileObjListings = getFilesForGroup(draggableGroupId, draggableParamName);
+                var rowIndex = $(ui.helper).find("input[name='rowindex']").val();
+                var dfileObjListings = getFilesForGroup(draggableGroupId, draggableParamName);
 
-            dfileObjListings.splice(rowIndex, 1);
-            updateFilesForGroup(draggableGroupId , draggableParamName, dfileObjListings);
-            updateParamFileTable(draggableParamName, null, draggableGroupId);
+                dfileObjListings.splice(rowIndex, 1);
+                updateFilesForGroup(draggableGroupId , draggableParamName, dfileObjListings);
+                updateParamFileTable(draggableParamName, null, draggableGroupId);
+            }
+            catch(err)
+            {
+                //drop failed do nothing but log error
+                console.log("Error: " + err.message);
+            }
         }
     });
 
