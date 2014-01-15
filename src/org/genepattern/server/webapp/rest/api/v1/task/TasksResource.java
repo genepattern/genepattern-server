@@ -3,14 +3,13 @@ package org.genepattern.server.webapp.rest.api.v1.task;
 import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URLEncoder;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
@@ -31,11 +30,15 @@ import org.genepattern.server.rest.ParameterInfoRecord;
 import org.genepattern.server.tags.SuiteTagManager;
 import org.genepattern.server.tags.TagManager;
 import org.genepattern.server.tags.TagManager.Tag;
+import org.genepattern.server.user.UserDAO;
+import org.genepattern.server.user.UserPropKey;
 import org.genepattern.server.webapp.rest.api.v1.Util;
 import org.genepattern.server.webservice.server.dao.AdminDAO;
+import org.genepattern.server.webservice.server.dao.AdminDAOSysException;
 import org.genepattern.server.webservice.server.local.LocalAdminClient;
 import org.genepattern.util.LSID;
 import org.genepattern.webservice.ParameterInfo;
+import org.genepattern.webservice.SuiteInfo;
 import org.genepattern.webservice.TaskInfo;
 import org.genepattern.webservice.TaskInfoCache;
 import org.genepattern.webservice.WebServiceException;
@@ -133,6 +136,21 @@ public class TasksResource {
         String path = getTaskInfoPath(request, taskInfo) + "/" + pname  + "/choiceInfo.json";
         return path;
     }
+
+    /**
+     * Returns a hash of the modules visible to the user
+     * @param user
+     * @return
+     */
+    private String getTasksHash(String user) {
+        //TODO: Implement correct hash
+        // Currently the hash simply returns the user and the hour
+        // This results in a cache that lasts until the top of the hour each hour.
+        Date date = new Date();
+        DateFormat df = new SimpleDateFormat("hh:'00' a");
+        String hour = df.format(date);
+        return user + " " + hour;
+    }
     
     /**
      * Rapid prototype method to get the latest version of all installed tasks in json format,
@@ -150,9 +168,20 @@ public class TasksResource {
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     @Path("all.json")
-    public Response getAllTasks(final @Context HttpServletRequest request) {
+    public Response getAllTasks(final @Context HttpServletRequest request, @Context HttpServletResponse response) {
         final ServerConfiguration.Context userContext = Util.getUserContext(request);
         final String userId = userContext.getUserId();
+
+        // Check the etag and return a 304 if they match
+//        String requestEtag = request.getHeader("If-None-Match");
+//        String responseEtag = getTasksHash(userId);
+//        if (responseEtag.equals(requestEtag)) {
+//            return Response.notModified().build();
+//        }
+//        // Otherwise add the correct etag
+//        else {
+//            response.addHeader("etag", responseEtag);
+//        }
         
         // Check for "return hidden modules" flag
         final boolean isInTransaction = HibernateUtil.isInTransaction();
