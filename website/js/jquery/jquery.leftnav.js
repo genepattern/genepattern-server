@@ -278,7 +278,7 @@ $.widget("gp.module", {
         this.gear.remove();
         this.menu.remove();
         this.tags.remove();
-        this.lsidBox.remove();
+        //this.lsidBox.remove();
 
         this.element.removeClass('module-listing');
     },
