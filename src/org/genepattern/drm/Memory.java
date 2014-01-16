@@ -59,7 +59,7 @@ public class Memory {
             log.debug("str is empty, return null");
             return null;
         }
-        //expecting: <long> <units>
+        //expecting: <double> <units>
         final String[] args=str.trim().split(" ");
         
         if (args.length<1 || args.length>2) {
