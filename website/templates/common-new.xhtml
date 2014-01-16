@@ -171,6 +171,7 @@
 	
 	                // Browse button controls
 	                jq("#module-browse-button button").button().click(function() {
+                        jq( ".module-listing" ).removeHighlight();
 	                	jq("#module-search-box").val("");
 	                	jq("#module-browse").searchslider("show");
 	                });

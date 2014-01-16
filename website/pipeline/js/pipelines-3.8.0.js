@@ -1638,6 +1638,7 @@ var library = {
 
         // Browse button controls
         $("#module-browse-button").button().click(function() {
+            $( ".module-listing" ).removeHighlight();
             $("#module-search-box").val("");
             $("#module-browse").searchslider("show");
         });
