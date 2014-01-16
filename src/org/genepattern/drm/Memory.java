@@ -41,7 +41,7 @@ public class Memory {
      * </pre>
      * 
      * Must be a String which can be split by the space (' ') character into an
-     * integer (long) value and a memory.unit (string).
+     * number (double) value and a memory.unit (string).
      * Memory units are not case sensitive.
      * If no unit is specified, then by default, 'Gb' is used.
      *
