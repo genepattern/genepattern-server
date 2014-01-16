@@ -864,34 +864,34 @@ function createFileDiv(parameterName, groupId, enableBatch, initialValuesList)
         hoverClass: 'highlight',
         drop: function(event, ui)
         {
-            var target = $(event.target);
-
-            var draggable = ui.draggable;
-            var draggablePRow = draggable.find("td").parents(".pRow").first();
-            if(draggablePRow == undefined || draggablePRow == null || draggablePRow.size() == 0)
-            {
-                //do nothing since this is not droppable
-                return;
-            }
-            var draggableParamName = draggablePRow.attr("id");
-            var draggableGroupId = draggable.parents(".valueEntryDiv").first().data("groupId");
-
-            var targetPRow = target.parents(".pRow").first();
-            if(targetPRow == undefined || targetPRow == null || targetPRow.size() == 0)
-            {
-                //do nothing since this is not expected
-                return;
-            }
-            var targetParamName = targetPRow.attr("id");
-
-            var filename = draggable.text();
-            filename = $.trim(filename);
-            var targetGroupId = target.parents(".valueEntryDiv").first().data("groupId");
-
-            var fileObjListings = getFilesForGroup(targetGroupId, targetParamName);
-
             try
             {
+                var target = $(event.target);
+
+                var draggable = ui.draggable;
+                var draggablePRow = draggable.find("td").parents(".pRow").first();
+                if(draggablePRow == undefined || draggablePRow == null || draggablePRow.size() == 0)
+                {
+                    //do nothing since this is not droppable
+                    return;
+                }
+                var draggableParamName = draggablePRow.attr("id");
+                var draggableGroupId = draggable.parents(".valueEntryDiv").first().data("groupId");
+
+                var targetPRow = target.parents(".pRow").first();
+                if(targetPRow == undefined || targetPRow == null || targetPRow.size() == 0)
+                {
+                    //do nothing since this is not expected
+                    return;
+                }
+                var targetParamName = targetPRow.attr("id");
+
+                var filename = draggable.text();
+                filename = $.trim(filename);
+                var targetGroupId = target.parents(".valueEntryDiv").first().data("groupId");
+
+                var fileObjListings = getFilesForGroup(targetGroupId, targetParamName);
+
                 validateMaxFiles(targetParamName, fileObjListings.length + 1);
 
                 var fileObj = {
