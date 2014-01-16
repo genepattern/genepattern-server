@@ -467,10 +467,7 @@ function setParamFieldType(parameterInfo)
             {
                 run_task_info.params[parameterInfo.name].type.push(field_types.PASSWORD);
             }
-            else 
-            {
-                run_task_info.params[parameterInfo.name].type.push(field_types.TEXT);
-            }
+            run_task_info.params[parameterInfo.name].type.push(field_types.TEXT);
         }
     }
 }
