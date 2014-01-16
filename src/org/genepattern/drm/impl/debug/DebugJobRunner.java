@@ -72,6 +72,16 @@ public class DebugJobRunner implements JobRunner {
         buf.append("starting gpJob="+drmJobSubmission.getGpJobNo()+" in "+drmJobSubmission.getWorkingDir()+"\n");
         buf.append("    "+drmJobSubmission.getJobInfo().getTaskName()+" ( lsid='"+drmJobSubmission.getJobInfo().getTaskLSID()+"' ) \n");
         buf.append("commandLine="+drmJobSubmission.getCommandLine()+"\n");
+        buf.append("====== resource requirements ======\n");
+        if (drmJobSubmission.getQueue() != null) {
+            buf.append("queue: "+drmJobSubmission.getQueue()+"\n");
+        }
+        if (drmJobSubmission.getMemory() != null) {
+            buf.append("memory: "+drmJobSubmission.getMemory().toString()+"\n");
+        }
+        if (drmJobSubmission.getExtraArgs() != null && drmJobSubmission.getExtraArgs().size()>0) {
+            buf.append("extraArgs: "+drmJobSubmission.getExtraArgs()+"\n");
+        }
         buf.trimToSize();
         String message=buf.toString();
         File out=new File(drmJobSubmission.getWorkingDir(), "debug.txt");

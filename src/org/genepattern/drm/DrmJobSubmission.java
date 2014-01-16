@@ -15,7 +15,7 @@ import org.genepattern.webservice.JobInfo;
  * @author pcarr
  *
  */
-public class DrmJobSubmission {
+public class DrmJobSubmission { 
     private final Integer gpJobNo;
     private final JobInfo jobInfo;
     private final List<String> commandLine;
@@ -26,6 +26,15 @@ public class DrmJobSubmission {
     private final File stderrFile;
     private final File stdinFile;
     private final File logFile;
+    
+    //additional drm job specification parameters
+    //    see http://slurm.schedmd.com/rosetta.pdf, 'a Rosetta Stone of Workload Managers',
+    //    for a table of common job specification parameters
+    private final String queue; //default is null
+    // initialized from a string, e.g. '8 gb',
+    // units must be one of 'b', 'kb', 'mb', 'gb' or 'tb', case insensitive.
+    private Memory memory; //default is null
+    private final List<String> extraArgs;
     
     private DrmJobSubmission(Builder builder) {
         this.gpJobNo=builder.gpJobNo;
@@ -45,6 +54,15 @@ public class DrmJobSubmission {
         this.stderrFile=builder.stderrFile;
         this.stdinFile=builder.stdinFile;
         this.logFile=builder.logFile;
+        
+        this.queue=builder.queue;
+        this.memory=builder.memory;
+        if (builder.extraArgs == null || builder.extraArgs.size()==0) {
+            this.extraArgs=Collections.emptyList();
+        }
+        else {
+            this.extraArgs=new ArrayList<String>(builder.extraArgs);
+        }
     }
     
     public Integer getGpJobNo() {
@@ -83,6 +101,18 @@ public class DrmJobSubmission {
         return logFile;
     }
     
+    public String getQueue() {
+        return queue;
+    }
+    
+    public Memory getMemory() {
+        return memory;
+    }
+    
+    public List<String> getExtraArgs() {
+        return Collections.unmodifiableList(extraArgs);
+    }
+    
     public static final class Builder {
         private final Integer gpJobNo;
         private List<String> commandLine=null;
@@ -95,6 +125,10 @@ public class DrmJobSubmission {
         private File logFile;
         private final JobInfo jobInfo;
         
+        private String queue=null;
+        private Memory memory=null;
+        private List<String> extraArgs=null;
+
         public Builder(final JobInfo jobInfo, final File workingDir) {
             this.jobInfo=jobInfo;
             this.gpJobNo=jobInfo.getJobNumber();
@@ -177,6 +211,34 @@ public class DrmJobSubmission {
         
         public Builder taskName(final String taskName) {
             this.jobInfo.setTaskName(taskName);
+            return this;
+        }
+        
+        public Builder queue(final String queue) {
+            this.queue=queue;
+            return this;
+        }
+
+        /**
+         * Initialize a memory setting for the job, from a string, usually set in the config file. For example,
+         *     'memory: 8 Gb'
+         * Which means this job must run on a node with at least 8 Gb of available memory.
+         * 
+         * @param memorySpec
+         * @return
+         * @throws IllegalArgumentException
+         * @throws NumberFormatException
+         */
+        public Builder memory(final String memorySpec) throws IllegalArgumentException, NumberFormatException {
+            this.memory=Memory.fromString(memorySpec);
+            return this;
+        }
+        
+        public Builder addExtraArg(final String extraArg) {
+            if (this.extraArgs == null) {
+                this.extraArgs = new ArrayList<String>();
+            }
+            this.extraArgs.add(extraArg);
             return this;
         }
         

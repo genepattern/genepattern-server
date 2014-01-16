@@ -14,6 +14,10 @@ import org.genepattern.server.executor.CommandExecutorException;
  *
  */
 public interface JobRunner {
+    public static final String PROP_QUEUE="queue";
+    public static final String PROP_MEMORY="memory";
+    public static final String PROP_EXTRA_ARGS="extraArgs";
+    
     /** 
      * Service shutdown, clean up resources. 
      * This is called when the parent JobExecutor is shut down.

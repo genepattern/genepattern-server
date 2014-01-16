@@ -16,9 +16,12 @@ import org.genepattern.drm.DrmJobState;
 import org.genepattern.drm.DrmJobStatus;
 import org.genepattern.drm.JobRunner;
 import org.genepattern.drm.DrmJobSubmission;
+import org.genepattern.server.config.ServerConfiguration;
+import org.genepattern.server.config.ServerConfiguration.Context;
 import org.genepattern.server.executor.CommandExecutor;
 import org.genepattern.server.executor.CommandExecutorException;
 import org.genepattern.server.executor.CommandProperties;
+import org.genepattern.server.executor.CommandProperties.Value;
 import org.genepattern.server.genepattern.GenePatternAnalysisTask;
 import org.genepattern.webservice.JobInfo;
 import org.genepattern.webservice.JobStatus;
@@ -335,14 +338,32 @@ public class JobExecutor implements CommandExecutor {
         }
         final Integer gpJobNo=jobInfo.getJobNumber();
         log.debug(jobRunnerName+" runCommand, gpJobNo="+gpJobNo);
-        final DrmJobSubmission drmJobSubmission=new DrmJobSubmission.Builder(jobInfo, runDir)
+        
+        final Context jobContext=ServerConfiguration.Context.getContextForJob(jobInfo);
+        
+        DrmJobSubmission.Builder builder=new DrmJobSubmission.Builder(jobInfo, runDir);
+        builder=builder
             .commandLine(commandLine)
             .environmentVariables(environmentVariables)
             .stdoutFile(stdoutFile)
             .stderrFile(stderrFile)
             .stdinFile(stdinFile)
-            .logFilename(logFilename)
-            .build();
+            .logFilename(logFilename);
+        Value queueValue=ServerConfiguration.instance().getValue(jobContext, JobRunner.PROP_QUEUE);
+        if (queueValue != null) {
+            builder=builder.queue(queueValue.getValue());
+        }
+        Value memValue=ServerConfiguration.instance().getValue(jobContext, JobRunner.PROP_MEMORY);
+        if (memValue != null) {
+            builder=builder.memory(memValue.getValue());
+        }
+        Value extraArgsValue=ServerConfiguration.instance().getValue(jobContext, JobRunner.PROP_EXTRA_ARGS);
+        if (extraArgsValue != null) {
+            for(final String extraArg : extraArgsValue.getValues()) {
+                builder=builder.addExtraArg(extraArg);
+            }
+        }
+        final DrmJobSubmission drmJobSubmission=builder.build();
         
         jobLookupTable.insertJobRecord(drmJobSubmission);
         //TODO: make fault tolerant in the event that (1) startJob gets hung or (2) startJob throws an exception
