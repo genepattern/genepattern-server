@@ -582,7 +582,7 @@ function createTextDiv(parameterName, groupId, initialValuesList)
     textField.get(0).addEventListener("dragexit", dragExit, false);
     textField.get(0).addEventListener("dragover", dragOver, false);
     textField.get(0).addEventListener("drop", function(event) {
-        $(this).removeClass('highlight');
+        $(this).removeClass('runtask-highlight');
         var link = event.dataTransfer.getData('Text');
         $(this).val(link);
 
@@ -858,7 +858,7 @@ function createFileDiv(parameterName, groupId, enableBatch, initialValuesList)
     //enable dragging of file between groups
     fileDiv.droppable(
     {
-        hoverClass: 'highlight',
+        hoverClass: 'runtask-highlight',
         drop: function(event, ui)
         {
             try
@@ -2059,14 +2059,14 @@ function submitTask()
 
 function dragEnter(evt)
 {
-    this.classList.add('highlight');
+    this.classList.add('runtask-highlight');
     evt.stopPropagation();
     evt.preventDefault();
 }
 
 function dragLeave(evt)
 {
-    this.classList.remove('highlight');
+    this.classList.remove('runtask-highlight');
     evt.stopPropagation();
     evt.preventDefault();
 }
@@ -2079,14 +2079,14 @@ function dragExit(evt)
 
 function dragOver(evt)
 {
-    this.classList.add('highlight');
+    this.classList.add('runtask-highlight');
     evt.stopPropagation();
     evt.preventDefault();
 }
 
 function drop(evt)
 {
-    this.classList.remove('highlight');
+    this.classList.remove('runtask-highlight');
     evt.stopPropagation();
     evt.preventDefault();
 
