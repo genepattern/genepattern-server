@@ -135,21 +135,21 @@ public class TaskInfoCache {
         }
     }
     private static FilenameFilter isDocFilenameFilter = new IsDocFilenameFilter();
-    private static class DocFilenameComparator implements Comparator { 
-        public int compare(Object o1, Object o2) {
-            if (((File) o1).getName().equals("version.txt")) {
+    private static class DocFilenameComparator implements Comparator<File> { 
+        public int compare(final File o1, final File o2) {
+            if (o1.getName().equals("version.txt")) {
                 return 1;
             }
-            return ((File) o1).getName().compareToIgnoreCase(((File) o2).getName());
+            return o1.getName().compareToIgnoreCase(o2.getName());
         }
     }
-    private static Comparator docFilenameComparator = new DocFilenameComparator();
+    private static Comparator<File> docFilenameComparator = new DocFilenameComparator();
     /**
      * 
      * @param lsid
      * @return null if the taskLibDir does not exist or can't be read.
      */
-    private List<String> listDocFilenames(String lsid) {
+    private List<String> listDocFilenames(final String lsid) {
         List<String> docFilenames = new ArrayList<String>();
         File taskLibDir = null;
         try {
@@ -469,7 +469,7 @@ public class TaskInfoCache {
      * @param lsid
      * @return
      */
-    public List<String> getDocFilenames(Integer taskId, String lsid) {
+    public List<String> getDocFilenames(final Integer taskId, final String lsid) {
         List<String> docFilenames = null;
         if (enableCache) {
             docFilenames = taskDocFilenameCache.get(taskId);
@@ -492,6 +492,10 @@ public class TaskInfoCache {
 
         //don't cache empty lists, see javadoc for details
         if (enableCache && docFilenames != null && docFilenames.size() > 0) {
+            taskDocFilenameCache.put(taskId, docFilenames);
+        }
+        else {
+            docFilenames=Collections.emptyList();
             taskDocFilenameCache.put(taskId, docFilenames);
         }
         
