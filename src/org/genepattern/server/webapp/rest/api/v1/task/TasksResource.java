@@ -344,7 +344,7 @@ public class TasksResource {
             JSONArray jsonArray = new JSONArray();
             for (final TaskInfo taskInfo : tasksArray) {
                 try {
-                    JSONObject jsonObj = asJson(taskInfo, userContext);
+                    JSONObject jsonObj = asJson(request, taskInfo, userContext);
                     jsonArray.put(jsonObj);
                 }
                 catch (Exception e) {
@@ -383,7 +383,7 @@ public class TasksResource {
      * @param taskInfo
      * @return
      */
-    private JSONObject asJson(final TaskInfo taskInfo, ServerConfiguration.Context userContext) throws JSONException {
+    private JSONObject asJson(final HttpServletRequest request, final TaskInfo taskInfo, ServerConfiguration.Context userContext) throws JSONException {
         JSONObject jsonObj = new JSONObject();
         jsonObj.put("lsid", taskInfo.getLsid());
         jsonObj.put("name", taskInfo.getName());
@@ -395,7 +395,7 @@ public class TasksResource {
         catch (MalformedURLException e) {
             log.error("Error getting lsid for task.name="+taskInfo.getName(), e);
         }
-        jsonObj.put("documentation", getDocLink(taskInfo));
+        jsonObj.put("documentation", getDocLink(request, taskInfo));
         jsonObj.put("categories", getCategories(userContext, taskInfo));
         jsonObj.put("suites", getSuites(taskInfo, userContext));
         jsonObj.put("tags", getTags(taskInfo, userContext));
@@ -438,15 +438,20 @@ public class TasksResource {
         return array;
     }
 
-    private String getDocLink(final TaskInfo taskInfo) {
+    private String getDocLink(final HttpServletRequest request, final TaskInfo taskInfo) {
+        String cp=request.getContextPath();
         List<String> docs = TaskInfoCache.instance().getDocFilenames(taskInfo.getID(), taskInfo.getLsid());
         if (docs.size() > 0) {
             try {
-                return "/gp/getTaskDoc.jsp?name=" + URLEncoder.encode(taskInfo.getLsid(), "UTF-8");
+                String docLink=cp+"/getTaskDoc.jsp?name=" + URLEncoder.encode(taskInfo.getLsid(), "UTF-8");
+                return docLink;
+                //return "/gp/getTaskDoc.jsp?name=" + URLEncoder.encode(taskInfo.getLsid(), "UTF-8");
             }
             catch (UnsupportedEncodingException e) {
                 log.error("Error encoding lsid: " + taskInfo.getLsid());
-                return "/gp/getTaskDoc.jsp?name=" + taskInfo.getLsid();
+                String docLink=cp+"/getTaskDoc.jsp?name=" + taskInfo.getLsid();
+                return docLink;
+                //return "/gp/getTaskDoc.jsp?name=" + taskInfo.getLsid();
             }
         }
         else {
