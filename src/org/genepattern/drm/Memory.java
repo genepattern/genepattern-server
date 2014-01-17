@@ -38,6 +38,8 @@ public class Memory {
      * Initialize memory instance from string, for example
      * <pre>
        maxMemory: "8 Gb"
+       maxMemory: "8"
+       maxMemory: "8gb"
      * </pre>
      * 
      * Must be a String which can be split by the space (' ') character into an
@@ -50,34 +52,44 @@ public class Memory {
      * @return
      * @throws NumberFormatException, IllegalArgumentException
      */
-    public static Memory fromString(final String str) throws NumberFormatException, IllegalArgumentException {
-        if (str==null) {
-            log.debug("str==null");
+    public static Memory fromString(final String in) throws NumberFormatException, IllegalArgumentException {
+        if (in==null) {
+            log.debug("in==null");
             return null;
         }
-        if (str.trim().length()==0) {
+        final String str=in.trim().toLowerCase();
+        if (str.length()==0) {
             log.debug("str is empty, return null");
             return null;
         }
-        //expecting: <double> <units>
-        final String[] args=str.trim().split(" ");
         
-        if (args.length<1 || args.length>2) {
-            throw new IllegalArgumentException("Invalid format for str='"+str+"', Must split into 1, or 2 args" );
+        
+        //split the input string a magnitude (double value) and [optional] units
+        //expecting: "<double> <units>" | "<double><units>" | "<double>"
+        Unit arg1=null;
+        int matchingIdx=-1;
+        for(final Unit unit : Unit.values()) {
+            if (str.endsWith(unit.name())) {
+                arg1=unit;
+                matchingIdx=str.lastIndexOf(unit.name());
+            }
         }
-
-        //throws NumberFormatException
-        final double value=Double.valueOf(args[0]);
-       
-        final Unit unit;
-        if (args.length==1) {
-            unit=Unit.gb;
+        
+        final String arg0;
+        if (arg1 != null) {
+            arg0=str.substring(0, matchingIdx).trim();
         }
         else {
-            //throws IllegalArgumentException
-            unit=Unit.valueOf(args[1].toLowerCase());
+            arg0=str;
         }
-        return new Memory(value, unit);
+        
+        //throws NumberFormatException
+        final double value=Double.valueOf(arg0);
+        if (arg1 == null) {
+            arg1=Unit.gb;
+        }
+        
+        return new Memory(value, arg1);
     }
 
     private double value;

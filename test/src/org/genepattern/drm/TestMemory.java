@@ -60,6 +60,13 @@ public class TestMemory {
     }
     
     @Test
+    public void testGpNoSeparator() {
+        final String spec="8gb";
+        Memory actual=Memory.fromString(spec);
+        Assert.assertEquals(spec, 8589934592L, actual.getNumBytes());        
+    }
+    
+    @Test
     public void testWhitespace() {
         Memory actual=Memory.fromString(" 8 Gb ");
         Assert.assertEquals("8 Gb", 8589934592L, actual.getNumBytes());
@@ -89,11 +96,6 @@ public class TestMemory {
         
         double numGb=(double) actual.getNumBytes() / (double) Unit.gb.getMultiplier();
         Assert.assertEquals("numGb", 0.46566128730774, numGb, 0.00001);
-    }
-    
-    @Test(expected=NumberFormatException.class)
-    public void testNumberFormatException() {
-        Memory.fromString("8gb");
     }
     
     @Test(expected=IllegalArgumentException.class)
