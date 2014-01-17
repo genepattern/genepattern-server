@@ -152,6 +152,9 @@
                     else { // Otherwise, assume it's a directory
                     	setParameter(elementId, value);
                     }
+
+                    // Hide the menus
+                    $('.popupMenu').hide();
                 }
 
                 function preventClose(event) {
