@@ -192,7 +192,7 @@ function generateEulas(eula) {
         .addClass("license-lsid")
         .appendTo(block);
 
-    $("<h5>You must agree below to the following End-User license agreements before you can run License.</h5>")
+    $("<h5>You must agree below to the following End-User license agreements before you can run " + eula.currentTaskName + ".</h5>")
         .addClass("license-center")
         .appendTo(block);
 
