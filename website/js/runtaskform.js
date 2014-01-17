@@ -183,7 +183,7 @@ function generateEulas(eula) {
 
     $("<div></div>")
         .addClass("barhead-task")
-        .append("<span>License</span>")
+        .append("<span>" + eula.currentTaskName + "</span>")
         .append($("<span>version " + eula.currentLsidVersion + "</span>")
             .addClass("license-version"))
         .appendTo(block);
@@ -220,10 +220,9 @@ function generateEulas(eula) {
         .addClass("license-center")
         .append($("<form></form>")
             .attr("name", "eula")
-            .attr("action", "/gp/eula")
-            .attr("method", "GET")
-            .append($("<input></input>")
-                .attr("type", "hidden")
+            .attr("action", eula.acceptUrl)
+            .attr("method", eula.acceptType)
+            .append($('<input type="hidden"></input>')
                 .attr("name", "lsid")
                 .attr("value", eula.currentLsid)
             )
