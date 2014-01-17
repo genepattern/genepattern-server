@@ -203,7 +203,7 @@ function generateEulas(eula) {
 
         $("<div></div>")
             .addClass("barhead-license-task")
-            .append("<span>License</span>")
+            .append("<span>" + item.moduleName + "</span>")
             .append($("<span>version " + item.moduleLsidVersion + "</span>")
                 .addClass("license-version"))
             .appendTo(eula);
