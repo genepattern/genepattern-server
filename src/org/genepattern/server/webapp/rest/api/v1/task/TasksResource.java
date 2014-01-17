@@ -19,6 +19,7 @@ import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -151,28 +152,6 @@ public class TasksResource {
      * (2) return a valid json representation with no 'pendingEulas' property, or
      * (3) return a valid json representation with an empty array for the 'pendingEulas' property
      * 
-     * Example JSON representation,
-     * <pre>
-{
-    "currentTaskName":"demoLicensedModule",
-    "currentLsid":"urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00311:0.2",
-    "currentLsidVersion":"0.2",
-    "pendingEulas":[    <----- there can be a list of 0 or more pending eulas, for example, a pipeline may require multiple licensees
-        { "moduleName": "demoLicensedModule",
-          "moduleLsid": "urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00311:0.2",
-          "moduleLsidVersion", "0.2",
-          "content": "the full content of the license agreement, (may not be present, if there was an error).",
-          "contentError": "error message, (will only be present if there was an error initializing the content)" 
-        }
-    ],
-    # the acceptData, acceptUrl, and acceptType objects give you enough information to construct an ajax call to accept the license
-    "acceptType":"GET",
-    "acceptUrl":"http://127.0.0.1:8080/gp/eula",
-    "acceptData": {  
-        "lsid":"urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00311:0.2"}
-}
-
-     * </pre>
      * @param request
      * @param userContext
      * @param taskInfo
@@ -182,21 +161,49 @@ public class TasksResource {
     public static JSONObject getPendingEulaForModuleJson(final HttpServletRequest request, final ServerConfiguration.Context userContext, final TaskInfo taskInfo) 
     throws JSONException
     {
-        final List<EulaInfo> pendingEulas=getPendingEulas(userContext, taskInfo);
-        if (pendingEulas != null && pendingEulas.size()>0) {
-            final JSONObject eulaObject = initEulaJson( request, userContext, taskInfo, pendingEulas );
-            return eulaObject;
+        final boolean includePending=true;
+        final boolean includeAll=false;
+        final JSONObject json=getEulaForModuleJson(request, userContext, taskInfo, includePending, includeAll);
+        if (!json.has("pendingEulas")) {
+            return null;
         }
-        return null;
+        if (json.getJSONArray("pendingEulas").length() == 0) {
+            return null;
+        }
+        return json;
     }
 
-    private static List<EulaInfo> getPendingEulas(final ServerConfiguration.Context userContext, final TaskInfo taskInfo) {
+    public static JSONObject getEulaForModuleJson(final HttpServletRequest request, final ServerConfiguration.Context userContext, final TaskInfo taskInfo, final boolean includePending, final boolean includeAll) 
+    throws JSONException
+    {
         userContext.setTaskInfo(taskInfo);
-        final List<EulaInfo> promptForEulas = EulaManager.instance(userContext).getPendingEulaForModule(userContext);
-        return promptForEulas;
+        final List<EulaInfo> pendingEulas;
+        if (includePending) {
+            pendingEulas=EulaManager.instance(userContext).getPendingEulaForModule(userContext);
+        }
+        else {
+            pendingEulas=null;
+        }
+        final List<EulaInfo> allEulas;
+        if (includeAll) {
+            allEulas=EulaManager.instance(userContext).getAllEulaForModule(userContext); 
+        }
+        else {
+            allEulas=null;
+        }
+        
+        final JSONObject eulaObject = initEulaJson( request, userContext, taskInfo, pendingEulas, allEulas );
+        return eulaObject;
     }
-    
-    private static JSONObject initEulaJson(final HttpServletRequest request, final ServerConfiguration.Context userContext, final TaskInfo taskInfo, final List<EulaInfo> promptForEulas) throws JSONException {
+
+    private static JSONObject initEulaJson(
+            final HttpServletRequest request, 
+            final ServerConfiguration.Context userContext, 
+            final TaskInfo taskInfo, 
+            final List<EulaInfo> pendingEulas, 
+            final List<EulaInfo> allEulas
+    ) 
+    throws JSONException {
         final JSONObject eulaObj=new JSONObject();
         eulaObj.put("currentTaskName", taskInfo.getName());
         eulaObj.put("currentLsid", taskInfo.getLsid());
@@ -206,31 +213,47 @@ public class TasksResource {
         catch (MalformedURLException e) {
             log.error(e);
         }
-        final JSONArray eulaInfos=new JSONArray();
-        for(final EulaInfo eulaInfo : promptForEulas) {
-            JSONObject eulaInfoJson=new JSONObject();
-            eulaInfoJson.put("moduleName", eulaInfo.getModuleName());
-            eulaInfoJson.put("moduleLsid", eulaInfo.getModuleLsid());
-            eulaInfoJson.put("moduleLsidVersion", eulaInfo.getModuleLsidVersion());
-            try {
-                eulaInfoJson.put("content", eulaInfo.getContent());
+        
+        if (pendingEulas != null) {
+            final JSONArray pending=new JSONArray();
+            for(final EulaInfo eulaInfo : pendingEulas) {
+                JSONObject eulaInfoJson=eulaInfoToJson(eulaInfo);
+                pending.put(eulaInfoJson);
             }
-            catch (InitException e) {
-                log.error("Error getting content for eula for "+eulaInfo.getModuleName()+" ("+eulaInfo.getModuleLsid()+")", e);
-                eulaInfoJson.put("contentError", e.getLocalizedMessage());
+            eulaObj.put("pendingEulas", pending);
+        }
+        if (allEulas != null) {
+            final JSONArray all=new JSONArray();
+            for(final EulaInfo eulaInfo : allEulas) {
+                JSONObject eulaInfoJson=eulaInfoToJson(eulaInfo);
+                all.put(eulaInfoJson);
             }
-            eulaInfos.put(eulaInfoJson);
+            eulaObj.put("allEulas", all);
         }
         
         // return enough info to make an HTTP request as a callback to the server to accept all pending license(s) for the module
         final String acceptUrl=EulaServlet.getServletPath(request);
-        eulaObj.put("pendingEulas", eulaInfos);
         eulaObj.put("acceptUrl", acceptUrl);
         eulaObj.put("acceptType", "GET");
         final JSONObject acceptData=new JSONObject();
         acceptData.put("lsid", taskInfo.getLsid());
         eulaObj.put("acceptData", acceptData);
         return eulaObj;
+    }
+    
+    private static JSONObject eulaInfoToJson(final EulaInfo eulaInfo) throws JSONException {
+        JSONObject eulaInfoJson=new JSONObject();
+        eulaInfoJson.put("moduleName", eulaInfo.getModuleName());
+        eulaInfoJson.put("moduleLsid", eulaInfo.getModuleLsid());
+        eulaInfoJson.put("moduleLsidVersion", eulaInfo.getModuleLsidVersion());
+        try {
+            eulaInfoJson.put("content", eulaInfo.getContent());
+        }
+        catch (InitException e) {
+            log.error("Error getting content for eula for "+eulaInfo.getModuleName()+" ("+eulaInfo.getModuleLsid()+")", e);
+            eulaInfoJson.put("contentError", e.getLocalizedMessage());
+        }
+        return eulaInfoJson;
     }
 
     /**
@@ -486,6 +509,7 @@ public class TasksResource {
         }
         return Response.ok().entity(jsonObj.toString()).build();        
     }
+    
 
     /**
      * Get the JSON representation of the choices for a given module input parameter.
@@ -581,6 +605,98 @@ public class TasksResource {
         }
     }
     
+    /**
+     * GET the JSON representation for the list of one or more End-user license agreement(s) (EULA) for the given module.
+     * This is context dependent; the list of pendingEulas may differ for each current user.
+     * A 'pending' eula is one for which the current user has not yet agreed. By default, only include pendingEulas.
+     * 
+     * Optional request parameters:
+     * <table>
+     * <tr><td>all</td><td>When present, include allEulas in the response.</td></tr>
+     * <tr><td>pending</td><td>When present, include pendingEulas in the response.</td></tr>
+     * </table>
+     * Template query:
+           curl -u <user>:<password> <GenePatternURL>rest/v1/tasks/<lsid>/eulaInfo.json
+     * Example queries:
+     * <pre>
+       curl -u test:test "http://127.0.0.1:8080/gp/rest/v1/tasks/urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00311:0.2/eulaInfo.json?pending"
+     * </pre>
+     * 
+     * 
+     * Example JSON representation,
+     * <pre>
+{
+    "currentTaskName":"demoLicensedModule",
+    "currentLsid":"urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00311:0.2",
+    "currentLsidVersion":"0.2",
+    "pendingEulas":[    <----- there can be a list of 0 or more pending eulas, for example, a pipeline may require multiple licensees
+        { "moduleName": "demoLicensedModule",
+          "moduleLsid": "urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00311:0.2",
+          "moduleLsidVersion", "0.2",
+          "content": "the full content of the license agreement, (may not be present, if there was an error).",
+          "contentError": "error message, (will only be present if there was an error initializing the content)" 
+        }
+    ],
+    # the acceptData, acceptUrl, and acceptType objects give you enough information to construct an ajax call to accept the license
+    "acceptType":"GET",
+    "acceptUrl":"http://127.0.0.1:8080/gp/eula",
+    "acceptData": {  
+        "lsid":"urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00311:0.2"}
+}
+
+     * </pre>
+
+     * @param uriInfo
+     * @param taskNameOrLsid
+     * @param all
+     * @param pending
+     * @param request
+     * @return
+     */
+    @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    @Path("{taskNameOrLsid}/eulaInfo.json")
+    public Response getEulaInfo(
+            final @Context UriInfo uriInfo,
+            final @PathParam("taskNameOrLsid") String taskNameOrLsid,
+            final @QueryParam("all") String all,
+            final @QueryParam("pending") String pending,
+            final @Context HttpServletRequest request
+    ) {
+        log.debug("taskNameOrLsid="+taskNameOrLsid);
+        log.debug("all="+all);
+        log.debug("pending="+pending);
+        
+        ServerConfiguration.Context userContext=Util.getUserContext(request);
+        final String userId=userContext.getUserId();
+        TaskInfo taskInfo = null;
+        try {
+            taskInfo=getTaskInfo(taskNameOrLsid, userId);
+        }
+        catch (Throwable t) {
+            return Responses.notFound().entity(t.getLocalizedMessage()).build();
+        }
+        if(taskInfo == null) {
+            String errorMessage="No task with task id: " + taskNameOrLsid + " found " + "for user " + userId;
+            return Responses.notFound().entity(errorMessage).build();
+        }
+        
+        try {
+            boolean includeAll= all != null;
+            boolean includePending= !includeAll || pending != null;
+            final JSONObject eulaInfoJson=TasksResource.getEulaForModuleJson(request, userContext, taskInfo, includePending, includeAll);
+            final String eulaInfoStr=eulaInfoJson.toString();
+
+            //return the JSON representation
+            return Response.ok()
+                .entity(eulaInfoStr)
+                .build();
+        }
+        catch (Throwable t) {
+            return Response.serverError().entity("Error serializing JSON response: "+t.getLocalizedMessage()).build();
+        }
+    }
+
     private TaskInfo getTaskInfo(final String taskLSID, final String username) 
     throws WebServiceException 
     {
