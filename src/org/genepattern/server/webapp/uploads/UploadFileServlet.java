@@ -77,11 +77,13 @@ public class UploadFileServlet extends HttpServlet {
         }
         else {
             DirectoryInfoWrapper dir = bean.getDirectory(url);
-            tree = unwrapFiles(dir.getFiles());           
+            if (dir != null) {
+                tree = unwrapFiles(dir.getFiles());
+            }
         }
         
         UploadTreeJSON json = null;
-        if (!tree.isEmpty()) {
+        if (tree != null && !tree.isEmpty()) {
             json = new UploadTreeJSON(tree);
         }
         else {
