@@ -1550,6 +1550,9 @@ function loadRunTaskForm(lsid, reloadJob) {
         $("#submitJob").replaceWith(Request.cleanJobSubmit.clone());
     }
 
+    // Hide the EULA if one is visible
+    $("#eula-block").hide();
+
     // Clean the run_task_info variable
     run_task_info = {
         lsid: null, //lsid of the module
