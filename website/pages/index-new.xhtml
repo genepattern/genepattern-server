@@ -251,7 +251,6 @@
             </div>
 
             <div id="eula-block">
-                <ui:include src="eulaTaskForm.xhtml" />
             </div>
 
             <ui:include src="/pages/serverFileDialog.xhtml" />
@@ -400,13 +399,11 @@
                 </div>
             </div>
 
-            <h:outputText rendered="#{!empty runTaskBean.lsid and !eulaTaskBean.prompt}">
-                <script type="text/javascript">
-                    $(document).ready(function() {
-                        loadRunTaskForm();
-                    });
-                </script>
-            </h:outputText>
+            <script type="text/javascript">
+                $(document).ready(function() {
+                    loadRunTaskForm();
+                });
+            </script>
             <h:outputText rendered="#{empty runTaskBean.lsid}">
                 <script type="text/javascript">
                     $(document).ready(function() {
