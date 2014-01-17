@@ -134,6 +134,10 @@ function loadModule(taskId, reloadId)
                     $("#matlabCode").parents("tr:first").hide();
                     $("#rCode").parents("tr:first").hide();
                 }
+                else if(module["eula"])
+                {
+                    alert("This module requires a license agreement");
+                }
                 else
                 {
                     loadParameterInfo(response["parameters"], response["initialValues"]);
