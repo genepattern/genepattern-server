@@ -65,11 +65,24 @@ public class JobMonitor {
                             Thread.currentThread().interrupt();
                         }
                         else {
-                            log.error("Unexpected error while processing next entry from the completedJobsQueue", t);
+                            try {
+                                log.error("Unexpected error while processing next entry from the completedJobsQueue", t);
+                            }
+                            catch (Throwable t2) {
+                                System.err.println("Unexpected log error on shutdown");
+                                t2.printStackTrace();
+                                t.printStackTrace();
+                            }
                         }
                     }
                 }
-                log.info("jobCompletionService is shut down.");
+                try {
+                    log.info("jobCompletionService is shut down.");
+                }
+                catch (Throwable t) {
+                    System.err.println("Unexpected log error on shutdown");
+                    t.printStackTrace();
+                }
             }
         });
     }
