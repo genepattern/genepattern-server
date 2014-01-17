@@ -859,15 +859,16 @@ input.error, select.error {
 }
 
 .barhead-license-task {
-	font-weight: bold;
-	font-size: 11px;
-	color: #333366;
-	background-color: #9999CC;
-	text-indent: 6px;
-	height: 19px;
-	width: 100%;
-	line-height: 20px;
-	vertical-align: top;
+    font-weight: bold;
+    font-size: 11px;
+    color: #333366;
+    background-color: #9999CC;
+    text-indent: 6px;
+    height: 19px;
+    width: 100%;
+    line-height: 20px;
+    vertical-align: top;
+    margin-top: 10px;
 }
 
 .license-content

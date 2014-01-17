@@ -868,6 +868,7 @@ input.error, select.error {
 	width: 100%;
 	line-height: 20px;
 	vertical-align: top;
+    margin-top: 10px;
 }
 
 .license-content

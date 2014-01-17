@@ -136,7 +136,9 @@ function loadModule(taskId, reloadId)
                 }
                 else if(module["eula"])
                 {
-                    alert("This module requires a license agreement");
+                    clearEulas();
+                    generateEulas(module["eula"]);
+                    $("#eula-block").show();
                 }
                 else
                 {
@@ -174,6 +176,89 @@ function loadModule(taskId, reloadId)
         },
         dataType: "json"
     });
+}
+
+function generateEulas(eula) {
+    var block = $("#eula-block");
+
+    $("<div></div>")
+        .addClass("barhead-task")
+        .append("<span>License</span>")
+        .append($("<span>version " + eula.currentLsidVersion + "</span>")
+            .addClass("license-version"))
+        .appendTo(block);
+
+    $("<div>LSID=" + eula.currentLsid + "</div>")
+        .addClass("license-lsid")
+        .appendTo(block);
+
+    $("<h5>You must agree below to the following End-User license agreements before you can run License.</h5>")
+        .addClass("license-center")
+        .appendTo(block);
+
+    $(eula.pendingEulas).each(function(index, item) {
+        var eula = $("<div></div>")
+            .addClass("eula")
+            .appendTo(block);
+
+        $("<div></div>")
+            .addClass("barhead-license-task")
+            .append("<span>License</span>")
+            .append($("<span>version " + item.moduleLsidVersion + "</span>")
+                .addClass("license-version"))
+            .appendTo(eula);
+
+        $("<textarea></textarea>")
+            .addClass("license-content")
+            .attr("rows", 20)
+            .attr("readonly", "readonly")
+            .text(item.content)
+            .appendTo(eula);
+    });
+
+    $("<div></div>")
+        .addClass("license-center")
+        .append($("<form></form>")
+            .attr("name", "eula")
+            .attr("action", "/gp/eula")
+            .attr("method", "GET")
+            .append($("<input></input>")
+                .attr("type", "hidden")
+                .attr("name", "lsid")
+                .attr("value", eula.currentLsid)
+            )
+            .append($("<input></input>")
+                .attr("type", "hidden")
+                .attr("name", "initialQueryString")
+                .attr("value", "lsid=" + eula.currentLsid)
+            )
+            .append($("<input></input>")
+                .attr("type", "hidden")
+                .attr("name", "reloadJob")
+                .attr("value", "")
+            )
+            .append($("<p>Do you accept all the license agreements?</p>")
+                .addClass("license-agree-text")
+            )
+            .append($("<input></input>")
+                .attr("type", "submit")
+                .attr("value", "OK")
+            )
+            .append($("<input></input>")
+                .attr("type", "button")
+                .attr("onclick", "document.location='/gp/pages/index.jsf'")
+                .attr("value", "Cancel")
+            )
+        )
+        .appendTo(block);
+
+        setTimeout(function() {
+            $("#submitJob").hide();
+        }, 10);
+}
+
+function clearEulas() {
+    $("#eula-block").empty();
 }
 
 function clearAllSendToParams() {
