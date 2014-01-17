@@ -33,7 +33,13 @@ import org.genepattern.modules.ParametersJSON;
 import org.genepattern.modules.ResponseJSON;
 import org.genepattern.server.config.ServerConfiguration;
 import org.genepattern.server.dm.GpFilePath;
-import org.genepattern.server.job.input.*;
+import org.genepattern.server.job.input.GroupId;
+import org.genepattern.server.job.input.JobInput;
+import org.genepattern.server.job.input.JobInputFileUtil;
+import org.genepattern.server.job.input.JobInputHelper;
+import org.genepattern.server.job.input.LoadModuleHelper;
+import org.genepattern.server.job.input.Param;
+import org.genepattern.server.job.input.ReloadJobHelper;
 import org.genepattern.server.repository.SourceInfo;
 import org.genepattern.server.repository.SourceInfoLoader;
 import org.genepattern.server.rest.GpServerException;
@@ -41,6 +47,7 @@ import org.genepattern.server.rest.JobReceipt;
 import org.genepattern.server.webapp.jsf.AuthorizationHelper;
 import org.genepattern.server.webapp.jsf.JobBean;
 import org.genepattern.server.webapp.jsf.UIBeanHelper;
+import org.genepattern.server.webapp.rest.api.v1.task.TasksResource;
 import org.genepattern.server.webservice.server.local.IAdminClient;
 import org.genepattern.server.webservice.server.local.LocalAdminClient;
 import org.genepattern.server.webservice.server.local.LocalTaskIntegratorClient;
@@ -150,8 +157,14 @@ public class RunTaskServlet extends HttpServlet
                 throw new Exception("No task with task id: " + lsid + " found " +
                         "for user " + userId);
             }
-
+            
             final ModuleJSON moduleObject = new ModuleJSON(taskInfo, null);
+            //check for EULA
+            JSONObject eulaObject=TasksResource.getPendingEulaForModuleJson(request, userContext, taskInfo);
+            if (eulaObject != null) {
+                moduleObject.put("eula", eulaObject);
+            }
+
             final SortedSet<LSID> moduleLsidVersions=getModuleVersions(userContext, taskInfo);
             final JSONArray lsidVersions=new JSONArray();
             for(final LSID moduleLsidVersion : moduleLsidVersions) {

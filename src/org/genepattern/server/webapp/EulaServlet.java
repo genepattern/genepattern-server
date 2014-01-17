@@ -12,6 +12,7 @@ import javax.servlet.http.HttpSession;
 
 import org.apache.log4j.Logger;
 import org.genepattern.server.config.ServerConfiguration.Context;
+import org.genepattern.server.dm.UrlUtil;
 import org.genepattern.server.eula.EulaManager;
 import org.genepattern.server.webapp.jsf.UIBeanHelper;
 import org.genepattern.server.webservice.server.local.LocalAdminClient;
@@ -37,6 +38,16 @@ import org.genepattern.webservice.TaskInfo;
  */
 public class EulaServlet  extends HttpServlet implements Servlet {
     private static Logger log = Logger.getLogger(EulaServlet.class);
+    
+    public static String getServletPath(final HttpServletRequest request) {
+        String rootPath=UrlUtil.getGpUrl(request);
+        if (!rootPath.endsWith("/")) {
+            rootPath += "/";
+        }
+        rootPath += "eula";
+        return rootPath;
+    }
+
 
     public void init(ServletConfig config) 
     throws ServletException

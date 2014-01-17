@@ -5,8 +5,13 @@ import java.net.MalformedURLException;
 import java.net.URLEncoder;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -24,21 +29,21 @@ import org.genepattern.server.cm.CategoryManager;
 import org.genepattern.server.config.ServerConfiguration;
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.dm.UrlUtil;
+import org.genepattern.server.eula.EulaInfo;
+import org.genepattern.server.eula.EulaManager;
+import org.genepattern.server.eula.InitException;
 import org.genepattern.server.job.input.choice.ChoiceInfo;
 import org.genepattern.server.job.input.choice.ChoiceInfoHelper;
 import org.genepattern.server.rest.ParameterInfoRecord;
 import org.genepattern.server.tags.SuiteTagManager;
 import org.genepattern.server.tags.TagManager;
 import org.genepattern.server.tags.TagManager.Tag;
-import org.genepattern.server.user.UserDAO;
-import org.genepattern.server.user.UserPropKey;
+import org.genepattern.server.webapp.EulaServlet;
 import org.genepattern.server.webapp.rest.api.v1.Util;
 import org.genepattern.server.webservice.server.dao.AdminDAO;
-import org.genepattern.server.webservice.server.dao.AdminDAOSysException;
 import org.genepattern.server.webservice.server.local.LocalAdminClient;
 import org.genepattern.util.LSID;
 import org.genepattern.webservice.ParameterInfo;
-import org.genepattern.webservice.SuiteInfo;
 import org.genepattern.webservice.TaskInfo;
 import org.genepattern.webservice.TaskInfoCache;
 import org.genepattern.webservice.WebServiceException;
@@ -136,6 +141,97 @@ public class TasksResource {
         String path = getTaskInfoPath(request, taskInfo) + "/" + pname  + "/choiceInfo.json";
         return path;
     }
+    
+    /**
+     * Get the JSON representation for the list of one or more license agreements which the current user must agree to 
+     * before they can run the given module.
+     * 
+     * If there are no pending licenses this may may ...
+     * (1) return null, or
+     * (2) return a valid json representation with no 'pendingEulas' property, or
+     * (3) return a valid json representation with an empty array for the 'pendingEulas' property
+     * 
+     * Example JSON representation,
+     * <pre>
+{
+    "currentTaskName":"demoLicensedModule",
+    "currentLsid":"urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00311:0.2",
+    "currentLsidVersion":"0.2",
+    "pendingEulas":[    <----- there can be a list of 0 or more pending eulas, for example, a pipeline may require multiple licensees
+        { "moduleName": "demoLicensedModule",
+          "moduleLsid": "urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00311:0.2",
+          "moduleLsidVersion", "0.2",
+          "content": "the full content of the license agreement, (may not be present, if there was an error).",
+          "contentError": "error message, (will only be present if there was an error initializing the content)" 
+        }
+    ],
+    # the acceptData, acceptUrl, and acceptType objects give you enough information to construct an ajax call to accept the license
+    "acceptType":"GET",
+    "acceptUrl":"http://127.0.0.1:8080/gp/eula",
+    "acceptData": {  
+        "lsid":"urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00311:0.2"}
+}
+
+     * </pre>
+     * @param request
+     * @param userContext
+     * @param taskInfo
+     * @return
+     * @throws JSONException
+     */
+    public static JSONObject getPendingEulaForModuleJson(final HttpServletRequest request, final ServerConfiguration.Context userContext, final TaskInfo taskInfo) 
+    throws JSONException
+    {
+        final List<EulaInfo> pendingEulas=getPendingEulas(userContext, taskInfo);
+        if (pendingEulas != null && pendingEulas.size()>0) {
+            final JSONObject eulaObject = initEulaJson( request, userContext, taskInfo, pendingEulas );
+            return eulaObject;
+        }
+        return null;
+    }
+
+    private static List<EulaInfo> getPendingEulas(final ServerConfiguration.Context userContext, final TaskInfo taskInfo) {
+        userContext.setTaskInfo(taskInfo);
+        final List<EulaInfo> promptForEulas = EulaManager.instance(userContext).getPendingEulaForModule(userContext);
+        return promptForEulas;
+    }
+    
+    private static JSONObject initEulaJson(final HttpServletRequest request, final ServerConfiguration.Context userContext, final TaskInfo taskInfo, final List<EulaInfo> promptForEulas) throws JSONException {
+        final JSONObject eulaObj=new JSONObject();
+        eulaObj.put("currentTaskName", taskInfo.getName());
+        eulaObj.put("currentLsid", taskInfo.getLsid());
+        try {
+            eulaObj.put("currentLsidVersion", new LSID(taskInfo.getLsid()).getVersion());
+        }
+        catch (MalformedURLException e) {
+            log.error(e);
+        }
+        final JSONArray eulaInfos=new JSONArray();
+        for(final EulaInfo eulaInfo : promptForEulas) {
+            JSONObject eulaInfoJson=new JSONObject();
+            eulaInfoJson.put("moduleName", eulaInfo.getModuleName());
+            eulaInfoJson.put("moduleLsid", eulaInfo.getModuleLsid());
+            eulaInfoJson.put("moduleLsidVersion", eulaInfo.getModuleLsidVersion());
+            try {
+                eulaInfoJson.put("content", eulaInfo.getContent());
+            }
+            catch (InitException e) {
+                log.error("Error getting content for eula for "+eulaInfo.getModuleName()+" ("+eulaInfo.getModuleLsid()+")", e);
+                eulaInfoJson.put("contentError", e.getLocalizedMessage());
+            }
+            eulaInfos.put(eulaInfoJson);
+        }
+        
+        // return enough info to make an HTTP request as a callback to the server to accept all pending license(s) for the module
+        final String acceptUrl=EulaServlet.getServletPath(request);
+        eulaObj.put("pendingEulas", eulaInfos);
+        eulaObj.put("acceptUrl", acceptUrl);
+        eulaObj.put("acceptType", "GET");
+        final JSONObject acceptData=new JSONObject();
+        acceptData.put("lsid", taskInfo.getLsid());
+        eulaObj.put("acceptData", acceptData);
+        return eulaObj;
+    }
 
     /**
      * Returns a hash of the modules visible to the user
@@ -150,6 +246,18 @@ public class TasksResource {
         DateFormat df = new SimpleDateFormat("hh:'00' a");
         String hour = df.format(date);
         return user + " " + hour;
+    }
+    
+    /**
+     * Updated method to get the latest version of all available installed tasks for the given user in json format.
+     * 
+     */
+    @GET
+    @Produces(MediaType.APPLICATION_JSON) 
+    @Path("all_{user_id}.json")
+    public Response getAllTasksForUser(final @Context HttpServletRequest request) {
+            final String errorMessage="Method not implemented";
+            return Response.serverError().entity(errorMessage).build();
     }
     
     /**
