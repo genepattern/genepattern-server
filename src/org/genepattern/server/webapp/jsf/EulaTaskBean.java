@@ -34,13 +34,13 @@ public class EulaTaskBean {
      * @author pcarr
      */
     static public class EulaInfoBean {
-        static EulaInfoBean from(EulaInfo eulaInfoObj) throws InitException {
+        static EulaInfoBean from(final String contextPath, final EulaInfo eulaInfoObj) throws InitException {
             EulaInfoBean eulaInfo = new EulaInfoBean();
             eulaInfo.setLsid(eulaInfoObj.getModuleLsid());
             eulaInfo.setLsidVersion(eulaInfoObj.getModuleLsidVersion());
             eulaInfo.setTaskName(eulaInfoObj.getModuleName());
             eulaInfo.setContent(eulaInfoObj.getContent());
-            eulaInfo.setLink(eulaInfoObj.getLink());
+            eulaInfo.setLink(eulaInfoObj.getLink(contextPath));
             return eulaInfo;
         }
 
@@ -272,9 +272,6 @@ public class EulaTaskBean {
             try {
                 IAdminClient adminClient = getAdminClient();
                 taskInfo = adminClient.getTask(lsid);
-                
-                //final LocalAdminClient lac = new LocalAdminClient(currentUser);
-                //taskInfo = lac.getTask(lsid);
             }
             catch (Throwable t) {
                 log.error("Error initializing taskInfo for lsid=" + lsid, t);
@@ -305,9 +302,17 @@ public class EulaTaskBean {
                 else {
                     eulas.clear();
                 }
+                final String contextPath;
+                if (UIBeanHelper.getRequest() != null) {
+                    contextPath=UIBeanHelper.getRequest().getContextPath();
+                }
+                else {
+                    log.error("UIBeanHelper.getRequest() is null");
+                    contextPath="/gp";
+                }
                 for(EulaInfo eulaInfoObj : promptForEulas) {
                     try {
-                        EulaInfoBean eulaInfoBean = EulaInfoBean.from(eulaInfoObj);
+                        EulaInfoBean eulaInfoBean = EulaInfoBean.from(contextPath, eulaInfoObj);
                         eulas.add(eulaInfoBean);
                     }
                     catch (InitException e) {
