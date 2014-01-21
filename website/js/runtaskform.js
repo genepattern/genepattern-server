@@ -73,6 +73,13 @@ function loadModule(taskId, reloadId)
     var url = window.location.href;
     var getParameters = url.slice(url.indexOf('?') + 1);
     getParameters = getParameters.replace(Request.parameter("lsid"), taskId);
+
+    // Remove the reloadJob parameter if it is no longer needed
+    if (!reloadId) {
+        getParameters = getParameters.split("&reloadJob=")[0];
+
+    }
+
     var queryString = "?" + getParameters;
 
     $.ajax({
