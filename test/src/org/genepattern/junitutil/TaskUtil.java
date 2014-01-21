@@ -5,7 +5,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.genepattern.server.eula.TestEulaManagerImpl;
 import org.genepattern.webservice.TaskInfo;
 import org.junit.Assert;
 
