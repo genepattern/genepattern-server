@@ -9,11 +9,14 @@
 package org.genepattern.pipelines;
 
 import java.util.Iterator;
+import java.util.List;
 import java.util.Vector;
 
 import org.apache.log4j.Logger;
 import org.genepattern.data.pipeline.JobSubmission;
 import org.genepattern.server.cm.CategoryManager;
+import org.genepattern.server.config.ServerConfiguration;
+import org.genepattern.server.config.ServerConfiguration.Context;
 import org.genepattern.webservice.ParameterInfo;
 import org.genepattern.webservice.TaskInfo;
 import org.genepattern.webservice.TaskInfoAttributes;
@@ -44,12 +47,16 @@ public class ModuleJSON extends JSONObject {
     
     public ModuleJSON(TaskInfo info, String username) {
         try {
+            final Context userContext=ServerConfiguration.Context.getContextForUser(username);
+            final CategoryManager categoryManager=CategoryManager.Factory.instance(userContext);
+            final List<String> categories=categoryManager.getCategoriesFromManifest(info);
+            
             this.setLsid(info.getLsid());
             this.setName(info.getName());
             this.extractVersion(info.getLsid());
             this.determineWrite(info, username);
             this.determineType(info);
-            this.setCategory(new JSONArray(CategoryManager.getCategoriesFromManifest(info)));
+            this.setCategory(new JSONArray(categories));
             this.setDescription(info.getDescription());
             this.constructInputs(info.getParameterInfoArray());
             this.constructOutputs(info.getTaskInfoAttributes());

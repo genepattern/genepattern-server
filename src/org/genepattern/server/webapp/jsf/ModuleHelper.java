@@ -80,7 +80,7 @@ public class ModuleHelper {
         final Map<String, List<TaskInfo>> taskMap = new HashMap<String, List<TaskInfo>>();
         
         for(final TaskInfo taskInfo : tasks) {
-            final List<String> taskTypes=CategoryManager.getCategoriesForTask(userContext, taskInfo);
+            final List<String> taskTypes=CategoryManager.Factory.instance(userContext).getCategoriesForTask(userContext, taskInfo);
             for(final String taskType : taskTypes) {
                 List<TaskInfo> taskMapEntries = taskMap.get(taskType);
                 if (taskMapEntries == null) {

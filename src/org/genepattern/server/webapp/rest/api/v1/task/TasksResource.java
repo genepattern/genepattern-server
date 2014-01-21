@@ -27,6 +27,7 @@ import javax.ws.rs.core.UriInfo;
 
 import org.apache.log4j.Logger;
 import org.genepattern.server.cm.CategoryManager;
+import org.genepattern.server.cm.CategoryManagerImpl;
 import org.genepattern.server.config.ServerConfiguration;
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.dm.UrlUtil;
@@ -322,11 +323,18 @@ public class TasksResource {
             TaskInfo[] allTasks = adminDao.getAllTasksForUser(userId);
             final Map<String, TaskInfo> latestTasks = adminDao.getLatestTasks(allTasks);
             //filter out the hidden tasks
+            // first pass, filter based on TaskInfo
+            //for(final Entry<String,TaskInfo> entry : latestTasks.entrySet()) {
+            //    final TaskInfo taskInfo=entry.getValue();
+            //}
+            //for(final TaskInfo taskInfo : allTasks) {
+            //}
+            
             final List<String> hiddenTasks=new ArrayList<String>();
             for(final Entry<String,TaskInfo> entry : latestTasks.entrySet()) {
                 final String baseLsid=entry.getKey();
                 final TaskInfo taskInfo=entry.getValue();
-                final List<String> taskTypes=CategoryManager.getCategoriesForTask(userContext, taskInfo);
+                final List<String> taskTypes=CategoryManager.Factory.instance(userContext).getCategoriesForTask(userContext, taskInfo);
                 if (taskTypes==null || taskTypes.size()==0) {
                     //it's hidden
                     hiddenTasks.add(baseLsid);
@@ -403,7 +411,7 @@ public class TasksResource {
     }
 
     private JSONArray getCategories(final ServerConfiguration.Context userContext, final TaskInfo taskInfo) {
-        List<String> categories=CategoryManager.getCategoriesForTask(userContext, taskInfo);
+        List<String> categories=CategoryManager.Factory.instance(userContext).getCategoriesForTask(userContext, taskInfo);
         JSONArray json=new JSONArray();
         for(final String cat : categories) {
             json.put(cat);

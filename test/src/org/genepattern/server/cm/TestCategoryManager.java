@@ -13,6 +13,7 @@ import org.genepattern.server.eula.TestEulaInfo;
 import org.genepattern.util.GPConstants;
 import org.genepattern.webservice.TaskInfo;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.mockito.Mockito;
@@ -25,6 +26,7 @@ import org.mockito.Mockito;
  */
 public class TestCategoryManager {
     Context userContext=ServerConfiguration.Context.getContextForUser("testUser");
+    CategoryManagerImpl categoryManager;
 
     /*
      * Test-cases
@@ -41,13 +43,18 @@ public class TestCategoryManager {
         ConfigUtil.loadConfigFile(TestCategoryManager.class, "config.yaml");
     }
     
+    @Before
+    public void beforeTest() {
+        categoryManager=new CategoryManagerImpl();
+    }
+    
     /**
      * The legacy Golub pipeline should be in the 'pipeline' category.
      */
     @Test
     public void testGolubPipeline() {
         final TaskInfo taskInfo=TaskUtil.getTaskInfoFromZip(TestEulaInfo.class, "Golub.Slonim.1999.Nature.all.aml.pipeline_v2_modules_only.zip");
-        final List<String> categories=CategoryManager.getCategoriesForTask(userContext, taskInfo);
+        final List<String> categories=categoryManager.getCategoriesForTask(userContext, taskInfo);
         Assert.assertNotNull("Expecting non-null value from getCategoriesForTask", categories);
         Assert.assertEquals("num categories", 1, categories.size());
         Assert.assertEquals("category[0]", "pipeline", categories.get(0));
@@ -61,7 +68,7 @@ public class TestCategoryManager {
         TaskInfo taskInfo=new TaskInfo();
         taskInfo.giveTaskInfoAttributes();
         taskInfo.getTaskInfoAttributes().put(GPConstants.TASK_TYPE, "Test");
-        final List<String> categories=CategoryManager.getCategoriesForTask(userContext, taskInfo);
+        final List<String> categories=categoryManager.getCategoriesForTask(userContext, taskInfo);
         Assert.assertNotNull("Expecting non-null value from getCategoriesForTask", categories);
         Assert.assertEquals("num categories", 1, categories.size());
         Assert.assertEquals("category[0]", "Test", categories.get(0));
@@ -71,7 +78,7 @@ public class TestCategoryManager {
     public void testCategorizedVisualizer() {
         final File zipFile=FileUtil.getDataFile("modules/MIT_701X_OriginalDataViewer_categorized.zip");
         final TaskInfo taskInfo=TaskUtil.getTaskInfoFromZip(zipFile);
-        final List<String> categories=CategoryManager.getCategoriesForTask(userContext, taskInfo);
+        final List<String> categories=categoryManager.getCategoriesForTask(userContext, taskInfo);
         Assert.assertNotNull("Expecting non-null value from getCategoriesForTask", categories);
         Assert.assertEquals("num categories", 2, categories.size());
         Assert.assertEquals("category[0]", "Visualizer", categories.get(0));
@@ -82,7 +89,7 @@ public class TestCategoryManager {
     public void testCategorizedPipeline() {
         final File zipFile=FileUtil.getDataFile("modules/MIT_701X_processClusteringData.pipeline_categorized.zip");
         final TaskInfo taskInfo=TaskUtil.getTaskInfoFromZip(zipFile);
-        final List<String> categories=CategoryManager.getCategoriesForTask(userContext, taskInfo);
+        final List<String> categories=categoryManager.getCategoriesForTask(userContext, taskInfo);
         Assert.assertNotNull("Expecting non-null value from getCategoriesForTask", categories);
         Assert.assertEquals("num categories", 2, categories.size());
         Assert.assertEquals("category[0]", "pipeline", categories.get(0));
@@ -98,7 +105,7 @@ public class TestCategoryManager {
         taskInfo.giveTaskInfoAttributes();
         taskInfo.getTaskInfoAttributes().put(GPConstants.TASK_TYPE, GPConstants.TASK_TYPE_VISUALIZER);
         taskInfo.getTaskInfoAttributes().put(GPConstants.CATEGORIES, "MIT_701X");
-        final List<String> categories=CategoryManager.getCategoriesForTask(userContext, taskInfo);
+        final List<String> categories=categoryManager.getCategoriesForTask(userContext, taskInfo);
         Assert.assertNotNull("Expecting non-null value from getCategoriesForTask", categories);
         Assert.assertEquals("num categories", 1, categories.size());
         Assert.assertEquals("category[0]", "MIT_701X", categories.get(0));
@@ -113,7 +120,7 @@ public class TestCategoryManager {
         taskInfo.giveTaskInfoAttributes();
         taskInfo.getTaskInfoAttributes().put(GPConstants.TASK_TYPE, "Test");
         taskInfo.getTaskInfoAttributes().put(GPConstants.CATEGORIES, "Test");
-        final List<String> categories=CategoryManager.getCategoriesForTask(userContext, taskInfo);
+        final List<String> categories=categoryManager.getCategoriesForTask(userContext, taskInfo);
         Assert.assertNotNull("Expecting non-null value from getCategoriesForTask", categories);
         Assert.assertEquals("num categories", 1, categories.size());
         Assert.assertEquals("category[0]", "Test", categories.get(0));
@@ -128,7 +135,7 @@ public class TestCategoryManager {
         taskInfo.giveTaskInfoAttributes();
         taskInfo.getTaskInfoAttributes().put(GPConstants.TASK_TYPE, "Test");
         taskInfo.getTaskInfoAttributes().put(GPConstants.CATEGORIES, "CustomCategory");
-        final List<String> categories=CategoryManager.getCategoriesForTask(userContext, taskInfo);
+        final List<String> categories=categoryManager.getCategoriesForTask(userContext, taskInfo);
         Assert.assertNotNull("Expecting non-null value from getCategoriesForTask", categories);
         Assert.assertEquals("num categories", 1, categories.size());
         Assert.assertEquals("category[0]", "CustomCategory", categories.get(0));
@@ -143,7 +150,7 @@ public class TestCategoryManager {
         taskInfo.giveTaskInfoAttributes();
         taskInfo.getTaskInfoAttributes().put(GPConstants.TASK_TYPE, "Test");
         taskInfo.getTaskInfoAttributes().put(GPConstants.CATEGORIES, "Test;CustomA;CustomB");
-        final List<String> categories=CategoryManager.getCategoriesForTask(userContext, taskInfo);
+        final List<String> categories=categoryManager.getCategoriesForTask(userContext, taskInfo);
         Assert.assertNotNull("Expecting non-null value from getCategoriesForTask", categories);
         Assert.assertEquals("num categories", 3, categories.size());
         Assert.assertEquals("category[0]", "Test", categories.get(0));
@@ -160,7 +167,7 @@ public class TestCategoryManager {
         taskInfo.giveTaskInfoAttributes();
         taskInfo.getTaskInfoAttributes().put(GPConstants.TASK_TYPE, "Test");
         taskInfo.getTaskInfoAttributes().put(GPConstants.CATEGORIES, " Test ; CustomA; CustomB");
-        final List<String> categories=CategoryManager.getCategoriesForTask(userContext, taskInfo);
+        final List<String> categories=categoryManager.getCategoriesForTask(userContext, taskInfo);
         Assert.assertNotNull("Expecting non-null value from getCategoriesForTask", categories);
         Assert.assertEquals("num categories", 3, categories.size());
         Assert.assertEquals("category[0]", "Test", categories.get(0));
@@ -177,7 +184,7 @@ public class TestCategoryManager {
         taskInfo.giveTaskInfoAttributes();
         taskInfo.getTaskInfoAttributes().put(GPConstants.TASK_TYPE, "Test");
         taskInfo.getTaskInfoAttributes().put(GPConstants.CATEGORIES, " Test ; CustomA; ; ; CustomB ; ");
-        final List<String> categories=CategoryManager.getCategoriesForTask(userContext, taskInfo);
+        final List<String> categories=categoryManager.getCategoriesForTask(userContext, taskInfo);
         Assert.assertNotNull("Expecting non-null value from getCategoriesForTask", categories);
         Assert.assertEquals("num categories", 3, categories.size());
         Assert.assertEquals("category[0]", "Test", categories.get(0));
@@ -194,7 +201,7 @@ public class TestCategoryManager {
         taskInfo.giveTaskInfoAttributes();
         taskInfo.getTaskInfoAttributes().put(GPConstants.TASK_TYPE, "Preprocess & Utilities");
         taskInfo.getTaskInfoAttributes().put(GPConstants.CATEGORIES, "");
-        final List<String> categories=CategoryManager.getCategoriesForTask(userContext, taskInfo);
+        final List<String> categories=categoryManager.getCategoriesForTask(userContext, taskInfo);
         Assert.assertNotNull("Expecting non-null value from getCategoriesForTask", categories);
         Assert.assertEquals("num categories", 0, categories.size());
     }
@@ -208,7 +215,7 @@ public class TestCategoryManager {
         taskInfo.giveTaskInfoAttributes();
         taskInfo.getTaskInfoAttributes().put(GPConstants.TASK_TYPE, "Preprocess & Utilities");
         taskInfo.getTaskInfoAttributes().put(GPConstants.CATEGORIES, ".");
-        final List<String> categories=CategoryManager.getCategoriesForTask(userContext, taskInfo);
+        final List<String> categories=categoryManager.getCategoriesForTask(userContext, taskInfo);
         Assert.assertNotNull("Expecting non-null value from getCategoriesForTask", categories);
         Assert.assertEquals("num categories", 0, categories.size());
     }
@@ -223,7 +230,7 @@ public class TestCategoryManager {
         taskInfo.giveTaskInfoAttributes();
         taskInfo.getTaskInfoAttributes().put(GPConstants.TASK_TYPE, GPConstants.TASK_TYPE_VISUALIZER);
         taskInfo.getTaskInfoAttributes().put(GPConstants.CATEGORIES, "");
-        final List<String> categories=CategoryManager.getCategoriesForTask(userContext, taskInfo);
+        final List<String> categories=categoryManager.getCategoriesForTask(userContext, taskInfo);
         Assert.assertNotNull("Expecting non-null value from getCategoriesForTask", categories);
         Assert.assertEquals("num categories", 0, categories.size());
     }
@@ -237,7 +244,7 @@ public class TestCategoryManager {
         taskInfo.giveTaskInfoAttributes();
         taskInfo.getTaskInfoAttributes().put(GPConstants.TASK_TYPE, GPConstants.TASK_TYPE_PIPELINE);
         taskInfo.getTaskInfoAttributes().put(GPConstants.CATEGORIES, "");
-        final List<String> categories=CategoryManager.getCategoriesForTask(userContext, taskInfo);
+        final List<String> categories=categoryManager.getCategoriesForTask(userContext, taskInfo);
         Assert.assertNotNull("Expecting non-null value from getCategoriesForTask", categories);
         Assert.assertEquals("num categories", 0, categories.size());
     }
@@ -254,7 +261,7 @@ public class TestCategoryManager {
         
         //1st test, module with taskType matching a hidden category
         taskInfo.getTaskInfoAttributes().put(GPConstants.TASK_TYPE, "Test");
-        List<String> categories=CategoryManager.getCategoriesForTask(userContext, taskInfo);
+        List<String> categories=categoryManager.getCategoriesForTask(userContext, taskInfo);
         Assert.assertNotNull("Expecting non-null value from getCategoriesForTask", categories);
         Assert.assertEquals("num categories", 0, categories.size());
         
@@ -263,7 +270,7 @@ public class TestCategoryManager {
         taskInfo.giveTaskInfoAttributes();
         taskInfo.getTaskInfoAttributes().put(GPConstants.TASK_TYPE, "Test");
         taskInfo.getTaskInfoAttributes().put(GPConstants.CATEGORIES, "Test;MIT_701X;Not Hidden");
-        categories=CategoryManager.getCategoriesForTask(userContext, taskInfo);
+        categories=categoryManager.getCategoriesForTask(userContext, taskInfo);
         Assert.assertNotNull("Expecting non-null value from getCategoriesForTask", categories);
         Assert.assertEquals("num categories", 1, categories.size());
         Assert.assertEquals("category[0]", "Not Hidden", categories.get(0));

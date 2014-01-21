@@ -40,18 +40,18 @@ import org.genepattern.webservice.TaskInfoCache;
  * @author pcarr
  *
  */
-public class CategoryManagerImpl {
+public class CategoryManagerImpl implements CategoryManager {
     private static Logger log = Logger.getLogger(CategoryManagerImpl.class);
 
     /**
      * see doc for {@link CategoryManager#getCategoriesForTask(Context, TaskInfo)}
      */
-    public static List<String> getCategoriesForTask(final Context userContext, final TaskInfo taskInfo) {
+    public List<String> getCategoriesForTask(final Context userContext, final TaskInfo taskInfo) {
         final boolean includeHidden=false;
         return getCategoriesForTask(userContext, taskInfo, includeHidden);
     }
     
-    public static List<String> getCategoriesForTask(final Context userContext, final TaskInfo taskInfo, final boolean includeHidden) {
+    public List<String> getCategoriesForTask(final Context userContext, final TaskInfo taskInfo, final boolean includeHidden) {
         final boolean checkCustomCategories;
         checkCustomCategories=ServerConfiguration.instance().getGPBooleanProperty(
                 userContext, CategoryManager.class.getName()+".checkCustomCategories", true);
@@ -85,7 +85,7 @@ public class CategoryManagerImpl {
         return categories;
     }
     
-    public static boolean isHidden(final String category) {
+    public boolean isHidden(final String category) {
         if (category==null) {
             return true;
         }
@@ -101,7 +101,7 @@ public class CategoryManagerImpl {
     /**
      * see doc for {@link CategoryManager#getCategoriesFromManifest(TaskInfo)}
      */
-    public static List<String> getCategoriesFromManifest(final TaskInfo taskInfo) {
+    public List<String> getCategoriesFromManifest(final TaskInfo taskInfo) {
         //check for custom 'categories' in the manifest ...
         final List<String> categories=parseCategoriesFromManifest(taskInfo);
         if (categories != null) {
@@ -119,7 +119,7 @@ public class CategoryManagerImpl {
         return rval;
     }
     
-    protected static List<String> parseCategoriesFromManifest(final TaskInfo taskInfo) {
+    public List<String> parseCategoriesFromManifest(final TaskInfo taskInfo) {
         //check for custom 'categories' in the manifest ...
         if (!taskInfo.getTaskInfoAttributes().containsKey(GPConstants.CATEGORIES)) {
             //no match, return null
@@ -152,7 +152,7 @@ public class CategoryManagerImpl {
      *         an empty list if the module should be hidden from the server;
      *         a list of categories 
      */
-    protected static List<String> getCustomCategoriesFromDb(final TaskInfo taskInfo) {
+    public List<String> getCustomCategoriesFromDb(final TaskInfo taskInfo) {
         try {
             final TaskCategoryRecorder recorder=new TaskCategoryRecorder();
             final LSID lsid=new LSID(taskInfo.getLsid());
@@ -190,7 +190,7 @@ public class CategoryManagerImpl {
         }
     }
     
-    public static List<String> getAllCategories(final Context userContext, final boolean includeHidden) {
+    public List<String> getAllCategories(final Context userContext, final boolean includeHidden) {
         SortedSet<String> categories = new TreeSet<String>(new Comparator<String>() {
             // sort categories alphabetically, ignoring case
             public int compare(String arg0, String arg1) {
@@ -212,7 +212,7 @@ public class CategoryManagerImpl {
         return new ArrayList<String>(categories);
     }
 
-    public static List<String> getAllCategoriesForUser(final Context userContext, final boolean includeHidden) {
+    public List<String> getAllCategoriesForUser(final Context userContext, final boolean includeHidden) {
         SortedSet<String> categories = new TreeSet<String>(new Comparator<String>() {
             // sort categories alphabetically, ignoring case
             public int compare(String arg0, String arg1) {

@@ -109,6 +109,9 @@ public class PipelineJSON extends JSONObject {
     
     public PipelineJSON(String username, PipelineModel pipeline, TaskInfo info) {
         try {
+            Context taskContext = Context.getContextForUser(username);
+            taskContext.setTaskInfo(info);
+            
             this.put(NAME, pipeline.getName());
             this.put(DESCRIPTION, pipeline.getDescription());
             this.put(AUTHOR, pipeline.getAuthor());
@@ -116,7 +119,7 @@ public class PipelineJSON extends JSONObject {
             this.put(VERSION, extractVersion(pipeline.getLsid()));
             this.put(VERSION_COMMENT, pipeline.getVersion());
             try {
-                final List<String> categories=CategoryManager.getCategoriesFromManifest(info);
+                final List<String> categories=CategoryManager.Factory.instance(taskContext).getCategoriesFromManifest(info);
                 String categoriesStr=join(categories,";");
                 //Note: to return an actual list of values to the client (instead of a ';' separated string)
                 //JSONArray categoriesJson=new JSONArray();
@@ -129,7 +132,7 @@ public class PipelineJSON extends JSONObject {
             catch (Throwable t) {
                 log.error(t);
             }
-            this.put(LICENSE, getLicense(username, pipeline, info));
+            this.put(LICENSE, getLicense(taskContext, pipeline, info));
             this.put(DOCUMENTATION, getDocumentation(pipeline, info));
             this.put(LSID, pipeline.getLsid());
         }
@@ -213,9 +216,7 @@ public class PipelineJSON extends JSONObject {
         }
     }
 
-    private String getLicense(String username, PipelineModel pipeline, TaskInfo info) {
-        Context taskContext = Context.getContextForUser(username);
-        taskContext.setTaskInfo(info);
+    private String getLicense(final Context taskContext, PipelineModel pipeline, TaskInfo info) {
         List<EulaInfo> eulaList = EulaManager.instance(taskContext).getEulas(info);
         if (eulaList.size() < 1) return "";
         EulaInfo eula = eulaList.get(0);

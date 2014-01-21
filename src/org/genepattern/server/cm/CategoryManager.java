@@ -26,7 +26,12 @@ import org.genepattern.webservice.TaskInfo;
  * @author pcarr
  *
  */
-public class CategoryManager {
+public interface CategoryManager {
+    public static class Factory {
+        public static CategoryManager instance(final Context userContext) {
+            return new CategoryManagerImpl();
+        }
+    }
 
     /**
      * Get the list of categories for the given task, by default based on the contents of the manifest file for the module,
@@ -48,9 +53,7 @@ public class CategoryManager {
      * @param taskInfo
      * @return
      */
-    public final static List<String> getCategoriesForTask(final Context userContext, final TaskInfo taskInfo) {
-        return CategoryManagerImpl.getCategoriesForTask(userContext, taskInfo);
-    }
+    public List<String> getCategoriesForTask(final Context userContext, final TaskInfo taskInfo);
 
     /**
      * Get the default list of one or more category for the given task, based on the manifest file
@@ -58,15 +61,9 @@ public class CategoryManager {
      * 
      * @return
      */
-    public static List<String> getCategoriesFromManifest(final TaskInfo taskInfo) {
-        return CategoryManagerImpl.getCategoriesFromManifest(taskInfo);
-    }
+    public List<String> getCategoriesFromManifest(final TaskInfo taskInfo);
     
-    public static List<String> getAllCategories(final Context userContext, final boolean includeHidden) {
-        return CategoryManagerImpl.getAllCategories(userContext, includeHidden);
-    }
+    public List<String> getAllCategories(final Context userContext, final boolean includeHidden);
 
-    public static List<String> getAllCategoriesForUser(final Context userContext, final boolean includeHidden) {
-        return CategoryManagerImpl.getAllCategoriesForUser(userContext, includeHidden);
-    }
+    public List<String> getAllCategoriesForUser(final Context userContext, final boolean includeHidden);
 }
