@@ -11,7 +11,9 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import org.apache.log4j.Logger;
+import org.genepattern.server.config.ServerConfiguration;
 import org.genepattern.server.database.HibernateUtil;
+import org.genepattern.server.webapp.rest.api.v1.Util;
 import org.genepattern.server.webservice.server.dao.AdminDAO;
 import org.genepattern.util.LSID;
 import org.genepattern.webservice.SuiteInfo;
@@ -35,11 +37,12 @@ public class SuiteResource {
     @Produces(MediaType.APPLICATION_JSON)
     @Path("all.json")
     public Response getAllSuites(@Context HttpServletRequest request) {
+        final ServerConfiguration.Context userContext = Util.getUserContext(request);
         final boolean isInTransaction = HibernateUtil.isInTransaction();
         try {
             // Get the latest suites
             final AdminDAO adminDao = new AdminDAO();
-            SuiteInfo[] allSuites = adminDao.getLatestSuites();
+            SuiteInfo[] allSuites = adminDao.getLatestSuitesForUser(userContext.getUserId());
             
             // Return the JSON object
             JSONArray jsonArray = new JSONArray();
