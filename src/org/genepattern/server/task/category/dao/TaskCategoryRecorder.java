@@ -60,5 +60,20 @@ public class TaskCategoryRecorder {
             }
         }
     }
+    
+    public List<TaskCategory> getAllCustomCategories() {
+        boolean inTransaction=HibernateUtil.isInTransaction();
+        try {
+            HibernateUtil.beginTransaction();
+            Session session = HibernateUtil.getSession();
+            final List<TaskCategory> records = session.createCriteria(TaskCategory.class).list();
+            return records;
+        }
+        finally {
+            if (!inTransaction) {
+                HibernateUtil.closeCurrentSession();
+            }
+        }
+    }
 
 }
