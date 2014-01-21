@@ -5,13 +5,14 @@ import java.net.MalformedURLException;
 import java.net.URLEncoder;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -26,8 +27,7 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 
 import org.apache.log4j.Logger;
-import org.genepattern.server.cm.CategoryManager;
-import org.genepattern.server.cm.CategoryManagerImpl;
+import org.genepattern.server.cm.CategoryUtil;
 import org.genepattern.server.config.ServerConfiguration;
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.dm.UrlUtil;
@@ -53,6 +53,8 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import com.google.common.collect.HashMultimap;
+import com.google.common.collect.Multimap;
 import com.sun.jersey.api.Responses;
 
 /**
@@ -273,18 +275,6 @@ public class TasksResource {
     }
     
     /**
-     * Updated method to get the latest version of all available installed tasks for the given user in json format.
-     * 
-     */
-    @GET
-    @Produces(MediaType.APPLICATION_JSON) 
-    @Path("all_{user_id}.json")
-    public Response getAllTasksForUser(final @Context HttpServletRequest request) {
-            final String errorMessage="Method not implemented";
-            return Response.serverError().entity(errorMessage).build();
-    }
-    
-    /**
      * Rapid prototype method to get the latest version of all installed tasks in json format,
      * for use by the new Modules & Pipelines search panel.
      * 
@@ -300,7 +290,10 @@ public class TasksResource {
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     @Path("all.json")
-    public Response getAllTasks(final @Context HttpServletRequest request, @Context HttpServletResponse response) {
+    public Response getAllTasks(
+            final @QueryParam("includeHidden") String includeHidden,
+            final @Context HttpServletRequest request, 
+            final @Context HttpServletResponse response) {
         final ServerConfiguration.Context userContext = Util.getUserContext(request);
         final String userId = userContext.getUserId();
 
@@ -321,38 +314,46 @@ public class TasksResource {
             // Get the map of the latest tasks
             final AdminDAO adminDao = new AdminDAO();
             TaskInfo[] allTasks = adminDao.getAllTasksForUser(userId);
-            final Map<String, TaskInfo> latestTasks = adminDao.getLatestTasks(allTasks);
+            final Map<String, TaskInfo> latestTasks = AdminDAO.getLatestTasks(allTasks);
             //filter out the hidden tasks
-            // first pass, filter based on TaskInfo
-            //for(final Entry<String,TaskInfo> entry : latestTasks.entrySet()) {
-            //    final TaskInfo taskInfo=entry.getValue();
-            //}
-            //for(final TaskInfo taskInfo : allTasks) {
-            //}
+            final CategoryUtil cu=new CategoryUtil();
+            final Multimap<String,String> customCategoryMap=cu.getCustomCategoriesFromDb();
+            final Set<String> hiddenCategories=cu.getHiddenCategories(userContext);
             
-            final List<String> hiddenTasks=new ArrayList<String>();
+            final boolean _includeHidden= includeHidden != null;
+            SortedSet<TaskInfo> filteredTasks=new TreeSet<TaskInfo>( new AdminDAO.TaskNameComparator() );
+            final Multimap<String, String> filteredCategories=HashMultimap.create();
             for(final Entry<String,TaskInfo> entry : latestTasks.entrySet()) {
-                final String baseLsid=entry.getKey();
                 final TaskInfo taskInfo=entry.getValue();
-                final List<String> taskTypes=CategoryManager.Factory.instance(userContext).getCategoriesForTask(userContext, taskInfo);
-                if (taskTypes==null || taskTypes.size()==0) {
-                    //it's hidden
-                    hiddenTasks.add(baseLsid);
+                final String baseLsid=CategoryUtil.getBaseLsid(taskInfo);
+                
+                final Collection<String> categories;
+                if (baseLsid != null && customCategoryMap.containsKey(baseLsid)) {
+                    categories=customCategoryMap.get(baseLsid);
+                    if (log.isDebugEnabled()) {
+                        log.debug("custom category for baseLsid="+baseLsid+": "+categories);
+                    }
+                }
+                else {
+                    categories=cu.getCategoriesFromManifest(taskInfo);
+                }
+                
+                if (categories != null) {
+                    for(final String category : categories) {
+                        if (_includeHidden ||  !hiddenCategories.contains(category)) {
+                            filteredTasks.add( taskInfo );
+                            filteredCategories.put( taskInfo.getLsid(), category );
+                        }
+                    }
                 }
             }
-            for(final String baseLsid : hiddenTasks) {
-                latestTasks.remove(baseLsid);
-            }
-
-            // Transform the latest task map to an array and sort it
-            TaskInfo[] tasksArray = (TaskInfo[]) latestTasks.values().toArray(new TaskInfo[0]);
-            Arrays.sort(tasksArray, new AdminDAO.TaskNameComparator());
 
             // Return the JSON object
             JSONArray jsonArray = new JSONArray();
-            for (final TaskInfo taskInfo : tasksArray) {
+            for(final TaskInfo taskInfo : filteredTasks) {
                 try {
-                    JSONObject jsonObj = asJson(request, taskInfo, userContext);
+                    Collection<String> categories=filteredCategories.get(taskInfo.getLsid());
+                    JSONObject jsonObj = asJson(request, taskInfo, categories, userContext);
                     jsonArray.put(jsonObj);
                 }
                 catch (Exception e) {
@@ -391,7 +392,7 @@ public class TasksResource {
      * @param taskInfo
      * @return
      */
-    private JSONObject asJson(final HttpServletRequest request, final TaskInfo taskInfo, ServerConfiguration.Context userContext) throws JSONException {
+    private JSONObject asJson(final HttpServletRequest request, final TaskInfo taskInfo, final Collection<String> categories, ServerConfiguration.Context userContext) throws JSONException {
         JSONObject jsonObj = new JSONObject();
         jsonObj.put("lsid", taskInfo.getLsid());
         jsonObj.put("name", taskInfo.getName());
@@ -404,20 +405,24 @@ public class TasksResource {
             log.error("Error getting lsid for task.name="+taskInfo.getName(), e);
         }
         jsonObj.put("documentation", getDocLink(request, taskInfo));
-        jsonObj.put("categories", getCategories(userContext, taskInfo));
+        JSONArray categoriesJson=new JSONArray();
+        for(final String cat : categories) {
+            categoriesJson.put(cat);
+        }
+        jsonObj.put("categories", categoriesJson);
         jsonObj.put("suites", getSuites(taskInfo, userContext));
         jsonObj.put("tags", getTags(taskInfo, userContext));
         return jsonObj;
     }
 
-    private JSONArray getCategories(final ServerConfiguration.Context userContext, final TaskInfo taskInfo) {
-        List<String> categories=CategoryManager.Factory.instance(userContext).getCategoriesForTask(userContext, taskInfo);
-        JSONArray json=new JSONArray();
-        for(final String cat : categories) {
-            json.put(cat);
-        }
-        return json;
-    }
+//    private JSONArray getCategories(final ServerConfiguration.Context userContext, final TaskInfo taskInfo) {
+//        List<String> categories=CategoryManager.Factory.instance(userContext).getCategoriesForTask(userContext, taskInfo);
+//        JSONArray json=new JSONArray();
+//        for(final String cat : categories) {
+//            json.put(cat);
+//        }
+//        return json;
+//    }
     
     private JSONArray getTags(final TaskInfo taskInfo, ServerConfiguration.Context userContext) {
         Set<Tag> tags = TagManager.instance().getTags(userContext, taskInfo);
@@ -453,13 +458,11 @@ public class TasksResource {
             try {
                 String docLink=cp+"/getTaskDoc.jsp?name=" + URLEncoder.encode(taskInfo.getLsid(), "UTF-8");
                 return docLink;
-                //return "/gp/getTaskDoc.jsp?name=" + URLEncoder.encode(taskInfo.getLsid(), "UTF-8");
             }
             catch (UnsupportedEncodingException e) {
                 log.error("Error encoding lsid: " + taskInfo.getLsid());
                 String docLink=cp+"/getTaskDoc.jsp?name=" + taskInfo.getLsid();
                 return docLink;
-                //return "/gp/getTaskDoc.jsp?name=" + taskInfo.getLsid();
             }
         }
         else {
