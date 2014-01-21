@@ -204,23 +204,25 @@ function generateEulas(eula) {
         .appendTo(block);
 
     $(eula.pendingEulas).each(function(index, item) {
-        var eula = $("<div></div>")
+        var thisEula = $("<div></div>")
             .addClass("eula")
             .appendTo(block);
 
-        $("<div></div>")
-            .addClass("barhead-license-task")
-            .append("<span>" + item.moduleName + "</span>")
-            .append($("<span>version " + item.moduleLsidVersion + "</span>")
-                .addClass("license-version"))
-            .appendTo(eula);
+        if (eula.pendingEulas.length > 1) {
+            $("<div></div>")
+                .addClass("barhead-license-task")
+                .append("<span>" + item.moduleName + "</span>")
+                .append($("<span>version " + item.moduleLsidVersion + "</span>")
+                    .addClass("license-version"))
+                .appendTo(thisEula);
+        }
 
         $("<textarea></textarea>")
             .addClass("license-content")
             .attr("rows", 20)
             .attr("readonly", "readonly")
             .text(item.content)
-            .appendTo(eula);
+            .appendTo(thisEula);
     });
 
     $("<div></div>")
@@ -243,8 +245,9 @@ function generateEulas(eula) {
                 .attr("name", "reloadJob")
                 .attr("value", "")
             )
-            .append($("<p>Do you accept all the license agreements?</p>")
-                .addClass("license-agree-text")
+            .append(eula.pendingEulas.length > 1 ?
+                $("<p>Do you accept all the license agreements?</p>").addClass("license-agree-text") :
+                $("<p>Do you accept the license agreement?</p>").addClass("license-agree-text")
             )
             .append($("<input></input>")
                 .attr("type", "submit")
