@@ -15,6 +15,8 @@ package org.genepattern.server.webservice.server;
 import java.io.File;
 import java.net.MalformedURLException;
 import java.util.Hashtable;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.log4j.Logger;
 import org.genepattern.server.webservice.server.dao.AdminDAO;
@@ -40,7 +42,7 @@ public class DirectoryManager {
 
     /** mapping of LSIDs to taskLibDir directories */
     private static Hashtable htTaskLibDir = new Hashtable();
-    private static Hashtable htSuiteLibDir = new Hashtable();
+    private static Map<String,String> htSuiteLibDir = new ConcurrentHashMap<String,String>();
     
     public static void removeTaskLibDirFromCache(String lsid) {
         htTaskLibDir.remove(lsid);
@@ -265,23 +267,22 @@ public class DirectoryManager {
             }
         }
 
-        File f = null;
         getLibDir();
-        LSID lsid = null;
-        String name = suiteName;
-        if (suiteName == null) {
+        final String name;
+        if (suiteName != null) {
+            name = suiteName;
+        }
+        else {
             IAdminClient adminClient = new LocalAdminClient(username);
             SuiteInfo si = adminClient.getSuite(sLSID);
             name = si.getName();
         }
-        String dirName = makeDirName(lsid, name);
-        f = new File(taskLibDir, dirName);
+        // (for compatibility, pre 3.8.0, always pass 'null' into this method)
+        final String dirName = makeDirName(null, name);
+        final File f = new File(taskLibDir, dirName);
         f.mkdirs();
         ret = f.getAbsolutePath();
-        if (lsid != null) {
-            //TODO: shouldn't this be htSuiteLibDir?
-            htTaskLibDir.put(lsid, ret);
-        }
+        htSuiteLibDir.put(sLSID, ret);
         return ret;
     }
 
