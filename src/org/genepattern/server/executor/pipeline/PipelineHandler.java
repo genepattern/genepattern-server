@@ -770,7 +770,7 @@ public class PipelineHandler {
      * @deprecated
      */
     public static boolean isParallelExec(Context jobContext) {
-        boolean rval=ServerConfiguration.instance().getGPBooleanProperty(jobContext, "org.genepattern.server.executor.pipeline.parallelExec", false);
+        boolean rval=ServerConfiguration.instance().getGPBooleanProperty(jobContext, "org.genepattern.server.executor.pipeline.parallelExec", true);
         return rval;
     }
 
