@@ -314,7 +314,13 @@ public class TasksResource {
         try {
             // Get the map of the latest tasks
             final AdminDAO adminDao = new AdminDAO();
-            TaskInfo[] allTasks = adminDao.getAllTasksForUser(userId);
+            final TaskInfo[] allTasks;
+            if (userContext.isAdmin()) {
+                allTasks = adminDao.getAllTasks();
+            }
+            else {
+                allTasks = adminDao.getAllTasksForUser(userId);
+            }
             final Map<String, TaskInfo> latestTasks = AdminDAO.getLatestTasks(allTasks);
             //filter out the hidden tasks
             final CategoryUtil cu=new CategoryUtil();
