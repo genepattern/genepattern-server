@@ -39,13 +39,7 @@ public class CategoryResource {
             // Get the map of the latest suites
             final boolean includeHidden=false;
             List<String> categories = CategoryManager.Factory.instance(userContext).getAllCategoriesForUser(userContext, includeHidden);
-            
-            // Return the JSON object
-            JSONArray jsonArray = new JSONArray();
-            for (String category : categories) {
-                JSONObject jsonObj = asJson(category);
-                jsonArray.put(jsonObj);
-            }
+            final JSONArray jsonArray=initCategoriesJson(categories);
             return Response.ok().entity(jsonArray.toString()).build();
         }
         catch (Throwable t) {
@@ -59,6 +53,21 @@ public class CategoryResource {
             }
         }
     }
+    
+    private static JSONArray initCategoriesJson(final List<String> categories) {
+        // Return the JSON object
+        final JSONArray jsonArray = new JSONArray();
+        for (final String category : categories) {
+            try {
+                JSONObject jsonObj = categoryAsJson(category);
+                jsonArray.put(jsonObj);
+            }
+            catch (JSONException e) {
+                log.error("Error processing category="+category, e);
+            }
+        }
+        return jsonArray;
+    }
  
     /**
      * Wrap a single string as a JSON object to be returned.
@@ -67,7 +76,7 @@ public class CategoryResource {
      * @return
      * @throws JSONException
      */
-    private JSONObject asJson(String category) throws JSONException {
+    private static JSONObject categoryAsJson(final String category) throws JSONException {
         JSONObject jsonObj = new JSONObject();
         jsonObj.put("name", category);
         jsonObj.put("description", ""); // Description reserved for future use
