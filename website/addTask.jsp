@@ -548,7 +548,7 @@
                             if (taskContext != null) {
                                 List<EulaInfo> eulas = EulaManager.instance(taskContext).getEulas(taskInfo);
                                 if (eulas != null && eulas.size() != 0) {
-                        %> <a href="<%=eulas.get(0).getLink()%>" target="new"><%=eulas.get(0).getLicense() %>
+                        %> <a href="<%=eulas.get(0).getLink(request.getContextPath())%>" target="new"><%=eulas.get(0).getLicense() %>
                     </a>
                         <%
                                 }

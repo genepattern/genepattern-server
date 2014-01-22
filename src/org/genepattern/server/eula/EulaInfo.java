@@ -165,6 +165,14 @@ public class EulaInfo implements Comparable<EulaInfo> {
     public LSID getLsid() {
         return theLsid;
     }
+
+    /**
+     * @deprecated, must pass in a valid contextPath ('/gp').
+     * @return
+     */
+    public String getLink() {
+        return getLink(null);
+    }
     
     /**
      * Pass in the contextPath (e.g. "/gp") so that we can generate a relative link to the file.
@@ -173,8 +181,9 @@ public class EulaInfo implements Comparable<EulaInfo> {
      */
     public String getLink(String contextPath) {
         if (contextPath==null) {
-            log.error("contextPath==null, using '/gp'");
-            contextPath="/gp";
+            //GP_Path=/gp
+            contextPath = System.getProperty("GP_Path", "/gp");
+            log.error("contextPath==null, using '"+contextPath+"'");
         }
         //http://gpbroad.broadinstitute.org:8080/gp/getTaskDoc.jsp?name=urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00044:9&file=ComparativeMarkerSelection.pdf
         String htmlEncodedLicense = HtmlEncoder.htmlEncode(license);

@@ -201,9 +201,10 @@
             out.println("<br>License: ");
             ServerConfiguration.Context taskContext = ServerConfiguration.Context.getContextForUser(userID);
             if (taskContext != null) {
+                String contextPath=request.getContextPath();
                 List<EulaInfo> eulas = EulaManager.instance(taskContext).getEulas(task);
                 if (eulas != null && eulas.size() != 0) {
-                    out.println("<a href='" + eulas.get(0).getLink() + "' target='new'>" + eulas.get(0).getLicense() + "</a>");
+                    out.println("<a href='" + eulas.get(0).getLink( contextPath ) + "' target='new'>" + eulas.get(0).getLicense() + "</a>");
                 }
             }
             out.println("<br>");
