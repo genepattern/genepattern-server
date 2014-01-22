@@ -8,6 +8,7 @@ import java.util.Set;
 
 import org.apache.log4j.Logger;
 import org.genepattern.server.config.ServerConfiguration;
+import org.genepattern.server.config.ServerConfiguration.Context;
 import org.genepattern.server.executor.CommandProperties.Value;
 import org.genepattern.server.task.category.dao.TaskCategory;
 import org.genepattern.server.task.category.dao.TaskCategoryRecorder;
@@ -19,12 +20,16 @@ import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 
 /**
- * Helper methods for custom and hidden categories.
+ * Helper methods for multiple categories, custom categories and hidden categories.
+ * 
  * @author pcarr
  *
  */
 public class CategoryUtil {
-    final static Logger log = Logger.getLogger(CategoryUtil.class);
+    private static final Logger log = Logger.getLogger(CategoryUtil.class);
+
+    public static final String PROP_CHECK_CUSTOM_CATEGORIES="org.genepattern.server.cm.CategoryManager.checkCustomCategories";
+    public static final String PROP_HIDDEN_CATEGORIES="org.genepattern.server.cm.CategoryManager.hiddenCategories";
     
     public static String getBaseLsid(final TaskInfo taskInfo) {
         try {
@@ -36,6 +41,71 @@ public class CategoryUtil {
         return null;
     }
     
+    /**
+     * Get the list of categories for the given task, by default based on the contents of the manifest file for the module,
+     * and optionally over-ridden by server configuration settings.
+     * 
+     * This method was added for GP-4672, which requires a way to associate more than one category to a task.
+     * In GP <= 3.7.0 there is one and only one category for a task, as set by the 'taskType' property in the manifest file.
+     * In GP > 3.7.0 there can optionally be additional categories for a visualizer or pipeline, as set by the 'categories' property
+     * in the manifest file. E.g.
+     * <pre>
+     *     # pipeline in a custom category
+     *     categories=pipeline;RNA-seq
+     *     # visualizer in a custom category
+     *     categories=Visualizer;RNA-seq
+     *     # pipeline moved to a custom category, it won't be in the pipeline category
+     *     categories=RNA-seq
+     * </pre>
+     * 
+     * @param taskInfo
+     * @return
+     */
+    public List<String> getCategoriesForTask(final Context userContext, final TaskInfo taskInfo) {
+        final boolean includeHidden=false;
+        return getCategoriesForTask(userContext, taskInfo, includeHidden);
+    }
+    
+    public List<String> getCategoriesForTask(final Context userContext, final TaskInfo taskInfo, final boolean includeHidden) {
+        final boolean checkCustomCategories;
+        checkCustomCategories=ServerConfiguration.instance().getGPBooleanProperty(
+                userContext, PROP_CHECK_CUSTOM_CATEGORIES, true);
+
+        final List<String> hiddenCategories=new ArrayList<String>();
+        if (!includeHidden) {
+            final Value value=ServerConfiguration.instance().getValue(userContext, PROP_HIDDEN_CATEGORIES);
+            if (value != null) {
+                hiddenCategories.addAll(value.getValues());
+            }
+        }
+
+        List<String> categories=null;
+        if (checkCustomCategories) {
+            categories=getCustomCategoriesFromDb(taskInfo);
+        }
+        if (categories==null) {
+            categories=getCategoriesFromManifest(taskInfo);
+        }
+        //check for '.' categories
+        if (!includeHidden) {
+            for(final String category : categories) {
+                if (isHidden(category)) {
+                    hiddenCategories.add(category);
+                }
+            }
+            for(final String hidden : hiddenCategories) {
+                categories.remove(hidden);
+            }
+        }
+        return categories;
+    }
+
+    /**
+     * Get the default list of one or more category for the given task, based on the manifest file
+     * for the module (e.g. tied to a particular version of the module).
+     * 
+     * @return
+     */
     public List<String> getCategoriesFromManifest(final TaskInfo taskInfo) {
         //check for custom 'categories' in the manifest ...
         final List<String> categories=parseCategoriesFromManifest(taskInfo);
@@ -44,7 +114,7 @@ public class CategoryUtil {
         }
         
         //legacy, (<= GP 3.7.2) use the taskType
-        String taskType = taskInfo.getTaskInfoAttributes().get("taskType");
+        String taskType = taskInfo.getTaskInfoAttributes().get(GPConstants.TASK_TYPE);
         if (taskType == null || taskType.length() == 0) {
             taskType = "Uncategorized";
         }
@@ -80,6 +150,52 @@ public class CategoryUtil {
     }
 
     /**
+     * Get the custom categories for the given task, which can optionally be set by an admin of the server.
+     * So that modules can be re-categorized without requiring a new version of the module.
+     * 
+     * @return null when there is no server-customization for the task;
+     *         an empty list if the module should be hidden from the server;
+     *         a list of categories 
+     */
+    public List<String> getCustomCategoriesFromDb(final TaskInfo taskInfo) {
+        try {
+            final TaskCategoryRecorder recorder=new TaskCategoryRecorder();
+            final LSID lsid=new LSID(taskInfo.getLsid());
+            final String baseLsid=lsid.toStringNoVersion();
+            final List<TaskCategory> categories=recorder.query(baseLsid);
+            if (categories==null || categories.size() ==0) {
+                //null indicates that there are no server-based customizations for the installed module
+                return null;
+            }
+
+            final List<String> rval=new ArrayList<String>();
+            boolean hasHidden=false;
+            for(final TaskCategory taskCategory : categories) {
+                //empty string or '.' prefix means hidden
+                String category=taskCategory.getCategory();
+                if (category != null) {
+                    category = category.trim();
+                    if (category.length()==0 || category.startsWith(".")) {
+                        //ignore hidden 
+                        hasHidden=true;
+                    }
+                    else {
+                        rval.add(category);
+                    }
+                }
+            }
+            if (hasHidden && rval.size()>0) {
+                log.error("found hidden and non-hidden entries in 'task_category' table for "+taskInfo.getName()+" ("+taskInfo.getLsid()+")");
+            }
+            return rval;
+        }
+        catch (Throwable t) {
+            log.error("Error checking 'task_category' table for "+taskInfo.getName()+" ("+taskInfo.getLsid()+")", t);
+            return null;
+        }
+    }
+
+    /**
      * This lookup table maps custom categories per task, by baseLsid.
      * The key is the baseLsid for a module, the list of values are a list of zero or more categories.
      * 
@@ -106,7 +222,7 @@ public class CategoryUtil {
      * @return
      */
     public Set<String> getHiddenCategories(final ServerConfiguration.Context userContext) {
-        final Value value=ServerConfiguration.instance().getValue(userContext, CategoryManager.class.getName()+".hiddenCategories");
+        final Value value=ServerConfiguration.instance().getValue(userContext, PROP_HIDDEN_CATEGORIES);
         if (value==null || value.getNumValues()==0) {
             return Collections.emptySet();
         }

@@ -14,9 +14,7 @@ import java.util.Vector;
 
 import org.apache.log4j.Logger;
 import org.genepattern.data.pipeline.JobSubmission;
-import org.genepattern.server.cm.CategoryManager;
-import org.genepattern.server.config.ServerConfiguration;
-import org.genepattern.server.config.ServerConfiguration.Context;
+import org.genepattern.server.cm.CategoryUtil;
 import org.genepattern.webservice.ParameterInfo;
 import org.genepattern.webservice.TaskInfo;
 import org.genepattern.webservice.TaskInfoAttributes;
@@ -47,9 +45,7 @@ public class ModuleJSON extends JSONObject {
     
     public ModuleJSON(TaskInfo info, String username) {
         try {
-            final Context userContext=ServerConfiguration.Context.getContextForUser(username);
-            final CategoryManager categoryManager=CategoryManager.Factory.instance(userContext);
-            final List<String> categories=categoryManager.getCategoriesFromManifest(info);
+            final List<String> categories=new CategoryUtil().getCategoriesFromManifest(info);
             
             this.setLsid(info.getLsid());
             this.setName(info.getName());

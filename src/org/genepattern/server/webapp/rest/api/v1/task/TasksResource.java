@@ -6,6 +6,7 @@ import java.net.URLEncoder;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -340,7 +341,7 @@ public class TasksResource {
                 
                 if (categories != null) {
                     for(final String category : categories) {
-                        if (_includeHidden ||  !hiddenCategories.contains(category)) {
+                        if (_includeHidden ||  (!hiddenCategories.contains(category) && !cu.isHidden(category))) {
                             filteredTasks.add( taskInfo );
                             filteredCategories.put( taskInfo.getLsid(), category );
                         }
@@ -349,19 +350,25 @@ public class TasksResource {
             }
 
             // Return the JSON object
-            JSONArray jsonArray = new JSONArray();
+            JSONArray allModules = new JSONArray();
             for(final TaskInfo taskInfo : filteredTasks) {
                 try {
                     Collection<String> categories=filteredCategories.get(taskInfo.getLsid());
-                    JSONObject jsonObj = asJson(request, taskInfo, categories, userContext);
-                    jsonArray.put(jsonObj);
+                    JSONObject jsonObj = getTaskSearchEntryJson(request, taskInfo, categories, userContext);
+                    allModules.put(jsonObj);
                 }
                 catch (Exception e) {
                     log.error("Exception thrown rendering to JSON (" + taskInfo.getLsid() + "): " + e.getMessage());
                     continue;
                 }
             }
-            return Response.ok().entity(jsonArray.toString()).build();
+
+            // Return the JSON object 
+            final JSONArray allCategories=initAllCategoriesJson( filteredCategories.values() );
+            JSONObject jsonObj=new JSONObject();
+            jsonObj.put("all_modules", allModules);
+            jsonObj.put("all_categories", allCategories);
+            return Response.ok().entity(jsonObj.toString()).build();
         }
         catch (Throwable t) {
             log.error(t);
@@ -376,8 +383,50 @@ public class TasksResource {
         }
     }
     
+    private JSONArray initAllCategoriesJson(final Collection<String> categoryNames) {
+        final JSONArray categoriesJson = new JSONArray();
+        final SortedSet<String> sortedCategoryNames = new TreeSet<String>(new Comparator<String>() {
+            // sort categories alphabetically, ignoring case
+            public int compare(String arg0, String arg1) {
+                String arg0tl = arg0.toLowerCase();
+                String arg1tl = arg1.toLowerCase();
+                int rval = arg0tl.compareTo(arg1tl);
+                if (rval == 0) {
+                    rval = arg0.compareTo(arg1);
+                }
+                return rval;
+            }
+        });
+        sortedCategoryNames.addAll( categoryNames );
+        for (final String category : sortedCategoryNames) {
+            try {
+                final JSONObject jsonObj = getCategoryJson(category);
+                categoriesJson.put(jsonObj);
+            }
+            catch (JSONException e) {
+                log.error("Error processing category="+category, e);
+            }
+        } 
+        return categoriesJson;
+    }
+    
     /**
-     * 
+     * Wrap a single string as a JSON object to be returned.
+     * Currently used for wrapping module categories
+     * @param string
+     * @return
+     * @throws JSONException
+     */
+    public static JSONObject getCategoryJson(final String category) throws JSONException {
+        JSONObject jsonObj = new JSONObject();
+        jsonObj.put("name", category);
+        jsonObj.put("description", ""); // Description reserved for future use
+        jsonObj.put("tags", new JSONArray());
+        return jsonObj;
+    }
+
+    /**
+     * For the modules and pipelines panel, create a json representation for a task.
      * <pre>
      * {
         "lsid": "the full lsid of the module should be here",
@@ -392,7 +441,7 @@ public class TasksResource {
      * @param taskInfo
      * @return
      */
-    private JSONObject asJson(final HttpServletRequest request, final TaskInfo taskInfo, final Collection<String> categories, ServerConfiguration.Context userContext) throws JSONException {
+    private JSONObject getTaskSearchEntryJson(final HttpServletRequest request, final TaskInfo taskInfo, final Collection<String> categories, ServerConfiguration.Context userContext) throws JSONException {
         JSONObject jsonObj = new JSONObject();
         jsonObj.put("lsid", taskInfo.getLsid());
         jsonObj.put("name", taskInfo.getName());
@@ -415,15 +464,6 @@ public class TasksResource {
         return jsonObj;
     }
 
-//    private JSONArray getCategories(final ServerConfiguration.Context userContext, final TaskInfo taskInfo) {
-//        List<String> categories=CategoryManager.Factory.instance(userContext).getCategoriesForTask(userContext, taskInfo);
-//        JSONArray json=new JSONArray();
-//        for(final String cat : categories) {
-//            json.put(cat);
-//        }
-//        return json;
-//    }
-    
     private JSONArray getTags(final TaskInfo taskInfo, ServerConfiguration.Context userContext) {
         Set<Tag> tags = TagManager.instance().getTags(userContext, taskInfo);
         
@@ -469,7 +509,6 @@ public class TasksResource {
             return "";
         }
     }
-    
 
     @GET
     @Produces(MediaType.APPLICATION_JSON)

@@ -22,7 +22,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.genepattern.server.cm.CategoryManager;
+import org.genepattern.server.cm.CategoryUtil;
 import org.genepattern.server.config.ServerConfiguration.Context;
 import org.genepattern.server.domain.Suite;
 import org.genepattern.server.domain.SuiteDAO;
@@ -80,7 +80,8 @@ public class ModuleHelper {
         final Map<String, List<TaskInfo>> taskMap = new HashMap<String, List<TaskInfo>>();
         
         for(final TaskInfo taskInfo : tasks) {
-            final List<String> taskTypes=CategoryManager.Factory.instance(userContext).getCategoriesForTask(userContext, taskInfo);
+            final CategoryUtil cu=new CategoryUtil();
+            final List<String> taskTypes=cu.getCategoriesForTask(userContext, taskInfo);
             for(final String taskType : taskTypes) {
                 List<TaskInfo> taskMapEntries = taskMap.get(taskType);
                 if (taskMapEntries == null) {

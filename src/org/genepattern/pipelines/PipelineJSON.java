@@ -13,7 +13,7 @@ import java.util.List;
 
 import org.apache.log4j.Logger;
 import org.genepattern.data.pipeline.PipelineModel;
-import org.genepattern.server.cm.CategoryManager;
+import org.genepattern.server.cm.CategoryUtil;
 import org.genepattern.server.config.ServerConfiguration.Context;
 import org.genepattern.server.eula.EulaInfo;
 import org.genepattern.server.eula.EulaManager;
@@ -119,7 +119,8 @@ public class PipelineJSON extends JSONObject {
             this.put(VERSION, extractVersion(pipeline.getLsid()));
             this.put(VERSION_COMMENT, pipeline.getVersion());
             try {
-                final List<String> categories=CategoryManager.Factory.instance(taskContext).getCategoriesFromManifest(info);
+                final List<String> categories=new CategoryUtil().getCategoriesFromManifest(info);
+
                 String categoriesStr=join(categories,";");
                 //Note: to return an actual list of values to the client (instead of a ';' separated string)
                 //JSONArray categoriesJson=new JSONArray();

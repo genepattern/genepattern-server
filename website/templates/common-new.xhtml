@@ -97,7 +97,7 @@
 	                    url: '/gp/rest/v1/tasks/all.json',
 	                    dataType: 'json',
 	                    success: function(data, status, xhr) {
-	                    	all_modules = data;
+	                    	all_modules = data.all_modules;
 	                    	
 	                    	// Initialize the displays on the left nav bar
 	                    	$("#loading-modules").hide();
@@ -106,6 +106,16 @@
 
 	                    	// Initialize the search slider
 	                    	initSearchSlider();
+	                    	
+	                    	all_categories = data.all_categories;
+	                        // Initialize the module browse button and slider
+	                        var allnsuite = initBrowseTop();
+	                        var browse = initBrowseModules();
+	                                
+	                        // Initialize the slider
+	                        var modbrowse = $('#module-browse').searchslider({
+	                            lists: [allnsuite, browse]
+	                        });
 	                    },
                         error: function(data) {
                             var userAborted = !data.getAllResponseHeaders();
@@ -116,25 +126,8 @@
                             }
                         }
 	                });
-	
-	                $.ajax({
-	                    url: '/gp/rest/v1/categories/all.json',
-	                    dataType: 'json',
-	                    success: function(data, status, xhr) {
-	                    	all_categories = data;
-	                    	
-	                        // Initialize the module browse button and slider
-	                        var allnsuite = initBrowseTop();
-	                        var browse = initBrowseModules();
-	                        
-	                        // Initialize the slider
-	                        var modbrowse = $('#module-browse').searchslider({
-	                            lists: [allnsuite, browse]
-	                        });
-	                    }
-	                });
-	                
-	                $.ajax({
+
+	            	$.ajax({
 	                    url: '/gp/rest/v1/suites/all.json',
 	                    dataType: 'json',
 	                    success: function(data, status, xhr) {
