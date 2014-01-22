@@ -533,6 +533,13 @@ public class AdminDAO extends BaseDAO {
         return latest;
     }
 
+    public SuiteInfo[] getLatestSuitesForUser(final String userName) throws AdminDAOSysException {
+        final SuiteInfo[] all=getAllSuites(userName);
+        ArrayList<SuiteInfo> suites = _getLatestSuitesFromList(all);
+        SuiteInfo[] arr=new SuiteInfo[ suites.size() ];
+        return suites.toArray(arr);
+    }
+
     private LSID getLsid(final SuiteInfo si) {
         if (si==null) {
             log.error("Unexpected null arg");
@@ -555,62 +562,46 @@ public class AdminDAO extends BaseDAO {
     private ArrayList<SuiteInfo> _getLatestSuites() throws AdminDAOSysException {
         try {
             final SuiteInfo[] allSuites = getAllSuites();
-            final TreeMap<String,SuiteInfo> latestSuites = new TreeMap<String, SuiteInfo>();
-            // loop through them placing them into a tree set based on their LSIDs
-            for (int i = 0; i < allSuites.length; i++) {
-                final SuiteInfo si = allSuites[i];
-                final LSID siLsid=getLsid(si);
-                if (siLsid != null) {
-                    final String baseLsid=siLsid.toStringNoVersion();
-                    final SuiteInfo altSi = (SuiteInfo) latestSuites.get(baseLsid);
-                    if (altSi == null) {
-                        latestSuites.put(baseLsid, si);
-                    } 
-                    else {
-                        final LSID altLsid = getLsid(altSi);
-                        if (altLsid != null) {
-                            if (altLsid.compareTo(siLsid) > 0) {
-                                latestSuites.put(siLsid.toStringNoVersion(), si); // it is newer
-                            }
-                        }
-                        // else it is older so leave it out
-                    }
-                }
-                else {
-                    //unexpected, but we can tolerate this error
-                    // if we are here is means that si.getLsid is not a properly formatted LSID
-                    log.debug("SuiteInfo.lsid is not a propery formatted LSID, lsid="+si.getLsid());
-                    latestSuites.put(si.getLsid(), si);
-                }
-            }
-
-            final ArrayList<SuiteInfo> latest = new ArrayList<SuiteInfo>();
-            for(final SuiteInfo suiteInfo : latestSuites.values()) {
-                latest.add(suiteInfo);
-            }
-            return latest;
+            return _getLatestSuitesFromList(allSuites);
         } 
         catch (Exception mfe) {
             throw new AdminDAOSysException("A database error occurred", mfe);
         }
     }
-
-    public SuiteInfo[] getLatestSuitesForUser(String userName) throws AdminDAOSysException {
-        ArrayList latestSuites = _getLatestSuites();
-        ArrayList<SuiteInfo> allowedSuites = new ArrayList<SuiteInfo>();
-        for (Iterator iter = latestSuites.iterator(); iter.hasNext();) {
-            SuiteInfo si = (SuiteInfo) iter.next();
-            if (si.getAccessId() == GPConstants.ACCESS_PRIVATE) {
-                if (!si.getOwner().equals(userName))
-                    continue;
+    
+    private ArrayList<SuiteInfo> _getLatestSuitesFromList(final SuiteInfo[] allSuites) {
+        final TreeMap<String,SuiteInfo> latestSuites = new TreeMap<String, SuiteInfo>();
+        // loop through them placing them into a tree set based on their LSIDs
+        for (int i = 0; i < allSuites.length; i++) {
+            final SuiteInfo si = allSuites[i];
+            final LSID siLsid=getLsid(si);
+            if (siLsid != null) {
+                final String baseLsid=siLsid.toStringNoVersion();
+                final SuiteInfo altSi = (SuiteInfo) latestSuites.get(baseLsid);
+                if (altSi == null) {
+                    latestSuites.put(baseLsid, si);
+                } 
+                else {
+                    final LSID altLsid = getLsid(altSi);
+                    if (altLsid != null) {
+                        if (altLsid.compareTo(siLsid) > 0) {
+                            latestSuites.put(siLsid.toStringNoVersion(), si); // it is newer
+                        }
+                    }
+                    // else it is older so leave it out
+                }
             }
-            allowedSuites.add(si);
+            else {
+                //unexpected, but we can tolerate this error
+                // if we are here is means that si.getLsid is not a properly formatted LSID
+                log.debug("SuiteInfo.lsid is not a propery formatted LSID, lsid="+si.getLsid());
+                latestSuites.put(si.getLsid(), si);
+            }
         }
 
-        SuiteInfo[] latest = new SuiteInfo[allowedSuites.size()];
-        int i = 0;
-        for (Iterator iter = allowedSuites.iterator(); iter.hasNext(); i++) {
-            latest[i] = (SuiteInfo) iter.next();
+        final ArrayList<SuiteInfo> latest = new ArrayList<SuiteInfo>();
+        for(final SuiteInfo suiteInfo : latestSuites.values()) {
+            latest.add(suiteInfo);
         }
         return latest;
     }
