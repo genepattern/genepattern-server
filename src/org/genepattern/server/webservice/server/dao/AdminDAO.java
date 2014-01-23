@@ -626,10 +626,9 @@ public class AdminDAO extends BaseDAO {
 
     public SuiteInfo[] getAllSuites(final String userId) throws AdminDAOSysException {
         String hql = "from org.genepattern.server.domain.Suite "
-            + " where accessId = :publicAccessId  or  (accessId = :privateAccessId and userId = :userId)";
+            + " where accessId = :publicAccessId  or  userId = :userId";
         Query query = getSession().createQuery(hql);
         query.setInteger("publicAccessId", GPConstants.ACCESS_PUBLIC);
-        query.setInteger("privateAccessId", GPConstants.ACCESS_PRIVATE);
         query.setString("userId", userId);
 
         List<Suite> results = query.list();
