@@ -1863,7 +1863,7 @@ function loadRunTaskForm(lsid, reloadJob) {
                 console.log("Response from server: status=" + xhr.status + " text=" + xhr.responseText);
                 console.log(thrownError);
 
-                $("#viewCodeDiv").append("<p>An error occurred while retrieving the code: " + xhr.responseText + "</p>");
+                $("#viewCodeDiv").append("<p>An error occurred while retrieving the code.</p>");
             },
             dataType: "json"
         });
