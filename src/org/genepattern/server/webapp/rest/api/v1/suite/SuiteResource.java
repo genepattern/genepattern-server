@@ -38,19 +38,11 @@ public class SuiteResource {
     @Path("all.json")
     public Response getAllSuites(@Context HttpServletRequest request) {
         final ServerConfiguration.Context userContext = Util.getUserContext(request);
-        final boolean isInTransaction = HibernateUtil.isInTransaction();
         try {
             // Get the latest suites
-            final SuiteInfo[] allSuites;
-            final AdminDAO adminDao = new AdminDAO();
-            allSuites = adminDao.getLatestSuitesForUser(userContext.getUserId());
-            
+            final SuiteInfo[] allSuites = getAllSuites(userContext); 
             // Return the JSON object
-            JSONArray jsonArray = new JSONArray();
-            for (SuiteInfo suiteInfo : allSuites) {
-                JSONObject jsonObj = asJson(suiteInfo);
-                jsonArray.put(jsonObj);
-            }
+            JSONArray jsonArray = toJsonArray(allSuites);
             return Response.ok().entity(jsonArray.toString()).build();
         }
         catch (Throwable t) {
@@ -58,11 +50,38 @@ public class SuiteResource {
             final String errorMessage="Error constructing json response for suites.json: " + t.getLocalizedMessage();
             return Response.serverError().entity(errorMessage).build();
         }
+    }
+    
+    public static SuiteInfo[] getAllSuites(final ServerConfiguration.Context userContext) {
+        if (userContext==null) {
+            throw new IllegalArgumentException("userContext==null");
+        }
+        final boolean isInTransaction = HibernateUtil.isInTransaction();
+        try {
+            // Get the latest suites
+            final SuiteInfo[] allSuites;
+            final AdminDAO adminDao = new AdminDAO();
+            allSuites = adminDao.getLatestSuitesForUser(userContext.getUserId());
+            return allSuites;
+        }
+        catch (Throwable t) {
+            log.error("Unexpected error getting suites for user="+userContext.getUserId(), t);
+            return new SuiteInfo[0];
+        }
         finally {
             if (!isInTransaction) {
                 HibernateUtil.closeCurrentSession();
             }
         }
+    }
+    
+    public static JSONArray toJsonArray(final SuiteInfo[] suiteInfos) throws JSONException {
+        final JSONArray jsonArray = new JSONArray();
+        for (final SuiteInfo suiteInfo : suiteInfos) {
+            JSONObject jsonObj = asJson(suiteInfo);
+            jsonArray.put(jsonObj);
+        }
+        return jsonArray;
     }
  
     /**
@@ -71,7 +90,7 @@ public class SuiteResource {
      * @return
      * @throws JSONException
      */
-    private JSONObject asJson(SuiteInfo suiteInfo) throws JSONException {
+    private static JSONObject asJson(SuiteInfo suiteInfo) throws JSONException {
         JSONObject jsonObj = new JSONObject();
         jsonObj.put("lsid", suiteInfo.getLsid());
         jsonObj.put("name", suiteInfo.getName());
@@ -93,7 +112,7 @@ public class SuiteResource {
         return jsonObj;
     }
     
-    private String getDocumentation(SuiteInfo suiteInfo) {
+    private static String getDocumentation(SuiteInfo suiteInfo) {
         String[] files = suiteInfo.getDocumentationFiles();
         if (files == null || files.length < 1) return "";
         else return files[0];
