@@ -43,12 +43,7 @@ public class SuiteResource {
             // Get the latest suites
             final SuiteInfo[] allSuites;
             final AdminDAO adminDao = new AdminDAO();
-            if (userContext.isAdmin()) {
-                allSuites = adminDao.getLatestSuites();
-            }
-            else {
-                allSuites = adminDao.getLatestSuitesForUser(userContext.getUserId());
-            }
+            allSuites = adminDao.getLatestSuitesForUser(userContext.getUserId());
             
             // Return the JSON object
             JSONArray jsonArray = new JSONArray();
