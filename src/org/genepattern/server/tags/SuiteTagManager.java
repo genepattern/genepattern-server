@@ -10,6 +10,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.apache.log4j.Logger;
 import org.genepattern.server.config.ServerConfiguration.Context;
+import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.webservice.server.dao.AdminDAO;
 import org.genepattern.server.webservice.server.dao.AdminDAOSysException;
 import org.genepattern.util.LSID;
@@ -97,15 +98,24 @@ public class SuiteTagManager {
         }
     }
     
-    private void addSuites(Context context) {
-        AdminDAO adminDao = new AdminDAO();
+    private void addSuites(final Context context) {
+        if (context==null) {
+            throw new IllegalArgumentException("context==null");
+        }
+        final boolean isInTransaction = HibernateUtil.isInTransaction();
         try {
-            SuiteInfo[] suites = adminDao.getLatestSuitesForUser(context.getUserId());
-
-            for (SuiteInfo suite : suites) {
-                for (String moduleLsid : suite.getModuleLsids()) {
-                    String baseLsid = getBaseLsid(moduleLsid);
-                    TagCacheKey key = new TagCacheKey(context.getUserId(), baseLsid);
+            final SuiteInfo[] suites;
+            final AdminDAO adminDao = new AdminDAO();
+            if (context.isAdmin()) {
+                suites = adminDao.getLatestSuites();
+            }
+            else {
+                suites = adminDao.getLatestSuitesForUser(context.getUserId());
+            }
+            for (final SuiteInfo suite : suites) {
+                for (final String moduleLsid : suite.getModuleLsids()) {
+                    final String baseLsid = getBaseLsid(moduleLsid);
+                    final TagCacheKey key = new TagCacheKey(context.getUserId(), baseLsid);
                     Set<String> tags = tagMap.get(key);
 
                     // Protect against null
@@ -118,7 +128,15 @@ public class SuiteTagManager {
             }
         }
         catch (AdminDAOSysException e1) {
-            log.error(e1);
+            log.error("Exception adding suites for user="+context.getUserId(), e1);
+        }
+        catch (Throwable t) {
+            log.error("Unexpected exception adding suites for user="+context.getUserId(), t);
+        }
+        finally {
+            if (!isInTransaction) {
+                HibernateUtil.closeCurrentSession();
+            }
         }
     }
     

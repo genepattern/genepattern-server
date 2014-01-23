@@ -41,8 +41,14 @@ public class SuiteResource {
         final boolean isInTransaction = HibernateUtil.isInTransaction();
         try {
             // Get the latest suites
+            final SuiteInfo[] allSuites;
             final AdminDAO adminDao = new AdminDAO();
-            final SuiteInfo[] allSuites = adminDao.getLatestSuitesForUser(userContext.getUserId());
+            if (userContext.isAdmin()) {
+                allSuites = adminDao.getLatestSuites();
+            }
+            else {
+                allSuites = adminDao.getLatestSuitesForUser(userContext.getUserId());
+            }
             
             // Return the JSON object
             JSONArray jsonArray = new JSONArray();
