@@ -5,7 +5,9 @@ import java.net.MalformedURLException;
 import java.net.URLEncoder;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
@@ -38,15 +40,16 @@ import org.genepattern.server.eula.InitException;
 import org.genepattern.server.job.input.choice.ChoiceInfo;
 import org.genepattern.server.job.input.choice.ChoiceInfoHelper;
 import org.genepattern.server.rest.ParameterInfoRecord;
-import org.genepattern.server.tags.SuiteTagManager;
 import org.genepattern.server.tags.TagManager;
 import org.genepattern.server.tags.TagManager.Tag;
 import org.genepattern.server.webapp.EulaServlet;
 import org.genepattern.server.webapp.rest.api.v1.Util;
+import org.genepattern.server.webapp.rest.api.v1.suite.SuiteResource;
 import org.genepattern.server.webservice.server.dao.AdminDAO;
 import org.genepattern.server.webservice.server.local.LocalAdminClient;
 import org.genepattern.util.LSID;
 import org.genepattern.webservice.ParameterInfo;
+import org.genepattern.webservice.SuiteInfo;
 import org.genepattern.webservice.TaskInfo;
 import org.genepattern.webservice.TaskInfoCache;
 import org.genepattern.webservice.WebServiceException;
@@ -324,8 +327,12 @@ public class TasksResource {
             final Map<String, TaskInfo> latestTasks = AdminDAO.getLatestTasks(allTasks);
             //filter out the hidden tasks
             final CategoryUtil cu=new CategoryUtil();
+            // multimap of <baseLsid,categoryNames>
             final Multimap<String,String> customCategoryMap=cu.getCustomCategoriesFromDb();
             final Set<String> hiddenCategories=cu.getHiddenCategories(userContext);
+            //initialize suites, multimap of <baseLsid,SuiteInfos>
+            final SuiteInfo[] suiteInfos=SuiteResource.getAllSuites(userContext);
+            final Multimap<String,SuiteInfo> suiteInfoMap=initSuiteInfoMap(suiteInfos);
             
             final boolean _includeHidden= includeHidden != null;
             SortedSet<TaskInfo> filteredTasks=new TreeSet<TaskInfo>( new AdminDAO.TaskNameComparator() );
@@ -359,8 +366,19 @@ public class TasksResource {
             JSONArray allModules = new JSONArray();
             for(final TaskInfo taskInfo : filteredTasks) {
                 try {
-                    Collection<String> categories=filteredCategories.get(taskInfo.getLsid());
-                    JSONObject jsonObj = getTaskSearchEntryJson(request, taskInfo, categories, userContext);
+                    final Collection<String> categories=filteredCategories.get(taskInfo.getLsid());
+                    final String baseLsid=CategoryUtil.getBaseLsid(taskInfo);
+                    Collection<String> suiteNames=Collections.emptySet();
+                    if (baseLsid != null) {
+                        final Collection<SuiteInfo> suiteInfosForModule=suiteInfoMap.get(baseLsid);
+                        if (suiteInfosForModule != null && suiteInfosForModule.size()>0) {
+                            suiteNames=new ArrayList<String>();
+                            for(final SuiteInfo suiteInfo : suiteInfosForModule) {
+                                suiteNames.add(suiteInfo.getName());
+                            }
+                        }
+                    }
+                    JSONObject jsonObj = getTaskSearchEntryJson(request, taskInfo, categories, suiteNames, userContext);
                     allModules.put(jsonObj);
                 }
                 catch (Exception e) {
@@ -371,9 +389,11 @@ public class TasksResource {
 
             // Return the JSON object 
             final JSONArray allCategories=initAllCategoriesJson( filteredCategories.values() );
+            final JSONArray allSuites=initAllSuitesJson( suiteInfos );
             JSONObject jsonObj=new JSONObject();
             jsonObj.put("all_modules", allModules);
             jsonObj.put("all_categories", allCategories);
+            jsonObj.put("all_suites", allSuites);
             return Response.ok().entity(jsonObj.toString()).build();
         }
         catch (Throwable t) {
@@ -430,6 +450,23 @@ public class TasksResource {
         jsonObj.put("tags", new JSONArray());
         return jsonObj;
     }
+    
+    private Multimap<String,SuiteInfo> initSuiteInfoMap(final SuiteInfo[] suiteInfos) {
+        final Multimap<String,SuiteInfo> map=HashMultimap.create();
+        for(final SuiteInfo suiteInfo : suiteInfos) {
+            for(final String moduleLsid : suiteInfo.getModuleLsids()) {
+                final String baseLsid=CategoryUtil.getBaseLsid(moduleLsid);
+                if (baseLsid != null) {
+                    map.put(baseLsid, suiteInfo);
+                }
+            }
+        }
+        return map;
+    }
+    
+    private JSONArray initAllSuitesJson(final SuiteInfo[] suiteInfos) throws JSONException {
+        return SuiteResource.toJsonArray(suiteInfos);
+    }
 
     /**
      * For the modules and pipelines panel, create a json representation for a task.
@@ -447,7 +484,7 @@ public class TasksResource {
      * @param taskInfo
      * @return
      */
-    private JSONObject getTaskSearchEntryJson(final HttpServletRequest request, final TaskInfo taskInfo, final Collection<String> categories, ServerConfiguration.Context userContext) throws JSONException {
+    private JSONObject getTaskSearchEntryJson(final HttpServletRequest request, final TaskInfo taskInfo, final Collection<String> categories, final Collection<String> suiteNames, ServerConfiguration.Context userContext) throws JSONException {
         JSONObject jsonObj = new JSONObject();
         jsonObj.put("lsid", taskInfo.getLsid());
         jsonObj.put("name", taskInfo.getName());
@@ -465,7 +502,11 @@ public class TasksResource {
             categoriesJson.put(cat);
         }
         jsonObj.put("categories", categoriesJson);
-        jsonObj.put("suites", getSuites(taskInfo, userContext));
+        JSONArray suitesJson=new JSONArray();
+        for (final String suiteName : suiteNames) {
+            suitesJson.put(suiteName);
+        }
+        jsonObj.put("suites", suitesJson);
         jsonObj.put("tags", getTags(taskInfo, userContext));
         return jsonObj;
     }
@@ -483,17 +524,6 @@ public class TasksResource {
             }
         }
         
-        return array;
-    }
-    
-    private JSONArray getSuites(final TaskInfo taskInfo, ServerConfiguration.Context userContext) {
-        Set<String> suites = SuiteTagManager.instance().getSuites(userContext, taskInfo);
-
-        JSONArray array = new JSONArray();
-        for (String suite : suites) {
-            array.put(suite);
-        }
-
         return array;
     }
 

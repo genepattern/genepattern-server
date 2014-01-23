@@ -32,8 +32,16 @@ public class CategoryUtil {
     public static final String PROP_HIDDEN_CATEGORIES="org.genepattern.server.cm.CategoryManager.hiddenCategories";
     
     public static String getBaseLsid(final TaskInfo taskInfo) {
+        if (taskInfo==null) {
+            log.error("taskInfo==null");
+            return null;
+        }
+        return getBaseLsid(taskInfo.getLsid());
+    }
+    
+    public static String getBaseLsid(final String lsid) {
         try {
-            return new LSID(taskInfo.getLsid()).toStringNoVersion();
+            return new LSID(lsid).toStringNoVersion();
         }
         catch (Throwable t) {
             log.error(t);

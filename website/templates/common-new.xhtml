@@ -116,6 +116,10 @@
 	                        var modbrowse = $('#module-browse').searchslider({
 	                            lists: [allnsuite, browse]
 	                        });
+	                        
+	                        // Initialize the suites slider
+	                        all_suites = data.all_suites;
+	                        initBrowseSuites();
 	                    },
                         error: function(data) {
                             var userAborted = !data.getAllResponseHeaders();
@@ -127,16 +131,16 @@
                         }
 	                });
 
-	            	$.ajax({
-	                    url: '/gp/rest/v1/suites/all.json',
-	                    dataType: 'json',
-	                    success: function(data, status, xhr) {
-	                    	all_suites = data;
-	                    	
-	                        // Initialize suites slider
-	                    	initBrowseSuites();
-	                    }
-	                });
+//	            	$.ajax({
+//	                    url: '/gp/rest/v1/suites/all.json',
+//	                    dataType: 'json',
+//	                    success: function(data, status, xhr) {
+//	                    	all_suites = data;
+//	                    	
+//	                        // Initialize suites slider
+//	                    	initBrowseSuites();
+//	                    }
+//	                });
 	                
 	             	// Load the running jobs, poll every 10 seconds
 	             	if (userLoggedIn) {

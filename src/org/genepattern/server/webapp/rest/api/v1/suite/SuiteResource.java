@@ -32,11 +32,14 @@ public class SuiteResource {
      * Used in the new modules & pipelines widget
      * @param request
      * @return
+     * 
+     * @deprecated - 'all_suites' json representation is included in the response to /tasks/all.json
      */
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     @Path("all.json")
     public Response getAllSuites(@Context HttpServletRequest request) {
+        log.error("Unexpected call to /"+SuiteResource.URI_PATH+"/all.json");
         final ServerConfiguration.Context userContext = Util.getUserContext(request);
         try {
             // Get the latest suites
