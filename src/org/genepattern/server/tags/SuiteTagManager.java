@@ -104,14 +104,8 @@ public class SuiteTagManager {
         }
         final boolean isInTransaction = HibernateUtil.isInTransaction();
         try {
-            final SuiteInfo[] suites;
             final AdminDAO adminDao = new AdminDAO();
-            if (context.isAdmin()) {
-                suites = adminDao.getLatestSuites();
-            }
-            else {
-                suites = adminDao.getLatestSuitesForUser(context.getUserId());
-            }
+            final SuiteInfo[] suites = adminDao.getLatestSuitesForUser(context.getUserId());
             for (final SuiteInfo suite : suites) {
                 for (final String moduleLsid : suite.getModuleLsids()) {
                     final String baseLsid = getBaseLsid(moduleLsid);
