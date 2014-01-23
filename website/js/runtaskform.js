@@ -70,6 +70,9 @@ if (!window.console)
 
 function loadModule(taskId, reloadId)
 {
+    // Fade in a progress indicator
+    $("#loadingContent").fadeIn(1000);
+
     var url = window.location.href;
     var getParameters = url.slice(url.indexOf('?') + 1);
     getParameters = getParameters.replace(Request.parameter("lsid"), taskId);
@@ -88,6 +91,8 @@ function loadModule(taskId, reloadId)
         cache: false,
         data: { "lsid" : taskId, "reloadJob":  reloadId},
         success: function(response) {
+            // Hide the loading indicator
+            $("#loadingContent").hide();
 
             var message = response["MESSAGE"];
             var error = response["ERROR"];
@@ -176,6 +181,9 @@ function loadModule(taskId, reloadId)
         {
             console.log("Response from server: status=" + xhr.status + " text=" + xhr.responseText);
             console.log(thrownError);
+
+            // Hide the loading indicator
+            $("#loadingContent").hide();
 
             $("#submitJob").show();
             $("#submitJob").empty();
