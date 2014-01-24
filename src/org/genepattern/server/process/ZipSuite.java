@@ -22,6 +22,7 @@ import java.io.OutputStreamWriter;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
+import org.apache.log4j.Logger;
 import org.genepattern.server.webservice.server.DirectoryManager;
 import org.genepattern.server.webservice.server.local.IAdminClient;
 import org.genepattern.server.webservice.server.local.LocalAdminClient;
@@ -29,6 +30,7 @@ import org.genepattern.util.GPConstants;
 import org.genepattern.webservice.SuiteInfo;
 
 public class ZipSuite extends CommandLineAction {
+    final static private Logger log = Logger.getLogger(ZipSuite.class);
     public static final String suiteManifestFileName = "suiteManifest.xml";
 
     /**
@@ -36,7 +38,11 @@ public class ZipSuite extends CommandLineAction {
      * @param dir
      * @throws Exception
      */
-    protected void zipFiles(ZipOutputStream zos, File dir) throws Exception {
+    protected void zipFiles(final ZipOutputStream zos, final File dir) throws Exception {
+        if (!dir.canRead()) {
+            log.debug("Can't read directory: "+dir);
+            return;
+        }
         File[] fileList = dir.listFiles(new FilenameFilter() {
             public boolean accept(File dir, String name) {
                 return !name.endsWith(".old") && !name.endsWith(".bak");
@@ -159,6 +165,7 @@ public class ZipSuite extends CommandLineAction {
         // find $OMNIGENE_ANALYSIS_ENGINE/taskLib/<taskName> to locate DLLs,
         // other support files
 
+        //File dir = new File(DirectoryManager._origGetSuiteLibDir(name, suiteInfo.getLSID(), userID));
         File dir = new File(DirectoryManager.getSuiteLibDir(name, suiteInfo.getLSID(), userID));
         zipFiles(zos, dir);
         zos.finish();
