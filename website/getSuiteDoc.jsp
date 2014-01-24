@@ -275,10 +275,10 @@ out.println("</div></td></tr>");
     </body>
 </html>
 <%
-        return;
+    return;
     }
     if (filename.indexOf("/") != -1) filename = filename.substring(filename.indexOf("/") + 1);
-    String suiteLibDir = DirectoryManager.getSuiteLibDir(si.getName(), si.getLSID(), userID);
+    File suiteLibDir = DirectoryManager.getSuiteLibDir(si.getName(), si.getLSID(), userID);
     int i = filename.lastIndexOf(".");
 
     File in = new File(suiteLibDir, filename);

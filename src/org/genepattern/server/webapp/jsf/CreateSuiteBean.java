@@ -242,8 +242,7 @@ public class CreateSuiteBean implements java.io.Serializable {
             ti.saveOrUpdateSuite(theSuite);
 
             // Save uploaded files, if any
-            String suiteDir = DirectoryManager.getSuiteLibDir(theSuite.getName(), theSuite.getLsid(), theSuite
-                    .getOwner());
+            final File suiteDir = DirectoryManager.getSuiteLibDir(theSuite.getName(), theSuite.getLsid(), theSuite.getOwner());
             if (supportFile1 != null) {
                 saveUploadedFile(supportFile1, suiteDir);
             }
@@ -259,15 +258,14 @@ public class CreateSuiteBean implements java.io.Serializable {
             currentSuite = theSuite;
             return "view suite";
         } catch (Exception e) {
-            HibernateUtil.rollbackTransaction(); // This shouldn't be
-            // neccessary, but just in
-            // case
+            // This shouldn't be neccessary, but just in case
+            HibernateUtil.rollbackTransaction(); 
             throw new RuntimeException(e);
         }
 
     }
 
-    private void saveUploadedFile(UploadedFile uploadedFile, String suiteDir) throws IOException {
+    private void saveUploadedFile(UploadedFile uploadedFile, File suiteDir) throws IOException {
         String fileName = uploadedFile.getName();
         if (fileName != null) {
             fileName = FilenameUtils.getName(fileName);

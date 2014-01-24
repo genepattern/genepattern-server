@@ -39,6 +39,10 @@ public class ZipSuite extends CommandLineAction {
      * @throws Exception
      */
     protected void zipFiles(final ZipOutputStream zos, final File dir) throws Exception {
+        if (dir==null) {
+            log.debug("dir==null");
+            return;
+        }
         if (!dir.canRead()) {
             log.debug("Can't read directory: "+dir);
             return;
@@ -165,9 +169,8 @@ public class ZipSuite extends CommandLineAction {
         // find $OMNIGENE_ANALYSIS_ENGINE/taskLib/<taskName> to locate DLLs,
         // other support files
 
-        //File dir = new File(DirectoryManager._origGetSuiteLibDir(name, suiteInfo.getLSID(), userID));
-        File dir = new File(DirectoryManager.getSuiteLibDir(name, suiteInfo.getLSID(), userID));
-        zipFiles(zos, dir);
+        File suiteLibDir = DirectoryManager.getSuiteLibDir(name, suiteInfo.getLSID(), userID);
+        zipFiles(zos, suiteLibDir);
         zos.finish();
         zos.close();
 

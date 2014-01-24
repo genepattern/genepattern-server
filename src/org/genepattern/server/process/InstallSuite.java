@@ -43,23 +43,28 @@ public class InstallSuite {
      * @param lsid
      * @throws WebServiceException
      */
-    public void install(String lsid) throws WebServiceException, TaskInstallationException {
-
+    public void install(final String lsid) throws WebServiceException, TaskInstallationException {
         try {
             SuiteRepository sr = new SuiteRepository();
             HashMap suites = sr.getSuites(System.getProperty("SuiteRepositoryURL"));
 
             HashMap hm = (HashMap) suites.get(lsid);
             // get the info from the HashMap and install it into the DB
-            SuiteInfo suite = new SuiteInfo(hm);
-
-            install(suite);
-        } catch (TaskInstallationException e) {
-            log.error(e);
+            SuiteInfo suiteInfo = new SuiteInfo(hm);
+            File suiteDir = DirectoryManager.getSuiteLibDir(suiteInfo.getName(), suiteInfo.getLSID(), suiteInfo.getOwner());
+            boolean success=suiteDir.mkdirs();
+            if (success) {
+                log.debug("created suiteDir="+suiteDir);
+            }
+            install(suiteInfo, suiteDir);
+        } 
+        catch (TaskInstallationException e) {
+            log.error("Error installing suiteLsid="+lsid, e);
             throw e;
-        } catch (Exception e) {
-            log.error(e);
-            throw new WebServiceException(e);
+        } 
+        catch (Throwable t) {
+            log.error("Error installing suiteLsid="+lsid, t);
+            throw new WebServiceException(t);
         }
     }
 
@@ -70,7 +75,7 @@ public class InstallSuite {
      * @return
      * @throws WebServiceException
      */
-    public String install(SuiteInfo suiteInfo) throws WebServiceException, TaskInstallationException {
+    private String install(final SuiteInfo suiteInfo, final File suiteDir) throws WebServiceException, TaskInstallationException {
         try {
             if (suiteInfo.getLSID() != null) {
                 if (suiteInfo.getLSID().trim().length() == 0)
@@ -79,8 +84,8 @@ public class InstallSuite {
 
             (new TaskIntegratorDAO()).saveOrUpdate(suiteInfo);
 
-            String suiteDir = DirectoryManager.getSuiteLibDir(suiteInfo.getName(), suiteInfo.getLSID(), suiteInfo
-                    .getOwner());
+            //String suiteDir = DirectoryManager.getSuiteLibDir(suiteInfo.getName(), suiteInfo.getLSID(), suiteInfo
+            //        .getOwner());
             String[] docs = suiteInfo.getDocumentationFiles();
             for (int i = 0; i < docs.length; i++) {
                 log.debug("Doc=" + docs[i]);
@@ -92,7 +97,8 @@ public class InstallSuite {
                     boolean success = GenePatternAnalysisTask.rename(new File(file), f2, true);
                     log.debug("Doc rename =" + success);
 
-                } else {
+                } 
+                else {
                     // move file to suitedir
                     File f3 = new File(suiteDir, f2.getName());
                     boolean success = GenePatternAnalysisTask.rename(f2, f3, true);

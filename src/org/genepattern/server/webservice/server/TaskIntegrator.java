@@ -700,8 +700,7 @@ public class TaskIntegrator {
 	    suiteInfo.setAccessId(getPermittedAccessId(privacy));
 	    (new TaskIntegratorDAO()).saveOrUpdate(suiteInfo);
 
-	    String suiteDir = DirectoryManager.getSuiteLibDir(suiteInfo.getName(), suiteInfo.getLSID(), suiteInfo
-		    .getOwner());
+	    final File suiteDir = DirectoryManager.getSuiteLibDir(suiteInfo, true);
 	    String[] docs = suiteInfo.getDocumentationFiles();
 	    for (int i = 0; i < docs.length; i++) {
 		log.debug("Doc=" + docs[i]);
@@ -964,7 +963,7 @@ public class TaskIntegrator {
 		IAdminClient adminClient = new LocalAdminClient(getUserName());
 
 		SuiteInfo oldsi = adminClient.getSuite(lsid);
-		String oldDir = DirectoryManager.getSuiteLibDir(null, lsid, getUserName());
+		File oldDir = DirectoryManager.getSuiteLibDir(null, lsid, getUserName());
 		String[] oldDocs = oldsi.getDocumentationFiles();
 
 		for (int i = 0; i < oldDocs.length; i++) {
@@ -1022,7 +1021,7 @@ public class TaskIntegrator {
 	    for (int i = 0; i < dataHandlers.length; i++) {
 		File axisFile = Util.getAxisFile(dataHandlers[i]);
 		try {
-		    File dir = new File(DirectoryManager.getSuiteLibDir(null, newLsid, getUserName()));
+		    File dir = DirectoryManager.getSuiteLibDir(null, newLsid, getUserName());
 		    File newFile = new File(dir, fileNames[i]);
 		    axisFile.renameTo(newFile);
 		    docFiles.add(newFile.getAbsolutePath());
@@ -1035,7 +1034,7 @@ public class TaskIntegrator {
 		int start = dataHandlers != null && dataHandlers.length > 0 ? dataHandlers.length - 1 : 0;
 
 		try {
-		    File oldLibDir = new File(DirectoryManager.getSuiteLibDir(null, lsid, getUserName()));
+		    File oldLibDir = DirectoryManager.getSuiteLibDir(null, lsid, getUserName());
 		    for (int i = start; i < fileNames.length; i++) {
 			String text = fileNames[i];
 			if (oldLibDir != null && oldLibDir.exists()) { // file

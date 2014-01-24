@@ -614,17 +614,26 @@ public class AdminDAO extends BaseDAO {
      *                    If an error occurs
      */
     public SuiteInfo[] getAllSuites() throws AdminDAOSysException {
+        List<Suite> results = queryAllSuites();
+        return suiteInfoFromSuites(results);
+    }
+    
+    private SuiteInfo[] suiteInfoFromSuites(final List<Suite> suites) {
+        SuiteInfo[] suiteInfos = new SuiteInfo[suites.size()];
+        for (int i = 0; i < suiteInfos.length; i++) {
+            suiteInfos[i] = suiteInfoFromSuite(suites.get(i));
+        }
+        return suiteInfos;
+    }
+
+    private List<Suite> queryAllSuites() {
         String hql = "from org.genepattern.server.domain.Suite ";
         Query query = getSession().createQuery(hql);
         List<Suite> results = query.list();
-        SuiteInfo[] suites = new SuiteInfo[results.size()];
-        for (int i = 0; i < suites.length; i++) {
-            suites[i] = suiteInfoFromSuite(results.get(i));
-        }
-        return suites;
+        return results;
     }
-
-    public SuiteInfo[] getAllSuites(final String userId) throws AdminDAOSysException {
+    
+    private List<Suite> queryAllSuites(final String userId) {
         String hql = "from org.genepattern.server.domain.Suite "
             + " where accessId = :publicAccessId  or  userId = :userId";
         Query query = getSession().createQuery(hql);
@@ -632,11 +641,12 @@ public class AdminDAO extends BaseDAO {
         query.setString("userId", userId);
 
         List<Suite> results = query.list();
-        SuiteInfo[] allowedSuites = new SuiteInfo[results.size()];
-        for (int i = 0; i < allowedSuites.length; i++) {
-            allowedSuites[i] = suiteInfoFromSuite(results.get(i));
-        }
-        return allowedSuites;
+        return results;
+    }
+
+    public SuiteInfo[] getAllSuites(final String userId) throws AdminDAOSysException {
+        final List<Suite> results = queryAllSuites(userId);
+        return suiteInfoFromSuites(results);
     }
 
     /**

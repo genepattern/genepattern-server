@@ -49,6 +49,15 @@ public class DirectoryManager {
     }
 
     /**
+     * 
+     * @param lsid
+     * @return the value removed from the cache, or null.
+     */
+    public static String removeSuiteLibDirFromCache(final String lsid) {
+        return htSuiteLibDir.remove(lsid);
+    }
+
+    /**
      * Locates the directory where the a particular task's files are stored. It is one level below taskLib. 
      * TODO: involve userID in this, so that there is no conflict among same-named private tasks. 
      * Creates the directory if it doesn't already exist.
@@ -66,7 +75,14 @@ public class DirectoryManager {
 	}
 
 	if (LSIDUtil.isSuiteLSID(lsid)) {
-	    return getSuiteLibDir(null, lsid, null);
+	    File suiteLibDir=getSuiteLibDir(null, lsid, null);
+	    if (suiteLibDir != null) {
+	        return suiteLibDir.getAbsolutePath();
+	    }
+	    else {
+	        log.debug("getSuiteLibDir was null, for lsid="+lsid);
+	        return "";
+	    }
 
 	} else {
 	    return getTaskLibDir(null, lsid, null);
@@ -257,7 +273,72 @@ public class DirectoryManager {
      * @throws Exception, if genepattern.properties System property not defined
      * @author Jim Lerner
      */
-    public static String getSuiteLibDir(String suiteName, String sLSID, String username) throws Exception  {
+    public static File getSuiteLibDir(String suiteName, String sLSID, String username) throws Exception  {
+        final boolean alwaysMkdirs=false;
+        return getSuiteLibDir(suiteName, sLSID, username, alwaysMkdirs);
+    }
+
+    /**
+     * Get the installation directory for the given SuiteInfo. First check the htSuiteLibDir cache.
+     * If it's not in the cache, create a file name, and create the directory.
+     * When alwaysMkdirs is true, always create the directory, even if it's already been cached.
+     * 
+     * @param suiteInfo
+     * @param alwaysMkdirs
+     * @return
+     * @throws Exception
+     */
+    public static File getSuiteLibDir(final SuiteInfo suiteInfo, final boolean alwaysMkdirs) throws Exception  {
+        return getSuiteLibDir(suiteInfo.getName(), suiteInfo.getLsid(), suiteInfo.getOwner(), alwaysMkdirs);
+    }
+
+    public static File getSuiteLibDir(final String suiteName, final String suiteLsid, final String username, final boolean alwaysMkdirs) throws Exception  {
+        String ret = null;
+        ret = (String) htSuiteLibDir.get(suiteLsid);
+        if (ret != null) {
+            final File suiteLibDir=new File(ret);
+            if (alwaysMkdirs) {
+                boolean success=suiteLibDir.mkdirs();
+                if (success) {
+                    log.debug("Created dir for cached suite, lsid="+suiteLsid+", suiteLibDir="+ret);
+                }
+            }
+            return suiteLibDir;
+        }
+
+        getLibDir();
+        
+        final String name;
+        if (suiteName==null) {
+            IAdminClient adminClient = new LocalAdminClient(username);
+            SuiteInfo si = adminClient.getSuite(suiteLsid);
+           name=si.getName();
+        }
+        else {
+            name=suiteName;
+        }
+        // (for compatibility, pre 3.8.0, always pass 'null' into this method)
+        final String dirName = makeDirName(null, name);
+        final File suiteLibDir = new File(taskLibDir, dirName);
+        suiteLibDir.mkdirs();
+        ret = suiteLibDir.getAbsolutePath();
+        htSuiteLibDir.put(suiteLsid, ret);
+        return suiteLibDir;
+    }
+
+    /**
+     * Locates the directory where the a particular task's files are stored. It is one level below taskLib. 
+     * TODO: involve userID in this, so that there is no conflict among same-named private tasks. 
+     * Creates the directory if it doesn't already exist.
+     * 
+     * @param taskName, name of task to look up
+     * @return directory name on server where taskName support files are stored
+     * @throws Exception, if genepattern.properties System property not defined
+     * @author Jim Lerner
+     * 
+     * @deprecated
+     */
+    private static String _origGetSuiteLibDir(String suiteName, String sLSID, String username) throws Exception  {
         String ret = null;
 
         if (sLSID != null) {
@@ -267,22 +348,23 @@ public class DirectoryManager {
             }
         }
 
+        File f = null;
         getLibDir();
-        final String name;
-        if (suiteName != null) {
-            name = suiteName;
-        }
-        else {
+        LSID lsid = null;
+        String name = suiteName;
+        if (suiteName == null) {
             IAdminClient adminClient = new LocalAdminClient(username);
             SuiteInfo si = adminClient.getSuite(sLSID);
             name = si.getName();
         }
-        // (for compatibility, pre 3.8.0, always pass 'null' into this method)
-        final String dirName = makeDirName(null, name);
-        final File f = new File(taskLibDir, dirName);
+        String dirName = makeDirName(lsid, name);
+        f = new File(taskLibDir, dirName);
         f.mkdirs();
         ret = f.getAbsolutePath();
-        htSuiteLibDir.put(sLSID, ret);
+        if (lsid != null) {
+            //TODO: shouldn't this be htSuiteLibDir?
+            htTaskLibDir.put(lsid, ret);
+        }
         return ret;
     }
 

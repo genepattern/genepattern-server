@@ -94,8 +94,7 @@ public class BaseDAO {
 
     }
   
-    protected SuiteInfo suiteInfoFromSuite(Suite suite) throws OmnigeneException {
-
+    protected SuiteInfo suiteInfoFromSuite(final Suite suite) throws OmnigeneException {
         String lsid = suite.getLsid();
         int access_id = suite.getAccessId();
         String name = suite.getName();
@@ -105,10 +104,9 @@ public class BaseDAO {
 
         ArrayList docs = new ArrayList();
         try {
-            String suiteDirStr = DirectoryManager.getSuiteLibDir(name, lsid, owner);
-            File suiteDir = new File(suiteDirStr);
-
-            if (suiteDir.exists()) {
+            boolean alwaysMkdirs=false;
+            File suiteDir = DirectoryManager.getSuiteLibDir(name, lsid, owner, alwaysMkdirs);
+            if (suiteDir != null && suiteDir.exists()) {
                 File docFiles[] = suiteDir.listFiles();
                 for (int i = 0; i < docFiles.length; i++) {
                     File f = docFiles[i];

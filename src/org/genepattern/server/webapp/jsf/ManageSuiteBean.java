@@ -29,6 +29,8 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.log4j.Logger;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.taskdefs.Delete;
+import org.genepattern.server.config.ServerConfiguration;
+import org.genepattern.server.config.ServerConfiguration.Context;
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.domain.Suite;
 import org.genepattern.server.domain.SuiteDAO;
@@ -82,10 +84,8 @@ public class ManageSuiteBean {
 		for (String f : supportFiles) {
 		    if (f.equals(key)) {
 			try {
-			    String suiteDirPath = DirectoryManager.getSuiteLibDir(currentSuite.getName(), currentSuite
-				    .getLsid(), currentSuite.getUserId());
-			    new File(suiteDirPath, f).delete();
-
+			    File suiteDir = DirectoryManager.getSuiteLibDir(currentSuite.getName(), currentSuite.getLsid(), currentSuite.getUserId());
+			    new File(suiteDir, f).delete();
 			} catch (Exception e) {
 			    log.error(e);
 			}
@@ -146,12 +146,10 @@ public class ManageSuiteBean {
     public String[] getSupportFiles() {
 	if (currentSuite != null) {
 	    try {
-		String suiteDirPath = DirectoryManager.getSuiteLibDir(currentSuite.getName(), currentSuite.getLsid(),
-			currentSuite.getUserId());
-		File suiteDir = new File(suiteDirPath);
+		File suiteDir = DirectoryManager.getSuiteLibDir(currentSuite.getName(), currentSuite.getLsid(), currentSuite.getUserId());
 		return suiteDir.list();
-	    } catch (Exception e) {
-		log.error(e);
+	    } catch (Throwable t) {
+		log.error(t);
 		HibernateUtil.rollbackTransaction();
 	    }
 	}
@@ -186,31 +184,45 @@ public class ManageSuiteBean {
      * @param suiteLsids
      */
     private void deleteSuites(String[] suiteLsids) {
-        String user = UIBeanHelper.getUserId();
-        boolean admin = AuthorizationHelper.adminSuites();
+        final String userId = UIBeanHelper.getUserId();
+        final Context userContext=ServerConfiguration.Context.getContextForUser(userId, true);
+        final boolean adminSuites = AuthorizationHelper.adminSuites();
         if (suiteLsids != null) {
-            for (String lsid : suiteLsids) {
-                Suite s = (Suite) HibernateUtil.getSession().get(org.genepattern.server.domain.Suite.class, lsid);
-                if (s.getUserId() == null || s.getUserId().equals(user) || admin) {
-                    (new SuiteDAO()).delete(s);
-                    // Delete supporting files
-                    String suiteDirPath = null;
-                    try {
-                        suiteDirPath = DirectoryManager.getSuiteLibDir(s.getName(), s.getLsid(), s.getUserId());
-                    } catch (Exception e) {
-                        log.error("Error", e);
-                        return;
-                    }
-                    Delete del = new Delete();
-                    del.setDir(new File(suiteDirPath));
-                    del.setIncludeEmptyDirs(true);
-                    del.setProject(new Project());
-                    del.execute();
-
-                }
+            for (final String suiteLsid : suiteLsids) {
+                deleteSuite(userContext, adminSuites, suiteLsid);
             }
             resetSuites();
         }
+    }
+
+    private boolean deleteSuite(final Context userContext, final boolean adminSuites, final String lsid) {
+        final Suite suite = (Suite) HibernateUtil.getSession().get(org.genepattern.server.domain.Suite.class, lsid);
+        if (suite.getUserId() == null || suite.getUserId().equals(userContext.getUserId()) || adminSuites) {
+            (new SuiteDAO()).delete(suite);
+            // Delete supporting files
+            File suiteDir=null;
+            try {
+                suiteDir = DirectoryManager.getSuiteLibDir(suite.getName(), suite.getLsid(), suite.getUserId());
+                if (suiteDir==null) {
+                    throw new Exception ("suiteDir==null");
+                }
+                if (!suiteDir.canRead()) {
+                    throw new Exception("can't read suiteDir="+suiteDir);
+                }
+                DirectoryManager.removeSuiteLibDirFromCache(suite.getLsid());
+            } 
+            catch (Throwable t) {
+                log.error("Error deleting suite, lsid="+lsid, t);
+                return false;
+            }
+            Delete del = new Delete();
+            del.setDir(suiteDir);
+            del.setIncludeEmptyDirs(true);
+            del.setProject(new Project());
+            del.execute();
+            return true;
+        }
+        return false;
     }
 
     private String export(ZipSuite zs) {
