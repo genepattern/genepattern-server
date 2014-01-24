@@ -186,31 +186,31 @@ public class ManageSuiteBean {
      * @param suiteLsids
      */
     private void deleteSuites(String[] suiteLsids) {
-	String user = UIBeanHelper.getUserId();
-	boolean admin = AuthorizationHelper.adminSuites();
-	if (suiteLsids != null) {
-	    for (String lsid : suiteLsids) {
-		Suite s = (Suite) HibernateUtil.getSession().get(org.genepattern.server.domain.Suite.class, lsid);
-		if (s.getUserId() == null || s.getUserId().equals(user) || admin) {
-		    (new SuiteDAO()).delete(s);
-		    // Delete supporting files
-		    String suiteDirPath = null;
-		    try {
-			suiteDirPath = DirectoryManager.getSuiteLibDir(s.getName(), s.getLsid(), s.getUserId());
-		    } catch (Exception e) {
-			log.error("Error", e);
-			return;
-		    }
-		    Delete del = new Delete();
-		    del.setDir(new File(suiteDirPath));
-		    del.setIncludeEmptyDirs(true);
-		    del.setProject(new Project());
-		    del.execute();
+        String user = UIBeanHelper.getUserId();
+        boolean admin = AuthorizationHelper.adminSuites();
+        if (suiteLsids != null) {
+            for (String lsid : suiteLsids) {
+                Suite s = (Suite) HibernateUtil.getSession().get(org.genepattern.server.domain.Suite.class, lsid);
+                if (s.getUserId() == null || s.getUserId().equals(user) || admin) {
+                    (new SuiteDAO()).delete(s);
+                    // Delete supporting files
+                    String suiteDirPath = null;
+                    try {
+                        suiteDirPath = DirectoryManager.getSuiteLibDir(s.getName(), s.getLsid(), s.getUserId());
+                    } catch (Exception e) {
+                        log.error("Error", e);
+                        return;
+                    }
+                    Delete del = new Delete();
+                    del.setDir(new File(suiteDirPath));
+                    del.setIncludeEmptyDirs(true);
+                    del.setProject(new Project());
+                    del.execute();
 
-		}
-	    }
-	    resetSuites();
-	}
+                }
+            }
+            resetSuites();
+        }
     }
 
     private String export(ZipSuite zs) {
