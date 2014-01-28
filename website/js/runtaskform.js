@@ -2656,6 +2656,15 @@ function uploadFile(paramName, file, fileOrder, fileId, groupId)
 
     var destinationUrl = "/gp/rest/RunTask/upload";
 
+    if(paramName == null || paramName == undefined)
+    {
+        console.log("An error occurred uploading files for module: " + run_task_info.name);
+        console.log("DEBUG: parameter_and_val_groups is " + parameter_and_val_groups);
+
+        //abort the upload since it will fail
+        javascript_abort("Error uploading " + file.name + " parameter name not specified");
+    }
+
     // prepare FormData
     var formData = new FormData();
     formData.append('ifile', file);
