@@ -175,6 +175,12 @@ public class InstallTask {
         catch (MalformedURLException mue) {
             log.error(mue);
         }
+        catch (java.lang.ExceptionInInitializerError e) {
+            //probably not an active Hibernate session
+        }
+        catch (Throwable t) {
+            log.error(t);
+        }
 
         docFileURLs = initDocFileURLs(supportFiles);
         module.put(STATE, isAlreadyInstalled() ? (isNewer() ? UPDATED : UPTODATE) : NEW);
@@ -281,11 +287,36 @@ public class InstallTask {
     }
 
     /**
+     * Determine whether the given module repository version of a module is newer than the
+     * currently installed one.
+     * @return
+     */
+    public boolean isNewer() {
+        boolean newIsNewer=_isNewer();
+        
+        // as part of debugging for GP-4819, when in debug mode compare the original implementation of isNewer
+        // with the 'new' implementation.
+        if (log.isDebugEnabled()) {
+            boolean origIsNewer=_origIsNewer();
+            if (newIsNewer != origIsNewer) {
+                log.debug("for "+module.get("name")+", lsid="+module.get(GPConstants.LSID)+", origIsNewer="+origIsNewer+", newIsNewer="+newIsNewer);
+                if (taskInfo != null) {
+                    log.debug("installed task: "+taskInfo.getName()+" "+taskInfo.getLsid());
+                }
+                //uncomment these lines in order to step through both method calls in the debugger
+                //origIsNewer=_origIsNewer();
+                //newIsNewer=_isNewer();
+            }
+        }
+        return newIsNewer;
+    }
+    
+    /**
      * determine whether the website version of a module is newer than the
      * currently installed one
      * @return
      */
-    public boolean isNewer() {
+    private boolean _isNewer() {
         if (taskInfo == null) {
             // newer because it doesn't exist on this system yet
             return true;
@@ -302,7 +333,7 @@ public class InstallTask {
                 final LSID l1 = new LSID(module.get(GPConstants.LSID));
                 final LSID l2 = new LSID(tia.get(GPConstants.LSID));
                 int result=l1.compareTo(l2);
-                return result > 0;
+                return result < 0;
             }
             catch (MalformedURLException e) {
                 log.error("Bad LSID: " + newLSID + " or " + oldLSID, e);
@@ -315,6 +346,51 @@ public class InstallTask {
         final String installedVersion = tia.get(GPConstants.VERSION);
         final String newVersion = module.get(GPConstants.VERSION);
         boolean result = (newVersion.compareTo(installedVersion) > 0);
+        return result;
+    }
+
+    // determine whether the website version of a module is newer than the
+    // currently installed one
+    // TODO: handle LSID version comparison
+    // @deprecated
+    private boolean _origIsNewer() {
+        boolean result = true;
+        if (taskInfo == null) {
+            // System.out.println(getName() + " isNewer: TaskInfo doesn't exist:
+            // " + result);
+            return result; // newer because it doesn't exist on this system yet
+        }
+        String newLSID = module.get(GPConstants.LSID);
+        String oldLSID = tia.get(GPConstants.LSID);
+
+        // TODO: use LSID class to compare LSIDs
+        if (newLSID != null && oldLSID == null)
+            return true;
+
+        if (newLSID != null && oldLSID != null && oldLSID.length() > 0
+                && newLSID.length() > 0) {
+            try {
+                LSID l1 = new LSID(newLSID);
+                LSID l2 = new LSID(oldLSID);
+                if (!l1.isSimilar(l2)) {
+                    // different authority, namespace,or identifier
+                    result = (l1.compareTo(l2) > 0);
+                } else {
+                    // only different version number
+                    result = (l1.getVersion().compareTo(l2.getVersion()) > 0);
+                }
+                // System.out.println(getName() + " isNewer: LSID comparison: "
+                // + result + " for " + newLSID + " vs. " + oldLSID);
+                return result;
+            } catch (MalformedURLException mue) {
+                System.err.println("Bad LSID: " + newLSID + " or " + oldLSID);
+            }
+        }
+        String installedVersion = tia.get(GPConstants.VERSION);
+        String newVersion = module.get(GPConstants.VERSION);
+        result = (newVersion.compareTo(installedVersion) > 0);
+        // System.out.println(getName() + " isNewer: version comparison: " +
+        // result + " for " + newVersion + " vs. " + installedVersion);
         return result;
     }
 
