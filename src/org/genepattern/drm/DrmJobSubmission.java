@@ -8,7 +8,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.genepattern.server.config.ServerConfiguration;
+import org.genepattern.server.config.ServerConfiguration.Context;
+import org.genepattern.server.executor.CommandProperties.Value;
 import org.genepattern.webservice.JobInfo;
+
+import com.google.inject.internal.ImmutableMap;
 
 /**
  * The description of a command line job to submit to the queuing system.
@@ -33,8 +38,13 @@ public class DrmJobSubmission {
     private final String queue; //default is null
     // initialized from a string, e.g. '8 gb',
     // units must be one of 'b', 'kb', 'mb', 'gb' or 'tb', case insensitive.
-    private Memory memory; //default is null
+    private final Memory memory; //default is null
+    private final Walltime walltime; //default is null
+    private final Integer nodeCount; //default is null
     private final List<String> extraArgs;
+    private final String workerName; //default is null
+    private final Map<?,?> workerConfig; //default is null
+    private final Context jobContext;
     
     private DrmJobSubmission(Builder builder) {
         this.gpJobNo=builder.gpJobNo;
@@ -57,12 +67,17 @@ public class DrmJobSubmission {
         
         this.queue=builder.queue;
         this.memory=builder.memory;
+        this.walltime=builder.walltime;
+        this.nodeCount=builder.nodeCount;
         if (builder.extraArgs == null || builder.extraArgs.size()==0) {
             this.extraArgs=Collections.emptyList();
         }
         else {
             this.extraArgs=new ArrayList<String>(builder.extraArgs);
         }
+        this.workerName=builder.workerName;
+        this.workerConfig=builder.workerConfig; 
+        this.jobContext=ServerConfiguration.Context.getContextForJob(jobInfo);
     }
     
     public Integer getGpJobNo() {
@@ -109,8 +124,31 @@ public class DrmJobSubmission {
         return memory;
     }
     
+    public Walltime getWalltime() {
+        return walltime;
+    }
+    
+    public Integer getNodeCount() {
+        return nodeCount;
+    }
+    
     public List<String> getExtraArgs() {
         return Collections.unmodifiableList(extraArgs);
+    }
+    
+    public String getProperty(final String propName) {
+        if (workerConfig != null && workerConfig.containsKey(propName)) {
+            return (String) workerConfig.get(propName);
+        }
+        Value value=ServerConfiguration.instance().getValue(jobContext, propName);
+        if (value==null) {
+            return null;
+        }
+        return value.getValue();
+    }
+    
+    public String getWorkerName() {
+        return workerName;
     }
     
     public static final class Builder {
@@ -127,7 +165,11 @@ public class DrmJobSubmission {
         
         private String queue=null;
         private Memory memory=null;
+        private Walltime walltime=null;
+        private Integer nodeCount=null;
         private List<String> extraArgs=null;
+        private String workerName;
+        private Map<?,?> workerConfig;
 
         public Builder(final JobInfo jobInfo, final File workingDir) {
             this.jobInfo=jobInfo;
@@ -234,11 +276,45 @@ public class DrmJobSubmission {
             return this;
         }
         
+        /**
+         * Initialize a wall clock limit for the job, from a string, usually set in the config file. For example,
+         *     'wallClockLimit: 01:00:00'
+         * Which means terminate this job after one hour.
+         * 
+         * @param wallClockLimitSpec
+         * @return
+         * @throws Exception
+         */
+        public Builder walltime(final String wallClockLimitSpec) throws Exception {
+            this.walltime=Walltime.fromString(wallClockLimitSpec);
+            return this;
+        }
+        
+        public Builder nodeCount(final Integer nodeCount) {
+            this.nodeCount=nodeCount;
+            return this;
+        } 
+        
         public Builder addExtraArg(final String extraArg) {
             if (this.extraArgs == null) {
                 this.extraArgs = new ArrayList<String>();
             }
             this.extraArgs.add(extraArg);
+            return this;
+        }
+        
+        public Builder workerName(final String workerName) {
+            this.workerName=workerName;
+            return this;
+        }
+        
+        public Builder workerConfig(final Map<?,?> workerConfig) {
+            if (workerConfig==null) {
+                this.workerConfig=null;
+            }
+            else {
+                this.workerConfig=ImmutableMap.copyOf(workerConfig);
+            }
             return this;
         }
         

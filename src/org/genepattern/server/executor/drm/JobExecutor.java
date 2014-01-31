@@ -1,6 +1,7 @@
 package org.genepattern.server.executor.drm;
 
 import java.io.File;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -349,15 +350,40 @@ public class JobExecutor implements CommandExecutor {
             .stderrFile(stderrFile)
             .stdinFile(stdinFile)
             .logFilename(logFilename);
-        Value queueValue=ServerConfiguration.instance().getValue(jobContext, JobRunner.PROP_QUEUE);
-        if (queueValue != null) {
-            builder=builder.queue(queueValue.getValue());
+        String workerName=ServerConfiguration.instance().getGPProperty(jobContext, JobRunner.PROP_WORKER_NAME, null);
+        if (workerName != null) {
+            builder.workerName(workerName);
         }
-        Value memValue=ServerConfiguration.instance().getValue(jobContext, JobRunner.PROP_MEMORY);
-        if (memValue != null) {
-            builder=builder.memory(memValue.getValue());
+        final Map<?,?> workerConfig=getWorkerConfig(jobContext);
+        builder=builder.workerConfig(workerConfig);
+        final String queue=getValue(jobContext, workerConfig, JobRunner.PROP_QUEUE);
+        if (queue != null) {
+            builder.queue(queue);
         }
-        Value extraArgsValue=ServerConfiguration.instance().getValue(jobContext, JobRunner.PROP_EXTRA_ARGS);
+        final String memory=getValue(jobContext, workerConfig, JobRunner.PROP_MEMORY);
+        if (memory != null) {
+            builder=builder.memory(memory);
+        }
+        final String walltime=getValue(jobContext, workerConfig, JobRunner.PROP_WALLTIME);
+        if (walltime != null) {
+            try {
+                builder=builder.walltime(walltime);
+            }
+            catch (Exception e) {
+                throw new CommandExecutorException("configuration error, initializing walltime="+walltime, e);
+            }
+        }
+        final String nodeCountStr=getValue(jobContext, workerConfig, JobRunner.PROP_NODE_COUNT);
+        if (nodeCountStr != null) {
+            try {
+                Integer nodeCount=Integer.parseInt(nodeCountStr);
+                builder=builder.nodeCount(nodeCount);
+            }
+            catch (Throwable t) {
+                throw new CommandExecutorException("configuration error, initializing nodeCount="+nodeCountStr, t);
+            }
+        }
+        final Value extraArgsValue=ServerConfiguration.instance().getValue(jobContext, JobRunner.PROP_EXTRA_ARGS);
         if (extraArgsValue != null) {
             for(final String extraArg : extraArgsValue.getValues()) {
                 builder=builder.addExtraArg(extraArg);
@@ -386,6 +412,29 @@ public class JobExecutor implements CommandExecutor {
                 return;
             }
         }
+    }
+    
+    private String getValue(final Context jobContext, final Map<?,?> workerConfig, final String prop) {
+        if (workerConfig != null && workerConfig.containsKey(prop)) {
+            return (String) workerConfig.get(prop);
+        }
+        Value value=ServerConfiguration.instance().getValue(jobContext, prop);
+        if (value==null) {
+            return null;
+        }
+        return value.getValue();
+    }
+    
+    private Map<?,?> getWorkerConfig(final Context jobContext) {
+        final String workerName=ServerConfiguration.instance().getGPProperty(jobContext, JobRunner.PROP_WORKER_NAME, null);
+        if (workerName == null) {
+            return Collections.emptyMap();
+        }
+        final Value workerConfig=ServerConfiguration.instance().getValue(jobContext, workerName);
+        if (workerConfig != null && workerConfig.isMap()) {
+            return workerConfig.getMap();
+        }
+        return Collections.emptyMap();
     }
 
     @Override
