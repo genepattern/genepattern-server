@@ -122,12 +122,13 @@ public class PluginManagerLegacy {
         installPatch(requiredPatchLSID, requiredPatchURL, null);
     }
 
-        /**
+    /**
      * Install a specific patch, downloading a zip file with a manifest containing a command line, 
      * running that command line after substitutions, and recording the result 
      * in the genepattern.properties patch registry
      */
     private static void installPatch(String requiredPatchLSID, String requiredPatchURL, Status taskIntegrator) throws JobDispatchException {
+        log.debug("installPatch, lsid="+requiredPatchLSID+", url="+requiredPatchURL);
         LSID patchLSID = null;
         try {
             patchLSID = new LSID(requiredPatchLSID);
@@ -173,7 +174,9 @@ public class PluginManagerLegacy {
             }
         }
         catch (Exception e) {
-            throw new JobDispatchException(e);
+            String errorMessage="Error installing patch, lsid="+requiredPatchLSID+", url="+requiredPatchURL+": "+e.getLocalizedMessage();
+            log.error(errorMessage, e);
+            throw new JobDispatchException(errorMessage, e);
         }
         if (taskIntegrator != null) {
             taskIntegrator.statusMessage("Downloading required patch from " + requiredPatchURL + "...");
@@ -183,7 +186,9 @@ public class PluginManagerLegacy {
             zipFilename = downloadPatch(requiredPatchURL, taskIntegrator, (String) hmProps.get("site_module.zipfilesize"));
         }
         catch (IOException e) {
-            throw new JobDispatchException(e);
+            String errorMessage="Error downloading patch, lsid="+requiredPatchLSID+", url="+requiredPatchURL+": "+e.getLocalizedMessage();
+            log.error(errorMessage, e);
+            throw new JobDispatchException(errorMessage, e);
         }
         String patchName = patchLSID.getAuthority() + "." + patchLSID.getNamespace() + "." + patchLSID.getIdentifier() + "." + patchLSID.getVersion();
         File patchDirectory = new File(System.getProperty("patches"), patchName);
@@ -194,7 +199,9 @@ public class PluginManagerLegacy {
             explodePatch(zipFilename, patchDirectory, taskIntegrator);
         }
         catch (IOException e) {
-            throw new JobDispatchException(e);
+            String errorMessage="Error unzipping patch from "+zipFilename+" into "+patchDirectory;
+            log.error(errorMessage, e);
+            throw new JobDispatchException(errorMessage, e);
         }
         new File(zipFilename).delete();
 
@@ -204,7 +211,9 @@ public class PluginManagerLegacy {
             props = loadManifest(patchDirectory);
         }
         catch (IOException e) {
-            throw new JobDispatchException(e);
+            String errorMessage="Error loading manifest from "+patchDirectory;
+            log.error(errorMessage, e);
+            throw new JobDispatchException(errorMessage, e);
         }
         String nomDePatch = props.getProperty("name");
         if (taskIntegrator != null) {
@@ -231,11 +240,13 @@ public class PluginManagerLegacy {
             exitValue = "" + executePatch(cmdLineArray, patchDirectory, taskIntegrator);
         }
         catch (IOException e) {
-            throw new JobDispatchException(e);
+            String errorMessage="IOException while running patch: "+e.getLocalizedMessage();
+            log.error(errorMessage, e);
+            throw new JobDispatchException(errorMessage, e);
         }
         catch (InterruptedException e2) {
             Thread.currentThread().interrupt();
-            throw new JobDispatchException(e2);
+            throw new JobDispatchException("Patch install interrupted", e2);
         }
         if (taskIntegrator != null) {
             taskIntegrator.statusMessage("Patch installed, exit code " + exitValue);
@@ -247,7 +258,9 @@ public class PluginManagerLegacy {
                 recordPatch(requiredPatchLSID);
             }
             catch (IOException e) {
-                throw new JobDispatchException(e);
+                String errorMessage="IOException while recording patch: "+e.getLocalizedMessage();
+                log.error(errorMessage, e);
+                throw new JobDispatchException(errorMessage, e);
             }
             if (taskIntegrator != null) {
                 taskIntegrator.statusMessage("Patch LSID recorded");
@@ -259,7 +272,9 @@ public class PluginManagerLegacy {
                     explodePatch(zipFilename, patchDirectory, null, MANIFEST_FILENAME);
                 }
                 catch (IOException e) {
-                    throw new JobDispatchException(e);
+                    String errorMessage="IOException while unzipping patch from "+zipFilename+" into "+patchDirectory+": "+e.getLocalizedMessage();
+                    log.error(errorMessage, e);
+                    throw new JobDispatchException(errorMessage, e);
                 }
                 if (props.getProperty(REQUIRED_PATCH_URLS, null) == null) {
                     try {
