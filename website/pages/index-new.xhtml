@@ -30,6 +30,9 @@
             <c:if test="#{uiBean.parameterGroups}">
                 <script type="text/javascript" src="#{facesContext.externalContext.requestContextPath}/js/runtaskform_3_8_1.js"></script>
             </c:if>
+            <c:otherwise>
+                <script type="text/javascript" src="#{facesContext.externalContext.requestContextPath}/js/runtaskform.js"></script>
+            </c:otherwise>
 
     		<script type="text/javascript" language="javascript">
                 /* <![CDATA[ */
