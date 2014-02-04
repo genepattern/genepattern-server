@@ -12,7 +12,12 @@ public class UIBean {
         boolean env = ServerConfiguration.instance().getGPBooleanProperty(UIBeanHelper.getUserContext(), "display.ui", true);
         return env;
     }
-    
+
+    public boolean getParameterGroups() {
+        boolean env = ServerConfiguration.instance().getGPBooleanProperty(UIBeanHelper.getUserContext(), "group.parameters", true);
+        return env;
+    }
+
     public static String skin() {
         return (new UIBean()).getSkin();
     }

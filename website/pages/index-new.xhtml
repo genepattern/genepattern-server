@@ -26,7 +26,10 @@
 
             <script type="text/javascript" src="#{facesContext.externalContext.requestContextPath}/js/jquery/jquery.multiselect.js"></script>
             <script type="text/javascript" src="#{facesContext.externalContext.requestContextPath}/js/jquery/jquery.validate.js"></script>
-            <script type="text/javascript" src="#{facesContext.externalContext.requestContextPath}/js/runtaskform.js"></script>
+
+            <c:if test="#{uiBean.parameterGroups}">
+                <script type="text/javascript" src="#{facesContext.externalContext.requestContextPath}/js/runtaskform_3_8_1.js"></script>
+            </c:if>
 
     		<script type="text/javascript" language="javascript">
                 /* <![CDATA[ */

@@ -5,11 +5,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.SortedSet;
-import java.util.TreeSet;
+import java.util.*;
 
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -78,9 +74,6 @@ import com.sun.jersey.multipart.FormDataParam;
 public class RunTaskServlet extends HttpServlet
 {
     public static Logger log = Logger.getLogger(RunTaskServlet.class);
-    /*public static final String UPLOAD = "/upload";
-    public static final String RUN = "/run";
-    */
 
     /**
 	 * Inject details about the URI for this request
@@ -257,11 +250,9 @@ public class RunTaskServlet extends HttpServlet
                 moduleObject.put("source_info", sourceInfoObj);
             }
             JSONObject responseObject = new JSONObject();
-            responseObject.put(ModuleJSON.KEY, moduleObject);
 
             JSONArray parametersObject = getParameterList(request, taskInfo);
             responseObject.put(ParametersJSON.KEY, parametersObject);
-
 
             //set initial values for the parameters for the following cases:
             //   1) a reloaded job
@@ -284,10 +275,38 @@ public class RunTaskServlet extends HttpServlet
                     _formatParam,
                     parameterMap);
             
-            //TODO: change the call to v2 in order to get the grouping information for reloaded jobs
-            //final JSONObject initialValuesJson=LoadModuleHelper.asJsonV1(initialValues);
             final JSONObject initialValuesJson=LoadModuleHelper.asJsonV2(initialValues);
             responseObject.put("initialValues", initialValuesJson);
+
+            //add parameter grouping info (i.e advanced parameters
+            JSONArray paramGroupsJson = new JSONArray();
+
+            //check if there are any user defined groups
+            String pGroupsJsonString = (String)taskInfo.getAttributes().get("paramGroups");
+            if(pGroupsJsonString != null && pGroupsJsonString.length() > 0)
+            {
+                paramGroupsJson = new JSONArray(pGroupsJsonString);
+                validateParamGroupsJson(paramGroupsJson, taskInfo.getParameterInfoArray());
+            }
+            else
+            {
+                //create a default parameter group which contains all of the parameters
+                JSONObject defaultParamJsonGroup = new JSONObject();
+
+                final ParameterInfo[] pArray=taskInfo.getParameterInfoArray();
+                JSONArray parameterNameList = new JSONArray();
+
+                for(int i =0;i < pArray.length;i++)
+                {
+                    parameterNameList.put(pArray[i].getName());
+                }
+
+                defaultParamJsonGroup.put("parameters", parameterNameList);
+                paramGroupsJson.put(defaultParamJsonGroup);
+            }
+
+            moduleObject.put("parameter_groups", paramGroupsJson);
+            responseObject.put(ModuleJSON.KEY, moduleObject);
 
             return Response.ok().entity(responseObject.toString()).build();
         }
@@ -757,6 +776,37 @@ public class RunTaskServlet extends HttpServlet
             final boolean createPipelineAllowed = AuthorizationHelper.createPipeline(userContext.getUserId());
             boolean editable = createPipelineAllowed && isMine && isAuthorityMine;
             return editable;
+        }
+    }
+
+    private void validateParamGroupsJson(JSONArray paramsGroupsJson, ParameterInfo[] pInfos) throws Exception
+    {
+        //get the list of parameters
+        ArrayList parameters = new ArrayList();
+        for(int p=0;p<pInfos.length;p++)
+        {
+            parameters.add(pInfos[p].getName());
+        }
+
+        for(int i=0;i<paramsGroupsJson.length();i++)
+        {
+            if(!(paramsGroupsJson.get(i) instanceof JSONObject))
+            {
+                throw new Exception("Unexpected parameter group json object: " + paramsGroupsJson.get(i)
+                + " at index " + i);
+            }
+
+            JSONObject paramGroup = paramsGroupsJson.getJSONObject(i);
+            JSONArray params  = (JSONArray)paramGroup.get("parameters");
+            for(int p=0;p<params.length();p++)
+            {
+                if(!(parameters.contains(params.get(p))))
+                {
+                    //specified parameter name in group does not exist
+                    throw new Exception("Parameter " + params.get(p) + " in parameter group " + paramGroup.get("name")
+                    + " does not exist");
+                }
+            }
         }
     }
 }
