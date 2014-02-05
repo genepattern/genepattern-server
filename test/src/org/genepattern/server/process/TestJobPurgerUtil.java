@@ -3,7 +3,9 @@ package org.genepattern.server.process;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
+import java.util.GregorianCalendar;
 
 import org.genepattern.junitutil.ConfigUtil;
 import org.genepattern.server.config.ServerConfiguration;
@@ -412,30 +414,54 @@ public class TestJobPurgerUtil {
     }
 
     @Test public void testNextPurgeTime_customConfig_before() throws ParseException {
+        final Date now=new Date();
+        final Date next=JobPurgerUtil.getNextPurgeTime(now, "09:00");
+        final GregorianCalendar cal = new GregorianCalendar();
         final Context userContext=ServerConfiguration.Context.getContextForUser("customUser");
         //See config.yaml for 'customUser' customizations
         //purge jobs after 3 days, purgeTime is 9:00 am
         
-        //0) job completed before purgeTime
-        final Date completionDate=parseDateFormat("2013-10-29 08:23:57");
+        // job completed just before purgeTime
+        cal.setTime(next);
+        cal.add(Calendar.SECOND, -1);
+        final Date completionDate=cal.getTime();
+        cal.setTime(next);
+        cal.add(Calendar.DAY_OF_YEAR, 3);
+        final Date expectedPurgeDate=cal.getTime();
+
         final Date purgeDate=JobPurgerUtil.getJobPurgeDate(userContext, completionDate);
-        Assert.assertEquals("custom config, a job which completed before the purgeTime", parseDateFormat("2013-11-01 09:00:00"), purgeDate);
+        
+        Assert.assertEquals("expecting purgeDate to be the next purge date", expectedPurgeDate, purgeDate);
     }
 
     @Test public void testNextPurgeTime_customConfig_at() throws ParseException {
+        final Date now=new Date();
+        final Date next=JobPurgerUtil.getNextPurgeTime(now, "09:00");
+        final GregorianCalendar cal = new GregorianCalendar();
         final Context userContext=ServerConfiguration.Context.getContextForUser("customUser");
-        //1) job completed at purgeTime
-        final Date completionDate=parseDateFormat("2013-10-29 09:00:00");
+        // job completed at purgeTime
+        cal.setTime(next);
+        cal.add(Calendar.DAY_OF_YEAR, -3);
+        final Date completionDate=cal.getTime();
         final Date purgeDate=JobPurgerUtil.getJobPurgeDate(userContext, completionDate);
-        Assert.assertEquals("custom config, a job which completed at purgeTime", parseDateFormat("2013-11-01 09:00:00"), purgeDate);
+        Assert.assertEquals("custom config, a job which completed at purgeTime", next, purgeDate);
     }
 
     @Test public void testNextPurgeTime_customConfig_after() throws ParseException {
+        final Date now=new Date();
+        final Date next=JobPurgerUtil.getNextPurgeTime(now, "09:00");
+        final GregorianCalendar cal = new GregorianCalendar();        
         final Context userContext=ServerConfiguration.Context.getContextForUser("customUser");
-        //2) job completed after purgeTime
-        final Date completionDate=parseDateFormat("2013-10-29 17:33:59");
+        // job completed after purgeTime
+        cal.setTime(next);
+        cal.add(Calendar.SECOND, 1);
+        final Date completionDate=cal.getTime();
+        cal.setTime(next);
+        cal.add(Calendar.DAY_OF_YEAR, 4);
+        final Date expectedPurgeDate=cal.getTime();
+        
         final Date purgeDate=JobPurgerUtil.getJobPurgeDate(userContext, completionDate);
-        Assert.assertEquals("custom config, a job which completed after purgeTime", parseDateFormat("2013-11-02 09:00:00"), purgeDate);
+        Assert.assertEquals("custom config, a job which completed after purgeTime", expectedPurgeDate, purgeDate);
     }
-
+    
 }
