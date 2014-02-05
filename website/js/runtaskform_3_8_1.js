@@ -10,7 +10,8 @@ var run_task_info = {
     lsid: null, //lsid of the module
     name: null, //name of the module
     params: {}, //contains parameter info necessary to build the job submit form, see the initParam() function for details
-    sendTo: {}
+    sendTo: {},
+    param_group_ids: {} //contains map of parameter group name to id
 };
 
 //contains json object with parameter to value pairing
@@ -154,7 +155,7 @@ function loadModule(taskId, reloadId)
                 }
                 else
                 {
-                    loadParameterInfo(response["parameters"], response["initialValues"]);
+                    loadParametersByGroup(module["parameter_groups"], response["parameters"], response["initialValues"]);
                 }
                 //the parameter form elements have been created now make the form visible
                 $("#protocols").hide();
@@ -1538,10 +1539,9 @@ function populateContentDiv(parameterName, contentDiv, groupId, initialValues, e
         contentDiv.prepend(createModeToggle(parameterName));
     }
 }
-function loadParameterInfo(parameters, initialValues)
-{
-    var paramsTable = $("#paramsTable");
 
+function loadParametersByGroup(parameterGroups, parameters, initialValues)
+{
     //check if the params object should be initialized
     if(parameters != null)
     {
@@ -1553,7 +1553,85 @@ function loadParameterInfo(parameters, initialValues)
         throw new Error("Error initialization parameters");
     }
 
-    var parameterNames = Object.keys(run_task_info.params);
+    for(var i=0;i<parameterGroups.length;i++)
+    {
+        var pGroupName = parameterGroups[i].name;
+
+        if(pGroupName == undefined && pGroupName == null)
+        {
+            pGroupName = "";
+        }
+
+        //set up the parameter group section(s)
+        var indent = 0;
+        var headings = pGroupName.split("/");
+        var curHeaderDiv = $("#paramsListingDiv");
+        for(var h=0;h < headings.length;h++)
+        {
+            var pHeadingId = run_task_info.param_group_ids[headings[h]];
+            if( pHeadingId == undefined || pHeadingId == null)
+            {
+                pHeadingId = "paramGroup_" + i + "_" + h;
+                run_task_info.param_group_ids[headings[h]] = pHeadingId;
+
+                var newHeaderDiv = $("<div id=" + pHeadingId + "/>");
+
+                var headerSection = $("<div class='headerDiv'/>");
+                var toggleImg = $("<img src ='/gp/images/toggle_collapse.png' width='15' height='15' class='paramSectionToggle'/>");
+                //var expandImgToggle = $("<img src ='/gp/images/toggle_expand.png' width='15' height='15' class='paramSectionToggle'/>");
+
+                toggleImg.click(function()
+                {
+                    $(this).parent().next().toggle();
+
+                    var imageSrc = $(this).attr("src");
+                    if(imageSrc.indexOf('collapse') != -1)
+                    {
+                        imageSrc = imageSrc.replace("collapse", "expand");
+                    }
+                    else
+                    {
+                        imageSrc = imageSrc.replace("expand", "collapse");
+                    }
+
+                    $(this).attr("src", imageSrc);
+                });
+
+                indent = h * 20;
+
+                headerSection.append(toggleImg);
+                headerSection.append(headings[h]);
+                headerSection.css({'margin-left':indent+'px'});
+
+                newHeaderDiv.css({'margin-left':indent+'px'});
+
+                //append to the top level parameter listing div
+                curHeaderDiv.append(newHeaderDiv);
+                newHeaderDiv.before(headerSection);
+            }
+
+            //keep track of top level parent div
+            curHeaderDiv = $("#" + pHeadingId);
+        }
+
+        //check if the new section should be hidden
+        if(parameterGroups[i].hidden != undefined && parameterGroups[i].hidden != null
+            && parameterGroups[i].hidden)
+        {
+            var toggleImg = curHeaderDiv.prev().find(".paramSectionToggle");
+            toggleImg.click();
+        }
+
+        var paramTable = createParamTable(parameterGroups[i].parameters, initialValues);
+        curHeaderDiv.append(paramTable);
+        paramTable.css({'margin-left': '20px'});
+    }
+}
+
+function createParamTable(parameterNames, initialValues)
+{
+    var paramsTable = $("<table class='paramsTable'/>");
+
     for(var q=0;q < parameterNames.length;q++)
     {
         var parameterName = parameterNames[q];
@@ -1626,6 +1704,8 @@ function loadParameterInfo(parameters, initialValues)
 
         paramsTable.append(createParamDescriptionRow(parameterName));
     }
+
+    return paramsTable;
 }
 
 function createParamDescriptionRow(parameterName)
@@ -1664,7 +1744,8 @@ function loadRunTaskForm(lsid, reloadJob) {
         lsid: null, //lsid of the module
         name: null, //name of the module
         params: {}, //contains parameter info necessary to build the job submit form, see the initParam() function for details
-        sendTo: {}
+        sendTo: {},
+        param_group_ids: {}
     };
 
     parameter_and_val_groups = {}; //contains params and their values only
@@ -1672,7 +1753,7 @@ function loadRunTaskForm(lsid, reloadJob) {
     $("#toggleDesc").click(function()
     {
         //show descriptions
-        $("#paramsTable tr.paramDescription").toggle();
+        $("#paramsListingDiv").find(".paramDescription").toggle();
     });
 
     $("button").button();

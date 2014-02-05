@@ -2,40 +2,60 @@
 	margin-top: 0 !important;
 }
 
-#paramsTable
+.paramSectionToggle:hover
+{
+    cursor: pointer;
+}
+
+#paramsListingDiv
+{
+    width: 100%;
+    height: 100%;
+}
+
+.headerDiv
+{
+    width: 100%;
+    height: 100%;
+    vertical-align: top;
+    font-size: 14px;
+    font-weight: bold;
+}
+
+.paramsTable
 {
     width: 100%;
     height: 100%;
     border-spacing: 0;
 }
 
-#paramsTable tr.pRow td
+tr.pRow td
 {
     border-top: 2px solid #F0F0F0;
 }
 
-#paramsTable tr:first-child td
+.paramsTable tr:first-child td
 {
     border: none;
 }
 
-#paramsTable td
+td.paramsTable
 {
     padding: 7px 0 6px 0;
 }
 
-#paramsTable tr.paramDescription td
+tr.paramDescription td
 {
     padding-top: 0;
     padding-bottom: 2px;
 }
 
-#paramsTable td:nth-child(odd)
+td:nth-child(odd).paramsTable
 {
     white-space: nowrap;
 }
 
-#paramsTable td:nth-child(even)
+td:nth-child(even).paramsTable
 {
     padding-left: 14px;
 }
@@ -137,17 +157,17 @@ button.urlButton
     padding: 0;
 }
 
-#paramsTable td:first-child
+td:first-child .paramsTable
 {
     width: 15px;
 }
 
-#paramsTable tr:nth-child(odd)
+tr:nth-child(odd) .paramsTable
 {
     border-bottom: 1px solid #7898c7;
 }
 
-#paramsTable input[type=text]
+.paramsTable input[type=text]
 {
     width: 295px;
     height: 17px;
