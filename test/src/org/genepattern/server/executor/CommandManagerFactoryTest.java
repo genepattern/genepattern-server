@@ -11,7 +11,6 @@ import org.genepattern.server.auth.IGroupMembershipPlugin;
 import org.genepattern.server.config.ServerConfiguration;
 import org.genepattern.server.config.ServerProperties;
 import org.genepattern.server.config.ServerConfiguration.Context;
-import org.genepattern.server.database.HsqlDbUtil;
 import org.genepattern.server.executor.CommandProperties.Value;
 import org.genepattern.webservice.JobInfo;
 
@@ -21,36 +20,17 @@ import org.genepattern.webservice.JobInfo;
  * @author pcarr
  */
 public class CommandManagerFactoryTest extends TestCase {
-    private static boolean isDbInitialized = false;
     
     public void setUp() throws Exception {
         super.setUp();
-
-        //some of the classes being tested require a Hibernate Session connected to a GP DB
-        if (!isDbInitialized) {
-            //TODO: use DbUnit to improve Hibernate and DB configuration for the unit tests 
-            System.setProperty("hibernate.configuration.file", "hibernate.junit.cfg.xml");
-            
-            //String args = System.getProperty("HSQL.args", " -port 9001  -database.0 file:../resources/GenePatternDB -dbname.0 xdb");
-            System.setProperty("HSQL.args", " -port 9001  -database.0 file:testdb/GenePatternDB -dbname.0 xdb");
-            System.setProperty("hibernate.connection.url", "jdbc:hsqldb:hsql://127.0.0.1:9001/xdb");
-            System.setProperty("GenePatternVersion", "3.4.3");
-
-            File resourceDir = new File("resources");
-            String pathToResourceDir = resourceDir.getAbsolutePath();
-            System.setProperty("genepattern.properties", pathToResourceDir);
-            System.setProperty("resources", pathToResourceDir);
-
-            try {
-                isDbInitialized = true;
-                HsqlDbUtil.startDatabase();
-            }
-            catch (Throwable t) {
-                //the unit tests can pass even if db initialization fails, so ...
-                // ... try commenting this out if it gives you problems
-                throw new Exception("Error initializing test database", t);
-            }
-        }
+        File resourceDir = new File("resources");
+        String pathToResourceDir = resourceDir.getAbsolutePath();
+        System.setProperty("genepattern.properties", pathToResourceDir);
+        System.setProperty("resources", pathToResourceDir);
+    }
+    
+    public void tearDown() throws Exception {
+        super.tearDown();
     }
     
     /**
