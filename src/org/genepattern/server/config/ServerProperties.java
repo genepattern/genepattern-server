@@ -115,18 +115,15 @@ public class ServerProperties {
             context=new Context();
         }
         String rval = null;
+        if (context.getCheckSystemProperties()) {
+            rval = System.getProperty(key);
+        }
         if (context.getCheckPropertiesFiles()) {
             for(Record record : propertiesList.values()) {
                 if (record.props.containsKey(key)) {
                     rval = record.props.getProperty(key);
                 }
             }
-        }
-        // system properties must take precedence over cached property files to allow for
-        // changes to the properties coming from the web UI
-        // TODO: should reload the properties files
-        if (context.getCheckSystemProperties()) {
-            rval = System.getProperty(key);            
         }
         return rval;
     }
