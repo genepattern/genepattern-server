@@ -463,6 +463,16 @@
   <servlet-name>UploadReceiver</servlet-name>
   <url-pattern>/UploadReceiver</url-pattern>
  </servlet-mapping>
+
+    <servlet>
+        <display-name>AJAX Upload Servlet</display-name>
+        <servlet-name>AJAXUpload</servlet-name>
+        <servlet-class>org.genepattern.server.webapp.uploads.AJAXUploadServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>AJAXUpload</servlet-name>
+        <url-pattern>/AJAXUpload</url-pattern>
+    </servlet-mapping>
  
   <servlet>
     <display-name>GenomeSpace OpenID Servlet</display-name>

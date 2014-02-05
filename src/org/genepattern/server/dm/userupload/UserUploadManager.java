@@ -148,7 +148,7 @@ public class UserUploadManager {
         UserUploadDao dao = new UserUploadDao();
         UserUpload uu = dao.selectUserUpload(userContext.getUserId(), gpFileObj);
         if (uu != null && !modDuplicate) {
-            throw new Exception("Duplicate entry found in the database for file: " + gpFileObj.getRelativePath()); 
+            throw new Exception("Duplicate entry found in the database for file: " + gpFileObj.getRelativePath());
         }
         uu = UserUpload.initFromGpFileObj(userContext.getUserId(), uu, gpFileObj);
         uu.setNumParts(numParts);

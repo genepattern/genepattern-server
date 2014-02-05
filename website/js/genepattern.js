@@ -503,3 +503,96 @@ function jobStatusPoll() {
         });
 		}
 }
+
+function ajaxFileTabUpload(file){
+    var loaded = 0;
+    var step = 1024*1024;
+    var total = file.size;
+    var start = 0;
+//    var progress = document.getElementById(file.name).nextSibling;
+    var partitionIndex = 0;
+    var partitionCount = Math.ceil(total / step);
+
+    var reader = new FileReader();
+
+    reader.onprogress = function(event){
+        loaded += event.loaded;
+        $("#upload-dropzone").text(Math.round((loaded/total) * 100) + "%");
+    };
+
+    reader.oncomplete = function(event){
+        alert("done!");
+    };
+
+    reader.onload = function(event){
+        var xhr = new XMLHttpRequest();
+        var upload = xhr.upload;
+        upload.addEventListener('load',function(){
+            if (loaded <= total) {
+                blob = file.slice(loaded, loaded + step + 1);
+                reader.readAsBinaryString(blob);
+            }
+            else {
+                loaded = total;
+            }
+        },false);
+        xhr.open("POST", "/gp/AJAXUpload?fileName=" + file.name);
+        xhr.overrideMimeType("application/octet-stream");
+        xhr.setRequestHeader('partitionCount', partitionCount.toString());
+        xhr.setRequestHeader('partitionIndex', partitionIndex.toString());
+        xhr.setRequestHeader('filename', file.name);
+        xhr.setRequestHeader('uploadPath', "./");
+        xhr.sendAsBinary(event.target.result);
+
+        partitionIndex++;
+    };
+    var blob = file.slice(start, start + step + 1);
+    reader.readAsBinaryString(blob);
+}
+
+function uploadDrop(event) {
+    this.classList.remove('runtask-highlight');
+    event.stopPropagation();
+    event.preventDefault();
+
+    alert("ajax dropped!");
+
+    var ul = document.createElement("ul");
+    var filelist = event.dataTransfer.files;
+
+    for (var i = 0; i < filelist.length; i++) {
+        var file = filelist[i];
+        ajaxFileTabUpload(file);
+    }
+}
+
+function initUploads() {
+    // Attach events to the upload drop zone
+    var dropzone = $("#upload-dropzone").droppable({
+        hoverClass: 'runtask-highlight',
+        drop: function(event, ui) {
+            alert("jQuery dropped!");
+        }
+    });
+    dropzone[0].addEventListener("dragenter", dragEnter, true);
+    dropzone[0].addEventListener("dragleave", dragLeave, true);
+    dropzone[0].addEventListener("dragexit", dragExit, false);
+    dropzone[0].addEventListener("dragover", dragOver, false);
+    dropzone[0].addEventListener("drop", uploadDrop, false);
+
+    // Ready AJAX for uploading as a binary file
+    if(!XMLHttpRequest.prototype.sendAsBinary){
+        XMLHttpRequest.prototype.sendAsBinary = function(datastr) {
+            function byteValue(x) {
+                return x.charCodeAt(0) & 0xff;
+            }
+            var ords = Array.prototype.map.call(datastr, byteValue);
+            var ui8a = new Uint8Array(ords);
+            try{
+                this.send(ui8a);
+            }catch(e){
+                this.send(ui8a.buffer);
+            }
+        };
+    }
+}
