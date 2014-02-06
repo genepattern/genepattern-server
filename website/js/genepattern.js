@@ -509,15 +509,38 @@ function ajaxFileTabUpload(file){
     var step = 1024*1024;
     var total = file.size;
     var start = 0;
-//    var progress = document.getElementById(file.name).nextSibling;
     var partitionIndex = 0;
     var partitionCount = Math.ceil(total / step);
 
     var reader = new FileReader();
 
+    // Hide the dropzone
+    $("#upload-dropzone").hide();
+    $("#upload-dropzone-wrapper span").hide();
+
+    // Show the progressbar
+    $("#upload-dropzone-progress").show();
+    $("#upload-dropzone-progress").progressbar({
+        value: false,
+        change: function() {
+            $("#upload-dropzone-progress-label").text("Uploading: " + $("#upload-dropzone-progress").progressbar( "value" ) + "%");
+        },
+        complete: function() {
+            $("#upload-dropzone-progress-label").text("Upload Complete!");
+
+            // Hide the progressbar
+            $("#upload-dropzone-progress").hide();
+
+            // Show the dropzone
+            $("#upload-dropzone").show();
+            $("#upload-dropzone-wrapper span").show();
+        }
+    });
+
     reader.onprogress = function(event){
         loaded += event.loaded;
-        $("#upload-dropzone").text(Math.round((loaded/total) * 100) + "%");
+        var progress = Math.min(Math.round((loaded/total) * 100), 100);
+        $("#upload-dropzone-progress").progressbar("value", progress);
     };
 
     reader.oncomplete = function(event){

@@ -475,6 +475,18 @@ body {
     padding-bottom: 10px;
 }
 
+#upload-dropzone-progress {
+    margin: 5px;
+}
+
+#upload-dropzone-progress-label {
+    position: absolute;
+    text-shadow: 1px 1px 0 #fff;
+    width: 100%;
+    text-align: center;
+    top: 11px;
+}
+
 #upload-dropzone-wrapper {
     color: darkgray;
     font-size: 10pt;
