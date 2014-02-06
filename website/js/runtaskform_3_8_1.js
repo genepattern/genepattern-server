@@ -1574,16 +1574,16 @@ function loadParametersByGroup(parameterGroups, parameters, initialValues)
                 pHeadingId = "paramGroup_" + i + "_" + h;
                 run_task_info.param_group_ids[headings[h]] = pHeadingId;
 
-                var newHeaderDiv = $("<div id=" + pHeadingId + "/>");
+                var newHeaderDiv = $("<div id=" + pHeadingId + " class='paramGroupSection'/>");
 
-                var headerSection = $("<div class='headerDiv'/>");
-                var toggleImg = $("<img src ='/gp/images/toggle_collapse.png' width='15' height='15' class='paramSectionToggle'/>");
-                //var expandImgToggle = $("<img src ='/gp/images/toggle_expand.png' width='15' height='15' class='paramSectionToggle'/>");
+                var headerTitleDiv = $("<div class='pHeaderTitleDiv'/>");
+                var toggleImg = $("<img src ='/gp/images/toggle_collapse.png' width='17' height='17' class='paramSectionToggle'/>");
 
                 toggleImg.click(function()
                 {
                     $(this).parent().next().toggle();
 
+                    //change the toggle image to indicate hide or show
                     var imageSrc = $(this).attr("src");
                     if(imageSrc.indexOf('collapse') != -1)
                     {
@@ -1597,17 +1597,33 @@ function loadParametersByGroup(parameterGroups, parameters, initialValues)
                     $(this).attr("src", imageSrc);
                 });
 
+                //indent the inner sections
                 indent = h * 20;
 
-                headerSection.append(toggleImg);
-                headerSection.append(headings[h]);
-                headerSection.css({'margin-left':indent+'px'});
+                //only provide hide/show toggle for a group with a name
+                if(pGroupName.length > 0)
+                {
+                    headerTitleDiv.append(toggleImg);
+                }
+
+                if(h != 0)
+                {
+                    newHeaderDiv.addClass("border");
+                    headerTitleDiv.addClass("border");
+                }
+                else
+                {
+                    headerTitleDiv.addClass("background");
+                }
+
+                headerTitleDiv.append(headings[h]);
+                headerTitleDiv.css({'margin-left':indent+'px'});
 
                 newHeaderDiv.css({'margin-left':indent+'px'});
 
                 //append to the top level parameter listing div
                 curHeaderDiv.append(newHeaderDiv);
-                newHeaderDiv.before(headerSection);
+                newHeaderDiv.before(headerTitleDiv);
             }
 
             //keep track of top level parent div
@@ -1618,8 +1634,7 @@ function loadParametersByGroup(parameterGroups, parameters, initialValues)
         if(parameterGroups[i].hidden != undefined && parameterGroups[i].hidden != null
             && parameterGroups[i].hidden)
         {
-            var toggleImg = curHeaderDiv.prev().find(".paramSectionToggle");
-            toggleImg.click();
+            curHeaderDiv.prev().find(".paramSectionToggle").click();
         }
 
         var paramTable = createParamTable(parameterGroups[i].parameters, initialValues);

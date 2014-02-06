@@ -2,6 +2,17 @@
 	margin-top: 0 !important;
 }
 
+.pHeaderTitleDiv
+{
+    margin-top: 12px;
+    padding-top: 4px;
+}
+
+.paramGroupSection
+{
+    margin-bottom: 10px;
+}
+
 .paramSectionToggle:hover
 {
     cursor: pointer;
@@ -9,14 +20,21 @@
 
 #paramsListingDiv
 {
-    width: 100%;
-    height: 100%;
+    /*width: 100%;
+    height: 100%;*/
 }
 
-.headerDiv
+.background
 {
-    width: 100%;
-    height: 100%;
+    background-color: #BDD3E9;
+}
+.border
+{
+    border: 2px solid #BDD3E9;
+}
+
+.pHeaderTitleDiv
+{
     vertical-align: top;
     font-size: 14px;
     font-weight: bold;
@@ -557,6 +575,7 @@ span.drop-box
     -moz-border-radius: 8px;
     -webkit-border-radius: 8px;
     padding: 8px 6px 6px 6px;
+    width: 92%;
 }
 
 
