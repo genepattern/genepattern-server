@@ -1,0 +1,77 @@
+<project name="money_demo" default="code.compile" basedir=".">
+    <description>
+        money build file
+    </description>
+
+    <property name="src" location="src/main/java"/>
+    <property name="test.src" location="src/test/java"/>
+    <property name="app.build" location="build/app"/>
+    <property name="test.result" location="build/testresult"/>
+    <property name="junit.jar" location="lib/junit-3.8.2.jar"/>
+
+    <property environment="env"/>
+    <property name="groovy-all.jar" location="${env.GROOVY_HOME}/embeddable/groovy-all-1.7.0.jar"/>
+    <condition property="groovy.exists">
+        <available file="${groovy-all.jar}"/>
+    </condition>
+
+    <property name="clover.jar" location="../lib/clover.jar"/>
+    <taskdef resource="cloverlib.xml" classpath="${clover.jar}"/>
+    <property name="test.target" value="test.run"/>
+    <clover-env/>
+
+    <path id="build.classpath">
+        <pathelement location="${junit.jar}"/>
+        <pathelement location="${app.build}"/>
+        <pathelement location="${clover.jar}"/>
+    </path>
+
+    <path id="testbuild.classpath">
+        <path refid="build.classpath"/>
+        <pathelement location="${groovy-all.jar}"/>
+    </path>
+
+
+    <target name="code.compile" unless="groovy.exists"
+            description="Creates ${app.build} directory and compiles sources from ${src} to ${app.build}">
+        <mkdir dir="${app.build}"/>
+        <javac srcdir="${src}" destdir="${app.build}" classpathref="build.classpath" source="1.4"/>
+    </target>
+
+    <target name="test.compile" depends="code.compile"  unless="groovy.exists"
+            description="Creates ${app.build} directory and compiles sources from ${test.src} to ${app.build}">
+        <mkdir dir="${app.build}"/>
+        <javac srcdir="${test.src}"
+               destdir="${app.build}"
+               classpathref="testbuild.classpath" source="1.4"/>
+    </target>
+
+    <target name="test.run" depends="test.compile, groovy.compile" description="Runs the tests">
+        <mkdir dir="${test.result}"/>
+        <junit fork="yes" printsummary="true" showoutput="true">
+            <classpath refid="testbuild.classpath"/>
+            <formatter type="xml"/>
+            <batchtest fork="yes" todir="${test.result}">
+                <fileset dir="${app.build}" includes="**/*Test.*"/>
+            </batchtest>
+        </junit>
+    </target>
+
+    <target name="clean">
+        <delete dir="build"/>
+    </target>
+
+    <!-- Setup the groovy, man. -->
+    <target name="groovy.compile" if="groovy.exists">
+        <taskdef name="groovyc" classname="org.codehaus.groovy.ant.Groovyc" classpath="${groovy-all.jar}"/>
+        <mkdir dir="${app.build}"/>
+        <groovyc destdir="${app.build}">
+            <src path="src/main/groovy"/>
+            <src path="src/test/groovy"/>
+            <src path="${src}"/>
+            <src path="${test.src}"/>
+            <javac classpathref="testbuild.classpath" source="1.5"/>
+        </groovyc>
+    </target>
+
+</project>

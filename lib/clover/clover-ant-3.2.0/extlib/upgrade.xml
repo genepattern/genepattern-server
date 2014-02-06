@@ -1,0 +1,317 @@
+<project name="Clover Core Jar Upgrader" basedir="." default="core.upgrade">
+    <description>
+    This script upgrades Clover Core / Clover for Ant with the latest version of third party libraries:
+        * Antlr
+        * Atlassian Extras
+        * Annotations (JetBrains)
+        * Cajo
+        * Commons Codec
+        * Commons Collections
+        * Commons Lang
+        * FastUtil
+        * Gson
+        * Guava
+        * iText
+        * JCommon
+        * JDOM
+        * JFreeChart
+        * Log4j
+        * Velocity
+
+    How to use it:
+    ==============
+        1) When you extract the Clover-for-Ant (clover-ant-X.Y.Z.zip) you will find the following directory layout:
+            /clover-ant-X.Y.Z
+                /api
+                /etc
+                /extlib
+                    /upgrade.xml - this script
+                /lib
+                    /clover.jar  - Clover Core
+                /resources
+                /tutorial
+                /README.html
+        2) Download all third party tools and put into /extlib directory
+        3) Update clover.xxx.jar and upgrade.xxx.jar properties where necessary
+        4) Go to /extlib directory and run 'ant -f upgrade.xml' (i.e. this script)
+    </description>
+
+    <!-- Location of jars for upgrading (source) -->
+    <property name="upgrade.annotations.jar" location="annotations-8.1.4.jar"/>
+    <property name="upgrade.antlr.jar" location="antlr-2.7.7.jar"/>
+    <property name="upgrade.atlassian-extras.jar" location="atlassian-extras-2.5.jar"/>
+    <property name="upgrade.cajo.jar" location="cajo-1.117.jar"/>
+    <property name="upgrade.commons-codec.jar" location="commons-codec-1.5.jar"/>
+    <property name="upgrade.commons-collections.jar" location="commons-collections-3.1.jar"/>
+    <property name="upgrade.commons-lang.jar" location="commons-lang-2.6.jar"/>
+    <property name="upgrade.fastutil.jar" location="fastutil-4.4.3.jar"/>
+    <property name="upgrade.gson.jar" location="gson-1.3.jar"/>
+    <property name="upgrade.guava.jar" location="guava-r09.jar"/>
+    <property name="upgrade.itext.jar" location="itext-2.0.1.jar"/>
+    <property name="upgrade.jcommon.jar" location="jcommon-1.0.13.jar"/>
+    <property name="upgrade.jdom.jar" location="jdom-1.0.jar"/>
+    <property name="upgrade.jfreechart.jar" location="jfreechart-1.0.10.jar"/>
+    <property name="upgrade.log4j.jar" location="log4j-1.2.13.jar"/>
+    <property name="upgrade.velocity.jar" location="velocity-1.5.jar"/>
+
+    <!-- Location of repackaged jars (target) -->
+    <property name="clover.annotations.jar" location="../lib/clover-annotations-8.1.4.jar"/>
+    <property name="clover.antlr.jar" location="../lib/clover-antlr-2.7.7.jar"/>
+    <property name="clover.atlassian-extras.jar" location="../lib/clover-atlassian-extras-2.5.jar"/>
+    <property name="clover.cajo.jar" location="../lib/clover-cajo-1.117.jar"/>
+    <property name="clover.commons-codec.jar" location="../lib/clover-commons-codec-1.5.jar"/>
+    <property name="clover.commons-collections.jar" location="../lib/clover-commons-collections-3.1.jar"/>
+    <property name="clover.commons-lang.jar" location="../lib/clover-commons-lang-2.6.jar"/>
+    <property name="clover.fastutil.jar" location="../lib/clover-fastutil-4.4.3.jar"/>
+    <property name="clover.gson.jar" location="../lib/clover-gson-1.3.jar"/>
+    <property name="clover.guava.jar" location="../lib/clover-guava-9.0.jar"/>
+    <property name="clover.itext.jar" location="../lib/clover-itext-2.0.1.jar"/>
+    <property name="clover.jcommon.jar" location="../lib/clover-jcommon-1.0.13.jar"/>
+    <property name="clover.jdom.jar" location="../lib/clover-jdom-1.0.jar"/>
+    <property name="clover.jfreechart.jar" location="../lib/clover-jfreechart-1.0.10.jar"/>
+    <property name="clover.log4j.jar" location="../lib/clover-log4j-1.2.13.jar"/>
+    <property name="clover.velocity.jar" location="../lib/clover-velocity-1.5.jar"/>
+
+    <!-- The location of the clover.jar to be upgraded (source and target) -->
+    <property name="clover-core.jar" value="../lib/clover.jar"/>
+
+    <taskdef name="jarjar"
+             classname="com.tonicsystems.jarjar.JarJarTask"
+             classpath="jarjar-1.0rc7.jar"/>
+
+    <!-- Repackaging using custom rules -->
+    <macrodef name="upgrade-custom-rules-jar">
+        <attribute name="from"/>
+        <attribute name="into"/>
+        <attribute name="includes" default="**/*"/>
+        <attribute name="excludes" default=""/>
+        <element name="rules"/>
+
+        <sequential>
+            <echo message="Repackaging @{from} into @{into}"/>
+            <echo message=" includes=@{includes}"/>
+            <echo message=" excludes=@{excludes}"/>
+            <delete file="@{into}"/>
+            <jarjar jarfile="@{into}">
+                <zipfileset src="@{from}" includes="@{includes}" excludes="@{excludes}"/>
+                <rules/>
+            </jarjar>
+        </sequential>
+    </macrodef>
+
+    <!-- Adds 'clover.' prefix to packages matching the pattern -->
+    <macrodef name="upgrade-jar">
+        <attribute name="from"/>
+        <attribute name="into"/>
+        <attribute name="pattern"/>
+        <attribute name="includes" default="**/*"/>
+        <attribute name="excludes" default=""/>
+        <sequential>
+            <upgrade-custom-rules-jar from="@{from}" into="@{into}" includes="@{includes}" excludes="@{excludes}">
+                <rules>
+                    <rule pattern="@{pattern}" result="clover.@0"/>
+                </rules>
+            </upgrade-custom-rules-jar>
+        </sequential>
+    </macrodef>
+
+    <!-- Adds 'clover.' prefix to packages matching one of two patterns -->
+    <macrodef name="upgrade-2pattern-jar">
+        <attribute name="from"/>
+        <attribute name="into"/>
+        <attribute name="pattern1"/>
+        <attribute name="pattern2"/>
+
+        <sequential>
+            <upgrade-custom-rules-jar from="@{from}" into="@{into}">
+                <rules>
+                    <rule pattern="@{pattern1}" result="clover.@0"/>
+                    <rule pattern="@{pattern2}" result="clover.@0"/>
+                </rules>
+            </upgrade-custom-rules-jar>
+        </sequential>
+    </macrodef>
+
+    <!-- Adds 'clover.' prefix to packages matching one of two patterns -->
+    <macrodef name="upgrade-3pattern-jar">
+        <attribute name="from"/>
+        <attribute name="into"/>
+        <attribute name="pattern1"/>
+        <attribute name="pattern2"/>
+        <attribute name="pattern3"/>
+        <attribute name="includes" default="**/*"/>
+        <attribute name="excludes" default=""/>
+
+        <sequential>
+            <upgrade-custom-rules-jar from="@{from}" into="@{into}" includes="@{includes}" excludes="@{excludes}">
+                <rules>
+                    <rule pattern="@{pattern1}" result="clover.@0"/>
+                    <rule pattern="@{pattern2}" result="clover.@0"/>
+                    <rule pattern="@{pattern3}" result="clover.@0"/>
+                </rules>
+            </upgrade-custom-rules-jar>
+        </sequential>
+    </macrodef>
+
+    <!-- =================================================================== -->
+    <!-- Targets for upgrading third party libraries. The depends="" attribute
+         documents what other libraries are being used by given library. -->
+    <!-- =================================================================== -->
+
+    <target name="annotations.upgrade">
+        <!-- This jar is not repackaged with 'clover.' prefix because we need original class names in order
+        to have code validation working in IDEA IDE -->
+        <delete file="${clover.annotations.jar}"/>
+        <zip file="${clover.annotations.jar}">
+            <zipfileset src="${upgrade.annotations.jar}" includes="org/jetbrains/annotations/*.class"/>
+        </zip>
+    </target>
+
+    <target name="antlr.upgrade">
+        <upgrade-jar from="${upgrade.antlr.jar}" into="${clover.antlr.jar}" pattern="antlr.**"/>
+    </target>
+
+    <target name="atlassian.upgrade" depends="commons-codec.upgrade, log4j.upgrade">
+        <upgrade-3pattern-jar from="${upgrade.atlassian-extras.jar}" into="${clover.atlassian-extras.jar}"
+                pattern1="com.atlassian.**" pattern2="org.apache.commons.codec.**" pattern3="org.apache.log4j.**"
+                excludes="README.txt"/>
+    </target>
+
+    <target name="cajo.upgrade">
+        <upgrade-jar from="${upgrade.cajo.jar}" into="${clover.cajo.jar}" pattern="gnu.cajo.**" excludes="readme.txt"/>
+    </target>
+
+    <target name="commons-codec.upgrade">
+        <upgrade-jar from="${upgrade.commons-codec.jar}" into="${clover.commons-codec.jar}" pattern="org.apache.commons.codec.**"/>
+    </target>
+
+    <target name="commons-collections.upgrade">
+        <upgrade-jar from="${upgrade.commons-collections.jar}" into="${clover.commons-collections.jar}" pattern="org.apache.commons.collections.**"/>
+    </target>
+
+    <target name="commons-lang.upgrade">
+        <!-- We must exclude package having 'enum' in name due to a bug in Eclipse - see CLOV-1370 -->
+        <upgrade-jar from="${upgrade.commons-lang.jar}" into="${clover.commons-lang.jar}" pattern="org.apache.commons.lang.**"
+                     excludes="org/apache/commons/lang/enum/**"/>
+    </target>
+
+    <target name="jcommon.upgrade">
+        <upgrade-2pattern-jar from="${upgrade.jcommon.jar}" into="${clover.jcommon.jar}"
+                pattern1="com.keypoint.**" pattern2="org.jfree.**"/>
+    </target>
+
+    <target name="jfreechart.upgrade" depends="jcommon.upgrade">
+        <upgrade-2pattern-jar from="${upgrade.jfreechart.jar}" into="${clover.jfreechart.jar}"
+                pattern1="com.keypoint.**" pattern2="org.jfree.**"/>
+    </target>
+
+    <target name="fastutil.upgrade">
+        <!-- Strip obsolete classes to reduce jar size -->
+        <upgrade-jar from="${upgrade.fastutil.jar}" into="${clover.fastutil.jar}" pattern="it.unimi.dsi.fastutil.**"
+                     includes="**/*"
+                     excludes="**/booleans/**,**/shorts/**,**/floats/**,**/doubles/**,**/chars/**"/>
+    </target>
+
+    <target name="gson.upgrade">
+        <upgrade-jar from="${upgrade.gson.jar}" into="${clover.gson.jar}" pattern="com.google.gson.**"
+                     excludes="**/assembly-descriptor.xml"/>
+    </target>
+
+    <target name="guava.upgrade">
+        <upgrade-jar from="${upgrade.guava.jar}" into="${clover.guava.jar}" pattern="com.google.common.**"
+                excludes="**\package-info*"/>
+    </target>
+
+    <target name="itext.upgrade"> <!-- depends="org.bouncycastle, com.sun.image.codec.jpeg" -->
+        <upgrade-jar from="${upgrade.itext.jar}" into="${clover.itext.jar}" pattern="com.lowagie.**" excludes="build.xml"/>
+    </target>
+
+    <target name="jdom.upgrade">  <!-- depends="jaxen.upgrade" -->
+        <upgrade-jar from="${upgrade.jdom.jar}" into="${clover.jdom.jar}" pattern="org.jdom.**" excludes="JDOMAbout*"/>
+    </target>
+
+    <target name="log4j.upgrade">
+        <upgrade-jar from="${upgrade.log4j.jar}" into="${clover.log4j.jar}" pattern="org.apache.log4j.**"/>
+    </target>
+
+    <target name="velocity.upgrade" depends="jdom.upgrade, commons-collections.upgrade, commons-lang.upgrade">
+        <!-- Repackage jar and correct class names in few configuration files - jarjar will not handle such stuff -->
+        <property name="velocity.tmp.dir" location="${java.io.tmpdir}/temp/velocity"/>
+        <property name="properties.dir" value="${velocity.tmp.dir}/org/apache/velocity/runtime/defaults"/>
+
+        <unzip src="${upgrade.velocity.jar}" dest="${velocity.tmp.dir}"/>
+        <replace file="${properties.dir}/directive.properties" token="org.apache.velocity.runtime.directive" value="clover.org.apache.velocity.runtime.directive"/>
+        <replace file="${properties.dir}/velocity.properties" token="org.apache.velocity" value="clover.org.apache.velocity"/>
+
+        <!-- Now use jarjar and prefix classes with 'clover.' -->
+        <echo message="Repackaging ${upgrade.velocity.jar} into ${clover.velocity.jar}"/>
+        <delete file="${clover.velocity.jar}"/>
+        <jarjar jarfile="${clover.velocity.jar}">
+            <fileset dir="${velocity.tmp.dir}"/>
+            <rule pattern="org.apache.commons.collections.**" result="clover.@0"/>
+            <rule pattern="org.apache.commons.lang.**" result="clover.@0"/>
+            <rule pattern="org.apache.velocity.**" result="clover.@0"/>
+            <rule pattern="org.jdom.**" result="clover.@0"/>
+        </jarjar>
+
+        <!-- Cleanup -->
+        <delete dir="${velocity.tmp.dir}"/>
+    </target>
+
+    <!-- =================================================================== -->
+    <!-- Target for upgrading Clover Core -->
+    <!-- =================================================================== -->
+
+    <target name="core.upgrade" depends="annotations.upgrade, antlr.upgrade, atlassian.upgrade, cajo.upgrade,
+                commons-codec.upgrade, commons-collections.upgrade, commons-lang.upgrade,
+                jcommon.upgrade, jfreechart.upgrade,
+                fastutil.upgrade, gson.upgrade, guava.upgrade, itext.upgrade, jdom.upgrade,
+                log4j.upgrade, velocity.upgrade">
+        <property name="clover-core.backup" location="${clover-core.jar}.bak"/>
+        <property name="clover-core.upgraded" location="${clover-core.jar}.upgraded"/>
+
+        <echo message="Creating backup of Clover Core in ${clover-core.backup}"/>
+        <copy file="${clover-core.jar}" tofile="${clover-core.backup}"/>
+
+        <echo message="Creating upgraded version of Clover Core in ${clover-core.upgraded}"/>
+        <jar destfile="${clover-core.upgraded}">
+            <!-- Omit third-party classes from original clover.jar-->
+            <zipfileset src="${clover-core.jar}">
+                <exclude name="org/jetbrains/**"/>
+                <exclude name="clover/antlr/**"/>
+                <exclude name="clover/com/atlassian/**"/>
+                <exclude name="clover/com/keypoint/**"/>
+                <exclude name="clover/com/google/gson/**"/>
+                <exclude name="clover/com/google/common/**"/>
+                <exclude name="clover/com/lowagie/**"/>
+                <exclude name="clover/gnu/cajo/**"/>
+                <exclude name="clover/it/unimi/dsi/fastutil/**"/>
+                <exclude name="clover/org/apache/commons/**"/>
+                <exclude name="clover/org/apache/**"/>
+                <exclude name="clover/org/jfree/**"/>
+                <!-- <exclude name="clover/org/codehaus/**"/> from clover-for-groovy module -->
+            </zipfileset>
+            <!-- And add classes from new version of third party jars -->
+            <zipfileset src="${clover.annotations.jar}"/>
+            <zipfileset src="${clover.antlr.jar}"/>
+            <zipfileset src="${clover.atlassian-extras.jar}"/>
+            <zipfileset src="${clover.cajo.jar}"/>
+            <zipfileset src="${clover.commons-codec.jar}"/>
+            <zipfileset src="${clover.commons-collections.jar}"/>
+            <zipfileset src="${clover.commons-lang.jar}"/>
+            <zipfileset src="${clover.jcommon.jar}"/>
+            <zipfileset src="${clover.jfreechart.jar}"/>
+            <zipfileset src="${clover.fastutil.jar}"/>
+            <zipfileset src="${clover.gson.jar}"/>
+            <zipfileset src="${clover.guava.jar}"/>
+            <zipfileset src="${clover.itext.jar}"/>
+            <zipfileset src="${clover.log4j.jar}"/>
+            <zipfileset src="${clover.velocity.jar}"/>
+        </jar>
+
+        <!-- Replace original jar -->
+        <echo message="Renaming ${clover-core.upgraded} to ${clover-core.jar}"/>
+        <delete file="${clover-core.jar}"/>
+        <move file="${clover-core.upgraded}" tofile="${clover-core.jar}"/>
+    </target>
+</project>
