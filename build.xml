@@ -36,6 +36,7 @@
     <!-- bring in the release targets from their seperate file -->
     &release_targets;
 
+    <property name="clover.dest" location="${basedir}/build/clover" />
     <property name="clover.home" location="${basedir}/lib/clover/clover-ant-3.2.0" />
     <taskdef resource="cloverlib.xml" classpath="${clover.home}/lib/clover.jar"/>
     <clover-env/>
@@ -106,6 +107,10 @@
         
         <mkdir dir="${build}" />
         <mkdir dir="${build}/jars" />
+    </target>
+
+    <target name="clover.clean" description="Deletes the clover database.">
+        <clover-clean/>
     </target>
 
     <target name="clean" depends="clean-junit, clover.clean">
