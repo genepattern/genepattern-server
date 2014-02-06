@@ -1,5 +1,6 @@
 package org.genepattern.server.job.input.collection;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -36,6 +37,7 @@ public class ParamGroupHelper {
     private final GroupInfo groupInfo;
     private final Param param;
     private final List<GpFilePath> gpFilePaths;
+    private final GpFilePath toFile;
     
     /**
      * The automatically generated name for the file list file is the <param.name>+<filenameSuffix>,
@@ -70,6 +72,18 @@ public class ParamGroupHelper {
             log.error(e);
             throw new IllegalArgumentException("Error initializing gpFilePaths for param");
         }
+        if (in.toFile != null) {
+            this.toFile=in.toFile;
+        }
+        else {
+            try {
+                this.toFile=initToFile();
+            }
+            catch (Throwable t) {
+                log.error(t);
+                throw new IllegalArgumentException("Error initialing toFile for param: "+t.getLocalizedMessage());
+            }
+        }
     }
     
     private GpFilePath initToFile() throws Exception {
@@ -82,7 +96,6 @@ public class ParamGroupHelper {
     }
 
     public GpFilePath createFilelist() throws Exception {
-        final GpFilePath toFile=initToFile();
         writeGroupFile(toFile, gpFilePaths);
         return toFile;
     }
@@ -125,7 +138,10 @@ public class ParamGroupHelper {
      * @throws Exception
      */
     private void writeGroupFile(final GpFilePath toFile, final List<GpFilePath> gpFilePaths) throws Exception {
-        final DefaultParamGroupWriter writer=new DefaultParamGroupWriter.Builder(toFile.getServerFile())
+        writeGroupFile(toFile.getServerFile(), gpFilePaths);
+    }
+    private void writeGroupFile(final File toFile, final List<GpFilePath> gpFilePaths) throws Exception {
+        final DefaultParamGroupWriter writer=new DefaultParamGroupWriter.Builder(toFile)
             .addColumn(Column.VALUE)
             .addColumn(Column.GROUP)
             .addColumn(Column.URL)
@@ -141,6 +157,7 @@ public class ParamGroupHelper {
         private final Param param;
         private String filenameSuffix=".group."+TsvWriter.EXT;
         private boolean downloadExternalFiles=true;
+        private GpFilePath toFile=null;
 
         public Builder(final Param param) {
             this.param=param;
@@ -159,6 +176,10 @@ public class ParamGroupHelper {
         }
         public Builder downloadExternalFiles(boolean b) {
             this.downloadExternalFiles=b;
+            return this;
+        }
+        public Builder toFile(final GpFilePath toFile) {
+            this.toFile=toFile;
             return this;
         }
         public ParamGroupHelper build() {
