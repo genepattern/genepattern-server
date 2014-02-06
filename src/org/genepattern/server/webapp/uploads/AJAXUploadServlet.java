@@ -1,22 +1,11 @@
 package org.genepattern.server.webapp.uploads;
 
-import java.io.*;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.commons.fileupload.*;
-import org.apache.commons.fileupload.disk.DiskFileItemFactory;
-import org.apache.commons.fileupload.servlet.ServletFileUpload;
-import org.apache.commons.fileupload.servlet.ServletRequestContext;
+import org.apache.commons.fileupload.FileUploadException;
 import org.apache.log4j.Logger;
 import org.genepattern.server.DataManager;
 import org.genepattern.server.config.ServerConfiguration;
@@ -24,6 +13,8 @@ import org.genepattern.server.dm.GpFileObjFactory;
 import org.genepattern.server.dm.GpFilePath;
 import org.genepattern.server.dm.userupload.UserUploadManager;
 import org.genepattern.server.webapp.LoginManager;
+
+import java.io.*;
 
 /**
  * Servlet implementation class AJAXUploadServlet
@@ -37,7 +28,6 @@ public class AJAXUploadServlet extends HttpServlet {
      */
     public AJAXUploadServlet() {
         super();
-        // TODO Auto-generated constructor stub
     }
 
     /**
@@ -48,7 +38,15 @@ public class AJAXUploadServlet extends HttpServlet {
     }
 
     /**
-     * @see HttpServlet#doPost(HttpServletRequest request, HttpServletResponse response)
+     * Handle post requests to the servlet
+     *
+     * All exceptions in the servlet are bubbled up to this level for
+     * unified exception handling with our error messaging system
+     *
+     * @param request
+     * @param response
+     * @throws ServletException
+     * @throws IOException
      */
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         PrintWriter responseWriter = response.getWriter();
@@ -64,8 +62,6 @@ public class AJAXUploadServlet extends HttpServlet {
 
             ServerConfiguration.Context userContext = ServerConfiguration.Context.getContextForUser(userId);
 
-            FileItemFactory factory = new DiskFileItemFactory();
-            ServletFileUpload upload = new ServletFileUpload(factory);
             final int partitionCount = Integer.parseInt(request.getHeader("partitionCount"));
             final int partitionIndex = Integer.parseInt(request.getHeader("partitionIndex"));
             final String filename = request.getHeader("filename");
@@ -79,7 +75,7 @@ public class AJAXUploadServlet extends HttpServlet {
             returnErrorResponse(responseWriter, e);
         }
         catch (Exception e) {
-            log.error("Unknown exception occured in UploadReceiver.doPost(): " + e.getMessage());
+            log.error("Unknown exception occurred in UploadReceiver.doPost(): " + e.getMessage());
             returnErrorResponse(responseWriter, new FileUploadException("Unknown error occured: " + e.getMessage()));
         }
         finally {
@@ -87,6 +83,13 @@ public class AJAXUploadServlet extends HttpServlet {
         }
     }
 
+    /**
+     * Get the GenePattern file path to which to upload the file
+     * @param userContext
+     * @param uploadDirPath
+     * @return
+     * @throws FileUploadException
+     */
     private File getUploadDirectory(ServerConfiguration.Context userContext, String uploadDirPath) throws FileUploadException {
         if (uploadDirPath == null) {
             throw new FileUploadException("server error, missing session attribute 'uploadPath'");
@@ -114,6 +117,13 @@ public class AJAXUploadServlet extends HttpServlet {
         return dir.getRelativeFile();
     }
 
+    /**
+     * Append the contents of the fileItem to the given file.
+     *
+     * @param is - an InputStream with the file's binary data
+     * @param to - the partial file to which to append the bytes
+     * @throws IOException
+     */
     private void appendPartition(InputStream is, File to) throws IOException {
         OutputStream os = null;
 
@@ -132,6 +142,16 @@ public class AJAXUploadServlet extends HttpServlet {
         }
     }
 
+    /**
+     * Get the GenePattern file path to which to upload the file.
+     * @param userContext
+     * @param request
+     * @param name
+     * @param uploadPath
+     * @param first - if it's the first chunk of data, it means the file or directory should not be on the file system
+     * @return
+     * @throws FileUploadException - if there is a server error, or if there is a naming conflict with the hidden tmp dir.
+     */
     private GpFilePath getUploadFile(ServerConfiguration.Context userContext, HttpServletRequest request, String name, String uploadPath, boolean first) throws FileUploadException {
         final File uploadDir = getUploadDirectory(userContext, uploadPath);
         final File relativeFile = new File(uploadDir, name);
@@ -153,6 +173,18 @@ public class AJAXUploadServlet extends HttpServlet {
         }
     }
 
+    /**
+     * Write the file to disk and to the database
+     * @param userContext
+     * @param request
+     * @param index
+     * @param count
+     * @param filename
+     * @param uploadPath
+     * @return
+     * @throws FileUploadException
+     * @throws IOException
+     */
     private String writeFile(ServerConfiguration.Context userContext, HttpServletRequest request, int index, int count, String filename, String uploadPath) throws FileUploadException, IOException {
         final boolean first = index == 0;
         String responseText = "";
@@ -171,7 +203,7 @@ public class AJAXUploadServlet extends HttpServlet {
                 UserUploadManager.createUploadFile(userContext, file, count);
             }
             catch (Throwable t) {
-                throw new FileUploadException("Error creating entry in DB for '"+file.getName()+"': "+t.getLocalizedMessage());
+                throw new FileUploadException("Error creating entry in DB for '" + file.getName() + "': " + t.getLocalizedMessage());
             }
         }
 
