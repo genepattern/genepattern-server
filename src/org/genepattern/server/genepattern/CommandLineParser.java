@@ -60,9 +60,9 @@ public class CommandLineParser {
      */
     public static List<String> getSubstitutionParameters(String str) {
         List<String> paramNames = new ArrayList<String>();
-        //<("[^"]*"|'[^']*'|[^'">])*>
-        //String patternRegex = "<[^>]*>";
-        String patternRegex = "<[-|\\w|\\.&^\\s]*>";
+        //String patternRegex = "<[-|\\w|\\.&^\\s]*>";
+        //new way
+        String patternRegex = "(<[^<^ ][^>&^ ]*>)";
         Pattern pattern = null;
         try {
             pattern = Pattern.compile(patternRegex);
@@ -228,7 +228,11 @@ public class CommandLineParser {
                 isOptional = paramInfo.isOptional();
                 String optionalPrefix = paramInfo._getOptionalPrefix();
                 if (value != null && value.length() > 0 && optionalPrefix != null && optionalPrefix.length() > 0) {
-                    if (optionalPrefix.endsWith(" ")) {
+                    if (optionalPrefix.endsWith("\\ ")) {
+                        //special-case: if optionalPrefix ends with an escaped space, don't split into two args
+                        value = optionalPrefix.substring(0, optionalPrefix.length()-3) + value;
+                    }
+                    else if (optionalPrefix.endsWith(" ")) {
                         //special-case: GP-2866, if optionalPrefix ends with a space, split into two args 
                         rval.add(optionalPrefix.substring(0, optionalPrefix.length()-1));
                     }
