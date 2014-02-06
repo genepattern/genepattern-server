@@ -1619,6 +1619,13 @@ function loadParametersByGroup(parameterGroups, parameters, initialValues)
                 headerTitleDiv.append(headings[h]);
                 headerTitleDiv.css({'margin-left':indent+'px'});
 
+                //add a description if there is one
+                if(parameterGroups[i].description != undefined && parameterGroups[i].description != null
+                    && parameterGroups[i].description.length > 0)
+                {
+                    newHeaderDiv.prepend("<div class='pHeaderDescription'>" + parameterGroups[i].description + "</div>");
+                }
+
                 newHeaderDiv.css({'margin-left':indent+'px'});
 
                 //append to the top level parameter listing div

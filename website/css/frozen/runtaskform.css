@@ -4,7 +4,7 @@
 
 .pHeaderTitleDiv
 {
-    margin-top: 12px;
+    margin-top: 6px;
     padding-top: 4px;
 }
 
@@ -16,12 +16,6 @@
 .paramSectionToggle:hover
 {
     cursor: pointer;
-}
-
-#paramsListingDiv
-{
-    /*width: 100%;
-    height: 100%;*/
 }
 
 .background
@@ -38,6 +32,12 @@
     vertical-align: top;
     font-size: 14px;
     font-weight: bold;
+}
+
+.pHeaderDescription
+{
+    font-size: 10px;
+    margin-bottom: 6px;
 }
 
 .paramsTable
