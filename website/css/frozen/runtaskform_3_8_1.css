@@ -2,40 +2,78 @@
 	margin-top: 0 !important;
 }
 
-#paramsTable
+.pHeaderTitleDiv
+{
+    margin-top: 6px;
+    padding-top: 4px;
+}
+
+.paramGroupSection
+{
+    margin-bottom: 10px;
+}
+
+.paramSectionToggle:hover
+{
+    cursor: pointer;
+}
+
+.background
+{
+    background-color: #BDD3E9;
+}
+.border
+{
+    border: 2px solid #BDD3E9;
+}
+
+.pHeaderTitleDiv
+{
+    vertical-align: top;
+    font-size: 14px;
+    font-weight: bold;
+}
+
+.pHeaderDescription
+{
+    font-size: 10px;
+    margin-bottom: 6px;
+}
+
+.paramsTable
 {
     width: 100%;
     height: 100%;
     border-spacing: 0;
 }
 
-#paramsTable tr.pRow td
+tr.pRow td
 {
     border-top: 2px solid #F0F0F0;
 }
 
-#paramsTable tr:first-child td
+.paramsTable tr:first-child td
 {
     border: none;
 }
 
-#paramsTable td
+td .paramsTable
 {
     padding: 7px 0 6px 0;
 }
 
-#paramsTable tr.paramDescription td
+tr.paramDescription td
 {
     padding-top: 0;
     padding-bottom: 2px;
 }
 
-#paramsTable td:nth-child(odd)
+td:nth-child(odd).paramsTable
 {
     white-space: nowrap;
 }
 
-#paramsTable td:nth-child(even)
+td:nth-child(even).paramsTable
 {
     padding-left: 14px;
 }
@@ -138,17 +176,17 @@ button.urlButton
     padding: 0;
 }
 
-#paramsTable td:first-child
+td:first-child .paramsTable
 {
     width: 15px;
 }
 
-#paramsTable tr:nth-child(odd)
+tr:nth-child(odd) .paramsTable
 {
     border-bottom: 1px solid #7898c7;
 }
 
-#paramsTable input[type=text]
+.paramsTable input[type=text]
 {
     width: 295px;
     height: 17px;
@@ -537,6 +575,7 @@ span.drop-box
     -moz-border-radius: 8px;
     -webkit-border-radius: 8px;
     padding: 8px 6px 6px 6px;
+    width: 92%;
 }
 
 
