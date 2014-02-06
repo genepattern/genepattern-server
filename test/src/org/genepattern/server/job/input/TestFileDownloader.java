@@ -32,26 +32,15 @@ import com.google.common.io.Files;
  *
  */
 public class TestFileDownloader {
-    //smaller file (118811 KB)
-    //private static final String aThalianaUrl="ftp://ftp.broadinstitute.org/pub/genepattern/rna_seq/whole_genomes/Arabidopsis_thaliana_Ensembl_TAIR10.fa";
-    //private static final String aThaliana_expectedName="Arabidopsis_thaliana_Ensembl_TAIR10.fa";
-    //private static final long aThaliana_expectedLength=121662238L;
     
-    //large file (3073525 KB, ~2.9G)
-    private static final String largeFile="ftp://ftp.broadinstitute.org/pub/genepattern/rna_seq/whole_genomes/Homo_sapiens_Ensembl_GRCh37.fa";
-    //private static final String largeFile_expectedName="Homo_sapiens_Ensembl_GRCh37.fa";
-    //private static final long largeFile_expectedLength=118820495L;
+    //large file on gpftp site (3147288982 b, ~3.0G)
+    private static final String largeFile="ftp://gpftp.broadinstitute.org/module_support_files/sequence/whole_genome/Homo_sapiens_GRCh37_Ensembl.fa";
+    private static long largeFile_expectedLength=3147288982L;
     
     //tiny file on gpftp site
     final String smallFileUrl="ftp://gpftp.broadinstitute.org/example_data/gpservertest/DemoFileDropdown/input.file/dummy_file_2.txt";
     final long smallFile_expectedLength=13L;
     final String smallFile_expectedName="dummy_file_2.txt";
-    
-    //small directory on gpftp site
-
-    //smaller file on gpftp site (116036 KB)
-    //final String gpftpFile="ftp://gpftp.broadinstitute.org/rna_seq/referenceAnnotation/gtf/Homo_sapiens_UCSC_hg18.gtf";
-    //long expectedLength=118820495L;
 
     /*
      * this class creates tmp dirs, but cleans up after itself. 
@@ -90,7 +79,7 @@ public class TestFileDownloader {
     }
 
     private void cancellationTest(boolean expected, final File toFile, final Callable<File> downloader) throws MalformedURLException, InterruptedException {
-        final int sleep_interval_ms=4000;
+        final int sleep_interval_ms=2000;
         final ExecutorService service=Executors.newSingleThreadExecutor();
         final Future<File> future=service.submit( downloader );
 
@@ -103,19 +92,31 @@ public class TestFileDownloader {
         
         //does cancel have any effect?
         long ts01=toFile.lastModified();
+        long sz01=toFile.length();
         Thread.sleep(sleep_interval_ms);
         long ts02=toFile.lastModified();
         boolean cancelWorked=ts02==ts01;
+        if (sz01==largeFile_expectedLength) {
+            //must have already finished downloading
+            System.out.println("Must have already finished downloading before cancelling");
+            return;
+        }
 
         //does shutdown have any effect? Note: always shut down, even if cancel worked
         service.shutdownNow();
         if (!cancelWorked) {
             Thread.sleep(sleep_interval_ms);
             long ts03=toFile.lastModified();
+            long sz03=toFile.length();
             Thread.sleep(sleep_interval_ms);
             long ts04=toFile.lastModified();
             boolean shutdownWorked=ts04==ts03;
             
+            if (sz03==largeFile_expectedLength) {
+                //must have already finished downloading
+                System.out.println("Must have already finished downloading before shutting down");
+                return;
+            }
             if (expected) {
                 Assert.assertTrue( "file transfer still going, cancelWorked="+cancelWorked+", shutdownWorked="+shutdownWorked, cancelWorked || shutdownWorked);
             }
