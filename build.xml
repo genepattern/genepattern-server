@@ -78,7 +78,6 @@
                 <include name="*.jar" />
                 <include name="*.zip" />
             </fileset>
-            <pathelement location="${clover.home}/lib/clover.jar"/>
         </path>
         
         <path id="junit.classpath">
@@ -132,15 +131,15 @@
     </target>
     
     <target name="findbugs" depends="init, compile, common" description="Findbugs Test">
-    	<taskdef name="findbugs" classname="edu.umd.cs.findbugs.anttask.FindBugsTask">
-    		<classpath>
-        		<pathelement location="${basedir}/lib/findbugs-ant.jar"/>
-    		</classpath> 
-		</taskdef> 
-	    <findbugs home="${basedir}/findbugs" output="xml" outputFile="findbugs.xml" >
-		    <sourcePath path="${basedir}/src" />
-		    <class location="${build}/${full-jarname}" />
-    	</findbugs>
+        <taskdef name="findbugs" classname="edu.umd.cs.findbugs.anttask.FindBugsTask">
+            <classpath>
+                <pathelement location="${basedir}/lib/findbugs-ant.jar"/>
+            </classpath> 
+        </taskdef> 
+        <findbugs home="${basedir}/findbugs" output="xml" outputFile="findbugs.xml" >
+            <sourcePath path="${basedir}/src" />
+            <class location="${build}/${full-jarname}" />
+        </findbugs>
     </target>
 
     <target name="compile-junit" depends="init,compile">
