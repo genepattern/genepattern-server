@@ -36,6 +36,10 @@
     <!-- bring in the release targets from their seperate file -->
     &release_targets;
 
+    <property name="clover.home" location="${basedir}/lib/clover/clover-ant-3.2.0" />
+    <taskdef resource="cloverlib.xml" classpath="${clover.home}/lib/clover.jar"/>
+    <clover-env/>
+
     <!-- Get all the files in the /lib directory and add them to the -->
     <!-- Classpath -->
     <target name="targets">
@@ -73,6 +77,7 @@
                 <include name="*.jar" />
                 <include name="*.zip" />
             </fileset>
+            <pathelement location="${clover.home}/lib/clover.jar"/>
         </path>
         
         <path id="junit.classpath">
@@ -96,13 +101,14 @@
             </fileset>
             <!-- include src on classpath for tests which call getResourceAsStream -->
             <pathelement location="test/src" />
+            <pathelement location="${clover.home}/lib/clover.jar"/>
         </path>
         
         <mkdir dir="${build}" />
         <mkdir dir="${build}/jars" />
     </target>
 
-    <target name="clean">
+    <target name="clean" depends="clean-junit, clover.clean">
         <delete dir="applet-build" />
         <delete quiet="true" failonerror="false">
             <fileset dir="src/" includes="**/*.class" />
@@ -110,7 +116,7 @@
             <fileset dir="installer/GP_server_Build_Output/" includes="**/*" />
             <fileset dir="installer/server_Build_Output/" includes="**/*" />
             <fileset dir="installer/" includes=".buildinstaller*.tmp/**" />
-        </delete>
+            </delete>
         <delete quiet="true" failonerror="false" includeemptydirs="true">
             <fileset dir="build/" includes="**/*" excludes="placeholder.txt, log4j.properties" />
         </delete>
@@ -147,10 +153,10 @@
         <mkdir dir="${junit.report.dir}/html" />
 
         <!-- junit includeantruntime="yes" printsummary="withOutAndErr" haltonfailure="no" showoutput="yes" filtertrace="off"> -->
-        <junit includeantruntime="yes" printsummary="no" haltonfailure="no" showoutput="no" filtertrace="on">
+        <junit includeantruntime="yes" printsummary="no" haltonfailure="no" showoutput="no" filtertrace="on" fork="yes" forkmode="perTest" >
             <formatter type="xml"/>
             <classpath refid="junit.classpath" />
-            <batchtest fork="yes" todir="${junit.report.dir}/xml" filtertrace="on">
+            <batchtest todir="${junit.report.dir}/xml" filtertrace="on">
                 <fileset dir="test/src">
                     <exclude name="org/genepattern/junitutil/*.java" />
                     <include name="**/*.java" />
@@ -171,9 +177,12 @@
         <delete dir="${junit.report.dir}" />
     </target>
 
-
     <target name="compile" depends="init" description="Compiles all the source.">
-        <javac debug="true" classpathref="library.classpath" destdir="${genepattern.build}" srcdir="${src}" compiler="javac1.5" source="${java.target}" target="${java.target}" excludes="org/genepattern/server/analysis/*,org/genepattern/server/handler/*,org/genepattern/jaxb/**" />
+        <javac debug="true" target="1.6" classpathref="library.classpath" 
+            destdir="${genepattern.build}" 
+            srcdir="${src}" 
+            excludes="org/genepattern/server/analysis/*,org/genepattern/server/handler/*,org/genepattern/jaxb/**"
+        />
 
         <copy todir="${genepattern.build}">
             <fileset dir="${src}" includes="**/*.xml" />
@@ -249,11 +258,7 @@
             </manifest>
 
         </jar>
-
-
     </target>
-
-
 
     <target depends="init" name="runtask">
         <javac debug="true" classpathref="library.classpath" destdir="${genepattern.build}" srcdir="${src}" target="${java.target}" source="${java.target}" includes="org/genepattern/util/RunGenePatternTaskMain.java" />
@@ -278,6 +283,7 @@
             <arg value="javax.ejb.EJBObject" />
         </java>
     </target>
+
     <target depends="init" name="prepare-compile" unless="prepare.disable">
         <mkdir dir="${genepattern.build}" />
     </target>
@@ -317,7 +323,7 @@
         </jar>
     </target>
 
-    <target name="test" depends="initBuildProperties">
+    <target name="show-version" depends="initBuildProperties">
         <echo>
             genepattern.version: ${genepattern.version}
             version.label: ${version.label} 
