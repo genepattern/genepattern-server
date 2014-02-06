@@ -75,6 +75,29 @@
             </fileset>
         </path>
         
+        <path id="junit.classpath">
+            <pathelement location="lib/junit-4.8.2.jar" />
+            <pathelement location="lib/javax.servlet.jar" />
+            <fileset dir="test/lib">
+                <include name="*.jar" />
+            </fileset>
+            <pathelement location="${build}/junit/classes" />
+            <pathelement location="${build}" />
+            <fileset dir="website/WEB-INF/lib">
+                <!-- exclude older version of ant, so that we can use junit4 -->
+                <exclude name="ant-1.6.5.jar" />
+                <exclude name="ant-antlr-1.6.5.jar" />
+                <exclude name="ant-junit-1.6.5.jar" />
+                <exclude name="ant-launcher-1.6.5.jar" />
+                <exclude name="ant-swing-1.6.5.jar" />
+                <exclude name="groovy-all-1.0.jar" />
+                <!-- include the rest -->
+                <include name="*.jar" />
+            </fileset>
+            <!-- include src on classpath for tests which call getResourceAsStream -->
+            <pathelement location="test/src" />
+        </path>
+        
         <mkdir dir="${build}" />
         <mkdir dir="${build}/jars" />
     </target>
@@ -108,14 +131,46 @@
 		    <class location="${build}/${full-jarname}" />
     	</findbugs>
     </target>
-    
-    <target name="junit" depends="init,compile" description="Run JUnit Tests">
-    	<echo message="Running JUnit Tests"/>
-    	<antcall target="compile-test"/>
-    	<antcall target="test-gp-library"/>
-    	<antcall target="test-taskintegrator"/>
-    	<antcall target="test-admin"/>
-  	</target>
+
+    <target name="compile-junit" depends="init,compile">
+        <mkdir dir="${build}/junit/classes" />
+        <javac debug="true" classpathref="junit.classpath" 
+            destdir="${build}/junit/classes" 
+            srcdir="test/src" 
+        />
+    </target>
+            
+    <target name="junit" depends="compile-junit">
+        <property name="junit.report.dir" location="${build}/junit/reports" />
+        <mkdir dir="${junit.report.dir}" />
+        <mkdir dir="${junit.report.dir}/xml" />
+        <mkdir dir="${junit.report.dir}/html" />
+
+        <!-- junit includeantruntime="yes" printsummary="withOutAndErr" haltonfailure="no" showoutput="yes" filtertrace="off"> -->
+        <junit includeantruntime="yes" printsummary="no" haltonfailure="no" showoutput="no" filtertrace="on">
+            <formatter type="xml"/>
+            <classpath refid="junit.classpath" />
+            <batchtest fork="yes" todir="${junit.report.dir}/xml" filtertrace="on">
+                <fileset dir="test/src">
+                    <exclude name="org/genepattern/junitutil/*.java" />
+                    <include name="**/*.java" />
+                </fileset>
+            </batchtest>
+        </junit>
+
+        <junitreport todir="${junit.report.dir}">
+            <fileset dir="${junit.report.dir}/xml">
+                <include name="*.xml" />
+            </fileset>
+            <report format="frames" todir="${junit.report.dir}/html" />
+        </junitreport>
+    </target>
+
+    <target name="clean-junit">
+        <!-- cleanup -->
+        <delete dir="${junit.report.dir}" />
+    </target>
+
 
     <target name="compile" depends="init" description="Compiles all the source.">
         <javac debug="true" classpathref="library.classpath" destdir="${genepattern.build}" srcdir="${src}" compiler="javac1.5" source="${java.target}" target="${java.target}" excludes="org/genepattern/server/analysis/*,org/genepattern/server/handler/*,org/genepattern/jaxb/**" />
