@@ -98,7 +98,7 @@ public class TestFileDownloader {
         boolean cancelWorked=ts02==ts01;
         if (sz01==largeFile_expectedLength) {
             //must have already finished downloading
-            System.out.println("Must have already finished downloading before cancelling");
+            System.err.println("Must have already finished downloading before cancelling");
             return;
         }
 
@@ -114,7 +114,7 @@ public class TestFileDownloader {
             
             if (sz03==largeFile_expectedLength) {
                 //must have already finished downloading
-                System.out.println("Must have already finished downloading before shutting down");
+                System.err.println("Must have already finished downloading before shutting down");
                 return;
             }
             if (expected) {
@@ -125,31 +125,6 @@ public class TestFileDownloader {
             }
         }
     }
-    
-//    @Test
-//    public void testDownloadFromBroadFtp_fileAlreadyExists() throws MalformedURLException, DownloadException {
-//        final File userUploadDir=newTmpDir();
-//        File userRootDir=new File(userUploadDir, "users");
-//        boolean success=userRootDir.mkdirs();
-//        if (!success) {
-//            Assert.fail("userRootDir already exists or could not be created: "+userRootDir);
-//        }
-//        System.setProperty("user.root.dir", userUploadDir.getAbsolutePath());
-//        //File f=new File(userRootDir, ".cache/uploads/cache");
-//
-//        CachedFtpFile cachedFile=new CachedFtpFile("ftp://gpftp.broadinstitute.org/example_data/gpservertest/DemoFileDropdown/input.file/dummy_file_3.txt");
-//        
-//        try {
-//            GpFilePath tempPath=cachedFile.getTempPath(cachedFile.getLocalPath());
-//            success=tempPath.getServerFile().getParentFile().mkdirs();
-//            saveToFile(tempPath.getServerFile(), "Blow away partial download");
-//        }
-//        catch (IOException e) {
-//            Assert.fail("error initializing partial download file: "+cachedFile.getLocalPath().getServerFile());
-//        }
-//        GpFilePath downloaded=cachedFile.download();
-//        
-//    }
 
     @Test
     public void testDownloadFromBroadFtp() throws MalformedURLException, InterruptedException, DownloadException {
