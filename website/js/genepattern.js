@@ -534,6 +534,9 @@ function ajaxFileTabUpload(file){
             // Show the dropzone
             $("#upload-dropzone").show();
             $("#upload-dropzone-wrapper span").show();
+
+            // Refresh the tree
+            $("#uploadTree").jstree("refresh");
         }
     });
 
@@ -541,10 +544,6 @@ function ajaxFileTabUpload(file){
         loaded += event.loaded;
         var progress = Math.min(Math.round((loaded/total) * 100), 100);
         $("#upload-dropzone-progress").progressbar("value", progress);
-    };
-
-    reader.oncomplete = function(event){
-        alert("done!");
     };
 
     reader.onload = function(event){
@@ -578,8 +577,6 @@ function uploadDrop(event) {
     event.stopPropagation();
     event.preventDefault();
 
-    alert("ajax dropped!");
-
     var ul = document.createElement("ul");
     var filelist = event.dataTransfer.files;
 
@@ -594,7 +591,7 @@ function initUploads() {
     var dropzone = $("#upload-dropzone").droppable({
         hoverClass: 'runtask-highlight',
         drop: function(event, ui) {
-            alert("jQuery dropped!");
+            showDialog("Operation Not Supported", "Sorry! We don't support downloading directly from URL. Please download the file first and then upload here.");
         }
     });
     dropzone[0].addEventListener("dragenter", dragEnter, true);
