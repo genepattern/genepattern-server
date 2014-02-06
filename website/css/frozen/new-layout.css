@@ -465,7 +465,6 @@ body {
     border: dashed 3px darkgray;
     bottom: 5px;
     left: 2px;
-    position: absolute;
     width: 320px;
     font-size: 28px;
     line-height: 28pt;
@@ -474,14 +473,18 @@ body {
     padding-right: 5px;
     padding-top: 10px;
     padding-bottom: 10px;
-    background-color: #F1F2F2;
 }
 
-#upload-dropzone span {
+#upload-dropzone-wrapper {
     color: darkgray;
     font-size: 10pt;
-    display: block;
     line-height: 14pt;
     text-align: center;
-    width: 320px;
+    position: absolute;
+    bottom: 0px;
+    left: 0px;
+    right: 0px;
+    padding: 0px;
+    margin: 0px;
+    background-color: #F1F2F2;
 }

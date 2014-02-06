@@ -165,9 +165,11 @@
             </t:div>
         </h:form>
         <h:outputText rendered="#{uiBean.newUI}">
-            <div id="upload-dropzone">
+            <div id="upload-dropzone-wrapper">
                 <span>Drag Files to Directories Above or</span>
-                Drop Files Here
+                <div id="upload-dropzone">
+                    Drop Files Here
+                </div>
             </div>
         </h:outputText>
         <script type="text/javascript">

@@ -125,6 +125,7 @@ td:nth-child(even).paramsTable
 .runtask-highlight
 {
     background-color: #cddcf1;
+    cursor: copy;
 }
 
 .paramFilesTable
