@@ -6,9 +6,10 @@ import java.util.List;
 
 import org.apache.commons.io.FileUtils;
 import org.junit.Assert;
+import org.junit.Ignore;
 
 import com.google.common.io.Files;
-
+@Ignore
 public class TempFileUtil {
     /*
      * this class creates tmp dirs, but cleans up after itself. 

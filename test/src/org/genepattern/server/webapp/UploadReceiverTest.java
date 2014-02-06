@@ -1,34 +1,24 @@
 package org.genepattern.server.webapp;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpSession;
-
-import junit.framework.TestCase;
 
 import org.apache.commons.fileupload.FileItem;
 import org.jmock.Expectations;
 import org.jmock.Mockery;
 import org.junit.AfterClass;
+import org.junit.Assert;
 import org.junit.Test;
-import org.junit.runner.JUnitCore;
 
-public class UploadReceiverTest extends TestCase {
+public class UploadReceiverTest {
     
     final static String TMPDIR = System.getProperty("java.io.tmpdir");
     UploadReceiver theTest = new UploadReceiver();
     Mockery context = new Mockery();
     
-    public static void main(String[] args) throws IOException {
-        JUnitCore.main("org.genepattern.server.webapp.UploadReceiverTest");
-    }
-    
     @AfterClass
-    public void removeFiles() {
+    public static void removeFiles() {
         File file1 = new File(TMPDIR, "test.txt");
         File file2 = new File(TMPDIR, "test2.txt");
         file1.delete();
@@ -74,30 +64,30 @@ public class UploadReceiverTest extends TestCase {
         return list;
     }
     
-    private HttpServletRequest buildTestRequest() {
-        final HttpServletRequest request = context.mock(HttpServletRequest.class);
-        final HttpSession session = buildTestSession();
-        
-        // Expectations
-        context.checking(new Expectations() {{
-            allowing(request).getSession(); will(returnValue(session));
-            allowing(request).getParameter("paramId"); will(returnValue("1234"));
-        }});
-
-        return request;
-    }
-    
-    private HttpSession buildTestSession() {
-        final HttpSession session = context.mock(HttpSession.class);
-        
-        // Expectations
-        context.checking(new Expectations() {{
-            allowing(session).getAttribute("1234"); will(returnValue(TMPDIR));
-            allowing(session).getAttribute("userid"); will(returnValue("admin"));
-        }});
-        
-        return session;
-    }
+//    private HttpServletRequest buildTestRequest() {
+//        final HttpServletRequest request = context.mock(HttpServletRequest.class);
+//        final HttpSession session = buildTestSession();
+//        
+//        // Expectations
+//        context.checking(new Expectations() {{
+//            allowing(request).getSession(); will(returnValue(session));
+//            allowing(request).getParameter("paramId"); will(returnValue("1234"));
+//        }});
+//
+//        return request;
+//    }
+//    
+//    private HttpSession buildTestSession() {
+//        final HttpSession session = context.mock(HttpSession.class);
+//        
+//        // Expectations
+//        context.checking(new Expectations() {{
+//            allowing(session).getAttribute("1234"); will(returnValue(TMPDIR));
+//            allowing(session).getAttribute("userid"); will(returnValue("admin"));
+//        }});
+//        
+//        return session;
+//    }
     
 //    @Test
 //    public void testReceiveSmallFile() throws Exception {
@@ -106,12 +96,12 @@ public class UploadReceiverTest extends TestCase {
 //        PrintWriter responseWriter = new PrintWriter(System.out);
 //        
 //        Context userContext = ServerConfiguration.Context.getContextForUser("admin");
-//        theTest.writeFile(userContext, request, postParameters, 0, 1);
+//        theTest.writeFile(userContext, request, postParameters, 0, 1, "admin"); 
 //        
 //        File file1 = new File(TMPDIR, "test.txt");
 //        File file2 = new File(TMPDIR, "test2.txt");
-//        assertTrue(file1.exists());
-//        assertTrue(file2.exists());
+//        Assert.assertTrue(file1.exists());
+//        Assert.assertTrue(file2.exists());
 //    }
     
     @Test
@@ -119,10 +109,10 @@ public class UploadReceiverTest extends TestCase {
         List<FileItem> list = buildTestParameterList();
         
         String param = theTest.getParameter(list, "testField2");
-        assertEquals(param, "testTrue2");
+        Assert.assertEquals(param, "testTrue2");
         
         param = theTest.getParameter(list, "testField3");
-        assertEquals(param, null);
+        Assert.assertEquals(param, null);
     }
     
 //    @Test
@@ -132,6 +122,6 @@ public class UploadReceiverTest extends TestCase {
 //        
 //        Context userContext = ServerConfiguration.Context.getContextForUser("admin");
 //        File dir = theTest.getUploadDirectory(userContext, request);
-//        assertEquals(dir.getCanonicalPath(), TMPDIR);
+//        Assert.assertEquals(dir.getCanonicalPath(), TMPDIR);
 //    }
 }

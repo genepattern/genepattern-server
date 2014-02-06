@@ -8,14 +8,27 @@ import org.genepattern.server.auth.AuthenticationException;
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.database.HsqlDbUtil;
 import org.junit.Assert;
+import org.junit.Ignore;
 
+@Ignore
 public class DbUtil {
     private static boolean isDbInitialized = false;
+    
+    @Ignore
+    private static class Fnf implements FilenameFilter {
+        private final String hsqlDbName;
+        public Fnf(final String hsqlDbName) {
+            this.hsqlDbName=hsqlDbName;
+        }
+        public boolean accept(final File dir, final String name) {
+            return name != null && name.startsWith(hsqlDbName);
+        }
+    }
     
     public static void initDb() throws Exception { 
         final File hsqlDbDir=new File("junitdb");
         final String hsqlDbName="GenePatternDB";
-        final String gpVersion="3.7.6";
+        final String gpVersion="3.8.0";
         initDb(hsqlDbDir, hsqlDbName, gpVersion);
     }
 
@@ -27,11 +40,7 @@ public class DbUtil {
             final boolean deleteDbFiles=true;
             if (deleteDbFiles) {
                 if (hsqlDbDir.exists()) {
-                    File[] todel = hsqlDbDir.listFiles(new FilenameFilter() {
-                        public boolean accept(final File dir, final String name) {
-                            return name != null && name.startsWith(hsqlDbName);
-                        }
-                    });
+                    File[] todel = hsqlDbDir.listFiles(new Fnf(hsqlDbName));
                     for(File old : todel) {
                         if (old.isFile()) {
                             if (!old.canWrite()) {

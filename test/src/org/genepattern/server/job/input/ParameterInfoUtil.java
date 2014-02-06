@@ -3,12 +3,14 @@ package org.genepattern.server.job.input;
 import java.util.HashMap;
 
 import org.genepattern.webservice.ParameterInfo;
+import org.junit.Ignore;
 
 /**
  * Utility class for working with ParameterInfo instances from junit tests.
  * @author pcarr
  *
  */
+@Ignore
 public class ParameterInfoUtil {
 
     /*

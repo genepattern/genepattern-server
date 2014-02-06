@@ -114,17 +114,20 @@ testQuotedArgs:
 
 testSpecialCharactersInValues:
     description: Handle double quote characters and other special characters in a parameter value
-    cmdLine: <perl> <arg1> <arg2> <arg3>
+    cmdLine: <perl> <arg1> <arg2> <arg3> <arg4>
     env:
         perl: /usr/bin/perl
         arg1: "It has a double quote (\") character"
         arg2: "Hugh O'Neill"
         arg3: "Ignore angle brackets, e.g. '<' and '>' in parameter values"
+        # arg4: "Unset substitution <s> in arg4"
     expected: [
         "/usr/bin/perl",
         "It has a double quote (\") character",
         "Hugh O'Neill",
-        "Ignore angle brackets, e.g. '<' and '>' in parameter values" ]
+        "Ignore angle brackets, e.g. '<' and '>' in parameter values"
+        # "Unset substitution <s> in arg4"
+    ]
 
 testSpaceInSub:
     description: Handle space character in substitution value, no quotes.
@@ -159,6 +162,15 @@ testSpaceInQuotedSub:
         "org.genepattern.testmodule.Echo",
         "./temp/test_run1000.tmp/my_file.txt",
         "my_file.out" ]
+
+testSpaceInInputValue:
+    description: "Handle space character in user-supplied input value"
+    cmdLine: "echo <arg1>"
+    env:
+        arg1: "< and >"
+    expected: [
+        "echo",
+        "< and >" ]
 
 testAntWin:
     description: Make sure the default ant command has the correct command line, when installing a patch on windows.

@@ -13,6 +13,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
 import org.genepattern.util.GPConstants;
+import org.junit.Ignore;
 
 /**
  * Utility class for extracting all nested zips from an exported GenePattern pipeline.
@@ -21,6 +22,7 @@ import org.genepattern.util.GPConstants;
  * 
  * @author pcarr
  */
+@Ignore
 public class ZipWalker {
     public static File createTempDirectory() throws IOException  {
         final File temp = File.createTempFile("temp", Long.toString(System.nanoTime()));

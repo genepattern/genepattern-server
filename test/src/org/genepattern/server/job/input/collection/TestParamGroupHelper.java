@@ -11,6 +11,7 @@ import org.genepattern.server.job.input.GroupId;
 import org.genepattern.server.job.input.GroupInfo;
 import org.genepattern.server.job.input.JobInput;
 import org.genepattern.server.job.input.Param;
+import org.genepattern.server.job.input.ParamId;
 import org.genepattern.server.job.input.TestJobInput;
 import org.genepattern.webservice.JobInfo;
 import org.junit.Assert;
@@ -41,23 +42,28 @@ public class TestParamGroupHelper {
         jobInput.addValue("inputList", TestJobInput.DATA_URL+"all_aml_train.cls", new GroupId(" train "));
         jobInput.addValue("inputList", TestJobInput.DATA_URL+"all_aml_train.gct", new GroupId("Train"));
         final Param inputParam=jobInput.getParam("inputList");
+        Assert.assertEquals("numGroups", 2, inputParam.getNumGroups());
         final GroupInfo groupInfo=new GroupInfo.Builder()
             .min(0)
             .max(null)
             .build();
         
-        File paramGroupFile=tmpDir.newFile("test_group.tsv");
+        final File paramGroupFile=tmpDir.newFile("test_group.tsv");
         final GpFilePath toFile=new MockGpFilePath.Builder(paramGroupFile).build();
         final int jobNo=13;
-        JobInfo jobInfo=new JobInfo();
+        final JobInfo jobInfo=new JobInfo();
         jobInfo.setJobNumber(jobNo);
         jobInfo.setUserId(userId);
-        Context jobContext=ServerConfiguration.Context.getContextForJob(jobInfo);
-        
-        Assert.fail("test not implemented!");
-        //ParamGroupHelper pgh=new ParamGroupHelper(toFile, inputParam, groupInfo);
-        //List<GpFilePath> gpFilePaths=pgh.downloadExternalUrl(jobContext);
-        //pgh.writeGroupFile(gpFilePaths);
+        final Context jobContext=ServerConfiguration.Context.getContextForJob(jobInfo);
 
+        final ParamGroupHelper pgh=new ParamGroupHelper.Builder(jobInput.getParam(new ParamId("inputList")))
+            .jobContext(jobContext)
+            .groupInfo(groupInfo)
+            .downloadExternalFiles(false)
+            .toFile(toFile)
+            .build();
+        
+        final GpFilePath gpFilePath=pgh.createFilelist();
+        Assert.assertEquals(toFile.getServerFile(), gpFilePath.getServerFile());
     }
 }

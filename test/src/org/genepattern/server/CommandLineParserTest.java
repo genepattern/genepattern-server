@@ -53,20 +53,23 @@ public class CommandLineParserTest extends TestCase {
         {"<R2.5> <p1> <p2> >> stdout.txt",
             "<R2.5>", "<p1>", "<p2>" },
         {"<R2.5> <p1> <p2> >><stdout.file> <<<stdin.file>",
-            "<R2.5>", "<p1>", "<p2>", "<stdout.file>", "<stdin.file>" },                
+            "<R2.5>", "<p1>", "<p2>", "<stdout.file>", "<stdin.file>" },  
+        {"<a b>", }, 
     };
     
     public void testGetSubstitutions() {
+        int i=0;
         for(String[] testCase : substitutionsTestCases) {
-            testGetSubstitutions(testCase);
+            testGetSubstitutions(i,testCase);
+            ++i;
         }
     }
     
-    private void testGetSubstitutions(String[] testCase) {
+    private void testGetSubstitutions(int testCaseIdx, String[] testCase) {
         List<String> rval = CommandLineParser.getSubstitutionParameters(testCase[0]);
         int numExpected = testCase.length - 1;
         assertNotNull(rval);
-        assertEquals("num subs", numExpected, rval.size());
+        assertEquals("testCase["+testCaseIdx+"] num subs", numExpected, rval.size());
         for(int i=0; i<rval.size(); ++i) {
             assertEquals("sub["+i+"]", testCase[i+1], rval.get(i));
         }
@@ -196,6 +199,11 @@ public class CommandLineParserTest extends TestCase {
     
     public void testRnaSeqCmdLines() {
         String filename = "rna_seq_test_cases.yaml";
+        testGetCommandLineFromFile(filename);
+    }
+    
+    public void testPathSeqCmdLines() {
+        String filename = "pathseq_test_cases.yaml";
         testGetCommandLineFromFile(filename);
     }
 

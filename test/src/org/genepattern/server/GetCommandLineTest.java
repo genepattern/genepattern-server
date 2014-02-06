@@ -1,6 +1,7 @@
 package org.genepattern.server;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
@@ -15,9 +16,9 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Map.Entry;
 
+import org.genepattern.junitutil.FileUtil;
+import org.genepattern.junitutil.MyLabelledParameterized;
 import org.genepattern.server.genepattern.CommandLineParser;
-import org.genepattern.util.LabelledParameterized;
-import org.genepattern.util.TestUtil;
 import org.genepattern.webservice.ParameterFormatConverter;
 import org.genepattern.webservice.ParameterInfo;
 import org.junit.Assert;
@@ -31,23 +32,25 @@ import org.yaml.snakeyaml.Yaml;
  * To add a new test case edit one of the testCaseFiles or add a new testCaseFile to the list.
  * @author pcarr
  */
-@RunWith(LabelledParameterized.class)
+@RunWith(MyLabelledParameterized.class)
 public class GetCommandLineTest {
     private static String[] testCaseFiles={ 
-        "test_cases.yaml", 
-        "rna_seq_test_cases.yaml", 
-        "gptest_generated_test_cases.yaml",
-        "gpprod_generated_test_cases_0000.yaml",
-        "gpprod_generated_test_cases_0400.yaml",
-        "gpprod_generated_test_cases_0800.yaml",
-        "gpprod_generated_test_cases_1200.yaml",
-        "gpprod_generated_test_cases_1600.yaml",
-        "gpprod_generated_test_cases_2000.yaml",
+        //"debug_test_case.yaml",
+        //"test_cases.yaml", 
+        //"rna_seq_test_cases.yaml", 
+        //"gptest_generated_test_cases.yaml",
+        "gpprod_generated_testcases_0000.yaml",
+        "gpprod_generated_testcases_0400.yaml",
+        "gpprod_generated_testcases_0800.yaml",
+        "gpprod_generated_testcases_1200.yaml",
+        "gpprod_generated_testcases_1600.yaml",
+        "gpprod_generated_testcases_2000.yaml",
         };
     private static String[] testCaseGpProperties={ 
-        null, 
-        null, 
-        "gptest_gp.properties",
+        //"gpprod_gp.properties",
+        //null, 
+        //null, 
+        //"gptest_gp.properties",
         "gpprod_gp.properties",
         "gpprod_gp.properties",
         "gpprod_gp.properties",
@@ -56,9 +59,10 @@ public class GetCommandLineTest {
         "gpprod_gp.properties",
         };
     private static String[] testCaseIds={
-        "",
-        "",
-        "gptest_",
+        //"gpprod_",
+        //"",
+        //"",
+        //"gptest_",
         "gpprod_",
         "gpprod_",
         "gpprod_",
@@ -107,17 +111,16 @@ public class GetCommandLineTest {
         Properties gpProperties = new Properties();
         File propsFile = new File(filepath);
         if (!propsFile.isAbsolute()) {
-            File parentDir = TestUtil.getSourceDir();
-            propsFile = new File(parentDir, filepath);
+            propsFile = FileUtil.getSourceFile(GetCommandLineTest.class, filepath);
         }
-        FileReader fileReader = null;
+        FileInputStream fis = null;
         try {
-            fileReader = new FileReader(propsFile);
-            gpProperties.load(fileReader);
+            fis = new FileInputStream(propsFile);
+            gpProperties.load(fis);
         }
         finally {
-            if (fileReader != null) {
-                fileReader.close();
+            if (fis != null) {
+                fis.close();
             }
         }
         return gpProperties;
@@ -231,8 +234,8 @@ public class GetCommandLineTest {
 
     private static List<TestData> loadTestCasesFromFile(String testId, String filename, Properties gpProperties) {
         List<TestData> testCases = new ArrayList<TestData>();
-        File parentDir = TestUtil.getSourceDir();
-        File configurationFile = new File(parentDir, filename);
+        File configurationFile = FileUtil.getSourceFile(GetCommandLineTest.class, filename);
+
         Reader reader = null;
         try {
             reader = new FileReader(configurationFile);
@@ -282,6 +285,13 @@ public class GetCommandLineTest {
     private final Map<String,String> env;
     private final Map<String,ParameterInfo> parameterInfoMap;
     private final List<String> expected;
+    
+    private boolean strequals(String a, String b) {
+        if (a == null) {
+            return b==null;
+        }
+        return a.equals(b);
+    }
 
     @Test
     public void testTranslateCmdLine() {
@@ -289,15 +299,49 @@ public class GetCommandLineTest {
         Assert.assertNotNull(name+": cmdLineArgs", cmdLineArgs);
         Assert.assertEquals(name+": cmdLineArgs.size", expected.size(), cmdLineArgs.size());
         int i=0;
-        for(String arg : cmdLineArgs) {
-            //ignore <java_flags>
+        for(String actual_arg : cmdLineArgs) {
             String expected_arg = expected.get(i);
-            if (expected_arg.equals("-Xmx512m")) {
-                //TODO: ignoring java_flags
-                Assert.assertEquals(name+": cmdLineArg["+i+"]", expected_arg, arg);
+            
+            boolean match = strequals(expected_arg, actual_arg);
+            if (match) {
+                return;
             }
+            
+            //special-cases
+            //null-check
+            if (expected_arg == null) {
+                Assert.fail(name+": cmdLineArg["+i+"]: Expecting a null value");
+            }
+            
+            //special-case for libdir path
+            if (expected_arg.contains("/taskLib/")) {
+                int a0 = expected_arg.indexOf("/taskLib/") + "/taskLib/".length();
+                int a2 = expected_arg.indexOf("/", a0);
+                if (a2 > 0) {
+                    int a1 = expected_arg.lastIndexOf(".", a2);
+                    if (a1 >= 0) {
+                        expected_arg = expected_arg.substring(0, a1) + expected_arg.substring(a2);
+                    }
+                }
+            }
+            
+            //ignore <java_flags>
+            if ("-Xmx512M".equals(actual_arg)) {
+                //the actual arg is hard-coded to '-Xmx512M'
+                expected_arg = "-Xmx512M";
+            }
+            Assert.assertEquals(name+": cmdLineArg["+i+"]", expected_arg, actual_arg);                
             ++i;
         }
+    }
+    
+    private String hackFilterArg(String expected, String actual) {
+        //ignore <java_flags>
+        if (actual.equals("-Xmx512M")) {
+            return "-Xmx512M";
+        }
+        
+        return expected;
     }
 
 }

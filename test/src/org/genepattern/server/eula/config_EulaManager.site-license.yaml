@@ -3,6 +3,7 @@
 default.properties: 
     # not necessary, because it's enabled by default
     org.genepattern.server.eula.EulaManager.enabled: true
+
 #
 # Note: the yaml parser for a GP config file requires at least one 'executors' entry
 #

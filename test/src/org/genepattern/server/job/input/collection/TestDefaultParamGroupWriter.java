@@ -1,7 +1,9 @@
 package org.genepattern.server.job.input.collection;
 
 import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
+import java.io.LineNumberReader;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -32,8 +34,7 @@ public class TestDefaultParamGroupWriter {
     throws IOException
     {
         final File localFile = tmpDir.newFile(filepath);
-        //final File localFile = new File(tmpDir, filepath);
-        GpFilePath gpFilePath=new MockGpFilePath.Builder(localFile).build();
+        final GpFilePath gpFilePath=new MockGpFilePath.Builder(localFile).build();
         inputParam.addValue(new GroupId(groupId), new ParamValue(gpFilePath.getParamInfoValue())); 
         gpFilePaths.add(gpFilePath);
     }
@@ -58,6 +59,36 @@ public class TestDefaultParamGroupWriter {
         writer.writeParamGroup(groupInfo, inputParam, gpFilePaths);
         
         Assert.assertEquals("toFile.exists", true, toFile.exists());
+        
+        //parse the results
+        LineNumberReader reader=null;
+        try {
+            reader=new LineNumberReader(new FileReader(toFile));
+            checkLine(0, reader.readLine(), gpFilePaths, "test");
+            checkLine(1, reader.readLine(), gpFilePaths, "test");
+            checkLine(2, reader.readLine(), gpFilePaths, "test");
+            checkLine(3, reader.readLine(), gpFilePaths, "train");
+            checkLine(4, reader.readLine(), gpFilePaths, "train");
+            checkLine(5, reader.readLine(), gpFilePaths, "train");
+            Assert.assertNull( "", reader.readLine() );
+        }
+        finally {
+            if (reader != null) {
+                reader.close();
+            }
+        }
+    }
+    
+    private void checkLine(final int i, final String line, final List<GpFilePath> gpFilePaths, final String groupId) {
+        final String[] items=line.split("\t");
+        Assert.assertEquals("filename["+i+"]", gpFilePaths.get(i).getServerFile().toString(), items[0]);
+        Assert.assertEquals("group["+i+"]", groupId, items[1]);
+        try {
+            Assert.assertEquals("url["+i+"]", gpFilePaths.get(i).getUrl().toString(), items[2]);
+        }
+        catch (Exception e) {
+            Assert.fail("Error parsing url["+i+"]: "+e.getLocalizedMessage());
+        }
     }
 
     /**

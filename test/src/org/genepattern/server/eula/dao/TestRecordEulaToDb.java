@@ -461,7 +461,7 @@ public class TestRecordEulaToDb {
         EulaRemoteQueue rval = entries.get(0);
         Assert.assertEquals("rval[0].remoteUrl", remoteUrl, rval.getRemoteUrl());
         Assert.assertEquals("rval[0].recorded", false, rval.getRecorded());
-        assertDateEquals("rval[0].date", expectedDate, rval.getDateRecorded());
+        assertDateEquals("rval[0].date", expectedDate, rval.getDateRecorded(), 10000);
         Assert.assertEquals("rval[0].numAttempts", 0, rval.getNumAttempts());
         
         //what happens when we try to add the same entry?

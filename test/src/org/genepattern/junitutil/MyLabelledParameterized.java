@@ -1,38 +1,39 @@
-package org.genepattern.util;
+package org.genepattern.junitutil;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import org.junit.Ignore;
 import org.junit.runner.Description;
 import org.junit.runners.Parameterized;
 
-public class LabelledParameterized extends Parameterized {
+@Ignore
+public class MyLabelledParameterized extends Parameterized {
 
-    private List<String> labels;
+    protected List<String> labels;
 
-    private Description labelledDescription;
+    protected Description labelledDescription;
 
-    public LabelledParameterized(Class<?> cl) throws Throwable {
-        super(cl);
+    public MyLabelledParameterized(final Class<?> klass) throws Throwable {
+        super(klass);
+        //initialiseScheduler(klass);
         initialiseLabels();
         generateLabelledDescription();
     }
 
-    private void initialiseLabels() throws Exception {
+    protected void initialiseLabels() throws Exception {
         Collection<Object[]> parameterArrays = getParameterArrays();
         labels = new ArrayList<String>();
         for (Object[] parameterArray : parameterArrays) {
             String label = parameterArray[0].toString();
             labels.add(label);
         }
-
     }
 
-    private Collection<Object[]> getParameterArrays() throws Exception {
-        Method testClassMethod = getDeclaredMethod(this.getClass(),
-                "getTestClass");
+    protected Collection<Object[]> getParameterArrays() throws Exception {
+        Method testClassMethod = getDeclaredMethod(this.getClass(), "getTestClass");
         Class<?> returnType = testClassMethod.getReturnType();
         if (returnType == Class.class)
             return getParameterArrays4_3();
@@ -40,7 +41,7 @@ public class LabelledParameterized extends Parameterized {
             return getParameterArrays4_4();
     }
 
-    private Collection<Object[]> getParameterArrays4_3() throws Exception {
+    protected Collection<Object[]> getParameterArrays4_3() throws Exception {
         Object[][] methodCalls = new Object[][] { new Object[] { "getTestClass" } };
         Class<?> cl = invokeMethodChain(this, methodCalls);
         Method[] methods = cl.getMethods();
@@ -62,13 +63,11 @@ public class LabelledParameterized extends Parameterized {
         if (parametersMethod == null)
             throw new Exception("No @Parameters method found");
 
-        Collection<Object[]> parameterArrays = (Collection<Object[]>) parametersMethod
-                .invoke(null);
+        Collection<Object[]> parameterArrays = (Collection<Object[]>) parametersMethod.invoke(null);
         return parameterArrays;
-
     }
 
-    private Collection<Object[]> getParameterArrays4_4() throws Exception {
+    protected Collection<Object[]> getParameterArrays4_4() throws Exception {
         Object[][] methodCalls = new Object[][] {
                 new Object[] { "getTestClass" },
                 new Object[] { "getAnnotatedMethods", Class.class,
@@ -82,8 +81,7 @@ public class LabelledParameterized extends Parameterized {
         return parameterArrays;
     }
 
-    private <T> T invokeMethodChain(Object object, Object[][] methodCalls)
-            throws Exception {
+    protected <T> T invokeMethodChain(Object object, Object[][] methodCalls) throws Exception {
         for (Object[] methodCall : methodCalls) {
             String methodName = (String) methodCall[0];
             int parameterCount = (methodCall.length - 1) / 2;
@@ -96,32 +94,29 @@ public class LabelledParameterized extends Parameterized {
                 classes[index] = cl;
                 arguments[index] = argument;
             }
-            Method method = getDeclaredMethod(object.getClass(), methodName,
-                    classes);
+            Method method = getDeclaredMethod(object.getClass(), methodName, classes);
             object = method.invoke(object, arguments);
         }
         return (T) object;
     }
 
-    // iterates through super-classes until found. Throws NoSuchMethodException
-    // if not
-    private Method getDeclaredMethod(Class<?> cl, String methodName,
-            Class<?>... parameterTypes) throws NoSuchMethodException {
+    // iterates through super-classes until found. Throws NoSuchMethodException if not
+    protected Method getDeclaredMethod(Class<?> cl, String methodName, Class<?>... parameterTypes) throws NoSuchMethodException {
         do {
             try {
-                Method method = cl
-                        .getDeclaredMethod(methodName, parameterTypes);
+                Method method = cl.getDeclaredMethod(methodName, parameterTypes);
                 return method;
-            } catch (NoSuchMethodException e) {
+            } 
+            catch (NoSuchMethodException e) {
                 // do nothing - just fall through to the below
             }
             cl = cl.getSuperclass();
-        } while (cl != null);
-        throw new NoSuchMethodException("Method " + methodName
-                + "() not found in hierarchy");
+        } 
+        while (cl != null);
+        throw new NoSuchMethodException("Method " + methodName + "() not found in hierarchy");
     }
 
-    private void generateLabelledDescription() throws Exception {
+    protected void generateLabelledDescription() throws Exception {
         Description originalDescription = super.getDescription();
         labelledDescription = Description
                 .createSuiteDescription(originalDescription.getDisplayName());

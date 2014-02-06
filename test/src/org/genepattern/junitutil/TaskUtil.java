@@ -7,12 +7,14 @@ import java.util.List;
 
 import org.genepattern.webservice.TaskInfo;
 import org.junit.Assert;
+import org.junit.Ignore;
 
 /**
  * Helper classes for instantiating TaskInfo for jUnit tests.
  * 
  * @author pcarr
  */
+@Ignore
 public class TaskUtil {
 
     public static TaskInfo getTaskInfoFromZip(final Class<?> clazz, final String zipfilename) {

@@ -7,6 +7,7 @@ import java.net.URISyntaxException;
 import org.genepattern.server.config.ServerConfiguration.Context;
 import org.genepattern.server.dm.GpFilePath;
 import org.genepattern.server.dm.UrlUtil;
+import org.junit.Ignore;
 
 /**
  * Helper class for working with GpFilePath objects within junit tests.
@@ -16,6 +17,7 @@ import org.genepattern.server.dm.UrlUtil;
  * @author pcarr
  *
  */
+@Ignore
 public class MockGpFilePath extends GpFilePath {
     private final File localFile;
     private final File relativeFile;

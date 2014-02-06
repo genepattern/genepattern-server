@@ -2,6 +2,9 @@ package org.genepattern.junitutil;
 
 import java.io.File;
 
+import org.junit.Ignore;
+
+@Ignore
 public class FileUtil {
     /**
      * Helper class which returns the parent File of this source file.

@@ -16,7 +16,9 @@ import org.genepattern.util.LSID;
 import org.genepattern.webservice.SuiteInfo;
 import org.genepattern.webservice.TaskInfo;
 import org.genepattern.webservice.WebServiceException;
+import org.junit.Ignore;
 
+@Ignore
 public class JunitAdminClient implements IAdminClient {
     private static Map<String, TaskInfo> catalog=new ConcurrentHashMap<String,TaskInfo>();
     private static Map<String, SortedSet<TaskInfo>> nameCatalog=new ConcurrentHashMap<String, SortedSet<TaskInfo>>();

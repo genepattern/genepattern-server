@@ -5,6 +5,7 @@ import java.io.File;
 import org.genepattern.server.UserAccountManager;
 import org.genepattern.server.config.ServerConfiguration;
 import org.junit.Assert;
+import org.junit.Ignore;
 
 /**
  * Helper methods for setting server configuration properties for jUnit tests.
@@ -12,6 +13,7 @@ import org.junit.Assert;
  * @author pcarr
  *
  */
+@Ignore
 public class ConfigUtil {
     /**
      * Load a 'config.yaml' file from the directory which contains this source file.

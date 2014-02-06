@@ -6,6 +6,7 @@ import java.util.Map;
 import org.genepattern.server.TaskLSIDNotFoundException;
 import org.genepattern.server.eula.GetTaskStrategy;
 import org.genepattern.webservice.TaskInfo;
+import org.junit.Ignore;
 
 /**
  * Task loader for use in jUnit tests; It's basically a lookup table
@@ -14,6 +15,7 @@ import org.genepattern.webservice.TaskInfo;
  * @author pcarr
  *
  */
+@Ignore
 public class TaskLoader implements GetTaskStrategy {
     private Map<String,TaskInfo> lookup=new HashMap<String,TaskInfo>();
    
