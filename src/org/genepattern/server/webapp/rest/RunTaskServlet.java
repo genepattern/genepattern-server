@@ -251,8 +251,8 @@ public class RunTaskServlet extends HttpServlet
             }
             JSONObject responseObject = new JSONObject();
 
-            JSONArray parametersObject = getParameterList(request, taskInfo);
-            responseObject.put(ParametersJSON.KEY, parametersObject);
+            JSONArray parametersArray = getParameterList(request, taskInfo);
+            responseObject.put(ParametersJSON.KEY, parametersArray);
 
             //set initial values for the parameters for the following cases:
             //   1) a reloaded job
@@ -284,6 +284,9 @@ public class RunTaskServlet extends HttpServlet
             //check if there are any user defined groups
             final LibdirStrategy libdirStrategy = new LibdirLegacy();
             final TasklibPath tasklibPath = new TasklibPath(libdirStrategy, taskInfo, "paramgroups.json");
+            //keep track of parameters without a group
+           ArrayList allParameters = new ArrayList();
+
             if(tasklibPath != null)
             {
                 File paramGroupsFile = tasklibPath.getServerFile();
@@ -295,6 +298,32 @@ public class RunTaskServlet extends HttpServlet
                     if(pGroupsJsonString != null && pGroupsJsonString.length() > 0)
                     {
                         paramGroupsJson = new JSONArray(pGroupsJsonString);
+                        for(int i=0;i<paramGroupsJson.length();i++)
+                        {
+                            JSONObject paramGroupObject = paramGroupsJson.getJSONObject(i);
+                            JSONArray parameters = paramGroupObject.getJSONArray("parameters");
+                            if(parameters == null || parameters.length() == 0)
+                            {
+                                throw new Exception("No parameters defined for parameter group: "
+                                        + paramGroupObject.getString("name"));
+                            }
+
+                            //add all the parameters individually
+                            for(int t=0;t<parameters.length();t++)
+                            {
+                                String paramName = parameters.getString(t);
+                                if(!allParameters.contains(paramName))
+                                {
+                                    allParameters.add(paramName);
+                                }
+                                else
+                                {
+                                    throw new Exception("Parameter " + paramName +
+                                            " found in multiple parameter groups");
+                                }
+                            }
+                        }
+
                         validateParamGroupsJson(paramGroupsJson, taskInfo.getParameterInfoArray());
                     }
                 }
@@ -317,7 +346,30 @@ public class RunTaskServlet extends HttpServlet
                 defaultParamJsonGroup.put("parameters", parameterNameList);
                 paramGroupsJson.put(defaultParamJsonGroup);
             }
+            else
+            {
+                //check if any parameters were not grouped
+                for(int p=0;p<parametersArray.length();p++)
+                {
+                    String paramName = parametersArray.getJSONObject(p).getString("name");
+                    if(allParameters.contains(paramName))
+                    {
+                        allParameters.remove(paramName);
+                    }
+                    else
+                    {
+                        allParameters.add(paramName);
+                    }
+                }
 
+                if(allParameters.size() > 0)
+                {
+                    //create a default parameter group which contains all of the parameters
+                    JSONObject defaultParamJsonGroup = new JSONObject();
+                    defaultParamJsonGroup.put("parameters", allParameters);
+                    paramGroupsJson.put(defaultParamJsonGroup);
+                }
+            }
             moduleObject.put("parameter_groups", paramGroupsJson);
             responseObject.put(ModuleJSON.KEY, moduleObject);
 
