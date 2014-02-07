@@ -1648,7 +1648,12 @@ function loadParametersByGroup(parameterGroups, parameters, initialValues)
 
         var paramTable = createParamTable(parameterGroups[i].parameters, initialValues);
         curHeaderDiv.append(paramTable);
-        paramTable.css({'margin-left': '20px'});
+
+        //indent only if a parameter section header name was provided
+        if(pGroupName.length > 0)
+        {
+            paramTable.css({'margin-left': '20px'});
+        }
     }
 }
 
