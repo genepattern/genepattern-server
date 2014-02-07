@@ -1606,16 +1606,18 @@ function loadParametersByGroup(parameterGroups, parameters, initialValues)
                     headerTitleDiv.append(toggleImg);
                 }
 
-                if(h != 0)
+                if(headings.length > 1)
                 {
-                    newHeaderDiv.addClass("border");
-                    headerTitleDiv.addClass("border");
+                    if(h != 0)
+                    {
+                        newHeaderDiv.addClass("border");
+                        headerTitleDiv.addClass("border");
+                    }
+                    else
+                    {
+                        headerTitleDiv.addClass("background");
+                    }
                 }
-                else
-                {
-                    headerTitleDiv.addClass("background");
-                }
-
                 headerTitleDiv.append(headings[h]);
                 headerTitleDiv.css({'margin-left':indent+'px'});
 
