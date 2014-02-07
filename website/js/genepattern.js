@@ -504,7 +504,7 @@ function jobStatusPoll() {
 		}
 }
 
-function ajaxFileTabUpload(file){
+function ajaxFileTabUpload(file, directory){
     var loaded = 0;
     var step = 1024*1024;
     var total = file.size;
@@ -563,7 +563,7 @@ function ajaxFileTabUpload(file){
         xhr.setRequestHeader('partitionCount', partitionCount.toString());
         xhr.setRequestHeader('partitionIndex', partitionIndex.toString());
         xhr.setRequestHeader('filename', file.name);
-        xhr.setRequestHeader('uploadPath', "./");
+        xhr.setRequestHeader('uploadPath', directory);
         xhr.sendAsBinary(event.target.result);
 
         partitionIndex++;
@@ -580,9 +580,13 @@ function uploadDrop(event) {
     var ul = document.createElement("ul");
     var filelist = event.dataTransfer.files;
 
+    openUploadDirectoryDialog(filelist);
+}
+
+function uploadAfterDialog(filelist, directory) {
     for (var i = 0; i < filelist.length; i++) {
         var file = filelist[i];
-        ajaxFileTabUpload(file);
+        ajaxFileTabUpload(file, directory);
     }
 }
 

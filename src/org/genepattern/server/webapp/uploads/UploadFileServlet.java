@@ -37,6 +37,9 @@ public class UploadFileServlet extends HttpServlet {
         if (TREE.equals(action)) {
             loadTreeLevel(request, response);
         }
+        if (SAVE_TREE.equals(action)) {
+            loadTreeLevel(request, response);
+        }
         else {
             // Default to tree if unknown
             loadTreeLevel(request, response);

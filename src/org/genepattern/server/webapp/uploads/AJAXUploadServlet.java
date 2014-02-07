@@ -94,12 +94,16 @@ public class AJAXUploadServlet extends HttpServlet {
         if (uploadDirPath == null) {
             throw new FileUploadException("server error, missing session attribute 'uploadPath'");
         }
-        if (!uploadDirPath.startsWith("./")) {
-            uploadDirPath = "./" + uploadDirPath;
-        }
+
         GpFilePath dir;
         try {
-            dir = GpFileObjFactory.getUserUploadFile(userContext, new File(uploadDirPath));
+            dir = GpFileObjFactory.getRequestedGpFileObj(uploadDirPath);
+
+
+            // Handle special case for root uploads directory
+            if (dir.getRelativeFile().getPath().equals("")) {
+                dir = GpFileObjFactory.getUserUploadFile(userContext, new File("./"));
+            }
         }
         catch (Exception e) {
             throw new FileUploadException("Could not get the appropriate directory path for file upload");

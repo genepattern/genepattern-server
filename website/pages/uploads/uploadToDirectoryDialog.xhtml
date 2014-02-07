@@ -1,0 +1,147 @@
+<!--
+  ~ Copyright 2012 The Broad Institute, Inc.
+  ~ SOFTWARE COPYRIGHT NOTICE
+  ~ This software and its documentation are the copyright of the Broad Institute, Inc. All rights are reserved.
+  ~
+  ~ This software is supplied without any warranty or guaranteed support whatsoever. The Broad Institute is not responsible for its use, misuse, or functionality.
+  -->
+<!DOCTYPE html PUBLIC "-/W3C/DTD XHTML 1.0 Transitional/EN" "http:/www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:t="http://myfaces.apache.org/tomahawk"
+      xmlns:c="http://java.sun.com/jstl/core">
+<ui:composition>
+    <ui:define name="headText">
+        <style type="text/css">
+            .uploadDirectorySelected {
+                background-color: #9999CC;
+            }
+
+            #uploadDirectoryTree .jstree-leaf a ins {
+                background-image: url('/gp/images/iconFolder.gif');
+            }
+        </style>
+        <script type="text/javascript" language="javascript">
+            /* <![CDATA[ */
+            var uploadDirectorySelected = null;
+            var uploadFileList = null;
+
+            function openUploadDirectoryDialog(filelist) {
+                $('#uploadDirectoryDialog').dialog('open');
+                uploadFileList = filelist;
+                return false;
+            }
+
+            function handleUploadDirectoryClick(node) {
+                jq(uploadDirectorySelected).removeClass("uploadDirectorySelected");
+                jq(node).addClass("uploadDirectorySelected");
+                uploadDirectorySelected = node;
+                jq("#uploadDirectoryDialog").parent().find(".ui-button:first").button("enable");
+                return false;
+            }
+            /* ]]> */
+        </script>
+        <script src="#{facesContext.externalContext.requestContextPath}/js/jquery/jquery.cookie.js" type="text/javascript" />
+        <script src="#{facesContext.externalContext.requestContextPath}/js/jquery/jquery.jstree.js" type="text/javascript" />
+        <link href="/gp/js/themes/default/style.css" rel="stylesheet" type="text/css" />
+    </ui:define>
+
+    <div id="uploadDirectoryDialog" style="display: none;">
+        <div id="uploadDirectoryTree"></div>
+        <script type="text/javascript">
+            jq("#uploadDirectoryTree").jstree({
+                core:{
+                    "html_titles":true
+                },
+
+                "json_data":{
+                    "ajax":{
+                        "url":function (node) {
+                            if (node === -1) {
+                                return "/gp/UploadFileTree/saveTree";
+                            }
+                            var gsURL = jq(node).find("a").attr("href");
+                            return "/gp/UploadFileTree/saveTree?dir=" + encodeURIComponent(gsURL);
+                        },
+                        "data":function (node) {
+                            return {
+                                id:node.attr ? node.attr("id") : 0
+                            };
+                        }
+                    }
+                },
+                "cookies":{
+                    "save_opened" : "uploadDirectoryTree"
+                },
+                plugins:[ "themes", "json_data", "cookies" ]
+            });
+            jq("#uploadDirectoryTree").bind("load_node.jstree", function (event, data) {
+                var iterate = null;
+
+                // Handle the case of the initial load
+                if (data["args"][0] === -1) {
+                    iterate = jq(this).find("li");
+                }
+                else {
+                    iterate = jq(data["args"][0]).find("li");
+                }
+
+                iterate.each(function (index) {
+
+                    var node = iterate.get(index);
+                    var name = jq(node).find("a:first").attr("name");
+
+                    // Add the id to the node
+                    jq(node).attr("id", name);
+
+                    // Check for the case of empty directories
+                    var link = jq(node).find("a:first").attr("href");
+                    if (link === "#") return;
+                });
+
+                jq("#uploadDirectoryDialog").parent().find(".ui-button:first").button("disable");
+
+                // Bind the correct click calls
+                $("#uploadDirectoryTree .jstree-leaf a").attr("onclick", "handleUploadDirectoryClick(this); return false;");
+                $("#uploadDirectoryTree .jstree-open a").attr("onclick", "handleUploadDirectoryClick(this); return false;");
+                $("#uploadDirectoryTree .jstree-closed a").attr("onclick", "handleUploadDirectoryClick(this); return false;");
+            });
+        </script>
+    </div>
+    <script type="text/javascript">
+        jq("#uploadDirectoryDialog").dialog({
+            width:500,
+            autoOpen:false,
+            title:"Select Directory in Which to Save the File",
+            buttons:[
+                {
+                    text:"Select",
+                    click:function () {
+                        // Prevent submitting if no directory is selected
+                        if (uploadDirectorySelected === null) {
+                            return;
+                        }
+
+                        // Get the URL of the directory to save to
+                        var directory = jq(uploadDirectorySelected).attr("href");
+
+                        // Start the upload
+                        uploadAfterDialog(uploadFileList, directory);
+
+                        // Hide the dialog
+                        $("#uploadDirectoryDialog").dialog("close");
+                    }
+                },
+                {
+                    text:"Cancel",
+                    click:function () {
+                        $("#uploadDirectoryDialog").dialog("close");
+                    }
+                }
+            ]
+        });
+    </script>
+</ui:composition>
+</html>

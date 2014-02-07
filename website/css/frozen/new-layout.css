@@ -500,3 +500,14 @@ body {
     margin: 0px;
     background-color: #F1F2F2;
 }
+
+#uploadDirectoryTree .jstree-leaf {
+    display: none;
+}
+
+#uploadDirectoryTree .jstree-open > ins {
+    display: none;
+}
+#uploadDirectoryTree .jstree-closed > ins {
+    display: none;
+}
