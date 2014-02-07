@@ -23,9 +23,9 @@
             <link  type="text/css" rel="stylesheet" media="screen" href="#{facesContext.externalContext.requestContextPath}/css/#{uiBean.skin}/modules/styles/jquery.multiselect.css" />
             <link  type="text/css" rel="stylesheet" media="screen" href="#{facesContext.externalContext.requestContextPath}/css/#{uiBean.skin}/jMenu.jquery.css" />
 
-            <c:if test="#{uiBean.parameterGroups}">
-                <link  type="text/css" rel="stylesheet" media="screen" href="#{facesContext.externalContext.requestContextPath}/css/#{uiBean.skin}/runtaskform_3_8_1.css" />
-            </c:if>
+            <c:when test="#{uiBean.parameterGroups}">
+                <link type="text/css" rel="stylesheet" media="screen" href="#{facesContext.externalContext.requestContextPath}/css/#{uiBean.skin}/runtaskform_3_8_1.css" />
+            </c:when>
             <c:otherwise>
                 <link  type="text/css" rel="stylesheet" media="screen" href="#{facesContext.externalContext.requestContextPath}/css/#{uiBean.skin}/runtaskform.css" />
             </c:otherwise>
@@ -33,13 +33,14 @@
             <script type="text/javascript" src="#{facesContext.externalContext.requestContextPath}/js/jquery/jquery.multiselect.js"></script>
             <script type="text/javascript" src="#{facesContext.externalContext.requestContextPath}/js/jquery/jquery.validate.js"></script>
 
-            <c:if test="#{uiBean.parameterGroups}">
-                <script type="text/javascript" src="#{facesContext.externalContext.requestContextPath}/js/runtaskform_3_8_1.js"></script>
-            </c:if>
-            <c:otherwise>
-                <script type="text/javascript" src="#{facesContext.externalContext.requestContextPath}/js/runtaskform.js"></script>
-            </c:otherwise>
-
+            <c:choose>
+                <c:when test="#{uiBean.parameterGroups}">
+                    <script type="text/javascript" src="#{facesContext.externalContext.requestContextPath}/js/runtaskform_3_8_1.js"></script>
+                </c:when>
+                <c:otherwise>
+                    <script type="text/javascript" src="#{facesContext.externalContext.requestContextPath}/js/runtaskform.js"></script>
+                </c:otherwise>
+            </c:choose>
     		<script type="text/javascript" language="javascript">
                 /* <![CDATA[ */
                 function callManagedBean(elExpression, parameters) {
