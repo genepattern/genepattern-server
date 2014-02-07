@@ -1606,7 +1606,7 @@ function loadParametersByGroup(parameterGroups, parameters, initialValues)
                     headerTitleDiv.append(toggleImg);
                 }
 
-                if(headings.length > 1)
+                if(parameterGroups.length > 1 && pGroupName.length > 0)
                 {
                     if(h != 0)
                     {
