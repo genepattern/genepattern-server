@@ -414,6 +414,7 @@ img {
 	width: 100%;
 	line-height: 20px;
 	vertical-align: top;
+    border-radius: 5px;
 }
 .barhead-version {
 	font-size: 11px;
