@@ -1,10 +1,6 @@
 package org.genepattern.server.webapp.rest;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.*;
 import java.util.*;
 
 import javax.servlet.http.HttpServlet;
@@ -22,6 +18,7 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 
 import org.apache.log4j.Logger;
+import org.apache.commons.io.FileUtils;
 import org.genepattern.codegenerator.CodeGeneratorUtil;
 import org.genepattern.data.pipeline.GetIncludedTasks;
 import org.genepattern.modules.ModuleJSON;
@@ -29,6 +26,9 @@ import org.genepattern.modules.ParametersJSON;
 import org.genepattern.modules.ResponseJSON;
 import org.genepattern.server.config.ServerConfiguration;
 import org.genepattern.server.dm.GpFilePath;
+import org.genepattern.server.dm.tasklib.TasklibPath;
+import org.genepattern.server.eula.LibdirLegacy;
+import org.genepattern.server.eula.LibdirStrategy;
 import org.genepattern.server.job.input.GroupId;
 import org.genepattern.server.job.input.JobInput;
 import org.genepattern.server.job.input.JobInputFileUtil;
@@ -282,13 +282,26 @@ public class RunTaskServlet extends HttpServlet
             JSONArray paramGroupsJson = new JSONArray();
 
             //check if there are any user defined groups
-            String pGroupsJsonString = (String)taskInfo.getAttributes().get("paramGroups");
-            if(pGroupsJsonString != null && pGroupsJsonString.length() > 0)
+            final LibdirStrategy libdirStrategy = new LibdirLegacy();
+            final TasklibPath tasklibPath = new TasklibPath(libdirStrategy, taskInfo, "paramgroups.json");
+            if(tasklibPath != null)
             {
-                paramGroupsJson = new JSONArray(pGroupsJsonString);
-                validateParamGroupsJson(paramGroupsJson, taskInfo.getParameterInfoArray());
+                File paramGroupsFile = tasklibPath.getServerFile();
+
+                if(paramGroupsFile.exists())
+                {
+                    String pGroupsJsonString = FileUtils.readFileToString(paramGroupsFile);
+
+                    if(pGroupsJsonString != null && pGroupsJsonString.length() > 0)
+                    {
+                        paramGroupsJson = new JSONArray(pGroupsJsonString);
+                        validateParamGroupsJson(paramGroupsJson, taskInfo.getParameterInfoArray());
+                    }
+                }
             }
-            else
+
+            //if no groups were defined in the module then create one group containing all the parameters
+            if(paramGroupsJson.length() == 0)
             {
                 //create a default parameter group which contains all of the parameters
                 JSONObject defaultParamJsonGroup = new JSONObject();
