@@ -1606,16 +1606,18 @@ function loadParametersByGroup(parameterGroups, parameters, initialValues)
                     headerTitleDiv.append(toggleImg);
                 }
 
-                if(parameterGroups.length > 1 && pGroupName.length > 0)
+                if(parameterGroups.length > 1)
                 {
-                    if(h != 0)
+                    newHeaderDiv.addClass("border");
+
+                    if(pGroupName.length > 0)
                     {
-                        newHeaderDiv.addClass("border");
                         headerTitleDiv.addClass("border");
-                    }
-                    else
-                    {
-                        headerTitleDiv.addClass("background");
+
+                        if(h==0)
+                        {
+                            headerTitleDiv.addClass("background");
+                        }
                     }
                 }
                 headerTitleDiv.append(headings[h]);
@@ -1650,10 +1652,10 @@ function loadParametersByGroup(parameterGroups, parameters, initialValues)
         curHeaderDiv.append(paramTable);
 
         //indent only if a parameter section header name was provided
-        if(pGroupName.length > 0)
-        {
+       // if(pGroupName.length > 0)
+       // {
             paramTable.css({'margin-left': '20px'});
-        }
+       // }
     }
 }
 

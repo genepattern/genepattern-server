@@ -42,7 +42,9 @@
 
 .paramsTable
 {
-    width: 100%;
+    min-width: 630;
+    width: auto;
+    margin-right: 14px;
     height: 100%;
     border-spacing: 0;
 }
@@ -52,12 +54,12 @@ tr.pRow td
     border-top: 2px solid #F0F0F0;
 }
 
-.paramsTable tr:first-child td
+tr:first-child td
 {
     border: none;
 }
 
-td .paramsTable
+td
 {
     padding: 7px 0 6px 0;
 }
@@ -68,12 +70,12 @@ tr.paramDescription td
     padding-bottom: 2px;
 }
 
-td:nth-child(odd).paramsTable
+.paramsTable td:nth-child(odd)
 {
     white-space: nowrap;
 }
 
-td:nth-child(even).paramsTable
+.paramsTable td:nth-child(even)
 {
     padding-left: 14px;
 }
@@ -176,14 +178,32 @@ button.urlButton
     padding: 0;
 }
 
-td:first-child .paramsTable
+/*.paramsTable td:first-child
 {
     width: 15px;
 }
 
-tr:nth-child(odd) .paramsTable
+.paramsTable tr:nth-child(odd)
 {
     border-bottom: 1px solid #7898c7;
+}
+*/
+
+#submitJob
+{
+    min-width: 820px;
+}
+
+.paramGroupSection
+{
+    min-width: 640px;
+    width: 100%;
+}
+
+.pHeaderTitleDiv
+{
+    min-width: 640px;
+    width: 100%;
 }
 
 .paramsTable input[type=text]
@@ -196,11 +216,10 @@ tr:nth-child(odd) .paramsTable
 {
     vertical-align: bottom;
     padding: 9px 10px 10px 10px;
-    min-width: 490px;
+    min-width: 570px;
     margin-bottom: 0;
     display: inline-block;
     white-space: nowrap;
-    width: 100%;
 }
 
 .fileDiv button img
@@ -575,7 +594,6 @@ span.drop-box
     -moz-border-radius: 8px;
     -webkit-border-radius: 8px;
     padding: 8px 6px 6px 6px;
-    width: 92%;
 }
 
 
