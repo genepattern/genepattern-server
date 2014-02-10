@@ -104,7 +104,7 @@
 
 .runtask-highlight
 {
-    background-color: #cddcf1;
+    background-color: #cddcf1 !important;
     cursor: copy;
 }
 
