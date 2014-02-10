@@ -1579,12 +1579,23 @@ function loadParametersByGroup(parameterGroups, parameters, initialValues)
                 var headerTitleDiv = $("<div class='pHeaderTitleDiv'/>");
                 var toggleImg = $("<img src ='/gp/images/toggle_collapse.png' width='17' height='17' class='paramSectionToggle'/>");
 
-                toggleImg.click(function()
+                headerTitleDiv.click(function()
                 {
-                    $(this).parent().next().toggle();
+                    $(this).next().toggle();
+
+                    var toggleImg = $(this).find(".paramSectionToggle");
+
+                    if(toggleImg == null)
+                    {
+                        //toggle image not found
+                        // just log error and return
+                        console.log("Could not find toggle image for hiding and showing parameter groups sections");
+
+                        return;
+                    }
 
                     //change the toggle image to indicate hide or show
-                    var imageSrc = $(this).attr("src");
+                    var imageSrc = toggleImg.attr("src");
                     if(imageSrc.indexOf('collapse') != -1)
                     {
                         imageSrc = imageSrc.replace("collapse", "expand");
@@ -1594,7 +1605,7 @@ function loadParametersByGroup(parameterGroups, parameters, initialValues)
                         imageSrc = imageSrc.replace("expand", "collapse");
                     }
 
-                    $(this).attr("src", imageSrc);
+                    toggleImg.attr("src", imageSrc);
                 });
 
                 //indent the inner sections
