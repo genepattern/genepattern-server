@@ -335,6 +335,7 @@ body {
 #left-nav-files, #left-nav-genomespace {
 	padding: 10px !important;
 	width: 328px;
+    bottom: 85px;
 }
 
 #left-nav-modules.ui-widget-content a {
@@ -494,10 +495,11 @@ body {
     font-size: 10pt;
     line-height: 14pt;
     text-align: center;
-    position: absolute;
-    bottom: 0px;
+    position: fixed;
+    bottom: 35px;
     left: 0px;
     right: 0px;
+    width: 349px;
     padding: 0px;
     margin: 0px;
     background-color: #F1F2F2;
