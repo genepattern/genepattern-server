@@ -279,97 +279,8 @@ public class RunTaskServlet extends HttpServlet
             responseObject.put("initialValues", initialValuesJson);
 
             //add parameter grouping info (i.e advanced parameters
-            JSONArray paramGroupsJson = new JSONArray();
+            JSONArray paramGroupsJson = loadModuleHelper.getParameterGroupsJson(taskInfo);
 
-            //check if there are any user defined groups
-            final LibdirStrategy libdirStrategy = new LibdirLegacy();
-            final TasklibPath tasklibPath = new TasklibPath(libdirStrategy, taskInfo, "paramgroups.json");
-            //keep track of parameters without a group
-           ArrayList allParameters = new ArrayList();
-
-            if(tasklibPath != null)
-            {
-                File paramGroupsFile = tasklibPath.getServerFile();
-
-                if(paramGroupsFile.exists())
-                {
-                    String pGroupsJsonString = FileUtils.readFileToString(paramGroupsFile);
-
-                    if(pGroupsJsonString != null && pGroupsJsonString.length() > 0)
-                    {
-                        paramGroupsJson = new JSONArray(pGroupsJsonString);
-                        for(int i=0;i<paramGroupsJson.length();i++)
-                        {
-                            JSONObject paramGroupObject = paramGroupsJson.getJSONObject(i);
-                            JSONArray parameters = paramGroupObject.getJSONArray("parameters");
-                            if(parameters == null || parameters.length() == 0)
-                            {
-                                throw new Exception("No parameters defined for parameter group: "
-                                        + paramGroupObject.getString("name"));
-                            }
-
-                            //add all the parameters individually
-                            for(int t=0;t<parameters.length();t++)
-                            {
-                                String paramName = parameters.getString(t);
-                                if(!allParameters.contains(paramName))
-                                {
-                                    allParameters.add(paramName);
-                                }
-                                else
-                                {
-                                    throw new Exception("Parameter " + paramName +
-                                            " found in multiple parameter groups");
-                                }
-                            }
-                        }
-
-                        validateParamGroupsJson(paramGroupsJson, taskInfo.getParameterInfoArray());
-                    }
-                }
-            }
-
-            //if no groups were defined in the module then create one group containing all the parameters
-            if(paramGroupsJson.length() == 0)
-            {
-                //create a default parameter group which contains all of the parameters
-                JSONObject defaultParamJsonGroup = new JSONObject();
-
-                final ParameterInfo[] pArray=taskInfo.getParameterInfoArray();
-                JSONArray parameterNameList = new JSONArray();
-
-                for(int i =0;i < pArray.length;i++)
-                {
-                    parameterNameList.put(pArray[i].getName());
-                }
-
-                defaultParamJsonGroup.put("parameters", parameterNameList);
-                paramGroupsJson.put(defaultParamJsonGroup);
-            }
-            else
-            {
-                //check if any parameters were not grouped
-                for(int p=0;p<parametersArray.length();p++)
-                {
-                    String paramName = parametersArray.getJSONObject(p).getString("name");
-                    if(allParameters.contains(paramName))
-                    {
-                        allParameters.remove(paramName);
-                    }
-                    else
-                    {
-                        allParameters.add(paramName);
-                    }
-                }
-
-                if(allParameters.size() > 0)
-                {
-                    //create a default parameter group which contains all of the parameters
-                    JSONObject defaultParamJsonGroup = new JSONObject();
-                    defaultParamJsonGroup.put("parameters", allParameters);
-                    paramGroupsJson.put(defaultParamJsonGroup);
-                }
-            }
             moduleObject.put("parameter_groups", paramGroupsJson);
             responseObject.put(ModuleJSON.KEY, moduleObject);
 
@@ -841,37 +752,6 @@ public class RunTaskServlet extends HttpServlet
             final boolean createPipelineAllowed = AuthorizationHelper.createPipeline(userContext.getUserId());
             boolean editable = createPipelineAllowed && isMine && isAuthorityMine;
             return editable;
-        }
-    }
-
-    private void validateParamGroupsJson(JSONArray paramsGroupsJson, ParameterInfo[] pInfos) throws Exception
-    {
-        //get the list of parameters
-        ArrayList parameters = new ArrayList();
-        for(int p=0;p<pInfos.length;p++)
-        {
-            parameters.add(pInfos[p].getName());
-        }
-
-        for(int i=0;i<paramsGroupsJson.length();i++)
-        {
-            if(!(paramsGroupsJson.get(i) instanceof JSONObject))
-            {
-                throw new Exception("Unexpected parameter group json object: " + paramsGroupsJson.get(i)
-                + " at index " + i);
-            }
-
-            JSONObject paramGroup = paramsGroupsJson.getJSONObject(i);
-            JSONArray params  = (JSONArray)paramGroup.get("parameters");
-            for(int p=0;p<params.length();p++)
-            {
-                if(!(parameters.contains(params.get(p))))
-                {
-                    //specified parameter name in group does not exist
-                    throw new Exception("Parameter " + params.get(p) + " in parameter group " + paramGroup.get("name")
-                    + " does not exist");
-                }
-            }
         }
     }
 }
