@@ -279,7 +279,10 @@ public class RunTaskServlet extends HttpServlet
             responseObject.put("initialValues", initialValuesJson);
 
             //add parameter grouping info (i.e advanced parameters
-            JSONArray paramGroupsJson = loadModuleHelper.getParameterGroupsJson(taskInfo);
+            //check if there are any user defined groups
+            final LibdirStrategy libdirStrategy = new LibdirLegacy();
+            final TasklibPath filePath = new TasklibPath(libdirStrategy, taskInfo, "paramgroups.json");
+            JSONArray paramGroupsJson = loadModuleHelper.getParameterGroupsJson(taskInfo, filePath.getServerFile());
 
             moduleObject.put("parameter_groups", paramGroupsJson);
             responseObject.put(ModuleJSON.KEY, moduleObject);

@@ -393,23 +393,25 @@ public class LoadModuleHelper {
         return initialValues;
     }
 
-    public JSONArray getParameterGroupsJson(TaskInfo taskInfo) throws Exception
+    public JSONArray getParameterGroupsJson(TaskInfo taskInfo, File paramGroupJsonFile) throws Exception
     {
         if (taskInfo == null) {
-            throw new IllegalArgumentException("parameterInfos==null");
+            throw new IllegalArgumentException("taskInfos==null");
+        }
+
+        if (paramGroupJsonFile == null) {
+            throw new IllegalArgumentException("paramGroupJsonFile==null");
         }
 
         JSONArray paramGroupsJson = new JSONArray();
 
-        //check if there are any user defined groups
-        final LibdirStrategy libdirStrategy = new LibdirLegacy();
-        final TasklibPath tasklibPath = new TasklibPath(libdirStrategy, taskInfo, "paramgroups.json");
+
         //keep track of parameters without a group
         ArrayList allParameters = new ArrayList();
 
-        if(tasklibPath != null)
+        if(filePath != null)
         {
-            File paramGroupsFile = tasklibPath.getServerFile();
+            File paramGroupsFile = filePath.getServerFile();
 
             if(paramGroupsFile.exists())
             {
