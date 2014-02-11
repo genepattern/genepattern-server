@@ -14,7 +14,7 @@ public class UIBean {
     }
 
     public boolean getParameterGroups() {
-        boolean env = ServerConfiguration.instance().getGPBooleanProperty(UIBeanHelper.getUserContext(), "group.parameters", true);
+        boolean env = ServerConfiguration.instance().getGPBooleanProperty(UIBeanHelper.getUserContext(), "group.parameters", false);
         return env;
     }
 
