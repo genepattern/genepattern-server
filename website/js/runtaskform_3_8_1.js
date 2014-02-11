@@ -2292,15 +2292,15 @@ function submitTask()
 function dragEnter(evt)
 {
     this.classList.add('runtask-highlight');
-    evt.stopPropagation();
-    evt.preventDefault();
+//    evt.stopPropagation();
+//    evt.preventDefault();
 }
 
 function dragLeave(evt)
 {
     this.classList.remove('runtask-highlight');
-    evt.stopPropagation();
-    evt.preventDefault();
+//    evt.stopPropagation();
+//    evt.preventDefault();
 }
 
 function dragExit(evt)
