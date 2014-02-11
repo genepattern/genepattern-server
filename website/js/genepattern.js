@@ -532,16 +532,16 @@ function ajaxFileTabUpload(file, directory){
     });
 
     reader.onprogress = function(event){
-        loaded += event.loaded;
         var progress = Math.min(Math.round((loaded/total) * 100), 100);
         $("#upload-dropzone-progress").progressbar("value", progress);
     };
 
     reader.onload = function(event){
+        loaded += event.loaded;
         xhr = new XMLHttpRequest();
         var upload = xhr.upload;
         upload.addEventListener('load',function(){
-            if (loaded <= total) {
+            if (loaded < total) {
                 blob = file.slice(loaded, loaded + step + 1);
                 reader.readAsBinaryString(blob);
             }
