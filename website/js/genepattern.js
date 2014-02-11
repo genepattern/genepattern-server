@@ -547,7 +547,9 @@ function ajaxFileTabUpload(file, directory){
             }
             else {
                 loaded = total;
+            }
 
+            if (loaded === total) {
                 setTimeout(function() {
                     var data = xhr.response;
 
