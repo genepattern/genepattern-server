@@ -16,7 +16,17 @@ import org.genepattern.webservice.JobInfo;
 import com.google.inject.internal.ImmutableMap;
 
 /**
- * The description of a command line job to submit to the queuing system.
+ * The details of a command line job to submit to the queuing system.
+ * This includes the command line arguments as well as additional drm job specification parameters
+ * which can be used by specific JobRunner implementations such as for LSF, SGE, or PBS/Torque.
+ * See http://slurm.schedmd.com/rosetta.pdf, 'a Rosetta Stone of Workload Managers',
+ * for a table of common job specification parameters.
+ * 
+ * To ensure that this class is immutable, use the DrmJobSubmission.Builder class to create a new instance.
+ * 
+ * The workerName and workerConfig options were developed for Wu, Le-Shin at Indiana Universiry for the
+ * integration of GenePattern with their PBS/Torque queuing system. The workerName can be used to select 
+ * 
  * @author pcarr
  *
  */
@@ -31,16 +41,12 @@ public class DrmJobSubmission {
     private final File stderrFile;
     private final File stdinFile;
     private final File logFile;
-    
-    //additional drm job specification parameters
-    //    see http://slurm.schedmd.com/rosetta.pdf, 'a Rosetta Stone of Workload Managers',
-    //    for a table of common job specification parameters
-    private final String queue; //default is null
-    // initialized from a string, e.g. '8 gb',
-    // units must be one of 'b', 'kb', 'mb', 'gb' or 'tb', case insensitive.
+
+    private final String queue; 
     private final Memory memory; //default is null
     private final Walltime walltime; //default is null
     private final Integer nodeCount; //default is null
+    private final Integer cpuCount; //default is null
     private final List<String> extraArgs;
     private final String workerName; //default is null
     private final Map<?,?> workerConfig; //default is null
@@ -69,6 +75,7 @@ public class DrmJobSubmission {
         this.memory=builder.memory;
         this.walltime=builder.walltime;
         this.nodeCount=builder.nodeCount;
+        this.cpuCount=builder.cpuCount;
         if (builder.extraArgs == null || builder.extraArgs.size()==0) {
             this.extraArgs=Collections.emptyList();
         }
@@ -80,62 +87,139 @@ public class DrmJobSubmission {
         this.jobContext=ServerConfiguration.Context.getContextForJob(jobInfo);
     }
     
+    /**
+     * The GenePattern job number.
+     * @return
+     */
     public Integer getGpJobNo() {
         return this.gpJobNo;
     }
-    
+
+    /**
+     * The job details as a JobInfo instance.
+     * @return
+     */
     public JobInfo getJobInfo() {
         return jobInfo;
     }
     
+    /**
+     * The command line as a list of args.
+     * @return
+     */
     public List<String> getCommandLine() {
         return Collections.unmodifiableList(commandLine);
     }
-    
+
+    /**
+     * Runtime environment variables.
+     * @return
+     */
     public Map<String,String> getEnvironmentVariables() {
         return Collections.unmodifiableMap(environmentVariables);
     }
-    
+
+    /**
+     * The working directory for the job.
+     * @return
+     */
     public File getWorkingDir() {
         return workingDir;
     }
-    
+
+    /**
+     * Stream stdout into this file.
+     * @return
+     */
     public File getStdoutFile() {
         return stdoutFile;
     }
-    
+
+    /**
+     * Stream stderr into this file.
+     * @return
+     */
     public File getStderrFile() {
         return stderrFile;
     }
-    
+
+    /**
+     * When set, stream stdin from this file.
+     * @return
+     */
     public File getStdinFile() {
         return stdinFile;
     }
-    
+
+    /**
+     * The location of queuing system specific log information, such as the lsf meta data.
+     * @return
+     */
     public File getLogFile() {
         return logFile;
     }
     
+    /**
+     * The name of the queue.
+     * The default value is null.
+     * @return 
+     */
     public String getQueue() {
         return queue;
     }
     
+    /**
+     * The memory size required for the given job. For example for an LSF job it means, request a node with at least this much
+     * available memory.
+     * 
+     * Initialized from a string, e.g. '8 gb' or '8gb',
+     * units must be one of 'b', 'kb', 'mb', 'gb' or 'tb', case insensitive.
+     * 
+     * @return the optional Memory setting, default is null.
+     */
     public Memory getMemory() {
         return memory;
     }
-    
+
+    /**
+     * 
+     * @return the optional walltime setting, default is null.
+     */
     public Walltime getWalltime() {
         return walltime;
     }
-    
+
+    /**
+     * 
+     * @return the optional nodeCount setting, default is null.
+     */
     public Integer getNodeCount() {
         return nodeCount;
     }
-    
+
+    /**
+     * 
+     * @return the optional cpuCount setting, default is null.
+     */
+    public Integer getCpuCount() {
+        return cpuCount;
+    }
+
+    /**
+     * 
+     * @return the list of additional JobRunner command line args, default is an empty list.
+     */
     public List<String> getExtraArgs() {
         return Collections.unmodifiableList(extraArgs);
     }
     
+    /**
+     * Get the runtime setting for the given configuration property. This is a helper method which 
+     * uses the GenePattern configuration system to get the value for a property.
+     * 
+     * @param propName
+     * @return
+     */
     public String getProperty(final String propName) {
         if (workerConfig != null && workerConfig.containsKey(propName)) {
             return (String) workerConfig.get(propName);
@@ -167,9 +251,10 @@ public class DrmJobSubmission {
         private Memory memory=null;
         private Walltime walltime=null;
         private Integer nodeCount=null;
+        private Integer cpuCount=null;
         private List<String> extraArgs=null;
         private String workerName;
-        private Map<?,?> workerConfig;
+        private Map<?,?> workerConfig=null;
 
         public Builder(final JobInfo jobInfo, final File workingDir) {
             this.jobInfo=jobInfo;
@@ -201,7 +286,7 @@ public class DrmJobSubmission {
         
         public Builder environmentVariables(final Map<String,String> environmentVariables) {
             if (this.environmentVariables != null) {
-                throw new IllegalArgumentException("environmentVariables alread set, should only call this method once!");
+                throw new IllegalArgumentException("environmentVariables already set, should only call this method once!");
             }
             this.environmentVariables = new HashMap<String,String>( environmentVariables );
             return this;
@@ -293,7 +378,12 @@ public class DrmJobSubmission {
         public Builder nodeCount(final Integer nodeCount) {
             this.nodeCount=nodeCount;
             return this;
-        } 
+        }
+        
+        public Builder cpuCount(final Integer cpuCount) {
+            this.cpuCount=cpuCount;
+            return this;
+        }
         
         public Builder addExtraArg(final String extraArg) {
             if (this.extraArgs == null) {

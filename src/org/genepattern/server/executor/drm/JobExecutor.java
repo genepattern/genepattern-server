@@ -383,6 +383,16 @@ public class JobExecutor implements CommandExecutor {
                 throw new CommandExecutorException("configuration error, initializing nodeCount="+nodeCountStr, t);
             }
         }
+        final String cpuCountStr=getValue(jobContext, workerConfig, JobRunner.PROP_CPU_COUNT);
+        if (cpuCountStr != null) {
+            try {
+                Integer cpuCount=Integer.parseInt(cpuCountStr);
+                builder=builder.cpuCount(cpuCount);
+            }
+            catch (Throwable t) {
+                throw new CommandExecutorException("configuration error, initializing cpuCount="+cpuCountStr, t);
+            }
+        }
         final Value extraArgsValue=ServerConfiguration.instance().getValue(jobContext, JobRunner.PROP_EXTRA_ARGS);
         if (extraArgsValue != null) {
             for(final String extraArg : extraArgsValue.getValues()) {

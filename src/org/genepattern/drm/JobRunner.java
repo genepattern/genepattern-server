@@ -18,6 +18,7 @@ public interface JobRunner {
     public static final String PROP_MEMORY="drm.memory";
     public static final String PROP_WALLTIME="drm.walltime";
     public static final String PROP_NODE_COUNT="drm.nodeCount";
+    public static final String PROP_CPU_COUNT="drm.cpuCount";
     public static final String PROP_EXTRA_ARGS="drm.extraArgs";
     public static final String PROP_WORKER_NAME="drm.workerName";
     
