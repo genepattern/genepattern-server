@@ -657,6 +657,16 @@ function initUploads() {
             }
         };
     }
+
+    // Set up the exit prompt
+    window.onbeforeunload = function(e) {
+        if ($("#upload-dropzone-progress:visible").length > 0) {
+            return "You are currently uploading files. If you navigate away from this page this will interrupt your file upload.";
+        }
+        else {
+            return null;
+        }
+    };
 }
 
 function initUploadTreeDND(folder_id) {
