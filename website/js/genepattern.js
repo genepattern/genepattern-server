@@ -603,6 +603,12 @@ function uploadDrop(event) {
     var ul = document.createElement("ul");
     var filelist = event.dataTransfer.files;
 
+    // Prevent uploads from interrupting other uploads
+    if ($("#upload-dropzone-progress:visible").length > 0) {
+        showDialog("Upload Initialization Error", "Please wait for all current uploads to complete before initiating another upload.");
+        return;
+    }
+
     if (filelist.length < 1) {
         showDialog("Operation Not Supported", "Sorry! We don't support downloading directly " +
             "from URL. Please download the file first and then upload here.");
