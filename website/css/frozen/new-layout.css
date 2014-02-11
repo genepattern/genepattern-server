@@ -508,10 +508,3 @@ body {
 #uploadDirectoryTree .jstree-leaf {
     display: none;
 }
-
-#uploadDirectoryTree .jstree-open > ins {
-    display: none;
-}
-#uploadDirectoryTree .jstree-closed > ins {
-    display: none;
-}

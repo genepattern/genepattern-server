@@ -536,6 +536,7 @@ function ajaxFileTabUpload(file, directory){
             $("#upload-dropzone-wrapper span").show();
 
             // Refresh the tree
+            $("#uploadTree").data("dndReady", {});
             $("#uploadTree").jstree("refresh");
         }
     });
@@ -580,7 +581,19 @@ function uploadDrop(event) {
     var ul = document.createElement("ul");
     var filelist = event.dataTransfer.files;
 
-    openUploadDirectoryDialog(filelist);
+    if (filelist.length < 1) {
+        showDialog("Operation Not Supported", "Sorry! We don't support downloading directly " +
+            "from URL. Please download the file first and then upload here.");
+        return;
+    }
+
+    if ($(event.toElement).attr("id") === "upload-dropzone") {
+        openUploadDirectoryDialog(filelist);
+    }
+    else {
+        var directory = $(event.toElement).closest(".jstree-open").find("a:first").attr("href");
+        uploadAfterDialog(filelist, directory);
+    }
 }
 
 function uploadAfterDialog(filelist, directory) {
@@ -592,12 +605,7 @@ function uploadAfterDialog(filelist, directory) {
 
 function initUploads() {
     // Attach events to the upload drop zone
-    var dropzone = $("#upload-dropzone").droppable({
-        hoverClass: 'runtask-highlight',
-        drop: function(event, ui) {
-            showDialog("Operation Not Supported", "Sorry! We don't support downloading directly from URL. Please download the file first and then upload here.");
-        }
-    });
+    var dropzone = $("#upload-dropzone");
     dropzone[0].addEventListener("dragenter", dragEnter, true);
     dropzone[0].addEventListener("dragleave", dragLeave, true);
     dropzone[0].addEventListener("dragexit", dragExit, false);
@@ -619,4 +627,33 @@ function initUploads() {
             }
         };
     }
+}
+
+function initUploadTreeDND(folder_id) {
+    // Ready the drop & drop aspects of the file tree
+    var eventsAttached = new Array();
+    var folder = $(folder_id);
+    $("#uploadTree li").find("ins, a img").each(function(index, element) {
+        // Protect against empties & repeats
+        if (folder === null || folder === undefined || folder.length < 1) return;
+        if ($.inArray(folder[0], eventsAttached) > -1) return;
+
+        folder[0].addEventListener("dragenter", dragEnter, true);
+        folder[0].addEventListener("dragleave", dragLeave, true);
+        folder[0].addEventListener("dragexit", dragExit, false);
+        folder[0].addEventListener("dragover", dragOver, false);
+        folder[0].addEventListener("drop", uploadDrop, false);
+
+        // Add to list to prevent repeats
+        eventsAttached.push(folder[0]);
+        console.log(eventsAttached);
+
+        var ready = $("#uploadTree").data("dndReady");
+        if (ready === undefined || ready === null) {
+            $("#uploadTree").data("dndReady", {});
+            ready = $("#uploadTree").data("dndReady");
+        }
+        ready[folder_id] = true;
+
+    });
 }
