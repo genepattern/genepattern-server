@@ -513,6 +513,7 @@ function ajaxFileTabUpload(file, directory){
     var partitionCount = Math.ceil(total / step);
 
     var reader = new FileReader();
+    var xhr = null;
 
     // Hide the dropzone
     $("#upload-dropzone").hide();
@@ -537,64 +538,56 @@ function ajaxFileTabUpload(file, directory){
     };
 
     reader.onload = function(event){
-        $.ajax({
-            type: "POST",
-            url: "/gp/AJAXUpload?fileName=" + file.name,
-            xhr: function() {  // custom xhr
-                var xhr = $.ajaxSettings.xhr();
-                if(xhr.upload){ // if upload property exists
-                    xhr.upload.addEventListener('progress', function() {
-                        if (loaded <= total) {
-                            blob = file.slice(loaded, loaded + step + 1);
-                            reader.readAsBinaryString(blob);
-                        }
-                        else {
-                            loaded = total;
-                        }
-                    }, false); // progressbar
-                }
-
-                return xhr;
-            },
-            cache: false,
-            contentType: false,
-            processData: false,
-            beforeSend: function(xhr) {
-                xhr.overrideMimeType("application/octet-stream");
-                xhr.setRequestHeader('partitionCount', partitionCount.toString());
-                xhr.setRequestHeader('partitionIndex', partitionIndex.toString());
-                xhr.setRequestHeader('filename', file.name);
-                xhr.setRequestHeader('uploadPath', directory);
-            },
-            success: function(data, status, xhr) {
-                if (data.match("^Error:")) {
-                    showDialog("Error in Upload", data);
-
-                    $("#upload-dropzone-progress-label").text("Upload Error!");
-
-                    // Hide the progressbar
-                    $("#upload-dropzone-progress").hide();
-
-                    // Show the dropzone
-                    $("#upload-dropzone").show();
-                    $("#upload-dropzone-wrapper span").show();
-                }
-                else {
-                    $("#upload-dropzone-progress-label").text("Upload Complete!");
-
-                    // Hide the progressbar
-                    $("#upload-dropzone-progress").hide();
-
-                    // Show the dropzone
-                    $("#upload-dropzone").show();
-                    $("#upload-dropzone-wrapper span").show();
-
-                    // Refresh the tree
-                    $("#uploadTree").data("dndReady", {});
-                    $("#uploadTree").jstree("refresh");
-                }
+        xhr = new XMLHttpRequest();
+        var upload = xhr.upload;
+        upload.addEventListener('load',function(){
+            if (loaded <= total) {
+                blob = file.slice(loaded, loaded + step + 1);
+                reader.readAsBinaryString(blob);
             }
-        });
+            else {
+                loaded = total;
+
+                setTimeout(function() {
+                    var data = xhr.response;
+
+                    if (data.match("^Error:")) {
+                        showDialog("Error in Upload", data);
+
+                        $("#upload-dropzone-progress-label").text("Upload Error!");
+
+                        // Hide the progressbar
+                        $("#upload-dropzone-progress").hide();
+
+                        // Show the dropzone
+                        $("#upload-dropzone").show();
+                        $("#upload-dropzone-wrapper span").show();
+                    }
+                    else {
+                        $("#upload-dropzone-progress-label").text("Upload Complete!");
+
+                        // Hide the progressbar
+                        $("#upload-dropzone-progress").hide();
+
+                        // Show the dropzone
+                        $("#upload-dropzone").show();
+                        $("#upload-dropzone-wrapper span").show();
+
+                        // Refresh the tree
+                        $("#uploadTree").data("dndReady", {});
+                        $("#uploadTree").jstree("refresh");
+                    }
+                }, 100)
+            }
+
+        },false);
+        xhr.open("POST", "/gp/AJAXUpload?fileName=" + file.name);
+        xhr.overrideMimeType("application/octet-stream");
+        xhr.setRequestHeader('partitionCount', partitionCount.toString());
+        xhr.setRequestHeader('partitionIndex', partitionIndex.toString());
+        xhr.setRequestHeader('filename', file.name);
+        xhr.setRequestHeader('uploadPath', directory);
+        xhr.sendAsBinary(event.target.result);
 
         partitionIndex++;
     };
@@ -675,7 +668,6 @@ function initUploadTreeDND(folder_id) {
 
         // Add to list to prevent repeats
         eventsAttached.push(folder[0]);
-        console.log(eventsAttached);
 
         var ready = $("#uploadTree").data("dndReady");
         if (ready === undefined || ready === null) {
