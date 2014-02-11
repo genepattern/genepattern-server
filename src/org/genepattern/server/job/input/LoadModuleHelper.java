@@ -409,13 +409,11 @@ public class LoadModuleHelper {
         //keep track of parameters without a group
         ArrayList allParameters = new ArrayList();
 
-        if(filePath != null)
+        if(paramGroupJsonFile != null)
         {
-            File paramGroupsFile = filePath.getServerFile();
-
-            if(paramGroupsFile.exists())
+            if(paramGroupJsonFile.exists())
             {
-                String pGroupsJsonString = FileUtils.readFileToString(paramGroupsFile);
+                String pGroupsJsonString = FileUtils.readFileToString(paramGroupJsonFile);
 
                 if(pGroupsJsonString != null && pGroupsJsonString.length() > 0)
                 {
