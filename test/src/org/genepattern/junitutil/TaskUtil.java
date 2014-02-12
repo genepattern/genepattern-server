@@ -1,10 +1,13 @@
 package org.genepattern.junitutil;
 
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
 
+import org.apache.commons.io.IOUtils;
+import org.genepattern.util.GPConstants;
 import org.genepattern.webservice.TaskInfo;
 import org.junit.Assert;
 import org.junit.Ignore;
@@ -84,4 +87,34 @@ public class TaskUtil {
         return taskInfos;
     }
 
+    public static InputStream getSupportFileFromZip(final Class<?> clazz, final String zipfilename, final String filename)
+            throws Exception
+    {
+        File zipSourceFile =FileUtil.getSourceFile(clazz, zipfilename);
+
+        ZipFile zipFile = null;
+        try {
+            zipFile = new ZipFile(zipSourceFile);
+            ZipEntry manifestEntry = zipFile.getEntry(filename);
+            if (manifestEntry == null) {
+                throw new IOException(zipfilename + " is missing a GenePattern manifest file.");
+            }
+            return zipFile.getInputStream(manifestEntry);
+        }
+        catch (IOException io)
+        {
+            if (zipFile != null) {
+                zipFile.close();
+            }
+        }
+
+        return null;
+    }
+
+    public static void writeSupportFileToFile(InputStream inputStream, File toFile)
+            throws IOException
+    {
+        OutputStream outputStream = new FileOutputStream(toFile);
+        IOUtils.copy(inputStream, outputStream);
+    }
 }
