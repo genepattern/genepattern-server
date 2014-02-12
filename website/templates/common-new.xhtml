@@ -98,6 +98,7 @@
 	                    dataType: 'json',
 	                    success: function(data, status, xhr) {
 	                    	all_modules = data.all_modules;
+                            initAllModulesMap(all_modules);
 	                    	
 	                    	// Initialize the displays on the left nav bar
 	                    	$("#loading-modules").hide();

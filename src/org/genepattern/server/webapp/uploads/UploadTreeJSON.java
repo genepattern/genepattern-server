@@ -1,13 +1,10 @@
 package org.genepattern.server.webapp.uploads;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 
 import org.apache.log4j.Logger;
 import org.genepattern.server.dm.GpFilePath;
-import org.genepattern.server.genomespace.TreeJSON.TreeComparator;
+import org.genepattern.webservice.TaskInfo;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -26,11 +23,11 @@ public class UploadTreeJSON extends JSONArray {
     public static final String TITLE = "title";
     public static final String ATTR = "attr";
     
-    public UploadTreeJSON(List<GpFilePath> files) {
-        this(files, "");
+    public UploadTreeJSON(List<GpFilePath> files, UploadFilesBean bean) {
+        this(files, "", bean);
     }
     
-    public UploadTreeJSON(List<GpFilePath> files, String code) {
+    public UploadTreeJSON(List<GpFilePath> files, String code, UploadFilesBean bean) {
         try {
             List<JSONObject> toAdd = new ArrayList<JSONObject>();
             
@@ -41,14 +38,14 @@ public class UploadTreeJSON extends JSONArray {
             else if (code.equals(SAVE_TREE)) {
                 for (GpFilePath gsf: files) {
                     if (gsf.isDirectory()) {
-                        JSONObject fj = makeFileJSON(gsf, true);
+                        JSONObject fj = makeFileJSON(gsf, true, bean);
                         toAdd.add(fj);
                     }
                 }
             }
             else {
                 for (GpFilePath gsf: files) {
-                    JSONObject fj = makeFileJSON(gsf);
+                    JSONObject fj = makeFileJSON(gsf, bean);
                     toAdd.add(fj);
                 }
             }
@@ -70,11 +67,19 @@ public class UploadTreeJSON extends JSONArray {
         object.put(DATA, "<em>Empty Directory</em>");
         return object;
     }
-    public static JSONObject makeFileJSON(GpFilePath file) throws Exception {
-        return makeFileJSON(file, false);
+    public static JSONObject makeFileJSON(GpFilePath file, UploadFilesBean bean) throws Exception {
+        return makeFileJSON(file, false, bean);
+    }
+
+    private static String makeTaskString(SortedSet<TaskInfo> tasks) {
+        List<String> toReturn = new ArrayList<String>();
+        for (TaskInfo task : tasks) {
+            toReturn.add('"' + task.getLsid() + '"');
+        }
+        return toReturn.toString();
     }
     
-    public static JSONObject makeFileJSON(GpFilePath file, boolean dirOnly) throws Exception {
+    public static JSONObject makeFileJSON(GpFilePath file, boolean dirOnly, UploadFilesBean bean) throws Exception {
         JSONObject object = new JSONObject();
         
         JSONObject data = new JSONObject();
@@ -85,14 +90,21 @@ public class UploadTreeJSON extends JSONArray {
         if (dirOnly) { attr.put("onclick", "JavaScript:handleSaveClick(this); return false;"); }
         else { attr.put("onclick", "JavaScript:handleTreeClick(this); return false;"); }
         attr.put("name", file.getName());
+
+        // Add the Send to Module data
+        String kind = file.getKind();
+        SortedSet<TaskInfo> tasks = bean.getKindToTaskInfo().get(kind);
+        if (tasks == null) tasks = new TreeSet<TaskInfo>();
+        String taskString = makeTaskString(tasks);
+        attr.put("data-sendtomodule", taskString);
         
         data.put(ATTR, attr);
-        
+
         if (file.isDirectory()) {
             List<JSONObject> children = new ArrayList<JSONObject>();
             for (GpFilePath child : file.getChildren()) {
                 if (child.isDirectory() || !dirOnly) {
-                    JSONObject childJSON = makeFileJSON(child, dirOnly);
+                    JSONObject childJSON = makeFileJSON(child, dirOnly, bean);
                     children.add(childJSON);
                 }
             }

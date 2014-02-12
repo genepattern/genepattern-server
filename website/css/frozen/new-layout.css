@@ -31,6 +31,7 @@
     line-height: 13pt;
     overflow: hidden;
     width: 93%;
+    white-space: nowrap;
 }
 
 .module-version {
@@ -507,4 +508,12 @@ body {
 
 #uploadDirectoryTree .jstree-leaf {
     display: none;
+}
+
+.file-widget {
+    width: 360px;
+}
+
+.file-widget h4 {
+    width: 245px;
 }

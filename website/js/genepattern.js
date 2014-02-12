@@ -190,6 +190,7 @@ if (typeof $ === 'undefined') {
 	var $ = jq;
 }
 var all_modules = null;
+var all_modules_map = null;
 var all_categories = null;
 var all_suites = null;
 
@@ -695,4 +696,106 @@ function initUploadTreeDND(folder_id) {
         ready[folder_id] = true;
 
     });
+}
+
+function initAllModulesMap(all_modules) {
+    var modMap = {};
+
+    for (var i = 0; i < all_modules.length; i++) {
+        var mod = all_modules[i];
+        modMap[mod.lsid] = mod;
+    }
+
+    all_modules_map = modMap;
+}
+
+function urlToName(url) {
+    if (url === null || url === undefined || url.indexOf("/gp/") === -1) { return null; }
+    url = url.split("/gp/")[1];
+    url = url.replace("/", "_");
+    url = url.substring(url.indexOf("/") + 1);
+    url = decodeURI(url);
+    if (url.substring(url.length-1) === "/") {
+        url = url.substring(0, url.length-1);
+    }
+    url = url.replace(/\//g,'%2F');
+    url = url.replace(/[^a-zA-Z0-9]/g,'_');
+    if (url === "") {
+        url = "__2F";
+    }
+    return url;
+}
+
+function lsidsToModules(lsidList) {
+    var toReturn = new Array();
+    for (var i = 0; i < lsidList.length; i++) {
+        var lsid = lsidList[i];
+        var module = all_modules_map[lsid];
+        if (module === null || module === undefined) {
+            console.log("Error finding LSID to create file widget: " + lsid);
+            continue;
+        }
+        toReturn.push(module);
+    }
+    return toReturn;
+}
+
+function createFileWidget(linkElement) {
+    var link = $(linkElement);
+    var name = urlToName(link.attr("href"));
+
+    var sendToString = linkElement.attr("data-sendtomodule");
+    if (sendToString === null || sendToString === undefined) sendToString = '[]';
+    var lsidList = JSON.parse(sendToString);
+    var sendToList = lsidsToModules(lsidList);
+
+    var actionList = $("<div></div>").modulelist({
+        title: name,
+        data: [
+            {
+                "lsid": "",
+                "name": "Delete " + name,
+                "description": "Browse an alphabetical listing of all installed GenePattern modules and pipelines.",
+                "version": "",
+                "documentation": "http://genepattern.org",
+                "categories": [],
+                "suites": [],
+                "tags": []
+            },
+
+            {
+                "lsid": "",
+                "name": "Save " + name,
+                "description": "Browse available modules and pipelines by associated suites.",
+                "version": "",
+                "documentation": "http://genepattern.org",
+                "categories": [],
+                "suites": [],
+                "tags": []
+            }
+        ],
+        droppable: false,
+        draggable: false,
+        click: function(event) {
+            alert("click");
+        }
+    });
+
+    var moduleList = $("<div></div>").modulelist({
+        title: "Send to Module",
+        data: sendToList,
+        droppable: false,
+        draggable: false,
+        click: function(event) {
+            alert("click");
+        }
+    });
+
+    var widget = $("<div></div>")
+        .attr("name", link.attr("href"))
+        .attr("class", "search-widget file-widget")
+        .searchslider({
+            lists: [actionList, moduleList]});
+
+    return widget;
 }

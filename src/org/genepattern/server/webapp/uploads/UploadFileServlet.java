@@ -87,10 +87,10 @@ public class UploadFileServlet extends HttpServlet {
         
         UploadTreeJSON json = null;
         if (tree != null && !tree.isEmpty()) {
-            json = new UploadTreeJSON(tree);
+            json = new UploadTreeJSON(tree, bean);
         }
         else {
-            json = new UploadTreeJSON(null, UploadTreeJSON.EMPTY);
+            json = new UploadTreeJSON(null, UploadTreeJSON.EMPTY, bean);
         }
         this.write(response, json);
     }
@@ -114,7 +114,7 @@ public class UploadFileServlet extends HttpServlet {
             writer.flush();
         }
         catch (IOException e) {
-            log.error("Error writing to the response in PipelineQueryServlet: " + content);
+            log.error("Error writing to the response in UploadFileServlet: " + content);
             e.printStackTrace();
         }
         finally {

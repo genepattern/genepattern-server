@@ -135,7 +135,8 @@
                         iterate.each(function (index) {
 
                             var node = iterate.get(index);
-                            var name = jq(node).find("a:first").attr("href");
+                            var anchor = $(node).find("a:first");
+                            var name = anchor.attr("href");
                             if (name === null || name === undefined) { return; } 
                             name = urlToName(name);
                             if (name === null || name === undefined) { return; } 
@@ -144,7 +145,7 @@
                             jq(node).attr("id", name);
 
                             // Check for the case of empty directories
-                            var link = jq(node).find("a:first").attr("href");
+                            var link = anchor.attr("href");
                             if (link === "#") return;
 
                             // Append menu arrow
@@ -155,8 +156,11 @@
                             arrow.setAttribute("alt", "menu");
                             arrow.setAttribute("onmouseover", "MM_swapImage('Image_" + name + "','','/gp/images/smallOptions2.gif',2);");
                             arrow.setAttribute("onmouseout", "MM_swapImgRestore();");
-                            jq(node).find("a:first").after(arrow);
+                            anchor.after(arrow);
                             menuRegistry._create("#Image_" + name, "#menuDiv_" + name);
+
+                            // Create a file widget for this file
+                            $("#content").append(createFileWidget(anchor));
                         });
                         
                         jq("a em:contains('Empty Directory')").parent().bind("dragstart", function() { return false; });
