@@ -71,13 +71,13 @@ public class ConfigFileParser {
      * @return
      */
     private JobConfigObj parse(File configurationFile) throws ConfigurationException {
-        JobConfigObj configObj = new JobConfigObj();
         Reader reader = null;
         try {
             reader = new FileReader(configurationFile);
             Yaml yaml = new Yaml();
             Object obj = yaml.load(reader);
             if (obj != null) {
+                JobConfigObj configObj = new JobConfigObj(obj);
                 if (obj instanceof Map<?,?>) {
                     Map<?,?> config = (Map<?,?>) obj;
                     Object executors = config.get("executors");
@@ -91,7 +91,16 @@ public class ConfigFileParser {
                     configObj.addGroupPropertiesObj(groupProperties);
                     Object userProperties = config.get("user.properties");
                     configObj.addUserPropertiesObj(userProperties);
+                    
+                    // optional 'jobRunner.properties'
+                    Object executorProperties=config.get("executor.properties");
+                    if (executorProperties != null) {
+                        if (executorProperties instanceof Map<?,?>) {
+                            configObj.addExecutorPropertiesMap( (Map<?,?>)executorProperties);
+                        }
+                    }
                 }
+                return configObj;
             }
         }
         catch (Throwable t) {
@@ -107,7 +116,7 @@ public class ConfigFileParser {
                 }
             }
         }
-        return configObj;
+        return new JobConfigObj(null);
     }
     
     private void parseExecutors(JobConfigObj configObj, Map<?,?> map) throws Exception {

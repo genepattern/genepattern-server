@@ -14,8 +14,15 @@ public class JobConfigObj {
     private Map<String,ExecutorConfig> executors = new LinkedHashMap<String,ExecutorConfig>();
     private Map<String,Map<?,?>> moduleProperties = new LinkedHashMap<String,Map<?,?>>();
 
+    
+    public JobConfigObj(final Object yamlObj) {
+        this.yamlObj=yamlObj;
+    }
+    
+    private final Object yamlObj;
     private Object groupPropertiesObj = null;
     private Object userPropertiesObj = null;
+    private Map<?,?> executorPropertiesMap = null;
 
     public void addExecutor(String cmdExecId, ExecutorConfig cmdExecConfigObj) {
         this.executors.put(cmdExecId, cmdExecConfigObj);            
@@ -37,6 +44,17 @@ public class JobConfigObj {
         this.userPropertiesObj = obj;
     }
     
+    public void addExecutorPropertiesMap(final Map<?, ?> executorPropertiesMap) {
+        this.executorPropertiesMap = executorPropertiesMap;
+    }
+
+    /**
+     * The yaml object parsed from the entire config file.
+     */
+    public Object getYamlObj() {
+        return yamlObj;
+    }
+    
     public Map<String,ExecutorConfig> getExecutors() {
         return executors;
     }
@@ -55,5 +73,9 @@ public class JobConfigObj {
     
     public Object getUserPropertiesObj() {
         return this.userPropertiesObj;
+    }
+    
+    public Map<?,?> getExecutorPropertiesMap() {
+        return executorPropertiesMap;
     }
 }

@@ -8,6 +8,7 @@ import java.util.Map.Entry;
 import org.apache.log4j.Logger;
 import org.genepattern.server.UserAccountManager;
 import org.genepattern.server.executor.CommandProperties;
+import org.genepattern.server.executor.CommandProperties.Value;
 import org.genepattern.webservice.JobInfo;
 
 /**
@@ -78,6 +79,27 @@ public class CommandManagerProperties {
     }
 
     public CommandProperties.Value getValue(final ServerConfiguration.Context context, final String key) {
+        Value drmCustomProps=null;
+        if (!key.equals("executor.props")) {
+            final String drmCustomPropsKey=ServerConfiguration.instance().getGPProperty(context, "executor.props");
+            if (drmCustomPropsKey != null) {
+                Map<?,?> executorPropertiesMap=
+                        ServerConfiguration.instance().getJobConfiguration().getExecutorPropertiesMap();
+                if (executorPropertiesMap != null &&
+                        executorPropertiesMap.containsKey(drmCustomPropsKey)) {
+                    try {
+                        drmCustomProps=Value.parse(executorPropertiesMap.get(drmCustomPropsKey));
+                    }
+                    catch (Throwable t) {
+                        log.error(t);
+                    }
+                }
+                //drmCustomProps=getValue(context, drmCustomPropsKey, null);
+            }
+        }
+        return getValue(context, key, drmCustomProps);
+    }
+    private CommandProperties.Value getValue(final ServerConfiguration.Context context, final String key, final Value drmCustomProps) {
         CommandProperties.Value rval = null;
         // 0) initialize from system properties and legacy properties files
         //    only if specified by the context
@@ -100,6 +122,20 @@ public class CommandManagerProperties {
             if (executorDefaultProps != null) {
                 if (executorDefaultProps.getDefaultProperties().containsKey(key)) {
                     rval = executorDefaultProps.getDefaultValue(key);
+                }
+            }
+        }
+
+        // 2a) replace with executor custom properties
+        if (drmCustomProps != null) {
+            if (drmCustomProps.isMap()) {
+                if (drmCustomProps.getMap().containsKey(key)) {
+                    try {
+                        rval=Value.parse(drmCustomProps.getMap().get(key));
+                    }
+                    catch (Throwable t) {
+                        log.error("Error parsing custom value for key="+key, t);
+                    }
                 }
             }
         }

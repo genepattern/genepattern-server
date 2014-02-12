@@ -247,7 +247,7 @@ public class ServerConfiguration {
     public CommandManagerProperties getCommandManagerProperties() {
         return cmdMgrProps;
     }
-    private JobConfigObj jobConfig = new  JobConfigObj();
+    private JobConfigObj jobConfig = new  JobConfigObj(null);
     public JobConfigObj getJobConfiguration() {
         return jobConfig;
     }

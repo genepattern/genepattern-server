@@ -1,0 +1,151 @@
+#
+#
+# Example YAML file entries for the JobRunner API
+#
+# This is just a snippet of a full yaml file for a GP server
+# You should copy the DemoPbsJobRunner entry from this file and add it to the
+# executors section of your config file.
+#
+default.properties:
+    executor: RuntimeExec
+    #
+    # job memory settings
+    #
+    drm.memory: "2gb"
+    java.Xmx: "2gb"
+    #executor: DemoPbsJobRunner
+    # Java non-standard options, such as -Xmx
+    # -Xmx<size>        set maximum Java heap size
+    #java.opts.Xmx: "512m"
+    #java.max.heap.size: "512m"
+    #java.options: {
+    #    "Xms": "256m",
+    #    "Xmx": "512m"
+    #}
+
+#
+# the executor.properties map makes it easier to group configuration settings
+# together, referencing the grouped values by name
+#
+# the 'executor.props' property can be set globally, by user, group et cetera 
+# executor.props: BigMem
+# this JSON object is an unordered set of name:value mappings.
+# each entry specifies a set of custom values which can be accessed at runtime
+# via the 'executor.property.name' variable.
+# 
+# 
+executor.properties: {
+    #
+    # Note in the memory settings,
+    # When the 'drm.memory' flag is set, it also defines the java max heap space
+    # command line arg. For example, if you have a <java> module, the -Xmx<drm.memory> arg
+    # will automatically be appended to your java command line.
+    # If you want to use a different value, you must explicitly set the 'java.Xmx' property.
+    #
+    BigMem: {
+        "drm.memory": "32gb",
+        "java.Xmx": "gb"
+    },
+    # example of explicitly setting the java.Xmx flag to a different value than the 'drm.memory'
+    JavaMem: {
+        "drm.memory": "8gb",
+        "java.Xmx": "24gb"
+    },
+    LongRunning: {
+        "drm.queue": "week",
+        # format is 'days-hh:mm:ss', e.g. kill the job 7 days from when it starts
+        "drm.walltime": "7-00:00:00"
+    },
+    LsfBigMem: {
+        "executor": "LSF",
+        "drm.memory": "32gb"
+    },
+    PbsBigMem: {
+        "executor": "DemoPbsJobRunner",
+        "drm.queue": "pbsBigMemQueue",
+        "drm.memory": "128gb",
+        "drm.javaMaxHeapSize": "128gb"
+    },
+    # himem drm.workerName
+    myHiMemPbsWorker: {
+        drm.queue: "exampleQueue",
+        drm.walltime: "02:00:00",
+        drm.nodeCount: "1",
+        pbs.host: "example.edu",
+        pbs.mem: "8gb",
+        pbs.cput: "",
+        pbs.vmem: "500gb"
+    },
+    myLongPbsWorker: {
+        drm.queue: "exampleQueue",
+        drm.walltime: "72:00:00",
+        drm.nodeCount: "1",
+        pbs.host: "example.edu",
+        pbs.mem: "8gb",
+        pbs.ppn: "8",
+        pbs.cput: "",
+        pbs.vmem: "64gb"
+    }
+}
+
+executors:
+    DemoPbsJobRunner:
+        classname: org.genepattern.server.executor.drm.JobExecutor
+        configuration.properties:
+             jobRunnerClassname: org.genepattern.drm.impl.iu.pbs.DemoPbsJobRunner
+             jobRunnerName: DemoPbsJobRunner
+             lookupType: DB
+             #lookupType: HASHMAP
+        default.properties:
+            drm.queue: "defaultQueue"
+            drm.walltime: "02:00:00"
+            drm.nodeCount: "1"
+
+            pbs.host: "example.edu"
+            pbs.mem: "8gb"
+            pbs.ppn: "8"
+            pbs.cput: ""
+            pbs.vmem: "64gb"
+
+module.properties:
+    # use the 'myHiMemPbsWorker' for all modules with this name
+    ConvertLineEndings:
+        drm.workerName: "myHiMemPbsWorker"
+    # use the 'myLongPbsWorker' for all modules with this name
+    TopHat:
+        drm.workerName: "myLongPbsWorker"
+    # customize by property name
+    Example3:
+        drm.walltime: "72:00:00"
+        pbs.mem: "8gb"
+        pbs.vmem: "500gb"
+
+#
+# it is possible to fine tune the settings on a per-group or per-user basis, this takes precedence over the default settings
+# No need to use this if you prefer to configure based on module name exclusively
+#
+
+# custom config by group
+group.properties:
+    administrators:
+        # all users in the administrators group will use the same 'drm.workerName'
+        drm.workerName: "myHiMemPbsWorker"
+
+        # customize module settings for all users in this group
+        module.properties:
+            TopHat:
+                drm.workerName: "admin_group_tophat_settings"
+
+# custom config by user
+user.properties:
+    admin:
+        drm.workerName: "myHiMemPbsWorker"
+    test_user:
+        executor.props: "PbsBigMem"
+#        drm.customProps: "PbsBigMem"
+#        drm.workerName: "myLongPbsWorker"
+
+        module.properties:
+            TopHat:
+                drm.workerName: "pcarr_tophat_settings"
+                
