@@ -1314,8 +1314,10 @@ function createModeToggle(parameterName)
 }
 
 //initialize the params object with info about the parameters
-function initParams(parameters, initialValues)
+function initParams(parameterGroups, parameters, initialValues)
 {
+    run_task_info.parameterGroups = parameterGroups;
+
     if(parameters == undefined || parameters == null)
     {
         return;
@@ -1545,15 +1547,25 @@ function loadParametersByGroup(parameterGroups, parameters, initialValues)
     //check if the params object should be initialized
     if(parameters != null)
     {
-        initParams(parameters, initialValues);
+        initParams(parameterGroups, parameters, initialValues);
+    }
+
+    if(parameterGroups == null)
+    {
+        parameterGroups = run_task_info.parameterGroups
     }
 
     if(run_task_info.params == null)
     {
-        throw new Error("Error initialization parameters");
+        throw new Error("Error initializating parameters");
     }
 
-    for(var i=0;i<parameterGroups.length;i++)
+    if(run_task_info.params == null)
+    {
+        throw new Error("Error initializating parameter groups");
+    }
+
+    for(var i=0;i<run_task_info.parameterGroups.length;i++)
     {
         var pGroupName = parameterGroups[i].name;
 
@@ -2003,13 +2015,13 @@ function loadRunTaskForm(lsid, reloadJob) {
 
 function reset()
 {
-
-    $("#paramsTable").empty();
+    $(".paramsTable").empty();
 
     //remove all input file parameter file listings
     param_file_listing = {};
+    parameter_and_val_groups = {};
 
-    loadParameterInfo(null, null);
+    loadParametersByGroup(null, null, null);
 }
 
 function isText(param)
