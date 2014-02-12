@@ -1,5 +1,6 @@
 package org.genepattern.server.job.input;
 
+import org.genepattern.server.dm.jobinput.ParameterInfoUtil;
 import org.genepattern.webservice.ParameterInfo;
 import org.junit.Assert;
 import org.junit.Test;

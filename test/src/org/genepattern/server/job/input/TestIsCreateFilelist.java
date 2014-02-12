@@ -5,6 +5,7 @@ import java.util.Map;
 import org.genepattern.junitutil.TaskLoader;
 import org.genepattern.server.config.ServerConfiguration;
 import org.genepattern.server.config.ServerConfiguration.Context;
+import org.genepattern.server.dm.jobinput.ParameterInfoUtil;
 import org.genepattern.server.job.input.Param;
 import org.genepattern.server.job.input.ParamId;
 import org.genepattern.server.job.input.ParamListHelper.ListMode;

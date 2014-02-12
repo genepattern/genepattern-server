@@ -1,7 +1,7 @@
 package org.genepattern.server.job.input.choice;
 
 
-import org.genepattern.server.job.input.ParameterInfoUtil;
+import org.genepattern.server.dm.jobinput.ParameterInfoUtil;
 import org.genepattern.webservice.ParameterInfo;
 import org.junit.Assert;
 import org.junit.Before;

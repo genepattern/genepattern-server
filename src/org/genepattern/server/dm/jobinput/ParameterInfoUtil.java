@@ -1,4 +1,4 @@
-package org.genepattern.server.job.input;
+package org.genepattern.server.dm.jobinput;
 
 import java.util.HashMap;
 
