@@ -84,7 +84,6 @@ import com.sun.jersey.multipart.FormDataParam;
 public class RunTaskServlet extends HttpServlet
 {
     public static Logger log = Logger.getLogger(RunTaskServlet.class);
-    //private static boolean enableJobConfigParams=true;
 
 
     /**
@@ -529,19 +528,11 @@ public class RunTaskServlet extends HttpServlet
     private Response newAddJob(final ServerConfiguration.Context userContext, final JobSubmitInfo jobSubmitInfo, final HttpServletRequest request) {
         try
         {
-            //String username = (String) request.getSession().getAttribute("userid");
-            //if (username == null)
-            //{
-            //    throw new Exception("User not logged in");
-            //}
-
             if(jobSubmitInfo.getLsid() == null)
             {
                 throw new Exception("No lsid received");
             }
 
-            final boolean initIsAdmin=true;
-            //final ServerConfiguration.Context userContext=ServerConfiguration.Context.getContextForUser(username, initIsAdmin);
             final JobInputHelper jobInputHelper=new JobInputHelper(userContext, jobSubmitInfo.getLsid());
             final JSONObject parameters = new JSONObject(jobSubmitInfo.getParameters());
 
@@ -554,8 +545,15 @@ public class RunTaskServlet extends HttpServlet
                 final JSONArray groupInfos = parameters.getJSONArray(parameterName);
                 for(int g=0;g<groupInfos.length();g++)
                 {
-                    JSONObject groupInfo = groupInfos.getJSONObject(g);
-                    String groupName = groupInfo.getString("name");
+                    final JSONObject groupInfo = groupInfos.getJSONObject(g);
+                    final String groupName = groupInfo.getString("name");
+                    final GroupId groupId;
+                    if (groupName == null || groupName.length()==0) {
+                        groupId=GroupId.EMPTY;
+                    }
+                    else {
+                        groupId=new GroupId(groupName);
+                    }
                     Object val = groupInfo.get("values");
 
                     if (val instanceof JSONArray) {
@@ -566,13 +564,13 @@ public class RunTaskServlet extends HttpServlet
                     }
                     for(int v=0; v<valueList.length();v++)
                     {
-                        if(groupName != null && groupName.length() != 0)
-                        {
-                            jobInputHelper.addSingleOrBatchValue(parameterName, valueList.getString(v), new GroupId(groupName), isBatch);
+                        final String value=valueList.getString(v);
+                        if (isBatch) {
+                            //TODO: implement support for groupId with batch values
+                            jobInputHelper.addBatchValue(parameterName, value);
                         }
-                        else
-                        {
-                            jobInputHelper.addSingleOrBatchValue(parameterName, valueList.getString(v), isBatch);
+                        else {
+                            jobInputHelper.addValue(parameterName, value, groupId);
                         }
                     }
                 }
@@ -584,12 +582,15 @@ public class RunTaskServlet extends HttpServlet
 
             
             //TODO: if necessary, add batch details to the JSON representation
-            String jobId="-1";
+            final ResponseJSON result = new ResponseJSON();
+            final String jobId;
             if (receipt.getJobIds().size()>0) {
                 jobId=receipt.getJobIds().get(0);
             }
-            ResponseJSON result = new ResponseJSON();
-            result.addChild("jobId", receipt.getJobIds().get(0));
+            else {
+                jobId="-1";
+            }
+            result.addChild("jobId", jobId);
             if (receipt.getBatchId() != null && receipt.getBatchId().length()>0) {
                 result.addChild("batchId", receipt.getBatchId());
                 request.getSession().setAttribute(JobBean.DISPLAY_BATCH, receipt.getBatchId());
