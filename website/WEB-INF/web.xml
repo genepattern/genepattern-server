@@ -429,6 +429,8 @@
   <url-pattern>/module/doc/*</url-pattern>
  </servlet-mapping>
  
+ <!--  DEPRECATED: Point old references to submitJob.jsp to the new servlet -->
+ <!-- 
  <servlet>
     <display-name>Submit Job Servlet</display-name>
     <servlet-name>SubmitJob</servlet-name>
@@ -439,10 +441,10 @@
   <url-pattern>/SubmitJob</url-pattern>
  </servlet-mapping>
   <servlet-mapping>
-  	<!-- DEPRECATED: Point old references to submitJob.jsp to the new servlet -->
   <servlet-name>SubmitJob</servlet-name>
   <url-pattern>/submitJob.jsp</url-pattern>
  </servlet-mapping>
+-->
 
 <servlet>
     <display-name>End user license agreement servlet</display-name>
