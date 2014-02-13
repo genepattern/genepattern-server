@@ -418,12 +418,12 @@ public class LoadModuleHelper {
                     for(int i=0;i<paramGroupsJson.length();i++)
                     {
                         JSONObject paramGroupObject = paramGroupsJson.getJSONObject(i);
-                        JSONArray parameters = paramGroupObject.getJSONArray("parameters");
-                        if(parameters == null || parameters.length() == 0)
+                        if(!paramGroupObject.has("parameters"))
                         {
-                            throw new Exception("No parameters defined for parameter group: "
-                                    + paramGroupObject.getString("name"));
+                            continue;
                         }
+
+                        JSONArray parameters = paramGroupObject.getJSONArray("parameters");
 
                         //add all the parameters individually
                         for(int t=0;t<parameters.length();t++)
@@ -510,6 +510,10 @@ public class LoadModuleHelper {
             }
 
             JSONObject paramGroup = paramsGroupsJson.getJSONObject(i);
+            if(!paramGroup.has("parameters"))
+            {
+                continue;
+            }
             JSONArray params  = (JSONArray)paramGroup.get("parameters");
             for(int p=0;p<params.length();p++)
             {

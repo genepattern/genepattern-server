@@ -1674,17 +1674,21 @@ function loadParametersByGroup(parameterGroups, parameters, initialValues)
         var paramTable = createParamTable(parameterGroups[i].parameters, initialValues);
         curHeaderDiv.append(paramTable);
 
-        //indent only if a parameter section header name was provided
-       // if(pGroupName.length > 0)
-       // {
-            paramTable.css({'margin-left': '20px'});
-       // }
+
+        paramTable.css({'margin-left': '20px'});
     }
 }
 
 function createParamTable(parameterNames, initialValues)
 {
     var paramsTable = $("<table class='paramsTable'/>");
+
+    //return empty paramsTable if no parameter names were specified
+    if(parameterNames == undefined || parameterNames == null)
+    {
+        return paramsTable;
+    }
+
 
     for(var q=0;q < parameterNames.length;q++)
     {
