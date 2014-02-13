@@ -37,6 +37,7 @@ import org.genepattern.server.dm.tasklib.TasklibPath;
 import org.genepattern.server.eula.LibdirLegacy;
 import org.genepattern.server.eula.LibdirStrategy;
 import org.genepattern.server.job.input.GroupId;
+import org.genepattern.server.job.input.JobConfigParams;
 import org.genepattern.server.job.input.JobInput;
 import org.genepattern.server.job.input.JobInputFileUtil;
 import org.genepattern.server.job.input.JobInputHelper;
@@ -157,6 +158,7 @@ public class RunTaskServlet extends HttpServlet
                 throw new Exception("No task with task id: " + lsid + " found " +
                         "for user " + userId);
             }
+            userContext.setTaskInfo(taskInfo);
             
             final ModuleJSON moduleObject = new ModuleJSON(taskInfo, null);
             //check for EULA
@@ -290,6 +292,18 @@ public class RunTaskServlet extends HttpServlet
             final LibdirStrategy libdirStrategy = new LibdirLegacy();
             final TasklibPath filePath = new TasklibPath(libdirStrategy, taskInfo, "paramgroups.json");
             JSONArray paramGroupsJson = loadModuleHelper.getParameterGroupsJson(taskInfo, filePath.getServerFile());
+            boolean promptForJobConfig=false;
+            if (promptForJobConfig) {
+                final JobConfigParams jobConfigParams=JobConfigParams.initJobConfigParams(userContext);
+                if (jobConfigParams != null) {
+                    final JSONObject jobConfigGroupJson=jobConfigParams.getInputParamGroup().toJson();
+                    paramGroupsJson.put(jobConfigGroupJson);
+                    for(final ParameterInfo jobConfigParameterInfo : jobConfigParams.getParams()) {
+                        JSONObject j=this.initParametersJSON(request, taskInfo, jobConfigParameterInfo);
+                        parametersArray.put(j);
+                    }
+                }
+            }
 
             moduleObject.put("parameter_groups", paramGroupsJson);
             responseObject.put(ModuleJSON.KEY, moduleObject);
