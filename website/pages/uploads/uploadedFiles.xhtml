@@ -78,7 +78,7 @@
             <t:div>
                 <div id="uploadTree"></div>
                 <script type="text/javascript">
-	                function urlToName(url) {
+	                function urlToEncodedName(url) {
 	                	if (url === null || url === undefined || url.indexOf("/gp/") === -1) { return null; }
 	                	url = url.split("/gp/")[1];
 	                	url = url.replace("/", "_");
@@ -138,7 +138,7 @@
                             var anchor = $(node).find("a:first");
                             var name = anchor.attr("href");
                             if (name === null || name === undefined) { return; } 
-                            name = urlToName(name);
+                            name = urlToEncodedName(name);
                             if (name === null || name === undefined) { return; } 
 
                             // Add the id to the node
@@ -149,30 +149,36 @@
                             if (link === "#") return;
 
                             // Append menu arrow
-                            var arrow = document.createElement("img");
-							arrow.setAttribute("id", "Image_" + name);
-                            arrow.setAttribute("class", "menuArrow");
-                            arrow.setAttribute("src", "/gp/images/smallOptions.gif");
-                            arrow.setAttribute("alt", "menu");
-                            arrow.setAttribute("onmouseover", "MM_swapImage('Image_" + name + "','','/gp/images/smallOptions2.gif',2);");
-                            arrow.setAttribute("onmouseout", "MM_swapImgRestore();");
-                            anchor.after(arrow);
-                            menuRegistry._create("#Image_" + name, "#menuDiv_" + name);
+                            //if (!#{uiBean.newUI}) {
+                                var arrow = document.createElement("img");
+                                arrow.setAttribute("id", "Image_" + name);
+                                arrow.setAttribute("class", "menuArrow");
+                                arrow.setAttribute("src", "/gp/images/smallOptions.gif");
+                                arrow.setAttribute("alt", "menu");
+                                arrow.setAttribute("onmouseover", "MM_swapImage('Image_" + name + "','','/gp/images/smallOptions.gif',2);");
+                                arrow.setAttribute("onmouseout", "MM_swapImgRestore();");
+                                anchor.after(arrow);
+                                menuRegistry._create("#Image_" + name, "#menuDiv_" + name);
+                            //}
 
                             // Create a file widget for this file
-                            $("#content").append(createFileWidget(anchor));
+                            if (#{uiBean.newUI}) {
+                                createFileWidget(anchor);
+                                anchor.attr("onclick", "JavaScript:openFileWidget(this); return false;");
+                            }
                         });
                         
                         jq("a em:contains('Empty Directory')").parent().bind("dragstart", function() { return false; });
 
                         // Set up drag and drop uploads
-                        var folder_id = data.args[0];
-                        if (folder_id === -1) return;
-                        var ready = $("#uploadTree").data("dndReady");
-                        if (!ready || !ready[folder_id]) {
-                            initUploadTreeDND(folder_id);
+                        if (#{uiBean.newUI}) {
+                            var folder_id = data.args[0];
+                            if (folder_id === -1) return;
+                            var ready = $("#uploadTree").data("dndReady");
+                            if (!ready || !ready[folder_id]) {
+                                initUploadTreeDND(folder_id);
+                            }
                         }
-
                     });
                 </script>
             </t:div>

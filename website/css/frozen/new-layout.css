@@ -514,6 +514,27 @@ body {
     width: 360px;
 }
 
-.file-widget h4 {
+.file-widget-actions h4 {
     width: 245px;
+}
+
+.file-widget-actions .module-name {
+    width: 100%;
+    text-overflow: ellipsis;
+}
+
+.file-widget-actions .module-listing {
+    background-image: linear-gradient(#F4F5F5, #EDEEEE);
+}
+
+.file-widget-actions .module-listing:hover {
+    background-image: url(images/sidebar-topBG.png);
+    background-repeat: repeat-x;
+}
+
+.module-list-icon {
+    float: left;
+    padding: 3px;
+    height: 12px;
+    width: 12px;
 }

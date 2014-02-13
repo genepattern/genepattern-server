@@ -711,19 +711,12 @@ function initAllModulesMap(all_modules) {
 
 function urlToName(url) {
     if (url === null || url === undefined || url.indexOf("/gp/") === -1) { return null; }
-    url = url.split("/gp/")[1];
-    url = url.replace("/", "_");
-    url = url.substring(url.indexOf("/") + 1);
-    url = decodeURI(url);
-    if (url.substring(url.length-1) === "/") {
+    if (url[url.length-1] === '/') {
         url = url.substring(0, url.length-1);
     }
-    url = url.replace(/\//g,'%2F');
-    url = url.replace(/[^a-zA-Z0-9]/g,'_');
-    if (url === "") {
-        url = "__2F";
-    }
-    return url;
+    url = url.replace("%20", " ");
+    url = url.split("/");
+    return url[url.length - 1];
 }
 
 function lsidsToModules(lsidList) {
@@ -741,55 +734,93 @@ function lsidsToModules(lsidList) {
 }
 
 function createFileWidget(linkElement) {
+    if (all_modules_map !== null) {
+        _createFileWidgetInner(linkElement);
+    }
+    else {
+        setTimeout(function() {
+            createFileWidget(linkElement);
+        }, 100);
+    }
+}
+
+function isDirectoryFromUrl(url) {
+    return url[url.length-1] === '/';
+}
+
+function _createFileWidgetInner(linkElement) {
     var link = $(linkElement);
     var name = urlToName(link.attr("href"));
+    var isDirectory = isDirectoryFromUrl(link.attr("href"));
 
     var sendToString = linkElement.attr("data-sendtomodule");
     if (sendToString === null || sendToString === undefined) sendToString = '[]';
     var lsidList = JSON.parse(sendToString);
     var sendToList = lsidsToModules(lsidList);
 
-    var actionList = $("<div></div>").modulelist({
-        title: name,
-        data: [
-            {
-                "lsid": "",
-                "name": "Delete " + name,
-                "description": "Browse an alphabetical listing of all installed GenePattern modules and pipelines.",
-                "version": "",
-                "documentation": "http://genepattern.org",
-                "categories": [],
-                "suites": [],
-                "tags": []
-            },
+    if (isDirectory) {
+        var saveOrSubdirectory = {
+            "lsid": "",
+            "name": "<img src='/gp/pipeline/images/save.gif' class='module-list-icon'> Create Subdirectory",
+            "description": "Create a subdirectory in this directory.",
+            "version": "",
+            "documentation": "http://genepattern.org",
+            "categories": [],
+            "suites": [],
+            "tags": []
+        };
+    }
+    else {
+        var saveOrSubdirectory = {
+            "lsid": "",
+            "name": "<img src='/gp/pipeline/images/save.gif' class='module-list-icon'> Save File",
+            "description": "Save a copy of this file to your local computer.",
+            "version": "",
+            "documentation": "http://genepattern.org",
+            "categories": [],
+            "suites": [],
+            "tags": []
+        };
+    }
 
-            {
-                "lsid": "",
-                "name": "Save " + name,
-                "description": "Browse available modules and pipelines by associated suites.",
-                "version": "",
-                "documentation": "http://genepattern.org",
-                "categories": [],
-                "suites": [],
-                "tags": []
+    var actionList = $("<div></div>")
+        .attr("class", "file-widget-actions")
+        .modulelist({
+            title: name,
+            data: [
+                {
+                    "lsid": "",
+                    "name": "<img src='/gp/pipeline/images/delete.gif' class='module-list-icon'> Delete " + (isDirectory ? "Directory" : "File"),
+                    "description": "Permanently delete this from your uploads.",
+                    "version": "",
+                    "documentation": "http://genepattern.org",
+                    "categories": [],
+                    "suites": [],
+                    "tags": []
+                },
+
+                saveOrSubdirectory
+            ],
+            droppable: false,
+            draggable: false,
+            click: function(event) {
+                alert("click");
             }
-        ],
-        droppable: false,
-        draggable: false,
-        click: function(event) {
-            alert("click");
-        }
     });
 
     var moduleList = $("<div></div>").modulelist({
         title: "Send to Module",
         data: sendToList,
         droppable: false,
-        draggable: false,
+        draggable: true,
         click: function(event) {
             alert("click");
         }
     });
+
+    if (moduleList.find(".module-listing").length < 1) {
+        moduleList.hide();
+    }
 
     var widget = $("<div></div>")
         .attr("name", link.attr("href"))
@@ -797,5 +828,10 @@ function createFileWidget(linkElement) {
         .searchslider({
             lists: [actionList, moduleList]});
 
-    return widget;
+    $("#content").append(widget);
+}
+
+function openFileWidget(link) {
+    var url = $(link).attr("href");
+    $("#content [name='" + url + "']").searchslider("show");
 }

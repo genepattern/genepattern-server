@@ -77,7 +77,7 @@ $.widget("gp.module", {
 
         this.name = $('<div>', {
             'class': 'module-name',
-            'text': this._protect(this.options.data.name, "UNNAMED")
+            'html': this._protect(this.options.data.name, "UNNAMED")
         }).appendTo(this.element);
 
         // Save the lsid
