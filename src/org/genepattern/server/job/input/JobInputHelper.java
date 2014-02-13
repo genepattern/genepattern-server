@@ -157,7 +157,14 @@ public class JobInputHelper {
     public void addSingleOrBatchValue(final ParameterInfo pInfo, String value, boolean isBatch)
     throws GpServerException 
     {
-        addSingleOrBatchValue(pInfo, value, GroupId.EMPTY, isBatch);
+        addSingleOrBatchValue(pInfo.getName(), value, isBatch);
+        
+    }
+
+    public void addSingleOrBatchValue(final String pname, String value, boolean isBatch)
+    throws GpServerException 
+    {
+        addSingleOrBatchValue(pname, value, GroupId.EMPTY, isBatch);
         
     }
 
@@ -170,12 +177,18 @@ public class JobInputHelper {
     public void addSingleOrBatchValue(final ParameterInfo pInfo, String value, final GroupId groupId, boolean isBatch)
     throws GpServerException
     {
+        addSingleOrBatchValue(pInfo.getName(), value, groupId, isBatch);
+    }
+
+    public void addSingleOrBatchValue(final String name, String value, final GroupId groupId, boolean isBatch)
+    throws GpServerException
+    {
         if (isBatch) {
             //TODO: implement support for groupId with batch values
-            batchInputFileHelper.addBatchValue(new ParamId(pInfo.getName()), value);
+            batchInputFileHelper.addBatchValue(new ParamId(name), value);
         }
         else {
-            batchInputFileHelper.addValue(new ParamId(pInfo.getName()), value, groupId);
+            batchInputFileHelper.addValue(new ParamId(name), value, groupId);
         }
     }
 
