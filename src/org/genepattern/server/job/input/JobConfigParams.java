@@ -15,6 +15,8 @@ import com.google.common.collect.ImmutableList;
  *
  */
 public class JobConfigParams {
+    public static final String PROP_ENABLE_JOB_CONFIG_PARAMS="enableJobConfigParams";
+    
     /*
      * Example json format
 [

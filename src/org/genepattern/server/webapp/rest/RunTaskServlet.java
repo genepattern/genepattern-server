@@ -5,6 +5,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -51,6 +52,7 @@ import org.genepattern.server.rest.JobReceipt;
 import org.genepattern.server.webapp.jsf.AuthorizationHelper;
 import org.genepattern.server.webapp.jsf.JobBean;
 import org.genepattern.server.webapp.jsf.UIBeanHelper;
+import org.genepattern.server.webapp.rest.api.v1.Util;
 import org.genepattern.server.webapp.rest.api.v1.task.TasksResource;
 import org.genepattern.server.webservice.server.local.IAdminClient;
 import org.genepattern.server.webservice.server.local.LocalAdminClient;
@@ -82,6 +84,8 @@ import com.sun.jersey.multipart.FormDataParam;
 public class RunTaskServlet extends HttpServlet
 {
     public static Logger log = Logger.getLogger(RunTaskServlet.class);
+    //private static boolean enableJobConfigParams=true;
+
 
     /**
 	 * Inject details about the URI for this request
@@ -292,8 +296,8 @@ public class RunTaskServlet extends HttpServlet
             final LibdirStrategy libdirStrategy = new LibdirLegacy();
             final TasklibPath filePath = new TasklibPath(libdirStrategy, taskInfo, "paramgroups.json");
             JSONArray paramGroupsJson = loadModuleHelper.getParameterGroupsJson(taskInfo, filePath.getServerFile());
-            boolean promptForJobConfig=false;
-            if (promptForJobConfig) {
+            final boolean enableJobConfigParams=ServerConfiguration.instance().getGPBooleanProperty(userContext, JobConfigParams.PROP_ENABLE_JOB_CONFIG_PARAMS, false);
+            if (enableJobConfigParams) {
                 final JobConfigParams jobConfigParams=JobConfigParams.initJobConfigParams(userContext);
                 if (jobConfigParams != null) {
                     final JSONObject jobConfigGroupJson=jobConfigParams.getInputParamGroup().toJson();
@@ -401,24 +405,35 @@ public class RunTaskServlet extends HttpServlet
         JobSubmitInfo jobSubmitInfo,
         @Context HttpServletRequest request)
     {
+        final ServerConfiguration.Context userContext = Util.getUserContext(request);
+        final boolean enableJobConfigParams=ServerConfiguration.instance().getGPBooleanProperty(userContext, JobConfigParams.PROP_ENABLE_JOB_CONFIG_PARAMS, false);
+        if (enableJobConfigParams) {
+            return newAddJob(userContext, jobSubmitInfo, request);
+        }
+        else {
+            return origAddJob(userContext, jobSubmitInfo, request);
+        }
+    }
+    
+    /**
+     * 
+     * @param jobSubmitInfo
+     * @param request
+     * @return
+     * 
+     * @deprecated - As of 3.8.1 should use the newer implementation of this method.
+     */
+    private Response origAddJob(final ServerConfiguration.Context userContext, final JobSubmitInfo jobSubmitInfo, final HttpServletRequest request) {
         try
         {
-            String username = (String) request.getSession().getAttribute("userid");
-            if (username == null)
-            {
-                throw new Exception("User not logged in");
-            }
-
             if(jobSubmitInfo.getLsid() == null)
             {
                 throw new Exception("No lsid received");
             }
 
-            final boolean initIsAdmin=true;
-            final ServerConfiguration.Context userContext=ServerConfiguration.Context.getContextForUser(username, initIsAdmin);
             final JobInputHelper jobInputHelper=new JobInputHelper(userContext, jobSubmitInfo.getLsid());
 
-            TaskInfo taskInfo = getTaskInfo(jobSubmitInfo.getLsid(), username);
+            TaskInfo taskInfo = getTaskInfo(jobSubmitInfo.getLsid(), userContext.getUserId());
 
             JSONObject parameters = new JSONObject(jobSubmitInfo.getParameters());
             ParameterInfo[] pInfoArray = taskInfo.getParameterInfoArray();
@@ -504,7 +519,108 @@ public class RunTaskServlet extends HttpServlet
             );
         }
     }
-    
+
+    /**
+     * Added this in 3.8.1 release to enable additional job configuration input parameters.
+     * @param jobSubmitInfo
+     * @param request
+     * @return
+     */
+    private Response newAddJob(final ServerConfiguration.Context userContext, final JobSubmitInfo jobSubmitInfo, final HttpServletRequest request) {
+        try
+        {
+            //String username = (String) request.getSession().getAttribute("userid");
+            //if (username == null)
+            //{
+            //    throw new Exception("User not logged in");
+            //}
+
+            if(jobSubmitInfo.getLsid() == null)
+            {
+                throw new Exception("No lsid received");
+            }
+
+            final boolean initIsAdmin=true;
+            //final ServerConfiguration.Context userContext=ServerConfiguration.Context.getContextForUser(username, initIsAdmin);
+            final JobInputHelper jobInputHelper=new JobInputHelper(userContext, jobSubmitInfo.getLsid());
+            final JSONObject parameters = new JSONObject(jobSubmitInfo.getParameters());
+
+            //the new way
+            final Iterator<?> iter=parameters.keys();
+            while(iter.hasNext()) {
+                final String parameterName = (String) iter.next();
+                boolean isBatch = isBatchParam(jobSubmitInfo, parameterName);
+                JSONArray valueList;
+                final JSONArray groupInfos = parameters.getJSONArray(parameterName);
+                for(int g=0;g<groupInfos.length();g++)
+                {
+                    JSONObject groupInfo = groupInfos.getJSONObject(g);
+                    String groupName = groupInfo.getString("name");
+                    Object val = groupInfo.get("values");
+
+                    if (val instanceof JSONArray) {
+                        valueList=(JSONArray) val;
+                    }
+                    else {
+                        valueList = new JSONArray((String)parameters.get(parameterName));
+                    }
+                    for(int v=0; v<valueList.length();v++)
+                    {
+                        if(groupName != null && groupName.length() != 0)
+                        {
+                            jobInputHelper.addSingleOrBatchValue(parameterName, valueList.getString(v), new GroupId(groupName), isBatch);
+                        }
+                        else
+                        {
+                            jobInputHelper.addSingleOrBatchValue(parameterName, valueList.getString(v), isBatch);
+                        }
+                    }
+                }
+            }
+
+            final List<JobInput> batchInputs;
+            batchInputs=jobInputHelper.prepareBatch();
+            final JobReceipt receipt=jobInputHelper.submitBatch(batchInputs);
+
+            
+            //TODO: if necessary, add batch details to the JSON representation
+            String jobId="-1";
+            if (receipt.getJobIds().size()>0) {
+                jobId=receipt.getJobIds().get(0);
+            }
+            ResponseJSON result = new ResponseJSON();
+            result.addChild("jobId", receipt.getJobIds().get(0));
+            if (receipt.getBatchId() != null && receipt.getBatchId().length()>0) {
+                result.addChild("batchId", receipt.getBatchId());
+                request.getSession().setAttribute(JobBean.DISPLAY_BATCH, receipt.getBatchId());
+            }
+            return Response.ok(result.toString()).build();
+        }
+        catch (GpServerException e) {
+            String message = "An error occurred while submitting the job";
+            if(e.getMessage() != null)
+            {
+                message = message + ": " + e.getMessage();
+            }
+            return Response.status(ClientResponse.Status.FORBIDDEN).entity(message).build();
+        }        
+        catch(Throwable t)
+        {
+            String message = "An error occurred while submitting the job";
+            if(t.getMessage() != null)
+            {
+                message = message + ": " + t.getMessage();
+            }
+            log.error(message);
+
+            throw new WebApplicationException(
+                Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+                    .entity(message)
+                    .build()
+            );
+        }
+    }
+
     /**
      * Given the submitted job info and a param name, determine if the provided parameter is a batch parameter
      * @param jobSubmitInfo

@@ -74,6 +74,12 @@ default.properties:
     # an entry in the 'user.properties' or 'group.propeties' section
     #purgeTime: "23:00"
     #purgeJobsAfter: "-1"
+    
+    #
+    # enable setting of job configuration parameters in the job input form
+    # added in GP 3.8.1
+    #
+    enableJobConfigParams: true
 
 
 # a list of command executors
