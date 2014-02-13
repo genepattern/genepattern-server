@@ -17,7 +17,12 @@ import org.genepattern.util.GPConstants;
 import org.genepattern.webservice.ParameterInfo;
 import org.genepattern.webservice.TaskInfo;
 
-public class SubmitJobServlet extends HttpServlet {
+/**
+ * 
+ * @author pcarr
+ * @deprecated - in favor of newer job submit form.
+ */
+class SubmitJobServlet extends HttpServlet {
     private static final long serialVersionUID = 1L;
     private String lsid = null;
     

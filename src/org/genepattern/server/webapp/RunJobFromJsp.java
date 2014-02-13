@@ -17,8 +17,9 @@ import org.genepattern.webservice.TaskInfo;
  * Helper class for submitting a job from the jsp page.
  * 
  * @author pcarr
+ * @deprecated - replaced this functionality when we switched the the jQuery based job input form.
  */
-public class RunJobFromJsp {
+class RunJobFromJsp {
     private String userId = null;
     private TaskInfo task = null;
     
