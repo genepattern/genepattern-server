@@ -91,7 +91,7 @@ public class ParametersJSON extends JSONObject {
     }
 
 
-    public ParametersJSON(final TaskInfo taskInfo, final ParameterInfo pInfo)
+    public ParametersJSON(final ParameterInfo pInfo)
     {
         try {
             HashMap pAttrs = pInfo.getAttributes();

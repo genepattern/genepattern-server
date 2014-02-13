@@ -674,7 +674,7 @@ public class RunTaskServlet extends HttpServlet
         for(int i =0;i < pArray.length;i++)
         {
             final ParameterInfo pinfo=pArray[i];
-            ParametersJSON parameter = new ParametersJSON(taskInfo, pinfo);
+            ParametersJSON parameter = new ParametersJSON(pinfo);
             parameter.addNumValues(pinfo);
             parameter.addGroupInfo(pinfo);
             parameter.initChoice(request, taskInfo, pinfo);

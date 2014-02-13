@@ -796,7 +796,7 @@ public class ModuleQueryServlet extends HttpServlet {
 
         for(int i =0;i < pArray.length;i++)
         {
-            ParametersJSON parameter = new ParametersJSON(taskInfo, pArray[i]);
+            ParametersJSON parameter = new ParametersJSON(pArray[i]);
             parametersObject.put(parameter);
         }
 
