@@ -5,7 +5,6 @@ import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;
 
 import org.genepattern.server.config.ServerConfiguration;
-import org.genepattern.server.webapp.jsf.AuthorizationHelper;
 
 public class Util {
     /**
@@ -23,9 +22,8 @@ public class Util {
             //user not logged in, 403 - Forbidden
             throw new WebApplicationException(Response.Status.FORBIDDEN);
         }
-        ServerConfiguration.Context userContext = ServerConfiguration.Context.getContextForUser(userId);
-        final boolean isAdmin = AuthorizationHelper.adminServer(userId);
-        userContext.setIsAdmin(isAdmin);
+        final boolean initIsAdmin=true;
+        ServerConfiguration.Context userContext = ServerConfiguration.Context.getContextForUser(userId, initIsAdmin);
         return userContext;
     }
 
