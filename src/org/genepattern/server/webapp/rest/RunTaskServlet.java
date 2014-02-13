@@ -1,7 +1,15 @@
 package org.genepattern.server.webapp.rest;
 
-import java.io.*;
-import java.util.*;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -18,7 +26,6 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 
 import org.apache.log4j.Logger;
-import org.apache.commons.io.FileUtils;
 import org.genepattern.codegenerator.CodeGeneratorUtil;
 import org.genepattern.data.pipeline.GetIncludedTasks;
 import org.genepattern.modules.ModuleJSON;
@@ -669,19 +676,20 @@ public class RunTaskServlet extends HttpServlet
     private JSONArray getParameterList(final HttpServletRequest request, final TaskInfo taskInfo) 
     {
         final ParameterInfo[] pArray=taskInfo.getParameterInfoArray();
-        JSONArray parametersObject = new JSONArray();
-
-        for(int i =0;i < pArray.length;i++)
-        {
-            final ParameterInfo pinfo=pArray[i];
-            ParametersJSON parameter = new ParametersJSON(pinfo);
-            parameter.addNumValues(pinfo);
-            parameter.addGroupInfo(pinfo);
-            parameter.initChoice(request, taskInfo, pinfo);
+        final JSONArray parametersObject = new JSONArray();
+        for(final ParameterInfo pinfo : pArray) {
+            final ParametersJSON parameter = initParametersJSON(request, taskInfo, pinfo);
             parametersObject.put(parameter);
         }
-
         return parametersObject;
+    }
+
+    private ParametersJSON initParametersJSON(final HttpServletRequest request, final TaskInfo taskInfo, final ParameterInfo pinfo) {
+        final ParametersJSON parameter = new ParametersJSON(pinfo);
+        parameter.addNumValues(pinfo);
+        parameter.addGroupInfo(pinfo);
+        parameter.initChoice(request, taskInfo, pinfo);
+        return parameter;
     }
 
     /**
