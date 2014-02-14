@@ -6,11 +6,15 @@
 {
     margin-top: 6px;
     padding-top: 4px;
+    margin-right: 8px;
+    font-size: 14px;
+    font-weight: bold;
 }
 
 .paramGroupSection
 {
-    margin-bottom: 10px;
+    margin-right: 8px;
+    padding-bottom: 8px;
 }
 
 .pHeaderTitleDiv:hover
@@ -22,6 +26,7 @@
 {
     background-color: #BDD3E9;
 }
+
 .border
 {
     border: 2px solid #BDD3E9;
@@ -32,12 +37,6 @@
     vertical-align: middle;
 }
 
-.pHeaderTitleDiv
-{
-    font-size: 14px;
-    font-weight: bold;
-}
-
 .pHeaderDescription
 {
     font-size: 12px;
@@ -46,7 +45,7 @@
 
 .paramsTable
 {
-    min-width: 630;
+    min-width: 630px;
     width: auto;
     margin-right: 14px;
     height: 100%;
@@ -196,18 +195,6 @@ button.urlButton
 #submitJob
 {
     min-width: 820px;
-}
-
-.paramGroupSection
-{
-    min-width: 640px;
-    width: 100%;
-}
-
-.pHeaderTitleDiv
-{
-    min-width: 640px;
-    width: 100%;
 }
 
 .paramsTable input[type=text]
