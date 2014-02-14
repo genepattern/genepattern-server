@@ -38,7 +38,7 @@ public class AddNewJobHandler extends RequestHandler {
     //default value of -1 means the job has no parent
     private int parentJobId = -1;
     
-    private boolean wakeupJobQueue = true;
+    private final boolean wakeupJobQueue = true;
     
     /**
      * Constructor with taskID, ParameterInfo[]
@@ -65,10 +65,6 @@ public class AddNewJobHandler extends RequestHandler {
         this.userId = userId;
         this.parameterInfoArray = parameterInfoArray;
         this.parentJobId = parentJobId;
-    }
-    
-    public void setWakeupJobQueueFlag(boolean b) {
-        this.wakeupJobQueue = b;
     }
 
     /**
