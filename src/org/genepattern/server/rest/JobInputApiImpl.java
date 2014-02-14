@@ -20,6 +20,8 @@ import org.genepattern.server.job.input.JobInput;
  *         update this code so that it does not have to block the web client.
  *     
  * @author pcarr
+ * 
+ * @deprecated for 3.8.1 should use the newer version of the API which can handle optional job configuration parameters
  *
  */
 public class JobInputApiImpl implements JobInputApi {
