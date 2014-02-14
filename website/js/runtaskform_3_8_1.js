@@ -1589,7 +1589,7 @@ function loadParametersByGroup(parameterGroups, parameters, initialValues)
                 var newHeaderDiv = $("<div id=" + pHeadingId + " class='paramGroupSection'/>");
 
                 var headerTitleDiv = $("<div class='pHeaderTitleDiv'/>");
-                var toggleImg = $("<img src ='/gp/images/toggle_collapse.png' width='17' height='17' class='paramSectionToggle'/>");
+                var toggleImg = $("<img src ='/gp/images/toggle_collapse.png' width='19' height='19' class='paramSectionToggle'/>");
 
                 headerTitleDiv.click(function()
                 {

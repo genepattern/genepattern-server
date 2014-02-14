@@ -27,9 +27,13 @@
     border: 2px solid #BDD3E9;
 }
 
+.paramSectionToggle
+{
+    vertical-align: middle;
+}
+
 .pHeaderTitleDiv
 {
-    vertical-align: top;
     font-size: 14px;
     font-weight: bold;
 }
