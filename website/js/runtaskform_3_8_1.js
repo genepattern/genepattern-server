@@ -1621,7 +1621,7 @@ function loadParametersByGroup(parameterGroups, parameters, initialValues)
                 });
 
                 //indent the inner sections
-                indent = h * 20;
+                indent = h * 16;
 
                 //only provide hide/show toggle for a group with a name
                 if(pGroupName.length > 0)
@@ -1675,7 +1675,7 @@ function loadParametersByGroup(parameterGroups, parameters, initialValues)
         curHeaderDiv.append(paramTable);
 
 
-        paramTable.css({'margin-left': '20px'});
+        paramTable.css({'margin-left': '16px'});
     }
 }
 
