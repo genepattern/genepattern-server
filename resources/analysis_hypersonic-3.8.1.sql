@@ -5,7 +5,8 @@ create table job_input_value (
     pvalue varchar(1023) not null,
     group_id varchar(255) default '' not null,
     group_name varchar(255) default '' not null,
-    primary key (gp_job_no, idx, pname)
+    primary key (gp_job_no, idx, pname),
+    constraint jiv_gpjn_fk foreign key (GP_JOB_NO) references ANALYSIS_JOB(JOB_NO) on delete cascade
 );
 
 -- update schema version
