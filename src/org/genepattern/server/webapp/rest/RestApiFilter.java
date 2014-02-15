@@ -35,6 +35,7 @@ public class RestApiFilter implements Filter {
         if (!(request instanceof HttpServletRequest) || !(response instanceof HttpServletResponse)) {
             log.error("Expecting HttpServletRequest");
             chain.doFilter(request, response);
+            return;
         }
         HttpServletRequest req = (HttpServletRequest) request;
         HttpServletResponse resp = (HttpServletResponse) response;
