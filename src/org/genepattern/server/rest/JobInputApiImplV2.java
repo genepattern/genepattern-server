@@ -17,7 +17,6 @@ import org.genepattern.server.job.input.JobInput;
 import org.genepattern.server.job.input.Param;
 import org.genepattern.server.job.input.ParamListHelper;
 import org.genepattern.server.jobqueue.JobQueue;
-import org.genepattern.server.webservice.server.dao.AdminDAO;
 import org.genepattern.webservice.JobInfo;
 import org.genepattern.webservice.ParameterInfo;
 import org.genepattern.webservice.TaskInfo;
@@ -44,41 +43,30 @@ import org.genepattern.webservice.TaskInfo;
 public class JobInputApiImplV2 implements JobInputApi {
     final static private Logger log = Logger.getLogger(JobInputApiImplV2.class);
     
-    private GetTaskStrategy getTaskStrategy;
+    private final GetTaskStrategy getTaskStrategy;
     /**
      * special-case, as a convenience, for input parameters which have not been set, initialize them from their default value.
      * By default, this value is false.
      */
-    private boolean initDefault=false;
-    protected JobInputApiImplV2() {
+    private final boolean initDefault;
+    public JobInputApiImplV2() {
+        this(false);
     }
-    protected JobInputApiImplV2(final boolean initDefault) {
-        this.initDefault=initDefault;
+    public JobInputApiImplV2(final boolean initDefault) {
+        this(null, initDefault);
     }
-    protected JobInputApiImplV2(final GetTaskStrategy getTaskStrategy) {
-        this.getTaskStrategy=getTaskStrategy;
-    }
-    protected JobInputApiImplV2(final GetTaskStrategy getTaskStrategy, final boolean initDefault) {
+    public JobInputApiImplV2(final GetTaskStrategy getTaskStrategy, final boolean initDefault) {
         this.getTaskStrategy=getTaskStrategy;
         this.initDefault=initDefault;
-    }
-    
-    /**
-     * Optionally set the strategy for initializing a TaskInfo from a task lsid.
-     * 
-     * @param impl, an object which implements this interface, can be null.
-     */
-    public void setGetTaskStrategy(final GetTaskStrategy getTaskStrategy) {
-        this.getTaskStrategy=getTaskStrategy;
     }
 
     @Override
-    public String postJob(final Context jobContext, final JobInput jobInput) throws GpServerException {
-        if (jobContext==null) {
-            throw new IllegalArgumentException("jobContext==null");
+    public String postJob(final Context taskContext, final JobInput jobInput) throws GpServerException {
+        if (taskContext==null) {
+            throw new IllegalArgumentException("taskContext==null");
         }
-        if (jobContext.getUserId()==null) {
-            throw new IllegalArgumentException("jobContext.userId==null");
+        if (taskContext.getUserId()==null) {
+            throw new IllegalArgumentException("taskContext.userId==null");
         }
         if (jobInput==null) {
             throw new IllegalArgumentException("jobInput==null");
@@ -87,12 +75,12 @@ public class JobInputApiImplV2 implements JobInputApi {
             throw new IllegalArgumentException("jobInput.lsid==null");
         }
         try {
-            JobInputHelper jobInputHelper=new JobInputHelper(jobContext, jobInput, getTaskStrategy, initDefault);
+            JobInputHelper jobInputHelper=new JobInputHelper(taskContext, jobInput, getTaskStrategy, initDefault);
             final String jobId=jobInputHelper.submitJob();
             return jobId;
         }
         catch (Throwable t) {
-            String message="Error adding job to queue, currentUser="+jobContext.getUserId()+", lsid="+jobInput.getLsid();
+            String message="Error adding job to queue, currentUser="+taskContext.getUserId()+", lsid="+jobInput.getLsid();
             log.error(message,t);
             throw new GpServerException(t.getLocalizedMessage(), t);
         }
@@ -102,53 +90,50 @@ public class JobInputApiImplV2 implements JobInputApi {
     private static class JobInputHelper {
         final static private Logger log = Logger.getLogger(JobInputApiLegacy.class);
 
-        private Context userContext;
-        private JobInput jobInput;
-        private TaskInfo taskInfo;
+        private final Context taskContext;
+        private final JobInput jobInput;
         private final boolean initDefault;
         private final int parentJobId;
 
-        public JobInputHelper(final Context userContext, final JobInput jobInput, final GetTaskStrategy getTaskStrategyIn, final boolean initDefault) {
-            this(userContext, jobInput, getTaskStrategyIn, initDefault, -1);
+        public JobInputHelper(final Context taskContext, final JobInput jobInput, final GetTaskStrategy getTaskStrategyIn, final boolean initDefault) {
+            this(taskContext, jobInput, getTaskStrategyIn, initDefault, -1);
         }
-        public JobInputHelper(final Context userContext, final JobInput jobInput, final GetTaskStrategy getTaskStrategyIn, final boolean initDefault, final int parentJobId) {
-            this.userContext=userContext;
+        public JobInputHelper(final Context taskContext, final JobInput jobInput, final GetTaskStrategy getTaskStrategyIn, final boolean initDefault, final int parentJobId) {
+            this.taskContext=taskContext;
             this.jobInput=jobInput;
             this.initDefault=initDefault;
             this.parentJobId=parentJobId;
-
-            final GetTaskStrategy getTaskStrategy;
-            if (getTaskStrategyIn == null) {
-                getTaskStrategy=new GetTaskStrategyDefault();
+            
+            if (taskContext.getTaskInfo()==null) {
+                log.debug("taskContext.taskInfo is null, initialize from getTaskStrategy");
+                final GetTaskStrategy getTaskStrategy;
+                if (getTaskStrategyIn == null) {
+                    getTaskStrategy=new GetTaskStrategyDefault();
+                }
+                else {
+                    getTaskStrategy=getTaskStrategyIn;
+                }
+                final TaskInfo taskInfo=getTaskStrategy.getTaskInfo(jobInput.getLsid());
+                taskContext.setTaskInfo(taskInfo);
             }
-            else {
-                getTaskStrategy=getTaskStrategyIn;
-            }
-            this.taskInfo=getTaskStrategy.getTaskInfo(jobInput.getLsid());
-            this.taskInfo.getParameterInfoArray();
-            userContext.setTaskInfo(taskInfo);
+            taskContext.getTaskInfo().getParameterInfoArray();
         }
 
-        public TaskInfo getTaskInfo() {
-            return taskInfo;
-        }
-
-        private ParameterInfo[] initParameterValues() throws Exception 
-        {
+        private ParameterInfo[] initParameterValues() throws Exception  {
             if (jobInput.getParams()==null) {
                 log.debug("jobInput.params==null");
                 return new ParameterInfo[0];
             }
 
             //initialize a map of paramName to ParameterInfo 
-            final Map<String,ParameterInfoRecord> paramInfoMap=ParameterInfoRecord.initParamInfoMap(taskInfo);
+            final Map<String,ParameterInfoRecord> paramInfoMap=ParameterInfoRecord.initParamInfoMap(taskContext.getTaskInfo());
 
             //for each formal input parameter ... set the actual value to be used on the command line
             for(Entry<String,ParameterInfoRecord> entry : paramInfoMap.entrySet()) {
                 // validate num values
                 // and initialize input file (or parameter) lists as needed
                 Param inputParam=jobInput.getParam( entry.getKey() );
-                ParamListHelper plh=new ParamListHelper(userContext, entry.getValue(), inputParam, initDefault);
+                ParamListHelper plh=new ParamListHelper(taskContext, entry.getValue(), inputParam, initDefault);
                 plh.validateNumValues();
                 plh.updatePinfoValue();
             }
@@ -163,32 +148,23 @@ public class JobInputApiImplV2 implements JobInputApi {
 
         public String submitJob() throws Exception {
             final ParameterInfo[] actualValues=initParameterValues();
-            final int taskId=getTaskInfo().getID();
-            final JobInfo jobInfo=submitJob(taskId, actualValues);
+            final JobInfo jobInfo = executeRequest(taskContext.getTaskInfo(), taskContext.getUserId(), actualValues, parentJobId);
             final String jobId = "" + jobInfo.getJobNumber();
             return jobId;
-        }
-
-        public JobInfo submitJob(final int taskID, final ParameterInfo[] parameters) throws JobSubmissionException {
-            final JobInfo jobInfo = executeRequest(taskID, userContext.getUserId(), parameters, parentJobId);
-            return jobInfo;
         }
         
         //copied from AddNewJobHandler#executeRequest
         //        AddNewJobHandler req = new AddNewJobHandler(taskID, userContext.getUserId(), parameters);
         //        JobInfo jobInfo = req.executeRequest();
-
         /**
          * Adds the job to GenePattern and commits the changes to the DB.
          * Delegates to JobManager, which does not commit to the DB.
          * @return the newly created JobInfo
          * @throws JobSubmissionException
          */
-        private JobInfo executeRequest(final int taskId, final String userId, final ParameterInfo[] parameterInfoArray, final int parentJobId ) throws JobSubmissionException {
-            TaskInfo taskInfo = null;
+        private JobInfo executeRequest(final TaskInfo taskInfo, final String userId, final ParameterInfo[] parameterInfoArray, final int parentJobId ) throws JobSubmissionException {
             try {
                 HibernateUtil.beginTransaction();
-                taskInfo = new AdminDAO().getTask(taskId);
                 JobInfo jobInfo = JobManager.addJobToQueue(taskInfo, userId, parameterInfoArray, parentJobId, JobQueue.Status.PENDING);
                 HibernateUtil.commitTransaction();
                 final boolean wakeupJobQueue = true;
@@ -204,11 +180,9 @@ public class JobInputApiImplV2 implements JobInputApi {
             }
             catch (Throwable t) {
                 HibernateUtil.rollbackTransaction();
-                throw new JobSubmissionException("Unexpected exception thrown while adding job to queue: taskID="+taskId, t);
+                throw new JobSubmissionException("Unexpected error adding task="+taskInfo.getName()+" for user="+userId, t);
             }
         }
-
     }
-    
 
 }
