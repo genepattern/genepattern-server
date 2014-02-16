@@ -1,12 +1,14 @@
 package org.genepattern.server.rest;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import org.genepattern.server.config.ServerConfiguration;
+import org.genepattern.server.webservice.server.dao.AnalysisDAO;
 import java.util.Map.Entry;
 
 import org.apache.log4j.Logger;
-import org.genepattern.server.JobManager;
 import org.genepattern.server.config.ServerConfiguration.Context;
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.eula.GetTaskStrategy;
@@ -17,6 +19,7 @@ import org.genepattern.server.job.input.JobInput;
 import org.genepattern.server.job.input.Param;
 import org.genepattern.server.job.input.ParamListHelper;
 import org.genepattern.server.jobqueue.JobQueue;
+import org.genepattern.server.jobqueue.JobQueueUtil;
 import org.genepattern.webservice.JobInfo;
 import org.genepattern.webservice.ParameterInfo;
 import org.genepattern.webservice.TaskInfo;
@@ -99,6 +102,9 @@ public class JobInputApiImplV2 implements JobInputApi {
             this(taskContext, jobInput, getTaskStrategyIn, initDefault, -1);
         }
         public JobInputHelper(final Context taskContext, final JobInput jobInput, final GetTaskStrategy getTaskStrategyIn, final boolean initDefault, final int parentJobId) {
+            if (taskContext==null) {
+                throw new IllegalArgumentException("taskContext==null");
+            }
             this.taskContext=taskContext;
             this.jobInput=jobInput;
             this.initDefault=initDefault;
@@ -120,11 +126,6 @@ public class JobInputApiImplV2 implements JobInputApi {
         }
 
         private ParameterInfo[] initParameterValues() throws Exception  {
-            if (jobInput.getParams()==null) {
-                log.debug("jobInput.params==null");
-                return new ParameterInfo[0];
-            }
-
             //initialize a map of paramName to ParameterInfo 
             final Map<String,ParameterInfoRecord> paramInfoMap=ParameterInfoRecord.initParamInfoMap(taskContext.getTaskInfo());
 
@@ -148,8 +149,8 @@ public class JobInputApiImplV2 implements JobInputApi {
 
         public String submitJob() throws Exception {
             final ParameterInfo[] actualValues=initParameterValues();
-            final JobInfo jobInfo = executeRequest(taskContext.getTaskInfo(), taskContext.getUserId(), actualValues, parentJobId);
-            final String jobId = "" + jobInfo.getJobNumber();
+            final Integer jobNo = executeRequest(taskContext.getTaskInfo(), taskContext.getUserId(), actualValues, parentJobId);
+            final String jobId = "" + jobNo;
             return jobId;
         }
         
@@ -162,17 +163,17 @@ public class JobInputApiImplV2 implements JobInputApi {
          * @return the newly created JobInfo
          * @throws JobSubmissionException
          */
-        private JobInfo executeRequest(final TaskInfo taskInfo, final String userId, final ParameterInfo[] parameterInfoArray, final int parentJobId ) throws JobSubmissionException {
+        private Integer executeRequest(final TaskInfo taskInfo, final String userId, final ParameterInfo[] parameterInfoArray, final int parentJobId ) throws JobSubmissionException {
             try {
                 HibernateUtil.beginTransaction();
-                JobInfo jobInfo = JobManager.addJobToQueue(taskInfo, userId, parameterInfoArray, parentJobId, JobQueue.Status.PENDING);
+                final Integer jobNo = addJobToQueue(taskInfo, userId, parameterInfoArray, parentJobId, JobQueue.Status.PENDING);
                 HibernateUtil.commitTransaction();
                 final boolean wakeupJobQueue = true;
                 if (wakeupJobQueue) {
                     log.debug("Waking up job queue");                
                     CommandManagerFactory.getCommandManager().wakeupJobQueue();
                 }
-                return jobInfo;
+                return jobNo;
             }
             catch (JobSubmissionException e) {
                 HibernateUtil.rollbackTransaction();
@@ -183,6 +184,108 @@ public class JobInputApiImplV2 implements JobInputApi {
                 throw new JobSubmissionException("Unexpected error adding task="+taskInfo.getName()+" for user="+userId, t);
             }
         }
+        
+        //copied from JobManager#addJobToQueue  
+        /**
+         * Adds a new job entry to the ANALYSIS_JOB table, with initial status either PENDING or WAITING.
+         * 
+         * @param taskID
+         * @param userID
+         * @param parameterInfoArray
+         * @param parentJobID
+         * @param jobStatusId
+         * @return
+         * @throws JobSubmissionException
+         */
+        private Integer addJobToQueue(
+            final TaskInfo taskInfo, 
+            final String userId, 
+            final ParameterInfo[] parameterInfoArray, 
+            final Integer parentJobNumber, 
+            final JobQueue.Status initialJobStatus
+        ) throws JobSubmissionException
+        {
+            try {
+                AnalysisDAO ds = new AnalysisDAO();
+                Integer jobNo = ds.addNewJob(userId, taskInfo, parameterInfoArray, parentJobNumber);
+                if (jobNo == null) {
+                    throw new JobSubmissionException(
+                            "addJobToQueue: Operation failed, null value returned for JobInfo");
+                }
+                final JobInfo jobInfo = ds.getJobInfo(jobNo);
+
+                createJobDirectory(taskContext, jobNo);
+
+                //add record to the internal job queue, for dispatching ...
+                JobQueueUtil.addJobToQueue(jobInfo, initialJobStatus);
+                return jobNo;
+            }
+            catch (JobSubmissionException e) {
+                throw e;
+            }
+            catch (Throwable t) {
+                throw new JobSubmissionException(t);
+            }
+        }
+
+        /**
+         * Create the job directory for a newly added job.
+         * This method requires a valid jobId, but does not check if the jobId is valid.
+         * 
+         * @throws IllegalArgumentException, JobDispatchException
+         */
+        public static File createJobDirectory(final Context taskContext, final int jobNumber) throws JobSubmissionException { 
+            File jobDir = null;
+            try {
+                jobDir = getWorkingDirectory(taskContext, jobNumber);
+            }
+            catch (Throwable t) {
+                throw new JobSubmissionException(t.getLocalizedMessage());
+            }
+
+            //TODO: record the working dir with the jobInfo and save to DB
+            //jobInfo.setWorkingDir(jobDir.getPath());
+            // make directory to hold input and output files
+            if (!jobDir.exists()) {
+                boolean success = jobDir.mkdirs();
+                if (!success) {
+                    throw new JobSubmissionException("Error creating working directory for job #" + jobNumber +", jobDir=" + jobDir.getPath());
+                }
+            } 
+            else {
+                // clean out existing directory
+                if (log.isDebugEnabled()) {
+                    log.debug("clean out existing directory");
+                }
+                File[] old = jobDir.listFiles();
+                for (int i = 0; old != null && i < old.length; i++) {
+                    old[i].delete();
+                }
+            }
+            return jobDir;
+        }
+
+        /**
+         * Get the working directory for the given job.
+         * In GP 3.3.2 and earlier, this is hard-coded based on a configured property.
+         * In future releases, the working directory is configurable, and must be stored in the DB.
+         * @param jobInfo
+         * @return
+         */
+        private static File getWorkingDirectory(final Context jobContext, final int jobNumber) throws Exception {
+            try {
+                File rootJobDir = ServerConfiguration.instance().getRootJobDir(jobContext);
+                File jobDir = new File(rootJobDir, ""+jobNumber);
+                return jobDir;
+            }
+            catch (ServerConfiguration.Exception e) {
+                throw new Exception(e.getLocalizedMessage());
+            }
+            catch (Throwable t) {
+                throw new Exception("Unexpected error getting working directory for jobId="+jobNumber, t);
+            }
+        }
+        
     }
 
 }
