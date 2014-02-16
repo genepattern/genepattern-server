@@ -83,8 +83,6 @@ public class JobInputApiImplV2 implements JobInputApi {
             throw new IllegalArgumentException("jobInput.lsid==null");
         }
         try {
-            //JobInputApiLegacy jobInputHelper=new JobInputApiLegacy(jobContext, jobInput, getTaskStrategy, initDefault);
-            //final String jobId=jobInputHelper.submitJob();
             JobInputHelper jobInputHelper=new JobInputHelper(jobContext, jobInput, getTaskStrategy, initDefault);
             final String jobId=jobInputHelper.submitJob();
             return jobId;
@@ -104,18 +102,16 @@ public class JobInputApiImplV2 implements JobInputApi {
         private JobInput jobInput;
         private TaskInfo taskInfo;
         private final boolean initDefault;
+        private final int parentJobId;
 
-
-//        public JobInputHelper(final Context userContext, final JobInput jobInput) {
-//            this(userContext, jobInput, null);
-//        }
-//        public JobInputHelper(final Context userContext, final JobInput jobInput, final GetTaskStrategy getTaskStrategyIn) {
-//            this(userContext, jobInput, getTaskStrategyIn, false);
-//        }
         public JobInputHelper(final Context userContext, final JobInput jobInput, final GetTaskStrategy getTaskStrategyIn, final boolean initDefault) {
+            this(userContext, jobInput, getTaskStrategyIn, initDefault, -1);
+        }
+        public JobInputHelper(final Context userContext, final JobInput jobInput, final GetTaskStrategy getTaskStrategyIn, final boolean initDefault, final int parentJobId) {
             this.userContext=userContext;
             this.jobInput=jobInput;
             this.initDefault=initDefault;
+            this.parentJobId=parentJobId;
 
             final GetTaskStrategy getTaskStrategy;
             if (getTaskStrategyIn == null) {
@@ -175,6 +171,5 @@ public class JobInputApiImplV2 implements JobInputApi {
             return jobInfo;
         }
     }
-
 
 }
