@@ -1287,12 +1287,16 @@ public class GenePatternAnalysisTask {
                                     }
                                     outFile = File.createTempFile(name, null, outDir);
                                 }
+                                log.debug("job "+jobId+"."+pinfo.getName()+" starting download to "+outFile);
+
                                 os = new FileOutputStream(outFile);
                                 byte[] buf = new byte[1024];
                                 int bytesRead;
                                 while ((bytesRead = is.read(buf, 0, buf.length)) != -1) {
                                     os.write(buf, 0, bytesRead);
                                 }
+                                log.debug("job "+jobId+"."+pinfo.getName()+" finished download to "+outFile);
+
                                 //TODO: mark file for delete from job results directory on handle job completion
                                 attrsCopy.put(ORIGINAL_PATH, originalPath);
                                 pinfo.setValue(outFile.getAbsolutePath());
