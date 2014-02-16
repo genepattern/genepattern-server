@@ -526,26 +526,20 @@ public class RunTaskServlet extends HttpServlet
      * @return
      */
     private Response newAddJob(final ServerConfiguration.Context userContext, final JobSubmitInfo jobSubmitInfo, final HttpServletRequest request) {
-        try
-        {
-            if(jobSubmitInfo.getLsid() == null)
-            {
-                throw new Exception("No lsid received");
-            }
-
+        if (jobSubmitInfo==null || jobSubmitInfo.getLsid()==null || jobSubmitInfo.getLsid().length()==0) {
+            return handleError("No lsid received");
+        }
+        try {
             final JobInputHelper jobInputHelper=new JobInputHelper(userContext, jobSubmitInfo.getLsid());
             final JSONObject parameters = new JSONObject(jobSubmitInfo.getParameters());
 
-            //the new way
-            final Iterator<?> iter=parameters.keys();
-            while(iter.hasNext()) {
+            for(final Iterator<?> iter=parameters.keys(); iter.hasNext();) {
                 final String parameterName = (String) iter.next();
                 boolean isBatch = isBatchParam(jobSubmitInfo, parameterName);
                 JSONArray valueList;
                 final JSONArray groupInfos = parameters.getJSONArray(parameterName);
-                for(int g=0;g<groupInfos.length();g++)
-                {
-                    final JSONObject groupInfo = groupInfos.getJSONObject(g);
+                for(int i=0;i<groupInfos.length();i++) {
+                    final JSONObject groupInfo = groupInfos.getJSONObject(i);
                     final String groupName = groupInfo.getString("name");
                     final GroupId groupId;
                     if (groupName == null || groupName.length()==0) {
@@ -554,16 +548,14 @@ public class RunTaskServlet extends HttpServlet
                     else {
                         groupId=new GroupId(groupName);
                     }
-                    Object val = groupInfo.get("values");
-
-                    if (val instanceof JSONArray) {
-                        valueList=(JSONArray) val;
+                    final Object values = groupInfo.get("values");
+                    if (values instanceof JSONArray) {
+                        valueList=(JSONArray) values;
                     }
                     else {
                         valueList = new JSONArray((String)parameters.get(parameterName));
                     }
-                    for(int v=0; v<valueList.length();v++)
-                    {
+                    for(int v=0; v<valueList.length();v++) {
                         final String value=valueList.getString(v);
                         if (isBatch) {
                             //TODO: implement support for groupId with batch values
@@ -579,7 +571,6 @@ public class RunTaskServlet extends HttpServlet
             final List<JobInput> batchInputs;
             batchInputs=jobInputHelper.prepareBatch();
             final JobReceipt receipt=jobInputHelper.submitBatch(batchInputs);
-
             
             //TODO: if necessary, add batch details to the JSON representation
             final ResponseJSON result = new ResponseJSON();
@@ -599,27 +590,27 @@ public class RunTaskServlet extends HttpServlet
         }
         catch (GpServerException e) {
             String message = "An error occurred while submitting the job";
-            if(e.getMessage() != null)
-            {
+            if(e.getMessage() != null) {
                 message = message + ": " + e.getMessage();
             }
             return Response.status(ClientResponse.Status.FORBIDDEN).entity(message).build();
         }        
-        catch(Throwable t)
-        {
+        catch(Throwable t) {
             String message = "An error occurred while submitting the job";
-            if(t.getMessage() != null)
-            {
+            if(t.getMessage() != null) {
                 message = message + ": " + t.getMessage();
             }
-            log.error(message);
-
-            throw new WebApplicationException(
-                Response.status(Response.Status.INTERNAL_SERVER_ERROR)
-                    .entity(message)
-                    .build()
-            );
+            log.error(message, t);
+            return handleError(message);
         }
+    }
+    
+    private Response handleError(final String errorMessage) throws WebApplicationException {
+        throw new WebApplicationException(
+                Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+                .entity(errorMessage)
+                .build()
+        );
     }
 
     /**
