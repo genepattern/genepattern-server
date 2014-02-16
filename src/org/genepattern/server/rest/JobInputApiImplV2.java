@@ -18,6 +18,7 @@ import org.genepattern.server.executor.JobSubmissionException;
 import org.genepattern.server.job.input.JobInput;
 import org.genepattern.server.job.input.Param;
 import org.genepattern.server.job.input.ParamListHelper;
+import org.genepattern.server.job.input.dao.JobInputValueRecorder;
 import org.genepattern.server.jobqueue.JobQueue;
 import org.genepattern.server.jobqueue.JobQueueUtil;
 import org.genepattern.webservice.JobInfo;
@@ -213,6 +214,7 @@ public class JobInputApiImplV2 implements JobInputApi {
                             "addJobToQueue: Operation failed, null value returned for JobInfo");
                 }
                 final JobInfo jobInfo = ds.getJobInfo(jobNo);
+                new JobInputValueRecorder().saveJobInput(jobNo, jobInput);
 
                 createJobDirectory(taskContext, jobNo);
 

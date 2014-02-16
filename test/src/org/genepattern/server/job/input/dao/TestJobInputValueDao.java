@@ -37,39 +37,7 @@ public class TestJobInputValueDao {
     @AfterClass
     static public void afterClass() throws Exception {
         DbUtil.shutdownDb();
-    }
-    
-    public void saveJobInput(final Integer gpJobNo, final JobInput jobInput) throws Exception {
-        final boolean inTransaction=HibernateUtil.isInTransaction();
-        try {
-            HibernateUtil.beginTransaction();
-            int numRows=0;
-            for(final Param param : jobInput.getParams().values()) {
-                int idx=1; //Note, db index starts at 1 so that max(idx)==num values
-                for(final Entry<GroupId,ParamValue> entry : param.getValuesAsEntries()) {
-                    final GroupId groupId=entry.getKey();
-                    final ParamValue paramValue=entry.getValue();
-                    final JobInputValue j=JobInputValue.create(gpJobNo, param.getParamId(), idx, groupId, paramValue);
-                    HibernateUtil.getSession().saveOrUpdate(j);
-                    ++idx;
-                    ++numRows;
-                }
-            }
-            if (!inTransaction) {
-                HibernateUtil.commitTransaction();
-            }
-        }
-        catch (Throwable t) {
-            //TODO: log error
-            HibernateUtil.rollbackTransaction();
-            throw new Exception("Error saving job_input_values for gpJobNo="+gpJobNo, t);
-        }
-        finally {
-            if (!inTransaction) {
-                HibernateUtil.closeCurrentSession();
-            }
-        }
-    }
+    } 
     
     public JobInput fetchJobInput(final int gpJobNo) throws Exception {
         boolean inTransaction=HibernateUtil.isInTransaction();
@@ -129,7 +97,7 @@ public class TestJobInputValueDao {
         int jobNo=jobUtil.addJobToDb(taskContext, jobInput, initDefault);
 
         // (2) another db transaction
-        saveJobInput(jobNo, jobInput);
+        new JobInputValueRecorder().saveJobInput(jobNo, jobInput);
 
         // (3) another db transaction
         JobInput jobInputOut = fetchJobInput(jobNo);
