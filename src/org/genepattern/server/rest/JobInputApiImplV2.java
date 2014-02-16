@@ -6,14 +6,18 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import org.apache.log4j.Logger;
+import org.genepattern.server.JobManager;
 import org.genepattern.server.config.ServerConfiguration.Context;
+import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.eula.GetTaskStrategy;
 import org.genepattern.server.eula.GetTaskStrategyDefault;
+import org.genepattern.server.executor.CommandManagerFactory;
 import org.genepattern.server.executor.JobSubmissionException;
-import org.genepattern.server.handler.AddNewJobHandler;
 import org.genepattern.server.job.input.JobInput;
 import org.genepattern.server.job.input.Param;
 import org.genepattern.server.job.input.ParamListHelper;
+import org.genepattern.server.jobqueue.JobQueue;
+import org.genepattern.server.webservice.server.dao.AdminDAO;
 import org.genepattern.webservice.JobInfo;
 import org.genepattern.webservice.ParameterInfo;
 import org.genepattern.webservice.TaskInfo;
@@ -166,10 +170,45 @@ public class JobInputApiImplV2 implements JobInputApi {
         }
 
         public JobInfo submitJob(final int taskID, final ParameterInfo[] parameters) throws JobSubmissionException {
-            AddNewJobHandler req = new AddNewJobHandler(taskID, userContext.getUserId(), parameters);
-            JobInfo jobInfo = req.executeRequest();
+            final JobInfo jobInfo = executeRequest(taskID, userContext.getUserId(), parameters, parentJobId);
             return jobInfo;
         }
+        
+        //copied from AddNewJobHandler#executeRequest
+        //        AddNewJobHandler req = new AddNewJobHandler(taskID, userContext.getUserId(), parameters);
+        //        JobInfo jobInfo = req.executeRequest();
+
+        /**
+         * Adds the job to GenePattern and commits the changes to the DB.
+         * Delegates to JobManager, which does not commit to the DB.
+         * @return the newly created JobInfo
+         * @throws JobSubmissionException
+         */
+        private JobInfo executeRequest(final int taskId, final String userId, final ParameterInfo[] parameterInfoArray, final int parentJobId ) throws JobSubmissionException {
+            TaskInfo taskInfo = null;
+            try {
+                HibernateUtil.beginTransaction();
+                taskInfo = new AdminDAO().getTask(taskId);
+                JobInfo jobInfo = JobManager.addJobToQueue(taskInfo, userId, parameterInfoArray, parentJobId, JobQueue.Status.PENDING);
+                HibernateUtil.commitTransaction();
+                final boolean wakeupJobQueue = true;
+                if (wakeupJobQueue) {
+                    log.debug("Waking up job queue");                
+                    CommandManagerFactory.getCommandManager().wakeupJobQueue();
+                }
+                return jobInfo;
+            }
+            catch (JobSubmissionException e) {
+                HibernateUtil.rollbackTransaction();
+                throw e;
+            }
+            catch (Throwable t) {
+                HibernateUtil.rollbackTransaction();
+                throw new JobSubmissionException("Unexpected exception thrown while adding job to queue: taskID="+taskId, t);
+            }
+        }
+
     }
+    
 
 }
