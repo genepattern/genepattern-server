@@ -22,6 +22,7 @@ import org.apache.log4j.Logger;
 import org.genepattern.server.JobInfoWrapper.ParameterInfoWrapper;
 import org.genepattern.server.config.ServerConfiguration;
 import org.genepattern.server.database.HibernateUtil;
+import org.genepattern.server.domain.JobStatus;
 import org.genepattern.server.user.UserDAO;
 import org.genepattern.server.user.UserProp;
 import org.genepattern.server.user.UserPropKey;
@@ -316,7 +317,10 @@ public class JobInfoManager {
                 }
                 else {
                     if (!isOptional) {
-                        log.error("link not set for inputFile: "+inputParam.getName()+"="+inputParam.getValue());
+                        if (JobStatus.FINISHED.equals(jobInfoWrapper.getStatus())) {
+                            final String currentStatus=jobInfoWrapper.getStatus();
+                            log.warn("link not set for job="+jobInfoWrapper.getJobNumber()+": "+inputParam.getName()+"="+inputParam.getValue()+", currentStatus="+currentStatus);
+                        }
                     }
                 }
             }
