@@ -49,7 +49,7 @@ public class JobInputValue {
     @Column(name="group_name", nullable=false)
     private String groupName="";
     
-    private JobInputValue() {
+    public JobInputValue() {
     }
 
     public Integer getGpJobNo() {
