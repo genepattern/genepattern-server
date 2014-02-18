@@ -97,6 +97,9 @@ public class UploadTreeJSON extends JSONArray {
         if (tasks == null) tasks = new TreeSet<TaskInfo>();
         String taskString = makeTaskString(tasks);
         attr.put("data-sendtomodule", taskString);
+
+        // Add the Kind data
+        attr.put("data-kind", kind);
         
         data.put(ATTR, attr);
 

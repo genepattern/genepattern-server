@@ -758,6 +758,8 @@ function _createFileWidgetInner(linkElement) {
     var lsidList = JSON.parse(sendToString);
     var sendToList = lsidsToModules(lsidList);
 
+    var kind = linkElement.attr("data-kind");
+
     if (isDirectory) {
         var saveOrSubdirectory = {
             "lsid": "",
@@ -808,6 +810,20 @@ function _createFileWidgetInner(linkElement) {
             }
     });
 
+    var paramList = $("<div></div>")
+        .attr("class", "send-to-param-list")
+        .attr("data-kind", kind)
+        .attr("data-url", link.attr("href"))
+        .modulelist({
+            title: "Send to Paramater",
+            data: [],
+            droppable: false,
+            draggable: false,
+            click: function(event) {
+                alert("click");
+            }
+    });
+
     var moduleList = $("<div></div>").modulelist({
         title: "Send to Module",
         data: sendToList,
@@ -826,9 +842,13 @@ function _createFileWidgetInner(linkElement) {
         .attr("name", link.attr("href"))
         .attr("class", "search-widget file-widget")
         .searchslider({
-            lists: [actionList, moduleList]});
+            lists: [actionList, paramList, moduleList]});
 
     $("#content").append(widget);
+
+    // Init the initial send to parameters
+    var sendToParamList = widget.find(".send-to-param-list");
+    sendToParamForMenu(sendToParamList);
 }
 
 function openFileWidget(link) {

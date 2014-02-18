@@ -284,6 +284,7 @@ function clearAllSendToParams() {
 }
 
 function sendToMapToMenu() {
+    // Insert into the old menus
     var starts = $(".send-to-param-start");
     starts.each(function(index, start) {
         var kind = $(start).attr("data-kind");
@@ -298,6 +299,50 @@ function sendToMapToMenu() {
             }
         }
     });
+
+    // Insert into the new menus
+    var paramLists = $(".send-to-param-list");
+    paramLists.each(function(index, paramList) {
+        sendToParamForMenu(paramList);
+    });
+}
+
+function sendToParamForMenu(paramList) {
+    var kind = $(paramList).attr("data-kind");
+    var url = $(paramList).attr("data-url");
+    var params = run_task_info.sendTo[kind];
+    if (params) {
+        for (var i = 0; i < params.length; i++) {
+            var param = params[i];
+
+            $("<div></div>")
+                .attr("class", "send-to-param")
+                .module({
+                    data: {
+                        "lsid": "",
+                        "name": "Send to " + param,
+                        "description": run_task_info.params[param].description,
+                        "version": "",
+                        "documentation": "http://genepattern.org",
+                        "categories": [],
+                        "suites": [],
+                        "tags": []
+                    },
+                    click: function() {
+                        setInputField(param, url);
+                        $(paramList).closest(".search-widget").searchslider("hide");
+                    },
+                    draggable: false
+                }).appendTo($(paramList));
+        }
+    }
+
+    if ($(paramList).find(".module-listing").length < 1) {
+        $(paramList).hide();
+    }
+    else {
+        $(paramList).show();
+    }
 }
 
 function loadModuleInfo(module)
