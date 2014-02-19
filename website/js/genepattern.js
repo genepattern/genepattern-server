@@ -748,20 +748,31 @@ function isDirectoryFromUrl(url) {
     return url[url.length-1] === '/';
 }
 
-function _createFileWidgetInner(linkElement) {
-    var link = $(linkElement);
-    var name = urlToName(link.attr("href"));
-    var isDirectory = isDirectoryFromUrl(link.attr("href"));
+function isRootFromUrl(url) {
+    var parts = url.split("/gp/");
+    var path = parts[parts.length-1];
+    var pieces = path.split("/");
+    return pieces.length <= 3;
+}
 
-    var sendToString = linkElement.attr("data-sendtomodule");
-    if (sendToString === null || sendToString === undefined) sendToString = '[]';
-    var lsidList = JSON.parse(sendToString);
-    var sendToList = lsidsToModules(lsidList);
+function constructFileMenuData(isRoot, isDirectory) {
+    var data = [];
 
-    var kind = linkElement.attr("data-kind");
+    if (!isRoot || !isDirectory) {
+        data.push({
+            "lsid": "",
+            "name": "<img src='/gp/pipeline/images/delete.gif' class='module-list-icon'> Delete " + (isDirectory ? "Directory" : "File"),
+            "description": "Permanently delete this from your uploads.",
+            "version": "",
+            "documentation": "http://genepattern.org",
+            "categories": [],
+            "suites": [],
+            "tags": []
+        });
+    }
 
     if (isDirectory) {
-        var saveOrSubdirectory = {
+        data.push({
             "lsid": "",
             "name": "<img src='/gp/pipeline/images/save.gif' class='module-list-icon'> Create Subdirectory",
             "description": "Create a subdirectory in this directory.",
@@ -770,10 +781,10 @@ function _createFileWidgetInner(linkElement) {
             "categories": [],
             "suites": [],
             "tags": []
-        };
+        });
     }
     else {
-        var saveOrSubdirectory = {
+        data.push({
             "lsid": "",
             "name": "<img src='/gp/pipeline/images/save.gif' class='module-list-icon'> Save File",
             "description": "Save a copy of this file to your local computer.",
@@ -782,36 +793,79 @@ function _createFileWidgetInner(linkElement) {
             "categories": [],
             "suites": [],
             "tags": []
-        };
+        });
     }
+
+    return data;
+}
+
+function _createFileWidgetInner(linkElement) {
+    var link = $(linkElement);
+    var url = link.attr("href");
+    var name = urlToName(url);
+    var isDirectory = isDirectoryFromUrl(url);
+    var isRoot = isRootFromUrl(url);
+
+    var sendToString = linkElement.attr("data-sendtomodule");
+    if (sendToString === null || sendToString === undefined) sendToString = '[]';
+    var lsidList = JSON.parse(sendToString);
+    var sendToList = lsidsToModules(lsidList);
+
+    var kind = linkElement.attr("data-kind");
+
+    var data = constructFileMenuData(isRoot, isDirectory);
 
     var actionList = $("<div></div>")
         .attr("class", "file-widget-actions")
         .modulelist({
             title: name,
-            data: [
-                {
-                    "lsid": "",
-                    "name": "<img src='/gp/pipeline/images/delete.gif' class='module-list-icon'> Delete " + (isDirectory ? "Directory" : "File"),
-                    "description": "Permanently delete this from your uploads.",
-                    "version": "",
-                    "documentation": "http://genepattern.org",
-                    "categories": [],
-                    "suites": [],
-                    "tags": []
-                },
-
-                saveOrSubdirectory
-            ],
+            data: data,
             droppable: false,
             draggable: false,
             click: function(event) {
-                var save = true;
+                var saveAction = $(event.target).closest(".module-listing").find(".module-name").text().trim().indexOf("Save") == 0;
+                var deleteAction = $(event.target).closest(".module-listing").find(".module-name").text().trim().indexOf("Delete") == 0;
+                var subdirAction = $(event.target).closest(".module-listing").find(".module-name").text().trim().indexOf("Create") == 0;
 
-                if (save) {
-                    var listObject = $(event.target).closest(".search-widget").find(".send-to-param-list");
-                    var url = listObject.attr("data-url");
+                var listObject = $(event.target).closest(".search-widget").find(".send-to-param-list");
+                var url = listObject.attr("data-url");
+
+                if (saveAction) {
                     window.location.href = "/gp/rest/v1/data/download/" + url;
+
+                    $(".search-widget:visible").searchslider("hide");
+                    return;
+                }
+
+                else if (deleteAction) {
+                    $.ajax({
+                        type: "DELETE",
+                        url: "/gp/rest/v1/data/delete/" + url,
+                        success: function(data, textStatus, jqXHR) {
+                            $("#infoMessageDiv #infoMessageContent").text(data);
+                            $("#infoMessageDiv").show();
+
+                            $("#uploadTree").data("dndReady", {});
+                            $("#uploadTree").jstree("refresh");
+                        },
+                        error: function(data, textStatus, jqXHR) {
+                            $("#errorMessageDiv #errorMessageContent").text(data);
+                            $("#errorMessageDiv").show();
+                        }
+                    });
+
+                    $(".search-widget:visible").searchslider("hide");
+                    return;
+                }
+
+                else if (subdirAction) {
+                    $(".search-widget:visible").searchslider("hide");
+                    return;
+                }
+
+                else {
+                    console.log("ERROR: Executing click function for " + url);
+                    $(".search-widget:visible").searchslider("hide");
                 }
             }
     });

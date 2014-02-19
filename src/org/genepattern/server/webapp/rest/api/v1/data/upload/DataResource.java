@@ -11,6 +11,7 @@ import java.util.Enumeration;
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
@@ -19,6 +20,7 @@ import javax.ws.rs.core.Response.Status;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.log4j.Logger;
+import org.genepattern.server.DataManager;
 import org.genepattern.server.config.ServerConfiguration;
 import org.genepattern.server.dm.GpFileObjFactory;
 import org.genepattern.server.dm.GpFilePath;
@@ -30,6 +32,7 @@ import org.genepattern.server.webapp.rest.api.v1.Util;
 import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.core.header.FormDataContentDisposition;
 import com.sun.jersey.multipart.FormDataParam;
+import org.genepattern.util.GPConstants;
 
 /**
  * RESTful implementation of the /data resource.
@@ -165,8 +168,8 @@ public class DataResource {
     }
 
     @GET
-    @Path("/download/{path:.+}")
-    public void handlePostJobInputMultipartForm(@Context HttpServletRequest request, @Context HttpServletResponse response, @PathParam("path") String path) {
+    @Path("/download/{url:.+}")
+    public Response getFile(@Context HttpServletRequest request, @Context HttpServletResponse response, @PathParam("url") String path) {
         try {
             ServletContext servletContext = request.getSession().getServletContext();
 
@@ -174,9 +177,32 @@ public class DataResource {
             File file = filePath.getServerFile();
 
             FileDownloader.serveFile(servletContext, request, response, true, FileDownloader.ContentDisposition.ATTACHMENT, file);
+
+            return Response.ok().build();
         }
         catch (Throwable t) {
-            Response.status(Status.INTERNAL_SERVER_ERROR).entity(t.getLocalizedMessage()).build();
+            return Response.status(Status.INTERNAL_SERVER_ERROR).entity(t.getLocalizedMessage()).build();
+        }
+    }
+
+    @DELETE
+    @Path("/delete/{url:.+}")
+    public Response deleteFile(@Context HttpServletRequest request, @PathParam("url") String path) {
+        try {
+            GpFilePath filePath = GpFileObjFactory.getRequestedGpFileObj(path);
+            String user = (String) request.getSession().getAttribute(GPConstants.USERID);
+
+            boolean deleted = DataManager.deleteUserUploadFile(user, filePath);
+
+            if (deleted) {
+                return Response.ok().entity("Deleted " + filePath.getName()).build();
+            }
+            else {
+                return Response.status(500).entity("Could not delete " + filePath.getName()).build();
+            }
+        }
+        catch (Throwable t) {
+            return Response.status(Status.INTERNAL_SERVER_ERROR).entity(t.getLocalizedMessage()).build();
         }
     }
 
