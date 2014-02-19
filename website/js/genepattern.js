@@ -806,7 +806,13 @@ function _createFileWidgetInner(linkElement) {
             droppable: false,
             draggable: false,
             click: function(event) {
-                alert("click");
+                var save = true;
+
+                if (save) {
+                    var listObject = $(event.target).closest(".search-widget").find(".send-to-param-list");
+                    var url = listObject.attr("data-url");
+                    window.location.href = "/gp/rest/v1/data/download/" + url;
+                }
             }
     });
 

@@ -8,16 +8,10 @@ import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.util.Enumeration;
 
+import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.DefaultValue;
-import javax.ws.rs.HeaderParam;
-import javax.ws.rs.POST;
-import javax.ws.rs.PUT;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.QueryParam;
-import javax.ws.rs.WebApplicationException;
+import javax.servlet.http.HttpServletResponse;
+import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -29,6 +23,8 @@ import org.genepattern.server.config.ServerConfiguration;
 import org.genepattern.server.dm.GpFileObjFactory;
 import org.genepattern.server.dm.GpFilePath;
 import org.genepattern.server.job.input.JobInputFileUtil;
+import org.genepattern.server.webapp.FileDownloader;
+import org.genepattern.server.webapp.jsf.UIBeanHelper;
 import org.genepattern.server.webapp.rest.api.v1.Util;
 
 import com.sun.jersey.api.client.ClientResponse;
@@ -142,8 +138,6 @@ public class DataResource {
      * </pre>
      * 
      * @param request
-     * @param path
-     * @param uploadedInputStream
      * @param fileDetail
      * @return
      */
@@ -167,6 +161,22 @@ public class DataResource {
         }
         catch (Throwable t) {
             return Response.status(Status.INTERNAL_SERVER_ERROR).entity(t.getLocalizedMessage()).build();
+        }
+    }
+
+    @GET
+    @Path("/download/{path:.+}")
+    public void handlePostJobInputMultipartForm(@Context HttpServletRequest request, @Context HttpServletResponse response, @PathParam("path") String path) {
+        try {
+            ServletContext servletContext = request.getSession().getServletContext();
+
+            GpFilePath filePath = GpFileObjFactory.getRequestedGpFileObj(path);
+            File file = filePath.getServerFile();
+
+            FileDownloader.serveFile(servletContext, request, response, true, FileDownloader.ContentDisposition.ATTACHMENT, file);
+        }
+        catch (Throwable t) {
+            Response.status(Status.INTERNAL_SERVER_ERROR).entity(t.getLocalizedMessage()).build();
         }
     }
 
@@ -259,7 +269,6 @@ public class DataResource {
      * 
      * @param userContext
      * @param in
-     * @param path
      * @return
      * @throws Exception
      */
