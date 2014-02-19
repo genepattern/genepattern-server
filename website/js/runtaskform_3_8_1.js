@@ -3076,3 +3076,15 @@ function cloneTask() {
         "&userid=" + encodeURIComponent(getUsername()) +
         "&forward=" + encodeURIComponent("/gp/pages/index.jsf?lsid=" + encodeURIComponent(cloneName));
 }
+
+function sendToByKind(url, kind) {
+    var paramNames = run_task_info.sendTo[kind];
+    if (paramNames === undefined || paramNames === null || paramNames.length < 1) {
+        console.log("ERROR: Sending to kind " + kind);
+        return;
+    }
+
+    var selectedParam = paramNames[0];
+
+    setInputField(selectedParam, url);
+}

@@ -819,9 +819,7 @@ function _createFileWidgetInner(linkElement) {
             data: [],
             droppable: false,
             draggable: false,
-            click: function(event) {
-                alert("click");
-            }
+            click: function(event) {}
     });
 
     var moduleList = $("<div></div>").modulelist({
@@ -830,7 +828,30 @@ function _createFileWidgetInner(linkElement) {
         droppable: false,
         draggable: true,
         click: function(event) {
-            alert("click");
+            var lsid = this.data.lsid;
+
+            loadRunTaskForm(lsid, false);
+
+            var afterRunTaskLoad = function() {
+                var listObject = $(event.target).closest(".search-widget").find(".send-to-param-list");
+                var kind = listObject.attr("data-kind");
+                var url = listObject.attr("data-url");
+
+                sendToByKind(url, kind);
+            };
+
+            var checkForRunTaskLoaded = function() {
+                if (run_task_info.lsid === lsid) {
+                    afterRunTaskLoad();
+                }
+                else {
+                    setTimeout(function() {
+                        checkForRunTaskLoaded();
+                    }, 100);
+                }
+            };
+
+            checkForRunTaskLoaded();
         }
     });
 
