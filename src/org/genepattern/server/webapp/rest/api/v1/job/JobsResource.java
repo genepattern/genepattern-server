@@ -2,6 +2,7 @@ package org.genepattern.server.webapp.rest.api.v1.job;
 
 import java.net.URI;
 import java.util.List;
+import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
@@ -23,8 +24,12 @@ import org.genepattern.server.job.input.JobInput;
 import org.genepattern.server.rest.GpServerException;
 import org.genepattern.server.rest.JobInputApi;
 import org.genepattern.server.rest.JobInputApiFactory;
+import org.genepattern.server.user.UserDAO;
+import org.genepattern.server.user.UserProp;
+import org.genepattern.server.user.UserPropKey;
 import org.genepattern.server.webapp.rest.api.v1.Util;
 import org.genepattern.server.webapp.rest.api.v1.job.JobInputValues.Param;
+import org.genepattern.server.webservice.server.Analysis;
 import org.genepattern.server.webservice.server.dao.AnalysisDAO;
 import org.genepattern.webservice.JobInfo;
 import org.json.JSONArray;
@@ -205,6 +210,43 @@ public class JobsResource {
         return Response.ok()
                 .entity(jsonStr)
                 .build();
+    }
+
+    @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    @Path("/recent")
+    public Response getRecentJobs (@Context UriInfo uriInfo, @Context HttpServletRequest request) {
+        ServerConfiguration.Context userContext = Util.getUserContext(request);
+
+        try {
+            // Get the number of recent jobs to show
+            UserDAO userDao = new UserDAO();
+            Set<UserProp> props = userDao.getUserProps(userContext.getUserId());
+            int recentJobsToShow = Integer.parseInt(UserDAO.getPropertyValue(props, UserPropKey.RECENT_JOBS_TO_SHOW, "10"));
+
+            // Get the recent jobs
+            AnalysisDAO dao = new AnalysisDAO();
+            List<JobInfo> recentJobs = dao.getRecentJobsForUser(userContext.getUserId(), recentJobsToShow, Analysis.JobSortOrder.SUBMITTED_DATE);
+
+            // Create the object for getting the job JSON
+            URI baseUri = uriInfo.getBaseUri();
+            String jobsResourcePath = baseUri.toString() + URI_PATH;
+            GetPipelineJobLegacy getJobImpl = new GetPipelineJobLegacy(jobsResourcePath);
+
+            // Put the job JSON in an array
+            JSONArray jobs = new JSONArray();
+            for (JobInfo jobInfo : recentJobs) {
+                JSONObject jobObject = getJobImpl.getJob(jobInfo, true);
+                jobs.put(jobObject);
+            }
+
+            // Return the JSON representation of the jobs
+            return Response.ok().entity(jobs.toString()).build();
+        }
+        catch (Throwable t) {
+            String message = "Error creating JSON representation for recent jobs: " + t.getLocalizedMessage();
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(message).build();
+        }
     }
     
     /**

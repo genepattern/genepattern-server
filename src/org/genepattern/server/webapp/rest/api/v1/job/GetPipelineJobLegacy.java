@@ -129,11 +129,13 @@ public class GetPipelineJobLegacy implements GetJob {
         final boolean includeChildren=false; //legacy support
         return getJob(userContext, jobId, includeChildren);
     }
-    public JSONObject getJob(final ServerConfiguration.Context userContext, final String jobId, final boolean includeChildren) 
-    throws GetJobException
-    {
-        final JobInfo jobInfo=initJobInfo(userContext, jobId);
-        
+
+    public JSONObject getJob(final ServerConfiguration.Context userContext, final String jobId, final boolean includeChildren) throws GetJobException {
+        JobInfo jobInfo=initJobInfo(userContext, jobId);
+        return getJob(jobInfo, includeChildren);
+    }
+
+    public JSONObject getJob(JobInfo jobInfo, boolean includeChildren) throws GetJobException {
         //manually create a JSONObject representing the job
         final JSONObject job;
         if (!includeChildren) {
