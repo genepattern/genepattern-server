@@ -149,7 +149,7 @@
                             if (link === "#") return;
 
                             // Append menu arrow
-                            //if (!#{uiBean.newUI}) {
+                            if (!#{uiBean.newUI}) {
                                 var arrow = document.createElement("img");
                                 arrow.setAttribute("id", "Image_" + name);
                                 arrow.setAttribute("class", "menuArrow");
@@ -159,7 +159,7 @@
                                 arrow.setAttribute("onmouseout", "MM_swapImgRestore();");
                                 anchor.after(arrow);
                                 menuRegistry._create("#Image_" + name, "#menuDiv_" + name);
-                            //}
+                            }
 
                             // Create a file widget for this file
                             if (#{uiBean.newUI}) {

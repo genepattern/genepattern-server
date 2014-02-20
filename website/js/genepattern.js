@@ -755,6 +755,18 @@ function isRootFromUrl(url) {
     return pieces.length <= 3;
 }
 
+function uploadPathFromUrl(url) {
+    var fullPath = $("<a></a>").attr("href", url)[0].pathname;
+    var count = 0;
+    while (count <= 3) {
+        var toChop = fullPath.split("/", 1)[0].length + 1;
+        fullPath = fullPath.substring(toChop, fullPath.length);
+        count++;
+    }
+
+    return fullPath;
+}
+
 function constructFileMenuData(isRoot, isDirectory) {
     var data = [];
 
@@ -859,6 +871,43 @@ function _createFileWidgetInner(linkElement) {
                 }
 
                 else if (subdirAction) {
+                    showDialog("Name the Subdirectory", "What name would you like to give the subdirectory?" +
+                        "<input type='text' class='dialog-subdirectory-name' style='width: 98%;' />", {
+                        "Create": function(event) {
+                            var subdirName = $(".dialog-subdirectory-name").val();
+
+                            $.ajax({
+                                type: "PUT",
+                                url: "/gp/rest/v1/data/createDirectory/" + url + subdirName,
+                                success: function(data, textStatus, jqXHR) {
+                                    $("#infoMessageDiv #infoMessageContent").text(data);
+                                    $("#infoMessageDiv").show();
+
+                                    $("#uploadTree").data("dndReady", {});
+                                    $("#uploadTree").jstree("refresh");
+                                },
+                                error: function(data, textStatus, jqXHR) {
+                                    $("#errorMessageDiv #errorMessageContent").text(data);
+                                    $("#errorMessageDiv").show();
+                                }
+                            });
+
+                            $(this).dialog("close");
+                        },
+                        "Cancel": function(event) {
+                            $(this).dialog("close");
+                        }
+                    });
+                    $(".ui-dialog-buttonset:visible button:first").button("disable");
+                    $(".dialog-subdirectory-name").keyup(function(event) {
+                        if ($(event.target).val() === "") {
+                            $(".ui-dialog-buttonset:visible button:first").button("disable");
+                        }
+                        else {
+                            $(".ui-dialog-buttonset:visible button:first").button("enable");
+                        }
+                    });
+
                     $(".search-widget:visible").searchslider("hide");
                     return;
                 }

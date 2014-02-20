@@ -11,7 +11,6 @@ import java.util.Enumeration;
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
 import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
@@ -26,7 +25,6 @@ import org.genepattern.server.dm.GpFileObjFactory;
 import org.genepattern.server.dm.GpFilePath;
 import org.genepattern.server.job.input.JobInputFileUtil;
 import org.genepattern.server.webapp.FileDownloader;
-import org.genepattern.server.webapp.jsf.UIBeanHelper;
 import org.genepattern.server.webapp.rest.api.v1.Util;
 
 import com.sun.jersey.api.client.ClientResponse;
@@ -199,6 +197,39 @@ public class DataResource {
             }
             else {
                 return Response.status(500).entity("Could not delete " + filePath.getName()).build();
+            }
+        }
+        catch (Throwable t) {
+            return Response.status(Status.INTERNAL_SERVER_ERROR).entity(t.getLocalizedMessage()).build();
+        }
+    }
+
+    @PUT
+    @Path("/createDirectory/{url:.+}")
+    public Response createDirectory(@Context HttpServletRequest request, @PathParam("url") String path) {
+        try {
+            GpFilePath filePath = GpFileObjFactory.getRequestedGpFileObj(path);
+            String user = (String) request.getSession().getAttribute(GPConstants.USERID);
+            ServerConfiguration.Context userContext = ServerConfiguration.Context.getContextForUser(user);
+
+            // Init the file object
+            String parentDirectoryPath = filePath.getRelativeFile().getParentFile().getPath();
+            File relativePath = DataManager.initSubdirectory(parentDirectoryPath, filePath.getName());
+
+            // Check for reserved names
+            boolean isTmpDir = DataManager.isTmpDir(userContext, relativePath);
+            if (isTmpDir) {
+                return Response.status(500).entity("Reserved name. Could not create " + filePath.getName()).build();
+            }
+
+            // Create the directory
+            boolean success = DataManager.createSubdirectory(userContext, relativePath);
+
+            if (success) {
+                return Response.ok().entity("Created " + filePath.getName()).build();
+            }
+            else {
+                return Response.status(500).entity("Could not create " + filePath.getName()).build();
             }
         }
         catch (Throwable t) {
