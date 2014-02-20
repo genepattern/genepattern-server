@@ -2,7 +2,6 @@ package org.genepattern.drm;
 
 import java.util.Date;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
 
 import org.apache.log4j.Logger;
 
@@ -18,31 +17,6 @@ import com.google.common.collect.ImmutableMap;
 public class DrmJobStatus {
      private static final Logger log = Logger.getLogger(DrmJobStatus.class);
    
-    /**
-     * Representation of an amount of time.
-     * @author pcarr
-     *
-     */
-    public static class Duration {
-        private final long time;
-        private final TimeUnit timeUnit;
-        
-        public Duration() {
-            this(0, TimeUnit.MILLISECONDS);
-        }
-        public Duration(long time, TimeUnit timeUnit) {
-            this.time=time;
-            this.timeUnit=timeUnit;
-        }
-        
-        public long getTime() {
-            return time;
-        }
-        public TimeUnit getTimeUnit() {
-            return timeUnit;
-        }
-    }
-
     @Override
     public String toString() {
         return this.toString;
@@ -53,7 +27,7 @@ public class DrmJobStatus {
     private final Date submitTime;
     private final Date startTime;
     private final Date endTime;
-    private final Duration cpuTime;
+    private final CpuTime cpuTime;
     private final String jobStatusMessage;
     private final Integer exitCode;
     private final String terminatingSignal;
@@ -143,7 +117,7 @@ public class DrmJobStatus {
      * Get the amount of cpu time used by the job, can be null of this is not known.
      * @return
      */
-    public Duration getCpuTime() {
+    public CpuTime getCpuTime() {
         return cpuTime;
     }
 
@@ -193,7 +167,7 @@ public class DrmJobStatus {
         private Date submitTime=null;
         private Date startTime=null;
         private Date endTime=null;
-        private Duration cpuTime=new Duration();
+        private CpuTime cpuTime=new CpuTime();
         private String jobStatusMessage="";
         private Integer exitCode=null;
         private String terminatingSignal="";
@@ -234,7 +208,7 @@ public class DrmJobStatus {
             return this;
         }
         
-        public Builder cpuTime(final Duration cpuTime) {
+        public Builder cpuTime(final CpuTime cpuTime) {
             this.cpuTime=cpuTime;
             return this;
         }
