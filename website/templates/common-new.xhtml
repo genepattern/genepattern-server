@@ -383,16 +383,20 @@
                         </ui:include>
                     </t:dataList>
                 </t:dataList>
-                <t:dataList var="aFile" value="#{uploadFilesBean.files}" rowIndexVar="dirIndex">
-                    <ui:include src="../pages/uploads/uploadFileMenu.xhtml">
-                        <ui:param name="aFile" value="#{aFile}" />
-                    </ui:include>
-                </t:dataList>
-                <t:dataList var="aFile" value="#{uploadFilesBean.directories}" rowIndexVar="dirIndex">
-                    <ui:include src="../pages/uploads/uploadFileMenu.xhtml">
-                        <ui:param name="aFile" value="#{aFile}" />
-                    </ui:include>
-                </t:dataList>
+
+                <h:outputText rendered="!#{uiBean.newUI}">
+                    <t:dataList var="aFile" value="#{uploadFilesBean.files}" rowIndexVar="dirIndex">
+                        <ui:include src="../pages/uploads/uploadFileMenu.xhtml">
+                            <ui:param name="aFile" value="#{aFile}" />
+                        </ui:include>
+                    </t:dataList>
+                    <t:dataList var="aFile" value="#{uploadFilesBean.directories}" rowIndexVar="dirIndex">
+                        <ui:include src="../pages/uploads/uploadFileMenu.xhtml">
+                            <ui:param name="aFile" value="#{aFile}" />
+                        </ui:include>
+                    </t:dataList>
+                </h:outputText>
+
                 <t:div id="genomeSpaceMenus" forceId="true">
                     <h:outputText rendered="#{genomeSpaceBean.loggedIn and not genomeSpaceBean.loading}">
                         <t:dataList var="file" value="#{genomeSpaceBean.allFiles}" rowIndexVar="fileIndex">
