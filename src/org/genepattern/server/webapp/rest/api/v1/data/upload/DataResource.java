@@ -165,13 +165,22 @@ public class DataResource {
         }
     }
 
+    /**
+     * Return the requested file, attaching the headers necessary for the browser to handle the file as a download
+     * @param request
+     * @param response
+     * @param path
+     * @return
+     */
     @GET
-    @Path("/download/{url:.+}")
-    public Response getFile(@Context HttpServletRequest request, @Context HttpServletResponse response, @PathParam("url") String path) {
+    @Path("/download/{path:.+}")
+    public Response getFile(@Context HttpServletRequest request, @Context HttpServletResponse response, @PathParam("path") String path) {
         try {
             ServletContext servletContext = request.getSession().getServletContext();
 
-            GpFilePath filePath = GpFileObjFactory.getRequestedGpFileObj(path);
+            String user = (String) request.getSession().getAttribute(GPConstants.USERID);
+            ServerConfiguration.Context userContext = ServerConfiguration.Context.getContextForUser(user);
+            GpFilePath filePath = GpFileObjFactory.getUserUploadFile(userContext, new File(path));
             File file = filePath.getServerFile();
 
             FileDownloader.serveFile(servletContext, request, response, true, FileDownloader.ContentDisposition.ATTACHMENT, file);
@@ -183,12 +192,19 @@ public class DataResource {
         }
     }
 
+    /**
+     * Delete the specified file
+     * @param request
+     * @param path
+     * @return
+     */
     @DELETE
-    @Path("/delete/{url:.+}")
-    public Response deleteFile(@Context HttpServletRequest request, @PathParam("url") String path) {
+    @Path("/delete/{path:.+}")
+    public Response deleteFile(@Context HttpServletRequest request, @PathParam("path") String path) {
         try {
-            GpFilePath filePath = GpFileObjFactory.getRequestedGpFileObj(path);
             String user = (String) request.getSession().getAttribute(GPConstants.USERID);
+            ServerConfiguration.Context userContext = ServerConfiguration.Context.getContextForUser(user);
+            GpFilePath filePath = GpFileObjFactory.getUserUploadFile(userContext, new File(path));
 
             boolean deleted = DataManager.deleteUserUploadFile(user, filePath);
 
@@ -204,16 +220,29 @@ public class DataResource {
         }
     }
 
+    /**
+     * Create the specified subdirectory
+     * Subdirectory creation in this way is not recursive
+     * @param request
+     * @param path
+     * @return
+     */
     @PUT
-    @Path("/createDirectory/{url:.+}")
-    public Response createDirectory(@Context HttpServletRequest request, @PathParam("url") String path) {
+    @Path("/createDirectory/{path:.+}")
+    public Response createDirectory(@Context HttpServletRequest request, @PathParam("path") String path) {
         try {
-            GpFilePath filePath = GpFileObjFactory.getRequestedGpFileObj(path);
             String user = (String) request.getSession().getAttribute(GPConstants.USERID);
             ServerConfiguration.Context userContext = ServerConfiguration.Context.getContextForUser(user);
+            GpFilePath filePath = GpFileObjFactory.getUserUploadFile(userContext, new File(path));
 
             // Init the file object
-            String parentDirectoryPath = filePath.getRelativeFile().getParentFile().getPath();
+            String parentDirectoryPath = null;
+            if (filePath.getRelativeFile().getPath().contains("/")) { // Special case for files in the root directory
+                parentDirectoryPath = filePath.getRelativeFile().getParentFile().getPath();
+            }
+            else {
+                parentDirectoryPath = "./";
+            }
             File relativePath = DataManager.initSubdirectory(parentDirectoryPath, filePath.getName());
 
             // Check for reserved names

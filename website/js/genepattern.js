@@ -841,10 +841,11 @@ function _createFileWidgetInner(linkElement) {
 
                 var listObject = $(event.target).closest(".search-widget").find(".send-to-param-list");
                 var url = listObject.attr("data-url");
+                var path = uploadPathFromUrl(url);
 
                 if (saveAction) {
-                    window.location.href = "/gp/rest/v1/data/download/" + url;
 
+                    window.location.href = "/gp/rest/v1/data/download/" + path;
                     $(".search-widget:visible").searchslider("hide");
                     return;
                 }
@@ -852,7 +853,7 @@ function _createFileWidgetInner(linkElement) {
                 else if (deleteAction) {
                     $.ajax({
                         type: "DELETE",
-                        url: "/gp/rest/v1/data/delete/" + url,
+                        url: "/gp/rest/v1/data/delete/" + path,
                         success: function(data, textStatus, jqXHR) {
                             $("#infoMessageDiv #infoMessageContent").text(data);
                             $("#infoMessageDiv").show();
@@ -878,7 +879,7 @@ function _createFileWidgetInner(linkElement) {
 
                             $.ajax({
                                 type: "PUT",
-                                url: "/gp/rest/v1/data/createDirectory/" + url + subdirName,
+                                url: "/gp/rest/v1/data/createDirectory/" + path + subdirName,
                                 success: function(data, textStatus, jqXHR) {
                                     $("#infoMessageDiv #infoMessageContent").text(data);
                                     $("#infoMessageDiv").show();
