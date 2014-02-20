@@ -975,7 +975,7 @@ function _createFileWidgetInner(linkElement) {
         .searchslider({
             lists: [actionList, paramList, moduleList]});
 
-    $("#content").append(widget);
+    $("#menus-uploads").append(widget);
 
     // Init the initial send to parameters
     var sendToParamList = widget.find(".send-to-param-list");
