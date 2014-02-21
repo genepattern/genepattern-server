@@ -23,6 +23,10 @@ import com.google.common.collect.HashBiMap;
 public class HashMapLookup implements DrmLookup {
     private static final Logger log = Logger.getLogger(HashMapLookup.class);
 
+    private static final boolean isSet(final String str) {
+        return str!=null && str.length()>0;
+    }
+
     private final String jobRunnerClassname;
     private final String jobRunnerName;
     
@@ -61,7 +65,7 @@ public class HashMapLookup implements DrmLookup {
             rowOrig=new JobRunnerJob.Builder(jobRunnerClassname, workingDir, gpJobNo).drmJobStatus(drmJobStatus).build();
         }
         final JobRunnerJob updated=new JobRunnerJob.Builder(rowOrig).drmJobStatus(drmJobStatus).build();
-        if (JobExecutor.isSet(updated.getExtJobId())) {
+        if (isSet(updated.getExtJobId())) {
             lookup.put(updated.getGpJobNo(), updated.getExtJobId());
         }
         detailsTable.put(gpJobNo, updated);
