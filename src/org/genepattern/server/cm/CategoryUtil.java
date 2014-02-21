@@ -9,6 +9,7 @@ import java.util.Set;
 import org.apache.log4j.Logger;
 import org.genepattern.server.config.ServerConfiguration;
 import org.genepattern.server.config.ServerConfiguration.Context;
+import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.executor.CommandProperties.Value;
 import org.genepattern.server.task.category.dao.TaskCategory;
 import org.genepattern.server.task.category.dao.TaskCategoryRecorder;
@@ -76,12 +77,12 @@ public class CategoryUtil {
     
     public List<String> getCategoriesForTask(final Context userContext, final TaskInfo taskInfo, final boolean includeHidden) {
         final boolean checkCustomCategories;
-        checkCustomCategories=ServerConfiguration.instance().getGPBooleanProperty(
+        checkCustomCategories=ServerConfigurationFactory.instance().getGPBooleanProperty(
                 userContext, PROP_CHECK_CUSTOM_CATEGORIES, true);
 
         final List<String> hiddenCategories=new ArrayList<String>();
         if (!includeHidden) {
-            final Value value=ServerConfiguration.instance().getValue(userContext, PROP_HIDDEN_CATEGORIES);
+            final Value value=ServerConfigurationFactory.instance().getValue(userContext, PROP_HIDDEN_CATEGORIES);
             if (value != null) {
                 hiddenCategories.addAll(value.getValues());
             }
@@ -230,7 +231,7 @@ public class CategoryUtil {
      * @return
      */
     public Set<String> getHiddenCategories(final ServerConfiguration.Context userContext) {
-        final Value value=ServerConfiguration.instance().getValue(userContext, PROP_HIDDEN_CATEGORIES);
+        final Value value=ServerConfigurationFactory.instance().getValue(userContext, PROP_HIDDEN_CATEGORIES);
         if (value==null || value.getNumValues()==0) {
             return Collections.emptySet();
         }

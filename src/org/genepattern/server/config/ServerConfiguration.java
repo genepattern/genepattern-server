@@ -147,12 +147,7 @@ public class ServerConfiguration {
         }
     }
 
-    private static ServerConfiguration singleton = new ServerConfiguration();
-    public static ServerConfiguration instance() {
-        return singleton;
-    }
-    
-    private ServerConfiguration() {
+    ServerConfiguration() {
         try {
             reloadConfiguration();
         }
@@ -169,7 +164,7 @@ public class ServerConfiguration {
     //cache any errors thrown while loading/reloading the configuration file
     private List<Throwable> errors = new ArrayList<Throwable>();
     
-    public synchronized void reloadConfiguration() {
+    synchronized void reloadConfiguration() {
         this.configFilepath = ServerProperties.instance().getProperty(PROP_CONFIG_FILE);
         if (configFilepath == null) {
             this.configFilepath = ServerProperties.instance().getProperty(PROP_LEGACY_CONFIG_FILE);
@@ -182,7 +177,7 @@ public class ServerConfiguration {
         reloadConfiguration(configFilepath);
     }
     
-    public synchronized void reloadConfiguration(String configFilepath) {
+    synchronized void reloadConfiguration(String configFilepath) {
         try {
             log.info("loading configuration from '"+configFilepath+"' ...");
             this.configFilepath = configFilepath;

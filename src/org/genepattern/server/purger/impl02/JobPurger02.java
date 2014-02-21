@@ -18,6 +18,7 @@ import java.util.Timer;
 import org.apache.log4j.Logger;
 import org.genepattern.server.config.ServerConfiguration;
 import org.genepattern.server.config.ServerConfiguration.Context;
+import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.process.JobPurgerUtil;
 import org.genepattern.server.purger.Purger;
 
@@ -62,7 +63,7 @@ public class JobPurger02 {
         timer=new Timer(true);
         final Date now=new Date();
         final Context serverContext=ServerConfiguration.Context.getServerContext();
-        final String purgeTime=ServerConfiguration.instance().getGPProperty(serverContext, Purger.PROP_PURGE_TIME, Purger.PURGE_TIME_DEFAULT);
+        final String purgeTime=ServerConfigurationFactory.instance().getGPProperty(serverContext, Purger.PROP_PURGE_TIME, Purger.PURGE_TIME_DEFAULT);
         final Date nextPurgeTime=JobPurgerUtil.getNextPurgeTime(now, purgeTime);
         final long MILLISECONDS_IN_A_DAY = 24 * 60 * 60 * 1000;
         final Purger02 purger02 = new Purger02();

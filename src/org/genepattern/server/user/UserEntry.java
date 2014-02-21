@@ -10,6 +10,7 @@ import org.apache.log4j.Logger;
 import org.genepattern.server.auth.GroupPermission;
 import org.genepattern.server.config.ServerConfiguration;
 import org.genepattern.server.config.ServerConfiguration.Context;
+import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.util.AuthorizationManagerFactory;
 import org.genepattern.server.util.IAuthorizationManager;
 import org.genepattern.server.webapp.jsf.UsersAndGroupsBean;
@@ -55,7 +56,7 @@ public class UserEntry {
     public String getUserDir() {
         Context context = ServerConfiguration.Context.getContextForUser(user.getUserId());
         try {
-            File userDir = ServerConfiguration.instance().getUserDir(context);
+            File userDir = ServerConfigurationFactory.instance().getUserDir(context);
             return userDir.getPath();
         }
         catch (Throwable t) {

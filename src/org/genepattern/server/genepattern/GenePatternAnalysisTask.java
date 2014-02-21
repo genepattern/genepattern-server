@@ -126,6 +126,7 @@ import org.genepattern.server.PermissionsHelper;
 import org.genepattern.server.TaskIDNotFoundException;
 import org.genepattern.server.config.ServerConfiguration;
 import org.genepattern.server.config.ServerConfiguration.Context;
+import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.config.ServerProperties;
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.dm.GpFileObjFactory;
@@ -451,7 +452,7 @@ public class GenePatternAnalysisTask {
                 //special case: look for file among the user uploaded files
                 try {
                     Context context = Context.getContextForUser(userId);
-                    File userUploadDir = ServerConfiguration.instance().getUserUploadDir(context);
+                    File userUploadDir = ServerConfigurationFactory.instance().getUserUploadDir(context);
                     in = new File(userUploadDir, filename);
                     boolean foundUserUpload = in.canRead();
                     if (foundUserUpload) {
@@ -529,7 +530,7 @@ public class GenePatternAnalysisTask {
             File localFile = null;
             try {
                 ServerConfiguration.Context context = ServerConfiguration.Context.getContextForJob(jobInfo);
-                File rootJobDir = ServerConfiguration.instance().getRootJobDir(context);
+                File rootJobDir = ServerConfigurationFactory.instance().getRootJobDir(context);
                 File jobDir = new File(rootJobDir, ""+parser.getJobNumber());
                 localFile = new File(jobDir, parser.getRelativeFilePath());
             }
@@ -677,7 +678,7 @@ public class GenePatternAnalysisTask {
         
         ServerConfiguration.Context jobContext = ServerConfiguration.Context.getContextForJob(jobInfo, taskInfo);
         //is disk space available
-        boolean allowNewJob = ServerConfiguration.instance().getGPBooleanProperty(jobContext, "allow.new.job", true);
+        boolean allowNewJob = ServerConfigurationFactory.instance().getGPBooleanProperty(jobContext, "allow.new.job", true);
         if (!allowNewJob) {
             String errorMessage = 
                 "Job did not run because there is not enough disk space available.\n";
@@ -686,7 +687,7 @@ public class GenePatternAnalysisTask {
 
         File rootJobDir = null;
         try {
-            rootJobDir = ServerConfiguration.instance().getRootJobDir(jobContext);
+            rootJobDir = ServerConfigurationFactory.instance().getRootJobDir(jobContext);
         }
         catch (ServerConfiguration.Exception e) {
             throw new JobDispatchException("Error getting root job directory for jobId="+jobId, e);
@@ -1093,7 +1094,7 @@ public class GenePatternAnalysisTask {
                             } 
                             catch (MalformedURLException mfe) {
                                 // path on server
-                                final boolean allowInputFilePaths = ServerConfiguration.instance().getAllowInputFilePaths(jobContext);
+                                final boolean allowInputFilePaths = ServerConfigurationFactory.instance().getAllowInputFilePaths(jobContext);
                                 if (!allowInputFilePaths) {
                                     vProblems.add("You are not permitted to access the requested file: "+originalPath);
                                     continue;
@@ -1134,7 +1135,7 @@ public class GenePatternAnalysisTask {
                             if ("file".equalsIgnoreCase(uri.getScheme())) {
                                 log.debug("handling 'file:///' url: "+originalPath);
                                 
-                                final boolean allowInputFilePaths = ServerConfiguration.instance().getAllowInputFilePaths(jobContext);
+                                final boolean allowInputFilePaths = ServerConfigurationFactory.instance().getAllowInputFilePaths(jobContext);
                                 if (allowInputFilePaths) {
                                     //check permissions and optionally convert value from url to server file path
                                     final String pname=pinfoRecord.getFormal().getName();
@@ -1349,7 +1350,7 @@ public class GenePatternAnalysisTask {
             throw new JobDispatchException(e);
         }
         // optionally, override the java flags if they have been overridden in the job configuration file
-        String javaFlags = ServerConfiguration.instance().getGPProperty(jobContext, "java_flags");
+        String javaFlags = ServerConfigurationFactory.instance().getGPProperty(jobContext, "java_flags");
         if (javaFlags != null) {
             props.setProperty("java_flags", javaFlags);
         }
@@ -1534,7 +1535,7 @@ public class GenePatternAnalysisTask {
             throw new JobDispatchException(e);
         }
 
-        long jobDispatchTimeout = ServerConfiguration.instance().getGPIntegerProperty(jobContext, "job.dispatch.timeout", 300000);
+        long jobDispatchTimeout = ServerConfigurationFactory.instance().getGPIntegerProperty(jobContext, "job.dispatch.timeout", 300000);
         runCommand(taskInfo.isPipeline(), cmdExec, jobDispatchTimeout, cmdLineArgs, environmentVariables, outDir, stdoutFile, stderrFile, jobInfo, stdinFile);
     }
     
@@ -1747,8 +1748,8 @@ public class GenePatternAnalysisTask {
         cleanupInputFiles(jobDir, jobInfoWrapper);
         File taskLog = writeExecutionLog(jobDir, jobInfoWrapper);
         
-        boolean checkExitValue = ServerConfiguration.instance().getGPBooleanProperty(jobContext, "job.error_status.exit_value", false);
-        boolean checkStderr = ServerConfiguration.instance().getGPBooleanProperty(jobContext, "job.error_status.stderr", true);
+        boolean checkExitValue = ServerConfigurationFactory.instance().getGPBooleanProperty(jobContext, "job.error_status.exit_value", false);
+        boolean checkStderr = ServerConfigurationFactory.instance().getGPBooleanProperty(jobContext, "job.error_status.stderr", true);
 
         log.debug("for job#"+jobId+" checkExitValue="+checkExitValue+", checkStderr="+checkStderr);
 
@@ -1758,9 +1759,9 @@ public class GenePatternAnalysisTask {
         }
         if (stdoutFile.exists() && stdoutFile.length() <= 0L) {
             boolean isCustom = !STDOUT.equals(stdoutFile.getName());
-            boolean deleteEmptyStdout = ServerConfiguration.instance().getGPBooleanProperty(jobContext, "job.deleteEmptyStdout", false);
-            boolean deleteEmptyStdoutDefault = ServerConfiguration.instance().getGPBooleanProperty(jobContext, "job.deleteEmptyStdout.default", true);
-            boolean deleteEmptyStdoutCustom = ServerConfiguration.instance().getGPBooleanProperty(jobContext, "job.deleteEmptyStdout.custom", false);
+            boolean deleteEmptyStdout = ServerConfigurationFactory.instance().getGPBooleanProperty(jobContext, "job.deleteEmptyStdout", false);
+            boolean deleteEmptyStdoutDefault = ServerConfigurationFactory.instance().getGPBooleanProperty(jobContext, "job.deleteEmptyStdout.default", true);
+            boolean deleteEmptyStdoutCustom = ServerConfigurationFactory.instance().getGPBooleanProperty(jobContext, "job.deleteEmptyStdout.custom", false);
             
             boolean delete = deleteEmptyStdout 
                     || (!isCustom && deleteEmptyStdoutDefault)
@@ -1797,7 +1798,7 @@ public class GenePatternAnalysisTask {
             filenameFilter.addExactMatch(taskLog.getName());
         }
         
-        CommandProperties.Value globPatterns = ServerConfiguration.instance().getValue(jobContext, "job.FilenameFilter");
+        CommandProperties.Value globPatterns = ServerConfigurationFactory.instance().getValue(jobContext, "job.FilenameFilter");
         if (globPatterns != null) {
             for(String globPattern : globPatterns.getValues()) {
                 filenameFilter.addGlob(globPattern);
@@ -3059,7 +3060,7 @@ public class GenePatternAnalysisTask {
                     if (!isOptional) {
                         //check system properties
                         Context serverContext = ServerConfiguration.Context.getServerContext();
-                        String prop = ServerConfiguration.instance().getGPProperty(serverContext, varName);
+                        String prop = ServerConfigurationFactory.instance().getGPProperty(serverContext, varName);
                         if (prop != null) {
                             //server properties are optional
                             isOptional = true;
@@ -3325,7 +3326,7 @@ public class GenePatternAnalysisTask {
     public static String getJobDir(String jobNumber) {
         ServerConfiguration.Context context = ServerConfiguration.Context.getServerContext();
         try {
-            File rootJobDir = ServerConfiguration.instance().getRootJobDir(context);
+            File rootJobDir = ServerConfigurationFactory.instance().getRootJobDir(context);
             String tmpDir = rootJobDir.getPath();
             if (!tmpDir.endsWith(File.separator)) {
                 tmpDir = tmpDir + "/";

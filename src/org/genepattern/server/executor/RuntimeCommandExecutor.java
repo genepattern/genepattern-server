@@ -16,6 +16,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.apache.log4j.Logger;
 import org.genepattern.server.config.ServerConfiguration;
+import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.domain.JobStatus;
 import org.genepattern.server.executor.RuntimeExecCommand.Status;
 import org.genepattern.server.genepattern.GenePatternAnalysisTask;
@@ -181,7 +182,7 @@ public class RuntimeCommandExecutor implements CommandExecutor {
     private void logCommandLine(String[] commandLine, File runDir, JobInfo jobInfo) {
         ServerConfiguration.Context jobContext = ServerConfiguration.Context.getContextForJob(jobInfo);
 
-        boolean saveLogFile = ServerConfiguration.instance().getGPBooleanProperty(jobContext, "rte.save.logfile", false);
+        boolean saveLogFile = ServerConfigurationFactory.instance().getGPBooleanProperty(jobContext, "rte.save.logfile", false);
         if (!saveLogFile) {
             return;
         }
@@ -198,7 +199,7 @@ public class RuntimeCommandExecutor implements CommandExecutor {
             }
         }
 
-        String filename = ServerConfiguration.instance().getGPProperty(jobContext, "rte.logfile", ".rte.out");
+        String filename = ServerConfigurationFactory.instance().getGPProperty(jobContext, "rte.logfile", ".rte.out");
         File commandLogFile = new File(runDir, filename);
         if (commandLogFile.exists()) {
             log.error("log file already exists: "+commandLogFile.getAbsolutePath());

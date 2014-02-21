@@ -21,8 +21,8 @@ import org.apache.commons.fileupload.RequestContext;
 import org.apache.commons.fileupload.servlet.ServletRequestContext;
 import org.apache.log4j.Logger;
 import org.genepattern.server.DataManager;
-import org.genepattern.server.config.ServerConfiguration;
 import org.genepattern.server.config.ServerConfiguration.Context;
+import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.dm.GpFileObjFactory;
 import org.genepattern.server.dm.GpFilePath;
 import org.genepattern.server.dm.UrlUtil;
@@ -351,7 +351,7 @@ public class BatchSubmit {
         
         if (inputDirPath == null) {
             //assume it is a literal server file path
-            if (ServerConfiguration.instance().getAllowInputFilePaths(userContext)) {
+            if (ServerConfigurationFactory.instance().getAllowInputFilePaths(userContext)) {
                 File serverFile = new File(dirUrl);
                 inputDirPath = ServerFileObjFactory.getServerFile(serverFile);
             }

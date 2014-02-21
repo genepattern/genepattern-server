@@ -8,8 +8,8 @@ import java.util.regex.Pattern;
 
 import org.apache.commons.io.FilenameUtils;
 import org.apache.log4j.Logger;
-import org.genepattern.server.config.ServerConfiguration;
 import org.genepattern.server.config.ServerConfiguration.Context;
+import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.dm.UrlUtil;
 import org.genepattern.server.executor.CommandProperties.Value;
 
@@ -33,7 +33,7 @@ public class MapLocalEntry {
      */
     private static Map<?,?> getLocalChoiceDirsMap() {
         final Context serverContext=Context.getServerContext();
-        final Value value=ServerConfiguration.instance().getValue(serverContext, PROP_LOCAL_CHOICE_DIRS);
+        final Value value=ServerConfigurationFactory.instance().getValue(serverContext, PROP_LOCAL_CHOICE_DIRS);
         if (value==null || !value.isMap()) {
             return Collections.emptyMap();
         }

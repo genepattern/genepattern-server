@@ -22,6 +22,7 @@ import org.genepattern.data.pipeline.JobSubmission;
 import org.genepattern.data.pipeline.PipelineModel;
 import org.genepattern.server.config.ServerConfiguration;
 import org.genepattern.server.config.ServerConfiguration.Context;
+import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.dm.UrlUtil;
 import org.genepattern.server.domain.JobStatus;
 import org.genepattern.server.genepattern.GenePatternAnalysisTask;
@@ -77,7 +78,7 @@ public class JobInfoWrapper implements Serializable {
             
             String currentUserId = UIBeanHelper.getUserId();
             ServerConfiguration.Context userContext = ServerConfiguration.Context.getContextForUser(currentUserId);
-            displayFileInfo = ServerConfiguration.instance().getGPBooleanProperty(userContext, "display.file.info");
+            displayFileInfo = ServerConfigurationFactory.instance().getGPBooleanProperty(userContext, "display.file.info");
             
             //set the display name
             if (parameterInfo != null) {

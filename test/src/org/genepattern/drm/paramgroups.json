@@ -1,0 +1,16 @@
+[
+{
+  name: "Advanced/JobConfig", 
+  description: "Customize job configuration parameters", 
+  hidden: true, 
+  parameters: [
+        "drm.queue",
+        "drm.walltime",
+        "drm.nodeCount",
+        "pbs.host",
+        "pbs.mem",
+        "pbs.cput",
+        "pbs.vmem"
+  ]
+}
+]

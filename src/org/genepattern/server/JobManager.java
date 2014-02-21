@@ -6,9 +6,9 @@ import java.util.List;
 
 import org.apache.log4j.Logger;
 import org.genepattern.server.config.ServerConfiguration;
+import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.domain.BatchJobDAO;
-import org.genepattern.server.executor.AnalysisJobScheduler;
 import org.genepattern.server.executor.CommandManagerFactory;
 import org.genepattern.server.executor.JobDeletionException;
 import org.genepattern.server.executor.JobSubmissionException;
@@ -47,7 +47,7 @@ public class JobManager {
         File jobDir = null;
         try {
             ServerConfiguration.Context jobContext = ServerConfiguration.Context.getContextForJob(jobInfo);
-            File rootJobDir = ServerConfiguration.instance().getRootJobDir(jobContext);
+            File rootJobDir = ServerConfigurationFactory.instance().getRootJobDir(jobContext);
             jobDir = new File(rootJobDir, ""+jobInfo.getJobNumber());
         }
         catch (ServerConfiguration.Exception e) {

@@ -41,17 +41,12 @@ import org.apache.commons.fileupload.servlet.ServletRequestContext;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpVersion;
 import org.apache.commons.httpclient.methods.MultipartPostMethod;
-import org.apache.commons.httpclient.methods.PostMethod;
-import org.apache.commons.httpclient.methods.multipart.FilePart;
-import org.apache.commons.httpclient.methods.multipart.MultipartRequestEntity;
-import org.apache.commons.httpclient.methods.multipart.Part;
-import org.apache.commons.httpclient.methods.multipart.StringPart;
-import org.apache.http.client.methods.HttpPost;
 import org.apache.http.params.CoreProtocolPNames;
 import org.apache.log4j.Logger;
 import org.genepattern.server.TaskLSIDNotFoundException;
 import org.genepattern.server.config.ServerConfiguration;
 import org.genepattern.server.config.ServerConfiguration.Context;
+import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.eula.EulaInfo;
 import org.genepattern.server.eula.EulaManager;
 import org.genepattern.server.eula.GetEulaAsManifestProperty;
@@ -72,7 +67,6 @@ import org.genepattern.webservice.TaskInfoCache;
 import org.genepattern.webservice.WebServiceException;
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.mozilla.javascript.tools.idswitch.FileBody;
 
 /**
  * based on PipelineQueryServer class in the org.genepattern.pipelines class
@@ -183,7 +177,7 @@ public class ModuleQueryServlet extends HttpServlet {
             
             // Get the URL to post to
             Context context = Context.getContextForUser((String) request.getSession().getAttribute("userid"));
-            String gparcUploadURL = ServerConfiguration.instance().getGPProperty(context, "gparcUploadURL", "http://www.broadinstitute.org/software/gparc/server_upload.php");
+            String gparcUploadURL = ServerConfigurationFactory.instance().getGPProperty(context, "gparcUploadURL", "http://www.broadinstitute.org/software/gparc/server_upload.php");
             
             // Set up the post method
             MultipartPostMethod post = new MultipartPostMethod(gparcUploadURL);
@@ -201,7 +195,7 @@ public class ModuleQueryServlet extends HttpServlet {
                 
                 String tokenURL = null;
                 if (token != null) {
-                    String gparcSubmitURL = ServerConfiguration.instance().getGPProperty(context, "gparcSubmitURL", "http://www.broadinstitute.org/software/gparc/uniqid");
+                    String gparcSubmitURL = ServerConfigurationFactory.instance().getGPProperty(context, "gparcSubmitURL", "http://www.broadinstitute.org/software/gparc/uniqid");
                     tokenURL = gparcSubmitURL + "?uniqid=" + token;
                     tokenObject.put("token", tokenURL);
                 }
@@ -403,7 +397,7 @@ public class ModuleQueryServlet extends HttpServlet {
                     if (!i.isFormField()) {
                         // Store in a temp directory until the module is saved
 
-                        File fileTempDir = ServerConfiguration.instance().getTemporaryUploadDir(userContext);
+                        File fileTempDir = ServerConfigurationFactory.instance().getTemporaryUploadDir(userContext);
                         File uploadedFile = new File(fileTempDir, i.getName());
 
                         transferUpload(i, uploadedFile);

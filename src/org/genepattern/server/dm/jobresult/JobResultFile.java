@@ -8,6 +8,7 @@ import org.apache.log4j.Logger;
 import org.genepattern.server.PermissionsHelper;
 import org.genepattern.server.config.ServerConfiguration;
 import org.genepattern.server.config.ServerConfiguration.Context;
+import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.dm.GpFilePath;
 import org.genepattern.server.dm.UrlUtil;
@@ -81,7 +82,7 @@ public class JobResultFile extends GpFilePath {
         
         //TODO: get the working dir for the job, currently all jobs are stored relative to the "jobs" directory
         ServerConfiguration.Context context = ServerConfiguration.Context.getServerContext();
-        File rootJobDir = ServerConfiguration.instance().getRootJobDir(context);
+        File rootJobDir = ServerConfigurationFactory.instance().getRootJobDir(context);
         
         File jobDir = new File(rootJobDir, jobId);
         this.serverFile = new File(jobDir, relativeFile.getPath()); 

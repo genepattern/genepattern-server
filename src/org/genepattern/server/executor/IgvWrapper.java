@@ -6,6 +6,7 @@ import java.net.URL;
 import java.util.Map;
 
 import org.genepattern.server.config.ServerConfiguration;
+import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.webservice.JobInfo;
 import org.genepattern.webservice.ParameterInfo;
 
@@ -48,7 +49,7 @@ public class IgvWrapper implements CommandExecutor {
     
     private String getFileServletUrl() {
         ServerConfiguration.Context context = ServerConfiguration.Context.getServerContext();
-        String server = ServerConfiguration.instance().getGPProperty(context, "GenePatternURL");
+        String server = ServerConfigurationFactory.instance().getGPProperty(context, "GenePatternURL");
         if (!server.endsWith("/")) {
             server += "/";
         }

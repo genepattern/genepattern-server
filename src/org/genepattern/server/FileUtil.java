@@ -7,6 +7,7 @@ import java.util.List;
 
 import org.apache.log4j.Logger;
 import org.genepattern.server.config.ServerConfiguration;
+import org.genepattern.server.config.ServerConfigurationFactory;
 
 /**
  * Utility class for GenePattern input files.
@@ -77,7 +78,7 @@ public class FileUtil {
      * @return
      */
     public static String getUserUploadPath(ServerConfiguration.Context userContext, File fileObj) {
-        File userDir = ServerConfiguration.instance().getUserUploadDir(userContext);
+        File userDir = ServerConfigurationFactory.instance().getUserUploadDir(userContext);
         String relativePath = FileUtil.getRelativePath(userDir, fileObj);
         if (relativePath != null) {
             return relativePath;
@@ -91,7 +92,7 @@ public class FileUtil {
      * @return true if the given file is in the user upload directory
      */
     public static boolean isInUserUploadDir(ServerConfiguration.Context userContext, File fileObj) {
-        File userUploadDir = ServerConfiguration.instance().getUserUploadDir(userContext);
+        File userUploadDir = ServerConfigurationFactory.instance().getUserUploadDir(userContext);
         return isDescendant(userUploadDir, fileObj);
     }
 

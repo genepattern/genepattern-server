@@ -10,6 +10,7 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.apache.log4j.Logger;
 import org.genepattern.server.config.ServerConfiguration;
+import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.dm.jobresult.JobResultFile;
 import org.genepattern.server.dm.serverfile.ServerFileObjFactory;
 import org.genepattern.server.dm.tasklib.TasklibPath;
@@ -128,7 +129,7 @@ public class GpFileObjFactory {
      * @throws Exception
      */
     static public GpFilePath getUserUploadDir(ServerConfiguration.Context userContext) throws Exception {
-        File userUploadDir = ServerConfiguration.instance().getUserUploadDir(userContext);
+        File userUploadDir = ServerConfigurationFactory.instance().getUserUploadDir(userContext);
         //1) construct a file reference to the server file
         //   e.g. serverFile=<user.upload.dir>/relativePath
         
@@ -190,7 +191,7 @@ public class GpFileObjFactory {
         if (userContext.getUserId().contains("/") || userContext.getUserId().contains(File.pathSeparator)) {
             throw new IllegalArgumentException("A valid userId is required, userId='"+userContext.getUserId()+"'. Your userId contains a pathSeparator character ('/').");
         }
-        File userUploadDir = ServerConfiguration.instance().getUserUploadDir(userContext);
+        File userUploadDir = ServerConfigurationFactory.instance().getUserUploadDir(userContext);
 
         //TODO: relativize the path, at the moment, just manually removing './'
         String relativePath = uploadFile.getPath();
@@ -287,7 +288,7 @@ public class GpFileObjFactory {
 
         //special-case for <GenePatternURL> substitution
         if (urlStr.startsWith("<GenePatternURL>")) {
-            URL url = ServerConfiguration.instance().getGenePatternURL();
+            URL url = ServerConfigurationFactory.instance().getGenePatternURL();
             String gpUrl=url.toString();
             String path=urlStr.substring("<GenePatternURL>".length());
             urlStr=gpUrl;

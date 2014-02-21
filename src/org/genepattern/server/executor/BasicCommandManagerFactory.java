@@ -3,7 +3,7 @@ package org.genepattern.server.executor;
 import org.apache.log4j.Logger;
 import org.genepattern.server.config.ExecutorConfig;
 import org.genepattern.server.config.JobConfigObj;
-import org.genepattern.server.config.ServerConfiguration;
+import org.genepattern.server.config.ServerConfigurationFactory;
 
 /**
  * Create a new instance of a CommandManager based on the ServerConfiguration.
@@ -19,7 +19,7 @@ public class BasicCommandManagerFactory {
     
     public BasicCommandManager createCommandManager() throws ConfigurationException {
         this.cmdMgr = new BasicCommandManager(); 
-        JobConfigObj jobConfigObj = ServerConfiguration.instance().getJobConfiguration();
+        JobConfigObj jobConfigObj = ServerConfigurationFactory.instance().getJobConfiguration();
         initializeCommandExecutors(cmdMgr, jobConfigObj);
         return cmdMgr;
     }

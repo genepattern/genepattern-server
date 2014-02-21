@@ -15,6 +15,7 @@ import org.genepattern.server.TaskIDNotFoundException;
 import org.genepattern.server.TaskLSIDNotFoundException;
 import org.genepattern.server.config.ServerConfiguration;
 import org.genepattern.server.config.ServerConfiguration.Context;
+import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.domain.TaskMaster;
 import org.genepattern.server.eula.EulaInfo;
@@ -62,7 +63,7 @@ public class TaskInfoCache {
     
     private TaskInfoCache() {
         ServerConfiguration.Context serverContext = ServerConfiguration.Context.getServerContext();
-        enableCache = ServerConfiguration.instance().getGPBooleanProperty(serverContext, "taskInfoCache.enable", true);
+        enableCache = ServerConfigurationFactory.instance().getGPBooleanProperty(serverContext, "taskInfoCache.enable", true);
         if (enableCache) {
             initializeCache();
         }

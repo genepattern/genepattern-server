@@ -11,6 +11,7 @@ import org.apache.log4j.Logger;
 import org.genepattern.server.JobInfoManager;
 import org.genepattern.server.config.CommandManagerProperties;
 import org.genepattern.server.config.ServerConfiguration;
+import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.domain.AnalysisJob;
 import org.genepattern.server.domain.JobStatus;
@@ -69,7 +70,7 @@ public class BasicCommandManager implements CommandManager {
 
     private boolean getJobQueueSuspendedFlag() {
         ServerConfiguration.Context serverContext = ServerConfiguration.Context.getServerContext();
-        boolean suspended = ServerConfiguration.instance().getGPBooleanProperty(serverContext, "job.queue.suspend_on_start");
+        boolean suspended = ServerConfigurationFactory.instance().getGPBooleanProperty(serverContext, "job.queue.suspend_on_start");
         return suspended;
     }
     
@@ -255,7 +256,7 @@ public class BasicCommandManager implements CommandManager {
         //}
 
         //initialize to default executor
-        CommandManagerProperties configProps = ServerConfiguration.instance().getCommandManagerProperties();
+        CommandManagerProperties configProps = ServerConfigurationFactory.instance().getCommandManagerProperties();
         String cmdExecId = configProps.getCommandExecutorId(jobInfo);
         if (cmdExecId == null) {
             log.info("no commandExecutorId found for job, use the first one from the list.");
@@ -282,7 +283,7 @@ public class BasicCommandManager implements CommandManager {
     }
     
     public CommandProperties getCommandProperties(JobInfo jobInfo) {
-        CommandManagerProperties configProps = ServerConfiguration.instance().getCommandManagerProperties();
+        CommandManagerProperties configProps = ServerConfigurationFactory.instance().getCommandManagerProperties();
         CommandProperties props = configProps.getCommandProperties(jobInfo);
         CommandProperties commandProps = new CommandProperties(props);
         return commandProps;
@@ -355,7 +356,7 @@ public class BasicCommandManager implements CommandManager {
     
     private synchronized void initPipelineExecutor() {
         log.debug("initializing pipeline executor");
-        CommandManagerProperties configProps = ServerConfiguration.instance().getCommandManagerProperties();
+        CommandManagerProperties configProps = ServerConfigurationFactory.instance().getCommandManagerProperties();
         String defaultPipelineExecId = configProps.getTop().getDefaultProperty("pipeline.executor");
         if (defaultPipelineExecId == null) {
             defaultPipelineExecId = DEFAULT_PIPELINE_EXEC_ID;

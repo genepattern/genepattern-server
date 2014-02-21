@@ -5,6 +5,7 @@ import org.genepattern.junitutil.TaskUtil;
 import org.genepattern.server.UserAccountManager;
 import org.genepattern.server.config.ServerConfiguration;
 import org.genepattern.server.config.ServerConfiguration.Context;
+import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.webservice.TaskInfo;
 import org.junit.After;
 import org.junit.Assert;
@@ -49,7 +50,7 @@ public class TestEulaManagerSiteLicense {
 
         //revert back to a 'default' config.file
         System.getProperties().remove("config.file");
-        ServerConfiguration.instance().reloadConfiguration();
+        ServerConfigurationFactory.reloadConfiguration();
     } 
 
     /**

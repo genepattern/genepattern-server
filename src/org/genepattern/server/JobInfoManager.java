@@ -21,6 +21,7 @@ import java.util.zip.ZipOutputStream;
 import org.apache.log4j.Logger;
 import org.genepattern.server.JobInfoWrapper.ParameterInfoWrapper;
 import org.genepattern.server.config.ServerConfiguration;
+import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.domain.JobStatus;
 import org.genepattern.server.user.UserDAO;
@@ -232,7 +233,7 @@ public class JobInfoManager {
         String javaFlags = userProp.getValue();
         if (javaFlags == null) {
             ServerConfiguration.Context userContext = ServerConfiguration.Context.getContextForUser(userId);
-            javaFlags = ServerConfiguration.instance().getGPProperty(userContext, RunVisualizerConstants.JAVA_FLAGS_VALUE);
+            javaFlags = ServerConfigurationFactory.instance().getGPProperty(userContext, RunVisualizerConstants.JAVA_FLAGS_VALUE);
         }
         return javaFlags;
     }

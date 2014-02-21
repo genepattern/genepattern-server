@@ -8,8 +8,8 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 
 import org.apache.log4j.Logger;
-import org.genepattern.server.config.ServerConfiguration;
 import org.genepattern.server.config.ServerConfiguration.Context;
+import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.dm.tasklib.TasklibPath;
 import org.genepattern.server.eula.GetTaskStrategy;
 import org.genepattern.server.eula.GetTaskStrategyDefault;
@@ -41,7 +41,7 @@ public class ReloadJobHelper {
         if (!in.startsWith("<GenePatternURL>")) {
             return in;
         }
-        URL gpURL=ServerConfiguration.instance().getGenePatternURL();
+        URL gpURL=ServerConfigurationFactory.instance().getGenePatternURL();
         String prefix=gpURL.toExternalForm();
         String suffix=in.substring("<GenePatternURL>".length());
         if (prefix.endsWith("/") && suffix.startsWith("/")) {

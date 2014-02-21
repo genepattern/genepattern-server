@@ -16,6 +16,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.log4j.Logger;
 import org.genepattern.server.auth.AuthenticationException;
 import org.genepattern.server.config.ServerConfiguration;
+import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.dm.GpFileObjFactory;
 import org.genepattern.server.dm.GpFilePath;
 import org.genepattern.server.executor.CommandProperties;
@@ -361,7 +362,7 @@ public class DataServlet extends HttpServlet implements Servlet {
      * @return true if the given file is in the user upload directory
      */
     private static boolean isInUserUploadDir(ServerConfiguration.Context userContext, File fileObj) {
-        File userUploadDir = ServerConfiguration.instance().getUserUploadDir(userContext);
+        File userUploadDir = ServerConfigurationFactory.instance().getUserUploadDir(userContext);
         return isDescendant(userUploadDir, fileObj);
     }
     
@@ -372,7 +373,7 @@ public class DataServlet extends HttpServlet implements Servlet {
      * @return true of the given user has permission to read the file on the server file path.
      */
     public static boolean canReadServerFile(ServerConfiguration.Context userContext, File fileObj) {
-        CommandProperties.Value value = ServerConfiguration.instance().getValue(userContext, "server.browse.file.system.root");
+        CommandProperties.Value value = ServerConfigurationFactory.instance().getValue(userContext, "server.browse.file.system.root");
         if (value == null) {
             //Note: by default, all files on the server's file system are readable
             //final String DEFAULT_ROOT = "/";            

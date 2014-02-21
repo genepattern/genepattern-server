@@ -6,7 +6,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import org.apache.log4j.Logger;
-import org.genepattern.server.config.ServerConfiguration;
+import org.genepattern.server.config.ServerConfigurationFactory;
 
 /**
  * Initialize and hold a single instance of a CommandManager for the GenePattern Server.
@@ -90,7 +90,7 @@ public class CommandManagerFactory {
     }
     
     private static synchronized BasicCommandManager createCommandManager() {
-        if (ServerConfiguration.instance().getInitializationErrors().size() > 0) {
+        if (ServerConfigurationFactory.instance().getInitializationErrors().size() > 0) {
             log.error("server configuration errors, creating default command manager");
             return createDefaultCommandManager();
         }

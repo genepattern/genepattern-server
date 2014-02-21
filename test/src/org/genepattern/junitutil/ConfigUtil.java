@@ -3,7 +3,7 @@ package org.genepattern.junitutil;
 import java.io.File;
 
 import org.genepattern.server.UserAccountManager;
-import org.genepattern.server.config.ServerConfiguration;
+import org.genepattern.server.config.ServerConfigurationFactory;
 import org.junit.Assert;
 import org.junit.Ignore;
 
@@ -34,7 +34,7 @@ public class ConfigUtil {
     static public void loadConfigFile(final File configFile) {
         if (configFile==null) {
             System.getProperties().remove("config.file");
-            ServerConfiguration.instance().reloadConfiguration();
+            ServerConfigurationFactory.reloadConfiguration();
             return;
         }
         if (!configFile.canRead()) {
@@ -43,7 +43,7 @@ public class ConfigUtil {
         }
         String configFilepath=configFile.getAbsolutePath();
         System.setProperty("config.file", configFilepath);
-        ServerConfiguration.instance().reloadConfiguration(configFilepath);
+        ServerConfigurationFactory.reloadConfiguration(configFilepath);
     }
     
     static public void setUserGroups(Class<?> clazz, String filename) {

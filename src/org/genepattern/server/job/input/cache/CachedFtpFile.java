@@ -17,6 +17,7 @@ import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
 import org.genepattern.server.config.ServerConfiguration;
 import org.genepattern.server.config.ServerConfiguration.Context;
+import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.dm.GpFileObjFactory;
 import org.genepattern.server.dm.GpFilePath;
 import org.genepattern.server.job.input.JobInputFileUtil;
@@ -101,7 +102,7 @@ abstract public class CachedFtpFile implements CachedFile {
 
         public CachedFtpFile newCachedFtpFile(final String urlString) {
             ServerConfiguration.Context serverContext=ServerConfiguration.Context.getServerContext();
-            String str=ServerConfiguration.instance().getGPProperty(serverContext, Type.PROP_FTP_DOWNLOADER_TYPE, Type.JAVA_6.name());
+            String str=ServerConfigurationFactory.instance().getGPProperty(serverContext, Type.PROP_FTP_DOWNLOADER_TYPE, Type.JAVA_6.name());
             Type type=null;
             try {
                 type=Type.valueOf(str);

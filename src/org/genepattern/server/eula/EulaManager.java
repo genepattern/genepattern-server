@@ -2,8 +2,8 @@ package org.genepattern.server.eula;
 
 import java.io.File;
 
-import org.genepattern.server.config.ServerConfiguration;
 import org.genepattern.server.config.ServerConfiguration.Context;
+import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.eula.InitException;
 import org.genepattern.webservice.TaskInfo;
 
@@ -19,7 +19,7 @@ public class EulaManager {
         if (context==null) {
             return true;
         }
-        boolean isEnabled=ServerConfiguration.instance().getGPBooleanProperty(context, EulaManager.class.getName()+".enabled", true);
+        boolean isEnabled=ServerConfigurationFactory.instance().getGPBooleanProperty(context, EulaManager.class.getName()+".enabled", true);
         return isEnabled;
     }
 

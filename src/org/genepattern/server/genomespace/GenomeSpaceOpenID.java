@@ -10,8 +10,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.Logger;
-import org.genepattern.server.config.ServerConfiguration;
 import org.genepattern.server.config.ServerConfiguration.Context;
+import org.genepattern.server.config.ServerConfigurationFactory;
 import org.openid4java.OpenIDException;
 import org.openid4java.association.AssociationSessionType;
 import org.openid4java.consumer.ConsumerManager;
@@ -58,7 +58,7 @@ public class GenomeSpaceOpenID extends HttpServlet {
      */
     private String getProviderURL() {
         Context context = Context.getServerContext();
-        String gsUrl = ServerConfiguration.instance().getGPProperty(context, "genomeSpaceUrl", "https://identity.genomespace.org:8444/identityServer/xrd.jsp");
+        String gsUrl = ServerConfigurationFactory.instance().getGPProperty(context, "genomeSpaceUrl", "https://identity.genomespace.org:8444/identityServer/xrd.jsp");
         log.debug("Getting the OpenID provider URL.  URL is: " + gsUrl);
         return gsUrl;
     }
@@ -70,7 +70,7 @@ public class GenomeSpaceOpenID extends HttpServlet {
         int idx = getProviderURL().lastIndexOf("identityServer");
         if (idx < 0) { return null; }
         String gsUrl = getProviderURL().substring(0, idx) + "identityServer/openIdProvider?_action=logout";
-        gsUrl += "&logout_return_to=" + ServerConfiguration.instance().getGenePatternURL();
+        gsUrl += "&logout_return_to=" + ServerConfigurationFactory.instance().getGenePatternURL();
         log.debug("Getting the OpenID logout URL.  URL is: " + gsUrl);
         return gsUrl;
     }
@@ -275,7 +275,7 @@ public class GenomeSpaceOpenID extends HttpServlet {
             servletPath = servletPath.substring(1);
         }
 
-        String u = ServerConfiguration.instance().getGenePatternURL() + servletPath;
+        String u = ServerConfigurationFactory.instance().getGenePatternURL() + servletPath;
         if (pathInfo != null) {
             u+= pathInfo;
         }

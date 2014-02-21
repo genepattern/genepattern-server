@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import org.genepattern.server.config.ServerConfiguration;
+import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.webservice.server.dao.AnalysisDAO;
 import java.util.Map.Entry;
 
@@ -276,7 +277,7 @@ public class JobInputApiImplV2 implements JobInputApi {
          */
         private static File getWorkingDirectory(final Context jobContext, final int jobNumber) throws Exception {
             try {
-                File rootJobDir = ServerConfiguration.instance().getRootJobDir(jobContext);
+                File rootJobDir = ServerConfigurationFactory.instance().getRootJobDir(jobContext);
                 File jobDir = new File(rootJobDir, ""+jobNumber);
                 return jobDir;
             }

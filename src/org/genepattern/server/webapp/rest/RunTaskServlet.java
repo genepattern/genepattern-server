@@ -33,6 +33,7 @@ import org.genepattern.modules.ModuleJSON;
 import org.genepattern.modules.ParametersJSON;
 import org.genepattern.modules.ResponseJSON;
 import org.genepattern.server.config.ServerConfiguration;
+import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.dm.GpFilePath;
 import org.genepattern.server.dm.tasklib.TasklibPath;
 import org.genepattern.server.eula.LibdirLegacy;
@@ -295,7 +296,7 @@ public class RunTaskServlet extends HttpServlet
             final LibdirStrategy libdirStrategy = new LibdirLegacy();
             final TasklibPath filePath = new TasklibPath(libdirStrategy, taskInfo, "paramgroups.json");
             JSONArray paramGroupsJson = loadModuleHelper.getParameterGroupsJson(taskInfo, filePath.getServerFile());
-            final boolean enableJobConfigParams=ServerConfiguration.instance().getGPBooleanProperty(userContext, JobConfigParams.PROP_ENABLE_JOB_CONFIG_PARAMS, false);
+            final boolean enableJobConfigParams=ServerConfigurationFactory.instance().getGPBooleanProperty(userContext, JobConfigParams.PROP_ENABLE_JOB_CONFIG_PARAMS, false);
             if (enableJobConfigParams) {
                 final JobConfigParams jobConfigParams=JobConfigParams.initJobConfigParams(userContext);
                 if (jobConfigParams != null) {
@@ -405,7 +406,7 @@ public class RunTaskServlet extends HttpServlet
         @Context HttpServletRequest request)
     {
         final ServerConfiguration.Context userContext = Util.getUserContext(request);
-        final boolean enableJobConfigParams=ServerConfiguration.instance().getGPBooleanProperty(userContext, JobConfigParams.PROP_ENABLE_JOB_CONFIG_PARAMS, false);
+        final boolean enableJobConfigParams=ServerConfigurationFactory.instance().getGPBooleanProperty(userContext, JobConfigParams.PROP_ENABLE_JOB_CONFIG_PARAMS, false);
         if (enableJobConfigParams) {
             return newAddJob(userContext, jobSubmitInfo, request);
         }

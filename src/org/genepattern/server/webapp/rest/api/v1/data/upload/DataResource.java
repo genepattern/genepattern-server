@@ -21,6 +21,7 @@ import org.apache.commons.io.IOUtils;
 import org.apache.log4j.Logger;
 import org.genepattern.server.DataManager;
 import org.genepattern.server.config.ServerConfiguration;
+import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.dm.GpFileObjFactory;
 import org.genepattern.server.dm.GpFilePath;
 import org.genepattern.server.job.input.JobInputFileUtil;
@@ -323,7 +324,7 @@ public class DataResource {
         long numBytes = -1L;
         long maxNumBytes = MAX_FILE_SIZE_DEFAULT;
         numBytes=Long.parseLong(contentLength);
-        maxNumBytes=ServerConfiguration.instance().getGPLongProperty(userContext, PROP_MAX_FILE_SIZE, MAX_FILE_SIZE_DEFAULT);
+        maxNumBytes=ServerConfigurationFactory.instance().getGPLongProperty(userContext, PROP_MAX_FILE_SIZE, MAX_FILE_SIZE_DEFAULT);
         if (numBytes > maxNumBytes) {
             throw new WebApplicationException(
                     Response.status(ClientResponse.Status.REQUEST_ENTITY_TOO_LARGE).build());

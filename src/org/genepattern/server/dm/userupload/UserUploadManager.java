@@ -9,6 +9,7 @@ import org.apache.log4j.Logger;
 import org.genepattern.server.FileUtil;
 import org.genepattern.server.config.ServerConfiguration;
 import org.genepattern.server.config.ServerConfiguration.Context;
+import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.dm.GpDirectoryNode;
 import org.genepattern.server.dm.GpFileObjFactory;
@@ -334,7 +335,7 @@ public class UserUploadManager {
      */
     static private List<UserUpload> getAllFiles(final Context userContext) {
         final String userId=userContext.getUserId();
-        final boolean hideTmp=ServerConfiguration.instance().getGPBooleanProperty(userContext, PROP_UPLOAD_HIDE_TMP, true);
+        final boolean hideTmp=ServerConfigurationFactory.instance().getGPBooleanProperty(userContext, PROP_UPLOAD_HIDE_TMP, true);
         final boolean includeTempFiles=!hideTmp;
         UserUploadDao dao = new UserUploadDao();
         return dao.selectAllUserUpload(userId, includeTempFiles);
@@ -349,7 +350,7 @@ public class UserUploadManager {
      * @throws Exception Thrown is the path provided is not in the user's upload dir
      */
     static public String absoluteToRelativePath(Context context, String absolute) throws Exception {
-        File userUploadDir = ServerConfiguration.instance().getUserUploadDir(context);
+        File userUploadDir = ServerConfigurationFactory.instance().getUserUploadDir(context);
         File absoluteFile = new File(absolute);
         
         // Handle special case of trying to get a relative path to the root upload directory

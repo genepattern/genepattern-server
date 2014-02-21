@@ -5,7 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.log4j.Logger;
-import org.genepattern.server.config.ServerConfiguration;
+import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.executor.CommandExecutor;
 import org.genepattern.server.executor.CommandManager;
 import org.genepattern.server.executor.CommandManagerFactory;
@@ -88,7 +88,7 @@ public class JobConfigurationBean {
      * Reload the configuration file, this does not initialize command executors. To do that you will need to call #shutdown and then #startup.
      */
     public void reloadJobConfiguration() throws Exception {
-        ServerConfiguration.instance().reloadConfiguration();
+        ServerConfigurationFactory.reloadConfiguration();
     }
     
     public String getParser() {
@@ -96,17 +96,17 @@ public class JobConfigurationBean {
     }
     
     public boolean getHasErrors() {
-        return ServerConfiguration.instance().getInitializationErrors().size() > 0;
+        return ServerConfigurationFactory.instance().getInitializationErrors().size() > 0;
     }
 
     public List<Throwable> getConfigurationFileErrors() {
-        return ServerConfiguration.instance().getInitializationErrors();
+        return ServerConfigurationFactory.instance().getInitializationErrors();
     }
     
     public String getConfigurationFilepath() {
         File configFile = null;
         try {
-            configFile = ServerConfiguration.instance().getConfigFile();
+            configFile = ServerConfigurationFactory.instance().getConfigFile();
             if (configFile != null) {
                 return configFile.getAbsolutePath();
             }
@@ -126,7 +126,7 @@ public class JobConfigurationBean {
     public String getConfigurationFileContent() {
         File configFile = null;
         try {
-            configFile = ServerConfiguration.instance().getConfigFile();
+            configFile = ServerConfigurationFactory.instance().getConfigFile();
         } 
         catch (Throwable e) {
             return e.getLocalizedMessage();

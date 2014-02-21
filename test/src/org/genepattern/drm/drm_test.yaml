@@ -8,6 +8,40 @@
 #
 default.properties:
     executor: RuntimeExec
+    
+    #
+    # to include job configuration options in the job input form ...
+    #
+    enableJobConfigParams: true
+#    jobConfigParams: {
+#        "drm.queue": { 
+#            altName: "queue",
+#            description: "",
+#            optional: true,
+#            choices: ["hour", "week", "bhour", "bweek", "priority", "interactive", "preview" ],
+#            defaultValue: "hour"
+#        },
+#        "drm.memory": null,
+#        "drm.walltime": null,
+#        "drm.nodeCount": null,
+#        "drm.cpuCount": {},
+#        "drm.extraArgs": {}
+#    }
+#    jobConfigParams: [
+#        { name: "drm.queue", 
+#          altName: "queue",
+#          description: "",
+#          optional: true,
+#          choices: ["hour", "week", "bhour", "bweek", "priority", "interactive", "preview" ],
+#          defaultValue: "hour"
+#        },
+#        { name: "drm.memory" },
+#        { name: "drm.walltime" },
+#        { name: "drm.nodeCount" },
+#        { name: "drm.cpuCount" },
+#        { name: "drm.extraArgs" }
+#    ]
+    
     #
     # job memory settings
     #
@@ -31,11 +65,12 @@ default.properties:
 # executor.props: BigMem
 # this JSON object is an unordered set of name:value mappings.
 # each entry specifies a set of custom values which can be accessed at runtime
-# via the 'executor.property.name' variable.
+# via the 'executor.props' variable.
 # 
 # 
 executor.properties: {
     #
+
     # Note in the memory settings,
     # When the 'drm.memory' flag is set, it also defines the java max heap space
     # command line arg. For example, if you have a <java> module, the -Xmx<drm.memory> arg
@@ -64,7 +99,6 @@ executor.properties: {
         "executor": "DemoPbsJobRunner",
         "drm.queue": "pbsBigMemQueue",
         "drm.memory": "128gb",
-        "drm.javaMaxHeapSize": "128gb"
     },
     # himem drm.workerName
     myHiMemPbsWorker: {

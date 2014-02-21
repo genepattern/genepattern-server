@@ -10,6 +10,7 @@ import org.genepattern.server.UserAccountManager;
 import org.genepattern.server.auth.AuthenticationException;
 import org.genepattern.server.config.ServerConfiguration;
 import org.genepattern.server.config.ServerConfiguration.Context;
+import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.genomespace.GenomeSpaceClient;
 import org.genepattern.server.genomespace.GenomeSpaceClientFactory;
 import org.genepattern.server.genomespace.GenomeSpaceDatabaseManager;
@@ -132,7 +133,7 @@ public class BasicAuthUtil {
         
         try {
             final Context serverContext = ServerConfiguration.Context.getServerContext();
-            final String env = ServerConfiguration.instance().getGPProperty(serverContext, "genomeSpaceEnvironment", "prod");
+            final String env = ServerConfigurationFactory.instance().getGPProperty(serverContext, "genomeSpaceEnvironment", "prod");
             final GenomeSpaceClient gsClient = GenomeSpaceClientFactory.getGenomeSpaceClient();
             final GenomeSpaceLogin login = gsClient.submitLogin(env, gsUsername, new String(gsPassword));
             final String gpUserId=GenomeSpaceDatabaseManager.getGPUsername(gsUsername);

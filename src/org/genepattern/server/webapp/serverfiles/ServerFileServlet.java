@@ -13,6 +13,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.log4j.Logger;
 import org.genepattern.server.config.ServerConfiguration;
 import org.genepattern.server.config.ServerConfiguration.Context;
+import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.dm.GpFileObjFactory;
 import org.genepattern.server.dm.GpFilePath;
 import org.genepattern.server.dm.serverfile.ServerFilePath;
@@ -63,13 +64,13 @@ public class ServerFileServlet extends HttpServlet {
     
     private boolean ensureServerFilePermissions(HttpServletRequest request) {
         Context userContext = getUserContext(request);
-        boolean  allowInputFilePaths = ServerConfiguration.instance().getAllowInputFilePaths(userContext);
+        boolean  allowInputFilePaths = ServerConfigurationFactory.instance().getAllowInputFilePaths(userContext);
         return allowInputFilePaths;
     }
     
     private List<File> getSystemBrowseRoots(HttpServletRequest request) {
         Context userContext = getUserContext(request);
-        Value  roots = ServerConfiguration.instance().getValue(userContext, "server.browse.file.system.root");
+        Value  roots = ServerConfigurationFactory.instance().getValue(userContext, "server.browse.file.system.root");
         
         List<File> toReturn = new ArrayList<File>();
         for (String path : roots.getValues()) {

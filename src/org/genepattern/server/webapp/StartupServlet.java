@@ -35,6 +35,7 @@ import javax.servlet.http.HttpServlet;
 
 import org.apache.log4j.Logger;
 import org.genepattern.server.config.ServerConfiguration;
+import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.database.HsqlDbUtil;
 import org.genepattern.server.dm.userupload.MigrationTool;
@@ -112,7 +113,7 @@ public class StartupServlet extends HttpServlet {
         //load the configuration file
         try {
             log.info("\tinitializing ServerConfiguration...");
-            String configFilepath = ServerConfiguration.instance().getConfigFilepath();
+            String configFilepath = ServerConfigurationFactory.instance().getConfigFilepath();
         }
         catch (Throwable t) {
             log.error("error initializing ServerConfiguration", t);
@@ -228,7 +229,7 @@ public class StartupServlet extends HttpServlet {
         String defaultRootJobDir = "";
         try {
             ServerConfiguration.Context serverContext = ServerConfiguration.Context.getServerContext();
-            File rootJobDir = ServerConfiguration.instance().getRootJobDir(serverContext);
+            File rootJobDir = ServerConfigurationFactory.instance().getRootJobDir(serverContext);
             defaultRootJobDir = rootJobDir.getAbsolutePath();
         }
         catch (Throwable t) {
@@ -249,7 +250,7 @@ public class StartupServlet extends HttpServlet {
         startupMessage.append("\tjobs: "+defaultRootJobDir + NL);
         startupMessage.append("\tjava.io.tmpdir: "+System.getProperty("java.io.tmpdir") + NL);
         startupMessage.append("\tsoap.attachment.dir: "+System.getProperty("soap.attachment.dir") + NL);
-        startupMessage.append("\tconfig.file: "+ServerConfiguration.instance().getConfigFilepath() + NL);
+        startupMessage.append("\tconfig.file: "+ServerConfigurationFactory.instance().getConfigFilepath() + NL);
         startupMessage.append(stars);
         
         log.info(startupMessage);

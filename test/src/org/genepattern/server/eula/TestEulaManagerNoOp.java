@@ -9,6 +9,7 @@ import org.genepattern.junitutil.ConfigUtil;
 import org.genepattern.junitutil.TaskUtil;
 import org.genepattern.server.config.ServerConfiguration;
 import org.genepattern.server.config.ServerConfiguration.Context;
+import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.webservice.TaskInfo;
 import org.junit.After;
 import org.junit.Before;
@@ -35,7 +36,7 @@ public class TestEulaManagerNoOp {
     @Test
     public void testDisableEulaManager() {
         Context userContext=ServerConfiguration.Context.getContextForUser("gp_user");
-        boolean customSetting=ServerConfiguration.instance().getGPBooleanProperty(userContext, "org.genepattern.server.eula.EulaManager.enabled", false);
+        boolean customSetting=ServerConfigurationFactory.instance().getGPBooleanProperty(userContext, "org.genepattern.server.eula.EulaManager.enabled", false);
         Assert.assertEquals("eula.enabled", false, customSetting);
     }
     

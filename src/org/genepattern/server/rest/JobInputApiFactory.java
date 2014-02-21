@@ -2,6 +2,7 @@ package org.genepattern.server.rest;
 
 import org.apache.log4j.Logger;
 import org.genepattern.server.config.ServerConfiguration;
+import org.genepattern.server.config.ServerConfigurationFactory;
 
 /**
  * Factory method for initializing an instance of the JobInputApi.
@@ -16,7 +17,7 @@ public class JobInputApiFactory {
     }
     
     static public JobInputApi createJobInputApi(ServerConfiguration.Context context, boolean initDefault) {
-        final String jobInputApiClass=ServerConfiguration.instance().getGPProperty(context, "jobInputApiClass");
+        final String jobInputApiClass=ServerConfigurationFactory.instance().getGPProperty(context, "jobInputApiClass");
         if ("org.genepattern.server.rest.JobInputApiImplV2".equals(jobInputApiClass)) {
             return new JobInputApiImplV2(initDefault);
         }

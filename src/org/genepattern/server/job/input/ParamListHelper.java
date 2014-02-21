@@ -11,14 +11,11 @@ import java.util.Map.Entry;
 import java.util.regex.Pattern;
 
 import org.apache.log4j.Logger;
-import org.genepattern.server.config.ServerConfiguration;
 import org.genepattern.server.config.ServerConfiguration.Context;
+import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.dm.GpFileObjFactory;
 import org.genepattern.server.dm.GpFilePath;
 import org.genepattern.server.dm.serverfile.ServerFileObjFactory;
-import org.genepattern.server.job.input.Param;
-import org.genepattern.server.job.input.ParamId;
-import org.genepattern.server.job.input.ParamValue;
 import org.genepattern.server.job.input.collection.ParamGroupHelper;
 import org.genepattern.server.rest.ParameterInfoRecord;
 import org.genepattern.util.LSID;
@@ -129,7 +126,7 @@ public class ParamListHelper {
      * @return
      */
     private static String insertGpUrlSubstitution(final String in) {
-        URL gpURL=ServerConfiguration.instance().getGenePatternURL();
+        URL gpURL=ServerConfigurationFactory.instance().getGenePatternURL();
         String gpUrlStr=gpURL.toExternalForm();
         if (!gpUrlStr.endsWith("/")) {
             gpUrlStr += "/";

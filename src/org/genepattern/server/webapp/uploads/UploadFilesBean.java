@@ -25,8 +25,8 @@ import javax.servlet.http.HttpServletResponseWrapper;
 
 import org.apache.log4j.Logger;
 import org.genepattern.server.DataManager;
-import org.genepattern.server.config.ServerConfiguration;
 import org.genepattern.server.config.ServerConfiguration.Context;
+import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.dm.GpDirectoryNode;
 import org.genepattern.server.dm.GpFilePath;
 import org.genepattern.server.dm.Node;
@@ -262,7 +262,7 @@ public class UploadFilesBean {
     }
     
     public File getUserUploadDir() {
-        return ServerConfiguration.instance().getUserUploadDir(Context.getContextForUser(UIBeanHelper.getUserId()));
+        return ServerConfigurationFactory.instance().getUserUploadDir(Context.getContextForUser(UIBeanHelper.getUserId()));
     }
     
     private void initUserUploadTree() {
@@ -411,12 +411,12 @@ public class UploadFilesBean {
     
     public int getPartitionLength() {
         Context context = Context.getContextForUser(UIBeanHelper.getUserId());
-        return ServerConfiguration.instance().getGPIntegerProperty(context, "upload.partition.size", 10000000);
+        return ServerConfigurationFactory.instance().getGPIntegerProperty(context, "upload.partition.size", 10000000);
     }
     
     public long getMaxUploadSize() {
         Context context = Context.getContextForUser(UIBeanHelper.getUserId());
-        return ServerConfiguration.instance().getGPLongProperty(context, "upload.max.size", 20000000000L);
+        return ServerConfigurationFactory.instance().getGPLongProperty(context, "upload.max.size", 20000000000L);
     }
     
     public String getUploadWindowName() {
@@ -427,7 +427,7 @@ public class UploadFilesBean {
     public boolean getUploadEnabled() {
         String userId = UIBeanHelper.getUserId();
         Context userContext = Context.getContextForUser(userId);
-        return ServerConfiguration.instance().getGPBooleanProperty(userContext, "upload.jumploader", true);
+        return ServerConfigurationFactory.instance().getGPBooleanProperty(userContext, "upload.jumploader", true);
     }
     
     /**

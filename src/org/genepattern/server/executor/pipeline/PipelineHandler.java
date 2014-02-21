@@ -27,6 +27,7 @@ import org.genepattern.data.pipeline.PipelineModelException;
 import org.genepattern.server.JobManager;
 import org.genepattern.server.config.ServerConfiguration;
 import org.genepattern.server.config.ServerConfiguration.Context;
+import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.dm.GpFileObjFactory;
 import org.genepattern.server.dm.GpFilePath;
@@ -770,7 +771,7 @@ public class PipelineHandler {
      * @deprecated
      */
     public static boolean isParallelExec(Context jobContext) {
-        boolean rval=ServerConfiguration.instance().getGPBooleanProperty(jobContext, "org.genepattern.server.executor.pipeline.parallelExec", true);
+        boolean rval=ServerConfigurationFactory.instance().getGPBooleanProperty(jobContext, "org.genepattern.server.executor.pipeline.parallelExec", true);
         return rval;
     }
 
@@ -1448,7 +1449,7 @@ public class PipelineHandler {
         String fileName = null;
         
         Context context = ServerConfiguration.Context.getContextForJob(fromJob);
-        File rootJobDir = ServerConfiguration.instance().getRootJobDir(context);
+        File rootJobDir = ServerConfigurationFactory.instance().getRootJobDir(context);
         String jobDir = rootJobDir.getAbsolutePath();
 
         for (ParameterInfo outputFile : jobResultFiles ) {

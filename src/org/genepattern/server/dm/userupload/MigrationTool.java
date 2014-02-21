@@ -10,6 +10,7 @@ import org.apache.log4j.Logger;
 import org.genepattern.server.DataManager;
 import org.genepattern.server.config.ServerConfiguration;
 import org.genepattern.server.config.ServerConfiguration.Context;
+import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.config.ServerProperties;
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.domain.AnalysisJob;
@@ -127,7 +128,7 @@ public class MigrationTool {
         File jobResultsDir = null;
         Context serverContext = ServerConfiguration.Context.getServerContext();
         try {
-            jobResultsDir = ServerConfiguration.instance().getRootJobDir(serverContext);
+            jobResultsDir = ServerConfigurationFactory.instance().getRootJobDir(serverContext);
         }
         catch (Throwable t) {
             log.error(t);
@@ -510,7 +511,7 @@ public class MigrationTool {
      */
     private static StatusCode migrateUserUploadDir(String userId) {
         Context userContext = ServerConfiguration.Context.getContextForUser(userId);
-        File userDir = ServerConfiguration.instance().getUserDir(userContext);
+        File userDir = ServerConfigurationFactory.instance().getUserDir(userContext);
         if (userDir == null) {
             log.error("userDir is null for userId="+userId);
             return StatusCode.SERVER_ERROR;

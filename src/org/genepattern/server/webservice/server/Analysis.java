@@ -34,6 +34,7 @@ import org.genepattern.server.PermissionsHelper;
 import org.genepattern.server.UserAccountManager;
 import org.genepattern.server.auth.IGroupMembershipPlugin;
 import org.genepattern.server.config.ServerConfiguration;
+import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.domain.JobStatus;
 import org.genepattern.server.executor.AnalysisJobScheduler;
@@ -379,7 +380,7 @@ public class Analysis extends GenericWebService {
         ServerConfiguration.Context context = ServerConfiguration.Context.getContextForUser(userId);
         File rootJobDir = null;
         try {
-            rootJobDir = ServerConfiguration.instance().getRootJobDir(context);
+            rootJobDir = ServerConfigurationFactory.instance().getRootJobDir(context);
         }
         catch (Throwable t) {
             throw new WebServiceException(t.getLocalizedMessage());
@@ -415,7 +416,7 @@ public class Analysis extends GenericWebService {
         ServerConfiguration.Context context = ServerConfiguration.Context.getContextForUser(userId);
         File rootJobDir = null;
         try {
-            rootJobDir = ServerConfiguration.instance().getRootJobDir(context);
+            rootJobDir = ServerConfigurationFactory.instance().getRootJobDir(context);
         }
         catch (Throwable t) {
             throw new WebServiceException(t.getLocalizedMessage());

@@ -54,6 +54,7 @@ import org.genepattern.data.pipeline.PipelineUtil;
 import org.genepattern.server.TaskLSIDNotFoundException;
 import org.genepattern.server.config.ServerConfiguration;
 import org.genepattern.server.config.ServerConfiguration.Context;
+import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.executor.pipeline.PipelineException;
 import org.genepattern.server.genepattern.TaskInstallationException;
 import org.genepattern.server.webapp.PipelineCreationHelper;
@@ -324,7 +325,7 @@ public class PipelineQueryServlet extends HttpServlet {
                         }
 
                         ServerConfiguration.Context userContext = ServerConfiguration.Context.getContextForUser(username);
-                        File fileTempDir = ServerConfiguration.instance().getTemporaryUploadDir(userContext);
+                        File fileTempDir = ServerConfigurationFactory.instance().getTemporaryUploadDir(userContext);
                         File uploadedFile = new File(fileTempDir, i.getName());
                         
                         transferUpload(i, uploadedFile);

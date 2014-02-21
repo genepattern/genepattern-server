@@ -5,6 +5,7 @@ import java.net.MalformedURLException;
 import org.apache.log4j.Logger;
 import org.genepattern.server.config.ServerConfiguration;
 import org.genepattern.server.config.ServerConfiguration.Context;
+import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.repository.SourceInfo.CreatedOnServer;
 import org.genepattern.server.repository.SourceInfo.FromRepo;
@@ -56,7 +57,7 @@ public class DbSourceInfoLoader implements SourceInfoLoader {
         if (taskInstall==null) {
             //no record in db, probably installed before updating to GP 3.6.0+
             //use the lsid to guess the source
-            boolean deduceFromLsid=ServerConfiguration.instance().getGPBooleanProperty(serverContext, SourceInfo.PROP_DEDUCE_FROM_LSID, false);
+            boolean deduceFromLsid=ServerConfigurationFactory.instance().getGPBooleanProperty(serverContext, SourceInfo.PROP_DEDUCE_FROM_LSID, false);
             if (deduceFromLsid) {
                 return fromLsid(taskInfo.getLsid());
             }

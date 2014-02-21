@@ -10,6 +10,7 @@ import java.util.Map;
 
 import org.genepattern.server.config.ServerConfiguration;
 import org.genepattern.server.config.ServerConfiguration.Context;
+import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.executor.CommandProperties.Value;
 import org.genepattern.webservice.JobInfo;
 
@@ -224,7 +225,7 @@ public class DrmJobSubmission {
         if (workerConfig != null && workerConfig.containsKey(propName)) {
             return (String) workerConfig.get(propName);
         }
-        Value value=ServerConfiguration.instance().getValue(jobContext, propName);
+        Value value=ServerConfigurationFactory.instance().getValue(jobContext, propName);
         if (value==null) {
             return null;
         }

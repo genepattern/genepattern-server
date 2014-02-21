@@ -51,6 +51,7 @@ import org.genepattern.server.PermissionsHelper;
 import org.genepattern.server.auth.GroupPermission;
 import org.genepattern.server.auth.GroupPermission.Permission;
 import org.genepattern.server.config.ServerConfiguration;
+import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.genepattern.GenePatternAnalysisTask;
 import org.genepattern.server.user.User;
@@ -198,7 +199,7 @@ public class JobResultsServlet extends HttpServlet implements Servlet {
         ServerConfiguration.Context context = ServerConfiguration.Context.getContextForUser(useridFromSession);
         File rootJobDir = null;
         try {
-            rootJobDir = ServerConfiguration.instance().getRootJobDir(context);
+            rootJobDir = ServerConfigurationFactory.instance().getRootJobDir(context);
         }
         catch (ServerConfiguration.Exception e) {
             log.error(e);

@@ -81,10 +81,10 @@ public class CommandManagerProperties {
     public CommandProperties.Value getValue(final ServerConfiguration.Context context, final String key) {
         Value drmCustomProps=null;
         if (!key.equals("executor.props")) {
-            final String drmCustomPropsKey=ServerConfiguration.instance().getGPProperty(context, "executor.props");
+            final String drmCustomPropsKey=ServerConfigurationFactory.instance().getGPProperty(context, "executor.props");
             if (drmCustomPropsKey != null) {
                 Map<?,?> executorPropertiesMap=
-                        ServerConfiguration.instance().getJobConfiguration().getExecutorPropertiesMap();
+                        ServerConfigurationFactory.instance().getJobConfiguration().getExecutorPropertiesMap();
                 if (executorPropertiesMap != null &&
                         executorPropertiesMap.containsKey(drmCustomPropsKey)) {
                     try {

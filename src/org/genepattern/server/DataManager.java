@@ -11,6 +11,7 @@ import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
 import org.genepattern.server.config.ServerConfiguration;
 import org.genepattern.server.config.ServerConfiguration.Context;
+import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.dm.GpFilePath;
 import org.genepattern.server.dm.userupload.UserUploadManager;
@@ -263,7 +264,7 @@ public class DataManager {
         try {
             UserUploadDao dao = new UserUploadDao();
             
-            File uploadDir = ServerConfiguration.instance().getUserUploadDir(Context.getContextForUser(userId));
+            File uploadDir = ServerConfigurationFactory.instance().getUserUploadDir(Context.getContextForUser(userId));
             if (uploadDir == null) {
                 log.error("Unable to get the user's upload directory in syncUploadFiles()");
                 return;

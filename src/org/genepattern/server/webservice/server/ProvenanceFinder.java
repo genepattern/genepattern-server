@@ -33,6 +33,7 @@ import org.apache.log4j.Logger;
 import org.genepattern.data.pipeline.JobSubmission;
 import org.genepattern.data.pipeline.PipelineModel;
 import org.genepattern.server.config.ServerConfiguration;
+import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.dm.GetFileDotJspUtil;
 import org.genepattern.server.dm.GpFileObjFactory;
 import org.genepattern.server.dm.GpFilePath;
@@ -86,7 +87,7 @@ public class ProvenanceFinder {
         //init system configured setting for max file size
         ServerConfiguration.Context userContext = ServerConfiguration.Context.getContextForUser(userID);
         final Long defaultMaxFileSize = 250L * 1000L * 1024L; //250 mB
-        maxFileSize = ServerConfiguration.instance().getGPLongProperty(userContext, "pipeline.max.file.size", defaultMaxFileSize);
+        maxFileSize = ServerConfigurationFactory.instance().getGPLongProperty(userContext, "pipeline.max.file.size", defaultMaxFileSize);
     }
 
     public ProvenancePipelineResult createProvenancePipeline(Set<JobInfo> jobs, String pipelineName) {

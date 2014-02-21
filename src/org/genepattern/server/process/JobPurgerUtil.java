@@ -21,6 +21,7 @@ import java.util.GregorianCalendar;
 import org.apache.log4j.Logger;
 import org.genepattern.server.config.ServerConfiguration;
 import org.genepattern.server.config.ServerConfiguration.Context;
+import org.genepattern.server.config.ServerConfigurationFactory;
 
 public class JobPurgerUtil {
     private static Logger log = Logger.getLogger(JobPurgerUtil.class);
@@ -38,8 +39,8 @@ public class JobPurgerUtil {
             //use the system defaults
             return getCutoffForUser(ServerConfiguration.Context.getServerContext(), now);
         }
-        final int purgeJobsAfter=ServerConfiguration.instance().getGPIntegerProperty(userContext, "purgeJobsAfter", -1);
-        final String purgeTime=ServerConfiguration.instance().getGPProperty(userContext, "purgeTime", "23:00");
+        final int purgeJobsAfter=ServerConfigurationFactory.instance().getGPIntegerProperty(userContext, "purgeJobsAfter", -1);
+        final String purgeTime=ServerConfigurationFactory.instance().getGPProperty(userContext, "purgeTime", "23:00");
         return getCutoff(now, purgeJobsAfter, purgeTime);
     }
     
@@ -166,8 +167,8 @@ public class JobPurgerUtil {
      * @return the purge date, or null if the date is unknown or if the purger is not configured to purge jobs.
      */
     public static final Date getJobPurgeDate(final Context userContext, final Date jobCompletionDate) {
-        final int purgeJobsAfter=ServerConfiguration.instance().getGPIntegerProperty(userContext, "purgeJobsAfter", -1);
-        final String purgeTime=ServerConfiguration.instance().getGPProperty(userContext, "purgeTime", "23:00");
+        final int purgeJobsAfter=ServerConfigurationFactory.instance().getGPIntegerProperty(userContext, "purgeJobsAfter", -1);
+        final String purgeTime=ServerConfigurationFactory.instance().getGPProperty(userContext, "purgeTime", "23:00");
 
         return getJobPurgeDate(purgeJobsAfter, purgeTime, jobCompletionDate);
     }

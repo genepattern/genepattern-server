@@ -20,6 +20,7 @@ import org.apache.commons.io.IOUtils;
 import org.apache.log4j.Logger;
 import org.genepattern.server.config.ServerConfiguration;
 import org.genepattern.server.config.ServerConfiguration.Context;
+import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.user.UserDAO;
 import org.yaml.snakeyaml.Yaml;
@@ -327,7 +328,7 @@ public class ConfigRepositoryInfoLoader implements RepositoryInfoLoader {
         final LinkedHashSet<String> repoUrls=new LinkedHashSet<String>();
         
         //check for entries in the server configuration
-        final Set<String> urlsFromConfig=ServerConfiguration.instance().getRepositoryUrls();
+        final Set<String> urlsFromConfig=ServerConfigurationFactory.instance().getRepositoryUrls();
         for(final String urlFromConfig : urlsFromConfig) {
             repoUrls.add(urlFromConfig);
         }
@@ -390,7 +391,7 @@ public class ConfigRepositoryInfoLoader implements RepositoryInfoLoader {
         // next, check for details in (local) config file, repositoryDetails.yaml
         if (info == null) {
             //info = repositoryDetailsYaml.get(repoUrl);
-            info = ServerConfiguration.instance().getRepositoryInfo(repoUrl);
+            info = ServerConfigurationFactory.instance().getRepositoryInfo(repoUrl);
         }
         if (info != null) {
             return info;

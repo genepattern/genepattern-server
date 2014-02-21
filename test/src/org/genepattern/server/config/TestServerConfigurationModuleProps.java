@@ -48,7 +48,7 @@ public class TestServerConfigurationModuleProps {
         File resourceDir = FileUtil.getSourceDir(TestServerConfigurationModuleProps.class);
         System.setProperty("genepattern.properties", resourceDir.getAbsolutePath());
         System.setProperty(ServerConfiguration.PROP_CONFIG_FILE, filename);
-        ServerConfiguration.instance().reloadConfiguration(filename);
+        ServerConfigurationFactory.instance().reloadConfiguration(filename);
         CommandManagerFactory.initializeCommandManager();
         
         validateCommandManager(CommandManagerFactory.getCommandManager());
@@ -61,7 +61,7 @@ public class TestServerConfigurationModuleProps {
     static private void validateCommandManager(CommandManager cmdMgr) {
         Assert.assertNotNull("Expecting non-null cmdMgr", cmdMgr);
         
-        List<Throwable> errors = ServerConfiguration.instance().getInitializationErrors();
+        List<Throwable> errors = ServerConfigurationFactory.instance().getInitializationErrors();
         
         if (errors != null && errors.size() > 0) {
             String errorMessage = "CommandManagerFactory initialization error, num="+errors.size();
@@ -89,7 +89,7 @@ public class TestServerConfigurationModuleProps {
 
     private void doTest(final Context context, final String prop, final String expected) {
         String message="for "+printContext(context)+" expecting "+prop+"="+expected;
-        Value value=ServerConfiguration.instance().getValue(context, prop);
+        Value value=ServerConfigurationFactory.instance().getValue(context, prop);
         Assert.assertEquals(message, expected, value.getValue());
     }
     

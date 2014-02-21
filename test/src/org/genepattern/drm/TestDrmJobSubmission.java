@@ -10,7 +10,9 @@ import java.util.Map;
 import org.genepattern.junitutil.ConfigUtil;
 import org.genepattern.server.config.ServerConfiguration;
 import org.genepattern.server.config.ServerConfiguration.Context;
+import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.executor.CommandProperties.Value;
+import org.genepattern.server.job.input.JobConfigParams;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -30,10 +32,14 @@ public class TestDrmJobSubmission {
     
     private File jobResults;
     private File workingDir;
+    private ServerConfiguration serverConfig;
 
     @Before
-    public void before() {
+    public void before() throws Throwable {
         ConfigUtil.loadConfigFile(this.getClass(), "drm_test.yaml");
+        if (ServerConfigurationFactory.instance().getInitializationErrors().size()>0) {
+            throw ServerConfigurationFactory.instance().getInitializationErrors().get(0);
+        }
 
         this.jobResults=temp.newFolder("jobResults");
         this.workingDir=new File(jobResults, ""+jobNo);
@@ -273,7 +279,7 @@ executors:
             .workerName("myLongPbsWorker")
             .build();
         
-        final ServerConfiguration config=ServerConfiguration.instance();
+        final ServerConfiguration config=ServerConfigurationFactory.instance();
         final Context userContext=ServerConfiguration.Context.getContextForUser("test_user");
         Value javaXmx=config.getValue(userContext, "java.Xmx");
 
@@ -282,12 +288,20 @@ executors:
     
     @Test
     public void testExecutorCustomProperties() {
-        final ServerConfiguration config=ServerConfiguration.instance();
+        final ServerConfiguration config=ServerConfigurationFactory.instance();
         final Context userContext=ServerConfiguration.Context.getContextForUser("test_user");
         //sanity check
         Assert.assertEquals("executor.props", "PbsBigMem", config.getGPProperty(userContext, "executor.props")); 
         final String executorId=config.getGPProperty(userContext, "executor");
         Assert.assertEquals("executor", "DemoPbsJobRunner", executorId);
+    }
+    
+    @Test
+    public void testCustomJobConfigParams() {
+        final ServerConfiguration config=ServerConfigurationFactory.instance();
+        final Context userContext=ServerConfiguration.Context.getContextForUser("test_user");
+        JobConfigParams jobConfigParams=JobConfigParams.initJobConfigParams(userContext);
+        Assert.assertNotNull(jobConfigParams);
     }
 
 }

@@ -7,7 +7,7 @@ import java.net.URLEncoder;
 
 import org.apache.log4j.Logger;
 import org.genepattern.server.FileUtil;
-import org.genepattern.server.config.ServerConfiguration;
+import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.webservice.ParameterInfo;
 
 /**
@@ -71,7 +71,7 @@ public class ReloadFromPreviousVersion {
         }
         
         if (isWebUpload || isSoapUpload) {
-            final URL gpURL=ServerConfiguration.instance().getGenePatternURL();
+            final URL gpURL=ServerConfigurationFactory.instance().getGenePatternURL();
             String gpUrlStr=gpURL.toExternalForm();
             if (!gpUrlStr.endsWith("/")) {
                 gpUrlStr += "/";

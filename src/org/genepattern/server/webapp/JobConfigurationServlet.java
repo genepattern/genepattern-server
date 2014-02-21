@@ -8,7 +8,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
-import org.genepattern.server.config.ServerConfiguration;
+import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.executor.CommandManagerFactory;
 import org.genepattern.server.webapp.jsf.AuthorizationHelper;
 import org.genepattern.util.GPConstants;
@@ -71,7 +71,7 @@ public class JobConfigurationServlet extends HttpServlet {
         }
         String method = req.getParameter("method");
         if (method != null && "reloadConfigFile".equalsIgnoreCase(method)) {
-            ServerConfiguration.instance().reloadConfiguration();
+            ServerConfigurationFactory.reloadConfiguration();
             handleSuccess(resp);
             return;
         }

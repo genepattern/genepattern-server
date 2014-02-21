@@ -24,7 +24,9 @@ public class ServerConfigurationFactory {
     
     private ServerConfigurationFactory() {
     }
-
+    
+    // legacy code, which uses the 'config.file' property from the genepattern.properties file
+    // to maintain a singleton instance of a ServerConfiguration 
     /**
      * Get a File object for the named configuration file as specified in the 'genepattern.properties' file. E.g.
      * <code>
@@ -75,5 +77,17 @@ public class ServerConfigurationFactory {
         }
         return rval;
     }
+
+    private static ServerConfiguration singleton = new ServerConfiguration();
+    public static ServerConfiguration instance() {
+        return singleton;
+    }
+    public static void reloadConfiguration() {
+        singleton.reloadConfiguration();
+    }
+    public static void reloadConfiguration(final String configFilepath) {
+        singleton.reloadConfiguration(configFilepath);
+    }
+
 
 }

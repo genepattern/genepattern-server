@@ -13,8 +13,8 @@ import java.util.concurrent.Future;
 
 import org.apache.log4j.Logger;
 import org.genepattern.server.DataManager;
-import org.genepattern.server.config.ServerConfiguration;
 import org.genepattern.server.config.ServerConfiguration.Context;
+import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.dm.GpFilePath;
 import org.genepattern.server.dm.userupload.UserUploadManager;
@@ -77,9 +77,9 @@ public class UserUploadPurger {
         this.userContext = userContext;
         this.cutoffDate = cutoffDate;
 
-        this.purgeAll=ServerConfiguration.instance().getGPBooleanProperty(userContext, PROP_PURGE_ALL, false);
-        this.purgeTmp=ServerConfiguration.instance().getGPBooleanProperty(userContext, PROP_PURGE_TMP, true);
-        this.purgePartial=ServerConfiguration.instance().getGPBooleanProperty(userContext, PROP_PURGE_PARTIAL, true);
+        this.purgeAll=ServerConfigurationFactory.instance().getGPBooleanProperty(userContext, PROP_PURGE_ALL, false);
+        this.purgeTmp=ServerConfigurationFactory.instance().getGPBooleanProperty(userContext, PROP_PURGE_TMP, true);
+        this.purgePartial=ServerConfigurationFactory.instance().getGPBooleanProperty(userContext, PROP_PURGE_PARTIAL, true);
         
         if (exec==null) {
             log.debug("creating new singleThreadExecutor");

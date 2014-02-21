@@ -26,6 +26,7 @@ import org.apache.axis.MessageContext;
 import org.apache.log4j.Logger;
 import org.genepattern.server.config.ServerConfiguration;
 import org.genepattern.server.config.ServerConfiguration.Context;
+import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.executor.CommandProperties;
 import org.genepattern.server.util.AuthorizationManagerFactory;
 import org.genepattern.server.util.IAuthorizationManager;
@@ -54,11 +55,11 @@ public class AdminService implements IAdminService {
         Context serverContext = ServerConfiguration.Context.getServerContext();
         
         serviceInfoMap.put("genepattern.version", 
-                ServerConfiguration.instance().getGPProperty(serverContext, "GenePatternVersion"));
+                ServerConfigurationFactory.instance().getGPProperty(serverContext, "GenePatternVersion"));
         serviceInfoMap.put("lsid.authority", 
-                ServerConfiguration.instance().getGPProperty(serverContext, "lsid.authority"));
+                ServerConfigurationFactory.instance().getGPProperty(serverContext, "lsid.authority"));
         serviceInfoMap.put("require.password", 
-                ServerConfiguration.instance().getGPProperty(serverContext, "require.password"));
+                ServerConfigurationFactory.instance().getGPProperty(serverContext, "require.password"));
     }
 
 

@@ -3,7 +3,7 @@ package org.genepattern.server.eula.remote;
 import java.io.IOException;
 
 import org.apache.log4j.Logger;
-import org.genepattern.server.config.ServerConfiguration;
+import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.eula.EulaInfo;
 import org.genepattern.server.eula.InitException;
 import org.genepattern.server.eula.RecordEula;
@@ -63,7 +63,7 @@ public class RecordEulaToRemoteServer {
             action.setEmail(email);
         }
         action.setRemoteUrl(remoteUrl);
-        String gpUrl=ServerConfiguration.instance().getGenePatternURL().toString();
+        String gpUrl=ServerConfigurationFactory.instance().getGenePatternURL().toString();
         action.setGpUrl(gpUrl);
         
         boolean success=false;

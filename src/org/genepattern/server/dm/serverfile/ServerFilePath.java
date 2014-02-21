@@ -9,6 +9,7 @@ import java.util.List;
 import org.apache.log4j.Logger;
 import org.genepattern.server.config.ServerConfiguration;
 import org.genepattern.server.config.ServerConfiguration.Context;
+import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.dm.GpFilePath;
 import org.genepattern.server.dm.UrlUtil;
 import org.genepattern.server.executor.CommandProperties;
@@ -85,12 +86,12 @@ public class ServerFilePath extends GpFilePath {
             return false;
         }
 
-        final boolean allowInputFilePaths = ServerConfiguration.instance().getAllowInputFilePaths(userContext);
+        final boolean allowInputFilePaths = ServerConfigurationFactory.instance().getAllowInputFilePaths(userContext);
         if (!allowInputFilePaths) {
             return false;
         }
 
-        final CommandProperties.Value value = ServerConfiguration.instance().getValue(userContext, "server.browse.file.system.root");
+        final CommandProperties.Value value = ServerConfigurationFactory.instance().getValue(userContext, "server.browse.file.system.root");
         if (value == null) {
             //Note: by default, all files on the server's file system are readable
             //final String DEFAULT_ROOT = "/";            
