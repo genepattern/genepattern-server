@@ -27,6 +27,7 @@ import org.genepattern.data.pipeline.PipelineModelException;
 import org.genepattern.server.JobManager;
 import org.genepattern.server.config.ServerConfiguration;
 import org.genepattern.server.config.ServerConfiguration.Context;
+import org.genepattern.server.config.ServerConfigurationException;
 import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.dm.GpFileObjFactory;
@@ -1264,17 +1265,14 @@ public class PipelineHandler {
             String url = getServer() + context + "/jobResults/" + fileName;
             return url;
         }
-        catch (ServerConfiguration.Exception e) {
+        catch (Exception e) {
             log.error(e.getLocalizedMessage());
             return "";            
-        }
-        catch (FileNotFoundException e) {
-            return "";
         }
     }
     
     private static String getOutputFileName(AnalysisDAO dao, JobInfo fromJob, String fileStr)
-    throws ServerConfiguration.Exception, FileNotFoundException 
+    throws ServerConfigurationException, FileNotFoundException 
     {
         if (fromJob==null) {
             throw new IllegalArgumentException("fromJob==null");
@@ -1444,7 +1442,7 @@ public class PipelineHandler {
      * @throws FileNotFoundException
      */
     private static String getOutputFilenameByType(final JobInfo fromJob, final String fileStr, List<ParameterInfo> jobResultFiles) 
-    throws ServerConfiguration.Exception, FileNotFoundException
+    throws ServerConfigurationException, FileNotFoundException
     {
         String fileName = null;
         

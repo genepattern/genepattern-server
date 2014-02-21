@@ -281,9 +281,6 @@ public class JobInputApiImplV2 implements JobInputApi {
                 File jobDir = new File(rootJobDir, ""+jobNumber);
                 return jobDir;
             }
-            catch (ServerConfiguration.Exception e) {
-                throw new Exception(e.getLocalizedMessage());
-            }
             catch (Throwable t) {
                 throw new Exception("Unexpected error getting working directory for jobId="+jobNumber, t);
             }

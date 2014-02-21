@@ -534,7 +534,7 @@ public class GenePatternAnalysisTask {
                 File jobDir = new File(rootJobDir, ""+parser.getJobNumber());
                 localFile = new File(jobDir, parser.getRelativeFilePath());
             }
-            catch (ServerConfiguration.Exception e) {
+            catch (Exception e) {
                 log.error(e);
             }
             if (localFile != null && localFile.exists()) {
@@ -689,7 +689,7 @@ public class GenePatternAnalysisTask {
         try {
             rootJobDir = ServerConfigurationFactory.instance().getRootJobDir(jobContext);
         }
-        catch (ServerConfiguration.Exception e) {
+        catch (Exception e) {
             throw new JobDispatchException("Error getting root job directory for jobId="+jobId, e);
         }
         final File outDir;
@@ -3334,7 +3334,7 @@ public class GenePatternAnalysisTask {
             tmpDir = tmpDir + jobNumber;
             return tmpDir;
         }
-        catch (ServerConfiguration.Exception e) {
+        catch (Exception e) {
             log.error(e);
         }
         

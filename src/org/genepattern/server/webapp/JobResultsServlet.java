@@ -201,9 +201,9 @@ public class JobResultsServlet extends HttpServlet implements Servlet {
         try {
             rootJobDir = ServerConfigurationFactory.instance().getRootJobDir(context);
         }
-        catch (ServerConfiguration.Exception e) {
-            log.error(e);
-            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getLocalizedMessage());
+        catch (Throwable t) {
+            log.error(t);
+            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, t.getLocalizedMessage());
             return;
         }
         File fileObj = new File(rootJobDir, jobNumber + File.separator + file);

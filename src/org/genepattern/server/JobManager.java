@@ -45,14 +45,9 @@ public class JobManager {
         }
 
         File jobDir = null;
-        try {
-            ServerConfiguration.Context jobContext = ServerConfiguration.Context.getContextForJob(jobInfo);
-            File rootJobDir = ServerConfigurationFactory.instance().getRootJobDir(jobContext);
-            jobDir = new File(rootJobDir, ""+jobInfo.getJobNumber());
-        }
-        catch (ServerConfiguration.Exception e) {
-            throw new Exception(e.getLocalizedMessage());
-        }
+        ServerConfiguration.Context jobContext = ServerConfiguration.Context.getContextForJob(jobInfo);
+        File rootJobDir = ServerConfigurationFactory.instance().getRootJobDir(jobContext);
+        jobDir = new File(rootJobDir, ""+jobInfo.getJobNumber());
         return jobDir;
     }
 

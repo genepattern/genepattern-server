@@ -28,18 +28,6 @@ public class ServerConfiguration {
     public static final String PROP_CONFIG_FILE = "config.file";
     //for compatibility with GP 3.2.3 and GP 3.2.4
     public static final String PROP_LEGACY_CONFIG_FILE = "command.manager.config.file";
-    
-    public static class Exception extends java.lang.Exception {
-        public Exception() {
-            super();
-        }
-        public Exception(String message) {
-            super(message);
-        }
-        public Exception(String message, Throwable t) {
-            super(message, t);
-        }
-    }
 
     public static class Context {
         //hard-coded default value is true for compatibility with GP 3.2.4 and earlier
@@ -438,7 +426,7 @@ public class ServerConfiguration {
      * 
      * @return the parent directory in which to create the new working directory for a job.
      */
-    public File getRootJobDir(Context context) throws Exception {
+    public File getRootJobDir(Context context) throws ServerConfigurationException {
         //default behavior, circa GP 3.2.4 and earlier, hard code path based on 'jobs' property
         String jobsDirPath = getGPProperty(context, "jobs");
         if (jobsDirPath != null) {
@@ -468,7 +456,7 @@ public class ServerConfiguration {
         }
 
         if (jobsDirPath == null) {
-            throw new Exception("Missing required propery, 'jobs'");
+            throw new ServerConfigurationException("Missing required propery, 'jobs'");
         }
         File rootJobDir = new File(jobsDirPath);
         return rootJobDir;
@@ -481,7 +469,7 @@ public class ServerConfiguration {
 //     * @param context, requires a jobInfo with a valid and unique jobId.
 //     * @return
 //     */
-//    private File getJobDir(Context context) throws Exception {
+//    private File getJobDir(Context context) throws ServerConfigurationException {
 //        if (context == null) {
 //            throw new Exception("context is null");
 //        }

@@ -8,6 +8,7 @@ import org.apache.log4j.Logger;
 import org.genepattern.server.PermissionsHelper;
 import org.genepattern.server.config.ServerConfiguration;
 import org.genepattern.server.config.ServerConfiguration.Context;
+import org.genepattern.server.config.ServerConfigurationException;
 import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.dm.GpFilePath;
@@ -24,7 +25,7 @@ public class JobResultFile extends GpFilePath {
     private URI relativeUri = null;
     private boolean isWorkingDir = false;
     
-    public JobResultFile(JobInfo jobInfo, File relativePath) throws ServerConfiguration.Exception {
+    public JobResultFile(JobInfo jobInfo, File relativePath) throws ServerConfigurationException {
         String jobId = ""+jobInfo.getJobNumber();
         init(jobId, relativePath);
     }
@@ -59,7 +60,7 @@ public class JobResultFile extends GpFilePath {
     }
 
     
-    private void init(String jobId, File relativeFile) throws ServerConfiguration.Exception {
+    private void init(String jobId, File relativeFile) throws ServerConfigurationException {
         if (relativeFile == null) {
             throw new IllegalArgumentException("invalid null arg, relativePath");
         }
