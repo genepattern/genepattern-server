@@ -19,6 +19,7 @@ import org.genepattern.drm.JobRunner;
 import org.genepattern.drm.DrmJobSubmission;
 import org.genepattern.server.config.ServerConfiguration;
 import org.genepattern.server.config.ServerConfiguration.Context;
+import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.executor.CommandExecutor;
 import org.genepattern.server.executor.CommandExecutorException;
 import org.genepattern.server.executor.CommandProperties;
@@ -350,7 +351,7 @@ public class JobExecutor implements CommandExecutor {
             .stderrFile(stderrFile)
             .stdinFile(stdinFile)
             .logFilename(logFilename);
-        String workerName=ServerConfiguration.instance().getGPProperty(jobContext, JobRunner.PROP_WORKER_NAME, null);
+        String workerName=ServerConfigurationFactory.instance().getGPProperty(jobContext, JobRunner.PROP_WORKER_NAME, null);
         if (workerName != null) {
             builder.workerName(workerName);
         }
@@ -393,7 +394,7 @@ public class JobExecutor implements CommandExecutor {
                 throw new CommandExecutorException("configuration error, initializing cpuCount="+cpuCountStr, t);
             }
         }
-        final Value extraArgsValue=ServerConfiguration.instance().getValue(jobContext, JobRunner.PROP_EXTRA_ARGS);
+        final Value extraArgsValue=ServerConfigurationFactory.instance().getValue(jobContext, JobRunner.PROP_EXTRA_ARGS);
         if (extraArgsValue != null) {
             for(final String extraArg : extraArgsValue.getValues()) {
                 builder=builder.addExtraArg(extraArg);
@@ -428,7 +429,7 @@ public class JobExecutor implements CommandExecutor {
         if (workerConfig != null && workerConfig.containsKey(prop)) {
             return (String) workerConfig.get(prop);
         }
-        Value value=ServerConfiguration.instance().getValue(jobContext, prop);
+        Value value=ServerConfigurationFactory.instance().getValue(jobContext, prop);
         if (value==null) {
             return null;
         }
@@ -436,11 +437,11 @@ public class JobExecutor implements CommandExecutor {
     }
     
     private Map<?,?> getWorkerConfig(final Context jobContext) {
-        final String workerName=ServerConfiguration.instance().getGPProperty(jobContext, JobRunner.PROP_WORKER_NAME, null);
+        final String workerName=ServerConfigurationFactory.instance().getGPProperty(jobContext, JobRunner.PROP_WORKER_NAME, null);
         if (workerName == null) {
             return Collections.emptyMap();
         }
-        final Value workerConfig=ServerConfiguration.instance().getValue(jobContext, workerName);
+        final Value workerConfig=ServerConfigurationFactory.instance().getValue(jobContext, workerName);
         if (workerConfig != null && workerConfig.isMap()) {
             return workerConfig.getMap();
         }
