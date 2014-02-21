@@ -1,6 +1,7 @@
 package org.genepattern.server.executor;
 
 import org.apache.log4j.Logger;
+import org.genepattern.server.config.ConfigurationException;
 import org.genepattern.server.config.ExecutorConfig;
 import org.genepattern.server.config.JobConfigObj;
 import org.genepattern.server.config.ServerConfigurationFactory;

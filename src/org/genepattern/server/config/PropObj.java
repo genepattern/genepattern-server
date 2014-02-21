@@ -7,7 +7,6 @@ import java.util.Map.Entry;
 import org.apache.log4j.Logger;
 import org.genepattern.server.domain.Lsid;
 import org.genepattern.server.executor.CommandProperties;
-import org.genepattern.server.executor.ConfigurationException;
 import org.genepattern.webservice.JobInfo;
 import org.genepattern.webservice.TaskInfo;
 

@@ -6,7 +6,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-import org.genepattern.server.executor.ConfigurationException;
 
 public class Value {
     static public Value parse(final Object object) throws ConfigurationException {

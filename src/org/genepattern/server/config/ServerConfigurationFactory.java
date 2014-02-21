@@ -3,7 +3,6 @@ package org.genepattern.server.config;
 import java.io.File;
 
 import org.apache.log4j.Logger;
-import org.genepattern.server.executor.ConfigurationException;
 
 /**
  * Initialize and hold a single instance of a ServerConfiguration for the GenePattern Server.

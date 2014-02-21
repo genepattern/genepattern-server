@@ -1,4 +1,4 @@
-package org.genepattern.server.executor;
+package org.genepattern.server.config;
 
 public class ConfigurationException extends Exception {
     public ConfigurationException(String message) {

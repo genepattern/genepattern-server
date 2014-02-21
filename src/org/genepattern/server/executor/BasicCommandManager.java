@@ -10,6 +10,7 @@ import java.util.Map;
 import org.apache.log4j.Logger;
 import org.genepattern.server.JobInfoManager;
 import org.genepattern.server.config.CommandManagerProperties;
+import org.genepattern.server.config.ConfigurationException;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.database.HibernateUtil;
