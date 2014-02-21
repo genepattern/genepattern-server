@@ -11,8 +11,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.Logger;
-import org.genepattern.server.config.ServerConfiguration;
-import org.genepattern.server.config.ServerConfiguration.Context;
+import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.dm.GpFileObjFactory;
 import org.genepattern.server.dm.GpFilePath;
@@ -56,20 +55,20 @@ public class ServerFileServlet extends HttpServlet {
         doGet(request, response);
     }
     
-    private Context getUserContext(HttpServletRequest request) {
+    private GpContext getUserContext(HttpServletRequest request) {
         String userId = (String) request.getSession().getAttribute("userID");
-        ServerConfiguration.Context userContext = ServerConfiguration.Context.getContextForUser(userId);
+        GpContext userContext = GpContext.getContextForUser(userId);
         return userContext;
     }
     
     private boolean ensureServerFilePermissions(HttpServletRequest request) {
-        Context userContext = getUserContext(request);
+        GpContext userContext = getUserContext(request);
         boolean  allowInputFilePaths = ServerConfigurationFactory.instance().getAllowInputFilePaths(userContext);
         return allowInputFilePaths;
     }
     
     private List<File> getSystemBrowseRoots(HttpServletRequest request) {
-        Context userContext = getUserContext(request);
+        GpContext userContext = getUserContext(request);
         Value  roots = ServerConfigurationFactory.instance().getValue(userContext, "server.browse.file.system.root");
         
         List<File> toReturn = new ArrayList<File>();
@@ -86,7 +85,7 @@ public class ServerFileServlet extends HttpServlet {
         if (url == null) {
             try {
                 tree = new ArrayList<GpFilePath>();
-                Context context = getUserContext(request);
+                GpContext context = getUserContext(request);
                 
                 // Add the default root dirs: "server.browse.file.system.root" property
                 List<File> roots = getSystemBrowseRoots(request);
@@ -104,7 +103,7 @@ public class ServerFileServlet extends HttpServlet {
         else {
             GpFilePath dir;
             try {
-                Context context = getUserContext(request);
+                GpContext context = getUserContext(request);
                 
                 dir = GpFileObjFactory.getRequestedGpFileObj(url);
                 dir.initMetadata();

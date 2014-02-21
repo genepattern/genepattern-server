@@ -5,8 +5,7 @@ import java.util.List;
 
 import javax.faces.model.SelectItem;
 
-import org.genepattern.server.config.ServerConfiguration;
-import org.genepattern.server.config.ServerConfiguration.Context;
+import org.genepattern.server.config.GpContext;
 import org.genepattern.server.repository.RepositoryInfo;
 import org.genepattern.server.repository.RepositoryInfoLoader;
 
@@ -23,7 +22,7 @@ public class ModuleRepositorySelectorBean {
     
     public ModuleRepositorySelectorBean() {
         final String userId=UIBeanHelper.getUserId();
-        final Context userContext=ServerConfiguration.Context.getContextForUser(userId);
+        final GpContext userContext=GpContext.getContextForUser(userId);
         loader=RepositoryInfo.getRepositoryInfoLoader(userContext);
         currentRepository=loader.getCurrentRepository();
         this.menuItems=new ArrayList<SelectItem>(); 

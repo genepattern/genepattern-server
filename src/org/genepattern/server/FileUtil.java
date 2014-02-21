@@ -6,7 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.log4j.Logger;
-import org.genepattern.server.config.ServerConfiguration;
+import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
 
 /**
@@ -77,7 +77,7 @@ public class FileUtil {
      * @param fileObj
      * @return
      */
-    public static String getUserUploadPath(ServerConfiguration.Context userContext, File fileObj) {
+    public static String getUserUploadPath(GpContext userContext, File fileObj) {
         File userDir = ServerConfigurationFactory.instance().getUserUploadDir(userContext);
         String relativePath = FileUtil.getRelativePath(userDir, fileObj);
         if (relativePath != null) {
@@ -91,7 +91,7 @@ public class FileUtil {
      * @param fileObj
      * @return true if the given file is in the user upload directory
      */
-    public static boolean isInUserUploadDir(ServerConfiguration.Context userContext, File fileObj) {
+    public static boolean isInUserUploadDir(GpContext userContext, File fileObj) {
         File userUploadDir = ServerConfigurationFactory.instance().getUserUploadDir(userContext);
         return isDescendant(userUploadDir, fileObj);
     }

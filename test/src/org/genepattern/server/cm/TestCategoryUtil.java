@@ -8,8 +8,7 @@ import org.genepattern.junitutil.ConfigUtil;
 import org.genepattern.junitutil.FileUtil;
 import org.genepattern.junitutil.TaskUtil;
 import org.genepattern.server.cm.CategoryUtil;
-import org.genepattern.server.config.ServerConfiguration;
-import org.genepattern.server.config.ServerConfiguration.Context;
+import org.genepattern.server.config.GpContext;
 import org.genepattern.server.eula.TestEulaInfo;
 import org.genepattern.util.GPConstants;
 import org.genepattern.webservice.TaskInfo;
@@ -25,7 +24,7 @@ import org.mockito.Mockito;
  *
  */
 public class TestCategoryUtil {
-    Context userContext=ServerConfiguration.Context.getContextForUser("testUser");
+    GpContext userContext=GpContext.getContextForUser("testUser");
     private CategoryUtil categoryUtil;
 
     @BeforeClass
@@ -268,7 +267,7 @@ public class TestCategoryUtil {
      */
     @Test
     public void testCustomCategories_noEntry() {
-        userContext=ServerConfiguration.Context.getContextForUser("customUser");
+        userContext=GpContext.getContextForUser("customUser");
         TaskInfo taskInfo=new TaskInfo();   
         taskInfo.giveTaskInfoAttributes();
         //set the lsid to the same as ConvertLineEndings, v.2
@@ -296,7 +295,7 @@ public class TestCategoryUtil {
      */
     @Test
     public void testCustomCategories_from_db() {
-        userContext=ServerConfiguration.Context.getContextForUser("customUser");
+        userContext=GpContext.getContextForUser("customUser");
         TaskInfo taskInfo=new TaskInfo();   
         taskInfo.giveTaskInfoAttributes();
         //set the lsid to the same as ConvertLineEndings, v.2
@@ -325,7 +324,7 @@ public class TestCategoryUtil {
      */
     @Test
     public void testCustomCategories_hidden() {
-        userContext=ServerConfiguration.Context.getContextForUser("customUser");
+        userContext=GpContext.getContextForUser("customUser");
         TaskInfo taskInfo=new TaskInfo();   
         taskInfo.giveTaskInfoAttributes();
         //set the lsid to the same as ConvertLineEndings, v.2

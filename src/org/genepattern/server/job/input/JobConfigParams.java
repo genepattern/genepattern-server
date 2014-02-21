@@ -3,7 +3,7 @@ package org.genepattern.server.job.input;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.genepattern.server.config.ServerConfiguration.Context;
+import org.genepattern.server.config.GpContext;
 import org.genepattern.server.dm.jobinput.ParameterInfoUtil;
 import org.genepattern.webservice.ParameterInfo;
 
@@ -54,7 +54,7 @@ public class JobConfigParams {
      * @param taskContext
      * @return
      */
-    public static JobConfigParams initJobConfigParams(final Context taskContext) {
+    public static JobConfigParams initJobConfigParams(final GpContext taskContext) {
         //this implementation returns hard-coded values for all users and modules
         //TODO: use server config to determine the return value
         JobConfigParams jobConfig=new Builder()

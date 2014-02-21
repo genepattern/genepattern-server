@@ -20,7 +20,7 @@ import javax.ws.rs.core.Response.Status;
 import org.apache.commons.io.IOUtils;
 import org.apache.log4j.Logger;
 import org.genepattern.server.DataManager;
-import org.genepattern.server.config.ServerConfiguration;
+import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.dm.GpFileObjFactory;
 import org.genepattern.server.dm.GpFilePath;
@@ -105,7 +105,7 @@ public class DataResource {
             final InputStream in) 
     {
         try { 
-            final ServerConfiguration.Context userContext=Util.getUserContext(request);
+            final GpContext userContext=Util.getUserContext(request);
             final long maxNumBytes=initMaxNumBytes(contentLength, userContext); 
             final GpFilePath gpFilePath=writeJobInputFile(userContext, in, filename, maxNumBytes);
             final String location = ""+gpFilePath.getUrl().toExternalForm(); 
@@ -153,7 +153,7 @@ public class DataResource {
             final @FormDataParam("file") FormDataContentDisposition fileDetail) 
     {
         try {
-            final ServerConfiguration.Context userContext=Util.getUserContext(request);        
+            final GpContext userContext=Util.getUserContext(request);        
             final long maxNumBytes=initMaxNumBytes(contentLength, userContext);
             final GpFilePath gpFilePath=writeJobInputFile(userContext, in, fileDetail.getFileName(), maxNumBytes);
             final String location = ""+gpFilePath.getUrl().toExternalForm(); 
@@ -180,7 +180,7 @@ public class DataResource {
             ServletContext servletContext = request.getSession().getServletContext();
 
             String user = (String) request.getSession().getAttribute(GPConstants.USERID);
-            ServerConfiguration.Context userContext = ServerConfiguration.Context.getContextForUser(user);
+            GpContext userContext = GpContext.getContextForUser(user);
             GpFilePath filePath = GpFileObjFactory.getUserUploadFile(userContext, new File(path));
             File file = filePath.getServerFile();
 
@@ -204,7 +204,7 @@ public class DataResource {
     public Response deleteFile(@Context HttpServletRequest request, @PathParam("path") String path) {
         try {
             String user = (String) request.getSession().getAttribute(GPConstants.USERID);
-            ServerConfiguration.Context userContext = ServerConfiguration.Context.getContextForUser(user);
+            GpContext userContext = GpContext.getContextForUser(user);
             GpFilePath filePath = GpFileObjFactory.getUserUploadFile(userContext, new File(path));
 
             boolean deleted = DataManager.deleteUserUploadFile(user, filePath);
@@ -233,7 +233,7 @@ public class DataResource {
     public Response createDirectory(@Context HttpServletRequest request, @PathParam("path") String path) {
         try {
             String user = (String) request.getSession().getAttribute(GPConstants.USERID);
-            ServerConfiguration.Context userContext = ServerConfiguration.Context.getContextForUser(user);
+            GpContext userContext = GpContext.getContextForUser(user);
             GpFilePath filePath = GpFileObjFactory.getUserUploadFile(userContext, new File(path));
 
             // Init the file object
@@ -289,7 +289,7 @@ public class DataResource {
             final InputStream in) 
     {
         try {
-            final ServerConfiguration.Context userContext=Util.getUserContext(request);  
+            final GpContext userContext=Util.getUserContext(request);  
             final long maxNumBytes=initMaxNumBytes(contentLength, userContext);
             final GpFilePath gpFilePath=writeUserUploadFile(userContext, in, path, maxNumBytes);
             final String location = ""+gpFilePath.getUrl().toExternalForm(); 
@@ -314,7 +314,7 @@ public class DataResource {
      * @return
      * @throws WebApplicationException, HTTP response headers are automatically set when errors occur
      */
-    private long initMaxNumBytes(final String contentLength, final ServerConfiguration.Context userContext) 
+    private long initMaxNumBytes(final String contentLength, final GpContext userContext) 
     throws WebApplicationException
     {
         if (contentLength == null) {
@@ -336,7 +336,7 @@ public class DataResource {
     // Helper methods for adding user upload files to GenePattern
     // TODO: should refactor these methods into an interface
     ////////////////////////////////////////////////////////////////
-    GpFilePath writeUserUploadFile(final ServerConfiguration.Context userContext, final InputStream in, final String path, final long maxNumBytes) 
+    GpFilePath writeUserUploadFile(final GpContext userContext, final InputStream in, final String path, final long maxNumBytes) 
     throws Exception
     {
         JobInputFileUtil fileUtil = new JobInputFileUtil(userContext);
@@ -359,7 +359,7 @@ public class DataResource {
      * @return
      * @throws Exception
      */
-    GpFilePath writeJobInputFile(final ServerConfiguration.Context userContext, final InputStream in, final String filename, final long maxNumBytes) 
+    GpFilePath writeJobInputFile(final GpContext userContext, final InputStream in, final String filename, final long maxNumBytes) 
     throws WebApplicationException
     {
         if (userContext==null) {
@@ -383,7 +383,7 @@ public class DataResource {
         return gpFilePath;
     }
     
-    private GpFilePath createJobInputDir(final ServerConfiguration.Context userContext, final String filename) 
+    private GpFilePath createJobInputDir(final GpContext userContext, final String filename) 
     throws Exception
     {
         GpFilePath tmpDir=null;
@@ -420,7 +420,7 @@ public class DataResource {
         }
     }
     
-    private void writeBytesToFile(final ServerConfiguration.Context userContext, final InputStream in, final GpFilePath gpFilePath, final long maxNumBytes) {
+    private void writeBytesToFile(final GpContext userContext, final InputStream in, final GpFilePath gpFilePath, final long maxNumBytes) {
         // save it
         boolean success=false;
         try {

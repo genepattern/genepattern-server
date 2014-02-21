@@ -15,7 +15,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.Logger;
 import org.genepattern.server.auth.AuthenticationException;
-import org.genepattern.server.config.ServerConfiguration;
+import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.dm.GpFileObjFactory;
 import org.genepattern.server.dm.GpFilePath;
@@ -343,7 +343,7 @@ public class DataServlet extends HttpServlet implements Servlet {
             return true;
         }
 
-        ServerConfiguration.Context userContext = ServerConfiguration.Context.getContextForUser(userid); 
+        GpContext userContext = GpContext.getContextForUser(userid); 
         boolean isInUploadDir = isInUserUploadDir(userContext, fileObj);
         if (isInUploadDir) {
             return true;
@@ -361,7 +361,7 @@ public class DataServlet extends HttpServlet implements Servlet {
      * @param fileObj
      * @return true if the given file is in the user upload directory
      */
-    private static boolean isInUserUploadDir(ServerConfiguration.Context userContext, File fileObj) {
+    private static boolean isInUserUploadDir(GpContext userContext, File fileObj) {
         File userUploadDir = ServerConfigurationFactory.instance().getUserUploadDir(userContext);
         return isDescendant(userUploadDir, fileObj);
     }
@@ -372,7 +372,7 @@ public class DataServlet extends HttpServlet implements Servlet {
      * @param fileObj
      * @return true of the given user has permission to read the file on the server file path.
      */
-    public static boolean canReadServerFile(ServerConfiguration.Context userContext, File fileObj) {
+    public static boolean canReadServerFile(GpContext userContext, File fileObj) {
         CommandProperties.Value value = ServerConfigurationFactory.instance().getValue(userContext, "server.browse.file.system.root");
         if (value == null) {
             //Note: by default, all files on the server's file system are readable

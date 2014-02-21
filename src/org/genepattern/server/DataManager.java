@@ -9,8 +9,7 @@ import java.util.Set;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
-import org.genepattern.server.config.ServerConfiguration;
-import org.genepattern.server.config.ServerConfiguration.Context;
+import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.dm.GpFilePath;
@@ -65,7 +64,7 @@ public class DataManager {
      * @param relativePath
      * @return
      */
-    final static public boolean isTmpDir(final Context userContext, final File relativePath) {
+    final static public boolean isTmpDir(final GpContext userContext, final File relativePath) {
         //current implementation is: './tmp/'
         File parent=relativePath.getParentFile();
         if (parent != null && !".".equals(parent.getName())) {
@@ -98,7 +97,7 @@ public class DataManager {
      * 
      * @return true if the directory was successfully created
      */
-    public static boolean createSubdirectory(final ServerConfiguration.Context userContext, final File relativePath) {
+    public static boolean createSubdirectory(final GpContext userContext, final File relativePath) {
         GpFilePath subdirRef = null;
         try {
             //another option ... subdirRef = GpFileObjFactory.getUserUploadFile(userContext, relativePath);
@@ -264,7 +263,7 @@ public class DataManager {
         try {
             UserUploadDao dao = new UserUploadDao();
             
-            File uploadDir = ServerConfigurationFactory.instance().getUserUploadDir(Context.getContextForUser(userId));
+            File uploadDir = ServerConfigurationFactory.instance().getUserUploadDir(GpContext.getContextForUser(userId));
             if (uploadDir == null) {
                 log.error("Unable to get the user's upload directory in syncUploadFiles()");
                 return;
@@ -277,7 +276,7 @@ public class DataManager {
             HibernateUtil.commitTransaction();
 
             // Add new entries to the database
-            ServerConfiguration.Context userContext = ServerConfiguration.Context.getContextForUser(userId);
+            GpContext userContext = GpContext.getContextForUser(userId);
             String[] relPath = new String[0];
             Set<String> visitedDirs = new HashSet<String>();
             dao = new UserUploadDao();
@@ -306,7 +305,7 @@ public class DataManager {
      * @param user
      * @throws Exception
      */
-    private static void handleFileSync(UserUploadDao dao, Set<String> visitedDirs, String[] relPath, File file, ServerConfiguration.Context userContext) throws Exception {
+    private static void handleFileSync(UserUploadDao dao, Set<String> visitedDirs, String[] relPath, File file, GpContext userContext) throws Exception {
         if (file == null) {
             throw new IllegalArgumentException("file==null");
         }

@@ -36,7 +36,7 @@ import org.apache.log4j.Logger;
 //import org.genepattern.data.pipeline.PipelineDependencyHelper;
 import org.genepattern.data.pipeline.PipelineModel;
 import org.genepattern.server.config.ServerConfiguration;
-import org.genepattern.server.config.ServerConfiguration.Context;
+import org.genepattern.server.config.GpContext;
 import org.genepattern.server.repository.SourceInfo;
 import org.genepattern.server.repository.SourceInfoLoader;
 import org.genepattern.server.user.UserDAO;
@@ -95,7 +95,7 @@ public class ManageTasksBean {
     private void deleteTasks(String[] taskLsids) {
         if (taskLsids != null) {
             final String userId=UIBeanHelper.getUserId();
-            final Context userContext=ServerConfiguration.Context.getContextForUser(userId);
+            final GpContext userContext=GpContext.getContextForUser(userId);
             
             // Get a set of the deleted TaskInfos
             Set<TaskInfo> deletedSet = new HashSet<TaskInfo>();

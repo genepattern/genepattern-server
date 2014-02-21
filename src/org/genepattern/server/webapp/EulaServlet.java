@@ -11,7 +11,7 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
 import org.apache.log4j.Logger;
-import org.genepattern.server.config.ServerConfiguration.Context;
+import org.genepattern.server.config.GpContext;
 import org.genepattern.server.dm.UrlUtil;
 import org.genepattern.server.eula.EulaManager;
 import org.genepattern.server.webapp.jsf.UIBeanHelper;
@@ -129,7 +129,7 @@ public class EulaServlet  extends HttpServlet implements Servlet {
     }
 
     private static void recordEULA(final String currentUser, final String lsid) {
-        Context taskContext=Context.getContextForUser(currentUser);
+        GpContext taskContext=GpContext.getContextForUser(currentUser);
         TaskInfo taskInfo = null;
         taskInfo = initTaskInfo(currentUser, lsid);
         taskContext.setTaskInfo(taskInfo);

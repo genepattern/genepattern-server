@@ -11,7 +11,7 @@ import java.util.Map.Entry;
 import java.util.regex.Pattern;
 
 import org.apache.log4j.Logger;
-import org.genepattern.server.config.ServerConfiguration.Context;
+import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.dm.GpFileObjFactory;
 import org.genepattern.server.dm.GpFilePath;
@@ -139,7 +139,7 @@ public class ParamListHelper {
     }
     
     //inputs
-    final Context jobContext;
+    final GpContext jobContext;
     final ParameterInfoRecord parameterInfoRecord;
     final Param actualValues;
     //outputs
@@ -147,10 +147,10 @@ public class ParamListHelper {
     final GroupInfo groupInfo;
     final ListMode listMode;
 
-    public ParamListHelper(final Context jobContext, final ParameterInfoRecord parameterInfoRecord, final Param inputValues) {
+    public ParamListHelper(final GpContext jobContext, final ParameterInfoRecord parameterInfoRecord, final Param inputValues) {
         this(jobContext, parameterInfoRecord, inputValues, false);
     }
-    public ParamListHelper(final Context jobContext, final ParameterInfoRecord parameterInfoRecord, final Param inputValues, final boolean initDefault) {
+    public ParamListHelper(final GpContext jobContext, final ParameterInfoRecord parameterInfoRecord, final Param inputValues, final boolean initDefault) {
         if (jobContext==null) {
             throw new IllegalArgumentException("jobContext==null");
         }
@@ -634,7 +634,7 @@ public class ParamListHelper {
     private Record initFromValue(final ParamValue pval) throws Exception {
         return ParamListHelper.initFromValue(jobContext, pval);
     }
-    public static Record initFromValue(final Context jobContext, final ParamValue pval) throws Exception 
+    public static Record initFromValue(final GpContext jobContext, final ParamValue pval) throws Exception 
     {
         final String value=pval.getValue();
         URL externalUrl=JobInputHelper.initExternalUrl(value);
@@ -765,7 +765,7 @@ public class ParamListHelper {
      * 
      * @deprecated - should replace this with a static call
      */
-    public static void forFileListCopyExternalUrlToUserUploads(final Context jobContext, final GpFilePath gpPath, final URL url) throws Exception {
+    public static void forFileListCopyExternalUrlToUserUploads(final GpContext jobContext, final GpFilePath gpPath, final URL url) throws Exception {
         final File parentDir=gpPath.getServerFile().getParentFile();
         if (!parentDir.exists()) {
             boolean success=parentDir.mkdirs();

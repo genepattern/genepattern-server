@@ -4,8 +4,7 @@ import java.io.File;
 import java.io.FilenameFilter;
 
 import org.genepattern.junitutil.ConfigUtil;
-import org.genepattern.server.config.ServerConfiguration;
-import org.genepattern.server.config.ServerConfiguration.Context;
+import org.genepattern.server.config.GpContext;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -35,13 +34,13 @@ public class ServerFileFilenameFilterTest {
     
     @Test
     public void testNullContext() {
-        Context userContext=null;
+        GpContext userContext=null;
         testDefault(userContext);
     }
     
     @Test
     public void testNullUserId() {
-        Context userContext=ServerConfiguration.Context.getContextForUser("default_user");
+        GpContext userContext=GpContext.getContextForUser("default_user");
         userContext.setUserId(null);
         Assert.assertNull("expecting null userContext.userId", userContext.getUserId());
         testDefault(userContext);
@@ -49,7 +48,7 @@ public class ServerFileFilenameFilterTest {
     
     @Test
     public void testUserIdNotSet() {
-        Context userContext=ServerConfiguration.Context.getContextForUser("");
+        GpContext userContext=GpContext.getContextForUser("");
         testDefault(userContext);
     }
     
@@ -58,13 +57,13 @@ public class ServerFileFilenameFilterTest {
      */
     @Test
     public void testDefaultConfig() {
-        Context userContext=ServerConfiguration.Context.getContextForUser("default_user");
+        GpContext userContext=GpContext.getContextForUser("default_user");
         testDefault(userContext);
     }
     
     @Test
     public void testStringFromConfig() {
-        Context userContext=ServerConfiguration.Context.getContextForUser("gp_user");
+        GpContext userContext=GpContext.getContextForUser("gp_user");
         FilenameFilter filter = ServerFileFilenameFilter.getServerFilenameFilter(userContext);
         check(filter, true, ".DS_Store");
         check(filter, true, "Thumbs.db");
@@ -86,7 +85,7 @@ public class ServerFileFilenameFilterTest {
 
     @Test
     public void testCommaDelimitedStringFromConfig() {
-        Context userContext=ServerConfiguration.Context.getContextForUser("admin_user");
+        GpContext userContext=GpContext.getContextForUser("admin_user");
         FilenameFilter filter = ServerFileFilenameFilter.getServerFilenameFilter(userContext);
         check(filter, false, ".nfs0123");
         check(filter, false, ".lsf0123");
@@ -99,7 +98,7 @@ public class ServerFileFilenameFilterTest {
     
     @Test
     public void testCommaInGlob() {
-        Context userContext=ServerConfiguration.Context.getContextForUser("extra_user");
+        GpContext userContext=GpContext.getContextForUser("extra_user");
         FilenameFilter filter = ServerFileFilenameFilter.getServerFilenameFilter(userContext);
         check(filter, true, "file");
         check(filter, true, "with");
@@ -108,7 +107,7 @@ public class ServerFileFilenameFilterTest {
         
     }
     
-    private void testDefault(final Context userContext) {
+    private void testDefault(final GpContext userContext) {
         FilenameFilter filter = ServerFileFilenameFilter.getServerFilenameFilter(userContext);
         check(filter, false, ".DS_Store");
         check(filter, false, "Thumbs.db");

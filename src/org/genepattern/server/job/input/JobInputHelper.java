@@ -5,7 +5,7 @@ import java.net.URL;
 import java.util.List;
 
 import org.apache.log4j.Logger;
-import org.genepattern.server.config.ServerConfiguration.Context;
+import org.genepattern.server.config.GpContext;
 import org.genepattern.server.dm.GpFilePath;
 import org.genepattern.server.eula.GetTaskStrategy;
 import org.genepattern.server.eula.GetTaskStrategyDefault;
@@ -84,13 +84,13 @@ public class JobInputHelper {
     private final GetTaskStrategy getTaskStrategy;
     private final BatchInputFileHelper batchInputFileHelper;
     
-    public JobInputHelper(final Context userContext, final String lsid) {
+    public JobInputHelper(final GpContext userContext, final String lsid) {
         this(userContext, lsid, null);
     }
-    public JobInputHelper(final Context userContext, final String lsid, final JobInputApi singleJobInputApi) {
+    public JobInputHelper(final GpContext userContext, final String lsid, final JobInputApi singleJobInputApi) {
         this(userContext, lsid, singleJobInputApi, null);
     }
-    public JobInputHelper(final Context userContext, final String lsid, final JobInputApi jobInputApi, final GetTaskStrategy getTaskStrategyIn) {
+    public JobInputHelper(final GpContext userContext, final String lsid, final JobInputApi jobInputApi, final GetTaskStrategy getTaskStrategyIn) {
         if (getTaskStrategyIn == null) {
             getTaskStrategy=new GetTaskStrategyDefault();
         }

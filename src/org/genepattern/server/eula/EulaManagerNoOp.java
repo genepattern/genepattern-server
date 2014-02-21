@@ -3,7 +3,7 @@ package org.genepattern.server.eula;
 import java.util.Collections;
 import java.util.List;
 
-import org.genepattern.server.config.ServerConfiguration.Context;
+import org.genepattern.server.config.GpContext;
 import org.genepattern.webservice.TaskInfo;
 
 /**
@@ -41,19 +41,19 @@ public class EulaManagerNoOp implements IEulaManager {
         //ignore
     }
 
-    public boolean requiresEula(Context taskContext) {
+    public boolean requiresEula(final GpContext taskContext) {
         return false;
     }
 
-    public List<EulaInfo> getAllEulaForModule(Context taskContext) {
+    public List<EulaInfo> getAllEulaForModule(final GpContext taskContext) {
         return Collections.emptyList();
     }
 
-    public List<EulaInfo> getPendingEulaForModule(Context taskContext) {
+    public List<EulaInfo> getPendingEulaForModule(final GpContext taskContext) {
         return Collections.emptyList();
     }
 
-    public void recordEula(Context taskContext) throws IllegalArgumentException {
+    public void recordEula(final GpContext taskContext) throws IllegalArgumentException {
         //ignore
     }
 

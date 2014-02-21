@@ -9,7 +9,7 @@ import java.util.Date;
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.log4j.Logger;
-import org.genepattern.server.config.ServerConfiguration;
+import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.dm.jobresult.JobResultFile;
 import org.genepattern.server.dm.serverfile.ServerFileObjFactory;
@@ -22,7 +22,7 @@ public class GpFileObjFactory {
     private static Logger log = Logger.getLogger(GpFileObjFactory.class);
 
 //    experimental code, not tested for production server
-//    static public GpFilePath getUserHomeDir(final ServerConfiguration.Context userContext) throws Exception {
+//    static public GpFilePath getUserHomeDir(final GpContext userContext) throws Exception {
 //        if (userContext == null) {
 //            throw new IllegalArgumentException("userContext == null");
 //        }
@@ -128,7 +128,7 @@ public class GpFileObjFactory {
      * @return
      * @throws Exception
      */
-    static public GpFilePath getUserUploadDir(ServerConfiguration.Context userContext) throws Exception {
+    static public GpFilePath getUserUploadDir(GpContext userContext) throws Exception {
         File userUploadDir = ServerConfigurationFactory.instance().getUserUploadDir(userContext);
         //1) construct a file reference to the server file
         //   e.g. serverFile=<user.upload.dir>/relativePath
@@ -164,7 +164,7 @@ public class GpFileObjFactory {
      * @return
      * @throws Exception
      */
-    static public GpFilePath getUserUploadFile(ServerConfiguration.Context userContext, File uploadFile) throws Exception {
+    static public GpFilePath getUserUploadFile(GpContext userContext, File uploadFile) throws Exception {
         if (uploadFile == null) {
             throw new IllegalArgumentException("uploadFile must not be null");
         }
@@ -328,7 +328,7 @@ public class GpFileObjFactory {
             //drop the wrapping slashes from '/user_id/'
             String relativePath = pathInfo.substring( userId.length() + 2 );
             File uploadFilePath = new File(relativePath);
-            ServerConfiguration.Context userContext = ServerConfiguration.Context.getContextForUser(userId);
+            GpContext userContext = GpContext.getContextForUser(userId);
             GpFilePath gpFileObj = GpFileObjFactory.getUserUploadFile(userContext, uploadFilePath);
             
             //TODO: init from either file system or DB depending on context, currently client must do this 

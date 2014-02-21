@@ -23,7 +23,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.genepattern.server.cm.CategoryUtil;
-import org.genepattern.server.config.ServerConfiguration.Context;
+import org.genepattern.server.config.GpContext;
 import org.genepattern.server.domain.Suite;
 import org.genepattern.server.domain.SuiteDAO;
 import org.genepattern.server.user.UserDAO;
@@ -34,7 +34,7 @@ import org.genepattern.webservice.TaskInfo;
 
 public class ModuleHelper {
     private final TaskInfo[] tasks;
-    private final Context userContext;
+    private final GpContext userContext;
 
     public ModuleHelper() {
         this(false);

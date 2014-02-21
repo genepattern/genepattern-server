@@ -9,7 +9,7 @@ import java.util.GregorianCalendar;
 
 import org.genepattern.junitutil.ConfigUtil;
 import org.genepattern.server.config.ServerConfiguration;
-import org.genepattern.server.config.ServerConfiguration.Context;
+import org.genepattern.server.config.GpContext;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -372,7 +372,7 @@ public class TestJobPurgerUtil {
      * @throws ParseException
      */
     @Test public void testCutoffForUser_defaultConfig() throws ParseException {
-        final Context userContext=ServerConfiguration.Context.getContextForUser("test");
+        final GpContext userContext=GpContext.getContextForUser("test");
         final Date now=parseDateFormat("2013-11-01 23:05:23");
         final Date cutoff=JobPurgerUtil.getCutoffForUser(userContext, now);
         
@@ -384,7 +384,7 @@ public class TestJobPurgerUtil {
      * @throws ParseException
      */
     @Test public void testCutoffForUser_defaultPurgeTime() throws ParseException {
-        final Context userContext=ServerConfiguration.Context.getContextForUser("customInterval");
+        final GpContext userContext=GpContext.getContextForUser("customInterval");
         final Date now=parseDateFormat("2013-11-01 23:05:23");
         final Date cutoff=JobPurgerUtil.getCutoffForUser(userContext, now);
         Assert.assertEquals("customInterval is 3",
@@ -397,7 +397,7 @@ public class TestJobPurgerUtil {
      * @throws ParseException
      */
     @Test public void testCutoffForUser_customConfig() throws ParseException {
-        final Context userContext=ServerConfiguration.Context.getContextForUser("customUser");
+        final GpContext userContext=GpContext.getContextForUser("customUser");
         final Date now=parseDateFormat("2013-11-01 23:05:23");
         final Date cutoff=JobPurgerUtil.getCutoffForUser(userContext, now);
         Assert.assertEquals("Expecting purgeTime=09:00 and purgeInterval=3",
@@ -406,7 +406,7 @@ public class TestJobPurgerUtil {
     }
     
     @Test public void testNextPurgeTime_defaultConfig() throws ParseException {
-        final Context userContext=ServerConfiguration.Context.getContextForUser("test");
+        final GpContext userContext=GpContext.getContextForUser("test");
         //by default there is no cutoff 
         final Date completionDate=parseDateFormat("2013-10-25 13:25:00");
         final Date purgeDate=JobPurgerUtil.getJobPurgeDate(userContext, completionDate);
@@ -417,7 +417,7 @@ public class TestJobPurgerUtil {
         final Date now=new Date();
         final Date next=JobPurgerUtil.getNextPurgeTime(now, "09:00");
         final GregorianCalendar cal = new GregorianCalendar();
-        final Context userContext=ServerConfiguration.Context.getContextForUser("customUser");
+        final GpContext userContext=GpContext.getContextForUser("customUser");
         //See config.yaml for 'customUser' customizations
         //purge jobs after 3 days, purgeTime is 9:00 am
         
@@ -438,7 +438,7 @@ public class TestJobPurgerUtil {
         final Date now=new Date();
         final Date next=JobPurgerUtil.getNextPurgeTime(now, "09:00");
         final GregorianCalendar cal = new GregorianCalendar();
-        final Context userContext=ServerConfiguration.Context.getContextForUser("customUser");
+        final GpContext userContext=GpContext.getContextForUser("customUser");
         // job completed at purgeTime
         cal.setTime(next);
         cal.add(Calendar.DAY_OF_YEAR, -3);
@@ -451,7 +451,7 @@ public class TestJobPurgerUtil {
         final Date now=new Date();
         final Date next=JobPurgerUtil.getNextPurgeTime(now, "09:00");
         final GregorianCalendar cal = new GregorianCalendar();        
-        final Context userContext=ServerConfiguration.Context.getContextForUser("customUser");
+        final GpContext userContext=GpContext.getContextForUser("customUser");
         // job completed after purgeTime
         cal.setTime(next);
         cal.add(Calendar.SECOND, 1);

@@ -30,7 +30,7 @@ import org.genepattern.data.pipeline.PipelineModel;
 import org.genepattern.data.pipeline.PipelineModelException;
 import org.genepattern.data.pipeline.PipelineUtil;
 import org.genepattern.server.PermissionsHelper;
-import org.genepattern.server.config.ServerConfiguration.Context;
+import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.genepattern.GenePatternAnalysisTask;
 import org.genepattern.server.genomespace.GenomeSpaceBean;
@@ -111,7 +111,7 @@ public class RunTaskBean {
             lsidParam = taskToRun;
         }
         
-        Context userContext = Context.getContextForUser(userId);
+        GpContext userContext = GpContext.getContextForUser(userId);
         allowNewJob = ServerConfigurationFactory.instance().getGPBooleanProperty(userContext, "allow.new.job", true);
         allowInputFilePaths = ServerConfigurationFactory.instance().getAllowInputFilePaths(userContext);
         allowBatchProcess = ServerConfigurationFactory.instance().getGPBooleanProperty(userContext, "allow.batch.process", false);

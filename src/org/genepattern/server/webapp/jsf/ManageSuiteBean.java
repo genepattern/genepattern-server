@@ -29,8 +29,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.log4j.Logger;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.taskdefs.Delete;
-import org.genepattern.server.config.ServerConfiguration;
-import org.genepattern.server.config.ServerConfiguration.Context;
+import org.genepattern.server.config.GpContext;
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.domain.Suite;
 import org.genepattern.server.domain.SuiteDAO;
@@ -185,7 +184,7 @@ public class ManageSuiteBean {
      */
     private void deleteSuites(String[] suiteLsids) {
         final String userId = UIBeanHelper.getUserId();
-        final Context userContext=ServerConfiguration.Context.getContextForUser(userId, true);
+        final GpContext userContext=GpContext.getContextForUser(userId, true);
         final boolean adminSuites = AuthorizationHelper.adminSuites();
         if (suiteLsids != null) {
             for (final String suiteLsid : suiteLsids) {
@@ -195,7 +194,7 @@ public class ManageSuiteBean {
         }
     }
 
-    private boolean deleteSuite(final Context userContext, final boolean adminSuites, final String lsid) {
+    private boolean deleteSuite(final GpContext userContext, final boolean adminSuites, final String lsid) {
         final Suite suite = (Suite) HibernateUtil.getSession().get(org.genepattern.server.domain.Suite.class, lsid);
         if (suite.getUserId() == null || suite.getUserId().equals(userContext.getUserId()) || adminSuites) {
             (new SuiteDAO()).delete(suite);

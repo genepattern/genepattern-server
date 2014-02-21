@@ -9,7 +9,7 @@ import java.util.LinkedHashMap;
 import java.util.Properties;
 
 import org.apache.log4j.Logger;
-import org.genepattern.server.config.ServerConfiguration.Context;
+import org.genepattern.server.config.GpContext;
 import org.genepattern.server.executor.CommandProperties;
 
 /**
@@ -100,7 +100,7 @@ public class ServerProperties {
         }
     }
     
-    public CommandProperties.Value getValue(Context context, String key) {
+    public CommandProperties.Value getValue(final GpContext context, final String key) {
         String from = getProperty(context, key);
         if (from != null) {
             return new CommandProperties.Value(from);
@@ -108,11 +108,11 @@ public class ServerProperties {
         return null;
     }
 
-    public String getProperty(Context context, String key) {
+    public String getProperty(GpContext context, final String key) {
         if (context==null) {
             log.error("context==null");
             //initialize, so that we use the default values
-            context=new Context();
+            context=new GpContext();
         }
         String rval = null;
         if (context.getCheckSystemProperties()) {

@@ -8,7 +8,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.genepattern.server.config.ServerConfiguration;
+import org.genepattern.server.config.GpContext;
 
 
 /**
@@ -70,7 +70,7 @@ public class GpDirectoryNode extends Node<GpFilePath> {
      * @return
      * @throws Exception
      */
-    public Node<GpFilePath> add(ServerConfiguration.Context userContext, GpFilePath gpFilePath) throws Exception {
+    public Node<GpFilePath> add(GpContext userContext, GpFilePath gpFilePath) throws Exception {
         String relativePath = gpFilePath.getRelativePath();
         Node<GpFilePath> node = allElements.get( relativePath );
         if (node != null) {

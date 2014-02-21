@@ -32,7 +32,7 @@ import org.genepattern.data.pipeline.GetIncludedTasks;
 import org.genepattern.modules.ModuleJSON;
 import org.genepattern.modules.ParametersJSON;
 import org.genepattern.modules.ResponseJSON;
-import org.genepattern.server.config.ServerConfiguration;
+import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.dm.GpFilePath;
 import org.genepattern.server.dm.tasklib.TasklibPath;
@@ -115,7 +115,7 @@ public class RunTaskServlet extends HttpServlet
 
             //Note: we have a helper method to initialize the userId,
             //    see org.genepattern.server.webapp.rest.api.v1.Util#getUserContext 
-            ServerConfiguration.Context userContext = ServerConfiguration.Context.getContextForUser(userId);
+            GpContext userContext = GpContext.getContextForUser(userId);
             final boolean isAdmin = AuthorizationHelper.adminServer(userId);
             userContext.setIsAdmin(isAdmin);
             
@@ -361,7 +361,7 @@ public class RunTaskServlet extends HttpServlet
                 throw new Exception("User not logged in");
             }
 
-            ServerConfiguration.Context jobContext=ServerConfiguration.Context.getContextForUser(username);
+            GpContext jobContext=GpContext.getContextForUser(username);
 
             JobInputFileUtil fileUtil = new JobInputFileUtil(jobContext);
             GpFilePath gpFilePath=fileUtil.initUploadFileForInputParam(index, paramName, fileDetail.getFileName());
@@ -405,7 +405,7 @@ public class RunTaskServlet extends HttpServlet
         JobSubmitInfo jobSubmitInfo,
         @Context HttpServletRequest request)
     {
-        final ServerConfiguration.Context userContext = Util.getUserContext(request);
+        final GpContext userContext = Util.getUserContext(request);
         final boolean enableJobConfigParams=ServerConfigurationFactory.instance().getGPBooleanProperty(userContext, JobConfigParams.PROP_ENABLE_JOB_CONFIG_PARAMS, false);
         if (enableJobConfigParams) {
             return newAddJob(userContext, jobSubmitInfo, request);
@@ -423,7 +423,7 @@ public class RunTaskServlet extends HttpServlet
      * 
      * @deprecated - As of 3.8.1 should use the newer implementation of this method.
      */
-    private Response origAddJob(final ServerConfiguration.Context userContext, final JobSubmitInfo jobSubmitInfo, final HttpServletRequest request) {
+    private Response origAddJob(final GpContext userContext, final JobSubmitInfo jobSubmitInfo, final HttpServletRequest request) {
         try
         {
             if(jobSubmitInfo.getLsid() == null)
@@ -526,7 +526,7 @@ public class RunTaskServlet extends HttpServlet
      * @param request
      * @return
      */
-    private Response newAddJob(final ServerConfiguration.Context userContext, final JobSubmitInfo jobSubmitInfo, final HttpServletRequest request) {
+    private Response newAddJob(final GpContext userContext, final JobSubmitInfo jobSubmitInfo, final HttpServletRequest request) {
         if (jobSubmitInfo==null || jobSubmitInfo.getLsid()==null || jobSubmitInfo.getLsid().length()==0) {
             return handleError("No lsid received");
         }
@@ -683,7 +683,7 @@ public class RunTaskServlet extends HttpServlet
     ) {
 
         String userId = (String) request.getSession().getAttribute("userid");
-        final ServerConfiguration.Context userContext=ServerConfiguration.Context.getContextForUser(userId);
+        final GpContext userContext=GpContext.getContextForUser(userId);
         JobInput reloadJobInput=null;
         if (reloadJob != null && !reloadJob.equals("")) {
             //This is a reloaded job
@@ -825,7 +825,7 @@ public class RunTaskServlet extends HttpServlet
      * @return
      * @throws Exception
      */
-    private SortedSet<LSID> getModuleVersions(final ServerConfiguration.Context userContext, final TaskInfo taskInfo) throws Exception
+    private SortedSet<LSID> getModuleVersions(final GpContext userContext, final TaskInfo taskInfo) throws Exception
     {
         final LSID taskLSID = new LSID(taskInfo.getLsid());
         final String taskNoLSIDVersion = taskLSID.toStringNoVersion();
@@ -853,7 +853,7 @@ public class RunTaskServlet extends HttpServlet
      * @param userContext
      * @return
      */
-    private boolean isEditable(final ServerConfiguration.Context userContext, final TaskInfo taskInfo) {
+    private boolean isEditable(final GpContext userContext, final TaskInfo taskInfo) {
         if (userContext == null) {
             log.error("userContext == null");
             return false;

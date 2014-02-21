@@ -52,8 +52,7 @@ import org.genepattern.data.pipeline.JobSubmission;
 import org.genepattern.data.pipeline.PipelineModel;
 import org.genepattern.data.pipeline.PipelineUtil;
 import org.genepattern.server.TaskLSIDNotFoundException;
-import org.genepattern.server.config.ServerConfiguration;
-import org.genepattern.server.config.ServerConfiguration.Context;
+import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.executor.pipeline.PipelineException;
 import org.genepattern.server.genepattern.TaskInstallationException;
@@ -254,7 +253,7 @@ public class PipelineQueryServlet extends HttpServlet {
 	    
 	    // Get a list of the pipelines dependent on this one (useful for recursion later)
 	    final Set<TaskInfo> dependents;
-	    Context userContext=ServerConfiguration.Context.getContextForUser(username);
+	    GpContext userContext=GpContext.getContextForUser(username);
 	    if (PipelineDependencyCache.isEnabled(userContext)) {
 	        dependents=PipelineDependencyCache.instance().getParentPipelines(toUpdateTaskInfo);
 	    }
@@ -324,7 +323,7 @@ public class PipelineQueryServlet extends HttpServlet {
                             throw new Exception("No valid session detected.  Please log in again.");
                         }
 
-                        ServerConfiguration.Context userContext = ServerConfiguration.Context.getContextForUser(username);
+                        GpContext userContext = GpContext.getContextForUser(username);
                         File fileTempDir = ServerConfigurationFactory.instance().getTemporaryUploadDir(userContext);
                         File uploadedFile = new File(fileTempDir, i.getName());
                         
@@ -917,7 +916,7 @@ public class PipelineQueryServlet extends HttpServlet {
         // Check for dependent pipelines to prompt for update
         Set<TaskInfo> dependents=Collections.emptySet();
         if (oldInfo != null) {
-            final Context userContext=ServerConfiguration.Context.getContextForUser(username);
+            final GpContext userContext=GpContext.getContextForUser(username);
             if (PipelineDependencyCache.isEnabled(userContext)) {
                 dependents=PipelineDependencyCache.instance().getParentPipelines(oldInfo);
             }

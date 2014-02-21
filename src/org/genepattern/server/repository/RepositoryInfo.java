@@ -2,7 +2,7 @@ package org.genepattern.server.repository;
 
 import java.net.URL;
 
-import org.genepattern.server.config.ServerConfiguration.Context;
+import org.genepattern.server.config.GpContext;
 
 /**
  * Java Bean representation of a GenePattern Module Repository.
@@ -25,7 +25,7 @@ public class RepositoryInfo {
     /**
      * RepositoryInfoFactory implementation
      */
-    final static public RepositoryInfoLoader getRepositoryInfoLoader(final Context userContext) {
+    final static public RepositoryInfoLoader getRepositoryInfoLoader(final GpContext userContext) {
         return new ConfigRepositoryInfoLoader(userContext);
     }
     

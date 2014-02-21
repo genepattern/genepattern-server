@@ -48,7 +48,7 @@ import org.genepattern.server.PermissionsHelper;
 import org.genepattern.server.UserAccountManager;
 import org.genepattern.server.auth.IGroupMembershipPlugin;
 import org.genepattern.server.config.ServerConfiguration;
-import org.genepattern.server.config.ServerConfiguration.Context;
+import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.dm.UrlUtil;
 import org.genepattern.server.domain.BatchJob;
@@ -134,7 +134,7 @@ public class JobBean {
 
     public String createPipelineMessage(List<ParameterInfo> params) throws UnsupportedEncodingException {
         String toReturn = "";
-        Context userContext = ServerConfiguration.Context.getContextForUser(UIBeanHelper.getUserId());
+        GpContext userContext = GpContext.getContextForUser(UIBeanHelper.getUserId());
         long maxFileSize = ServerConfigurationFactory.instance().getGPLongProperty(userContext, "pipeline.max.file.size", 250L * 1000L * 1024L);
         for (ParameterInfo i : params) {
             toReturn += "Changed parameter " + i.getName() + " to 'Prompt When Run' because it exceeded maximum file size of " + JobHelper.getFormattedSize(maxFileSize) + " for pipelines.  ";
@@ -734,7 +734,7 @@ public class JobBean {
     }
 
     public JobInfoWrapper getJobInfoWrapper(int jobNumber) {
-        Context context = Context.getContextForUser(UIBeanHelper.getUserId());
+        GpContext context = GpContext.getContextForUser(UIBeanHelper.getUserId());
         if (!ServerConfigurationFactory.instance().getGPBooleanProperty(context, "display.input.results", false)) { return null; }
 
         String userId = UIBeanHelper.getUserId();
@@ -1133,7 +1133,7 @@ public class JobBean {
             this.p = p;
 
             String currentUserId = UIBeanHelper.getUserId();
-            ServerConfiguration.Context userContext = ServerConfiguration.Context.getContextForUser(currentUserId);
+            GpContext userContext = GpContext.getContextForUser(currentUserId);
             boolean displayFileInfo = ServerConfigurationFactory.instance().getGPBooleanProperty(userContext, "display.file.info");
             if (displayFileInfo) {
                 this.size = file.length();

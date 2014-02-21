@@ -13,8 +13,7 @@ import java.util.concurrent.ConcurrentMap;
 import org.apache.log4j.Logger;
 import org.genepattern.server.TaskIDNotFoundException;
 import org.genepattern.server.TaskLSIDNotFoundException;
-import org.genepattern.server.config.ServerConfiguration;
-import org.genepattern.server.config.ServerConfiguration.Context;
+import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.domain.TaskMaster;
@@ -62,7 +61,7 @@ public class TaskInfoCache {
     private final ConcurrentMap<Integer, List<String>> taskDocFilenameCache = new ConcurrentHashMap<Integer, List<String>>();
     
     private TaskInfoCache() {
-        ServerConfiguration.Context serverContext = ServerConfiguration.Context.getServerContext();
+        GpContext serverContext = GpContext.getServerContext();
         enableCache = ServerConfigurationFactory.instance().getGPBooleanProperty(serverContext, "taskInfoCache.enable", true);
         if (enableCache) {
             initializeCache();
@@ -72,7 +71,7 @@ public class TaskInfoCache {
     private void initializeCache() {
         boolean closeDbSession = true;
         List<TaskMaster> allTaskMasters = findAll(closeDbSession);
-        final Context serverContext=ServerConfiguration.Context.getServerContext();
+        final GpContext serverContext=GpContext.getServerContext();
         final boolean isPipelineDependencyCacheEnabled=PipelineDependencyCache.isEnabled(serverContext);
         for(TaskMaster taskMaster : allTaskMasters) {
             addToCache(taskMaster, isPipelineDependencyCacheEnabled);
@@ -80,7 +79,7 @@ public class TaskInfoCache {
     }
     
     private void addToCache(final TaskMaster taskMaster) {
-        final Context serverContext=ServerConfiguration.Context.getServerContext();
+        final GpContext serverContext=GpContext.getServerContext();
         addToCache(taskMaster, PipelineDependencyCache.isEnabled(serverContext));
     }
 
@@ -100,7 +99,7 @@ public class TaskInfoCache {
         taskMasterCache.clear();
         taskInfoAttributesCache.clear();
         taskDocFilenameCache.clear();
-        final Context serverContext=ServerConfiguration.Context.getServerContext();
+        final GpContext serverContext=GpContext.getServerContext();
         if (PipelineDependencyCache.isEnabled(serverContext)) {
             PipelineDependencyCache.instance().clear();
         }
@@ -121,7 +120,7 @@ public class TaskInfoCache {
         taskInfoAttributesCache.remove(taskId);
         taskDocFilenameCache.remove(taskId);
 
-        final Context serverContext=ServerConfiguration.Context.getServerContext();
+        final GpContext serverContext=GpContext.getServerContext();
         if (PipelineDependencyCache.isEnabled(serverContext)) {
             if (tm != null) {
                 final String taskLsid=tm.getLsid();
@@ -171,7 +170,7 @@ public class TaskInfoCache {
         List<File> approvedDocFiles = new ArrayList<File>();
         
         // Filter out the license files
-        List<EulaInfo> infos = EulaManager.instance(new Context()).getEulas(TaskInfoCache.instance().getTask(lsid));
+        List<EulaInfo> infos = EulaManager.instance(new GpContext()).getEulas(TaskInfoCache.instance().getTask(lsid));
         if (infos.size() > 0) {
             for (File file : docFiles) {
                 boolean approved = true;
@@ -345,11 +344,11 @@ public class TaskInfoCache {
      * @param lsid
      * @return
      */
-    public List<TaskInfo> getAllVersions(final ServerConfiguration.Context userContext, final LSID lsid) {
+    public List<TaskInfo> getAllVersions(final GpContext userContext, final LSID lsid) {
         final boolean closeSessionIfNecessary=false;
         return getAllVersions(closeSessionIfNecessary, userContext, lsid);
     }
-    public List<TaskInfo> getAllVersions(final boolean closeSessionIfNecessary, final ServerConfiguration.Context userContext, final LSID lsid) {
+    public List<TaskInfo> getAllVersions(final boolean closeSessionIfNecessary, final GpContext userContext, final LSID lsid) {
         if (userContext==null) {
             throw new IllegalArgumentException("userContext==null");
         }

@@ -9,7 +9,7 @@ import java.util.Map;
 
 import org.genepattern.junitutil.ConfigUtil;
 import org.genepattern.server.config.ServerConfiguration;
-import org.genepattern.server.config.ServerConfiguration.Context;
+import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.executor.CommandProperties.Value;
 import org.genepattern.server.job.input.JobConfigParams;
@@ -280,7 +280,7 @@ executors:
             .build();
         
         final ServerConfiguration config=ServerConfigurationFactory.instance();
-        final Context userContext=ServerConfiguration.Context.getContextForUser("test_user");
+        final GpContext userContext=GpContext.getContextForUser("test_user");
         Value javaXmx=config.getValue(userContext, "java.Xmx");
 
         Assert.assertEquals("java.Xmx", "2gb", drmJob.getProperty("java.Xmx"));
@@ -289,7 +289,7 @@ executors:
     @Test
     public void testExecutorCustomProperties() {
         final ServerConfiguration config=ServerConfigurationFactory.instance();
-        final Context userContext=ServerConfiguration.Context.getContextForUser("test_user");
+        final GpContext userContext=GpContext.getContextForUser("test_user");
         //sanity check
         Assert.assertEquals("executor.props", "PbsBigMem", config.getGPProperty(userContext, "executor.props")); 
         final String executorId=config.getGPProperty(userContext, "executor");
@@ -299,7 +299,7 @@ executors:
     @Test
     public void testCustomJobConfigParams() {
         final ServerConfiguration config=ServerConfigurationFactory.instance();
-        final Context userContext=ServerConfiguration.Context.getContextForUser("test_user");
+        final GpContext userContext=GpContext.getContextForUser("test_user");
         JobConfigParams jobConfigParams=JobConfigParams.initJobConfigParams(userContext);
         Assert.assertNotNull(jobConfigParams);
     }

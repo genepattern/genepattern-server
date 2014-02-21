@@ -5,7 +5,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import org.genepattern.server.config.ServerConfiguration.Context;
+import org.genepattern.server.config.GpContext;
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.domain.AnalysisJob;
 import org.genepattern.server.job.input.JobInput;
@@ -32,12 +32,12 @@ public class AnalysisJobUtil {
      * @return
      * @throws Exception
      */
-    public Integer addJobToDb(final Context taskContext, final JobInput jobInput) throws Exception {
+    public Integer addJobToDb(final GpContext taskContext, final JobInput jobInput) throws Exception {
         final boolean initDefaultDefault=false;
         return addJobToDb(taskContext, jobInput, initDefaultDefault);
     }
     
-    public Integer addJobToDb(final Context taskContext, final JobInput jobInput, final boolean initDefault) throws Exception {
+    public Integer addJobToDb(final GpContext taskContext, final JobInput jobInput, final boolean initDefault) throws Exception {
         if (taskContext==null) {
             throw new IllegalArgumentException("taskContext==null");
         }
@@ -61,7 +61,7 @@ public class AnalysisJobUtil {
      * @return
      * @throws Exception
      */
-    public ParameterInfo[] initParameterValues(final Context userContext, final JobInput jobInput, final TaskInfo taskInfo, final boolean initDefault) throws Exception {
+    public ParameterInfo[] initParameterValues(final GpContext userContext, final JobInput jobInput, final TaskInfo taskInfo, final boolean initDefault) throws Exception {
         if (jobInput==null) {
             throw new IllegalArgumentException("jobInput==null");
         }

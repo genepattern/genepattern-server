@@ -1,7 +1,7 @@
 package org.genepattern.server.rest;
 
 import org.apache.log4j.Logger;
-import org.genepattern.server.config.ServerConfiguration.Context;
+import org.genepattern.server.config.GpContext;
 import org.genepattern.server.eula.GetTaskStrategy;
 import org.genepattern.server.job.input.JobInput;
 
@@ -56,7 +56,7 @@ public class JobInputApiImpl implements JobInputApi {
     }
 
     @Override
-    public String postJob(final Context jobContext, final JobInput jobInput) throws GpServerException {
+    public String postJob(final GpContext jobContext, final JobInput jobInput) throws GpServerException {
         if (jobContext==null) {
             throw new IllegalArgumentException("jobContext==null");
         }

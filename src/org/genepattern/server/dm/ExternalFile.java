@@ -7,7 +7,7 @@ import java.net.URISyntaxException;
 import java.net.URL;
 
 import org.apache.log4j.Logger;
-import org.genepattern.server.config.ServerConfiguration.Context;
+import org.genepattern.server.config.GpContext;
 
 /**
  * Implementation for handling external URLs to files in the way we handle other files
@@ -78,7 +78,7 @@ public class ExternalFile extends GpFilePath {
     }
 
     @Override
-    public boolean canRead(boolean isAdmin, Context userContext) {
+    public boolean canRead(boolean isAdmin, final GpContext userContext) {
         log.error("Not implemented exception: ExternalFile.canRead()");
         return false;
     }

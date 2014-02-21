@@ -7,7 +7,7 @@ import java.net.URISyntaxException;
 import java.net.URLEncoder;
 
 import org.apache.log4j.Logger;
-import org.genepattern.server.config.ServerConfiguration.Context;
+import org.genepattern.server.config.GpContext;
 import org.genepattern.server.dm.GpFilePath;
 import org.genepattern.server.eula.InitException;
 import org.genepattern.server.eula.LibdirLegacy;
@@ -103,7 +103,7 @@ public class TasklibPath extends GpFilePath {
      * Admin users can read all files, all users can read all files in public modules, otherwise 
      * only the owner of the module can read the file.
      */
-    public boolean canRead(boolean isAdmin, Context userContext) {
+    public boolean canRead(final boolean isAdmin, final GpContext userContext) {
         if (isAdmin) {
             return true;
         }

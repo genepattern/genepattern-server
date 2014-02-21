@@ -31,7 +31,7 @@ import javax.ws.rs.core.UriInfo;
 
 import org.apache.log4j.Logger;
 import org.genepattern.server.cm.CategoryUtil;
-import org.genepattern.server.config.ServerConfiguration;
+import org.genepattern.server.config.GpContext;
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.dm.UrlUtil;
 import org.genepattern.server.eula.EulaInfo;
@@ -165,7 +165,7 @@ public class TasksResource {
      * @return
      * @throws JSONException
      */
-    public static JSONObject getPendingEulaForModuleJson(final HttpServletRequest request, final ServerConfiguration.Context userContext, final TaskInfo taskInfo) 
+    public static JSONObject getPendingEulaForModuleJson(final HttpServletRequest request, final GpContext userContext, final TaskInfo taskInfo) 
     throws JSONException
     {
         final boolean includePending=true;
@@ -180,7 +180,7 @@ public class TasksResource {
         return json;
     }
 
-    public static JSONObject getEulaForModuleJson(final HttpServletRequest request, final ServerConfiguration.Context userContext, final TaskInfo taskInfo, final boolean includePending, final boolean includeAll) 
+    public static JSONObject getEulaForModuleJson(final HttpServletRequest request, final GpContext userContext, final TaskInfo taskInfo, final boolean includePending, final boolean includeAll) 
     throws JSONException
     {
         userContext.setTaskInfo(taskInfo);
@@ -205,7 +205,7 @@ public class TasksResource {
 
     private static JSONObject initEulaJson(
             final HttpServletRequest request, 
-            final ServerConfiguration.Context userContext, 
+            final GpContext userContext, 
             final TaskInfo taskInfo, 
             final List<EulaInfo> pendingEulas, 
             final List<EulaInfo> allEulas
@@ -298,7 +298,7 @@ public class TasksResource {
             final @QueryParam("includeHidden") String includeHidden,
             final @Context HttpServletRequest request, 
             final @Context HttpServletResponse response) {
-        final ServerConfiguration.Context userContext = Util.getUserContext(request);
+        final GpContext userContext = Util.getUserContext(request);
         final String userId = userContext.getUserId();
 
         // Check the etag and return a 304 if they match
@@ -479,7 +479,7 @@ public class TasksResource {
      * @param taskInfo
      * @return
      */
-    private JSONObject getTaskSearchEntryJson(final HttpServletRequest request, final TaskInfo taskInfo, final Collection<String> categories, final Collection<String> suiteNames, ServerConfiguration.Context userContext) throws JSONException {
+    private JSONObject getTaskSearchEntryJson(final HttpServletRequest request, final TaskInfo taskInfo, final Collection<String> categories, final Collection<String> suiteNames, GpContext userContext) throws JSONException {
         JSONObject jsonObj = new JSONObject();
         jsonObj.put("lsid", taskInfo.getLsid());
         jsonObj.put("name", taskInfo.getName());
@@ -506,7 +506,7 @@ public class TasksResource {
         return jsonObj;
     }
 
-    private JSONArray getTags(final TaskInfo taskInfo, ServerConfiguration.Context userContext) {
+    private JSONArray getTags(final TaskInfo taskInfo, GpContext userContext) {
         Set<Tag> tags = TagManager.instance().getTags(userContext, taskInfo);
         
         JSONArray array = new JSONArray();
@@ -549,7 +549,7 @@ public class TasksResource {
             final @PathParam("taskNameOrLsid") String taskNameOrLsid,
             final @Context HttpServletRequest request
             ) {
-        ServerConfiguration.Context userContext=Util.getUserContext(request);
+        GpContext userContext=Util.getUserContext(request);
         final String userId=userContext.getUserId();
         TaskInfo taskInfo = null;
         try {
@@ -650,7 +650,7 @@ public class TasksResource {
         log.debug("taskNameOrLsid="+taskNameOrLsid);
         log.debug("pname="+pname);
         
-        ServerConfiguration.Context userContext=Util.getUserContext(request);
+        GpContext userContext=Util.getUserContext(request);
         final String userId=userContext.getUserId();
         TaskInfo taskInfo = null;
         try {
@@ -753,7 +753,7 @@ public class TasksResource {
         log.debug("all="+all);
         log.debug("pending="+pending);
         
-        ServerConfiguration.Context userContext=Util.getUserContext(request);
+        GpContext userContext=Util.getUserContext(request);
         final String userId=userContext.getUserId();
         TaskInfo taskInfo = null;
         try {

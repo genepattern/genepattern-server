@@ -1,7 +1,7 @@
 package org.genepattern.server.job;
 
 import org.genepattern.server.PermissionsHelper;
-import org.genepattern.server.config.ServerConfiguration.Context;
+import org.genepattern.server.config.GpContext;
 import org.genepattern.server.webapp.jsf.AuthorizationHelper;
 import org.genepattern.server.webservice.server.dao.AnalysisDAO;
 import org.genepattern.webservice.JobInfo;
@@ -22,7 +22,7 @@ public class JobInfoLoaderDefault implements JobInfoLoader {
      *     2) if the current user does not have permission to 'read' the job
      */
     @Override
-    public JobInfo getJobInfo(Context userContext, String jobId) throws Exception {
+    public JobInfo getJobInfo(GpContext userContext, String jobId) throws Exception {
         if (userContext==null) {
             throw new IllegalArgumentException("userContext==null");
         }

@@ -5,8 +5,7 @@ import java.util.Date;
 import java.util.List;
 
 import org.apache.log4j.Logger;
-import org.genepattern.server.config.ServerConfiguration;
-import org.genepattern.server.config.ServerConfiguration.Context;
+import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.eula.dao.RecordEulaToDb;
@@ -79,8 +78,8 @@ public class RecordEulaDefault implements RecordEula {
         return null;
     }
 
-    private Context getContextForEula(final String userId, final EulaInfo eula) {
-        Context eulaContext=ServerConfiguration.Context.getContextForUser(userId);
+    private GpContext getContextForEula(final String userId, final EulaInfo eula) {
+        GpContext eulaContext=GpContext.getContextForUser(userId);
         TaskInfo taskInfo = new TaskInfo();
         taskInfo.giveTaskInfoAttributes().put(GPConstants.LSID, eula.getModuleLsid());
         taskInfo.setName(eula.getModuleName());
@@ -89,7 +88,7 @@ public class RecordEulaDefault implements RecordEula {
     }
 
     private List<String> getRemoteUrls(final String userId, final EulaInfo eula) {
-        Context eulaContext=getContextForEula(userId, eula);
+        GpContext eulaContext=getContextForEula(userId, eula);
         Value val=ServerConfigurationFactory.instance().getValue(eulaContext, PROP_REMOTE_URL);
         if (val==null) {
             // null means, use the default value

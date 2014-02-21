@@ -6,7 +6,7 @@ import java.util.Set;
 import org.apache.log4j.Logger;
 import org.genepattern.server.DataManager;
 import org.genepattern.server.UserAccountManager;
-import org.genepattern.server.config.ServerConfiguration.Context;
+import org.genepattern.server.config.GpContext;
 import org.genepattern.server.dm.GpDirectoryNode;
 import org.genepattern.server.dm.GpFilePath;
 import org.genepattern.server.dm.userupload.UserUploadManager;
@@ -77,7 +77,7 @@ public class UserControlPanelBean {
     public List<GpFilePath> getFiles(String user) {
         List<GpFilePath> uploadedFiles;
         try {
-            GpDirectoryNode root = UserUploadManager.getFileTree(Context.getContextForUser(user));
+            GpDirectoryNode root = UserUploadManager.getFileTree(GpContext.getContextForUser(user));
             uploadedFiles = root.getAllFilePaths();
         }
         catch (Exception e) {

@@ -3,7 +3,7 @@ package org.genepattern.server.repository;
 import java.net.MalformedURLException;
 
 import org.apache.log4j.Logger;
-import org.genepattern.server.config.ServerConfiguration;
+import org.genepattern.server.config.GpContext;
 import org.genepattern.server.repository.SourceInfo.CreatedOnServer;
 import org.genepattern.server.repository.SourceInfo.FromRepo;
 import org.genepattern.server.repository.SourceInfo.FromUnknown;
@@ -64,14 +64,14 @@ public class LsidSourceInfoLoader implements SourceInfoLoader {
                 isBeta=false;
             }
             if (!isBeta) {
-                ServerConfiguration.Context serverContext=ServerConfiguration.Context.getServerContext();
+                GpContext serverContext=GpContext.getServerContext();
                 RepositoryInfo prod=
                         RepositoryInfo.getRepositoryInfoLoader(serverContext).getRepository(RepositoryInfo.BROAD_PROD_URL);
                 return new FromRepo(prod);
             }
             else {
                 // assume it's from Broad beta repository
-                ServerConfiguration.Context serverContext=ServerConfiguration.Context.getServerContext();
+                GpContext serverContext=GpContext.getServerContext();
                 RepositoryInfo beta=
                         RepositoryInfo.getRepositoryInfoLoader(serverContext).getRepository(RepositoryInfo.BROAD_BETA_URL);
                 return new FromRepo(beta);

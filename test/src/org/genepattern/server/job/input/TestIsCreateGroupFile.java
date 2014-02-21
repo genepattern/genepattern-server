@@ -3,8 +3,7 @@ package org.genepattern.server.job.input;
 import java.util.Map;
 
 import org.genepattern.junitutil.TaskLoader;
-import org.genepattern.server.config.ServerConfiguration;
-import org.genepattern.server.config.ServerConfiguration.Context;
+import org.genepattern.server.config.GpContext;
 import org.genepattern.server.job.input.Param;
 import org.genepattern.server.job.input.ParamId;
 import org.genepattern.server.rest.ParameterInfoRecord;
@@ -21,7 +20,7 @@ import org.junit.Test;
 public class TestIsCreateGroupFile {
     private static TaskInfo taskInfo;
     private static Map<String,ParameterInfoRecord> paramInfoMap;
-    private static Context jobContext;
+    private static GpContext jobContext;
 
     final static private String userId="test";
     final static private String lsid="urn:lsid:broad.mit.edu:cancer.software.genepattern.module.test.analysis:00006:0.7";
@@ -34,7 +33,7 @@ public class TestIsCreateGroupFile {
         taskLoader.addTask(TestJobInputHelper.class, "TestMultiInputFile_v0.7.zip");
         taskInfo = taskLoader.getTaskInfo(lsid);
         paramInfoMap=ParameterInfoRecord.initParamInfoMap(taskInfo);
-        jobContext=ServerConfiguration.Context.getContextForUser(userId);
+        jobContext=GpContext.getContextForUser(userId);
 
     }
     

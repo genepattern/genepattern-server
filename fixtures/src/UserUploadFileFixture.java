@@ -3,7 +3,7 @@ import java.net.URL;
 
 import org.apache.log4j.Logger;
 import org.genepattern.server.UserAccountManager;
-import org.genepattern.server.config.ServerConfiguration;
+import org.genepattern.server.config.GpContext;
 import org.genepattern.server.dm.GpFileObjFactory;
 import org.genepattern.server.dm.GpFilePath;
 
@@ -41,7 +41,7 @@ public class UserUploadFileFixture {
         UserAccountManager.validateUsername(userId);
         
         GpFilePath userUploadFile = null;
-        ServerConfiguration.Context userContext = ServerConfiguration.Context.getContextForUser(userId);
+        GpContext userContext = GpContext.getContextForUser(userId);
         
         File uploadFile = new File(parentDir, filename);
         userUploadFile = GpFileObjFactory.getUserUploadFile(userContext, uploadFile);

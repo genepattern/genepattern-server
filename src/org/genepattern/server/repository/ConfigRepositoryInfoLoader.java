@@ -18,8 +18,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.log4j.Logger;
-import org.genepattern.server.config.ServerConfiguration;
-import org.genepattern.server.config.ServerConfiguration.Context;
+import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.user.UserDAO;
@@ -255,13 +254,13 @@ public class ConfigRepositoryInfoLoader implements RepositoryInfoLoader {
         return info;
     }
     
-    final private Context userContext; 
+    final private GpContext userContext; 
     private String currentRepository=RepositoryInfo.BROAD_PROD_URL;
 
-    public ConfigRepositoryInfoLoader(Context userContext) {
+    public ConfigRepositoryInfoLoader(final GpContext userContext) {
         if (userContext==null) {
             log.debug("User context==null");
-            this.userContext=ServerConfiguration.Context.getServerContext();
+            this.userContext=GpContext.getServerContext();
         }
         else {
             this.userContext=userContext;

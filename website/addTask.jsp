@@ -39,6 +39,7 @@
                  java.util.TreeSet,
                  java.util.TreeMap,
                  java.util.Vector,
+                 org.genepattern.server.config.GpContext,
                  org.genepattern.server.config.ServerConfiguration,
                  org.genepattern.server.eula.EulaManager,
                  org.genepattern.server.eula.EulaInfo"
@@ -544,7 +545,7 @@
                     </td>
                     <td>
                         <%
-                            ServerConfiguration.Context taskContext = ServerConfiguration.Context.getContextForUser(userID);
+                            GpContext taskContext = GpContext.getContextForUser(userID);
                             if (taskContext != null) {
                                 List<EulaInfo> eulas = EulaManager.instance(taskContext).getEulas(taskInfo);
                                 if (eulas != null && eulas.size() != 0) {

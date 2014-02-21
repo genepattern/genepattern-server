@@ -4,7 +4,7 @@ import java.io.File;
 import java.net.URI;
 import java.net.URISyntaxException;
 
-import org.genepattern.server.config.ServerConfiguration.Context;
+import org.genepattern.server.config.GpContext;
 import org.genepattern.server.dm.GpFilePath;
 import org.genepattern.server.dm.UrlUtil;
 import org.junit.Ignore;
@@ -83,7 +83,7 @@ public class MockGpFilePath extends GpFilePath {
     }
 
     @Override
-    public boolean canRead(boolean isAdmin, Context userContext) {
+    public boolean canRead(boolean isAdmin, GpContext userContext) {
         return canRead;
     }
 

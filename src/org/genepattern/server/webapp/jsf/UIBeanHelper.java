@@ -28,7 +28,7 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
 import org.apache.log4j.Logger;
-import org.genepattern.server.config.ServerConfiguration.Context;
+import org.genepattern.server.config.GpContext;
 import org.genepattern.util.GPConstants;
 
 public class UIBeanHelper {
@@ -134,8 +134,8 @@ public class UIBeanHelper {
         return null;
     }
     
-    public static Context getUserContext() {
-        return Context.getContextForUser(getUserId());
+    public static GpContext getUserContext() {
+        return GpContext.getContextForUser(getUserId());
     }
 
     public static String encode(String s) {

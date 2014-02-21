@@ -11,7 +11,7 @@ import javax.servlet.http.HttpSession;
 import org.apache.log4j.Logger;
 import org.genepattern.server.UserAccountManager;
 import org.genepattern.server.auth.AuthenticationException;
-import org.genepattern.server.config.ServerConfiguration.Context;
+import org.genepattern.server.config.GpContext;
 import org.genepattern.server.genomespace.GenomeSpaceClientFactory;
 import org.genepattern.server.genomespace.GenomeSpaceException;
 import org.genepattern.server.genomespace.GenomeSpaceLoginManager;
@@ -121,7 +121,7 @@ public class LoginManager {
      * @param session
      */
     public static void handleGenomeSpaceLogin(String gp_username, HttpSession session) {
-        Context context = Context.getContextForUser(gp_username);
+        GpContext context = GpContext.getContextForUser(gp_username);
         boolean genomeSpaceEnabled = GenomeSpaceClientFactory.isGenomeSpaceEnabled(context);
         String gsUsername = (String) session.getAttribute(GenomeSpaceLoginManager.GS_USER_KEY);
         if (genomeSpaceEnabled && gsUsername != null) {

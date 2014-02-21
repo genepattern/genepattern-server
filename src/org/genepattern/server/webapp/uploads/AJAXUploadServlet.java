@@ -8,7 +8,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.fileupload.FileUploadException;
 import org.apache.log4j.Logger;
 import org.genepattern.server.DataManager;
-import org.genepattern.server.config.ServerConfiguration;
+import org.genepattern.server.config.GpContext;
 import org.genepattern.server.dm.GpFileObjFactory;
 import org.genepattern.server.dm.GpFilePath;
 import org.genepattern.server.dm.userupload.UserUploadManager;
@@ -60,7 +60,7 @@ public class AJAXUploadServlet extends HttpServlet {
                 throw new FileUploadException("No user ID attached to session");
             }
 
-            ServerConfiguration.Context userContext = ServerConfiguration.Context.getContextForUser(userId);
+            GpContext userContext = GpContext.getContextForUser(userId);
 
             final int partitionCount = Integer.parseInt(request.getHeader("partitionCount"));
             final int partitionIndex = Integer.parseInt(request.getHeader("partitionIndex"));
@@ -90,7 +90,7 @@ public class AJAXUploadServlet extends HttpServlet {
      * @return
      * @throws FileUploadException
      */
-    private File getUploadDirectory(ServerConfiguration.Context userContext, String uploadDirPath) throws FileUploadException {
+    private File getUploadDirectory(GpContext userContext, String uploadDirPath) throws FileUploadException {
         if (uploadDirPath == null) {
             throw new FileUploadException("server error, missing session attribute 'uploadPath'");
         }
@@ -156,7 +156,7 @@ public class AJAXUploadServlet extends HttpServlet {
      * @return
      * @throws FileUploadException - if there is a server error, or if there is a naming conflict with the hidden tmp dir.
      */
-    private GpFilePath getUploadFile(ServerConfiguration.Context userContext, HttpServletRequest request, String name, String uploadPath, boolean first) throws FileUploadException {
+    private GpFilePath getUploadFile(GpContext userContext, HttpServletRequest request, String name, String uploadPath, boolean first) throws FileUploadException {
         final File uploadDir = getUploadDirectory(userContext, uploadPath);
         final File relativeFile = new File(uploadDir, name);
 
@@ -189,7 +189,7 @@ public class AJAXUploadServlet extends HttpServlet {
      * @throws FileUploadException
      * @throws IOException
      */
-    private String writeFile(ServerConfiguration.Context userContext, HttpServletRequest request, int index, int count, String filename, String uploadPath) throws FileUploadException, IOException {
+    private String writeFile(GpContext userContext, HttpServletRequest request, int index, int count, String filename, String uploadPath) throws FileUploadException, IOException {
         final boolean first = index == 0;
         String responseText = "";
 

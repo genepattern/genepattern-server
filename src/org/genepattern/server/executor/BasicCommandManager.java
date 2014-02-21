@@ -10,7 +10,7 @@ import java.util.Map;
 import org.apache.log4j.Logger;
 import org.genepattern.server.JobInfoManager;
 import org.genepattern.server.config.CommandManagerProperties;
-import org.genepattern.server.config.ServerConfiguration;
+import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.domain.AnalysisJob;
@@ -69,7 +69,7 @@ public class BasicCommandManager implements CommandManager {
     }
 
     private boolean getJobQueueSuspendedFlag() {
-        ServerConfiguration.Context serverContext = ServerConfiguration.Context.getServerContext();
+        GpContext serverContext = GpContext.getServerContext();
         boolean suspended = ServerConfigurationFactory.instance().getGPBooleanProperty(serverContext, "job.queue.suspend_on_start");
         return suspended;
     }

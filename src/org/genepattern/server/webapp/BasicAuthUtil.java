@@ -8,8 +8,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.log4j.Logger;
 import org.genepattern.server.UserAccountManager;
 import org.genepattern.server.auth.AuthenticationException;
-import org.genepattern.server.config.ServerConfiguration;
-import org.genepattern.server.config.ServerConfiguration.Context;
+import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.genomespace.GenomeSpaceClient;
 import org.genepattern.server.genomespace.GenomeSpaceClientFactory;
@@ -132,7 +131,7 @@ public class BasicAuthUtil {
         }
         
         try {
-            final Context serverContext = ServerConfiguration.Context.getServerContext();
+            final GpContext serverContext = GpContext.getServerContext();
             final String env = ServerConfigurationFactory.instance().getGPProperty(serverContext, "genomeSpaceEnvironment", "prod");
             final GenomeSpaceClient gsClient = GenomeSpaceClientFactory.getGenomeSpaceClient();
             final GenomeSpaceLogin login = gsClient.submitLogin(env, gsUsername, new String(gsPassword));

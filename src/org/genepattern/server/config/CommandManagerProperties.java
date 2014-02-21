@@ -67,7 +67,7 @@ public class CommandManagerProperties {
     }
 
 
-    public String getProperty(ServerConfiguration.Context context, String key) {
+    public String getProperty(final GpContext context, final String key) {
         CommandProperties.Value value = getValue(context, key);
         if (value == null) {
             return null;
@@ -78,7 +78,7 @@ public class CommandManagerProperties {
         return value.getValue();
     }
 
-    public CommandProperties.Value getValue(final ServerConfiguration.Context context, final String key) {
+    public CommandProperties.Value getValue(final GpContext context, final String key) {
         Value drmCustomProps=null;
         if (!key.equals("executor.props")) {
             final String drmCustomPropsKey=ServerConfigurationFactory.instance().getGPProperty(context, "executor.props");
@@ -99,7 +99,7 @@ public class CommandManagerProperties {
         }
         return getValue(context, key, drmCustomProps);
     }
-    private CommandProperties.Value getValue(final ServerConfiguration.Context context, final String key, final Value drmCustomProps) {
+    private CommandProperties.Value getValue(final GpContext context, final String key, final Value drmCustomProps) {
         CommandProperties.Value rval = null;
         // 0) initialize from system properties and legacy properties files
         //    only if specified by the context

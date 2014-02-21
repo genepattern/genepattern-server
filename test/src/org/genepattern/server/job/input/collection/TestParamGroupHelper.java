@@ -5,7 +5,7 @@ import java.util.List;
 
 import org.genepattern.junitutil.MockGpFilePath;
 import org.genepattern.server.config.ServerConfiguration;
-import org.genepattern.server.config.ServerConfiguration.Context;
+import org.genepattern.server.config.GpContext;
 import org.genepattern.server.dm.GpFilePath;
 import org.genepattern.server.job.input.GroupId;
 import org.genepattern.server.job.input.GroupInfo;
@@ -54,7 +54,7 @@ public class TestParamGroupHelper {
         final JobInfo jobInfo=new JobInfo();
         jobInfo.setJobNumber(jobNo);
         jobInfo.setUserId(userId);
-        final Context jobContext=ServerConfiguration.Context.getContextForJob(jobInfo);
+        final GpContext jobContext=GpContext.getContextForJob(jobInfo);
 
         final ParamGroupHelper pgh=new ParamGroupHelper.Builder(jobInput.getParam(new ParamId("inputList")))
             .jobContext(jobContext)

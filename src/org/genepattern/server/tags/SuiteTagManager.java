@@ -9,7 +9,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.apache.log4j.Logger;
-import org.genepattern.server.config.ServerConfiguration.Context;
+import org.genepattern.server.config.GpContext;
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.webservice.server.dao.AdminDAO;
 import org.genepattern.server.webservice.server.dao.AdminDAOSysException;
@@ -35,7 +35,7 @@ public class SuiteTagManager {
     private Map<String, Date> userCacheMap = new ConcurrentHashMap<String, Date>();                     // User to cache update date
     private Map<TagCacheKey, Set<String>> tagMap = new ConcurrentHashMap<TagCacheKey, Set<String>>();         // User+lsid to set of tags
     
-    public Set<String> getSuites(Context context, TaskInfo taskInfo) {
+    public Set<String> getSuites(GpContext context, TaskInfo taskInfo) {
         
         // Lazily update the tag cache for each TaskInfo
         if (needsUpdate(context)) {
@@ -66,7 +66,7 @@ public class SuiteTagManager {
      * @param context
      * @return
      */
-    private boolean needsUpdate(Context context) {
+    private boolean needsUpdate(GpContext context) {
         Date now = new Date();
         Date updated = userCacheMap.get(context.getUserId());
         if (updated == null) return true;
@@ -79,7 +79,7 @@ public class SuiteTagManager {
      * Update the tag cache and the map of updated dates
      * @param context
      */
-    private void updateCache(Context context) {
+    private void updateCache(GpContext context) {
         // Remove old tags
         removeOld(context);
         
@@ -90,7 +90,7 @@ public class SuiteTagManager {
         userCacheMap.put(context.getUserId(), new Date());
     }
     
-    private void removeOld(Context context) {
+    private void removeOld(GpContext context) {
         for (TagCacheKey key : tagMap.keySet()) {
             if (key.getUser().equals(context.getUserId())) {
                 tagMap.remove(key);
@@ -98,7 +98,7 @@ public class SuiteTagManager {
         }
     }
     
-    private void addSuites(final Context context) {
+    private void addSuites(final GpContext context) {
         if (context==null) {
             throw new IllegalArgumentException("context==null");
         }

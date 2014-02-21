@@ -12,7 +12,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.log4j.Logger;
-import org.genepattern.server.config.ServerConfiguration.Context;
+import org.genepattern.server.config.GpContext;
 import org.genepattern.server.dm.GpFilePath;
 import org.genepattern.server.dm.UrlUtil;
 import org.genepattern.server.webapp.jsf.JobHelper;
@@ -277,7 +277,7 @@ public class GenomeSpaceFile extends GpFilePath {
     }
 
     @Override
-    public boolean canRead(boolean isAdmin, Context userContext) {
+    public boolean canRead(boolean isAdmin, GpContext userContext) {
         log.error("Not implemented exception: GenomeSpaceFile.canRead()");
         return false;
     }

@@ -6,8 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.log4j.Logger;
-import org.genepattern.server.config.ServerConfiguration;
-import org.genepattern.server.config.ServerConfiguration.Context;
+import org.genepattern.server.config.GpContext;
 import org.genepattern.server.dm.GpFileObjFactory;
 import org.genepattern.server.dm.GpFilePath;
 import org.genepattern.server.dm.UserUploadFile;
@@ -40,7 +39,7 @@ public class JobInputFileUtil {
      * @param context
      * @return
      */
-    public static GpFilePath createTmpDir(final Context context) throws Exception {
+    public static GpFilePath createTmpDir(final GpContext context) throws Exception {
         if (context==null) {
             throw new IllegalArgumentException("context==null");
         }
@@ -72,14 +71,14 @@ public class JobInputFileUtil {
     //to use instead of a jobId, because we don't have one yet
     private String uploadPath; 
     //for getting the currentUser, and optionally current task and current job
-    private Context context;
+    private GpContext context;
     /**
      * The base input directory for a given job.
      */
     private GpFilePath inputFileDir;
 
 
-    public JobInputFileUtil(final Context jobContext) throws Exception {
+    public JobInputFileUtil(final GpContext jobContext) throws Exception {
         this(jobContext, null);
     }
 
@@ -89,7 +88,7 @@ public class JobInputFileUtil {
      * @param relativePath
      * @throws Exception, when it can't initialize a unique path for data files into the user uploads directory.
      */
-    public JobInputFileUtil(final Context jobContext, final String relativePath) throws Exception {
+    public JobInputFileUtil(final GpContext jobContext, final String relativePath) throws Exception {
         this.context=jobContext;
         this.uploadPath=relativePath;
         this.inputFileDir=initInputFileDir();
@@ -269,7 +268,7 @@ public class JobInputFileUtil {
         }
 
         final String userId=userUploadFile.getOwner();
-        final Context userContext=ServerConfiguration.Context.getContextForUser(userId);
+        final GpContext userContext=GpContext.getContextForUser(userId);
         String parentPath="";
         for(String dirname : dirs) {
             parentPath += (dirname+"/");
@@ -289,7 +288,7 @@ public class JobInputFileUtil {
      * 
      * @param relativePath
      */
-    static public void addUploadFileToDb(final Context context, final GpFilePath gpFilePath) throws Exception {
+    static public void addUploadFileToDb(final GpContext context, final GpFilePath gpFilePath) throws Exception {
         if (!(gpFilePath instanceof UserUploadFile)) {
             throw new IllegalArgumentException("Expecting a GpFilePath instance of type UserUploadFile");
         }
@@ -314,7 +313,7 @@ public class JobInputFileUtil {
         UserUploadManager.updateUploadFile(context, gpFilePath, 1, 1);
     }
 
-    static public GpFilePath getDistinctPathForExternalUrl(final Context jobContext, final URL url) throws Exception {
+    static public GpFilePath getDistinctPathForExternalUrl(final GpContext jobContext, final URL url) throws Exception {
         File relPath=new File(DEFAULT_ROOT_PATH+"external/"+url.getHost()+"/"+url.getPath());
         GpFilePath input=GpFileObjFactory.getUserUploadFile(jobContext, relPath);
         return input;

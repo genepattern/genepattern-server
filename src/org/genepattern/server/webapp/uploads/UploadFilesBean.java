@@ -25,7 +25,7 @@ import javax.servlet.http.HttpServletResponseWrapper;
 
 import org.apache.log4j.Logger;
 import org.genepattern.server.DataManager;
-import org.genepattern.server.config.ServerConfiguration.Context;
+import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.dm.GpDirectoryNode;
 import org.genepattern.server.dm.GpFilePath;
@@ -262,7 +262,7 @@ public class UploadFilesBean {
     }
     
     public File getUserUploadDir() {
-        return ServerConfigurationFactory.instance().getUserUploadDir(Context.getContextForUser(UIBeanHelper.getUserId()));
+        return ServerConfigurationFactory.instance().getUserUploadDir(GpContext.getContextForUser(UIBeanHelper.getUserId()));
     }
     
     private void initUserUploadTree() {
@@ -270,7 +270,7 @@ public class UploadFilesBean {
         files = new ArrayList<FileInfoWrapper>();
         directories = new ArrayList<DirectoryInfoWrapper>();
         try {
-            Context userContext = Context.getContextForUser(currentUser);
+            GpContext userContext = GpContext.getContextForUser(currentUser);
             GpDirectoryNode userUploadRoot = UserUploadManager.getFileTree(userContext);
             rootDir = initFilesFromDir(userUploadRoot);
             initModuleMenuItems();
@@ -368,7 +368,7 @@ public class UploadFilesBean {
         }
         parentPath = UIBeanHelper.getRequest().getParameter("parentPath");
         
-        Context userContext = Context.getContextForUser(UIBeanHelper.getUserId());
+        GpContext userContext = GpContext.getContextForUser(UIBeanHelper.getUserId());
         final File relativePath=DataManager.initSubdirectory(parentPath, subdirName);
         //special-case: don't allow creation of top-level tmp directory
         boolean isTmpDir=DataManager.isTmpDir(userContext, relativePath);
@@ -410,12 +410,12 @@ public class UploadFilesBean {
     }
     
     public int getPartitionLength() {
-        Context context = Context.getContextForUser(UIBeanHelper.getUserId());
+        GpContext context = GpContext.getContextForUser(UIBeanHelper.getUserId());
         return ServerConfigurationFactory.instance().getGPIntegerProperty(context, "upload.partition.size", 10000000);
     }
     
     public long getMaxUploadSize() {
-        Context context = Context.getContextForUser(UIBeanHelper.getUserId());
+        GpContext context = GpContext.getContextForUser(UIBeanHelper.getUserId());
         return ServerConfigurationFactory.instance().getGPLongProperty(context, "upload.max.size", 20000000000L);
     }
     
@@ -426,7 +426,7 @@ public class UploadFilesBean {
     
     public boolean getUploadEnabled() {
         String userId = UIBeanHelper.getUserId();
-        Context userContext = Context.getContextForUser(userId);
+        GpContext userContext = GpContext.getContextForUser(userId);
         return ServerConfigurationFactory.instance().getGPBooleanProperty(userContext, "upload.jumploader", true);
     }
     

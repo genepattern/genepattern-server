@@ -8,8 +8,7 @@ import java.util.TreeSet;
 
 import org.apache.log4j.Logger;
 import org.genepattern.server.auth.GroupPermission;
-import org.genepattern.server.config.ServerConfiguration;
-import org.genepattern.server.config.ServerConfiguration.Context;
+import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.util.AuthorizationManagerFactory;
 import org.genepattern.server.util.IAuthorizationManager;
@@ -54,9 +53,9 @@ public class UserEntry {
     }
     
     public String getUserDir() {
-        Context context = ServerConfiguration.Context.getContextForUser(user.getUserId());
         try {
-            File userDir = ServerConfigurationFactory.instance().getUserDir(context);
+            final GpContext context = GpContext.getContextForUser(user.getUserId());
+            final File userDir = ServerConfigurationFactory.instance().getUserDir(context);
             return userDir.getPath();
         }
         catch (Throwable t) {

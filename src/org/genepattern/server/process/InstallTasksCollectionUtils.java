@@ -25,7 +25,7 @@ import java.util.TreeSet;
 import java.util.Vector;
 
 import org.genepattern.server.config.ServerConfiguration;
-import org.genepattern.server.config.ServerConfiguration.Context;
+import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerProperties;
 import org.genepattern.server.genepattern.TaskInstallationException;
 import org.genepattern.server.repository.RepositoryInfo;
@@ -44,7 +44,7 @@ public class InstallTasksCollectionUtils {
     public InstallTasksCollectionUtils(String userID, boolean initialInstall) {
         this.userID = userID;
         this.initialInstall = initialInstall;
-        final Context userContext=ServerConfiguration.Context.getContextForUser(userID);
+        final GpContext userContext=GpContext.getContextForUser(userID);
         final RepositoryInfo repositoryInfo=RepositoryInfo.getRepositoryInfoLoader(userContext).getCurrentRepository();
         this.repositoryURL = repositoryInfo.getUrl();
         repos = new ModuleRepository(repositoryURL);

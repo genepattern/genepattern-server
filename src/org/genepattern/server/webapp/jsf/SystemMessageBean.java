@@ -6,7 +6,7 @@ import java.util.Date;
 import javax.faces.event.ActionEvent;
 
 import org.apache.log4j.Logger;
-import org.genepattern.server.config.ServerConfiguration;
+import org.genepattern.server.config.GpContext;
 import org.genepattern.server.message.SystemAlertFactory;
 import org.genepattern.server.message.SystemMessage;
 

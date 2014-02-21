@@ -2,20 +2,20 @@ package org.genepattern.server.eula;
 
 import java.io.File;
 
-import org.genepattern.server.config.ServerConfiguration.Context;
+import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.eula.InitException;
 import org.genepattern.webservice.TaskInfo;
 
 public class EulaManager {
-    static public IEulaManager instance(Context context) {
+    static public IEulaManager instance(final GpContext context) {
         if (!isEulaEnabled(context)) {
             return Singleton.NO_OP;
         }
         return Singleton.INSTANCE;
     }
     
-    private static boolean isEulaEnabled(Context context) {
+    private static boolean isEulaEnabled(final GpContext context) {
         if (context==null) {
             return true;
         }

@@ -2,7 +2,7 @@ package org.genepattern.server.eula;
 
 import java.util.List;
 
-import org.genepattern.server.config.ServerConfiguration.Context;
+import org.genepattern.server.config.GpContext;
 import org.genepattern.webservice.TaskInfo;
 
 /**
@@ -25,7 +25,7 @@ public interface IEulaManager {
      * 
      * @return true if there is no record of EULA for the current user.
      */
-    boolean requiresEula(Context taskContext);
+    boolean requiresEula(GpContext taskContext);
 
     /**
      * For an individual module or task, get the list of zero or more End-user license agreements (EULA)
@@ -83,7 +83,7 @@ public interface IEulaManager {
      * 
      * @return
      */
-    List<EulaInfo> getAllEulaForModule(Context taskContext);
+    List<EulaInfo> getAllEulaForModule(GpContext taskContext);
 
     /**
      * Get the list of End-user license agreements for the given module or pipeline, for
@@ -98,7 +98,7 @@ public interface IEulaManager {
      * 
      * @return
      */
-    List<EulaInfo> getPendingEulaForModule(Context taskContext);
+    List<EulaInfo> getPendingEulaForModule(GpContext taskContext);
 
     /**
      * In response to user acceptance by clicking the 'Ok' button in the GUI,
@@ -114,6 +114,6 @@ public interface IEulaManager {
      *     
      * @throws IllegalArgumentException if the taskContext is not initialized properly.
      */
-    void recordEula(final Context taskContext) throws IllegalArgumentException;
+    void recordEula(final GpContext taskContext) throws IllegalArgumentException;
 
 }

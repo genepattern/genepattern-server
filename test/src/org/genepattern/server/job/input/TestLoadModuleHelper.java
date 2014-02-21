@@ -13,8 +13,7 @@ import java.util.Map.Entry;
 import org.genepattern.drm.JobRunner;
 import org.genepattern.junitutil.JobInfoLoaderFromMap;
 import org.genepattern.junitutil.TaskLoader;
-import org.genepattern.server.config.ServerConfiguration;
-import org.genepattern.server.config.ServerConfiguration.Context;
+import org.genepattern.server.config.GpContext;
 import org.genepattern.server.dm.GpFilePath;
 import org.genepattern.server.job.JobInfoLoader;
 import org.genepattern.webservice.ParameterInfo;
@@ -37,7 +36,7 @@ public class TestLoadModuleHelper {
     private static TaskLoader taskLoader;
     private static JobInfoLoader jobInfoLoader;
     private static String adminUserId;
-    private static Context userContext;
+    private static GpContext userContext;
     private static URL gpUrl;
 
     final private static String cmsLsid="urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00044:9";    
@@ -52,7 +51,7 @@ public class TestLoadModuleHelper {
     @BeforeClass
     static public void beforeClass() {
         adminUserId="admin";
-        userContext=ServerConfiguration.Context.getContextForUser(adminUserId);
+        userContext=GpContext.getContextForUser(adminUserId);
         userContext.setIsAdmin(true);
         taskLoader=new TaskLoader();
         taskLoader.addTask(TestLoadModuleHelper.class, "ComparativeMarkerSelection_v9.zip");

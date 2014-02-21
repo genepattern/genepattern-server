@@ -7,8 +7,7 @@ import java.net.URISyntaxException;
 import java.util.List;
 
 import org.apache.log4j.Logger;
-import org.genepattern.server.config.ServerConfiguration;
-import org.genepattern.server.config.ServerConfiguration.Context;
+import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.dm.GpFilePath;
 import org.genepattern.server.dm.UrlUtil;
@@ -77,7 +76,7 @@ public class ServerFilePath extends GpFilePath {
     /**
      * Implement user permissions for server files.
      */
-    public boolean canRead(boolean isAdmin, Context userContext) {
+    public boolean canRead(boolean isAdmin, GpContext userContext) {
         if (isAdmin) {
             return true;
         }
@@ -112,11 +111,11 @@ public class ServerFilePath extends GpFilePath {
     }
     
     public void initChildren() {
-        Context context = ServerConfiguration.Context.getServerContext();
+        final GpContext context = GpContext.getServerContext();
         initChildren(context);
     }
     
-    public void initChildren(Context context) {
+    public void initChildren(final GpContext context) {
         FilenameFilter filter = ServerFileFilenameFilter.getServerFilenameFilter(context);
         
         File file = getServerFile();

@@ -13,7 +13,7 @@ import java.util.concurrent.Future;
 
 import org.apache.log4j.Logger;
 import org.genepattern.server.DataManager;
-import org.genepattern.server.config.ServerConfiguration.Context;
+import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.dm.GpFilePath;
@@ -50,7 +50,7 @@ public class UserUploadPurger {
     final static public String PROP_PURGE_PARTIAL="upload.purge.partial";
 
     final private ExecutorService exec;
-    final private Context userContext;
+    final private GpContext userContext;
     final private Date cutoffDate;
     final private boolean purgeAll;
     final private boolean purgeTmp;
@@ -62,11 +62,11 @@ public class UserUploadPurger {
      * @param userContext
      * @param dateCutoff
      */
-    public UserUploadPurger(final ExecutorService exec, final Context userContext, final long dateCutoff) {
+    public UserUploadPurger(final ExecutorService exec, final GpContext userContext, final long dateCutoff) {
         this(exec, userContext, new Date(dateCutoff));
     }
     
-    public UserUploadPurger(final ExecutorService exec, final Context userContext, final Date cutoffDate) {
+    public UserUploadPurger(final ExecutorService exec, final GpContext userContext, final Date cutoffDate) {
         if (userContext == null) {
             throw new IllegalArgumentException("userContext == null");
         }
@@ -90,7 +90,7 @@ public class UserUploadPurger {
         }
     }
     
-    public Context getUserContext() {
+    public GpContext getUserContext() {
         return userContext;
     }
 

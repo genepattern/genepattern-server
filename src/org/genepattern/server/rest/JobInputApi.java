@@ -1,6 +1,6 @@
 package org.genepattern.server.rest;
 
-import org.genepattern.server.config.ServerConfiguration.Context;
+import org.genepattern.server.config.GpContext;
 import org.genepattern.server.job.input.JobInput;
 
 public interface JobInputApi {
@@ -14,6 +14,6 @@ public interface JobInputApi {
      * @param jobInput
      * @return
      */
-    String postJob(Context jobContext, JobInput jobInput) throws GpServerException;
+    String postJob(GpContext jobContext, JobInput jobInput) throws GpServerException;
 
 }

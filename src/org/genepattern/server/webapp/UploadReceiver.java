@@ -25,8 +25,7 @@ import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.apache.commons.fileupload.servlet.ServletRequestContext;
 import org.apache.log4j.Logger;
 import org.genepattern.server.DataManager;
-import org.genepattern.server.config.ServerConfiguration;
-import org.genepattern.server.config.ServerConfiguration.Context;
+import org.genepattern.server.config.GpContext;
 import org.genepattern.server.dm.GpFileObjFactory;
 import org.genepattern.server.dm.GpFilePath;
 import org.genepattern.server.dm.userupload.UserUploadManager;
@@ -62,7 +61,7 @@ public class UploadReceiver extends HttpServlet {
      * @return
      * @throws FileUploadException
      */
-    private File getUploadDirectory(Context userContext, HttpServletRequest request) throws FileUploadException {
+    private File getUploadDirectory(final GpContext userContext, final HttpServletRequest request) throws FileUploadException {
         String uploadDirPath = (String) request.getSession().getAttribute("uploadPath");
         if (uploadDirPath == null) {
             throw new FileUploadException("server error, missing session attribute 'uploadPath'");
@@ -99,7 +98,7 @@ public class UploadReceiver extends HttpServlet {
      * @return
      * @throws FileUploadException if there is a server error, or if there is a naming conflict with the hidden tmp dir.
      */
-    private GpFilePath getUploadFile(Context userContext, HttpServletRequest request, String name, boolean first) throws FileUploadException {
+    private GpFilePath getUploadFile(final GpContext userContext, final HttpServletRequest request, final String name, final boolean first) throws FileUploadException {
         final File uploadDir = getUploadDirectory(userContext, request);
         final File relativeFile = new File(uploadDir, name);
         
@@ -157,7 +156,7 @@ public class UploadReceiver extends HttpServlet {
      * @return
      * @throws FileUploadException
      */
-    private String writeFile(Context userContext, HttpServletRequest request, List<FileItem> postParameters, int index, int count, String userId) throws FileUploadException { 
+    private String writeFile(final GpContext userContext, final HttpServletRequest request, final List<FileItem> postParameters, final int index, final int count, final String userId) throws FileUploadException { 
         final boolean first = index == 0;
         String responseText = "";
         for(FileItem fileItem : postParameters) {
@@ -215,7 +214,7 @@ public class UploadReceiver extends HttpServlet {
                 // Return error to the applet; this happens if a user logged out during an upload
                 throw new FileUploadException("No user ID attached to session");
             }
-            Context userContext = ServerConfiguration.Context.getContextForUser(userId);
+            final GpContext userContext = GpContext.getContextForUser(userId);
             
             RequestContext reqContext = new ServletRequestContext(request);
             if (FileUploadBase.isMultipartContent(reqContext)) {

@@ -21,7 +21,7 @@ import org.apache.log4j.Logger;
 import org.genepattern.data.pipeline.JobSubmission;
 import org.genepattern.data.pipeline.PipelineModel;
 import org.genepattern.server.config.ServerConfiguration;
-import org.genepattern.server.config.ServerConfiguration.Context;
+import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.dm.UrlUtil;
 import org.genepattern.server.domain.JobStatus;
@@ -77,7 +77,7 @@ public class JobInfoWrapper implements Serializable {
             this.parameterInfo = parameterInfo;
             
             String currentUserId = UIBeanHelper.getUserId();
-            ServerConfiguration.Context userContext = ServerConfiguration.Context.getContextForUser(currentUserId);
+            GpContext userContext = GpContext.getContextForUser(currentUserId);
             displayFileInfo = ServerConfigurationFactory.instance().getGPBooleanProperty(userContext, "display.file.info");
             
             //set the display name
@@ -885,7 +885,7 @@ public class JobInfoWrapper implements Serializable {
     private void initPurgeDate() {
         if (jobInfo != null) {
             final String userId=jobInfo.getUserId();
-            final Context userContext=ServerConfiguration.Context.getContextForUser(userId);
+            final GpContext userContext=GpContext.getContextForUser(userId);
             purgeDate = JobPurgerUtil.getJobPurgeDate(userContext, jobInfo.getDateCompleted());
         }
         if (purgeDate != null) {

@@ -95,7 +95,7 @@ public class UploadReceiverTest {
 //        List<FileItem> postParameters = buildTestParameterList();
 //        PrintWriter responseWriter = new PrintWriter(System.out);
 //        
-//        Context userContext = ServerConfiguration.Context.getContextForUser("admin");
+//        Context userContext = GpContext.getContextForUser("admin");
 //        theTest.writeFile(userContext, request, postParameters, 0, 1, "admin"); 
 //        
 //        File file1 = new File(TMPDIR, "test.txt");
@@ -120,7 +120,7 @@ public class UploadReceiverTest {
 //        List<FileItem> params = buildTestParameterList();
 //        HttpServletRequest request = buildTestRequest();
 //        
-//        Context userContext = ServerConfiguration.Context.getContextForUser("admin");
+//        Context userContext = GpContext.getContextForUser("admin");
 //        File dir = theTest.getUploadDirectory(userContext, request);
 //        Assert.assertEquals(dir.getCanonicalPath(), TMPDIR);
 //    }

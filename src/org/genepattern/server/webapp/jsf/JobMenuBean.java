@@ -27,7 +27,7 @@ import javax.servlet.http.HttpServletResponseWrapper;
 
 import org.apache.log4j.Logger;
 import org.genepattern.server.config.ServerConfiguration;
-import org.genepattern.server.config.ServerConfiguration.Context;
+import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.genepattern.GenePatternAnalysisTask;
@@ -46,7 +46,7 @@ public class JobMenuBean {
     
     public String createPipelineMessage(List<ParameterInfo> params) throws UnsupportedEncodingException {
         String toReturn = "";
-        Context userContext = ServerConfiguration.Context.getContextForUser(UIBeanHelper.getUserId());
+        GpContext userContext = GpContext.getContextForUser(UIBeanHelper.getUserId());
         long maxFileSize = ServerConfigurationFactory.instance().getGPLongProperty(userContext, "pipeline.max.file.size", 250L * 1000L * 1024L);
         for (ParameterInfo i : params) {
             toReturn += "Changed parameter " + i.getName() + " to 'Prompt When Run' because it exceeded maximum file size of " + JobHelper.getFormattedSize(maxFileSize) + " for pipelines.  ";

@@ -8,8 +8,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.genepattern.server.config.ServerConfiguration;
-import org.genepattern.server.config.ServerConfiguration.Context;
+import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.executor.CommandProperties.Value;
 import org.genepattern.webservice.JobInfo;
@@ -51,7 +50,7 @@ public class DrmJobSubmission {
     private final List<String> extraArgs;
     private final String workerName; //default is null
     private final Map<?,?> workerConfig; //default is null
-    private final Context jobContext;
+    private final GpContext jobContext;
     
     private DrmJobSubmission(Builder builder) {
         this.gpJobNo=builder.gpJobNo;
@@ -85,7 +84,7 @@ public class DrmJobSubmission {
         }
         this.workerName=builder.workerName;
         this.workerConfig=builder.workerConfig; 
-        this.jobContext=ServerConfiguration.Context.getContextForJob(jobInfo);
+        this.jobContext=GpContext.getContextForJob(jobInfo);
     }
     
     /**

@@ -17,8 +17,7 @@ import org.genepattern.drm.DrmJobState;
 import org.genepattern.drm.DrmJobStatus;
 import org.genepattern.drm.JobRunner;
 import org.genepattern.drm.DrmJobSubmission;
-import org.genepattern.server.config.ServerConfiguration;
-import org.genepattern.server.config.ServerConfiguration.Context;
+import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.executor.CommandExecutor;
 import org.genepattern.server.executor.CommandExecutorException;
@@ -341,7 +340,7 @@ public class JobExecutor implements CommandExecutor {
         final Integer gpJobNo=jobInfo.getJobNumber();
         log.debug(jobRunnerName+" runCommand, gpJobNo="+gpJobNo);
         
-        final Context jobContext=ServerConfiguration.Context.getContextForJob(jobInfo);
+        final GpContext jobContext=GpContext.getContextForJob(jobInfo);
         
         DrmJobSubmission.Builder builder=new DrmJobSubmission.Builder(jobInfo, runDir);
         builder=builder
@@ -425,7 +424,7 @@ public class JobExecutor implements CommandExecutor {
         }
     }
     
-    private String getValue(final Context jobContext, final Map<?,?> workerConfig, final String prop) {
+    private String getValue(final GpContext jobContext, final Map<?,?> workerConfig, final String prop) {
         if (workerConfig != null && workerConfig.containsKey(prop)) {
             return (String) workerConfig.get(prop);
         }
@@ -436,7 +435,7 @@ public class JobExecutor implements CommandExecutor {
         return value.getValue();
     }
     
-    private Map<?,?> getWorkerConfig(final Context jobContext) {
+    private Map<?,?> getWorkerConfig(final GpContext jobContext) {
         final String workerName=ServerConfigurationFactory.instance().getGPProperty(jobContext, JobRunner.PROP_WORKER_NAME, null);
         if (workerName == null) {
             return Collections.emptyMap();

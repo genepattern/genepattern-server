@@ -14,9 +14,6 @@ import org.apache.log4j.Logger;
 import org.genepattern.server.executor.CommandProperties;
 import org.genepattern.server.repository.ConfigRepositoryInfoLoader;
 import org.genepattern.server.repository.RepositoryInfo;
-import org.genepattern.server.webapp.jsf.AuthorizationHelper;
-import org.genepattern.webservice.JobInfo;
-import org.genepattern.webservice.TaskInfo;
 
 /**
  * Server configuration.
@@ -28,112 +25,6 @@ public class ServerConfiguration {
     public static final String PROP_CONFIG_FILE = "config.file";
     //for compatibility with GP 3.2.3 and GP 3.2.4
     public static final String PROP_LEGACY_CONFIG_FILE = "command.manager.config.file";
-
-    public static class Context {
-        //hard-coded default value is true for compatibility with GP 3.2.4 and earlier
-        private boolean checkSystemProperties = true;
-        //hard-coded default value is true for compatibility with GP 3.2.4 and earlier
-        private boolean checkPropertiesFiles = true;
-        private String userId = null;
-        private TaskInfo taskInfo = null;
-        private JobInfo jobInfo = null;
-        private boolean isAdmin=false;
-        
-        public static Context getServerContext() {
-            Context context = new Context();
-            return context;
-        }
-
-        public static Context getContextForUser(final String userId) {
-            return getContextForUser(userId, false);
-        }
-
-        public static Context getContextForUser(final String userId, final boolean initIsAdmin) {
-            if (userId==null) {
-                return new Context();
-            }
-            Context context = new Context();
-            context.setUserId(userId);
-            if (initIsAdmin) { 
-                final boolean isAdmin = AuthorizationHelper.adminServer(userId);
-                context.setIsAdmin(isAdmin);
-            }
-            return context;
-        }
-
-        public static Context getContextForJob(JobInfo jobInfo) {
-            Context context = new Context();
-            if (jobInfo != null) {
-                context.setJobInfo(jobInfo);
-                if (jobInfo.getUserId() != null) {
-                    context.setUserId(jobInfo.getUserId());
-                }
-            }
-            return context;
-        }
-        
-        public static Context getContextForJob(JobInfo jobInfo, TaskInfo taskInfo) {
-            Context context = getContextForJob(jobInfo);
-            if (taskInfo != null) {
-                context.setTaskInfo(taskInfo);
-            }
-            return context;
-        }
-        
-        public void setCheckSystemProperties(boolean b) {
-            this.checkSystemProperties = b;
-        }
-
-        public boolean getCheckSystemProperties() {
-            return checkSystemProperties;
-        }
-
-        public void setCheckPropertiesFiles(boolean b) {
-            this.checkPropertiesFiles = b;
-        }
-        
-        public boolean getCheckPropertiesFiles() {
-            return checkPropertiesFiles;
-        }
-        
-        public void setUserId(String userId) {
-            this.userId = userId;
-        }
-        public String getUserId() {
-            return userId;
-        }
-        
-        public void setTaskInfo(TaskInfo taskInfo) {
-            this.taskInfo = taskInfo;
-        }
-        public TaskInfo getTaskInfo() {
-            return this.taskInfo;
-        } 
-        
-        public void setJobInfo(JobInfo jobInfo) {
-            this.jobInfo = jobInfo;
-        }
-        public JobInfo getJobInfo() {
-            return jobInfo;
-        }
-
-        public void setIsAdmin(final boolean b) {
-            this.isAdmin=b;
-        }
-        public boolean isAdmin() {
-            return isAdmin;
-        }
-        
-        public String getLsid() {
-            if (taskInfo != null) {
-                return taskInfo.getLsid();
-            }
-            if (jobInfo != null) {
-                return jobInfo.getTaskLSID();
-            }
-            return null;
-        }
-    }
 
     ServerConfiguration() {
         try {
@@ -257,12 +148,12 @@ public class ServerConfiguration {
      * @param key
      * @return
      */
-    public boolean getGPBooleanProperty(Context context, String key) {
+    public boolean getGPBooleanProperty(final GpContext context, final String key) {
         String prop = getGPProperty(context, key);
         return Boolean.parseBoolean(prop);
     }
     
-    public boolean getGPBooleanProperty(Context context, String key, boolean defaultValue) {
+    public boolean getGPBooleanProperty(final GpContext context, final String key, final boolean defaultValue) {
         String prop = getGPProperty(context, key);
         if (prop == null) {
             return defaultValue;
@@ -281,7 +172,7 @@ public class ServerConfiguration {
      * 
      * @return the int value for the property, or the default value, can return null.
      */
-    public Integer getGPIntegerProperty(Context context, String key, Integer defaultValue) {
+    public Integer getGPIntegerProperty(final GpContext context, final String key, final Integer defaultValue) {
         String val = getGPProperty(context, key);
         if (val == null) {
             return defaultValue;
@@ -295,7 +186,7 @@ public class ServerConfiguration {
         }
     }
     
-    public Long getGPLongProperty(Context context, String key, Long defaultValue) {
+    public Long getGPLongProperty(final GpContext context, final String key, final Long defaultValue) {
         String val = getGPProperty(context, key);
         if (val == null) {
             return defaultValue;
@@ -315,7 +206,7 @@ public class ServerConfiguration {
      * @param key
      * @return
      */
-    public String getGPProperty(Context context, String key) {
+    public String getGPProperty(final GpContext context, final String key) {
         if (cmdMgrProps == null) {
             log.error("Invalid server configuration in getGPProperty("+key+")");
             return null;
@@ -323,7 +214,7 @@ public class ServerConfiguration {
         return cmdMgrProps.getProperty(context, key);
     }
     
-    public String getGPProperty(Context context, String key, String defaultValue) {
+    public String getGPProperty(final GpContext context, final String key, final String defaultValue) {
         if (cmdMgrProps == null) {
             log.error("Invalid server configuration in getGPProperty("+key+")");
             return defaultValue;
@@ -335,7 +226,7 @@ public class ServerConfiguration {
         return value;
     }
     
-    public CommandProperties.Value getValue(Context context, String key) {
+    public CommandProperties.Value getValue(final GpContext context, final String key) {
         if (cmdMgrProps == null) {
             log.error("Invalid server configuration in getGPProperty("+key+")");
             return null;
@@ -387,7 +278,7 @@ public class ServerConfiguration {
      * @param context
      * @return
      */
-    public File getUserDir(Context context) {
+    public File getUserDir(final GpContext context) {
         if (context == null) {
             throw new IllegalArgumentException("context is null");
         }
@@ -426,7 +317,7 @@ public class ServerConfiguration {
      * 
      * @return the parent directory in which to create the new working directory for a job.
      */
-    public File getRootJobDir(Context context) throws ServerConfigurationException {
+    public File getRootJobDir(final GpContext context) throws ServerConfigurationException {
         //default behavior, circa GP 3.2.4 and earlier, hard code path based on 'jobs' property
         String jobsDirPath = getGPProperty(context, "jobs");
         if (jobsDirPath != null) {
@@ -503,14 +394,14 @@ public class ServerConfiguration {
      * @return
      * @throws IllegalArgumentException if a directory is not found for the userId.
      */
-    public File getUserUploadDir(Context context) throws IllegalArgumentException {
+    public File getUserUploadDir(final GpContext context) throws IllegalArgumentException {
         boolean configError = false;
         if (context == null) {
             configError = true;
             //throw new IllegalArgumentException("context is null");
             log.error("context is null");
         }
-        if (context.getUserId() == null) {
+        else if (context.getUserId() == null) {
             configError = true;
             //throw new IllegalArgumentException("context.userId is null");
             log.error("context.userId is null");
@@ -549,11 +440,11 @@ public class ServerConfiguration {
         return new File(str);
     }
     
-    public boolean getAllowInputFilePaths(Context context) {
+    public boolean getAllowInputFilePaths(final GpContext context) {
         return getGPBooleanProperty(context, "allow.input.file.paths", false);
     }
     
-    public File getTemporaryUploadDir(Context context) throws IOException, Exception {
+    public File getTemporaryUploadDir(final GpContext context) throws IOException, Exception {
         String username = context.getUserId();
         if (username == null || username.length() == 0) {
             throw new Exception("userid not set");

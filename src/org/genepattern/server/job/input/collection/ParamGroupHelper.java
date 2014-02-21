@@ -6,7 +6,7 @@ import java.util.Collections;
 import java.util.List;
 
 import org.apache.log4j.Logger;
-import org.genepattern.server.config.ServerConfiguration.Context;
+import org.genepattern.server.config.GpContext;
 import org.genepattern.server.dm.GpFilePath;
 import org.genepattern.server.job.input.GroupInfo;
 import org.genepattern.server.job.input.JobInputFileUtil;
@@ -33,7 +33,7 @@ import org.genepattern.server.job.input.collection.ParamGroupWriter.Column;
 public class ParamGroupHelper {
     private static final Logger log = Logger.getLogger(ParamGroupHelper.class);
     
-    private final Context jobContext;
+    private final GpContext jobContext;
     private final GroupInfo groupInfo;
     private final Param param;
     private final List<GpFilePath> gpFilePaths;
@@ -111,7 +111,7 @@ public class ParamGroupHelper {
      * @param jobContext
      * @return
      */
-    private List<GpFilePath> initFilelist(final Context jobContext, final boolean downloadExternalFiles) 
+    private List<GpFilePath> initFilelist(final GpContext jobContext, final boolean downloadExternalFiles) 
     throws Exception 
     {
         final List<GpFilePath> gpFilePaths=new ArrayList<GpFilePath>();
@@ -152,7 +152,7 @@ public class ParamGroupHelper {
     }
     
     public static class Builder {
-        private Context jobContext=null;
+        private GpContext jobContext=null;
         private GroupInfo groupInfo=null;
         private final Param param;
         private String filenameSuffix=".group."+TsvWriter.EXT;
@@ -162,7 +162,7 @@ public class ParamGroupHelper {
         public Builder(final Param param) {
             this.param=param;
         }
-        public Builder jobContext(final Context jobContext) {
+        public Builder jobContext(final GpContext jobContext) {
             this.jobContext=jobContext;
             return this;
         }

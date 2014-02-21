@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
-import org.genepattern.server.config.ServerConfiguration.Context;
+import org.genepattern.server.config.GpContext;
 import org.genepattern.server.dm.ExternalFile;
 import org.genepattern.server.dm.GpFileObjFactory;
 import org.genepattern.server.dm.GpFilePath;
@@ -212,7 +212,7 @@ public class BatchInputFileHelper {
         }
     }
     
-    private final Context userContext;
+    private final GpContext userContext;
     private final JobInputApi jobInputApi;
     private final BatchGenerator batchGenerator;
     
@@ -220,13 +220,13 @@ public class BatchInputFileHelper {
     private Map<String,List<GpFilePath>> batchValues=new LinkedHashMap<String,List<GpFilePath>>();
     private final Map<String,ParameterInfoRecord> paramInfoMap;
 
-    public BatchInputFileHelper(final Context userContext, final TaskInfo taskInfo) {
+    public BatchInputFileHelper(final GpContext userContext, final TaskInfo taskInfo) {
         this(userContext, taskInfo, null);
     }
-    public BatchInputFileHelper(final Context userContext, final TaskInfo taskInfo, final JobInputApi jobInputApiIn) {
+    public BatchInputFileHelper(final GpContext userContext, final TaskInfo taskInfo, final JobInputApi jobInputApiIn) {
         this(userContext, taskInfo, jobInputApiIn, null);
     }
-    public BatchInputFileHelper(final Context userContext, final TaskInfo taskInfo, final JobInputApi jobInputApiIn, final BatchGenerator batchGeneratorIn) {
+    public BatchInputFileHelper(final GpContext userContext, final TaskInfo taskInfo, final JobInputApi jobInputApiIn, final BatchGenerator batchGeneratorIn) {
         this.userContext=userContext;
         if (jobInputApiIn == null) {
             this.jobInputApi=JobInputApiFactory.createJobInputApi(userContext);

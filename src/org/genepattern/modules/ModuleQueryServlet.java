@@ -44,8 +44,7 @@ import org.apache.commons.httpclient.methods.MultipartPostMethod;
 import org.apache.http.params.CoreProtocolPNames;
 import org.apache.log4j.Logger;
 import org.genepattern.server.TaskLSIDNotFoundException;
-import org.genepattern.server.config.ServerConfiguration;
-import org.genepattern.server.config.ServerConfiguration.Context;
+import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.eula.EulaInfo;
 import org.genepattern.server.eula.EulaManager;
@@ -176,7 +175,7 @@ public class ModuleQueryServlet extends HttpServlet {
             File zipfile = getZipFile(request);
             
             // Get the URL to post to
-            Context context = Context.getContextForUser((String) request.getSession().getAttribute("userid"));
+            GpContext context = GpContext.getContextForUser((String) request.getSession().getAttribute("userid"));
             String gparcUploadURL = ServerConfigurationFactory.instance().getGPProperty(context, "gparcUploadURL", "http://www.broadinstitute.org/software/gparc/server_upload.php");
             
             // Set up the post method
@@ -383,7 +382,7 @@ public class ModuleQueryServlet extends HttpServlet {
            sendError(response, "No GenePattern session found.  Please log in.");
            return;
         }
-        ServerConfiguration.Context userContext = ServerConfiguration.Context.getContextForUser(username);
+        GpContext userContext = GpContext.getContextForUser(username);
 
 	    RequestContext reqContext = new ServletRequestContext(request);
         if (FileUploadBase.isMultipartContent(reqContext)) {
@@ -804,7 +803,7 @@ public class ModuleQueryServlet extends HttpServlet {
 	        sendError(response, "No GenePattern session found.  Please log in.");
 	        return;
 	    }
-	    Context taskContext=Context.getContextForUser(username);
+	    GpContext taskContext=GpContext.getContextForUser(username);
 
 	    String lsid = request.getParameter("lsid");
 

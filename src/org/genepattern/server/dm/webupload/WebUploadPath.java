@@ -7,7 +7,7 @@ import java.net.URISyntaxException;
 import java.net.URLEncoder;
 
 import org.apache.log4j.Logger;
-import org.genepattern.server.config.ServerConfiguration.Context;
+import org.genepattern.server.config.GpContext;
 import org.genepattern.server.dm.GpFilePath;
 
 /**
@@ -72,7 +72,7 @@ public class WebUploadPath extends GpFilePath {
         return relativeFile;
     }
 
-    public boolean canRead(boolean isAdmin, Context userContext) {
+    public boolean canRead(final boolean isAdmin, final GpContext userContext) {
         if (isAdmin) {
             return true;
         }

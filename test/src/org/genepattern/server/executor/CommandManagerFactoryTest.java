@@ -11,7 +11,7 @@ import org.genepattern.server.auth.IGroupMembershipPlugin;
 import org.genepattern.server.config.ServerConfiguration;
 import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.config.ServerProperties;
-import org.genepattern.server.config.ServerConfiguration.Context;
+import org.genepattern.server.config.GpContext;
 import org.genepattern.server.executor.CommandProperties.Value;
 import org.genepattern.webservice.JobInfo;
 
@@ -536,7 +536,7 @@ public class CommandManagerFactoryTest extends TestCase {
         ServerProperties.instance().reloadProperties();
 
         //tests for 'test' user, use 'default.properties', no overrides
-        Context userContext = Context.getContextForUser("test");
+        GpContext userContext = GpContext.getContextForUser("test");
         assertNull("unset property",  ServerConfigurationFactory.instance().getGPProperty(userContext, "NOT_SET"));
         assertEquals("property which is only set in System.properties", 
                 "SYSTEM", ServerConfigurationFactory.instance().getGPProperty(userContext, "system.prop"));
@@ -548,16 +548,16 @@ public class CommandManagerFactoryTest extends TestCase {
         assertNull("default null value", ServerConfigurationFactory.instance().getGPProperty(userContext, "default.prop.null"));
 
         //tests for 'userA', with group overrides, userA is in two groups
-        userContext = Context.getContextForUser("userA");
+        userContext = GpContext.getContextForUser("userA");
         assertEquals("override default prop in group.properties", "admingroup_val", ServerConfigurationFactory.instance().getGPProperty(userContext, "default.prop"));
         
         //tests for 'userC', with group overrides, userC is in one group
-        userContext = Context.getContextForUser("userC");
+        userContext = GpContext.getContextForUser("userC");
         assertEquals("user override", "userC_val", ServerConfigurationFactory.instance().getGPProperty(userContext, "default.prop") );
         assertEquals("group override", "-Xmx256m -Dgroup=broadgroup", ServerConfigurationFactory.instance().getGPProperty(userContext, "java_flags"));
         
         //tests for 'userD' with user overrides, userD is not in any group
-        userContext = Context.getContextForUser("userD");
+        userContext = GpContext.getContextForUser("userD");
         assertEquals("user override", "userD_val", ServerConfigurationFactory.instance().getGPProperty(userContext, "default.prop"));
     }
     
@@ -574,7 +574,7 @@ public class CommandManagerFactoryTest extends TestCase {
         initializeYamlConfigFile("test_user_properties.yaml");
         UserAccountManager.instance().refreshUsersAndGroups();
 
-        Context context = new Context();
+        GpContext context = new GpContext();
         
         assertEquals("3.3.1", ServerConfigurationFactory.instance().getGPProperty(context, "GenePatternVersion"));
         assertEquals("8080.gp-trunk-dev.120.0.0.1", ServerConfigurationFactory.instance().getGPProperty(context, "lsid.authority"));
@@ -584,7 +584,7 @@ public class CommandManagerFactoryTest extends TestCase {
         assertEquals("added_in_custom.properties", ServerConfigurationFactory.instance().getGPProperty(context, "prop.test.02"));
         
         String userId = "admin";
-        Context userContext = Context.getContextForUser(userId);
+        GpContext userContext = GpContext.getContextForUser(userId);
         boolean allowBatchProcess = ServerConfigurationFactory.instance().getGPBooleanProperty(userContext, "allow.batch.process");
         assertEquals("testing getBooleanProperty in genepattern.properties and config.yaml", true, allowBatchProcess);
         

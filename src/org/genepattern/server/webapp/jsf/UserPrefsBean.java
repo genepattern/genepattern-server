@@ -21,7 +21,7 @@ import javax.faces.model.SelectItem;
 
 import org.apache.log4j.Logger;
 import org.genepattern.server.UserAccountManager;
-import org.genepattern.server.config.ServerConfiguration;
+import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.user.UserDAO;
 import org.genepattern.server.user.UserProp;
@@ -41,7 +41,7 @@ public class UserPrefsBean {
         this.userId = UIBeanHelper.getUserId();
         UserDAO dao = new UserDAO();
         
-        ServerConfiguration.Context userContext = ServerConfiguration.Context.getContextForUser(userId);
+        GpContext userContext = GpContext.getContextForUser(userId);
         String systemVisualizerJavaFlags = ServerConfigurationFactory.instance().getGPProperty(userContext, RunVisualizerConstants.JAVA_FLAGS_VALUE);
         javaFlagsProp = dao.getProperty(userId, UserPropKey.VISUALIZER_JAVA_FLAGS, systemVisualizerJavaFlags);
 

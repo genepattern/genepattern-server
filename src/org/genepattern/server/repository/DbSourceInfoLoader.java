@@ -3,8 +3,7 @@ package org.genepattern.server.repository;
 import java.net.MalformedURLException;
 
 import org.apache.log4j.Logger;
-import org.genepattern.server.config.ServerConfiguration;
-import org.genepattern.server.config.ServerConfiguration.Context;
+import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.repository.SourceInfo.CreatedOnServer;
@@ -28,7 +27,7 @@ import org.genepattern.webservice.TaskInfo;
 public class DbSourceInfoLoader implements SourceInfoLoader {
     final static private Logger log = Logger.getLogger(SourceInfoLoader.class);
     
-    private Context serverContext=ServerConfiguration.Context.getServerContext();
+    private GpContext serverContext=GpContext.getServerContext();
 
     @Override
     public SourceInfo getSourceInfo(final TaskInfo taskInfo) {

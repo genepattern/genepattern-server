@@ -15,8 +15,7 @@ import java.util.concurrent.Future;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
-import org.genepattern.server.config.ServerConfiguration;
-import org.genepattern.server.config.ServerConfiguration.Context;
+import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.dm.GpFileObjFactory;
 import org.genepattern.server.dm.GpFilePath;
@@ -101,7 +100,7 @@ abstract public class CachedFtpFile implements CachedFile {
         private Type defaultType=Type.JAVA_6;
 
         public CachedFtpFile newCachedFtpFile(final String urlString) {
-            ServerConfiguration.Context serverContext=ServerConfiguration.Context.getServerContext();
+            GpContext serverContext=GpContext.getServerContext();
             String str=ServerConfigurationFactory.instance().getGPProperty(serverContext, Type.PROP_FTP_DOWNLOADER_TYPE, Type.JAVA_6.name());
             Type type=null;
             try {
@@ -215,7 +214,7 @@ abstract public class CachedFtpFile implements CachedFile {
     }
     
     private static final GpFilePath getLocalPath(final URL fromExternalUrl, final String toRootDir) {
-        final Context userContext=ServerConfiguration.Context.getContextForUser(FileCache.CACHE_USER_ID);
+        final GpContext userContext=GpContext.getContextForUser(FileCache.CACHE_USER_ID);
         final String relPath= toRootDir+"/"+fromExternalUrl.getHost()+"/"+fromExternalUrl.getPath();
         final File relFile=new File(relPath);
         try {

@@ -6,8 +6,7 @@ import java.net.URISyntaxException;
 
 import org.apache.log4j.Logger;
 import org.genepattern.server.PermissionsHelper;
-import org.genepattern.server.config.ServerConfiguration;
-import org.genepattern.server.config.ServerConfiguration.Context;
+import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationException;
 import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.database.HibernateUtil;
@@ -82,7 +81,7 @@ public class JobResultFile extends GpFilePath {
         }
         
         //TODO: get the working dir for the job, currently all jobs are stored relative to the "jobs" directory
-        ServerConfiguration.Context context = ServerConfiguration.Context.getServerContext();
+        GpContext context = GpContext.getServerContext();
         File rootJobDir = ServerConfigurationFactory.instance().getRootJobDir(context);
         
         File jobDir = new File(rootJobDir, jobId);
@@ -114,7 +113,7 @@ public class JobResultFile extends GpFilePath {
         return relativeFile;
     }
 
-    public boolean canRead(boolean isAdmin, Context userContext) {
+    public boolean canRead(boolean isAdmin, GpContext userContext) {
         if (isAdmin) {
             return true;
         }

@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.apache.log4j.Logger;
-import org.genepattern.server.config.ServerConfiguration.Context;
+import org.genepattern.server.config.GpContext;
 import org.genepattern.server.eula.GetTaskStrategy;
 import org.genepattern.server.eula.GetTaskStrategyDefault;
 import org.genepattern.util.GPConstants;
@@ -29,7 +29,7 @@ import org.genepattern.webservice.TaskInfo;
 public class GetIncludedTasks {
     final static private Logger log = Logger.getLogger(GetIncludedTasks.class);
     
-    final private Context userContext;
+    final private GpContext userContext;
     final private GetTaskStrategy getTaskStrategy;
     final private Set<TaskInfo> dependentTasks;
     final private Set<LSID> missingTaskLsids;
@@ -39,11 +39,11 @@ public class GetIncludedTasks {
     //so that we don't visit the same pipeline more than once
     final private Set<String> visitedLsids;
 
-    public GetIncludedTasks(final Context userContext, final TaskInfo forTask) {
+    public GetIncludedTasks(final GpContext userContext, final TaskInfo forTask) {
         this(userContext, forTask, null);
     }
 
-    public GetIncludedTasks(final Context userContext, final TaskInfo forTask, final GetTaskStrategy getTaskStrategyIn) {
+    public GetIncludedTasks(final GpContext userContext, final TaskInfo forTask, final GetTaskStrategy getTaskStrategyIn) {
         this.userContext=userContext;
         if (forTask==null) {
             throw new IllegalArgumentException("forTask==null");

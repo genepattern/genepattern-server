@@ -7,7 +7,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.log4j.Logger;
-import org.genepattern.server.config.ServerConfiguration.Context;
+import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.dm.GpFilePath;
 
@@ -23,11 +23,11 @@ import org.genepattern.server.dm.GpFilePath;
 public class GenomeSpaceClientFactory {
     public static Logger log = Logger.getLogger(GenomeSpaceClientFactory.class);
 
-    static public boolean isGenomeSpaceEnabled(Context context) {
+    static public boolean isGenomeSpaceEnabled(final GpContext context) {
         return ServerConfigurationFactory.instance().getGPBooleanProperty(context, "genomeSpaceEnabled", true);
     }
     
-    static public String getGenomeSpaceEnvironment(Context context) {
+    static public String getGenomeSpaceEnvironment(final GpContext context) {
         return ServerConfigurationFactory.instance().getGPProperty(context, "genomeSpaceEnvironment", "prod");
     }
 

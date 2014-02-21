@@ -1,6 +1,6 @@
 package org.genepattern.server.job;
 
-import org.genepattern.server.config.ServerConfiguration.Context;
+import org.genepattern.server.config.GpContext;
 import org.genepattern.webservice.JobInfo;
 
 /**
@@ -11,5 +11,5 @@ import org.genepattern.webservice.JobInfo;
  *
  */
 public interface JobInfoLoader {
-    JobInfo getJobInfo(final Context userContext, final String jobId) throws Exception;
+    JobInfo getJobInfo(final GpContext userContext, final String jobId) throws Exception;
 }

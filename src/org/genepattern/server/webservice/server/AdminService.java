@@ -24,10 +24,8 @@ import javax.activation.FileDataSource;
 
 import org.apache.axis.MessageContext;
 import org.apache.log4j.Logger;
-import org.genepattern.server.config.ServerConfiguration;
-import org.genepattern.server.config.ServerConfiguration.Context;
+import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
-import org.genepattern.server.executor.CommandProperties;
 import org.genepattern.server.util.AuthorizationManagerFactory;
 import org.genepattern.server.util.IAuthorizationManager;
 import org.genepattern.server.webapp.jsf.AuthorizationHelper;
@@ -52,7 +50,7 @@ public class AdminService implements IAdminService {
     private static Map<String, String> serviceInfoMap;
     static {
         serviceInfoMap = new HashMap<String, String>();
-        Context serverContext = ServerConfiguration.Context.getServerContext();
+        GpContext serverContext = GpContext.getServerContext();
         
         serviceInfoMap.put("genepattern.version", 
                 ServerConfigurationFactory.instance().getGPProperty(serverContext, "GenePatternVersion"));

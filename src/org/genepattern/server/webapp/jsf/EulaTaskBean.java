@@ -8,7 +8,7 @@ import java.util.List;
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.log4j.Logger;
-import org.genepattern.server.config.ServerConfiguration.Context;
+import org.genepattern.server.config.GpContext;
 import org.genepattern.server.eula.EulaInfo;
 import org.genepattern.server.eula.EulaManager;
 import org.genepattern.server.eula.InitException;
@@ -287,7 +287,7 @@ public class EulaTaskBean {
         log.debug("initializing EULA info for userId="+currentUser+", lsid="+currentLsid);
         boolean requiresEULA = false; 
         if (taskInfo != null) {
-            Context taskContext = Context.getContextForUser(currentUser);
+            GpContext taskContext = GpContext.getContextForUser(currentUser);
             taskContext.setTaskInfo(taskInfo);
             List<EulaInfo> promptForEulas = EulaManager.instance(taskContext).getPendingEulaForModule(taskContext);
             if (promptForEulas == null || promptForEulas.size()==0) {

@@ -8,7 +8,7 @@ import java.util.regex.Pattern;
 
 import org.apache.commons.io.FilenameUtils;
 import org.apache.log4j.Logger;
-import org.genepattern.server.config.ServerConfiguration.Context;
+import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.dm.UrlUtil;
 import org.genepattern.server.executor.CommandProperties.Value;
@@ -32,7 +32,7 @@ public class MapLocalEntry {
      *     For a default gp install this will return an empty map.
      */
     private static Map<?,?> getLocalChoiceDirsMap() {
-        final Context serverContext=Context.getServerContext();
+        final GpContext serverContext=GpContext.getServerContext();
         final Value value=ServerConfigurationFactory.instance().getValue(serverContext, PROP_LOCAL_CHOICE_DIRS);
         if (value==null || !value.isMap()) {
             return Collections.emptyMap();

@@ -2,7 +2,7 @@ package org.genepattern.server.job.input.batch;
 
 import java.util.List;
 
-import org.genepattern.server.config.ServerConfiguration.Context;
+import org.genepattern.server.config.GpContext;
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.domain.AnalysisJobDAO;
 import org.genepattern.server.domain.BatchJob;
@@ -22,13 +22,13 @@ import org.genepattern.server.rest.JobReceipt;
  */
 public class BatchSubmitterImpl implements BatchSubmitter {
 
-    private final Context userContext;
+    private final GpContext userContext;
     private final JobInputApi jobInputApi;
     
-    public BatchSubmitterImpl(final Context userContext) {
+    public BatchSubmitterImpl(final GpContext userContext) {
         this(userContext, null);
     }
-    public BatchSubmitterImpl(final Context userContext, final JobInputApi jobInputApiIn) {
+    public BatchSubmitterImpl(final GpContext userContext, final JobInputApi jobInputApiIn) {
         this.userContext=userContext;
         if (jobInputApiIn == null) {
             this.jobInputApi=JobInputApiFactory.createJobInputApi(userContext);
@@ -62,7 +62,7 @@ public class BatchSubmitterImpl implements BatchSubmitter {
         return receipt;
     }
 
-    private String recordBatchJob(final Context userContext, final JobReceipt jobReceipt) throws GpServerException {
+    private String recordBatchJob(final GpContext userContext, final JobReceipt jobReceipt) throws GpServerException {
         //legacy implementation, based on code in SubmitJobServlet
         String batchId="";
         final boolean isInTransaction=HibernateUtil.isInTransaction();

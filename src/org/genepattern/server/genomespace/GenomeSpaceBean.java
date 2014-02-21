@@ -24,7 +24,7 @@ import javax.servlet.http.HttpSession;
 import org.apache.log4j.Logger;
 import org.genepattern.server.UserAccountManager;
 import org.genepattern.server.auth.AuthenticationException;
-import org.genepattern.server.config.ServerConfiguration.Context;
+import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.dm.ExternalFile;
 import org.genepattern.server.dm.GpFileObjFactory;
@@ -1066,7 +1066,7 @@ public class GenomeSpaceBean {
 
         // Update Database
         try {
-            Context context = UIBeanHelper.getUserContext();
+            GpContext context = UIBeanHelper.getUserContext();
             File relativeFile = new File(directory.getRelativeFile(), name);
             GpFilePath asUploadFile = UserUploadManager.getUploadFileObj(context, relativeFile, true);
             UserUploadManager.createUploadFile(context, asUploadFile, 1, true);

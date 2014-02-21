@@ -11,7 +11,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import org.apache.log4j.Logger;
-import org.genepattern.server.config.ServerConfiguration;
+import org.genepattern.server.config.GpContext;
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.webapp.rest.api.v1.Util;
 import org.genepattern.server.webservice.server.dao.AdminDAO;
@@ -40,7 +40,7 @@ public class SuiteResource {
     @Path("all.json")
     public Response getAllSuites(@Context HttpServletRequest request) {
         log.error("Unexpected call to /"+SuiteResource.URI_PATH+"/all.json");
-        final ServerConfiguration.Context userContext = Util.getUserContext(request);
+        final GpContext userContext = Util.getUserContext(request);
         try {
             // Get the latest suites
             final SuiteInfo[] allSuites = getAllSuites(userContext); 
@@ -55,7 +55,7 @@ public class SuiteResource {
         }
     }
     
-    public static SuiteInfo[] getAllSuites(final ServerConfiguration.Context userContext) {
+    public static SuiteInfo[] getAllSuites(final GpContext userContext) {
         if (userContext==null) {
             throw new IllegalArgumentException("userContext==null");
         }

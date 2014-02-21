@@ -7,8 +7,7 @@ import java.util.TreeMap;
 
 import org.apache.log4j.Logger;
 import org.genepattern.server.FileUtil;
-import org.genepattern.server.config.ServerConfiguration;
-import org.genepattern.server.config.ServerConfiguration.Context;
+import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.dm.GpDirectoryNode;
@@ -33,7 +32,7 @@ public class UserUploadManager {
      * @return
      * @throws Exception
      */
-    static public GpFilePath getUserUploadDir(ServerConfiguration.Context userContext) throws Exception {
+    static public GpFilePath getUserUploadDir(GpContext userContext) throws Exception {
         return GpFileObjFactory.getUserUploadDir(userContext);
     }
     
@@ -46,12 +45,12 @@ public class UserUploadManager {
      * @return
      * @throws Exception
      */
-    static public GpFilePath getUploadFileObj(final Context userContext, final File relativePath, final boolean initMetaData) throws Exception {
+    static public GpFilePath getUploadFileObj(final GpContext userContext, final File relativePath, final boolean initMetaData) throws Exception {
         final GpFilePath uploadFilePath = GpFileObjFactory.getUserUploadFile(userContext, relativePath);
         return getUploadFileObj(userContext, uploadFilePath, initMetaData);
     }
         
-    static public GpFilePath getUploadFileObj(final Context userContext, final GpFilePath uploadFilePath, final boolean initMetaData) throws Exception {
+    static public GpFilePath getUploadFileObj(final GpContext userContext, final GpFilePath uploadFilePath, final boolean initMetaData) throws Exception {
         //if there is a record in the DB ... 
         boolean isInTransaction = false;
         try {
@@ -90,7 +89,7 @@ public class UserUploadManager {
      * Create an instance of a GpFilePath object from a UserUpload record.
      * 
      */
-    static public GpFilePath getUploadFileObj(Context userContext, File relativePath, UserUpload fromDb) throws Exception {
+    static public GpFilePath getUploadFileObj(GpContext userContext, File relativePath, UserUpload fromDb) throws Exception {
         GpFilePath uploadFilePath = GpFileObjFactory.getUserUploadFile(userContext, relativePath);
         initMetadata(uploadFilePath, fromDb);
         return uploadFilePath;
@@ -127,7 +126,7 @@ public class UserUploadManager {
      * @param numParts, the number of parts this file is broken up into, based on the jumploader applet.
      * @throws Exception if a duplicate entry for the file is found in the database
      */
-    static public UserUpload createUploadFile(Context userContext, GpFilePath gpFileObj, int numParts) throws Exception {
+    static public UserUpload createUploadFile(GpContext userContext, GpFilePath gpFileObj, int numParts) throws Exception {
         return createUploadFile(userContext, gpFileObj, numParts, false);
     }
     
@@ -143,7 +142,7 @@ public class UserUploadManager {
      * @param modDuplicate, whether an existing duplicate entry is updated or if an error is thrown
      * @throws Exception if a duplicate entry for the file is found in the database and modDuplicate is false
      */
-    static public UserUpload createUploadFile(Context userContext, GpFilePath gpFileObj, int numParts, boolean modDuplicate) throws Exception {
+    static public UserUpload createUploadFile(GpContext userContext, GpFilePath gpFileObj, int numParts, boolean modDuplicate) throws Exception {
         boolean inTransaction = HibernateUtil.isInTransaction();
         
         UserUploadDao dao = new UserUploadDao();
@@ -180,7 +179,7 @@ public class UserUploadManager {
      * @param totalParts
      * @throws Exception, if a part is received out of order.
      */
-    static public void updateUploadFile(Context userContext, GpFilePath gpFilePath, int partNum, int totalParts) throws Exception {
+    static public void updateUploadFile(GpContext userContext, GpFilePath gpFilePath, int partNum, int totalParts) throws Exception {
         boolean inTransaction = HibernateUtil.isInTransaction();
         try {
             UserUploadDao dao = new UserUploadDao();
@@ -246,7 +245,7 @@ public class UserUploadManager {
      * @param inDir
      * @return
      */
-    static public GpDirectoryNode getFileTree(final ServerConfiguration.Context userContext) throws Exception { 
+    static public GpDirectoryNode getFileTree(final GpContext userContext) throws Exception { 
         final GpFilePath userDir = GpFileObjFactory.getUserUploadDir(userContext);
         final GpDirectoryNode root = new GpDirectoryNode(userDir);
 
@@ -333,7 +332,7 @@ public class UserUploadManager {
      * @param userId
      * @return
      */
-    static private List<UserUpload> getAllFiles(final Context userContext) {
+    static private List<UserUpload> getAllFiles(final GpContext userContext) {
         final String userId=userContext.getUserId();
         final boolean hideTmp=ServerConfigurationFactory.instance().getGPBooleanProperty(userContext, PROP_UPLOAD_HIDE_TMP, true);
         final boolean includeTempFiles=!hideTmp;
@@ -349,7 +348,7 @@ public class UserUploadManager {
      * @return
      * @throws Exception Thrown is the path provided is not in the user's upload dir
      */
-    static public String absoluteToRelativePath(Context context, String absolute) throws Exception {
+    static public String absoluteToRelativePath(GpContext context, String absolute) throws Exception {
         File userUploadDir = ServerConfigurationFactory.instance().getUserUploadDir(context);
         File absoluteFile = new File(absolute);
         

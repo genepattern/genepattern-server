@@ -4,7 +4,7 @@ import java.io.File;
 import java.util.List;
 
 import org.genepattern.junitutil.FileUtil;
-import org.genepattern.server.config.ServerConfiguration.Context;
+import org.genepattern.server.config.GpContext;
 import org.genepattern.server.executor.CommandExecutor;
 import org.genepattern.server.executor.CommandManager;
 import org.genepattern.server.executor.CommandManagerFactory;
@@ -83,17 +83,17 @@ public class TestServerConfigurationModuleProps {
         }
     }
 
-    private void doTest(final Context context, final String expected) {
+    private void doTest(final GpContext context, final String expected) {
         doTest(context, "test.prop", expected);
     }
 
-    private void doTest(final Context context, final String prop, final String expected) {
+    private void doTest(final GpContext context, final String prop, final String expected) {
         String message="for "+printContext(context)+" expecting "+prop+"="+expected;
         Value value=ServerConfigurationFactory.instance().getValue(context, prop);
         Assert.assertEquals(message, expected, value.getValue());
     }
     
-    private String printContext(final Context context) {
+    private String printContext(final GpContext context) {
         if (context==null) {
             return "context=null";
         }
@@ -113,7 +113,7 @@ public class TestServerConfigurationModuleProps {
      */
     @Test
     public void testDefaultContext() {
-        Context context = new Context();
+        GpContext context = new GpContext();
         doTest(context, "DEFAULT_VALUE");
     }
 
@@ -122,7 +122,7 @@ public class TestServerConfigurationModuleProps {
      */
     @Test
     public void testNullContext() {
-        Context context = null;
+        GpContext context = null;
         doTest(context, "DEFAULT_VALUE");
     }
 
@@ -132,7 +132,7 @@ public class TestServerConfigurationModuleProps {
     @Test
     public void testJobInfoAndTaskInfoNotSet() {
         //2) user is set, taskInfo and jobInfo not set
-        Context context = Context.getContextForUser("gp_user");
+        GpContext context = GpContext.getContextForUser("gp_user");
         doTest(context, "DEFAULT_VALUE");
     }
 
@@ -141,7 +141,7 @@ public class TestServerConfigurationModuleProps {
      */
     @Test
     public void testUserWithCustomValue() {
-        Context context = Context.getContextForUser("userD");
+        GpContext context = GpContext.getContextForUser("userD");
         doTest(context, "USERD_VALUE");
     }
     
@@ -150,7 +150,7 @@ public class TestServerConfigurationModuleProps {
      */
     @Test
     public void testGroupWithCustomValue() {
-        Context context = Context.getContextForUser("userC");
+        GpContext context = GpContext.getContextForUser("userC");
         doTest(context, "BROADGROUP_VALUE");
     }
 
@@ -159,7 +159,7 @@ public class TestServerConfigurationModuleProps {
      */
     @Test
     public void testLsidWithCustomValue() {
-        Context context = Context.getContextForUser("gp_user");
+        GpContext context = GpContext.getContextForUser("gp_user");
         context.setTaskInfo(taskInfo);
         doTest(context, "TASK_LSID_VALUE");
     }
@@ -169,7 +169,7 @@ public class TestServerConfigurationModuleProps {
      */
     @Test
     public void testLsidNoVersion() {
-        Context context = Context.getContextForUser("gp_user");
+        GpContext context = GpContext.getContextForUser("gp_user");
         taskInfo.giveTaskInfoAttributes().put(GPConstants.LSID, "urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00044:3");
         context.setTaskInfo(taskInfo);
         doTest(context, "TASK_LSID_NO_VERSION_VALUE");
@@ -180,7 +180,7 @@ public class TestServerConfigurationModuleProps {
      */
     @Test
     public void testTaskName() {
-        Context context = Context.getContextForUser("gp_user");
+        GpContext context = GpContext.getContextForUser("gp_user");
         context.setTaskInfo(taskInfo);
         
         //same taskName but different base lsid
@@ -195,7 +195,7 @@ public class TestServerConfigurationModuleProps {
      */
     @Test
     public void testJobInfo() {
-        Context context = Context.getContextForUser("gp_user");
+        GpContext context = GpContext.getContextForUser("gp_user");
         context.setJobInfo(jobInfo);
         doTest(context, "TASK_LSID_VALUE");
     }
@@ -205,7 +205,7 @@ public class TestServerConfigurationModuleProps {
      */
     @Test
     public void testJobInfoLsidNoVersion() {
-        Context context = Context.getContextForUser("gp_user");
+        GpContext context = GpContext.getContextForUser("gp_user");
         jobInfo.setTaskLSID("urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00044:3");
         context.setJobInfo(jobInfo);
         doTest(context, "TASK_LSID_NO_VERSION_VALUE");
@@ -216,7 +216,7 @@ public class TestServerConfigurationModuleProps {
      */
     @Test
     public void testJobInfoTaskName() {
-        Context context = Context.getContextForUser("gp_user");
+        GpContext context = GpContext.getContextForUser("gp_user");
         jobInfo.setTaskLSID("urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00045:2");
         context.setJobInfo(jobInfo);
         doTest(context, "TASK_NAME_VALUE");
@@ -227,7 +227,7 @@ public class TestServerConfigurationModuleProps {
      */
     @Test
     public void testNullJobInfo() {
-        Context context = Context.getContextForUser("gp_user");
+        GpContext context = GpContext.getContextForUser("gp_user");
         context.setJobInfo(null);
         doTest(context, "DEFAULT_VALUE");
     }
@@ -237,7 +237,7 @@ public class TestServerConfigurationModuleProps {
      */
     @Test
     public void testJobInfoAndTaskInfo() {
-        Context context = Context.getContextForUser("gp_user");
+        GpContext context = GpContext.getContextForUser("gp_user");
         context.setTaskInfo(taskInfo);
         jobInfo.setTaskName("ConvertLineEndings");
         jobInfo.setTaskLSID("urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00002:1");
@@ -250,7 +250,7 @@ public class TestServerConfigurationModuleProps {
      */
     @Test
     public void testUserAndModuleProp() {
-        Context context = Context.getContextForUser("userD");
+        GpContext context = GpContext.getContextForUser("userD");
         context.setTaskInfo(taskInfo);
         doTest(context, "USERD_VALUE");
     }
@@ -260,7 +260,7 @@ public class TestServerConfigurationModuleProps {
      */
     @Test
     public void testUserAndGroupProp() {
-        Context context = Context.getContextForUser("adminuser");
+        GpContext context = GpContext.getContextForUser("adminuser");
         context.setTaskInfo(taskInfo);
         doTest(context, "ADMINGROUP_VALUE");
 
@@ -276,7 +276,7 @@ public class TestServerConfigurationModuleProps {
      */
     @Test
     public void testModulePropInGroup() {
-        Context context = Context.getContextForUser("userB");
+        GpContext context = GpContext.getContextForUser("userB");
         context.setTaskInfo(taskInfo);
         doTest(context, "BROADGROUP_LSID_VALUE");
         
@@ -291,7 +291,7 @@ public class TestServerConfigurationModuleProps {
      */
     @Test
     public void testModulePropForUser() {
-        Context context = Context.getContextForUser("userC");
+        GpContext context = GpContext.getContextForUser("userC");
         context.setTaskInfo(taskInfo);
         doTest(context, "USERC_TASK_LSID_VALUE");
         
@@ -308,7 +308,7 @@ public class TestServerConfigurationModuleProps {
      */
     @Test
     public void testModulePropForUserInTwoGroups() {
-        Context context = Context.getContextForUser("userA");
+        GpContext context = GpContext.getContextForUser("userA");
         context.setTaskInfo(taskInfo);
         doTest(context, "USERA_TASK_LSID_VALUE");
         
@@ -326,7 +326,7 @@ public class TestServerConfigurationModuleProps {
     @Test
     public void testAllGroups_defaultUser() {
         // a user in no group
-        Context context=Context.getContextForUser("gp_user");
+        GpContext context=GpContext.getContextForUser("gp_user");
         doTest(context, "all.groups.prop", "ALL_GROUPS_VALUE");
     }
     
@@ -336,7 +336,7 @@ public class TestServerConfigurationModuleProps {
      */
     public void testAllGroups_userInGroup() {        
         // a user in a group, which doesn't set the value
-        Context context=Context.getContextForUser("userC");
+        GpContext context=GpContext.getContextForUser("userC");
         doTest(context, "all.groups.prop", "ALL_GROUPS_VALUE");
     }
     
@@ -346,7 +346,7 @@ public class TestServerConfigurationModuleProps {
      */
     public void testAllGroups_override() {        
         // a user in a group, which sets the value
-        Context context=Context.getContextForUser("adminuser");
+        GpContext context=GpContext.getContextForUser("adminuser");
         doTest(context, "all.groups.prop", "ADMINGROUP_VALUE");
     }
     
@@ -357,7 +357,7 @@ public class TestServerConfigurationModuleProps {
      */
     public void testAllGroups_overrideInModuleProps() {        
         // a user in a group, which overrides the value in the module.properties section
-        Context context=Context.getContextForUser("adminuser");
+        GpContext context=GpContext.getContextForUser("adminuser");
         taskInfo.setName("AllGroupsModule");
         taskInfo.getTaskInfoAttributes().put(GPConstants.LSID, "urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00001:1");
         context.setTaskInfo(taskInfo);

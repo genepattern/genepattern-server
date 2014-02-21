@@ -11,7 +11,7 @@ import javax.servlet.http.HttpSession;
 import org.apache.log4j.Logger;
 import org.genepattern.server.UserAccountManager;
 import org.genepattern.server.auth.AuthenticationException;
-import org.genepattern.server.config.ServerConfiguration.Context;
+import org.genepattern.server.config.GpContext;
 import org.genepattern.server.webapp.jsf.UIBeanHelper;
 import org.genepattern.util.GPConstants;
 
@@ -47,7 +47,7 @@ public class GenomeSpaceLoginManager {
         String gp_username = (String) httpSession.getAttribute(GPConstants.USERID);
         if (token == null || gp_username == null) return false;
         
-        Context context = Context.getContextForUser(gp_username);
+        GpContext context = GpContext.getContextForUser(gp_username);
         String genomeSpaceEnvironment = GenomeSpaceClientFactory.getGenomeSpaceEnvironment(context);
         
         GenomeSpaceLogin login = GenomeSpaceClientFactory.getGenomeSpaceClient().submitLogin(genomeSpaceEnvironment, token);
@@ -70,7 +70,7 @@ public class GenomeSpaceLoginManager {
      * @throws GenomeSpaceException
      */
     public static boolean loginFromDatabase(String gp_username, HttpSession httpSession) throws GenomeSpaceException {
-        Context context = Context.getContextForUser(gp_username);
+        GpContext context = GpContext.getContextForUser(gp_username);
         String genomeSpaceEnvironment = GenomeSpaceClientFactory.getGenomeSpaceEnvironment(context);
         
         if (GenomeSpaceDatabaseManager.isGPAccountAssociated(gp_username)) {

@@ -6,7 +6,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import org.apache.log4j.Logger;
-import org.genepattern.server.config.ServerConfiguration.Context;
+import org.genepattern.server.config.GpContext;
 import org.genepattern.server.eula.GetTaskStrategy;
 import org.genepattern.server.eula.GetTaskStrategyDefault;
 import org.genepattern.server.executor.JobSubmissionException;
@@ -21,19 +21,19 @@ import org.genepattern.webservice.TaskInfo;
 public class JobInputApiLegacy {
     final static private Logger log = Logger.getLogger(JobInputApiLegacy.class);
 
-    private Context userContext;
+    private GpContext userContext;
     private JobInput jobInput;
     private TaskInfo taskInfo;
     private final boolean initDefault;
     
 
-    public JobInputApiLegacy(final Context userContext, final JobInput jobInput) {
+    public JobInputApiLegacy(final GpContext userContext, final JobInput jobInput) {
         this(userContext, jobInput, null);
     }
-    public JobInputApiLegacy(final Context userContext, final JobInput jobInput, final GetTaskStrategy getTaskStrategyIn) {
+    public JobInputApiLegacy(final GpContext userContext, final JobInput jobInput, final GetTaskStrategy getTaskStrategyIn) {
         this(userContext, jobInput, getTaskStrategyIn, false);
     }
-    public JobInputApiLegacy(final Context userContext, final JobInput jobInput, final GetTaskStrategy getTaskStrategyIn, final boolean initDefault) {
+    public JobInputApiLegacy(final GpContext userContext, final JobInput jobInput, final GetTaskStrategy getTaskStrategyIn, final boolean initDefault) {
         this.userContext=userContext;
         this.jobInput=jobInput;
         this.initDefault=initDefault;

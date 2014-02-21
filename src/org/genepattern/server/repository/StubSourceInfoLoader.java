@@ -2,8 +2,7 @@ package org.genepattern.server.repository;
 
 import java.util.List;
 
-import org.genepattern.server.config.ServerConfiguration;
-import org.genepattern.server.config.ServerConfiguration.Context;
+import org.genepattern.server.config.GpContext;
 import org.genepattern.server.repository.SourceInfo.FromRepo;
 import org.genepattern.server.repository.SourceInfo.FromUnknown;
 import org.genepattern.webservice.TaskInfo;
@@ -17,7 +16,7 @@ import org.genepattern.webservice.TaskInfo;
  */
 public class StubSourceInfoLoader implements SourceInfoLoader {
     private SourceInfo getSourceInfoByIdx(final int idx) {
-        final Context serverContext=ServerConfiguration.Context.getServerContext();
+        final GpContext serverContext=GpContext.getServerContext();
         final RepositoryInfoLoader loader = RepositoryInfo.getRepositoryInfoLoader(serverContext);
         final List<RepositoryInfo> repositories=loader.getRepositories();
         if (repositories != null && repositories.size()>idx) {

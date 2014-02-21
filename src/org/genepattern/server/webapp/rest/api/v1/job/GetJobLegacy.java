@@ -6,7 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.log4j.Logger;
-import org.genepattern.server.config.ServerConfiguration;
+import org.genepattern.server.config.GpContext;
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.dm.GpFilePath;
 import org.genepattern.server.dm.jobresult.JobResultFile;
@@ -93,7 +93,7 @@ class GetJobLegacy implements GetJob {
         return o;
     }
     
-    public JSONObject getJob(final ServerConfiguration.Context userContext, final String jobId) 
+    public JSONObject getJob(final GpContext userContext, final String jobId) 
     throws GetJobException
     {
         if (userContext==null) {

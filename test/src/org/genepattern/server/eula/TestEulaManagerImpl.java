@@ -8,7 +8,7 @@ import org.apache.log4j.Logger;
 import org.genepattern.junitutil.FileUtil;
 import org.genepattern.junitutil.TaskUtil;
 import org.genepattern.server.TaskLSIDNotFoundException;
-import org.genepattern.server.config.ServerConfiguration.Context;
+import org.genepattern.server.config.GpContext;
 import org.genepattern.webservice.TaskInfo;
 import org.junit.Assert;
 import org.junit.Before;
@@ -161,7 +161,7 @@ public class TestEulaManagerImpl {
 
 
         final String userId="gp_user";
-        Context taskContext=Context.getContextForUser(userId);
+        GpContext taskContext=GpContext.getContextForUser(userId);
         taskContext.setTaskInfo(taskInfo);
 
         eulaMgr.setGetEulaFromTask(stub);
@@ -200,7 +200,7 @@ public class TestEulaManagerImpl {
         addLicenseFiles(stub, taskInfo, licenses);
         
         final String userId="gp_user";
-        Context taskContext=Context.getContextForUser(userId);
+        GpContext taskContext=GpContext.getContextForUser(userId);
         taskContext.setTaskInfo(taskInfo);
 
         eulaMgr.setGetEulaFromTask(stub);
@@ -263,7 +263,7 @@ public class TestEulaManagerImpl {
         addLicenseFiles(stub, lastEulaTask, twoLicenses);
 
         final String userId="gp_user";
-        Context taskContext=Context.getContextForUser(userId);
+        GpContext taskContext=GpContext.getContextForUser(userId);
         taskContext.setTaskInfo(pipelineTask);
 
         eulaMgr.setGetTaskStrategy(myTaskInfoCache);
@@ -305,7 +305,7 @@ public class TestEulaManagerImpl {
         GetEulaFromTaskStub stub = new GetEulaFromTaskStub();
         
         final String userId="gp_user";
-        Context taskContext=Context.getContextForUser(userId);
+        GpContext taskContext=GpContext.getContextForUser(userId);
         taskContext.setTaskInfo(taskInfo);
         eulaMgr.setGetEulaFromTask(stub);
         eulaMgr.setRecordEulaStrategy(RecordEulaStub.instance());
@@ -322,7 +322,7 @@ public class TestEulaManagerImpl {
         addLicenseFile(stub, taskInfo, licenseFile);
         
         final String userId="gp_user";
-        Context taskContext=Context.getContextForUser(userId);
+        GpContext taskContext=GpContext.getContextForUser(userId);
         taskContext.setTaskInfo(taskInfo);
         eulaMgr.setGetEulaFromTask(stub);
         eulaMgr.setRecordEulaStrategy(RecordEulaStub.instance());
@@ -332,7 +332,7 @@ public class TestEulaManagerImpl {
 
     @Test
     public void testRequiresEula_NullTaskContext() {
-        Context taskContext=null;        
+        GpContext taskContext=null;        
         try { 
             eulaMgr.requiresEula(taskContext);
             Assert.fail("Expecting IllegalArgumentException, when taskContext==null");
@@ -347,7 +347,7 @@ public class TestEulaManagerImpl {
         GetEulaFromTaskStub stub = new GetEulaFromTaskStub();
         
         final String userId="gp_user";
-        Context taskContext=Context.getContextForUser(userId);
+        GpContext taskContext=GpContext.getContextForUser(userId);
         eulaMgr.setGetEulaFromTask(stub);
         eulaMgr.setRecordEulaStrategy(RecordEulaStub.instance());
         
@@ -368,7 +368,7 @@ public class TestEulaManagerImpl {
         GetEulaFromTaskStub stub = new GetEulaFromTaskStub();
         
         final String userId="gp_user";
-        Context taskContext=Context.getContextForUser(userId);
+        GpContext taskContext=GpContext.getContextForUser(userId);
         taskContext.setTaskInfo(taskInfo);
         eulaMgr.setGetEulaFromTask(stub);
         eulaMgr.setRecordEulaStrategy(RecordEulaStub.instance());
@@ -390,7 +390,7 @@ public class TestEulaManagerImpl {
         GetEulaFromTaskStub stub = new GetEulaFromTaskStub();
         
         final String userId="gp_user";
-        Context taskContext=Context.getContextForUser(userId);
+        GpContext taskContext=GpContext.getContextForUser(userId);
         taskContext.setTaskInfo(taskInfo);
         eulaMgr.setGetEulaFromTask(stub);
         eulaMgr.setRecordEulaStrategy(RecordEulaStub.instance());
@@ -413,7 +413,7 @@ public class TestEulaManagerImpl {
         addLicenseFile(stub, taskInfo, licenseFile);
         
         final String userId=null;
-        Context taskContext=Context.getContextForUser(userId);
+        GpContext taskContext=GpContext.getContextForUser(userId);
         taskContext.setTaskInfo(taskInfo);
         eulaMgr.setGetEulaFromTask(stub);
         eulaMgr.setRecordEulaStrategy(RecordEulaStub.instance());
@@ -436,7 +436,7 @@ public class TestEulaManagerImpl {
         addLicenseFile(stub, taskInfo, licenseFile);
         
         final String userId="";
-        Context taskContext=Context.getContextForUser(userId);
+        GpContext taskContext=GpContext.getContextForUser(userId);
         taskContext.setTaskInfo(taskInfo);
         eulaMgr.setGetEulaFromTask(stub);
         eulaMgr.setRecordEulaStrategy(RecordEulaStub.instance());
@@ -462,7 +462,7 @@ public class TestEulaManagerImpl {
         addLicenseFile(stub, taskInfo, licenseFile);
 
         final String userId="gp_user";
-        Context taskContext=Context.getContextForUser(userId);
+        GpContext taskContext=GpContext.getContextForUser(userId);
         taskContext.setTaskInfo(taskInfo);
         eulaMgr.setGetEulaFromTask(stub);
         eulaMgr.setRecordEulaStrategy(RecordEulaStub.instance());
@@ -477,7 +477,7 @@ public class TestEulaManagerImpl {
         GetEulaFromTaskStub stub = new GetEulaFromTaskStub();
         addLicenseFile(stub, taskInfo, licenseFile);
 
-        Context taskContext=null; 
+        GpContext taskContext=null; 
         eulaMgr.setGetEulaFromTask(stub);
         eulaMgr.setRecordEulaStrategy(RecordEulaStub.instance());
         try { 
@@ -498,7 +498,7 @@ public class TestEulaManagerImpl {
         addLicenseFile(stub, taskInfo, licenseFile);
 
         final String userId="gp_user";
-        Context taskContext=Context.getContextForUser(userId);
+        GpContext taskContext=GpContext.getContextForUser(userId);
         taskContext.setTaskInfo(null);
         eulaMgr.setGetEulaFromTask(stub);
         eulaMgr.setRecordEulaStrategy(RecordEulaStub.instance());
@@ -520,7 +520,7 @@ public class TestEulaManagerImpl {
         addLicenseFile(stub, taskInfo, licenseFile);
 
         final String userId="gp_user";
-        Context taskContext=Context.getContextForUser(userId);
+        GpContext taskContext=GpContext.getContextForUser(userId);
         taskInfo.getAttributes().put("LSID", null);
         taskContext.setTaskInfo(taskInfo);
         eulaMgr.setGetEulaFromTask(stub);
@@ -543,7 +543,7 @@ public class TestEulaManagerImpl {
         addLicenseFile(stub, taskInfo, licenseFile);
 
         final String userId="gp_user";
-        Context taskContext=Context.getContextForUser(userId);
+        GpContext taskContext=GpContext.getContextForUser(userId);
         taskInfo.getAttributes().put("LSID", "");
         taskContext.setTaskInfo(taskInfo);
         eulaMgr.setGetEulaFromTask(stub);
@@ -566,7 +566,7 @@ public class TestEulaManagerImpl {
         addLicenseFile(stub, taskInfo, licenseFile);
 
         final String userId=null;
-        Context taskContext=Context.getContextForUser(userId);
+        GpContext taskContext=GpContext.getContextForUser(userId);
         taskContext.setTaskInfo(taskInfo);
         eulaMgr.setGetEulaFromTask(stub);
         eulaMgr.setRecordEulaStrategy(RecordEulaStub.instance());
@@ -588,7 +588,7 @@ public class TestEulaManagerImpl {
         addLicenseFile(stub, taskInfo, licenseFile);
 
         final String userId="";
-        Context taskContext=Context.getContextForUser(userId);
+        GpContext taskContext=GpContext.getContextForUser(userId);
         taskContext.setTaskInfo(taskInfo);
         eulaMgr.setGetEulaFromTask(stub);
         eulaMgr.setRecordEulaStrategy(RecordEulaStub.instance());
@@ -610,7 +610,7 @@ public class TestEulaManagerImpl {
         addLicenseFile(stub, taskInfo, licenseFile);
         
         final String userId="gp_user";
-        Context taskContext=Context.getContextForUser(userId);
+        GpContext taskContext=GpContext.getContextForUser(userId);
         taskContext.setTaskInfo(taskInfo);
         eulaMgr.setGetEulaFromTask(stub);
         eulaMgr.setRecordEulaStrategy(RecordEulaStub.instance());
@@ -629,7 +629,7 @@ public class TestEulaManagerImpl {
         GetEulaFromTaskStub stub = new GetEulaFromTaskStub();
         
         final String userId="gp_user";
-        Context taskContext=Context.getContextForUser(userId);
+        GpContext taskContext=GpContext.getContextForUser(userId);
         taskContext.setTaskInfo(taskInfo);
         eulaMgr.setGetEulaFromTask(stub);
         eulaMgr.setRecordEulaStrategy(RecordEulaStub.instance());
@@ -652,7 +652,7 @@ public class TestEulaManagerImpl {
         addLicenseFile(stub, taskInfo, licenseFile);
         
         final String userId="gp_user_two";
-        Context taskContext=Context.getContextForUser(userId);
+        GpContext taskContext=GpContext.getContextForUser(userId);
         taskContext.setTaskInfo(taskInfo);
         eulaMgr.setGetEulaFromTask(stub);
         eulaMgr.setRecordEulaStrategy(RecordEulaStub.instance());
@@ -674,7 +674,7 @@ public class TestEulaManagerImpl {
         addLicenseFile(stub, taskInfo, licenseFile);
         
         final String userId="gp_user_three";
-        Context taskContext=Context.getContextForUser(userId);
+        GpContext taskContext=GpContext.getContextForUser(userId);
         taskContext.setTaskInfo(taskInfo);
         eulaMgr.setGetEulaFromTask(stub);
         eulaMgr.setRecordEulaStrategy(RecordEulaStub.instance());
@@ -689,7 +689,7 @@ public class TestEulaManagerImpl {
         final TaskInfo taskInfo = initTaskInfoFromZip("testLicenseAgreement_v3.zip");
         final File licenseFile=getSourceFile("gp_server_license.txt");
         final String userId="gp_user";
-        Context taskContext=Context.getContextForUser(userId);
+        GpContext taskContext=GpContext.getContextForUser(userId);
         taskContext.setTaskInfo(taskInfo);
         
         EulaInfo eula=null;
@@ -718,7 +718,7 @@ public class TestEulaManagerImpl {
         final List<TaskInfo> taskInfos = TaskUtil.getTaskInfosFromZipPipeline(this.getClass(), filename); 
         
         final String userId="gp_user";
-        Context taskContext=Context.getContextForUser(userId);
+        GpContext taskContext=GpContext.getContextForUser(userId);
         //assume the first entry is the pipeline
         taskContext.setTaskInfo(taskInfos.get(0));
         

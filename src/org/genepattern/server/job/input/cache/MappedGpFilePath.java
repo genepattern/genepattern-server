@@ -2,7 +2,7 @@ package org.genepattern.server.job.input.cache;
 
 import java.io.File;
 
-import org.genepattern.server.config.ServerConfiguration.Context;
+import org.genepattern.server.config.GpContext;
 import org.genepattern.server.dm.serverfile.ServerFilePath;
 
 /**
@@ -18,7 +18,7 @@ public class MappedGpFilePath extends ServerFilePath {
     }
     
     @Override
-    public boolean canRead(final boolean isAdmin, final Context userContext) {
+    public boolean canRead(final boolean isAdmin, final GpContext userContext) {
         //by definition this file is readable by all users
         return true;
     }

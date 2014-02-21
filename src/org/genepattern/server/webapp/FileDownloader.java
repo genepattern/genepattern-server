@@ -19,7 +19,7 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpServletResponseWrapper;
 
 import org.apache.log4j.Logger;
-import org.genepattern.server.config.ServerConfiguration;
+import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.webapp.jsf.UIBeanHelper;
 
@@ -49,7 +49,7 @@ public class FileDownloader {
     
     private static int getMaxInlineSize() {
         String userId = UIBeanHelper.getUserId();
-        ServerConfiguration.Context userContext = ServerConfiguration.Context.getContextForUser(userId);
+        GpContext userContext = GpContext.getContextForUser(userId);
         int i = ServerConfigurationFactory.instance().getGPIntegerProperty(userContext, "max.inline.size", 10000000);
         return i;
     }

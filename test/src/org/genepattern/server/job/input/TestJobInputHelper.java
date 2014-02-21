@@ -5,8 +5,7 @@ import java.util.List;
 
 import org.genepattern.junitutil.FileUtil;
 import org.genepattern.junitutil.TaskLoader;
-import org.genepattern.server.config.ServerConfiguration;
-import org.genepattern.server.config.ServerConfiguration.Context;
+import org.genepattern.server.config.GpContext;
 import org.genepattern.server.job.input.Param;
 import org.genepattern.server.rest.GpServerException;
 import org.junit.Assert;
@@ -22,7 +21,7 @@ import org.junit.Test;
 public class TestJobInputHelper {
     private static TaskLoader taskLoader;
     private static String adminUserId;
-    private static Context userContext;
+    private static GpContext userContext;
     
     final static String GP_URL="http://127.0.0.1:8080/gp";
     
@@ -53,7 +52,7 @@ public class TestJobInputHelper {
     @BeforeClass
     static public void beforeClass() {
         adminUserId="admin";
-        userContext=ServerConfiguration.Context.getContextForUser(adminUserId);
+        userContext=GpContext.getContextForUser(adminUserId);
         userContext.setIsAdmin(true);
         taskLoader=new TaskLoader();
         taskLoader.addTask(TestJobInputHelper.class, "ConvertLineEndings_v1.zip");

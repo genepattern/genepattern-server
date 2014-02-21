@@ -125,7 +125,7 @@ import org.genepattern.server.JobManager;
 import org.genepattern.server.PermissionsHelper;
 import org.genepattern.server.TaskIDNotFoundException;
 import org.genepattern.server.config.ServerConfiguration;
-import org.genepattern.server.config.ServerConfiguration.Context;
+import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.config.ServerProperties;
 import org.genepattern.server.database.HibernateUtil;
@@ -349,7 +349,7 @@ public class GenePatternAnalysisTask {
      * @throws IllegalArgumentException, If the URL refers to a file that the specified userId does not have permission to access.
      * @return The file or <tt>null</tt>
      */
-    private File localInputUrlToFile(URL url, boolean isAdmin, Context jobContext) {
+    private File localInputUrlToFile(URL url, boolean isAdmin, GpContext jobContext) {
         JobInfo jobInfo = jobContext.getJobInfo();
         //new way of converting server url to file path
         GpFilePath inputFilePath = null;
@@ -451,7 +451,7 @@ public class GenePatternAnalysisTask {
 
                 //special case: look for file among the user uploaded files
                 try {
-                    Context context = Context.getContextForUser(userId);
+                    GpContext context = GpContext.getContextForUser(userId);
                     File userUploadDir = ServerConfigurationFactory.instance().getUserUploadDir(context);
                     in = new File(userUploadDir, filename);
                     boolean foundUserUpload = in.canRead();
@@ -529,7 +529,7 @@ public class GenePatternAnalysisTask {
         if (canReadJob(isAdmin, userId, parser.getJobNumber())) {
             File localFile = null;
             try {
-                ServerConfiguration.Context context = ServerConfiguration.Context.getContextForJob(jobInfo);
+                GpContext context = GpContext.getContextForJob(jobInfo);
                 File rootJobDir = ServerConfigurationFactory.instance().getRootJobDir(context);
                 File jobDir = new File(rootJobDir, ""+parser.getJobNumber());
                 localFile = new File(jobDir, parser.getRelativeFilePath());
@@ -676,7 +676,7 @@ public class GenePatternAnalysisTask {
             log.debug("taskName=" + taskName);
         }
         
-        ServerConfiguration.Context jobContext = ServerConfiguration.Context.getContextForJob(jobInfo, taskInfo);
+        GpContext jobContext = GpContext.getContextForJob(jobInfo, taskInfo);
         //is disk space available
         boolean allowNewJob = ServerConfigurationFactory.instance().getGPBooleanProperty(jobContext, "allow.new.job", true);
         if (!allowNewJob) {
@@ -1709,7 +1709,7 @@ public class GenePatternAnalysisTask {
             return;
         }
         
-        ServerConfiguration.Context jobContext = ServerConfiguration.Context.getContextForJob(jobInfo);
+        GpContext jobContext = GpContext.getContextForJob(jobInfo);
         
         //validate the jobDir
         //Note: hard-coded rules, circa GP 3.2.4 and earlier, if we ever want to allow alternate locations for
@@ -3059,7 +3059,7 @@ public class GenePatternAnalysisTask {
                     }
                     if (!isOptional) {
                         //check system properties
-                        Context serverContext = ServerConfiguration.Context.getServerContext();
+                        GpContext serverContext = GpContext.getServerContext();
                         String prop = ServerConfigurationFactory.instance().getGPProperty(serverContext, varName);
                         if (prop != null) {
                             //server properties are optional
@@ -3324,7 +3324,7 @@ public class GenePatternAnalysisTask {
      * @author Jim Lerner
      */
     public static String getJobDir(String jobNumber) {
-        ServerConfiguration.Context context = ServerConfiguration.Context.getServerContext();
+        GpContext context = GpContext.getServerContext();
         try {
             File rootJobDir = ServerConfigurationFactory.instance().getRootJobDir(context);
             String tmpDir = rootJobDir.getPath();

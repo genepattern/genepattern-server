@@ -4,7 +4,7 @@ import java.util.List;
 import java.util.Map.Entry;
 
 import org.apache.log4j.Logger;
-import org.genepattern.server.config.ServerConfiguration.Context;
+import org.genepattern.server.config.GpContext;
 import org.genepattern.server.job.input.JobInputHelper;
 import org.genepattern.server.job.input.JobInput;
 import org.genepattern.server.job.input.Param;
@@ -15,7 +15,7 @@ public class BatchJobInputApiImpl implements JobInputApi {
     final static private Logger log = Logger.getLogger(BatchJobInputApiImpl.class);
     
     @Override
-    public String postJob(Context jobContext, JobInput jobInput) throws GpServerException {
+    public String postJob(final GpContext jobContext, final JobInput jobInput) throws GpServerException {
         try {
             JobReceipt receipt=postBatchJob(jobContext, jobInput);
             return receipt.getJobIds().get(0);
@@ -26,7 +26,7 @@ public class BatchJobInputApiImpl implements JobInputApi {
         }
     }
     
-    public JobReceipt postBatchJob(Context jobContext, JobInput jobInput) throws GpServerException {
+    public JobReceipt postBatchJob(final GpContext jobContext, final JobInput jobInput) throws GpServerException {
         try {
             final JobReceipt receipt=doBatch(jobContext, jobInput);
             return receipt;
@@ -37,7 +37,7 @@ public class BatchJobInputApiImpl implements JobInputApi {
         }
     }
     
-    private JobReceipt doBatch(final Context userContext, final JobInput jobInput) throws GpServerException {
+    private JobReceipt doBatch(final GpContext userContext, final JobInput jobInput) throws GpServerException {
         try {
             JobInputHelper batchJobInput=new JobInputHelper(userContext, jobInput.getLsid());
             for(Entry<ParamId,Param> entry : jobInput.getParams().entrySet()) {

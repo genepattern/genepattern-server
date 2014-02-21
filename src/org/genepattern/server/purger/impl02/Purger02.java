@@ -24,8 +24,7 @@ import java.util.concurrent.Executors;
 import org.apache.log4j.Logger;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.taskdefs.Delete;
-import org.genepattern.server.config.ServerConfiguration;
-import org.genepattern.server.config.ServerConfiguration.Context;
+import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.domain.BatchJob;
@@ -60,7 +59,7 @@ public class Purger02 extends TimerTask {
     public void run() {
         log.debug("running Purger ...");
         final Date now=new Date();
-        final Context serverContext=ServerConfiguration.Context.getServerContext();
+        final GpContext serverContext=GpContext.getServerContext();
         final int purgeJobsAfter=ServerConfigurationFactory.instance().getGPIntegerProperty(serverContext, Purger.PROP_PURGE_JOBS_AFTER, Purger.PURGE_JOBS_AFTER_DEFAULT);
         final String purgeTime=ServerConfigurationFactory.instance().getGPProperty(serverContext, Purger.PROP_PURGE_TIME, Purger.PURGE_TIME_DEFAULT);
         final Date serverCutoff=JobPurgerUtil.getCutoff(now, purgeJobsAfter, purgeTime);
@@ -169,7 +168,7 @@ public class Purger02 extends TimerTask {
         
         final ExecutorService exec = Executors.newSingleThreadExecutor();
         for(final String userId : userIds) {
-            final Context userContext = Context.getContextForUser(userId);
+            final GpContext userContext = GpContext.getContextForUser(userId);
             final Date cutoffDate=JobPurgerUtil.getCutoffForUser(userContext, now);
             if (cutoffDate != null) {
                 try {
@@ -186,7 +185,7 @@ public class Purger02 extends TimerTask {
         log.debug("done purging data for each user.");
     }
     
-    private void purgeJobsForUser(final Context userContext, final Date cutoffDate) {
+    private void purgeJobsForUser(final GpContext userContext, final Date cutoffDate) {
         log.debug("purging jobs for user="+userContext.getUserId()+" ...");
         final List<Integer> jobIds=getJobIdsForUser(userContext.getUserId(), cutoffDate);
         for(Integer jobId : jobIds) {
@@ -236,7 +235,7 @@ public class Purger02 extends TimerTask {
     }
     
     
-    private void purgeUserUploadsForUser(final ExecutorService exec, final Context userContext, final Date cutoffDate) {
+    private void purgeUserUploadsForUser(final ExecutorService exec, final GpContext userContext, final Date cutoffDate) {
         if (cutoffDate==null) {
             log.debug("skipping userId="+userContext.getUserId());
             return;
@@ -251,7 +250,7 @@ public class Purger02 extends TimerTask {
         }
     }
     
-    private void purgeBatchJobsForUser(final Context userContext, final Date cutoffDate) {
+    private void purgeBatchJobsForUser(final GpContext userContext, final Date cutoffDate) {
         if (userContext==null) {
             log.error("userContext==null");
             return;

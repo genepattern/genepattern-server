@@ -13,7 +13,7 @@ import org.genepattern.server.auth.IAuthenticationPlugin;
 import org.genepattern.server.auth.IGroupMembershipPlugin;
 import org.genepattern.server.auth.NoAuthentication;
 import org.genepattern.server.auth.XmlGroupMembership;
-import org.genepattern.server.config.ServerConfiguration;
+import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.user.User;
 import org.genepattern.server.user.UserDAO;
@@ -113,7 +113,7 @@ public class UserAccountManager {
                     "User already registered: "+user.getUserId());
         }
         //3) can create user dir for user
-        ServerConfiguration.Context userContext = ServerConfiguration.Context.getContextForUser(username);
+        GpContext userContext = GpContext.getContextForUser(username);
         try {
             File userDir = ServerConfigurationFactory.instance().getUserDir(userContext);
             log.info("creating user dir: "+userDir.getPath());

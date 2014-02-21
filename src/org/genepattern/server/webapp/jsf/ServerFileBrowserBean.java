@@ -1,7 +1,7 @@
 package org.genepattern.server.webapp.jsf;
 
 import org.apache.log4j.Logger;
-import org.genepattern.server.config.ServerConfiguration;
+import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.executor.CommandProperties;
 
@@ -19,7 +19,7 @@ public class ServerFileBrowserBean {
     
     private void init() {
         String userId = UIBeanHelper.getUserId();
-        ServerConfiguration.Context userContext = ServerConfiguration.Context.getContextForUser(userId);
+        GpContext userContext = GpContext.getContextForUser(userId);
         CommandProperties.Value value = ServerConfigurationFactory.instance().getValue(userContext, "server.browse.file.system.root");
         if (value != null) {
             serverBrowseFileSystemRoot = value.getValue();

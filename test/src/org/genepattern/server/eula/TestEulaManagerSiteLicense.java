@@ -3,8 +3,7 @@ package org.genepattern.server.eula;
 import org.genepattern.junitutil.ConfigUtil;
 import org.genepattern.junitutil.TaskUtil;
 import org.genepattern.server.UserAccountManager;
-import org.genepattern.server.config.ServerConfiguration;
-import org.genepattern.server.config.ServerConfiguration.Context;
+import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.webservice.TaskInfo;
 import org.junit.After;
@@ -22,8 +21,8 @@ import org.junit.Test;
  */
 public class TestEulaManagerSiteLicense {
     private TaskInfo taskInfo=null;
-    private Context stdContext=null;
-    private Context altContext=null;
+    private GpContext stdContext=null;
+    private GpContext altContext=null;
     
     @Before
     public void setUp() {
@@ -37,9 +36,9 @@ public class TestEulaManagerSiteLicense {
         Assert.assertEquals("taskName", "testLicenseAgreement", taskInfo.getName());
         Assert.assertEquals("taskLsid", "urn:lsid:9090.gpdev.gpint01:genepatternmodules:812:3", taskInfo.getLsid());
         
-        stdContext=ServerConfiguration.Context.getContextForUser("gp_user");
+        stdContext=GpContext.getContextForUser("gp_user");
         stdContext.setTaskInfo(taskInfo);
-        altContext=ServerConfiguration.Context.getContextForUser("gp_test_user");
+        altContext=GpContext.getContextForUser("gp_test_user");
         altContext.setTaskInfo(taskInfo);
     }
     

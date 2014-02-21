@@ -4,7 +4,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;
 
-import org.genepattern.server.config.ServerConfiguration;
+import org.genepattern.server.config.GpContext;
 
 public class Util {
     /**
@@ -16,14 +16,14 @@ public class Util {
      * @return
      * @throws WebApplicationException if there is not a current user.
      */
-    public static ServerConfiguration.Context getUserContext(final HttpServletRequest request) {
+    public static GpContext getUserContext(final HttpServletRequest request) {
         final String userId=(String) request.getSession().getAttribute("userid");
         if (userId==null || userId.length()==0) {
             //user not logged in, 403 - Forbidden
             throw new WebApplicationException(Response.Status.FORBIDDEN);
         }
         final boolean initIsAdmin=true;
-        ServerConfiguration.Context userContext = ServerConfiguration.Context.getContextForUser(userId, initIsAdmin);
+        GpContext userContext = GpContext.getContextForUser(userId, initIsAdmin);
         return userContext;
     }
 

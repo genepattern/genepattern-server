@@ -21,7 +21,7 @@ import org.apache.commons.fileupload.RequestContext;
 import org.apache.commons.fileupload.servlet.ServletRequestContext;
 import org.apache.log4j.Logger;
 import org.genepattern.server.DataManager;
-import org.genepattern.server.config.ServerConfiguration.Context;
+import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.dm.GpFileObjFactory;
 import org.genepattern.server.dm.GpFilePath;
@@ -326,7 +326,7 @@ public class BatchSubmit {
     }
     
     protected void readBatchDirectories() throws FileUploadException {
-        Context userContext = Context.getContextForUser(userName);
+        GpContext userContext = GpContext.getContextForUser(userName);
         boolean isAdmin = AuthorizationHelper.adminJobs(userName);
         
         for (String key : multiFileValues.keySet()) {
@@ -338,7 +338,7 @@ public class BatchSubmit {
     
 
     //dirUrl is parsed from the form ( <paramname>_url )
-    public static MultiFileParameter getMultiFileParameter(boolean isAdmin, Context userContext, String dirUrl) throws FileUploadException {
+    public static MultiFileParameter getMultiFileParameter(boolean isAdmin, GpContext userContext, String dirUrl) throws FileUploadException {
         boolean urlInput = false; //TODO: don't need this anymore
         GpFilePath inputDirPath = null;
         try {
@@ -362,7 +362,7 @@ public class BatchSubmit {
         return getMultiFileParameter(isAdmin, userContext, inputDirPath);
     }
     
-    public static MultiFileParameter getMultiFileParameter(final boolean isAdmin, final Context userContext, final GpFilePath inputDirPath) throws FileUploadException {
+    public static MultiFileParameter getMultiFileParameter(final boolean isAdmin, final GpContext userContext, final GpFilePath inputDirPath) throws FileUploadException {
         final String dirUrl=inputDirPath.getRelativePath();
         if (!inputDirPath.getServerFile().exists()) {
             throw new FileUploadException("Batch directory does not exist: " + dirUrl);

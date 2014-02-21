@@ -4,8 +4,7 @@ import java.io.File;
 
 import org.genepattern.junitutil.FileUtil;
 import org.genepattern.junitutil.TaskUtil;
-import org.genepattern.server.config.ServerConfiguration;
-import org.genepattern.server.config.ServerConfiguration.Context;
+import org.genepattern.server.config.GpContext;
 import org.genepattern.webservice.TaskInfo;
 import org.junit.Assert;
 import org.junit.Test;
@@ -22,7 +21,7 @@ public class TestJobConfigParams {
         final String userId="test_user";
         final File zipFile=FileUtil.getDataFile("modules/ComparativeMarkerSelection_v9.zip");
         final TaskInfo taskInfo=TaskUtil.getTaskInfoFromZip(zipFile);
-        final Context taskContext=ServerConfiguration.Context.getContextForUser(userId);
+        final GpContext taskContext=GpContext.getContextForUser(userId);
         taskContext.setTaskInfo(taskInfo);
         
         JobConfigParams jobConfigParams=JobConfigParams.initJobConfigParams(taskContext);

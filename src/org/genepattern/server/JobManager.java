@@ -5,7 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.log4j.Logger;
-import org.genepattern.server.config.ServerConfiguration;
+import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.domain.BatchJobDAO;
@@ -45,7 +45,7 @@ public class JobManager {
         }
 
         File jobDir = null;
-        ServerConfiguration.Context jobContext = ServerConfiguration.Context.getContextForJob(jobInfo);
+        GpContext jobContext = GpContext.getContextForJob(jobInfo);
         File rootJobDir = ServerConfigurationFactory.instance().getRootJobDir(jobContext);
         jobDir = new File(rootJobDir, ""+jobInfo.getJobNumber());
         return jobDir;

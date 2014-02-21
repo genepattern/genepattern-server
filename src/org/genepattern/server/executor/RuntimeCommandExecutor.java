@@ -15,7 +15,7 @@ import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.log4j.Logger;
-import org.genepattern.server.config.ServerConfiguration;
+import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.domain.JobStatus;
 import org.genepattern.server.executor.RuntimeExecCommand.Status;
@@ -180,7 +180,7 @@ public class RuntimeCommandExecutor implements CommandExecutor {
      * @author pcarr
      */
     private void logCommandLine(String[] commandLine, File runDir, JobInfo jobInfo) {
-        ServerConfiguration.Context jobContext = ServerConfiguration.Context.getContextForJob(jobInfo);
+        GpContext jobContext = GpContext.getContextForJob(jobInfo);
 
         boolean saveLogFile = ServerConfigurationFactory.instance().getGPBooleanProperty(jobContext, "rte.save.logfile", false);
         if (!saveLogFile) {

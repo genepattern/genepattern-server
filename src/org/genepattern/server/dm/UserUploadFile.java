@@ -4,7 +4,7 @@ import java.io.File;
 import java.net.URI;
 
 import org.apache.log4j.Logger;
-import org.genepattern.server.config.ServerConfiguration.Context;
+import org.genepattern.server.config.GpContext;
 import org.genepattern.server.job.input.cache.FileCache;
 
 
@@ -54,7 +54,7 @@ public class UserUploadFile extends GpFilePath {
         return null;
     }
 
-    public boolean canRead(boolean isAdmin, Context userContext) {
+    public boolean canRead(final boolean isAdmin, final GpContext userContext) {
         if (isAdmin) {
             return true;
         }

@@ -8,7 +8,7 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 
 import org.apache.log4j.Logger;
-import org.genepattern.server.config.ServerConfiguration.Context;
+import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.dm.tasklib.TasklibPath;
 import org.genepattern.server.eula.GetTaskStrategy;
@@ -90,30 +90,30 @@ public class ReloadJobHelper {
         return in;
     }
 
-    final Context userContext;
+    final GpContext userContext;
     final GetTaskStrategy getTaskStrategy;
     final LibdirStrategy libdirStrategy;
     final JobInfoLoader jobInfoLoader;
     final TaskInfo taskInfo;
     final JobInfo jobInfo;
     
-    public ReloadJobHelper(final Context userContext, final String reloadJobId) 
+    public ReloadJobHelper(final GpContext userContext, final String reloadJobId) 
     throws Exception
     {
         this(userContext, reloadJobId, null);
     }
-    public ReloadJobHelper(final Context userContext, final String reloadJobId, final GetTaskStrategy getTaskStrategyIn) 
+    public ReloadJobHelper(final GpContext userContext, final String reloadJobId, final GetTaskStrategy getTaskStrategyIn) 
     throws Exception
     {
         this(userContext, reloadJobId, null, null);
     }
-    public ReloadJobHelper(final Context userContext, final String reloadJobId, final GetTaskStrategy getTaskStrategyIn, final JobInfoLoader jobInfoLoaderIn) 
+    public ReloadJobHelper(final GpContext userContext, final String reloadJobId, final GetTaskStrategy getTaskStrategyIn, final JobInfoLoader jobInfoLoaderIn) 
     throws Exception
     {
         this(userContext, reloadJobId, getTaskStrategyIn, jobInfoLoaderIn, null);
     }
     public ReloadJobHelper(
-            final Context userContext, 
+            final GpContext userContext, 
             final String reloadJobId, 
             final GetTaskStrategy getTaskStrategyIn, 
             final JobInfoLoader jobInfoLoaderIn, 

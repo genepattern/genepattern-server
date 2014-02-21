@@ -10,7 +10,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.apache.log4j.Logger;
-import org.genepattern.server.config.ServerConfiguration.Context;
+import org.genepattern.server.config.GpContext;
 import org.genepattern.server.domain.PinModule;
 import org.genepattern.server.domain.PinModuleDAO;
 import org.genepattern.server.user.UserDAO;
@@ -39,7 +39,7 @@ public class TagManager {
     private Map<String, Date> userCacheMap = new ConcurrentHashMap<String, Date>();                     // User to cache update date
     private Map<TagCacheKey, Set<Tag>> tagMap = new ConcurrentHashMap<TagCacheKey, Set<Tag>>();         // User+lsid to set of tags
     
-    public Set<Tag> getTags(Context context, TaskInfo taskInfo) {
+    public Set<Tag> getTags(final GpContext context, final TaskInfo taskInfo) {
         
         // Lazily update the tag cache for each TaskInfo
         if (needsUpdate(context)) {
@@ -70,7 +70,7 @@ public class TagManager {
      * @param taskInfo
      * @return
      */
-    private boolean needsUpdate(Context context) {
+    private boolean needsUpdate(final GpContext context) {
         Date now = new Date();
         Date updated = userCacheMap.get(context.getUserId());
         if (updated == null) return true;
@@ -83,7 +83,7 @@ public class TagManager {
      * Update the tag cache and the map of updated dates
      * @param taskInfo
      */
-    private void updateCache(Context context) {
+    private void updateCache(final GpContext context) {
         // Remove old tags
         removeOld(context);
         
@@ -95,7 +95,7 @@ public class TagManager {
         userCacheMap.put(context.getUserId(), new Date());
     }
     
-    private void removeOld(Context context) {
+    private void removeOld(final GpContext context) {
         for (TagCacheKey key : tagMap.keySet()) {
             if (key.getUser().equals(context.getUserId())) {
                 tagMap.remove(key);
@@ -103,7 +103,7 @@ public class TagManager {
         }
     }
     
-    private void addRecent(Context context) {
+    private void addRecent(final GpContext context) {
         AdminDAO adminDao = new AdminDAO();
         int recentJobsToShow = Integer.parseInt(new UserDAO().getPropertyValue(context.getUserId(), UserPropKey.RECENT_JOBS_TO_SHOW, "4"));
         TaskInfo[] recentModules = adminDao.getRecentlyRunTasksForUser(context.getUserId(), recentJobsToShow);
@@ -123,7 +123,7 @@ public class TagManager {
         }
     }
     
-    private void addPinned(Context context) {
+    private void addPinned(final GpContext context) {
         PinModuleDAO pinDao = new PinModuleDAO();
         List<PinModule> pins = pinDao.getPinsForUser(context.getUserId());
 

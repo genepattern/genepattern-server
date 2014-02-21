@@ -2,19 +2,15 @@ package org.genepattern.server.job.input.dao;
 
 import java.io.File;
 import java.util.List;
-import java.util.Map.Entry;
 
 import org.genepattern.junitutil.AnalysisJobUtil;
 import org.genepattern.junitutil.DbUtil;
 import org.genepattern.junitutil.FileUtil;
 import org.genepattern.junitutil.TaskUtil;
-import org.genepattern.server.config.ServerConfiguration;
-import org.genepattern.server.config.ServerConfiguration.Context;
+import org.genepattern.server.config.GpContext;
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.job.input.GroupId;
 import org.genepattern.server.job.input.JobInput;
-import org.genepattern.server.job.input.Param;
-import org.genepattern.server.job.input.ParamValue;
 import org.genepattern.webservice.TaskInfo;
 import org.hibernate.Query;
 import org.hibernate.Session;
@@ -88,7 +84,7 @@ public class TestJobInputValueDao {
         
         final File zipFile=FileUtil.getDataFile(cleZip);
         final TaskInfo taskInfo=TaskUtil.getTaskInfoFromZip(zipFile);
-        final Context taskContext=ServerConfiguration.Context.getContextForUser(userId);
+        final GpContext taskContext=GpContext.getContextForUser(userId);
         taskContext.setTaskInfo(taskInfo);
         AnalysisJobUtil jobUtil=new AnalysisJobUtil();
         final boolean initDefault=true;

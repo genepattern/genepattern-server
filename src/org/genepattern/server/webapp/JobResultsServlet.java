@@ -50,7 +50,7 @@ import org.genepattern.server.JobManager;
 import org.genepattern.server.PermissionsHelper;
 import org.genepattern.server.auth.GroupPermission;
 import org.genepattern.server.auth.GroupPermission.Permission;
-import org.genepattern.server.config.ServerConfiguration;
+import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.genepattern.GenePatternAnalysisTask;
@@ -196,7 +196,7 @@ public class JobResultsServlet extends HttpServlet implements Servlet {
             return;
         }
 
-        ServerConfiguration.Context context = ServerConfiguration.Context.getContextForUser(useridFromSession);
+        GpContext context = GpContext.getContextForUser(useridFromSession);
         File rootJobDir = null;
         try {
             rootJobDir = ServerConfigurationFactory.instance().getRootJobDir(context);

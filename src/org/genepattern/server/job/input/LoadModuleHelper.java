@@ -12,7 +12,7 @@ import java.util.StringTokenizer;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
-import org.genepattern.server.config.ServerConfiguration.Context;
+import org.genepattern.server.config.GpContext;
 import org.genepattern.server.dm.ExternalFile;
 import org.genepattern.server.dm.GpFileObjFactory;
 import org.genepattern.server.dm.GpFilePath;
@@ -123,17 +123,17 @@ public class LoadModuleHelper {
     }
 
     
-    final Context userContext;
+    final GpContext userContext;
     final GetTaskStrategy getTaskStrategy;
     final JobInfoLoader jobInfoLoader;
     
-    public LoadModuleHelper(final Context userContext) {
+    public LoadModuleHelper(final GpContext userContext) {
         this(userContext, null);
     }
-    public LoadModuleHelper(final Context userContext, final GetTaskStrategy getTaskStrategyIn) {
+    public LoadModuleHelper(final GpContext userContext, final GetTaskStrategy getTaskStrategyIn) {
         this(userContext, null, null);
     }
-    public LoadModuleHelper(final Context userContext, final GetTaskStrategy getTaskStrategyIn, final JobInfoLoader jobInfoLoaderIn) { 
+    public LoadModuleHelper(final GpContext userContext, final GetTaskStrategy getTaskStrategyIn, final JobInfoLoader jobInfoLoaderIn) { 
         if (userContext==null) {
             throw new IllegalArgumentException("userContext==null");
         }

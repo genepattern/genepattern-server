@@ -5,7 +5,7 @@ import java.util.List;
 import java.util.SortedSet;
 
 import org.apache.log4j.Logger;
-import org.genepattern.server.config.ServerConfiguration.Context;
+import org.genepattern.server.config.GpContext;
 import org.genepattern.webservice.TaskInfo;
 
 /**
@@ -72,9 +72,9 @@ public class EulaManagerImpl implements IEulaManager {
     }
     
     /**
-     * @see IEulaManager#requiresEula(org.genepattern.server.config.ServerConfiguration.Context)
+     * @see IEulaManager#requiresEula(org.genepattern.server.config.GpContext)
      */
-    public boolean requiresEula(Context taskContext) {
+    public boolean requiresEula(final GpContext taskContext) {
         final List<EulaInfo> notYetAgreed = getEulaInfos(taskContext,false);
         if (notYetAgreed.size()>0) {
             return true;
@@ -107,25 +107,25 @@ public class EulaManagerImpl implements IEulaManager {
     }
 
     /**
-     * @see IEulaManager#getAllEulaForModule(org.genepattern.server.config.ServerConfiguration.Context)
+     * @see IEulaManager#getAllEulaForModule(org.genepattern.server.config.GpContext)
      */
-    public List<EulaInfo> getAllEulaForModule(final Context taskContext) {
+    public List<EulaInfo> getAllEulaForModule(final GpContext taskContext) {
         List<EulaInfo> eulaInfos = getEulaInfos(taskContext, true);
         return eulaInfos;
     }
 
     /**
-     * @see org.genepattern.server.eula.IEulaManager#getPendingEulaForModule(org.genepattern.server.config.ServerConfiguration.Context)
+     * @see org.genepattern.server.eula.IEulaManager#getPendingEulaForModule(org.genepattern.server.config.GpContext)
      */
-    public List<EulaInfo> getPendingEulaForModule(final Context taskContext) {
+    public List<EulaInfo> getPendingEulaForModule(final GpContext taskContext) {
         List<EulaInfo> eulaInfos = getEulaInfos(taskContext, false);
         return eulaInfos;
     }
     
     /**
-     * @see org.genepattern.server.eula.IEulaManager#recordEula(org.genepattern.server.config.ServerConfiguration.Context)
+     * @see org.genepattern.server.eula.IEulaManager#recordEula(org.genepattern.server.config.GpContext)
      */
-    public void recordEula(final Context taskContext) throws IllegalArgumentException {
+    public void recordEula(final GpContext taskContext) throws IllegalArgumentException {
         if (taskContext == null) {
             throw new IllegalArgumentException("taskContext==null");
         }
@@ -165,7 +165,7 @@ public class EulaManagerImpl implements IEulaManager {
      * @param includeAll
      * @return
      */
-    private List<EulaInfo> getEulaInfos(final Context taskContext, final boolean includeAll) {
+    private List<EulaInfo> getEulaInfos(final GpContext taskContext, final boolean includeAll) {
         if (taskContext == null) {
             throw new IllegalArgumentException("taskContext==null");
         }

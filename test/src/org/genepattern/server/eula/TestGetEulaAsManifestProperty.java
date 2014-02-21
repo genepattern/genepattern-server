@@ -8,7 +8,7 @@ import junit.framework.Assert;
 
 import org.genepattern.junitutil.FileUtil;
 import org.genepattern.junitutil.TaskUtil;
-import org.genepattern.server.config.ServerConfiguration.Context;
+import org.genepattern.server.config.GpContext;
 import org.genepattern.server.eula.InitException;
 import org.genepattern.webservice.TaskInfo;
 import org.junit.After;
@@ -53,7 +53,7 @@ public class TestGetEulaAsManifestProperty {
         }
 
         final String userId="gp_user";
-        Context taskContext=Context.getContextForUser(userId);
+        GpContext taskContext=GpContext.getContextForUser(userId);
         taskContext.setTaskInfo(taskInfo);
         
         final List<EulaInfo> eulas=stub.getEulasFromTask(taskInfo);
@@ -89,7 +89,7 @@ public class TestGetEulaAsManifestProperty {
         }
 
         final String userId="gp_user";
-        Context taskContext=Context.getContextForUser(userId);
+        GpContext taskContext=GpContext.getContextForUser(userId);
         taskContext.setTaskInfo(taskInfo);
         
         final List<EulaInfo> eulas=stub.getEulasFromTask(taskInfo);

@@ -10,7 +10,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.Logger;
-import org.genepattern.server.config.ServerConfiguration.Context;
+import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
 import org.openid4java.OpenIDException;
 import org.openid4java.association.AssociationSessionType;
@@ -57,7 +57,7 @@ public class GenomeSpaceOpenID extends HttpServlet {
      * @return
      */
     private String getProviderURL() {
-        Context context = Context.getServerContext();
+        GpContext context = GpContext.getServerContext();
         String gsUrl = ServerConfigurationFactory.instance().getGPProperty(context, "genomeSpaceUrl", "https://identity.genomespace.org:8444/identityServer/xrd.jsp");
         log.debug("Getting the OpenID provider URL.  URL is: " + gsUrl);
         return gsUrl;

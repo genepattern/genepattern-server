@@ -23,7 +23,7 @@ import java.util.concurrent.Executors;
 import org.apache.log4j.Logger;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.taskdefs.Delete;
-import org.genepattern.server.config.ServerConfiguration.Context;
+import org.genepattern.server.config.GpContext;
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.domain.BatchJob;
 import org.genepattern.server.domain.BatchJobDAO;
@@ -161,14 +161,14 @@ public class Purger extends TimerTask {
         
         ExecutorService exec = Executors.newSingleThreadExecutor();
         for(String userId : userIds) {
-            Context userContext = Context.getContextForUser(userId);
+            GpContext userContext = GpContext.getContextForUser(userId);
             purgeUserUploadsForUser(exec, userContext, dateCutoff);
         }
         exec.shutdown();
         log.debug("done purging data for each user.");
     }
     
-    private void purgeUserUploadsForUser(ExecutorService exec, Context userContext, long dateCutoff) {
+    private void purgeUserUploadsForUser(ExecutorService exec, GpContext userContext, long dateCutoff) {
         log.debug("purgeUserUploadsForUser(userId='"+userContext.getUserId()+"') ...");
         try {
             final UserUploadPurger uup = new UserUploadPurger(exec, userContext, dateCutoff);

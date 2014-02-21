@@ -18,7 +18,7 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 
 import org.apache.log4j.Logger;
-import org.genepattern.server.config.ServerConfiguration;
+import org.genepattern.server.config.GpContext;
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.job.input.JobInput;
 import org.genepattern.server.rest.GpServerException;
@@ -92,7 +92,7 @@ public class JobsResource {
             final @Context HttpServletRequest request, 
             final JobInputValues jobInputValues) 
     {
-        final ServerConfiguration.Context jobContext=Util.getUserContext(request);
+        final GpContext jobContext=Util.getUserContext(request);
         
         final JSONObject rval=new JSONObject();
         try {
@@ -175,7 +175,7 @@ public class JobsResource {
             final @PathParam("jobId") String jobId
     ) {
         
-        final ServerConfiguration.Context userContext=Util.getUserContext(request);
+        final GpContext userContext=Util.getUserContext(request);
         
         final String self=uriInfo.getAbsolutePath().toString();
         final URI baseUri=uriInfo.getBaseUri();
@@ -216,7 +216,7 @@ public class JobsResource {
     @Produces(MediaType.APPLICATION_JSON)
     @Path("/recent")
     public Response getRecentJobs (@Context UriInfo uriInfo, @Context HttpServletRequest request) {
-        ServerConfiguration.Context userContext = Util.getUserContext(request);
+        GpContext userContext = Util.getUserContext(request);
 
         try {
             // Get the number of recent jobs to show
@@ -269,7 +269,7 @@ public class JobsResource {
             final @PathParam("jobId") String jobId
     ) {
         
-        final ServerConfiguration.Context userContext=Util.getUserContext(request);
+        final GpContext userContext=Util.getUserContext(request);
         final String self=uriInfo.getAbsolutePath().toString();
         final URI baseUri=uriInfo.getBaseUri();
         final String jobsResourcePath=baseUri.toString()+URI_PATH;
@@ -311,7 +311,7 @@ public class JobsResource {
     @Produces(MediaType.APPLICATION_JSON)
     @Path("/incomplete")
     public Response isJobRunning(@Context HttpServletRequest request) {
-        ServerConfiguration.Context userContext = Util.getUserContext(request);
+        GpContext userContext = Util.getUserContext(request);
         final String userId = userContext.getUserId();
         
         final boolean isInTransaction = HibernateUtil.isInTransaction();

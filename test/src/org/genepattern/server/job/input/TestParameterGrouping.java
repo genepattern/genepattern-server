@@ -1,22 +1,16 @@
 package org.genepattern.server.job.input;
 
+import java.io.File;
+import java.io.InputStream;
+
 import org.genepattern.junitutil.TaskLoader;
 import org.genepattern.junitutil.TaskUtil;
-import org.genepattern.server.config.ServerConfiguration;
-import org.genepattern.server.dm.tasklib.TasklibPath;
-import org.genepattern.server.eula.LibdirLegacy;
-import org.genepattern.server.eula.LibdirStrategy;
-import org.genepattern.server.job.input.LoadModuleHelper;
+import org.genepattern.server.config.GpContext;
 import org.genepattern.webservice.TaskInfo;
 import org.json.JSONArray;
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-
-import java.io.File;
-import java.io.InputStream;
-import java.util.HashMap;
 
 /**
  * Created by nazaire on 2/11/14.
@@ -25,7 +19,7 @@ public class TestParameterGrouping
 {
     final static private String userId="test";
     final static private String adminUserId="admin";
-    private static ServerConfiguration.Context userContext;
+    private static GpContext userContext;
     private static TaskLoader taskLoader;
     final static private String tBAdvancedParamsLsid ="urn:lsid:8080.nazaire.69.173.118.131:genepatternmodules:6:4";
     final static private String moduleZipFile = "TestBasicAdvancedParameters_v4.zip";
@@ -33,7 +27,7 @@ public class TestParameterGrouping
     @BeforeClass
     static public void beforeClass()
     {
-        userContext = ServerConfiguration.Context.getContextForUser(adminUserId);
+        userContext = GpContext.getContextForUser(adminUserId);
         userContext.setIsAdmin(true);
 
         taskLoader=new TaskLoader();

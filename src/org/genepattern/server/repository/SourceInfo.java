@@ -1,6 +1,6 @@
 package org.genepattern.server.repository;
 
-import org.genepattern.server.config.ServerConfiguration.Context;
+import org.genepattern.server.config.GpContext;
 import org.genepattern.server.taskinstall.InstallInfo;
 import org.genepattern.webservice.TaskInfo;
 
@@ -26,7 +26,7 @@ public abstract class SourceInfo {
     final static private String SERVER_ONLY_BETA_IMG="/gp/images/server_only_beta.png";
 
     final static SourceInfoLoader sourceInfoLoaderSingleton=new DbSourceInfoLoader();
-    final static public SourceInfoLoader getSourceInfoLoader(final Context userContext) {
+    final static public SourceInfoLoader getSourceInfoLoader(final GpContext userContext) {
         return sourceInfoLoaderSingleton;
     }
     

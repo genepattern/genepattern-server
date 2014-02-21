@@ -10,7 +10,7 @@ import java.util.Date;
 import java.util.List;
 
 import org.apache.log4j.Logger;
-import org.genepattern.server.config.ServerConfiguration.Context;
+import org.genepattern.server.config.GpContext;
 import org.genepattern.util.SemanticUtil;
 
 /**
@@ -301,7 +301,7 @@ abstract public class GpFilePath implements Comparable<GpFilePath> {
      * @param userContext
      * @return true iff the currentUser has permission to read this file.
      */
-    abstract public boolean canRead(boolean isAdmin, Context userContext);
+    abstract public boolean canRead(boolean isAdmin, GpContext userContext);
     
     /**
      * Get the string literal to use as an input form value in a job submit form, when this file is to be specified as an input

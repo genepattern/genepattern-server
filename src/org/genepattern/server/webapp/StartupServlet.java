@@ -34,7 +34,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 
 import org.apache.log4j.Logger;
-import org.genepattern.server.config.ServerConfiguration;
+import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.database.HsqlDbUtil;
@@ -228,7 +228,7 @@ public class StartupServlet extends HttpServlet {
 
         String defaultRootJobDir = "";
         try {
-            ServerConfiguration.Context serverContext = ServerConfiguration.Context.getServerContext();
+            GpContext serverContext = GpContext.getServerContext();
             File rootJobDir = ServerConfigurationFactory.instance().getRootJobDir(serverContext);
             defaultRootJobDir = rootJobDir.getAbsolutePath();
         }

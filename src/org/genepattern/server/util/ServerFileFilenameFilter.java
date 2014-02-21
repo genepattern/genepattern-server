@@ -7,7 +7,7 @@ import java.util.List;
 
 import org.apache.log4j.Logger;
 import org.apache.oro.io.GlobFilenameFilter;
-import org.genepattern.server.config.ServerConfiguration.Context;
+import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.executor.CommandProperties;
 
@@ -46,7 +46,7 @@ public class ServerFileFilenameFilter implements FilenameFilter {
      * @param userContext
      * @return
      */
-    public static FilenameFilter getServerFilenameFilter(Context userContext) {
+    public static FilenameFilter getServerFilenameFilter(GpContext userContext) {
         if (userContext==null) {
             //TODO: log an error?
             log.error("userContext==null");

@@ -33,6 +33,7 @@
                  java.util.Iterator,
                  org.genepattern.server.eula.EulaManager,
                  org.genepattern.server.eula.EulaInfo,
+                 org.genepattern.server.config.GpContext,
                  org.genepattern.server.config.ServerConfiguration"
          session="true" contentType="text/html" language="Java" %>
 <%
@@ -199,7 +200,7 @@
             }
 
             out.println("<br>License: ");
-            ServerConfiguration.Context taskContext = ServerConfiguration.Context.getContextForUser(userID);
+            GpContext taskContext = GpContext.getContextForUser(userID);
             if (taskContext != null) {
                 String contextPath=request.getContextPath();
                 List<EulaInfo> eulas = EulaManager.instance(taskContext).getEulas(task);

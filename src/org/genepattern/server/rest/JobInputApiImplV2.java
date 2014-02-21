@@ -4,13 +4,13 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import org.genepattern.server.config.ServerConfiguration;
+import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.webservice.server.dao.AnalysisDAO;
 import java.util.Map.Entry;
 
 import org.apache.log4j.Logger;
-import org.genepattern.server.config.ServerConfiguration.Context;
+import org.genepattern.server.config.GpContext;
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.eula.GetTaskStrategy;
 import org.genepattern.server.eula.GetTaskStrategyDefault;
@@ -66,7 +66,7 @@ public class JobInputApiImplV2 implements JobInputApi {
     }
 
     @Override
-    public String postJob(final Context taskContext, final JobInput jobInput) throws GpServerException {
+    public String postJob(final GpContext taskContext, final JobInput jobInput) throws GpServerException {
         if (taskContext==null) {
             throw new IllegalArgumentException("taskContext==null");
         }
@@ -95,15 +95,15 @@ public class JobInputApiImplV2 implements JobInputApi {
     private static class JobInputHelper {
         final static private Logger log = Logger.getLogger(JobInputApiLegacy.class);
 
-        private final Context taskContext;
+        private final GpContext taskContext;
         private final JobInput jobInput;
         private final boolean initDefault;
         private final int parentJobId;
 
-        public JobInputHelper(final Context taskContext, final JobInput jobInput, final GetTaskStrategy getTaskStrategyIn, final boolean initDefault) {
+        public JobInputHelper(final GpContext taskContext, final JobInput jobInput, final GetTaskStrategy getTaskStrategyIn, final boolean initDefault) {
             this(taskContext, jobInput, getTaskStrategyIn, initDefault, -1);
         }
-        public JobInputHelper(final Context taskContext, final JobInput jobInput, final GetTaskStrategy getTaskStrategyIn, final boolean initDefault, final int parentJobId) {
+        public JobInputHelper(final GpContext taskContext, final JobInput jobInput, final GetTaskStrategy getTaskStrategyIn, final boolean initDefault, final int parentJobId) {
             if (taskContext==null) {
                 throw new IllegalArgumentException("taskContext==null");
             }
@@ -237,7 +237,7 @@ public class JobInputApiImplV2 implements JobInputApi {
          * 
          * @throws IllegalArgumentException, JobDispatchException
          */
-        public static File createJobDirectory(final Context taskContext, final int jobNumber) throws JobSubmissionException { 
+        public static File createJobDirectory(final GpContext taskContext, final int jobNumber) throws JobSubmissionException { 
             File jobDir = null;
             try {
                 jobDir = getWorkingDirectory(taskContext, jobNumber);
@@ -275,7 +275,7 @@ public class JobInputApiImplV2 implements JobInputApi {
          * @param jobInfo
          * @return
          */
-        private static File getWorkingDirectory(final Context jobContext, final int jobNumber) throws Exception {
+        private static File getWorkingDirectory(final GpContext jobContext, final int jobNumber) throws Exception {
             try {
                 File rootJobDir = ServerConfigurationFactory.instance().getRootJobDir(jobContext);
                 File jobDir = new File(rootJobDir, ""+jobNumber);

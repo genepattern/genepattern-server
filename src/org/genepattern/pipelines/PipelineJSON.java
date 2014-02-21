@@ -14,7 +14,7 @@ import java.util.List;
 import org.apache.log4j.Logger;
 import org.genepattern.data.pipeline.PipelineModel;
 import org.genepattern.server.cm.CategoryUtil;
-import org.genepattern.server.config.ServerConfiguration.Context;
+import org.genepattern.server.config.GpContext;
 import org.genepattern.server.eula.EulaInfo;
 import org.genepattern.server.eula.EulaManager;
 import org.genepattern.webservice.TaskInfo;
@@ -109,7 +109,7 @@ public class PipelineJSON extends JSONObject {
     
     public PipelineJSON(String username, PipelineModel pipeline, TaskInfo info) {
         try {
-            Context taskContext = Context.getContextForUser(username);
+            GpContext taskContext = GpContext.getContextForUser(username);
             taskContext.setTaskInfo(info);
             
             this.put(NAME, pipeline.getName());
@@ -217,7 +217,7 @@ public class PipelineJSON extends JSONObject {
         }
     }
 
-    private String getLicense(final Context taskContext, PipelineModel pipeline, TaskInfo info) {
+    private String getLicense(final GpContext taskContext, PipelineModel pipeline, TaskInfo info) {
         List<EulaInfo> eulaList = EulaManager.instance(taskContext).getEulas(info);
         if (eulaList.size() < 1) return "";
         EulaInfo eula = eulaList.get(0);

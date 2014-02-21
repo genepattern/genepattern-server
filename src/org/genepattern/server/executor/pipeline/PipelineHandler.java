@@ -26,7 +26,7 @@ import org.genepattern.data.pipeline.PipelineModel;
 import org.genepattern.data.pipeline.PipelineModelException;
 import org.genepattern.server.JobManager;
 import org.genepattern.server.config.ServerConfiguration;
-import org.genepattern.server.config.ServerConfiguration.Context;
+import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationException;
 import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.database.HibernateUtil;
@@ -592,7 +592,7 @@ public class PipelineHandler {
     private static List<JobInfo> runPipeline(JobInfo pipelineJobInfo, int stopAfterTask, boolean isScatterStep) 
     throws PipelineModelException, MissingTasksException, JobSubmissionException
     {
-        final Context userContext=Context.getContextForUser(pipelineJobInfo.getUserId());
+        final GpContext userContext=GpContext.getContextForUser(pipelineJobInfo.getUserId());
         // initialized permissions
         final IAuthorizationManager authManager = AuthorizationManagerFactory.getAuthorizationManager();
         final boolean isAdmin = (authManager.checkPermission("adminServer", pipelineJobInfo.getUserId()) || authManager.checkPermission("adminModules", pipelineJobInfo.getUserId()));
@@ -762,7 +762,7 @@ public class PipelineHandler {
      * @deprecated
      */
     public static boolean isParallelExec(final JobInfo jobInfo) {
-        Context jobContext=ServerConfiguration.Context.getContextForJob(jobInfo);
+        GpContext jobContext=GpContext.getContextForJob(jobInfo);
         return isParallelExec(jobContext);
     }
 
@@ -771,7 +771,7 @@ public class PipelineHandler {
      * 
      * @deprecated
      */
-    public static boolean isParallelExec(Context jobContext) {
+    public static boolean isParallelExec(GpContext jobContext) {
         boolean rval=ServerConfigurationFactory.instance().getGPBooleanProperty(jobContext, "org.genepattern.server.executor.pipeline.parallelExec", true);
         return rval;
     }
@@ -1123,7 +1123,7 @@ public class PipelineHandler {
         return jobInfo;
     }
 
-    private static void checkForMissingTasks(final Context userContext, final TaskInfo forTask) throws MissingTasksException {
+    private static void checkForMissingTasks(final GpContext userContext, final TaskInfo forTask) throws MissingTasksException {
         final GetIncludedTasks taskChecker;
         try {
             taskChecker=new GetIncludedTasks(userContext, forTask);
@@ -1446,7 +1446,7 @@ public class PipelineHandler {
     {
         String fileName = null;
         
-        Context context = ServerConfiguration.Context.getContextForJob(fromJob);
+        GpContext context = GpContext.getContextForJob(fromJob);
         File rootJobDir = ServerConfigurationFactory.instance().getRootJobDir(context);
         String jobDir = rootJobDir.getAbsolutePath();
 

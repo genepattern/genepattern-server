@@ -7,7 +7,7 @@ import java.util.List;
 
 import org.apache.log4j.Logger;
 import org.genepattern.server.config.ServerConfiguration;
-import org.genepattern.server.config.ServerConfiguration.Context;
+import org.genepattern.server.config.GpContext;
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.dm.GpFilePath;
 import org.genepattern.server.dm.jobresult.JobResultFile;
@@ -85,7 +85,7 @@ public class GetPipelineJobLegacy implements GetJob {
         this.jobsResourcePath=jobsResourcePath;
     }
     
-    private JobInfo initJobInfo(final ServerConfiguration.Context userContext, final String jobId) throws GetJobException {
+    private JobInfo initJobInfo(final GpContext userContext, final String jobId) throws GetJobException {
         if (userContext==null) {
             throw new IllegalArgumentException("userContext==null");
         }
@@ -123,14 +123,14 @@ public class GetPipelineJobLegacy implements GetJob {
     }
     
     @Override
-    public JSONObject getJob(final ServerConfiguration.Context userContext, final String jobId) 
+    public JSONObject getJob(final GpContext userContext, final String jobId) 
     throws GetJobException
     {
         final boolean includeChildren=false; //legacy support
         return getJob(userContext, jobId, includeChildren);
     }
 
-    public JSONObject getJob(final ServerConfiguration.Context userContext, final String jobId, final boolean includeChildren) throws GetJobException {
+    public JSONObject getJob(final GpContext userContext, final String jobId, final boolean includeChildren) throws GetJobException {
         JobInfo jobInfo=initJobInfo(userContext, jobId);
         return getJob(jobInfo, includeChildren);
     }
@@ -156,7 +156,7 @@ public class GetPipelineJobLegacy implements GetJob {
         return job;
     }
 
-    public JSONObject getChildren(Context userContext, String jobId) throws GetJobException {
+    public JSONObject getChildren(GpContext userContext, String jobId) throws GetJobException {
         final boolean includeChildren=true;
         JSONObject parentJobObj=getJob(userContext, jobId, includeChildren);
         try {

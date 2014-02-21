@@ -1,7 +1,7 @@
 package org.genepattern.server.rest;
 
 import org.apache.log4j.Logger;
-import org.genepattern.server.config.ServerConfiguration;
+import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
 
 /**
@@ -11,12 +11,12 @@ import org.genepattern.server.config.ServerConfigurationFactory;
  */
 public class JobInputApiFactory {
     private static final Logger log = Logger.getLogger(JobInputApiFactory.class);
-    static public JobInputApi createJobInputApi(ServerConfiguration.Context context) {
+    static public JobInputApi createJobInputApi(GpContext context) {
         final boolean initDefault=false;
         return createJobInputApi(context, initDefault);
     }
     
-    static public JobInputApi createJobInputApi(ServerConfiguration.Context context, boolean initDefault) {
+    static public JobInputApi createJobInputApi(GpContext context, boolean initDefault) {
         final String jobInputApiClass=ServerConfigurationFactory.instance().getGPProperty(context, "jobInputApiClass");
         if ("org.genepattern.server.rest.JobInputApiImplV2".equals(jobInputApiClass)) {
             return new JobInputApiImplV2(initDefault);
