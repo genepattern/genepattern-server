@@ -12,7 +12,7 @@ import org.genepattern.server.config.ServerConfiguration;
 import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.config.ServerProperties;
 import org.genepattern.server.config.GpContext;
-import org.genepattern.server.executor.CommandProperties.Value;
+import org.genepattern.server.config.Value;
 import org.genepattern.webservice.JobInfo;
 
 /**

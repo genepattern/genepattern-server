@@ -11,7 +11,7 @@ import org.apache.log4j.Logger;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.dm.UrlUtil;
-import org.genepattern.server.executor.CommandProperties.Value;
+import org.genepattern.server.config.Value;
 
 /**
  * Helper class which allows you to map a local directory as if it 

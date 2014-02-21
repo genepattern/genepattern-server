@@ -3,7 +3,7 @@ package org.genepattern.server.webapp.jsf;
 import org.apache.log4j.Logger;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
-import org.genepattern.server.executor.CommandProperties;
+import org.genepattern.server.config.Value;
 
 /**
  * Backing bean for the server file browser ui, currently implemented with jqueryFileTree.
@@ -20,7 +20,7 @@ public class ServerFileBrowserBean {
     private void init() {
         String userId = UIBeanHelper.getUserId();
         GpContext userContext = GpContext.getContextForUser(userId);
-        CommandProperties.Value value = ServerConfigurationFactory.instance().getValue(userContext, "server.browse.file.system.root");
+        Value value = ServerConfigurationFactory.instance().getValue(userContext, "server.browse.file.system.root");
         if (value != null) {
             serverBrowseFileSystemRoot = value.getValue();
         }

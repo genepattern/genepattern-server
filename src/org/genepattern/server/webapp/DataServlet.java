@@ -17,9 +17,9 @@ import org.apache.log4j.Logger;
 import org.genepattern.server.auth.AuthenticationException;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
+import org.genepattern.server.config.Value;
 import org.genepattern.server.dm.GpFileObjFactory;
 import org.genepattern.server.dm.GpFilePath;
-import org.genepattern.server.executor.CommandProperties;
 import org.genepattern.server.webapp.jsf.AuthorizationHelper;
 import org.genepattern.server.webapp.jsf.UIBeanHelper;
 
@@ -373,7 +373,7 @@ public class DataServlet extends HttpServlet implements Servlet {
      * @return true of the given user has permission to read the file on the server file path.
      */
     public static boolean canReadServerFile(GpContext userContext, File fileObj) {
-        CommandProperties.Value value = ServerConfigurationFactory.instance().getValue(userContext, "server.browse.file.system.root");
+        Value value = ServerConfigurationFactory.instance().getValue(userContext, "server.browse.file.system.root");
         if (value == null) {
             //Note: by default, all files on the server's file system are readable
             //final String DEFAULT_ROOT = "/";            

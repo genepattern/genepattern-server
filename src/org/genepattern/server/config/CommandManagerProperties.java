@@ -8,7 +8,7 @@ import java.util.Map.Entry;
 import org.apache.log4j.Logger;
 import org.genepattern.server.UserAccountManager;
 import org.genepattern.server.executor.CommandProperties;
-import org.genepattern.server.executor.CommandProperties.Value;
+import org.genepattern.server.config.Value;
 import org.genepattern.webservice.JobInfo;
 
 /**
@@ -68,7 +68,7 @@ public class CommandManagerProperties {
 
 
     public String getProperty(final GpContext context, final String key) {
-        CommandProperties.Value value = getValue(context, key);
+        Value value = getValue(context, key);
         if (value == null) {
             return null;
         }
@@ -78,7 +78,7 @@ public class CommandManagerProperties {
         return value.getValue();
     }
 
-    public CommandProperties.Value getValue(final GpContext context, final String key) {
+    public Value getValue(final GpContext context, final String key) {
         Value drmCustomProps=null;
         if (!key.equals("executor.props")) {
             final String drmCustomPropsKey=ServerConfigurationFactory.instance().getGPProperty(context, "executor.props");
@@ -99,8 +99,8 @@ public class CommandManagerProperties {
         }
         return getValue(context, key, drmCustomProps);
     }
-    private CommandProperties.Value getValue(final GpContext context, final String key, final Value drmCustomProps) {
-        CommandProperties.Value rval = null;
+    private Value getValue(final GpContext context, final String key, final Value drmCustomProps) {
+        Value rval = null;
         // 0) initialize from system properties and legacy properties files
         //    only if specified by the context
         rval = ServerProperties.instance().getValue(context, key);

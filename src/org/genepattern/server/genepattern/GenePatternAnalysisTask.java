@@ -124,10 +124,10 @@ import org.genepattern.server.JobInfoWrapper.InputFile;
 import org.genepattern.server.JobManager;
 import org.genepattern.server.PermissionsHelper;
 import org.genepattern.server.TaskIDNotFoundException;
-import org.genepattern.server.config.ServerConfiguration;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.config.ServerProperties;
+import org.genepattern.server.config.Value;
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.dm.GpFileObjFactory;
 import org.genepattern.server.dm.GpFilePath;
@@ -140,7 +140,6 @@ import org.genepattern.server.executor.AnalysisJobScheduler;
 import org.genepattern.server.executor.CommandExecutor;
 import org.genepattern.server.executor.CommandExecutorNotFoundException;
 import org.genepattern.server.executor.CommandManagerFactory;
-import org.genepattern.server.executor.CommandProperties;
 import org.genepattern.server.executor.JobDispatchException;
 import org.genepattern.server.executor.JobSubmissionException;
 import org.genepattern.server.executor.pipeline.PipelineException;
@@ -1798,7 +1797,7 @@ public class GenePatternAnalysisTask {
             filenameFilter.addExactMatch(taskLog.getName());
         }
         
-        CommandProperties.Value globPatterns = ServerConfigurationFactory.instance().getValue(jobContext, "job.FilenameFilter");
+        Value globPatterns = ServerConfigurationFactory.instance().getValue(jobContext, "job.FilenameFilter");
         if (globPatterns != null) {
             for(String globPattern : globPatterns.getValues()) {
                 filenameFilter.addGlob(globPattern);

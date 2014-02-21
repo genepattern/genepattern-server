@@ -8,7 +8,7 @@ import org.genepattern.server.config.GpContext;
 import org.genepattern.server.executor.CommandExecutor;
 import org.genepattern.server.executor.CommandManager;
 import org.genepattern.server.executor.CommandManagerFactory;
-import org.genepattern.server.executor.CommandProperties.Value;
+import org.genepattern.server.config.Value;
 import org.genepattern.util.GPConstants;
 import org.genepattern.webservice.JobInfo;
 import org.genepattern.webservice.TaskInfo;

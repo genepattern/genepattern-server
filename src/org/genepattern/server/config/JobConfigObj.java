@@ -28,7 +28,7 @@ public class JobConfigObj {
         this.executors.put(cmdExecId, cmdExecConfigObj);            
     }
     
-    public void addDefaultProperty(String key, CommandProperties.Value value) {
+    public void addDefaultProperty(String key, Value value) {
         defaultProperties.put(key, value);
     }
     

@@ -10,7 +10,7 @@ import java.util.Map;
 
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
-import org.genepattern.server.executor.CommandProperties.Value;
+import org.genepattern.server.config.Value;
 import org.genepattern.webservice.JobInfo;
 
 import com.google.inject.internal.ImmutableMap;

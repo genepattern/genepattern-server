@@ -11,7 +11,7 @@ import org.genepattern.junitutil.ConfigUtil;
 import org.genepattern.server.config.ServerConfiguration;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
-import org.genepattern.server.executor.CommandProperties.Value;
+import org.genepattern.server.config.Value;
 import org.genepattern.server.job.input.JobConfigParams;
 import org.junit.After;
 import org.junit.Assert;

@@ -12,7 +12,7 @@ import java.util.Set;
 import org.apache.log4j.Logger;
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.executor.CommandProperties;
-import org.genepattern.server.executor.CommandProperties.Value;
+import org.genepattern.server.config.Value;
 import org.genepattern.server.genepattern.GenePatternAnalysisTask;
 import org.genepattern.server.webservice.server.DirectoryManager;
 import org.genepattern.util.GPConstants;

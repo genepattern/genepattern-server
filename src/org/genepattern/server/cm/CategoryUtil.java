@@ -9,7 +9,7 @@ import java.util.Set;
 import org.apache.log4j.Logger;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
-import org.genepattern.server.executor.CommandProperties.Value;
+import org.genepattern.server.config.Value;
 import org.genepattern.server.task.category.dao.TaskCategory;
 import org.genepattern.server.task.category.dao.TaskCategoryRecorder;
 import org.genepattern.util.GPConstants;

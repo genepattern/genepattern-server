@@ -27,7 +27,7 @@ public class PropObj {
         defaultProperties.clear();
     }
 
-    public void addDefaultProperty(String key, CommandProperties.Value value) {
+    public void addDefaultProperty(String key, Value value) {
         defaultProperties.put(key, value);
     }
     
@@ -44,7 +44,7 @@ public class PropObj {
         modulePropertiesMap.clear();
     }
     
-    public void addModuleProperty(String moduleId, String propKey, CommandProperties.Value propValue) {
+    public void addModuleProperty(String moduleId, String propKey, Value propValue) {
         CommandProperties moduleProperties = modulePropertiesMap.get(moduleId);
         if (moduleProperties == null) {
             moduleProperties = new CommandProperties();
@@ -59,7 +59,7 @@ public class PropObj {
             String moduleId = mapEntry.getKey();
             for(Entry<?,?> entry : mapEntry.getValue().entrySet()) {
                 String propKey = ""+entry.getKey();
-                CommandProperties.Value propValue = CommandProperties.Value.parse(entry.getValue());
+                Value propValue = Value.parse(entry.getValue());
                 addModuleProperty(moduleId, propKey, propValue);
             }
         }
@@ -82,7 +82,7 @@ public class PropObj {
         return getDefaultProperty(key, null);
     }
     
-    public CommandProperties.Value getDefaultValue(String key) {
+    public Value getDefaultValue(String key) {
         return defaultProperties.get(key);
     }
 

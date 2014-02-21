@@ -10,7 +10,6 @@ import java.util.Properties;
 
 import org.apache.log4j.Logger;
 import org.genepattern.server.config.GpContext;
-import org.genepattern.server.executor.CommandProperties;
 
 /**
  * Utility class for managing the loading of properties from the genepattern.properties file, custom.properties file, et cetera.
@@ -100,10 +99,10 @@ public class ServerProperties {
         }
     }
     
-    public CommandProperties.Value getValue(final GpContext context, final String key) {
+    public Value getValue(final GpContext context, final String key) {
         String from = getProperty(context, key);
         if (from != null) {
-            return new CommandProperties.Value(from);
+            return new Value(from);
         }
         return null;
     }

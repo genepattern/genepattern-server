@@ -10,7 +10,7 @@ import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.eula.dao.RecordEulaToDb;
 import org.genepattern.server.eula.remote.RecordEulaToRemoteServerAsync;
-import org.genepattern.server.executor.CommandProperties.Value;
+import org.genepattern.server.config.Value;
 import org.genepattern.server.user.User;
 import org.genepattern.server.user.UserDAO;
 import org.genepattern.util.GPConstants;

@@ -9,7 +9,6 @@ import java.util.Set;
 import java.util.Map.Entry;
 
 import org.apache.log4j.Logger;
-import org.genepattern.server.executor.CommandProperties;
 import org.genepattern.server.executor.ConfigurationException;
 import org.yaml.snakeyaml.Yaml;
 
@@ -147,7 +146,7 @@ public class ConfigFileParser {
         Map<?,?> map = (Map<?,?>) defaultPropertiesObj;
         for(Entry<?,?> entry : map.entrySet()) {
             String key = ""+entry.getKey();
-            CommandProperties.Value value = CommandProperties.Value.parse(entry.getValue());
+            Value value = Value.parse(entry.getValue());
             configObj.addDefaultProperty(key, value);
         }
     }
@@ -187,7 +186,7 @@ public class ConfigFileParser {
             if (execObj.defaultProperties != null) { 
                 PropObj propObj = config.getPropsForExecutor(execId);
                 for (String key : (Set<String>) (Set) execObj.defaultProperties.keySet()) {
-                    CommandProperties.Value value = execObj.defaultProperties.get(key);
+                    Value value = execObj.defaultProperties.get(key);
                     propObj.addDefaultProperty(key, value);
                 }
             }
@@ -246,7 +245,7 @@ public class ConfigFileParser {
                 initializeModulePropertiesInto(propObj, groupOrUserId, entry.getValue());
             }
             else {
-                CommandProperties.Value value = CommandProperties.Value.parse( entry.getValue() );
+                Value value = Value.parse( entry.getValue() );
                 propObj.addDefaultProperty(propname, value);
             }
         }
@@ -274,7 +273,7 @@ public class ConfigFileParser {
             if (modulePropertiesObj instanceof Map<?,?>) {
                 for(Entry<?,?> propEntry : ((Map<?,?>)modulePropertiesObj).entrySet()) {
                     String propKey = ""+propEntry.getKey();
-                    CommandProperties.Value propValue = CommandProperties.Value.parse(propEntry.getValue());
+                    Value propValue = Value.parse(propEntry.getValue());
                     propObj.addModuleProperty(moduleId, propKey, propValue);
                 }
             }

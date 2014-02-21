@@ -16,7 +16,7 @@ import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.dm.GpFileObjFactory;
 import org.genepattern.server.dm.GpFilePath;
 import org.genepattern.server.dm.serverfile.ServerFilePath;
-import org.genepattern.server.executor.CommandProperties.Value;
+import org.genepattern.server.config.Value;
 
 /**
  * Servlet to back the new server files browser

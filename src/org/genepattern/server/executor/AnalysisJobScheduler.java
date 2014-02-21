@@ -31,7 +31,7 @@ import java.util.concurrent.TimeoutException;
 import org.apache.log4j.Logger;
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.domain.JobStatus;
-import org.genepattern.server.executor.CommandProperties.Value;
+import org.genepattern.server.config.Value;
 import org.genepattern.server.genepattern.GenePatternAnalysisTask;
 import org.genepattern.server.job.input.cache.FileCache;
 import org.genepattern.server.jobqueue.JobQueue;

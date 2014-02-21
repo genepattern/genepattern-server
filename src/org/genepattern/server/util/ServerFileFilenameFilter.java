@@ -9,7 +9,7 @@ import org.apache.log4j.Logger;
 import org.apache.oro.io.GlobFilenameFilter;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
-import org.genepattern.server.executor.CommandProperties;
+import org.genepattern.server.config.Value;
 
 /**
  * Filter out files from the server file path based on a pattern specified using GLOB syntax.
@@ -54,7 +54,7 @@ public class ServerFileFilenameFilter implements FilenameFilter {
         else if (userContext.getUserId()==null || userContext.getUserId().length()==0) {
             log.error("userContext.userId is not set");
         }
-        CommandProperties.Value globPatterns = ServerConfigurationFactory.instance().getValue(userContext, KEY);
+        Value globPatterns = ServerConfigurationFactory.instance().getValue(userContext, KEY);
         ServerFileFilenameFilter filter=new ServerFileFilenameFilter();
         if (globPatterns == null) {
             //not set, use the default values 

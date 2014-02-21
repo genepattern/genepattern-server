@@ -22,7 +22,7 @@ import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.executor.CommandExecutor;
 import org.genepattern.server.executor.CommandExecutorException;
 import org.genepattern.server.executor.CommandProperties;
-import org.genepattern.server.executor.CommandProperties.Value;
+import org.genepattern.server.config.Value;
 import org.genepattern.server.genepattern.GenePatternAnalysisTask;
 import org.genepattern.webservice.JobInfo;
 import org.genepattern.webservice.JobStatus;

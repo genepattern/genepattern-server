@@ -226,7 +226,7 @@ public class ServerConfiguration {
         return value;
     }
     
-    public CommandProperties.Value getValue(final GpContext context, final String key) {
+    public Value getValue(final GpContext context, final String key) {
         if (cmdMgrProps == null) {
             log.error("Invalid server configuration in getGPProperty("+key+")");
             return null;

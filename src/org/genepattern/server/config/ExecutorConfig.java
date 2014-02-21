@@ -64,7 +64,7 @@ public class ExecutorConfig {
             Map<?,?> configPropsMap = (Map<?,?>) configPropsObj;
             for(Entry<?,?> entry : configPropsMap.entrySet()) {
                 String key = ""+entry.getKey();
-                CommandProperties.Value value = CommandProperties.Value.parse(entry.getValue());
+                Value value = Value.parse(entry.getValue());
                 this.configurationProperties.put(key, value);
             }
         }
@@ -75,7 +75,7 @@ public class ExecutorConfig {
             Map<?,?> defaultPropertiesMap = (Map<?,?>) defaultPropertiesObj;
             for(Entry<?,?> entry : defaultPropertiesMap.entrySet()) {
                 String key = ""+entry.getKey();
-                CommandProperties.Value value = CommandProperties.Value.parse(entry.getValue());
+                Value value = Value.parse(entry.getValue());
                 this.defaultProperties.put(key, value);
             }
         } 
