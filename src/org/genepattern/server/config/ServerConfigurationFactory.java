@@ -1,7 +1,5 @@
 package org.genepattern.server.config;
 
-import java.io.File;
-
 import org.apache.log4j.Logger;
 
 /**
@@ -37,5 +35,27 @@ public class ServerConfigurationFactory {
         singleton.reloadConfiguration(configFilepath);
     }
 
+//    // proposed new code
+//    private static ServerConfigurationWrapper singletonWrapper=new ServerConfigurationWrapper(init());
+//    public static ServerConfigurationWrapper instanceWrapper() {
+//        return singletonWrapper;
+//    }
+//    public static void reloadConfigurationWrapper() {
+//        singletonWrapper=new ServerConfigurationWrapper(init());
+//    }
+//    public static void reloadConfigurationWrapper(final String configFilepath) {
+//        final File configFile=ConfigFileParser.initConfigurationFile(configFilepath);
+//        singletonWrapper=new ServerConfigurationWrapper(init(configFile));
+//    }
+//    
+//    private static ServerConfigurationV2 init() {
+//        return new ServerConfigurationV2.Builder().build();
+//    }
+//    
+//    private static ServerConfigurationV2 init(final File configFile) {
+//        return new ServerConfigurationV2.Builder()
+//            .configFile(configFile)
+//            .build();
+//    }
 
 }

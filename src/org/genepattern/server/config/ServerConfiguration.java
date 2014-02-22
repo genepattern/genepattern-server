@@ -60,8 +60,9 @@ public class ServerConfiguration {
             log.info("loading configuration from '"+configFilepath+"' ...");
             this.configFilepath = configFilepath;
             errors.clear();
-            ConfigFileParser parser = new ConfigFileParser();
-            parser.parseConfigFile(configFilepath);
+            final File configFile=ConfigFileParser.initConfigurationFile(configFilepath);
+            final ConfigFileParser parser = new ConfigFileParser(configFile);
+            parser.parse();
             this.configFile = parser.getConfigFile();
             this.cmdMgrProps = parser.getConfig();
             this.jobConfig = parser.getJobConfig();

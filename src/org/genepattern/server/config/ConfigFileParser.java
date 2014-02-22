@@ -31,9 +31,9 @@ public class ConfigFileParser {
      * @param configuration
      * @return a valid File or null
      * 
-     * @deprecated, prefer to declare the config file rather than look for it in the resouces directory.
+     * @deprecated, prefer to declare the config file rather than look for it in the resources directory.
      */
-    private static File getConfigurationFile(String configuration) throws ConfigurationException {
+    public static File initConfigurationFile(String configuration) {
         if (configuration == null || configuration.length() == 0) {
             return null;
         }
@@ -43,14 +43,6 @@ public class ConfigFileParser {
             File parent = getResourceDirectory();
             if (parent != null) {
                 f = new File(parent, configuration);
-            }
-        }
-        if (!f.canRead()) {
-            if (!f.exists()) {
-                throw new ConfigurationException("Configuration file does not exist: "+f.getAbsolutePath());
-            }
-            else {
-                throw new ConfigurationException("Cannot read configuration file: "+f.getAbsolutePath());
             }
         }
         return f;
@@ -74,12 +66,13 @@ public class ConfigFileParser {
     
     //----input
     //the absolute or relative path to the config file, if relative it is relative to the resources dir
-    private File configFile = null;
+    private final File configFile;
     //----output
     private CommandManagerProperties config = new CommandManagerProperties();
     private JobConfigObj jobConfigObj = null;
 
-    public ConfigFileParser() {
+    public ConfigFileParser(final File configFile) {
+        this.configFile=configFile;
     }
     
     public File getConfigFile() {
@@ -94,28 +87,20 @@ public class ConfigFileParser {
         return jobConfigObj;
     }
 
-    /**
-     *  @deprecated, prefer to pass in a valid File.
-     */
-    public void parseConfigFile(final String pathToConfiguration) throws ConfigurationException {
-        final File configFile = getConfigurationFile(pathToConfiguration);
-        reloadConfigFile(configFile);
-    }
-    
-    public void parseConfigFile(final File configFile) throws ConfigurationException {
-        reloadConfigFile(configFile);
-    }
-    
-    public void reloadConfigFile(final File configFile) throws ConfigurationException {
-        setConfigFile(configFile);
-        synchronized(config) {
-            jobConfigObj = parse(configFile);            
-            reloadCommandManagerProperties(jobConfigObj);
+    synchronized public void parse() throws ConfigurationException {
+        if (configFile==null) {
+            throw new ConfigurationException("Configuration file is null");
         }
-    }
-    
-    private void setConfigFile(final File configFile) {
-        this.configFile = configFile;
+        if (!configFile.canRead()) {
+            if (!configFile.exists()) {
+                throw new ConfigurationException("Configuration file does not exist: "+configFile.getAbsolutePath());
+            }
+            else {
+                throw new ConfigurationException("Cannot read configuration file: "+configFile.getAbsolutePath());
+            }
+        }
+        jobConfigObj = parse(configFile);            
+        reloadCommandManagerProperties(jobConfigObj);
     }
     
     /**
@@ -123,7 +108,7 @@ public class ConfigFileParser {
      * @param configFile
      * @return
      */
-    private JobConfigObj parse(File configurationFile) throws ConfigurationException {
+    private JobConfigObj parse(final File configurationFile) throws ConfigurationException {
         Reader reader = null;
         try {
             reader = new FileReader(configurationFile);
