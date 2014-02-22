@@ -20,7 +20,6 @@ import java.util.Set;
 import org.apache.log4j.Logger;
 import org.genepattern.data.pipeline.JobSubmission;
 import org.genepattern.data.pipeline.PipelineModel;
-import org.genepattern.server.config.ServerConfiguration;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.dm.UrlUtil;
