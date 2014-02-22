@@ -6,7 +6,8 @@ import java.util.Map;
 import org.apache.log4j.Logger;
 import org.broadinstitute.zamboni.server.batchsystem.BatchJob;
 import org.broadinstitute.zamboni.server.batchsystem.sge.SgeBatchSystem;
-import org.genepattern.server.config.ServerConfiguration;
+import org.genepattern.server.config.GpContext;
+import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.executor.CommandExecutor;
 import org.genepattern.server.executor.CommandExecutorException;
 import org.genepattern.server.executor.CommandProperties;
@@ -238,46 +239,46 @@ public class SgeCommandExecutor implements CommandExecutor {
              * "sge.slotReservation"
              * "sge.restartable");
              */
-            ServerConfiguration.Context jobContext = ServerConfiguration.Context.getContextForJob(jobInfo); 
-            Integer priority = ServerConfiguration.instance().getGPIntegerProperty(jobContext, "sge.priority", null);
+            GpContext jobContext = GpContext.getContextForJob(jobInfo); 
+            Integer priority = ServerConfigurationFactory.instance().getGPIntegerProperty(jobContext, "sge.priority", null);
             if (priority != null) {
                 log.debug("sgeJob.setPriority( "+priority+" )");
                 sgeJob.setPriority( scala.Option.apply( priority ) );
             }
-            String queueName = ServerConfiguration.instance().getGPProperty(jobContext, "sge.queueName", null);
+            String queueName = ServerConfigurationFactory.instance().getGPProperty(jobContext, "sge.queueName", null);
             if (queueName != null) {
                 log.debug("sgeJob.setQueueName( "+queueName+" )");
                 sgeJob.setQueueName( scala.Option.apply( queueName ) );
             }
-            Object exclusiveObj = ServerConfiguration.instance().getValue(jobContext, "sge.exclusive");
+            Object exclusiveObj = ServerConfigurationFactory.instance().getValue(jobContext, "sge.exclusive");
             if (exclusiveObj != null) {
-                Boolean exclusive = ServerConfiguration.instance().getGPBooleanProperty(jobContext, "sge.exclusive");
+                Boolean exclusive = ServerConfigurationFactory.instance().getGPBooleanProperty(jobContext, "sge.exclusive");
                 log.debug("sgeJob.setExclusive( "+exclusive+" )");
                 sgeJob.setExclusive( scala.Option.apply( exclusive ) );
             }
-            Integer maxRunningTime = ServerConfiguration.instance().getGPIntegerProperty(jobContext, "sge.maxRunningTime", null);
+            Integer maxRunningTime = ServerConfigurationFactory.instance().getGPIntegerProperty(jobContext, "sge.maxRunningTime", null);
             if (maxRunningTime != null) {
                 log.debug("sgeJob.setMaxRunningTime( "+maxRunningTime+" )");
                 sgeJob.setMaxRunningTime( scala.Option.apply( maxRunningTime ) );
             }
-            Integer memoryReservation = ServerConfiguration.instance().getGPIntegerProperty(jobContext, "sge.memoryReservation", null);
+            Integer memoryReservation = ServerConfigurationFactory.instance().getGPIntegerProperty(jobContext, "sge.memoryReservation", null);
             if (memoryReservation != null) {
                 log.debug("sgeJob.setMemoryReservation( "+memoryReservation+" )");
                 sgeJob.setMemoryReservation( scala.Option.apply( memoryReservation ) );
             }
-            Integer maxMemory = ServerConfiguration.instance().getGPIntegerProperty(jobContext, "sge.maxMemory", null);
+            Integer maxMemory = ServerConfigurationFactory.instance().getGPIntegerProperty(jobContext, "sge.maxMemory", null);
             if (maxMemory != null) {
                 log.debug("sgeJob.setMaxMemory( "+maxMemory+" )");
                 sgeJob.setMaxMemory( scala.Option.apply( maxMemory ) );
             }
-            Integer slotReservation = ServerConfiguration.instance().getGPIntegerProperty(jobContext, "sge.slotReservation", null);
+            Integer slotReservation = ServerConfigurationFactory.instance().getGPIntegerProperty(jobContext, "sge.slotReservation", null);
             if (slotReservation != null) {
                 log.debug("sgeJob.setSlotReservation( "+slotReservation+" )");
                 sgeJob.setSlotReservation( scala.Option.apply( slotReservation ) );
             }
-            Object restartableObj = ServerConfiguration.instance().getValue(jobContext, "sge.restartable");
+            Object restartableObj = ServerConfigurationFactory.instance().getValue(jobContext, "sge.restartable");
             if (restartableObj != null) {
-                Boolean restartable = ServerConfiguration.instance().getGPBooleanProperty(jobContext, "sge.restartable");
+                Boolean restartable = ServerConfigurationFactory.instance().getGPBooleanProperty(jobContext, "sge.restartable");
                 log.debug("sgeJob.setRestartable( "+restartable+" )");
                 sgeJob.setRestartable( scala.Option.apply( restartable ) );
             }

@@ -2,7 +2,7 @@
 
 name := "gp-sge-queue"
 
-version := "0.5" 
+version := "1.0" 
 
 scalaVersion := "2.8.1"
 

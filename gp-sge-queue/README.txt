@@ -24,17 +24,20 @@ If you want to use the default build, skip ahead to step 7.
 2. Building / modifying the plugin
 ----------------------------------------
 Project dependencies:
-* requires an installation of GenePattern Server. Tested with GP 3.3.3-beta; Byte compatible with GP 3.3.2-production.
+* requires an installation of GenePattern Server. Tested with GP 3.7.3-beta; Byte compatible with GP 3.3.2-production.
   This project includes a copy of the GP 3.3.2 library (gp-full.jar, renamed to gp-full-3.3.2.prod.jar). 
   To use a different version of GenePattern, replace gp-full-3.3.2.prod.jar with the gp-full.jar in the WEB-INF/lib folder
   of your deployed GenePattern Server. You can also, as tested from Eclipse, simply link this project to the GenePattern project.
-* requires Java 5; recommended Java 6 to be compatible with GP 3.3.3 and later.
+* requires Java 6 to be compatible with GP 3.3.3 and later.
 * requires scala compiler to build the project. Built with SBT (scala build tool) 0.10.0 and scala-2.8.1. Also seems to work with scala-2.9.
+  See http://www.scala-sbt.org/.
 * requires scala-library.jar to deploy.
+
 
 How to deploy this project to your GP server
 --------------------------------------------
 # Compile and package the library
+(Hint: I install sbt here, /Users/Shared/Broad/Scala/sbt/sbt.sh)
 sbt compile
 sbt package
 
@@ -46,7 +49,7 @@ Dependencies include:
 scala-library.jar
 ./target/scala-<version>/gp-sge-queue_<scala-version>.jar
 
-# configure the DB
+# [not needed for GP >= 3.6.0] configure the DB
 5) create the tables defined in the src/main/resources/sge_schema_oracle.sql script. 
    You may need to copy and then modify this script to work with a different database vendor.
 
