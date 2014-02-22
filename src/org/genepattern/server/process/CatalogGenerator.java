@@ -38,7 +38,7 @@ import java.util.Properties;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
-import org.genepattern.server.config.ServerProperties;
+import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.webservice.server.DirectoryManager;
 import org.genepattern.server.webservice.server.local.IAdminClient;
 import org.genepattern.server.webservice.server.local.LocalAdminClient;
@@ -127,7 +127,8 @@ public class CatalogGenerator {
         return "<site_motd><motd_message>GenePattern Server Modules</motd_message>\n" + "<motd_url>"
                 + getZipDownloadURLBase() + "</motd_url>\" \n" + "<motd_urgency>0</motd_urgency>\n"
                 + "<motd_timestamp>" + System.currentTimeMillis() + "</motd_timestamp>\n"
-                + "<motd_latestServerVersion>" + ServerProperties.instance().getProperty("GenePatternVersion")
+                + "<motd_latestServerVersion>" 
+                + ServerConfigurationFactory.instance().getGenePatternVersion()
                 + "</motd_latestServerVersion></site_motd>\n";
 
     }

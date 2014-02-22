@@ -1,10 +1,8 @@
 package org.genepattern.server.job.input.collection;
 
 import java.io.File;
-import java.util.List;
 
 import org.genepattern.junitutil.MockGpFilePath;
-import org.genepattern.server.config.ServerConfiguration;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.dm.GpFilePath;
 import org.genepattern.server.job.input.GroupId;

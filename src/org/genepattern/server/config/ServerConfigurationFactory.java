@@ -24,15 +24,15 @@ public class ServerConfigurationFactory {
     
     // legacy code, which uses the 'config.file' property from the genepattern.properties file
     // to maintain a singleton instance of a ServerConfiguration 
-    private static ServerConfiguration singleton = new ServerConfiguration();
+    private static ServerConfigurationV1 singletonV1 = new ServerConfigurationV1();
     public static ServerConfiguration instance() {
-        return singleton;
+        return singletonV1;
     }
     public static void reloadConfiguration() {
-        singleton.reloadConfiguration();
+        singletonV1.reloadConfiguration();
     }
     public static void reloadConfiguration(final String configFilepath) {
-        singleton.reloadConfiguration(configFilepath);
+        singletonV1.reloadConfiguration(configFilepath);
     }
 
 //    // proposed new code

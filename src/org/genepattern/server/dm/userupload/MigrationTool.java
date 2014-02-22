@@ -10,7 +10,6 @@ import org.apache.log4j.Logger;
 import org.genepattern.server.DataManager;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
-import org.genepattern.server.config.ServerProperties;
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.domain.AnalysisJob;
 import org.genepattern.server.domain.AnalysisJobDAO;
@@ -38,23 +37,13 @@ import org.hibernate.SQLQuery;
 public class MigrationTool {
     private static Logger log = Logger.getLogger(MigrationTool.class);
     
-    private static String getInstalledVersion() {
-        //helper method, return the identifier for the version of GP we are running
-        //use this to determine whether or not to migrate job upload files
-        final String gpVersion = ServerProperties.instance().getProperty("GenePatternVersion");
-        if (gpVersion == null) {
-            log.error("GenePatternVersion==null");
-        }
-        return gpVersion;
-    }
-    
     /**
      * added this with the 3.3.3 release to correct a bug (which also exists in previous versions of GP) in the installer.
      * The bug: after installing an updated version of GP, the job upload files for jobs run in the previous version of GP
      * are not in the correct location on the file system.
      */
     public static void migrateJobUploads() {
-        final String gpVersion = getInstalledVersion();
+        final String gpVersion =  ServerConfigurationFactory.instance().getGenePatternVersion();
         if (gpVersion == null) {
             return;
         }

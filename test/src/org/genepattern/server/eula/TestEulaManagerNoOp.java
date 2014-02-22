@@ -7,7 +7,6 @@ import junit.framework.Assert;
 
 import org.genepattern.junitutil.ConfigUtil;
 import org.genepattern.junitutil.TaskUtil;
-import org.genepattern.server.config.ServerConfiguration;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.webservice.TaskInfo;

@@ -126,7 +126,6 @@ import org.genepattern.server.PermissionsHelper;
 import org.genepattern.server.TaskIDNotFoundException;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
-import org.genepattern.server.config.ServerProperties;
 import org.genepattern.server.config.Value;
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.dm.GpFileObjFactory;
@@ -4243,7 +4242,9 @@ public class GenePatternAnalysisTask {
     }
 
     public static void announceReady() {
-        log.info("GenePattern server version " + ServerProperties.instance().getProperty("GenePatternVersion") + " is ready.");
+        log.info("GenePattern server version " 
+                + ServerConfigurationFactory.instance().getGenePatternVersion()
+                + " is ready.");
     }
 
     /**

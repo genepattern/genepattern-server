@@ -24,9 +24,8 @@ import java.util.Map;
 import java.util.TreeSet;
 import java.util.Vector;
 
-import org.genepattern.server.config.ServerConfiguration;
 import org.genepattern.server.config.GpContext;
-import org.genepattern.server.config.ServerProperties;
+import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.genepattern.TaskInstallationException;
 import org.genepattern.server.repository.RepositoryInfo;
 import org.genepattern.util.GPConstants;
@@ -63,10 +62,12 @@ public class InstallTasksCollectionUtils {
         boolean notFirstParam = (repositoryUrlQuery.indexOf("?") > 0);       
         String paramPrefix = notFirstParam? "&" :"?";
         if (initialInstall) {
-            repositoryUrlQuery = repositoryURL.toExternalForm() + paramPrefix + "initialInstall=1&GenePatternVersion=" + ServerProperties.instance().getProperty("GenePatternVersion");
+            repositoryUrlQuery = repositoryURL.toExternalForm() + paramPrefix + "initialInstall=1&GenePatternVersion=" 
+                    + ServerConfigurationFactory.instance().getGenePatternVersion();
         } 
         else {
-            repositoryUrlQuery = repositoryURL.toExternalForm() + paramPrefix + "GenePatternVersion=" + ServerProperties.instance().getProperty("GenePatternVersion");
+            repositoryUrlQuery = repositoryURL.toExternalForm() + paramPrefix + "GenePatternVersion=" 
+                    + ServerConfigurationFactory.instance().getGenePatternVersion();
         }
 
 

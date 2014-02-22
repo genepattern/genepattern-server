@@ -32,7 +32,6 @@ public class TestDrmJobSubmission {
     
     private File jobResults;
     private File workingDir;
-    private ServerConfiguration serverConfig;
 
     @Before
     public void before() throws Throwable {

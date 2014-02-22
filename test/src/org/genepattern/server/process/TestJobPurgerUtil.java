@@ -8,7 +8,6 @@ import java.util.Date;
 import java.util.GregorianCalendar;
 
 import org.genepattern.junitutil.ConfigUtil;
-import org.genepattern.server.config.ServerConfiguration;
 import org.genepattern.server.config.GpContext;
 import org.junit.Assert;
 import org.junit.BeforeClass;

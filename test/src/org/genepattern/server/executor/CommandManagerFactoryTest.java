@@ -10,7 +10,6 @@ import org.genepattern.server.UserAccountManager;
 import org.genepattern.server.auth.IGroupMembershipPlugin;
 import org.genepattern.server.config.ServerConfiguration;
 import org.genepattern.server.config.ServerConfigurationFactory;
-import org.genepattern.server.config.ServerProperties;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.Value;
 import org.genepattern.webservice.JobInfo;
@@ -533,7 +532,7 @@ public class CommandManagerFactoryTest extends TestCase {
         System.setProperty("system.prop.override", "SYSTEM_VALUE");
         System.setProperty("system.prop.override.to.null", "NOT_NULL");
         
-        ServerProperties.instance().reloadProperties();
+        ServerConfigurationFactory.reloadConfiguration();
 
         //tests for 'test' user, use 'default.properties', no overrides
         GpContext userContext = GpContext.getContextForUser("test");
@@ -569,7 +568,7 @@ public class CommandManagerFactoryTest extends TestCase {
         System.setProperty("genepattern.properties", resourceDir.getAbsolutePath());
         System.setProperty("require.password", "false");
         System.setProperty("prop.test.case", "test.case.SYSTEM");
-        ServerProperties.instance().reloadProperties();
+        ServerConfigurationFactory.reloadConfiguration();
 
         initializeYamlConfigFile("test_user_properties.yaml");
         UserAccountManager.instance().refreshUsersAndGroups();

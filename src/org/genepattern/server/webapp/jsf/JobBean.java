@@ -47,7 +47,6 @@ import org.genepattern.server.JobManager;
 import org.genepattern.server.PermissionsHelper;
 import org.genepattern.server.UserAccountManager;
 import org.genepattern.server.auth.IGroupMembershipPlugin;
-import org.genepattern.server.config.ServerConfiguration;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.dm.UrlUtil;

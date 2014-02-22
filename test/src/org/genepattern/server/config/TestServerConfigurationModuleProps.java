@@ -48,7 +48,7 @@ public class TestServerConfigurationModuleProps {
         File resourceDir = FileUtil.getSourceDir(TestServerConfigurationModuleProps.class);
         System.setProperty("genepattern.properties", resourceDir.getAbsolutePath());
         System.setProperty(ServerConfiguration.PROP_CONFIG_FILE, filename);
-        ServerConfigurationFactory.instance().reloadConfiguration(filename);
+        ServerConfigurationFactory.reloadConfiguration(filename);
         CommandManagerFactory.initializeCommandManager();
         
         validateCommandManager(CommandManagerFactory.getCommandManager());

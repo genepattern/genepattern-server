@@ -23,7 +23,7 @@ import org.genepattern.server.config.GpContext;
  * 
  * @author pcarr
  */
-public class ServerProperties {
+class ServerProperties {
     private static Logger log = Logger.getLogger(ServerProperties.class);
     private boolean useSystemProperties = true;
     private boolean usePropertiesFiles = true;

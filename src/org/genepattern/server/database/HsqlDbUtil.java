@@ -24,7 +24,7 @@ import java.util.List;
 import java.util.StringTokenizer;
 
 import org.apache.log4j.Logger;
-import org.genepattern.server.config.ServerProperties;
+import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.webservice.server.dao.AnalysisDAO;
 import org.genepattern.server.webservice.server.dao.BaseDAO;
 import org.hsqldb.Server;
@@ -44,6 +44,20 @@ public class HsqlDbUtil {
         //  String dbName = System.getProperty("HSQL.dbName", "xdb");
         //  String[] args = new String[] { "-port", port, "-database.0", dbUrl, "-dbname.0", dbName };
         String args = System.getProperty("HSQL.args", " -port 9001  -database.0 file:../resources/GenePatternDB -dbname.0 xdb");
+        //String expectedSchemaVersion = ServerProperties.instance().getProperty("GenePatternVersion");
+        final String expectedSchemaVersion;
+        
+        final String gpVersion = ServerConfigurationFactory.instance().getGenePatternVersion();
+        //for junit testing, if the property is not in ServerProperties, check System properties
+        if ("$GENEPATTERN_VERSION$".equals(gpVersion)) {
+            log.info("gpVersion="+gpVersion+" (from ServerProperties)");
+            expectedSchemaVersion = System.getProperty("GenePatternVersion", gpVersion);
+            log.info("expectedSchemaVersion="+expectedSchemaVersion+" (from System.getProperty)");
+        }
+        else {
+            expectedSchemaVersion=gpVersion;
+        }
+
 
         StringTokenizer strTok = new StringTokenizer(args);
         List<String> argsList = new ArrayList<String>();
@@ -69,7 +83,7 @@ public class HsqlDbUtil {
             HibernateUtil.beginTransaction();
             try {
                 // 2) ...
-                updateSchema();
+                updateSchema(expectedSchemaVersion);
                 HibernateUtil.commitTransaction();
             }
             catch (Throwable t) {
@@ -116,13 +130,13 @@ public class HsqlDbUtil {
         }
     }
 
-    private static void updateSchema() 
+    private static void updateSchema(final String expectedSchemaVersion) 
     throws Exception 
     {
         log.debug("Updating schema...");
-        if (!checkSchema()) {
-            createSchema();
-            if (!checkSchema()) {
+        if (!checkSchema(expectedSchemaVersion)) {
+            createSchema(expectedSchemaVersion);
+            if (!checkSchema(expectedSchemaVersion)) {
                 log.error("schema didn't have correct version after creating");
                 //throw new IOException("Unable to successfully update database tables.");
             }
@@ -136,12 +150,12 @@ public class HsqlDbUtil {
      * @param props
      * @return
      */
-    private static boolean checkSchema() throws Exception {
+    private static boolean checkSchema(final String requiredSchemaVersion) throws Exception {
         boolean upToDate = false;
         String dbSchemaVersion = "";
 
         BaseDAO dao = new BaseDAO();
-        String requiredSchemaVersion = ServerProperties.instance().getProperty("GenePatternVersion");
+
         // check schemaVersion
         try {
             ResultSet resultSet = dao.executeSQL("select value from props where key='schemaVersion'", false);
@@ -189,7 +203,7 @@ public class HsqlDbUtil {
      * @param props
      * @throws IOException
      */
-    private static void createSchema() {
+    private static void createSchema(final String expectedSchemaVersion) {
         File resourceDir = getResourceDir();
         final String schemaPrefix = System.getProperty("HSQL.schema", "analysis_hypersonic-");
         FilenameFilter schemaFilenameFilter = new FilenameFilter() {
@@ -208,13 +222,12 @@ public class HsqlDbUtil {
                 return version1.compareToIgnoreCase(version2);
             }
         });
-        String expectedSchemaVersion = ServerProperties.instance().getProperty("GenePatternVersion");
-        //for junit testing, if the property is not in ServerProperties, check System properties
-        if ("$GENEPATTERN_VERSION$".equals(expectedSchemaVersion)) {
-            log.info("expectedSchemaVersion="+expectedSchemaVersion+" (from ServerProperties)");
-            expectedSchemaVersion = System.getProperty("GenePatternVersion", expectedSchemaVersion);
-            log.info("expectedSchemaVersion="+expectedSchemaVersion+" (from System.getProperty)");
-        }
+//        //for junit testing, if the property is not in ServerProperties, check System properties
+//        if ("$GENEPATTERN_VERSION$".equals(expectedSchemaVersion)) {
+//            log.info("expectedSchemaVersion="+expectedSchemaVersion+" (from ServerProperties)");
+//            expectedSchemaVersion = System.getProperty("GenePatternVersion", expectedSchemaVersion);
+//            log.info("expectedSchemaVersion="+expectedSchemaVersion+" (from System.getProperty)");
+//        }
         String dbSchemaVersion = (String) System.getProperty("dbSchemaVersion");
         for (int f = 0; f < schemaFiles.length; f++) {
             File schemaFile = schemaFiles[f];
