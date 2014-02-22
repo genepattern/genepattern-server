@@ -18,20 +18,68 @@ import org.yaml.snakeyaml.Yaml;
  */
 public class ConfigFileParser {
     private static Logger log = Logger.getLogger(ConfigFileParser.class);
+
+    /**
+     * Get a File object for the named configuration file as specified in the 'genepattern.properties' file. E.g.
+     * <code>
+     *     config.file=config_default.yaml
+     *     or
+     *     config.file=/fully/qualified/path/to/config.yaml
+     * </code>
+     * If a relative path is given, load the file relative to the resources directory as specified by the 
+     * system property, 'genepattern.properties'. 
+     * @param configuration
+     * @return a valid File or null
+     * 
+     * @deprecated, prefer to declare the config file rather than look for it in the resouces directory.
+     */
+    private static File getConfigurationFile(String configuration) throws ConfigurationException {
+        if (configuration == null || configuration.length() == 0) {
+            return null;
+        }
+        File f = new File(configuration);
+        if (!f.isAbsolute()) {
+            //load the configuration file from the resources directory
+            File parent = getResourceDirectory();
+            if (parent != null) {
+                f = new File(parent, configuration);
+            }
+        }
+        if (!f.canRead()) {
+            if (!f.exists()) {
+                throw new ConfigurationException("Configuration file does not exist: "+f.getAbsolutePath());
+            }
+            else {
+                throw new ConfigurationException("Cannot read configuration file: "+f.getAbsolutePath());
+            }
+        }
+        return f;
+    }
+
+    /**
+     * Get the resource directory, the parent directory of the genepattern.properties file.
+     * @return a File or null if there is a configuration error 
+     */
+    private static File getResourceDirectory() {
+        File rval = null;
+        String pathToResourceDir = System.getProperty("genepattern.properties");
+        if (pathToResourceDir != null) {
+            rval = new File(pathToResourceDir);
+        }
+        else {
+            log.error("Missing required system property, 'genepattern.properties'");
+        }
+        return rval;
+    }
     
     //----input
     //the absolute or relative path to the config file, if relative it is relative to the resources dir
-    private String configFilepath = null;
     private File configFile = null;
     //----output
     private CommandManagerProperties config = new CommandManagerProperties();
     private JobConfigObj jobConfigObj = null;
 
     public ConfigFileParser() {
-    }
-    
-    public String getConfigFilepath() {
-        return configFilepath;
     }
     
     public File getConfigFile() {
@@ -46,21 +94,28 @@ public class ConfigFileParser {
         return jobConfigObj;
     }
 
-    public void parseConfigFile(String pathToConfiguration) throws ConfigurationException {
-        reloadConfigFile(pathToConfiguration);
+    /**
+     *  @deprecated, prefer to pass in a valid File.
+     */
+    public void parseConfigFile(final String pathToConfiguration) throws ConfigurationException {
+        final File configFile = getConfigurationFile(pathToConfiguration);
+        reloadConfigFile(configFile);
     }
     
-    public void reloadConfigFile(String pathToConfiguration) throws ConfigurationException {
-        setConfigFilename(pathToConfiguration);
+    public void parseConfigFile(final File configFile) throws ConfigurationException {
+        reloadConfigFile(configFile);
+    }
+    
+    public void reloadConfigFile(final File configFile) throws ConfigurationException {
+        setConfigFile(configFile);
         synchronized(config) {
             jobConfigObj = parse(configFile);            
             reloadCommandManagerProperties(jobConfigObj);
         }
     }
     
-    private void setConfigFilename(String s) throws ConfigurationException {
-        this.configFilepath = s;
-        this.configFile = ServerConfigurationFactory.getConfigurationFile(configFilepath);
+    private void setConfigFile(final File configFile) {
+        this.configFile = configFile;
     }
     
     /**

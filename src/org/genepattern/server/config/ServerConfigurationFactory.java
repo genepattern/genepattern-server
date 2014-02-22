@@ -26,57 +26,6 @@ public class ServerConfigurationFactory {
     
     // legacy code, which uses the 'config.file' property from the genepattern.properties file
     // to maintain a singleton instance of a ServerConfiguration 
-    /**
-     * Get a File object for the named configuration file as specified in the 'genepattern.properties' file. E.g.
-     * <code>
-     *     config.file=config_default.yaml
-     *     or
-     *     config.file=/fully/qualified/path/to/config.yaml
-     * </code>
-     * If a relative path is given, load the file relative to the resources directory as specified by the 
-     * system property, 'genepattern.properties'. 
-     * @param configuration
-     * @return a valid File or null
-     */
-    public static File getConfigurationFile(String configuration) throws ConfigurationException {
-        if (configuration == null || configuration.length() == 0) {
-            return null;
-        }
-        File f = new File(configuration);
-        if (!f.isAbsolute()) {
-            //load the configuration file from the resources directory
-            File parent = getResourceDirectory();
-            if (parent != null) {
-                f = new File(parent, configuration);
-            }
-        }
-        if (!f.canRead()) {
-            if (!f.exists()) {
-                throw new ConfigurationException("Configuration file does not exist: "+f.getAbsolutePath());
-            }
-            else {
-                throw new ConfigurationException("Cannot read configuration file: "+f.getAbsolutePath());
-            }
-        }
-        return f;
-    }
-
-    /**
-     * Get the resource directory, the parent directory of the genepattern.properties file.
-     * @return a File or null if there is a configuration error 
-     */
-    private static File getResourceDirectory() {
-        File rval = null;
-        String pathToResourceDir = System.getProperty("genepattern.properties");
-        if (pathToResourceDir != null) {
-            rval = new File(pathToResourceDir);
-        }
-        else {
-            log.error("Missing required system property, 'genepattern.properties'");
-        }
-        return rval;
-    }
-
     private static ServerConfiguration singleton = new ServerConfiguration();
     public static ServerConfiguration instance() {
         return singleton;
