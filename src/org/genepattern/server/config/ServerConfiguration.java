@@ -11,7 +11,6 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import org.apache.log4j.Logger;
-import org.genepattern.server.executor.CommandProperties;
 import org.genepattern.server.repository.ConfigRepositoryInfoLoader;
 import org.genepattern.server.repository.RepositoryInfo;
 
