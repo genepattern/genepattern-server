@@ -25,7 +25,6 @@ import org.genepattern.data.pipeline.MissingTasksException;
 import org.genepattern.data.pipeline.PipelineModel;
 import org.genepattern.data.pipeline.PipelineModelException;
 import org.genepattern.server.JobManager;
-import org.genepattern.server.config.ServerConfiguration;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationException;
 import org.genepattern.server.config.ServerConfigurationFactory;
@@ -1438,7 +1437,7 @@ public class PipelineHandler {
      * @param fileStr
      * @param jobResultFiles
      * @return
-     * @throws ServerConfiguration.Exception
+     * @throws ServerConfigurationException
      * @throws FileNotFoundException
      */
     private static String getOutputFilenameByType(final JobInfo fromJob, final String fileStr, List<ParameterInfo> jobResultFiles) 
