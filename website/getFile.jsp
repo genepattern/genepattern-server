@@ -7,7 +7,7 @@
                 java.io.BufferedInputStream,
                 java.io.File,
                 org.genepattern.server.config.GpContext,
-                org.genepattern.server.config.ServerConfiguration,
+                org.genepattern.server.config.ServerConfigurationFactory,
                 org.genepattern.server.webapp.jsf.UIBeanHelper,
                 java.io.FileInputStream,
                 java.io.InputStream,
@@ -69,7 +69,7 @@
             if (!in.exists()) {
                 try {
                     Context context = Context.getContextForUser(userID);
-                    File userUploadDir = ServerConfiguration.instance().getUserUploadDir(context);
+                    File userUploadDir = ServerConfigurationFactory.instance().getUserUploadDir(context);
                     in = new File(userUploadDir, filename);
                 } catch (Throwable t) {
                     //TODO: log exception

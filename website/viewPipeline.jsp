@@ -33,8 +33,7 @@
                  java.util.Iterator,
                  org.genepattern.server.eula.EulaManager,
                  org.genepattern.server.eula.EulaInfo,
-                 org.genepattern.server.config.GpContext,
-                 org.genepattern.server.config.ServerConfiguration"
+                 org.genepattern.server.config.GpContext"
          session="true" contentType="text/html" language="Java" %>
 <%
     response.setHeader("Cache-Control", "no-store"); // HTTP 1.1 cache control

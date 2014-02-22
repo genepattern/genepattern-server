@@ -40,7 +40,6 @@
                  java.util.TreeMap,
                  java.util.Vector,
                  org.genepattern.server.config.GpContext,
-                 org.genepattern.server.config.ServerConfiguration,
                  org.genepattern.server.eula.EulaManager,
                  org.genepattern.server.eula.EulaInfo"
          session="false" contentType="text/html" language="Java" %>
