@@ -514,7 +514,7 @@ body {
     width: 360px;
 }
 
-.file-widget-actions h4 {
+.file-widget-actions h4, .job-widget-actions h4 {
     width: 245px;
 }
 
@@ -523,11 +523,11 @@ body {
     text-overflow: ellipsis;
 }
 
-.file-widget-actions .module-listing {
+ .file-widget-actions .module-listing, .job-widget-actions .module-listing {
     background-image: linear-gradient(#F4F5F5, #EDEEEE);
 }
 
-.file-widget-actions .module-listing:hover {
+.file-widget-actions .module-listing:hover, .job-widget-actions .module-listing:hover {
     background-image: url(images/sidebar-topBG.png);
     background-repeat: repeat-x;
 }
