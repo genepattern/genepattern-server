@@ -382,7 +382,7 @@ public class JobsResource {
             // Put the job JSON in an array
             JSONArray jobs = new JSONArray();
             for (JobInfo jobInfo : recentJobs) {
-                JSONObject jobObject = getJobImpl.getJob(jobInfo, true);
+                JSONObject jobObject = getJobImpl.getJob(userContext, jobInfo, true);
                 jobs.put(jobObject);
             }
 

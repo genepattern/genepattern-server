@@ -1078,7 +1078,7 @@ function createJobWidget(job) {
                                 $("#infoMessageDiv #infoMessageContent").text(data);
                                 $("#infoMessageDiv").show();
 
-                                // TODO: Reload Job Tab
+                                initRecentJobs();
                             },
                             error: function(data, textStatus, jqXHR) {
                                 $("#errorMessageDiv #errorMessageContent").text(data);
@@ -1098,7 +1098,7 @@ function createJobWidget(job) {
                             $("#infoMessageDiv #infoMessageContent").text(data);
                             $("#infoMessageDiv").show();
 
-                            // TODO: Reload Job Tab
+                            initRecentJobs();
                         },
                         error: function(data, textStatus, jqXHR) {
                             $("#errorMessageDiv #errorMessageContent").text(data);
@@ -1190,6 +1190,9 @@ function initRecentJobs() {
         url: "/gp/rest/v1/jobs/recent",
         dataType: "json",
         success: function(data, textStatus, jqXHR) {
+            // Clear away any old jobs menus
+            $("#menus-jobs").empty();
+
             for (var i = 0; i < data.length; i++) {
                 var jobJson = data[i];
                 createJobWidget(jobJson);
@@ -1202,7 +1205,7 @@ function initRecentJobs() {
                     var link = $("<a></a>")
                         .attr("href", file.link.href)
                         .attr("data-kind", "cls")
-                        .attr("data-sendtomodule", "[\"urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00092:1\"]");
+                        .attr("data-sendtomodule", JSON.stringify(file.sendTo));
 
                     createFileWidget(link, "#menus-jobs");
                 }

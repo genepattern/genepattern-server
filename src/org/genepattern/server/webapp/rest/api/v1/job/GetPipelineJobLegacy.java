@@ -4,17 +4,20 @@ import java.io.File;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.SortedSet;
 
 import org.apache.log4j.Logger;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.dm.GpFilePath;
 import org.genepattern.server.dm.jobresult.JobResultFile;
+import org.genepattern.server.webapp.SendToModuleManager;
 import org.genepattern.server.webservice.server.dao.AnalysisDAO;
 import org.genepattern.util.GPConstants;
 import org.genepattern.webservice.JobInfo;
 import org.genepattern.webservice.JobInfoUtil;
 import org.genepattern.webservice.ParameterInfo;
+import org.genepattern.webservice.TaskInfo;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -66,16 +69,42 @@ public class GetPipelineJobLegacy implements GetJob {
         }
         return null;
     }
+
+    /**
+     * Add a list of sendToModule lsids
+     * This list will be empty is there is a null user in the userContext
+     * @param userContext
+     * @param kind
+     * @return
+     */
+    public static JSONArray initSendTo(GpContext userContext, String kind) {
+        JSONArray sendTo = new JSONArray();
+
+        if (userContext.getUserId() != null) {
+            SortedSet<TaskInfo> tasks = SendToModuleManager.instance().getSendTo(userContext.getUserId(), kind);
+
+            for (TaskInfo task: tasks) {
+                sendTo.put(task.getLsid());
+            }
+        }
+
+        return sendTo;
+    }
     
-    public static JSONObject initOutputFile(final GpFilePath gpFilePath) throws Exception {
+    public static JSONObject initOutputFile(GpContext userContext, final GpFilePath gpFilePath) throws Exception {
         //create a JSON representation of a file
         JSONObject o = new JSONObject();
+
         JSONObject link = new JSONObject();
         link.put("href", gpFilePath.getUrl().toExternalForm());
-        link.put("name", gpFilePath.getName());        
+        link.put("name", gpFilePath.getName());
         o.put("link", link);
+
+        o.put("sendTo", initSendTo(userContext, gpFilePath.getKind()));
+
         o.put("fileLength", gpFilePath.getFileLength());
         o.put("lastModified", gpFilePath.getLastModified().getTime());
+        o.put("kind", gpFilePath.getKind());
         return o;
     }
     
@@ -131,18 +160,18 @@ public class GetPipelineJobLegacy implements GetJob {
 
     public JSONObject getJob(final GpContext userContext, final String jobId, final boolean includeChildren) throws GetJobException {
         JobInfo jobInfo=initJobInfo(userContext, jobId);
-        return getJob(jobInfo, includeChildren);
+        return getJob(userContext, jobInfo, includeChildren);
     }
 
-    public JSONObject getJob(JobInfo jobInfo, boolean includeChildren) throws GetJobException {
+    public JSONObject getJob(GpContext userContext, JobInfo jobInfo, boolean includeChildren) throws GetJobException {
         //manually create a JSONObject representing the job
         final JSONObject job;
         if (!includeChildren) {
-            job = initJsonObject(jobInfo);
+            job = initJsonObject(userContext, jobInfo);
         }
         else {
             try {
-                InitPipelineJson walker=new InitPipelineJson(jobsResourcePath, jobInfo);
+                InitPipelineJson walker=new InitPipelineJson(userContext, jobsResourcePath, jobInfo);
                 walker.prepareJsonObject();
                 job=walker.getJsonObject();
             }
@@ -172,11 +201,12 @@ public class GetPipelineJobLegacy implements GetJob {
      * @param jobInfo
      * @return
      */
-    public static JSONObject initJsonObject(final JobInfo jobInfo) throws GetJobException {
+    public static JSONObject initJsonObject(GpContext userContext, final JobInfo jobInfo) throws GetJobException {
         final boolean includeOutputFiles=true;
-        return initJsonObject(jobInfo, includeOutputFiles);
+        return initJsonObject(userContext, jobInfo, includeOutputFiles);
     }
-    public static JSONObject initJsonObject(final JobInfo jobInfo, final boolean includeOutputFiles) throws GetJobException {
+
+    public static JSONObject initJsonObject(GpContext userContext, final JobInfo jobInfo, final boolean includeOutputFiles) throws GetJobException {
         final JSONObject job = new JSONObject();
         try {
             job.put("jobId", ""+jobInfo.getJobNumber());
@@ -221,7 +251,7 @@ public class GetPipelineJobLegacy implements GetJob {
                     else {
                         ++numFiles;
                         try {
-                            JSONObject outputFileJson=initOutputFile(outputFile);
+                            JSONObject outputFileJson=initOutputFile(userContext, outputFile);
                             outputFiles.put(outputFileJson);
                         }
                         catch (Exception e) {
