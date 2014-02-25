@@ -2,6 +2,7 @@ package org.genepattern.server.webapp.rest.api.v1.job;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.io.PrintWriter;
 import java.net.URI;
 import java.util.List;
 import java.util.Set;
@@ -15,12 +16,12 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 
 import org.apache.log4j.Logger;
+import org.genepattern.codegenerator.CodeGeneratorUtil;
 import org.genepattern.server.JobInfoManager;
 import org.genepattern.server.JobInfoWrapper;
 import org.genepattern.server.JobManager;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.database.HibernateUtil;
-import org.genepattern.server.domain.AnalysisJob;
 import org.genepattern.server.job.input.JobInput;
 import org.genepattern.server.rest.GpServerException;
 import org.genepattern.server.rest.JobInputApi;
@@ -32,7 +33,11 @@ import org.genepattern.server.webapp.rest.api.v1.Util;
 import org.genepattern.server.webapp.rest.api.v1.job.JobInputValues.Param;
 import org.genepattern.server.webservice.server.Analysis;
 import org.genepattern.server.webservice.server.dao.AnalysisDAO;
+import org.genepattern.server.webservice.server.local.IAdminClient;
+import org.genepattern.server.webservice.server.local.LocalAdminClient;
 import org.genepattern.webservice.JobInfo;
+import org.genepattern.webservice.TaskInfo;
+import org.genepattern.webservice.AnalysisJob;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -214,6 +219,71 @@ public class JobsResource {
     }
 
     /**
+     * Terminate the specified job
+     * @param request
+     * @param jobId
+     * @return
+     */
+    @DELETE
+    @Path("/{jobId}/terminate")
+    public Response terminateJob(@Context HttpServletRequest request, @PathParam("jobId") String jobId) {
+        GpContext userContext = Util.getUserContext(request);
+
+        try {
+            int intJobId = Integer.parseInt(jobId);
+            JobManager.terminateJob(userContext.isAdmin(), userContext.getUserId(), intJobId);
+            return Response.ok().entity("Terminated Job: " + intJobId).build();
+        }
+        catch (Exception e) {
+            return Response.status(500).entity("Could not terminate job " + jobId + " " + e.getLocalizedMessage()).build();
+        }
+    }
+
+    /**
+     * Get code for the specified job
+     * @param request
+     * @param response
+     * @param jobId
+     * @param language
+     * @return
+     */
+    @GET
+    @Path("/{jobId}/code")
+    public Response jobCode(@Context HttpServletRequest request, @Context HttpServletResponse response, @PathParam("jobId") String jobId, @QueryParam("language") String language) {
+        GpContext userContext = Util.getUserContext(request);
+
+        try {
+            int jobNumber = Integer.parseInt(jobId);
+            JobInfo jobInfo = new AnalysisDAO().getJobInfo(jobNumber);
+            AnalysisJob job = new AnalysisJob(userContext.getUserId(), jobInfo);
+            String filename = jobId + CodeGeneratorUtil.getFileExtension(language);
+
+            response.setHeader("Content-disposition", "inline; filename=\"" + filename + "\"");
+            response.setHeader("Content-Type", "text/plain");
+            response.setHeader("Cache-Control", "no-store"); // HTTP 1.1
+            response.setHeader("Pragma", "no-cache"); // HTTP 1.0 cache
+            response.setDateHeader("Expires", 0);
+            OutputStream os = response.getOutputStream();
+
+            IAdminClient adminClient = new LocalAdminClient(userContext.getUserId());
+            TaskInfo taskInfo = adminClient.getTask(job.getLSID());
+
+            String code = CodeGeneratorUtil.getCode(language, job, taskInfo, adminClient);
+
+            PrintWriter pw = new PrintWriter(os);
+            pw.println(code);
+            pw.flush();
+            os.close();
+
+            return Response.ok().build();
+        }
+        catch (Exception e) {
+            log.error("Error viewing code for job " + jobId, e);
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(e.getLocalizedMessage()).build();
+        }
+    }
+
+    /**
      * Delete the specified job
      * @param request
      * @param jobId
@@ -243,6 +313,13 @@ public class JobsResource {
         }
     }
 
+    /**
+     * Sets the correct download headers and serves up the zip file for the job
+     * @param request
+     * @param response
+     * @param jobId
+     * @return
+     */
     @GET
     @Path("/{jobId}/download")
     public Response downloadJob(@Context HttpServletRequest request, @Context HttpServletResponse response, @PathParam("jobId") String jobId) {

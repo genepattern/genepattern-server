@@ -988,32 +988,47 @@ function openFileWidget(link) {
 }
 
 function createJobWidget(job) {
-    var actionData = [
-        {
-            "lsid": "",
-            "name": "Job Status",
-            "description": "View the job status page for this job.",
-            "version": "", "documentation": "", "categories": [], "suites": [], "tags": []
-        },
-        {
+    var actionData = [];
+    actionData.push({
+        "lsid": "",
+        "name": "Job Status",
+        "description": "View the job status page for this job.",
+        "version": "", "documentation": "", "categories": [], "suites": [], "tags": []
+    });
+
+    if (job.status.isFinished) {
+        actionData.push({
             "lsid": "",
             "name": "Download Job",
             "description": "Download a copy of this job, including all input and result files.",
             "version": "", "documentation": "", "categories": [], "suites": [], "tags": []
-        },
-        {
-            "lsid": "",
-            "name": "Reload Job",
-            "description": "Reload this job using the same input parameters.",
-            "version": "", "documentation": "", "categories": [], "suites": [], "tags": []
-        },
-        {
+        });
+    }
+
+    actionData.push({
+        "lsid": "",
+        "name": "Reload Job",
+        "description": "Reload this job using the same input parameters.",
+        "version": "", "documentation": "", "categories": [], "suites": [], "tags": []
+    });
+
+    if (job.status.isFinished) {
+        actionData.push({
             "lsid": "",
             "name": "Delete Job",
             "description": "Delete this job from the GenePattern server.",
             "version": "", "documentation": "", "categories": [], "suites": [], "tags": []
-        }
-    ];
+        });
+    }
+
+    if (!job.status.isFinished) {
+        actionData.push({
+            "lsid": "",
+            "name": "Terminate Job",
+            "description": "Terminate this job on the GenePattern server.",
+            "version": "", "documentation": "", "categories": [], "suites": [], "tags": []
+        });
+    }
 
     var actionList = $("<div></div>")
         .attr("class", "job-widget-actions")
@@ -1027,6 +1042,7 @@ function createJobWidget(job) {
                 var downloadAction = $(event.target).closest(".module-listing").find(".module-name").text().trim().indexOf("Download") == 0;
                 var reloadAction = $(event.target).closest(".module-listing").find(".module-name").text().trim().indexOf("Reload") == 0;
                 var deleteAction = $(event.target).closest(".module-listing").find(".module-name").text().trim().indexOf("Delete") == 0;
+                var terminateAction = $(event.target).closest(".module-listing").find(".module-name").text().trim().indexOf("Terminate") == 0;
 
                 var listObject = $(event.target).closest(".search-widget").find(".send-to-param-list");
                 var url = listObject.attr("data-url");
@@ -1057,12 +1073,12 @@ function createJobWidget(job) {
                     if (confirm('Are you sure you want to delete the selected job?')) {
                         $.ajax({
                             type: "DELETE",
-                            url: "/gp/rest/v1/jobs/" + job.jobId + "/delete/",
+                            url: "/gp/rest/v1/jobs/" + job.jobId + "/delete",
                             success: function(data, textStatus, jqXHR) {
                                 $("#infoMessageDiv #infoMessageContent").text(data);
                                 $("#infoMessageDiv").show();
 
-                                alert("ok");
+                                // TODO: Reload Job Tab
                             },
                             error: function(data, textStatus, jqXHR) {
                                 $("#errorMessageDiv #errorMessageContent").text(data);
@@ -1070,6 +1086,26 @@ function createJobWidget(job) {
                             }
                         });
                     }
+                    $(".search-widget:visible").searchslider("hide");
+                    return;
+                }
+
+                else if (terminateAction) {
+                    $.ajax({
+                        type: "DELETE",
+                        url: "/gp/rest/v1/jobs/" + job.jobId + "/terminate",
+                        success: function(data, textStatus, jqXHR) {
+                            $("#infoMessageDiv #infoMessageContent").text(data);
+                            $("#infoMessageDiv").show();
+
+                            // TODO: Reload Job Tab
+                        },
+                        error: function(data, textStatus, jqXHR) {
+                            $("#errorMessageDiv #errorMessageContent").text(data);
+                            $("#errorMessageDiv").show();
+                        }
+                    });
+
                     $(".search-widget:visible").searchslider("hide");
                     return;
                 }
@@ -1110,25 +1146,24 @@ function createJobWidget(job) {
             droppable: false,
             draggable: false,
             click: function(event) {
-                var saveAction = $(event.target).closest(".module-listing").find(".module-name").text().trim().indexOf("Save") == 0;
-                var deleteAction = $(event.target).closest(".module-listing").find(".module-name").text().trim().indexOf("Delete") == 0;
-                var subdirAction = $(event.target).closest(".module-listing").find(".module-name").text().trim().indexOf("Create") == 0;
+                var javaAction = $(event.target).closest(".module-listing").find(".module-name").text().trim().indexOf("View Java") == 0;
+                var matlabAction = $(event.target).closest(".module-listing").find(".module-name").text().trim().indexOf("View MATLAB") == 0;
+                var rAction = $(event.target).closest(".module-listing").find(".module-name").text().trim().indexOf("View R") == 0;
 
-                var listObject = $(event.target).closest(".search-widget").find(".send-to-param-list");
-                var url = listObject.attr("data-url");
-                var path = uploadPathFromUrl(url);
-
-                if (saveAction) {
+                if (javaAction) {
+                    window.open("/gp/rest/v1/jobs/" + job.jobId + "/code?language=Java")
                     $(".search-widget:visible").searchslider("hide");
                     return;
                 }
 
-                else if (deleteAction) {
+                else if (matlabAction) {
+                    window.open("/gp/rest/v1/jobs/" + job.jobId + "/code?language=MATLAB")
                     $(".search-widget:visible").searchslider("hide");
                     return;
                 }
 
-                else if (subdirAction) {
+                else if (rAction) {
+                    window.open("/gp/rest/v1/jobs/" + job.jobId + "/code?language=R")
                     $(".search-widget:visible").searchslider("hide");
                     return;
                 }
