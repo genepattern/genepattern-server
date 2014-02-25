@@ -140,31 +140,36 @@ public class JobInfoManager {
      * @return null if the job is deleted.
      */
     public JobInfoWrapper getJobInfo(String documentCookie, String contextPath, String currentUser, int jobNo) {
-        UserDAO userDao = new UserDAO();
-        boolean showExecutionLogs = userDao.getPropertyShowExecutionLogs(currentUser);
-        String visualizerJavaFlags = getVisualizerJavaFlags(userDao, currentUser);
-
         AnalysisDAO analysisDao = new AnalysisDAO();
         JobInfo jobInfo = analysisDao.getJobInfo(jobNo);
         if (jobInfo == null) {
             return null;
         }
-            
+
+        return getJobInfo(documentCookie, contextPath, currentUser, jobInfo);
+    }
+
+    public JobInfoWrapper getJobInfo(String documentCookie, String contextPath, String currentUser, JobInfo jobInfo) {
+        AnalysisDAO analysisDao = new AnalysisDAO();
+        UserDAO userDao = new UserDAO();
+        boolean showExecutionLogs = userDao.getPropertyShowExecutionLogs(currentUser);
+        String visualizerJavaFlags = getVisualizerJavaFlags(userDao, currentUser);
+
         AdminDAO adminDao = new AdminDAO();
 
         JobInfoWrapper jobInfoWrapper = processChildren(
-                (JobInfoWrapper)null, 
+                (JobInfoWrapper)null,
                 showExecutionLogs,
-                documentCookie, 
-                contextPath, 
-                analysisDao, 
-                adminDao, 
-                //kindToModules, 
-                jobInfo, 
+                documentCookie,
+                contextPath,
+                analysisDao,
+                adminDao,
+                //kindToModules,
+                jobInfo,
                 visualizerJavaFlags);
 
         //this call initializes the helper methods
-        jobInfoWrapper.getPathFromRoot(); 
+        jobInfoWrapper.getPathFromRoot();
         return jobInfoWrapper;
     }
     

@@ -36,7 +36,7 @@
         </t:dataList>
         <!--  Loop through output files -->
         <t:dataList var="p" value="#{recentJob.outputFileParameterInfos}" rowIndexVar="paramIndex">
-            <h:outputLink value="#{p.url}">#{p.truncatedDisplayName}</h:outputLink>
+            <h:outputLink value="#{p.url}" onclick="openFileWidget(this); return false;">#{p.truncatedDisplayName}</h:outputLink>
 
             <!-- Image for popup menu -->
             <img src="/gp/images/smallOptions.gif"

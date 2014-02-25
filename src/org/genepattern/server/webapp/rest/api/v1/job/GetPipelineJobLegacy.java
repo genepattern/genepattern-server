@@ -122,7 +122,7 @@ public class GetPipelineJobLegacy implements GetJob {
     }
     
     @Override
-    public JSONObject getJob(final GpContext userContext, final String jobId) 
+    public JSONObject getJob(final GpContext userContext, final String jobId)
     throws GetJobException
     {
         final boolean includeChildren=false; //legacy support

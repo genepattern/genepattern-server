@@ -96,7 +96,7 @@
                         <td>
           	
             <span class="recentjobs-sh yui-skin-sam" style="white-space: nowrap">
-            	<h:outputLink value="/gp/jobResults/#{job.jobNumber}">#{job.taskName}</h:outputLink>
+                <a href="/gp/jobResults/#{job.jobNumber}" onclick="openJobWidget(this); return false;" data-jobid="#{job.jobNumber}">#{job.taskName}</a>
             </span>
                             <!-- Image trigger for jobs menu popup -->
                             <img src="/gp/images/smallOptions.gif"
@@ -163,23 +163,11 @@
             </table>
         </h:form>
 
-        <p>
-            <br />
-        </p>
-
-        <p>
-            <br />
-        </p>
-
-        <p>&nbsp;</p>
-
-        <p>
-            <br />
-        </p>
-
-        <p>
-            <br />
-        </p>
+        <script type="text/javascript">
+            $(document).ready(function() {
+                initRecentJobs();
+            });
+        </script>
 
     </ui:composition>
 </html>

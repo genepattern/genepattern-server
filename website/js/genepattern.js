@@ -733,13 +733,13 @@ function lsidsToModules(lsidList) {
     return toReturn;
 }
 
-function createFileWidget(linkElement) {
+function createFileWidget(linkElement, appendTo) {
     if (all_modules_map !== null) {
-        _createFileWidgetInner(linkElement);
+        _createFileWidgetInner(linkElement, appendTo);
     }
     else {
         setTimeout(function() {
-            createFileWidget(linkElement);
+            createFileWidget(linkElement, appendTo);
         }, 100);
     }
 }
@@ -774,7 +774,7 @@ function constructFileMenuData(isRoot, isDirectory) {
         data.push({
             "lsid": "",
             "name": "<img src='/gp/pipeline/images/delete.gif' class='module-list-icon'> Delete " + (isDirectory ? "Directory" : "File"),
-            "description": "Permanently delete this from your uploads.",
+            "description": "Permanently delete this file.",
             "version": "",
             "documentation": "http://genepattern.org",
             "categories": [],
@@ -811,7 +811,7 @@ function constructFileMenuData(isRoot, isDirectory) {
     return data;
 }
 
-function _createFileWidgetInner(linkElement) {
+function _createFileWidgetInner(linkElement, appendTo) {
     var link = $(linkElement);
     var url = link.attr("href");
     var name = urlToName(url);
@@ -975,7 +975,7 @@ function _createFileWidgetInner(linkElement) {
         .searchslider({
             lists: [actionList, paramList, moduleList]});
 
-    $("#menus-uploads").append(widget);
+    $(appendTo).append(widget);
 
     // Init the initial send to parameters
     var sendToParamList = widget.find(".send-to-param-list");
@@ -985,4 +985,174 @@ function _createFileWidgetInner(linkElement) {
 function openFileWidget(link) {
     var url = $(link).attr("href");
     $("#content [name='" + url + "']").searchslider("show");
+}
+
+function createJobWidget(job) {
+    var actionData = [
+        {
+            "lsid": "",
+            "name": "Job Status",
+            "description": "View the job status page for this job.",
+            "version": "", "documentation": "", "categories": [], "suites": [], "tags": []
+        },
+        {
+            "lsid": "",
+            "name": "Download Job",
+            "description": "Download a copy of this job, including all input and result files.",
+            "version": "", "documentation": "", "categories": [], "suites": [], "tags": []
+        },
+        {
+            "lsid": "",
+            "name": "Reload Job",
+            "description": "Reload this job using the same input parameters.",
+            "version": "", "documentation": "", "categories": [], "suites": [], "tags": []
+        },
+        {
+            "lsid": "",
+            "name": "Delete Job",
+            "description": "Delete this job from the GenePattern server.",
+            "version": "", "documentation": "", "categories": [], "suites": [], "tags": []
+        }
+    ];
+
+    var actionList = $("<div></div>")
+        .attr("class", "job-widget-actions")
+        .modulelist({
+            title: job.taskName + " (" + job.jobId + ")",
+            data: actionData,
+            droppable: false,
+            draggable: false,
+            click: function(event) {
+                var saveAction = $(event.target).closest(".module-listing").find(".module-name").text().trim().indexOf("Save") == 0;
+                var deleteAction = $(event.target).closest(".module-listing").find(".module-name").text().trim().indexOf("Delete") == 0;
+                var subdirAction = $(event.target).closest(".module-listing").find(".module-name").text().trim().indexOf("Create") == 0;
+
+                var listObject = $(event.target).closest(".search-widget").find(".send-to-param-list");
+                var url = listObject.attr("data-url");
+                var path = uploadPathFromUrl(url);
+
+                if (saveAction) {
+                    $(".search-widget:visible").searchslider("hide");
+                    return;
+                }
+
+                else if (deleteAction) {
+                    $(".search-widget:visible").searchslider("hide");
+                    return;
+                }
+
+                else if (subdirAction) {
+                    $(".search-widget:visible").searchslider("hide");
+                    return;
+                }
+
+                else {
+                    console.log("ERROR: Executing click function for Job " + job.jobId);
+                    $(".search-widget:visible").searchslider("hide");
+                }
+            }
+        });
+
+    var codeData = [
+        {
+            "lsid": "",
+            "name": "View Java Code",
+            "description": "View the code for referencing this job programmatically from Java.",
+            "version": "", "documentation": "", "categories": [], "suites": [], "tags": []
+        },
+        {
+            "lsid": "",
+            "name": "View MATLAB Code",
+            "description": "View the code for referencing this job programmatically from MATLAB.",
+            "version": "", "documentation": "", "categories": [], "suites": [], "tags": []
+        },
+        {
+            "lsid": "",
+            "name": "View R Code",
+            "description": "View the code for referencing this job programmatically from R.",
+            "version": "", "documentation": "", "categories": [], "suites": [], "tags": []
+        }
+    ];
+
+    var codeList = $("<div></div>")
+        .attr("class", "job-widget-code")
+        .modulelist({
+            title: "View Code",
+            data: codeData,
+            droppable: false,
+            draggable: false,
+            click: function(event) {
+                var saveAction = $(event.target).closest(".module-listing").find(".module-name").text().trim().indexOf("Save") == 0;
+                var deleteAction = $(event.target).closest(".module-listing").find(".module-name").text().trim().indexOf("Delete") == 0;
+                var subdirAction = $(event.target).closest(".module-listing").find(".module-name").text().trim().indexOf("Create") == 0;
+
+                var listObject = $(event.target).closest(".search-widget").find(".send-to-param-list");
+                var url = listObject.attr("data-url");
+                var path = uploadPathFromUrl(url);
+
+                if (saveAction) {
+                    $(".search-widget:visible").searchslider("hide");
+                    return;
+                }
+
+                else if (deleteAction) {
+                    $(".search-widget:visible").searchslider("hide");
+                    return;
+                }
+
+                else if (subdirAction) {
+                    $(".search-widget:visible").searchslider("hide");
+                    return;
+                }
+
+                else {
+                    console.log("ERROR: Executing click function for Job " + job.jobId);
+                    $(".search-widget:visible").searchslider("hide");
+                }
+            }
+        });
+
+    var widget = $("<div></div>")
+        .attr("name", "job_" + job.jobId)
+        .attr("class", "search-widget file-widget")
+        .searchslider({
+            lists: [actionList, codeList]});
+
+    $("#menus-jobs").append(widget);
+}
+
+function initRecentJobs() {
+    $.ajax({
+        type: "GET",
+        url: "/gp/rest/v1/jobs/recent",
+        dataType: "json",
+        success: function(data, textStatus, jqXHR) {
+            for (var i = 0; i < data.length; i++) {
+                var jobJson = data[i];
+                createJobWidget(jobJson);
+
+                for (var j = 0; j < jobJson.outputFiles.length; j++) {
+                    var file = jobJson.outputFiles[j];
+
+                    // Mock up a link
+                    // TODO: Implement for real once the tab itself is loaded through AJAX
+                    var link = $("<a></a>")
+                        .attr("href", file.link.href)
+                        .attr("data-kind", "cls")
+                        .attr("data-sendtomodule", "[\"urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00092:1\"]");
+
+                    createFileWidget(link, "#menus-jobs");
+                }
+            }
+        },
+        error: function(data, textStatus, jqXHR) {
+            $("#errorMessageDiv #errorMessageContent").text(data);
+            $("#errorMessageDiv").show();
+        }
+    });
+}
+
+function openJobWidget(link) {
+    var id = $(link).attr("data-jobid");
+    $("#content [name='job_" + id + "']").searchslider("show");
 }
