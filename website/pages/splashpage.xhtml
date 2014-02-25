@@ -15,6 +15,8 @@
       xmlns:c="http://java.sun.com/jstl/core">
     <ui:composition>
 
+        <script type="text/javascript" src="#{facesContext.externalContext.requestContextPath}/js/gp_tours.js"></script>
+
         <h:outputText rendered="#{moduleChooserBean.noModulesInstalled}">
             <h2><font color="red">There are no modules installed. Click <a href="#{facesContext.externalContext.requestContextPath}/pages/taskCatalog.jsf">here</a> to install modules from the module repository.</font></h2>
         </h:outputText>
@@ -40,6 +42,9 @@
                     <li>Click a <b>protocol</b> to run an analysis. GenePattern guides you step by step.</li>
                     <li>Click <b><a href="http://www.broadinstitute.org/genepattern/desc/quick_start.html">Quick Start</a></b>
                         for instructions on how to run any module in GenePattern.
+                    </li>
+                    <li>Click <b><a id="gp_tours" href="#">Tour of GenePatttern UI</a></b>
+                        for a guided tour through the GenePattern User Interface.
                     </li>
                 </ul>
                 <h3>Protocols for running common analyses in GenePattern:</h3>

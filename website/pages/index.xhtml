@@ -22,6 +22,8 @@
 <ui:define name="headText">
 <link  type="text/css" rel="stylesheet" media="screen" href="#{facesContext.externalContext.requestContextPath}/css/#{uiBean.skin}/modules/styles/jquery.multiselect.css?version=#{aboutBean.full}" />
 <link  type="text/css" rel="stylesheet" media="screen" href="#{facesContext.externalContext.requestContextPath}/css/#{uiBean.skin}/jMenu.jquery.css?version=#{aboutBean.full}" />
+<link  type="text/css" rel="stylesheet" media="screen" href="#{facesContext.externalContext.requestContextPath}/css/#{uiBean.skin}/introjs.min.css?version=#{aboutBean.full}" />
+
 
 <c:choose>
     <c:when test="#{uiBean.parameterGroups}">
@@ -34,6 +36,10 @@
 
 <script type="text/javascript" src="#{facesContext.externalContext.requestContextPath}/js/jquery/jquery.multiselect.js?version=#{aboutBean.full}"></script>
 <script type="text/javascript" src="#{facesContext.externalContext.requestContextPath}/js/jquery/jquery.validate.js?version=#{aboutBean.full}"></script>
+<script type="text/javascript" src="#{facesContext.externalContext.requestContextPath}/js/jquery/intro.js?version=#{aboutBean.full}"></script>
+<script type="text/javascript" src="#{facesContext.externalContext.requestContextPath}/js/gp_tours.js?version=#{aboutBean.full}"></script>
+
+
 
 <c:choose>
     <c:when test="#{uiBean.parameterGroups}">
