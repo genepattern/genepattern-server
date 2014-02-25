@@ -1023,25 +1023,53 @@ function createJobWidget(job) {
             droppable: false,
             draggable: false,
             click: function(event) {
-                var saveAction = $(event.target).closest(".module-listing").find(".module-name").text().trim().indexOf("Save") == 0;
+                var statusAction = $(event.target).closest(".module-listing").find(".module-name").text().trim().indexOf("Job Status") == 0;
+                var downloadAction = $(event.target).closest(".module-listing").find(".module-name").text().trim().indexOf("Download") == 0;
+                var reloadAction = $(event.target).closest(".module-listing").find(".module-name").text().trim().indexOf("Reload") == 0;
                 var deleteAction = $(event.target).closest(".module-listing").find(".module-name").text().trim().indexOf("Delete") == 0;
-                var subdirAction = $(event.target).closest(".module-listing").find(".module-name").text().trim().indexOf("Create") == 0;
 
                 var listObject = $(event.target).closest(".search-widget").find(".send-to-param-list");
                 var url = listObject.attr("data-url");
                 var path = uploadPathFromUrl(url);
 
-                if (saveAction) {
+                if (statusAction) {
+                    $(location).attr('href', '/gp/jobResults/' + job.jobId);
+
+                    $(".search-widget:visible").searchslider("hide");
+                    return;
+                }
+
+                else if (downloadAction) {
+                    $(location).attr('href', '/gp/rest/v1/jobs/' + job.jobId + '/download');
+
+                    $(".search-widget:visible").searchslider("hide");
+                    return;
+                }
+
+                else if (reloadAction) {
+                    $(location).attr('href', '/gp/pages/index.jsf?lsid' + job.taskLsid + "&reloadJob=" + job.jobId);
+
                     $(".search-widget:visible").searchslider("hide");
                     return;
                 }
 
                 else if (deleteAction) {
-                    $(".search-widget:visible").searchslider("hide");
-                    return;
-                }
+                    if (confirm('Are you sure you want to delete the selected job?')) {
+                        $.ajax({
+                            type: "DELETE",
+                            url: "/gp/rest/v1/jobs/" + job.jobId + "/delete/",
+                            success: function(data, textStatus, jqXHR) {
+                                $("#infoMessageDiv #infoMessageContent").text(data);
+                                $("#infoMessageDiv").show();
 
-                else if (subdirAction) {
+                                alert("ok");
+                            },
+                            error: function(data, textStatus, jqXHR) {
+                                $("#errorMessageDiv #errorMessageContent").text(data);
+                                $("#errorMessageDiv").show();
+                            }
+                        });
+                    }
                     $(".search-widget:visible").searchslider("hide");
                     return;
                 }

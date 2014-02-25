@@ -1,25 +1,26 @@
 package org.genepattern.server.webapp.rest.api.v1.job;
 
+import java.io.IOException;
+import java.io.OutputStream;
 import java.net.URI;
 import java.util.List;
 import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.WebApplicationException;
+import javax.servlet.http.HttpServletResponse;
+import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 
 import org.apache.log4j.Logger;
+import org.genepattern.server.JobInfoManager;
+import org.genepattern.server.JobInfoWrapper;
+import org.genepattern.server.JobManager;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.database.HibernateUtil;
+import org.genepattern.server.domain.AnalysisJob;
 import org.genepattern.server.job.input.JobInput;
 import org.genepattern.server.rest.GpServerException;
 import org.genepattern.server.rest.JobInputApi;
@@ -212,6 +213,74 @@ public class JobsResource {
                 .build();
     }
 
+    /**
+     * Delete the specified job
+     * @param request
+     * @param jobId
+     * @return
+     */
+    @DELETE
+    @Path("/{jobId}/delete")
+    public Response deleteJob(@Context HttpServletRequest request, @PathParam("jobId") String jobId) {
+        GpContext userContext = Util.getUserContext(request);
+
+        try {
+            String userId = userContext.getUserId();
+            boolean isAdmin = userContext.isAdmin();
+            int intJobId = Integer.parseInt(jobId);
+
+            List<Integer> deleted = JobManager.deleteJob(isAdmin, userId, intJobId);
+
+            if (deleted.size() > 0) {
+                return Response.ok().entity("Deleted Jobs: " + deleted.toString()).build();
+            }
+            else {
+                return Response.status(500).entity("Could not delete job " + jobId).build();
+            }
+        }
+        catch (Throwable t) {
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(t.getLocalizedMessage()).build();
+        }
+    }
+
+    @GET
+    @Path("/{jobId}/download")
+    public Response downloadJob(@Context HttpServletRequest request, @Context HttpServletResponse response, @PathParam("jobId") String jobId) {
+        GpContext userContext = Util.getUserContext(request);
+        String contextPath = request.getContextPath();
+        String cookie = request.getHeader("Cookie");
+
+        try {
+            AnalysisDAO dao = new AnalysisDAO();
+            int id = Integer.parseInt(jobId);
+
+            JobInfoManager manager = new JobInfoManager();
+            JobInfoWrapper wrapper = manager.getJobInfo(cookie, contextPath, userContext.getUserId(), id);
+
+            response.setHeader("Content-Disposition", "attachment; filename=" + jobId + ".zip" + ";");
+            response.setHeader("Content-Type", "application/octet-stream");
+            response.setHeader("Cache-Control", "no-store");
+            response.setHeader("Pragma", "no-cache");
+            response.setDateHeader("Expires", 0);
+
+            OutputStream os = response.getOutputStream();
+            JobInfoManager.writeOutputFilesToZipStream(os, wrapper);
+            os.close();
+        }
+        catch (Throwable t) {
+            String message = "Error downloading output files for job " + jobId + ": " + t.getLocalizedMessage();
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(message).build();
+        }
+
+        return Response.ok().build();
+    }
+
+    /**
+     * Get a JSON List of the JSOn objects for the most recent jobs
+     * @param uriInfo
+     * @param request
+     * @return
+     */
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     @Path("/recent")
