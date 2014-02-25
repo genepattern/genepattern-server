@@ -1,5 +1,6 @@
 package org.genepattern.server.webapp;
 
+import org.genepattern.server.config.GpContext;
 import org.genepattern.server.webservice.server.dao.AdminDAO;
 import org.genepattern.webservice.TaskInfo;
 
@@ -25,6 +26,11 @@ public class SendToModuleManager {
     }
 
     public KindToTaskInfo getKindToTaskInfo(String user) {
+        // Lazily clear the sendTo cache is needed
+        if (needsUpdate(user)) {
+            userToKindMap.put(user, null);
+        }
+
         if (userToKindMap.get(user) == null) {
             KindToTaskInfo ktti = new KindToTaskInfo(user);
             userToKindMap.put(user, ktti);
@@ -37,8 +43,23 @@ public class SendToModuleManager {
         return getKindToTaskInfo(user).get(kind);
     }
 
+    private boolean needsUpdate(String user) {
+        KindToTaskInfo ktti = userToKindMap.get(user);
+
+        // If it hasn't been updated then there is nothing to update
+        if (ktti == null) return false;
+
+        Date now = new Date();
+        Date updated = ktti.updated();
+        if (updated == null) return true;
+
+        if (updated.before(new Date(now.getTime() - 10000 ))) return true;
+        else return false;
+    }
+
     private class KindToTaskInfo {
         private Map<String,SortedSet<TaskInfo>> kindToTaskInfo;
+        private Date updated;
 
         public KindToTaskInfo(String user) {
             kindToTaskInfo = new HashMap<String, SortedSet<TaskInfo>>();
@@ -55,10 +76,16 @@ public class SendToModuleManager {
                     taskInfosForMap.add(taskInfo);
                 }
             }
+
+            updated = new Date();
         }
 
         public SortedSet<TaskInfo> get(String kind) {
             return kindToTaskInfo.get(kind);
+        }
+
+        public Date updated() {
+            return updated;
         }
     }
 
