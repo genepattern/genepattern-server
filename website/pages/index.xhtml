@@ -20,27 +20,27 @@
 </ui:define>
 
 <ui:define name="headText">
-<link  type="text/css" rel="stylesheet" media="screen" href="#{facesContext.externalContext.requestContextPath}/css/#{uiBean.skin}/modules/styles/jquery.multiselect.css" />
-<link  type="text/css" rel="stylesheet" media="screen" href="#{facesContext.externalContext.requestContextPath}/css/#{uiBean.skin}/jMenu.jquery.css" />
+<link  type="text/css" rel="stylesheet" media="screen" href="#{facesContext.externalContext.requestContextPath}/css/#{uiBean.skin}/modules/styles/jquery.multiselect.css?version=#{aboutBean.full}" />
+<link  type="text/css" rel="stylesheet" media="screen" href="#{facesContext.externalContext.requestContextPath}/css/#{uiBean.skin}/jMenu.jquery.css?version=#{aboutBean.full}" />
 
 <c:choose>
     <c:when test="#{uiBean.parameterGroups}">
-        <link type="text/css" rel="stylesheet" media="screen" href="#{facesContext.externalContext.requestContextPath}/css/#{uiBean.skin}/runtaskform_3_8_1.css" />
+        <link type="text/css" rel="stylesheet" media="screen" href="#{facesContext.externalContext.requestContextPath}/css/#{uiBean.skin}/runtaskform_3_8_1.css?version=#{aboutBean.full}" />
     </c:when>
     <c:otherwise>
-        <link  type="text/css" rel="stylesheet" media="screen" href="#{facesContext.externalContext.requestContextPath}/css/#{uiBean.skin}/runtaskform.css" />
+        <link  type="text/css" rel="stylesheet" media="screen" href="#{facesContext.externalContext.requestContextPath}/css/#{uiBean.skin}/runtaskform.css?version=#{aboutBean.full}" />
     </c:otherwise>
 </c:choose>
 
-<script type="text/javascript" src="#{facesContext.externalContext.requestContextPath}/js/jquery/jquery.multiselect.js"></script>
-<script type="text/javascript" src="#{facesContext.externalContext.requestContextPath}/js/jquery/jquery.validate.js"></script>
+<script type="text/javascript" src="#{facesContext.externalContext.requestContextPath}/js/jquery/jquery.multiselect.js?version=#{aboutBean.full}"></script>
+<script type="text/javascript" src="#{facesContext.externalContext.requestContextPath}/js/jquery/jquery.validate.js?version=#{aboutBean.full}"></script>
 
 <c:choose>
     <c:when test="#{uiBean.parameterGroups}">
-        <script type="text/javascript" src="#{facesContext.externalContext.requestContextPath}/js/runtaskform_3_8_1.js"></script>
+        <script type="text/javascript" src="#{facesContext.externalContext.requestContextPath}/js/runtaskform_3_8_1.js?version=#{aboutBean.full}"></script>
     </c:when>
     <c:otherwise>
-        <script type="text/javascript" src="#{facesContext.externalContext.requestContextPath}/js/runtaskform.js"></script>
+        <script type="text/javascript" src="#{facesContext.externalContext.requestContextPath}/js/runtaskform.js?version=#{aboutBean.full}"></script>
     </c:otherwise>
 </c:choose>
 <script type="text/javascript" language="javascript">
