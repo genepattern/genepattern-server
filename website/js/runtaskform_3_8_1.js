@@ -995,7 +995,9 @@ function createChoiceDiv(parameterName, groupId, initialValuesList)
     }
 
     //if this is not a reloaded job where the value was from a drop down list
-    if(!run_task_info.params[parameterName].initialChoiceValues)
+    //and the type is not also a file
+    if(!run_task_info.params[parameterName].initialChoiceValues
+        && $.inArray(field_types.FILE, run_task_info.params[parameterName]) != -1)
     {
         selectChoiceDiv.hide();
     }
