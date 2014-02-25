@@ -1,6 +1,5 @@
 package org.genepattern.server.webapp.jsf;
 
-import org.genepattern.server.config.ServerConfiguration;
 import org.genepattern.server.config.ServerConfigurationFactory;
 
 public class UIBean {
