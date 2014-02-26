@@ -1264,25 +1264,18 @@ function initRecentJobs() {
         url: "/gp/rest/v1/jobs/recent",
         dataType: "json",
         success: function(data, textStatus, jqXHR) {
+            // Clear away the old rendering of the tab
+            var tab = $("#left-nav-jobs");
+            tab.empty();
+
             // Clear away any old jobs menus
             $("#menus-jobs").empty();
 
+            // For each top-level job
             for (var i = 0; i < data.length; i++) {
                 var jobJson = data[i];
-                createJobWidget(jobJson);
 
-                for (var j = 0; j < jobJson.outputFiles.length; j++) {
-                    var file = jobJson.outputFiles[j];
-
-                    // Mock up a link
-                    // TODO: Implement for real once the tab itself is loaded through AJAX
-                    var link = $("<a></a>")
-                        .attr("href", file.link.href)
-                        .attr("data-kind", "cls")
-                        .attr("data-sendtomodule", JSON.stringify(file.sendTo));
-
-                    createFileWidget(link, "#menus-jobs");
-                }
+                renderJob(jobJson, tab);
             }
         },
         error: function(data, textStatus, jqXHR) {
@@ -1290,6 +1283,67 @@ function initRecentJobs() {
             $("#errorMessageDiv").show();
         }
     });
+}
+
+function renderJob(jobJson, tab) {
+    var jobBox = $("<div></div>")
+        .addClass("job-box")
+        .appendTo(tab);
+
+    var jobName = $("<div></div>")
+        .addClass("job-name")
+        .appendTo(jobBox);
+
+    $("<img />")
+        .attr("src", "/gp/images/arrow-pipelinetask-down.gif")
+        .attr("onclick", "toggleJobCollapse(this);")
+        .appendTo(jobName);
+
+    $("<a></a>")
+        .attr("href", "#")
+        .attr("onclick", "openJobWidget(this); return false;")
+        .attr("data-jobid", jobJson.jobId)
+        .text(jobJson.taskName + " (" + jobJson.jobId + ")")
+        .appendTo(jobName);
+
+    var jobDetails = $("<div></div>")
+        .addClass("job-details")
+        .text(jobJson.datetime)
+        .appendTo(jobBox);
+
+    // Create the menu widget
+    createJobWidget(jobJson);
+
+    for (var j = 0; j < jobJson.outputFiles.length; j++) {
+        var file = jobJson.outputFiles[j];
+
+        var fileBox = $("<div></div>")
+            .addClass("job-file")
+            .appendTo(jobDetails);
+
+        var link = $("<a></a>")
+            .attr("href", file.link.href)
+            .attr("onclick", "openFileWidget(this); return false;")
+            .attr("href", file.link.href)
+            .attr("data-kind", file.kind)
+            .attr("data-sendtomodule", JSON.stringify(file.sendTo))
+            .append(
+                $("<img />")
+                    .attr("src", "/gp/images/outputFile.gif"))
+            .append(file.link.name)
+            .appendTo(fileBox);
+
+        // Create the menu widget
+        createFileWidget(link, "#menus-jobs");
+    }
+
+    // Handle child jobs
+    if (jobJson.children) {
+        for (var j = 0; j < jobJson.children.items.length; j++) {
+            var child = jobJson.children.items[j];
+            renderJob(child, jobDetails);
+        }
+    }
 }
 
 function openJobWidget(link) {

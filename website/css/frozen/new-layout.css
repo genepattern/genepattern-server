@@ -328,11 +328,6 @@ body {
 	padding: 0px !important;
 }
 
-#left-nav-jobs {
-	padding: 0px !important;
-	width: 348px;
-}
-
 #left-nav-files, #left-nav-genomespace {
 	padding: 10px !important;
 	width: 328px;
@@ -561,4 +556,46 @@ body {
     border: 1px solid #CFA3A5;
     border-radius: 5px;
     margin: 5px;
+}
+
+#left-nav-jobs {
+    width: 328px;
+    padding: 10px;
+}
+
+#left-nav-jobs .job-box {
+    margin-top: 10px;
+}
+
+#left-nav-jobs > .job-box {
+    margin-bottom: 15px;
+    padding-bottom: 15px;
+    border-bottom: solid 1px;
+}
+
+#left-nav-jobs .job-name {
+    font-size: 10pt;
+    font-weight: bold;
+    color: #333366 !important;
+    padding-left: 20px;
+    text-indent: -20px;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+#left-nav-jobs .job-details .job-name {
+    font-size: 8pt;
+}
+
+#left-nav-jobs .job-name img {
+    margin-right: 5px;
+}
+
+#left-nav-jobs .job-details {
+    margin-left: 20px;
+    font-style: italic;
+}
+
+#left-nav-jobs .job-file a {
+    font-style: normal;
+    color: #000099 !important;
 }

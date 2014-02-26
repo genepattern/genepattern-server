@@ -325,7 +325,16 @@
 	                    <div id="recent-modules"></div>
 	                </div>
 		            <div id="left-nav-jobs" class="left-nav-tab">
-	                    <ui:include src="/pages/recentJobs.xhtml" />
+                        <h:outputText rendered="!#{uiBean.newUI}">
+	                        <ui:include src="/pages/recentJobs.xhtml" />
+                        </h:outputText>
+                        <h:outputText rendered="#{uiBean.newUI}">
+                            <script type="text/javascript">
+                                $(document).ready(function() {
+                                    initRecentJobs();
+                                });
+                        </script>
+                        </h:outputText>
 	                </div>
 	                <div id="left-nav-files" class="left-nav-tab">
 	                    <ui:include src="/pages/uploads/uploadedFiles.xhtml" />
@@ -375,19 +384,19 @@
             <ui:insert name="popupMenus" />
             <h:form id="menuForm" forceId="true">
                 <f:param />
-                <t:dataList var="jobInfo" value="#{jobsBean.recentJobs}" rowIndexVar="jobIndex">
-                    <ui:include src="../pages/jobsMenu.xhtml">
-                        <ui:param name="job" value="#{jobInfo}" />
-                    </ui:include>
-                    <t:dataList var="fileInfo" value="#{jobInfo.allFileInfos}" rowIndexVar="paramIndex">
-                        <ui:include src="../pages/jobFileMenu.xhtml">
-                            <ui:param name="job" value="#{jobInfo}" />
-                            <ui:param name="fileInfo" value="#{fileInfo}" />
-                        </ui:include>
-                    </t:dataList>
-                </t:dataList>
 
                 <h:outputText rendered="!#{uiBean.newUI}">
+                    <t:dataList var="jobInfo" value="#{jobsBean.recentJobs}" rowIndexVar="jobIndex">
+                        <ui:include src="../pages/jobsMenu.xhtml">
+                            <ui:param name="job" value="#{jobInfo}" />
+                        </ui:include>
+                        <t:dataList var="fileInfo" value="#{jobInfo.allFileInfos}" rowIndexVar="paramIndex">
+                            <ui:include src="../pages/jobFileMenu.xhtml">
+                                <ui:param name="job" value="#{jobInfo}" />
+                                <ui:param name="fileInfo" value="#{fileInfo}" />
+                            </ui:include>
+                        </t:dataList>
+                    </t:dataList>
                     <t:dataList var="aFile" value="#{uploadFilesBean.files}" rowIndexVar="dirIndex">
                         <ui:include src="../pages/uploads/uploadFileMenu.xhtml">
                             <ui:param name="aFile" value="#{aFile}" />
