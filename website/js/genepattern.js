@@ -819,6 +819,21 @@ function constructFileMenuData(isRoot, isDirectory, isUpload, isJobFile) {
     return data;
 }
 
+function makePipelineNameValid(string) {
+    var newName = string.replace(/[^a-zA-Z _0-9.]+/g, "");
+    newName = newName.replace(/ /g, ".");
+    if (/^\d+/.test(newName)) {
+        newName = "Pipeline." + newName;
+    }
+    if (/^\.+/.test(newName)) {
+        newName = "Pipeline" + newName;
+    }
+    if (newName == "") {
+        newName = "Pipeline" + newName;
+    }
+    return newName;
+}
+
 function _createFileWidgetInner(linkElement, appendTo) {
     var link = $(linkElement);
     var url = link.attr("href");
@@ -924,7 +939,50 @@ function _createFileWidgetInner(linkElement, appendTo) {
                 }
 
                 else if (pipelineAction) {
-                    // TODO: Pipeline stuff
+                    showDialog("Name the Pipeline", "What name would you like to give the pipeline?" +
+                        "<input type='text' class='dialog-pipeline-name' style='width: 98%;' />", {
+                        "Create": function(event) {
+                            var subdirName = $(".dialog-pipeline-name").val();
+                            subdirName = makePipelineNameValid(subdirName);
+
+                            $.ajax({
+                                type: "PUT",
+                                url: "/gp/rest/v1/data/createPipeline" + path + "?name=" + subdirName,
+                                success: function(data, textStatus, jqXHR) {
+                                    $("#infoMessageDiv #infoMessageContent").text(data);
+                                    $("#infoMessageDiv").show();
+
+                                    var forwardUrl = jqXHR.getResponseHeader("pipeline-forward");
+                                    if (forwardUrl && forwardUrl.length > 0) {
+                                        window.location = forwardUrl;
+                                    }
+                                },
+                                error: function(data, textStatus, jqXHR) {
+                                    if (typeof data === 'object') {
+                                        data = data.responseText;
+                                    }
+
+                                    $("#errorMessageDiv #errorMessageContent").text(data);
+                                    $("#errorMessageDiv").show();
+                                }
+                            });
+
+                            $(this).dialog("close");
+                        },
+                        "Cancel": function(event) {
+                            $(this).dialog("close");
+                        }
+                    });
+                    $(".ui-dialog-buttonset:visible button:first").button("disable");
+                    $(".dialog-pipeline-name").keyup(function(event) {
+                        if ($(event.target).val() === "") {
+                            $(".ui-dialog-buttonset:visible button:first").button("disable");
+                        }
+                        else {
+                            $(".ui-dialog-buttonset:visible button:first").button("enable");
+                        }
+                    });
+
                     $(".search-widget:visible").searchslider("hide");
                     return;
                 }

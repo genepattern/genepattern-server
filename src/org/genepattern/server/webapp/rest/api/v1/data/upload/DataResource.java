@@ -6,7 +6,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.util.Enumeration;
+import java.util.List;
 
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
@@ -27,13 +29,16 @@ import org.genepattern.server.dm.GpFilePath;
 import org.genepattern.server.dm.jobresult.JobResultFile;
 import org.genepattern.server.job.input.JobInputFileUtil;
 import org.genepattern.server.webapp.FileDownloader;
+import org.genepattern.server.webapp.jsf.JobHelper;
 import org.genepattern.server.webapp.rest.api.v1.Util;
 
 import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.core.header.FormDataContentDisposition;
 import com.sun.jersey.multipart.FormDataParam;
+import org.genepattern.server.webservice.server.ProvenanceFinder;
 import org.genepattern.server.webservice.server.local.LocalAnalysisClient;
 import org.genepattern.util.GPConstants;
+import org.genepattern.webservice.ParameterInfo;
 
 /**
  * RESTful implementation of the /data resource.
@@ -393,6 +398,53 @@ public class DataResource {
         // save it
         writeBytesToFile(userContext, in, gpFilePath, maxNumBytes);
         return gpFilePath;
+    }
+
+    private String createPipelineMessage(String user, List<ParameterInfo> params) throws UnsupportedEncodingException {
+        String toReturn = "";
+        GpContext userContext = GpContext.getContextForUser(user);
+        long maxFileSize = ServerConfigurationFactory.instance().getGPLongProperty(userContext, "pipeline.max.file.size", 250L * 1000L * 1024L);
+        for (ParameterInfo i : params) {
+            toReturn += "Changed parameter " + i.getName() + " to 'Prompt When Run' because it exceeded maximum file size of " + JobHelper.getFormattedSize(maxFileSize) + " for pipelines.  ";
+        }
+        if (toReturn.length() != 0) {
+            toReturn = "&message=" + URLEncoder.encode(toReturn, "UTF-8");
+        }
+        return toReturn;
+    }
+
+    /**
+     * Create a provenance pipeline from the given job result file
+     * @param request
+     * @param path
+     * @return
+     */
+    @PUT
+    @Path("/createPipeline/{path:.+}")
+    public Response createPipeline(@Context HttpServletRequest request, @Context HttpServletResponse response, @PathParam("path") String path, @QueryParam("name") String pipelineName) {
+        try {
+            String user = (String) request.getSession().getAttribute(GPConstants.USERID);
+            GpFilePath filePath = GpFileObjFactory.getRequestedGpFileObj("<GenePatternURL>" + path);
+            Integer jobNumber = Integer.parseInt(((JobResultFile) filePath).getJobId());
+
+            // Set the pipeline name
+            if (pipelineName == null) pipelineName = "job_" + jobNumber;
+
+            ProvenanceFinder.ProvenancePipelineResult pipelineResult = new LocalAnalysisClient(user).createProvenancePipeline(jobNumber.toString(), pipelineName);
+            String lsid = pipelineResult.getLsid();
+            String message = createPipelineMessage(user, pipelineResult.getReplacedParams());
+            if (lsid == null) {
+                return Response.status(500).entity("Unable to create pipeline: " + filePath.getName()).build();
+            }
+
+            response.setHeader("pipeline-forward", request.getContextPath() + "/pipeline/index.jsf?lsid=" + lsid);
+            return Response.ok().entity("Created Pipeline: " + pipelineName + " " + message).build();
+        }
+        catch (Exception ex) {
+            return Response.status(500).entity("Unable to create pipeline: " + ex.getLocalizedMessage()).build();
+        }
+
+        //UIBeanHelper.getResponse().sendRedirect(UIBeanHelper.getRequest().getContextPath() + "/pipeline/index.jsf?lsid=" + UIBeanHelper.encode(lsid) + message);
     }
     
     private GpFilePath createJobInputDir(final GpContext userContext, final String filename) 
