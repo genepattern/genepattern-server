@@ -212,6 +212,7 @@ public class GetPipelineJobLegacy implements GetJob {
             job.put("jobId", ""+jobInfo.getJobNumber());
             job.put("taskName", jobInfo.getTaskName());
             job.put("taskLsid", jobInfo.getTaskLSID());
+            job.put("datetime", jobInfo.getDateSubmitted().toString());
             
             //init jobStatus
             final JSONObject jobStatus = new JSONObject();
