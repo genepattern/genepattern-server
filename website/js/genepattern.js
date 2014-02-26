@@ -756,18 +756,13 @@ function isRootFromUrl(url) {
 }
 
 function uploadPathFromUrl(url) {
-    var fullPath = $("<a></a>").attr("href", url)[0].pathname;
-    var count = 0;
-    while (count <= 3) {
-        var toChop = fullPath.split("/", 1)[0].length + 1;
-        fullPath = fullPath.substring(toChop, fullPath.length);
-        count++;
-    }
+    var fullPath = $("<a>").attr("href", url)[0].pathname;
+    fullPath = fullPath.substring(3); // Remove the /gp
 
     return fullPath;
 }
 
-function constructFileMenuData(isRoot, isDirectory) {
+function constructFileMenuData(isRoot, isDirectory, isUpload, isJobFile) {
     var data = [];
 
     if (!isRoot || !isDirectory) {
@@ -786,7 +781,7 @@ function constructFileMenuData(isRoot, isDirectory) {
     if (isDirectory) {
         data.push({
             "lsid": "",
-            "name": "<img src='/gp/pipeline/images/save.gif' class='module-list-icon'> Create Subdirectory",
+            "name": "Create Subdirectory",
             "description": "Create a subdirectory in this directory.",
             "version": "",
             "documentation": "http://genepattern.org",
@@ -808,6 +803,19 @@ function constructFileMenuData(isRoot, isDirectory) {
         });
     }
 
+    if (isJobFile) {
+        data.push({
+            "lsid": "",
+            "name": "Create Pipeline",
+            "description": "Create a provenance pipeline from this file.",
+            "version": "",
+            "documentation": "http://genepattern.org",
+            "categories": [],
+            "suites": [],
+            "tags": []
+        });
+    }
+
     return data;
 }
 
@@ -817,6 +825,8 @@ function _createFileWidgetInner(linkElement, appendTo) {
     var name = urlToName(url);
     var isDirectory = isDirectoryFromUrl(url);
     var isRoot = isRootFromUrl(url);
+    var isUpload = appendTo === "#menus-uploads";
+    var isJobFile = appendTo === "#menus-jobs";
 
     var sendToString = linkElement.attr("data-sendtomodule");
     if (sendToString === null || sendToString === undefined) sendToString = '[]';
@@ -825,7 +835,7 @@ function _createFileWidgetInner(linkElement, appendTo) {
 
     var kind = linkElement.attr("data-kind");
 
-    var data = constructFileMenuData(isRoot, isDirectory);
+    var data = constructFileMenuData(isRoot, isDirectory, isUpload, isJobFile);
 
     var actionList = $("<div></div>")
         .attr("class", "file-widget-actions")
@@ -837,14 +847,14 @@ function _createFileWidgetInner(linkElement, appendTo) {
             click: function(event) {
                 var saveAction = $(event.target).closest(".module-listing").find(".module-name").text().trim().indexOf("Save") == 0;
                 var deleteAction = $(event.target).closest(".module-listing").find(".module-name").text().trim().indexOf("Delete") == 0;
-                var subdirAction = $(event.target).closest(".module-listing").find(".module-name").text().trim().indexOf("Create") == 0;
+                var subdirAction = $(event.target).closest(".module-listing").find(".module-name").text().trim().indexOf("Create Subdirectory") == 0;
+                var pipelineAction = $(event.target).closest(".module-listing").find(".module-name").text().trim().indexOf("Create Pipeline") == 0;
 
                 var listObject = $(event.target).closest(".search-widget").find(".send-to-param-list");
                 var url = listObject.attr("data-url");
                 var path = uploadPathFromUrl(url);
 
                 if (saveAction) {
-
                     window.location.href = "/gp/rest/v1/data/download/" + path;
                     $(".search-widget:visible").searchslider("hide");
                     return;
@@ -909,6 +919,12 @@ function _createFileWidgetInner(linkElement, appendTo) {
                         }
                     });
 
+                    $(".search-widget:visible").searchslider("hide");
+                    return;
+                }
+
+                else if (pipelineAction) {
+                    // TODO: Pipeline stuff
                     $(".search-widget:visible").searchslider("hide");
                     return;
                 }

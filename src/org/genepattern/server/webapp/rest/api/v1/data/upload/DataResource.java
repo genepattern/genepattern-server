@@ -24,6 +24,7 @@ import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.dm.GpFileObjFactory;
 import org.genepattern.server.dm.GpFilePath;
+import org.genepattern.server.dm.jobresult.JobResultFile;
 import org.genepattern.server.job.input.JobInputFileUtil;
 import org.genepattern.server.webapp.FileDownloader;
 import org.genepattern.server.webapp.rest.api.v1.Util;
@@ -31,6 +32,7 @@ import org.genepattern.server.webapp.rest.api.v1.Util;
 import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.core.header.FormDataContentDisposition;
 import com.sun.jersey.multipart.FormDataParam;
+import org.genepattern.server.webservice.server.local.LocalAnalysisClient;
 import org.genepattern.util.GPConstants;
 
 /**
@@ -180,8 +182,7 @@ public class DataResource {
             ServletContext servletContext = request.getSession().getServletContext();
 
             String user = (String) request.getSession().getAttribute(GPConstants.USERID);
-            GpContext userContext = GpContext.getContextForUser(user);
-            GpFilePath filePath = GpFileObjFactory.getUserUploadFile(userContext, new File(path));
+            GpFilePath filePath = GpFileObjFactory.getRequestedGpFileObj("<GenePatternURL>" + path);
             File file = filePath.getServerFile();
 
             FileDownloader.serveFile(servletContext, request, response, true, FileDownloader.ContentDisposition.ATTACHMENT, file);
@@ -204,16 +205,27 @@ public class DataResource {
     public Response deleteFile(@Context HttpServletRequest request, @PathParam("path") String path) {
         try {
             String user = (String) request.getSession().getAttribute(GPConstants.USERID);
-            GpContext userContext = GpContext.getContextForUser(user);
-            GpFilePath filePath = GpFileObjFactory.getUserUploadFile(userContext, new File(path));
+            GpFilePath filePath = GpFileObjFactory.getRequestedGpFileObj("<GenePatternURL>" + path);
 
-            boolean deleted = DataManager.deleteUserUploadFile(user, filePath);
+            if (path.startsWith("/users")) { // If this is a user upload
+                boolean deleted = DataManager.deleteUserUploadFile(user, filePath);
 
-            if (deleted) {
+                if (deleted) {
+                    return Response.ok().entity("Deleted " + filePath.getName()).build();
+                }
+                else {
+                    return Response.status(500).entity("Could not delete " + filePath.getName()).build();
+                }
+            }
+            else if (path.startsWith("/jobResults")) { // If this is a job result file
+                LocalAnalysisClient analysisClient = new LocalAnalysisClient(user);
+                int jobNumber = Integer.parseInt(((JobResultFile) filePath).getJobId());
+                analysisClient.deleteJobResultFile(jobNumber, jobNumber + "/" + filePath.getName());
+
                 return Response.ok().entity("Deleted " + filePath.getName()).build();
             }
-            else {
-                return Response.status(500).entity("Could not delete " + filePath.getName()).build();
+            else { // Other files not implemented
+                return Response.status(500).entity("Delete not implemented for this file type: " + filePath.getName()).build();
             }
         }
         catch (Throwable t) {
