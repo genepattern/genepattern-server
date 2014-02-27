@@ -618,11 +618,11 @@ function uploadDrop(event) {
         return;
     }
 
-    if ($(event.toElement).attr("id") === "upload-dropzone") {
+    if ($(event.target).attr("id") === "upload-dropzone") {
         openUploadDirectoryDialog(filelist);
     }
     else {
-        var directory = $(event.toElement).closest(".jstree-open").find("a:first").attr("href");
+        var directory = $(event.target).closest(".jstree-open").find("a:first").attr("href");
         uploadAfterDialog(filelist, directory);
     }
 }
