@@ -251,7 +251,7 @@ public class DataResource {
         try {
             String user = (String) request.getSession().getAttribute(GPConstants.USERID);
             GpContext userContext = GpContext.getContextForUser(user);
-            GpFilePath filePath = GpFileObjFactory.getUserUploadFile(userContext, new File(path));
+            GpFilePath filePath = GpFileObjFactory.getRequestedGpFileObj("<GenePatternURL>" + path.replaceAll(" ", "%20"));
 
             // Init the file object
             String parentDirectoryPath = null;

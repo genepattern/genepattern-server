@@ -916,7 +916,7 @@ function _createFileWidgetInner(linkElement, appendTo) {
 
                             $.ajax({
                                 type: "PUT",
-                                url: "/gp/rest/v1/data/createDirectory/" + path + subdirName,
+                                url: "/gp/rest/v1/data/createDirectory/" + path + encodeURIComponent(subdirName),
                                 success: function(data, textStatus, jqXHR) {
                                     $("#infoMessageDiv #infoMessageContent").text(data);
                                     $("#infoMessageDiv").show();
