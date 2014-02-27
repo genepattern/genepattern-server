@@ -1285,6 +1285,17 @@ function initRecentJobs() {
     });
 }
 
+function toggleJobCollapse(toggleImg) {
+    $(toggleImg).closest(".job-box").find(".job-details").toggle("blind");
+    var open = $(toggleImg).attr("src").indexOf("arrow-pipelinetask-down.gif") >= 0;
+    if (open) {
+        $(toggleImg).attr("src", "http://127.0.0.1:8080/gp/images/arrow-pipelinetask-right.gif")
+    }
+    else {
+        $(toggleImg).attr("src", "http://127.0.0.1:8080/gp/images/arrow-pipelinetask-down.gif")
+    }
+}
+
 function renderJob(jobJson, tab) {
     var jobBox = $("<div></div>")
         .addClass("job-box")

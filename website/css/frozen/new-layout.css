@@ -588,14 +588,17 @@ body {
 
 #left-nav-jobs .job-name img {
     margin-right: 5px;
+    cursor: pointer;
 }
 
 #left-nav-jobs .job-details {
     margin-left: 20px;
     font-style: italic;
+    font-size: 7pt;
 }
 
 #left-nav-jobs .job-file a {
     font-style: normal;
     color: #000099 !important;
+    font-size: 9pt;
 }
