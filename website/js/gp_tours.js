@@ -16,11 +16,6 @@ $(function()
                     intro: "The navigation bar provides access to other pages."
                 },
                 {
-                    element:document.getElementsByClassName("jobResults").item(0),
-                    intro: "The Job Results Summary page lists all of your analysis jobs.",
-                    position: 'bottom'
-                },
-                {
                     element: '#left-nav-modules-tab',
                     intro: 'The Modules tab lists the analyses that you can run. Enter the first few characters of a module or pipeline name in the search box to locate that analysis.',
                     position: 'right'
