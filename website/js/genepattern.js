@@ -540,33 +540,41 @@ function ajaxFileTabUpload(file, directory){
     reader.onload = function(event){
         loaded += event.loaded;
         xhr = new XMLHttpRequest();
+
         var upload = xhr.upload;
+
         upload.addEventListener('load',function(){
-            if (loaded < total) {
-                blob = file.slice(loaded, loaded + step + 1);
-                reader.readAsBinaryString(blob);
-            }
-            else {
-                loaded = total;
-            }
+            setTimeout(function() {
+                var data = xhr.response;
 
-            if (loaded === total) {
-                setTimeout(function() {
-                    var data = xhr.response;
+                if (data.match("^Error:")) {
+                    xhr.abort();
 
-                    if (data.match("^Error:")) {
-                        showDialog("Error in Upload", data);
+                    showDialog("Error in Upload", data);
 
-                        $("#upload-dropzone-progress-label").text("Upload Error!");
+                    $("#upload-dropzone-progress-label").text("Upload Error!");
 
-                        // Hide the progressbar
-                        $("#upload-dropzone-progress").hide();
+                    // Hide the progressbar
+                    $("#upload-dropzone-progress").hide();
 
-                        // Show the dropzone
-                        $("#upload-dropzone").show();
-                        $("#upload-dropzone-wrapper span").show();
-                    }
-                    else {
+                    // Show the dropzone
+                    $("#upload-dropzone").show();
+                    $("#upload-dropzone-wrapper span").show();
+
+                    return;
+                }
+
+
+                if (loaded < total) {
+                    blob = file.slice(loaded, loaded + step + 1);
+                    reader.readAsBinaryString(blob);
+                }
+                else {
+                    loaded = total;
+                }
+
+                if (loaded === total) {
+                    if (!data.match("^Error:")) {
                         $("#upload-dropzone-progress-label").text("Upload Complete!");
 
                         // Hide the progressbar
@@ -580,10 +588,10 @@ function ajaxFileTabUpload(file, directory){
                         $("#uploadTree").data("dndReady", {});
                         $("#uploadTree").jstree("refresh");
                     }
-                }, 100)
-            }
+                }
+            }, 10);
+        }, false);
 
-        },false);
         xhr.open("POST", "/gp/AJAXUpload?fileName=" + file.name);
         xhr.overrideMimeType("application/octet-stream");
         xhr.setRequestHeader('partitionCount', partitionCount.toString());
