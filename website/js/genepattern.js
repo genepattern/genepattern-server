@@ -895,6 +895,10 @@ function _createFileWidgetInner(linkElement, appendTo) {
                             $("#uploadTree").jstree("refresh");
                         },
                         error: function(data, textStatus, jqXHR) {
+                            if (typeof data === 'object') {
+                                data = data.responseText;
+                            }
+
                             $("#errorMessageDiv #errorMessageContent").text(data);
                             $("#errorMessageDiv").show();
                         }
@@ -921,6 +925,10 @@ function _createFileWidgetInner(linkElement, appendTo) {
                                     $("#uploadTree").jstree("refresh");
                                 },
                                 error: function(data, textStatus, jqXHR) {
+                                    if (typeof data === 'object') {
+                                        data = data.responseText;
+                                    }
+
                                     $("#errorMessageDiv #errorMessageContent").text(data);
                                     $("#errorMessageDiv").show();
                                 }
@@ -1163,6 +1171,10 @@ function createJobWidget(job) {
                                 initRecentJobs();
                             },
                             error: function(data, textStatus, jqXHR) {
+                                if (typeof data === 'object') {
+                                    data = data.responseText;
+                                }
+
                                 $("#errorMessageDiv #errorMessageContent").text(data);
                                 $("#errorMessageDiv").show();
                             }
@@ -1183,6 +1195,10 @@ function createJobWidget(job) {
                             initRecentJobs();
                         },
                         error: function(data, textStatus, jqXHR) {
+                            if (typeof data === 'object') {
+                                data = data.responseText;
+                            }
+
                             $("#errorMessageDiv #errorMessageContent").text(data);
                             $("#errorMessageDiv").show();
                         }
@@ -1287,6 +1303,10 @@ function initRecentJobs() {
             }
         },
         error: function(data, textStatus, jqXHR) {
+            if (typeof data === 'object') {
+                data = data.responseText;
+            }
+
             $("#errorMessageDiv #errorMessageContent").text(data);
             $("#errorMessageDiv").show();
         }
