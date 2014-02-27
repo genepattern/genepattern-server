@@ -574,13 +574,12 @@ body {
 }
 
 #left-nav-jobs .job-name {
-    font-size: 10pt;
+    font-size: 9pt;
     font-weight: bold;
     color: #333366 !important;
-    padding-left: 20px;
-    text-indent: -20px;
-    white-space: nowrap;
-    text-overflow: ellipsis;
+    /*padding-left: 20px;*/
+    /*text-indent: -20px;*/
+    overflow: auto;
 }
 #left-nav-jobs .job-details .job-name {
     font-size: 8pt;
@@ -589,6 +588,19 @@ body {
 #left-nav-jobs .job-name img {
     margin-right: 5px;
     cursor: pointer;
+    float: left;
+}
+
+#left-nav-jobs .job-name a {
+    display: block;
+    float: left;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+}
+
+#left-nav-jobs > .job-box > .job-name > a {
+    width: 300px;
 }
 
 #left-nav-jobs .job-details {
