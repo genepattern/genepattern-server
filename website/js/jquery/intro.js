@@ -432,16 +432,16 @@
         this._introChangeCallback.call(this, targetElement.element);
     }
 
+    //following if statement added by Marc-Danie 2/24/2013 to update the  pointer to the target element
+    //this only occurs if a string was original provided as the value for the element
     if(targetElement.element.id != null && targetElement.element.id != undefined && targetElement.element.id.length > 0)
     {
-	targetElement.element = document.querySelector("#" + jqEscape(targetElement.element.id));
+	    targetElement.element = document.querySelector("#" + jqEscape(targetElement.element.id));
     }
 
     var self = this,
         oldHelperLayer = document.querySelector('.introjs-helperLayer'),
-        
-	//following line edited by Marc-Danie 2/24/2013 to update the pointer to the element
-	
+
 	elementPosition = _getOffset(targetElement.element);
 
     if (oldHelperLayer != null) {
@@ -653,7 +653,7 @@
       //next two lines are manual edits by Marc-Danie 2/23/14 to workaround table row highlighting issue
       $(targetElement.element).find('td').addClass(' introjs-relativePosition').addClass('introjs-showElement');
       //$(targetElement.element).find('td').find('.uploadedinputfile').hide();
-    
+
     }
 
 
