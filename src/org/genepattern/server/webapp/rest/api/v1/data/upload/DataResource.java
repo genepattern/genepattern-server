@@ -186,7 +186,6 @@ public class DataResource {
         try {
             ServletContext servletContext = request.getSession().getServletContext();
 
-            String user = (String) request.getSession().getAttribute(GPConstants.USERID);
             GpFilePath filePath = GpFileObjFactory.getRequestedGpFileObj("<GenePatternURL>" + path);
             File file = filePath.getServerFile();
 
@@ -241,47 +240,66 @@ public class DataResource {
     /**
      * Create the specified subdirectory
      * Subdirectory creation in this way is not recursive
+     * 
+     * TODO: the preferred API is for the 'path' to be relative to the current user's 
+     *     'home directory'.
      * @param request
      * @param path
      * @return
      */
     @PUT
     @Path("/createDirectory/{path:.+}")
-    public Response createDirectory(@Context HttpServletRequest request, @PathParam("path") String path) {
+    public Response createDirectoryV1(
+            @Context HttpServletRequest request,
+            @PathParam("path") String path) 
+    {
         try {
-            String user = (String) request.getSession().getAttribute(GPConstants.USERID);
-            GpContext userContext = GpContext.getContextForUser(user);
-            GpFilePath filePath = GpFileObjFactory.getRequestedGpFileObj("<GenePatternURL>" + path.replaceAll(" ", "%20"));
-
-            // Init the file object
-            String parentDirectoryPath = null;
-            if (filePath.getRelativeFile().getPath().contains("/")) { // Special case for files in the root directory
-                parentDirectoryPath = filePath.getRelativeFile().getParentFile().getPath();
-            }
-            else {
-                parentDirectoryPath = "./";
-            }
-            File relativePath = DataManager.initSubdirectory(parentDirectoryPath, filePath.getName());
-
-            // Check for reserved names
-            boolean isTmpDir = DataManager.isTmpDir(userContext, relativePath);
-            if (isTmpDir) {
-                return Response.status(500).entity("Reserved name. Could not create " + filePath.getName()).build();
+            final GpContext userContext=Util.getUserContext(request);
+            final File relativePath=extractRelativePath(userContext,path);
+            if (relativePath==null) {
+                //error
+                return Response.status(500).entity("Could not createDirectory: " + path).build();
             }
 
             // Create the directory
             boolean success = DataManager.createSubdirectory(userContext, relativePath);
 
             if (success) {
-                return Response.ok().entity("Created " + filePath.getName()).build();
+                return Response.ok().entity("Created " + relativePath.getName()).build();
             }
             else {
-                return Response.status(500).entity("Could not create " + filePath.getName()).build();
+                return Response.status(500).entity("Could not create " + relativePath.getName()).build();
             }
         }
         catch (Throwable t) {
             return Response.status(Status.INTERNAL_SERVER_ERROR).entity(t.getLocalizedMessage()).build();
         }
+    }
+
+    /**
+     * Extract path=/users/{userId}/{relativePath} from the pathParam arg.
+     * Copies hard-code rules from the GpFileObjFactory for working with user directories.
+     * @param userContext, must be non-null with a valid userId
+     * @param pathParam, should be non-null
+     * @return
+     */
+    private File extractRelativePath(final GpContext userContext, final String pathParam) {
+        if (pathParam==null) {
+            return null;
+        }
+        if (userContext==null) {
+            throw new IllegalArgumentException("userContext==null");
+        }
+        if (userContext.getUserId()==null) {
+            throw new IllegalArgumentException("userContext.userId==null");
+        }
+        
+        final String pathInfo="/users/"+userContext.getUserId()+"/";        
+        if (!pathParam.startsWith(pathInfo)) {
+            return null;
+        }
+        final String relativePath=pathParam.substring(pathInfo.length());
+        return new File(relativePath);
     }
 
     /**
