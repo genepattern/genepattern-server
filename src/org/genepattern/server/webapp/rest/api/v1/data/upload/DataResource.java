@@ -181,6 +181,9 @@ public class DataResource {
      * @param response
      * @param path
      * @return
+     * 
+     * @deprecated -- haven't looked at this yet, but I suspect there are character encoding bugs.
+     *    Also, we don't need a special request to GET a resource, the URL is the resource, just download it directly
      */
     @GET
     @Path("/download/{path:.+}")
