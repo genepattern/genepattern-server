@@ -24,6 +24,7 @@ import org.apache.log4j.Logger;
 import org.genepattern.server.DataManager;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
+import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.dm.GpFileObjFactory;
 import org.genepattern.server.dm.GpFilePath;
 import org.genepattern.server.dm.jobresult.JobResultFile;
@@ -39,6 +40,7 @@ import org.genepattern.server.webservice.server.ProvenanceFinder;
 import org.genepattern.server.webservice.server.local.LocalAnalysisClient;
 import org.genepattern.util.GPConstants;
 import org.genepattern.webservice.ParameterInfo;
+import org.genepattern.webservice.WebServiceException;
 
 /**
  * RESTful implementation of the /data resource.
@@ -198,43 +200,91 @@ public class DataResource {
         }
     }
 
+
     /**
-     * Delete the specified file
+     * Delete the specified jobResults or user upload file
      * @param request
-     * @param path
+     * @param path, for example '/jobResults/14855/all aml test.cvt.gct', 
+     *                          '/users/user_id/all_aml_test.cls'
      * @return
      */
     @DELETE
     @Path("/delete/{path:.+}")
     public Response deleteFile(@Context HttpServletRequest request, @PathParam("path") String path) {
         try {
-            String user = (String) request.getSession().getAttribute(GPConstants.USERID);
-            GpFilePath filePath = GpFileObjFactory.getRequestedGpFileObj("<GenePatternURL>" + path);
-
+            final GpContext userContext=Util.getUserContext(request);
             if (path.startsWith("/users")) { // If this is a user upload
-                boolean deleted = DataManager.deleteUserUploadFile(user, filePath);
+                final File uploadFilePath=extractUsersPath(userContext, path);
+                final GpFilePath uploadFileToDelete = GpFileObjFactory.getUserUploadFile(userContext, uploadFilePath);
+
+                boolean deleted = DataManager.deleteUserUploadFile(userContext.getUserId(), uploadFileToDelete);
 
                 if (deleted) {
-                    return Response.ok().entity("Deleted " + filePath.getName()).build();
+                    return Response.ok().entity("Deleted " + uploadFileToDelete.getName()).build();
                 }
                 else {
-                    return Response.status(500).entity("Could not delete " + filePath.getName()).build();
+                    return Response.status(500).entity("Could not delete " + uploadFileToDelete.getName()).build();
                 }
             }
-            else if (path.startsWith("/jobResults")) { // If this is a job result file
-                LocalAnalysisClient analysisClient = new LocalAnalysisClient(user);
-                int jobNumber = Integer.parseInt(((JobResultFile) filePath).getJobId());
-                analysisClient.deleteJobResultFile(jobNumber, jobNumber + "/" + filePath.getName());
-
-                return Response.ok().entity("Deleted " + filePath.getName()).build();
+            else if (path.startsWith("/jobResults/")) { // If this is a job result file
+                try {
+                    String relativePath=deleteJobResultFile(userContext, path);
+                    return Response.ok().entity("Deleted " + relativePath).build();
+                }
+                catch (Exception e) {
+                    //Exception means some kind of user error, such as an invalid file path
+                    return Response.status(404).entity(e.getMessage()).build();
+                }
+                catch (Throwable t) {
+                    log.error("Unexpected server error deleting path=" + path, t);
+                    return Response.status(500).entity("Unexpected server error deleting path=" + path).build();
+                }
             }
             else { // Other files not implemented
-                return Response.status(500).entity("Delete not implemented for this file type: " + filePath.getName()).build();
+                return Response.status(500).entity("Delete not implemented for this file type: " + path).build();
             }
         }
         catch (Throwable t) {
             return Response.status(Status.INTERNAL_SERVER_ERROR).entity(t.getLocalizedMessage()).build();
         }
+    }
+    
+    private String deleteJobResultFile(final GpContext userContext, final String path) throws Exception {
+        //example path="/jobResults/14855/all # aml test.cvt.gct"
+        final int idx0="/jobResults/".length();
+        if (idx0<0) {
+            log.error("Unexpected error, path should start with '/jobResults/', path="+path);
+            throw new Exception("Unable to delete path="+path);
+        }
+        final int idx1=path.indexOf("/", idx0);
+        if (idx1<idx0) {
+            //return Response.status(404).entity("Unable to delete path="+path).build();
+            throw new Exception("Unable to delete path="+path);
+        }
+        final String jobIdStr=path.substring(idx0, idx1);
+        final Integer jobId=Integer.parseInt(jobIdStr);
+        final File relativePath=new File(path.substring(idx1+1));
+
+        final boolean isInTransaction=HibernateUtil.isInTransaction();
+        try {
+            LocalAnalysisClient analysisClient = new LocalAnalysisClient(userContext.getUserId());
+            analysisClient.deleteJobResultFile(jobId, jobId + "/" + relativePath.getPath());
+            if (!isInTransaction) {
+                HibernateUtil.commitTransaction();
+            }
+        }
+        catch (WebServiceException e) {
+            log.debug("Error deleting path="+path, e);
+            throw new Exception("Unable to delete path="+path);
+        }
+        finally {
+            if (!isInTransaction) {
+                HibernateUtil.closeCurrentSession();
+            }
+        }
+        
+        //include the jobId in the end-user message
+        return jobId + "/" + relativePath.getPath();
     }
 
     /**
@@ -255,7 +305,7 @@ public class DataResource {
     {
         try {
             final GpContext userContext=Util.getUserContext(request);
-            final File relativePath=extractRelativePath(userContext,path);
+            final File relativePath=extractUsersPath(userContext,path);
             if (relativePath==null) {
                 //error
                 return Response.status(500).entity("Could not createDirectory: " + path).build();
@@ -283,7 +333,7 @@ public class DataResource {
      * @param pathParam, should be non-null
      * @return
      */
-    private File extractRelativePath(final GpContext userContext, final String pathParam) {
+    private File extractUsersPath(final GpContext userContext, final String pathParam) {
         if (pathParam==null) {
             return null;
         }
