@@ -103,12 +103,18 @@ public class ConfigFileParser {
         reloadCommandManagerProperties(jobConfigObj);
     }
     
+    public static ConfigFromYaml parseYamlFile(final File configYaml) throws ConfigurationException {
+        JobConfigObj jobConfigObj=parse(configYaml);
+        CommandManagerProperties cmdMgrProps=initCmdMgrProps(jobConfigObj);
+        return new ConfigFromYaml(jobConfigObj, cmdMgrProps);
+    }
+    
     /**
      * Parse the config file, creating a new JobConfigObj.
      * @param configFile
      * @return
      */
-    private JobConfigObj parse(final File configurationFile) throws ConfigurationException {
+    private static JobConfigObj parse(final File configurationFile) throws ConfigurationException {
         Reader reader = null;
         try {
             reader = new FileReader(configurationFile);
@@ -157,7 +163,7 @@ public class ConfigFileParser {
         return new JobConfigObj(null);
     }
     
-    private void parseExecutors(JobConfigObj configObj, Map<?,?> map) throws Exception {
+    private static void parseExecutors(final JobConfigObj configObj, final Map<?,?> map) throws Exception {
         for(Object key : map.keySet()) {
             String cmdExecId = ""+key;
             Object val = map.get(key);
@@ -166,19 +172,14 @@ public class ConfigFileParser {
         }
     }
 
-    private void parseDefaultProperties(JobConfigObj configObj, Object defaultPropertiesObj) throws Exception {
+    private static void parseDefaultProperties(JobConfigObj configObj, Object defaultPropertiesObj) throws Exception {
         if (defaultPropertiesObj == null) {
             log.info("No 'default.properties' in configuration");
             return;
         }
         if (!(defaultPropertiesObj instanceof Map<?,?>)) {
-            String errorMessage = "Error in 'default.properties' section of configuration file, expected a map, but found a ";
-            if (defaultPropertiesObj != null) {
-                errorMessage += defaultPropertiesObj.getClass().getCanonicalName();
-            }
-            else {
-                errorMessage += "null object";
-            }
+            final String errorMessage = "Error in 'default.properties' section of configuration file, expected a map, but found a "+
+                    defaultPropertiesObj.getClass().getCanonicalName();
             log.error(errorMessage);
             return;
         }
@@ -190,7 +191,7 @@ public class ConfigFileParser {
         }
     }
     
-    private void parseModuleProperties(JobConfigObj configObj, Object modulePropertiesObj) {
+    private static void parseModuleProperties(JobConfigObj configObj, Object modulePropertiesObj) {
         if (modulePropertiesObj == null) {
             log.info("No 'module.properties' in configuration");
             return;
@@ -218,6 +219,30 @@ public class ConfigFileParser {
         setCommandManagerProperties(jobConfigObj);
     }
 
+    private static CommandManagerProperties initCmdMgrProps(final JobConfigObj jobConfigObj) throws ConfigurationException {
+        CommandManagerProperties config=new CommandManagerProperties();
+        for(final String execId : jobConfigObj.getExecutors().keySet()) {
+            final ExecutorConfig execObj = jobConfigObj.getExecutors().get(execId);
+            //load executor->default.properties
+            if (execObj.defaultProperties != null) { 
+                PropObj propObj = config.getPropsForExecutor(execId);
+                for (String key : (Set<String>) (Set) execObj.defaultProperties.keySet()) {
+                    Value value = execObj.defaultProperties.get(key);
+                    propObj.addDefaultProperty(key, value);
+                }
+            }
+        }
+        //store top level default.properties
+        config.getTop().setDefaultProperties(jobConfigObj.getDefaultProperties());
+        //store top level module.properties
+        config.getTop().setModuleProperties(jobConfigObj.getModuleProperties());
+        //store custom group.properties
+        initializeCustomProperties(config, jobConfigObj.getGroupPropertiesObj(), true);
+        //store custom user.properties
+        initializeCustomProperties(config, jobConfigObj.getUserPropertiesObj(), false);
+        return config;
+    }
+    
     private void setCommandManagerProperties(JobConfigObj jobConfigObj) throws ConfigurationException {
         for(String execId : jobConfigObj.getExecutors().keySet()) {
             ExecutorConfig execObj = jobConfigObj.getExecutors().get(execId);
@@ -240,25 +265,17 @@ public class ConfigFileParser {
         initializeCustomProperties(config, jobConfigObj.getUserPropertiesObj(), false);
     }
 
-    private void initializeCustomProperties(CommandManagerProperties config, Object userOrGroupPropertiesObj, boolean forGroup) throws ConfigurationException {
-        if (userOrGroupPropertiesObj == null) {
-            return;
-        }
+    private static void initializeCustomProperties(CommandManagerProperties config, Object userOrGroupPropertiesObj, boolean forGroup) throws ConfigurationException {
         //for logging and debugging
-        String parentKey = forGroup ? "group.properties" : "user.properties";
-
+        final String parentKey = forGroup ? "group.properties" : "user.properties";
         if (userOrGroupPropertiesObj == null) {
             log.debug("No '"+parentKey+"' in configuration");
             return;
         }
+
         if (!(userOrGroupPropertiesObj instanceof Map)) {
-            String errorMessage = "Error in '"+parentKey+"' section of configuration file, expected a map, but found a ";
-            if (userOrGroupPropertiesObj != null) {
-                errorMessage += userOrGroupPropertiesObj.getClass().getCanonicalName();
-            }
-            else {
-                errorMessage += "null object";
-            }
+            String errorMessage = "Error in '"+parentKey+"' section of configuration file, expected a map, but found a "+
+                    userOrGroupPropertiesObj.getClass().getCanonicalName();
             log.error(errorMessage);
             return;
         }
@@ -276,7 +293,7 @@ public class ConfigFileParser {
         }
     }
     
-    private void initializePropertiesInto(PropObj propObj, String groupOrUserId, Object propertiesObj) throws ConfigurationException {
+    private static void initializePropertiesInto(PropObj propObj, String groupOrUserId, Object propertiesObj) throws ConfigurationException {
         Map<?,?> map = (Map<?,?>) propertiesObj;
         for(Entry<?,?> entry : map.entrySet() ) {
             String propname = "" + entry.getKey();
@@ -290,19 +307,14 @@ public class ConfigFileParser {
         }
     }
 
-    private void initializeModulePropertiesInto(PropObj propObj, String groupOrUserId, Object modulePropertiesMapObj) throws ConfigurationException {
+    private static void initializeModulePropertiesInto(PropObj propObj, String groupOrUserId, Object modulePropertiesMapObj) throws ConfigurationException {
         if (modulePropertiesMapObj == null) {
             log.debug("No module.properties set for: "+groupOrUserId);
             return;
         }
         if (!(modulePropertiesMapObj instanceof Map<?,?>)) {
-            String errorMessage = "Error in 'module.properties' section of configuration file for: "+groupOrUserId+". Expected a map, but found a ";
-            if (modulePropertiesMapObj != null) {
-                errorMessage += modulePropertiesMapObj.getClass().getCanonicalName();
-            }
-            else {
-                errorMessage += "null object";
-            }
+            String errorMessage = "Error in 'module.properties' section of configuration file for: "+groupOrUserId+". Expected a map, but found a "+
+                modulePropertiesMapObj.getClass().getCanonicalName();
             throw new ConfigurationException(errorMessage);
         }
         Map<?,?> map = (Map<?,?>) modulePropertiesMapObj;
