@@ -6,6 +6,9 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.lang.builder.EqualsBuilder;
+import org.apache.commons.lang.builder.HashCodeBuilder;
+
 
 public class Value {
     static public Value parse(final Object object) throws ConfigurationException {
@@ -55,8 +58,8 @@ public class Value {
 
     private boolean fromCollection=false;
     private List<String> values = new ArrayList<String>();
-
     private Map<?,?> mapValue=null;
+    private Integer hashCode=null;
 
     public Value(final String value) {
         fromCollection=false;
@@ -120,7 +123,31 @@ public class Value {
     }
 
     public Map<?,?> getMap() {
-        return mapValue;
+        return Collections.unmodifiableMap(mapValue);
+    }
+    
+    public boolean equals(final Object obj) {
+        if (obj == null) { return false; }
+        if (obj == this) { return true; }
+        if (obj.getClass() != getClass()) {
+            return false;
+        }
+        Value rhs = (Value) obj;
+        return new EqualsBuilder()
+            .append(fromCollection, rhs.fromCollection)
+            .append(values, rhs.values)
+            .append(mapValue, rhs.mapValue)
+            .isEquals();
+    }
+    
+    public int hashCode() {
+        if (hashCode != null) {
+            return hashCode;
+        }
+        hashCode=new HashCodeBuilder()
+            .append(values.toArray())
+            .hashCode();
+        return hashCode;
     }
 }
 
