@@ -23,7 +23,6 @@ import java.security.Security;
 import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.Properties;
-import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.Vector;
 
