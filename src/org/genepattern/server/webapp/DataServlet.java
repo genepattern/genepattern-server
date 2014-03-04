@@ -134,7 +134,6 @@ public class DataServlet extends HttpServlet implements Servlet {
      * 
      * @param request
      * @param response
-     * @param serveContent, if false, only respond with the header
      * @throws IOException
      */
     private void processRequest(HttpServletRequest request, HttpServletResponse response, HTTPMethod httpMethod) throws IOException {
@@ -166,7 +165,7 @@ public class DataServlet extends HttpServlet implements Servlet {
 
             log.debug(request.getMethod()+" "+u);
         }
-        
+
         if (isUserUploadRequest(request)) {
             processUserUploadRequest(request, response, httpMethod);
             return;
@@ -188,7 +187,7 @@ public class DataServlet extends HttpServlet implements Servlet {
         }
 
         //2) require a valid server file
-        File fileObj = getRequestedFile(request); 
+        File fileObj = getRequestedFile(request);
         if (fileObj == null || fileObj.isDirectory()) {
             log.debug("Directory listings are forbidden: "+fileObj);
             //not implementing directory browser 
@@ -218,6 +217,26 @@ public class DataServlet extends HttpServlet implements Servlet {
         // Accept ranges header
         response.setHeader("Accept-Ranges", "bytes");
         serveFile(request, response, httpMethod, fileObj);
+    }
+
+    /**
+     * Sets the header that ensures download behavior in the browser
+     * @param response
+     * @param filename
+     */
+    private void attachDownloadHeader(HttpServletResponse response, String filename) {
+        response.setHeader("Content-Disposition", "attachment; filename=" + filename);
+    }
+
+    /**
+     * Determine if the request has the "download" GET param
+     * This is used in requests that force download browser behavior
+     * @param request
+     * @return
+     */
+    private boolean isDownloadRequest(HttpServletRequest request) {
+        String download = request.getParameter("download");
+        return download != null;
     }
 
     /**
@@ -322,8 +341,15 @@ public class DataServlet extends HttpServlet implements Servlet {
         if (httpMethod == HTTPMethod.HEAD) {
             serveContent = false;
         }
+
+        // Determine if this is a download request
+        FileDownloader.ContentDisposition behavior = FileDownloader.ContentDisposition.INLINE;
+        if (isDownloadRequest(request)) {
+            behavior = FileDownloader.ContentDisposition.ATTACHMENT;
+        }
+
         log.debug(""+httpMethod+" "+request.getRequestURI());
-        FileDownloader.serveFile(this.getServletContext(), request, response, serveContent, fileObj);    
+        FileDownloader.serveFile(this.getServletContext(), request, response, serveContent, behavior, fileObj);
     }
 
     /**

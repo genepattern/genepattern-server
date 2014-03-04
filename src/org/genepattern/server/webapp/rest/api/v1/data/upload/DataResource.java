@@ -176,35 +176,6 @@ public class DataResource {
     }
 
     /**
-     * Return the requested file, attaching the headers necessary for the browser to handle the file as a download
-     * @param request
-     * @param response
-     * @param path
-     * @return
-     * 
-     * @deprecated -- haven't looked at this yet, but I suspect there are character encoding bugs.
-     *    Also, we don't need a special request to GET a resource, the URL is the resource, just download it directly
-     */
-    @GET
-    @Path("/download/{path:.+}")
-    public Response getFile(@Context HttpServletRequest request, @Context HttpServletResponse response, @PathParam("path") String path) {
-        try {
-            ServletContext servletContext = request.getSession().getServletContext();
-
-            GpFilePath filePath = GpFileObjFactory.getRequestedGpFileObj("<GenePatternURL>" + path);
-            File file = filePath.getServerFile();
-
-            FileDownloader.serveFile(servletContext, request, response, true, FileDownloader.ContentDisposition.ATTACHMENT, file);
-
-            return Response.ok().build();
-        }
-        catch (Throwable t) {
-            return Response.status(Status.INTERNAL_SERVER_ERROR).entity(t.getLocalizedMessage()).build();
-        }
-    }
-
-
-    /**
      * Delete the specified jobResults or user upload file
      * @param request
      * @param path, for example '/jobResults/14855/all aml test.cvt.gct', 
@@ -307,9 +278,9 @@ public class DataResource {
             @PathParam("path") String path) 
     {
         try {
-            final GpContext userContext=Util.getUserContext(request);
-            final File relativePath=extractUsersPath(userContext,path);
-            if (relativePath==null) {
+            GpContext userContext=Util.getUserContext(request);
+            File relativePath = extractUsersPath(userContext, path);
+            if (relativePath == null) {
                 //error
                 return Response.status(500).entity("Could not createDirectory: " + path).build();
             }

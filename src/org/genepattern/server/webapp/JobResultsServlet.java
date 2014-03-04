@@ -207,7 +207,25 @@ public class JobResultsServlet extends HttpServlet implements Servlet {
             return;
         }
         File fileObj = new File(rootJobDir, jobNumber + File.separator + file);
-        FileDownloader.serveFile(this.getServletContext(), request, response, serveContent, fileObj);
+
+        // Determine if this is a download request
+        FileDownloader.ContentDisposition behavior = FileDownloader.ContentDisposition.INLINE;
+        if (isDownloadRequest(request)) {
+            behavior = FileDownloader.ContentDisposition.ATTACHMENT;
+        }
+
+        FileDownloader.serveFile(this.getServletContext(), request, response, serveContent, behavior, fileObj);
+    }
+
+    /**
+     * Determine if the request has the "download" GET param
+     * This is used in requests that force download browser behavior
+     * @param request
+     * @return
+     */
+    private boolean isDownloadRequest(HttpServletRequest request) {
+        String download = request.getParameter("download");
+        return download != null;
     }
     
     /**

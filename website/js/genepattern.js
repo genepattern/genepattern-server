@@ -878,7 +878,7 @@ function _createFileWidgetInner(linkElement, appendTo) {
                 var path = uploadPathFromUrl(url);
 
                 if (saveAction) {
-                    window.location.href = "/gp/rest/v1/data/download/" + path;
+                    window.location.href = url + "?download";
                     $(".search-widget:visible").searchslider("hide");
                     return;
                 }
