@@ -12,7 +12,7 @@ $(function()
                     intro: "You can click the GenePattern icon to return to this home page at any time."
                 },
                 {
-                    element: document.querySelector('#navband1'),
+                    element: '#navband1',
                     intro: "The navigation bar provides access to other pages."
                 },
                 {
@@ -31,7 +31,7 @@ $(function()
                     position: 'right'
                 },
                 {
-                    element: document.querySelector('#protocols'),
+                    element: '#protocols',
                     intro: "The center pane is the main display pane, which GenePattern uses to display information and to prompt you for input. " +
                         "Right now, the protocols are displayed here.",
                     position: 'left'
