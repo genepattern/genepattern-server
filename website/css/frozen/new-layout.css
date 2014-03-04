@@ -450,6 +450,11 @@ body {
     white-space: normal !important;
 }
 
+.jstree a {
+    word-break: break-all;
+    white-space: normal !important;
+}
+
 #recent-modules .module-listing {
     height: 17px;
 }
@@ -627,4 +632,6 @@ body {
     font-style: normal;
     color: #000099 !important;
     font-size: 9pt;
+    word-break: break-all;
+    white-space: normal;
 }
