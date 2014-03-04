@@ -68,7 +68,9 @@ public class Value {
 
     public Value(final Collection<String> from) {
         fromCollection=true;
-        values.addAll(from);
+        if (from!=null) {
+            values.addAll(from);
+        }
     }
 
     public Value(final Map<?,?> from) {
@@ -148,6 +150,16 @@ public class Value {
             .append(values.toArray())
             .hashCode();
         return hashCode;
+    }
+    
+    public String toString() {
+        if (values==null) {
+            return "";
+        }
+        if (values.size()==1) {
+            return getValue();
+        }
+        return values.toString();
     }
 }
 
