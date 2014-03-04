@@ -267,7 +267,7 @@ public class ConfigYamlProperties {
      * @param jobInfo
      * @return
      */
-    public CommandProperties getCommandProperties(JobInfo jobInfo) {
+    public CommandProperties getCommandProperties(final JobInfo jobInfo) {
         CommandProperties cmdProperties = new CommandProperties();
         
         if (jobInfo == null) {
@@ -279,18 +279,14 @@ public class ConfigYamlProperties {
         cmdProperties.putAll(this.rootProps.getDefaultProperties());
         
         // 2) add/replace with executor default properties
-        if (jobInfo != null) {
-            String cmdExecId = getCommandExecutorId(jobInfo);
-            PropObj executorDefaultProps = executorPropertiesMap.get(cmdExecId);
-            if (executorDefaultProps != null) {
-                cmdProperties.putAll( executorDefaultProps.getDefaultProperties() );
-            }
+        String cmdExecId = getCommandExecutorId(jobInfo);
+        PropObj executorDefaultProps = executorPropertiesMap.get(cmdExecId);
+        if (executorDefaultProps != null) {
+            cmdProperties.putAll( executorDefaultProps.getDefaultProperties() );
         }
         
         // 3) add/replace with top level module properties ...
-        if (jobInfo != null) {
-            cmdProperties.putAll(this.rootProps.getModuleProperties(jobInfo));
-        }
+        cmdProperties.putAll(this.rootProps.getModuleProperties(jobInfo));
 
         // 4) add/replace with group properties
         String userId = jobInfo.getUserId();
