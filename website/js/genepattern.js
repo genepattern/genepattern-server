@@ -1292,6 +1292,13 @@ function initRecentJobs() {
             for (var i = 0; i < data.length; i++) {
                 var jobJson = data[i];
 
+                // Protect against numm job IDs
+                if (jobJson.jobId === null) {
+                    console.log("ERROR rendering job:");
+                    console.log(jobJson);
+                    continue;
+                }
+
                 renderJob(jobJson, tab);
             }
         },
