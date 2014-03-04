@@ -1598,45 +1598,6 @@ public class GenePatternAnalysisTask {
         }
     }
 
-    private void runCommand(final boolean isPipeline, final CommandExecutor cmdExec, final long jobDispatchTimeout, final String[] commandTokens, final Map<String, String> environmentVariables, final File outDir, final File stdoutFile, final File stderrFile, final JobInfo jobInfo, final File stdinFile) 
-    throws JobDispatchException
-    {
-        Future<Integer> task = executor.submit(new Callable<Integer>() {
-            public Integer call() throws Exception {
-                cmdExec.runCommand(commandTokens, environmentVariables, outDir, stdoutFile, stderrFile, jobInfo, stdinFile);
-                return JobStatus.JOB_PROCESSING;
-            }
-        });
-        try {
-            int job_status = task.get(jobDispatchTimeout, TimeUnit.MILLISECONDS);
-            try {
-                if (!isPipeline) {
-                    //pipeline handler sets the status for the pipeline job
-                    HibernateUtil.beginTransaction();
-                    AnalysisJobScheduler.setJobStatus(jobInfo.getJobNumber(), job_status);
-                    HibernateUtil.commitTransaction();
-                }
-                if (isPipeline) {
-                    CommandManagerFactory.getCommandManager().wakeupJobQueue();
-                }
-            }
-            catch (Throwable t) {
-                HibernateUtil.rollbackTransaction();
-                throw new JobDispatchException("Error changing job status for job #"+jobInfo.getJobNumber(), t);
-            }
-        }
-        catch (ExecutionException e) {
-            throw new JobDispatchException(e);
-        }
-        catch (TimeoutException e) {
-            task.cancel(true);
-            throw new JobDispatchException("Timeout after "+jobDispatchTimeout+" ms while dispatching job #"+jobInfo.getJobNumber()+" to queue.", e);
-        }
-        catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }
-    }
-
     /**
      * 
      * @param taskInfo
