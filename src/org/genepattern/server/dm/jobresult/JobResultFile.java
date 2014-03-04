@@ -29,6 +29,13 @@ public class JobResultFile extends GpFilePath {
         init(jobId, relativePath);
     }
 
+    /**
+     * Create a new JobResultFile (GpFilePath) instance from the given pathInfo, 
+     *     /<jobId>/<relativePath>
+     * The relative path should be encoded as a valid file system file (not as a URI).
+     * @param pathInfo
+     * @throws Exception
+     */
     public JobResultFile(String pathInfo) throws Exception {
         //e.g. /<jobId>/<relativePath>
         if (pathInfo == null) {
