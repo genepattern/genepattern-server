@@ -6,6 +6,7 @@ import java.util.List;
 import org.genepattern.junitutil.FileUtil;
 import org.genepattern.junitutil.TaskLoader;
 import org.genepattern.server.config.GpContext;
+import org.genepattern.server.config.GpContextFactory;
 import org.genepattern.server.job.input.Param;
 import org.genepattern.server.rest.GpServerException;
 import org.junit.Assert;
@@ -52,8 +53,10 @@ public class TestJobInputHelper {
     @BeforeClass
     static public void beforeClass() {
         adminUserId="admin";
-        userContext=GpContext.getContextForUser(adminUserId);
-        userContext.setIsAdmin(true);
+        userContext=new GpContextFactory.Builder()
+            .userId(adminUserId)
+            .isAdmin(true)
+            .build();
         taskLoader=new TaskLoader();
         taskLoader.addTask(TestJobInputHelper.class, "ConvertLineEndings_v1.zip");
         taskLoader.addTask(TestJobInputHelper.class, "ComparativeMarkerSelection_v9.zip");

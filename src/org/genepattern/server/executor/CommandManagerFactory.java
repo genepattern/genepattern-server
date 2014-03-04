@@ -6,6 +6,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import org.apache.log4j.Logger;
+import org.genepattern.server.config.JobConfigObj;
 import org.genepattern.server.config.ServerConfigurationFactory;
 
 /**
@@ -86,18 +87,19 @@ public class CommandManagerFactory {
         if (manager != null) {
             log.info("replacing current command manager with a new instance");
         }
-        manager = createCommandManager();
+        final JobConfigObj jobConfigObj=ServerConfigurationFactory.instance().getJobConfiguration();
+        manager = createCommandManager(jobConfigObj);
     }
     
-    private static synchronized BasicCommandManager createCommandManager() {
+    private static synchronized BasicCommandManager createCommandManager(final JobConfigObj jobConfigObj) {
         if (ServerConfigurationFactory.instance().getInitializationErrors().size() > 0) {
             log.error("server configuration errors, creating default command manager");
             return createDefaultCommandManager();
         }
         
-        BasicCommandManagerFactory parser = new BasicCommandManagerFactory();
+        BasicCommandManagerFactory basicCmdMgrFactory = new BasicCommandManagerFactory();
         try {
-            BasicCommandManager cmdMgr =  parser.createCommandManager();
+            BasicCommandManager cmdMgr =  basicCmdMgrFactory.createCommandManager(jobConfigObj);
             return cmdMgr;
         }
         catch (final Exception e) {

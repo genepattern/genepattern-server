@@ -9,7 +9,6 @@ import java.util.Map;
 
 import org.apache.log4j.Logger;
 import org.genepattern.server.JobInfoManager;
-import org.genepattern.server.config.CommandManagerProperties;
 import org.genepattern.server.config.ConfigurationException;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
@@ -25,32 +24,16 @@ import org.hibernate.Session;
 /**
  * Default implementation of the CommandManager interface.
  * Note, there is special-handling for pipeline execution. There is one, and only one, CommandExecutor for pipelines.
- * By default this is set implicitly (no need for anything in the job_configuration file) with the following private class variables:
- *     {@link #DEFAULT_PIPELINE_EXEC_ID}
- *     {@link #DEFAULT_PIPELINE_EXEC_CLASS}
- * 
- * To override the default, set a 'pipeline.executor' in the 'default.properties' section of the job configuration file.
- * This is an id to an executor which must be defined in the 'executors' section of the configuration file.
- * For example:
-<code>
-default.properties:
-    executor: RuntimeExec
-    pipeline.executor: PipelineExec
-
-executors:
-    # simple declaration, of the form <id>:<classname>
-    RuntimeExec: org.genepattern.server.executor.RuntimeCommandExecutor
-    # explicitly declare pipeline executor
-    PipelineExec: org.genepattern.server.executor.pipeline.CustomPipelineExecutor
-</code>
+ * This is set implicitly and can not be modified with the configuration file.
  * 
  * @author pcarr
  */
 public class BasicCommandManager implements CommandManager {
     private static Logger log = Logger.getLogger(BasicCommandManager.class);
-    
+
     private AnalysisJobScheduler analysisTaskScheduler = null;
     
+    @Override
     public void startAnalysisService() { 
         log.info("starting analysis service...");
         handleJobsOnServerStartup();
@@ -62,6 +45,7 @@ public class BasicCommandManager implements CommandManager {
         log.info("...analysis service started!");
     }
     
+    @Override
     public void shutdownAnalysisService() {
         if (analysisTaskScheduler != null) {
             analysisTaskScheduler.stopQueue();
@@ -241,6 +225,7 @@ public class BasicCommandManager implements CommandManager {
     }
 
     //implement the CommandExecutorMapper interface
+    @Override
     public CommandExecutor getCommandExecutor(JobInfo jobInfo) throws CommandExecutorNotFoundException {
         CommandExecutor cmdExec = null;
         
@@ -257,8 +242,7 @@ public class BasicCommandManager implements CommandManager {
         //}
 
         //initialize to default executor
-        CommandManagerProperties configProps = ServerConfigurationFactory.instance().getCommandManagerProperties();
-        String cmdExecId = configProps.getCommandExecutorId(jobInfo);
+        String cmdExecId = ServerConfigurationFactory.instance().getCommandExecutorId(jobInfo);
         if (cmdExecId == null) {
             log.info("no commandExecutorId found for job, use the first one from the list.");
             cmdExecId = getFirstCmdExecId();
@@ -283,9 +267,9 @@ public class BasicCommandManager implements CommandManager {
         return firstKey;
     }
     
+    @Override
     public CommandProperties getCommandProperties(JobInfo jobInfo) {
-        CommandManagerProperties configProps = ServerConfigurationFactory.instance().getCommandManagerProperties();
-        CommandProperties props = configProps.getCommandProperties(jobInfo);
+        CommandProperties props = ServerConfigurationFactory.instance().getCommandProperties(jobInfo);
         CommandProperties commandProps = new CommandProperties(props);
         return commandProps;
     }
@@ -357,12 +341,7 @@ public class BasicCommandManager implements CommandManager {
     
     private synchronized void initPipelineExecutor() {
         log.debug("initializing pipeline executor");
-        CommandManagerProperties configProps = ServerConfigurationFactory.instance().getCommandManagerProperties();
-        String defaultPipelineExecId = configProps.getTop().getDefaultProperty("pipeline.executor");
-        if (defaultPipelineExecId == null) {
-            defaultPipelineExecId = DEFAULT_PIPELINE_EXEC_ID;
-        }
-        this.pipelineExecId = defaultPipelineExecId;
+        this.pipelineExecId = DEFAULT_PIPELINE_EXEC_ID;
         CommandExecutor pipelineExec = cmdExecutorsMap.get(pipelineExecId);
         if (pipelineExec == null) {
             //initialize to default setting

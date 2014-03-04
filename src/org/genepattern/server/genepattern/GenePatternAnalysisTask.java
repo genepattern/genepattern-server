@@ -125,6 +125,7 @@ import org.genepattern.server.JobManager;
 import org.genepattern.server.PermissionsHelper;
 import org.genepattern.server.TaskIDNotFoundException;
 import org.genepattern.server.config.GpContext;
+import org.genepattern.server.config.GpContextFactory;
 import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.config.Value;
 import org.genepattern.server.database.HibernateUtil;
@@ -137,6 +138,8 @@ import org.genepattern.server.domain.JobStatusDAO;
 import org.genepattern.server.eula.EulaManager;
 import org.genepattern.server.executor.AnalysisJobScheduler;
 import org.genepattern.server.executor.CommandExecutor;
+import org.genepattern.server.executor.CommandExecutor2;
+import org.genepattern.server.executor.CommandExecutor2Wrapper;
 import org.genepattern.server.executor.CommandExecutorNotFoundException;
 import org.genepattern.server.executor.CommandManagerFactory;
 import org.genepattern.server.executor.JobDispatchException;
@@ -147,6 +150,7 @@ import org.genepattern.server.genomespace.GenomeSpaceClient;
 import org.genepattern.server.genomespace.GenomeSpaceClientFactory;
 import org.genepattern.server.genomespace.GenomeSpaceException;
 import org.genepattern.server.genomespace.GenomeSpaceFileManager;
+import org.genepattern.server.job.input.JobInput;
 import org.genepattern.server.job.input.Param;
 import org.genepattern.server.job.input.ParamId;
 import org.genepattern.server.job.input.ParamValue;
@@ -155,6 +159,7 @@ import org.genepattern.server.job.input.cache.CachedFile;
 import org.genepattern.server.job.input.cache.FileCache;
 import org.genepattern.server.job.input.choice.Choice;
 import org.genepattern.server.job.input.choice.ChoiceInfo;
+import org.genepattern.server.job.input.dao.JobInputValueRecorder;
 import org.genepattern.server.plugin.PluginManagerLegacy;
 import org.genepattern.server.rest.ParameterInfoRecord;
 import org.genepattern.server.taskinstall.InstallInfo;
@@ -637,11 +642,13 @@ public class GenePatternAnalysisTask {
         }
 
         JobInfo jobInfo = null;
+        JobInput jobInput = null;
         int parentJobId = -1;
         try {
             AnalysisDAO dao = new AnalysisDAO();
             jobInfo = dao.getJobInfo(jobId);
             parentJobId = dao.getParentJobId(jobId);
+            jobInput = new JobInputValueRecorder().fetchJobInput(jobId);
         }
         catch (Throwable t) {
             throw new JobDispatchException("Server error: Not able to load jobInfo for jobId: "+jobId, t);
@@ -674,7 +681,7 @@ public class GenePatternAnalysisTask {
             log.debug("taskName=" + taskName);
         }
         
-        GpContext jobContext = GpContext.getContextForJob(jobInfo, taskInfo);
+        final GpContext jobContext=GpContextFactory.createContextForJob(jobInfo, taskInfo, jobInput);
         //is disk space available
         boolean allowNewJob = ServerConfigurationFactory.instance().getGPBooleanProperty(jobContext, "allow.new.job", true);
         if (!allowNewJob) {
@@ -1525,16 +1532,7 @@ public class GenePatternAnalysisTask {
             log.info("running " + taskName + " (job " + jobId + ") command: " + commandLine.toString());
         }
 
-        CommandExecutor cmdExec = null;
-        try {
-            cmdExec = CommandManagerFactory.getCommandManager().getCommandExecutor(jobInfo);
-        }
-        catch (CommandExecutorNotFoundException e) {
-            throw new JobDispatchException(e);
-        }
-
-        long jobDispatchTimeout = ServerConfigurationFactory.instance().getGPIntegerProperty(jobContext, "job.dispatch.timeout", 300000);
-        runCommand(taskInfo.isPipeline(), cmdExec, jobDispatchTimeout, cmdLineArgs, environmentVariables, outDir, stdoutFile, stderrFile, jobInfo, stdinFile);
+        runCommand(jobContext, cmdLineArgs, environmentVariables, outDir, stdoutFile, stderrFile, stdinFile);
     }
     
     private ChoiceInfo initChoiceInfo(final ParameterInfoRecord pinfoRecord, final ParameterInfo pinfo) {
@@ -1545,6 +1543,60 @@ public class GenePatternAnalysisTask {
             return choiceInfo;
         }
         return null;
+    }
+
+    private CommandExecutor2 initCmdExec2(final GpContext jobContext) throws JobDispatchException {
+        CommandExecutor cmdExec = null;
+        try {
+            cmdExec = CommandManagerFactory.getCommandManager().getCommandExecutor(jobContext.getJobInfo());
+        }
+        catch (CommandExecutorNotFoundException e) {
+            throw new JobDispatchException(e);
+        }
+        return CommandExecutor2Wrapper.createCmdExecutor(cmdExec);
+    }
+
+    private void runCommand(final GpContext jobContext, final String[] cmdLineArgs, final Map<String,String> environmentVariables, final File runDir, final File stdoutFile, final File stderrFile, final File stdinFile) 
+    throws JobDispatchException
+    {
+        final boolean isPipeline=jobContext.getTaskInfo().isPipeline();
+        final long jobDispatchTimeout = ServerConfigurationFactory.instance().getGPIntegerProperty(jobContext, "job.dispatch.timeout", 300000);
+        final CommandExecutor2 cmdExec=initCmdExec2(jobContext);
+        Future<Integer> task = executor.submit(new Callable<Integer>() {
+            public Integer call() throws Exception {
+                cmdExec.runCommand(jobContext, cmdLineArgs, environmentVariables, runDir, stdoutFile, stderrFile, stdinFile);
+                //cmdExec.runCommand(cmdLineArgs, environmentVariables, outDir, stdoutFile, stderrFile, jobInfo, stdinFile);
+                return JobStatus.JOB_PROCESSING;
+            }
+        });
+        try {
+            int job_status = task.get(jobDispatchTimeout, TimeUnit.MILLISECONDS);
+            try {
+                if (!isPipeline) {
+                    //pipeline handler sets the status for the pipeline job
+                    HibernateUtil.beginTransaction();
+                    AnalysisJobScheduler.setJobStatus(jobContext.getJobInfo().getJobNumber(), job_status);
+                    HibernateUtil.commitTransaction();
+                }
+                if (isPipeline) {
+                    CommandManagerFactory.getCommandManager().wakeupJobQueue();
+                }
+            }
+            catch (Throwable t) {
+                HibernateUtil.rollbackTransaction();
+                throw new JobDispatchException("Error changing job status for job #"+jobContext.getJobInfo().getJobNumber(), t);
+            }
+        }
+        catch (ExecutionException e) {
+            throw new JobDispatchException(e);
+        }
+        catch (TimeoutException e) {
+            task.cancel(true);
+            throw new JobDispatchException("Timeout after "+jobDispatchTimeout+" ms while dispatching job #"+jobContext.getJobInfo().getJobNumber()+" to queue.", e);
+        }
+        catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
     }
 
     private void runCommand(final boolean isPipeline, final CommandExecutor cmdExec, final long jobDispatchTimeout, final String[] commandTokens, final Map<String, String> environmentVariables, final File outDir, final File stdoutFile, final File stderrFile, final JobInfo jobInfo, final File stdinFile) 

@@ -32,6 +32,7 @@ import org.genepattern.data.pipeline.GetIncludedTasks;
 import org.genepattern.modules.ModuleJSON;
 import org.genepattern.modules.ParametersJSON;
 import org.genepattern.modules.ResponseJSON;
+import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.dm.GpFilePath;
@@ -39,13 +40,13 @@ import org.genepattern.server.dm.tasklib.TasklibPath;
 import org.genepattern.server.eula.LibdirLegacy;
 import org.genepattern.server.eula.LibdirStrategy;
 import org.genepattern.server.job.input.GroupId;
-import org.genepattern.server.job.input.JobConfigParams;
 import org.genepattern.server.job.input.JobInput;
 import org.genepattern.server.job.input.JobInputFileUtil;
 import org.genepattern.server.job.input.JobInputHelper;
 import org.genepattern.server.job.input.LoadModuleHelper;
 import org.genepattern.server.job.input.Param;
 import org.genepattern.server.job.input.ReloadJobHelper;
+import org.genepattern.server.job.input.configparam.JobConfigParams;
 import org.genepattern.server.repository.SourceInfo;
 import org.genepattern.server.repository.SourceInfoLoader;
 import org.genepattern.server.rest.GpServerException;
@@ -114,10 +115,9 @@ public class RunTaskServlet extends HttpServlet
             }
 
             //Note: we have a helper method to initialize the userId,
-            //    see org.genepattern.server.webapp.rest.api.v1.Util#getUserContext 
-            GpContext userContext = GpContext.getContextForUser(userId);
-            final boolean isAdmin = AuthorizationHelper.adminServer(userId);
-            userContext.setIsAdmin(isAdmin);
+            //    see org.genepattern.server.webapp.rest.api.v1.Util#getUserContext
+            final boolean initIsAdmin=true;
+            final GpContext userContext = GpContext.getContextForUser(userId, initIsAdmin);
             
             JobInput reloadJobInput = null;
 
@@ -298,7 +298,8 @@ public class RunTaskServlet extends HttpServlet
             JSONArray paramGroupsJson = loadModuleHelper.getParameterGroupsJson(taskInfo, filePath.getServerFile());
             final boolean enableJobConfigParams=ServerConfigurationFactory.instance().getGPBooleanProperty(userContext, JobConfigParams.PROP_ENABLE_JOB_CONFIG_PARAMS, false);
             if (enableJobConfigParams) {
-                final JobConfigParams jobConfigParams=JobConfigParams.initJobConfigParams(userContext);
+                final GpConfig gpConfig=ServerConfigurationFactory.instance();
+                final JobConfigParams jobConfigParams=JobConfigParams.initJobConfigParams(gpConfig, userContext);
                 if (jobConfigParams != null) {
                     final JSONObject jobConfigGroupJson=jobConfigParams.getInputParamGroup().toJson();
                     paramGroupsJson.put(jobConfigGroupJson);

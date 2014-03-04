@@ -40,8 +40,7 @@ public class ServerFileFilenameFilterTest {
     
     @Test
     public void testNullUserId() {
-        GpContext userContext=GpContext.getContextForUser("default_user");
-        userContext.setUserId(null);
+        GpContext userContext=GpContext.getContextForUser(null);
         Assert.assertNull("expecting null userContext.userId", userContext.getUserId());
         testDefault(userContext);
     }

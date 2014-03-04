@@ -42,9 +42,7 @@ import org.genepattern.server.executor.JobTerminationException;
 import org.genepattern.server.genepattern.GenePatternAnalysisTask;
 import org.genepattern.server.jobqueue.JobQueue;
 import org.genepattern.server.jobqueue.JobQueueUtil;
-import org.genepattern.server.util.AuthorizationManagerFactory;
 import org.genepattern.server.util.FindFileFilter;
-import org.genepattern.server.util.IAuthorizationManager;
 import org.genepattern.server.webservice.server.dao.AnalysisDAO;
 import org.genepattern.util.GPConstants;
 import org.genepattern.webservice.JobInfo;
@@ -591,11 +589,8 @@ public class PipelineHandler {
     private static List<JobInfo> runPipeline(JobInfo pipelineJobInfo, int stopAfterTask, boolean isScatterStep) 
     throws PipelineModelException, MissingTasksException, JobSubmissionException
     {
-        final GpContext userContext=GpContext.getContextForUser(pipelineJobInfo.getUserId());
-        // initialized permissions
-        final IAuthorizationManager authManager = AuthorizationManagerFactory.getAuthorizationManager();
-        final boolean isAdmin = (authManager.checkPermission("adminServer", pipelineJobInfo.getUserId()) || authManager.checkPermission("adminModules", pipelineJobInfo.getUserId()));
-        userContext.setIsAdmin(isAdmin);
+        final boolean initIsAdmin=true;
+        final GpContext userContext=GpContext.getContextForUser(pipelineJobInfo.getUserId(), initIsAdmin);
 
         final TaskInfo pipelineTaskInfo;
         try {

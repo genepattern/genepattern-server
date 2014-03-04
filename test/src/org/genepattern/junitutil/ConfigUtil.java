@@ -15,6 +15,7 @@ import org.junit.Ignore;
  */
 @Ignore
 public class ConfigUtil {
+    
     /**
      * Load a 'config.yaml' file from the directory which contains this source file.
      * 
@@ -33,16 +34,21 @@ public class ConfigUtil {
      */
     static public void loadConfigFile(final File configFile) {
         if (configFile==null) {
-            System.getProperties().remove("config.file");
-            ServerConfigurationFactory.reloadConfiguration();
             return;
         }
+        //if (configFile==null) {
+        //    System.getProperties().remove("config.file");
+        //    ServerConfigurationFactory.reloadConfiguration();
+        //    return;
+        //}
         if (!configFile.canRead()) {
             Assert.fail("jUnit initialization error, can't read configFile="+configFile.getAbsolutePath());
             return;
         }
         String configFilepath=configFile.getAbsolutePath();
         System.setProperty("config.file", configFilepath);
+        System.setProperty("resources", configFile.getParentFile().getAbsolutePath());
+        System.setProperty("genepattern.properties", configFile.getParentFile().getAbsolutePath());
         ServerConfigurationFactory.reloadConfiguration(configFilepath);
     }
     

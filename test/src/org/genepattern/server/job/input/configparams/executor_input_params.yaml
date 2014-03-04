@@ -1,0 +1,29 @@
+{
+# input param grouping
+name: "Advanced/Job Configuration",
+description: "Set job configuration parameters",
+hidden: true,
+parameters: [
+{ name: "drm.queue", 
+  altName: "queue",
+  description: "",
+  optional: true,
+  choices: ["hour", "week", "bhour", "bweek", "priority", "interactive", "preview" ],
+  defaultValue: "hour"
+},
+{ name: "drm.memory", 
+  altName: "memory", 
+  description: "max memory requirement, e.g. '8gb'",
+  defaultValue: "512m",
+  optional=true
+},
+{ name: "drm.walltime", 
+  altName: "walltime", 
+  description: "The walltime limit in <day-hh:mm:ss> format, e.g. '5-00:00:00'",
+  optional=true  
+},
+{ name: "drm.nodeCount", altName: "node count", optional=true  },
+{ name: "drm.cpuCount", altName: "cpu count", optional=true },
+{ name: "drm.extraArgs", description: "extra job runner parameters", optional=true }
+]
+}

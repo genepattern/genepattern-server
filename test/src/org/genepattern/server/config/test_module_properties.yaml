@@ -11,8 +11,14 @@ executors:
         classname: org.genepattern.server.executor.RuntimeCommandExecutor
         configuration.properties:
             test.prop: BY_EXEC_CONFIG
+
+    TestExec:
+        classname: org.genepattern.server.executor.RuntimeCommandExecutor
+        configuration.properties:
+            test.prop: BY_EXEC_CONFIG
         default.properties:
             test.prop: BY_EXEC_DEFAULT
+        
 
 module.properties:
     # 1) by taskName
@@ -52,6 +58,9 @@ user.properties:
             # by taskLsid (version)
             "urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00044:4":
                 test.prop: USERE_LSID_VALUE
+    userF:
+        executor: TestExec
+        
 # when there are identical group properties set, the last group 
 # in the group.properties takes precedence
 group.properties:

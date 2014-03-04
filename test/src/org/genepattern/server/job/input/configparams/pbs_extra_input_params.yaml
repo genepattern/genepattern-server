@@ -1,0 +1,26 @@
+{
+# input param grouping
+name: "Advanced/Pbs Resources",
+description: "Optional PBS command line parameters",
+hidden: true,
+parameters: [
+{ name: "drm.queue", 
+  altName: "queue",
+  description: "",
+  optional: true,
+  choices: ["hour", "week", "bhour", "bweek", "priority", "interactive", "preview" ],
+  defaultValue: "hour"
+},
+{ name: "pbs.mem", 
+  defaultValue: "512m"
+},
+{ name: "drm.walltime", 
+  altName: "walltime", 
+  description: "The max wall clock time limit for the job in <days-hh:mm:ss> format, e.g. '5-00:00:00'",
+  optional=true  
+},
+{ name: "pbs.host" },
+{ name: "pbs.cput" },
+{ name: "pbs.vmem" }
+]
+}

@@ -105,8 +105,8 @@ public class ConfigFileParser {
     
     public static ConfigFromYaml parseYamlFile(final File configYaml) throws ConfigurationException {
         JobConfigObj jobConfigObj=parse(configYaml);
-        CommandManagerProperties cmdMgrProps=initCmdMgrProps(jobConfigObj);
-        return new ConfigFromYaml(jobConfigObj, cmdMgrProps);
+        ConfigYamlProperties configYamlProps=initConfigYamlProperties(jobConfigObj);
+        return new ConfigFromYaml(jobConfigObj, configYamlProps);
     }
     
     /**
@@ -219,13 +219,38 @@ public class ConfigFileParser {
         setCommandManagerProperties(jobConfigObj);
     }
 
-    private static CommandManagerProperties initCmdMgrProps(final JobConfigObj jobConfigObj) throws ConfigurationException {
-        CommandManagerProperties config=new CommandManagerProperties();
-        for(final String execId : jobConfigObj.getExecutors().keySet()) {
-            final ExecutorConfig execObj = jobConfigObj.getExecutors().get(execId);
+//    private static CommandManagerProperties initCmdMgrProps(final JobConfigObj jobConfigObj) throws ConfigurationException {
+//        CommandManagerProperties config=new CommandManagerProperties();
+//        for(final String execId : jobConfigObj.getExecutors().keySet()) {
+//            final ExecutorConfig execObj = jobConfigObj.getExecutors().get(execId);
+//            //load executor->default.properties
+//            if (execObj.defaultProperties != null) { 
+//                PropObj propObj = config.getPropsForExecutor(execId);
+//                for (String key : (Set<String>) (Set) execObj.defaultProperties.keySet()) {
+//                    Value value = execObj.defaultProperties.get(key);
+//                    propObj.addDefaultProperty(key, value);
+//                }
+//            }
+//        }
+//        //store top level default.properties
+//        config.getTop().setDefaultProperties(jobConfigObj.getDefaultProperties());
+//        //store top level module.properties
+//        config.getTop().setModuleProperties(jobConfigObj.getModuleProperties());
+//        //store custom group.properties
+//        initializeCustomProperties(config, jobConfigObj.getGroupPropertiesObj(), true);
+//        //store custom user.properties
+//        initializeCustomProperties(config, jobConfigObj.getUserPropertiesObj(), false);
+//        return config;
+//    }
+    
+    private static ConfigYamlProperties initConfigYamlProperties(final JobConfigObj jobConfigObj) throws ConfigurationException {
+        final ConfigYamlProperties config=new ConfigYamlProperties(jobConfigObj);
+        for(final Entry<String,ExecutorConfig> entry : jobConfigObj.getExecutors().entrySet()) {
+            final String execId=entry.getKey();
+            final ExecutorConfig execObj=entry.getValue();
             //load executor->default.properties
             if (execObj.defaultProperties != null) { 
-                PropObj propObj = config.getPropsForExecutor(execId);
+                final PropObj propObj = config.getPropsForExecutor(execId);
                 for (String key : (Set<String>) (Set) execObj.defaultProperties.keySet()) {
                     Value value = execObj.defaultProperties.get(key);
                     propObj.addDefaultProperty(key, value);
@@ -293,6 +318,34 @@ public class ConfigFileParser {
         }
     }
     
+    private static void initializeCustomProperties(final ConfigYamlProperties config, final Object userOrGroupPropertiesObj, boolean forGroup) throws ConfigurationException {
+        //for logging and debugging
+        final String parentKey = forGroup ? "group.properties" : "user.properties";
+        if (userOrGroupPropertiesObj == null) {
+            log.debug("No '"+parentKey+"' in configuration");
+            return;
+        }
+
+        if (!(userOrGroupPropertiesObj instanceof Map)) {
+            String errorMessage = "Error in '"+parentKey+"' section of configuration file, expected a map, but found a "+
+                    userOrGroupPropertiesObj.getClass().getCanonicalName();
+            log.error(errorMessage);
+            return;
+        }
+        Map<?,?> groupPropertiesMap = (Map<?,?>) userOrGroupPropertiesObj;
+        for(Entry<?,?> entry : groupPropertiesMap.entrySet()) {
+            final String userOrGroupId = "" + entry.getKey();
+            PropObj propObj = null;
+            if (forGroup) {
+                propObj = config.getPropsForGroup(userOrGroupId);
+            }
+            else {
+                propObj = config.getPropsForUser(userOrGroupId);
+            }
+            initializePropertiesInto(propObj, userOrGroupId, entry.getValue());
+        }
+    }
+
     private static void initializePropertiesInto(PropObj propObj, String groupOrUserId, Object propertiesObj) throws ConfigurationException {
         Map<?,?> map = (Map<?,?>) propertiesObj;
         for(Entry<?,?> entry : map.entrySet() ) {

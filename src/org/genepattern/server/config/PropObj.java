@@ -116,6 +116,18 @@ public class PropObj {
         return getModuleProperties(jobInfo.getTaskName(), jobInfo.getTaskLSID());
     }
 
+    private Lsid initLsidFromTask(final String taskLsid) {
+        if (taskLsid==null || taskLsid.length()==0) {
+             return null;
+        }
+        try {
+            return new Lsid(taskLsid);
+        }
+        catch (Throwable t) {
+            log.debug("Error initializing lsid from "+taskLsid, t);
+        }
+        return null;
+    }
     public CommandProperties getModuleProperties(final TaskInfo taskInfo) {
         if (taskInfo==null) {
             log.error("taskInfo==null");
@@ -133,10 +145,9 @@ public class PropObj {
                 props.putAll(taskNameProps);
             }
         }
-        //2. override by lsid, no version
-        Lsid lsid = null;
-        if (taskLsid != null) {
-            lsid = new Lsid(taskLsid);
+        final Lsid lsid=initLsidFromTask(taskLsid);
+        if (lsid != null) {
+            //2. override by lsid, no version
             CommandProperties lsidNoVersionProps = this.modulePropertiesMap.get(lsid.getLsidNoVersion());
             if (lsidNoVersionProps != null) {
                 props.putAll(lsidNoVersionProps);

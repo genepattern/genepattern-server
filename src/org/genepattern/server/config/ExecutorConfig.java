@@ -15,7 +15,7 @@ public class ExecutorConfig {
     CommandProperties configurationProperties = new CommandProperties();
     CommandProperties defaultProperties = new CommandProperties();
     
-    ExecutorConfig(Object yamlObj) throws Exception {
+    public ExecutorConfig(Object yamlObj) throws Exception {
         if (yamlObj instanceof String) {
             // <id>:<classname>
             this.classname = (String) yamlObj;

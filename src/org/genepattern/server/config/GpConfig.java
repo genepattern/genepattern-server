@@ -6,143 +6,182 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 
 import org.apache.log4j.Logger;
-import org.genepattern.server.repository.ConfigRepositoryInfoLoader;
+import org.genepattern.server.executor.CommandProperties;
 import org.genepattern.server.repository.RepositoryInfo;
+import org.genepattern.webservice.JobInfo;
 
-/**
- * Server configuration.
- * 
- * @author pcarr
- */
-class ServerConfigurationV1 implements ServerConfiguration {
-    private static Logger log = Logger.getLogger(ServerConfigurationV1.class);
-    ServerConfigurationV1() {
+import com.google.common.collect.ImmutableList;
+
+public class GpConfig {
+    private static Logger log = Logger.getLogger(GpConfig.class);
+
+    private final URL genePatternURL;
+    private final String genePatternVersion;
+    private final File resourcesDir;
+    private final List<Throwable> initErrors;
+    private final GpRepositoryProperties repoConfig;
+    private final GpServerProperties serverProperties;
+    private final ConfigYamlProperties yamlProperties;
+    private final File configFile;
+
+    /**
+     * Initialize the GenePatternURL from System.property
+     * @return
+     */
+    private static URL initGpUrl(GpServerProperties serverProperties) {
+        log.debug("Initializing GenePatternURL from server properties ...");
+        URL gpUrl=null;
+        String urlStr = null;
+        if (serverProperties != null) {
+            urlStr=serverProperties.getProperty("GenePatternURL");
+        }
+        if (urlStr==null) {
+            urlStr="http://127.0.0.1:8080/gp/";
+        }
         try {
-            reloadConfiguration();
+            gpUrl=new URL(urlStr);
         }
         catch (Throwable t) {
-            errors.add(t);
-            log.error("Error creating ServerConfiguration instance: "+t.getLocalizedMessage());
-        }
-    }
-
-    private URL genePatternUrl = null;
-    private String configFilepath = null;
-    private File configFile = null;
-
-    //cache any errors thrown while loading/reloading the configuration file
-    private List<Throwable> errors = new ArrayList<Throwable>();
-    
-    synchronized void reloadConfiguration() {
-        ServerProperties.instance().reloadProperties();
-        this.configFilepath = ServerProperties.instance().getProperty(PROP_CONFIG_FILE);
-        if (configFilepath == null) {
-            this.configFilepath = ServerProperties.instance().getProperty(PROP_LEGACY_CONFIG_FILE);
-            log.info(""+PROP_CONFIG_FILE+" not set, checking "+PROP_LEGACY_CONFIG_FILE);
-        }
-        if (configFilepath == null) {
-            configFilepath = "config_default.yaml";
-            log.info(""+PROP_CONFIG_FILE+" not set, using default config file: "+configFilepath);
-        }
-        reloadConfiguration(false, configFilepath);
-    }
-    
-    synchronized void reloadConfiguration(final String configFilepath) {
-        reloadConfiguration(true, configFilepath);
-    }
-    
-    private synchronized void reloadConfiguration(final boolean reloadProperties, String configFilepath) {
-        try {
-            if (reloadProperties) {
-                ServerProperties.instance().reloadProperties();
-            }
-            log.info("loading configuration from '"+configFilepath+"' ...");
-            this.configFilepath = configFilepath;
-            errors.clear();
-            final File configFile=ConfigFileParser.initConfigurationFile(configFilepath);
-            final ConfigFileParser parser = new ConfigFileParser(configFile);
-            parser.parse();
-            this.configFile = parser.getConfigFile();
-            this.cmdMgrProps = parser.getConfig();
-            this.jobConfig = parser.getJobConfig();
-        }
-        catch (Throwable t) {
-            errors.add(t);
-            log.error(t);
-        }
-
-        // parse the repo.yaml and optional repo_custom.yaml file
-        boolean parsedRepoInfo=false;
-        try {
-            final File defaultRepositoryFile=new File(System.getProperty("resources"), "repo.yaml");
-            this.repositoryDetails=ConfigRepositoryInfoLoader.parseRepositoryDetailsYaml(defaultRepositoryFile);
-            parsedRepoInfo=true;
-        }
-        catch (Throwable t) {
-            log.error("Error in repo.yaml", t);
-            errors.add(new Exception("Error in repo.yaml: "+t.getLocalizedMessage(), t));
-        }
-        if (parsedRepoInfo) {            
+            log.error("Error initializing GenePatternURL="+urlStr);
             try {
-                final File customRepositoryFile=new File(System.getProperty("resources"), "repo_custom.yaml");
-                final Map<String,RepositoryInfo> custom=ConfigRepositoryInfoLoader.parseRepositoryDetailsYaml(customRepositoryFile);
-                for(Entry<String,RepositoryInfo> entry : custom.entrySet()) {
-                    this.repositoryDetails.put(entry.getKey(), entry.getValue());
-                }
+                gpUrl=new URL("http://127.0.0.1:8080/gp/");
             }
-            catch (Throwable t) {
-                log.error("Error in repo_custom.yaml", t);
-                errors.add(new Exception("Error in repo_custom.yaml: "+t.getLocalizedMessage(), t));
+            catch(Throwable t1) {
+                throw new IllegalArgumentException("shouldn't ever be here", t1);
             }
-            ConfigRepositoryInfoLoader.clearCache();
         }
+        if (log.isDebugEnabled()) {
+            log.debug("GenePatternURL="+gpUrl);
+        }
+        return gpUrl;
     }
-    
-    public String getConfigFilepath() {
-        return configFilepath;
+
+    private static GpRepositoryProperties initRepoConfig(final File resourcesDir) {
+        return new GpRepositoryProperties.Builder()
+            .resourcesDir(resourcesDir)
+            .build();
+    }
+
+    public GpConfig(final Builder in) {
+        this.resourcesDir=in.resourcesDir;
+        this.serverProperties=in.serverProperties;
+        if (in.genePatternVersion != null) {
+            this.genePatternVersion=in.genePatternVersion;
+        }
+        else if (this.serverProperties != null) {
+            this.genePatternVersion=this.serverProperties.getProperty("GenePatternVersion");
+        }
+        else {
+            log.error("GenePatternVersion not set");
+            this.genePatternVersion="";
+        }
+        if (in.genePatternURL!=null) {
+            this.genePatternURL=in.genePatternURL;
+        }
+        else {
+            this.genePatternURL=initGpUrl(this.serverProperties);
+        }
+        if (in.configFromYaml != null && in.configFromYaml.getConfigYamlProperties() != null) {
+            this.yamlProperties=in.configFromYaml.getConfigYamlProperties();
+        }
+        else {
+            this.yamlProperties=null;
+        }
+        this.valueLookup=new ValueLookupFromConfigYaml(this.serverProperties, this.yamlProperties);
+
+        if (in.initErrors==null) {
+            this.initErrors=Collections.emptyList();
+        }
+        else {
+            this.initErrors=ImmutableList.copyOf(in.initErrors);
+        }
+        this.configFile=in.configFile;
+        this.repoConfig=initRepoConfig(this.resourcesDir);
+    }
+
+    /**
+     * Get the public facing URL for this GenePattern Server.
+     * Note: replaces <pre>System.getProperty("GenePatternURL");</pre>
+     * @return
+     */
+    public URL getGenePatternURL() {
+        return genePatternURL;
+    }
+
+    public String getGenePatternVersion() {
+        return genePatternVersion;
     }
     
     public File getConfigFile() {
         return configFile;
     }
-
-    /**
-     * Get the list of errors, if any, which resulted from parsing the configuration file.
-     * 
-     * @return
-     */
-    public List<Throwable> getInitializationErrors() {
-        return errors;
-    }
-
-    //legacy (circa GP 3.2.3 ;) code ... in transition from old job configuration file to server configuration file 
-    private CommandManagerProperties cmdMgrProps = new CommandManagerProperties();
-    public CommandManagerProperties getCommandManagerProperties() {
-        return cmdMgrProps;
-    }
-    private JobConfigObj jobConfig = new  JobConfigObj(null);
-    public JobConfigObj getJobConfiguration() {
-        return jobConfig;
-    }
-    private Map<String,RepositoryInfo> repositoryDetails=Collections.emptyMap();
-    public Set<String> getRepositoryUrls() {
-        if (repositoryDetails==null || repositoryDetails.size()==0) {
-            return Collections.emptySet();
+    
+    public String getConfigFilepath() {
+        if (configFile != null) {
+            return configFile.getAbsolutePath();
         }
-        return repositoryDetails.keySet();
+        return null;
     }
-    public RepositoryInfo getRepositoryInfo(final String url) {
-        if (repositoryDetails==null) {
+
+    public boolean hasInitErrors() {
+        return initErrors != null && initErrors.size()>0;
+    }
+    
+    public List<Throwable> getInitializationErrors() {
+        return initErrors;
+    }
+    public File getResourcesDir() {
+        return resourcesDir;
+    }
+
+    // config helper method
+    private final ValueLookup valueLookup;
+    
+    public Value getValue(final GpContext context, final String key) {
+        if (valueLookup==null) {
             return null;
         }
-        return repositoryDetails.get(url);
+        return valueLookup.getValue(context, key);
     }
 
+    public Value getValue(final GpContext context, final String key, final Value defaultValue) {
+        Value value=getValue(context, key);
+        if (value==null) {
+            return defaultValue;
+        }
+        return value;
+    }
+    
+    /**
+     * @deprecated, use getValue instead, which supports lists.
+     * @param context
+     * @param key
+     * @return
+     */
+    public String getGPProperty(final GpContext context, final String key) {
+        final Value value = getValue(context, key);
+        if (value == null) {
+            return null;
+        }
+        if (value.getNumValues() > 1) {
+            log.error("returning first item of a "+value.getNumValues()+" item list");
+        }
+        return value.getValue();
+    }
+    
+    public String getGPProperty(final GpContext context, final String key, final String defaultValue) {
+        final Value value = getValue(context, key);
+        if (value == null) {
+            return defaultValue;
+        }
+        if (value.getNumValues() > 1) {
+            log.error("returning first item of a "+value.getNumValues()+" item list");
+        }
+        return value.getValue();
+    }
 
     /**
      * Utility method for parsing properties as a boolean.
@@ -156,13 +195,28 @@ class ServerConfigurationV1 implements ServerConfiguration {
         String prop = getGPProperty(context, key);
         return Boolean.parseBoolean(prop);
     }
-    
+
     public boolean getGPBooleanProperty(final GpContext context, final String key, final boolean defaultValue) {
         String prop = getGPProperty(context, key);
         if (prop == null) {
             return defaultValue;
         }
         return Boolean.parseBoolean(prop);
+    }
+    
+    /**
+     * Utility method for parsing a property as an Integer. If there is no property set
+     * return null.
+     * 
+     * When a non integer value is set in the config file, return null.
+     * Errors are logged, but exceptions are not thrown.
+     * 
+     * @param context
+     * @param key
+     * @return
+     */
+    public Integer getGPIntegerProperty(final GpContext context, final String key) {
+        return getGPIntegerProperty(context, key, null);
     }
     
     /**
@@ -189,7 +243,7 @@ class ServerConfigurationV1 implements ServerConfiguration {
             return defaultValue;
         }
     }
-    
+
     public Long getGPLongProperty(final GpContext context, final String key, final Long defaultValue) {
         String val = getGPProperty(context, key);
         if (val == null) {
@@ -201,75 +255,6 @@ class ServerConfigurationV1 implements ServerConfiguration {
         catch (NumberFormatException e) {
             log.error("Error parsing long value for property, "+key+"="+val);
             return defaultValue;
-        }
-    }
-
-    /**
-     * @deprecated, use getValue instead, which supports lists.
-     * @param context
-     * @param key
-     * @return
-     */
-    public String getGPProperty(final GpContext context, final String key) {
-        if (cmdMgrProps == null) {
-            log.error("Invalid server configuration in getGPProperty("+key+")");
-            return null;
-        }
-        return cmdMgrProps.getProperty(context, key);
-    }
-    
-    public String getGPProperty(final GpContext context, final String key, final String defaultValue) {
-        if (cmdMgrProps == null) {
-            log.error("Invalid server configuration in getGPProperty("+key+")");
-            return defaultValue;
-        }
-        String value = cmdMgrProps.getProperty(context, key);
-        if (value == null) {
-            return defaultValue;
-        }
-        return value;
-    }
-    
-    public Value getValue(final GpContext context, final String key) {
-        if (cmdMgrProps == null) {
-            log.error("Invalid server configuration in getGPProperty("+key+")");
-            return null;
-        }
-        return cmdMgrProps.getValue(context, key);
-    }
-
-    @Override
-    public String getGenePatternVersion() {
-        return ServerProperties.instance().getProperty("GenePatternVersion");
-    }
-    
-    /**
-     * Get the public facing URL for this GenePattern Server.
-     * Note: replaces <pre>System.getProperty("GenePatternURL");</pre>
-     * @return
-     */
-    public URL getGenePatternURL() {
-        if (genePatternUrl == null) {
-            initGpUrl();
-        }
-        return genePatternUrl;
-    }
-
-    private void initGpUrl() {
-        String urlStr = "";
-        try {
-            urlStr = System.getProperty("GenePatternURL");
-            this.genePatternUrl = new URL(urlStr);
-        }
-        catch (Throwable t) {
-            log.error("Error initializing GenePatternURL="+urlStr);
-            
-            try {
-                this.genePatternUrl = new URL("http://127.0.0.1:8080/gp/");
-            }
-            catch(Throwable t1) {
-                throw new IllegalArgumentException("shouldn't ever be here", t1);
-            }
         }
     }
     
@@ -362,36 +347,6 @@ class ServerConfigurationV1 implements ServerConfiguration {
         return rootJobDir;
     }
 
-//    /**
-//     * Note: untested prototype code, for use in next rev of GP.
-//     * 
-//     * Get the working directory for a given job, create the job directory if necessary.
-//     * @param context, requires a jobInfo with a valid and unique jobId.
-//     * @return
-//     */
-//    private File getJobDir(Context context) throws ServerConfigurationException {
-//        if (context == null) {
-//            throw new Exception("context is null");
-//        }
-//        if (context.getJobInfo() == null) {
-//            throw new Exception("context.jobInfo is null");
-//        }
-//        if (context.getJobInfo().getJobNumber() < 0) {
-//            throw new Exception("invalid jobNumber, jobNumber="+context.getJobInfo().getJobNumber());
-//        }
-//
-//        File parent = getRootJobDir(context);
-//        File workingDir = new File(parent, ""+context.getJobInfo().getJobNumber());
-//        if (workingDir.exists()) {
-//            return workingDir;
-//        }
-//        boolean success = workingDir.mkdirs();
-//        if (success) {
-//            return workingDir;
-//        }
-//        throw new Exception("Error getting working directory for job="+context.getJobInfo().getJobNumber());
-//    }
-
     /**
      * Get the upload directory for the given user, the location for files uploaded directly from the Uploads tab.
      * By default, user uploads are stored in ../users/<user.id>/uploads/
@@ -443,16 +398,16 @@ class ServerConfigurationV1 implements ServerConfiguration {
         log.error("Unable to create user.uploads directory for '"+context.getUserId()+"', userUploadDir="+userUploadDir.getAbsolutePath());
         return getTempDir();
     } 
-    
+
     public File getTempDir() {
         String str = System.getProperty("java.io.tmpdir");
         return new File(str);
     }
-    
+
     public boolean getAllowInputFilePaths(final GpContext context) {
         return getGPBooleanProperty(context, "allow.input.file.paths", false);
     }
-    
+
     public File getTemporaryUploadDir(final GpContext context) throws IOException, Exception {
         String username = context.getUserId();
         if (username == null || username.length() == 0) {
@@ -468,4 +423,113 @@ class ServerConfigurationV1 implements ServerConfiguration {
         return tempDir;
     }
 
+    public Set<String> getRepositoryUrls() {
+        if (repoConfig==null) {
+            return Collections.emptySet();
+        }
+        return repoConfig.getRepositoryUrls();
+    }
+    public RepositoryInfo getRepositoryInfo(final String url) {
+        if (repoConfig==null) {
+            return null;
+        }
+        return repoConfig.getRepositoryInfo(url);
+    }
+
+    /**
+     * @deprecated
+     * @return
+     */
+    public JobConfigObj getJobConfiguration() {
+        if (yamlProperties==null) {
+            return null;
+        }
+        return yamlProperties.getJobConfiguration();
+    }
+    
+    public String getExecutorId(final GpContext gpContext) {
+        return getGPProperty(gpContext, "executor");
+    }
+
+    /**
+     * @deprecated, should just call getValue(GpContext jobContext, "executor")
+     * @param jobInfo
+     * @return
+     */
+    public String getCommandExecutorId(final JobInfo jobInfo) {
+        if (yamlProperties == null) {
+            return null;
+        }
+        return yamlProperties.getCommandExecutorId(jobInfo);
+    }
+
+    /**
+     * @deprecated, should make direct calls to getValue with a jobContext instead.
+     * @param jobInfo
+     * @return
+     */
+    public CommandProperties getCommandProperties(JobInfo jobInfo) {
+        if (yamlProperties == null) {
+            return null;
+        }
+        return yamlProperties.getCommandProperties(jobInfo);
+    }
+    
+    public static final class Builder {
+        private URL genePatternURL=null;
+        private String genePatternVersion=null;
+        private File resourcesDir=null;
+        private File configFile=null;
+        private GpServerProperties serverProperties=null;
+        private ConfigFromYaml configFromYaml=null;
+        private List<Throwable> initErrors=null;
+
+        public Builder genePatternURL(final URL gpUrl) {
+            this.genePatternURL=gpUrl;
+            return this;
+        }
+        public Builder addError(final Throwable t) {
+            if (initErrors==null) {
+                initErrors=new ArrayList<Throwable>();
+            }
+            initErrors.add(t);
+            return this;
+        }
+        
+        public Builder serverProperties(final GpServerProperties serverProperties) {
+            this.serverProperties=serverProperties;
+            return this;
+        }
+
+        public Builder resourcesDir(final File resourcesDir) {
+            this.resourcesDir=resourcesDir;
+            return this;
+        }
+
+        public Builder configFile(final File configFile) {
+            this.configFile=configFile;
+            return this;
+        }
+
+        public GpConfig build() { 
+            //parse the config file here
+            if (configFile != null) {
+                try {
+                    configFromYaml=ConfigFileParser.parseYamlFile(configFile);
+                }
+                catch (ConfigurationException e) {
+                    addError(e);
+                }
+            }
+
+            //if not already set, set the resourcesDir
+            if (resourcesDir == null) {
+                if (configFile != null) {
+                    resourcesDir=configFile.getParentFile();
+                }
+            }
+
+            return new GpConfig(this);
+        }
+    }
 }

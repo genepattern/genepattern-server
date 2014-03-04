@@ -1,13 +1,16 @@
 package org.genepattern.junitutil;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
 import org.apache.commons.io.IOUtils;
-import org.genepattern.util.GPConstants;
 import org.genepattern.webservice.TaskInfo;
 import org.junit.Assert;
 import org.junit.Ignore;

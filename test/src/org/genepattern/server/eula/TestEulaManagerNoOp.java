@@ -41,7 +41,7 @@ public class TestEulaManagerNoOp {
     
     @Test
     public void testGetNoOpEulaManager() {
-        GpContext context=new GpContext();
+        GpContext context=GpContext.getServerContext();
         IEulaManager eulaMgr=EulaManager.instance(context);
         
         if (eulaMgr instanceof EulaManagerNoOp) {

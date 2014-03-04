@@ -6,6 +6,7 @@ import java.io.InputStream;
 import org.genepattern.junitutil.TaskLoader;
 import org.genepattern.junitutil.TaskUtil;
 import org.genepattern.server.config.GpContext;
+import org.genepattern.server.config.GpContextFactory;
 import org.genepattern.webservice.TaskInfo;
 import org.json.JSONArray;
 import org.junit.Assert;
@@ -27,8 +28,10 @@ public class TestParameterGrouping
     @BeforeClass
     static public void beforeClass()
     {
-        userContext = GpContext.getContextForUser(adminUserId);
-        userContext.setIsAdmin(true);
+        userContext=new GpContextFactory.Builder()
+            .userId(adminUserId)
+            .isAdmin(true)
+            .build();
 
         taskLoader=new TaskLoader();
         taskLoader.addTask(TestParameterGrouping.class, moduleZipFile);

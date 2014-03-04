@@ -6,5 +6,4 @@ executors:
     # simple declaration, of the form <id>:<classname>
     RuntimeExec: org.genepattern.server.executor.RuntimeCommandExecutor
     # explicitly declare pipeline executor
-    #PipelineExec: org.genepattern.server.executor.pipeline.CustomPipelineExecutor
-    PipelineExec: org.genepattern.server.executor.pipeline.PipelineExecutor2
+    PipelineExec: org.genepattern.server.executor.CustomPipelineExecutor

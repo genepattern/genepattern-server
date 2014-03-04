@@ -47,7 +47,7 @@ public class TestServerConfigurationModuleProps {
     static protected void initializeYamlConfigFile(String filename) {
         File resourceDir = FileUtil.getSourceDir(TestServerConfigurationModuleProps.class);
         System.setProperty("genepattern.properties", resourceDir.getAbsolutePath());
-        System.setProperty(ServerConfiguration.PROP_CONFIG_FILE, filename);
+        System.setProperty(ServerConfigurationFactory.PROP_CONFIG_FILE, filename);
         ServerConfigurationFactory.reloadConfiguration(filename);
         CommandManagerFactory.initializeCommandManager();
         
@@ -113,7 +113,7 @@ public class TestServerConfigurationModuleProps {
      */
     @Test
     public void testDefaultContext() {
-        GpContext context = new GpContext();
+        GpContext context = GpContext.getServerContext();
         doTest(context, "DEFAULT_VALUE");
     }
 
@@ -150,7 +150,7 @@ public class TestServerConfigurationModuleProps {
      */
     @Test
     public void testGroupWithCustomValue() {
-        GpContext context = GpContext.getContextForUser("userC");
+        GpContext context = GpContext.getContextForUser("Broadie C");
         doTest(context, "BROADGROUP_VALUE");
     }
 
@@ -276,7 +276,7 @@ public class TestServerConfigurationModuleProps {
      */
     @Test
     public void testModulePropInGroup() {
-        GpContext context = GpContext.getContextForUser("userB");
+        GpContext context = GpContext.getContextForUser("Broadie C");
         context.setTaskInfo(taskInfo);
         doTest(context, "BROADGROUP_LSID_VALUE");
         
@@ -334,6 +334,7 @@ public class TestServerConfigurationModuleProps {
      * what about when the '*' group is set and the user is in a group with no custom value.
      * for a particular group?
      */
+    @Test
     public void testAllGroups_userInGroup() {        
         // a user in a group, which doesn't set the value
         GpContext context=GpContext.getContextForUser("userC");
@@ -344,6 +345,7 @@ public class TestServerConfigurationModuleProps {
      * what about when the '*' group is set and the value is customized
      * for a particular group?
      */
+    @Test
     public void testAllGroups_override() {        
         // a user in a group, which sets the value
         GpContext context=GpContext.getContextForUser("adminuser");
@@ -355,6 +357,7 @@ public class TestServerConfigurationModuleProps {
      * what about when the '*' group is set and the value is customized
      * for a particular group and a particular module?
      */
+    @Test
     public void testAllGroups_overrideInModuleProps() {        
         // a user in a group, which overrides the value in the module.properties section
         GpContext context=GpContext.getContextForUser("adminuser");
@@ -362,5 +365,17 @@ public class TestServerConfigurationModuleProps {
         taskInfo.getTaskInfoAttributes().put(GPConstants.LSID, "urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00001:1");
         context.setTaskInfo(taskInfo);
         doTest(context, "all.groups.prop", "ADMINGROUP_MODULE_VALUE"); 
+    }
+    
+    /**
+     * The executor.default.properties takes precedence over the top level default properties,
+     * for the current user's executor.
+     */
+    @Test
+    public void testOverrideInExecutorDefaults() {
+        // userF has the 'TestExec' executor
+        final String userId="userF";
+        final GpContext gpContext=GpContext.getContextForUser(userId);
+        doTest(gpContext, "test.prop", "BY_EXEC_DEFAULT");
     }
 }

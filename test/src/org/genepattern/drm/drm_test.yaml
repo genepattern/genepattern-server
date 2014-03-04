@@ -12,35 +12,8 @@ default.properties:
     #
     # to include job configuration options in the job input form ...
     #
-    enableJobConfigParams: true
-#    jobConfigParams: {
-#        "drm.queue": { 
-#            altName: "queue",
-#            description: "",
-#            optional: true,
-#            choices: ["hour", "week", "bhour", "bweek", "priority", "interactive", "preview" ],
-#            defaultValue: "hour"
-#        },
-#        "drm.memory": null,
-#        "drm.walltime": null,
-#        "drm.nodeCount": null,
-#        "drm.cpuCount": {},
-#        "drm.extraArgs": {}
-#    }
-#    jobConfigParams: [
-#        { name: "drm.queue", 
-#          altName: "queue",
-#          description: "",
-#          optional: true,
-#          choices: ["hour", "week", "bhour", "bweek", "priority", "interactive", "preview" ],
-#          defaultValue: "hour"
-#        },
-#        { name: "drm.memory" },
-#        { name: "drm.walltime" },
-#        { name: "drm.nodeCount" },
-#        { name: "drm.cpuCount" },
-#        { name: "drm.extraArgs" }
-#    ]
+    enableJobConfigParams: false
+    #jobConfigParams: ../server/job/input/configparams/job_config_params.yaml
     
     #
     # job memory settings
@@ -70,6 +43,11 @@ default.properties:
 # 
 executor.properties: {
     #
+    BroadGroupDefaults: {
+        "executor": "BroadGroupJobRunner",
+        "drm.memory": "8gb",
+        "drm.queue": "week"
+    },
 
     # Note in the memory settings,
     # When the 'drm.memory' flag is set, it also defines the java max heap space
@@ -79,7 +57,7 @@ executor.properties: {
     #
     BigMem: {
         "drm.memory": "32gb",
-        "java.Xmx": "gb"
+        "java.Xmx": "gb",
     },
     # example of explicitly setting the java.Xmx flag to a different value than the 'drm.memory'
     JavaMem: {
@@ -99,8 +77,9 @@ executor.properties: {
         "executor": "DemoPbsJobRunner",
         "drm.queue": "pbsBigMemQueue",
         "drm.memory": "128gb",
+        "executor.inputParams": "../server/job/input/configparams/executor_input_params.yaml"
     },
-    # himem drm.workerName
+    # himem executor.props
     myHiMemPbsWorker: {
         drm.queue: "exampleQueue",
         drm.walltime: "02:00:00",
@@ -140,14 +119,29 @@ executors:
             pbs.ppn: "8"
             pbs.cput: ""
             pbs.vmem: "64gb"
+    AdminGroupJobRunner:
+        classname: org.genepattern.server.executor.drm.JobExecutor
+        configuration.properties:
+             jobRunnerClassname: org.genepattern.drm.impl.iu.pbs.DemoPbsJobRunner
+             jobRunnerName: AdminGroupJobRunner
+    UserAJobRunner:
+        classname: org.genepattern.server.executor.drm.JobExecutor
+        configuration.properties:
+             jobRunnerClassname: org.genepattern.drm.impl.iu.pbs.DemoPbsJobRunner
+             jobRunnerName: UserAJobRunner
+    BroadGroupJobRunner:
+        classname: org.genepattern.server.executor.drm.JobExecutor
+        configuration.properties:
+             jobRunnerClassname: org.genepattern.drm.impl.iu.pbs.DemoPbsJobRunner
+             jobRunnerName: BroadGroupJobRunner
 
 module.properties:
     # use the 'myHiMemPbsWorker' for all modules with this name
     ConvertLineEndings:
-        drm.workerName: "myHiMemPbsWorker"
+        executor.props: "myHiMemPbsWorker"
     # use the 'myLongPbsWorker' for all modules with this name
     TopHat:
-        drm.workerName: "myLongPbsWorker"
+        executor.props: "myLongPbsWorker"
     # customize by property name
     Example3:
         drm.walltime: "72:00:00"
@@ -161,25 +155,29 @@ module.properties:
 
 # custom config by group
 group.properties:
-    administrators:
-        # all users in the administrators group will use the same 'drm.workerName'
-        drm.workerName: "myHiMemPbsWorker"
+    admingroup:
+        # all users in the administrators group will use the same 'executor.props'
+        executor: "AdminGroupJobRunner"
 
         # customize module settings for all users in this group
         module.properties:
             TopHat:
-                drm.workerName: "admin_group_tophat_settings"
+                executor.props: "admin_group_tophat_settings"
+                
+    broadgroup:
+        executor.props: "BroadGroupDefaults"
 
 # custom config by user
 user.properties:
-    admin:
-        drm.workerName: "myHiMemPbsWorker"
     test_user:
         executor.props: "PbsBigMem"
-#        drm.customProps: "PbsBigMem"
-#        drm.workerName: "myLongPbsWorker"
+    
+    userA:
+        executor: "UserAJobRunner"
+    userB:
+        executor.props: "PbsBigMem"
 
         module.properties:
             TopHat:
-                drm.workerName: "pcarr_tophat_settings"
+                executor.props: "pcarr_tophat_settings"
                 

@@ -4,14 +4,14 @@
 
 <group name="admingroup">
     <user name="adminuser" />
-    <user name="userA" />
-    <user name="userB" />
+    <user name="adminA" />
+    <user name="adminB" />
 </group>
 
 <group name="broadgroup">
-    <user name="userA" />
-    <user name="userB" />
-    <user name="userC" />
+    <user name="Broadie C" />
+    <user name="Broadie D" />
+    <user name="Broadie E" />
 </group>
 
 </userGroups>

@@ -231,6 +231,10 @@ public class DrmJobSubmission {
         return value.getValue();
     }
     
+    public Value getValue(final String key) {
+        return ServerConfigurationFactory.instance().getValue(jobContext, key);
+    }
+    
     public String getWorkerName() {
         return workerName;
     }

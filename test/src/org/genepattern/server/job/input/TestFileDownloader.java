@@ -312,7 +312,7 @@ public class TestFileDownloader {
         final CachedFtpDir cachedFtpDir = new CachedFtpDir(dirUrl);
         cachedFtpDir.getLocalPath();
 
-        Assert.assertFalse("before: isDownloaded", cachedFtpDir.isDownloaded());
+        Assert.assertFalse("test failed because cachedFtpDir is already downloaded", cachedFtpDir.isDownloaded());
         final GpFilePath localDirPath=cachedFtpDir.download();
         Assert.assertTrue("after: isDownloaded", cachedFtpDir.isDownloaded());
         final File localDir=localDirPath.getServerFile();

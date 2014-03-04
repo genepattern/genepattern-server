@@ -1,0 +1,81 @@
+#
+# config file snippet for the Demo PBS JobRunner
+#
+default.properties:
+    executor: DemoPbsJobRunner
+    #executor: RuntimeExec
+    java_flags: -Xmx512m -Dhttp.proxyHost=<http.proxyHost> -Dhttp.proxyPort=<http.proxyPort>
+
+
+#
+# named sets of custom configuration settings,
+# these take precedence over the 'default.properties' 
+# for the entry in the 'executors' section.
+#
+executor.properties: {
+    # himem executor.props
+    PbsHiMemWorker: {
+        # "executor": "DemoPbsJobRunner",  <-- not necessary because 'DemoPbsJobRunner' is the default
+        "drm.cpuCount": 4,
+        "pbs.vmem": "320gb"
+    },
+    PbsLongWorker: {
+        "drm.walltime": "72:00:00",
+    },
+    VisualizerProps: {
+        "executor": "RuntimeExec"
+    }
+}
+
+executors:
+    # default executor runs locally
+    RuntimeExec:
+        classname: org.genepattern.server.executor.RuntimeCommandExecutor
+        configuration.properties:
+            # the total number of jobs to run concurrently
+            num.threads: 20
+        default.properties:
+            # local runner shouldn't use too much RAM
+            drm.memory: "512mb"
+
+    DemoPbsJobRunner:
+        classname: org.genepattern.server.executor.drm.JobExecutor
+        configuration.properties:
+             jobRunnerClassname: edu.iu.gp.PbsJobRunner
+             jobRunnerName: DemoPbsJobRunner
+             lookupType: DB
+             #lookupType: HASHMAP
+        default.properties:
+            # path to a file, if it's a relative path, look for it in the resources directory
+            executor.inputParams: pbs_extra_input_params.yaml 
+            drm.queue: "batch"
+            drm.walltime: "02:00:00"
+            drm.cpuCount: "1"
+            pbs.host: "default.pbshost.genepattern.org"
+            pbs.mem: ""
+            pbs.ppn: "8"
+            pbs.cput: ""
+            pbs.vmem: "64gb"
+
+
+module.properties:
+    # example, use a different 'executor' for this module
+    ConvertLineEndings: 
+        executor: RuntimeExec
+    
+    # example, use a different 'executor.props' for this module
+    IGV:
+        # this 'executor.props' declares an 'executor'
+        executor.props: "VisualizerProps"
+        
+    # use the 'myHiMemPbsWorker' for all modules with this name
+    ExampleModule01:
+        executor.props: "PbsHiMemWorker"
+    # use the 'myLongPbsWorker' for all modules with this name
+    TopHat:
+        drm.workerName: "myLongPbsWorker"
+    # customize by property name
+    Example3:
+        drm.walltime: "72:00:00"
+        pbs.mem: "8gb"
+        pbs.vmem: "500gb"

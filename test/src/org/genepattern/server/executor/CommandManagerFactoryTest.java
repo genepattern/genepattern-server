@@ -8,7 +8,6 @@ import junit.framework.TestCase;
 
 import org.genepattern.server.UserAccountManager;
 import org.genepattern.server.auth.IGroupMembershipPlugin;
-import org.genepattern.server.config.ServerConfiguration;
 import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.Value;
@@ -37,18 +36,23 @@ public class CommandManagerFactoryTest extends TestCase {
      * assertions for all instance of CommandManager, can be called from all test cases.
      * @param cmdMgr
      */
-    private static void validateCommandManager(CommandManager cmdMgr) {
+    private static void validateCommandManager(final CommandManager cmdMgr) {
+        final boolean checkErrors=true;
+        validateCommandManager(cmdMgr, checkErrors);
+    }
+    private static void validateCommandManager(final CommandManager cmdMgr, final boolean checkErrors) {
         assertNotNull("Expecting non-null cmdMgr", cmdMgr);
-        
-        List<Throwable> errors = ServerConfigurationFactory.instance().getInitializationErrors();
-        
-        if (errors != null && errors.size() > 0) {
-            String errorMessage = "CommandManagerFactory initialization error, num="+errors.size();
-            Throwable first = errors.get(0);
-            if (first != null) {
-                errorMessage += " error[0]="+first.getMessage();
+
+        if (checkErrors) {
+            List<Throwable> errors = ServerConfigurationFactory.instance().getInitializationErrors();
+            if (errors != null && errors.size() > 0) {
+                String errorMessage = "CommandManagerFactory initialization error, num="+errors.size();
+                Throwable first = errors.get(0);
+                if (first != null) {
+                    errorMessage += " error[0]="+first.getMessage();
+                }
+                fail(errorMessage);
             }
-            fail(errorMessage);
         }
         
         assertNotNull("Expecting non-null cmdMgr.commandExecutorsMap", cmdMgr.getCommandExecutorsMap());
@@ -66,7 +70,11 @@ public class CommandManagerFactoryTest extends TestCase {
      * @param cmdMgr
      */
     private static void validateDefaultConfig(CommandManager cmdMgr) {
-        validateCommandManager(cmdMgr);
+        final boolean checkErrors=true;
+        validateDefaultConfig(cmdMgr, checkErrors);
+    }
+    private static void validateDefaultConfig(CommandManager cmdMgr, final boolean checkErrors) {
+        validateCommandManager(cmdMgr, checkErrors);
         assertEquals("By default, expecting only one CommandExecutor", 1, cmdMgr.getCommandExecutorsMap().size());
     }
 
@@ -104,19 +112,20 @@ public class CommandManagerFactoryTest extends TestCase {
     public void testMissingConfigFile() { 
         //load the config file from the same directory as this class file
         //Note: make sure your test build copies the test files into the classpath
-        String classname = this.getClass().getCanonicalName();
-        String filepath = "test/src/"+classname.replace('.', '/')+"/filenotfound.yaml";
+        //String classname = this.getClass().getCanonicalName();
+        //String filepath = "test/src/"+classname.replace('.', '/')+"/filenotfound.yaml";
+        String filepath = "filenotfound.yaml";
         File resourceDir = getSourceDir();
         System.setProperty("genepattern.properties", resourceDir.getAbsolutePath());
-        System.setProperty(ServerConfiguration.PROP_CONFIG_FILE, filepath);
+        System.setProperty(ServerConfigurationFactory.PROP_CONFIG_FILE, filepath);
         
         ServerConfigurationFactory.reloadConfiguration();
         CommandManagerFactory.initializeCommandManager();
         assertEquals("expecting initializion error", 1, ServerConfigurationFactory.instance().getInitializationErrors().size()); 
         //now, clear the errors
-        ServerConfigurationFactory.instance().getInitializationErrors().clear();
+        //ServerConfigurationFactory.instance().getInitializationErrors().clear();
         CommandManager cmdMgr = CommandManagerFactory.getCommandManager();
-        validateDefaultConfig(cmdMgr);
+        validateDefaultConfig(cmdMgr, false);
     }
     
     /**
@@ -205,7 +214,7 @@ public class CommandManagerFactoryTest extends TestCase {
     private void initializeYamlConfigFile(String filename) {
         File resourceDir = getSourceDir();
         System.setProperty("genepattern.properties", resourceDir.getAbsolutePath());
-        System.setProperty(ServerConfiguration.PROP_CONFIG_FILE, filename);
+        System.setProperty(ServerConfigurationFactory.PROP_CONFIG_FILE, filename);
         ServerConfigurationFactory.reloadConfiguration(filename);
         CommandManagerFactory.initializeCommandManager();
         
@@ -456,6 +465,12 @@ public class CommandManagerFactoryTest extends TestCase {
         initializeYamlConfigFile("test_custom_pipeline_executor.yaml");
         CommandManager cmdMgr = CommandManagerFactory.getCommandManager();
         assertEquals("# of command executors", 2, cmdMgr.getCommandExecutorsMap().size());
+        CommandExecutor runtimeExec=cmdMgr.getCommandExecutorsMap().get("RuntimeExec");
+        CommandExecutor pipelineExec=cmdMgr.getCommandExecutorsMap().get("PipelineExec");
+        
+        assertNotNull("runtimeExec", runtimeExec);
+        assertNotNull("pipelineExec", pipelineExec);
+        assertEquals("custom PipelineExec class", CustomPipelineExecutor.class.getName(), pipelineExec.getClass().getName());
     }
     
     public void testCommandProperties() {
@@ -560,12 +575,23 @@ public class CommandManagerFactoryTest extends TestCase {
         assertEquals("user override", "userD_val", ServerConfigurationFactory.instance().getGPProperty(userContext, "default.prop"));
     }
     
+    public void testOverrideSystemProperty() {
+        GpContext userContext = GpContext.getContextForUser("test");
+        initializeYamlConfigFile("test_user_properties.yaml");
+        UserAccountManager.instance().refreshUsersAndGroups();
+        System.setProperty("system.prop.override", "SYSTEM_VALUE");
+        assertEquals("override a system property", 
+                "SERVER_DEFAULT", 
+                ServerConfigurationFactory.instance().getGPProperty(userContext, "system.prop.override"));
+    }
+    
     /**
      * Test getProperty.
      */
     public void testServerProperties() {
         File resourceDir = getSourceDir();
         System.setProperty("genepattern.properties", resourceDir.getAbsolutePath());
+        System.setProperty("resources", resourceDir.getAbsolutePath());
         System.setProperty("require.password", "false");
         System.setProperty("prop.test.case", "test.case.SYSTEM");
         ServerConfigurationFactory.reloadConfiguration();
@@ -573,9 +599,9 @@ public class CommandManagerFactoryTest extends TestCase {
         initializeYamlConfigFile("test_user_properties.yaml");
         UserAccountManager.instance().refreshUsersAndGroups();
 
-        GpContext context = new GpContext();
+        GpContext context = GpContext.getServerContext();
         
-        assertEquals("3.3.1", ServerConfigurationFactory.instance().getGPProperty(context, "GenePatternVersion"));
+        //assertEquals("3.3.1", ServerConfigurationFactory.instance().getGPProperty(context, "GenePatternVersion"));
         assertEquals("8080.gp-trunk-dev.120.0.0.1", ServerConfigurationFactory.instance().getGPProperty(context, "lsid.authority"));
         assertEquals("true", ServerConfigurationFactory.instance().getGPProperty(context, "require.password"));
 

@@ -1,10 +1,12 @@
 package org.genepattern.server.executor;
 
+import java.util.Map;
+import java.util.Map.Entry;
+
 import org.apache.log4j.Logger;
 import org.genepattern.server.config.ConfigurationException;
 import org.genepattern.server.config.ExecutorConfig;
 import org.genepattern.server.config.JobConfigObj;
-import org.genepattern.server.config.ServerConfigurationFactory;
 
 /**
  * Create a new instance of a CommandManager based on the ServerConfiguration.
@@ -18,34 +20,29 @@ public class BasicCommandManagerFactory {
     public BasicCommandManagerFactory() {
     }
     
-    public BasicCommandManager createCommandManager() throws ConfigurationException {
+    public BasicCommandManager createCommandManager(final JobConfigObj jobConfigObj) throws ConfigurationException {
         this.cmdMgr = new BasicCommandManager(); 
-        JobConfigObj jobConfigObj = ServerConfigurationFactory.instance().getJobConfiguration();
-        initializeCommandExecutors(cmdMgr, jobConfigObj);
+        initializeCommandExecutors(cmdMgr, jobConfigObj.getExecutors());
         return cmdMgr;
     }
     
     //initialize executors list
-    private void initializeCommandExecutors(BasicCommandManager cmdMgr, JobConfigObj jobConfigObj)  throws ConfigurationException {
+    private void initializeCommandExecutors(final BasicCommandManager cmdMgr, final Map<String,ExecutorConfig> executors)  throws ConfigurationException {
         log.info("initializing command executors ...");
-        for(String execId : jobConfigObj.getExecutors().keySet()) {
+        for(final Entry<String,ExecutorConfig> entry : executors.entrySet()) {
             try {
-                log.info("initializing command executor, execId='"+execId+"' ...");
-                initializeCommandExecutor(cmdMgr, jobConfigObj, execId);
-                log.info("... done initializing '"+execId+"'.");
+                initializeCommandExecutor(cmdMgr, entry.getKey(), entry.getValue());
             }
             catch (Throwable t) {
-                log.error("error initializing command executor, execId='"+execId+"'", t);
+                log.error("error initializing command executor, execId='"+entry.getKey()+"'", t);
             }
         }
     }
-    
-    private void initializeCommandExecutor(BasicCommandManager cmdMgr, JobConfigObj jobConfigObj, String execId) throws ConfigurationException {
-        ExecutorConfig execObj = jobConfigObj.getExecutors().get(execId);
+
+    private void initializeCommandExecutor(final BasicCommandManager cmdMgr, final String execId, final ExecutorConfig execObj) throws ConfigurationException {
         CommandExecutor cmdExecutor = initializeCommandExecutor(execObj);
         cmdMgr.addCommandExecutor(execId, cmdExecutor);
     }
-
     /**
      * Initialize an instance of a CommandExecutor from the settings stored in the given CmdExecConfigObj.
      * This method calls the constructor and [optionally] calls setConfigurationFilename and setConfigurationProperties.

@@ -31,7 +31,8 @@ import java.util.concurrent.TimeoutException;
 import org.apache.log4j.Logger;
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.domain.JobStatus;
-import org.genepattern.server.config.Value;
+import org.genepattern.server.config.GpContext;
+import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.genepattern.GenePatternAnalysisTask;
 import org.genepattern.server.job.input.cache.FileCache;
 import org.genepattern.server.jobqueue.JobQueue;
@@ -443,21 +444,11 @@ public class AnalysisJobScheduler implements Runnable {
      * @param jobInfo
      * @return
      */
-    private static long getJobTerminationTimeout(JobInfo jobInfo) {
-        if (jobInfo != null) {
-            try {
-                CommandProperties cmdProperties = CommandManagerFactory.getCommandManager().getCommandProperties(jobInfo);
-                Value value = cmdProperties.get("job.termination.timeout");
-                if (value != null) {
-                    return Long.parseLong( value.getValue() );
-                }
-            }
-            catch (Throwable t) {
-                log.error("Error getting jobTerminationTimeout", t);
-            }
-        }
+    private static long getJobTerminationTimeout(final JobInfo jobInfo) {
+        final GpContext jobContext=GpContext.getContextForJob(jobInfo);
         //default value is 30 seconds
-        return 1000*30;
+        final Long jobTerminationTimeout=ServerConfigurationFactory.instance().getGPLongProperty(jobContext, "job.termination.timeout", 1000L*30L);
+        return jobTerminationTimeout;
     }
 
     public static boolean isPending(JobInfo jobInfo) {

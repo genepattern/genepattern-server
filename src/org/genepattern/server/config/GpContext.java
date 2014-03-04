@@ -1,10 +1,13 @@
 package org.genepattern.server.config;
 
+import org.genepattern.server.job.input.JobInput;
 import org.genepattern.server.webapp.jsf.AuthorizationHelper;
 import org.genepattern.webservice.JobInfo;
 import org.genepattern.webservice.TaskInfo;
 
 public class GpContext {
+    private final ValueLookup valueLookup;
+
     //hard-coded default value is true for compatibility with GP 3.2.4 and earlier
     private boolean checkSystemProperties = true;
     //hard-coded default value is true for compatibility with GP 3.2.4 and earlier
@@ -12,22 +15,32 @@ public class GpContext {
     private String userId = null;
     private TaskInfo taskInfo = null;
     private JobInfo jobInfo = null;
+    private JobInput jobInput = null;
     private boolean isAdmin=false;
 
+    /**
+     * @deprecated
+     * @return
+     */
     public static GpContext getServerContext() {
-        GpContext context = new GpContext();
+        GpContext context = new GpContext(null);
         return context;
     }
 
+    /**
+     * @deprecated
+     * @param userId
+     * @return
+     */
     public static GpContext getContextForUser(final String userId) {
         return getContextForUser(userId, false);
     }
 
     public static GpContext getContextForUser(final String userId, final boolean initIsAdmin) {
         if (userId==null) {
-            return new GpContext();
+            return new GpContext(null);
         }
-        GpContext context = new GpContext();
+        GpContext context = new GpContext(null);
         context.setUserId(userId);
         if (initIsAdmin) { 
             final boolean isAdmin = AuthorizationHelper.adminServer(userId);
@@ -37,7 +50,7 @@ public class GpContext {
     }
 
     public static GpContext getContextForJob(JobInfo jobInfo) {
-        GpContext context = new GpContext();
+        GpContext context = new GpContext(null);
         if (jobInfo != null) {
             context.setJobInfo(jobInfo);
             if (jobInfo.getUserId() != null) {
@@ -55,7 +68,18 @@ public class GpContext {
         return context;
     }
 
-    public void setCheckSystemProperties(boolean b) {
+    /**
+     * @deprecated
+     */
+    
+    public GpContext() {
+        this.valueLookup=null;
+    }
+    public GpContext(final ValueLookup valueLookup) {
+        this.valueLookup=valueLookup;
+    }
+
+    void setCheckSystemProperties(boolean b) {
         this.checkSystemProperties = b;
     }
 
@@ -63,7 +87,7 @@ public class GpContext {
         return checkSystemProperties;
     }
 
-    public void setCheckPropertiesFiles(boolean b) {
+    void setCheckPropertiesFiles(boolean b) {
         this.checkPropertiesFiles = b;
     }
 
@@ -71,7 +95,7 @@ public class GpContext {
         return checkPropertiesFiles;
     }
 
-    public void setUserId(String userId) {
+    void setUserId(String userId) {
         this.userId = userId;
     }
     public String getUserId() {
@@ -85,14 +109,21 @@ public class GpContext {
         return this.taskInfo;
     } 
 
-    public void setJobInfo(JobInfo jobInfo) {
+    void setJobInfo(JobInfo jobInfo) {
         this.jobInfo = jobInfo;
     }
     public JobInfo getJobInfo() {
         return jobInfo;
     }
+    
+    void setJobInput(final JobInput jobInput) {
+        this.jobInput=jobInput;
+    }
+    public JobInput getJobInput() {
+        return this.jobInput;
+    }
 
-    public void setIsAdmin(final boolean b) {
+    void setIsAdmin(final boolean b) {
         this.isAdmin=b;
     }
     public boolean isAdmin() {
@@ -107,5 +138,12 @@ public class GpContext {
             return jobInfo.getTaskLSID();
         }
         return null;
+    }
+    
+    public Value getValue(final String key) {
+        if (valueLookup==null) {
+            return null;
+        }
+        return valueLookup.getValue(this, key);
     }
 }

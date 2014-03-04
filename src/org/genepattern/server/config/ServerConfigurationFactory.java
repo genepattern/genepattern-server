@@ -1,6 +1,7 @@
 package org.genepattern.server.config;
 
 import org.apache.log4j.Logger;
+import org.genepattern.server.repository.ConfigRepositoryInfoLoader;
 
 /**
  * Initialize and hold a single instance of a ServerConfiguration for the GenePattern Server.
@@ -19,43 +20,26 @@ import org.apache.log4j.Logger;
 public class ServerConfigurationFactory {
     private static Logger log = Logger.getLogger(ServerConfigurationFactory.class);
     
+    public static final String PROP_CONFIG_FILE = "config.file";
+    //for compatibility with GP 3.2.3 and GP 3.2.4
+    public static final String PROP_LEGACY_CONFIG_FILE = "command.manager.config.file";
+
+    private static GpConfig gpConfigSingleton=GpConfigLoader.createFromSystemProps();
+    
     private ServerConfigurationFactory() {
     }
     
-    // legacy code, which uses the 'config.file' property from the genepattern.properties file
-    // to maintain a singleton instance of a ServerConfiguration 
-    private static ServerConfigurationV1 singletonV1 = new ServerConfigurationV1();
-    public static ServerConfiguration instance() {
-        return singletonV1;
+    synchronized public static void reloadConfiguration() {
+        gpConfigSingleton=GpConfigLoader.createFromSystemProps();
+        ConfigRepositoryInfoLoader.clearCache();
     }
-    public static void reloadConfiguration() {
-        singletonV1.reloadConfiguration();
+    synchronized public static void reloadConfiguration(final String configFilepath) {
+        gpConfigSingleton=GpConfigLoader.createFromConfigFilepath(configFilepath);
+        ConfigRepositoryInfoLoader.clearCache();
     }
-    public static void reloadConfiguration(final String configFilepath) {
-        singletonV1.reloadConfiguration(configFilepath);
+    
+    public static GpConfig instance() {
+        return gpConfigSingleton;
     }
-
-//    // proposed new code
-//    private static ServerConfigurationWrapper singletonWrapper=new ServerConfigurationWrapper(init());
-//    public static ServerConfigurationWrapper instanceWrapper() {
-//        return singletonWrapper;
-//    }
-//    public static void reloadConfigurationWrapper() {
-//        singletonWrapper=new ServerConfigurationWrapper(init());
-//    }
-//    public static void reloadConfigurationWrapper(final String configFilepath) {
-//        final File configFile=ConfigFileParser.initConfigurationFile(configFilepath);
-//        singletonWrapper=new ServerConfigurationWrapper(init(configFile));
-//    }
-//    
-//    private static ServerConfigurationV2 init() {
-//        return new ServerConfigurationV2.Builder().build();
-//    }
-//    
-//    private static ServerConfigurationV2 init(final File configFile) {
-//        return new ServerConfigurationV2.Builder()
-//            .configFile(configFile)
-//            .build();
-//    }
 
 }

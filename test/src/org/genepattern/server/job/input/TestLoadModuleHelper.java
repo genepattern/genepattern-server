@@ -14,6 +14,7 @@ import org.genepattern.drm.JobRunner;
 import org.genepattern.junitutil.JobInfoLoaderFromMap;
 import org.genepattern.junitutil.TaskLoader;
 import org.genepattern.server.config.GpContext;
+import org.genepattern.server.config.GpContextFactory;
 import org.genepattern.server.dm.GpFilePath;
 import org.genepattern.server.job.JobInfoLoader;
 import org.genepattern.webservice.ParameterInfo;
@@ -51,8 +52,10 @@ public class TestLoadModuleHelper {
     @BeforeClass
     static public void beforeClass() {
         adminUserId="admin";
-        userContext=GpContext.getContextForUser(adminUserId);
-        userContext.setIsAdmin(true);
+        userContext=new GpContextFactory.Builder()
+            .userId(adminUserId)
+            .isAdmin(true)
+            .build();
         taskLoader=new TaskLoader();
         taskLoader.addTask(TestLoadModuleHelper.class, "ComparativeMarkerSelection_v9.zip");
         taskLoader.addTask(TestLoadModuleHelper.class, "ExtractComparativeMarkerResults_v2.zip");

@@ -3,14 +3,21 @@ package org.genepattern.server.executor;
 import java.io.File;
 import java.util.Map;
 
-import org.genepattern.server.job.input.JobInput;
+import org.genepattern.server.config.GpContext;
 import org.genepattern.webservice.JobInfo;
 
+/**
+ * Helper class to transition from the pre 3.8.1 CommandExecutor API to the new CommandExecutor2 API,
+ * which takes a GpContext instance as an arg.
+ * 
+ * @author pcarr
+ *
+ */
 public class CommandExecutor2Wrapper implements CommandExecutor2 {
     private final CommandExecutor cmdExec;
     private final CommandExecutor2 cmdExec2;
 
-    public CommandExecutor2 createCmdExecutor(final CommandExecutor cmdExecIn) {
+    public static final CommandExecutor2 createCmdExecutor(final CommandExecutor cmdExecIn) {
         if (cmdExecIn == null) {
             throw new IllegalArgumentException("cmdExecIn==null");
         }
@@ -51,12 +58,6 @@ public class CommandExecutor2Wrapper implements CommandExecutor2 {
     }
 
     @Override
-    public void runCommand(String[] commandLine, Map<String, String> environmentVariables, File runDir, File stdoutFile, File stderrFile, JobInfo jobInfo, File stdinFile) throws CommandExecutorException {
-        final JobInput jobInput=null;
-        runCommand(commandLine, environmentVariables, runDir, stdoutFile, stderrFile, jobInput, jobInfo, stdinFile);
-    }
-
-    @Override
     public void terminateJob(final JobInfo jobInfo) throws Exception {
         if (cmdExec2 != null) {
             cmdExec2.terminateJob(jobInfo);
@@ -79,13 +80,34 @@ public class CommandExecutor2Wrapper implements CommandExecutor2 {
     }
 
     @Override
-    public void runCommand(String[] commandLine, Map<String, String> environmentVariables, File runDir, File stdoutFile, File stderrFile, JobInput jobInput, JobInfo jobInfo, File stdinFile) throws CommandExecutorException {
+    public void runCommand(String[] commandLine, Map<String, String> environmentVariables, File runDir, File stdoutFile, File stderrFile, JobInfo jobInfo, File stdinFile) throws CommandExecutorException {
+        cmdExec.runCommand(commandLine, environmentVariables, runDir, stdoutFile, stderrFile, jobInfo, stdinFile);
+    }
+
+    @Override
+    public void runCommand(
+            final GpContext gpContext, 
+            final String[] commandLine, 
+            final Map<String, String> environmentVariables, 
+            final File runDir, 
+            final File stdoutFile,
+            final File stderrFile, 
+            final File stdinFile) 
+    throws CommandExecutorException {
         if (cmdExec2 != null) {
-            cmdExec2.runCommand(commandLine, environmentVariables, runDir, stdoutFile, stderrFile, jobInput, jobInfo, stdinFile);
+            cmdExec2.runCommand(gpContext, commandLine, environmentVariables, runDir, stdoutFile, stderrFile, stdinFile);
             return;
         }
+        
+        //legacy CommandExecutor
+        if (gpContext==null) {
+            throw new CommandExecutorException("gpContext==null, Can't start job without a valid gpContext");
+        }
+        if (gpContext.getJobInfo()==null) {
+            throw new CommandExecutorException("gpContext.jobInfo==null, Can't start job without a valid jobInfo");
+        }
         if (cmdExec != null) {
-            cmdExec.runCommand(commandLine, environmentVariables, runDir, stdoutFile, stderrFile, jobInfo, stdinFile);
+            cmdExec.runCommand(commandLine, environmentVariables, runDir, stdoutFile, stderrFile, gpContext.getJobInfo(), stdinFile);
         }
     }
 }

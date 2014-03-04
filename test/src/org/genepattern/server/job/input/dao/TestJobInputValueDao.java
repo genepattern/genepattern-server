@@ -1,19 +1,15 @@
 package org.genepattern.server.job.input.dao;
 
 import java.io.File;
-import java.util.List;
 
 import org.genepattern.junitutil.AnalysisJobUtil;
 import org.genepattern.junitutil.DbUtil;
 import org.genepattern.junitutil.FileUtil;
 import org.genepattern.junitutil.TaskUtil;
 import org.genepattern.server.config.GpContext;
-import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.job.input.GroupId;
 import org.genepattern.server.job.input.JobInput;
 import org.genepattern.webservice.TaskInfo;
-import org.hibernate.Query;
-import org.hibernate.Session;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
@@ -34,34 +30,6 @@ public class TestJobInputValueDao {
     static public void afterClass() throws Exception {
         DbUtil.shutdownDb();
     } 
-    
-    public JobInput fetchJobInput(final int gpJobNo) throws Exception {
-        boolean inTransaction=HibernateUtil.isInTransaction();
-        try {
-            final String hql = "from "+JobInputValue.class.getName()+" vv where vv.gpJobNo = :gpJobNo order by vv.pname, vv.idx";
-            HibernateUtil.beginTransaction();
-            Session session = HibernateUtil.getSession();
-            Query query = session.createQuery(hql);
-            query.setInteger("gpJobNo", gpJobNo);
-            final List<JobInputValue> records = query.list();
-            
-            final JobInput jobInput=new JobInput();
-            for(final JobInputValue v : records) {
-                final GroupId groupId=new GroupId(v.getGroupName());
-                jobInput.addValue(v.getPname(), v.getPvalue(), groupId);
-            }
-            return jobInput;
-        }
-        catch (Throwable t) {
-            //TODO: log error
-            throw new Exception("Error getting records from job_input_value table, for gpJobNo="+gpJobNo, t);
-        }
-        finally {
-            if (!inTransaction) {
-                HibernateUtil.closeCurrentSession();
-            }
-        }
-    }
     
     @Test
     public void testAddJobInputValue() throws Exception { 
@@ -96,7 +64,7 @@ public class TestJobInputValueDao {
         new JobInputValueRecorder().saveJobInput(jobNo, jobInput);
 
         // (3) another db transaction
-        JobInput jobInputOut = fetchJobInput(jobNo);
+        JobInput jobInputOut = new JobInputValueRecorder().fetchJobInput(jobNo);
 
         Assert.assertEquals("numParams", 4, jobInputOut.getParams().size());
         Assert.assertEquals("input.filename[0]", gpUrl+"users/"+userId+"/all_aml_test_01.cls", jobInputOut.getParamValues("input.filename").get(0).getValue());
@@ -118,7 +86,7 @@ public class TestJobInputValueDao {
         jobUtil.deleteJobFromDb(jobNo);
         
         // (5) another db transaction
-        jobInputOut = fetchJobInput(jobNo);
+        jobInputOut = new JobInputValueRecorder().fetchJobInput(jobNo);
         Assert.assertEquals("jobInput.params.size after delete from analysis_job table", 0, jobInputOut.getParams().size());
     }
 
