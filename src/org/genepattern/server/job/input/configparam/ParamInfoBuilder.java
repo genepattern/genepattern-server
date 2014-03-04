@@ -13,7 +13,7 @@ import com.google.common.base.Joiner;
 public class ParamInfoBuilder {
     private final String name;
     private String altName=null;
-    private final String value="";
+    //private final String value="";
     private String description="";
     private boolean optional=true;
     private List<String> choices=null;
@@ -48,6 +48,7 @@ public class ParamInfoBuilder {
 
     @SuppressWarnings("unchecked")
     public ParameterInfo build() {
+        final String value="";
         final ParameterInfo pinfo=new ParameterInfo(name, value, description);
         pinfo.setAttributes(new HashMap<String,String>());
         if (altName!=null) {
