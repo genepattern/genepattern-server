@@ -893,6 +893,7 @@ function _createFileWidgetInner(linkElement, appendTo) {
 
                             $("#uploadTree").data("dndReady", {});
                             $("#uploadTree").jstree("refresh");
+                            initRecentJobs();
                         },
                         error: function(data, textStatus, jqXHR) {
                             if (typeof data === 'object') {
