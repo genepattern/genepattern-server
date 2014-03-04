@@ -170,7 +170,8 @@ public class TaskInfoCache {
         List<File> approvedDocFiles = new ArrayList<File>();
         
         // Filter out the license files
-        List<EulaInfo> infos = EulaManager.instance(new GpContext()).getEulas(TaskInfoCache.instance().getTask(lsid));
+        final GpContext serverContext=GpContext.getServerContext();
+        List<EulaInfo> infos = EulaManager.instance(serverContext).getEulas(TaskInfoCache.instance().getTask(lsid));
         if (infos.size() > 0) {
             for (File file : docFiles) {
                 boolean approved = true;
