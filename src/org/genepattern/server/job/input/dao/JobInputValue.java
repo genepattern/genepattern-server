@@ -83,20 +83,26 @@ public class JobInputValue {
         this.gpJobNo = gpJobNo;
     }
 
-    private void setPname(String pname) {
+    private void setPname(final String pname) {
         this.pname = pname;
     }
-    private void setPvalue(String pvalue) {
+    private void setPvalue(final String pvalue) {
         this.pvalue = pvalue;
     }
-    private void setIdx(Integer idx) {
+    private void setIdx(final Integer idx) {
         this.idx = idx;
     }
-    private void setGroupId(String groupId) {
-        this.groupId = groupId;
+    private void setGroupId(final String groupId) {
+        //ignore null args
+        if (groupId != null) {
+            this.groupId=groupId;
+        }
     }
-    private void setGroupName(String groupName) {
-        this.groupName = groupName;
+    private void setGroupName(final String groupName) {
+        //ignore null args
+        if (groupName!=null) {
+            this.groupName = groupName;
+        }
     }
 
 }
