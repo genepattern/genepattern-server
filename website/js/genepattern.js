@@ -1023,38 +1023,40 @@ function _createFileWidgetInner(linkElement, appendTo) {
             click: function(event) {}
     });
 
-    var moduleList = $("<div></div>").modulelist({
-        title: "Send to Module",
-        data: sendToList,
-        droppable: false,
-        draggable: true,
-        click: function(event) {
-            var lsid = this.data.lsid;
+    var moduleList = $("<div></div>")
+        .attr("class", "send-to-module-list")
+        .modulelist({
+            title: "Send to Module",
+            data: sendToList,
+            droppable: false,
+            draggable: true,
+            click: function(event) {
+                var lsid = this.data.lsid;
 
-            loadRunTaskForm(lsid, false);
+                loadRunTaskForm(lsid, false);
 
-            var afterRunTaskLoad = function() {
-                var listObject = $(event.target).closest(".search-widget").find(".send-to-param-list");
-                var kind = listObject.attr("data-kind");
-                var url = listObject.attr("data-url");
+                var afterRunTaskLoad = function() {
+                    var listObject = $(event.target).closest(".search-widget").find(".send-to-param-list");
+                    var kind = listObject.attr("data-kind");
+                    var url = listObject.attr("data-url");
 
-                sendToByKind(url, kind);
-            };
+                    sendToByKind(url, kind);
+                };
 
-            var checkForRunTaskLoaded = function() {
-                if (run_task_info.lsid === lsid) {
-                    afterRunTaskLoad();
-                }
-                else {
-                    setTimeout(function() {
-                        checkForRunTaskLoaded();
-                    }, 100);
-                }
-            };
+                var checkForRunTaskLoaded = function() {
+                    if (run_task_info.lsid === lsid) {
+                        afterRunTaskLoad();
+                    }
+                    else {
+                        setTimeout(function() {
+                            checkForRunTaskLoaded();
+                        }, 100);
+                    }
+                };
 
-            checkForRunTaskLoaded();
-        }
-    });
+                checkForRunTaskLoaded();
+            }
+        });
 
     if (moduleList.find(".module-listing").length < 1) {
         moduleList.hide();

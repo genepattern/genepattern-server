@@ -193,12 +193,15 @@
     height: 100%;
     overflow: auto;
     padding-left: 20px;
+    position: relative;
+    overflow-x: hidden;
 }
 
 .slider-close-block {
     height: 0px;
     width: 0px;
-    float: right;
+    position: absolute;
+    right: -5px;
 }
 
 .slider-close {
@@ -206,6 +209,11 @@
     top: 5px;
     right: 20px;
     font-size: 8pt;
+}
+
+.slider-close span {
+    padding: 5px !important;
+    line-height: 1 !important;
 }
 
 .search-widget .module-list-title {
@@ -510,7 +518,13 @@ body {
 }
 
 .file-widget-actions h4, .job-widget-actions h4 {
-    width: 245px;
+    width: 305px;
+    font-size: 9pt;
+}
+
+.send-to-module-list h4, .send-to-param-list h4 {
+    width: 305px;
+    font-size: 9pt;
 }
 
 .file-widget-actions .module-name {

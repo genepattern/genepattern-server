@@ -561,7 +561,7 @@ $.widget("gp.searchslider", {
             .appendTo(this.inner);;
         $('<button></button>', {
             'class': 'slider-close',
-            'text': 'Close' })
+            'text': 'X' })
             .button()
             .click(function() {
             	$("#module-search-box").val("");
