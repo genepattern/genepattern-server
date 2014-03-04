@@ -37,7 +37,6 @@ import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.domain.JobStatus;
-import org.genepattern.server.executor.AnalysisJobScheduler;
 import org.genepattern.server.executor.CommandManagerFactory;
 import org.genepattern.server.executor.JobTerminationException;
 import org.genepattern.server.genepattern.GenePatternAnalysisTask;
