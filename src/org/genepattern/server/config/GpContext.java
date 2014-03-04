@@ -6,8 +6,6 @@ import org.genepattern.webservice.JobInfo;
 import org.genepattern.webservice.TaskInfo;
 
 public class GpContext {
-    private final ValueLookup valueLookup;
-
     //hard-coded default value is true for compatibility with GP 3.2.4 and earlier
     private boolean checkSystemProperties = true;
     //hard-coded default value is true for compatibility with GP 3.2.4 and earlier
@@ -19,11 +17,11 @@ public class GpContext {
     private boolean isAdmin=false;
 
     /**
-     * @deprecated
+     * TODO: @deprecated
      * @return
      */
     public static GpContext getServerContext() {
-        GpContext context = new GpContext(null);
+        GpContext context = new GpContext();
         return context;
     }
 
@@ -38,9 +36,9 @@ public class GpContext {
 
     public static GpContext getContextForUser(final String userId, final boolean initIsAdmin) {
         if (userId==null) {
-            return new GpContext(null);
+            return new GpContext();
         }
-        GpContext context = new GpContext(null);
+        GpContext context = new GpContext();
         context.setUserId(userId);
         if (initIsAdmin) { 
             final boolean isAdmin = AuthorizationHelper.adminServer(userId);
@@ -50,7 +48,7 @@ public class GpContext {
     }
 
     public static GpContext getContextForJob(JobInfo jobInfo) {
-        GpContext context = new GpContext(null);
+        GpContext context = new GpContext();
         if (jobInfo != null) {
             context.setJobInfo(jobInfo);
             if (jobInfo.getUserId() != null) {
@@ -71,12 +69,7 @@ public class GpContext {
     /**
      * @deprecated
      */
-    
     public GpContext() {
-        this.valueLookup=null;
-    }
-    public GpContext(final ValueLookup valueLookup) {
-        this.valueLookup=valueLookup;
     }
 
     void setCheckSystemProperties(boolean b) {
@@ -139,11 +132,5 @@ public class GpContext {
         }
         return null;
     }
-    
-    public Value getValue(final String key) {
-        if (valueLookup==null) {
-            return null;
-        }
-        return valueLookup.getValue(this, key);
-    }
+
 }
