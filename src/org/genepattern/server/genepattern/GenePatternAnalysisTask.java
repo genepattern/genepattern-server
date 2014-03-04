@@ -57,7 +57,6 @@ import static org.genepattern.util.GPConstants.UNREQUIRED_PARAMETER_NAMES;
 import static org.genepattern.util.GPConstants.USERID;
 
 import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -4058,77 +4057,6 @@ public class GenePatternAnalysisTask {
     }
 
     // utility methods:
-    
-    /**
-     * Copy of streamToFile which filters out suppresses output of anything on the input stream which matches
-     * the given text, exactMatch.
-     * 
-     * @param is, InputStream to read from
-     * @param file, file to write to
-     * @param exactMatch, String to suppress from output to file
-     * 
-     * @author pcarr
-     */
-    protected Thread filteredStreamToFile(final InputStream is, final File file, final String exactMatch) {
-        // create thread to read from a process' output or error stream
-        return new Thread() {
-            public void run() {
-                final int BUFSIZE = 2048;
-                byte[] b = new byte[BUFSIZE];
-                int bytesRead = 0;
-                int prevBytesRead = 0;
-                BufferedOutputStream fis = null;
-                boolean wroteBytes = false;
-                try {
-                    fis = new BufferedOutputStream(new FileOutputStream(file));
-
-                    String s = "";
-                    String prevS = "";
-                    StringBuffer S12 = new StringBuffer(2*BUFSIZE);
-                    while ((bytesRead = is.read(b)) >= 0) {
-                        s = new String(b, 0, bytesRead);
-                        //always construct a string by contatenating the previous read to the current read
-                        int newLength = prevBytesRead + bytesRead;
-                        S12.setLength(newLength);
-                        S12.replace(0, prevS.length(), prevS);
-                        S12.replace(prevS.length(), prevS.length() + s.length(), s);
-
-                        int idx = -1;
-                        while((idx = S12.indexOf(exactMatch)) >= 0) {
-                            S12.delete(idx, exactMatch.length());
-                        }
-                        if (S12.length() > 0) { 
-                            wroteBytes = true;
-                            byte[] filtered = S12.toString().getBytes();
-                            fis.write(filtered, 0, filtered.length);
-                        }
-                        
-                        prevS = s;
-                        prevBytesRead = bytesRead;
-                    }
-                } 
-                catch (IOException e) {
-                    e.printStackTrace();
-                    log.error(e);
-                } 
-                finally {
-                    if (fis != null) {
-                        try {
-                            fis.flush();
-                            fis.close();
-                        } 
-                        catch (IOException e) {
-                            e.printStackTrace();
-                        }
-                    }
-                    if (!wroteBytes) {
-                        file.delete();
-                    }
-                }
-            }
-        };
-    }
-
 
     /**
      * writes a string to a file
