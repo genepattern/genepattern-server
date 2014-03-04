@@ -717,16 +717,6 @@ function initAllModulesMap(all_modules) {
     all_modules_map = modMap;
 }
 
-function urlToName(url) {
-    if (url === null || url === undefined || url.indexOf("/gp/") === -1) { return null; }
-    if (url[url.length-1] === '/') {
-        url = url.substring(0, url.length-1);
-    }
-    url = url.replace("%20", " ");
-    url = url.split("/");
-    return url[url.length - 1];
-}
-
 function lsidsToModules(lsidList) {
     var toReturn = new Array();
     for (var i = 0; i < lsidList.length; i++) {
@@ -845,7 +835,7 @@ function makePipelineNameValid(string) {
 function _createFileWidgetInner(linkElement, appendTo) {
     var link = $(linkElement);
     var url = link.attr("href");
-    var name = urlToName(url);
+    var name = $(linkElement).text();
     var isDirectory = isDirectoryFromUrl(url);
     var isRoot = isRootFromUrl(url);
     var isUpload = appendTo === "#menus-uploads";
