@@ -123,6 +123,7 @@ import org.genepattern.server.JobInfoWrapper.InputFile;
 import org.genepattern.server.JobManager;
 import org.genepattern.server.PermissionsHelper;
 import org.genepattern.server.TaskIDNotFoundException;
+import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.GpContextFactory;
 import org.genepattern.server.config.ServerConfigurationFactory;
@@ -139,7 +140,6 @@ import org.genepattern.server.executor.AnalysisJobScheduler;
 import org.genepattern.server.executor.CommandExecutor;
 import org.genepattern.server.executor.CommandExecutor2;
 import org.genepattern.server.executor.CommandExecutor2Wrapper;
-import org.genepattern.server.executor.CommandExecutorNotFoundException;
 import org.genepattern.server.executor.CommandManagerFactory;
 import org.genepattern.server.executor.JobDispatchException;
 import org.genepattern.server.executor.JobSubmissionException;
@@ -1544,13 +1544,14 @@ public class GenePatternAnalysisTask {
         return null;
     }
 
-    private CommandExecutor2 initCmdExec2(final GpContext jobContext) throws JobDispatchException {
-        CommandExecutor cmdExec = null;
-        try {
-            cmdExec = CommandManagerFactory.getCommandManager().getCommandExecutor(jobContext.getJobInfo());
+    private CommandExecutor2 initCmdExec2(final GpConfig gpConfig, final GpContext jobContext) throws JobDispatchException {
+        final String executorId=gpConfig.getExecutorId(jobContext);
+        if (executorId==null) {
+            throw new JobDispatchException("Server error: 'executor' not set for job="+jobContext.getJobInfo().getJobNumber());
         }
-        catch (CommandExecutorNotFoundException e) {
-            throw new JobDispatchException(e);
+        final CommandExecutor cmdExec=CommandManagerFactory.getCommandManager().getCommandExecutorsMap().get(executorId);
+        if (cmdExec==null) {
+            throw new JobDispatchException("Server error: CommandExecutor not set for executorId="+executorId);
         }
         return CommandExecutor2Wrapper.createCmdExecutor(cmdExec);
     }
@@ -1558,13 +1559,13 @@ public class GenePatternAnalysisTask {
     private void runCommand(final GpContext jobContext, final String[] cmdLineArgs, final Map<String,String> environmentVariables, final File runDir, final File stdoutFile, final File stderrFile, final File stdinFile) 
     throws JobDispatchException
     {
+        final GpConfig gpConfig=ServerConfigurationFactory.instance();
         final boolean isPipeline=jobContext.getTaskInfo().isPipeline();
-        final long jobDispatchTimeout = ServerConfigurationFactory.instance().getGPIntegerProperty(jobContext, "job.dispatch.timeout", 300000);
-        final CommandExecutor2 cmdExec=initCmdExec2(jobContext);
+        final long jobDispatchTimeout = gpConfig.getGPIntegerProperty(jobContext, "job.dispatch.timeout", 300000);
+        final CommandExecutor2 cmdExec=initCmdExec2(gpConfig, jobContext);
         Future<Integer> task = executor.submit(new Callable<Integer>() {
             public Integer call() throws Exception {
                 cmdExec.runCommand(jobContext, cmdLineArgs, environmentVariables, runDir, stdoutFile, stderrFile, stdinFile);
-                //cmdExec.runCommand(cmdLineArgs, environmentVariables, outDir, stdoutFile, stderrFile, jobInfo, stdinFile);
                 return JobStatus.JOB_PROCESSING;
             }
         });
