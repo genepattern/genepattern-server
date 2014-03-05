@@ -20,6 +20,7 @@ import org.junit.Test;
 public class TestPbsDemoConfig {
     private static TaskInfo cleTaskInfo=null;
     private static TaskInfo exampleTaskInfo=null;
+    private static TaskInfo igvTaskInfo=null;
     
     @BeforeClass
     public static final void beforeClass() {
@@ -30,6 +31,11 @@ public class TestPbsDemoConfig {
         exampleTaskInfo.setName("ExampleModule01");
         exampleTaskInfo.giveTaskInfoAttributes();
         exampleTaskInfo.getTaskInfoAttributes().put(GPConstants.LSID, "");
+        
+        igvTaskInfo=new TaskInfo();
+        igvTaskInfo.setName("IGV");
+        igvTaskInfo.giveTaskInfoAttributes();
+        igvTaskInfo.getTaskInfoAttributes().put(GPConstants.LSID, "urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00170:4");
     }
     
     private GpConfig gpConfig;
@@ -145,6 +151,18 @@ public class TestPbsDemoConfig {
         
         Assert.assertEquals("'pbs.vmem' from job input", "120gb", 
                 gpConfig.getGPProperty(gpContext, "pbs.vmem"));
+    }
+    
+    @Test
+    public void testSetExecutorInExecutopProps() {
+        GpContext gpContext=new GpContextFactory.Builder()
+            .userId("test")
+            .taskInfo(igvTaskInfo)
+            .build();
+        
+        Assert.assertEquals("set 'executor.props' for taskName='IGV'", "VisualizerProps", gpConfig.getGPProperty(gpContext, "executor.props"));
+        Assert.assertEquals("set 'executor' in executor.props='VisualizerProps'", "RuntimeExec", gpConfig.getGPProperty(gpContext, "executor"));
+        Assert.assertEquals("gpConfig.executorId", "RuntimeExec", gpConfig.getExecutorId(gpContext));
     }
 
 }
