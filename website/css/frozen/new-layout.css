@@ -489,14 +489,29 @@ body {
 
 #upload-dropzone-progress {
     margin: 5px;
+    width: 275px;
+    display: inline-block;
+    float: left;
 }
 
 #upload-dropzone-progress-label {
     position: absolute;
     text-shadow: 1px 1px 0 #fff;
-    width: 100%;
+    width: 275px;
     text-align: center;
     top: 11px;
+}
+
+#upload-cancel {
+    float: right;
+    display: inline-block;
+    margin: 0;
+    margin-right: 5px;
+    top: 5px;
+}
+
+#upload-cancel span {
+    padding: 4px 5px 4px 5px;
 }
 
 #upload-dropzone-wrapper {

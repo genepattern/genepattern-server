@@ -10,7 +10,7 @@ function toggleCheckBoxes(maincheckbox, parentId) {
 	var isChecked = maincheckbox.checked;
 	var parentElement = document.getElementById(parentId);
 	var elements = parentElement.getElementsByTagName("input");
-	for (i = 0; i < elements.length; i++) {
+	for (var i = 0; i < elements.length; i++) {
 		if (elements[i].type = "checkbox") {
 			elements[i].checked = isChecked;
 		}
@@ -518,10 +518,10 @@ function ajaxFileTabUpload(file, directory){
 
     // Hide the dropzone
     $("#upload-dropzone").hide();
-    $("#upload-dropzone-wrapper span").hide();
+    $("#upload-dropzone-wrapper > span").hide();
 
     // Show the progressbar
-    $("#upload-dropzone-progress").show();
+    $("#upload-progress-wrapper").show();
     $("#upload-dropzone-progress").progressbar({
         value: false,
         change: function() {
@@ -540,6 +540,7 @@ function ajaxFileTabUpload(file, directory){
     reader.onload = function(event){
         loaded += event.loaded;
         xhr = new XMLHttpRequest();
+        $("#upload-dropzone-progress").data("xhr", xhr);
 
         var upload = xhr.upload;
 
@@ -555,11 +556,11 @@ function ajaxFileTabUpload(file, directory){
                     $("#upload-dropzone-progress-label").text("Upload Error!");
 
                     // Hide the progressbar
-                    $("#upload-dropzone-progress").hide();
+                    $("#upload-progress-wrapper").hide();
 
                     // Show the dropzone
                     $("#upload-dropzone").show();
-                    $("#upload-dropzone-wrapper span").show();
+                    $("#upload-dropzone-wrapper > span").show();
 
                     return;
                 }
@@ -578,11 +579,11 @@ function ajaxFileTabUpload(file, directory){
                         $("#upload-dropzone-progress-label").text("Upload Complete!");
 
                         // Hide the progressbar
-                        $("#upload-dropzone-progress").hide();
+                        $("#upload-progress-wrapper").hide();
 
                         // Show the dropzone
                         $("#upload-dropzone").show();
-                        $("#upload-dropzone-wrapper span").show();
+                        $("#upload-dropzone-wrapper > span").show();
 
                         // Refresh the tree
                         $("#uploadTree").data("dndReady", {});
@@ -652,16 +653,16 @@ function initUploads() {
     dropzone[0].addEventListener("drop", uploadDrop, false);
 
     // Ready AJAX for uploading as a binary file
-    if(!XMLHttpRequest.prototype.sendAsBinary){
+    if (!XMLHttpRequest.prototype.sendAsBinary) {
         XMLHttpRequest.prototype.sendAsBinary = function(datastr) {
             function byteValue(x) {
                 return x.charCodeAt(0) & 0xff;
             }
             var ords = Array.prototype.map.call(datastr, byteValue);
             var ui8a = new Uint8Array(ords);
-            try{
+            try {
                 this.send(ui8a);
-            }catch(e){
+            } catch(e){
                 this.send(ui8a.buffer);
             }
         };
@@ -676,6 +677,23 @@ function initUploads() {
             return null;
         }
     };
+
+    // Set up the cancel button
+    $("#upload-cancel")
+        .button()
+        .click(function() {
+            var xhr = $("#upload-dropzone-progress").data("xhr");
+            xhr.abort();
+
+            $("#upload-dropzone-progress-label").text("Upload Canceled!");
+
+            // Hide the progressbar
+            $("#upload-progress-wrapper").hide();
+
+            // Show the dropzone
+            $("#upload-dropzone").show();
+            $("#upload-dropzone-wrapper > span").show();
+        });
 }
 
 function initUploadTreeDND(folder_id) {
