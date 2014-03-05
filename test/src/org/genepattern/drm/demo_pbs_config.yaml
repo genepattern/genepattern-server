@@ -71,9 +71,6 @@ module.properties:
     # use the 'myHiMemPbsWorker' for all modules with this name
     ExampleModule01:
         executor.props: "PbsHiMemWorker"
-    # use the 'myLongPbsWorker' for all modules with this name
-    TopHat:
-        drm.workerName: "myLongPbsWorker"
     # customize by property name
     Example3:
         drm.walltime: "72:00:00"
