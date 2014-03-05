@@ -267,6 +267,9 @@ public class BasicCommandManager implements CommandManager {
         return firstKey;
     }
     
+    /**
+     * @deprecated, newer implementations of the CommandExecutor interface should call GpConfig.getValue(GpContext gpContext, String key) instead.
+     */
     @Override
     public CommandProperties getCommandProperties(JobInfo jobInfo) {
         CommandProperties props = ServerConfigurationFactory.instance().getCommandProperties(jobInfo);

@@ -26,6 +26,8 @@ public interface CommandExecutorMapper {
      *
      * @param jobInfo
      * @return
+     * 
+     * @deprecated, newer implementations of the CommandExecutor interface should call GpConfig.getValue(GpContext gpContext, String key) instead.
      */
     CommandProperties getCommandProperties(JobInfo jobInfo);
 }
