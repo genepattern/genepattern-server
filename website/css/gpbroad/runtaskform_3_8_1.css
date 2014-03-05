@@ -2,40 +2,83 @@
 	margin-top: 0 !important;
 }
 
-#paramsTable
+.pHeaderTitleDiv
 {
-    width: 100%;
+    margin-top: 6px;
+    padding-top: 4px;
+    margin-right: 8px;
+    font-size: 14px;
+    font-weight: bold;
+}
+
+.paramGroupSection
+{
+    margin-right: 8px;
+    padding-bottom: 8px;
+}
+
+.pHeaderTitleDiv:hover
+{
+    cursor: pointer;
+}
+
+.background
+{
+    background-color: #BDD3E9;
+}
+
+.border
+{
+    border: 2px solid #BDD3E9;
+}
+
+.paramSectionToggle
+{
+    vertical-align: middle;
+}
+
+.pHeaderDescription
+{
+    font-size: 12px;
+    margin-bottom: 6px;
+}
+
+.paramsTable
+{
+    min-width: 630px;
+    width: auto;
+    margin-right: 14px;
     height: 100%;
     border-spacing: 0;
 }
 
-#paramsTable tr.pRow td
+tr.pRow td
 {
     border-top: 2px solid #F0F0F0;
 }
 
-#paramsTable tr:first-child td
+tr:first-child td
 {
     border: none;
 }
 
-#paramsTable td
+td
 {
     padding: 7px 0 6px 0;
 }
 
-#paramsTable tr.paramDescription td
+tr.paramDescription td
 {
     padding-top: 0;
     padding-bottom: 2px;
 }
 
-#paramsTable td:nth-child(odd)
+.paramsTable td:nth-child(odd)
 {
     white-space: nowrap;
 }
 
-#paramsTable td:nth-child(even)
+.paramsTable td:nth-child(even)
 {
     padding-left: 14px;
 }
@@ -138,17 +181,23 @@ button.urlButton
     padding: 0;
 }
 
-#paramsTable td:first-child
+/*.paramsTable td:first-child
 {
     width: 15px;
 }
 
-#paramsTable tr:nth-child(odd)
+.paramsTable tr:nth-child(odd)
 {
     border-bottom: 1px solid #7898c7;
 }
+*/
 
-#paramsTable input[type=text]
+#submitJob
+{
+    min-width: 820px;
+}
+
+.paramsTable input[type=text]
 {
     width: 295px;
     height: 17px;
@@ -158,11 +207,10 @@ button.urlButton
 {
     vertical-align: bottom;
     padding: 9px 10px 10px 10px;
-    min-width: 490px;
+    min-width: 570px;
     margin-bottom: 0;
     display: inline-block;
     white-space: nowrap;
-    width: 100%;
 }
 
 .fileDiv button img
