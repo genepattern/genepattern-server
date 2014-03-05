@@ -337,6 +337,13 @@ public class ConfigYamlProperties {
         return cmdProperties;
     }
 
+    /**
+     * @deprecated, does not allow setting the executorId in the 'executor.props' entry,
+     *     does not allow setting the executorId from the job input form.
+     *     
+     * @param jobInfo
+     * @return
+     */
     public String getCommandExecutorId(JobInfo jobInfo) {
         final String key = "executor";
         //TODO: null check
