@@ -178,17 +178,14 @@ public class TestJobInput {
         Assert.assertEquals("numValues", 6, param.getNumValues());
     }
     
+    /**
+     * Null arg to GroupId should convert to empty string groupId.
+     */
     @Test
     public void testNullGroupId() {
-        final JobInput jobInput = new JobInput();
-        jobInput.setLsid(lsid);
-        try {
-            jobInput.addValue("inputList", DATA_URL+"all_aml_train.res", new GroupId( (String) null));
-            Assert.fail("null arg to GroupId constructor, should throw an IllegalArgumentException");
-        }
-        catch (IllegalArgumentException e) {
-            //expected
-        }
+        GroupId groupId=new GroupId( (String) null);
+        Assert.assertEquals("groupId.name", "", groupId.getName());
+        Assert.assertEquals("groupId.groupId", "", groupId.getGroupId());
     }
 
 }
