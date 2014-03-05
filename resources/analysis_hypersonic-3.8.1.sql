@@ -3,8 +3,8 @@ create table job_input_value (
     idx integer default 1 not null,
     pname varchar(511) not null,
     pvalue varchar(1023) not null,
-    group_id varchar(511) default '' not null,
-    group_name varchar(511) default '' not null,
+    group_id varchar(511) default '',
+    group_name varchar(511) default '',
     primary key (gp_job_no, idx, pname),
     constraint jiv_gpjn_fk foreign key (GP_JOB_NO) references ANALYSIS_JOB(JOB_NO) on delete cascade
 );

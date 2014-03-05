@@ -7,19 +7,24 @@ import org.genepattern.junitutil.DbUtil;
 import org.genepattern.junitutil.FileUtil;
 import org.genepattern.junitutil.TaskUtil;
 import org.genepattern.server.config.GpContext;
+import org.genepattern.server.config.GpContextFactory;
 import org.genepattern.server.job.input.GroupId;
 import org.genepattern.server.job.input.JobInput;
 import org.genepattern.webservice.TaskInfo;
 import org.junit.AfterClass;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
 public class TestJobInputValueDao {
-    final String userId="test_user";
-    final String gpUrl="http://127.0.0.1:8080/gp/";
-    final String cleLsid="urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00002:2";
-    final String cleZip="modules/ConvertLineEndings_v2.zip";
+    private static final String userId="test_user";
+    private static final String gpUrl="http://127.0.0.1:8080/gp/";
+    private static final String cleLsid="urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00002:2";
+    private static final String cleZip="modules/ConvertLineEndings_v2.zip";
+    
+    private GpContext gpContext;
+    private AnalysisJobUtil jobUtil;
     
     @BeforeClass
     static public void beforeClass() throws Exception {
@@ -31,8 +36,19 @@ public class TestJobInputValueDao {
         DbUtil.shutdownDb();
     } 
     
+    @Before
+    public void beforeTest() {
+        final File zipFile=FileUtil.getDataFile(cleZip);
+        final TaskInfo taskInfo=TaskUtil.getTaskInfoFromZip(zipFile);
+        gpContext=new GpContextFactory.Builder()
+            .userId(userId)
+            .taskInfo(taskInfo)
+            .build();
+        jobUtil=new AnalysisJobUtil();
+    }
+    
     @Test
-    public void testAddJobInputValue() throws Exception { 
+    public void testAddJobInputValue_fileGroup() throws Exception { 
         JobInput jobInput=new JobInput();
         jobInput.setLsid(cleLsid);
         jobInput.addValue("input.filename", gpUrl+"users/"+userId+"/all_aml_test_01.cls", new GroupId("test"));
@@ -50,15 +66,10 @@ public class TestJobInputValueDao {
         jobInput.addValue("drm.memory", "8gb");
         
         
-        final File zipFile=FileUtil.getDataFile(cleZip);
-        final TaskInfo taskInfo=TaskUtil.getTaskInfoFromZip(zipFile);
-        final GpContext taskContext=GpContext.getContextForUser(userId);
-        taskContext.setTaskInfo(taskInfo);
-        AnalysisJobUtil jobUtil=new AnalysisJobUtil();
         final boolean initDefault=true;
         
         // (1) db transaction
-        int jobNo=jobUtil.addJobToDb(taskContext, jobInput, initDefault);
+        int jobNo=jobUtil.addJobToDb(gpContext, jobInput, initDefault);
 
         // (2) another db transaction
         new JobInputValueRecorder().saveJobInput(jobNo, jobInput);
@@ -89,5 +100,27 @@ public class TestJobInputValueDao {
         jobInputOut = new JobInputValueRecorder().fetchJobInput(jobNo);
         Assert.assertEquals("jobInput.params.size after delete from analysis_job table", 0, jobInputOut.getParams().size());
     }
+    
+    @Test
+    public void testBlankValues() throws Exception {
+        JobInput jobInput=new JobInput();
+        jobInput.setLsid(cleLsid);
+        jobInput.addValue("input.filename", gpUrl+"users/"+userId+"/all_aml_test_01.cls");
+        // example job config params
+        jobInput.addValue("drm.queue", "broad");
+        jobInput.addValue("drm.memory", "8gb");
+        jobInput.addValue("walltime", "");
+
+        final boolean initDefault=true;
+        int jobNo=jobUtil.addJobToDb(gpContext, jobInput, initDefault);
+        new JobInputValueRecorder().saveJobInput(jobNo, jobInput);
+        JobInput jobInputOut = new JobInputValueRecorder().fetchJobInput(jobNo);
+
+        Assert.assertEquals("input.filename", gpUrl+"users/"+userId+"/all_aml_test_01.cls", jobInputOut.getParam("input.filename").getValues().get(0).getValue());
+        Assert.assertEquals("drm.queue", "broad", jobInputOut.getParam("drm.queue").getValues().get(0).getValue());
+        Assert.assertEquals("drm.memory", "8gb", jobInputOut.getParam("drm.memory").getValues().get(0).getValue());
+        Assert.assertEquals("walltime (empty string)", "", jobInputOut.getParam("walltime").getValues().get(0).getValue());
+    }
+    
 
 }
