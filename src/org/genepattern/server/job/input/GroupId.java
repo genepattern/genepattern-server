@@ -1,5 +1,7 @@
 package org.genepattern.server.job.input;
 
+import org.apache.log4j.Logger;
+
 import com.google.common.base.Objects;
 
 /**
@@ -8,6 +10,7 @@ import com.google.common.base.Objects;
  *
  */
 public class GroupId {
+    private static Logger log = Logger.getLogger(GroupId.class);
     public static final GroupId EMPTY=new GroupId();
 
     private final String name;
@@ -18,10 +21,14 @@ public class GroupId {
     }
     public GroupId(final String nameIn) {
         if (nameIn==null) {
-            throw new IllegalArgumentException("name not set");
+            log.debug("name not set");
+            this.name="";
+            this.groupId="";
         }
-        this.name=nameIn.trim();
-        this.groupId=this.name.toLowerCase();
+        else {
+            this.name=nameIn.trim();
+            this.groupId=this.name.toLowerCase();
+        }
     }
 
     //copy constructor
