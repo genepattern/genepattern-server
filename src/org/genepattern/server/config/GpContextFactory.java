@@ -1,5 +1,7 @@
 package org.genepattern.server.config;
 
+import java.io.File;
+
 import org.genepattern.server.job.input.JobInput;
 import org.genepattern.server.webapp.jsf.AuthorizationHelper;
 import org.genepattern.webservice.JobInfo;
@@ -53,7 +55,7 @@ public class GpContextFactory {
         return builder.build();
     }
     
-    public static GpContext createContextForJob(final JobInfo jobInfo, final TaskInfo taskInfo, final JobInput jobInput) {
+    public static GpContext createContextForJob(final JobInfo jobInfo, final TaskInfo taskInfo, final File taskLibDir, final JobInput jobInput) {
         Builder builder=new Builder();
         if (jobInfo != null) {
             builder=builder.jobInfo(jobInfo);
@@ -63,6 +65,9 @@ public class GpContextFactory {
         }
         if (taskInfo != null) {
             builder=builder.taskInfo(taskInfo);
+        }
+        if (taskLibDir != null) {
+            builder.taskLibDir(taskLibDir);
         }
         if (jobInput != null) {
             builder=builder.jobInput(jobInput);
@@ -75,10 +80,9 @@ public class GpContextFactory {
         private boolean isAdmin=false;
         private JobInfo jobInfo=null;
         private TaskInfo taskInfo=null;
+        private File taskLibDir=null;
         private JobInput jobInput=null;
 
-        public Builder() {
-        }
         public Builder userId(final String userId) {
             this.userId=userId;
             return this;
@@ -93,6 +97,10 @@ public class GpContextFactory {
         }
         public Builder taskInfo(final TaskInfo taskInfo) {
             this.taskInfo=taskInfo;
+            return this;
+        }
+        public Builder taskLibDir(final File taskLibDir) {
+            this.taskLibDir=taskLibDir;
             return this;
         }
         public Builder jobInput(final JobInput jobInput) {
@@ -111,6 +119,9 @@ public class GpContextFactory {
             }
             if (taskInfo!=null) {
                 gpContext.setTaskInfo(taskInfo);
+            }
+            if (taskLibDir!=null) {
+                gpContext.setTaskLibDir(taskLibDir);
             }
             if (jobInput!=null) {
                 gpContext.setJobInput(jobInput);

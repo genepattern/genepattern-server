@@ -136,6 +136,7 @@ import org.genepattern.server.domain.AnalysisJobDAO;
 import org.genepattern.server.domain.JobStatus;
 import org.genepattern.server.domain.JobStatusDAO;
 import org.genepattern.server.eula.EulaManager;
+import org.genepattern.server.eula.LibdirLegacy;
 import org.genepattern.server.executor.AnalysisJobScheduler;
 import org.genepattern.server.executor.CommandExecutor;
 import org.genepattern.server.executor.CommandExecutor2;
@@ -246,19 +247,10 @@ import org.genepattern.webservice.WebServiceException;
  */
 
 public class GenePatternAnalysisTask {
-    final static private Logger log = Logger.getLogger(GenePatternAnalysisTask.class);
+    private static final Logger log = Logger.getLogger(GenePatternAnalysisTask.class);
 
-    protected static final String CLASSPATH = "classpath";
-    protected static final String OUTPUT_FILENAME = "output_filename";
-    protected static final String ORIGINAL_PATH = "originalPath";
-    public static final String TASK_NAME = "GenePatternAnalysisTask";
-    final static String DATA_SERVLET_TOKEN = "/gp/data/";
-    
-    //these flags are for input files which have been moved, copied, or downloaded into the working directory for the job
-    //properties get set during onJob and removed during handleJobCompletion
-    //private static final String ORIGINAL_FILENAME = "originalFilename";
-    //private static final String ORIGINAL_LAST_MODIFIED="originalLastModified";
-    //private static final String ORIGINAL_LENGTH="originalLength";
+    private static final String ORIGINAL_PATH = "originalPath";
+    private static final String DATA_SERVLET_TOKEN = "/gp/data/";
 
     public enum JOB_TYPE {
         JOB,
@@ -640,49 +632,41 @@ public class GenePatternAnalysisTask {
             throw new JobDispatchException("Invalid arg to onJob, jobId="+jobId);
         }
 
-        JobInfo jobInfo = null;
-        JobInput jobInput = null;
-        int parentJobId = -1;
+        final JobInfo jobInfo;
+        final JobInput jobInput;
+        final int parentJobId; // = -1;
+        final TaskInfo taskInfo;
+        final String taskName;
+        final File taskLibDir;
         try {
             AnalysisDAO dao = new AnalysisDAO();
             jobInfo = dao.getJobInfo(jobId);
+            // handle special-case: job was terminated before it was started
+            if (JobStatus.ERROR.equals(jobInfo.getStatus()) || JobStatus.FINISHED.equals(jobInfo.getStatus())) {
+                log.info("job #"+jobId+" already finished, status="+jobInfo.getStatus());
+                return;
+            }
             parentJobId = dao.getParentJobId(jobId);
             jobInput = new JobInputValueRecorder().fetchJobInput(jobId);
+            taskInfo=TaskInfoCache.instance().getTask(jobInfo.getTaskLSID());
+            taskName=taskInfo.getName();
+            if (log.isDebugEnabled()) {
+                log.debug("taskName=" + taskName);
+            }
+            taskLibDir=new LibdirLegacy().getLibdir(taskInfo.getLsid());
         }
         catch (Throwable t) {
+            log.debug("Server error: Not able to load jobInfo for jobId: "+jobId, t);
             throw new JobDispatchException("Server error: Not able to load jobInfo for jobId: "+jobId, t);
         }
         finally {
             HibernateUtil.closeCurrentSession();
         }
-        
-        if (jobInfo == null) {
-            throw new JobDispatchException("Server error: Not able to load jobInfo for jobId: "+jobId);
-        }
 
-        // handle special-case: job was terminated before it was started
-        if (JobStatus.ERROR.equals(jobInfo.getStatus()) || JobStatus.FINISHED.equals(jobInfo.getStatus())) {
-            log.info("job #"+jobId+" already finished, status="+jobInfo.getStatus());
-            return;
-        }
-        
-        String taskName = "";
-        TaskInfo taskInfo = null;
-        int taskId = jobInfo.getTaskID();
-        try {
-            taskInfo = JobInfoManager.getTaskInfo(taskId);
-        }
-        catch (TaskIDNotFoundException e) {
-            throw e;
-        }
-        taskName = taskInfo.getName();
-        if (log.isDebugEnabled()) {
-            log.debug("taskName=" + taskName);
-        }
-        
-        final GpContext jobContext=GpContextFactory.createContextForJob(jobInfo, taskInfo, jobInput);
+        final GpConfig gpConfig = ServerConfigurationFactory.instance();
+        final GpContext jobContext=GpContextFactory.createContextForJob(jobInfo, taskInfo, taskLibDir, jobInput);
         //is disk space available
-        boolean allowNewJob = ServerConfigurationFactory.instance().getGPBooleanProperty(jobContext, "allow.new.job", true);
+        boolean allowNewJob = gpConfig.getGPBooleanProperty(jobContext, "allow.new.job", true);
         if (!allowNewJob) {
             String errorMessage = 
                 "Job did not run because there is not enough disk space available.\n";
@@ -691,7 +675,7 @@ public class GenePatternAnalysisTask {
 
         File rootJobDir = null;
         try {
-            rootJobDir = ServerConfigurationFactory.instance().getRootJobDir(jobContext);
+            rootJobDir = gpConfig.getRootJobDir(jobContext);
         }
         catch (Exception e) {
             throw new JobDispatchException("Error getting root job directory for jobId="+jobId, e);
@@ -1039,10 +1023,6 @@ public class GenePatternAnalysisTask {
                         catch (IOException e) {
                             throw new JobDispatchException(e);
                         }
-                        //attrsActual.put(ORIGINAL_PATH, originalPath);
-                        //attrsActual.put(ORIGINAL_FILENAME, outFile.getName());
-                        //attrsActual.put(ORIGINAL_LAST_MODIFIED, ""+outFile.lastModified());
-                        //attrsActual.put(ORIGINAL_LENGTH, ""+outFile.length());
                     }
                 } 
                 else if (j >= formalParamsLength) {
@@ -1098,7 +1078,7 @@ public class GenePatternAnalysisTask {
                             } 
                             catch (MalformedURLException mfe) {
                                 // path on server
-                                final boolean allowInputFilePaths = ServerConfigurationFactory.instance().getAllowInputFilePaths(jobContext);
+                                final boolean allowInputFilePaths = gpConfig.getAllowInputFilePaths(jobContext);
                                 if (!allowInputFilePaths) {
                                     vProblems.add("You are not permitted to access the requested file: "+originalPath);
                                     continue;
@@ -1139,7 +1119,7 @@ public class GenePatternAnalysisTask {
                             if ("file".equalsIgnoreCase(uri.getScheme())) {
                                 log.debug("handling 'file:///' url: "+originalPath);
                                 
-                                final boolean allowInputFilePaths = ServerConfigurationFactory.instance().getAllowInputFilePaths(jobContext);
+                                final boolean allowInputFilePaths = gpConfig.getAllowInputFilePaths(jobContext);
                                 if (allowInputFilePaths) {
                                     //check permissions and optionally convert value from url to server file path
                                     final String pname=pinfoRecord.getFormal().getName();
@@ -1354,7 +1334,7 @@ public class GenePatternAnalysisTask {
             throw new JobDispatchException(e);
         }
         // optionally, override the java flags if they have been overridden in the job configuration file
-        String javaFlags = ServerConfigurationFactory.instance().getGPProperty(jobContext, "java_flags");
+        String javaFlags = gpConfig.getGPProperty(jobContext, "java_flags");
         if (javaFlags != null) {
             props.setProperty("java_flags", javaFlags);
         }
@@ -1531,7 +1511,7 @@ public class GenePatternAnalysisTask {
             log.info("running " + taskName + " (job " + jobId + ") command: " + commandLine.toString());
         }
 
-        runCommand(jobContext, cmdLineArgs, environmentVariables, outDir, stdoutFile, stderrFile, stdinFile);
+        runCommand(gpConfig, jobContext, cmdLineArgs, environmentVariables, outDir, stdoutFile, stderrFile, stdinFile);
     }
     
     private ChoiceInfo initChoiceInfo(final ParameterInfoRecord pinfoRecord, final ParameterInfo pinfo) {
@@ -1556,10 +1536,9 @@ public class GenePatternAnalysisTask {
         return CommandExecutor2Wrapper.createCmdExecutor(cmdExec);
     }
 
-    private void runCommand(final GpContext jobContext, final String[] cmdLineArgs, final Map<String,String> environmentVariables, final File runDir, final File stdoutFile, final File stderrFile, final File stdinFile) 
+    private void runCommand(final GpConfig gpConfig, final GpContext jobContext, final String[] cmdLineArgs, final Map<String,String> environmentVariables, final File runDir, final File stdoutFile, final File stderrFile, final File stdinFile) 
     throws JobDispatchException
     {
-        final GpConfig gpConfig=ServerConfigurationFactory.instance();
         final boolean isPipeline=jobContext.getTaskInfo().isPipeline();
         final long jobDispatchTimeout = gpConfig.getGPIntegerProperty(jobContext, "job.dispatch.timeout", 300000);
         final CommandExecutor2 cmdExec=initCmdExec2(gpConfig, jobContext);

@@ -1,5 +1,7 @@
 package org.genepattern.server.config;
 
+import java.io.File;
+
 import org.genepattern.server.job.input.JobInput;
 import org.genepattern.server.webapp.jsf.AuthorizationHelper;
 import org.genepattern.webservice.JobInfo;
@@ -12,6 +14,7 @@ public class GpContext {
     private boolean checkPropertiesFiles = true;
     private String userId = null;
     private TaskInfo taskInfo = null;
+    private File taskLibDir = null;  // aka installation dir, the directory to which the task was installed
     private JobInfo jobInfo = null;
     private JobInput jobInput = null;
     private boolean isAdmin=false;
@@ -101,6 +104,18 @@ public class GpContext {
     public TaskInfo getTaskInfo() {
         return this.taskInfo;
     } 
+    
+    public void setTaskLibDir(final File taskLibDir) {
+        this.taskLibDir=taskLibDir;
+    }
+    /**
+     * Get the '<libdir>' for the current TaskInfo, can be null if it
+     * has not been initialized for this particular context.
+     * @return
+     */
+    public File getTaskLibDir() {
+        return this.taskLibDir;
+    }
 
     void setJobInfo(JobInfo jobInfo) {
         this.jobInfo = jobInfo;
