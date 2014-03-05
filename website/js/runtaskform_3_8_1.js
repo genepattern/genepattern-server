@@ -1415,7 +1415,6 @@ function getGroupId(element)
     return valueEntryDiv.data("groupId");
 }
 
-
 function updateValuesForGroup(groupId, paramName, valueList)
 {
     if(parameter_and_val_groups[paramName].groups[groupId] == undefined
@@ -1775,7 +1774,6 @@ function createParamTable(parameterNames, initialValues)
             for(var g=0;g<initialValuesByGroup.length;g++)
             {
                 valueTd.append(createParamValueEntryDiv(parameterName, initialValuesByGroup[g]));
-                //check if grouping is enabled
             }
         }
         else
@@ -3024,6 +3022,25 @@ function jqEscape(str) {
     return str.replace(/([;&,\.\+\*\~':"\!\^$%@\[\]\(\)=>\|])/g, '\\$1');
 }
 
+function getParamValueEntryDivByGroupId(paramName, groupId)
+{
+    var valueElement = null;
+    var paramRow = $("#" + jqEscape(paramName));
+
+    if(groupId != undefined && groupId != null && groupId.length > 0)
+    {
+        paramRow.find(".valueEntryDiv").each(function()
+        {
+            if($(this).data("groupId") == groupId)
+            {
+                valueElement = $(this);
+            }
+        });
+    }
+
+    return valueElement;
+}
+
 function setParameter(paramName, value, groupId)
 {
     var paramDetails = run_task_info.params[paramName];
@@ -3034,10 +3051,23 @@ function setParameter(paramName, value, groupId)
     }
 
     var paramRow = $("#" + jqEscape(paramName));
-    if($.inArray(field_types.CHOICE, paramDetails.type) != -1)
+
+    var valueEntryDiv = getParamValueEntryDivByGroupId(paramName, groupId);
+
+    if(valueEntryDiv == undefined || valueEntryDiv == null)
     {
-        paramRow.find("paramValueTd").find(".choice").first().val(value);
-        paramRow.find("paramValueTd").find(".choice").first().multiselect("refresh");
+        //if you get here then the groupId is probably null or not valid
+        //in that case just grab the first value entry div
+        valueEntryDiv = paramRow.find(".paramValueTd").find(".valueEntryDiv").first();
+    }
+
+    //if the type is choice and for the case of a file choice parameter
+    //check that the choice is visible and not the upload your own file div
+    if($.inArray(field_types.CHOICE, paramDetails.type) != -1
+        && valueEntryDiv.find(".choice").is(":visible"))
+    {
+        valueEntryDiv.find(".choice").val(value);
+        valueEntryDiv.find(".choice").multiselect("refresh");
         return
     }
 
