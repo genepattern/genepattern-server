@@ -76,7 +76,7 @@ public class AJAXUploadServlet extends HttpServlet {
         }
         catch (Exception e) {
             log.error("Unknown exception occurred in UploadReceiver.doPost(): " + e.getMessage());
-            returnErrorResponse(responseWriter, new FileUploadException("Unknown error occured: " + e.getMessage()));
+            returnErrorResponse(responseWriter, new FileUploadException("Unknown error occurred: " + e.getMessage()));
         }
         finally {
             responseWriter.close();

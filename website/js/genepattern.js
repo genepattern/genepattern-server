@@ -532,11 +532,6 @@ function ajaxFileTabUpload(file, directory){
         }
     });
 
-    reader.onprogress = function(event){
-        var progress = Math.min(Math.round((loaded/total) * 100), 100);
-        $("#upload-dropzone-progress").progressbar("value", progress);
-    };
-
     reader.onload = function(event){
         loaded += event.loaded;
         xhr = new XMLHttpRequest();
@@ -565,14 +560,16 @@ function ajaxFileTabUpload(file, directory){
                     return;
                 }
 
-
                 if (loaded < total) {
                     blob = file.slice(loaded, loaded + step + 1);
-                    reader.readAsBinaryString(blob);
+                    reader.readAsArrayBuffer(blob);
                 }
                 else {
                     loaded = total;
                 }
+
+                var progress = Math.min(Math.round((loaded/total) * 100), 100);
+                $("#upload-dropzone-progress").progressbar("value", progress);
 
                 if (loaded === total) {
                     if (!data.match("^Error:")) {
@@ -604,7 +601,7 @@ function ajaxFileTabUpload(file, directory){
         partitionIndex++;
     };
     var blob = file.slice(start, start + step + 1);
-    reader.readAsBinaryString(blob);
+    reader.readAsArrayBuffer(blob);
 }
 
 function uploadDrop(event) {
@@ -654,12 +651,10 @@ function initUploads() {
 
     // Ready AJAX for uploading as a binary file
     if (!XMLHttpRequest.prototype.sendAsBinary) {
-        XMLHttpRequest.prototype.sendAsBinary = function(datastr) {
+        XMLHttpRequest.prototype.sendAsBinary = function(ui8a) {
             function byteValue(x) {
                 return x.charCodeAt(0) & 0xff;
             }
-            var ords = Array.prototype.map.call(datastr, byteValue);
-            var ui8a = new Uint8Array(ords);
             try {
                 this.send(ui8a);
             } catch(e){
