@@ -185,6 +185,11 @@ public class DataResource {
     @DELETE
     @Path("/delete/{path:.+}")
     public Response deleteFile(@Context HttpServletRequest request, @PathParam("path") String path) {
+        // Fix for when the preceding slash is missing from the path
+        if (!path.startsWith("/")) {
+            path = "/" + path;
+        }
+
         try {
             final GpContext userContext=Util.getUserContext(request);
             if (path.startsWith("/users")) { // If this is a user upload
@@ -273,10 +278,12 @@ public class DataResource {
      */
     @PUT
     @Path("/createDirectory/{path:.+}")
-    public Response createDirectoryV1(
-            @Context HttpServletRequest request,
-            @PathParam("path") String path) 
-    {
+    public Response createDirectoryV1(@Context HttpServletRequest request, @PathParam("path") String path) {
+        // Fix for when the preceding slash is missing from the path
+        if (!path.startsWith("/")) {
+            path = "/" + path;
+        }
+
         try {
             GpContext userContext=Util.getUserContext(request);
             File relativePath = extractUsersPath(userContext, path);
@@ -464,6 +471,11 @@ public class DataResource {
     @PUT
     @Path("/createPipeline/{path:.+}")
     public Response createPipeline(@Context HttpServletRequest request, @Context HttpServletResponse response, @PathParam("path") String path, @QueryParam("name") String pipelineName) {
+        // Fix for when the preceding slash is missing from the path
+        if (!path.startsWith("/")) {
+            path = "/" + path;
+        }
+
         try {
             String user = (String) request.getSession().getAttribute(GPConstants.USERID);
             GpFilePath filePath = GpFileObjFactory.getRequestedGpFileObj("<GenePatternURL>" + path);
