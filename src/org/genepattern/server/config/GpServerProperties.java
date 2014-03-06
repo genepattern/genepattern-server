@@ -111,21 +111,24 @@ public class GpServerProperties {
             propertiesList.put("system.properties", systemProps);
             flattened.putAll(systemProps.getProperties());
         }
-        if (in.gpProperties != null) {
-            log.debug("loading genepattern.properties from file="+in.gpProperties);
-            Record gpProps=new Record(in.gpProperties);
+        if (in.gpPropertiesFile != null) {
+            log.debug("loading genepattern.properties from file="+in.gpPropertiesFile);
+            Record gpProps=new Record(in.gpPropertiesFile);
             propertiesList.put("genepattern.properties", gpProps);
             flattened.putAll(gpProps.getProperties());
         }
-        if (in.customProperties != null) {
-            log.debug("loading custom.properties from file="+in.customProperties);
-            Record customProps=new Record(in.customProperties);
+        if (in.customPropertiesFile != null) {
+            log.debug("loading custom.properties from file="+in.customPropertiesFile);
+            Record customProps=new Record(in.customPropertiesFile);
             propertiesList.put("custom.properties", customProps);
             flattened.putAll(customProps.getProperties());
         }
-        if (in.buildProperties != null) {
-            log.debug("loading build.properties from file="+in.buildProperties);
-            Record buildProps=new Record(in.buildProperties);
+        if (in.customProperties != null) {
+            flattened.putAll(in.customProperties);
+        }
+        if (in.buildPropertiesFile != null) {
+            log.debug("loading build.properties from file="+in.buildPropertiesFile);
+            Record buildProps=new Record(in.buildPropertiesFile);
             propertiesList.put("build.properties", buildProps);
             flattened.putAll(buildProps.getProperties());
         }
@@ -176,9 +179,10 @@ public class GpServerProperties {
         private boolean useSystemProperties = true;
         private boolean usePropertiesFiles = true;
         private File resourcesDir=null;
-        private File gpProperties=null;
-        private File customProperties=null;
-        private File buildProperties=null;
+        private File gpPropertiesFile=null;
+        private File customPropertiesFile=null;
+        private File buildPropertiesFile=null;
+        private Properties customProperties=null;
 
         public Builder initFromSystemProperties(final boolean initFromSystemProperties) {
             this.initFromSystemProperties=initFromSystemProperties;
@@ -197,29 +201,37 @@ public class GpServerProperties {
             return this;
         }
         public Builder gpProperties(final File gpProperties) {
-            this.gpProperties=gpProperties;
+            this.gpPropertiesFile=gpProperties;
             return this;
         }
         
         public Builder customProperties(final File customProperties) {
-            this.customProperties=customProperties;
+            this.customPropertiesFile=customProperties;
             return this;
         }
         
         public Builder buildProperties(final File buildProperties) {
-            this.buildProperties=buildProperties;
+            this.buildPropertiesFile=buildProperties;
+            return this;
+        }
+        
+        public Builder addCustomProperty(final String key, final String value) {
+            if (customProperties==null) {
+                customProperties=new Properties();
+            }
+            customProperties.setProperty(key, value);
             return this;
         }
         
         public GpServerProperties build() throws IllegalArgumentException {
-            if (gpProperties==null && resourcesDir != null) {
-                gpProperties=new File(resourcesDir, "genepattern.properties");
+            if (gpPropertiesFile==null && resourcesDir != null) {
+                gpPropertiesFile=new File(resourcesDir, "genepattern.properties");
             }
-            if (customProperties==null && resourcesDir != null) {
-                customProperties=new File(resourcesDir, "custom.properties");
+            if (customPropertiesFile==null && resourcesDir != null) {
+                customPropertiesFile=new File(resourcesDir, "custom.properties");
             }
-            if (buildProperties==null && resourcesDir != null) {
-                buildProperties=new File(resourcesDir, "build.properties");
+            if (buildPropertiesFile==null && resourcesDir != null) {
+                buildPropertiesFile=new File(resourcesDir, "build.properties");
             }
             return new GpServerProperties(this);
         }
