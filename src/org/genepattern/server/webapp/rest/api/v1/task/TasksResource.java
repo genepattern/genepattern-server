@@ -39,6 +39,7 @@ import org.genepattern.server.eula.EulaManager;
 import org.genepattern.server.eula.InitException;
 import org.genepattern.server.job.input.choice.ChoiceInfo;
 import org.genepattern.server.job.input.choice.ChoiceInfoHelper;
+import org.genepattern.server.job.input.choice.ChoiceInfoParser;
 import org.genepattern.server.rest.ParameterInfoRecord;
 import org.genepattern.server.tags.TagManager;
 import org.genepattern.server.tags.TagManager.Tag;
@@ -650,21 +651,20 @@ public class TasksResource {
         log.debug("taskNameOrLsid="+taskNameOrLsid);
         log.debug("pname="+pname);
         
-        GpContext userContext=Util.getUserContext(request);
-        final String userId=userContext.getUserId();
-        TaskInfo taskInfo = null;
+        final GpContext taskContext;
         try {
-            taskInfo=getTaskInfo(taskNameOrLsid, userId);
+            taskContext=Util.getTaskContext(request, taskNameOrLsid);
         }
         catch (Throwable t) {
-            return Responses.notFound().entity(t.getLocalizedMessage()).build();
+            log.debug(t);
+            return Responses.notFound().entity("Server error initializing taskContext for "+taskNameOrLsid).build();
         }
-        if(taskInfo == null) {
-            String errorMessage="No task with task id: " + taskNameOrLsid + " found " + "for user " + userId;
+        if (taskContext.getTaskInfo()==null) {
+            String errorMessage="No task with task id: " + taskNameOrLsid + " found " + "for user " + taskContext.getUserId();
             return Responses.notFound().entity(errorMessage).build();
         }
         
-        final Map<String,ParameterInfoRecord> paramInfoMap=ParameterInfoRecord.initParamInfoMap(taskInfo);
+        final Map<String,ParameterInfoRecord> paramInfoMap=ParameterInfoRecord.initParamInfoMap(taskContext.getTaskInfo());
         if (!paramInfoMap.containsKey(pname)) {
             String errorMessage="No parameter with name="+pname;
             return Responses.notFound().entity(errorMessage).build();
@@ -672,13 +672,14 @@ public class TasksResource {
         
         ParameterInfoRecord pinfoRecord=paramInfoMap.get(pname);
         if (!ChoiceInfo.hasChoiceInfo(pinfoRecord.getFormal())) {
-            return Responses.notFound().entity(taskInfo.getName()+"."+pname + " does not have a choiceInfo").build();
+            return Responses.notFound().entity(taskContext.getTaskInfo().getName()+"."+pname + " does not have a choiceInfo").build();
         }
         
-        ChoiceInfo choiceInfo=ChoiceInfo.getChoiceInfoParser().initChoiceInfo(pinfoRecord.getFormal());
+        ChoiceInfoParser parser=ChoiceInfo.getChoiceInfoParser(taskContext);
+        ChoiceInfo choiceInfo=parser.initChoiceInfo(pinfoRecord.getFormal());
         
         try {
-            final JSONObject choiceInfoJson=ChoiceInfoHelper.initChoiceInfoJson(request, taskInfo, choiceInfo);            
+            final JSONObject choiceInfoJson=ChoiceInfoHelper.initChoiceInfoJson(request, taskContext.getTaskInfo(), choiceInfo);            
             final String choiceInfoStr=choiceInfoJson.toString();
 
             //return the JSON representation of the job

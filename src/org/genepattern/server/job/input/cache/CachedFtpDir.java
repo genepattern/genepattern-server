@@ -16,11 +16,16 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.net.ftp.FTPFile;
 import org.apache.commons.net.ftp.FTPFileFilter;
 import org.apache.log4j.Logger;
+import org.genepattern.server.config.GpConfig;
+import org.genepattern.server.config.GpContext;
+import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.dm.GpFilePath;
 import org.genepattern.server.dm.UrlUtil;
 import org.genepattern.server.job.input.JobInputHelper;
-import org.genepattern.server.job.input.choice.DynamicChoiceInfoParser;
 import org.genepattern.server.job.input.choice.FtpDirFilter;
+import org.genepattern.server.job.input.choice.RemoteDirLister;
+import org.genepattern.server.job.input.choice.ftp.CommonsNet_3_3_DirLister;
+import org.genepattern.server.job.input.choice.ftp.ListFtpDirException;
 
 /**
  * For sync'ing a remote directory.
@@ -59,19 +64,35 @@ public class CachedFtpDir implements CachedFile {
         }
     }
 
+    private final GpConfig gpConfig;
+    private final GpContext jobContext;
     private final URL url;
     private final GpFilePath localPath;
     // the tmpDir contains a file indicating the status of the file transfer, so that we can
     // check for completed downloads after a server restart
     private final GpFilePath tmpDir;
-    
+
+    /**
+     * @deprecated - prefer that you pass in a valid GpContext
+     * @param urlString
+     */
     public CachedFtpDir(final String urlString) {
+        this((GpContext)null, urlString);
+    }
+    public CachedFtpDir(final GpContext jobContextIn, final String urlString) {
         if (log.isDebugEnabled()) {
             log.debug("Initializing CachedFtpFile, type="+this.getClass().getName());
         }
         this.url=JobInputHelper.initExternalUrl(urlString);
         if (url==null) {
             throw new IllegalArgumentException("value is not an external url: "+urlString);
+        }
+        this.gpConfig=ServerConfigurationFactory.instance();
+        if (jobContextIn==null) {
+            this.jobContext=GpContext.getServerContext();
+        }
+        else {
+            this.jobContext=jobContextIn;
         }
         this.localPath=CachedFtpFile.getLocalPath(url);
         if (this.localPath==null) {
@@ -123,7 +144,7 @@ public class CachedFtpDir implements CachedFile {
             final boolean isDir=false;
             for(final String fileToDownload : filesToDownload) {
                 try {
-                    final Future<?> f = FileCache.instance().getFutureObj(fileToDownload, isDir);
+                    final Future<?> f = FileCache.instance().getFutureObj(jobContext, fileToDownload, isDir);
                     f.get(100, TimeUnit.MILLISECONDS);
                 }
                 catch (TimeoutException e) {
@@ -133,7 +154,7 @@ public class CachedFtpDir implements CachedFile {
             }
             // now loop through all of the files and wait for each download to complete
             for(final String fileToDownload : filesToDownload) {
-                final Future<?> f = FileCache.instance().getFutureObj(fileToDownload, isDir);
+                final Future<?> f = FileCache.instance().getFutureObj(jobContext, fileToDownload, isDir);
                 f.get();
             }
         }
@@ -180,9 +201,10 @@ public class CachedFtpDir implements CachedFile {
         //1) get the listing of data files
         FTPFile[] files=null;
         try {
-            files=DynamicChoiceInfoParser.listFiles(ftpDir);
+            RemoteDirLister<FTPFile, ListFtpDirException> lister=CommonsNet_3_3_DirLister.createFromConfig(gpConfig, jobContext);
+            files=lister.listFiles(ftpDir);
         }
-        catch (DynamicChoiceInfoParser.ListFtpDirException e) {
+        catch (ListFtpDirException e) {
             log.error(e);
             throw new DownloadException("Error listing files from :"+ftpDir, e);
         }

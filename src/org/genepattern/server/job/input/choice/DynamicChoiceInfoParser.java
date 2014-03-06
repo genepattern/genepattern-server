@@ -1,19 +1,17 @@
 package org.genepattern.server.job.input.choice;
 
-import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.Date;
 import java.util.List;
 
-import org.apache.commons.net.ftp.FTP;
-import org.apache.commons.net.ftp.FTPClient;
 import org.apache.commons.net.ftp.FTPFile;
 import org.apache.commons.net.ftp.FTPFileFilter;
-import org.apache.commons.net.ftp.FTPReply;
 import org.apache.log4j.Logger;
+import org.genepattern.server.config.GpConfig;
+import org.genepattern.server.config.GpContext;
 import org.genepattern.server.dm.UrlUtil;
 import org.genepattern.server.job.input.choice.ChoiceInfo.Status.Flag;
+import org.genepattern.server.job.input.choice.ftp.CommonsNet_3_3_DirLister;
+import org.genepattern.server.job.input.choice.ftp.ListFtpDirException;
 import org.genepattern.webservice.ParameterInfo;
 
 
@@ -28,6 +26,14 @@ import org.genepattern.webservice.ParameterInfo;
  */
 public class DynamicChoiceInfoParser implements ChoiceInfoParser {
     private final static Logger log = Logger.getLogger(DynamicChoiceInfoParser.class);
+    
+    private final GpConfig gpConfig;
+    private final GpContext jobContext;
+    
+    public DynamicChoiceInfoParser(final GpConfig gpConfig, final GpContext jobContext) {
+        this.gpConfig=gpConfig;
+        this.jobContext=jobContext;
+    }
 
     @Override
     public ChoiceInfo initChoiceInfo(final ParameterInfo param) {
@@ -102,91 +108,6 @@ public class DynamicChoiceInfoParser implements ChoiceInfoParser {
         return choiceInfo;
     }
     
-    public static final class ListFtpDirException extends Exception {
-        public ListFtpDirException(final String message) {
-            super(message);
-        }
-    }
-
-    //TODO: add final int connectTimeout_ms, final int readTimeout_ms args, so that
-    //      we can cancel the file listing after a given timeout
-    public static final FTPFile[] listFiles(final String ftpDir) throws ListFtpDirException {
-        final URL ftpUrl;
-        try {
-            ftpUrl=new URL(ftpDir);
-            if (!"ftp".equalsIgnoreCase(ftpUrl.getProtocol())) {
-                log.error("Invalid ftpDir="+ftpDir);
-                throw new ListFtpDirException("Module error, Invalid ftpDir="+ftpDir);
-            }
-        }
-        catch (MalformedURLException e) {
-            log.error("Invalid ftpDir="+ftpDir, e);
-            throw new ListFtpDirException("Module error, Invalid ftpDir="+ftpDir);
-        }
-
-        FTPFile[] files;
-        final FTPClient ftpClient = new FTPClient();
-        try {
-            final int default_timeout_ms=15*1000; //15 seconds
-            final int socket_timeout_ms=15*1000; //15 seconds
-            ftpClient.setDataTimeout(default_timeout_ms);
-            ftpClient.connect(ftpUrl.getHost());
-            ftpClient.setSoTimeout(socket_timeout_ms);
-            // After connection attempt, you should check the reply code to verify success.
-            final int reply = ftpClient.getReplyCode();
-            if(!FTPReply.isPositiveCompletion(reply)) {
-                ftpClient.disconnect();
-                log.error("Connection refused, ftpDir="+ftpDir);
-                throw new ListFtpDirException("Connection refused, ftpDir="+ftpDir);
-            }
-            // anonymous login
-            final String ftpUsername="anonymous";
-            final String ftpPassword="gp-help@broadinstitute.org";
-            boolean success=ftpClient.login(ftpUsername, ftpPassword);
-            if (!success) {
-                final String errorMessage="Login error, ftpDir="+ftpDir;
-                log.error(errorMessage);
-                throw new ListFtpDirException(errorMessage);
-            }
-            ftpClient.setFileType(FTP.ASCII_FILE_TYPE);
-            //ftpClient.setFileType(FTP.BINARY_FILE_TYPE);
-            ftpClient.enterLocalPassiveMode();
-            
-            //check for valid path
-            success=ftpClient.changeWorkingDirectory(ftpUrl.getPath());
-            if (!success) {
-                final String errorMessage="Error CWD="+ftpUrl.getPath()+", ftpDir="+ftpDir;
-                log.error(errorMessage);
-                throw new ListFtpDirException(errorMessage);
-            }
-            
-            log.debug("listing files from directory: "+ftpClient.printWorkingDirectory());
-            files = ftpClient.listFiles();
-            return files;
-        }
-        catch (IOException e) {
-            String errorMessage="Error listing files from "+ftpDir;
-            log.error(errorMessage, e);
-            throw new ListFtpDirException(errorMessage);
-        }
-        catch (Throwable t) {
-            String errorMessage="Unexpected error listing files from "+ftpDir+", "+t.getClass().getName();
-            log.error(errorMessage, t);
-            throw new ListFtpDirException(errorMessage);
-        }
-        finally {
-            if(ftpClient.isConnected()) {
-                try {
-                    ftpClient.disconnect();
-                } 
-                catch(IOException ioe) {
-                    // do nothing
-                    log.warn("Error disconnecting from ftp client, ftpDir="+ftpDir, ioe);
-                }
-            }
-        }
-    }
-    
     /**
      * Initialize the ChoiceInfo from an ftp directory.
      * 
@@ -216,14 +137,18 @@ public class DynamicChoiceInfoParser implements ChoiceInfoParser {
 
         FTPFile[] files=null;
         try {
-            files=listFiles(ftpDir);
+            RemoteDirLister<FTPFile, ListFtpDirException> remoteLister=CommonsNet_3_3_DirLister.createFromConfig(gpConfig, jobContext);
+            files=remoteLister.listFiles(ftpDir);
         }
         catch (ListFtpDirException e) {
+            log.debug("dynamic drop-down error, param="+param.getName()+", ftpDir="+ftpDir, e);
             choiceInfo.setStatus(Flag.ERROR, e.getLocalizedMessage());
             return choiceInfo;
         }
         catch (Throwable t) {
-            log.error("Unexpected exception",t);
+            log.error("Unexpected dynamic drop-down error, param="+param.getName()+", ftpDir="+ftpDir, t);
+            choiceInfo.setStatus(Flag.ERROR, t.getLocalizedMessage());
+            return choiceInfo;
         }
         if (files==null) {
             final String errorMessage="Error listing files from "+ftpDir;

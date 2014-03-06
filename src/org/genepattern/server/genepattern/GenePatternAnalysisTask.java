@@ -796,7 +796,7 @@ public class GenePatternAnalysisTask {
                 final boolean isUrlMode=pinfo._isUrlMode();
                 final ParameterInfoRecord pinfoRecord=paramInfoMap.get(pinfo.getName());
                 final boolean isDirectoryInputParam=pinfoRecord.getFormal()._isDirectory();
-                final ChoiceInfo choiceInfo=initChoiceInfo(pinfoRecord, pinfo);
+                final ChoiceInfo choiceInfo=initChoiceInfo(jobContext, pinfoRecord, pinfo);
                 final Choice selectedChoice= choiceInfo == null ? null : choiceInfo.getValue(pinfo.getValue());
                 final boolean isFileChoiceSelection=
                         pinfoRecord.getFormal().isInputFile()
@@ -833,7 +833,7 @@ public class GenePatternAnalysisTask {
                     final GpFilePath cachedFile;
                     try {
                         // this method waits, if necessary, for the file to be transferred to a local path
-                        Future<CachedFile> f = FileCache.instance().getFutureObj(selectedChoice.getValue(), selectedChoice.isRemoteDir());
+                        Future<CachedFile> f = FileCache.instance().getFutureObj(jobContext, selectedChoice.getValue(), selectedChoice.isRemoteDir());
                         cachedFile=f.get().getLocalPath();
                     }
                     catch (Throwable t) {
@@ -1514,11 +1514,11 @@ public class GenePatternAnalysisTask {
         runCommand(gpConfig, jobContext, cmdLineArgs, environmentVariables, outDir, stdoutFile, stderrFile, stdinFile);
     }
     
-    private ChoiceInfo initChoiceInfo(final ParameterInfoRecord pinfoRecord, final ParameterInfo pinfo) {
+    private ChoiceInfo initChoiceInfo(final GpContext jobContext, final ParameterInfoRecord pinfoRecord, final ParameterInfo pinfo) {
         if (ChoiceInfo.hasChoiceInfo(pinfoRecord.getFormal())) {
             //it's a file choice
             log.debug("Checking for cached value for File Choice, "+pinfo.getName()+"="+pinfo.getValue());
-            ChoiceInfo choiceInfo = ChoiceInfo.getChoiceInfoParser().initChoiceInfo(pinfoRecord.getFormal());
+            ChoiceInfo choiceInfo = ChoiceInfo.getChoiceInfoParser(jobContext).initChoiceInfo(pinfoRecord.getFormal());
             return choiceInfo;
         }
         return null;

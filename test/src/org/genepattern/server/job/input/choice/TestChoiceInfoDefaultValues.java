@@ -1,6 +1,9 @@
 package org.genepattern.server.job.input.choice;
 
 
+import org.genepattern.server.config.GpConfig;
+import org.genepattern.server.config.GpContext;
+import org.genepattern.server.config.GpContextFactory;
 import org.genepattern.server.dm.jobinput.ParameterInfoUtil;
 import org.genepattern.webservice.ParameterInfo;
 import org.junit.Assert;
@@ -17,9 +20,12 @@ import org.junit.Test;
 public class TestChoiceInfoDefaultValues {
     private DynamicChoiceInfoParser parser;
     
+    
     @Before
     public void beforeTest() {
-        parser=new DynamicChoiceInfoParser();
+        GpConfig gpConfig=new GpConfig.Builder().build();
+        GpContext gpContext=new GpContextFactory.Builder().build();
+        parser=new DynamicChoiceInfoParser(gpConfig, gpContext);
     }
 
     /*

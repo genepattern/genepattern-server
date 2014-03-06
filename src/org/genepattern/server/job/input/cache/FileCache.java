@@ -15,6 +15,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 import org.apache.log4j.Logger;
+import org.genepattern.server.config.GpContext;
 
 /**
  * Maintain a cache of input files downloaded from an external source. 
@@ -82,7 +83,7 @@ public class FileCache {
      * @param externalUrl
      * @return
      */
-    private CachedFile initCachedFileObj(final String externalUrl, final boolean isRemoteDir) {
+    private CachedFile initCachedFileObj(final GpContext jobContext, final String externalUrl, final boolean isRemoteDir) {
         final File mappedFile=MapLocalEntry.initLocalFileSelection(externalUrl);
         if (mappedFile!=null) {
             if (!mappedFile.exists()) {
@@ -109,7 +110,7 @@ public class FileCache {
             return CachedFtpFile.Factory.instance().newCachedFtpFile(externalUrl);
         }
         else {
-            return new CachedFtpDir(externalUrl);
+            return new CachedFtpDir(jobContext, externalUrl);
         }
      }
     
@@ -151,12 +152,8 @@ public class FileCache {
         }
     }
 
-    //public synchronized Future<CachedFile> getFutureObj(final String externalUrl) {
-    //    final boolean isRemoteDir=false;
-    //    return getFutureObj(externalUrl, isRemoteDir);
-    //}
-    public synchronized Future<CachedFile> getFutureObj(final String externalUrl, final boolean isRemoteDir) {
-        final CachedFile obj = initCachedFileObj(externalUrl, isRemoteDir);
+    public synchronized Future<CachedFile> getFutureObj(final GpContext jobContext, final String externalUrl, final boolean isRemoteDir) {
+        final CachedFile obj = initCachedFileObj(jobContext, externalUrl, isRemoteDir);
         if (obj.isDownloaded()) {
             //already downloaded
             return new AlreadyDownloaded(obj);

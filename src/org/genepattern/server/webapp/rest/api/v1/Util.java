@@ -5,6 +5,9 @@ import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;
 
 import org.genepattern.server.config.GpContext;
+import org.genepattern.server.webservice.server.local.LocalAdminClient;
+import org.genepattern.webservice.TaskInfo;
+import org.genepattern.webservice.WebServiceException;
 
 public class Util {
     /**
@@ -26,6 +29,22 @@ public class Util {
         GpContext userContext = GpContext.getContextForUser(userId, initIsAdmin);
         return userContext;
     }
+        
+    public static GpContext getTaskContext(
+            final HttpServletRequest request,
+            final String taskNameOrLsid) 
+    throws WebServiceException
+    {
+        GpContext taskContext=getUserContext( request );
+        TaskInfo taskInfo = getTaskInfo( taskNameOrLsid, taskContext.getUserId() );
+        taskContext.setTaskInfo(taskInfo);
+        return taskContext;
+    }
 
+    private static TaskInfo getTaskInfo(final String taskLSID, final String username) 
+    throws WebServiceException 
+    {
+        return new LocalAdminClient(username).getTask(taskLSID);
+    }
 
 }

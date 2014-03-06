@@ -5,6 +5,7 @@ import java.io.StringWriter;
 import java.util.concurrent.ExecutionException;
 
 import org.apache.log4j.Logger;
+import org.genepattern.server.config.GpContext;
 import org.genepattern.server.genepattern.GenePatternAnalysisTask;
 import org.genepattern.server.jobqueue.JobQueueUtil;
 import org.genepattern.webservice.JobInfo;
@@ -36,9 +37,13 @@ public class JobSubmitter implements Runnable {
     
     @Override
     public void run() {
+        GpContext jobContext=null;
         JobInfo jobInfo=null;
         try {
-            jobInfo=FileDownloader.initJobInfo(jobId);
+            jobContext=FileDownloader.initJobContext(jobId);
+            if (jobContext != null) {
+                jobInfo=jobContext.getJobInfo();
+            }
         }
         catch (Throwable t) {
             //log below
@@ -62,7 +67,7 @@ public class JobSubmitter implements Runnable {
         boolean interrupted=false;
         try {
             log.debug("submitting job "+jobId);
-            startDownloadAndWait(jobInfo);
+            startDownloadAndWait(jobContext);
             log.debug("calling genePattern.onJob("+jobId+")");
             genePattern.onJob(jobId);
         }
@@ -91,14 +96,14 @@ public class JobSubmitter implements Runnable {
         }
     }
     
-    private void startDownloadAndWait(final JobInfo jobInfo) throws JobDispatchException, ExecutionException, InterruptedException {
-        FileDownloader downloader=FileDownloader.fromJobInfo(jobInfo);
+    private void startDownloadAndWait(final GpContext jobContext) throws JobDispatchException, ExecutionException, InterruptedException {
+        FileDownloader downloader=FileDownloader.fromJobContext(jobContext);
         if (!downloader.hasSelectedChoices()) {
             log.debug("No selected choices");
             return;
         }
         log.debug("downloading files for jobId="+jobId+" ...");
-        downloader.startDownloadAndWait();
+        downloader.startDownloadAndWait(jobContext);
     }
 
     //handle errors during job dispatch (moved from GPAT.onJob)

@@ -6,6 +6,9 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
+import org.genepattern.server.config.GpConfig;
+import org.genepattern.server.config.GpContext;
+import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.webservice.ParameterInfo;
 
 /**
@@ -200,9 +203,20 @@ public class ChoiceInfo {
         return choiceDirFilter;
     }
 
-    private static final ChoiceInfoParser choiceInfoParser= new DynamicChoiceInfoParser();
+    /**
+     * @return
+     * @deprecated - prefer to pass in a valid gpContext
+     */
     public static ChoiceInfoParser getChoiceInfoParser() {
-        return choiceInfoParser;
+        GpContext gpContext=GpContext.getServerContext();
+        return getChoiceInfoParser(gpContext);
+    }
+    public static ChoiceInfoParser getChoiceInfoParser(final GpContext gpContext) {
+        GpConfig gpConfig=ServerConfigurationFactory.instance();
+        return getChoiceInfoParser(gpConfig, gpContext);
+    }
+    public static ChoiceInfoParser getChoiceInfoParser(final GpConfig gpConfig, final GpContext gpContext) {
+        return new DynamicChoiceInfoParser(gpConfig, gpContext);
     }
 
     private final String paramName;

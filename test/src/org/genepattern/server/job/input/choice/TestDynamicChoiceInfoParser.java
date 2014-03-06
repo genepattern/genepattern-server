@@ -9,11 +9,17 @@ import java.util.List;
 import java.util.Map;
 
 import org.genepattern.junitutil.TaskUtil;
+import org.genepattern.server.config.GpConfig;
+import org.genepattern.server.config.GpContext;
+import org.genepattern.server.config.GpContextFactory;
+import org.genepattern.server.config.GpServerProperties;
 import org.genepattern.server.job.input.TestLoadModuleHelper;
+import org.genepattern.server.job.input.choice.ftp.CommonsNet_3_3_DirLister;
 import org.genepattern.server.rest.ParameterInfoRecord;
 import org.genepattern.webservice.ParameterInfo;
 import org.genepattern.webservice.TaskInfo;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -51,6 +57,16 @@ public class TestDynamicChoiceInfoParser {
         gseaGeneSetsDatabaseChoices.add(new Choice("c5.mf.v4.0.symbols.gmt [Gene Ontology]", "c5.mf.v4.0.symbols.gmt"));
         gseaGeneSetsDatabaseChoices.add(new Choice("c6.all.v4.0.symbols.gmt [Oncogenic Signatures]", "c6.all.v4.0.symbols.gmt"));
         gseaGeneSetsDatabaseChoices.add(new Choice("c7.all.v4.0.symbols.gmt [Immunologic signatures]", "c7.all.v4.0.symbols.gmt"));
+    }
+    
+    private DynamicChoiceInfoParser choiceInfoParser=null;
+
+    
+    @Before
+    public void beforeTest() {
+        GpConfig gpConfig=new GpConfig.Builder().build();
+        GpContext gpContext=new GpContextFactory.Builder().build();
+        choiceInfoParser=new DynamicChoiceInfoParser(gpConfig, gpContext);
     }
 
     @Test
@@ -125,7 +141,6 @@ public class TestDynamicChoiceInfoParser {
         final Map<String,ParameterInfoRecord> paramInfoMap=ParameterInfoRecord.initParamInfoMap(taskInfo);
         final ParameterInfoRecord pinfoRecord=paramInfoMap.get("gene.sets.database");
         
-        final DynamicChoiceInfoParser choiceInfoParser=new DynamicChoiceInfoParser();
         final ChoiceInfo choiceInfo=choiceInfoParser.initChoiceInfo(pinfoRecord.getFormal());
         
         Assert.assertNotNull("Expecting a non-null choiceInfo", choiceInfo);
@@ -143,7 +158,6 @@ public class TestDynamicChoiceInfoParser {
         final Map<String,ParameterInfoRecord> paramInfoMap=ParameterInfoRecord.initParamInfoMap(taskInfo);
         final ParameterInfoRecord pinfoRecord=paramInfoMap.get("statistic");
         
-        final DynamicChoiceInfoParser choiceInfoParser=new DynamicChoiceInfoParser();
         final ChoiceInfo choiceInfo=choiceInfoParser.initChoiceInfo(pinfoRecord.getFormal());
         Assert.assertNotNull("Expecting a non-null choiceInfo", choiceInfo);
         Choice selected=choiceInfo.getSelected();
@@ -153,6 +167,7 @@ public class TestDynamicChoiceInfoParser {
     }
     
     @Test
+    @SuppressWarnings("unchecked")
     public void testLegacyOptionalDropdown() {
         final String value="arg1;arg2;arg3;arg4";
         
@@ -163,7 +178,6 @@ public class TestDynamicChoiceInfoParser {
         pinfo.getAttributes().put("prefix_when_specified", "");
         pinfo.getAttributes().put("type", "java.lang.String");
         
-        final DynamicChoiceInfoParser choiceInfoParser=new DynamicChoiceInfoParser();
         final ChoiceInfo choiceInfo=choiceInfoParser.initChoiceInfo(pinfo);
         Assert.assertNotNull("Expecting a non-null choiceInfo", choiceInfo);
         Choice selected=choiceInfo.getSelected();
@@ -172,6 +186,7 @@ public class TestDynamicChoiceInfoParser {
         Assert.assertEquals("Checking default value", "arg1", selected.getValue());
     }
     
+    @SuppressWarnings("unchecked")
     private ParameterInfo initFtpParam(final String choiceDir) {
         final String name="input.file";
         final String value="";
@@ -213,7 +228,6 @@ public class TestDynamicChoiceInfoParser {
         final String choiceDir="ftp://gpftp.broadinstitute.org/example_data/gpservertest/DemoFileDropdown/input.dir/";
         final ParameterInfo pinfo=initFtpParam(choiceDir);
         
-        final DynamicChoiceInfoParser choiceInfoParser=new DynamicChoiceInfoParser();
         final ChoiceInfo choiceInfo=choiceInfoParser.initChoiceInfo(pinfo);
         
         Assert.assertNotNull("choiceInfo.choices", choiceInfo.getChoices());
@@ -234,15 +248,26 @@ public class TestDynamicChoiceInfoParser {
      * Note the bogus assert statement which always passes.
      */
     @Test
+    @SuppressWarnings("unchecked")
     public void testDynamicDropdownGsea() {
         final String choiceDir="ftp://gseaftp.broadinstitute.org/pub/gsea/annotations/";
         final ParameterInfo pinfo=initFtpParam(choiceDir);
         final String choiceDirFilter="*.chip";
         pinfo.getAttributes().put("choiceDirFilter", choiceDirFilter);
 
-        final DynamicChoiceInfoParser choiceInfoParser=new DynamicChoiceInfoParser();
+        // set custom.properties to use a 30 second timeout 
+        GpServerProperties serverProperties=new GpServerProperties.Builder()
+            .addCustomProperty(CommonsNet_3_3_DirLister.PROP_FTP_DATA_TIMEOUT, "30000")
+            .addCustomProperty(CommonsNet_3_3_DirLister.PROP_FTP_SOCKET_TIMEOUT, "30000")
+            .build();
+        GpConfig gpConfig=new GpConfig.Builder()
+            .serverProperties(serverProperties)
+            .build();
+        GpContext gpContext=new GpContextFactory.Builder().build();
+        choiceInfoParser=new DynamicChoiceInfoParser(gpConfig, gpContext);
+        
         final ChoiceInfo choiceInfo=choiceInfoParser.initChoiceInfo(pinfo);
-        //Assert.assertEquals("num choices", 143, choiceInfo.getChoices().size());
+        Assert.assertEquals("num choices", 143, choiceInfo.getChoices().size());
         Assert.assertEquals("always pass", true, true);
     }
 
@@ -250,12 +275,12 @@ public class TestDynamicChoiceInfoParser {
      * A required parameter with a default value should have an empty item at the start of the drop-down.
      */
     @Test
+    @SuppressWarnings("unchecked")
     public void testFtpFileDropdown_requiredWithDefaultValue() {
         final String choiceDir="ftp://gpftp.broadinstitute.org/example_data/gpservertest/DemoFileDropdown/input.dir/";
         final ParameterInfo pinfo=initFtpParam(choiceDir);
         pinfo.getAttributes().put("default_value", choiceDir+"a.txt");
 
-        final DynamicChoiceInfoParser choiceInfoParser=new DynamicChoiceInfoParser();
         final ChoiceInfo choiceInfo=choiceInfoParser.initChoiceInfo(pinfo);
         
         Assert.assertNotNull("choiceInfo.choices", choiceInfo.getChoices());
@@ -274,13 +299,13 @@ public class TestDynamicChoiceInfoParser {
      * An optional parameter with a default value should have an empty item at the start of the drop-down.
      */
     @Test
+    @SuppressWarnings("unchecked")
     public void testFtpFileDropdown_optionalWithDefaultValue() {
         final String choiceDir="ftp://gpftp.broadinstitute.org/example_data/gpservertest/DemoFileDropdown/input.dir/";
         final ParameterInfo pinfo=initFtpParam(choiceDir);
         pinfo.getAttributes().put("default_value", choiceDir+"a.txt");
         pinfo.getAttributes().put("optional", "on");
         
-        final DynamicChoiceInfoParser choiceInfoParser=new DynamicChoiceInfoParser();
         final ChoiceInfo choiceInfo=choiceInfoParser.initChoiceInfo(pinfo);
         
         Assert.assertNotNull("choiceInfo.choices", choiceInfo.getChoices());
@@ -299,12 +324,12 @@ public class TestDynamicChoiceInfoParser {
      * Test with a default value which doesn't match any items in the remote directory.
      */
     @Test
+    @SuppressWarnings("unchecked")
     public void testFtpFileDropdown_defaultValue_noMatch() {
         final String choiceDir="ftp://gpftp.broadinstitute.org/example_data/gpservertest/DemoFileDropdown/input.dir/";
         final ParameterInfo pinfo=initFtpParam(choiceDir);
         pinfo.getAttributes().put("default_value", choiceDir+"no_match.txt");
 
-        final DynamicChoiceInfoParser choiceInfoParser=new DynamicChoiceInfoParser();
         final ChoiceInfo choiceInfo=choiceInfoParser.initChoiceInfo(pinfo);
         
         Assert.assertNotNull("choiceInfo.choices", choiceInfo.getChoices());
@@ -322,13 +347,13 @@ public class TestDynamicChoiceInfoParser {
 
 
     @Test
+    @SuppressWarnings("unchecked")
     public void testFtpDirectoryDropdown() {
         final String choiceDir="ftp://gpftp.broadinstitute.org/example_data/gpservertest/DemoFileDropdown/input.dir/";
         final String choiceDirFilter="type=dir";
         final ParameterInfo pinfo=initFtpParam(choiceDir);
         pinfo.getAttributes().put("choiceDirFilter", choiceDirFilter);
 
-        final DynamicChoiceInfoParser choiceInfoParser=new DynamicChoiceInfoParser();
         final ChoiceInfo choiceInfo=choiceInfoParser.initChoiceInfo(pinfo);
 
         Assert.assertNotNull("choiceInfo.choices", choiceInfo.getChoices());
@@ -353,13 +378,14 @@ public class TestDynamicChoiceInfoParser {
      * test case: a directory selected from the drop-down, where the value does not include a trailing slash.
      */
     @Test
+    @SuppressWarnings("unchecked")
     public void testChoiceInfoGetValue_noTrailingSlash() {
         final String choiceDir="ftp://gpftp.broadinstitute.org/example_data/gpservertest/DemoFileDropdown/input.dir/";
         final String valueNoSlash="ftp://gpftp.broadinstitute.org/example_data/gpservertest/DemoFileDropdown/input.dir/A";
         final String choiceDirFilter="type=dir";
         final ParameterInfo pinfo=initFtpParam(choiceDir);
         pinfo.getAttributes().put("choiceDirFilter", choiceDirFilter);
-        final ChoiceInfo choiceInfo = ChoiceInfo.getChoiceInfoParser().initChoiceInfo(pinfo);
+        final ChoiceInfo choiceInfo = choiceInfoParser.initChoiceInfo(pinfo);
         
         final Choice expected=makeChoice(choiceDir, "A", true);
         Assert.assertEquals("getValue, no slash", expected, choiceInfo.getValue(valueNoSlash));
@@ -369,13 +395,14 @@ public class TestDynamicChoiceInfoParser {
      * test case: a directory selected from the drop-down, where the value includes a trailing slash.
      */
     @Test
+    @SuppressWarnings("unchecked")
     public void testChoiceInfoGetValue_withTrailingSlash() {
         final String choiceDir="ftp://gpftp.broadinstitute.org/example_data/gpservertest/DemoFileDropdown/input.dir/";
         final String value="ftp://gpftp.broadinstitute.org/example_data/gpservertest/DemoFileDropdown/input.dir/A/";
         final String choiceDirFilter="type=dir";
         final ParameterInfo pinfo=initFtpParam(choiceDir);
         pinfo.getAttributes().put("choiceDirFilter", choiceDirFilter);
-        final ChoiceInfo choiceInfo = ChoiceInfo.getChoiceInfoParser().initChoiceInfo(pinfo);
+        final ChoiceInfo choiceInfo = choiceInfoParser.initChoiceInfo(pinfo);
         
         final Choice expected=makeChoice(choiceDir, "A", true);
         Assert.assertEquals("getValue, no slash", expected, choiceInfo.getValue(value));

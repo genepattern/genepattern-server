@@ -10,6 +10,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 import org.apache.log4j.Logger;
+import org.genepattern.server.config.GpContext;
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.eula.GetTaskStrategy;
 import org.genepattern.server.eula.GetTaskStrategyDefault;
@@ -33,7 +34,13 @@ import org.genepattern.webservice.TaskInfo;
 public class FileDownloader {
     private static final Logger log = Logger.getLogger(FileDownloader.class);
 
-    private final List<Choice> selectedChoices;
+    
+    public static final GpContext initJobContext(final Integer jobId) throws JobDispatchException { 
+        final JobInfo jobInfo=initJobInfo(jobId);
+        final GetTaskStrategy getTaskStrategy=new GetTaskStrategyDefault();
+        final TaskInfo taskInfo=getTaskStrategy.getTaskInfo(jobInfo.getTaskLSID());        
+        return GpContext.getContextForJob(jobInfo, taskInfo);
+    }
     
     /**
      * Initialize a JobInfo instance for the given jobId.
@@ -70,13 +77,16 @@ public class FileDownloader {
      * @return
      * @throws JobDispatchException
      */
-    public static final FileDownloader fromJobInfo(final JobInfo jobInfo) throws JobDispatchException {
-        return new FileDownloader(jobInfo);
+    public static final FileDownloader fromJobContext(final GpContext jobContext) throws JobDispatchException {
+        return new FileDownloader(jobContext);
+    }
+    
+    private final List<Choice> selectedChoices;
+
+    private FileDownloader(final GpContext jobContext) {
+        this.selectedChoices=initSelectedChoices(jobContext);
     }
                 
-    private FileDownloader(final JobInfo jobInfo) {
-        this(jobInfo, null);
-    }
     private FileDownloader(final JobInfo jobInfo, final GetTaskStrategy getTaskStrategyIn) {
         final GetTaskStrategy getTaskStrategy;
         if (getTaskStrategyIn == null) {
@@ -131,6 +141,49 @@ public class FileDownloader {
     }
 
     /**
+     * Initialize a list of selected Choices for the given job. For each input parameter, if it has a file drop-down
+     * (aka Choice) and the runtime value was selected from the drop-down, then add it to the list.
+     * 
+     * @param taskInfo
+     * @param jobInfo
+     * @return an empty list of the job has no input values from a file drop-down selection.
+     */
+    private static List<Choice> initSelectedChoices(final GpContext jobContext) {
+        final TaskInfo taskInfo=jobContext.getTaskInfo();
+        final JobInfo jobInfo=jobContext.getJobInfo();
+        
+        List<Choice> selectedChoices=null;
+        final Map<String,ParameterInfoRecord> paramInfoMap=ParameterInfoRecord.initParamInfoMap(taskInfo);
+        for(final ParameterInfo pinfo : jobInfo.getParameterInfoArray()) {
+            final ParameterInfoRecord pinfoRecord=paramInfoMap.get( pinfo.getName() );
+            if (pinfoRecord==null) {
+                //skip, probably here because it's a completed job
+                log.debug("skipping param="+pinfo.getName());
+            }
+            else {
+                final ChoiceInfo choiceInfo=ChoiceInfoHelper.initChoiceInfo(pinfoRecord, pinfo);
+                final Choice selectedChoice= choiceInfo == null ? null : choiceInfo.getValue(pinfo.getValue());
+                final boolean isFileChoiceSelection=
+                        pinfoRecord.getFormal().isInputFile() &&
+                        selectedChoice != null && 
+                        selectedChoice.getValue() != null && 
+                        selectedChoice.getValue().length() > 0;
+                if (isFileChoiceSelection) {
+                    //lazy-init the list
+                    if (selectedChoices==null) {
+                        selectedChoices=new ArrayList<Choice>();
+                    }
+                    selectedChoices.add(selectedChoice);
+                }
+            }
+        }
+        if (selectedChoices==null) {
+            return Collections.emptyList();
+        }
+        return selectedChoices;
+    }
+
+    /**
      * Does the job have at least one input selected from a file drop-down?
      * @return
      */
@@ -147,7 +200,7 @@ public class FileDownloader {
      * @throws InterruptedException
      * @throws ExecutionException
      */
-    public void startDownloadAndWait() throws InterruptedException, ExecutionException {
+    public void startDownloadAndWait(final GpContext jobContext) throws InterruptedException, ExecutionException {
         if (selectedChoices == null) {
             return;
         }
@@ -160,7 +213,7 @@ public class FileDownloader {
             try {
                 final String selectedValue=selectedChoice.getValue();
                 final boolean isDir=selectedChoice.isRemoteDir();
-                final Future<?> f = FileCache.instance().getFutureObj(selectedValue, isDir);
+                final Future<?> f = FileCache.instance().getFutureObj(jobContext, selectedValue, isDir);
                 f.get(100, TimeUnit.MILLISECONDS);
             }
             catch (TimeoutException e) {
@@ -172,7 +225,7 @@ public class FileDownloader {
         for(final Choice selectedChoice : selectedChoices) {
             final String selectedValue=selectedChoice.getValue();
             final boolean isDir=selectedChoice.isRemoteDir();
-            final Future<?> f = FileCache.instance().getFutureObj(selectedValue, isDir);
+            final Future<?> f = FileCache.instance().getFutureObj(jobContext, selectedValue, isDir);
             f.get();
         }    
     }
