@@ -624,12 +624,41 @@ function uploadDrop(event) {
         return;
     }
 
-    if ($(event.target).attr("id") === "upload-dropzone") {
-        openUploadDirectoryDialog(filelist);
+    var dirPromptIfNecessary = function () {
+        if ($(event.target).attr("id") === "upload-dropzone") {
+            openUploadDirectoryDialog(filelist);
+        }
+        else {
+            var directory = $(event.target).closest(".jstree-open").find("a:first").attr("href");
+            uploadAfterDialog(filelist, directory);
+        }
     }
-    else {
-        var directory = $(event.target).closest(".jstree-open").find("a:first").attr("href");
-        uploadAfterDialog(filelist, directory);
+
+    // Check for special characters
+    var specialCharacters = false;
+    var regex = new RegExp("[^A-Za-z0-9-_.]");
+    for (var i = 0; i < filelist.length; i++) {
+        var file = filelist[i];
+        if (regex.test(file.name)) {
+            specialCharacters = true;
+            showDialog("File Name With Special Character!",
+                "One or more files being uploaded has a name containing special characters. " +
+                "Some older GenePattern modules do not handle names with special characters well. " +
+                "Are you sure you want to continue the upload?", {
+                    "Yes": function() {
+                        $(this).dialog("close");
+                        dirPromptIfNecessary();
+                    },
+                    "No": function() {
+                        $(this).dialog("close");
+                    }
+                });
+            break;
+        }
+    }
+
+    if (!specialCharacters) {
+        dirPromptIfNecessary();
     }
 }
 
