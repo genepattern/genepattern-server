@@ -485,6 +485,7 @@ body {
     padding-right: 5px;
     padding-top: 10px;
     padding-bottom: 10px;
+    cursor: pointer;
 }
 
 #upload-dropzone-progress {
@@ -512,6 +513,11 @@ body {
 
 #upload-cancel span {
     padding: 4px 5px 4px 5px;
+}
+
+#upload-dropzone-input {
+    position: absolute;
+    bottom: -100px;
 }
 
 #upload-dropzone-wrapper {

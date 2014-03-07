@@ -689,6 +689,21 @@ function initUploads() {
             $("#upload-dropzone").show();
             $("#upload-dropzone-wrapper > span").show();
         });
+
+    // Add click to browse functionality
+    $("<input />")
+        .attr("id", "upload-dropzone-input")
+        .attr("type", "file")
+        .change(function(event) {
+            var filelist = event.target.files;
+            openUploadDirectoryDialog(filelist);
+        })
+        .appendTo("#upload-dropzone-wrapper");
+
+    $("#upload-dropzone").click(function() {
+        alert("ok");
+        $("#upload-dropzone-input").trigger("click");
+    });
 }
 
 function initUploadTreeDND(folder_id) {
@@ -715,7 +730,6 @@ function initUploadTreeDND(folder_id) {
             ready = $("#uploadTree").data("dndReady");
         }
         ready[folder_id] = true;
-
     });
 }
 
