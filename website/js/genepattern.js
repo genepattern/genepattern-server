@@ -636,7 +636,7 @@ function uploadDrop(event) {
 
     // Check for special characters
     var specialCharacters = false;
-    var regex = new RegExp("[^A-Za-z0-9-_.]");
+    var regex = new RegExp("[^A-Za-z0-9_.]");
     for (var i = 0; i < filelist.length; i++) {
         var file = filelist[i];
         if (regex.test(file.name)) {
