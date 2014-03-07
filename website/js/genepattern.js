@@ -641,10 +641,10 @@ function uploadDrop(event) {
         var file = filelist[i];
         if (regex.test(file.name)) {
             specialCharacters = true;
-            showDialog("File Name With Special Character!",
-                "One or more files being uploaded has a name containing special characters. " +
-                "Some older GenePattern modules do not handle names with special characters well. " +
-                "Are you sure you want to continue the upload?", {
+            showDialog("Special Characters!",
+                "One or more files being uploaded has a name containing special characters!<br/><br/>" +
+                "Some older GenePattern modules do not handle special characters well. " +
+                "Are you sure you want to continue?", {
                     "Yes": function() {
                         $(this).dialog("close");
                         dirPromptIfNecessary();
