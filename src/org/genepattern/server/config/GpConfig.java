@@ -527,6 +527,9 @@ public class GpConfig {
                 if (configFile != null) {
                     resourcesDir=configFile.getParentFile();
                 }
+                else if (serverProperties != null) {
+                    resourcesDir=serverProperties.getResourcesDir();
+                }
             }
 
             return new GpConfig(this);
