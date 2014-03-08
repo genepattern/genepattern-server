@@ -1,0 +1,45 @@
+#
+# LSF flags exposed in the input form
+#
+# lsf.project  (a string, default="GenePattern")
+# lsf.queue    (a string, one of 'genepattern', 'hour', 'week')
+# lsf.max.memory (an integer, number of Gb, default is '2')
+# lsf.cpu.slots
+#
+# LSF flags not exposed in the input form
+#
+# lsf.priority
+# lsf.stdout.file
+# lsf.job.report.file
+# lsf.use.pre.exec.command
+# lsf.pre.exec.standard.directories
+# lsf.host.os
+# lsf.extra.bsub.args
+# lsf.job.completion.listener
+#
+
+{
+# input param grouping
+name: "Advanced/Lsf Resources",
+description: "Optional LSF job resource requirements",
+hidden: true,
+parameters: [
+{ name: "lsf.project",
+  altName: "project",
+  description: "a string, default is 'gpdev'",
+  optional: true },
+{ name: "lsf.queue",
+  altName: "queue",
+  description: "All jobs are run as the 'gpdev' role account, by default on the 'genepattern' queue. See the BITS Wiki (https://it.broadinstitute.org/wiki/LSF) for details on the other queues.",
+  choices: ["genepattern", "hour", "week", "bhour", "bweek", "priority" ],
+  defaultValue: "genepattern" ,
+  optional: true
+   },
+{ name: "lsf.max.memory",
+  description: "An integer, in number of Gb, default is '2'",
+  optional: true },
+{ name: "lsf.cpu.slots",
+  description: "The '-n' arg to the bsub command",
+  optional: true }
+]
+}
