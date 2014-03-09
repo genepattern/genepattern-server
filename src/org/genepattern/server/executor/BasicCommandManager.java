@@ -219,6 +219,9 @@ public class BasicCommandManager implements CommandManager {
     public void setPipelineExecutor(String id) {
         this.pipelineExecId = id;
     }
+    public String getPipelineExecutorId() {
+        return this.pipelineExecId;
+    }
     
     public CommandExecutor getCommandExecutorById(String cmdExecutorId) {
         return cmdExecutorsMap.get(cmdExecutorId);
