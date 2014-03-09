@@ -37,6 +37,9 @@ parameters: [
    },
 { name: "lsf.max.memory",
   description: "An integer, in number of Gb, default is '2'",
+  # <actualValue>=<displayValue>
+  choices: [ "1=small (1 Gb)", "2=default (2 Gb)", "8=8 Gb", "12=12 Gb", "16=16 Gb", "24=max available (24 Gb)" ],
+  defaultValue: "2",
   optional: true },
 { name: "lsf.cpu.slots",
   description: "The '-n' arg to the bsub command",

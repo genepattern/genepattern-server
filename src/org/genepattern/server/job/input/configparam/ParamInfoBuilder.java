@@ -4,11 +4,11 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+import org.genepattern.server.job.input.choice.Choice;
 import org.genepattern.server.job.input.choice.ChoiceInfo;
+import org.genepattern.server.job.input.choice.ChoiceInfoHelper;
 import org.genepattern.util.GPConstants;
 import org.genepattern.webservice.ParameterInfo;
-
-import com.google.common.base.Joiner;
 
 public class ParamInfoBuilder {
     private final String name;
@@ -16,7 +16,7 @@ public class ParamInfoBuilder {
     //private final String value="";
     private String description="";
     private boolean optional=true;
-    private List<String> choices=null;
+    private List<Choice> choices=null;
     private String defaultValue="";
 
     public ParamInfoBuilder(final String name) {
@@ -38,11 +38,11 @@ public class ParamInfoBuilder {
         this.defaultValue=defaultValue;
         return this;
     }
-    public ParamInfoBuilder addChoice(final String value) {
+    public ParamInfoBuilder addChoice(final Choice choice) {
         if (choices==null) {
-            choices=new ArrayList<String>();
+            choices=new ArrayList<Choice>();
         }
-        choices.add(value);
+        choices.add(choice);
         return this;
     }
 
@@ -65,8 +65,7 @@ public class ParamInfoBuilder {
         }
         pinfo.getAttributes().put("type", "java.lang.String");
         if (choices!=null) {
-            Joiner joiner=Joiner.on(";").useForNull("");
-            String choicesStr=joiner.join(choices);
+            final String choicesStr=ChoiceInfoHelper.initManifestEntryFromChoices(choices);
             pinfo.getAttributes().put(ChoiceInfo.PROP_CHOICE, choicesStr);
         }
         return pinfo;

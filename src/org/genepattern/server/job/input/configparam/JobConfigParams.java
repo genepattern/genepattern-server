@@ -1,6 +1,7 @@
 package org.genepattern.server.job.input.configparam;
 
 import java.io.File;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -23,7 +24,7 @@ import com.google.common.collect.ImmutableList;
 public class JobConfigParams {
     private static Logger log = Logger.getLogger(JobConfigParams.class);
 
-    public static final String PROP_ENABLE_JOB_CONFIG_PARAMS="enableJobConfigParams";
+    public static final String PROP_ENABLE_EXECUTOR_INPUT_PARAMS="enableExecutorInputParams";
     public static final String PROP_EXECUTOR_INPUT_PARAMS="executor.inputParams";
     
     /**
@@ -60,6 +61,7 @@ public class JobConfigParams {
     
     private final InputParamGroup jobConfigGroup;
     private final List<ParameterInfo> params;
+    private final Map<String,ParameterInfo> paramInfoMap;
     
     private JobConfigParams(final Builder in) {
         InputParamGroup.Builder paramGroupBuilder=new InputParamGroup.Builder(in.paramGroupName)
@@ -70,6 +72,10 @@ public class JobConfigParams {
         }
         this.jobConfigGroup=paramGroupBuilder.build();
         this.params=ImmutableList.copyOf(in.params.values());
+        this.paramInfoMap=new HashMap<String,ParameterInfo>();
+        for(final ParameterInfo param : params) {
+            paramInfoMap.put(param.getName(), param);
+        }
     }
     
     public InputParamGroup getInputParamGroup() {
@@ -78,6 +84,10 @@ public class JobConfigParams {
     
     public List<ParameterInfo> getParams() {
         return params;
+    }
+    
+    public ParameterInfo getParam(final String pname) {
+        return paramInfoMap.get(pname);
     }
     
     public static class Builder { 

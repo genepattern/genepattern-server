@@ -6,6 +6,9 @@ import java.io.InputStream;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.log4j.Logger;
+import org.genepattern.server.job.input.choice.Choice;
+import org.genepattern.server.job.input.choice.ChoiceInfoHelper;
 import org.genepattern.webservice.ParameterInfo;
 import org.yaml.snakeyaml.Yaml;
 
@@ -16,6 +19,7 @@ import org.yaml.snakeyaml.Yaml;
  *
  */
 public class JobConfigParamsParserYaml {
+    final static private Logger log = Logger.getLogger(JobConfigParamsParserYaml.class);
     public static final JobConfigParams parse(final File file) throws Exception {
         InputStream in=null;
         try {
@@ -46,8 +50,8 @@ public class JobConfigParamsParserYaml {
             return builder.build();
         }
         catch (Throwable t) {
-            //TODO: log.error("Error parsing config file="+file.getPath(), t);
-            throw new Exception("Error parsing config file="+file.getPath());
+            log.error("Error parsing config file="+file.getPath(), t);
+            throw new Exception("Error parsing config file="+file.getPath()+": "+t.getLocalizedMessage());
         }
         finally {
             if (in != null) {
@@ -56,7 +60,7 @@ public class JobConfigParamsParserYaml {
         }
     }
     
-    static ParameterInfo initParamInfo(final Object obj) {
+    static ParameterInfo initParamInfo(final Object obj) throws Exception {
         final Map<?,?> map = (Map<?,?>) obj;
         ParamInfoBuilder builder=new ParamInfoBuilder( (String) map.get("name"));
         if (map.containsKey("altName")) {
@@ -72,8 +76,14 @@ public class JobConfigParamsParserYaml {
             builder.defaultValue( (String) map.get("defaultValue") );
         }
         if (map.containsKey("choices")) {
-            for(final String choice : (List<String>) map.get("choices")) {
-                builder.addChoice(choice);
+            for(final Object choiceObj : (List<?> )map.get("choices")) {
+                if (choiceObj instanceof String) {
+                    final Choice choice=ChoiceInfoHelper.initChoiceFromManifestEntry((String)choiceObj);
+                    builder.addChoice(choice);
+                }
+                else {
+                    throw new Exception("parse error, 'choices' must be an array of string");
+                }
             }
         }
         return builder.build();

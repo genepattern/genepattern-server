@@ -296,8 +296,8 @@ public class RunTaskServlet extends HttpServlet
             final LibdirStrategy libdirStrategy = new LibdirLegacy();
             final TasklibPath filePath = new TasklibPath(libdirStrategy, taskInfo, "paramgroups.json");
             JSONArray paramGroupsJson = loadModuleHelper.getParameterGroupsJson(taskInfo, filePath.getServerFile());
-            final boolean enableJobConfigParams=ServerConfigurationFactory.instance().getGPBooleanProperty(userContext, JobConfigParams.PROP_ENABLE_JOB_CONFIG_PARAMS, false);
-            if (enableJobConfigParams) {
+            final boolean enableExecutorInputParams=ServerConfigurationFactory.instance().getGPBooleanProperty(userContext, JobConfigParams.PROP_ENABLE_EXECUTOR_INPUT_PARAMS, false);
+            if (enableExecutorInputParams) {
                 final GpConfig gpConfig=ServerConfigurationFactory.instance();
                 final JobConfigParams jobConfigParams=JobConfigParams.initJobConfigParams(gpConfig, userContext);
                 if (jobConfigParams != null) {
@@ -407,7 +407,7 @@ public class RunTaskServlet extends HttpServlet
         @Context HttpServletRequest request)
     {
         final GpContext userContext = Util.getUserContext(request);
-        final boolean enableJobConfigParams=ServerConfigurationFactory.instance().getGPBooleanProperty(userContext, JobConfigParams.PROP_ENABLE_JOB_CONFIG_PARAMS, false);
+        final boolean enableJobConfigParams=ServerConfigurationFactory.instance().getGPBooleanProperty(userContext, JobConfigParams.PROP_ENABLE_EXECUTOR_INPUT_PARAMS, false);
         if (enableJobConfigParams) {
             return newAddJob(userContext, jobSubmitInfo, request);
         }

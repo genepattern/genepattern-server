@@ -7,7 +7,10 @@ import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.GpContextFactory;
 import org.genepattern.server.config.GpServerProperties;
+import org.genepattern.server.job.input.choice.ChoiceInfo;
+import org.genepattern.server.job.input.choice.ChoiceInfoHelper;
 import org.genepattern.server.job.input.configparam.JobConfigParams;
+import org.genepattern.webservice.ParameterInfo;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -22,7 +25,7 @@ public class TestLsfInputParams {
         final File resourcesDir=FileUtil.getSourceDir(this.getClass());
         final GpServerProperties serverProperties=new GpServerProperties.Builder()
             .resourcesDir(resourcesDir)
-            .addCustomProperty("executor.inputParams", "lsf_executorInputParams.yaml")
+            .addCustomProperty("executor.inputParams", "lsfInputParams.yaml")
             .build();
         final GpConfig gpConfig=new GpConfig.Builder()
             .serverProperties(serverProperties)
@@ -38,6 +41,14 @@ public class TestLsfInputParams {
         Assert.assertEquals("lsfParams[1].name", "lsf.queue", lsfParams.getParams().get(1).getName());
         Assert.assertEquals("lsfParams[2].name", "lsf.max.memory", lsfParams.getParams().get(2).getName());
         Assert.assertEquals("lsfParams[3].name", "lsf.cpu.slots", lsfParams.getParams().get(3).getName());
+        
+        
+        //test choice drop-down with labels
+        ParameterInfo lsfMaxMemory=lsfParams.getParam("lsf.max.memory");
+        Assert.assertEquals("lsf.max.memory.defaultValue", "2", lsfMaxMemory.getDefaultValue());
+        ChoiceInfo choiceInfo=ChoiceInfoHelper.initChoiceInfo(lsfMaxMemory);    
+        Assert.assertEquals("small (1 Gb)", choiceInfo.getChoices().get(0).getLabel());
+        Assert.assertEquals("1", choiceInfo.getChoices().get(0).getValue());
     }
 
 }

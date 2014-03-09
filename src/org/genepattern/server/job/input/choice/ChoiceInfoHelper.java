@@ -97,6 +97,51 @@ public class ChoiceInfoHelper {
     }
 
 
+    /**
+     * Generate the string representation (for the gp manifest file) for the Choice instance.
+     * Format is, <actualValue>=<displayValue>
+     * @param choice
+     * @return
+     */
+    public static final String initManifestEntryFromChoice(final Choice choice) {
+        if (choice==null) {
+            throw new IllegalArgumentException("choice==null");
+        }
+        if (choice.getLabel()==null) {
+            if (choice.getValue()==null) {
+                return "";
+            }
+            return choice.getValue();
+        }
+        // <actualValue>=<displayValue>
+        if (choice.getValue()==null) {
+            return "="+choice.getLabel();
+        }
+        if (choice.getValue().equals(choice.getLabel())) {
+            return choice.getValue();
+        }
+        return choice.getValue()+"="+choice.getLabel();
+    }
+    
+    public static final String initManifestEntryFromChoices(final List<Choice> choices) {
+        if (choices==null) {
+            return "";
+        }
+        final StringBuilder sb=new StringBuilder();
+        boolean first=true;
+        final String SEP=";";
+        for(final Choice choice : choices) {
+            if (first) {
+                first=false;
+            }
+            else {
+                sb.append(SEP);
+            }
+            sb.append(initManifestEntryFromChoice(choice));
+        }
+        return sb.toString();
+    }
+    
     final static public ChoiceInfo initChoiceInfo(final ParameterInfo pinfo) {
         try {
             return ChoiceInfo.getChoiceInfoParser().initChoiceInfo(pinfo);
