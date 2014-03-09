@@ -56,7 +56,8 @@ public class Choice {
      * @param isRemoteDir
      */
     public Choice(final String labelIn, final String valueIn, final boolean isRemoteDir) {
-        this.label=labelIn;
+        //convert null label to empty string
+        this.label= labelIn==null ? "" : labelIn;
         this.value=initValue(valueIn, isRemoteDir);
         this.remoteDir=isRemoteDir;
         this.hcb = new HashCodeBuilder(17,31).
@@ -78,6 +79,11 @@ public class Choice {
     }
     
     private String initValue(final String valueIn, final boolean isRemoteDirIn) {
+        //convert null value to empty string
+        if (valueIn==null) {
+            return "";
+        }
+
         //special-case, always append a '/' character to directory values
         if (!isRemoteDirIn) {
             return valueIn;
