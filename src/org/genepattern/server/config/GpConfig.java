@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.apache.log4j.Logger;
+import org.genepattern.server.executor.CommandExecutorMapper;
 import org.genepattern.server.executor.CommandProperties;
 import org.genepattern.server.repository.RepositoryInfo;
 import org.genepattern.webservice.JobInfo;
@@ -448,6 +449,13 @@ public class GpConfig {
     }
     
     public String getExecutorId(final GpContext gpContext) {
+        //special-case for pipelines
+        if (gpContext != null && gpContext.getTaskInfo() != null) {
+            final boolean isPipeline=gpContext.getTaskInfo().isPipeline();
+            if (isPipeline) {
+                return CommandExecutorMapper.PIPELINE_EXEC_ID;
+            }
+        }
         return getGPProperty(gpContext, "executor");
     }
 
@@ -459,7 +467,7 @@ public class GpConfig {
     public String getCommandExecutorId(final JobInfo jobInfo) {
         if (yamlProperties == null) {
             return null;
-        }
+        }        
         return yamlProperties.getCommandExecutorId(jobInfo);
     }
 

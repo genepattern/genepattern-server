@@ -9,6 +9,11 @@ import org.genepattern.webservice.JobInfo;
  */
 public interface CommandExecutorMapper {
     /**
+     * The reserved executorId for pipelines.
+     */
+    public static final String PIPELINE_EXEC_ID = "PipelineExec";
+
+    /**
      * Get the command executor for the given job.
      * 
      * @param jobInfo

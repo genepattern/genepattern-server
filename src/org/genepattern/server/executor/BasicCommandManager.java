@@ -167,15 +167,12 @@ public class BasicCommandManager implements CommandManager {
     private static List<MyJobInfoWrapper> getJobsWithStatusId(List<Integer> statusIds, AnalysisDAO dao, int maxJobCount) {
         List<MyJobInfoWrapper> runningJobs = new ArrayList<MyJobInfoWrapper>();
         Session session = HibernateUtil.getSession();
-        //final String hql = "from org.genepattern.server.domain.AnalysisJob where ( jobStatus.statusId = :statusId or jobStatus.statusId = :dispatchingStatusId ) and deleted = false order by submittedDate ";
         final String hql = "from org.genepattern.server.domain.AnalysisJob where jobStatus.statusId in ( :statusIds ) and deleted = false order by submittedDate ";
         Query query = session.createQuery(hql);
         if (maxJobCount > 0) {
             query.setMaxResults(maxJobCount);
         }
         query.setParameterList("statusIds", statusIds);
-        //query.setInteger("statusId", JobStatus.JOB_PROCESSING);
-        //query.setInteger("dispatchingStatusId", JobStatus.JOB_DISPATCHING);
         List<AnalysisJob> jobList = query.list();
         for(AnalysisJob aJob : jobList) {
             JobInfo singleJobInfo = new JobInfo(aJob);
@@ -205,22 +202,12 @@ public class BasicCommandManager implements CommandManager {
     
     //map cmdExecId - commandExecutor
     private LinkedHashMap<String,CommandExecutor> cmdExecutorsMap = new LinkedHashMap<String,CommandExecutor>();
-    //the cmdExecutorsMap.get( DEFAULT_PIPELINE_EXEC_ID ) ... the name for the default pipeline executor when none is specified in the config file
-    private static final String DEFAULT_PIPELINE_EXEC_ID = "DefaultGenePatternPipelineExecutor";
     
     public void addCommandExecutor(String id, CommandExecutor cmdExecutor) throws ConfigurationException {
         if (cmdExecutorsMap.containsKey(id)) {
             throw new ConfigurationException("duplicate id: "+id);
         }
         cmdExecutorsMap.put(id, cmdExecutor);
-    }
-    
-    private String pipelineExecId = DEFAULT_PIPELINE_EXEC_ID;
-    public void setPipelineExecutor(String id) {
-        this.pipelineExecId = id;
-    }
-    public String getPipelineExecutorId() {
-        return this.pipelineExecId;
     }
     
     public CommandExecutor getCommandExecutorById(String cmdExecutorId) {
@@ -293,7 +280,7 @@ public class BasicCommandManager implements CommandManager {
         initPipelineExecutor();
 
         for(String cmdExecId : cmdExecutorsMap.keySet()) {
-            if (cmdExecId.equals(pipelineExecId)) {
+            if (cmdExecId.equals(PIPELINE_EXEC_ID)) {
                 //don't start the pipeline executor
             }
             else {
@@ -347,24 +334,23 @@ public class BasicCommandManager implements CommandManager {
     
     private synchronized void initPipelineExecutor() {
         log.debug("initializing pipeline executor");
-        this.pipelineExecId = DEFAULT_PIPELINE_EXEC_ID;
-        CommandExecutor pipelineExec = cmdExecutorsMap.get(pipelineExecId);
+        CommandExecutor pipelineExec = cmdExecutorsMap.get(PIPELINE_EXEC_ID);
         if (pipelineExec == null) {
             //initialize to default setting
             pipelineExec = new PipelineExecutor();
-            cmdExecutorsMap.put(pipelineExecId, pipelineExec);
+            cmdExecutorsMap.put(PIPELINE_EXEC_ID, pipelineExec);
         }
-        log.info("pipeline.executor, id="+pipelineExecId);
+        log.info("pipeline.executor, id="+PIPELINE_EXEC_ID);
         log.info("pipeline.executor, class="+pipelineExec.getClass().getCanonicalName());
     }
     
     private CommandExecutor getPipelineExecutor() {
-        CommandExecutor pipelineExec = cmdExecutorsMap.get(pipelineExecId);
+        CommandExecutor pipelineExec = cmdExecutorsMap.get(PIPELINE_EXEC_ID);
         if (pipelineExec == null) {
-            log.error("Pipeline configuration error: no CommandExecutor exists with id="+pipelineExecId);
+            log.error("Pipeline configuration error: no CommandExecutor exists with id="+PIPELINE_EXEC_ID);
             //hard-coded to default pipeline execution in spite of config file error
             pipelineExec = new PipelineExecutor();
-            cmdExecutorsMap.put(pipelineExecId, pipelineExec);
+            cmdExecutorsMap.put(PIPELINE_EXEC_ID, pipelineExec);
         }
         return pipelineExec;
     }
@@ -409,6 +395,5 @@ public class BasicCommandManager implements CommandManager {
         }
         analysisTaskScheduler.terminateJob(jobInfo);
     }
-    
-    
+
 }
