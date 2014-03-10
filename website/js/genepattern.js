@@ -596,7 +596,8 @@ function ajaxFileTabUpload(file, directory){
         xhr.setRequestHeader('partitionIndex', partitionIndex.toString());
         xhr.setRequestHeader('filename', file.name);
         xhr.setRequestHeader('uploadPath', directory);
-        xhr.sendAsBinary(event.target.result);
+        //xhr.sendAsBinary(event.target.result);
+        xhr.send(event.target.result);
 
         partitionIndex++;
     };
