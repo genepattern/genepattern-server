@@ -730,7 +730,6 @@ function initUploads() {
         .appendTo("#upload-dropzone-wrapper");
 
     $("#upload-dropzone").click(function() {
-        alert("ok");
         $("#upload-dropzone-input").trigger("click");
     });
 }
