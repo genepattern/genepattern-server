@@ -788,10 +788,21 @@ SEARCH SLIDER STUFF
     height: 60px;
     overflow: hidden;
     z-index: 100;
+    background-color: #FDFDFD;
+    border-radius: 5px;
 }
 
 .module-listing:hover {
     background-image: url(../../images/sidebar-topBG.png);
+    background-repeat: repeat-x;
+}
+
+#module-list-allnsuite .module-listing {
+    background-image: linear-gradient(#F4F5F5, #EDEEEE);
+}
+
+#module-list-allnsuite .module-listing:hover {
+    background-image: url(../images/sidebar-topBG.png);
     background-repeat: repeat-x;
 }
 

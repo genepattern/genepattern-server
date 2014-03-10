@@ -1735,6 +1735,29 @@ var library = {
     },
 
     _initBrowseSlider: function(all_categories) {
+        var allnsuites = $('<div id="module-list-allnsuite"></div>').modulelist({
+            title: 'Browse Modules & Pipelines',
+            data: [
+                {
+                    "lsid": "",
+                    "name": "All Modules",
+                    "description": "Browse an alphabetical listing of all installed GenePattern modules and pipelines.",
+                    "version": "",
+                    "documentation": "http://genepattern.org",
+                    "categories": [],
+                    "suites": [],
+                    "tags": []
+                }
+            ],
+            droppable: false,
+            draggable: false,
+            click: function(event) {
+                $("#module-search").searchslider("show");
+                $("#module-search").searchslider("filter", '');
+                $("#module-search").searchslider("set_title", '<a href="#" onclick="$(\'#module-browse\').searchslider(\'show\');">Browse Modules</a> &raquo; All Modules');
+            }
+        });
+
         var browse = $('<div id="module-list-browse"></div>').modulelist({
             title: 'Browse Modules by Category',
             data: all_categories,
@@ -1749,7 +1772,7 @@ var library = {
         });
 
         var modbrowse = $('#module-browse').searchslider({
-            lists: [browse]
+            lists: [allnsuites, browse]
         });
 
         $('#module-browse').css("height", $(window).height() - 112);
