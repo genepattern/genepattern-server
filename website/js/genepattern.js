@@ -1348,8 +1348,8 @@ function initRecentJobs() {
             for (var i = 0; i < data.length; i++) {
                 var jobJson = data[i];
 
-                // Protect against null job IDs
-                if (jobJson.jobId === null) {
+                // Protect against null jobs
+                if (jobJson === null) {
                     console.log("ERROR rendering job:");
                     console.log(jobJson);
                     continue;
