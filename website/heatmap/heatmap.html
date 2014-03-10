@@ -1,0 +1,93 @@
+
+<!DOCTYPE html>
+<html>
+    <head>
+        <link href="jheatmap-1.0.0/css/jheatmap-1.0.0-min.css" rel="stylesheet" type="text/css"/>
+ 
+        <!-- You must include the jQuery library -->
+        <script type="text/javascript" src="http://code.jquery.com/jquery-1.8.3.js"></script>
+        <script type="text/javascript" src="http://code.jquery.com/ui/1.8.24/jquery-ui.js"></script>
+        
+        <script src="jheatmap-1.0.0/js/jheatmap-1.0.0-min.js" type="text/javascript"></script>
+ 
+        <script>
+
+        //
+        // Helper function: parse the query string from 'window.location.search', 
+        // return a hash of decoded values
+        //
+        var parseQueryString = function( ) {
+            var queryStringParams=[];
+            if (window.location.search) {
+                //alert('window.location.search='+window.location.search);
+                queryString=window.location.search;
+                if (queryString) {
+                    //drop the leading '?'
+                    queryString=queryString.substring(1);
+                    queryStringParams=_parseQueryString( queryString );
+                }
+            }
+            return queryStringParams;            
+        }
+        
+        //
+        // Helper function: parse the given query string, assuming the leading '?'
+        // has already been removed
+        //
+        var _parseQueryString = function( queryString ) {
+            var params = {}, queries, temp, i, l;
+         
+            // Split into key/value pairs
+            queries = queryString.split("&");
+         
+            // Convert the array of strings into an object
+            for ( i = 0, l = queries.length; i < l; i++ ) {
+                temp = queries[i].split('=');
+                params[ decodeURIComponent(temp[0]) ] = decodeURIComponent(temp[1]);
+            }
+         
+            return params;
+        };
+
+        var queryStringParams=parseQueryString();
+        var gctFile;
+        if (queryStringParams && queryStringParams['gctFile']) {
+            gctFile=queryStringParams['gctFile'];
+        }
+        else {
+            gctFile="all_aml_test.gct";
+        }
+        //alert('gctFile='+gctFile);
+        
+        // The initialization code goes here, see next steps.
+        // http://127.0.0.1:8080/gp/jobResults/14880/all_aml%20test.cvt.gct
+//         $(document).ready(function () {
+//              $('#heatmap').heatmap(
+//              {
+//                  data: {
+//                      values: new jheatmap.readers.TableHeatmapReader({ url: "quickstart-data.tsv" })
+//                  }
+//              });
+//         });
+        $(document).ready(function () {
+            $('#heatmap').heatmap(
+            {
+                data: {
+                    //values: new jheatmap.readers.GctHeatmapReader({ url: "http://127.0.0.1:8080/gp/jobResults/14880/all_aml%20test.cvt.gct" })
+                    values: new jheatmap.readers.GctHeatmapReader({ url: gctFile })
+                }
+            });
+            
+            //$( "#resizable" ).resizable();
+            //$( "#heatmap" ).resizable();
+       });
+        </script>
+    </head>
+    <body>
+        <div id="heatmap"></div>
+        <script>
+            $( "#heatmap" ).resizable();
+        </script>
+        
+    </body>
+</html>
