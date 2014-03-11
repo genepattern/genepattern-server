@@ -81,13 +81,13 @@ public class GetPipelineJobLegacy implements GetJob {
         JSONArray sendTo = new JSONArray();
 
         if (userContext.getUserId() != null) {
-            SortedSet<TaskInfo> tasks = SendToModuleManager.instance().getSendTo(userContext.getUserId(), kind);
-
-            for (TaskInfo task: tasks) {
-                sendTo.put(task.getLsid());
+            final SortedSet<TaskInfo> tasks = SendToModuleManager.instance().getSendTo(userContext.getUserId(), kind);
+            if (tasks != null) {
+                for (TaskInfo task: tasks) {
+                    sendTo.put(task.getLsid());
+                }
             }
         }
-
         return sendTo;
     }
     
