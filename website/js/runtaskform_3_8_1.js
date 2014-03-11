@@ -317,6 +317,7 @@ function sendToParamForMenu(paramList) {
 
             $("<div></div>")
                 .attr("class", "send-to-param")
+                .attr("name", param)
                 .module({
                     data: {
                         "lsid": "",
@@ -328,8 +329,9 @@ function sendToParamForMenu(paramList) {
                         "suites": [],
                         "tags": []
                     },
-                    click: function() {
-                        setInputField(param, url);
+                    click: function(event) {
+                        var paramName = $(event.target).closest(".module-listing").attr("name");
+                        setInputField(paramName, url);
                         $(paramList).closest(".search-widget").searchslider("hide");
                     },
                     draggable: false
