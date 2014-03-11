@@ -656,3 +656,7 @@ body {
     word-break: break-all;
     white-space: normal;
 }
+
+#loading-jobs {
+    text-align: center;
+}

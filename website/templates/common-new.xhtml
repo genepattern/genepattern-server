@@ -329,6 +329,10 @@
 	                        <ui:include src="/pages/recentJobs.xhtml" />
                         </h:outputText>
                         <h:outputText rendered="#{uiBean.newUI}">
+                            <div id="loading-jobs">
+                                <h4>Loading GenePattern Jobs...</h4>
+                                <img src="/gp/images/ajax.gif" height="100" width="100" alt="Loading..." />
+                            </div>
                             <script type="text/javascript">
                                 $(document).ready(function() {
                                     initRecentJobs();

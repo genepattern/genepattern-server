@@ -1356,6 +1356,7 @@ function initRecentJobs() {
         dataType: "json",
         success: function(data, textStatus, jqXHR) {
             // Clear away the old rendering of the tab
+            $("#loading-jobs").hide();
             var tab = $("#left-nav-jobs");
             tab.empty();
 
