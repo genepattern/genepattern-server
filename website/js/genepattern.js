@@ -834,7 +834,7 @@ function uploadPathFromUrl(url) {
     return fullPath;
 }
 
-function constructFileMenuData(isRoot, isDirectory, isUpload, isJobFile) {
+function constructFileMenuData(isRoot, isDirectory, isUpload, isJobFile, isPartialFile) {
     var data = [];
 
     if (!isRoot || !isDirectory) {
@@ -862,7 +862,7 @@ function constructFileMenuData(isRoot, isDirectory, isUpload, isJobFile) {
             "tags": []
         });
     }
-    else {
+    else if (!isPartialFile) {
         data.push({
             "lsid": "",
             "name": "<img src='/gp/pipeline/images/save.gif' class='module-list-icon'> Save File",
@@ -914,6 +914,7 @@ function _createFileWidgetInner(linkElement, appendTo) {
     var isRoot = isRootFromUrl(url);
     var isUpload = appendTo === "#menus-uploads";
     var isJobFile = appendTo === "#menus-jobs";
+    var isPartialFile = linkElement.attr("data-partial") === "true";
 
     var sendToString = linkElement.attr("data-sendtomodule");
     if (sendToString === null || sendToString === undefined) sendToString = '[]';
@@ -922,7 +923,7 @@ function _createFileWidgetInner(linkElement, appendTo) {
 
     var kind = linkElement.attr("data-kind");
 
-    var data = constructFileMenuData(isRoot, isDirectory, isUpload, isJobFile);
+    var data = constructFileMenuData(isRoot, isDirectory, isUpload, isJobFile, isPartialFile);
 
     var actionList = $("<div></div>")
         .attr("class", "file-widget-actions")
@@ -1123,6 +1124,11 @@ function _createFileWidgetInner(linkElement, appendTo) {
         });
 
     if (moduleList.find(".module-listing").length < 1) {
+        paramList.hide();
+        moduleList.hide();
+    }
+
+    if (isPartialFile) {
         moduleList.hide();
     }
 

@@ -100,6 +100,10 @@ public class UploadTreeJSON extends JSONArray {
 
         // Add the Kind data
         attr.put("data-kind", kind);
+
+        // Add partial file data
+        boolean isPartial = file.getNumParts() != file.getNumPartsRecd();
+        attr.put("data-partial", isPartial);
         
         data.put(ATTR, attr);
 
