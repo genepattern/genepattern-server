@@ -1062,7 +1062,7 @@ function _createFileWidgetInner(linkElement, appendTo) {
         .attr("data-kind", kind)
         .attr("data-url", link.attr("href"))
         .modulelist({
-            title: "Send to Paramater",
+            title: "Send to Parameter",
             data: [],
             droppable: false,
             draggable: false,
