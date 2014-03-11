@@ -68,7 +68,12 @@ public class JobInputValueRecorder {
             final JobInput jobInput=new JobInput();
             for(final JobInputValue v : records) {
                 final GroupId groupId=new GroupId(v.getGroupName());
-                jobInput.addValue(v.getPname(), v.getPvalue(), groupId);
+                String pvalue=v.getPvalue();
+                if (pvalue==null) {
+                    //assume it's the empty string
+                    pvalue="";
+                }
+                jobInput.addValue(v.getPname(), pvalue, groupId);
             }
             return jobInput;
         }

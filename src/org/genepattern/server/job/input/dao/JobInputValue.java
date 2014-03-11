@@ -44,9 +44,9 @@ public class JobInputValue {
     // --- end primary key fields ---
     @Column(nullable=true)
     private String pvalue;
-    @Column(name="group_id", nullable=false)
+    @Column(name="group_id", nullable=true)
     private String groupId="";
-    @Column(name="group_name", nullable=false)
+    @Column(name="group_name", nullable=true)
     private String groupName="";
     
     public JobInputValue() {
@@ -87,7 +87,10 @@ public class JobInputValue {
         this.pname = pname;
     }
     private void setPvalue(final String pvalue) {
-        this.pvalue = pvalue;
+        //ignore null values
+        if (pvalue != null) {
+            this.pvalue = pvalue;
+        }
     }
     private void setIdx(final Integer idx) {
         this.idx = idx;
