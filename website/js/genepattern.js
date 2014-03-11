@@ -532,7 +532,25 @@ function ajaxFileTabUpload(file, directory){
         }
     });
 
-    reader.onload = function(event){
+    // Handle the directory error condition
+    reader.onerror = function(event) {
+        var message = "Uploading directories is not supported. Aborting upload.";
+        $("#errorMessageDiv #errorMessageContent").text(message);
+        $("#errorMessageDiv").show();
+
+        // Hide the progressbar
+        $("#upload-progress-wrapper").hide();
+
+        // Show the dropzone
+        $("#upload-dropzone").show();
+        $("#upload-dropzone-wrapper > span").show();
+
+        // Refresh the tree
+        $("#uploadTree").data("dndReady", {});
+        $("#uploadTree").jstree("refresh");
+    };
+
+    reader.onload = function(event) {
         loaded += event.loaded;
         xhr = new XMLHttpRequest();
         $("#upload-dropzone-progress").data("xhr", xhr);
