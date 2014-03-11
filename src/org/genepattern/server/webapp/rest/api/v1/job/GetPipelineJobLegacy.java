@@ -91,7 +91,7 @@ public class GetPipelineJobLegacy implements GetJob {
         return sendTo;
     }
     
-    public static JSONObject initOutputFile(GpContext userContext, final GpFilePath gpFilePath) throws Exception {
+    public static JSONObject initOutputFile(final GpContext userContext, final GpFilePath gpFilePath) throws Exception {
         //create a JSON representation of a file
         JSONObject o = new JSONObject();
 
@@ -100,8 +100,13 @@ public class GetPipelineJobLegacy implements GetJob {
         link.put("name", gpFilePath.getName());
         o.put("link", link);
 
-        o.put("sendTo", initSendTo(userContext, gpFilePath.getKind()));
-
+        try {
+            JSONArray sendTo=initSendTo(userContext, gpFilePath.getKind());
+            o.put("sendTo", sendTo);
+        }
+        catch (Throwable t) {
+            log.error("Error initializing sendTo for userId="+userContext.getUserId()+", kind="+gpFilePath.getKind());
+        }
         o.put("fileLength", gpFilePath.getFileLength());
         o.put("lastModified", gpFilePath.getLastModified().getTime());
         o.put("kind", gpFilePath.getKind());
