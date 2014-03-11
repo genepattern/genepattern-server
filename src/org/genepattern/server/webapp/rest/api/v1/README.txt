@@ -3,7 +3,7 @@ Using the GenePattern REST API
 ========================================
 
 This document describes how to use the GenePattern REST API.
-Target audience: Someone integrating the eQTL portal with a REST-enabled GP server.
+Target audience: Someone integrating the Genet portal with a REST-enabled GP server.
 
 Setup:
 
