@@ -68,7 +68,7 @@
             // look for file among the user uploaded files
             if (!in.exists()) {
                 try {
-                    Context context = Context.getContextForUser(userID);
+                    GpContext context = GpContext.getContextForUser(userID);
                     File userUploadDir = ServerConfigurationFactory.instance().getUserUploadDir(context);
                     in = new File(userUploadDir, filename);
                 } catch (Throwable t) {
