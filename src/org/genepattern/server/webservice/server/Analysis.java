@@ -622,25 +622,18 @@ public class Analysis extends GenericWebService {
             boolean isAdmin = AuthorizationHelper.adminJobs(userId);
             canWriteJob(isAdmin, userId, jobId);
             jobInfo = getJob(jobId);
+            // Delegate job termination to GenePatternAnalysisTask.
+            CommandManagerFactory.getCommandManager().terminateJob(jobInfo);
+        }
+        catch (WebServiceException e) {
+            throw e;
+        }
+        catch (Throwable t) {
+            log.error("Error in terminateJob, jobId="+jobId, t);
+            throw new WebServiceException("Error in terminateJob("+jobId+")");
         }
         finally {
             HibernateUtil.closeCurrentSession();
-        }
-        terminateJob(jobInfo);
-    }
-    
-    /**
-     * Delegate job termination to GenePatternAnalysisTask.
-     * 
-     * @param jobInfo
-     * @throws WebServiceException
-     */
-    private void terminateJob(JobInfo jobInfo) throws WebServiceException {
-        try {
-            CommandManagerFactory.getCommandManager().terminateJob(jobInfo);
-        }
-        catch (JobTerminationException e) {
-            throw new WebServiceException(e);
         }
     }
     
