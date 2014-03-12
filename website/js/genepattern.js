@@ -1384,6 +1384,11 @@ function initRecentJobs() {
 
                 renderJob(jobJson, tab);
             }
+
+            // Handle the case of no recent jobs
+            if (data.length === 0) {
+                tab.append("<h3 style='text-align:center;'>No Recent Jobs</h3>");
+            }
         },
         error: function(data, textStatus, jqXHR) {
             if (typeof data === 'object') {
