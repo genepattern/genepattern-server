@@ -841,7 +841,7 @@ function constructFileMenuData(isRoot, isDirectory, isUpload, isJobFile, isParti
         data.push({
             "lsid": "",
             "name": "<img src='/gp/pipeline/images/delete.gif' class='module-list-icon'> Delete " + (isDirectory ? "Directory" : "File"),
-            "description": "Permanently delete this file.",
+            "description": (isDirectory ? "Permanently delete this directory and all child files." : "Permanently delete this file."),
             "version": "",
             "documentation": "http://genepattern.org",
             "categories": [],
@@ -949,28 +949,30 @@ function _createFileWidgetInner(linkElement, appendTo) {
                 }
 
                 else if (deleteAction) {
-                    $.ajax({
-                        type: "DELETE",
-                        url: "/gp/rest/v1/data/delete/" + path,
-                        success: function(data, textStatus, jqXHR) {
-                            $("#infoMessageDiv #infoMessageContent").text(data);
-                            $("#infoMessageDiv").show();
+                    if (confirm('Are you sure you want to delete the selected file or directory?')) {
+                        $.ajax({
+                            type: "DELETE",
+                            url: "/gp/rest/v1/data/delete/" + path,
+                            success: function(data, textStatus, jqXHR) {
+                                $("#infoMessageDiv #infoMessageContent").text(data);
+                                $("#infoMessageDiv").show();
 
-                            $("#uploadTree").data("dndReady", {});
-                            $("#uploadTree").jstree("refresh");
-                            initRecentJobs();
-                        },
-                        error: function(data, textStatus, jqXHR) {
-                            if (typeof data === 'object') {
-                                data = data.responseText;
+                                $("#uploadTree").data("dndReady", {});
+                                $("#uploadTree").jstree("refresh");
+                                initRecentJobs();
+                            },
+                            error: function(data, textStatus, jqXHR) {
+                                if (typeof data === 'object') {
+                                    data = data.responseText;
+                                }
+
+                                $("#errorMessageDiv #errorMessageContent").text(data);
+                                $("#errorMessageDiv").show();
                             }
+                        });
 
-                            $("#errorMessageDiv #errorMessageContent").text(data);
-                            $("#errorMessageDiv").show();
-                        }
-                    });
-
-                    $(".search-widget:visible").searchslider("hide");
+                        $(".search-widget:visible").searchslider("hide");
+                    }
                     return;
                 }
 
