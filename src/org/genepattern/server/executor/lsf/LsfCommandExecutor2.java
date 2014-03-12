@@ -273,12 +273,18 @@ public class LsfCommandExecutor2 implements CommandExecutor2 {
             try {
                 GenePatternAnalysisTask.handleJobCompletion(jobInfo.getJobNumber(), -1, "User terminated job #"+jobInfo.getJobNumber()+" before it was added to the LSF queue");
             } 
-            catch (final Exception e) {
-                log.error("Error terminating job "+jobInfo.getJobNumber(), e);
+            catch (final Throwable t) {
+                log.error("Error terminating job "+jobInfo.getJobNumber(), t);
             }
         } 
         else {
-            terminateJobs(gpJobId, lsfJobs);
+            try {
+                terminateJobs(gpJobId, lsfJobs);
+            }
+            catch (Throwable t) {
+                log.debug("Unexpected error cancelling lsf job, gpJobId="+gpJobId);
+                GenePatternAnalysisTask.handleJobCompletion(jobInfo.getJobNumber(), -1, "Cancelled pending job #"+jobInfo.getJobNumber());
+            }
         }
     }
 
