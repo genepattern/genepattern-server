@@ -716,9 +716,6 @@ function initUploads() {
         if ($("#upload-dropzone-progress:visible").length > 0) {
             return "You are currently uploading files. If you navigate away from this page this will interrupt your file upload.";
         }
-        else {
-            return null;
-        }
     };
 
     // Set up the cancel button
