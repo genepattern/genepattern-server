@@ -161,6 +161,16 @@
                                 menuRegistry._create("#Image_" + name, "#menuDiv_" + name);
                             }
 
+                            // Set icon for broken uploads
+                            var isPartialUpload = $(anchor).attr("data-partial") === "true";
+                            var isDirectory = $(anchor).attr("data-kind") === "directory";
+                            if (isPartialUpload) {
+                                if (!isDirectory) {
+                                    var icon = $(anchor).find("ins");
+                                    icon.css("background-image", "url('/gp/images/iconBroken.gif')");
+                                }
+                            }
+
                             // Create a file widget for this file
                             if (#{uiBean.newUI}) {
                                 createFileWidget(anchor, "#menus-uploads");
