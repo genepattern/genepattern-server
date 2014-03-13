@@ -91,6 +91,10 @@ $.widget("gp.module", {
             'class': 'module-description',
             'text': this._protect(this.options.data.description, "")
         }).appendTo(this.element);
+        $(this.description).jTruncate({
+            length: 90,
+            moreTest: ""
+        });
 
         this.tags = $('<div>', {
             'class': 'module-tag'
