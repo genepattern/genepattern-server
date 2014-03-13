@@ -101,25 +101,11 @@ $.widget("gp.module", {
         }).appendTo(this.element);
 
         // Add tag links
-        var all_tags_raw = [];
-        $.merge(all_tags_raw, this._protect(this.options.data.categories, []));
-        $.merge(all_tags_raw, this._protect(this.options.data.suites, []));
-        $.merge(all_tags_raw, this._protect(this._getTags(this.options.data.tags), []));
-        var all_tags = [];
-        $.each(all_tags_raw, function(i, el) { // Remove duplicates
-            if($.inArray(el, all_tags) === -1) all_tags.push(el);
-        });
-        all_tags.sort(); // Sort
-        
-        for (var i = 0; i < all_tags.length; i++) {
-        	all_tags[i] = $("<div>").append($('<a>', {
-                'class': 'tag',
-                'text': all_tags[i],
-                'href': '#'})
-                .attr("onclick", "$(this).closest('.module-listing').module('tagClick', event);")).html();
-        }
-        
-        this.tags.append(all_tags.join(", "));
+        this.all_tags_raw = [];
+        $.merge(this.all_tags_raw, this._protect(this.options.data.categories, []));
+        $.merge(this.all_tags_raw, this._protect(this.options.data.suites, []));
+        $.merge(this.all_tags_raw, this._protect(this._getTags(this.options.data.tags), []));
+        this._makeTags();
 
         if (!this.options.display) {
             this.element.hide();
@@ -177,6 +163,24 @@ $.widget("gp.module", {
             }
         });
     },
+
+    _makeTags: function() {
+        var all_tags = [];
+        $.each(this.all_tags_raw, function(i, el) { // Remove duplicates
+            if($.inArray(el, all_tags) === -1) all_tags.push(el);
+        });
+        all_tags.sort(); // Sort
+
+        for (var i = 0; i < all_tags.length; i++) {
+            all_tags[i] = $("<div>").append($('<a>', {
+                'class': 'tag',
+                'text': all_tags[i],
+                'href': '#'})
+                .attr("onclick", "$(this).closest('.module-listing').module('tagClick', event);")).html();
+        }
+
+        this.tags.append(all_tags.join(", "));
+    },
     
     _getTags: function(tagObjList) {
     	var tagList = [];
@@ -200,6 +204,20 @@ $.widget("gp.module", {
         var modlist = $(toElement).closest(".module-list");
         if (modlist.length < 1) return false;
         return $(modlist[0]).hasClass("ui-sortable");
+    },
+
+    add_tag: function(tag) {
+        this.tags.empty();
+        $.merge(this.all_tags_raw, [tag]);
+        this._makeTags();
+    },
+
+    remove_tag: function(tag) {
+        this.tags.empty();
+        this.all_tags_raw = $.grep(this.all_tags_raw, function(value) {
+            return value !== tag;
+        });
+        this._makeTags();
     },
     
     get_lsid: function(event) {

@@ -412,17 +412,24 @@ function initPinned() {
             }
         },
         add: function(event, ui) {
+            var lsid = $(ui.item).find(".module-lsid").text();
+
         	$.ajax({
         		type: 'POST',
                 url: '/gp/rest/v1/tags/pin',
                 dataType: 'text',
                 data: JSON.stringify({
                 	user: username,
-                	lsid: baseLsid($(ui.item).find(".module-lsid").text()),
+                	lsid: baseLsid(lsid),
                 	position: calcPosition(ui.placeholder)
                 }),
                 success: function(data, status, xhr) {
                 	console.log("pinned");
+
+                    $(".module-lsid:contains('" + lsid + "')").each(function(index, element) {
+                        var module = $(element).parent();
+                        module.module("add_tag", "favorite");
+                    });
                 }
             });
         	
@@ -439,17 +446,24 @@ function initPinned() {
         	});
         },
         remove: function(event, ui) {
+            var lsid = $(ui.item).find(".module-lsid").text();
+
         	$.ajax({
         		type: 'DELETE',
                 url: '/gp/rest/v1/tags/unpin',
                 dataType: 'text',
                 data: JSON.stringify({
                 	user: username,
-                	lsid: baseLsid($(ui.item).find(".module-lsid").text()),
+                	lsid: baseLsid(lsid),
                 	position: 0
                 }),
                 success: function(data, status, xhr) {
                 	console.log("unpinned");
+
+                    $(".module-lsid:contains('" + lsid + "')").each(function(index, element) {
+                        var module = $(element).parent();
+                        module.module("remove_tag", "favorite");
+                    });
                 }
             });
         },
