@@ -161,7 +161,9 @@ public class GenomeSpaceClientImpl implements GenomeSpaceClient {
     
     /**
      * Registers a new user with GenomeSpace using the provided information
+     * @deprecated - We no longer directly handle GenomeSpace registration
      */
+    @Deprecated
     public void registerUser(String env, String username, String password, String regEmail) throws GenomeSpaceException {
         if (env == null) {
             log.error("Environment for GenomeSpace not set");

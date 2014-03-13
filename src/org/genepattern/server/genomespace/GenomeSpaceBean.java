@@ -308,8 +308,10 @@ public class GenomeSpaceBean {
     /**
      * Handle submission of the GenomeSpace registration form.
      * Then log the user into their new GenomeSpace account
+     * @deprecated - We no longer directly handle GenomeSpace registration
      * @return
      */
+    @Deprecated
     public String submitRegistration() {
         if (!genomeSpaceEnabled) {
             UIBeanHelper.setErrorMessage("GenomeSpace is not enabled");

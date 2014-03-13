@@ -76,7 +76,7 @@
 	         <ul>
 	             <li class="genomeSpaceLoggedOut"><a href="/gp/pages/genomespace/signon.jsf">Login</a></li>
 	             <li class="genomeSpaceLoggedIn"><a href="/gp/pages/genomespace/signon.jsf">Logout</a></li>
-	             <li class="genomeSpaceLoggedOut"><a href="/gp/pages/genomespace/userRegistration.jsf">Register</a></li>
+	             <li class="genomeSpaceLoggedOut"><a href="JavaScript:Menu.go('http://genomespace.org/register')">Register</a></li>
 	             <li class="genomeSpaceLoggedIn"><a href="/gp/pages/genomespace/privateTool.jsf">Add as Private Tool</a></li>
 	             <li><a href="JavaScript:Menu.go('https://gsui.genomespace.org/jsui/')">GenomeSpace UI</a></li>
 	             <li><a href="JavaScript:Menu.go('http://www.genomespace.org/')">About</a></li>

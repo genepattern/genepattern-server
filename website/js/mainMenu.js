@@ -73,7 +73,7 @@ function mmLoadMenus() {
   // GENOMESPACE MENU
   window.mm_menu_genomespace = new Menu("root",158,18,"Verdana, Arial, Helvetica, sans-serif",10,"#FFFFFF","#9999FF","#333366","#000033","left","middle",3,0,500,-5,7,true,true,true,3,true,false);
   mm_menu_genomespace.addMenuItem("Login","location=contextRoot + '/pages/genomespace/signon.jsf'");
-  mm_menu_genomespace.addMenuItem("Register","location=contextRoot + '/pages/genomespace/userRegistration.jsf'");
+  mm_menu_genomespace.addMenuItem("Register","window.open('http://genomespace.org/register', '_blank')");
   mm_menu_genomespace.addMenuItem("GenomeSpace UI","window.open('https://gsui.genomespace.org/jsui/', '_blank')");
   mm_menu_genomespace.addMenuItem("About","window.open('http://www.genomespace.org/', '_blank')");
   mm_menu_genomespace.hideOnMouseOut=true;
