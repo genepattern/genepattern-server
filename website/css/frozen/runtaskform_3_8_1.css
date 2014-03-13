@@ -57,12 +57,12 @@ tr.pRow td
     border-top: 2px solid #F0F0F0;
 }
 
-tr:first-child td
+#main-pane tr:first-child td
 {
     border: none;
 }
 
-td
+#main-pane td
 {
     padding: 7px 0 6px 0;
 }
