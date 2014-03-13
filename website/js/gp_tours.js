@@ -46,6 +46,8 @@ $(function()
             //switch the active left navigation tab to the approptiate one for the step
             if(intro._currentStep == 2)
             {
+                $("#gp_tours").data("last-left-nav-tab", $("#left-nav").tabs( "option", "active"));
+
                 $( "#left-nav" ).tabs( "option", "active", 0 );
             }
             else if(intro._currentStep == 3)
@@ -56,6 +58,16 @@ $(function()
             {
                 $( "#left-nav" ).tabs( "option", "active", 2 );
             }
+        });
+
+        intro.onexit(function()
+        {
+            $( "#left-nav" ).tabs( "option", "active", $("#gp_tours").data("last-left-nav-tab"));
+        });
+
+        intro.oncomplete(function()
+        {
+            $( "#left-nav" ).tabs( "option", "active", $("#gp_tours").data("last-left-nav-tab"));
         });
 
         intro.start();
