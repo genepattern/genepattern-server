@@ -1901,7 +1901,12 @@ var library = {
                 },
                 complete : function (response) {
                     // Work around a bug in the JSON handling of iframe-post-form
-                    response = $.parseJSON($(response)[0].innerHTML);
+                    try {
+                        response = $.parseJSON(response);
+                    }
+                    catch (e) {
+                        response = $.parseJSON($(response)[0].innerHTML);
+                    }
 
                     $("#fileUploading").hide();
                     $("#fileDone").show();
