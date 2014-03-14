@@ -32,8 +32,7 @@ $(function()
                 },
                 {
                     element: '#protocols',
-                    intro: "The center pane is the main display pane, which GenePattern uses to display information and to prompt you for input. " +
-                        "Right now, the protocols are displayed here.",
+                    intro: "The center pane is the main display pane, which GenePattern uses to display information and to prompt you for input.",
                     position: 'left'
                 }
             ],
