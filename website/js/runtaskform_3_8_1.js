@@ -1833,6 +1833,9 @@ function loadRunTaskForm(lsid, reloadJob) {
     // Hide the search slider if it is open
     $(".search-widget").searchslider("hide");
 
+    // Hide the protocols if visible
+    $("#protocols").hide();
+
     // Lazily clone the blank jobSubmit div, and replace a dirty div with the clean one
     if (Request.cleanJobSubmit === null) {
         Request.cleanJobSubmit = $("#submitJob").clone();
