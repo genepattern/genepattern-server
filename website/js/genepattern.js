@@ -1042,7 +1042,7 @@ function _createFileWidgetInner(linkElement, appendTo) {
 
                             $.ajax({
                                 type: "PUT",
-                                url: "/gp/rest/v1/data/createPipeline" + path + "?name=" + subdirName,
+                                url: "/gp/rest/v1/data/createPipeline/" + path + "?name=" + subdirName,
                                 success: function(data, textStatus, jqXHR) {
                                     $("#infoMessageDiv #infoMessageContent").text(data);
                                     $("#infoMessageDiv").show();
