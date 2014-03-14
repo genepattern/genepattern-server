@@ -968,9 +968,13 @@ function _createFileWidgetInner(linkElement, appendTo) {
                                 $("#infoMessageDiv #infoMessageContent").text(data);
                                 $("#infoMessageDiv").show();
 
-                                $("#uploadTree").data("dndReady", {});
-                                $("#uploadTree").jstree("refresh");
-                                initRecentJobs();
+                                if (isUpload) {
+                                    $("#uploadTree").data("dndReady", {});
+                                    $("#uploadTree").jstree("refresh");
+                                }
+                                if (isJobFile) {
+                                    initRecentJobs();
+                                }
                             },
                             error: function(data, textStatus, jqXHR) {
                                 if (typeof data === 'object') {
@@ -1000,8 +1004,12 @@ function _createFileWidgetInner(linkElement, appendTo) {
                                     $("#infoMessageDiv #infoMessageContent").text(data);
                                     $("#infoMessageDiv").show();
 
-                                    $("#uploadTree").data("dndReady", {});
-                                    $("#uploadTree").jstree("refresh");
+                                    if (isUpload) {
+                                        $("#uploadTree").data("dndReady", {});
+                                        $("#uploadTree").jstree("refresh");
+
+                                        $("#uploadDirectoryTree").jstree("refresh");
+                                    }
                                 },
                                 error: function(data, textStatus, jqXHR) {
                                     if (typeof data === 'object') {
