@@ -193,8 +193,6 @@
     height: 100%;
     overflow: auto;
     padding-left: 20px;
-    position: relative;
-    overflow-x: hidden;
 }
 
 .slider-close-block {
