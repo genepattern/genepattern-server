@@ -649,11 +649,20 @@ body {
     font-size: 7pt;
 }
 
+#left-nav-jobs .job-file {
+    word-break: break-all;
+    word-wrap: break-word;
+    -ms-word-wrap: break-word;
+    white-space: normal;
+}
+
 #left-nav-jobs .job-file a {
     font-style: normal;
     color: #000099 !important;
     font-size: 9pt;
     word-break: break-all;
+    word-wrap: break-word;
+    -ms-word-wrap: break-word;
     white-space: normal;
 }
 
