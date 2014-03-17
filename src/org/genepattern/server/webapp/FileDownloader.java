@@ -253,6 +253,7 @@ public class FileDownloader {
 
         // Initialize response.
         response.reset();
+        CorsFilter.applyCorsHeaders(request, response);
         response.setBufferSize(DEFAULT_BUFFER_SIZE);
         response.setDateHeader("Last-Modified", lastModified);
         response.setHeader("ETag", eTag);
