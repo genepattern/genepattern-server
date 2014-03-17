@@ -1,6 +1,7 @@
 package org.genepattern.server.webapp;
 
 import java.io.IOException;
+import java.net.URI;
 
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
@@ -55,12 +56,19 @@ public class CorsFilter implements Filter {
      * proposed CorsFilter implementation
      */
     public static final void applyCorsHeaders(final HttpServletRequest request, final HttpServletResponse response) {
-        final String clientOrigin = request.getHeader("origin");
-        if (clientOrigin != null) {
-            //allow all clients
-            response.setHeader("Access-Control-Allow-Origin", clientOrigin);
-            if (log.isDebugEnabled()) {
-                log.debug("setting 'Access-Control-Allow-Origin'="+clientOrigin);
+        final String origin = request.getHeader("origin");
+        if (origin != null) {
+            try {
+                final URI uri=new URI(origin);
+                final String originResponse=uri.toString();
+                //allow all clients
+                response.setHeader("Access-Control-Allow-Origin", originResponse);
+                if (log.isDebugEnabled()) {
+                    log.debug("setting 'Access-Control-Allow-Origin'="+originResponse);
+                }
+            }
+            catch (Throwable t) {
+                log.error("Invalid value for request header 'origin'="+origin, t);
             }
         }
         // 'read-only' access
