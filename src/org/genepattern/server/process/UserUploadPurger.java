@@ -253,7 +253,8 @@ public class UserUploadPurger {
      * @param filesToDelete
      */
     private void purgeFiles(final List<UserUpload> filesToDelete) {
-        List<GpFilePath> tmpDirs = new ArrayList<GpFilePath>();
+        final List<GpFilePath> tmpDirs = new ArrayList<GpFilePath>();
+        final List<GpFilePath> missingFiles = new ArrayList<GpFilePath>();
         
         //quick and dirty way to delete files and parent directories without conflicts
         //on the first pass, delete all files, don't delete any directories
@@ -271,7 +272,8 @@ public class UserUploadPurger {
                     tmpDirs.add(gpFilePath);
                 }
                 else {
-                    log.error("gpFilePath is neither a file nor a directory: "+gpFilePath.getServerFile().getPath());
+                    log.debug("gpFilePath is neither a file nor a directory: "+gpFilePath.getServerFile().getPath());
+                    missingFiles.add(gpFilePath);
                 }
             }
             catch (Throwable t) {
@@ -284,6 +286,7 @@ public class UserUploadPurger {
             log.debug("numDirsToPurge: "+numDirsToPurge);
             log.debug("tmpDirs.size: "+tmpDirs.size());
         }
+        log.debug("missingFiles.size: "+missingFiles.size());
 
         //on the second pass, delete directories
         //iterate the sorted list in reverse order to ensure that we don't try to delete a parent directory
@@ -297,6 +300,19 @@ public class UserUploadPurger {
             }
             catch (Throwable t) {
                 log.error("Error purging tmpDir, userId="+userContext.getUserId()+", path="+tmpDir.getRelativePath(), t);
+            }
+        }
+        
+        //on the third pass, remove records from the DB for files which no longer exist
+        for(final GpFilePath missingFile : missingFiles) {
+            try {
+                boolean success=DataManager.deleteUserUploadFile(userContext.getUserId(), missingFile);
+                if (!success) {
+                    log.error("Did not deleteUserUploadFile: "+missingFile.getServerFile().getPath());
+                }
+            }
+            catch (Throwable t) {
+                log.error("Error removing UserUploadFile from DB, "+missingFile.getServerFile().getPath(), t);
             }
         }
     }
