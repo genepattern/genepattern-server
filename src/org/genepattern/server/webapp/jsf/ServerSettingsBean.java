@@ -35,6 +35,7 @@ import javax.faces.event.ActionEvent;
 import javax.faces.model.SelectItem;
 
 import org.apache.log4j.Logger;
+import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.purger.PurgerFactory;
 import org.genepattern.server.util.PropertiesManager_3_2;
 
@@ -758,6 +759,8 @@ public class ServerSettingsBean implements Serializable {
 	UIBeanHelper.setInfoMessage("Property successfully updated");
 	PropertiesManager_3_2.storeChanges(settings);
 	PropertiesManager_3_2.storeChangesToCustomProperties(customSettings);
+	//force reload of genepattern.properties and custom.properties files
+	ServerConfigurationFactory.reloadConfiguration();
     }
 
     /**
