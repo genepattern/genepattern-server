@@ -267,26 +267,28 @@ public class Purger02 extends TimerTask {
             return;
         }
         
-        final List<BatchJob> batchJobsToPurge=getBatchJobsToPurge(userContext.getUserId(), cutoffDate);
-        for(final BatchJob batchJob : batchJobsToPurge) {
-            deleteBatchJob(batchJob);
-        }
-        log.debug("done purging batch jobs for userId="+userContext.getUserId());
-    }
-
-    private List<BatchJob> getBatchJobsToPurge(final String userId, final Date cutoffDate) {
+        final boolean isInTransaction=HibernateUtil.isInTransaction();
         try {
+            HibernateUtil.beginTransaction();
             final BatchJobDAO batchJobDAO = new BatchJobDAO();
-            final List<BatchJob> batchJobsToPurge = batchJobDAO.getOlderThanDateForUser(userId, cutoffDate);
-            return batchJobsToPurge;
-        }
-        catch (Throwable t) {
-            log.error("Unexpected error getting batch jobs to purge for userId="+userId, t);
-            return Collections.emptyList();
+            final List<BatchJob> batchJobsToPurge = batchJobDAO.getOlderThanDateForUser(userContext.getUserId(), cutoffDate);
+            if (log.isDebugEnabled()) {
+                log.debug("batchJobsToPurge.size="+batchJobsToPurge.size());
+            }
+            for(final BatchJob batchJob : batchJobsToPurge) {
+                deleteBatchJob(batchJob);
+                HibernateUtil.getSession().flush();
+            }
+            if (!isInTransaction) {
+                HibernateUtil.commitTransaction();
+            }
         }
         finally {
-            HibernateUtil.closeCurrentSession();
+            if (!isInTransaction) {
+                HibernateUtil.closeCurrentSession();
+            }
         }
+        log.debug("done purging batch jobs for userId="+userContext.getUserId());
     }
     
     /**
@@ -294,7 +296,19 @@ public class Purger02 extends TimerTask {
      * @param batchJob
      */
     private void deleteBatchJob(final BatchJob batchJob) {
-        if (batchJob==null || batchJob.getBatchJobs()==null || batchJob.getBatchJobs().size() != 0) {
+        if (batchJob==null) {
+            log.error("batchJob==null");
+            return;
+        }
+        if (batchJob.getBatchJobs()==null) {
+            log.error("batchJob.getBatchJobs()==null");
+            return;
+        }
+        if (batchJob.getBatchJobs().size() != 0) {
+            if (log.isDebugEnabled()) {
+                log.debug("skipping batch job_no="+batchJob.getJobNo()+" for user="+batchJob.getUserId()
+                        +", batchJobs.size="+batchJob.getBatchJobs().size());
+            }
             return;
         }
         final boolean isInTransaction=HibernateUtil.isInTransaction();
