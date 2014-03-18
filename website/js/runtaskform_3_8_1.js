@@ -321,7 +321,7 @@ function sendToParamForMenu(paramList) {
                 .module({
                     data: {
                         "lsid": "",
-                        "name": "Send to " + param,
+                        "name": "Send to " + run_task_info.params[param].displayname,
                         "description": run_task_info.params[param].description,
                         "version": "",
                         "documentation": "http://genepattern.org",
