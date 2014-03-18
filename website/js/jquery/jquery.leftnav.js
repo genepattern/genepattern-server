@@ -242,10 +242,10 @@ $.widget("gp.module", {
 
     showMenu: function() {
         var menu = $(this.element).find('.module-menu');
-        var top = $(this.element).position().top + 100;
-        var left = $(this.element).position().left + $(this.element).width() - menu.width() + 350;
+        var top = $(this.element).position().top + 30;
+        var left = $(this.element).position().left + $(this.element).width() - menu.width();
 
-        menu.css("position", "fixed");
+        menu.css("position", "absolute");
         menu.css("top", top);
         menu.css("left", left);
         menu.show();
