@@ -211,6 +211,23 @@
             $(document).ready(function() {
                 initUploads();
             });
+
+            // Stupid IE hack to fix the dropzone display
+            var isMSIE = navigator.userAgent.indexOf("Trident") != -1;
+            if (isMSIE) {
+                $('#left-nav').bind('tabsshow', function(event, ui) {
+                    switch (ui.index){
+                        case 2:
+                            $('#upload-dropzone-wrapper').show();
+                            break;
+                        default:
+                            $('#upload-dropzone-wrapper').hide();
+                    }
+                });
+
+                var dropzone = $('#upload-dropzone-wrapper').detach();
+                $('#left-nav').append(dropzone);
+            }
         </script>
     </ui:composition>
 </html>
