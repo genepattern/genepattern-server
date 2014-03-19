@@ -29,7 +29,7 @@ function stopJob(button, jobId) {
 
 // POST /jobResults/<job>/requestEmailNotification
 function requestEmailNotification(cb, jobId, userEmail) {
-	jq.ajax({
+	$.ajax({
 		type : "POST",
 		url : '/gp/jobResults/' + jobId + '/requestEmailNotification',
 		data : 'userEmail=' + userEmail,
@@ -46,7 +46,7 @@ function requestEmailNotification(cb, jobId, userEmail) {
 
 // POST /jobResults/<job>/cancelEmailNotification
 function cancelEmailNotification(cb, jobId, userEmail) {
-	jq.ajax({
+	$.ajax({
 		type : "POST",
 		url : '/gp/jobResults/' + jobId + '/cancelEmailNotification',
 		data : 'userEmail=' + userEmail,
@@ -82,7 +82,7 @@ function ajaxEmailResponse(req) {
 
 function sendAjaxRequest(elExpression, parameters, callbackFunction, method,
 		ajaxServletUrl) {
-	jq.ajax({
+	$.ajax({
 		type : method,
 		url : '/gp/jobResults/' + jobId + '/cancelEmailNotification',
 		data : parameters + '&el=' + elExpression,
@@ -100,7 +100,7 @@ function sendAjaxRequest(elExpression, parameters, callbackFunction, method,
 // The form parameters as a string.
 
 function getFormParameters(formId) {
-	var form = jq("#" + formId);
+	var form = $("#" + formId);
 	if (form.length < 1) {
 		alert("Form " + formId + " not found.");
 	}
@@ -151,7 +151,7 @@ function showDialog(title, message, button) {
 	if (button === undefined || button === null) {
 		button = {
 			"OK" : function(event) {
-				jq(this).dialog("close");
+				$(this).dialog("close");
 				if (event.preventDefault)
 					event.preventDefault();
 				if (event.stopPropagation)
@@ -160,23 +160,23 @@ function showDialog(title, message, button) {
 		};
 	}
 
-	jq(alert).dialog({
+	$(alert).dialog({
 		modal : true,
 		dialogClass : "top-dialog",
 		width : 400,
 		title : title,
 		buttons : button,
 		close : function() {
-			jq(this).dialog("destroy");
-			jq(this).remove();
+			$(this).dialog("destroy");
+			$(this).remove();
 		}
 	});
 
 	// Fix z-index for dialog
-	var z = parseInt(jq(alert).parent().css("z-index"));
+	var z = parseInt($(alert).parent().css("z-index"));
 	if (z < 10000) {
 		z += 9000;
-		jq(".top-dialog").css("z-index", z);
+		$(".top-dialog").css("z-index", z);
 	}
 
 	return alert;
@@ -266,13 +266,13 @@ function initBrowseSuites() {
         }
     });
 	
-	var modsearch = $('#module-suites').searchslider({
+	$('#module-suites').searchslider({
         lists: [browse]
     });
 }
 
 function initBrowseModules() {
-	var browse = $('<div id="module-list-browse"></div>').modulelist({
+	return $('<div id="module-list-browse"></div>').modulelist({
         title: 'Browse Modules by Category',
         data: all_categories,
         droppable: false,
@@ -284,8 +284,6 @@ function initBrowseModules() {
             $("#module-search").searchslider("set_title", '<a href="#" onclick="$(\'#module-browse\').searchslider(\'show\');">Browse Modules</a> &raquo; ' + filter);
         }
     });
-	
-	return browse;
 }
 
 function initBrowseTop() {
@@ -519,7 +517,7 @@ function jobStatusPoll() {
 		}
 }
 
-function ajaxFileTabUpload(file, directory){
+function ajaxFileTabUpload(file, directory, done, index){
     var loaded = 0;
     var step = 1024*1024;
     var total = file.size;
@@ -529,22 +527,6 @@ function ajaxFileTabUpload(file, directory){
 
     var reader = new FileReader();
     var xhr = null;
-
-    // Hide the dropzone
-    $("#upload-dropzone").hide();
-    $("#upload-dropzone-wrapper > span").hide();
-
-    // Show the progressbar
-    $("#upload-progress-wrapper").show();
-    $("#upload-dropzone-progress").progressbar({
-        value: false,
-        change: function() {
-            $("#upload-dropzone-progress-label").text("Uploading: " + $("#upload-dropzone-progress").progressbar( "value" ) + "%");
-        },
-        complete: function() {
-
-        }
-    });
 
     // Handle the directory error condition
     reader.onerror = function(event) {
@@ -605,18 +587,19 @@ function ajaxFileTabUpload(file, directory){
 
                 if (loaded === total) {
                     if (!data.match("^Error:")) {
-                        $("#upload-dropzone-progress-label").text("Upload Complete!");
-
-                        // Hide the progressbar
-                        $("#upload-progress-wrapper").hide();
-
-                        // Show the dropzone
-                        $("#upload-dropzone").show();
-                        $("#upload-dropzone-wrapper > span").show();
-
-                        // Refresh the tree
-                        $("#uploadTree").data("dndReady", {});
-                        $("#uploadTree").jstree("refresh");
+                        done[index] = true;
+//                        $("#upload-dropzone-progress-label").text("Upload Complete!");
+//
+//                        // Hide the progressbar
+//                        $("#upload-progress-wrapper").hide();
+//
+//                        // Show the dropzone
+//                        $("#upload-dropzone").show();
+//                        $("#upload-dropzone-wrapper > span").show();
+//
+//                        // Refresh the tree
+//                        $("#uploadTree").data("dndReady", {});
+//                        $("#uploadTree").jstree("refresh");
                     }
                 }
             }, 10);
@@ -695,11 +678,69 @@ function uploadDrop(event) {
     }
 }
 
+// TODO: Finish implementation
+function initUploadToaster(filelist, directory) {
+    // Hide the dropzone
+    $("#upload-dropzone").hide();
+    $("#upload-dropzone-wrapper").find("> span").hide();
+
+    // Show the progressbar
+    $("#upload-progress-wrapper").show();
+    $("#upload-dropzone-progress").progressbar({
+        value: false,
+        change: function() {
+            $("#upload-dropzone-progress-label").text("Uploading: " + $("#upload-dropzone-progress").progressbar( "value" ) + "%");
+        },
+        complete: function() {
+
+        }
+    });
+}
+
+function cleanUploadToaster() {
+    $("#upload-dropzone-progress-label").text("Upload Complete!");
+
+    // Hide the progressbar
+    $("#upload-progress-wrapper").hide();
+
+    // Show the dropzone
+    $("#upload-dropzone").show();
+    $("#upload-dropzone-wrapper").find("> span").show();
+
+    // Refresh the tree
+    $("#uploadTree").data("dndReady", {});
+    $("#uploadTree").jstree("refresh");
+}
+
 function uploadAfterDialog(filelist, directory) {
+    // Set up the upload toaster
+    initUploadToaster(filelist, directory);
+
+    // Create upload done indicator
+    var done = [];
+
+    // Do each upload
     for (var i = 0; i < filelist.length; i++) {
+        // Create the done indicator
+        done[i] = false;
+
+        // Upload the file
         var file = filelist[i];
-        ajaxFileTabUpload(file, directory);
+        ajaxFileTabUpload(file, directory, done, i);
     }
+
+    // Finish all uploads, cycling until done
+    var testForCleanup = function() {
+        setTimeout(function() {
+            if (done.reduce(function(a, b) {return a && b})) {
+                cleanUploadToaster();
+            }
+            else {
+                testForCleanup();
+            }
+        }, 1000);
+    };
+    testForCleanup();
 }
 
 function initUploads() {
