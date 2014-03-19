@@ -296,7 +296,7 @@ public class RunTaskServlet extends HttpServlet
             final LibdirStrategy libdirStrategy = new LibdirLegacy();
             final TasklibPath filePath = new TasklibPath(libdirStrategy, taskInfo, "paramgroups.json");
             JSONArray paramGroupsJson = loadModuleHelper.getParameterGroupsJson(taskInfo, filePath.getServerFile());
-            final boolean enableExecutorInputParams=ServerConfigurationFactory.instance().getGPBooleanProperty(userContext, JobConfigParams.PROP_ENABLE_EXECUTOR_INPUT_PARAMS, false);
+            final boolean enableExecutorInputParams=ServerConfigurationFactory.instance().getGPBooleanProperty(userContext, JobConfigParams.PROP_ENABLE_EXECUTOR_INPUT_PARAMS, true);
             if (enableExecutorInputParams) {
                 final GpConfig gpConfig=ServerConfigurationFactory.instance();
                 final JobConfigParams jobConfigParams=JobConfigParams.initJobConfigParams(gpConfig, userContext);
