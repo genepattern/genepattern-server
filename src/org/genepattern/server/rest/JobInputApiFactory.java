@@ -17,9 +17,12 @@ public class JobInputApiFactory {
     }
     
     static public JobInputApi createJobInputApi(GpContext context, boolean initDefault) {
-        final String jobInputApiClass=ServerConfigurationFactory.instance().getGPProperty(context, "jobInputApiClass");
-        if ("org.genepattern.server.rest.JobInputApiImplV2".equals(jobInputApiClass)) {
+        final String jobInputApiClass=ServerConfigurationFactory.instance().getGPProperty(context, "jobInputApiClass", JobInputApiImplV2.class.getName());
+        if (JobInputApiImplV2.class.getName().equals(jobInputApiClass)) {
             return new JobInputApiImplV2(initDefault);
+        }
+        else if (JobInputApiImpl.class.getName().equals(jobInputApiClass)) {
+            return new JobInputApiImpl(initDefault);
         }
         if (jobInputApiClass != null) {
             log.error("Ignoring config property jobInputApiClass="+jobInputApiClass);
