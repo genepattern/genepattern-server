@@ -858,6 +858,255 @@ function lsidsToModules(lsidList) {
 }
 
 function createFileWidget(linkElement, appendTo) {
+    var _createFileWidgetInner = function(linkElement, appendTo) {
+        var link = $(linkElement);
+        var url = link.attr("href");
+        var name = $(linkElement).text();
+        var isDirectory = isDirectoryFromUrl(url);
+        var isRoot = isRootFromUrl(url);
+        var isUpload = appendTo === "#menus-uploads";
+        var isJobFile = appendTo === "#menus-jobs";
+        var isPartialFile = linkElement.attr("data-partial") === "true";
+
+        var sendToString = linkElement.attr("data-sendtomodule");
+        if (sendToString === null || sendToString === undefined) sendToString = '[]';
+        var lsidList = JSON.parse(sendToString);
+        var sendToList = lsidsToModules(lsidList);
+
+        var kind = linkElement.attr("data-kind");
+
+        var data = constructFileMenuData(isRoot, isDirectory, isUpload, isJobFile, isPartialFile);
+
+        var actionList = $("<div></div>")
+            .attr("class", "file-widget-actions")
+            .modulelist({
+                title: name,
+                data: data,
+                droppable: false,
+                draggable: false,
+                click: function(event) {
+                    var saveAction = $(event.target).closest(".module-listing").find(".module-name").text().trim().indexOf("Save") == 0;
+                    var deleteAction = $(event.target).closest(".module-listing").find(".module-name").text().trim().indexOf("Delete") == 0;
+                    var subdirAction = $(event.target).closest(".module-listing").find(".module-name").text().trim().indexOf("Create Subdirectory") == 0;
+                    var pipelineAction = $(event.target).closest(".module-listing").find(".module-name").text().trim().indexOf("Create Pipeline") == 0;
+
+                    var listObject = $(event.target).closest(".search-widget").find(".send-to-param-list");
+                    var url = listObject.attr("data-url");
+                    var path = uploadPathFromUrl(url);
+
+                    if (saveAction) {
+                        window.location.href = url + "?download";
+                        $(".search-widget:visible").searchslider("hide");
+                        return;
+                    }
+
+                    else if (deleteAction) {
+                        if (confirm('Are you sure you want to delete the selected file or directory?')) {
+                            $.ajax({
+                                type: "DELETE",
+                                url: "/gp/rest/v1/data/delete/" + path,
+                                success: function(data, textStatus, jqXHR) {
+                                    $("#infoMessageDiv #infoMessageContent").text(data);
+                                    $("#infoMessageDiv").show();
+
+                                    if (isUpload) {
+                                        $("#uploadTree").data("dndReady", {});
+                                        $("#uploadTree").jstree("refresh");
+                                    }
+                                    if (isJobFile) {
+                                        initRecentJobs();
+                                    }
+                                },
+                                error: function(data, textStatus, jqXHR) {
+                                    if (typeof data === 'object') {
+                                        data = data.responseText;
+                                    }
+
+                                    $("#errorMessageDiv #errorMessageContent").text(data);
+                                    $("#errorMessageDiv").show();
+                                }
+                            });
+
+                            $(".search-widget:visible").searchslider("hide");
+                        }
+                        return;
+                    }
+
+                    else if (subdirAction) {
+                        showDialog("Name the Subdirectory", "What name would you like to give the subdirectory?" +
+                            "<input type='text' class='dialog-subdirectory-name' style='width: 98%;' />", {
+                            "Create": function(event) {
+                                var subdirName = $(".dialog-subdirectory-name").val();
+
+                                $.ajax({
+                                    type: "PUT",
+                                    url: "/gp/rest/v1/data/createDirectory/" + path + encodeURIComponent(subdirName),
+                                    success: function(data, textStatus, jqXHR) {
+                                        $("#infoMessageDiv #infoMessageContent").text(data);
+                                        $("#infoMessageDiv").show();
+
+                                        if (isUpload) {
+                                            $("#uploadTree").data("dndReady", {});
+                                            $("#uploadTree").jstree("refresh");
+
+                                            $("#uploadDirectoryTree").jstree("refresh");
+                                        }
+                                    },
+                                    error: function(data, textStatus, jqXHR) {
+                                        if (typeof data === 'object') {
+                                            data = data.responseText;
+                                        }
+
+                                        $("#errorMessageDiv #errorMessageContent").text(data);
+                                        $("#errorMessageDiv").show();
+                                    }
+                                });
+
+                                $(this).dialog("close");
+                            },
+                            "Cancel": function(event) {
+                                $(this).dialog("close");
+                            }
+                        });
+                        $(".ui-dialog-buttonset:visible button:first").button("disable");
+                        $(".dialog-subdirectory-name").keyup(function(event) {
+                            if ($(event.target).val() === "") {
+                                $(".ui-dialog-buttonset:visible button:first").button("disable");
+                            }
+                            else {
+                                $(".ui-dialog-buttonset:visible button:first").button("enable");
+                            }
+                        });
+
+                        $(".search-widget:visible").searchslider("hide");
+                        return;
+                    }
+
+                    else if (pipelineAction) {
+                        showDialog("Name the Pipeline", "What name would you like to give the pipeline?" +
+                            "<input type='text' class='dialog-pipeline-name' style='width: 98%;' />", {
+                            "Create": function(event) {
+                                var subdirName = $(".dialog-pipeline-name").val();
+                                subdirName = makePipelineNameValid(subdirName);
+
+                                $.ajax({
+                                    type: "PUT",
+                                    url: "/gp/rest/v1/data/createPipeline/" + path + "?name=" + subdirName,
+                                    success: function(data, textStatus, jqXHR) {
+                                        $("#infoMessageDiv #infoMessageContent").text(data);
+                                        $("#infoMessageDiv").show();
+
+                                        var forwardUrl = jqXHR.getResponseHeader("pipeline-forward");
+                                        if (forwardUrl && forwardUrl.length > 0) {
+                                            window.location = forwardUrl;
+                                        }
+                                    },
+                                    error: function(data, textStatus, jqXHR) {
+                                        if (typeof data === 'object') {
+                                            data = data.responseText;
+                                        }
+
+                                        $("#errorMessageDiv #errorMessageContent").text(data);
+                                        $("#errorMessageDiv").show();
+                                    }
+                                });
+
+                                $(this).dialog("close");
+                            },
+                            "Cancel": function(event) {
+                                $(this).dialog("close");
+                            }
+                        });
+                        $(".ui-dialog-buttonset:visible button:first").button("disable");
+                        $(".dialog-pipeline-name").keyup(function(event) {
+                            if ($(event.target).val() === "") {
+                                $(".ui-dialog-buttonset:visible button:first").button("disable");
+                            }
+                            else {
+                                $(".ui-dialog-buttonset:visible button:first").button("enable");
+                            }
+                        });
+
+                        $(".search-widget:visible").searchslider("hide");
+                        return;
+                    }
+
+                    else {
+                        console.log("ERROR: Executing click function for " + url);
+                        $(".search-widget:visible").searchslider("hide");
+                    }
+                }
+            });
+
+        var paramList = $("<div></div>")
+            .attr("class", "send-to-param-list")
+            .attr("data-kind", kind)
+            .attr("data-url", link.attr("href"))
+            .modulelist({
+                title: "Send to Parameter",
+                data: [],
+                droppable: false,
+                draggable: false,
+                click: function(event) {}
+            });
+
+        var moduleList = $("<div></div>")
+            .attr("class", "send-to-module-list")
+            .modulelist({
+                title: "Send to Module",
+                data: sendToList,
+                droppable: false,
+                draggable: true,
+                click: function(event) {
+                    var lsid = this.data.lsid;
+
+                    loadRunTaskForm(lsid, false);
+
+                    var afterRunTaskLoad = function() {
+                        var listObject = $(event.target).closest(".search-widget").find(".send-to-param-list");
+                        var kind = listObject.attr("data-kind");
+                        var url = listObject.attr("data-url");
+
+                        sendToByKind(url, kind);
+                    };
+
+                    var checkForRunTaskLoaded = function() {
+                        if (run_task_info.lsid === lsid) {
+                            afterRunTaskLoad();
+                        }
+                        else {
+                            setTimeout(function() {
+                                checkForRunTaskLoaded();
+                            }, 100);
+                        }
+                    };
+
+                    checkForRunTaskLoaded();
+                }
+            });
+
+        if (moduleList.find(".module-listing").length < 1) {
+            paramList.hide();
+            moduleList.hide();
+        }
+
+        if (isPartialFile) {
+            moduleList.hide();
+        }
+
+        var widget = $("<div></div>")
+            .attr("name", link.attr("href"))
+            .attr("class", "search-widget file-widget")
+            .searchslider({
+                lists: [actionList, paramList, moduleList]});
+
+        $(appendTo).append(widget);
+
+        // Init the initial send to parameters
+        var sendToParamList = widget.find(".send-to-param-list");
+        sendToParamForMenu(sendToParamList);
+    }
+
     if (all_modules_map !== null) {
         _createFileWidgetInner(linkElement, appendTo);
     }
@@ -958,258 +1207,17 @@ function makePipelineNameValid(string) {
     return newName;
 }
 
-function _createFileWidgetInner(linkElement, appendTo) {
-    var link = $(linkElement);
-    var url = link.attr("href");
-    var name = $(linkElement).text();
-    var isDirectory = isDirectoryFromUrl(url);
-    var isRoot = isRootFromUrl(url);
-    var isUpload = appendTo === "#menus-uploads";
-    var isJobFile = appendTo === "#menus-jobs";
-    var isPartialFile = linkElement.attr("data-partial") === "true";
-
-    var sendToString = linkElement.attr("data-sendtomodule");
-    if (sendToString === null || sendToString === undefined) sendToString = '[]';
-    var lsidList = JSON.parse(sendToString);
-    var sendToList = lsidsToModules(lsidList);
-
-    var kind = linkElement.attr("data-kind");
-
-    var data = constructFileMenuData(isRoot, isDirectory, isUpload, isJobFile, isPartialFile);
-
-    var actionList = $("<div></div>")
-        .attr("class", "file-widget-actions")
-        .modulelist({
-            title: name,
-            data: data,
-            droppable: false,
-            draggable: false,
-            click: function(event) {
-                var saveAction = $(event.target).closest(".module-listing").find(".module-name").text().trim().indexOf("Save") == 0;
-                var deleteAction = $(event.target).closest(".module-listing").find(".module-name").text().trim().indexOf("Delete") == 0;
-                var subdirAction = $(event.target).closest(".module-listing").find(".module-name").text().trim().indexOf("Create Subdirectory") == 0;
-                var pipelineAction = $(event.target).closest(".module-listing").find(".module-name").text().trim().indexOf("Create Pipeline") == 0;
-
-                var listObject = $(event.target).closest(".search-widget").find(".send-to-param-list");
-                var url = listObject.attr("data-url");
-                var path = uploadPathFromUrl(url);
-
-                if (saveAction) {
-                    window.location.href = url + "?download";
-                    $(".search-widget:visible").searchslider("hide");
-                    return;
-                }
-
-                else if (deleteAction) {
-                    if (confirm('Are you sure you want to delete the selected file or directory?')) {
-                        $.ajax({
-                            type: "DELETE",
-                            url: "/gp/rest/v1/data/delete/" + path,
-                            success: function(data, textStatus, jqXHR) {
-                                $("#infoMessageDiv #infoMessageContent").text(data);
-                                $("#infoMessageDiv").show();
-
-                                if (isUpload) {
-                                    $("#uploadTree").data("dndReady", {});
-                                    $("#uploadTree").jstree("refresh");
-                                }
-                                if (isJobFile) {
-                                    initRecentJobs();
-                                }
-                            },
-                            error: function(data, textStatus, jqXHR) {
-                                if (typeof data === 'object') {
-                                    data = data.responseText;
-                                }
-
-                                $("#errorMessageDiv #errorMessageContent").text(data);
-                                $("#errorMessageDiv").show();
-                            }
-                        });
-
-                        $(".search-widget:visible").searchslider("hide");
-                    }
-                    return;
-                }
-
-                else if (subdirAction) {
-                    showDialog("Name the Subdirectory", "What name would you like to give the subdirectory?" +
-                        "<input type='text' class='dialog-subdirectory-name' style='width: 98%;' />", {
-                        "Create": function(event) {
-                            var subdirName = $(".dialog-subdirectory-name").val();
-
-                            $.ajax({
-                                type: "PUT",
-                                url: "/gp/rest/v1/data/createDirectory/" + path + encodeURIComponent(subdirName),
-                                success: function(data, textStatus, jqXHR) {
-                                    $("#infoMessageDiv #infoMessageContent").text(data);
-                                    $("#infoMessageDiv").show();
-
-                                    if (isUpload) {
-                                        $("#uploadTree").data("dndReady", {});
-                                        $("#uploadTree").jstree("refresh");
-
-                                        $("#uploadDirectoryTree").jstree("refresh");
-                                    }
-                                },
-                                error: function(data, textStatus, jqXHR) {
-                                    if (typeof data === 'object') {
-                                        data = data.responseText;
-                                    }
-
-                                    $("#errorMessageDiv #errorMessageContent").text(data);
-                                    $("#errorMessageDiv").show();
-                                }
-                            });
-
-                            $(this).dialog("close");
-                        },
-                        "Cancel": function(event) {
-                            $(this).dialog("close");
-                        }
-                    });
-                    $(".ui-dialog-buttonset:visible button:first").button("disable");
-                    $(".dialog-subdirectory-name").keyup(function(event) {
-                        if ($(event.target).val() === "") {
-                            $(".ui-dialog-buttonset:visible button:first").button("disable");
-                        }
-                        else {
-                            $(".ui-dialog-buttonset:visible button:first").button("enable");
-                        }
-                    });
-
-                    $(".search-widget:visible").searchslider("hide");
-                    return;
-                }
-
-                else if (pipelineAction) {
-                    showDialog("Name the Pipeline", "What name would you like to give the pipeline?" +
-                        "<input type='text' class='dialog-pipeline-name' style='width: 98%;' />", {
-                        "Create": function(event) {
-                            var subdirName = $(".dialog-pipeline-name").val();
-                            subdirName = makePipelineNameValid(subdirName);
-
-                            $.ajax({
-                                type: "PUT",
-                                url: "/gp/rest/v1/data/createPipeline/" + path + "?name=" + subdirName,
-                                success: function(data, textStatus, jqXHR) {
-                                    $("#infoMessageDiv #infoMessageContent").text(data);
-                                    $("#infoMessageDiv").show();
-
-                                    var forwardUrl = jqXHR.getResponseHeader("pipeline-forward");
-                                    if (forwardUrl && forwardUrl.length > 0) {
-                                        window.location = forwardUrl;
-                                    }
-                                },
-                                error: function(data, textStatus, jqXHR) {
-                                    if (typeof data === 'object') {
-                                        data = data.responseText;
-                                    }
-
-                                    $("#errorMessageDiv #errorMessageContent").text(data);
-                                    $("#errorMessageDiv").show();
-                                }
-                            });
-
-                            $(this).dialog("close");
-                        },
-                        "Cancel": function(event) {
-                            $(this).dialog("close");
-                        }
-                    });
-                    $(".ui-dialog-buttonset:visible button:first").button("disable");
-                    $(".dialog-pipeline-name").keyup(function(event) {
-                        if ($(event.target).val() === "") {
-                            $(".ui-dialog-buttonset:visible button:first").button("disable");
-                        }
-                        else {
-                            $(".ui-dialog-buttonset:visible button:first").button("enable");
-                        }
-                    });
-
-                    $(".search-widget:visible").searchslider("hide");
-                    return;
-                }
-
-                else {
-                    console.log("ERROR: Executing click function for " + url);
-                    $(".search-widget:visible").searchslider("hide");
-                }
-            }
-    });
-
-    var paramList = $("<div></div>")
-        .attr("class", "send-to-param-list")
-        .attr("data-kind", kind)
-        .attr("data-url", link.attr("href"))
-        .modulelist({
-            title: "Send to Parameter",
-            data: [],
-            droppable: false,
-            draggable: false,
-            click: function(event) {}
-    });
-
-    var moduleList = $("<div></div>")
-        .attr("class", "send-to-module-list")
-        .modulelist({
-            title: "Send to Module",
-            data: sendToList,
-            droppable: false,
-            draggable: true,
-            click: function(event) {
-                var lsid = this.data.lsid;
-
-                loadRunTaskForm(lsid, false);
-
-                var afterRunTaskLoad = function() {
-                    var listObject = $(event.target).closest(".search-widget").find(".send-to-param-list");
-                    var kind = listObject.attr("data-kind");
-                    var url = listObject.attr("data-url");
-
-                    sendToByKind(url, kind);
-                };
-
-                var checkForRunTaskLoaded = function() {
-                    if (run_task_info.lsid === lsid) {
-                        afterRunTaskLoad();
-                    }
-                    else {
-                        setTimeout(function() {
-                            checkForRunTaskLoaded();
-                        }, 100);
-                    }
-                };
-
-                checkForRunTaskLoaded();
-            }
-        });
-
-    if (moduleList.find(".module-listing").length < 1) {
-        paramList.hide();
-        moduleList.hide();
-    }
-
-    if (isPartialFile) {
-        moduleList.hide();
-    }
-
-    var widget = $("<div></div>")
-        .attr("name", link.attr("href"))
-        .attr("class", "search-widget file-widget")
-        .searchslider({
-            lists: [actionList, paramList, moduleList]});
-
-    $(appendTo).append(widget);
-
-    // Init the initial send to parameters
-    var sendToParamList = widget.find(".send-to-param-list");
-    sendToParamForMenu(sendToParamList);
-}
-
-function openFileWidget(link) {
+function openFileWidget(link, context) {
     var url = $(link).attr("href");
-    $("#content [name='" + url + "']").searchslider("show");
+
+    // Create the menu widget
+    var widgetFound = $(context).find("[name='" + url + "']").length > 0;
+    if (!widgetFound) {
+        createFileWidget($(link), context);
+    }
+
+    // Open the file slider
+    $(context).find("[name='" + url + "']").searchslider("show");
 }
 
 function createJobWidget(job) {
@@ -1486,10 +1494,11 @@ function renderJob(jobJson, tab) {
         .attr("onclick", "toggleJobCollapse(this);")
         .appendTo(jobName);
 
-    $("<a></a>")
+    var jobLink = $("<a></a>")
         .attr("href", "#")
         .attr("onclick", "openJobWidget(this); return false;")
         .attr("data-jobid", jobJson.jobId)
+        .attr("data-json", JSON.stringify(jobJson))
         .text(jobJson.taskName + " (" + jobJson.jobId + ")")
         .appendTo(jobName);
 
@@ -1497,9 +1506,6 @@ function renderJob(jobJson, tab) {
         .addClass("job-details")
         .text(jobJson.datetime)
         .appendTo(jobBox);
-
-    // Create the menu widget
-    createJobWidget(jobJson);
 
     for (var j = 0; j < jobJson.outputFiles.length; j++) {
         var file = jobJson.outputFiles[j];
@@ -1510,7 +1516,7 @@ function renderJob(jobJson, tab) {
 
         var link = $("<a></a>")
             .attr("href", file.link.href)
-            .attr("onclick", "openFileWidget(this); return false;")
+            .attr("onclick", "openFileWidget(this, '#menus-jobs'); return false;")
             .attr("href", file.link.href)
             .attr("data-kind", file.kind)
             .attr("data-sendtomodule", JSON.stringify(file.sendTo))
@@ -1519,9 +1525,6 @@ function renderJob(jobJson, tab) {
                     .attr("src", "/gp/images/outputFile.gif"))
             .append(file.link.name)
             .appendTo(fileBox);
-
-        // Create the menu widget
-        createFileWidget(link, "#menus-jobs");
     }
 
     // Handle child jobs
@@ -1535,5 +1538,16 @@ function renderJob(jobJson, tab) {
 
 function openJobWidget(link) {
     var id = $(link).attr("data-jobid");
-    $("#content [name='job_" + id + "']").searchslider("show");
+
+    // Create the job widget
+    var widgetFound = $("#menus-jobs").find("[name='job_" + id + "']").length > 0;
+    if (!widgetFound) {
+        // Get the job JSON
+        var jobJson = $(link).data("json");
+
+        createJobWidget(jobJson);
+    }
+
+    // Open the job slider
+    $("#menus-jobs").find("[name='job_" + id + "']").searchslider("show");
 }

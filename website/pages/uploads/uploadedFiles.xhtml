@@ -173,8 +173,7 @@
 
                             // Create a file widget for this file
                             if (#{uiBean.newUI}) {
-                                createFileWidget(anchor, "#menus-uploads");
-                                anchor.attr("onclick", "JavaScript:openFileWidget(this); return false;");
+                                anchor.attr("onclick", "JavaScript:openFileWidget(this, '#menus-uploads'); return false;");
                             }
                         });
                         
