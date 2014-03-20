@@ -32,10 +32,32 @@ import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
 
 import org.apache.log4j.Logger;
+import org.genepattern.server.config.GpContext;
+import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.user.User;
 import org.genepattern.server.user.UserDAO;
 
+/**
+ * This class is a JSF backing bean for the Contact Page, linked to from the 'Contact Us' link.
+ * By default it will send an email to 'gp-help@broadinstitute.org' using the 'smtp.broadinstitute.org'
+ * mail server.
+ * These default values can be set via standard GP server configuration settings, e.g.
+ * <pre>
+ * contact.us.email=gp-help@broadinstitute.org
+ * smtp.server=smtp.broadinstitute.org
+ * </pre>
+ * 
+ * One way to change the default values is by adding or editing a custom property from the 'Server Settings > Custom' page.
+ * 
+ * @author pcarr
+ *
+ */
 public class ContactUsBean {
+    public static final String PROP_CONTACT_EMAIL="contact.us.email";
+    public static final String DEFAULT_CONTACT_EMAIL="gp-help@broadinstitute.org";
+    public static final String PROP_SMTP_SERVER="smtp.server";
+    public static final String DEFAULT_SMTP_SERVER="smtp.broadinstitute.org"; 
+    
     private String subject;
 
     private String replyTo;
@@ -80,9 +102,15 @@ public class ContactUsBean {
     }
 
     public String send() {
+        final GpContext gpContext=GpContext.getServerContext();
+        final String sendToAddress = ServerConfigurationFactory.instance().getGPProperty(gpContext, PROP_CONTACT_EMAIL, DEFAULT_CONTACT_EMAIL);
+        final String smtpServer = ServerConfigurationFactory.instance().getGPProperty(gpContext, PROP_SMTP_SERVER, DEFAULT_SMTP_SERVER);
+        return send(sendToAddress, smtpServer);
+    }
+    
+    private String send(final String sendToAddress, final String smtpServer) {
         Properties p = new Properties();
-        String mailServer = System.getProperty("smtp.server", "smtp.broadinstitute.org");
-        p.put("mail.host", mailServer);
+        p.put("mail.host", smtpServer);
 
         Session mailSession = Session.getDefaultInstance(p, null);
         mailSession.setDebug(false);
@@ -93,8 +121,7 @@ public class ContactUsBean {
             msg.setText(message);
             msg.setFrom(new InternetAddress(replyTo));
             msg.setSentDate(new Date());
-            String email = "gp-help@broadinstitute.org";
-            msg.addRecipient(Message.RecipientType.TO, new InternetAddress(email));
+            msg.addRecipient(Message.RecipientType.TO, new InternetAddress(sendToAddress));
             Transport.send(msg);
         } catch (MessagingException e) {
             log.error(e);
