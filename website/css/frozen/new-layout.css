@@ -451,6 +451,7 @@ body {
 .jstree a {
     word-break: break-all;
     white-space: normal !important;
+    height: auto !important;
 }
 
 #recent-modules .module-listing {
