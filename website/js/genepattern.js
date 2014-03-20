@@ -1059,20 +1059,15 @@ function createFileWidget(linkElement, appendTo) {
                 draggable: true,
                 click: function(event) {
                     var lsid = this.data.lsid;
-
-                    loadRunTaskForm(lsid, false);
-
-                    var afterRunTaskLoad = function() {
-                        var listObject = $(event.target).closest(".search-widget").find(".send-to-param-list");
-                        var kind = listObject.attr("data-kind");
-                        var url = listObject.attr("data-url");
-
-                        sendToByKind(url, kind);
-                    };
+                    var listObject = $(event.target).closest(".search-widget").find(".send-to-param-list");
+                    var kind = listObject.attr("data-kind");
+                    var url = listObject.attr("data-url");
+                    
+                    loadRunTaskForm(lsid, false, kind, url);
 
                     var checkForRunTaskLoaded = function() {
                         if (run_task_info.lsid === lsid) {
-                            afterRunTaskLoad();
+                            sendToByKind(url, kind);
                         }
                         else {
                             setTimeout(function() {

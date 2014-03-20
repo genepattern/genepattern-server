@@ -69,7 +69,7 @@ if (!window.console)
     window.console = { time:function(){}, timeEnd:function(){}, group:function(){}, groupEnd:function(){}, log:function(){} };
 }
 
-function loadModule(taskId, reloadId)
+function loadModule(taskId, reloadId, sendFromKind, sendFromUrl)
 {
     // Fade in a progress indicator
     $("#loadingContent").fadeIn(1000);
@@ -150,7 +150,7 @@ function loadModule(taskId, reloadId)
                 else if(module["eula"])
                 {
                     clearEulas();
-                    generateEulas(module["eula"]);
+                    generateEulas(module["eula"], reloadId, sendFromKind, sendFromUrl);
                     $("#eula-block").show();
                 }
                 else
@@ -194,7 +194,7 @@ function loadModule(taskId, reloadId)
     });
 }
 
-function generateEulas(eula) {
+function generateEulas(eula, reloadId, sendFromKind, sendFromUrl) {
     var block = $("#eula-block");
 
     $("<div></div>")
@@ -234,6 +234,17 @@ function generateEulas(eula) {
             .appendTo(thisEula);
     });
 
+    var initialQueryString = "lsid=" + encodeURIComponent( eula.currentLsid );
+    if (reloadId) {
+        initialQueryString = initialQueryString + "&reloadJob=" + encodeURIComponent( reloadId );
+    }
+    if (sendFromUrl) {
+        initialQueryString = initialQueryString + "&_file="+encodeURIComponent(sendFromUrl);
+    }
+    if (sendFromKind) {
+        initialQueryString = initialQueryString + "&_format="+encodeURIComponent(sendFromKind);
+    }
+
     $("<div></div>")
         .addClass("license-center")
         .append($("<form></form>")
@@ -247,7 +258,7 @@ function generateEulas(eula) {
             .append($("<input></input>")
                 .attr("type", "hidden")
                 .attr("name", "initialQueryString")
-                .attr("value", "lsid=" + eula.currentLsid)
+                .attr("value", initialQueryString)
             )
             .append($("<input></input>")
                 .attr("type", "hidden")
@@ -1829,7 +1840,7 @@ function createParamDescriptionRow(parameterName)
     return $("<tr class='paramDescription'><td></td><td colspan='3'>" + pDescription +"</td></tr>");
 }
 
-function loadRunTaskForm(lsid, reloadJob) {
+function loadRunTaskForm(lsid, reloadJob, sendFromKind, sendFromUrl) {
     // Hide the search slider if it is open
     $(".search-widget").searchslider("hide");
 
@@ -1888,7 +1899,7 @@ function loadRunTaskForm(lsid, reloadJob) {
     }
     else
     {
-        loadModule(lsid, reloadJob);
+        loadModule(lsid, reloadJob, sendFromKind, sendFromUrl);
     }
 
     $("input[type='file']").live("change", function()
