@@ -1,6 +1,5 @@
 package org.genepattern.server.webapp.rest.api.v1.job;
 
-import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.net.URI;
@@ -9,7 +8,16 @@ import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.ws.rs.*;
+import javax.ws.rs.Consumes;
+import javax.ws.rs.DELETE;
+import javax.ws.rs.DefaultValue;
+import javax.ws.rs.GET;
+import javax.ws.rs.POST;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
+import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -35,9 +43,9 @@ import org.genepattern.server.webservice.server.Analysis;
 import org.genepattern.server.webservice.server.dao.AnalysisDAO;
 import org.genepattern.server.webservice.server.local.IAdminClient;
 import org.genepattern.server.webservice.server.local.LocalAdminClient;
+import org.genepattern.webservice.AnalysisJob;
 import org.genepattern.webservice.JobInfo;
 import org.genepattern.webservice.TaskInfo;
-import org.genepattern.webservice.AnalysisJob;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -166,7 +174,7 @@ public class JobsResource {
      * 
      * Example
      * <pre>
-       curl -D headers.txt -u test:test http://127.0.0.1:8080/gp/rest/v1/jobs/9140
+       curl -D headers.txt -u test:test http://127.0.0.1:8080/gp/rest/v1/jobs/9140?includeChildren=true
      * </pre>
      * @param request
      * @param jobId
@@ -178,7 +186,8 @@ public class JobsResource {
     public Response getJob(
             final @Context UriInfo uriInfo,
             final @Context HttpServletRequest request,
-            final @PathParam("jobId") String jobId
+            final @PathParam("jobId") String jobId,
+            final @DefaultValue("true") @QueryParam("includeChildren") boolean includeChildren
     ) {
         
         final GpContext userContext=Util.getUserContext(request);
@@ -189,8 +198,6 @@ public class JobsResource {
         final GetPipelineJobLegacy getJobImpl = new GetPipelineJobLegacy(jobsResourcePath);
         String jsonStr;
         try {
-            //TODO: make this a configurable flag
-            final boolean includeChildren=true;
             JSONObject job=null;
             job=getJobImpl.getJob(userContext, jobId, includeChildren);
             if (job==null) {
@@ -361,7 +368,11 @@ public class JobsResource {
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     @Path("/recent")
-    public Response getRecentJobs (@Context UriInfo uriInfo, @Context HttpServletRequest request) {
+    public Response getRecentJobs (
+            final @Context UriInfo uriInfo, 
+            final @Context HttpServletRequest request,
+            final @DefaultValue("true") @QueryParam("includeChildren") boolean includeChildren
+    ) {
         GpContext userContext = Util.getUserContext(request);
 
         try {
@@ -382,7 +393,7 @@ public class JobsResource {
             // Put the job JSON in an array
             JSONArray jobs = new JSONArray();
             for (JobInfo jobInfo : recentJobs) {
-                JSONObject jobObject = getJobImpl.getJob(userContext, jobInfo, true);
+                JSONObject jobObject = getJobImpl.getJob(userContext, jobInfo, includeChildren);
                 jobs.put(jobObject);
             }
 
