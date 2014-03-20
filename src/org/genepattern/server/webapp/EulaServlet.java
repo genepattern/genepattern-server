@@ -1,6 +1,8 @@
 package org.genepattern.server.webapp;
 
 import java.io.IOException;
+import java.util.Map;
+import java.util.Map.Entry;
 
 import javax.servlet.Servlet;
 import javax.servlet.ServletConfig;
@@ -73,6 +75,22 @@ public class EulaServlet  extends HttpServlet implements Servlet {
         String currentUser=null;
         String lsid=null;
         try {
+            //for debugging
+            if (log.isDebugEnabled()) {
+                try {
+                    final String queryString=request.getQueryString();
+                    log.debug("queryString="+queryString);
+                    final Map<String,String[]> pmap=request.getParameterMap();
+                    for(final Entry<String,String[]> entry : pmap.entrySet()) {
+                        String key=entry.getKey();
+                        String[] values=entry.getValue();
+                        log.debug(key+"="+values);
+                    }
+                }
+                catch (Throwable t) {
+                    log.debug("Unexpected exception while debugging request", t);
+                }
+            }         
             currentUser = getUserIdFromSession(request);
             lsid=request.getParameter("lsid");
             recordEULA(currentUser,lsid);
