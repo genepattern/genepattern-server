@@ -53,7 +53,7 @@ img {
 }
 
 #systemMessageLink {
-	position: fixed;
+	position: absolute;
 	right: 0px;
 	width: 500px;
     top: 5px;
