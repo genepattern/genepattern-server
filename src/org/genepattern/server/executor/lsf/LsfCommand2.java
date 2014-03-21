@@ -58,7 +58,7 @@ class LsfCommand2 {
      * 
      * @return
      */
-    private List<String> getMemFlags() {
+    protected static List<String> getMemFlags(final GpConfig gpConfig, final GpContext gpContext) {
         final Memory drmMemory=gpConfig.getGPMemoryProperty(gpContext, JobRunner.PROP_MEMORY);
         final Integer numGb;
         if (drmMemory==null) {
@@ -136,7 +136,7 @@ class LsfCommand2 {
         this.lsfJob.setQueue(lsfQueue);
         
         final List<String> extraBsubArgs = new ArrayList<String>();
-        List<String> memFlags=getMemFlags();
+        List<String> memFlags=LsfCommand2.getMemFlags(gpConfig, gpContext);
         if (memFlags!=null) {
             for(final String memFlag : memFlags) {
                 extraBsubArgs.add( memFlag );
