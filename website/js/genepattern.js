@@ -555,8 +555,7 @@ function ajaxFileTabUpload(file, directory, done, index){
     reader.onerror = function(event) {
         // Set the top error message
         var message = "Uploading directories is not supported. Aborting upload.";
-        $("#errorMessageDiv #errorMessageContent").text(message);
-        $("#errorMessageDiv").show();
+        showErrorMessage(message);
 
         // Set the progressbar error message
         progressbar.progressbar("value", 100);
@@ -592,8 +591,7 @@ function ajaxFileTabUpload(file, directory, done, index){
                     xhr.abort();
 
                     // Set the top error message
-                    $("#errorMessageDiv #errorMessageContent").text(data);
-                    $("#errorMessageDiv").show();
+                    showErrorMessage(data);
 
                     // Set the progressbar error message
                     progressbar.progressbar("value", 100);
@@ -927,6 +925,17 @@ function lsidsToModules(lsidList) {
     return toReturn;
 }
 
+function showErrorMessage(message) {
+    var messageBox = $("#errorMessageDiv");
+    messageBox.find("#errorMessageContent").text(message);
+    if (messageBox.is(":visible")) {
+        messageBox.effect("shake", {}, 500);
+    }
+    else {
+        messageBox.show("shake", {}, 500);
+    }
+}
+
 function createFileWidget(linkElement, appendTo) {
     var _createFileWidgetInner = function(linkElement, appendTo) {
         var link = $(linkElement);
@@ -992,8 +1001,7 @@ function createFileWidget(linkElement, appendTo) {
                                         data = data.responseText;
                                     }
 
-                                    $("#errorMessageDiv #errorMessageContent").text(data);
-                                    $("#errorMessageDiv").show();
+                                    showErrorMessage(data);
                                 }
                             });
 
@@ -1027,8 +1035,7 @@ function createFileWidget(linkElement, appendTo) {
                                             data = data.responseText;
                                         }
 
-                                        $("#errorMessageDiv #errorMessageContent").text(data);
-                                        $("#errorMessageDiv").show();
+                                        showErrorMessage(data);
                                     }
                                 });
 
@@ -1076,8 +1083,7 @@ function createFileWidget(linkElement, appendTo) {
                                             data = data.responseText;
                                         }
 
-                                        $("#errorMessageDiv #errorMessageContent").text(data);
-                                        $("#errorMessageDiv").show();
+                                        showErrorMessage(data);
                                     }
                                 });
 
@@ -1383,8 +1389,7 @@ function createJobWidget(job) {
                                     data = data.responseText;
                                 }
 
-                                $("#errorMessageDiv #errorMessageContent").text(data);
-                                $("#errorMessageDiv").show();
+                                showErrorMessage(data);
                             }
                         });
                     }
@@ -1407,8 +1412,7 @@ function createJobWidget(job) {
                                 data = data.responseText;
                             }
 
-                            $("#errorMessageDiv #errorMessageContent").text(data);
-                            $("#errorMessageDiv").show();
+                            showErrorMessage(data);
                         }
                     });
 
@@ -1528,8 +1532,7 @@ function initRecentJobs() {
                 data = data.responseText;
             }
 
-            $("#errorMessageDiv #errorMessageContent").text(data);
-            $("#errorMessageDiv").show();
+            showErrorMessage(data);
         }
     });
 }
