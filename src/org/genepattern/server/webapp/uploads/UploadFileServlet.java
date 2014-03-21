@@ -3,9 +3,11 @@ package org.genepattern.server.webapp.uploads;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.SortedSet;
+import java.util.TreeSet;
 
 import javax.faces.context.FacesContext;
 import javax.servlet.http.HttpServlet;
@@ -29,6 +31,36 @@ public class UploadFileServlet extends HttpServlet {
     private static final long serialVersionUID = -7008649202244924080L;
     public static Logger log = Logger.getLogger(UploadFileServlet.class);
     
+    /**
+     * Sort a list of GpFilePath by filename, case insensitive. Child directories are listed before child files.
+     * This assumes that all items in the list to be sorted are at the same level.
+     */
+    public static final Comparator<GpFilePath> dirFirstComparator=new Comparator<GpFilePath>() {
+
+        @Override
+        public int compare(final GpFilePath arg0, final GpFilePath arg1) {
+            if (arg0==null) {
+                if (arg1==null) {
+                    return 0;
+                }
+                return -1;
+            }
+            if (arg1==null) {
+                return 1;
+            }
+            //directories first
+            if (arg0.isDirectory()) {
+                if (!arg1.isDirectory()) {
+                    return -1;
+                }
+            }
+            else if (arg1.isDirectory()) {
+                return 1;
+            }
+            return arg0.getName().compareToIgnoreCase(arg1.getName());
+        }
+    };
+
     public static final String TREE = "/tree";
     public static final String SAVE_TREE = "/saveTree";
     public static final String SAVE_FILE = "/saveFile";
@@ -107,11 +139,12 @@ public class UploadFileServlet extends HttpServlet {
     }
 
     private static List<GpFilePath> unwrapFiles(List<FileInfoWrapper> wrappedFiles) {
-        List<GpFilePath> files = new ArrayList<GpFilePath>();
+        //List<GpFilePath> files = new ArrayList<GpFilePath>();
+        SortedSet<GpFilePath> files = new TreeSet<GpFilePath>(dirFirstComparator);
         for (FileInfoWrapper wrapper : wrappedFiles) {
             files.add(wrapper.getFile());
         }
-        return files;
+        return new ArrayList<GpFilePath>(files);
     }
     
     private static UploadTreeJSON treeToJson(final List<GpFilePath> tree, Map<String, SortedSet<TaskInfo>> kindToTaskInfo) {

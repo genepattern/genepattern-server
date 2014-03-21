@@ -49,9 +49,6 @@ public class UploadTreeJSON extends JSONArray {
                 }
             }
             
-            // Sort the list alphabetically
-            Collections.sort(toAdd, new TreeComparator());
-            
             for (JSONObject obj : toAdd) {
                 this.put(obj);
             } 
@@ -74,10 +71,10 @@ public class UploadTreeJSON extends JSONArray {
         return toReturn.toString();
     }
     
-    public static JSONObject makeFileJSON(GpFilePath file, final Map<String, SortedSet<TaskInfo>> kindToTaskInfo) throws Exception {
+    public static JSONObject makeFileJSON(final GpFilePath file, final Map<String, SortedSet<TaskInfo>> kindToTaskInfo) throws Exception {
         return makeFileJSON(file, false, kindToTaskInfo);
     }
-    public static JSONObject makeFileJSON(GpFilePath file, boolean dirOnly, final Map<String, SortedSet<TaskInfo>> kindToTaskInfo) throws Exception {
+    public static JSONObject makeFileJSON(final GpFilePath file, final boolean dirOnly, final Map<String, SortedSet<TaskInfo>> kindToTaskInfo) throws Exception {
         JSONObject object = new JSONObject();
         
         JSONObject data = new JSONObject();
@@ -106,17 +103,15 @@ public class UploadTreeJSON extends JSONArray {
         data.put(ATTR, attr);
 
         if (file.isDirectory()) {
+            final SortedSet<GpFilePath> sortedChildren=new TreeSet<GpFilePath>(UploadFileServlet.dirFirstComparator);
+            sortedChildren.addAll(file.getChildren());
             List<JSONObject> children = new ArrayList<JSONObject>();
-            for (GpFilePath child : file.getChildren()) {
+            for (final GpFilePath child : sortedChildren) {
                 if (child.isDirectory() || !dirOnly) {
                     JSONObject childJSON = makeFileJSON(child, dirOnly, kindToTaskInfo);
                     children.add(childJSON);
                 }
             }
-            
-            // Sort the list alphabetically
-            Collections.sort(children, new TreeComparator());
-            
             object.put(CHILDREN, children);
         }  
         
@@ -165,17 +160,15 @@ public class UploadTreeJSON extends JSONArray {
         data.put(ATTR, attr);
 
         if (file.isDirectory()) {
+            SortedSet<GpFilePath> sortedChildren=new TreeSet<GpFilePath>(UploadFileServlet.dirFirstComparator);
+            sortedChildren.addAll(file.getChildren());
             List<JSONObject> children = new ArrayList<JSONObject>();
-            for (GpFilePath child : file.getChildren()) {
+            for (GpFilePath child : sortedChildren) {
                 if (child.isDirectory() || !dirOnly) {
                     JSONObject childJSON = makeFileJSON(child, dirOnly, bean);
                     children.add(childJSON);
                 }
             }
-            
-            // Sort the list alphabetically
-            Collections.sort(children, new TreeComparator());
-            
             object.put(CHILDREN, children);
         }  
         
@@ -191,24 +184,4 @@ public class UploadTreeJSON extends JSONArray {
         return object;
     }
     
-    public static class TreeComparator implements Comparator<JSONObject> {
-        @Override
-        public int compare(JSONObject obj1, JSONObject obj2) {
-            String name1;
-            String name2;
-            try {
-                JSONObject data1 = obj1.getJSONObject("data");
-                JSONObject data2 = obj2.getJSONObject("data");
-                name1 = data1.getString(TITLE);
-                name2 = data2.getString(TITLE);
-            }
-            catch (JSONException e) {
-                log.error("ERROR in TreeJSON getting title for sort: " + obj1 + " " + obj2);
-                name1 = "ERROR1";
-                name2 = "ERROR2";
-            }
-            
-            return name1.compareToIgnoreCase(name2);
-        }
-    }
 }
