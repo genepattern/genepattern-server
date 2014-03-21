@@ -20,6 +20,19 @@ public class GpDirectoryNode extends Node<GpFilePath> {
     private Map<String, Node<GpFilePath>> allElements = new HashMap<String, Node<GpFilePath>>();
     static private Comparator<Node<GpFilePath>> comparator = new Comparator<Node<GpFilePath>>() {
         public int compare(Node<GpFilePath> o1, Node<GpFilePath> o2) {
+            //directories come before files
+            final boolean o1IsDir=o1.getValue().isDirectory();
+            final boolean o2IsDir=o2.getValue().isDirectory();
+            if (o1IsDir) {
+                if (!o2IsDir) {
+                    return -1;
+                }
+            }
+            else if (o2IsDir) {
+                if (!o1IsDir) {
+                    return 1;
+                }
+            }
             return o1.getValue().getRelativeUri().getPath().compareTo( o2.getValue().getRelativeUri().getPath() );
         }
     };
