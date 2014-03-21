@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.apache.log4j.Logger;
+import org.genepattern.drm.Memory;
 import org.genepattern.server.executor.CommandExecutorMapper;
 import org.genepattern.server.executor.CommandProperties;
 import org.genepattern.server.repository.RepositoryInfo;
@@ -183,7 +184,7 @@ public class GpConfig {
         }
         return value.getValue();
     }
-
+    
     /**
      * Utility method for parsing properties as a boolean.
      * The current implementation uses Boolean.parseBoolean, 
@@ -259,6 +260,25 @@ public class GpConfig {
         }
     }
     
+    public Memory getGPMemoryProperty(final GpContext gpContext, final String key) {
+        return getGPMemoryProperty(gpContext, key, null);
+
+    }
+
+    public Memory getGPMemoryProperty(final GpContext gpContext, final String key, final Memory defaultValue) {
+        String val = getGPProperty(gpContext, key);
+        if (val == null) {
+            return defaultValue;
+        }
+        try {
+            return Memory.fromString(val);
+        }
+        catch (Throwable t) {
+            log.error("Error parsing memory value for property, "+key+"="+val, t);
+            return defaultValue;
+        }
+    }
+
     //helper methods for locating server files and folders
     /**
      * Get the 'home directory' for a gp user account. This is the location for user data.
