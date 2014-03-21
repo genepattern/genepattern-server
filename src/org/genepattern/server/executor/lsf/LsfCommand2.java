@@ -10,6 +10,8 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.log4j.Logger;
+import org.genepattern.drm.JobRunner;
+import org.genepattern.drm.Memory;
 import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.Value;
@@ -39,6 +41,44 @@ class LsfCommand2 {
         this.gpContext=gpContext;
     }
     
+    /**
+     * Get the command line flags to set the max memory. 
+     * This is for the LSF instance used by the GenePattern Server at the Broad Institute,
+     * which defines memory flags as integer values corresponding to Gigabytes of RAM.
+     * 
+     * IF the newer (more general) 'drm.memory' flag is set, use that, otherwise,
+     * use the 'lsf.max.memory' flag.
+     * 
+     * These flags use two different formats, drm.memory expects units to be declared, while
+     * the lsf.max.memory must be an integer value. For example,
+     * <pre>
+       drm.memory: 8gb
+       lsf.max.memory: 8
+     * </pre>
+     * 
+     * @return
+     */
+    private List<String> getMemFlags() {
+        final Memory drmMemory=gpConfig.getGPMemoryProperty(gpContext, JobRunner.PROP_MEMORY);
+        final Integer numGb;
+        if (drmMemory==null) {
+             numGb = gpConfig.getGPIntegerProperty(gpContext, LsfProperties.Key.MAX_MEMORY.getKey(), LsfProperties.MAX_MEMORY_DEFAULT);
+        }
+        else {
+            numGb = (int) Math.ceil(drmMemory.numGb());
+            if (numGb > drmMemory.numGb()) {
+                log.debug("Rounded up to nearest int, LSF executor expects an integer value, was "+drmMemory.numGb());
+            }
+        }
+
+        final List<String> memFlags = new ArrayList<String>();
+        memFlags.add("-R");
+        memFlags.add("rusage[mem="+numGb+"]");
+        memFlags.add("-M");
+        memFlags.add(""+numGb);
+        
+        return memFlags;
+    }
 
     //example LSF command from the GP production server,
     //bsub -P $project -q "$queue" -R "rusage[mem=$max_memory]" -M $max_memory -m "$hosts" -K -o .lsf_%J.out -e $lsf_err $"$@" \>\> $cmd_out
@@ -87,8 +127,6 @@ class LsfCommand2 {
         }
         final String lsfProject=gpConfig.getGPProperty(gpContext, LsfProperties.Key.PROJECT.getKey());
         final String lsfQueue=gpConfig.getGPProperty(gpContext, LsfProperties.Key.QUEUE.getKey());
-        final String lsfMaxMemory=gpConfig.getGPProperty(gpContext, LsfProperties.Key.MAX_MEMORY.getKey(), 
-                LsfProperties.MAX_MEMORY_DEFAULT);
         final String lsfCpuSlots=gpConfig.getGPProperty(gpContext, LsfProperties.Key.CPU_SLOTS.getKey());
         final Value extraBsubArgsFromConfigFile = gpConfig.getValue(gpContext, LsfProperties.Key.EXTRA_BSUB_ARGS.getKey());
         final String lsfPriority = gpConfig.getGPProperty(gpContext, LsfProperties.Key.PRIORITY.getKey());
@@ -98,10 +136,12 @@ class LsfCommand2 {
         this.lsfJob.setQueue(lsfQueue);
         
         final List<String> extraBsubArgs = new ArrayList<String>();
-        extraBsubArgs.add("-R");
-        extraBsubArgs.add("rusage[mem="+lsfMaxMemory+"]");
-        extraBsubArgs.add("-M");
-        extraBsubArgs.add(lsfMaxMemory);
+        List<String> memFlags=getMemFlags();
+        if (memFlags!=null) {
+            for(final String memFlag : memFlags) {
+                extraBsubArgs.add( memFlag );
+            }
+        }
 
         if (lsfCpuSlots != null) {
             //expecting an integer
@@ -143,6 +183,10 @@ class LsfCommand2 {
         final List<String> preExecArgs=getPreExecCommand(jobInfo, runDir);
         extraBsubArgs.addAll(preExecArgs);
         this.lsfJob.setExtraBsubArgs(extraBsubArgs);
+        
+        if (log.isDebugEnabled()) {
+            log.debug("lsf extraBsubArgs: "+extraBsubArgs);
+        }
 
         String commandLineStr = wrapCommandLineArgsInSingleQuotes(commandLine);
 

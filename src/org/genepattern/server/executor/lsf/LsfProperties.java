@@ -1,7 +1,7 @@
 package org.genepattern.server.executor.lsf;
 
 public class LsfProperties {
-    public static final String MAX_MEMORY_DEFAULT="2"; //<-- 2 gb
+    public static final Integer MAX_MEMORY_DEFAULT=2; //<-- 2 gb
     public enum Key {
         PROJECT("lsf.project"),
         QUEUE("lsf.queue"),
