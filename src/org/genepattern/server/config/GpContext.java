@@ -2,6 +2,7 @@ package org.genepattern.server.config;
 
 import java.io.File;
 
+import org.genepattern.server.JobPermissions;
 import org.genepattern.server.job.input.JobInput;
 import org.genepattern.server.webapp.jsf.AuthorizationHelper;
 import org.genepattern.webservice.JobInfo;
@@ -16,8 +17,10 @@ public class GpContext {
     private TaskInfo taskInfo = null;
     private File taskLibDir = null;  // aka installation dir, the directory to which the task was installed
     private JobInfo jobInfo = null;
+    private Integer jobNumber = null;
     private JobInput jobInput = null;
     private boolean isAdmin=false;
+    private JobPermissions jobPermissions=null;
 
     /**
      * TODO: @deprecated
@@ -57,6 +60,7 @@ public class GpContext {
             if (jobInfo.getUserId() != null) {
                 context.setUserId(jobInfo.getUserId());
             }
+            context.jobNumber=jobInfo.getJobNumber();
         }
         return context;
     }
@@ -117,6 +121,21 @@ public class GpContext {
         return this.taskLibDir;
     }
 
+    void setJobNumber(final Integer jobNumber) {
+        this.jobNumber=jobNumber;
+    }
+    
+    /**
+     * can return null if not set.
+     * @return
+     */
+    public Integer getJobNumber() {
+        if (jobInfo!=null) {
+            return jobInfo.getJobNumber();
+        }
+        return jobNumber;
+    }
+
     void setJobInfo(JobInfo jobInfo) {
         this.jobInfo = jobInfo;
     }
@@ -146,6 +165,27 @@ public class GpContext {
             return jobInfo.getTaskLSID();
         }
         return null;
+    }
+
+    void setJobPermissions(final JobPermissions jobPermissions) {
+        this.jobPermissions=jobPermissions;
+    }
+    public JobPermissions getJobPermissions() {
+        return this.jobPermissions;
+    }
+    
+    public boolean canReadJob() {
+        if (jobPermissions==null) {
+            return false;
+        }
+        return jobPermissions.canReadJob();
+    }
+    
+    public boolean canWriteJob() {
+        if (jobPermissions==null) {
+            return false;
+        }
+        return jobPermissions.canWriteJob();
     }
 
 }

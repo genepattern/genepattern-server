@@ -136,7 +136,6 @@ import org.genepattern.server.domain.AnalysisJobDAO;
 import org.genepattern.server.domain.JobStatus;
 import org.genepattern.server.domain.JobStatusDAO;
 import org.genepattern.server.eula.EulaManager;
-import org.genepattern.server.eula.LibdirLegacy;
 import org.genepattern.server.executor.AnalysisJobScheduler;
 import org.genepattern.server.executor.CommandExecutor;
 import org.genepattern.server.executor.CommandExecutor2;
@@ -150,16 +149,14 @@ import org.genepattern.server.genomespace.GenomeSpaceClient;
 import org.genepattern.server.genomespace.GenomeSpaceClientFactory;
 import org.genepattern.server.genomespace.GenomeSpaceException;
 import org.genepattern.server.genomespace.GenomeSpaceFileManager;
-import org.genepattern.server.job.input.JobInput;
 import org.genepattern.server.job.input.Param;
 import org.genepattern.server.job.input.ParamId;
-import org.genepattern.server.job.input.ParamValue;
 import org.genepattern.server.job.input.ParamListHelper;
+import org.genepattern.server.job.input.ParamValue;
 import org.genepattern.server.job.input.cache.CachedFile;
 import org.genepattern.server.job.input.cache.FileCache;
 import org.genepattern.server.job.input.choice.Choice;
 import org.genepattern.server.job.input.choice.ChoiceInfo;
-import org.genepattern.server.job.input.dao.JobInputValueRecorder;
 import org.genepattern.server.plugin.PluginManagerLegacy;
 import org.genepattern.server.rest.ParameterInfoRecord;
 import org.genepattern.server.taskinstall.InstallInfo;
@@ -431,9 +428,9 @@ public class GenePatternAnalysisTask {
                 File in = new File(System.getProperty("java.io.tmpdir"), filename);
                 if (in.exists() && jobNumber >= 0) {
                     // check whether the current user has access to the job
-                    PermissionsHelper perm = new PermissionsHelper(isAdmin, userId, jobNumber);
-                    boolean canRead = perm.canReadJob();
-                    if (canRead) {
+                    //PermissionsHelper perm = new PermissionsHelper(isAdmin, userId, jobNumber);
+                    //boolean canRead = perm.canReadJob();
+                    if (jobContext.canReadJob()) {
                         return in;
                     }
                     throw new IllegalArgumentException("You are not permitted to access the requested file: "+in.getName());
@@ -631,42 +628,32 @@ public class GenePatternAnalysisTask {
         if (jobId == null) {
             throw new JobDispatchException("Invalid arg to onJob, jobId="+jobId);
         }
-
-        final JobInfo jobInfo;
-        final JobInput jobInput;
-        final int parentJobId; // = -1;
-        final TaskInfo taskInfo;
-        final String taskName;
-        final File taskLibDir;
+        final GpConfig gpConfig = ServerConfigurationFactory.instance();
+        final GpContext jobContext;
         try {
-            AnalysisDAO dao = new AnalysisDAO();
-            jobInfo = dao.getJobInfo(jobId);
-            // handle special-case: job was terminated before it was started
-            if (JobStatus.ERROR.equals(jobInfo.getStatus()) || JobStatus.FINISHED.equals(jobInfo.getStatus())) {
-                log.info("job #"+jobId+" already finished, status="+jobInfo.getStatus());
-                return;
-            }
-            parentJobId = dao.getParentJobId(jobId);
-            jobInput = new JobInputValueRecorder().fetchJobInput(jobId);
-            taskInfo=TaskInfoCache.instance().getTask(jobInfo.getTaskLSID());
-            taskName=taskInfo.getName();
-            if (log.isDebugEnabled()) {
-                log.debug("taskName=" + taskName);
-            }
-            taskLibDir=new LibdirLegacy().getLibdir(taskInfo.getLsid());
+            jobContext=GpContextFactory.createContextForJob(jobId);
         }
         catch (Throwable t) {
-            log.debug("Server error: Not able to load jobInfo for jobId: "+jobId, t);
-            throw new JobDispatchException("Server error: Not able to load jobInfo for jobId: "+jobId, t);
+            log.error("Error initializing jobContext for jobId="+jobId, t);
+            throw new JobDispatchException("Error initializing jobContext for jobId="+jobId);
         }
         finally {
             HibernateUtil.closeCurrentSession();
         }
+        
+        final JobInfo jobInfo=jobContext.getJobInfo();
+        final int parentJobId=jobInfo._getParentJobNumber();
+        final TaskInfo taskInfo=jobContext.getTaskInfo();
+        final String taskName=taskInfo.getName();
+ 
+        //  handle special-case: job was terminated before it was started
+        if (JobStatus.ERROR.equals(jobInfo.getStatus()) || JobStatus.FINISHED.equals(jobInfo.getStatus())) {
+            log.info("job #"+jobId+" already finished, status="+jobInfo.getStatus());
+            return;
+        }
 
-        final GpConfig gpConfig = ServerConfigurationFactory.instance();
-        final GpContext jobContext=GpContextFactory.createContextForJob(jobInfo, taskInfo, taskLibDir, jobInput);
         //is disk space available
-        boolean allowNewJob = gpConfig.getGPBooleanProperty(jobContext, "allow.new.job", true);
+        final boolean allowNewJob = gpConfig.getGPBooleanProperty(jobContext, "allow.new.job", true);
         if (!allowNewJob) {
             String errorMessage = 
                 "Job did not run because there is not enough disk space available.\n";

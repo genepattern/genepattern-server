@@ -2,10 +2,20 @@ package org.genepattern.server.config;
 
 import java.io.File;
 
+import org.apache.log4j.Logger;
+import org.genepattern.server.database.HibernateUtil;
+import org.genepattern.server.eula.LibdirLegacy;
+import org.genepattern.server.eula.LibdirStrategy;
+import org.genepattern.server.JobPermissions;
+import org.genepattern.server.JobPermissionsFactory;
 import org.genepattern.server.job.input.JobInput;
+import org.genepattern.server.job.input.dao.JobInputValueRecorder;
 import org.genepattern.server.webapp.jsf.AuthorizationHelper;
+import org.genepattern.server.webservice.server.dao.AnalysisDAO;
 import org.genepattern.webservice.JobInfo;
 import org.genepattern.webservice.TaskInfo;
+import org.genepattern.webservice.TaskInfoCache;
+
 
 /**
  * Factory methods for creating GpContext instances.
@@ -13,6 +23,7 @@ import org.genepattern.webservice.TaskInfo;
  *
  */
 public class GpContextFactory {
+    private static final Logger log = Logger.getLogger(GpContextFactory.class);
     
     public GpContext createServerContext() {
         return new Builder()
@@ -36,32 +47,52 @@ public class GpContextFactory {
         return builder.build();
     }
     
-    public static GpContext createContextForJob(final JobInfo jobInfo) {
-        TaskInfo taskInfo=null;
-        return createContextForJob(jobInfo, taskInfo);
+    public static GpContext createContextForJob(final Integer jobNumber) throws Exception, Throwable {
+        //null arg for currentUser means 'use the owner of the job'
+        return createContextForJob(null, jobNumber);
     }
-
-    public static GpContext createContextForJob(final JobInfo jobInfo, final TaskInfo taskInfo) {
-        Builder builder=new Builder();
-        if (jobInfo != null) {
-            builder=builder.jobInfo(jobInfo);
-            if (jobInfo.getUserId() != null) {
-                builder=builder.userId(jobInfo.getUserId());
+    public static GpContext createContextForJob(final String currentUser, final Integer jobNumber) throws Exception, Throwable {
+        LibdirStrategy libdirStrategy=new LibdirLegacy();
+        return createContextForJob(currentUser, jobNumber, libdirStrategy);
+    }
+    public static GpContext createContextForJob(final String currentUser, final Integer jobNumber, final LibdirStrategy libdirStrategy) throws Exception, Throwable {
+        if (jobNumber==null) {
+            throw new IllegalArgumentException("jobNumber==null");
+        }
+        if (libdirStrategy==null) {
+            throw new IllegalArgumentException("libdirStrategy==null");
+        }
+        final boolean initFromDb=true;
+        final boolean isInTransaction=HibernateUtil.isInTransaction();
+        final JobInfo jobInfo;
+        final JobInput jobInput;
+        final TaskInfo taskInfo;
+        final String taskName;
+        final File taskLibDir;
+        try {
+            AnalysisDAO dao = new AnalysisDAO();
+            jobInfo = dao.getJobInfo(jobNumber);
+            jobInput = new JobInputValueRecorder().fetchJobInput(jobNumber);
+            taskInfo=TaskInfoCache.instance().getTask(jobInfo.getTaskLSID());
+            taskName=taskInfo.getName();
+            if (log.isDebugEnabled()) {
+                log.debug("taskName=" + taskName);
+            }
+            taskLibDir=libdirStrategy.getLibdir(taskInfo.getLsid());
+            return GpContextFactory.createContextForJob(currentUser, jobInfo, taskInfo, taskLibDir, jobInput, initFromDb);
+        }
+        finally {
+            if (!isInTransaction) {
+                HibernateUtil.closeCurrentSession();
             }
         }
-        if (taskInfo != null) {
-            builder=builder.taskInfo(taskInfo);
-        }
-        return builder.build();
     }
     
-    public static GpContext createContextForJob(final JobInfo jobInfo, final TaskInfo taskInfo, final File taskLibDir, final JobInput jobInput) {
+    private static GpContext createContextForJob(final String currentUser, final JobInfo jobInfo, final TaskInfo taskInfo, final File taskLibDir, final JobInput jobInput, final boolean initFromDb) {
+        
         Builder builder=new Builder();
         if (jobInfo != null) {
             builder=builder.jobInfo(jobInfo);
-            if (jobInfo.getUserId() != null) {
-                builder=builder.userId(jobInfo.getUserId());
-            }
         }
         if (taskInfo != null) {
             builder=builder.taskInfo(taskInfo);
@@ -72,16 +103,36 @@ public class GpContextFactory {
         if (jobInput != null) {
             builder=builder.jobInput(jobInput);
         }
+
+        final String userId;
+        if (currentUser==null && jobInfo!=null) {
+            userId=jobInfo.getUserId();
+        }
+        else {
+            userId=currentUser;
+        }
+        builder.userId(userId);
+        if (initFromDb) {
+            if (jobInfo != null && jobInfo.getUserId() != null) {
+                final boolean isAdmin = AuthorizationHelper.adminServer(userId);
+                builder = builder.isAdmin(isAdmin);
+                JobPermissions jobPermissions=JobPermissionsFactory.createJobPermissionsFromDb(isAdmin, userId, jobInfo.getJobNumber());
+                builder.jobPermissions(jobPermissions);
+            }
+        }
+        
         return builder.build();
     }
 
     public static final class Builder {
         private String userId=null;
         private boolean isAdmin=false;
+        private Integer jobNumber=null;
         private JobInfo jobInfo=null;
         private TaskInfo taskInfo=null;
         private File taskLibDir=null;
         private JobInput jobInput=null;
+        private JobPermissions jobPermissions=null;
 
         public Builder userId(final String userId) {
             this.userId=userId;
@@ -89,6 +140,10 @@ public class GpContextFactory {
         }
         public Builder isAdmin(final boolean isAdmin) {
             this.isAdmin=isAdmin;
+            return this;
+        }
+        public Builder jobNumber(final Integer jobNumber) {
+            this.jobNumber=jobNumber;
             return this;
         }
         public Builder jobInfo(final JobInfo jobInfo) {
@@ -107,6 +162,10 @@ public class GpContextFactory {
             this.jobInput=jobInput;
             return this;
         }
+        public Builder jobPermissions(final JobPermissions jobPermissions) {
+            this.jobPermissions=jobPermissions;
+            return this;
+        }
 
         public GpContext build() {
             GpContext gpContext=new GpContext();
@@ -114,6 +173,9 @@ public class GpContextFactory {
                 gpContext.setUserId(userId);
             }
             gpContext.setIsAdmin(isAdmin);
+            if (jobNumber != null) {
+                gpContext.setJobNumber(jobNumber);
+            }
             if (jobInfo!=null) {
                 gpContext.setJobInfo(jobInfo);
             }
@@ -125,6 +187,9 @@ public class GpContextFactory {
             }
             if (jobInput!=null) {
                 gpContext.setJobInput(jobInput);
+            }
+            if (jobPermissions!=null) {
+                gpContext.setJobPermissions(jobPermissions);
             }
             return gpContext;
         }
