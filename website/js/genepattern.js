@@ -604,6 +604,12 @@ function ajaxFileTabUpload(file, directory, done, index){
                         .find(".upload-toaster-file-progress-label")
                         .text("Error!");
 
+                    // Restore the dialog if necessary
+                    if ($("#dialog-extend-fixed-container").find(".upload-dialog").length > 0) {
+                        $(".upload-dialog").css("z-index", "9000");
+                        $(".upload-toaster-list").dialogExtend("restore");
+                    }
+
                     // Mark this upload as done
                     done[index] = true;
 
@@ -705,7 +711,7 @@ function uploadDrop(event) {
 // TODO: Finish implementation
 function initUploadToaster(filelist, directory) {
     // Hide the dropzone
-    $("#upload-dropzone-wrapper").hide();
+    $("#upload-dropzone-wrapper").hide("slide", { direction: "down" }, 200);
 
     // Create the dialog contents
     var toaster = $("<div/>").addClass("upload-toaster-list");
@@ -761,6 +767,14 @@ function initUploadToaster(filelist, directory) {
             "minimizable" : true,
             "collapsable" : false,
             "minimizeLocation" : "left",
+            "load" : function(evt, dlg){
+                $(".upload-dialog").find(".ui-dialog-titlebar-close").hide();
+            },
+            "minimize" : function(evt, dlg){
+                $("#dialog-extend-fixed-container")
+                    .find(".upload-dialog")
+                    .removeAttr("style");
+            },
             "icons" : {
                 "close" : "ui-icon-close",
                 "minimize" : "ui-icon-minus",
@@ -770,8 +784,15 @@ function initUploadToaster(filelist, directory) {
 }
 
 function cleanUploadToaster() {
+    // Close dialog if minimized
+    $("#dialog-extend-fixed-container").find(".upload-dialog").remove();
+
+    // Disable minimize button and enable close if not minimized
+    $(".upload-dialog").find(".ui-dialog-titlebar-minimize").remove();
+    $(".upload-dialog").find(".ui-dialog-titlebar-close").show();
+
     // Show the dropzone
-    $("#upload-dropzone-wrapper").show();
+    $("#upload-dropzone-wrapper").show("slide", { direction: "up" }, 200);
 
     // Refresh the tree
     $("#uploadTree").data("dndReady", {});

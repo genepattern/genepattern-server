@@ -702,3 +702,10 @@ body {
 .upload-toaster-file-cancel {
     width: 70px;
 }
+
+#dialog-extend-fixed-container .upload-dialog {
+    position: absolute;
+    width: 343px;
+    top: -68px;
+    left: -1px;
+}
