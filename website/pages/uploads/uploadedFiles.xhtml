@@ -168,6 +168,8 @@
                                 if (!isDirectory) {
                                     var icon = $(anchor).find("ins");
                                     icon.css("background-image", "url('/gp/images/iconBroken.gif')");
+                                    $(anchor).attr("title", "This file is either currently uploading or the upload has failed.")
+                                    $(anchor).tooltip();
                                 }
                             }
 
