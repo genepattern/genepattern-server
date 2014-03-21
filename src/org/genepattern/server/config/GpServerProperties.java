@@ -5,6 +5,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Date;
+import java.util.Enumeration;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Properties;
@@ -220,6 +221,17 @@ public class GpServerProperties {
                 customProperties=new Properties();
             }
             customProperties.setProperty(key, value);
+            return this;
+        }
+        
+        public Builder addCustomProperties(final Properties props) {
+            if (customProperties==null) {
+                customProperties=new Properties();
+            }
+            for (Enumeration<?> propertyNames = props.propertyNames(); propertyNames.hasMoreElements(); ) {
+                Object key = propertyNames.nextElement();
+                customProperties.put(key, props.get(key));
+            }
             return this;
         }
         
