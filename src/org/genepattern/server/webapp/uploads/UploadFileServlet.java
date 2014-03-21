@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.SortedSet;
 
 import javax.faces.context.FacesContext;
 import javax.servlet.http.HttpServlet;
@@ -15,6 +17,8 @@ import org.genepattern.server.dm.GpFilePath;
 import org.genepattern.server.util.FacesUtil;
 import org.genepattern.server.webapp.uploads.UploadFilesBean.DirectoryInfoWrapper;
 import org.genepattern.server.webapp.uploads.UploadFilesBean.FileInfoWrapper;
+import org.genepattern.webservice.TaskInfo;
+import org.richfaces.model.TreeNode;
 
 /**
  * Servlet to back the new upload files tree
@@ -37,7 +41,7 @@ public class UploadFileServlet extends HttpServlet {
         if (TREE.equals(action)) {
             loadTreeLevel(request, response);
         }
-        if (SAVE_TREE.equals(action)) {
+        else if (SAVE_TREE.equals(action)) {
             loadTreeLevel(request, response);
         }
         else {
@@ -56,22 +60,37 @@ public class UploadFileServlet extends HttpServlet {
         doGet(request, response);
     }
     
-    private List<GpFilePath> unwrapFiles(List<FileInfoWrapper> wrappedFiles) {
-        List<GpFilePath> files = new ArrayList<GpFilePath>();
-        for (FileInfoWrapper wrapper : wrappedFiles) {
-            files.add(wrapper.getFile());
-        }
-        return files;
+    private void loadTreeLevel(final HttpServletRequest request, final HttpServletResponse response) {
+        final UploadTreeJSON json=initUploadTreeFromBean(request, response);
+        this.write(response, json);
     }
     
-    private void loadTreeLevel(HttpServletRequest request, HttpServletResponse response) {
-        UploadFilesBean bean = getUploadsBean(request, response);
-        String url = request.getParameter("dir");
-        
+    /**
+     * @deprecated, should remove dependency on JSF stack
+     * @param request
+     * @param response
+     */
+    private static UploadTreeJSON initUploadTreeFromBean(HttpServletRequest request, HttpServletResponse response) {
+        final String url = request.getParameter("dir");
+        final UploadFilesBean bean = getUploadsBean(request, response);
+        final List<GpFilePath> tree=initTreeLevelFromBean(bean, url);
+        final Map<String, SortedSet<TaskInfo>> kindToTaskInfo=bean.getKindToTaskInfo();
+        final UploadTreeJSON treeJson=treeToJson(tree, kindToTaskInfo);
+        return treeJson;
+    }
+
+    private static UploadFilesBean getUploadsBean(HttpServletRequest request, HttpServletResponse response) {
+        // Get the FacesContext inside HttpServlet.
+        FacesContext facesContext = FacesUtil.getFacesContext(request, response);   
+        return (UploadFilesBean) facesContext.getApplication().createValueBinding("#{uploadFilesBean}").getValue(facesContext);
+    }
+    
+    private static List<GpFilePath> initTreeLevelFromBean(final UploadFilesBean bean, final String url) {
         List<GpFilePath> tree = null;
         if (url == null) {
             try {
-                List<FileInfoWrapper> wrappedFiles = ((DirectoryInfoWrapper) bean.getFileTree().getData()).getFiles();
+                final TreeNode<FileInfoWrapper> fileTree= bean.getFileTree();
+                final List<FileInfoWrapper> wrappedFiles = ((DirectoryInfoWrapper) fileTree.getData()).getFiles();
                 tree = unwrapFiles(wrappedFiles);
             }
             catch (Exception e) {
@@ -84,24 +103,28 @@ public class UploadFileServlet extends HttpServlet {
                 tree = unwrapFiles(dir.getFiles());
             }
         }
-        
+        return tree;
+    }
+
+    private static List<GpFilePath> unwrapFiles(List<FileInfoWrapper> wrappedFiles) {
+        List<GpFilePath> files = new ArrayList<GpFilePath>();
+        for (FileInfoWrapper wrapper : wrappedFiles) {
+            files.add(wrapper.getFile());
+        }
+        return files;
+    }
+    
+    private static UploadTreeJSON treeToJson(final List<GpFilePath> tree, Map<String, SortedSet<TaskInfo>> kindToTaskInfo) {
         UploadTreeJSON json = null;
         if (tree != null && !tree.isEmpty()) {
-            json = new UploadTreeJSON(tree, bean);
+            json = new UploadTreeJSON(tree, kindToTaskInfo);
         }
         else {
-            json = new UploadTreeJSON(null, UploadTreeJSON.EMPTY, bean);
+            json = new UploadTreeJSON(null, UploadTreeJSON.EMPTY, kindToTaskInfo);
         }
-        this.write(response, json);
+        return json;
     }
-    
-    @SuppressWarnings("deprecation")
-    private UploadFilesBean getUploadsBean(HttpServletRequest request, HttpServletResponse response) {
-        // Get the FacesContext inside HttpServlet.
-        FacesContext facesContext = FacesUtil.getFacesContext(request, response);   
-        return (UploadFilesBean) facesContext.getApplication().createValueBinding("#{uploadFilesBean}").getValue(facesContext);
-    }
-    
+
     private void write(HttpServletResponse response, Object content) {
         this.write(response, content.toString());
     }
