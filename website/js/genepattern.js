@@ -527,29 +527,60 @@ function ajaxFileTabUpload(file, directory, done, index){
 
     var reader = new FileReader();
     var xhr = null;
+    var xhrCanceled = false;
+
+    var progressbar = $(".upload-toaster-file[name='" + file.name + "']").find(".upload-toaster-file-progress");
+
+    // Set the cancel button functionality
+    var cancelButton = $(".upload-toaster-file[name='" + file.name + "']").find(".upload-toaster-file-cancel");
+    cancelButton.click(function() {
+        //var xhr = progressbar.data("xhr");
+        xhr.abort();
+
+        // Set the progressbar cancel message
+        progressbar.progressbar("value", 100);
+        progressbar
+            .find(".ui-progressbar-value")
+            .css("background", "#FCF1F3");
+        progressbar
+            .find(".upload-toaster-file-progress-label")
+            .text("Canceled!");
+
+        // Mark this upload as done
+        xhrCanceled = true;
+        done[index] = true;
+    });
 
     // Handle the directory error condition
     reader.onerror = function(event) {
+        // Set the top error message
         var message = "Uploading directories is not supported. Aborting upload.";
         $("#errorMessageDiv #errorMessageContent").text(message);
         $("#errorMessageDiv").show();
 
-        // Hide the progressbar
-        $("#upload-progress-wrapper").hide();
+        // Set the progressbar error message
+        progressbar.progressbar("value", 100);
+        progressbar
+            .find(".ui-progressbar-value")
+            .css("background", "#FCF1F3");
+        progressbar
+            .find(".upload-toaster-file-progress-label")
+            .text("Error!");
 
-        // Show the dropzone
-        $("#upload-dropzone").show();
-        $("#upload-dropzone-wrapper > span").show();
-
-        // Refresh the tree
-        $("#uploadTree").data("dndReady", {});
-        $("#uploadTree").jstree("refresh");
+        // Mark this upload as done
+        done[index] = true;
     };
 
     reader.onload = function(event) {
+        // Double check for canceling
+        if (xhrCanceled) {
+            xhr.abort();
+            return;
+        }
+
         loaded += event.loaded;
         xhr = new XMLHttpRequest();
-        $("#upload-dropzone-progress").data("xhr", xhr);
+        progressbar.data("xhr", xhr);
 
         var upload = xhr.upload;
 
@@ -560,16 +591,21 @@ function ajaxFileTabUpload(file, directory, done, index){
                 if (data.match("^Error:")) {
                     xhr.abort();
 
-                    showDialog("Error in Upload", data);
+                    // Set the top error message
+                    $("#errorMessageDiv #errorMessageContent").text(data);
+                    $("#errorMessageDiv").show();
 
-                    $("#upload-dropzone-progress-label").text("Upload Error!");
+                    // Set the progressbar error message
+                    progressbar.progressbar("value", 100);
+                    progressbar
+                        .find(".ui-progressbar-value")
+                        .css("background", "#FCF1F3");
+                    progressbar
+                        .find(".upload-toaster-file-progress-label")
+                        .text("Error!");
 
-                    // Hide the progressbar
-                    $("#upload-progress-wrapper").hide();
-
-                    // Show the dropzone
-                    $("#upload-dropzone").show();
-                    $("#upload-dropzone-wrapper > span").show();
+                    // Mark this upload as done
+                    done[index] = true;
 
                     return;
                 }
@@ -583,23 +619,11 @@ function ajaxFileTabUpload(file, directory, done, index){
                 }
 
                 var progress = Math.min(Math.round((loaded/total) * 100), 100);
-                $("#upload-dropzone-progress").progressbar("value", progress);
+                progressbar.progressbar("value", progress);
 
                 if (loaded === total) {
                     if (!data.match("^Error:")) {
                         done[index] = true;
-//                        $("#upload-dropzone-progress-label").text("Upload Complete!");
-//
-//                        // Hide the progressbar
-//                        $("#upload-progress-wrapper").hide();
-//
-//                        // Show the dropzone
-//                        $("#upload-dropzone").show();
-//                        $("#upload-dropzone-wrapper > span").show();
-//
-//                        // Refresh the tree
-//                        $("#uploadTree").data("dndReady", {});
-//                        $("#uploadTree").jstree("refresh");
                     }
                 }
             }, 10);
@@ -681,31 +705,73 @@ function uploadDrop(event) {
 // TODO: Finish implementation
 function initUploadToaster(filelist, directory) {
     // Hide the dropzone
-    $("#upload-dropzone").hide();
-    $("#upload-dropzone-wrapper").find("> span").hide();
+    $("#upload-dropzone-wrapper").hide();
 
-    // Show the progressbar
-    $("#upload-progress-wrapper").show();
-    $("#upload-dropzone-progress").progressbar({
-        value: false,
-        change: function() {
-            $("#upload-dropzone-progress-label").text("Uploading: " + $("#upload-dropzone-progress").progressbar( "value" ) + "%");
-        },
-        complete: function() {
+    // Create the dialog contents
+    var toaster = $("<div/>").addClass("upload-toaster-list");
+    for (var i = 0; i < filelist.length; i++) {
+        var file = filelist[i];
+        $("<div/>")
+            .addClass("upload-toaster-file")
+            .attr("name", file.name)
+            .append(
+                $("<span/>")
+                    .addClass("upload-toaster-file-name")
+                    .text(file.name)
+            )
+            .append(
+                $("<div/>")
+                    .addClass("upload-toaster-file-progress")
+                    .progressbar({
+                        change: function(event) {
+                            $(this).find(".upload-toaster-file-progress-label").text($(this).progressbar("value") + "%");
+                        },
+                        complete: function() {
+                            $(this).find(".upload-toaster-file-progress-label").text("Complete!");
+                        }
+                    })
+                    .append(
+                        $("<div/>")
+                            .addClass("upload-toaster-file-progress-label")
+                            .text("Pending")
+                    )
+            )
+            .append(
+                $("<button/>")
+                    .addClass("upload-toaster-file-cancel")
+                    .text("Cancel")
+                    .button()
+            )
+            .appendTo(toaster);
+    }
 
-        }
-    });
+    // Create the dialog
+    toaster
+        .attr("id", "upload-toaster")
+        .dialog({
+            "title" : "GenePattern Uploads",
+            "width": 585,
+            "height": 250,
+            "buttons" : {},
+            "dialogClass": "upload-dialog"
+        })
+        .dialogExtend({
+            "closable" : true,
+            "maximizable" : false,
+            "minimizable" : true,
+            "collapsable" : false,
+            "minimizeLocation" : "left",
+            "icons" : {
+                "close" : "ui-icon-close",
+                "minimize" : "ui-icon-minus",
+                "restore" : "ui-icon-bullet"
+            }
+        });
 }
 
 function cleanUploadToaster() {
-    $("#upload-dropzone-progress-label").text("Upload Complete!");
-
-    // Hide the progressbar
-    $("#upload-progress-wrapper").hide();
-
     // Show the dropzone
-    $("#upload-dropzone").show();
-    $("#upload-dropzone-wrapper").find("> span").show();
+    $("#upload-dropzone-wrapper").show();
 
     // Refresh the tree
     $("#uploadTree").data("dndReady", {});
@@ -768,27 +834,10 @@ function initUploads() {
 
     // Set up the exit prompt
     window.onbeforeunload = function(e) {
-        if ($("#upload-dropzone-progress:visible").length > 0) {
+        if ($(".upload-dialog:visible").length > 0) {
             return "You are currently uploading files. If you navigate away from this page this will interrupt your file upload.";
         }
     };
-
-    // Set up the cancel button
-    $("#upload-cancel")
-        .button()
-        .click(function() {
-            var xhr = $("#upload-dropzone-progress").data("xhr");
-            xhr.abort();
-
-            $("#upload-dropzone-progress-label").text("Upload Canceled!");
-
-            // Hide the progressbar
-            $("#upload-progress-wrapper").hide();
-
-            // Show the dropzone
-            $("#upload-dropzone").show();
-            $("#upload-dropzone-wrapper > span").show();
-        });
 
     // Add click to browse functionality
     $("<input />")

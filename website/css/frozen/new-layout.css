@@ -668,3 +668,37 @@ body {
 #loading-jobs {
     text-align: center;
 }
+
+/* Upload Toaster */
+
+.upload-toaster-file-name {
+    display: inline-block;
+    width: 300px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    height: 20px;
+    vertical-align: bottom;
+}
+
+.upload-toaster-file-progress {
+    width: 150px;
+    text-align: center;
+    margin-right: 10px;
+    margin-left: 10px;
+    position: relative;
+    display: inline-block;
+    top: 9px;
+}
+
+.upload-toaster-file-progress-label {
+    position: absolute;
+    top: 5px;
+    width: 150px;
+    font-weight: bold;
+    text-shadow: 1px 1px 0 #fff;
+}
+
+.upload-toaster-file-cancel {
+    width: 70px;
+}
