@@ -42,15 +42,51 @@ public class TestMemory {
     }
     
     @Test
+    public void testk() {
+        final String spec="8k";
+        Assert.assertEquals("numBytes for '"+spec+"'", 8192L, Memory.fromString(spec).getNumBytes());
+    }
+
+    @Test
+    public void testK() {
+        final String spec="8K";
+        Assert.assertEquals("numBytes for '"+spec+"'", 8192L, Memory.fromString(spec).getNumBytes());
+    }
+
+    @Test
     public void testMb() {
         final String spec="512 Mb";
         Assert.assertEquals("numBytes for '"+spec+"'", 536870912L, Memory.fromString(spec).getNumBytes());
     }
 
     @Test
+    public void testm() {
+        final String spec="512m";
+        Assert.assertEquals("numBytes for '"+spec+"'", 536870912L, Memory.fromString(spec).getNumBytes());
+    }
+
+    @Test
+    public void testM() {
+        final String spec="512M";
+        Assert.assertEquals("numBytes for '"+spec+"'", 536870912L, Memory.fromString(spec).getNumBytes());
+    }
+
+    @Test
     public void testGb() {
-        Memory actual=Memory.fromString("8 Gb");
-        Assert.assertEquals("8 Gb", 8589934592L, actual.getNumBytes());
+        final String spec="8 Gb";
+        Assert.assertEquals("numBytes for '"+spec+"'", 8589934592L, Memory.fromString(spec).getNumBytes());
+    }
+
+    @Test
+    public void testg() {
+        final String spec="8g";
+        Assert.assertEquals("numBytes for '"+spec+"'", 8589934592L, Memory.fromString(spec).getNumBytes());
+    }
+
+    @Test
+    public void testG() {
+        final String spec="8G";
+        Assert.assertEquals("numBytes for '"+spec+"'", 8589934592L, Memory.fromString(spec).getNumBytes());
     }
 
     @Test
@@ -59,6 +95,42 @@ public class TestMemory {
         Assert.assertEquals("numBytes for '"+spec+"'", 2199023255552L, Memory.fromString(spec).getNumBytes());
     }
     
+    @Test
+    public void testt() {
+        final String spec="2t";
+        Assert.assertEquals("numBytes for '"+spec+"'", 2199023255552L, Memory.fromString(spec).getNumBytes());
+    }
+    
+    @Test
+    public void testT() {
+        final String spec="2T";
+        Assert.assertEquals("numBytes for '"+spec+"'", 2199023255552L, Memory.fromString(spec).getNumBytes());
+    }
+    
+    @Test
+    public void testPetabyte() {
+        final String spec="1024Tb";
+        Assert.assertEquals("numBytes for '"+spec+"'", 1125899906842624L, Memory.fromString(spec).getNumBytes());
+    }
+    
+    @Test
+    public void testPb() {
+        final String spec="1 pb";
+        Assert.assertEquals("numBytes for '"+spec+"'", 1125899906842624L, Memory.fromString(spec).getNumBytes());
+    }
+    
+    @Test
+    public void testp() {
+        final String spec="1p";
+        Assert.assertEquals("numBytes for '"+spec+"'", 1125899906842624L, Memory.fromString(spec).getNumBytes());
+    }
+    
+    @Test
+    public void testP() {
+        final String spec="1P";
+        Assert.assertEquals("numBytes for '"+spec+"'", 1125899906842624L, Memory.fromString(spec).getNumBytes());
+    }
+
     @Test
     public void testGpNoSeparator() {
         final String spec="8gb";

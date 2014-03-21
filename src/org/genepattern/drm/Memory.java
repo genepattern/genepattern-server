@@ -20,17 +20,22 @@ public class Memory {
     /**
      * A unit of memory in bytes.
      * 
-     * @see http://www.clusterresources.com/torquedocs21/2.1jobsubmission.shtml#size
      * 
      * @author pcarr
      *
      */
     public static enum Unit {
-         b(1L),
+        b (1L),
+        k (1024L),
         kb(1024L),
+        m (1048576L),
         mb(1048576L),
+        g (1073741824L),
         gb(1073741824L),
-        tb(1099511627776L);
+        t (1099511627776L),
+        tb(1099511627776L),
+        p (1125899906842624L),
+        pb(1125899906842624L);
 
         private final long multiplier;
         private Unit(long multiplier) {
