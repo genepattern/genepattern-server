@@ -4,9 +4,9 @@
   description: "Customize job configuration parameters", 
   hidden: true, 
   parameters: [
-        "drm.queue",
-        "drm.walltime",
-        "drm.nodeCount",
+        "job.queue",
+        "job.walltime",
+        "job.nodeCount",
         "pbs.host",
         "pbs.mem",
         "pbs.cput",

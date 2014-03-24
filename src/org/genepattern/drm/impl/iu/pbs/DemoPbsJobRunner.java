@@ -17,12 +17,11 @@ import org.genepattern.server.executor.CommandExecutorException;
  * Example job runner with custom configuration options.
  * The following variables can be customized in the config_.yaml file.
  * <pre>
- * # these flags are part of the built-in DrmJobSubmission class, note the 'drm.' prefix.
-   drm.queue: "defaultQueue"
-   drm.walltime: "02:00:00"
-   drm.nodeCount: "1"
-   drm.extraArgs: []                                                                                                                                                                           
-            #drm.workerName: "defaultPbsWorker"                                                                                                                                                          
+ * # these flags are part of the built-in DrmJobSubmission class, note the 'job.' prefix.
+   job.queue: "defaultQueue"
+   job.walltime: "02:00:00"
+   job.nodeCount: "1"
+   job.extraArgs: []                                                                                                                                                                           
 
    # these flags are customized for this particular implementation of the JobRunner. Note the 'pbs.' prefix.
    pbs.host: "example.edu"
@@ -34,8 +33,6 @@ import org.genepattern.server.executor.CommandExecutorException;
  * 
  * To customize your configuration, define a map (YAML format) in the default.properties section
  * of the executor. Create one map for each worker type.
- * 
- * Use the 'drm.workerName' to select custom properties.
  * 
  * 
  * @author pcarr

@@ -16,11 +16,11 @@ executor.properties: {
     # himem executor.props
     PbsHiMemWorker: {
         # "executor": "DemoPbsJobRunner",  <-- not necessary because 'DemoPbsJobRunner' is the default
-        "drm.cpuCount": 4,
+        "job.cpuCount": 4,
         "pbs.vmem": "320gb"
     },
     PbsLongWorker: {
-        "drm.walltime": "72:00:00",
+        "job.walltime": "72:00:00",
     },
     VisualizerProps: {
         "executor": "RuntimeExec"
@@ -36,7 +36,7 @@ executors:
             num.threads: 20
         default.properties:
             # local runner shouldn't use too much RAM
-            drm.memory: "512mb"
+            job.memory: "512mb"
 
     DemoPbsJobRunner:
         classname: org.genepattern.server.executor.drm.JobExecutor
@@ -48,9 +48,9 @@ executors:
         default.properties:
             # path to a file, if it's a relative path, look for it in the resources directory
             executor.inputParams: pbs_extra_input_params.yaml 
-            drm.queue: "batch"
-            drm.walltime: "02:00:00"
-            drm.cpuCount: "1"
+            job.queue: "batch"
+            job.walltime: "02:00:00"
+            job.cpuCount: "1"
             pbs.host: "default.pbshost.genepattern.org"
             pbs.mem: ""
             pbs.ppn: "8"
@@ -73,6 +73,6 @@ module.properties:
         executor.props: "PbsHiMemWorker"
     # customize by property name
     Example3:
-        drm.walltime: "72:00:00"
+        job.walltime: "72:00:00"
         pbs.mem: "8gb"
         pbs.vmem: "500gb"

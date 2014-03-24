@@ -28,7 +28,7 @@ public class TestJobConfigParamsParser {
         Assert.assertEquals("group.description", "Set job configuration parameters", params.getInputParamGroup().getDescription());
         Assert.assertEquals("group.hidden", true, params.getInputParamGroup().isHidden());
         Assert.assertEquals("group.numParams", 6, params.getInputParamGroup().getParameters().size());
-        List<String> expected = Arrays.asList("drm.queue", "drm.memory", "drm.walltime", "drm.nodeCount", "drm.cpuCount", "drm.extraArgs");
+        List<String> expected = Arrays.asList("job.queue", "job.memory", "job.walltime", "job.nodeCount", "job.cpuCount", "job.extraArgs");
         Assert.assertThat("group.parameters", params.getInputParamGroup().getParameters(), is(expected));
     }
 

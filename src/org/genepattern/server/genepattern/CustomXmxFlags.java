@@ -8,7 +8,7 @@ import org.genepattern.webservice.TaskInfo;
 import org.genepattern.webservice.TaskInfoAttributes;
 
 /**
- * Helper class for java modules, to set the java max memory based on the GP server configuration setting 'drm.memory'.
+ * Helper class for java modules, to set the java max memory based on the GP server configuration setting 'job.memory'.
  * 
  * This is called after all other command line substitutions have happened and simply replaces all
  * occurrences of -Xmx<originalValue> with -Xmx<customValue> if a custom value has been specified.

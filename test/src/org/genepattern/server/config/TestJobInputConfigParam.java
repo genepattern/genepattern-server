@@ -40,15 +40,15 @@ public class TestJobInputConfigParam {
         jobInput.addValue("input.filename", "ftp://ftp.broadinstitute.org/pub/genepattern/datasets/all_aml/all_aml_train.gct");
         
         //add config params
-        jobInput.addValue("drm.queue", "userCustomQueue");
-        jobInput.addValue("drm.memory", "28gb");
+        jobInput.addValue("job.queue", "userCustomQueue");
+        jobInput.addValue("job.memory", "28gb");
         
         GpContext jobContext=new GpContextFactory.Builder()
             .jobInput(jobInput)
             .build();
         
-        Assert.assertEquals("Get 'drm.queue' from jobInput", "userCustomQueue", gpConfig.getGPProperty(jobContext, "drm.queue"));
-        Assert.assertEquals("Get 'drm.memory' from jobInput", "28gb", gpConfig.getGPProperty(jobContext, "drm.memory"));
+        Assert.assertEquals("Get 'job.queue' from jobInput", "userCustomQueue", gpConfig.getGPProperty(jobContext, "job.queue"));
+        Assert.assertEquals("Get 'job.memory' from jobInput", "28gb", gpConfig.getGPProperty(jobContext, "job.memory"));
     }
 
 }

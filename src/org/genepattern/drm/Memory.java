@@ -6,10 +6,10 @@ import org.apache.log4j.Logger;
  * Generic representation of an amount of memory, so that it is easier to initialize memory settings from 
  * the config file. Examples:
  * <pre>
-   drm.memory: 1024b   
-   drm.memory: 1 kb
-   drm.memory: 100mb
-   drm.memory: 8gb
+   job.memory: 1024b   
+   job.memory: 1 kb
+   job.memory: 100mb
+   job.memory: 8gb
  * </pre>
  * @author pcarr
  *

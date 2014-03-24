@@ -46,13 +46,13 @@ class LsfCommand2 {
      * This is for the LSF instance used by the GenePattern Server at the Broad Institute,
      * which defines memory flags as integer values corresponding to Gigabytes of RAM.
      * 
-     * IF the newer (more general) 'drm.memory' flag is set, use that, otherwise,
+     * If the newer (more general) 'job.memory' flag is set, use that, otherwise,
      * use the 'lsf.max.memory' flag.
      * 
-     * These flags use two different formats, drm.memory expects units to be declared, while
+     * These flags use two different formats, job.memory expects units to be declared, while
      * the lsf.max.memory must be an integer value. For example,
      * <pre>
-       drm.memory: 8gb
+       job.memory: 8gb
        lsf.max.memory: 8
      * </pre>
      * 

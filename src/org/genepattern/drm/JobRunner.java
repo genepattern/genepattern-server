@@ -14,13 +14,13 @@ import org.genepattern.server.executor.CommandExecutorException;
  *
  */
 public interface JobRunner {
-    public static final String PROP_QUEUE="drm.queue";
-    public static final String PROP_MEMORY="drm.memory";
-    public static final String PROP_WALLTIME="drm.walltime";
-    public static final String PROP_NODE_COUNT="drm.nodeCount";
-    public static final String PROP_CPU_COUNT="drm.cpuCount";
-    public static final String PROP_EXTRA_ARGS="drm.extraArgs";
-    public static final String PROP_WORKER_NAME="drm.workerName";
+    public static final String PROP_QUEUE="job.queue";
+    public static final String PROP_MEMORY="job.memory";
+    public static final String PROP_WALLTIME="job.walltime";
+    public static final String PROP_NODE_COUNT="job.nodeCount";
+    public static final String PROP_CPU_COUNT="job.cpuCount";
+    public static final String PROP_EXTRA_ARGS="job.extraArgs";
+    public static final String PROP_WORKER_NAME="job.workerName";
     
     /** 
      * Service shutdown, clean up resources. 

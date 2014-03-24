@@ -367,7 +367,7 @@ public class DrmJobSubmission {
         
         /**
          * Initialize a wall clock limit for the job, from a string, usually set in the config file. For example,
-         *     'drm.walltime: 01:00:00'
+         *     'job.walltime: 01:00:00'
          * Which means terminate this job after one hour.
          * 
          * @param wallClockLimitSpec

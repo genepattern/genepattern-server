@@ -71,11 +71,11 @@ public class TestPbsDemoConfig {
         Assert.assertNotNull("Expecting non-null executor.inputParams for default user", jobConfigParams);
         
         Assert.assertEquals("executor.inputParams.size", 4, jobConfigParams.getParams().size());
-        Assert.assertEquals("inputParams[0].name", "drm.cpuCount", 
+        Assert.assertEquals("inputParams[0].name", "job.cpuCount", 
                 jobConfigParams.getParams().get(0).getName());
         Assert.assertEquals("inputParams[1].name", "pbs.vmem", 
                 jobConfigParams.getParams().get(1).getName());
-        Assert.assertEquals("inputParams[2].name", "drm.walltime", 
+        Assert.assertEquals("inputParams[2].name", "job.walltime", 
                 jobConfigParams.getParams().get(2).getName());
         Assert.assertEquals("inputParams[3].name", "example.dropdown", 
                 jobConfigParams.getParams().get(3).getName());
@@ -102,12 +102,12 @@ public class TestPbsDemoConfig {
         
         Assert.assertEquals("executor.inputParams", "pbs_extra_input_params.yaml",  
                 gpConfig.getGPProperty(gpContext, "executor.inputParams"));
-        Assert.assertEquals("drm.queue", "batch",  
-                gpConfig.getGPProperty(gpContext, "drm.queue"));
-        Assert.assertEquals("drm.walltime", "02:00:00",  
-                gpConfig.getGPProperty(gpContext, "drm.walltime"));
-        Assert.assertEquals("drm.cpuCount", "1",  
-                gpConfig.getGPProperty(gpContext, "drm.cpuCount"));
+        Assert.assertEquals("job.queue", "batch",  
+                gpConfig.getGPProperty(gpContext, "job.queue"));
+        Assert.assertEquals("job.walltime", "02:00:00",  
+                gpConfig.getGPProperty(gpContext, "job.walltime"));
+        Assert.assertEquals("job.cpuCount", "1",  
+                gpConfig.getGPProperty(gpContext, "job.cpuCount"));
         Assert.assertEquals("pbs.host", "default.pbshost.genepattern.org",  
                 gpConfig.getGPProperty(gpContext, "pbs.host"));
         Assert.assertEquals("pbs.mem", "",  
@@ -128,8 +128,8 @@ public class TestPbsDemoConfig {
             .taskInfo(exampleTaskInfo)
             .build();
 
-        Assert.assertEquals("custom 'drm.cpuCount'", (Integer) 4, 
-                gpConfig.getGPIntegerProperty(gpContext, "drm.cpuCount"));
+        Assert.assertEquals("custom 'job.cpuCount'", (Integer) 4, 
+                gpConfig.getGPIntegerProperty(gpContext, "job.cpuCount"));
         Assert.assertEquals("custom 'pbs.vmem'", "320gb", 
                 gpConfig.getGPProperty(gpContext, "pbs.vmem"));
         

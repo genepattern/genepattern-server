@@ -62,8 +62,8 @@ public class TestJobInputValueDao {
         jobInput.addValue("output.file", "<input.filename_basename>.cvt.<input.filename_extension>");
         
         // example job config params
-        jobInput.addValue("drm.queue", "broad");
-        jobInput.addValue("drm.memory", "8gb");
+        jobInput.addValue("job.queue", "broad");
+        jobInput.addValue("job.memory", "8gb");
         
         
         final boolean initDefault=true;
@@ -89,8 +89,8 @@ public class TestJobInputValueDao {
         
         Assert.assertEquals("output.file", "<input.filename_basename>.cvt.<input.filename_extension>", jobInputOut.getParam("output.file").getValues().get(0).getValue());
         
-        Assert.assertEquals("drm.queue", "broad", jobInputOut.getParam("drm.queue").getValues().get(0).getValue());
-        Assert.assertEquals("drm.memory", "8gb", jobInputOut.getParam("drm.memory").getValues().get(0).getValue());
+        Assert.assertEquals("job.queue", "broad", jobInputOut.getParam("job.queue").getValues().get(0).getValue());
+        Assert.assertEquals("job.memory", "8gb", jobInputOut.getParam("job.memory").getValues().get(0).getValue());
         
         // verify cascade delete
         // (4) another db transaction
@@ -107,8 +107,8 @@ public class TestJobInputValueDao {
         jobInput.setLsid(cleLsid);
         jobInput.addValue("input.filename", gpUrl+"users/"+userId+"/all_aml_test_01.cls");
         // example job config params
-        jobInput.addValue("drm.queue", "broad");
-        jobInput.addValue("drm.memory", "8gb");
+        jobInput.addValue("job.queue", "broad");
+        jobInput.addValue("job.memory", "8gb");
         jobInput.addValue("walltime", "");
 
         final boolean initDefault=true;
@@ -117,8 +117,8 @@ public class TestJobInputValueDao {
         JobInput jobInputOut = new JobInputValueRecorder().fetchJobInput(jobNo);
 
         Assert.assertEquals("input.filename", gpUrl+"users/"+userId+"/all_aml_test_01.cls", jobInputOut.getParam("input.filename").getValues().get(0).getValue());
-        Assert.assertEquals("drm.queue", "broad", jobInputOut.getParam("drm.queue").getValues().get(0).getValue());
-        Assert.assertEquals("drm.memory", "8gb", jobInputOut.getParam("drm.memory").getValues().get(0).getValue());
+        Assert.assertEquals("job.queue", "broad", jobInputOut.getParam("job.queue").getValues().get(0).getValue());
+        Assert.assertEquals("job.memory", "8gb", jobInputOut.getParam("job.memory").getValues().get(0).getValue());
         Assert.assertEquals("walltime (empty string)", "", jobInputOut.getParam("walltime").getValues().get(0).getValue());
     }
     

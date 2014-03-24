@@ -4,8 +4,8 @@ name: "Advanced/Pbs Resources",
 description: "Optional PBS job resource requirements",
 hidden: true,
 parameters: [
-# drm.cpuCount
-{ name: "drm.cpuCount", 
+# job.cpuCount
+{ name: "job.cpuCount", 
   altName: "cpuCount",
   description: "The number of processors per node",
   optional: true,
@@ -17,7 +17,7 @@ parameters: [
   defaultValue: "512mb"
 },
 # walltime
-{ name: "drm.walltime", 
+{ name: "job.walltime", 
   altName: "walltime", 
   description: "The max wall clock time limit for the job in <days-hh:mm:ss> format, e.g. '5-00:00:00'",
   optional=true  

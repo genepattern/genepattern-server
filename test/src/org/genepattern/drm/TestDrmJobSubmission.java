@@ -55,19 +55,19 @@ public class TestDrmJobSubmission {
     
     @Test
     public void testDefaultBuilder_commandLine() { 
-        final DrmJobSubmission drmJob = new DrmJobSubmission.Builder(jobNo, workingDir)
+        final DrmJobSubmission job = new DrmJobSubmission.Builder(jobNo, workingDir)
             .commandLine(commandLine)
             .build();
-        Assert.assertEquals("jobNo", jobNo, drmJob.getGpJobNo());
-        Assert.assertEquals("jobNo", jobNo.intValue(), drmJob.getJobInfo().getJobNumber());
-        Assert.assertEquals("workingDir", workingDir.getAbsolutePath(), drmJob.getWorkingDir().getAbsolutePath());
-        Assert.assertEquals("commandLine.length", commandLine.length, drmJob.getCommandLine().size());
-        Assert.assertEquals("arg[0]", commandLine[0], drmJob.getCommandLine().get(0));
-        Assert.assertEquals("arg[1]", commandLine[1], drmJob.getCommandLine().get(1));
+        Assert.assertEquals("jobNo", jobNo, job.getGpJobNo());
+        Assert.assertEquals("jobNo", jobNo.intValue(), job.getJobInfo().getJobNumber());
+        Assert.assertEquals("workingDir", workingDir.getAbsolutePath(), job.getWorkingDir().getAbsolutePath());
+        Assert.assertEquals("commandLine.length", commandLine.length, job.getCommandLine().size());
+        Assert.assertEquals("arg[0]", commandLine[0], job.getCommandLine().get(0));
+        Assert.assertEquals("arg[1]", commandLine[1], job.getCommandLine().get(1));
         
-        Assert.assertEquals("env.length", 0, drmJob.getEnvironmentVariables().size());
+        Assert.assertEquals("env.length", 0, job.getEnvironmentVariables().size());
         try {
-            drmJob.getEnvironmentVariables().put("newArg", "newValue");
+            job.getEnvironmentVariables().put("newArg", "newValue");
             ///CLOVER:OFF
             Assert.fail("environmentVariables should be unmodifiable");
             ///CLOVER:ON
@@ -75,12 +75,12 @@ public class TestDrmJobSubmission {
         catch (UnsupportedOperationException e) {
             //expected
         }
-        Assert.assertNull("drmJob.queue", drmJob.getQueue()); 
-        Assert.assertNull("drmJob.memory", drmJob.getMemory()); 
-        Assert.assertNull("drmJob.walltime", drmJob.getWalltime()); 
-        Assert.assertNull("drmJob.nodeCount", drmJob.getNodeCount()); 
-        Assert.assertNull("drmJob.cpuCount", drmJob.getCpuCount()); 
-        Assert.assertEquals("drm.extraArgs.size", 0, drmJob.getExtraArgs().size());        
+        Assert.assertNull("job.queue", job.getQueue()); 
+        Assert.assertNull("job.memory", job.getMemory()); 
+        Assert.assertNull("job.walltime", job.getWalltime()); 
+        Assert.assertNull("job.nodeCount", job.getNodeCount()); 
+        Assert.assertNull("job.cpuCount", job.getCpuCount()); 
+        Assert.assertEquals("job.extraArgs.size", 0, job.getExtraArgs().size());        
     }
     
     @Test(expected = IllegalArgumentException.class)
@@ -135,15 +135,15 @@ public class TestDrmJobSubmission {
         try {
             drmJob.getExtraArgs().add("--extraArg=value");
             ///CLOVER:OFF
-            Assert.fail("drm.extraArgs should be unmodifiable");
+            Assert.fail("job.extraArgs should be unmodifiable");
             ///CLOVER:ON
         }
         catch (UnsupportedOperationException e) {
             //expected
         }
-        Assert.assertEquals("drm.extraArgs.size", 2, drmJob.getExtraArgs().size());
-        Assert.assertEquals("drm.extraArgs[0]", "-P", drmJob.getExtraArgs().get(0));
-        Assert.assertEquals("drm.extraArgs[1]", "ProjectName", drmJob.getExtraArgs().get(1));
+        Assert.assertEquals("job.extraArgs.size", 2, drmJob.getExtraArgs().size());
+        Assert.assertEquals("job.extraArgs[0]", "-P", drmJob.getExtraArgs().get(0));
+        Assert.assertEquals("job.extraArgs[1]", "ProjectName", drmJob.getExtraArgs().get(1));
     }
 
     @Test
@@ -161,7 +161,7 @@ public class TestDrmJobSubmission {
         try {
             envOut.put("ENV_01", "Value_01");
             ///CLOVER:OFF
-            Assert.fail("drm.environmentVariables should be unmodifiable");
+            Assert.fail("job.environmentVariables should be unmodifiable");
             ///CLOVER:ON
         }
         catch (UnsupportedOperationException e) {
@@ -209,9 +209,9 @@ executors:
              lookupType: DB
              #lookupType: HASHMAP
         default.properties:
-            drm.queue: "defaultQueue"
-            drm.walltime: "02:00:00"
-            drm.nodeCount: "1"
+            job.queue: "defaultQueue"
+            job.walltime: "02:00:00"
+            job.nodeCount: "1"
 
             pbs.host: "example.edu"
             pbs.mem: "8gb"
@@ -219,11 +219,11 @@ executors:
             pbs.cput: ""
             pbs.vmem: "64gb"
 
-            # himem drm.workerName
+            # himem job.workerName
             myHiMemPbsWorker: {
-                drm.queue: "exampleQueue",
-                drm.walltime: "02:00:00",
-                drm.nodeCount: "1",
+                job.queue: "exampleQueue",
+                job.walltime: "02:00:00",
+                job.nodeCount: "1",
                 pbs.host: "example.edu",
                 pbs.mem: "8gb",
                 pbs.cput: "",
@@ -231,9 +231,9 @@ executors:
             }
 
             myLongPbsWorker: {
-                drm.queue: "exampleQueue",
-                drm.walltime: "72:00:00",
-                drm.nodeCount: "1",
+                job.queue: "exampleQueue",
+                job.walltime: "72:00:00",
+                job.nodeCount: "1",
                 pbs.host: "example.edu",
                 pbs.mem: "8gb",
                 pbs.ppn: "8",
@@ -246,9 +246,9 @@ executors:
     @Test
     public void testWorkerConfig() {
         Map<String,String> workerConfig=new HashMap<String,String>();
-        workerConfig.put("drm.queue", "exampleQueue");
-        workerConfig.put("drm.walltime", "72:00:00");
-        workerConfig.put("drm.nodeCount", "1");
+        workerConfig.put("job.queue", "exampleQueue");
+        workerConfig.put("job.walltime", "72:00:00");
+        workerConfig.put("job.nodeCount", "1");
         workerConfig.put("pbs.host", "example.edu");
         workerConfig.put("pbs.mem", "8gb");
         workerConfig.put("pbs.ppn", "8");
@@ -261,9 +261,9 @@ executors:
             .workerConfig(workerConfig)
             .build();
         
-        Assert.assertEquals("drm.queue", "exampleQueue", drmJob.getProperty("drm.queue"));
-        Assert.assertEquals("drm.walltime", "72:00:00", drmJob.getProperty("drm.walltime"));
-        Assert.assertEquals("drm.nodeCount", "1", drmJob.getProperty("drm.nodeCount"));
+        Assert.assertEquals("job.queue", "exampleQueue", drmJob.getProperty("job.queue"));
+        Assert.assertEquals("job.walltime", "72:00:00", drmJob.getProperty("job.walltime"));
+        Assert.assertEquals("job.nodeCount", "1", drmJob.getProperty("job.nodeCount"));
         Assert.assertEquals("pbs.host", "example.edu", drmJob.getProperty("pbs.host"));
         Assert.assertEquals("pbs.mem", "8gb", drmJob.getProperty("pbs.mem"));
         Assert.assertEquals("pbs.ppn", "8", drmJob.getProperty("pbs.ppn"));

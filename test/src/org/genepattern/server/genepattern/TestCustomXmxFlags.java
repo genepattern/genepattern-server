@@ -14,7 +14,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 /**
- * junit test cases for automatically setting java Xmx flag based on 'drm.memory' property.
+ * junit test cases for automatically setting java Xmx flag based on 'job.memory' property.
  * @author pcarr
  *
  */

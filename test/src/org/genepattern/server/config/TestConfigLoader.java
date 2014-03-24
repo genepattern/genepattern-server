@@ -68,7 +68,7 @@ public class TestConfigLoader {
         GpConfig gpConfig=GpConfigLoader.createFromConfigYaml(configYaml);
         Assert.assertEquals("test_user.executor.props", "PbsBigMem", gpConfig.getGPProperty(gpContext, "executor.props"));
         Assert.assertEquals("test_user.executor", "DemoPbsJobRunner", gpConfig.getGPProperty(gpContext, "executor"));
-        Assert.assertEquals("test_user.drm.queue", "pbsBigMemQueue", gpConfig.getGPProperty(gpContext, "drm.queue"));
+        Assert.assertEquals("test_user.job.queue", "pbsBigMemQueue", gpConfig.getGPProperty(gpContext, "job.queue"));
     }
 
 }

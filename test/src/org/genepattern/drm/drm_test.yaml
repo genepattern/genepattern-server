@@ -18,7 +18,7 @@ default.properties:
     #
     # job memory settings
     #
-    drm.memory: "2gb"
+    job.memory: "2gb"
     java.Xmx: "2gb"
     #executor: DemoPbsJobRunner
     # Java non-standard options, such as -Xmx
@@ -45,54 +45,54 @@ executor.properties: {
     #
     BroadGroupDefaults: {
         "executor": "BroadGroupJobRunner",
-        "drm.memory": "8gb",
-        "drm.queue": "week"
+        "job.memory": "8gb",
+        "job.queue": "week"
     },
 
     # Note in the memory settings,
-    # When the 'drm.memory' flag is set, it also defines the java max heap space
-    # command line arg. For example, if you have a <java> module, the -Xmx<drm.memory> arg
+    # When the 'job.memory' flag is set, it also defines the java max heap space
+    # command line arg. For example, if you have a <java> module, the -Xmx<job.memory> arg
     # will automatically be appended to your java command line.
     # If you want to use a different value, you must explicitly set the 'java.Xmx' property.
     #
     BigMem: {
-        "drm.memory": "32gb",
+        "job.memory": "32gb",
         "java.Xmx": "gb",
     },
-    # example of explicitly setting the java.Xmx flag to a different value than the 'drm.memory'
+    # example of explicitly setting the java.Xmx flag to a different value than the 'job.memory'
     JavaMem: {
-        "drm.memory": "8gb",
+        "job.memory": "8gb",
         "java.Xmx": "24gb"
     },
     LongRunning: {
-        "drm.queue": "week",
+        "job.queue": "week",
         # format is 'days-hh:mm:ss', e.g. kill the job 7 days from when it starts
-        "drm.walltime": "7-00:00:00"
+        "job.walltime": "7-00:00:00"
     },
     LsfBigMem: {
         "executor": "LSF",
-        "drm.memory": "32gb"
+        "job.memory": "32gb"
     },
     PbsBigMem: {
         "executor": "DemoPbsJobRunner",
-        "drm.queue": "pbsBigMemQueue",
-        "drm.memory": "128gb",
+        "job.queue": "pbsBigMemQueue",
+        "job.memory": "128gb",
         "executor.inputParams": "../server/job/input/configparams/executor_input_params.yaml"
     },
     # himem executor.props
     myHiMemPbsWorker: {
-        drm.queue: "exampleQueue",
-        drm.walltime: "02:00:00",
-        drm.nodeCount: "1",
+        job.queue: "exampleQueue",
+        job.walltime: "02:00:00",
+        job.nodeCount: "1",
         pbs.host: "example.edu",
         pbs.mem: "8gb",
         pbs.cput: "",
         pbs.vmem: "500gb"
     },
     myLongPbsWorker: {
-        drm.queue: "exampleQueue",
-        drm.walltime: "72:00:00",
-        drm.nodeCount: "1",
+        job.queue: "exampleQueue",
+        job.walltime: "72:00:00",
+        job.nodeCount: "1",
         pbs.host: "example.edu",
         pbs.mem: "8gb",
         pbs.ppn: "8",
@@ -110,9 +110,9 @@ executors:
              lookupType: DB
              #lookupType: HASHMAP
         default.properties:
-            drm.queue: "defaultQueue"
-            drm.walltime: "02:00:00"
-            drm.nodeCount: "1"
+            job.queue: "defaultQueue"
+            job.walltime: "02:00:00"
+            job.nodeCount: "1"
 
             pbs.host: "example.edu"
             pbs.mem: "8gb"
@@ -144,7 +144,7 @@ module.properties:
         executor.props: "myLongPbsWorker"
     # customize by property name
     Example3:
-        drm.walltime: "72:00:00"
+        job.walltime: "72:00:00"
         pbs.mem: "8gb"
         pbs.vmem: "500gb"
 

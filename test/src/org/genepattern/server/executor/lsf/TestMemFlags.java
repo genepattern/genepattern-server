@@ -92,7 +92,7 @@ public class TestMemFlags {
     }
     
     /**
-     * When both 'lsf.max.memory' and 'drm.memory' are set, use 'drm.memory'.
+     * When both 'lsf.max.memory' and 'job.memory' are set, use 'job.memory'.
      */
     @Test
     public void testBothJobRunnerAndLsf() {
