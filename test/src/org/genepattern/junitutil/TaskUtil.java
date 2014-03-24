@@ -27,6 +27,10 @@ public class TaskUtil {
         File zipfile=FileUtil.getSourceFile(clazz, zipfilename);
         return getTaskInfoFromZip(zipfile);
     }
+    
+    public static TaskInfo getTaskInfoFromManifest(final File manifest) throws IOException {
+        return org.genepattern.server.TaskUtil.getTaskInfoFromManifest(manifest);
+    }
 
     public static TaskInfo getTaskInfoFromZip(final File zipfile) {
         TaskInfo taskInfo = null;

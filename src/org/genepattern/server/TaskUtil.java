@@ -378,6 +378,7 @@ public class TaskUtil {
 
     /**
      * Creates a new <code>TaskInfo</code> instance from the input stream.
+     * Throws MalformedURLException if the manifest has a bad LSID
      * Note that the returned <code>TaskInfo</code> will have getID() equal to
      * -1, getParameterInfo() will be <code>null</code>, getUserId is
      * <code>null</code>, and getAccessId is 0.
@@ -388,20 +389,13 @@ public class TaskUtil {
      * @exception IOException
      *                if an error occurs during reading
      */
-    private static TaskInfo getTaskInfoFromManifest(InputStream is) throws IOException {
+    public static TaskInfo getTaskInfoFromManifest(InputStream is) throws IOException {
         Properties props = new Properties();
         props.load(is);
 
         String taskName = (String) props.remove(GPConstants.NAME);
         String lsid = (String) props.get(GPConstants.LSID);
         LSID l = new LSID(lsid);
-        // throws
-        // MalformedURLException
-        // if
-        // this
-        // is a
-        // bad
-        // LSID
         if (taskName == null || taskName.trim().equals("")) {
             throw new IOException("Missing task name");
         }
