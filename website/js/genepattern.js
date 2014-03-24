@@ -1572,6 +1572,10 @@ function renderJob(jobJson, tab) {
         .attr("data-jobid", jobJson.jobId)
         .attr("data-json", JSON.stringify(jobJson))
         .text(jobJson.taskName + " (" + jobJson.jobId + ")")
+        .append(
+            $("<img />")
+                .attr("src", "/gp/images/menuicon-over.gif")
+                .addClass("menu-icon"))
         .appendTo(jobName);
 
     var jobDetails = $("<div></div>")
@@ -1592,10 +1596,11 @@ function renderJob(jobJson, tab) {
             .attr("href", file.link.href)
             .attr("data-kind", file.kind)
             .attr("data-sendtomodule", JSON.stringify(file.sendTo))
+            .append(file.link.name)
             .append(
                 $("<img />")
-                    .attr("src", "/gp/images/outputFile.gif"))
-            .append(file.link.name)
+                    .attr("src", "/gp/images/menuicon-over.gif")
+                    .addClass("menu-icon"))
             .appendTo(fileBox);
     }
 

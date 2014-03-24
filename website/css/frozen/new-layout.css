@@ -674,6 +674,14 @@ body {
     text-align: center;
 }
 
+.menu-icon {
+    position: relative;
+    padding-left: 3px;
+    top: 1px;
+    height: 12px;
+    float: none !important;
+}
+
 /* Upload Toaster */
 
 .upload-toaster-file-name {
