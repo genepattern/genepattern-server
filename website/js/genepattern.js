@@ -529,10 +529,10 @@ function ajaxFileTabUpload(file, directory, done, index){
     var xhr = null;
     var xhrCanceled = false;
 
-    var progressbar = $(".upload-toaster-file[name='" + file.name + "']").find(".upload-toaster-file-progress");
+    var progressbar = $(".upload-toaster-file[name='" + escapeJquerySelector(file.name) + "']").find(".upload-toaster-file-progress");
 
     // Set the cancel button functionality
-    var cancelButton = $(".upload-toaster-file[name='" + file.name + "']").find(".upload-toaster-file-cancel");
+    var cancelButton = $(".upload-toaster-file[name='" + escapeJquerySelector(file.name) + "']").find(".upload-toaster-file-cancel");
     cancelButton.click(function() {
         //var xhr = progressbar.data("xhr");
         xhr.abort();
@@ -1282,13 +1282,13 @@ function openFileWidget(link, context) {
     var url = $(link).attr("href");
 
     // Create the menu widget
-    var widgetFound = $(context).find("[name='" + url + "']").length > 0;
+    var widgetFound = $(context).find("[name='" + escapeJquerySelector(url) + "']").length > 0;
     if (!widgetFound) {
         createFileWidget($(link), context);
     }
 
     // Open the file slider
-    $(context).find("[name='" + url + "']").searchslider("show");
+    $(context).find("[name='" + escapeJquerySelector(url) + "']").searchslider("show");
 }
 
 function createJobWidget(job) {
