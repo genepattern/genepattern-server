@@ -601,8 +601,7 @@ span.drop-box
     border: 2px dashed darkgray;
     padding: 8px 6px 6px 6px;
     white-space: normal;
-    word-break: break-all;
-    max-width: 50px;
+    word-break: normal;
 }
 
 
