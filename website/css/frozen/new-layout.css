@@ -547,7 +547,7 @@ body {
     width: 360px;
 }
 
-.file-widget-actions h4, .job-widget-actions h4 {
+.file-widget-actions h4, .job-widget-actions h4, .job-widget-code h4 {
     width: 305px;
     font-size: 9pt;
 }
