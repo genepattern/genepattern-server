@@ -362,6 +362,8 @@ body {
     line-height: 28pt;
     font-weight: 400;
 	margin-left: 0px;
+    margin-top: 10px;
+    margin-bottom: 10px;
     padding: 10px 5px;
     text-align: center;
 }
