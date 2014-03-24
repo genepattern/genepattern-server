@@ -14,6 +14,8 @@ import org.genepattern.server.executor.CommandExecutorException;
  *
  */
 public interface JobRunner {
+    public static final String PROP_EXECUTOR_INPUT_PARAMS="executor.inputParams";
+
     public static final String PROP_QUEUE="job.queue";
     public static final String PROP_MEMORY="job.memory";
     public static final String PROP_WALLTIME="job.walltime";

@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
+import org.genepattern.drm.JobRunner;
 import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpConfigLoader;
 import org.genepattern.server.config.GpContext;
@@ -25,7 +26,6 @@ public class JobConfigParams {
     private static Logger log = Logger.getLogger(JobConfigParams.class);
 
     public static final String PROP_ENABLE_EXECUTOR_INPUT_PARAMS="enableExecutorInputParams";
-    public static final String PROP_EXECUTOR_INPUT_PARAMS="executor.inputParams";
     
     /**
      * At runtime, when loading the job input form for a given module for a given user
@@ -41,7 +41,7 @@ public class JobConfigParams {
             log.debug("gpConfig==null");
             return null;
         }
-        final String jobConfigParamsStr=gpConfig.getGPProperty(taskContext, PROP_EXECUTOR_INPUT_PARAMS);
+        final String jobConfigParamsStr=gpConfig.getGPProperty(taskContext, JobRunner.PROP_EXECUTOR_INPUT_PARAMS);
         if (jobConfigParamsStr != null) {
             //figure out how to cache the results of parsing the config file
             try {

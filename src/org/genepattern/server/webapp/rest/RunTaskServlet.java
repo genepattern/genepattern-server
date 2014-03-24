@@ -407,7 +407,7 @@ public class RunTaskServlet extends HttpServlet
         @Context HttpServletRequest request)
     {
         final GpContext userContext = Util.getUserContext(request);
-        final boolean enableJobConfigParams=ServerConfigurationFactory.instance().getGPBooleanProperty(userContext, JobConfigParams.PROP_ENABLE_EXECUTOR_INPUT_PARAMS, false);
+        final boolean enableJobConfigParams=ServerConfigurationFactory.instance().getGPBooleanProperty(userContext, JobConfigParams.PROP_ENABLE_EXECUTOR_INPUT_PARAMS, true);
         if (enableJobConfigParams) {
             return newAddJob(userContext, jobSubmitInfo, request);
         }
