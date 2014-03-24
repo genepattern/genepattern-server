@@ -116,6 +116,8 @@ import org.apache.tools.ant.taskdefs.Execute;
 import org.apache.tools.ant.taskdefs.Expand;
 import org.genepattern.codegenerator.AbstractPipelineCodeGenerator;
 import org.genepattern.data.pipeline.PipelineModel;
+import org.genepattern.drm.JobRunner;
+import org.genepattern.drm.Memory;
 import org.genepattern.server.InputFilePermissionsHelper;
 import org.genepattern.server.JobInfoManager;
 import org.genepattern.server.JobInfoWrapper;
@@ -1488,17 +1490,22 @@ public class GenePatternAnalysisTask {
             }
             return;
         }
-
-        String[] cmdLineArgs = commandTokens;
+        
+        //special-case, for -Xmx flag
+        Memory memoryFlag=gpConfig.getGPMemoryProperty(jobContext, JobRunner.PROP_MEMORY);
+        if (memoryFlag!=null) {
+            log.debug("setting custom memory flag: "+memoryFlag);
+            commandTokens=CustomXmxFlags.addOrReplaceXmxFlag(jobContext, memoryFlag, commandTokens);
+        }
         if (log.isInfoEnabled()) {
-            StringBuffer commandLine = new StringBuffer();
-            for(String arg : cmdLineArgs) {
+            final StringBuffer commandLine = new StringBuffer();
+            for(final String arg : commandTokens) {
                 commandLine.append(arg+" ");
             }
             log.info("running " + taskName + " (job " + jobId + ") command: " + commandLine.toString());
         }
 
-        runCommand(gpConfig, jobContext, cmdLineArgs, environmentVariables, outDir, stdoutFile, stderrFile, stdinFile);
+        runCommand(gpConfig, jobContext, commandTokens, environmentVariables, outDir, stdoutFile, stderrFile, stdinFile);
     }
     
     private ChoiceInfo initChoiceInfo(final GpContext jobContext, final ParameterInfoRecord pinfoRecord, final ParameterInfo pinfo) {
