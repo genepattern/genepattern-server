@@ -46,10 +46,9 @@
 .paramsTable
 {
     min-width: 630px;
-    width: auto;
     margin-right: 14px;
     height: 100%;
-    border-spacing: 0;
+    border-collapse: collapse;
 }
 
 tr.pRow td
@@ -64,13 +63,23 @@ tr.pRow td
 
 #main-pane td
 {
-    padding: 7px 0 6px 0;
+    padding-top: 7px;
 }
 
 tr.paramDescription td
 {
     padding-top: 0;
     padding-bottom: 2px;
+}
+
+.paramsTable tr td
+{
+    padding-right: 5px;
+}
+
+tr td
+{
+    padding-right: 5px;
 }
 
 .paramsTable tr td:nth-child(even)
@@ -82,6 +91,8 @@ tr.paramDescription td
 .pTitle
 {
     white-space: nowrap;
+    padding-right: 10px;
+    margin-right: 8px;
 }
 
 .task_header
@@ -228,7 +239,6 @@ button.urlButton
     display: inline-block;
     white-space: normal;
     word-break: break-all;
-    max-width: 50px;
 }
 
 .fileDiv button img
