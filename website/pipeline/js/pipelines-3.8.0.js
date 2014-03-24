@@ -1702,7 +1702,12 @@ var library = {
             });
         }
 
+        var startsWithDot = new RegExp("^[.]");
         returnFormat.sort(function(a, b) {
+            // Special punctuation handling
+            if (startsWithDot.test(a.name) && !startsWithDot.test(b.name)) return 1;
+            if (!startsWithDot.test(a.name) && startsWithDot.test(b.name)) return -1;
+
             if (a.name.toLowerCase() < b.name.toLowerCase()) return -1;
             else if (a.name.toLowerCase() > b.name.toLowerCase()) return 1;
             else return 0;
