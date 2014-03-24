@@ -1231,7 +1231,7 @@ function createFileDiv(parameterName, groupId, enableBatch, initialValuesList)
         openServerFileDialog(this);
     });
 
-    fileDiv.append("<span class='drop-box'>drop files here</span>");
+    fileDiv.append("<span class='drop-box'>Drag Files Here</span>");
     fileDiv.append("<div class='fileListingDiv'/>");
 
     //check if there are predefined file values

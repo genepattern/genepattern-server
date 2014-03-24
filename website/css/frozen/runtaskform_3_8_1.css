@@ -194,6 +194,8 @@ button.urlButton
 {
     font-size: 11px;
     padding: 0;
+    position: relative;
+    top: -5px;
 }
 
 /*.paramsTable td:first-child
@@ -240,6 +242,8 @@ button.urlButton
 {
     vertical-align: bottom;
     margin-right: 7px;
+    position: relative;
+    top: -5px;
 }
 
 .errorMessage
@@ -557,18 +561,15 @@ hr
 span.drop-box
 {
     font-family: Helvetica, Arial, sans-serif;
-    font-size: 16px;
+    font-size: 28px;
+    line-height: 28pt;
     width: 120px;
     height: 20px;
     text-align:center;
     padding-top:5px;
-    -moz-border-radius: 5px;
-    -webkit-border-radius: 5px;
-    -o-border-radius: 5px;
-    border-radius: 5px;
     margin-left: 9px;
     padding: 5px 10px 5px 10px;
-    color: lightgray;
+    color: darkgray;
     letter-spacing: 1px;
 }
 
@@ -595,16 +596,14 @@ span.drop-box
     margin-bottom: 7px;
 }
 
-.mainDivBorder
-{
+.mainDivBorder {
     vertical-align: bottom;
-    border: 2px dashed lightgray;
-    -moz-border-radius: 8px;
-    -webkit-border-radius: 8px;
+    border: 2px dashed darkgray;
     padding: 8px 6px 6px 6px;
     white-space: normal;
     word-break: break-all;
     max-width: 50px;
+    font-size: 28px;
 }
 
 

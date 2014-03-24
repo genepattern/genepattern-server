@@ -357,10 +357,13 @@ body {
 }
 
 #pinned-modules .module-list-empty {
-	border: dashed;
+	border: dashed 2px darkgray;
+    font-size: 28px;
+    line-height: 28pt;
+    font-weight: 400;
 	margin-left: 0px;
-	padding: 15px;
-	text-align: center;
+    padding: 10px 5px;
+    text-align: center;
 }
 
 #module-browse-button {
@@ -473,7 +476,7 @@ body {
 #upload-dropzone {
     padding-left: 5px;
     margin: 5px;
-    border: dashed 3px darkgray;
+    border: dashed 2px darkgray;
     bottom: 5px;
     left: 2px;
     width: 320px;
