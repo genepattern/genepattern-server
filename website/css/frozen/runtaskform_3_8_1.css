@@ -77,7 +77,6 @@ tr.paramDescription td
 {
     padding-left: 14px;
     white-space: normal;
-    word-break: break-all;
 }
 
 .pTitle
@@ -601,7 +600,7 @@ span.drop-box
     border: 2px dashed darkgray;
     padding: 8px 6px 6px 6px;
     white-space: normal;
-    word-break: normal;
+    word-break: break-all;
 }
 
 
