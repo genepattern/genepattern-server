@@ -950,7 +950,11 @@ function createFileWidget(linkElement, appendTo) {
         var sendToString = linkElement.attr("data-sendtomodule");
         if (sendToString === null || sendToString === undefined) sendToString = '[]';
         var lsidList = JSON.parse(sendToString);
-        var sendToList = lsidsToModules(lsidList);
+        var sendToList = lsidsToModules(lsidList).sort(function (a, b) {
+            if (a.name.toLowerCase() < b.name.toLowerCase()) return -1;
+            if (a.name.toLowerCase() > b.name.toLowerCase()) return 1;
+            return 0;
+        });
 
         var kind = linkElement.attr("data-kind");
 
