@@ -37,6 +37,23 @@ public class Memory {
         p (1125899906842624L),
         pb(1125899906842624L);
 
+        static Unit scaleDown(Unit in) {
+            if (in==b) {
+                throw new IllegalArgumentException("Can't scale down from "+in);
+            }
+            if (in==k) return b;
+            // by convention, can subtract the index, e.g. scaleDown(g) returns m and scaleDown(gb) returns mb
+            return Unit.values()[in.ordinal()-2];
+        }
+        
+        static Unit scaleUp(Unit in) {
+            if (in==p || in==pb) {
+                return in;
+            }
+            if (in==b) return k;
+            return Unit.values()[in.ordinal()+2];
+        }
+
         private final long multiplier;
         private Unit(long multiplier) {
             this.multiplier=multiplier;
@@ -54,11 +71,12 @@ public class Memory {
        maxMemory: "8gb"
      * </pre>
      * 
-     * Must be a String which can be split by the space (' ') character into an
+     * Must be a String which can be split by the space (' ') character into a
      * number (double) value and a memory.unit (string).
      * Memory units are not case sensitive.
      * If no unit is specified, then by default, 'Gb' is used.
-     *
+     * Bytes must be specified as in integer, for other units, fractional (double) values
+     * are allowed. Rounding occurs in the getNumBytes method.
      * 
      * @param str
      * @return
@@ -74,39 +92,41 @@ public class Memory {
             log.debug("str is empty, return null");
             return null;
         }
-        
-        
-        //split the input string a magnitude (double value) and [optional] units
+
+        //split the input string a magnitude (long value) and [optional] units
         //expecting: "<double> <units>" | "<double><units>" | "<double>"
-        Unit arg1=null;
+        Unit unit=null;
         int matchingIdx=-1;
-        for(final Unit unit : Unit.values()) {
-            if (str.endsWith(unit.name())) {
-                arg1=unit;
-                matchingIdx=str.lastIndexOf(unit.name());
+        for(final Unit unitFromEnum : Unit.values()) {
+            if (str.endsWith(unitFromEnum.name())) {
+                unit=unitFromEnum;
+                matchingIdx=str.lastIndexOf(unitFromEnum.name());
             }
         }
         
-        final String arg0;
-        if (arg1 != null) {
-            arg0=str.substring(0, matchingIdx).trim();
+        final String valueSpec;
+        if (unit != null) {
+            valueSpec=str.substring(0, matchingIdx).trim();
         }
         else {
-            arg0=str;
+            valueSpec=str;
         }
-        
-        //throws NumberFormatException
-        final double value=Double.valueOf(arg0);
-        if (arg1 == null) {
-            arg1=Unit.gb;
+        if (unit == null) {
+            unit=Unit.gb;
         }
-        
-        return new Memory(value, arg1);
+        double value=Double.valueOf(valueSpec);
+
+        return new Memory(value, unit);
     }
 
     private double value;
     private Unit unit;
-    
+
+    // copy constructor
+    private Memory(final Memory in) {
+        this.value=in.value;
+        this.unit=in.unit;
+    }
     private Memory(final double value, final Unit unit) {
         if (value < 0) {
             throw new IllegalArgumentException("value must be >= 0");
@@ -116,20 +136,64 @@ public class Memory {
     }
 
     public long getNumBytes() {
-        //return value * unit.getMultiplier();
         return Math.round(value * unit.getMultiplier());
     }
-    
+
     public double numGb() {
         double numGb=(double) getNumBytes() / (double) Unit.gb.getMultiplier();
         return numGb;
     }
     
-    public String toGb() {
-        return ""+ ( ((long)getNumBytes()) / Unit.gb.getMultiplier());
-    }
-
     public String toString() {
         return ""+value+" "+unit.name();
     }
+
+    /**
+     * Output a valid Java '-Xmx' value, must be an integer value in k, m or g units.
+     * This returns a String containing an integer and a single character scale, it is up to the calling method to append the '-Xmx' flag.
+     * For example, '512m'.
+     * @return
+     */
+    public String toXmx() { 
+        if (unit==Unit.b) {
+            //convert to k
+            long numKb = (long)Math.max(1, Math.round( ((double)getNumBytes()) / Unit.kb.getMultiplier() ));
+            return numKb+"k";
+        }
+        else if (unit.ordinal() >= Unit.g.ordinal()) {
+            return toXmxUnits(Unit.gb);
+        }
+        else if (unit.ordinal() >= Unit.m.ordinal()) {
+            return toXmxUnits(Unit.mb);
+        }
+        else if (unit==Unit.k || unit==Unit.kb) {
+            //convert to k
+            long numKb = (long)Math.max(1, Math.round( ((double)getNumBytes()) / Unit.kb.getMultiplier() ));
+            return numKb+"k";
+        }
+        //dead code
+        return toXmxUnits(Unit.gb);
+    }
+
+    /**
+     * Helper method for the toXmx method, for the given xmxUnits, if we can output an integer value do so,
+     * otherwise, scale down, for example from Gb to Mb, so that we don't lose too much precision when rounding
+     * to an integer value.
+     *     toXmxUnits of "2.5 Gb" becomes "2560m"
+     *     toXmxUnits of "2 Gb" becomes "2g"
+     * @param xmxUnits
+     * @return
+     */
+    private String toXmxUnits(final Unit xmxUnits) {
+        long num=getNumBytes() / xmxUnits.getMultiplier();
+        long mod=getNumBytes() % xmxUnits.getMultiplier();
+        if (mod==0) {
+            return ""+num+xmxUnits.toString().charAt(0);
+        }
+        //else scale down and round to nearest int
+        final Unit down=Unit.scaleDown(xmxUnits);
+        long downNum=1024L*num + (long) Math.round(((double)mod) / down.getMultiplier());
+        return ""+downNum+down.toString().charAt(0);
+    }
+
 }

@@ -130,6 +130,49 @@ public class TestMemory {
         final String spec="1P";
         Assert.assertEquals("numBytes for '"+spec+"'", 1125899906842624L, Memory.fromString(spec).getNumBytes());
     }
+    
+    @Test
+    public void testToXmx_512m() {
+        final String spec="512m";
+        Assert.assertEquals("toXmx for '"+spec+"'", "512m", Memory.fromString(spec).toXmx());
+    }
+
+    @Test
+    public void testToXmx_2048_Mb() {
+        final String spec="2048 Mb";
+        Assert.assertEquals("toXmx for '"+spec+"'", "2048m", Memory.fromString(spec).toXmx());
+    }
+    
+    @Test
+    public void testToXmx_16_Gb() {
+        final String spec="16 Gb";
+        Assert.assertEquals("toXmx for '"+spec+"'", "16g", Memory.fromString(spec).toXmx());
+    }
+
+    @Test
+    public void testToXmx_fractional() {
+        final String spec="2.5 gb";
+        Assert.assertEquals("toXmx for '"+spec+"'", "2560m", Memory.fromString(spec).toXmx());
+    }
+    
+    @Test
+    public void testToXmx_2_0() {
+        final String spec="2.0 gb";
+        Assert.assertEquals("toXmx for '"+spec+"'", "2g", Memory.fromString(spec).toXmx());
+    }
+    
+    @Test
+    public void testToXmx_fractional_Pb() {
+        final String spec="0.001 Pb";
+        //1.048567 Gb, 1024 + 
+        Assert.assertEquals("toXmx for '"+spec+"'", "1073742m", Memory.fromString(spec).toXmx());
+    }
+
+    @Test
+    public void testToXmx_16_Pb() {
+        final String spec="16 Pb";
+        Assert.assertEquals("toXmx for '"+spec+"'", "16777216g", Memory.fromString(spec).toXmx());
+    }
 
     @Test
     public void testGpNoSeparator() {
@@ -142,12 +185,6 @@ public class TestMemory {
     public void testWhitespace() {
         Memory actual=Memory.fromString(" 8 Gb ");
         Assert.assertEquals("8 Gb", 8589934592L, actual.getNumBytes());
-    }
-    
-    @Test
-    public void testFractionalTb() {
-        final String spec="1.2 TB";
-        Assert.assertEquals("numBytes for '"+spec+"'", 1319413953331L, Memory.fromString(spec).getNumBytes());
     }
     
     @Test
@@ -170,6 +207,13 @@ public class TestMemory {
         Assert.assertEquals("numGb", 0.46566128730774, numGb, 0.00001);
     }
     
+    @Test()
+    public void testFractionalTb() {
+        final String spec="1.2 TB";
+        //Memory.fromString(spec);
+        Assert.assertEquals("numBytes for '"+spec+"'", 1319413953331L, Memory.fromString(spec).getNumBytes());
+    }
+
     @Test(expected=IllegalArgumentException.class)
     public void testNegativeNumberNoUnit() {
         final String spec="-5";
