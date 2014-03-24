@@ -1626,6 +1626,14 @@ function loadParametersByGroup(parameterGroups, parameters, initialValues)
 
     for(var i=0;i<run_task_info.parameterGroups.length;i++)
     {
+        //check if any parameters were found in the group
+        //if so then do nothing and continue
+        if(parameterGroups[i].parameters == undefined || parameterGroups[i].parameters == null
+            || parameterGroups[i].parameters.length == 0)
+        {
+            continue;
+        }
+
         var pGroupName = parameterGroups[i].name;
 
         if(pGroupName == undefined && pGroupName == null)
