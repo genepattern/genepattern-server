@@ -213,6 +213,19 @@ public class TestMemory {
         //Memory.fromString(spec);
         Assert.assertEquals("numBytes for '"+spec+"'", 1319413953331L, Memory.fromString(spec).getNumBytes());
     }
+    
+    @Test
+    public void testEquals() {
+        final String spec="8 gb";
+        Assert.assertEquals(spec, Memory.fromString(spec), Memory.fromString(spec)); 
+    }
+    
+    @Test
+    public void testEquals_anyUnits() {
+        final String spec0="512m";
+        final String spec1="0.5g";
+        Assert.assertEquals(spec0+"=="+spec1, Memory.fromString(spec0), Memory.fromString(spec1));
+    }
 
     @Test(expected=IllegalArgumentException.class)
     public void testNegativeNumberNoUnit() {

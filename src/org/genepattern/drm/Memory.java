@@ -119,13 +119,15 @@ public class Memory {
         return new Memory(value, unit);
     }
 
-    private double value;
-    private Unit unit;
+    private final double value;
+    private final Unit unit;
+    private final Long numBytes;
 
     // copy constructor
     private Memory(final Memory in) {
         this.value=in.value;
         this.unit=in.unit;
+        this.numBytes=initNumBytes(value, unit);
     }
     private Memory(final double value, final Unit unit) {
         if (value < 0) {
@@ -133,10 +135,14 @@ public class Memory {
         }
         this.value=value;
         this.unit=unit;
+        this.numBytes=initNumBytes(value, unit);
     }
 
-    public long getNumBytes() {
+    private static final long initNumBytes(final double value, final Unit unit) {
         return Math.round(value * unit.getMultiplier());
+    }
+    public long getNumBytes() {
+        return numBytes;
     }
 
     public double numGb() {
@@ -194,6 +200,23 @@ public class Memory {
         final Unit down=Unit.scaleDown(xmxUnits);
         long downNum=1024L*num + (long) Math.round(((double)mod) / down.getMultiplier());
         return ""+downNum+down.toString().charAt(0);
+    }
+    
+    public boolean equals(final Object obj) {
+        if (obj==null) {
+            return false;
+        }
+        if (this==obj) {
+            return true;
+        }
+        if (!(obj instanceof Memory)) {
+            return false;
+        }
+        return ((Memory)obj).getNumBytes()==getNumBytes();
+    }
+    
+    public int hashCode() {
+        return numBytes.hashCode();
     }
 
 }
