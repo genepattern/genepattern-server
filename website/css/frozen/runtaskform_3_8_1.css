@@ -163,22 +163,10 @@ tr td
     cursor: copy;
 }
 
-/*.paramFilesTable
+.paramFilesTable
 {
-    text-align:left;
-    word-break: break-all;
-    white-space: normal;
+    width: 100%;
 }
-*/
-
-/*
-.paramFilesTable td
-{
-    text-align:left;
-  /*  word-break: break-all;
-    white-space: normal;
-    overflow: hidden;
-}*/
 
 table.paramFilesTable tr td
 {
