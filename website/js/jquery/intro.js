@@ -215,7 +215,8 @@
    * @method _cloneObject
   */
   function _cloneObject(object) {
-      if (object == null || typeof (object) != 'object' || object.hasOwnProperty("nodeName") === true) {
+      //Marc-Danie copied from later release v. 0.8.0 - fix for infinite recursion in Firefox
+      if (object == null || typeof (object) != 'object' || typeof (object.nodeType) != 'undefined') {
           return object;
       }
       var temp = {};
@@ -469,12 +470,12 @@
 
       //remove old classes
       var oldShowElement = document.querySelector('.introjs-showElement');
-	
-      //added if condition around statement below Marc-Danie 2/2/4/14	
+
+      //added if condition around statement below Marc-Danie 2/2/4/14
       if(oldShowElement != null && oldShowElement != undefined)
       {
 	oldShowElement.className = oldShowElement.className.replace(/introjs-[a-zA-Z]+/g, '').replace(/^\s+|\s+$/g, '');
-      }	
+      }
       //added by Marc-Danie 2/23/14 to workaround table row highlighting issue
       $(oldShowElement).find('td').removeClass('introjs-showElement').removeClass('introjs-relativePosition');
 
@@ -668,7 +669,7 @@
       if (/[0-9]+/.test(zIndex) || opacity < 1) {
         parentElm.className += ' introjs-fixParent';
       }
-	  
+
       parentElm = parentElm.parentNode;
     }
 
