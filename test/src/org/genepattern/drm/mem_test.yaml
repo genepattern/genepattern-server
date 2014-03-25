@@ -1,0 +1,32 @@
+#
+# Example yaml file for testing 'job.memory' flag
+#
+default.properties:
+    executor: RuntimeExec
+        
+    #
+    # default job memory settings
+    #
+    #job.memory: "2gb"
+    
+    # proposed flags which are not yet implemented
+    #java.Xmx: "2gb"
+    #executor: DemoPbsJobRunner
+    # Java non-standard options, such as -Xmx
+    # -Xmx<size>        set maximum Java heap size
+    #java.opts.Xmx: "512m"
+    #java.max.heap.size: "512m"
+    #java.options: {
+    #    "Xms": "256m",
+    #    "Xmx": "512m"
+    #}
+
+
+executors:
+    # default executor for all jobs, it is included in GenePattern
+    RuntimeExec:
+        classname: org.genepattern.server.executor.RuntimeCommandExecutor
+        configuration.properties:
+            # the total number of jobs to run concurrently
+            num.threads: 20
+                

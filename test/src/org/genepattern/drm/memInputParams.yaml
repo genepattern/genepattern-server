@@ -1,0 +1,21 @@
+#
+# Memory flags to display in the job input form
+# To use this, set executor.inputParams: memInputParams.yaml
+#
+{
+name: "Memory settings",
+hidden: true,
+parameters: [
+{ name: "job.memory",
+  altName: "memory",
+  description: "Set memory requirements for your job. In most cases the default value is best.
+                The maximum amount of memory to allocate to your job.
+                In most cases the default value is sufficient.
+                When working with larger data sets you may need to select a higher setting.
+                When you do, you will tend to wait longer for an available node.",
+  # <actualValue>=<displayValue>
+  choices: [ "1=small (1 Gb)", "2=default (2 Gb)", "8=8 Gb", "12=12 Gb", "16=16 Gb", "24=max available (24 Gb)" ],
+  defaultValue: "2",
+  optional: true }
+]
+}

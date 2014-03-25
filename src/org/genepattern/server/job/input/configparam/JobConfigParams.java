@@ -11,9 +11,11 @@ import org.genepattern.drm.JobRunner;
 import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpConfigLoader;
 import org.genepattern.server.config.GpContext;
+import org.genepattern.server.config.Value;
 import org.genepattern.server.dm.jobinput.ParameterInfoUtil;
 import org.genepattern.server.job.input.InputParamGroup;
 import org.genepattern.webservice.ParameterInfo;
+import org.genepattern.webservice.TaskExecutor;
 
 import com.google.common.collect.ImmutableList;
 
@@ -49,6 +51,7 @@ public class JobConfigParams {
                         gpConfig.getResourcesDir(), 
                         jobConfigParamsStr);
                 JobConfigParams jobConfigParams=JobConfigParamsParserYaml.parse(jobConfigParamsFile);
+                replaceDefaults(gpConfig, taskContext, jobConfigParams);
                 return jobConfigParams;
             }
             catch (Throwable t) {
@@ -57,6 +60,26 @@ public class JobConfigParams {
             return null;
         }
         return null;
+    }
+    
+    private static void replaceDefaults(final GpConfig gpConfig, final GpContext taskContext, final JobConfigParams jobConfigParams) {
+        for(final ParameterInfo pinfo : jobConfigParams.getParams()) {
+            final String pname=pinfo.getName();
+            final Value customValue=gpConfig.getValue(taskContext, pname);
+            if (customValue != null) {
+                setDefaultValue(pinfo, customValue.getValue());
+            }
+        }
+    }
+
+    /**
+     * 
+     * @param pinfo
+     * @param defaultValue
+     */
+    @SuppressWarnings("unchecked")
+    private static void setDefaultValue(final ParameterInfo pinfo, final String defaultValue) {
+        pinfo.getAttributes().put(TaskExecutor.PARAM_INFO_DEFAULT_VALUE[0], defaultValue);
     }
     
     private final InputParamGroup jobConfigGroup;

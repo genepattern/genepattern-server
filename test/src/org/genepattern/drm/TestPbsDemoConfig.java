@@ -8,6 +8,7 @@ import org.genepattern.junitutil.TaskUtil;
 import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.GpContextFactory;
+import org.genepattern.server.config.GpServerProperties;
 import org.genepattern.server.job.input.JobInput;
 import org.genepattern.server.job.input.configparam.JobConfigParams;
 import org.genepattern.util.GPConstants;
@@ -38,12 +39,13 @@ public class TestPbsDemoConfig {
         igvTaskInfo.getTaskInfoAttributes().put(GPConstants.LSID, "urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00170:4");
     }
     
+    private File resourcesDir;
     private GpConfig gpConfig;
 
     
     @Before
     public void beforeTest() throws Exception {
-        final File resourcesDir=FileUtil.getSourceDir(this.getClass());
+        resourcesDir=FileUtil.getSourceDir(this.getClass());
         if (!resourcesDir.canRead()) {
             throw new Exception("Can't read resourcesDir="+resourcesDir);
         }
@@ -163,6 +165,50 @@ public class TestPbsDemoConfig {
         Assert.assertEquals("set 'executor.props' for taskName='IGV'", "VisualizerProps", gpConfig.getGPProperty(gpContext, "executor.props"));
         Assert.assertEquals("set 'executor' in executor.props='VisualizerProps'", "RuntimeExec", gpConfig.getGPProperty(gpContext, "executor"));
         Assert.assertEquals("gpConfig.executorId", "RuntimeExec", gpConfig.getExecutorId(gpContext));
+    }
+
+    /**
+     * When the manifest sets the 'job.memory' flag AND when 'job.memory' is set in the 'executor.inputParams',
+     * use the value in the manifest as the default value.
+     *
+     */
+    @Test
+    public void testSetDefaultJobMemoryInManifest() {
+        final TaskInfo taskInfo=new TaskInfo();
+        taskInfo.setName("ExampleModule02");
+        taskInfo.giveTaskInfoAttributes();
+        taskInfo.getTaskInfoAttributes().put(GPConstants.LSID, "");
+        taskInfo.getTaskInfoAttributes().put(JobRunner.PROP_MEMORY, "8g");
+
+        final GpContext taskContext=new GpContextFactory.Builder()
+            .userId("test")
+            .taskInfo(taskInfo)
+            .build();
+        
+        
+
+        // executor.inputParams: memInputParams.yaml
+        final File configFile=FileUtil.getSourceFile(this.getClass(), "mem_test.yaml");
+        final GpServerProperties serverProperties=new GpServerProperties.Builder()
+            .resourcesDir(resourcesDir)
+            .addCustomProperty("executor.inputParams", "memInputParams.yaml")
+            .build();
+        final GpConfig gpConfig=new GpConfig.Builder()
+            .serverProperties(serverProperties)
+            .configFile(configFile)
+            .build();
+
+        
+        JobConfigParams jobInputParams=JobConfigParams.initJobConfigParams(gpConfig, taskContext);
+        Memory mem=Memory.fromString(jobInputParams.getParam(JobRunner.PROP_MEMORY).getDefaultValue());
+        Assert.assertEquals("", mem.fromString("8g"), mem);
+    }
+
+    /**
+     * what about if both 'job.memory' and 'job.javaXmx' are set?
+     */
+    @Test
+    public void testDD() {
     }
 
 }

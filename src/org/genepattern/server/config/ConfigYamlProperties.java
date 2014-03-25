@@ -8,6 +8,7 @@ import java.util.Set;
 import java.util.Map.Entry;
 
 import org.apache.log4j.Logger;
+import org.genepattern.drm.JobRunner;
 import org.genepattern.server.UserAccountManager;
 import org.genepattern.server.executor.CommandProperties;
 import org.genepattern.server.job.input.JobInput;
@@ -158,6 +159,16 @@ public class ConfigYamlProperties {
                     }
                 }
             }
+        }
+        
+        // 2b) special-case, check for 'job.*' prefixed properties in the module manifest file
+        if (context.getTaskInfo() != null 
+            &&
+            key.startsWith(JobRunner.PROP_PREFIX)
+            &&
+            context.getTaskInfo().giveTaskInfoAttributes().containsKey(key)
+        ) {
+            rval=new Value(context.getTaskInfo().giveTaskInfoAttributes().get(key));
         }
         
         // 3) replace with top level module properties ...

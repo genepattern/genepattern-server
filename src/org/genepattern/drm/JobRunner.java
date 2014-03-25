@@ -19,6 +19,7 @@ public interface JobRunner {
     public static final String PROP_PREFIX="job.";
     public static final String PROP_QUEUE="job.queue";
     public static final String PROP_MEMORY="job.memory";
+    public static final String PROP_JAVA_XMX="job.javaXmx";
     public static final String PROP_WALLTIME="job.walltime";
     public static final String PROP_NODE_COUNT="job.nodeCount";
     public static final String PROP_CPU_COUNT="job.cpuCount";
