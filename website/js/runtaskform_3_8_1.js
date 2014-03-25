@@ -1686,14 +1686,14 @@ function loadParametersByGroup(parameterGroups, parameters, initialValues)
                     toggleImg.attr("src", imageSrc);
                 });
 
-                //only provide hide/show toggle for a group with a name
-                if(pGroupName.length > 0)
-                {
-                    headerTitleDiv.append(toggleImg);
-                }
-
                 if(parameterGroups.length > 1)
                 {
+                    //only provide hide/show toggle for a group with a name
+                    if(pGroupName.length > 0)
+                    {
+                        headerTitleDiv.append(toggleImg);
+                    }
+
                     if(h==0)
                     {
                         newHeaderDiv.addClass("solid-border");
