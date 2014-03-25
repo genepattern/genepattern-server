@@ -16,6 +16,7 @@ import org.genepattern.server.executor.CommandExecutorException;
 public interface JobRunner {
     public static final String PROP_EXECUTOR_INPUT_PARAMS="executor.inputParams";
 
+    public static final String PROP_PREFIX="job.";
     public static final String PROP_QUEUE="job.queue";
     public static final String PROP_MEMORY="job.memory";
     public static final String PROP_WALLTIME="job.walltime";
@@ -23,6 +24,24 @@ public interface JobRunner {
     public static final String PROP_CPU_COUNT="job.cpuCount";
     public static final String PROP_EXTRA_ARGS="job.extraArgs";
     public static final String PROP_WORKER_NAME="job.workerName";
+    
+    /**
+     * Set a boolean value, when true, it means flag the job as ERROR if there is stderr output. 
+     * Example config file entry
+     * <pre>
+     *     job.error_status.stderr: true
+     * </pre>
+     */
+    public static final String PROP_ERROR_STATUS_STDERR="job.error_status.stderr";
+
+    /**
+     * Set a boolean value, when true, it means flag the job as ERROR if ther is a non-zero exit code.
+     * Example config file entry
+     * <pre>
+     *     job.error_status.exit_value: true
+     * </pre>
+     */
+    public static final String PROP_ERROR_STATUS_EXIT_VALUE="job.error_status.exit_value";
     
     /** 
      * Service shutdown, clean up resources. 
