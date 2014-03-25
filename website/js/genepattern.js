@@ -732,6 +732,7 @@ function initUploadToaster(filelist, directory) {
                         },
                         complete: function() {
                             $(this).find(".upload-toaster-file-progress-label").text("Complete!");
+                            $(this).parent().find(".upload-toaster-file-cancel").button("disable");
                         }
                     })
                     .append(
