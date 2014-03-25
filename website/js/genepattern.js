@@ -501,17 +501,21 @@ function jobStatusPoll() {
             url: '/gp/rest/v1/jobs/incomplete',
             dataType: 'json',
             success: function(data, status, xhr) {
-            	$(".current-job-status a").empty();
-            	if (data.length > 0) {
-            		$(".current-job-status a").text(" " + data.length + " Jobs Processing");
-            		$(".current-job-status a").prepend("<img src='/gp/images/spin.gif' alt='Jobs Currently Processing' />");
-            		$.data($(".current-job-status")[0], "continuePolling", true);
-            	}
-            	else {
-            		$(".current-job-status a").text(" No Jobs Processing");
-            		$(".current-job-status a").prepend("<img src='/gp/images/complete.gif' alt='No Jobs Processing' />");
-            		$.data($(".current-job-status")[0], "continuePolling", false);
-            	}
+                var statusBoxes = $(".current-job-status a");
+
+                statusBoxes.each(function(index, ui) {
+                    $(ui).empty();
+                    if (data.length > 0) {
+                        $(ui).text(" " + data.length + " Jobs Processing");
+                        $(ui).prepend("<img src='/gp/images/spin.gif' alt='Jobs Currently Processing' />");
+                        $.data(ui, "continuePolling", true);
+                    }
+                    else {
+                        $(ui).text(" No Jobs Processing");
+                        $(ui).prepend("<img src='/gp/images/complete.gif' alt='No Jobs Processing' />");
+                        $.data(ui, "continuePolling", false);
+                    }
+                });
             }
         });
 		}
@@ -1528,6 +1532,12 @@ function createJobWidget(job) {
 }
 
 function initRecentJobs() {
+    // Init the browse button
+    $("#left-nav-jobs-browse").click(function() {
+        window.location = "/gp/jobResults";
+    });
+
+    // Init the jobs
     $.ajax({
         type: "GET",
         url: "/gp/rest/v1/jobs/recent",
@@ -1535,7 +1545,7 @@ function initRecentJobs() {
         success: function(data, textStatus, jqXHR) {
             // Clear away the old rendering of the tab
             $("#loading-jobs").hide();
-            var tab = $("#left-nav-jobs");
+            var tab = $("#left-nav-jobs-list");
             tab.empty();
 
             // Clear away any old jobs menus

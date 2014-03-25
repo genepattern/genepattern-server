@@ -327,6 +327,12 @@
 	                    <div id="recent-modules"></div>
 	                </div>
 		            <div id="left-nav-jobs" class="left-nav-tab">
+                        <div class="left-nav-top">
+                            <div class="current-job-status">
+                                <a href="/gp/jobResults"></a>
+                            </div>
+                            <button id="left-nav-jobs-browse">Browse Jobs &#x203a;</button>
+                        </div>
                         <h:outputText rendered="!#{uiBean.newUI}">
 	                        <ui:include src="/pages/recentJobs.xhtml" />
                         </h:outputText>
@@ -335,6 +341,7 @@
                                 <h4>Loading GenePattern Jobs...</h4>
                                 <img src="/gp/images/ajax.gif" height="100" width="100" alt="Loading..." />
                             </div>
+                            <div id="left-nav-jobs-list"></div>
                             <script type="text/javascript">
                                 $(document).ready(function() {
                                     initRecentJobs();
@@ -343,6 +350,11 @@
                         </h:outputText>
 	                </div>
 	                <div id="left-nav-files" class="left-nav-tab">
+                        <div class="left-nav-top">
+                            <div class="current-job-status">
+                                <a href="/gp/jobResults"></a>
+                            </div>
+                        </div>
 	                    <ui:include src="/pages/uploads/uploadedFiles.xhtml" />
 	                </div>
 	                <h:outputText rendered="#{genomeSpaceBean.loggedIn}">

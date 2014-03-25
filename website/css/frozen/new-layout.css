@@ -317,13 +317,13 @@ body {
 }
 
 .left-nav-top {
-	background-color: #BDD3E9;
-	border: none;
+    border: none;
 	border-bottom: solid 1px #A3B1DA;
-	background-image: url(images/sidebar-topBG.png);
-	background-repeat: repeat-x;
-	padding: 10px;
+    background: #BDD3E9 url(images/sidebar-topBG.png) repeat-x;
+    padding: 10px;
 	top: 33px;
+    overflow: auto;
+    min-height: 30px;
 }
 
 .ui-widget-content.popupMenu {
@@ -334,7 +334,17 @@ body {
 	padding: 0px !important;
 }
 
-#left-nav-files, #left-nav-genomespace {
+#left-nav-files {
+    padding: 0px;
+    width: 348px;
+    bottom: 85px;
+}
+
+#uploadTree {
+    padding: 10px;
+}
+
+#left-nav-genomespace {
 	padding: 10px !important;
 	width: 328px;
     bottom: 85px;
@@ -346,6 +356,14 @@ body {
 
 #left-nav-modules.ui-widget-content a:hover {
 	color: #6666FF;
+}
+
+.left-nav-top a {
+    color: #000099;
+}
+
+.left-nav-top a:hover {
+    color: #6666FF;
 }
 
 .search-box {
@@ -603,7 +621,15 @@ body {
 }
 
 #left-nav-jobs {
-    width: 328px;
+    width: 348px;
+    padding: 0px;
+}
+
+#left-nav-jobs-browse {
+    float: right;
+}
+
+#left-nav-jobs-list {
     padding: 10px;
 }
 
