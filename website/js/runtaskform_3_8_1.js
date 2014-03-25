@@ -1638,11 +1638,10 @@ function loadParametersByGroup(parameterGroups, parameters, initialValues)
 
         if(pGroupName == undefined && pGroupName == null)
         {
-            pGroupName = "";
+            pGroupName = "  ";
         }
 
         //set up the parameter group section(s)
-        var indent = 0;
         var headings = pGroupName.split("/");
         var curHeaderDiv = $("#paramsListingDiv");
         for(var h=0;h < headings.length;h++)
@@ -1687,9 +1686,6 @@ function loadParametersByGroup(parameterGroups, parameters, initialValues)
                     toggleImg.attr("src", imageSrc);
                 });
 
-                //indent the inner sections
-                indent = h * 12;
-
                 //only provide hide/show toggle for a group with a name
                 if(pGroupName.length > 0)
                 {
@@ -1698,20 +1694,20 @@ function loadParametersByGroup(parameterGroups, parameters, initialValues)
 
                 if(parameterGroups.length > 1)
                 {
-                    newHeaderDiv.addClass("border");
-
-                    if(pGroupName.length > 0)
+                    if(h==0)
                     {
-                        headerTitleDiv.addClass("border");
+                        newHeaderDiv.addClass("solid-border");
+                        newHeaderDiv.addClass("paramgroup-spacing");
+                        headerTitleDiv.addClass("top-level-background");
+                    }
+                    else
+                    {
+                        newHeaderDiv.addClass("dotted-border");
 
-                        if(h==0)
-                        {
-                            headerTitleDiv.addClass("background");
-                        }
+                        headerTitleDiv.addClass("background");
                     }
                 }
                 headerTitleDiv.append(headings[h]);
-                headerTitleDiv.css({'margin-left':indent+'px'});
 
                 //add a description if this is the last heading item
                 if(h== headings.length -1 && (parameterGroups[i].description != undefined && parameterGroups[i].description != null
@@ -1719,8 +1715,6 @@ function loadParametersByGroup(parameterGroups, parameters, initialValues)
                 {
                     newHeaderDiv.prepend("<div class='pHeaderDescription'>" + parameterGroups[i].description + "</div>");
                 }
-
-                newHeaderDiv.css({'margin-left':indent+'px'});
 
                 //append to the top level parameter listing div
                 curHeaderDiv.append(newHeaderDiv);
@@ -1740,9 +1734,6 @@ function loadParametersByGroup(parameterGroups, parameters, initialValues)
 
         var paramTable = createParamTable(parameterGroups[i].parameters, initialValues);
         curHeaderDiv.append(paramTable);
-
-
-        paramTable.css({'margin-left': '12px'});
     }
 }
 

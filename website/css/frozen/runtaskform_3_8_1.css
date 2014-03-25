@@ -4,7 +4,7 @@
 
 .pHeaderTitleDiv
 {
-    margin-top: 6px;
+    margin-top: 9px;
     padding-top: 4px;
     margin-right: 8px;
     font-size: 14px;
@@ -14,7 +14,7 @@
 .paramGroupSection
 {
     margin-right: 8px;
-    padding-bottom: 8px;
+    padding: 2px 7px 9px 14px;
 }
 
 .pHeaderTitleDiv:hover
@@ -22,14 +22,24 @@
     cursor: pointer;
 }
 
-.background
+.top-level-background
 {
-    background-color: #BDD3E9;
+    background-color: #AEC9E4;
 }
 
-.border
+.background
 {
-    border: 2px solid #BDD3E9;
+    background-color: #dae7f3;
+}
+
+.solid-border
+{
+    border-bottom: 2px solid #BDD3E9;
+}
+
+.paramgroup-spacing
+{
+    margin-bottom: 15px;
 }
 
 .paramSectionToggle
@@ -40,7 +50,7 @@
 .pHeaderDescription
 {
     font-size: 12px;
-    margin: 5px 4px 6px 5px;
+    margin: 5px 4px 6px -8px;
 }
 
 .paramsTable
@@ -54,6 +64,11 @@
 tr.pRow td
 {
     border-top: 2px solid #F0F0F0;
+}
+
+#submitJob
+{
+    margin-left: -12px;
 }
 
 #main-pane tr:first-child td
@@ -72,7 +87,7 @@ tr.paramDescription td
     padding-bottom: 2px;
 }
 
-.paramsTable tr td
+/*.paramsTable tr td
 {
     padding-right: 5px;
 }
@@ -81,10 +96,11 @@ tr td
 {
     padding-right: 5px;
 }
+*/
 
 .paramsTable tr td:nth-child(even)
 {
-    padding-left: 14px;
+/*    padding-left: 14px;*/
     white-space: normal;
 }
 
@@ -100,9 +116,6 @@ tr td
     clear: both;
 	font-weight: bold;
 	font-size: 15px;
-	/*color: #333366;*/
-	/*background-color: #CCDFFF;*/
-    /*background-color: #B8C9E6; preferred */
     background-color: #e5ebe9;
 	text-indent: 6px;
 	height: 21px;
