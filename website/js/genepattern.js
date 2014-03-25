@@ -706,7 +706,6 @@ function uploadDrop(event) {
     }
 }
 
-// TODO: Finish implementation
 function initUploadToaster(filelist, directory) {
     // Hide the dropzone
     $("#upload-dropzone-wrapper").hide("slide", { direction: "down" }, 200);
@@ -864,12 +863,20 @@ function initUploads() {
         .attr("id", "upload-dropzone-input")
         .attr("type", "file")
         .change(function(event) {
+            var origin = $("#upload-dropzone-input").data("origin");
             var filelist = event.target.files;
-            openUploadDirectoryDialog(filelist);
+
+            if (origin === "dropzone") {
+                openUploadDirectoryDialog(filelist);
+            }
+            else {
+                uploadAfterDialog(filelist, origin);
+            }
         })
         .appendTo("#upload-dropzone-wrapper");
 
     $("#upload-dropzone").click(function() {
+        $("#upload-dropzone-input").data("origin", "dropzone");
         $("#upload-dropzone-input").trigger("click");
     });
 }
@@ -972,6 +979,7 @@ function createFileWidget(linkElement, appendTo) {
                     var saveAction = $(event.target).closest(".module-listing").find(".module-name").text().trim().indexOf("Save") == 0;
                     var deleteAction = $(event.target).closest(".module-listing").find(".module-name").text().trim().indexOf("Delete") == 0;
                     var subdirAction = $(event.target).closest(".module-listing").find(".module-name").text().trim().indexOf("Create Subdirectory") == 0;
+                    var uploadAction = $(event.target).closest(".module-listing").find(".module-name").text().trim().indexOf("Upload") == 0;
                     var pipelineAction = $(event.target).closest(".module-listing").find(".module-name").text().trim().indexOf("Create Pipeline") == 0;
 
                     var listObject = $(event.target).closest(".search-widget").find(".send-to-param-list");
@@ -1061,6 +1069,14 @@ function createFileWidget(linkElement, appendTo) {
                         });
 
                         $(".search-widget:visible").searchslider("hide");
+                        return;
+                    }
+
+                    else if (uploadAction) {
+                        var directory = $(event.target).closest(".file-widget").attr("name");
+
+                        $("#upload-dropzone-input").data("origin", directory);
+                        $("#upload-dropzone-input").trigger("click");
                         return;
                     }
 
@@ -1232,6 +1248,17 @@ function constructFileMenuData(isRoot, isDirectory, isUpload, isJobFile, isParti
             "lsid": "",
             "name": "Create Subdirectory",
             "description": "Create a subdirectory in this directory.",
+            "version": "",
+            "documentation": "http://genepattern.org",
+            "categories": [],
+            "suites": [],
+            "tags": []
+        });
+
+        data.push({
+            "lsid": "",
+            "name": "Upload Files",
+            "description": "Upload files to this directory.",
             "version": "",
             "documentation": "http://genepattern.org",
             "categories": [],
