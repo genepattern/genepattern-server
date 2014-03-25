@@ -881,11 +881,12 @@ function initUploads() {
     });
 }
 
-function initUploadTreeDND(folder_id) {
+function initUploadTreeDND() {
     // Ready the drop & drop aspects of the file tree
     var eventsAttached = new Array();
-    var folder = $(folder_id);
-    $("#uploadTree li").find("ins, a img").each(function(index, element) {
+    $("#uploadTree").find(".jstree-closed, .jstree-open").each(function(index, element) {
+        var folder = $(element);
+
         // Protect against empties & repeats
         if (folder === null || folder === undefined || folder.length < 1) return;
         if ($.inArray(folder[0], eventsAttached) > -1) return;
@@ -904,7 +905,7 @@ function initUploadTreeDND(folder_id) {
             $("#uploadTree").data("dndReady", {});
             ready = $("#uploadTree").data("dndReady");
         }
-        ready[folder_id] = true;
+        ready[folder.attr("id")] = true;
     });
 }
 

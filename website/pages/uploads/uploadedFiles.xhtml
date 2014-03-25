@@ -193,7 +193,7 @@
                             if (folder_id === -1) return;
                             var ready = $("#uploadTree").data("dndReady");
                             if (!ready || !ready[folder_id]) {
-                                initUploadTreeDND(folder_id);
+                                initUploadTreeDND();
                             }
                         }
                     });
