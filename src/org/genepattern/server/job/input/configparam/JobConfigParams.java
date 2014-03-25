@@ -91,8 +91,8 @@ public class JobConfigParams {
     }
     
     public static class Builder { 
-        private String paramGroupName="Advanced/Job Configuration";
-        private String paramGroupDescription="Cutomize the job configuration parameters for this job";
+        private String paramGroupName="";
+        private String paramGroupDescription="";
         private boolean paramGroupHidden=true;
         private final Map<String,ParameterInfo> params=new LinkedHashMap<String,ParameterInfo>();
         public Builder() {
