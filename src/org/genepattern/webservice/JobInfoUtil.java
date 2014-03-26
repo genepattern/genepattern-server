@@ -20,12 +20,19 @@ public class JobInfoUtil {
     }
     
     /**
-     * helper method which indicates of the job has an error status.
+     * helper method which indicates if the job has an error status.
      * @param jobInfo
      * @return
      */
     public static boolean hasError(final JobInfo jobInfo) {
         return org.genepattern.server.domain.JobStatus.ERROR.equals(jobInfo.getStatus());
+    }
+    
+    /**
+     * helper method which indicates if the job is pending.
+     */
+    public static boolean isPending(final JobInfo jobInfo) {
+        return org.genepattern.server.domain.JobStatus.PENDING.equals(jobInfo.getStatus());
     }
 
 }
