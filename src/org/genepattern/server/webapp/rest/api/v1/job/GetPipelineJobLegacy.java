@@ -227,7 +227,6 @@ public class GetPipelineJobLegacy implements GetJob {
             jobStatus.put("hasError", hasError);
             final boolean isPending=JobInfoUtil.isPending(jobInfo);
             jobStatus.put("isPending", isPending);
-            jobStatus.put("name", jobInfo.getStatus()); // Pending, Processing, Finished, Error
             URL stderr=null;
             try {
                 stderr=getStderrLocation(jobInfo);

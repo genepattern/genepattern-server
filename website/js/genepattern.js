@@ -1336,29 +1336,33 @@ function openFileWidget(link, context) {
 
 // Possible statuses: Pending, Processing, Finished, Error
 function createJobStatus(status) {
-    if (status === "Pending") {
+    if (!status) {
+        console.log("status is not set");
+        return $("<span></span>")
+    }
+    // Pending
+    if (status.isPending) {
         return $("<div></div>")
             .text("Pending")
             .addClass("job-status-icon");
     }
-    else if (status === "Processing") {
+    // Processing
+    else if (!status.isFinished) {
         return $("<img/>")
             .attr("src", "/gp/images/run.gif")
             .addClass("job-status-icon");
     }
-    else if (status === "Finished") {
-        return $("<img/>")
-            .attr("src", "/gp/images/complete.gif")
-            .addClass("job-status-icon");
-    }
-    else if (status === "Error") {
+    // Finished and Error
+    else if (status.hasError) {
         return $("<img/>")
             .attr("src", "/gp/images/error.gif")
             .addClass("job-status-icon");
     }
+    // must be Finished and Success
     else {
-        console.log("Error in status: " + status);
-        return $("<span></span>")
+        return $("<img/>")
+            .attr("src", "/gp/images/complete.gif")
+            .addClass("job-status-icon");
     }
 }
 
@@ -1652,7 +1656,7 @@ function renderJob(jobJson, tab) {
         .append(
             $("<div></div>")
                 .addClass("job-status")
-                .append(createJobStatus(jobJson.status.name))
+                .append(createJobStatus(jobJson.status))
         )
         .append(jobJson.datetime)
         .appendTo(jobBox);
