@@ -477,6 +477,10 @@ body {
     height: auto !important;
 }
 
+.jstree a:hover {
+    color: #6666FF !important;
+}
+
 #pinned-modules .module-listing, #recent-modules .module-listing {
     height: 17px;
 }
@@ -633,6 +637,12 @@ body {
     padding: 10px;
 }
 
+.job-status-icon {
+    float: right !important;
+    height: 16px;
+    font-size: 5pt;
+}
+
 #left-nav-jobs .job-box {
     margin-top: 10px;
 }
@@ -667,6 +677,11 @@ body {
     white-space: nowrap;
     text-overflow: ellipsis;
     overflow: hidden;
+    max-width: 300px;
+}
+
+#left-nav-jobs .job-name a:hover {
+    color: #6666FF;
 }
 
 #left-nav-jobs > .job-box > .job-name > a {
@@ -694,6 +709,10 @@ body {
     word-wrap: break-word;
     -ms-word-wrap: break-word;
     white-space: normal;
+}
+
+#left-nav-jobs .job-file a:hover {
+    color: #6666FF !important;
 }
 
 #loading-jobs {

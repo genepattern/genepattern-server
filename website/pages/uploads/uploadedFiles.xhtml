@@ -160,12 +160,6 @@
                                 anchor.after(arrow);
                                 menuRegistry._create("#Image_" + name, "#menuDiv_" + name);
                             }
-                            else {
-                                $("<img/>")
-                                        .addClass("menu-icon")
-                                        .attr("src", "/gp/images/menuicon-over.gif")
-                                        .appendTo(anchor);
-                            }
 
                             // Set icon for broken uploads
                             var isPartialUpload = $(anchor).attr("data-partial") === "true";

@@ -647,6 +647,12 @@ function ajaxFileTabUpload(file, directory, done, index){
         xhr.send(event.target.result);
 
         partitionIndex++;
+
+        // Special case for empty files
+        if (partitionCount === 0) {
+            progressbar.progressbar("value", 100);
+            done[index] = true;
+        }
     };
     var blob = file.slice(start, start + step + 1);
     reader.readAsArrayBuffer(blob);
@@ -1328,6 +1334,34 @@ function openFileWidget(link, context) {
     $(context).find("[name='" + escapeJquerySelector(url) + "']").searchslider("show");
 }
 
+// Possible statuses: Pending, Processing, Finished, Error
+function createJobStatus(status) {
+    if (status === "Pending") {
+        return $("<div></div>")
+            .text("Pending")
+            .addClass("job-status-icon");
+    }
+    else if (status === "Processing") {
+        return $("<img/>")
+            .attr("src", "/gp/images/run.gif")
+            .addClass("job-status-icon");
+    }
+    else if (status === "Finished") {
+        return $("<img/>")
+            .attr("src", "/gp/images/complete.gif")
+            .addClass("job-status-icon");
+    }
+    else if (status === "Error") {
+        return $("<img/>")
+            .attr("src", "/gp/images/error.gif")
+            .addClass("job-status-icon");
+    }
+    else {
+        console.log("Error in status: " + status);
+        return $("<span></span>")
+    }
+}
+
 function createJobWidget(job) {
     var actionData = [];
     actionData.push({
@@ -1605,21 +1639,22 @@ function renderJob(jobJson, tab) {
         .attr("onclick", "toggleJobCollapse(this);")
         .appendTo(jobName);
 
-    var jobLink = $("<a></a>")
+    $("<a></a>")
         .attr("href", "#")
         .attr("onclick", "openJobWidget(this); return false;")
         .attr("data-jobid", jobJson.jobId)
         .attr("data-json", JSON.stringify(jobJson))
         .text(jobJson.taskName + " (" + jobJson.jobId + ")")
-        .append(
-            $("<img />")
-                .attr("src", "/gp/images/menuicon-over.gif")
-                .addClass("menu-icon"))
         .appendTo(jobName);
 
     var jobDetails = $("<div></div>")
         .addClass("job-details")
-        .text(jobJson.datetime)
+        .append(
+            $("<div></div>")
+                .addClass("job-status")
+                .append(createJobStatus(jobJson.status.name))
+        )
+        .append(jobJson.datetime)
         .appendTo(jobBox);
 
     for (var j = 0; j < jobJson.outputFiles.length; j++) {
@@ -1635,11 +1670,10 @@ function renderJob(jobJson, tab) {
             .attr("href", file.link.href)
             .attr("data-kind", file.kind)
             .attr("data-sendtomodule", JSON.stringify(file.sendTo))
-            .append(file.link.name)
             .append(
                 $("<img />")
-                    .attr("src", "/gp/images/menuicon-over.gif")
-                    .addClass("menu-icon"))
+                    .attr("src", "/gp/images/outputFile.gif"))
+            .append(file.link.name)
             .appendTo(fileBox);
     }
 
