@@ -300,7 +300,7 @@ button.urlButton
 {
     padding: 3px !important;
     margin-bottom: 5px !important;
-    vertical-align: bottom !important;    
+    vertical-align: bottom !important;
 }
 
 .submitControlsDiv
@@ -493,6 +493,7 @@ hr
 #otherOptionsDiv
 {
     padding: 0;
+    position: relative;
 }
 
 #otherOptions
