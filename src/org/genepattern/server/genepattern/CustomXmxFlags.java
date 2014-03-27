@@ -78,6 +78,9 @@ public class CustomXmxFlags {
         if (taskInfo==null) {
             return false;
         }
+        if (taskInfo.isPipeline()) {
+            return false;
+        }
         final TaskInfoAttributes taskInfoAttributes = taskInfo.giveTaskInfoAttributes();
         final String cmdLine=taskInfoAttributes.get(COMMAND_LINE);
         if (cmdLine==null) {
