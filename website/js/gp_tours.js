@@ -54,7 +54,8 @@ $(function()
         intro.setOptions({
             steps: steps,
             showStepNumbers: false,
-            skipLabel: "End tour"
+            skipLabel: "End tour",
+            tooltipClass: "tourStyle"
         });
 
         intro.onbeforechange(function(targetElement)
