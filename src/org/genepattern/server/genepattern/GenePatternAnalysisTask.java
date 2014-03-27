@@ -1492,17 +1492,22 @@ public class GenePatternAnalysisTask {
         }
         
         //special-case, for -Xmx flag
-        final Memory memoryFlag;
-        final Memory xmxFlag=gpConfig.getGPMemoryProperty(jobContext, JobRunner.PROP_JAVA_XMX);
-        if (xmxFlag==null) {
-            memoryFlag=gpConfig.getGPMemoryProperty(jobContext, JobRunner.PROP_MEMORY);
+        try {
+            final Memory memoryFlag;
+            final Memory xmxFlag=gpConfig.getGPMemoryProperty(jobContext, JobRunner.PROP_JAVA_XMX);
+            if (xmxFlag==null) {
+                memoryFlag=gpConfig.getGPMemoryProperty(jobContext, JobRunner.PROP_MEMORY);
+            }
+            else {
+                memoryFlag=xmxFlag;
+            }
+            if (memoryFlag!=null) {
+                log.debug("setting custom memory flag: "+memoryFlag);
+                commandTokens=CustomXmxFlags.addOrReplaceXmxFlag(jobContext, memoryFlag, commandTokens);
+            }
         }
-        else {
-            memoryFlag=xmxFlag;
-        }
-        if (memoryFlag!=null) {
-            log.debug("setting custom memory flag: "+memoryFlag);
-            commandTokens=CustomXmxFlags.addOrReplaceXmxFlag(jobContext, memoryFlag, commandTokens);
+        catch (Throwable t) {
+            log.error("Unexpected error initializing custom xmx flags for job="+jobId, t);
         }
 
         if (log.isInfoEnabled()) {
