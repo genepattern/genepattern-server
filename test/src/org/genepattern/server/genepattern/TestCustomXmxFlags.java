@@ -7,10 +7,9 @@ import org.genepattern.junitutil.FileUtil;
 import org.genepattern.junitutil.TaskUtil;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.GpContextFactory;
-import org.genepattern.server.genepattern.CustomXmxFlags;
+import org.genepattern.util.GPConstants;
 import org.genepattern.webservice.TaskInfo;
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Test;
 
 /**
@@ -19,117 +18,188 @@ import org.junit.Test;
  *
  */
 public class TestCustomXmxFlags {
-    private GpContext jobContext;
-
-    private GpContext initJobContext() {
-        final File zipfile=FileUtil.getDataFile("modules/ARACNE_v2.zip");
-        final TaskInfo taskInfo=TaskUtil.getTaskInfoFromZip(zipfile);
-        
-        return new GpContextFactory.Builder()
+    private static GpContext createJobContext(final String name, final String cmdLine) {
+        final TaskInfo taskInfo=createTask(name, cmdLine);
+        final File taskLibDir=new File("taskLib/"+name+".1.0");
+        final GpContext taskContext=new GpContextFactory.Builder()
             .taskInfo(taskInfo)
+            .taskLibDir(taskLibDir)
             .build();
+        return taskContext;
     }
-    
-    @Before
-    public void beforeTest() {
-        this.jobContext=initJobContext();
+
+    private static TaskInfo createTask(final String name, final String cmdLine) {
+        TaskInfo mockTask=new TaskInfo();
+        mockTask.setName(name);
+        mockTask.giveTaskInfoAttributes();
+        mockTask.getTaskInfoAttributes().put(GPConstants.LSID, "");
+        mockTask.getTaskInfoAttributes().put(GPConstants.TASK_TYPE, "Test");
+        mockTask.getTaskInfoAttributes().put(GPConstants.COMMAND_LINE, cmdLine);
+        return mockTask;
+    }    
+
+    final private Memory mem=Memory.fromString("16 Gb");
+
+    /**
+     * An example java module which already has an -Xmx flag,
+     * replace it with the new value.
+     */
+    @Test
+    public void testReplaceXmx() {
+        final GpContext jobContext=createJobContext("DemoJava", "<java> <java_flags> -cp <libdir>DemoJava.jar");
+        final File libdir=jobContext.getTaskLibDir();
+        final String[] cmdLineArgs={ "java", "-Xmx512m", "-cp", ""+libdir.getAbsolutePath()+"/DemoJava.jar"};
+        final String[] expected={ "java", "-Xmx16g", "-cp", ""+libdir.getAbsolutePath()+"/DemoJava.jar"};
+        final String[] actual=CustomXmxFlags.addOrReplaceXmxFlag(jobContext, mem, cmdLineArgs);
+        Assert.assertArrayEquals("No change for pipelines", expected, actual);
     }
     
     /**
-     * Test case for Aracne as configured on gpprod,
+     * An example java module on a system which defines more than arg in the <java_flags> property.
      * <pre>
-module.properties:
-    ARACNE:
-        executor: LSF
-        lsf.max.memory: 8
-        java_flags: -Xmx8g
-     * </pre>
-     * 
-     * <pre>
-           <java> <java_flags> -cp <libdir>aracne-java.jar<path.separator><libdir>aracne-main.jar<path.separator><libdir>commons-cli.jar<path.separator><libdir>commons-logging-1.0.3.jar<path.separator><libdir>workbook-0.9.jar<path.separator><libdir>log4j-1.2.8.jar<path.separator><libdir>collections-generic-4.0.jar<path.separator><libdir>commons-math-1.0.jar<path.separator><libdir>gp-modules.jar 
-               org.genepattern.modules.aracne.ARACNE 
-               -i <dataset.file> 
-               -o <output.file> 
-               -h <hub.gene> 
-               -s <hub.genes.file> 
-               -l <transcription.factor.file> 
-               -k <kernel.width> 
-               -t <mi.threshold> 
-               -p <p.value> 
-               -e <dpi.tolerance> 
-               -f <mean.filter> 
-               <cv.filter> 
+     *     java_flags: -Xmx512m -Dhttp.proxyHost=<http.proxyHost> -Dhttp.proxyPort=<http.proxyPort>
      * </pre>
      */
     @Test
-    public void testAracneLegacy() {
-        final Memory mem=Memory.fromString("16 Gb");
-        final String[] cmdLineArgs= {
-                "/broad/software/free/Linux/redhat_5_x86_64/pkgs/sun-java-jdk_1.6.0-21_x86_64/bin/java",
-                "-Xmx1024m", 
-                "-cp",
-                "/xchip/gpprod/servers/genepattern/taskLib/ARACNE.2.854/aracne-java.jar:/xchip/gpprod/servers/genepattern/taskLib/ARACNE.2.854/aracne-main.jar:/xchip/gpprod/servers/genepattern/taskLib/ARACNE.2.854/commons-cli.jar:/xchip/gpprod/servers/genepattern/taskLib/ARACNE.2.854/commons-logging-1.0.3.jar:/xchip/gpprod/servers/genepattern/taskLib/ARACNE.2.854/workbook-0.9.jar:/xchip/gpprod/servers/genepattern/taskLib/ARACNE.2.854/log4j-1.2.8.jar:/xchip/gpprod/servers/genepattern/taskLib/ARACNE.2.854/collections-generic-4.0.jar:/xchip/gpprod/servers/genepattern/taskLib/ARACNE.2.854/commons-math-1.0.jar:/xchip/gpprod/servers/genepattern/taskLib/ARACNE.2.854/gp-modules.jar",
-                "org.genepattern.modules.aracne.ARACNE",
-                "-i", 
-                "/xchip/gpprod-upload/servers/genepattern/users/KarolBaca/uploads/tmp/run381623986050853385.tmp/dataset.file/1/GSEAinput.gct",
-                "-o",
-                "p53_pval_m60_2.adj",
-                "-h",
-                "-s",
-                "/xchip/gpprod-upload/servers/genepattern/users/KarolBaca/uploads/tmp/run5295682235411312210.tmp/hub.genes.file/2/p53_list_alias.txt",
-                "-l",
-                "-k",
-                "-t",
-                "0",
-                "-p",
-                "1e-60",
-                "-e",
-                "1",
-                "-f",
-                "0",
-                "0"
-        };
+    public void testReplaceXmxMultiArgJava_Flags() {
+        final GpContext jobContext=createJobContext("DemoJava", "<java> <java_flags> -cp <libdir>DemoJava.jar");
+        final File libdir=jobContext.getTaskLibDir();
+        final String[] cmdLineArgs={ "java", "-Xmx512m -Dhttp.proxyHost=localhost -Dhttp.proxyPort=9393", "-cp", ""+libdir.getAbsolutePath()+"/DemoJava.jar"};
+        final String[] expected={ "java", "-Xmx16g -Dhttp.proxyHost=localhost -Dhttp.proxyPort=9393", "-cp", ""+libdir.getAbsolutePath()+"/DemoJava.jar"};
         final String[] actual=CustomXmxFlags.addOrReplaceXmxFlag(jobContext, mem, cmdLineArgs);
-        Assert.assertEquals("", "-Xmx16g", actual[1]);
+        Assert.assertArrayEquals("No change for pipelines", expected, actual);
+    }
+
+    /**
+     * An example java module on a system which defines more than arg in the <java_flags> property.
+     * <pre>
+     *     java_flags: -Xmx512m -Dhttp.proxyHost=<http.proxyHost> -Dhttp.proxyPort=<http.proxyPort>
+     * </pre>
+     */
+    @Test
+    public void testReplaceXmxMultiArgJava_Flags_split() {
+        final GpContext jobContext=createJobContext("DemoJava", "<java> <java_flags> -cp <libdir>DemoJava.jar");
+        final File libdir=jobContext.getTaskLibDir();
+        final String[] cmdLineArgs={ "java", "-Xmx512m", "-Dhttp.proxyHost=localhost", "-Dhttp.proxyPort=9393", "-cp", ""+libdir.getAbsolutePath()+"/DemoJava.jar"};
+        final String[] expected={ "java", "-Xmx16g", "-Dhttp.proxyHost=localhost", "-Dhttp.proxyPort=9393", "-cp", ""+libdir.getAbsolutePath()+"/DemoJava.jar"};
+        final String[] actual=CustomXmxFlags.addOrReplaceXmxFlag(jobContext, mem, cmdLineArgs);
+        Assert.assertArrayEquals("No change for pipelines", expected, actual);
+    }
+
+    /**
+     * An example java module which does not already have an -Xmx flag.
+     */
+    @Test
+    public void testAddXmx() {
+        final GpContext jobContext=createJobContext("DemoJava", "<java> -cp <libdir>DemoJava.jar");
+
+        final File libdir=jobContext.getTaskLibDir();
+        final String[] cmdLineArgs={ "java", "-cp", ""+libdir.getAbsolutePath()+"/DemoJava.jar"};
+        final String[] expected={ "java", "-Xmx16g", "-cp", ""+libdir.getAbsolutePath()+"/DemoJava.jar"};
+
+        final String[] actual=CustomXmxFlags.addOrReplaceXmxFlag(jobContext, mem, cmdLineArgs);
+        Assert.assertArrayEquals("No change for pipelines", expected, actual);
     }
     
     @Test
+    public void testReplaceXmx01() {
+        final GpContext jobContext=createJobContext("DemoJava", "<java> <java_flags> -cp <libdir>DemoJava.jar");
+
+        final File libdir=jobContext.getTaskLibDir();
+        final String[] cmdLineArgs={ "java", "-Xmx512m", "-cp", ""+libdir.getAbsolutePath()+"/DemoJava.jar"};
+        final String[] expected={ "java", "-Xmx16g", "-cp", ""+libdir.getAbsolutePath()+"/DemoJava.jar"};
+
+        final String[] actual=CustomXmxFlags.addOrReplaceXmxFlag(jobContext, mem, cmdLineArgs);
+        Assert.assertArrayEquals("No change for pipelines", expected, actual);
+    }
+    
+    @Test
+    public void testGolubPipeline() {
+        final File golubZip=FileUtil.getDataFile("modules/Golub.Slonim.1999.Nature.all.aml.pipeline_v2_modules_only.zip");
+        final TaskInfo taskInfo=TaskUtil.getTaskInfoFromZip(golubZip);
+        final GpContext jobContext=new GpContextFactory.Builder()
+            .taskInfo(taskInfo)
+            .build();
+
+        final String[] cmdLineArgs=taskInfo.giveTaskInfoAttributes().get("commandLine").split(" ");
+        final String[] actual=CustomXmxFlags.addOrReplaceXmxFlag(jobContext, mem, cmdLineArgs);
+        Assert.assertArrayEquals("No change for pipelines", cmdLineArgs, actual);
+    }
+    
+    @Test
+    public void testNullCmdLine() {
+        final GpContext jobContext=createJobContext("DemoJava", null);
+        final String[] cmdLineArgs={ };
+        final String[] actual=CustomXmxFlags.addOrReplaceXmxFlag(jobContext, mem, cmdLineArgs);
+        Assert.assertArrayEquals("null cmdLine", cmdLineArgs, actual);
+    }
+    
+    @Test
+    public void testNullTaskInfo() {
+        final GpContext jobContext=GpContext.getServerContext();
+        final String[] cmdLineArgs={"ant", "install-task" };
+        final String[] actual=CustomXmxFlags.addOrReplaceXmxFlag(jobContext, mem, cmdLineArgs);
+        Assert.assertArrayEquals("null taskInfo", cmdLineArgs, actual);
+    }
+    
+    @Test
+    public void testNullMem() {
+        final GpContext jobContext=createJobContext("DemoJava", "<java> -cp <libdir>DemoJava.jar");
+
+        final File libdir=jobContext.getTaskLibDir();
+        final String[] cmdLineArgs={ "java", "-cp", ""+libdir.getAbsolutePath()+"/DemoJava.jar"};
+
+        final String[] actual=CustomXmxFlags.addOrReplaceXmxFlag(jobContext, null, cmdLineArgs);
+        Assert.assertArrayEquals("No change for pipelines", cmdLineArgs, actual);
+    }
+
+
+    
+    @Test
     public void testReplaceXmx_null() {
-        Memory mem=Memory.fromString("16gb");
         Assert.assertEquals("null string", null, CustomXmxFlags.replaceXmx(mem, null));
     }
 
     @Test
     public void testReplaceXmx_emptyString() {
-        Memory mem=Memory.fromString("16gb");
         Assert.assertEquals("empty string", "", CustomXmxFlags.replaceXmx(mem, ""));
     }
 
     @Test
     public void testReplaceXmx_completeString() {
-        Memory mem=Memory.fromString("16gb");
         Assert.assertEquals("-Xmx16g", CustomXmxFlags.replaceXmx(mem, "-Xmx1024m"));
     }
     
     @Test
     public void testReplaceXmx_at_beginning() {
-        Memory mem=Memory.fromString("16gb");
-        Assert.assertEquals("-Xmx16g -Dhttp.proxyHost=http.proxyHost=webcache.example.com -Dhttp.proxyPort=5555", 
-                CustomXmxFlags.replaceXmx(mem, "-Xmx512m -Dhttp.proxyHost=http.proxyHost=webcache.example.com -Dhttp.proxyPort=5555"));
+        Assert.assertEquals("-Xmx16g -Dhttp.proxyHost=webcache.example.com -Dhttp.proxyPort=5555", 
+                CustomXmxFlags.replaceXmx(mem, "-Xmx512m -Dhttp.proxyHost=webcache.example.com -Dhttp.proxyPort=5555"));
     }
 
     @Test
     public void testReplaceXmx_in_middle() {
-        Memory mem=Memory.fromString("16gb");
-        Assert.assertEquals("-Dhttp.proxyHost=http.proxyHost=webcache.example.com -Xmx16g -Dhttp.proxyPort=5555", 
-                CustomXmxFlags.replaceXmx(mem, "-Dhttp.proxyHost=http.proxyHost=webcache.example.com -Xmx512m -Dhttp.proxyPort=5555"));
+        Assert.assertEquals("-Dhttp.proxyHost=webcache.example.com -Xmx16g -Dhttp.proxyPort=5555", 
+                CustomXmxFlags.replaceXmx(mem, "-Dhttp.proxyHost=webcache.example.com -Xmx512m -Dhttp.proxyPort=5555"));
     }
 
     @Test
     public void testReplaceXmx_at_end() {
-        Memory mem=Memory.fromString("16gb");
-        Assert.assertEquals("-Dhttp.proxyHost=http.proxyHost=webcache.example.com -Dhttp.proxyPort=5555 -Xmx16g", 
-                CustomXmxFlags.replaceXmx(mem, "-Dhttp.proxyHost=http.proxyHost=webcache.example.com -Dhttp.proxyPort=5555 -Xmx512m"));
+        Assert.assertEquals("-Dhttp.proxyHost=webcache.example.com -Dhttp.proxyPort=5555 -Xmx16g", 
+                CustomXmxFlags.replaceXmx(mem, "-Dhttp.proxyHost=webcache.example.com -Dhttp.proxyPort=5555 -Xmx512m"));
     }
 
+    @Test
+    public void testSkipInvalidSpec_empty() {
+        final String arg="This is an example of -Xmx happening to be in a string";
+        Assert.assertEquals(arg, 
+                CustomXmxFlags.replaceXmx(mem, arg));
+    }
+
+    @Test
+    public void testSkipInvalidSpec_notANumber() {
+        final String arg="This is an example of -Xmx=2345 happening to be in a string";
+        Assert.assertEquals(arg, 
+                CustomXmxFlags.replaceXmx(mem, arg));
+    }
+    
 }

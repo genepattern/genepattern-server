@@ -22,19 +22,36 @@ import org.genepattern.webservice.TaskInfoAttributes;
  */
 public class CustomXmxFlags {
     public static String replaceXmx(final Memory mem, final String arg) {
+        final String XMX="-Xmx";
         if (arg==null) {
             return arg;
         }
-        final int i0=arg.indexOf("-Xmx");
+        final int i0=arg.indexOf(XMX);
         if (i0<0) {
             //no match
             return arg;
         }
+        String xmxVal="";
+        String tail="";
         final int i1=arg.indexOf(" ", i0);
-        if (i1<0) {
-            return arg.substring(0, i0) + "-Xmx"+mem.toXmx();
-        }        
-        return arg.substring(0, i0) + "-Xmx"+mem.toXmx() + arg.substring(i1);
+        if (i1>=0) {
+            xmxVal=arg.substring(i0+XMX.length(),i1);
+            tail=arg.substring(i1);
+        }
+        else {
+            xmxVal=arg.substring(i0+XMX.length());
+        }
+        try {
+            Memory memOrig=Memory.fromString(xmxVal);
+            if (memOrig==null) {
+                return arg;
+            }
+        }
+        catch (Throwable t) {
+            //ignore
+            return arg;
+        }
+        return arg.substring(0, i0) + XMX+mem.toXmx() + tail;
     }
     
     public static String[] addOrReplaceXmxFlag(final GpContext jobContext, final Memory mem, final String[] cmdLineArgs) {
@@ -65,7 +82,7 @@ public class CustomXmxFlags {
             String[] rval=new String[ 1+cmdLineArgs.length ];
             rval[0]=cmdLineArgs[0];
             rval[1]="-Xmx"+mem.toXmx();
-            System.arraycopy(cmdLineArgs, 1, rval, 2, cmdLineArgs.length);
+            System.arraycopy(cmdLineArgs, 1, rval, 2, cmdLineArgs.length-1);
             return rval;
         }
     }
@@ -83,11 +100,12 @@ public class CustomXmxFlags {
         }
         final TaskInfoAttributes taskInfoAttributes = taskInfo.giveTaskInfoAttributes();
         final String cmdLine=taskInfoAttributes.get(COMMAND_LINE);
+        ///CLOVER:OFF
         if (cmdLine==null) {
             return false;
         }
+        ///CLOVER:ON
         return cmdLine.startsWith("<java>");
     }
-    
 
 }
