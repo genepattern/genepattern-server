@@ -1,4 +1,6 @@
 
+var last_left_nav_tab = null;
+
 $(function()
 {
     $(".gp_tours").click(function(event)
@@ -63,7 +65,7 @@ $(function()
             //switch the active left navigation tab to the approptiate one for the step
             if(intro._currentStep == 2)
             {
-                $("#gp_tours").data("last-left-nav-tab", $("#left-nav").tabs( "option", "active"));
+                $(this).data("last-left-nav-tab", $("#left-nav").tabs( "option", "active"));
 
                 $( "#left-nav" ).tabs( "option", "active", 0 );
             }
@@ -84,12 +86,12 @@ $(function()
 
         intro.onexit(function()
         {
-            $( "#left-nav" ).tabs( "option", "active", $("#gp_tours").data("last-left-nav-tab"));
+            $( "#left-nav" ).tabs( "option", "active", $(this).data("last-left-nav-tab"));
         });
 
         intro.oncomplete(function()
         {
-            $( "#left-nav" ).tabs( "option", "active", $("#gp_tours").data("last-left-nav-tab"));
+            $( "#left-nav" ).tabs( "option", "active", $(this).data("last-left-nav-tab"));
 
         });
 
