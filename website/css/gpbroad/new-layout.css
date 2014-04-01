@@ -193,8 +193,6 @@
     height: 100%;
     overflow: auto;
     padding-left: 20px;
-    position: relative;
-    overflow-x: hidden;
 }
 
 .slider-close-block {
@@ -319,13 +317,13 @@ body {
 }
 
 .left-nav-top {
-	background-color: #BDD3E9;
-	border: none;
+    border: none;
 	border-bottom: solid 1px #A3B1DA;
-	background-image: url(images/sidebar-topBG.png);
-	background-repeat: repeat-x;
-	padding: 10px;
+    background: #BDD3E9 url(images/sidebar-topBG.png) repeat-x;
+    padding: 10px;
 	top: 33px;
+    overflow: auto;
+    min-height: 30px;
 }
 
 .ui-widget-content.popupMenu {
@@ -336,7 +334,17 @@ body {
 	padding: 0px !important;
 }
 
-#left-nav-files, #left-nav-genomespace {
+#left-nav-files {
+    padding: 0px;
+    width: 348px;
+    bottom: 85px;
+}
+
+#uploadTree {
+    padding: 10px;
+}
+
+#left-nav-genomespace {
 	padding: 10px !important;
 	width: 328px;
     bottom: 85px;
@@ -350,6 +358,14 @@ body {
 	color: #6666FF;
 }
 
+.left-nav-top a {
+    color: #000099;
+}
+
+.left-nav-top a:hover {
+    color: #6666FF;
+}
+
 .search-box {
     width: 100%;
 }
@@ -359,10 +375,15 @@ body {
 }
 
 #pinned-modules .module-list-empty {
-	border: dashed;
+	border: dashed 2px darkgray;
+    font-size: 28px;
+    line-height: 28pt;
+    font-weight: 400;
 	margin-left: 0px;
-	padding: 15px;
-	text-align: center;
+    margin-top: 10px;
+    margin-bottom: 10px;
+    padding: 10px 5px;
+    text-align: center;
 }
 
 #module-browse-button {
@@ -453,9 +474,14 @@ body {
 .jstree a {
     word-break: break-all;
     white-space: normal !important;
+    height: auto !important;
 }
 
-#recent-modules .module-listing {
+.jstree a:hover {
+    color: #6666FF !important;
+}
+
+#pinned-modules .module-listing, #recent-modules .module-listing {
     height: 17px;
 }
 
@@ -474,7 +500,7 @@ body {
 #upload-dropzone {
     padding-left: 5px;
     margin: 5px;
-    border: dashed 3px darkgray;
+    border: dashed 2px darkgray;
     bottom: 5px;
     left: 2px;
     width: 320px;
@@ -485,6 +511,7 @@ body {
     padding-right: 5px;
     padding-top: 10px;
     padding-bottom: 10px;
+    cursor: pointer;
 }
 
 #upload-dropzone-progress {
@@ -514,6 +541,11 @@ body {
     padding: 4px 5px 4px 5px;
 }
 
+#upload-dropzone-input {
+    position: absolute;
+    bottom: -100px;
+}
+
 #upload-dropzone-wrapper {
     color: darkgray;
     font-size: 10pt;
@@ -537,7 +569,7 @@ body {
     width: 360px;
 }
 
-.file-widget-actions h4, .job-widget-actions h4 {
+.file-widget-actions h4, .job-widget-actions h4, .job-widget-code h4 {
     width: 305px;
     font-size: 9pt;
 }
@@ -593,8 +625,22 @@ body {
 }
 
 #left-nav-jobs {
-    width: 328px;
+    width: 348px;
+    padding: 0px;
+}
+
+#left-nav-jobs-browse {
+    float: right;
+}
+
+#left-nav-jobs-list {
     padding: 10px;
+}
+
+.job-status-icon {
+    float: right !important;
+    height: 16px;
+    font-size: 5pt;
 }
 
 #left-nav-jobs .job-box {
@@ -631,6 +677,11 @@ body {
     white-space: nowrap;
     text-overflow: ellipsis;
     overflow: hidden;
+    max-width: 300px;
+}
+
+#left-nav-jobs .job-name a:hover {
+    color: #6666FF;
 }
 
 #left-nav-jobs > .job-box > .job-name > a {
@@ -643,10 +694,76 @@ body {
     font-size: 7pt;
 }
 
+#left-nav-jobs .job-file {
+    word-break: break-all;
+    word-wrap: break-word;
+    -ms-word-wrap: break-word;
+    white-space: normal;
+}
+
 #left-nav-jobs .job-file a {
     font-style: normal;
     color: #000099 !important;
     font-size: 9pt;
     word-break: break-all;
+    word-wrap: break-word;
+    -ms-word-wrap: break-word;
     white-space: normal;
+}
+
+#left-nav-jobs .job-file a:hover {
+    color: #6666FF !important;
+}
+
+#loading-jobs {
+    text-align: center;
+}
+
+.menu-icon {
+    position: relative;
+    padding-left: 3px;
+    top: 1px;
+    height: 12px;
+    float: none !important;
+}
+
+/* Upload Toaster */
+
+.upload-toaster-file-name {
+    display: inline-block;
+    width: 300px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    height: 20px;
+    vertical-align: bottom;
+}
+
+.upload-toaster-file-progress {
+    width: 150px;
+    text-align: center;
+    margin-right: 10px;
+    margin-left: 10px;
+    position: relative;
+    display: inline-block;
+    top: 9px;
+}
+
+.upload-toaster-file-progress-label {
+    position: absolute;
+    top: 5px;
+    width: 150px;
+    font-weight: bold;
+    text-shadow: 1px 1px 0 #fff;
+}
+
+.upload-toaster-file-cancel {
+    width: 70px;
+}
+
+#dialog-extend-fixed-container .upload-dialog {
+    position: absolute;
+    width: 343px;
+    top: -68px;
+    left: -1px;
 }

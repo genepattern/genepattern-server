@@ -4,7 +4,7 @@
 
 .pHeaderTitleDiv
 {
-    margin-top: 6px;
+    margin-top: 9px;
     padding-top: 4px;
     margin-right: 8px;
     font-size: 14px;
@@ -14,7 +14,7 @@
 .paramGroupSection
 {
     margin-right: 8px;
-    padding-bottom: 8px;
+    padding: 2px 7px 9px 14px;
 }
 
 .pHeaderTitleDiv:hover
@@ -22,14 +22,24 @@
     cursor: pointer;
 }
 
-.background
+.top-level-background
 {
-    background-color: #BDD3E9;
+    background-color: #AEC9E4;
 }
 
-.border
+.background
 {
-    border: 2px solid #BDD3E9;
+    background-color: #dae7f3;
+}
+
+.solid-border
+{
+    border-bottom: 2px solid #BDD3E9;
+}
+
+.paramgroup-spacing
+{
+    margin-bottom: 15px;
 }
 
 .paramSectionToggle
@@ -40,16 +50,15 @@
 .pHeaderDescription
 {
     font-size: 12px;
-    margin-bottom: 6px;
+    margin: 5px 4px 6px -8px;
 }
 
 .paramsTable
 {
     min-width: 630px;
-    width: auto;
     margin-right: 14px;
     height: 100%;
-    border-spacing: 0;
+    border-collapse: collapse;
 }
 
 tr.pRow td
@@ -57,14 +66,19 @@ tr.pRow td
     border-top: 2px solid #F0F0F0;
 }
 
-tr:first-child td
+#submitJob
+{
+    margin-left: -12px;
+}
+
+#main-pane tr:first-child td
 {
     border: none;
 }
 
-td
+#main-pane td
 {
-    padding: 7px 0 6px 0;
+    padding-top: 7px;
 }
 
 tr.paramDescription td
@@ -73,14 +87,28 @@ tr.paramDescription td
     padding-bottom: 2px;
 }
 
-.paramsTable td:nth-child(odd)
+/*.paramsTable tr td
 {
-    white-space: nowrap;
+    padding-right: 5px;
 }
 
-.paramsTable td:nth-child(even)
+tr td
 {
-    padding-left: 14px;
+    padding-right: 5px;
+}
+*/
+
+.paramsTable tr td:nth-child(even)
+{
+/*    padding-left: 14px;*/
+    white-space: normal;
+}
+
+.pTitle
+{
+    white-space: nowrap;
+    padding-right: 10px;
+    margin-right: 8px;
 }
 
 .task_header
@@ -88,9 +116,6 @@ tr.paramDescription td
     clear: both;
 	font-weight: bold;
 	font-size: 15px;
-	/*color: #333366;*/
-	/*background-color: #CCDFFF;*/
-    /*background-color: #B8C9E6; preferred */
     background-color: #e5ebe9;
 	text-indent: 6px;
 	height: 21px;
@@ -153,14 +178,15 @@ tr.paramDescription td
 
 .paramFilesTable
 {
-    text-align:left;
     width: 100%;
 }
 
 table.paramFilesTable tr td
 {
     height: 10px !important;
-    padding: 4px !important;;
+    padding: 4px !important;
+    white-space: normal;
+    overflow: hidden;
 }
 
 table.paramFilesTable tr td.pfileAction
@@ -179,6 +205,8 @@ button.urlButton
 {
     font-size: 11px;
     padding: 0;
+    position: relative;
+    top: -5px;
 }
 
 /*.paramsTable td:first-child
@@ -210,7 +238,8 @@ button.urlButton
     min-width: 570px;
     margin-bottom: 0;
     display: inline-block;
-    white-space: nowrap;
+    white-space: normal;
+    word-break: break-all;
 }
 
 .fileDiv button img
@@ -223,6 +252,8 @@ button.urlButton
 {
     vertical-align: bottom;
     margin-right: 7px;
+    position: relative;
+    top: -5px;
 }
 
 .errorMessage
@@ -269,7 +300,7 @@ button.urlButton
 {
     padding: 3px !important;
     margin-bottom: 5px !important;
-    vertical-align: bottom !important;    
+    vertical-align: bottom !important;
 }
 
 .submitControlsDiv
@@ -462,6 +493,7 @@ hr
 #otherOptionsDiv
 {
     padding: 0;
+    position: relative;
 }
 
 #otherOptions
@@ -540,18 +572,15 @@ hr
 span.drop-box
 {
     font-family: Helvetica, Arial, sans-serif;
-    font-size: 16px;
+    font-size: 28px;
+    line-height: 28pt;
     width: 120px;
     height: 20px;
     text-align:center;
     padding-top:5px;
-    -moz-border-radius: 5px;
-    -webkit-border-radius: 5px;
-    -o-border-radius: 5px;
-    border-radius: 5px;
     margin-left: 9px;
     padding: 5px 10px 5px 10px;
-    color: lightgray;
+    color: darkgray;
     letter-spacing: 1px;
 }
 
@@ -578,14 +607,20 @@ span.drop-box
     margin-bottom: 7px;
 }
 
-.mainDivBorder
-{
+.mainDivBorder {
     vertical-align: bottom;
-    border: 2px dashed lightgray;
-    -moz-border-radius: 8px;
-    -webkit-border-radius: 8px;
+    border: 2px dashed darkgray;
     padding: 8px 6px 6px 6px;
+    white-space: normal;
+    word-break: break-all;
 }
+
+#otherOptionsMenu
+{
+    font-size: 13px;
+    min-width: 238px;
+}
+
 
 
 
