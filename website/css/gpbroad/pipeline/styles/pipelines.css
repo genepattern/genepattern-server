@@ -9,7 +9,7 @@
 html {
     height: 100%;
 }
-
+ 
 body {
     background-attachment: fixed;
     height: 99%;
@@ -47,39 +47,39 @@ body {
 }
 
 #libraryWrapper {
-    z-index: 3000;
-    position: fixed;
-    top: 112px;
-    left: 0;
-    width: 190px;
-    background-color: #F1F2F2;
+	z-index: 3000;
+	position: fixed;
+	top: 112px;
+	left: 0;
+	width: 190px;
+	background-color: #F1F2F2;
     border: 1px solid #F1F2F2;
     border-right: 1px solid #A3B1DA;
-    height: 100%;
-    padding: 0px;
-    margin: 0px;
+	height: 100%;
+	padding: 0px;
+	margin: 0px;
 }
 
 #libraryWrapper table {
-    height: 100%;
-    padding: 0px;
-    margin: 0px;
-    width: 190px;
+	height: 100%;
+	padding: 0px;
+	margin: 0px;
+	width: 190px;
 }
 
 #libraryWrapper table tr td {
-    vertical-align: top;
-    padding: 0px;
-    margin: 0px;
-    width: 190px;
+	vertical-align: top;
+	padding: 0px;
+	margin: 0px;
+	width: 190px;
 }
 
 #library {
     overflow-y: auto;
     overflow-x: hidden;
-    z-index: 3000;
-    padding: 0px;
-    height: 100%;
+	z-index: 3000;
+	padding: 0px;
+	height: 100%;
     position: fixed;
     top: 112px;
     left: 0px;
@@ -97,7 +97,7 @@ body {
     font-size: 11px;
     line-height: 32px;
     font-weight: bold;
-    width: 100%;
+	width: 100%;
 }
 
 #libraryControls a {
@@ -148,9 +148,9 @@ a:hover {
     width:100%;
     height: 20px;
     background-color: #DFDFB9;
-    background-color: #cddcf1;
+	background-color: #cddcf1;
     border-bottom: 1px solid #CDC3B7;
-    border-bottom: 1px solid #3386c2;
+	border-bottom: 1px solid #3386c2;
     padding: 10px 0 10px 0;
     overflow-x: hidden;
     overflow: hidden;
@@ -160,13 +160,13 @@ a:hover {
     white-space: nowrap;
     display: inline-block;
     position: fixed;
-    line-height: 7px;
-    width: 100%;
-    min-width: 1000px;
+	line-height: 7px;
+	width: 100%;
+	min-width: 1000px;
 }
 
 #navband1 > ul {
-    white-space: nowrap;
+	white-space: nowrap;
     display: inline-block;
 }
 
@@ -190,7 +190,7 @@ a:hover {
 #saveLoadDiv {
     /*float: right;*/
     float:left;
-
+	
     position: relative;
     top: -5px;
 }
@@ -200,8 +200,8 @@ a:hover {
 }
 
 #workspace {
-    padding-left: 10px;
-    background-color: #FFFFFF;
+	padding-left: 10px;
+	background-color: #FFFFFF;
 }
 
 .tableDiv {
@@ -227,56 +227,56 @@ a:hover {
 }
 
 #propertiesWrapper {
-    z-index: 4000;
-    position: fixed;
-    top: 112px;
-    right: 0;
-    width: 300px;
-    background-color: #F1F2F2;
+	z-index: 4000;
+	position: fixed;
+	top: 112px;
+	right: 0;
+	width: 300px;
+	background-color: #F1F2F2;
     border: 1px solid #F1F2F2;
     border-left: 1px solid #A3B1DA;
-    height: 100%;
-    padding: 0px;
-    margin: 0px;
+	height: 100%;
+	padding: 0px;
+	margin: 0px;
 }
 
 #propertiesWrapper table {
-    height: 100%;
-    padding: 0px;
-    margin: 0px;
-    width: 300px;
+	height: 100%;
+	padding: 0px;
+	margin: 0px;
+	width: 300px;
 }
 
 #propertiesWrapper table tr td {
-    vertical-align: top;
-    padding: 0px;
-    margin: 0px;
-    width: 300px;
+	vertical-align: top;
+	padding: 0px;
+	margin: 0px;
+	width: 300px;
 }
 
 #properties {
-    z-index: 4000;
+	z-index: 4000;
     height: 100%;
     overflow-y: auto;
-    width: 290px;
-    overflow-x: hidden;
+	width: 290px;
+	overflow-x: hidden;
     padding: 5px 5px 15px 5px;
-    font-size: 12px;
-    line-height: 16px;
+	font-size: 12px;
+	line-height: 16px;
 }
 
 #properties hr {
-    border:none;
-    background-color:#bbb;
-    height:1px;
-    margin-top: 15px;
-    margin-bottom:15px;
+	border:none;
+	background-color:#bbb;
+	height:1px;
+	margin-top: 15px;
+	margin-bottom:15px;
 }
 
 #propertiesKey em {
-    font-size: 11px;
-    font-weight: bold;
-    color: #3386c2;
+	font-size: 11px;
+	font-weight: bold;
+	color: #3386c2;
 }
 
 .propertyCheckBox {
@@ -287,7 +287,7 @@ a:hover {
     width: auto;
     /*float: left;*/
     padding-left: 10px;
-    margin-right: 20px;
+	margin-right: 20px;
     max-width: 100px;
 }
 
@@ -308,23 +308,23 @@ a:hover {
 
 .fileUploadValue {
     font-size: 8pt;
-    padding-left: 25px;
-    word-wrap:break-word;
+	padding-left: 25px;
+	word-wrap:break-word;
 }
 
 input[type="file"] {
-    width: 220px;
+	width: 220px;
 }
 
 .topRowButton {
     float:left;
     height: 16px;
     margin-right: 5px;
-    margin-left: -3px;
+	margin-left: -3px;
 }
 
 ._jsPlumb_endpoint {
-    z-index: 2000;
+	z-index: 2000;
     opacity: 0.8;
 }
 
@@ -337,7 +337,7 @@ input[type="file"] {
 }
 
 .libraryModuleButton {
-    font-size: 8pt;
+	font-size: 8pt;
 }
 
 .bottomSpacer {
@@ -355,8 +355,8 @@ input[type="file"] {
 
 .inputDescription {
     font-size: 7pt;
-    padding-left: 05px;
-    color: #36C;
+	padding-left: 05px;
+	color: #36C;
 }
 
 #propertiesTitle {
@@ -444,7 +444,7 @@ input[type="file"] {
 
 .collapseDisabled {
     color: #333333;
-    display: none;
+	display: none;
 }
 
 .collapseDisabled:hover {
@@ -548,12 +548,12 @@ div.iconSpace {
 }
 
 .module.ui-selected {
-    border-color: #000000;
+	border-color: #000000;
 }
 
 ._jsPlumb_connector {
     z-index: 1999;
-    opacity:0.6;
+	opacity:0.6;
 }
 
 ._jsPlumb_connector.ui-selected path {
@@ -586,36 +586,36 @@ div.iconSpace {
     color:#000000;
     text-align: center;
     z-index: 9000;
-    word-wrap:break-word;
+	word-wrap:break-word;
 }
 
 .tooltip .deleteButton {
-    height:16px;
-    width: 16px;
-    float:none;
+	height:16px;
+	width: 16px;
+	float:none;
     border: none;
-    margin-left: 3px;
-    margin-top:5px;
+	margin-left: 3px;
+	margin-top:5px;
     padding:3px;
     cursor: pointer;
 }
 
 .tooltip .deleteButton:hover {
-    opacity: 0.75
+	opacity: 0.75
 }
 
 .tooltip .propertiesButton {
-    height:16px;
-    width: 16px;
-    float:none;
+	height:16px;
+	width: 16px;
+	float:none;
     border: none;
     padding:3px;
     cursor: pointer;
-    margin-top:5px;
+	margin-top:5px;
 }
 
 .tooltip .propertiesButton:hover {
-    opacity: 0.75
+	opacity: 0.75
 }
 
 #loadPipelineDialog {
@@ -628,7 +628,7 @@ div.iconSpace {
 }
 
 #loadingEditorDialog {
-    z-index: 10000 !important;
+	z-index: 10000 !important;
 }
 
 #loadPipelineHeader {
@@ -672,11 +672,11 @@ div.iconSpace {
 }
 
 .updateCheckbox {
-    margin-left: 20px;
+	margin-left: 20px;
 }
 
 .updateCallback {
-    margin-left: 20px;
+	margin-left: 20px;
 }
 
 #left-nav-top {
@@ -743,28 +743,28 @@ input.ui-button { padding: .4em 1em; }
 button.ui-button::-moz-focus-inner { border: 0; padding: 0; } /* reset extra padding in Firefox */
 
 .ui-dialog table {
-    margin-top:20px;
-    margin-bottom:20px;
+	margin-top:20px;
+	margin-bottom:20px;
 }
 
 .ui-dialog table td {
-    padding-right: 10px;
+	padding-right: 10px;
 }
 
 .ui-widget-overlay {
-    z-index: 10000 !important;
+	z-index: 10000 !important;
 }
 
 .properties-overlay {
-    z-index: 3999 !important;
+	z-index: 3999 !important;
 }
 
 .ui-dialog {
-    z-index: 10001;
+	z-index: 10001;
 }
 
 .top-dialog {
-    z-index: 10001;
+	z-index: 10001;
 }
 
 #navband1 {
