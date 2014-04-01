@@ -97,6 +97,7 @@
 	            	
 	            	// Load the modules
 	            	$.ajax({
+                        cache: false,
 	                    url: '/gp/rest/v1/tasks/all.json',
 	                    dataType: 'json',
 	                    success: function(data, status, xhr) {

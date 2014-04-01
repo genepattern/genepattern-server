@@ -413,6 +413,7 @@ function initPinned() {
             var lsid = $(ui.item).find(".module-lsid").text();
 
         	$.ajax({
+                cache: false,
         		type: 'POST',
                 url: '/gp/rest/v1/tags/pin',
                 dataType: 'text',
@@ -498,6 +499,7 @@ function jobStatusPoll() {
 	var continuePolling = $.data($(".current-job-status")[0], "continuePolling");
 	if (continuePolling == undefined || continuePolling) {
  		$.ajax({
+            cache: false,
             url: '/gp/rest/v1/jobs/incomplete',
             dataType: 'json',
             success: function(data, status, xhr) {
@@ -1577,6 +1579,7 @@ function initRecentJobs() {
 
     // Init the jobs
     $.ajax({
+        cache: false,
         type: "GET",
         url: "/gp/rest/v1/jobs/recent",
         dataType: "json",
