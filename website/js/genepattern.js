@@ -1017,6 +1017,8 @@ function createFileWidget(linkElement, appendTo) {
                                     if (isUpload) {
                                         $("#uploadTree").data("dndReady", {});
                                         $("#uploadTree").jstree("refresh");
+
+                                        $("#uploadDirectoryTree").jstree("refresh");
                                     }
                                     if (isJobFile) {
                                         initRecentJobs();
