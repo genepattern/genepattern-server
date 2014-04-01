@@ -506,7 +506,7 @@ function loadModuleInfo(module)
             editLink = "/gp/pipeline/index.jsf?lsid=" + run_task_info.lsid;
         }
 
-        $("#otherOptionsSubMenu table tbody").prepend("<tr><td><a href='JavaScript:Menu.denyIE(\"" + editLink + "\");' onclick='jq('.popupMenu').hide();'>Edit</a></td></tr>");
+        $("#otherOptionsMenu").prepend("<li><a href='JavaScript:Menu.denyIE(\"" + editLink + "\");'>Edit</li>");
     }
 
     //add source info
@@ -2078,17 +2078,23 @@ function loadRunTaskForm(lsid, reloadJob, sendFromKind, sendFromUrl) {
 
     $("#otherOptions").click(function(event)
     {
-        event.preventDefault();
-        var menu = $("#optionsMenu");
+        var menu = $("#otherOptionsMenu");
         menu.menu();
 
-        var top = $(this).position().top + 24;
-        var left = $(this).position().left - menu.width() + $(this).width();
+        var top = $(this).position().top + 22;
+        var left = $(this).position().left - menu.width() + $(this).width() + 22;
 
         menu.css("position", "absolute");
         menu.css("top", top);
         menu.css("left", left);
         menu.show();
+
+        event.stopPropagation();
+
+        $(document).click(function()
+        {
+            $("#otherOptionsMenu").hide();
+        });
     });
 }
 

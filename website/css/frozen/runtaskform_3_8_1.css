@@ -617,14 +617,10 @@ span.drop-box
 
 #otherOptionsMenu
 {
-    z-index: 5;
-    font-size: 30%;
+    font-size: 13px;
+    min-width: 238px;
 }
 
-#otherOptionsMenu li a {
-    color: black !important;
-    font-size: 8px;
-}
 
 
 
