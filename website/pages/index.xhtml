@@ -319,51 +319,32 @@ function showFileInput(id) {
 
                     <div id="otherOptionsDiv" class="floatRight">
                         <img id="otherOptions" alt="other options" src="#{facesContext.externalContext.requestContextPath}/images/gear_blue_and_white.png" height="20"/>
-                        <div id="otherOptionsSubMenu" class="popupMenu" style="display:none;">
-                            <table>
-                                <tr>
-                                    <td>
-                                        <a id="properties" href="#" onclick="jq('.popupMenu').hide();">Properties</a>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td>
-                                        <a id="clone" href="#" onclick="cloneTask();jq('.popupMenu').hide();">Clone</a>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td>
-                                        <a id="export" target="_blank" href="#" onclick="jq('.popupMenu').hide();">Export</a>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td>
-                                        <a id="javaCode" class="viewCode" href="#" onclick="jq('.popupMenu').hide();">Java code</a>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td>
-                                        <a id="matlabCode" class="viewCode" href="#" onclick="jq('.popupMenu').hide();">MATLAB code</a>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td>
-                                        <a id="rCode" class="viewCode" href="#" onclick="jq('.popupMenu').hide();">R code</a>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td>
-                                        <input name="toggleDesc" id="toggleDesc" type="checkbox" checked="checked"  onclick="jq('.popupMenu').hide();" />
-                                        <label for="toggleDesc" onclick="jq('.popupMenu').hide();">
-                                            Show parameter descriptions
-                                        </label>
-                                    </td>
-                                </tr>
-                            </table>
-                        </div>
-                        <script type="text/javascript">
-                            menuRegistry._create("#otherOptions", "#otherOptionsSubMenu");
-                        </script>
+                            <ul id="optionsMenu" class="module-menu" style="display: none;">
+                                <li>
+                                    <a id="properties" href="#" onclick="jq('.popupMenu').hide();">Properties</a>
+                                </li>
+                                <li>
+                                    <a id="clone" href="#" onclick="cloneTask();jq('.popupMenu').hide();">Clone</a>
+                                </li>
+                                <li>
+                                    <a id="export" target="_blank" href="#" onclick="jq('.popupMenu').hide();">Export</a>
+                                </li>
+                                <li>
+                                    <a id="javaCode" class="viewCode" href="#" onclick="jq('.popupMenu').hide();">Java code</a>
+                                </li>
+                                <li>
+                                    <a id="matlabCode" class="viewCode" href="#" onclick="jq('.popupMenu').hide();">MATLAB code</a>
+                                </li>
+                                <li>
+                                    <a id="rCode" class="viewCode" href="#" onclick="jq('.popupMenu').hide();">R code</a>
+                                </li>
+                                <li>
+                                    <input name="toggleDesc" id="toggleDesc" type="checkbox" checked="checked"  onclick="jq('.popupMenu').hide();" />
+                                    <label for="toggleDesc" onclick="jq('.popupMenu').hide();">
+                                        Show parameter descriptions
+                                    </label>
+                                </li>
+                            </ul>
                     </div>
                     <a class="floatRight" id ="documentation" href="#" target="_blank">Documentation</a>
 

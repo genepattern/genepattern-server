@@ -615,5 +615,16 @@ span.drop-box
     word-break: break-all;
 }
 
+#otherOptionsMenu
+{
+    z-index: 5;
+    font-size: 30%;
+}
+
+#otherOptionsMenu li a {
+    color: black !important;
+    font-size: 8px;
+}
+
 
 

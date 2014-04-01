@@ -2075,7 +2075,30 @@ function loadRunTaskForm(lsid, reloadJob, sendFromKind, sendFromUrl) {
             dataType: "json"
         });
     });
+
+    $("#otherOptions").click(function(event)
+    {
+        event.preventDefault();
+        var menu = $("#optionsMenu");
+        menu.menu();
+
+        var top = $(this).position().top + 24;
+        var left = $(this).position().left - menu.width() + $(this).width();
+
+        menu.css("position", "absolute");
+        menu.css("top", top);
+        menu.css("left", left);
+        menu.show();
+    });
 }
+
+$("#optionsMenu").blur(function() {
+    menu.hide();
+});
+
+$("#optionsMenu").focusout(function() {
+    menu.hide();
+});
 
 function reset()
 {
