@@ -112,9 +112,11 @@
     </div>
     <script type="text/javascript">
         jq("#uploadDirectoryDialog").dialog({
-            width:500,
-            autoOpen:false,
-            title:"Select Directory in Which to Save the File",
+            modal : true,
+            dialogClass : "top-dialog",
+            width: 500,
+            autoOpen: false,
+            title: "Select Directory in Which to Save the File",
             buttons:[
                 {
                     text:"Select",
