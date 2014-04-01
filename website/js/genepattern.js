@@ -685,7 +685,7 @@ function uploadDrop(event) {
             openUploadDirectoryDialog(filelist);
         }
         else {
-            var directory = $(event.target).closest(".jstree-open").find("a:first").attr("href");
+            var directory = $(event.target).closest(".jstree-closed, .jstree-open").find("a:first").attr("href");
             uploadAfterDialog(filelist, directory);
         }
     }
