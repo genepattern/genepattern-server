@@ -1901,7 +1901,7 @@ function loadRunTaskForm(lsid, reloadJob, sendFromKind, sendFromUrl) {
         loadModule(lsid, reloadJob, sendFromKind, sendFromUrl);
     }
 
-    $("input[type='file']").live("change", function()
+    $("#submitJob input[type='file']").live("change", function()
     {
         var paramName = $(this).data("pname");
 
