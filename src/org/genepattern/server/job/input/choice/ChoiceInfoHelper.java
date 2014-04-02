@@ -229,5 +229,14 @@ public class ChoiceInfoHelper {
         GpFilePath localPath=CachedFtpFile.getLocalPath(url);
         return localPath;
     }
+    
+    public static void appendChoice(final Choice choice, final ParameterInfo pinfo) {
+        //append choice to beginning of menu
+        final String choicesStrIn=(String)pinfo.getAttributes().get(ChoiceInfo.PROP_CHOICE);
+        //<value>=<label>;
+        final String choicesStr=initManifestEntryFromChoice(choice)+";"+choicesStrIn;
+        pinfo.getAttributes().put(ChoiceInfo.PROP_CHOICE, choicesStr);
+        pinfo.setValue(choicesStr);
+    }
 
 }

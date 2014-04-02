@@ -1,0 +1,9 @@
+default.properties:
+    executor.inputParams: executor_input_params.yaml
+executors:
+    # default executor for all jobs, it is included in GenePattern
+    RuntimeExec:
+        classname: org.genepattern.server.executor.RuntimeCommandExecutor
+        configuration.properties:
+            # the total number of jobs to run concurrently
+            num.threads: 20

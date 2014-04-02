@@ -14,6 +14,9 @@ import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.Value;
 import org.genepattern.server.dm.jobinput.ParameterInfoUtil;
 import org.genepattern.server.job.input.InputParamGroup;
+import org.genepattern.server.job.input.choice.Choice;
+import org.genepattern.server.job.input.choice.ChoiceInfo;
+import org.genepattern.server.job.input.choice.ChoiceInfoHelper;
 import org.genepattern.webservice.ParameterInfo;
 import org.genepattern.webservice.TaskExecutor;
 
@@ -65,9 +68,24 @@ public class JobConfigParams {
     private static void replaceDefaults(final GpConfig gpConfig, final GpContext taskContext, final JobConfigParams jobConfigParams) {
         for(final ParameterInfo pinfo : jobConfigParams.getParams()) {
             final String pname=pinfo.getName();
-            final Value customValue=gpConfig.getValue(taskContext, pname);
-            if (customValue != null) {
-                setDefaultValue(pinfo, customValue.getValue());
+            final Value customValueObj=gpConfig.getValue(taskContext, pname);
+            boolean inMenu=false;
+            if (customValueObj != null) {
+                final String customValueStr=customValueObj.getValue();
+                final List<Choice> choices=ChoiceInfo.getDeclaredChoices(pinfo);
+                if (choices != null && customValueStr != null) {  
+                    for(final Choice choice : choices) {
+                        if (customValueStr.equals(choice.getValue())) {
+                            inMenu=true;
+                            break;
+                        }
+                    }
+                }
+                if (!inMenu) {
+                    //append choice to beginning of menu
+                    ChoiceInfoHelper.appendChoice(new Choice(customValueStr), pinfo);
+                }
+                setDefaultValue(pinfo, customValueStr);
             }
         }
     }

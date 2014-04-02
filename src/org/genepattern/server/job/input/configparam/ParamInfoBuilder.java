@@ -67,6 +67,7 @@ public class ParamInfoBuilder {
         if (choices!=null) {
             final String choicesStr=ChoiceInfoHelper.initManifestEntryFromChoices(choices);
             pinfo.getAttributes().put(ChoiceInfo.PROP_CHOICE, choicesStr);
+            pinfo.setValue(choicesStr);
         }
         return pinfo;
     }
