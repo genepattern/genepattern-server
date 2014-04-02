@@ -10,7 +10,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import org.genepattern.drm.JobRunner;
 import org.genepattern.junitutil.JobInfoLoaderFromMap;
 import org.genepattern.junitutil.TaskLoader;
 import org.genepattern.server.config.GpContext;
@@ -439,22 +438,6 @@ public class TestLoadModuleHelper {
                 groupArray.getJSONObject(1).getJSONArray("values").get(0));
         Assert.assertEquals("group[1].value[1]", "ftp://gpftp.broadinstitute.org/example_data/datasets/all_aml/all_aml_train.gct", 
                 groupArray.getJSONObject(1).getJSONArray("values").get(1));
-    }
-
-    
-    /**
-     * For GP-4872, optionally include additional job configuration parameters on the job input form.
-     */
-    //TODO: convert to a @Test
-    public void testPromptForJobConfigParam() throws Exception {
-        final TaskInfo taskInfo=taskLoader.getTaskInfo(cmsLsid);
-        LoadModuleHelper loadModuleHelper=new LoadModuleHelper(userContext, taskLoader, jobInfoLoader);
-        final JobInput initialValues=loadModuleHelper.getInitialValues(
-                        taskInfo.getLsid(), taskInfo.getParameterInfoArray(), reloadedValues, _fileParam, _formatParam, parameterMap);
-        
-        Param jobQueue=initialValues.getParam(JobRunner.PROP_QUEUE);
-        Assert.assertNotNull("jobQueue", jobQueue);
-
     }
 
 }
