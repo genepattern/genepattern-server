@@ -5,7 +5,7 @@ function escapeJquerySelector(str) {
 
 // toggleCheckBoxes -- used in combination with a "master" checkbox to toggle
 // the state of a collection of child checkboxes.  Assumes the children and parent
-// share a common container parent    
+// share a common container parent
 function toggleCheckBoxes(maincheckbox, parentId) {
 	var isChecked = maincheckbox.checked;
 	var parentElement = document.getElementById(parentId);
@@ -138,7 +138,7 @@ function showDialog(title, message, button) {
 	if (typeof jq === 'undefined') {
 		var jq = $;
 	}
-	
+
 	var alert = document.createElement("div");
 
 	if (typeof (message) == 'string') {
@@ -195,8 +195,8 @@ var all_categories = null;
 var all_suites = null;
 
 function getPinnedModules() {
-	var pinned = [];	
-	
+	var pinned = [];
+
 	$.each(all_modules, function(i, v) {
 		for (var j = 0; j < v.tags.length; j++) {
 			var tagObj = v.tags[j];
@@ -205,7 +205,7 @@ function getPinnedModules() {
 			}
 		}
 	});
-	
+
 	// Sort by position
 	pinned = pinned.sort(function (a, b) {
 		var a_pos = 0;
@@ -215,7 +215,7 @@ function getPinnedModules() {
 				a_pos = tagObj.metadata;
 			}
 		}
-		
+
 		var b_pos = 0;
 		for (var j = 0; j < b.tags.length; j++) {
 			var tagObj = b.tags[j];
@@ -223,7 +223,7 @@ function getPinnedModules() {
 				b_pos = tagObj.metadata;
 			}
 		}
-		
+
 		if (a_pos > b_pos) {
 			return 1;
 		}
@@ -233,13 +233,13 @@ function getPinnedModules() {
 
 		return 0;
 	});
-	
+
 	return pinned;
 }
 
 function getRecentModules() {
 	var recent = [];
-	
+
 	$.each(all_modules, function(i, v) {
 		for (var j = 0; j < v.tags.length; j++) {
 			var tagObj = v.tags[j];
@@ -248,7 +248,7 @@ function getRecentModules() {
 			}
 		}
 	});
-	
+
 	return recent;
 }
 
@@ -265,7 +265,7 @@ function initBrowseSuites() {
             $("#module-search").searchslider("set_title", '<a href="#" onclick="$(\'#module-browse\').searchslider(\'show\');">Browse Modules</a> &raquo; <a href="#" onclick="$(\'#module-suites\').searchslider(\'show\');">Browse Suites</a> &raquo; ' + filter);
         }
     });
-	
+
 	$('#module-suites').searchslider({
         lists: [browse]
     });
@@ -326,7 +326,7 @@ function initBrowseTop() {
             }
         }
     });
-	
+
 	return allnsuite;
 }
 
@@ -359,7 +359,7 @@ function initSearchSlider() {
 function initRecent() {
     var still_loading = false;
 	var recent_modules = getRecentModules();
-	
+
 	var recent = $('#recent-modules').modulelist({
         title: "Recent Modules",
         data: recent_modules,
@@ -392,7 +392,7 @@ function baseLsid(lsid) {
 function initPinned() {
     var still_loading = false;
 	var pinned_modules = getPinnedModules();
-	
+
 	var pinned = $('#pinned-modules').modulelist({
         title: "Favorite Modules",
         data: pinned_modules,
@@ -431,12 +431,12 @@ function initPinned() {
                     });
                 }
             });
-        	
+
         	// Reinitialize the widget as a module
         	var lsid = $(ui.item).find(".module-lsid").text();							// Get the lsid
         	var source = $("#module-list-search").modulelist("get_module", lsid);		// Get the source widget
         	var data = source.module("get_data");										// Get the JSON data
-        	var click = source.module("get_click");										// Get the click event	
+        	var click = source.module("get_click");										// Get the click event
         	$(ui.item).empty();															// Empty the div
         	$(ui.item).module({															// Reinitialize
         		data: data,
@@ -660,6 +660,44 @@ function ajaxFileTabUpload(file, directory, done, index){
     reader.readAsArrayBuffer(blob);
 }
 
+function hasSpecialChars(filelist)
+{
+    var regex = new RegExp("[^A-Za-z0-9_.]");
+    for (var i = 0; i < filelist.length; i++) {
+        var file = filelist[i];
+        if (regex.test(file.name)) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+function warnSpecialChars(filelist, directory)
+{
+    showDialog("Special Characters!",
+        "One or more files being uploaded has a name containing special characters!<br/><br/>" +
+            "Some older GenePattern modules do not handle special characters well. " +
+            "Are you sure you want to continue?", {
+            "Yes": function() {
+                $(this).dialog("close");
+                dirPromptIfNecessary(filelist, directory);
+            },
+            "No": function() {
+                $(this).dialog("close");
+            }
+        });
+}
+
+function dirPromptIfNecessary (filelist, directory) {
+    if (directory == undefined || directory == null || directory.length == 0) {
+        openUploadDirectoryDialog(filelist);
+    }
+    else {
+        uploadAfterDialog(filelist, directory);
+    }
+}
+
 function uploadDrop(event) {
     this.classList.remove('runtask-highlight');
     event.stopPropagation();
@@ -680,41 +718,15 @@ function uploadDrop(event) {
         return;
     }
 
-    var dirPromptIfNecessary = function () {
-        if ($(event.target).attr("id") === "upload-dropzone") {
-            openUploadDirectoryDialog(filelist);
-        }
-        else {
-            var directory = $(event.target).closest(".jstree-closed, .jstree-open").find("a:first").attr("href");
-            uploadAfterDialog(filelist, directory);
-        }
-    }
-
     // Check for special characters
-    var specialCharacters = false;
-    var regex = new RegExp("[^A-Za-z0-9_.]");
-    for (var i = 0; i < filelist.length; i++) {
-        var file = filelist[i];
-        if (regex.test(file.name)) {
-            specialCharacters = true;
-            showDialog("Special Characters!",
-                "One or more files being uploaded has a name containing special characters!<br/><br/>" +
-                "Some older GenePattern modules do not handle special characters well. " +
-                "Are you sure you want to continue?", {
-                    "Yes": function() {
-                        $(this).dialog("close");
-                        dirPromptIfNecessary();
-                    },
-                    "No": function() {
-                        $(this).dialog("close");
-                    }
-                });
-            break;
-        }
+    var directory = $(event.target).closest(".jstree-closed, .jstree-open").find("a:first").attr("href");
+    if(hasSpecialChars(filelist))
+    {
+        warnSpecialChars(filelist, directory);
     }
-
-    if (!specialCharacters) {
-        dirPromptIfNecessary();
+    else
+    {
+        dirPromptIfNecessary(filelist, directory);
     }
 }
 
@@ -878,11 +890,19 @@ function initUploads() {
             var origin = $("#upload-dropzone-input").data("origin");
             var filelist = event.target.files;
 
-            if (origin === "dropzone") {
-                openUploadDirectoryDialog(filelist);
+            var directory = null;
+            if(origin != "dropzone")
+            {
+                directory = origin;
             }
-            else {
-                uploadAfterDialog(filelist, origin);
+
+            //check for special characters
+            if(hasSpecialChars(filelist)){
+                warnSpecialChars(filelist, directory);
+            }
+            else
+            {
+                dirPromptIfNecessary(filelist, directory);
             }
         })
         .appendTo("#upload-dropzone-wrapper");
@@ -1174,7 +1194,7 @@ function createFileWidget(linkElement, appendTo) {
                     var listObject = $(event.target).closest(".search-widget").find(".send-to-param-list");
                     var kind = listObject.attr("data-kind");
                     var url = listObject.attr("data-url");
-                    
+
                     loadRunTaskForm(lsid, false, kind, url);
 
                     var checkForRunTaskLoaded = function() {
