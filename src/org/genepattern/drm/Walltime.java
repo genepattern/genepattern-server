@@ -2,6 +2,8 @@ package org.genepattern.drm;
 
 import java.util.concurrent.TimeUnit;
 
+import org.apache.commons.lang.builder.HashCodeBuilder;
+
 /**
  * Generic representation of the amount of time, the wall clock limit, for 
  * a job submitted to the queue.
@@ -38,6 +40,26 @@ public class Walltime {
         return ""+duration;
     }
 
+    public boolean equals(final Object obj) {
+        if (obj==null) {
+            return false;
+        }
+        if (this==obj) {
+            return true;
+        }
+        if (!(obj instanceof Walltime)) {
+            return false;
+        }
+        Walltime wt = (Walltime) obj;
+        return wt.duration==duration && wt.timeUnit==timeUnit;
+    }
+    
+    public int hashCode() {
+        return new HashCodeBuilder(17,31).
+                append(duration).
+                append(timeUnit).toHashCode();
+    }
+    
     /**
      * Parse a string in 'days-hh:mm:ss' format, where hours are on a 24 hour scale.
      * @param val
