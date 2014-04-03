@@ -10,9 +10,14 @@ import java.util.Map;
 import org.genepattern.junitutil.ConfigUtil;
 import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
+import org.genepattern.server.config.GpContextFactory;
+import org.genepattern.server.config.GpServerProperties;
 import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.config.Value;
 import org.genepattern.server.job.input.configparam.JobConfigParams;
+import org.genepattern.util.GPConstants;
+import org.genepattern.webservice.JobInfo;
+import org.genepattern.webservice.TaskInfo;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -27,11 +32,41 @@ import org.junit.rules.TemporaryFolder;
  *
  */
 public class TestDrmJobSubmission {
+    private GpContext jobContext;
+    private static final String userId="test";
     private static final Integer jobNo=1;
-    private static final String[] commandLine={"echo", "Hello, World!"};
+    private static final String taskName="EchoTest";
+    private static final String cmdLineStr="echo <arg1>";
+    private static final String[] cmdLineArgs={"echo", "Hello, World!"};
     
     private File jobResults;
     private File workingDir;
+    
+    private static GpContext createJobContext(final String userId, final Integer jobNumber, final String taskName, final String cmdLine) {
+        final TaskInfo taskInfo=createTask(taskName, cmdLine);
+        final File taskLibDir=new File("taskLib/"+taskName+".1.0");
+        final JobInfo jobInfo=new JobInfo();
+        jobInfo.setJobNumber(jobNumber);
+        jobInfo.setTaskName(taskName);
+        final GpContext taskContext=new GpContextFactory.Builder()
+            .userId(userId)
+            .jobInfo(jobInfo)
+            .taskInfo(taskInfo)
+            .taskLibDir(taskLibDir)
+            .build();
+        return taskContext;
+    }
+
+    private static TaskInfo createTask(final String name, final String cmdLine) {
+        TaskInfo mockTask=new TaskInfo();
+        mockTask.setName(name);
+        mockTask.giveTaskInfoAttributes();
+        mockTask.getTaskInfoAttributes().put(GPConstants.LSID, "");
+        mockTask.getTaskInfoAttributes().put(GPConstants.TASK_TYPE, "Test");
+        mockTask.getTaskInfoAttributes().put(GPConstants.COMMAND_LINE, cmdLine);
+        return mockTask;
+    }    
+
 
     @Before
     public void before() throws Throwable {
@@ -42,6 +77,7 @@ public class TestDrmJobSubmission {
 
         this.jobResults=temp.newFolder("jobResults");
         this.workingDir=new File(jobResults, ""+jobNo);
+        this.jobContext=createJobContext(userId, jobNo, taskName, cmdLineStr);
     }
     
     @After
@@ -55,15 +91,16 @@ public class TestDrmJobSubmission {
     
     @Test
     public void testDefaultBuilder_commandLine() { 
-        final DrmJobSubmission job = new DrmJobSubmission.Builder(jobNo, workingDir)
-            .commandLine(commandLine)
+        final DrmJobSubmission job = new DrmJobSubmission.Builder(workingDir)
+            .jobContext(jobContext)
+            .commandLine(cmdLineArgs)
             .build();
         Assert.assertEquals("jobNo", jobNo, job.getGpJobNo());
         Assert.assertEquals("jobNo", jobNo.intValue(), job.getJobInfo().getJobNumber());
         Assert.assertEquals("workingDir", workingDir.getAbsolutePath(), job.getWorkingDir().getAbsolutePath());
-        Assert.assertEquals("commandLine.length", commandLine.length, job.getCommandLine().size());
-        Assert.assertEquals("arg[0]", commandLine[0], job.getCommandLine().get(0));
-        Assert.assertEquals("arg[1]", commandLine[1], job.getCommandLine().get(1));
+        Assert.assertEquals("commandLine.length", cmdLineArgs.length, job.getCommandLine().size());
+        Assert.assertEquals("arg[0]", cmdLineArgs[0], job.getCommandLine().get(0));
+        Assert.assertEquals("arg[1]", cmdLineArgs[1], job.getCommandLine().get(1));
         
         Assert.assertEquals("env.length", 0, job.getEnvironmentVariables().size());
         try {
@@ -75,76 +112,88 @@ public class TestDrmJobSubmission {
         catch (UnsupportedOperationException e) {
             //expected
         }
-        Assert.assertNull("job.queue", job.getQueue()); 
-        Assert.assertNull("job.memory", job.getMemory()); 
-        Assert.assertNull("job.walltime", job.getWalltime()); 
-        Assert.assertNull("job.nodeCount", job.getNodeCount()); 
-        Assert.assertNull("job.cpuCount", job.getCpuCount()); 
-        Assert.assertEquals("job.extraArgs.size", 0, job.getExtraArgs().size());        
-    }
-    
-    @Test(expected = IllegalArgumentException.class)
-    public void testNullCommandLine() {
-        final DrmJobSubmission drmJob = new DrmJobSubmission.Builder(jobNo, workingDir)
-            .build();
-        ///CLOVER:OFF
-        Assert.assertNull("Expecting IllegalArgumentException", drmJob);
-        Assert.fail("Expecting IllegalArgumentException");
-        ///CLOVER:ON
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void testEmptyCommandLine() {
-        final DrmJobSubmission drmJob = new DrmJobSubmission.Builder(jobNo, workingDir)
-            .commandLine(new String[0])
-            .build();
-        ///CLOVER:OFF
-        Assert.assertNull("Expecting IllegalArgumentException", drmJob);
-        Assert.fail("Expecting IllegalArgumentException");
-        ///CLOVER:ON
-    }
-    
-    @Test(expected = IllegalArgumentException.class)
-    public void testDuplicateCommandLine() {
-        new DrmJobSubmission.Builder(jobNo, workingDir)
-            .commandLine(commandLine)
-            .commandLine(commandLine);
-    }
-
-    @Test
-    public void testDefaultBuilder_addArg() {
-        final DrmJobSubmission drmJob;
-        DrmJobSubmission.Builder builder = new DrmJobSubmission.Builder(jobNo, workingDir);
-        for(final String arg : commandLine) {
-            builder=builder.addArg(arg);
-        }
-        drmJob=builder.build();
-        Assert.assertEquals("jobNo", jobNo.intValue(), drmJob.getJobInfo().getJobNumber());
-        Assert.assertEquals("workingDir", workingDir.getAbsolutePath(), drmJob.getWorkingDir().getAbsolutePath());
-        Assert.assertThat("commandLine", Arrays.asList(commandLine), is(drmJob.getCommandLine()));
-    }
-    
-    @Test
-    public void testAddExtraArg() {
-        final DrmJobSubmission drmJob = new DrmJobSubmission.Builder(jobNo, workingDir)
-            .commandLine(commandLine)
-            .addExtraArg("-P")
-            .addExtraArg("ProjectName")
-            .build();
-
         try {
-            drmJob.getExtraArgs().add("--extraArg=value");
+            job.getCommandLine().add("-P");
             ///CLOVER:OFF
-            Assert.fail("job.extraArgs should be unmodifiable");
+            Assert.fail("commandLine should be unmodifiable");
             ///CLOVER:ON
         }
         catch (UnsupportedOperationException e) {
             //expected
         }
-        Assert.assertEquals("job.extraArgs.size", 2, drmJob.getExtraArgs().size());
-        Assert.assertEquals("job.extraArgs[0]", "-P", drmJob.getExtraArgs().get(0));
-        Assert.assertEquals("job.extraArgs[1]", "ProjectName", drmJob.getExtraArgs().get(1));
+
+        Assert.assertNull("job.queue", job.getQueue()); 
+        Assert.assertNull("job.walltime", job.getWalltime()); 
+        Assert.assertNull("job.nodeCount", job.getNodeCount()); 
+        Assert.assertNull("job.cpuCount", job.getCpuCount()); 
+        Assert.assertEquals("job.extraArgs.size", 2, job.getExtraArgs().size());        
     }
+    
+    @Test(expected = UnsupportedOperationException.class)
+    public void testNullCommandLine() {
+        final DrmJobSubmission drmJob = new DrmJobSubmission.Builder(workingDir)
+            .jobContext(jobContext)
+            .build();
+        Assert.assertEquals("Expecting emtpy list", 0, drmJob.getCommandLine().size());
+        //should throw an exception
+        drmJob.getCommandLine().add("-P");
+    }
+
+    @Test(expected = UnsupportedOperationException.class)
+    public void testEmptyCommandLine() {
+        final DrmJobSubmission drmJob = new DrmJobSubmission.Builder(workingDir)
+            .jobContext(jobContext)
+            .commandLine(new String[0])
+            .build();
+        Assert.assertEquals("Expecting emtpy list", 0, drmJob.getCommandLine().size());
+        //should throw an exception
+        drmJob.getCommandLine().add("-P");
+    }
+    
+    @Test(expected = IllegalArgumentException.class)
+    public void testDuplicateCommandLine() {
+        new DrmJobSubmission.Builder(workingDir)
+            .jobContext(jobContext)
+            .commandLine(cmdLineArgs)
+            .commandLine(cmdLineArgs);
+    }
+
+    @Test
+    public void testDefaultBuilder_addArg() {
+        final DrmJobSubmission drmJob;
+        DrmJobSubmission.Builder builder = new DrmJobSubmission.Builder(workingDir)
+            .jobContext(jobContext);        
+        for(final String arg : cmdLineArgs) {
+            builder=builder.addArg(arg);
+        }
+        drmJob=builder.build();
+        Assert.assertEquals("jobNo", jobNo.intValue(), drmJob.getJobInfo().getJobNumber());
+        Assert.assertEquals("workingDir", workingDir.getAbsolutePath(), drmJob.getWorkingDir().getAbsolutePath());
+        Assert.assertThat("commandLine", Arrays.asList(cmdLineArgs), is(drmJob.getCommandLine()));
+    }
+    
+//    @Test
+//    public void testAddExtraArg() {
+//        final DrmJobSubmission drmJob = new DrmJobSubmission.Builder(workingDir)
+//            .jobContext(jobContext)
+//            .commandLine(cmdLineArgs)
+//            //.addExtraArg("-P")
+//            //.addExtraArg("ProjectName")
+//            .build();
+//
+//        try {
+//            drmJob.getExtraArgs().add("--extraArg=value");
+//            ///CLOVER:OFF
+//            Assert.fail("job.extraArgs should be unmodifiable");
+//            ///CLOVER:ON
+//        }
+//        catch (UnsupportedOperationException e) {
+//            //expected
+//        }
+//        Assert.assertEquals("job.extraArgs.size", 2, drmJob.getExtraArgs().size());
+//        Assert.assertEquals("job.extraArgs[0]", "-P", drmJob.getExtraArgs().get(0));
+//        Assert.assertEquals("job.extraArgs[1]", "ProjectName", drmJob.getExtraArgs().get(1));
+//    }
 
     @Test
     public void testEnvironmentVariables() {
@@ -152,8 +201,9 @@ public class TestDrmJobSubmission {
         envIn.put("ANT_OPTS", "-Xmx2048m");
         envIn.put("JAVA_OPTS", "-XX:MaxPermSize=2g -Xmx2g");
         
-        final DrmJobSubmission drmJob = new DrmJobSubmission.Builder(jobNo, workingDir)
-            .commandLine(commandLine)
+        final DrmJobSubmission drmJob = new DrmJobSubmission.Builder(workingDir)
+            .jobContext(jobContext)
+            .commandLine(cmdLineArgs)
             .environmentVariables(envIn)
             .build();
         
@@ -177,16 +227,18 @@ public class TestDrmJobSubmission {
         final Map<String,String> envIn=new HashMap<String,String>();
         envIn.put("ANT_OPTS", "-Xmx2048m");
         envIn.put("JAVA_OPTS", "-XX:MaxPermSize=2g -Xmx2g");
-        new DrmJobSubmission.Builder(jobNo, workingDir)
-            .commandLine(commandLine)
+        new DrmJobSubmission.Builder(workingDir)
+            .jobContext(jobContext)
+            .commandLine(cmdLineArgs)
             .environmentVariables(envIn)
             .environmentVariables(envIn);
     }
 
     @Test
     public void testAddEnvVar() {
-        final DrmJobSubmission drmJob = new DrmJobSubmission.Builder(jobNo, workingDir)
-            .commandLine(commandLine)
+        final DrmJobSubmission drmJob = new DrmJobSubmission.Builder(workingDir)
+            .jobContext(jobContext)
+            .commandLine(cmdLineArgs)
             .addEnvVar("ANT_OPTS", "-Xmx2048m")
             .addEnvVar("JAVA_OPTS", "-XX:MaxPermSize=2g -Xmx2g")
             .build();
@@ -196,93 +248,19 @@ public class TestDrmJobSubmission {
         Assert.assertEquals("env['JAVA_OPTS']", "-XX:MaxPermSize=2g -Xmx2g", drmJob.getEnvironmentVariables().get("JAVA_OPTS"));
     }
     
-    /**
-     * Test case for customizing the job config by setting the 'workerName' property.
-     * Example entry in config file,
-     * <pre>
-executors:
-    DemoPbsJobRunner:
-        classname: org.genepattern.server.executor.drm.JobExecutor
-        configuration.properties:
-             jobRunnerClassname: org.genepattern.drm.impl.iu.pbs.DemoPbsJobRunner
-             jobRunnerName: DemoPbsJobRunner
-             lookupType: DB
-             #lookupType: HASHMAP
-        default.properties:
-            job.queue: "defaultQueue"
-            job.walltime: "02:00:00"
-            job.nodeCount: "1"
-
-            pbs.host: "example.edu"
-            pbs.mem: "8gb"
-            pbs.ppn: "8"
-            pbs.cput: ""
-            pbs.vmem: "64gb"
-
-            # himem job.workerName
-            myHiMemPbsWorker: {
-                job.queue: "exampleQueue",
-                job.walltime: "02:00:00",
-                job.nodeCount: "1",
-                pbs.host: "example.edu",
-                pbs.mem: "8gb",
-                pbs.cput: "",
-                pbs.vmem: "500gb"
-            }
-
-            myLongPbsWorker: {
-                job.queue: "exampleQueue",
-                job.walltime: "72:00:00",
-                job.nodeCount: "1",
-                pbs.host: "example.edu",
-                pbs.mem: "8gb",
-                pbs.ppn: "8",
-                pbs.cput: "",
-                pbs.vmem: "64gb"
-            }
-
-     * </pre>
-     */
-    @Test
-    public void testWorkerConfig() {
-        Map<String,String> workerConfig=new HashMap<String,String>();
-        workerConfig.put("job.queue", "exampleQueue");
-        workerConfig.put("job.walltime", "72:00:00");
-        workerConfig.put("job.nodeCount", "1");
-        workerConfig.put("pbs.host", "example.edu");
-        workerConfig.put("pbs.mem", "8gb");
-        workerConfig.put("pbs.ppn", "8");
-        workerConfig.put("pbs.cput", "");
-        workerConfig.put("pbs.vmem", "64gb");
-        
-        final DrmJobSubmission drmJob = new DrmJobSubmission.Builder(jobNo, workingDir)
-            .commandLine(commandLine)
-            .workerName("myLongPbsWorker")
-            .workerConfig(workerConfig)
-            .build();
-        
-        Assert.assertEquals("job.queue", "exampleQueue", drmJob.getProperty("job.queue"));
-        Assert.assertEquals("job.walltime", "72:00:00", drmJob.getProperty("job.walltime"));
-        Assert.assertEquals("job.nodeCount", "1", drmJob.getProperty("job.nodeCount"));
-        Assert.assertEquals("pbs.host", "example.edu", drmJob.getProperty("pbs.host"));
-        Assert.assertEquals("pbs.mem", "8gb", drmJob.getProperty("pbs.mem"));
-        Assert.assertEquals("pbs.ppn", "8", drmJob.getProperty("pbs.ppn"));
-        Assert.assertEquals("pbs.cput", "", drmJob.getProperty("pbs.cput"));
-        Assert.assertEquals("pbs.vmem", "64gb", drmJob.getProperty("pbs.vmem"));
-    }
-    
     @Test
     public void testGetGpConfigProperty() {
-        final DrmJobSubmission drmJob = new DrmJobSubmission.Builder(jobNo, workingDir)
-            .commandLine(commandLine)
-            .workerName("myLongPbsWorker")
+        final DrmJobSubmission drmJob = new DrmJobSubmission.Builder(workingDir)
+            .jobContext(jobContext)
+            .commandLine(cmdLineArgs)
+            //.workerName("myLongPbsWorker")
             .build();
         
         final GpConfig config=ServerConfigurationFactory.instance();
         final GpContext userContext=GpContext.getContextForUser("test_user");
-        Value javaXmx=config.getValue(userContext, "java.Xmx");
+        Value javaXmx=config.getValue(userContext, "job.javaXmx");
 
-        Assert.assertEquals("java.Xmx", "2gb", drmJob.getProperty("java.Xmx"));
+        Assert.assertEquals("job.javaXmx", "2gb", drmJob.getProperty("job.javaXmx"));
     }
     
     @Test
@@ -306,6 +284,77 @@ executors:
         
         JobConfigParams jobConfigParams=JobConfigParams.initJobConfigParams(gpConfig, userContext);
         Assert.assertNotNull("initJobConfigParams was null", jobConfigParams);
+    }
+    
+    @Test
+    public void testCustomMemory() {
+        final GpServerProperties serverProperties=new GpServerProperties.Builder()
+            .addCustomProperty(JobRunner.PROP_MEMORY, "8g")
+            .build();
+        final GpConfig gpConfig=new GpConfig.Builder()
+            .serverProperties(serverProperties)
+            .build();
+        DrmJobSubmission drmJobSubmission = new DrmJobSubmission.Builder(workingDir)
+            .jobContext(jobContext)
+            .gpConfig(gpConfig)
+            .build();
+        
+        Assert.assertEquals("set memory in config", Memory.fromString("8g"), 
+                drmJobSubmission.getMemory());
+    }
+    
+    @Test
+    public void testCustomWalltime() throws Exception {
+        final GpServerProperties serverProperties=new GpServerProperties.Builder()
+            .addCustomProperty(JobRunner.PROP_WALLTIME, "7-00:00:00")
+            .build();
+        final GpConfig gpConfig=new GpConfig.Builder()
+            .serverProperties(serverProperties)
+            .build();
+        DrmJobSubmission drmJobSubmission = new DrmJobSubmission.Builder(workingDir)
+            .jobContext(jobContext)
+            .gpConfig(gpConfig)
+            .build();
+        
+        Assert.assertEquals("set walltime in config", 
+                Walltime.fromString("7-00:00:00"),
+                drmJobSubmission.getWalltime());
+    }
+    
+    @Test
+    public void testExtraArgs() {
+        DrmJobSubmission drmJobSubmission = new DrmJobSubmission.Builder(workingDir)
+            .jobContext(jobContext)
+            .build();
+        Assert.assertArrayEquals("default 'extraArgs' from 'drm_test.yaml'", 
+                new String[]{"-P", "gpdev" },
+                drmJobSubmission.getExtraArgs().toArray());
+    }
+    
+    @Test
+    public void testCustomValue() {
+        DrmJobSubmission drmJobSubmission = new DrmJobSubmission.Builder(workingDir)
+            .jobContext(jobContext)
+            .build();
+        Assert.assertArrayEquals("'customValue' from 'drm_test.yaml'", 
+                new String[]{"A", "B", "C"},
+                drmJobSubmission.getValue("customValue").getValues().toArray());
+    }
+
+    
+    @Test(expected=IllegalArgumentException.class)
+    public void testNullJobContext() {
+        new DrmJobSubmission.Builder(workingDir).build();
+    }
+    
+    @Test(expected=IllegalArgumentException.class)
+    public void testNullJobInfo() {
+        jobContext=new GpContextFactory.Builder()
+            .jobNumber(jobNo)
+            .build();
+        new DrmJobSubmission.Builder(workingDir)
+            .jobContext(jobContext)
+            .build();        
     }
 
 }

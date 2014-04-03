@@ -4,6 +4,7 @@ import java.util.Collections;
 import java.util.List;
 
 import org.apache.log4j.Logger;
+import org.genepattern.drm.DrmJobRecord;
 import org.genepattern.drm.DrmJobStatus;
 import org.genepattern.drm.DrmJobSubmission;
 
@@ -31,25 +32,16 @@ public class DrmLookupFactory {
         log.error("Unspecified DrmLookup Type, creating anonymous default implementation");   
         return new DrmLookup() {
             @Override
-            public List<String> getRunningDrmJobIds() {
+            public List<DrmJobRecord> getRunningDrmJobRecords() {
                 return Collections.emptyList();
             }
 
             @Override
-            public String lookupDrmJobId(final Integer gpJobNo) {
-                return ""+gpJobNo;
-            }
-
-            @Override
-            public Integer lookupGpJobNo(String drmJobId) {
-                try {
-                    Integer gpJobNo=new Integer(drmJobId);
-                    return gpJobNo;
-                }
-                catch (Throwable t) {
-                    log.error("Can't convert drmJobId to gpJobNo, drmJobId="+drmJobId, t);
-                    return null;
-                }
+            public DrmJobRecord lookupJobRecord(Integer gpJobNo) {
+                final String extJobId=""+gpJobNo;
+                return new DrmJobRecord.Builder(gpJobNo)
+                    .extJobId(extJobId)
+                    .build();
             }
 
             @Override
@@ -58,10 +50,9 @@ public class DrmLookupFactory {
             }
 
             @Override
-            public void updateJobStatus(final Integer gpJobNo, final DrmJobStatus drmJobStatus) {
+            public void updateJobStatus(DrmJobRecord drmJobRecord, DrmJobStatus drmJobStatus) {
                 //no-op
             }
-
         };
     }
     

@@ -2,6 +2,7 @@ package org.genepattern.server.executor.drm;
 
 import java.util.List;
 
+import org.genepattern.drm.DrmJobRecord;
 import org.genepattern.drm.DrmJobStatus;
 import org.genepattern.drm.DrmJobSubmission;
 
@@ -27,25 +28,14 @@ public interface DrmLookup {
      * 
      * @return
      */
-    List<String> getRunningDrmJobIds();
+    List<DrmJobRecord> getRunningDrmJobRecords();
 
     /**
-     * Get the drmJob id for the given GenePattern job id.
+     * Get the DrmJobRecord for the given GenePattern job id.
      * @param jobInfo
      * @return
      */
-    String lookupDrmJobId(final Integer gpJobNo);
-
-    /**
-     * Get the GenePattern jobId for the given drm job. The system uses one table to store records for an arbitrary number
-     * of job runner instances. The DB model allows for duplicate drmJobIds. The uniqueness constraint is on three columns.
-     * 
-     * @param jobRunnerClassname
-     * @param jobRunnerName
-     * @param drmJobId
-     * @return
-     */
-    Integer lookupGpJobNo(final String drmJobId);
+    DrmJobRecord lookupJobRecord(final Integer gpJobNo);
     
     /**
      * Insert a record into the DB for a given GenePattern job;
@@ -62,5 +52,6 @@ public interface DrmLookup {
      * @param gpJobId, the GenePattern job id.
      * @param drmJobStatus, the current status as reported by the external JobRunner.
      */
-    void updateJobStatus(final Integer gpJobNo, final DrmJobStatus drmJobStatus);
+    //void updateJobStatus(final Integer gpJobNo, final DrmJobStatus drmJobStatus);
+    void updateJobStatus(final DrmJobRecord drmJobRecord, final DrmJobStatus drmJobStatus);
 }

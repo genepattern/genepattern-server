@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.util.Date;
 
 import org.apache.log4j.Logger;
+import org.genepattern.drm.DrmJobRecord;
 import org.genepattern.drm.DrmJobState;
 import org.genepattern.drm.DrmJobStatus;
 import org.genepattern.drm.DrmJobSubmission;
@@ -109,18 +110,18 @@ public class DemoPbsJobRunner implements JobRunner {
     }
 
     @Override
-    public DrmJobStatus getStatus(final String drmJobId) {
-        log.info("getStatus, drmJobId="+drmJobId);
+    public DrmJobStatus getStatus(final DrmJobRecord drmJobRecord) {
+        log.info("getStatus, extJobId="+drmJobRecord.getExtJobId());
         //I work so hard, I'm always finished
-        return new DrmJobStatus.Builder(drmJobId, DrmJobState.DONE)
+        return new DrmJobStatus.Builder(drmJobRecord.getExtJobId(), DrmJobState.DONE)
             .exitCode(0)
             .endTime(new Date())
             .build();
     }
 
     @Override
-    public boolean cancelJob(final String drmJobId, final DrmJobSubmission drmJobSubmission) throws Exception {
-        log.info("cancelJob, drmJobId="+drmJobId);
+    public boolean cancelJob(final DrmJobRecord job) throws Exception {
+        log.info("cancelJob, extJobId="+job.getExtJobId());
         return true;
     }
 

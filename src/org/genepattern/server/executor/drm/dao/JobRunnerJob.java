@@ -24,6 +24,7 @@ import org.genepattern.drm.DrmJobSubmission;
 @Table(name="job_runner_job",
        uniqueConstraints=@UniqueConstraint(columnNames={"jr_classname", "jr_name", "ext_job_id"}))
 public class JobRunnerJob {
+    
     //this is a foreign key to the analysis_job table
     @Id
     @Column(name="gp_job_no")
@@ -251,6 +252,22 @@ public class JobRunnerJob {
     public String getWorkingDir() {
         return workingDir;
     }
+    
+    public String getStdinFile() {
+        return stdinFile;
+    }
+    
+    public String getStdoutFile() {
+        return stdoutFile;
+    }
+    
+    public String getStderrFile() {
+        return stderrFile;
+    }
+    
+    public String getLogFile() {
+        return logFile;
+    }
 
     //private no-arg constructor for hibernate
     private JobRunnerJob() {
@@ -296,5 +313,16 @@ public class JobRunnerJob {
     private void setWorkingDir(final String workingDir) {
         this.workingDir = workingDir;
     }
+    
+    private void setStdinFile(final String stdinFile) {
+        this.stdinFile = stdinFile;
+    }
 
+    private void setStdoutFile(final String stdoutFile) {
+        this.stdoutFile = stdoutFile;
+    }
+    
+    private void setLogFile(final String logFile) {
+        this.logFile = logFile;
+    }
 }

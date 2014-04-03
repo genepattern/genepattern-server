@@ -1,7 +1,6 @@
 package org.genepattern.server.executor.drm;
 
 import java.io.File;
-import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -10,19 +9,19 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadFactory;
+
 import java.util.concurrent.TimeUnit;
 
 import org.apache.log4j.Logger;
+import org.genepattern.drm.DrmJobRecord;
 import org.genepattern.drm.DrmJobState;
 import org.genepattern.drm.DrmJobStatus;
-import org.genepattern.drm.JobRunner;
 import org.genepattern.drm.DrmJobSubmission;
+import org.genepattern.drm.JobRunner;
 import org.genepattern.server.config.GpContext;
-import org.genepattern.server.config.ServerConfigurationFactory;
-import org.genepattern.server.executor.CommandExecutor;
+import org.genepattern.server.executor.CommandExecutor2;
 import org.genepattern.server.executor.CommandExecutorException;
 import org.genepattern.server.executor.CommandProperties;
-import org.genepattern.server.config.Value;
 import org.genepattern.server.genepattern.GenePatternAnalysisTask;
 import org.genepattern.webservice.JobInfo;
 import org.genepattern.webservice.JobStatus;
@@ -42,7 +41,7 @@ import org.genepattern.webservice.JobStatus;
  * @author pcarr
  *
  */
-public class JobExecutor implements CommandExecutor {
+public class JobExecutor implements CommandExecutor2 {
     private static final Logger log = Logger.getLogger(JobExecutor.class);
     
     private String jobRunnerClassname;
@@ -56,7 +55,7 @@ public class JobExecutor implements CommandExecutor {
     private DrmLookup jobLookupTable;
 
     private static final int BOUND = 100000;
-    private BlockingQueue<String> runningJobs;
+    private BlockingQueue<DrmJobRecord> runningJobs;
     private Thread jobHandlerThread;
     
     private ScheduledExecutorService svc=Executors.newSingleThreadScheduledExecutor(new ThreadFactory() {
@@ -99,21 +98,21 @@ public class JobExecutor implements CommandExecutor {
                 }
 
                 @Override
-                public DrmJobStatus getStatus(String drmJobId) {
+                public DrmJobStatus getStatus(DrmJobRecord drmJobRecord) {
                     return null;
                 }
 
                 @Override
-                public boolean cancelJob(final String drmJobId, final DrmJobSubmission jobSubmission) throws Exception {
+                public boolean cancelJob(final DrmJobRecord drmJobRecord) throws Exception {
                     throw new Exception("Server configuration error: the jobRunner was not initialized from classname="+classname);
                 }
             };
         }
     }
     
-    private void handleCompletedJob(final DrmJobStatus jobStatus) {
-        log.debug("handleCompletedJob, jobStatus="+jobStatus);
-        final Integer gpJobNo=jobLookupTable.lookupGpJobNo(jobStatus.getDrmJobId());
+    private void handleCompletedJob(final DrmJobRecord jobRecord, final DrmJobStatus jobStatus) {
+        log.debug("handleCompletedJob, gpJobNo="+jobRecord.getGpJobNo()+",extJobId="+jobRecord.getExtJobId()+", jobStatus="+jobStatus);
+        final Integer gpJobNo=jobRecord.getGpJobNo();
         try {
             final int exitCode;
             if (jobStatus.getExitCode()==null) {
@@ -153,12 +152,12 @@ public class JobExecutor implements CommandExecutor {
      * 
      * @return the number of milliseconds to sleep before adding the job back to the runningJobsQueue
      */
-    private long getDelay(final String drmJobId, final DrmJobStatus drmJobStatus) {
-        return 1000L;
+    private long getDelay(final DrmJobRecord drmJobRecord, final DrmJobStatus drmJobStatus) {
+        return 2000L;
     }
     
     // more intelligent delay
-    private long getDelay_proposed(final String drmJobId, final DrmJobStatus drmJobStatus) {
+    private long getDelay_proposed(final DrmJobRecord drmJobRecord, final DrmJobStatus drmJobStatus) {
         if (drmJobStatus==null) {
             log.error("drmJobStatus==null, returning hard-coded value");
             return 1000L;
@@ -231,16 +230,16 @@ public class JobExecutor implements CommandExecutor {
     @Override
     public void start() {
         log.info("starting job executor: "+jobRunnerName+" ( "+jobRunnerClassname+" ) ...");
-        runningJobs=new LinkedBlockingQueue<String>(BOUND);
+        runningJobs=new LinkedBlockingQueue<DrmJobRecord>(BOUND);
         initJobHandler();
         initJobsOnStartup(runningJobs);
     }
 
-    private void initJobsOnStartup(final BlockingQueue<String> toQueue) {
+    private void initJobsOnStartup(final BlockingQueue<DrmJobRecord> toQueue) {
         log.info("initializing jobs on startup: "+jobRunnerName+" ( "+jobRunnerClassname+" ) ...");
-        final List<String> jobs=jobLookupTable.getRunningDrmJobIds();
+        final List<DrmJobRecord> jobs=jobLookupTable.getRunningDrmJobRecords();
         log.info("found "+jobs.size()+ " running job(s)");
-        for(final String drmJobId : jobs) {
+        for(final DrmJobRecord drmJobId : jobs) {
             log.debug("adding drmJobId="+drmJobId+" to list of running jobs");
             boolean success=runningJobs.offer(drmJobId);
             if (!success) {
@@ -249,21 +248,24 @@ public class JobExecutor implements CommandExecutor {
         }
     }
     
-    private void updateStatus(final DrmJobStatus drmJobStatus) {
+    private void updateStatus(final DrmJobRecord drmJobRecord, final DrmJobStatus drmJobStatus) {
         if (drmJobStatus==null) {
             //ignore
             log.debug("drmJobStatus==null");
             return;
         }
-        
-        final Integer gpJobNo=jobLookupTable.lookupGpJobNo(drmJobStatus.getDrmJobId());
+        if (drmJobRecord==null) {
+            //ignore
+            log.debug("drmJobRecord==null");
+            return;
+        }
         if (log.isDebugEnabled()) {
-            log.debug("recording status for gpJobId="+gpJobNo+
+            log.debug("recording status for gpJobId="+drmJobRecord.getGpJobNo()+
                     ", drmJobStatus="+drmJobStatus);
         }
         
         //record this to the lookup table
-        jobLookupTable.updateJobStatus(gpJobNo, drmJobStatus);
+        jobLookupTable.updateJobStatus(drmJobRecord, drmJobStatus);
     }
     
     private void initJobHandler() {
@@ -274,27 +276,28 @@ public class JobExecutor implements CommandExecutor {
                 try {
                     while(true) {
                         //take the next job from the queue
-                        final String drmJobId=runningJobs.take();
+                        final DrmJobRecord drmJobRecord=runningJobs.take();
                         //check it's status
-                        final DrmJobStatus drmJobStatus=jobRunner.getStatus(drmJobId);
-                        updateStatus(drmJobStatus);
+                        final DrmJobStatus drmJobStatus=jobRunner.getStatus(drmJobRecord);
+                        updateStatus(drmJobRecord, drmJobStatus);
                         if (drmJobStatus != null && drmJobStatus.getJobState().is(DrmJobState.TERMINATED)) {
-                            handleCompletedJob(drmJobStatus);
+                            handleCompletedJob(drmJobRecord, drmJobStatus);
                         }
                         else if (drmJobStatus != null && drmJobStatus.getJobState().is(DrmJobState.UNDETERMINED)) {
                             log.error("unexpected result from jobRunner.getStatus, jobState="+drmJobStatus.getJobState());
+                            handleCompletedJob(drmJobRecord, drmJobStatus);
                         }
                         else {
                             if (drmJobStatus==null) {
                                 log.error("unexpected result from jobRunner.getStatus, drmJobStatus=null");
                             }
                             //put it back onto the queue
-                            final long delay=getDelay(drmJobId, drmJobStatus);
+                            final long delay=getDelay(drmJobRecord, drmJobStatus);
                             svc.schedule(new Runnable() {
                                 @Override
                                 public void run() {
                                     try {
-                                        runningJobs.put(drmJobId);
+                                        runningJobs.put(drmJobRecord);
                                     }
                                     catch (InterruptedException e) {
                                         Thread.currentThread().interrupt();
@@ -303,7 +306,7 @@ public class JobExecutor implements CommandExecutor {
                             },
                             delay,
                             TimeUnit.MILLISECONDS);
-                       }
+                        }
                     }
                 }
                 catch (InterruptedException e) {
@@ -334,117 +337,53 @@ public class JobExecutor implements CommandExecutor {
     
     @Override
     public void runCommand(final String[] commandLine, final Map<String, String> environmentVariables, final File runDir, final File stdoutFile, final File stderrFile, final JobInfo jobInfo, final File stdinFile) throws CommandExecutorException {
-        if (jobInfo==null) {
-            throw new IllegalArgumentException("jobInfo==null");
+        GpContext jobContext=GpContext.getContextForJob(jobInfo);
+        runCommand(jobContext, commandLine, environmentVariables, runDir, stdoutFile, stderrFile, stdinFile);
+    }
+
+    @Override
+    public void runCommand(final GpContext jobContext, String[] commandLine, Map<String, String> environmentVariables, File runDir, File stdoutFile, File stderrFile, File stdinFile) throws CommandExecutorException {
+        if (jobContext==null) {
+            throw new IllegalArgumentException("jobContext==null");
         }
-        final Integer gpJobNo=jobInfo.getJobNumber();
+        if (jobContext.getJobInfo()==null) {
+            throw new IllegalArgumentException("jobContext.jobInfo==null");
+        }
+        final Integer gpJobNo=jobContext.getJobNumber();
         log.debug(jobRunnerName+" runCommand, gpJobNo="+gpJobNo);
         
-        final GpContext jobContext=GpContext.getContextForJob(jobInfo);
-        
-        DrmJobSubmission.Builder builder=new DrmJobSubmission.Builder(jobInfo, runDir);
-        builder=builder
+        DrmJobSubmission.Builder builder=new DrmJobSubmission.Builder(runDir)
+            .jobContext(jobContext)
             .commandLine(commandLine)
             .environmentVariables(environmentVariables)
             .stdoutFile(stdoutFile)
             .stderrFile(stderrFile)
             .stdinFile(stdinFile)
             .logFilename(logFilename);
-        String workerName=ServerConfigurationFactory.instance().getGPProperty(jobContext, JobRunner.PROP_WORKER_NAME, null);
-        if (workerName != null) {
-            builder.workerName(workerName);
-        }
-        final Map<?,?> workerConfig=getWorkerConfig(jobContext);
-        builder=builder.workerConfig(workerConfig);
-        final String queue=getValue(jobContext, workerConfig, JobRunner.PROP_QUEUE);
-        if (queue != null) {
-            builder.queue(queue);
-        }
-        final String memory=getValue(jobContext, workerConfig, JobRunner.PROP_MEMORY);
-        if (memory != null) {
-            builder=builder.memory(memory);
-        }
-        final String walltime=getValue(jobContext, workerConfig, JobRunner.PROP_WALLTIME);
-        if (walltime != null) {
-            try {
-                builder=builder.walltime(walltime);
-            }
-            catch (Exception e) {
-                throw new CommandExecutorException("configuration error, initializing walltime="+walltime, e);
-            }
-        }
-        final String nodeCountStr=getValue(jobContext, workerConfig, JobRunner.PROP_NODE_COUNT);
-        if (nodeCountStr != null) {
-            try {
-                Integer nodeCount=Integer.parseInt(nodeCountStr);
-                builder=builder.nodeCount(nodeCount);
-            }
-            catch (Throwable t) {
-                throw new CommandExecutorException("configuration error, initializing nodeCount="+nodeCountStr, t);
-            }
-        }
-        final String cpuCountStr=getValue(jobContext, workerConfig, JobRunner.PROP_CPU_COUNT);
-        if (cpuCountStr != null) {
-            try {
-                Integer cpuCount=Integer.parseInt(cpuCountStr);
-                builder=builder.cpuCount(cpuCount);
-            }
-            catch (Throwable t) {
-                throw new CommandExecutorException("configuration error, initializing cpuCount="+cpuCountStr, t);
-            }
-        }
-        final Value extraArgsValue=ServerConfigurationFactory.instance().getValue(jobContext, JobRunner.PROP_EXTRA_ARGS);
-        if (extraArgsValue != null) {
-            for(final String extraArg : extraArgsValue.getValues()) {
-                builder=builder.addExtraArg(extraArg);
-            }
-        }
         final DrmJobSubmission drmJobSubmission=builder.build();
         
         jobLookupTable.insertJobRecord(drmJobSubmission);
         //TODO: make fault tolerant in the event that (1) startJob gets hung or (2) startJob throws an exception
-        //TODO: consider modifying the API so that startJob returns a DrmJobStatus instance
-        final String drmJobId=jobRunner.startJob(drmJobSubmission);
-        if (!isSet(drmJobId)) {
-            final DrmJobStatus drmJobStatus = new DrmJobStatus.Builder(drmJobId, DrmJobState.FAILED).build();
-            jobLookupTable.updateJobStatus(gpJobNo, drmJobStatus);
-            throw new CommandExecutorException("invalid drmJobId returned from startJob, gpJobId="+jobInfo.getJobNumber());
+        final String extJobId=jobRunner.startJob(drmJobSubmission);
+        final DrmJobRecord drmJobRecord = new DrmJobRecord.Builder(extJobId, drmJobSubmission)
+            .build();
+        if (!isSet(extJobId)) {
+            final DrmJobStatus drmJobStatus = new DrmJobStatus.Builder(extJobId, DrmJobState.FAILED).build();
+            jobLookupTable.updateJobStatus(drmJobRecord, drmJobStatus);
+            throw new CommandExecutorException("invalid drmJobId returned from startJob, gpJobId="+gpJobNo);
         }
         else {
-            jobLookupTable.updateJobStatus(gpJobNo, new DrmJobStatus.Builder(drmJobId, DrmJobState.QUEUED).build());
+            jobLookupTable.updateJobStatus(drmJobRecord, new DrmJobStatus.Builder(extJobId, DrmJobState.QUEUED).build());
             try {
-                runningJobs.put(drmJobId);
+                runningJobs.put(drmJobRecord);
             }
             catch (InterruptedException e) {
                 //we were cancelled while trying to add another job to the runtime queue
-                log.error("Interrupted, drmJobId="+drmJobId);
+                log.error("Interrupted, extJobId="+extJobId);
                 Thread.currentThread().interrupt();
                 return;
             }
         }
-    }
-    
-    private String getValue(final GpContext jobContext, final Map<?,?> workerConfig, final String prop) {
-        if (workerConfig != null && workerConfig.containsKey(prop)) {
-            return (String) workerConfig.get(prop);
-        }
-        Value value=ServerConfigurationFactory.instance().getValue(jobContext, prop);
-        if (value==null) {
-            return null;
-        }
-        return value.getValue();
-    }
-    
-    private Map<?,?> getWorkerConfig(final GpContext jobContext) {
-        final String workerName=ServerConfigurationFactory.instance().getGPProperty(jobContext, JobRunner.PROP_WORKER_NAME, null);
-        if (workerName == null) {
-            return Collections.emptyMap();
-        }
-        final Value workerConfig=ServerConfigurationFactory.instance().getValue(jobContext, workerName);
-        if (workerConfig != null && workerConfig.isMap()) {
-            return workerConfig.getMap();
-        }
-        return Collections.emptyMap();
     }
 
     @Override
@@ -453,18 +392,10 @@ public class JobExecutor implements CommandExecutor {
             throw new IllegalArgumentException("jobInfo==null");
         }
         log.debug(jobRunnerName+" terminateJob, gpJobNo="+jobInfo.getJobNumber());
-        //TODO: load DrmJobSubmission from jobLookupTable
-        final String drmJobId=jobLookupTable.lookupDrmJobId(jobInfo.getJobNumber());
-        final File workingDir = new File(GenePatternAnalysisTask.getJobDir(""+jobInfo.getJobNumber()));
-        final String[] commandLine={ "echo", "Hello, World!" };
-        final DrmJobSubmission jobSubmission=new DrmJobSubmission.Builder(jobInfo.getJobNumber(), workingDir)
-            .gpUserId(jobInfo.getUserId())
-            .lsid(jobInfo.getTaskLSID())
-            .taskName(jobInfo.getTaskName())
-            .commandLine(commandLine)
-            .build();
-        boolean cancelled=jobRunner.cancelJob(drmJobId, jobSubmission);
-        log.debug("terminateJob(gpJobId="+jobInfo.getJobNumber()+", drmJobId="+drmJobId+"): cancelled="+cancelled);
+        final DrmJobRecord drmJobRecord=jobLookupTable.lookupJobRecord(jobInfo.getJobNumber());
+        drmJobRecord.getExtJobId();
+        boolean cancelled=jobRunner.cancelJob(drmJobRecord);
+        log.debug("terminateJob(gpJobId="+jobInfo.getJobNumber()+", extJobId="+drmJobRecord.getExtJobId()+"): cancelled="+cancelled);
     }
 
     /**
@@ -472,24 +403,24 @@ public class JobExecutor implements CommandExecutor {
      */
     @Override
     public int handleRunningJob(JobInfo jobInfo) throws Exception {
-        final String drmJobId=jobLookupTable.lookupDrmJobId(jobInfo.getJobNumber());
-        if (drmJobId==null) {
+        final DrmJobRecord drmJobRecord=jobLookupTable.lookupJobRecord(jobInfo.getJobNumber());
+        if (drmJobRecord==null || drmJobRecord.getExtJobId()==null) {
             //no match found, what to do?
             log.error("No matching drmJobId found for gpJobId="+jobInfo.getJobNumber());
             return JobStatus.JOB_ERROR;
         }
         if (log.isDebugEnabled()) {
-            log.debug(jobRunnerName+" handleRunningJob, gpJobNo="+jobInfo.getJobNumber()+", drmJobId="+drmJobId);
+            log.debug(jobRunnerName+" handleRunningJob, gpJobNo="+jobInfo.getJobNumber()+", extJobId="+drmJobRecord.getExtJobId());
         }
-        final DrmJobStatus drmJobStatus=jobRunner.getStatus(drmJobId);
+        final DrmJobStatus drmJobStatus=jobRunner.getStatus(drmJobRecord);
         
         if (drmJobStatus==null) {
-            log.error("No matching drmJobStatus for gpJobId="+jobInfo.getJobNumber()+", drmJobId="+drmJobId);
+            log.error("No matching drmJobStatus for gpJobId="+jobInfo.getJobNumber()+", extJobId="+drmJobRecord.getExtJobId());
             return JobStatus.JOB_ERROR;
         }
         // an rval < 0 indicates to the calling method to ignore this
         if (drmJobStatus.getJobState().is(DrmJobState.TERMINATED)) {
-            handleCompletedJob(drmJobStatus);
+            handleCompletedJob(drmJobRecord, drmJobStatus);
             return -1;
         }
         //it's still processing

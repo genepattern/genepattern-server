@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
+import org.genepattern.drm.DrmJobRecord;
 import org.genepattern.drm.DrmJobStatus;
 import org.genepattern.drm.DrmJobSubmission;
 import org.genepattern.server.executor.drm.dao.JobRunnerJob;
@@ -37,43 +38,67 @@ public class HashMapLookup implements DrmLookup {
     
     //map of gpJobId -> drmJobId
     private BiMap<Integer, String> lookup=HashBiMap.create();
+    private BiMap<Integer, DrmJobRecord> lookup2=HashBiMap.create();
 
     private Map<Integer, JobRunnerJob> detailsTable=new HashMap<Integer, JobRunnerJob>();
 
     @Override
-    public List<String> getRunningDrmJobIds() {
-        return new ArrayList<String>(lookup.values());
+    public List<DrmJobRecord> getRunningDrmJobRecords() {
+        return new ArrayList<DrmJobRecord>(lookup2.values());
     }
 
+
     @Override
-    public String lookupDrmJobId(final Integer gpJobNo) {
-        return lookup.get(gpJobNo);
+    public DrmJobRecord lookupJobRecord(Integer gpJobNo) {
+        return lookup2.get(gpJobNo);
     }
     
-    @Override
-    public Integer lookupGpJobNo(final String drmJobId) {
-        return lookup.inverse().get(drmJobId);
-    }
 
+//    @Override
+//    public void updateJobStatus(final Integer gpJobNo, final DrmJobStatus drmJobStatus) {
+//        JobRunnerJob rowOrig=detailsTable.get(gpJobNo);
+//        if (rowOrig==null) {
+//            log.error("Row not initialized for gpJobId="+gpJobNo);
+//            //TODO: figure out how to initialize the workingDir
+//            final File workingDir=new File(""+gpJobNo);
+//            rowOrig=new JobRunnerJob.Builder(jobRunnerClassname, workingDir, gpJobNo).drmJobStatus(drmJobStatus).build();
+//        }
+//        final JobRunnerJob updated=new JobRunnerJob.Builder(rowOrig).drmJobStatus(drmJobStatus).build();
+//        if (isSet(updated.getExtJobId())) {
+//            lookup.put(updated.getGpJobNo(), updated.getExtJobId());
+//            String extJobId=lookup.get(gpJobNo);
+//            DrmJobRecord drmJobRecord=new DrmJobRecord.Builder(gpJobNo)
+//                .extJobId(extJobId)
+//                .build();
+//            lookup2.put(updated.getGpJobNo(), drmJobRecord);
+//        }
+//        detailsTable.put(gpJobNo, updated);
+//    }
+    
     @Override
-    public void updateJobStatus(final Integer gpJobNo, final DrmJobStatus drmJobStatus) {
+    public void updateJobStatus(final DrmJobRecord drmJobRecord, final DrmJobStatus drmJobStatus) {
+        final Integer gpJobNo=drmJobRecord.getGpJobNo();
         JobRunnerJob rowOrig=detailsTable.get(gpJobNo);
         if (rowOrig==null) {
             log.error("Row not initialized for gpJobId="+gpJobNo);
-            //TODO: figure out how to initialize the workingDir
-            final File workingDir=new File(""+gpJobNo);
+            final File workingDir=drmJobRecord.getWorkingDir();
             rowOrig=new JobRunnerJob.Builder(jobRunnerClassname, workingDir, gpJobNo).drmJobStatus(drmJobStatus).build();
         }
         final JobRunnerJob updated=new JobRunnerJob.Builder(rowOrig).drmJobStatus(drmJobStatus).build();
         if (isSet(updated.getExtJobId())) {
             lookup.put(updated.getGpJobNo(), updated.getExtJobId());
+            lookup2.put(updated.getGpJobNo(), drmJobRecord);
         }
         detailsTable.put(gpJobNo, updated);
     }
+
+
 
     @Override
     public void insertJobRecord(final DrmJobSubmission jobSubmission) {
         JobRunnerJob row=new JobRunnerJob.Builder(jobRunnerClassname, jobSubmission.getWorkingDir(), jobSubmission.getGpJobNo()).jobRunnerName(jobRunnerName).build();
         detailsTable.put(row.getGpJobNo(), row);
     }
+
+
 }

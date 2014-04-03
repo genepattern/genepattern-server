@@ -66,17 +66,16 @@ public interface JobRunner {
      * @param drmJobId
      * @return
      */
-    DrmJobStatus getStatus(String drmJobId);
+    DrmJobStatus getStatus(DrmJobRecord drmJobRecord);
 
     /**
      * This method is called when the GP server wants to cancel a job before it has completed on the queuing system. 
      * For example when a user terminates a job from the web ui.
      * 
-     * @param drmJobId
-     * @param jobInfo
+     * @param drmJobRecord, contains a record of the job
      * @return true if the job was successfully cancelled, false otherwise.
      * @throws Exception
      */  
-    boolean cancelJob(String drmJobId, DrmJobSubmission drmJobSubmission) throws Exception;
+    boolean cancelJob(DrmJobRecord drmJobRecord) throws Exception;
 
 }

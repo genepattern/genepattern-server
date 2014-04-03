@@ -12,6 +12,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
 import org.apache.log4j.Logger;
+import org.genepattern.drm.DrmJobRecord;
 import org.genepattern.drm.DrmJobState;
 import org.genepattern.drm.DrmJobStatus;
 import org.genepattern.drm.JobRunner;
@@ -91,7 +92,8 @@ public class LocalJobRunner implements JobRunner {
     }
 
     @Override
-    public DrmJobStatus getStatus(final String drmJobId) {
+    public DrmJobStatus getStatus(final DrmJobRecord drmJobRecord) {
+        final String drmJobId=drmJobRecord.getExtJobId();
         final Future<DrmJobStatus> task=runningTasks.get(drmJobId);
         if (task==null) {
             //TODO: could look at the file system for evidence of job completion
@@ -124,15 +126,15 @@ public class LocalJobRunner implements JobRunner {
     }
 
     @Override
-    public boolean cancelJob(final String drmJobId, final DrmJobSubmission drmJobSubmission) throws Exception {
-        final Future<DrmJobStatus> task=runningTasks.get(drmJobId);
+    public boolean cancelJob(final DrmJobRecord jobRecord) throws Exception {
+        final Future<DrmJobStatus> task=runningTasks.get(jobRecord.getExtJobId());
         if (task != null) {
             final boolean mayInterruptIfRunning=true;
             final boolean success=task.cancel(mayInterruptIfRunning);
             log.debug("success="+success);
             return success;
         }
-        log.debug("No entry in 'runningTasks' map for drmJobId="+drmJobId);
+        log.debug("No entry in 'runningTasks' map for drmJobId="+jobRecord.getExtJobId());
         //TODO: job may have already completed ... successfully or already cancelled successfully,
         return false;
     }
