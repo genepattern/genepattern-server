@@ -1064,30 +1064,55 @@ function createFileWidget(linkElement, appendTo) {
                             "Create": function(event) {
                                 var subdirName = $(".dialog-subdirectory-name").val();
 
-                                $.ajax({
-                                    type: "PUT",
-                                    url: "/gp/rest/v1/data/createDirectory/" + path + encodeURIComponent(subdirName),
-                                    success: function(data, textStatus, jqXHR) {
-                                        $("#infoMessageDiv #infoMessageContent").text(data);
-                                        $("#infoMessageDiv").show();
+                                var _createSubdirectory = function() {
+                                    $.ajax({
+                                        type: "PUT",
+                                        url: "/gp/rest/v1/data/createDirectory/" + path + encodeURIComponent(subdirName),
+                                        success: function(data, textStatus, jqXHR) {
+                                            $("#infoMessageDiv #infoMessageContent").text(data);
+                                            $("#infoMessageDiv").show();
 
-                                        if (isUpload) {
-                                            $("#uploadTree").data("dndReady", {});
-                                            $("#uploadTree").jstree("refresh");
+                                            if (isUpload) {
+                                                $("#uploadTree").data("dndReady", {});
+                                                $("#uploadTree").jstree("refresh");
 
-                                            $("#uploadDirectoryTree").jstree("refresh");
+                                                $("#uploadDirectoryTree").jstree("refresh");
+                                            }
+                                        },
+                                        error: function(data, textStatus, jqXHR) {
+                                            if (typeof data === 'object') {
+                                                data = data.responseText;
+                                            }
+
+                                            showErrorMessage(data);
                                         }
-                                    },
-                                    error: function(data, textStatus, jqXHR) {
-                                        if (typeof data === 'object') {
-                                            data = data.responseText;
-                                        }
+                                    });
+                                };
 
-                                        showErrorMessage(data);
-                                    }
-                                });
-
-                                $(this).dialog("close");
+                                // Check for special characters
+                                var regex = new RegExp("[^A-Za-z0-9_.]");
+                                var specialCharacters = regex.test(subdirName);
+                                if(specialCharacters) {
+                                    var outerDialog = $(this);
+                                    showDialog("Special Characters!",
+                                        "The name you selected contains special characters!<br/><br/>" +
+                                            "Some older GenePattern modules do not handle special characters well. " +
+                                            "Are you sure you want to continue?", {
+                                            "Yes": function() {
+                                                _createSubdirectory();
+                                                $(this).dialog("close");
+                                                $(outerDialog).dialog("close");
+                                            },
+                                            "No": function() {
+                                                $(this).dialog("close");
+                                            }
+                                        });
+                                    return;
+                                }
+                                else {
+                                    _createSubdirectory();
+                                    $(this).dialog("close");
+                                }
                             },
                             "Cancel": function(event) {
                                 $(this).dialog("close");
