@@ -3,6 +3,8 @@ package org.genepattern.server.dm.userupload.dao;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.log4j.Logger;
 import org.genepattern.server.database.BaseDAO;
@@ -130,13 +132,16 @@ public class UserUploadDao extends BaseDAO {
         // Delete the file itself
         int numDeleted = deleteUserUpload(userId, gpFileObj);
 
+        // Escape single quotes so they don't cause SQL problems
+        relativePath = relativePath.replaceAll("'", Matcher.quoteReplacement("''"));
+
         // Delete child files
         String hql = "delete from " + UserUpload.class.getName() + " where user_id = '" + userId + "' and path like '" + relativePath + "/%'"; //delete "+UserUpload.class.getName()+" uu where uu.userId = :userId and uu.path like :path";
         Query query = HibernateUtil.getSession().createQuery( hql );
         numDeleted += query.executeUpdate();
-        
-        
-        
+
+
+
         return numDeleted;
     }
     
