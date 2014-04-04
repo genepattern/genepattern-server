@@ -1392,13 +1392,13 @@ function createJobStatus(status) {
     // Pending
     if (status.isPending) {
         return $("<div></div>")
-            .text("Pending")
+            //.text("Pending")
             .addClass("job-status-icon");
     }
     // Processing
     else if (!status.isFinished) {
         return $("<img/>")
-            .attr("src", "/gp/images/run.gif")
+            //.attr("src", "/gp/images/run.gif")
             .addClass("job-status-icon");
     }
     // Finished and Error
