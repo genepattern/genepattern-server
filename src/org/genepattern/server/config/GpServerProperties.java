@@ -2,7 +2,6 @@ package org.genepattern.server.config;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Date;
 import java.util.Enumeration;
@@ -28,7 +27,7 @@ import com.google.common.collect.Maps;
 public class GpServerProperties {
     private static Logger log = Logger.getLogger(GpServerProperties.class);
 
-    private static class Record {
+    public static class Record {
         private final File propFile;
         private long dateLoaded = System.currentTimeMillis();
         private final Properties props=new Properties();
@@ -57,23 +56,22 @@ public class GpServerProperties {
         
         public void reloadProps() {
             props.clear();
+            dateLoaded = System.currentTimeMillis();
             FileInputStream fis = null;
             try {
                 fis = new FileInputStream(propFile);
                 props.load(fis);
                 dateLoaded = System.currentTimeMillis();
             }
-            catch (FileNotFoundException e) {
-                log.error("FileNotFound: "+propFile.getAbsolutePath(), e);
-                return;
-            }
             catch (IOException e) {
                 log.error("IOException reading file="+propFile.getAbsolutePath(), e);
                 return;
             }
             catch (Throwable t) {
+                ///CLOVER:OFF
                 log.error("unexpected error reading file="+propFile.getAbsolutePath(), t);
                 return;
+                ///CLOVER:ON
             }
             finally {
                 if (fis != null) {
@@ -81,7 +79,9 @@ public class GpServerProperties {
                         fis.close();
                     }
                     catch (IOException e) {
+                        ///CLOVER:OFF
                         log.error(e);
+                        ///CLOVER:ON
                     }
                 }
             }
@@ -118,7 +118,7 @@ public class GpServerProperties {
             propertiesList.put("genepattern.properties", gpProps);
             flattened.putAll(gpProps.getProperties());
         }
-        if (in.customPropertiesFile != null) {
+        if (in.customPropertiesFile != null && in.customPropertiesFile.exists()) {
             log.debug("loading custom.properties from file="+in.customPropertiesFile);
             Record customProps=new Record(in.customPropertiesFile);
             propertiesList.put("custom.properties", customProps);
@@ -127,7 +127,7 @@ public class GpServerProperties {
         if (in.customProperties != null) {
             flattened.putAll(in.customProperties);
         }
-        if (in.buildPropertiesFile != null) {
+        if (in.buildPropertiesFile != null && in.buildPropertiesFile.exists()) {
             log.debug("loading build.properties from file="+in.buildPropertiesFile);
             Record buildProps=new Record(in.buildPropertiesFile);
             propertiesList.put("build.properties", buildProps);

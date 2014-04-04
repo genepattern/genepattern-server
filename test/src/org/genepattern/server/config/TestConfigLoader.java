@@ -14,27 +14,6 @@ import org.junit.Test;
  */
 public class TestConfigLoader {
     
-    private String printContext(final GpContext context) {
-        if (context==null) {
-            return "context=null";
-        }
-        StringBuffer buf=new StringBuffer();
-        buf.append("userId="+context.getUserId());
-        if (context.getTaskInfo() != null) {
-            buf.append(",taskInfo.name="+context.getTaskInfo().getName());
-        }
-        if (context.getJobInfo() != null) {
-            buf.append(",jobInfo.taskName="+context.getJobInfo().getTaskName());
-        }
-        return buf.toString();
-    }
-
-    private void doTest(final GpConfig gpConfig, final GpContext context, final String prop, final String expected) {
-        String message="for "+printContext(context)+" expecting "+prop+"="+expected;
-        Value value=gpConfig.getValue(context, prop);
-        //Value value=ServerConfigurationFactory.instance().getValue(context, prop);
-        Assert.assertEquals(message, expected, value.getValue());
-    }
 
     @Test
     public void testFromSystemProps() {
