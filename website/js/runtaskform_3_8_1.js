@@ -1705,6 +1705,7 @@ function loadParametersByGroup(parameterGroups, parameters, initialValues)
                         newHeaderDiv.addClass("dotted-border");
 
                         headerTitleDiv.addClass("background");
+                        newHeaderDiv.before(headerTitleDiv);
                     }
                 }
                 headerTitleDiv.append(headings[h]);
@@ -1718,7 +1719,6 @@ function loadParametersByGroup(parameterGroups, parameters, initialValues)
 
                 //append to the top level parameter listing div
                 curHeaderDiv.append(newHeaderDiv);
-                newHeaderDiv.before(headerTitleDiv);
             }
 
             //keep track of top level parent div
