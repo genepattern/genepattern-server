@@ -284,7 +284,7 @@ public class JobExecutor implements CommandExecutor2 {
                             handleCompletedJob(drmJobRecord, drmJobStatus);
                         }
                         else if (drmJobStatus != null && drmJobStatus.getJobState().is(DrmJobState.UNDETERMINED)) {
-                            log.error("unexpected result from jobRunner.getStatus, jobState="+drmJobStatus.getJobState());
+                            log.debug("unexpected result from jobRunner.getStatus, jobState="+drmJobStatus.getJobState());
                             handleCompletedJob(drmJobRecord, drmJobStatus);
                         }
                         else {
