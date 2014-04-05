@@ -365,7 +365,9 @@ public class RunTaskServlet extends HttpServlet
             GpContext jobContext=GpContext.getContextForUser(username);
 
             JobInputFileUtil fileUtil = new JobInputFileUtil(jobContext);
-            GpFilePath gpFilePath=fileUtil.initUploadFileForInputParam(index, paramName, fileDetail.getFileName());
+            final String fileName=fileDetail.getFileName();
+            log.debug("fileName="+fileName);
+            GpFilePath gpFilePath=fileUtil.initUploadFileForInputParam(index, paramName, fileName);
 
             // save it
             writeToFile(uploadedInputStream, gpFilePath.getServerFile().getCanonicalPath());
@@ -383,7 +385,6 @@ public class RunTaskServlet extends HttpServlet
         }
         catch(Exception e)
         {
-            e.printStackTrace();
             String message = "An error occurred while uploading the file \"" + fileDetail.getFileName() + "\"";
             if(e.getMessage() != null)
             {
