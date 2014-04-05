@@ -142,17 +142,23 @@ public class JobInputFileUtil {
      * @param paramName
      * @return
      */
-    public GpFilePath initUploadFileForInputParam(final int idx, final String paramName, final String fileName) throws Exception {
+    public GpFilePath initUploadFileForInputParam(final int idx, final String paramName, final String fileNameIn) throws Exception {
         if (paramName==null) {
             throw new IllegalArgumentException("paramName==null");
         }
-        if (fileName==null) {
+        if (fileNameIn==null) {
             throw new IllegalArgumentException("fileName==null");
         }
         //require a simple file name
-        File f=new File(fileName);
-        if (f.getParent() != null) {
-            throw new IllegalArgumentException("fileName should not contain path separators, fileName="+fileName);
+        final String fileName;
+        final File f=new File(fileNameIn);
+        if (f.getParent()==null) {
+            //expected
+            fileName=fileNameIn;
+        }
+        else {
+            fileName=f.getName();
+            log.error("fileName should not contain path separators, fileName='"+fileNameIn+"', using '"+fileName+"'");
         }
         
         initInputFileDir();
