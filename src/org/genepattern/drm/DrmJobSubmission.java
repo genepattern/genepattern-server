@@ -224,6 +224,23 @@ public class DrmJobSubmission {
         }
         return Collections.emptyList();
     }
+
+    //
+    // Helper methods for working with the GenePattern Server configuration system
+    //
+    
+    
+    public GpConfig getGpConfig() {
+        return gpConfig;
+    }
+    
+    public GpContext getJobContext() {
+        return jobContext;
+    }
+    
+    public File getTaskLibDir() {
+        return jobContext.getTaskLibDir();
+    }
     
     /**
      * Get the runtime setting for the given configuration property. This is a helper method which 
