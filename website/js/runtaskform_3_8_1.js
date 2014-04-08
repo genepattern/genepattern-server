@@ -1653,6 +1653,8 @@ function loadParametersByGroup(parameterGroups, parameters, initialValues)
                 run_task_info.param_group_ids[headings[h]] = pHeadingId;
 
                 var newHeaderDiv = $("<div id=" + pHeadingId + " class='paramGroupSection'/>");
+                //append to the top level parameter listing div
+                curHeaderDiv.append(newHeaderDiv);
 
                 var headerTitleDiv = $("<div class='pHeaderTitleDiv'/>");
                 var toggleImg = $("<img src ='/gp/images/toggle_collapse.png' width='19' height='19' class='paramSectionToggle'/>");
@@ -1705,9 +1707,11 @@ function loadParametersByGroup(parameterGroups, parameters, initialValues)
                         newHeaderDiv.addClass("dotted-border");
 
                         headerTitleDiv.addClass("background");
-                        newHeaderDiv.before(headerTitleDiv);
                     }
+
+                    newHeaderDiv.before(headerTitleDiv);
                 }
+
                 headerTitleDiv.append(headings[h]);
 
                 //add a description if this is the last heading item
@@ -1716,9 +1720,6 @@ function loadParametersByGroup(parameterGroups, parameters, initialValues)
                 {
                     newHeaderDiv.prepend("<div class='pHeaderDescription'>" + parameterGroups[i].description + "</div>");
                 }
-
-                //append to the top level parameter listing div
-                curHeaderDiv.append(newHeaderDiv);
             }
 
             //keep track of top level parent div
