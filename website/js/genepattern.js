@@ -1009,11 +1009,12 @@ function createFileWidget(linkElement, appendTo) {
                 droppable: false,
                 draggable: false,
                 click: function(event) {
-                    var saveAction = $(event.target).closest(".module-listing").find(".module-name").text().trim().indexOf("Save") == 0;
+                    var saveAction = $(event.target).closest(".module-listing").find(".module-name").text().trim().indexOf("Save File") == 0;
                     var deleteAction = $(event.target).closest(".module-listing").find(".module-name").text().trim().indexOf("Delete") == 0;
                     var subdirAction = $(event.target).closest(".module-listing").find(".module-name").text().trim().indexOf("Create Subdirectory") == 0;
                     var uploadAction = $(event.target).closest(".module-listing").find(".module-name").text().trim().indexOf("Upload") == 0;
                     var pipelineAction = $(event.target).closest(".module-listing").find(".module-name").text().trim().indexOf("Create Pipeline") == 0;
+                    var genomeSpaceAction = $(event.target).closest(".module-listing").find(".module-name").text().trim().indexOf("Save to Genomespace") == 0;
 
                     var listObject = $(event.target).closest(".search-widget").find(".send-to-param-list");
                     var url = listObject.attr("data-url");
@@ -1188,6 +1189,15 @@ function createFileWidget(linkElement, appendTo) {
                         return;
                     }
 
+                    else if (genomeSpaceAction) {
+                        fileURL = url;							// Set the URL of the file
+
+                        $('#genomeSpaceSaveDialog').dialog('open');
+
+                        $(".search-widget:visible").searchslider("hide");
+                        return;
+                    }
+
                     else {
                         console.log("ERROR: Executing click function for " + url);
                         $(".search-widget:visible").searchslider("hide");
@@ -1337,6 +1347,19 @@ function constructFileMenuData(isRoot, isDirectory, isUpload, isJobFile, isParti
             "suites": [],
             "tags": []
         });
+
+        if (genomeSpaceEnabled && genomeSpaceLoggedIn) {
+            data.push({
+                "lsid": "",
+                "name": "<img src='/gp/pages/genomespace/genomespace_icon.gif' class='module-list-icon'> Save to Genomespace",
+                "description": "Save a copy of this file to your GenomeSpace account.",
+                "version": "",
+                "documentation": "http://genepattern.org",
+                "categories": [],
+                "suites": [],
+                "tags": []
+            });
+        }
     }
 
     if (isJobFile) {
