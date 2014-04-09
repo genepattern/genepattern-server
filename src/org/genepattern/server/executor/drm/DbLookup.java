@@ -73,7 +73,6 @@ public class DbLookup implements DrmLookup {
     public List<DrmJobRecord> getRunningDrmJobRecords() {
         final boolean isInTransaction=HibernateUtil.isInTransaction();
         final String[] runningJobStates = {
-                DrmJobState.UNDETERMINED.name(),
                 DrmJobState.QUEUED.name(),
                 DrmJobState.QUEUED_HELD.name(),
                 DrmJobState.RUNNING.name(),
