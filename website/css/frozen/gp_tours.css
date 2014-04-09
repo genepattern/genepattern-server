@@ -2,3 +2,11 @@
 {
     background-color: #FFFF99 !important;
 }
+
+.tour-header
+{
+    font-size: 12px;
+    font-weight: bold;
+    border-bottom: 1px solid #CFCFCF;
+    margin-bottom: 7px;
+}
