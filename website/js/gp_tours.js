@@ -1,3 +1,5 @@
+var last_left_nav_tab = $("#left-nav").tabs( "option", "active");
+
 $(function()
 {
     $(".gp_tours").click(function(event)
@@ -181,8 +183,6 @@ $(function()
             //switch the active left navigation tab to the approptiate one for the step
             if(intro._currentStep == 0)
             {
-                $(this).data("last-left-nav-tab", $("#left-nav").tabs( "option", "active"));
-
                 $( "#left-nav" ).tabs( "option", "active", 2);
             }
             else if(intro._currentStep == 2)
@@ -253,7 +253,7 @@ $(function()
             initRecentJobs();
 
             //reset to original state before start of tour
-            $( "#left-nav" ).tabs( "option", "active", $(this).data("last-left-nav-tab"));
+            $( "#left-nav" ).tabs( "option", "active", last_left_nav_tab);
 
             $(".gp-tour-step").removeClass("gp-tour-step");
         });
@@ -265,10 +265,13 @@ $(function()
             initRecentJobs();
 
             //reset to original state before start of tour
-            $( "#left-nav" ).tabs( "option", "active", $(this).data("last-left-nav-tab"));
+            $( "#left-nav" ).tabs( "option", "active", last_left_nav_tab);
+
 
             $(".gp-tour-step").removeClass("gp-tour-step");
         });
+
+        last_left_nav_tab =  $("#left-nav").tabs( "option", "active");
 
         intro.start();
     });
