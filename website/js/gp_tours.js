@@ -112,7 +112,7 @@ $(function()
             },
             {
                 element: '#upload-dropzone-wrapper',
-                intro: '<div class="tour-header"> Files Tab </div> Files can be drag an dropped to this target, which will trigger the selection of a ' +
+                intro: '<div class="tour-header"> Files Tab </div> Files can be drag and dropped to this target, which will trigger the selection of a ' +
                     ' destination directory, or to directories listed above. Files can also be selected from a ' +
                     'file browser by clicking this target.',
                 position: 'top',
@@ -248,26 +248,26 @@ $(function()
 
         intro.onexit(function()
         {
-            //reset to original state before start of tour
-            $( "#left-nav" ).tabs( "option", "active", $(this).data("last-left-nav-tab"));
+            $(".search-widget").searchslider("hide");
 
             initRecentJobs();
 
-            $(".gp-tour-step").removeClass("gp-tour-step");
+            //reset to original state before start of tour
+            $( "#left-nav" ).tabs( "option", "active", $(this).data("last-left-nav-tab"));
 
-            $('.introjs-helperLayer').show();
-            $('.introjs-tooltip').show();
+            $(".gp-tour-step").removeClass("gp-tour-step");
         });
 
         intro.oncomplete(function()
         {
+            $(".search-widget").searchslider("hide");
+
+            initRecentJobs();
+
             //reset to original state before start of tour
             $( "#left-nav" ).tabs( "option", "active", $(this).data("last-left-nav-tab"));
-            initRecentJobs();
-            $(".gp-tour-step").removeClass("gp-tour-step");
 
-            $('.introjs-helperLayer').show();
-            $('.introjs-tooltip').show();
+            $(".gp-tour-step").removeClass("gp-tour-step");
         });
 
         intro.start();
