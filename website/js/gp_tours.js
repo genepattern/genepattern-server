@@ -59,6 +59,9 @@ $(function()
 
         intro.onbeforechange(function(targetElement)
         {
+            //hack to not show the hidden native file upload button
+            $("#submitJob").find(".uploadedinputfile").hide();
+
             //switch the active left navigation tab to the approptiate one for the step
             if(intro._currentStep == 2)
             {
@@ -77,7 +80,7 @@ $(function()
             else if(targetElement.id == "submitJob")
             {
                 //hack to not show the hidden native file upload button
-                $("#submitJob").find(".uploadedinputfile").hide();
+               // $("#submitJob").find(".uploadedinputfile").hide();
             }
         });
 
