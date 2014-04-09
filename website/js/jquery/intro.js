@@ -79,15 +79,23 @@
         var currentItem = _cloneObject(this._options.steps[i]);
         //set the step
         currentItem.step = introItems.length + 1;
+
+        //Marc-Danie 4/8/14 - code below commented out to fix the selection of
+        //step elements added after the start of the tour
+        /*
         //use querySelector function only when developer used CSS selector
         if (typeof(currentItem.element) === 'string') {
           //grab the element with given selector from the page
-          currentItem.element = document.querySelector(currentItem.element);
-        }
+          var tempElement = document.querySelector(currentItem.element);
+          if(tempElement != null)
+          {
+              currentItem.element = document.querySelector(currentItem.element);
+          }
+        }*/
 
-        if (currentItem.element != null) {
+        //if (currentItem.element != null) {
           introItems.push(currentItem);
-        }
+       // }
       }
 
     } else {
@@ -435,9 +443,14 @@
 
     //following if statement added by Marc-Danie 2/24/2013 to update the  pointer to the target element
     //this only occurs if a string was original provided as the value for the element
-    if(targetElement.element.id != null && targetElement.element.id != undefined && targetElement.element.id.length > 0)
+    /*if(targetElement.element.id != null && targetElement.element.id != undefined && targetElement.element.id.length > 0)
     {
 	    targetElement.element = document.querySelector("#" + jqEscape(targetElement.element.id));
+    }*/
+
+    if(typeof(targetElement.element) === 'string')
+    {
+        targetElement.element = document.querySelector(targetElement.element);
     }
 
     var self = this,
