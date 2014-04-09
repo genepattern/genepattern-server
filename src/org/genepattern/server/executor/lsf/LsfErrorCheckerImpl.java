@@ -20,7 +20,7 @@ public class LsfErrorCheckerImpl implements ILsfErrorChecker
 
     LsfErrorStatus errorStatus = null;
 
-    LsfErrorCheckerImpl(File lsfLogFile)
+    public LsfErrorCheckerImpl(File lsfLogFile)
     {
 	    BufferedReader reader = null;
         try
