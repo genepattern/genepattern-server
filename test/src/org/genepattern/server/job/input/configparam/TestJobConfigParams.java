@@ -58,7 +58,7 @@ public class TestJobConfigParams {
      */
     @Test
     public void testCustomMemoryDropdown() {
-        // 'job.memory' drop-down set via 'executor.inputParams' in the config file.
+        // 'job.memory' drop-down set via 'job.inputParams' in the config file.
         final GpConfig gpConfig=new GpConfig.Builder()
             .configFile(new File(resourcesDir, "config_custom.yaml"))
             .build();

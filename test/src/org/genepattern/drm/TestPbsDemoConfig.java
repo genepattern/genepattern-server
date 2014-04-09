@@ -67,12 +67,12 @@ public class TestPbsDemoConfig {
         Assert.assertEquals(
                 "for a default user",
                 "pbs_extra_input_params.yaml", 
-                gpConfig.getGPProperty(gpContext, "executor.inputParams"));
+                gpConfig.getGPProperty(gpContext, "job.inputParams"));
         
         JobConfigParams jobConfigParams=JobConfigParams.initJobConfigParams(gpConfig, gpContext);
-        Assert.assertNotNull("Expecting non-null executor.inputParams for default user", jobConfigParams);
+        Assert.assertNotNull("Expecting non-null job.inputParams for default user", jobConfigParams);
         
-        Assert.assertEquals("executor.inputParams.size", 4, jobConfigParams.getParams().size());
+        Assert.assertEquals("job.inputParams.size", 4, jobConfigParams.getParams().size());
         Assert.assertEquals("inputParams[0].name", "job.cpuCount", 
                 jobConfigParams.getParams().get(0).getName());
         Assert.assertEquals("inputParams[1].name", "pbs.vmem", 
@@ -102,8 +102,8 @@ public class TestPbsDemoConfig {
             .userId("test")
             .build();
         
-        Assert.assertEquals("executor.inputParams", "pbs_extra_input_params.yaml",  
-                gpConfig.getGPProperty(gpContext, "executor.inputParams"));
+        Assert.assertEquals("job.inputParams", "pbs_extra_input_params.yaml",  
+                gpConfig.getGPProperty(gpContext, "job.inputParams"));
         Assert.assertEquals("job.queue", "batch",  
                 gpConfig.getGPProperty(gpContext, "job.queue"));
         Assert.assertEquals("job.walltime", "02:00:00",  
@@ -168,7 +168,7 @@ public class TestPbsDemoConfig {
     }
 
     /**
-     * When the manifest sets the 'job.memory' flag AND when 'job.memory' is set in the 'executor.inputParams',
+     * When the manifest sets the 'job.memory' flag AND when 'job.memory' is set in the 'job.inputParams',
      * use the value in the manifest as the default value.
      *
      */
@@ -187,11 +187,11 @@ public class TestPbsDemoConfig {
         
         
 
-        // executor.inputParams: memInputParams.yaml
+        // job.inputParams: memInputParams.yaml
         final File configFile=FileUtil.getSourceFile(this.getClass(), "mem_test.yaml");
         final GpServerProperties serverProperties=new GpServerProperties.Builder()
             .resourcesDir(resourcesDir)
-            .addCustomProperty("executor.inputParams", "memInputParams.yaml")
+            .addCustomProperty("job.inputParams", "memInputParams.yaml")
             .build();
         final GpConfig gpConfig=new GpConfig.Builder()
             .serverProperties(serverProperties)

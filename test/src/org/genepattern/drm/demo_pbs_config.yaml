@@ -47,7 +47,7 @@ executors:
              #lookupType: HASHMAP
         default.properties:
             # path to a file, if it's a relative path, look for it in the resources directory
-            executor.inputParams: pbs_extra_input_params.yaml 
+            job.inputParams: pbs_extra_input_params.yaml 
             job.queue: "batch"
             job.walltime: "02:00:00"
             job.cpuCount: "1"

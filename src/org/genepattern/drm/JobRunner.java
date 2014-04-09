@@ -14,9 +14,13 @@ import org.genepattern.server.executor.CommandExecutorException;
  *
  */
 public interface JobRunner {
-    public static final String PROP_EXECUTOR_INPUT_PARAMS="executor.inputParams";
-
     public static final String PROP_PREFIX="job.";
+    public static final String PROP_JOB_INPUT_PARAMS="job.inputParams";
+    /** 
+     * optional param, when set it is the name of a log file for saving meta data about the completed job.
+     * For example, the LsfJobRunner streams the output from the bsub command to the '.lsf.out' file.
+     */
+    public static final String PROP_LOGFILE="job.logFile";
     public static final String PROP_QUEUE="job.queue";
     public static final String PROP_MEMORY="job.memory";
     public static final String PROP_JAVA_XMX="job.javaXmx";
@@ -24,7 +28,6 @@ public interface JobRunner {
     public static final String PROP_NODE_COUNT="job.nodeCount";
     public static final String PROP_CPU_COUNT="job.cpuCount";
     public static final String PROP_EXTRA_ARGS="job.extraArgs";
-    public static final String PROP_WORKER_NAME="job.workerName";
     
     /**
      * Set a boolean value, when true, it means flag the job as ERROR if there is stderr output. 

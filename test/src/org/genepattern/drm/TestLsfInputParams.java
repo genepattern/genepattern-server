@@ -15,7 +15,7 @@ import org.junit.Assert;
 import org.junit.Test;
 
 /**
- * Test custom LSF executor.inputParams.
+ * Test custom LSF job.inputParams.
  * @author pcarr
  *
  */
@@ -25,7 +25,7 @@ public class TestLsfInputParams {
         final File resourcesDir=FileUtil.getSourceDir(this.getClass());
         final GpServerProperties serverProperties=new GpServerProperties.Builder()
             .resourcesDir(resourcesDir)
-            .addCustomProperty("executor.inputParams", "lsfInputParams.yaml")
+            .addCustomProperty("job.inputParams", "lsfInputParams.yaml")
             .build();
         final GpConfig gpConfig=new GpConfig.Builder()
             .serverProperties(serverProperties)
@@ -34,7 +34,7 @@ public class TestLsfInputParams {
             .build();
         final JobConfigParams lsfParams=JobConfigParams.initJobConfigParams(gpConfig, gpContext);
         
-        Assert.assertNotNull("expecting non-null 'executor.inputParams'", lsfParams);
+        Assert.assertNotNull("expecting non-null 'job.inputParams'", lsfParams);
         Assert.assertEquals("lsfParams.size", 4, lsfParams.getParams().size());
         Assert.assertEquals("lsfParams[0]._displayName", "project", lsfParams.getParams().get(0)._getDisplayName());
         Assert.assertEquals("lsfParams[0].name", "lsf.project", lsfParams.getParams().get(0).getName());

@@ -1,5 +1,5 @@
 default.properties:
-    executor.inputParams: executor_input_params.yaml
+    job.inputParams: executor_input_params.yaml
 executors:
     # default executor for all jobs, it is included in GenePattern
     RuntimeExec:

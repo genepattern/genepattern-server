@@ -71,7 +71,7 @@ executor.properties: {
         "executor": "DemoPbsJobRunner",
         "job.queue": "pbsBigMemQueue",
         "job.memory": "128gb",
-        "executor.inputParams": "../server/job/input/configparam/executor_input_params.yaml"
+        "job.inputParams": "../server/job/input/configparam/executor_input_params.yaml"
     },
     # himem executor.props
     myHiMemPbsWorker: {

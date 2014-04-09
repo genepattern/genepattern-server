@@ -46,7 +46,7 @@ public class JobConfigParams {
             log.debug("gpConfig==null");
             return null;
         }
-        final String jobConfigParamsStr=gpConfig.getGPProperty(taskContext, JobRunner.PROP_EXECUTOR_INPUT_PARAMS);
+        final String jobConfigParamsStr=gpConfig.getGPProperty(taskContext, JobRunner.PROP_JOB_INPUT_PARAMS);
         if (jobConfigParamsStr != null) {
             //figure out how to cache the results of parsing the config file
             try {

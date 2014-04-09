@@ -1,6 +1,6 @@
 #
 # Memory flags to display in the job input form
-# To use this, set executor.inputParams: memInputParams.yaml
+# To use this, set job.inputParams: memInputParams.yaml
 #
 {
 name: "Memory settings",

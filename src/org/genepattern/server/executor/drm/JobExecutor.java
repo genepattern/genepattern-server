@@ -5,10 +5,14 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.TimeoutException;
 
 import java.util.concurrent.TimeUnit;
 
@@ -19,6 +23,7 @@ import org.genepattern.drm.DrmJobStatus;
 import org.genepattern.drm.DrmJobSubmission;
 import org.genepattern.drm.JobRunner;
 import org.genepattern.server.config.GpContext;
+import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.executor.CommandExecutor2;
 import org.genepattern.server.executor.CommandExecutorException;
 import org.genepattern.server.executor.CommandProperties;
@@ -46,11 +51,6 @@ public class JobExecutor implements CommandExecutor2 {
     
     private String jobRunnerClassname;
     private String jobRunnerName;
-    /** 
-     * optional param, when set it is the name of a log file (e.g. '.lsf.out') for saving meta data about the completed job.
-     *  For the LSF executor the outpout from the bsub command is streamed from stdout into this file.
-     */
-    private String logFilename;
     private JobRunner jobRunner;
     private DrmLookup jobLookupTable;
 
@@ -64,6 +64,17 @@ public class JobExecutor implements CommandExecutor2 {
             final Thread t=new Thread(r);
             t.setDaemon(true);
             t.setName("JobExecutor-0");
+            return t;
+        }
+    });
+
+    // call to JobRunner.getStatus in a separate thread so that it can be killed after a timeout period
+    private ScheduledExecutorService jobStatusService=Executors.newSingleThreadScheduledExecutor(new ThreadFactory() {
+        @Override
+        public Thread newThread(final Runnable r) {
+            final Thread t=new Thread(r);
+            t.setDaemon(true);
+            t.setName("JobExecutor-1");
             return t;
         }
     });
@@ -206,7 +217,6 @@ public class JobExecutor implements CommandExecutor2 {
             throw new IllegalArgumentException("jobRunnerClassname is not set!");
         }
         this.jobRunnerName=properties.getProperty("jobRunnerName", "0");
-        this.logFilename=properties.getProperty("logFilename", null);
         String lookupTypeStr=properties.getProperty("lookupType", DrmLookupFactory.Type.DB.name());
         DrmLookupFactory.Type lookupType=null;
         try {
@@ -218,7 +228,6 @@ public class JobExecutor implements CommandExecutor2 {
         if (log.isDebugEnabled()) {
             log.debug("jobRunnerClassname="+jobRunnerClassname);
             log.debug("jobRunnerName="+jobRunnerName);
-            log.debug("logFilename="+logFilename);
             log.debug("lookupType="+lookupType);
         }
 
@@ -267,7 +276,68 @@ public class JobExecutor implements CommandExecutor2 {
         //record this to the lookup table
         jobLookupTable.updateJobStatus(drmJobRecord, drmJobStatus);
     }
-    
+
+    private DrmJobStatus getJobStatus(final DrmJobRecord drmJobRecord) throws InterruptedException {
+        Future<DrmJobStatus> f=jobStatusService.submit(new Callable<DrmJobStatus>() {
+            @Override
+            public DrmJobStatus call() throws Exception {
+                final DrmJobStatus drmJobStatus=jobRunner.getStatus(drmJobRecord);
+                return drmJobStatus;
+            }
+        });
+        final long getJobStatus_delay=60L*1000L; //60 seconds
+        try {
+            return f.get(getJobStatus_delay, TimeUnit.MILLISECONDS);
+        }
+        catch (TimeoutException e) {
+            if (log.isDebugEnabled()) { 
+                log.debug("checkStatus(gpJobNo="+drmJobRecord.getGpJobNo()+") timed out after "+getJobStatus_delay+" "+TimeUnit.MILLISECONDS);
+            }
+            //TODO: just a guess, report it as running so that we try again
+            return new DrmJobStatus.Builder(drmJobRecord.getExtJobId(), DrmJobState.RUNNING).build();
+        }
+        catch (ExecutionException e) {
+            final String jobStatusMessage="ExecutionException in checkStatus(gpJobNo="+drmJobRecord.getGpJobNo()+")";
+            log.error(jobStatusMessage, e);
+            return new DrmJobStatus.Builder(drmJobRecord.getExtJobId(), DrmJobState.UNDETERMINED)
+                .jobStatusMessage(jobStatusMessage+": "+e.getLocalizedMessage())
+                .build();
+        }
+    }
+
+    private void checkJobStatus(final DrmJobRecord drmJobRecord) throws InterruptedException {
+        //check it's status
+        final DrmJobStatus drmJobStatus=getJobStatus(drmJobRecord);
+        updateStatus(drmJobRecord, drmJobStatus);
+        if (drmJobStatus != null && drmJobStatus.getJobState().is(DrmJobState.TERMINATED)) {
+            handleCompletedJob(drmJobRecord, drmJobStatus);
+        }
+        else if (drmJobStatus != null && drmJobStatus.getJobState().is(DrmJobState.UNDETERMINED)) {
+            log.debug("unexpected result from jobRunner.getStatus, jobState="+drmJobStatus.getJobState());
+            handleCompletedJob(drmJobRecord, drmJobStatus);
+        }
+        else {
+            if (drmJobStatus==null) {
+                log.error("unexpected result from jobRunner.getStatus, drmJobStatus=null");
+            }
+            //put it back onto the queue
+            final long delay=getDelay(drmJobRecord, drmJobStatus);
+            svc.schedule(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        runningJobs.put(drmJobRecord);
+                    }
+                    catch (InterruptedException e) {
+                        Thread.currentThread().interrupt();
+                    }
+                }
+            },
+            delay,
+            TimeUnit.MILLISECONDS);
+        }
+    }
+
     private void initJobHandler() {
         jobHandlerThread=new Thread(new Runnable() {
 
@@ -278,39 +348,15 @@ public class JobExecutor implements CommandExecutor2 {
                         //take the next job from the queue
                         final DrmJobRecord drmJobRecord=runningJobs.take();
                         //check it's status
-                        final DrmJobStatus drmJobStatus=jobRunner.getStatus(drmJobRecord);
-                        updateStatus(drmJobRecord, drmJobStatus);
-                        if (drmJobStatus != null && drmJobStatus.getJobState().is(DrmJobState.TERMINATED)) {
-                            handleCompletedJob(drmJobRecord, drmJobStatus);
-                        }
-                        else if (drmJobStatus != null && drmJobStatus.getJobState().is(DrmJobState.UNDETERMINED)) {
-                            log.debug("unexpected result from jobRunner.getStatus, jobState="+drmJobStatus.getJobState());
-                            handleCompletedJob(drmJobRecord, drmJobStatus);
-                        }
-                        else {
-                            if (drmJobStatus==null) {
-                                log.error("unexpected result from jobRunner.getStatus, drmJobStatus=null");
-                            }
-                            //put it back onto the queue
-                            final long delay=getDelay(drmJobRecord, drmJobStatus);
-                            svc.schedule(new Runnable() {
-                                @Override
-                                public void run() {
-                                    try {
-                                        runningJobs.put(drmJobRecord);
-                                    }
-                                    catch (InterruptedException e) {
-                                        Thread.currentThread().interrupt();
-                                    }
-                                }
-                            },
-                            delay,
-                            TimeUnit.MILLISECONDS);
-                        }
+                        checkJobStatus(drmJobRecord);
                     }
                 }
                 catch (InterruptedException e) {
+                    log.info("job poller interupted, shutting down job poller");
                     Thread.currentThread().interrupt();
+                }
+                catch (Throwable t) {
+                    log.error("Unexpected error polling for job status, shutting down job poller", t);
                 }
                 jobRunner.stop();
             }
@@ -328,6 +374,8 @@ public class JobExecutor implements CommandExecutor2 {
         if (jobRunner != null) {
             jobRunner.stop();
         }
+        jobStatusService.shutdownNow();
+        svc.shutdownNow();
         log.info("stopped job executor: "+jobRunnerName+" ( "+jobRunnerClassname+" )");
     }
     
@@ -352,6 +400,7 @@ public class JobExecutor implements CommandExecutor2 {
         final Integer gpJobNo=jobContext.getJobNumber();
         log.debug(jobRunnerName+" runCommand, gpJobNo="+gpJobNo);
         
+        final String logFilename=ServerConfigurationFactory.instance().getGPProperty(jobContext, JobRunner.PROP_LOGFILE);
         DrmJobSubmission.Builder builder=new DrmJobSubmission.Builder(runDir)
             .jobContext(jobContext)
             .commandLine(commandLine)
