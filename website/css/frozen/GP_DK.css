@@ -312,7 +312,7 @@ td.header a {
 }
 
  a{
-	color:#0066FF;
+	/*color:#0066FF;*/
 	text-decoration:none;
 }
  a.execution {

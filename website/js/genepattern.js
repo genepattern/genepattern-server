@@ -372,7 +372,7 @@ function initRecent() {
                 setTimeout(function() {
                     console.log(still_loading);
                     still_loading = false;
-                }, 400);
+                }, 800);
                 loadRunTaskForm(lsid, false);
             }
         }
@@ -1643,7 +1643,7 @@ function createJobWidget(job) {
 
 function initRecentJobs() {
     // Init the browse button
-    $("#left-nav-jobs-browse").click(function() {
+    $("#left-nav-jobs-browse").button().click(function() {
         window.location = "/gp/jobResults";
     });
 

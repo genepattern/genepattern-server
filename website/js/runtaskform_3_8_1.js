@@ -72,7 +72,7 @@ if (!window.console)
 function loadModule(taskId, reloadId, sendFromKind, sendFromUrl)
 {
     // Fade in a progress indicator
-    $("#loadingContent").fadeIn(1000);
+    $("#loadingContent").fadeIn(800);
 
     var url = window.location.href;
     var getParameters = url.slice(url.indexOf('?') + 1);
