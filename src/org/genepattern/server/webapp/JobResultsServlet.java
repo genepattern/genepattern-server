@@ -181,7 +181,7 @@ public class JobResultsServlet extends HttpServlet implements Servlet {
             }
             String openVisualizers = request.getParameter("openVisualizers") == null ? "" : "&openVisualizers=true";
             
-            RequestDispatcher rd = this.getServletContext().getRequestDispatcher("/pages/jobResult.jsf?jobNumber="+jobNumber+openVisualizers);
+            RequestDispatcher rd = this.getServletContext().getRequestDispatcher("/pages/index.jsf?jobid="+jobNumber+openVisualizers);
             response.addHeader("Pragma", "no-cache");
             response.addHeader("Cache-Control", "no-cache");
             response.addHeader("Cache-Control", "no-store");

@@ -1500,9 +1500,7 @@ function createJobWidget(job) {
                 var path = uploadPathFromUrl(url);
 
                 if (statusAction) {
-                    $(location).attr('href', '/gp/jobResults/' + job.jobId);
-
-                    $(".search-widget:visible").searchslider("hide");
+                    loadJobStatus(job.jobId);
                     return;
                 }
 
@@ -1777,4 +1775,39 @@ function openJobWidget(link) {
 
     // Open the job slider
     $("#menus-jobs").find("[name='job_" + id + "']").searchslider("show");
+}
+
+function loadJobStatus(jobId) {
+    // Abort if no job to load
+    if (jobId === undefined || jobId === null || jobId === '') {
+        return;
+    }
+
+    // Hide the search slider if it is open
+    $(".search-widget").searchslider("hide");
+
+    // Hide the protocols & run task form, if visible
+    $("#protocols").hide();
+    $("#submitJob").hide();
+
+    // Add to history so back button works
+    history.pushState(null, document.title, location.protocol + "//" + location.host + location.pathname + "?jobid=" + jobId);
+
+    $.ajax({
+        type: "GET",
+        url: "/gp/pages/jobResult.jsf?jobNumber=" + jobId,
+        cache: false,
+        success: function(data, textStatus, jqXHR) {
+            $("#jobResults").html(data);
+            $("#jobResults").show();
+        },
+        error: function(data) {
+            if (typeof data === 'object') {
+                data = data.responseText;
+            }
+
+            showErrorMessage(data);
+        },
+        dataType: "html"
+    });
 }

@@ -16,7 +16,8 @@
 <ui:composition template="/templates/common-new.xhtml">
 
 <ui:define name="pageTitle">
-    GenePattern<h:outputText rendered="#{!empty runTaskBean.lsid}"> - #{runTaskBean.name}</h:outputText>
+    GenePattern <h:outputText rendered="#{!empty runTaskBean.lsid}"> - #{runTaskBean.name}</h:outputText>
+    <h:outputText rendered="#{!empty runTaskBean.jobId}"> Job - #{runTaskBean.jobId}</h:outputText>
 </ui:define>
 
 <ui:define name="headText">
@@ -284,6 +285,8 @@ function showFileInput(id) {
         <img src="/gp/images/ajax.gif" height="150" width="150" alt="Loading..." style="margin-top: 50px;" />
     </div>
 
+    <div id="jobResults" style="display: none;"></div>
+
     <div id="submitJob" style="display: none;">
         <div id="submitErrors"/>
         <div id="submitForm">
@@ -395,9 +398,10 @@ function showFileInput(id) {
     <script type="text/javascript">
         $(document).ready(function() {
             loadRunTaskForm();
+            loadJobStatus(#{runTaskBean.jobId});
         });
     </script>
-    <h:outputText rendered="#{empty runTaskBean.lsid}">
+    <h:outputText rendered="#{empty runTaskBean.lsid and empty runTaskBean.jobId}">
         <script type="text/javascript">
             $(document).ready(function() {
                 $("#protocols").show();

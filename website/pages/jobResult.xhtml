@@ -15,7 +15,7 @@
 	xmlns:f="http://java.sun.com/jsf/core"
 	xmlns:t="http://myfaces.apache.org/tomahawk"
 	xmlns:c="http://java.sun.com/jstl/core">
-<ui:composition template="/templates/common-new.xhtml">
+<ui:composition template="/templates/ajax.xhtml">
 	<ui:define name="pageTitle">
             GenePattern | Job #{(!empty jobStatusBean.jobInfo ) ? jobStatusBean.jobInfo.jobNumber : "not set" }
         </ui:define>
@@ -233,7 +233,7 @@
                 $.ajax({
                     cache: false,
                     type: "GET",
-                    url: "/gp/rest/v1/jobs/" + currentJobNumber + "?includeSendTo=true",
+                    url: "/gp/rest/v1/jobs/" + currentJobNumber + "?includeSendTo=true&includeChildren=true",
                     dataType: "json",
                     success: function(data, textStatus, jqXHR) {
                         $(document).ready(function() {
@@ -577,9 +577,6 @@
 				</a4j:outputPanel>
 
 				<br /> <br />
-				<h:outputLink
-					value="#{facesContext.externalContext.requestContextPath}">Return to Modules &amp; Pipelines Start
-                    </h:outputLink>
 
 			</div>
 			<table cellpadding="0" cellspacing="0" border="0"
