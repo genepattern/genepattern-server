@@ -1790,12 +1790,21 @@ function loadJobStatus(jobId) {
     $("#protocols").hide();
     $("#submitJob").hide();
 
+    // Handle open visualizer flag
+    var openVisualizers = $.param("openVisualizers");
+    if (openVisualizers) {
+        openVisualizers = "&openVisualizers=true";
+    }
+    else {
+        openVisualizers = "&openVisualizers=false";
+    }
+
     // Add to history so back button works
     history.pushState(null, document.title, location.protocol + "//" + location.host + location.pathname + "?jobid=" + jobId);
 
     $.ajax({
         type: "GET",
-        url: "/gp/pages/jobResult.jsf?jobNumber=" + jobId,
+        url: "/gp/pages/jobResult.jsf?jobNumber=" + jobId + openVisualizers,
         cache: false,
         success: function(data, textStatus, jqXHR) {
             $("#jobResults").html(data);
