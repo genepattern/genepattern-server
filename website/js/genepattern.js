@@ -370,7 +370,6 @@ function initRecent() {
             if (!still_loading) {
                 still_loading = true;
                 setTimeout(function() {
-                    console.log(still_loading);
                     still_loading = false;
                 }, 800);
                 loadRunTaskForm(lsid, false);
