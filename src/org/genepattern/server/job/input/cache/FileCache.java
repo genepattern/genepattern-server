@@ -153,13 +153,31 @@ public class FileCache {
     }
 
     public synchronized Future<CachedFile> getFutureObj(final GpContext jobContext, final String externalUrl, final boolean isRemoteDir) {
+        if (log.isDebugEnabled()) {
+            StringBuffer sb=new StringBuffer();
+            sb.append("checking for cached ");
+            if (isRemoteDir) {
+                sb.append("directory ");
+            }
+            else {
+                sb.append("file ");
+            }
+            sb.append(" from "+externalUrl+" ... ");
+            log.debug(sb.toString());
+        }
         final CachedFile obj = initCachedFileObj(jobContext, externalUrl, isRemoteDir);
         if (obj.isDownloaded()) {
             //already downloaded
+            if (log.isDebugEnabled()) {
+                log.debug("already downloaded");
+            }
             return new AlreadyDownloaded(obj);
         }
         final String key=obj.getUrl().toExternalForm();
         if (cache.containsKey(key)) {
+            if (log.isDebugEnabled()) {
+                log.debug("already downloading");
+            }
             return cache.get(key);
         }
         //otherwise start the download and add to the cache
@@ -168,9 +186,10 @@ public class FileCache {
             public CachedFile call() throws Exception {
                 DownloadException ex=null;
                 try {
+                    log.debug("starting download, downloader="+obj.getClass().getName());
                     obj.download();
                 }
-                catch (DownloadException e) {                    
+                catch (DownloadException e) {  
                     //swallow it, we'll deal later
                     ex=e;
                 }  
@@ -186,9 +205,15 @@ public class FileCache {
 
                 if (ex != null) {
                     //TODO: implement pause and retry
+                    if (log.isDebugEnabled()) {
+                        log.debug("Error downloading from "+externalUrl, ex);
+                    }
                     throw ex;
                 }
-                
+
+                if (log.isDebugEnabled()) {
+                    log.debug("completed download from "+externalUrl);
+                }
                 return obj;
             }
         });

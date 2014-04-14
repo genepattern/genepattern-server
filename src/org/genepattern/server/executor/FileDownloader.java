@@ -202,12 +202,14 @@ public class FileDownloader {
      */
     public void startDownloadAndWait(final GpContext jobContext) throws InterruptedException, ExecutionException {
         if (selectedChoices == null) {
+            log.debug("selectedChoices==null");
             return;
         }
         if (selectedChoices.size()==0) {
+            log.debug("selectedChoices.size()==0");
             return;
         }
-        
+         
         // loop through all the choices and start downloading ...
         for(final Choice selectedChoice : selectedChoices) {
             try {
