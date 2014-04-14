@@ -101,7 +101,7 @@ abstract public class CachedFtpFile implements CachedFile {
 
         public CachedFtpFile newCachedFtpFile(final String urlString) {
             GpContext serverContext=GpContext.getServerContext();
-            String str=ServerConfigurationFactory.instance().getGPProperty(serverContext, Type.PROP_FTP_DOWNLOADER_TYPE, Type.JAVA_6.name());
+            String str=ServerConfigurationFactory.instance().getGPProperty(serverContext, Type.PROP_FTP_DOWNLOADER_TYPE, Type.EDT_FTP_J.name());
             Type type=null;
             try {
                 type=Type.valueOf(str);
