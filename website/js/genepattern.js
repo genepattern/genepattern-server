@@ -1374,16 +1374,15 @@ function createFileWidget(linkElement, appendTo) {
         var isJobFile = appendTo === "#menus-jobs";
         var isPartialFile = linkElement.attr("data-partial") === "true";
 
-        var sendToString = linkElement.attr("data-sendtomodule");
-        if (sendToString === null || sendToString === undefined) sendToString = '[]';
-        var lsidList = JSON.parse(sendToString);
+        var kind = linkElement.attr("data-kind");
+
+        var lsidList = kindToModules[kind];
+        if (lsidList === null || lsidList === undefined) lsidList = [];
         var sendToList = lsidsToModules(lsidList).sort(function (a, b) {
             if (a.name.toLowerCase() < b.name.toLowerCase()) return -1;
             if (a.name.toLowerCase() > b.name.toLowerCase()) return 1;
             return 0;
         });
-
-        var kind = linkElement.attr("data-kind");
 
         var data = _constructFileMenuData(isRoot, isDirectory, isUpload, isJobFile, isPartialFile);
 
