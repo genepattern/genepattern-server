@@ -384,12 +384,15 @@ public class TasksResource {
             }
 
             // Return the JSON object 
-            final JSONArray allCategories=initAllCategoriesJson( filteredCategories.values() );
-            final JSONArray allSuites=initAllSuitesJson( suiteInfos );
+            JSONArray allCategories = initAllCategoriesJson(filteredCategories.values());
+            JSONArray allSuites = initAllSuitesJson(suiteInfos);
+            JSONObject kindToModules = initSendToModulesMap(filteredTasks);
+
             JSONObject jsonObj=new JSONObject();
             jsonObj.put("all_modules", allModules);
             jsonObj.put("all_categories", allCategories);
             jsonObj.put("all_suites", allSuites);
+            jsonObj.put("kindToModules", kindToModules);
             return Response.ok().entity(jsonObj.toString()).build();
         }
         catch (Throwable t) {
@@ -403,6 +406,28 @@ public class TasksResource {
                 HibernateUtil.closeCurrentSession();
             }
         }
+    }
+
+    private JSONObject initSendToModulesMap(SortedSet<TaskInfo> filteredTasks) {
+        JSONObject toReturn = new JSONObject();
+
+        for (TaskInfo info : filteredTasks) {
+            Set<String> kinds = info._getInputFileTypes();
+
+            for (String kind : kinds) {
+                JSONArray lsids = null;
+                try { lsids = toReturn.getJSONArray(kind); } catch (JSONException e) { lsids = new JSONArray(); }
+                lsids.put(info.getLsid());
+
+                try {
+                    toReturn.put(kind, lsids);
+                } catch (JSONException e) {
+                    log.error("ERROR building sendToModule map in JSON");
+                }
+            }
+        }
+
+        return toReturn;
     }
     
     private JSONArray initAllCategoriesJson(final Collection<String> categoryNames) {
@@ -435,7 +460,7 @@ public class TasksResource {
     /**
      * Wrap a single string as a JSON object to be returned.
      * Currently used for wrapping module categories
-     * @param string
+     * @param category
      * @return
      * @throws JSONException
      */

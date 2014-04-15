@@ -104,6 +104,7 @@
 	                    success: function(data, status, xhr) {
 	                    	all_modules = data.all_modules;
                             initAllModulesMap(all_modules);
+                            kindToModules = data.kindToModules;
 	                    	
 	                    	// Initialize the displays on the left nav bar
 	                    	$("#loading-modules").hide();
@@ -375,6 +376,7 @@
 
                 <div id="menus-uploads"></div>
                 <div id="menus-jobs"></div>
+                <div id="menus-genomespace"></div>
 	
 	            <div id="main-pane">
 	            	<!-- Error message area -->

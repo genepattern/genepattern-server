@@ -193,6 +193,7 @@ var all_modules = null;
 var all_modules_map = null;
 var all_categories = null;
 var all_suites = null;
+var kindToModules = null;
 
 function getPinnedModules() {
 	var pinned = [];
