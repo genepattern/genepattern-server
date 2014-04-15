@@ -985,6 +985,60 @@ function createGenomeSpaceWidget(linkElement, appendTo) {
         return pieces.length <= 4;
     };
 
+    var _constructGenomeSpaceMenuData = function(isRoot, isDirectory, kind, clients) {
+        var data = [];
+
+        if (!isRoot || !isDirectory) {
+            data.push({
+                "lsid": "",
+                "name": "<img src='/gp/pipeline/images/delete.gif' class='module-list-icon'> Delete " + (isDirectory ? "Directory" : "File"),
+                "description": (isDirectory ? "Permanently delete this directory and all child files." : "Permanently delete this file."),
+                "version": "",
+                "documentation": "http://genepattern.org",
+                "categories": [],
+                "suites": [],
+                "tags": []
+            });
+        }
+
+        if (isDirectory) {
+            data.push({
+                "lsid": "",
+                "name": "Create Subdirectory",
+                "description": "Create a subdirectory in this directory.",
+                "version": "",
+                "documentation": "http://genepattern.org",
+                "categories": [],
+                "suites": [],
+                "tags": []
+            });
+        }
+
+        else if (!isDirectory) {
+            data.push({
+                "lsid": "",
+                "name": "<img src='/gp/pipeline/images/save.gif' class='module-list-icon'> Save File",
+                "description": "Save a copy of this file to your local computer.",
+                "version": "",
+                "documentation": "http://genepattern.org",
+                "categories": [],
+                "suites": [],
+                "tags": []
+            });
+        }
+
+        return data;
+    };
+
+    var _parseList = function(listString) {
+        if (listString === null || listString === undefined) {
+            return [];
+        }
+        else {
+            return JSON.parse(listString);
+        }
+    };
+
     var _createGenomeSpaceWidgetInner = function(linkElement, appendTo) {
         var link = $(linkElement);
         var url = link.attr("href");
@@ -992,20 +1046,12 @@ function createGenomeSpaceWidget(linkElement, appendTo) {
         var isDirectory = link.attr("data-directory") === "true";
         var isRoot = _isGenomeSpaceRoot(url);
 
-        var sendToString = linkElement.attr("data-sendtomodule");
-        if (sendToString === null || sendToString === undefined) sendToString = '[]';
-        var lsidList = JSON.parse(sendToString);
-        var sendToList = lsidsToModules(lsidList).sort(function (a, b) {
-            if (a.name.toLowerCase() < b.name.toLowerCase()) return -1;
-            if (a.name.toLowerCase() > b.name.toLowerCase()) return 1;
-            return 0;
-        });
+        var kind = _parseList(linkElement.attr("data-kind"));
+        var clients = _parseList(linkElement.attr("data-clients"));
+        var convertUrls = _parseList(linkElement.attr("data-converturls"));
+        var listList = [];
 
-        var kind = linkElement.attr("data-kind");
-        var clients = linkElement.attr("data-clients");
-
-        var data = _constructGenomepaceMenuData(isRoot, isDirectory, kind, clients);
-
+        var data = _constructGenomeSpaceMenuData(isRoot, isDirectory, kind, clients);
         var actionList = $("<div></div>")
             .attr("class", "file-widget-actions")
             .modulelist({
@@ -1017,9 +1063,6 @@ function createGenomeSpaceWidget(linkElement, appendTo) {
                     var saveAction = $(event.target).closest(".module-listing").find(".module-name").text().trim().indexOf("Save File") == 0;
                     var deleteAction = $(event.target).closest(".module-listing").find(".module-name").text().trim().indexOf("Delete") == 0;
                     var subdirAction = $(event.target).closest(".module-listing").find(".module-name").text().trim().indexOf("Create Subdirectory") == 0;
-                    var uploadAction = $(event.target).closest(".module-listing").find(".module-name").text().trim().indexOf("Upload") == 0;
-                    var pipelineAction = $(event.target).closest(".module-listing").find(".module-name").text().trim().indexOf("Create Pipeline") == 0;
-                    var genomeSpaceAction = $(event.target).closest(".module-listing").find(".module-name").text().trim().indexOf("Save to Genomespace") == 0;
 
                     var listObject = $(event.target).closest(".search-widget").find(".send-to-param-list");
                     var url = listObject.attr("data-url");
@@ -1138,130 +1181,89 @@ function createGenomeSpaceWidget(linkElement, appendTo) {
                         return;
                     }
 
-                    else if (uploadAction) {
-                        var directory = $(event.target).closest(".file-widget").attr("name");
-
-                        $("#upload-dropzone-input").data("origin", directory);
-                        $("#upload-dropzone-input").trigger("click");
-                        return;
-                    }
-
-                    else if (pipelineAction) {
-                        showDialog("Name the Pipeline", "What name would you like to give the pipeline?" +
-                            "<input type='text' class='dialog-pipeline-name' style='width: 98%;' />", {
-                            "Create": function(event) {
-                                var subdirName = $(".dialog-pipeline-name").val();
-                                subdirName = makePipelineNameValid(subdirName);
-
-                                $.ajax({
-                                    type: "PUT",
-                                    url: "/gp/rest/v1/data/createPipeline/" + path + "?name=" + subdirName,
-                                    success: function(data, textStatus, jqXHR) {
-                                        $("#infoMessageDiv #infoMessageContent").text(data);
-                                        $("#infoMessageDiv").show();
-
-                                        var forwardUrl = jqXHR.getResponseHeader("pipeline-forward");
-                                        if (forwardUrl && forwardUrl.length > 0) {
-                                            window.location = forwardUrl;
-                                        }
-                                    },
-                                    error: function(data, textStatus, jqXHR) {
-                                        if (typeof data === 'object') {
-                                            data = data.responseText;
-                                        }
-
-                                        showErrorMessage(data);
-                                    }
-                                });
-
-                                $(this).dialog("close");
-                            },
-                            "Cancel": function(event) {
-                                $(this).dialog("close");
-                            }
-                        });
-                        $(".ui-dialog-buttonset:visible button:first").button("disable");
-                        $(".dialog-pipeline-name").keyup(function(event) {
-                            if ($(event.target).val() === "") {
-                                $(".ui-dialog-buttonset:visible button:first").button("disable");
-                            }
-                            else {
-                                $(".ui-dialog-buttonset:visible button:first").button("enable");
-                            }
-                        });
-
-                        $(".search-widget:visible").searchslider("hide");
-                        return;
-                    }
-
-                    else if (genomeSpaceAction) {
-                        fileURL = url;							// Set the URL of the file
-
-                        $('#genomeSpaceSaveDialog').dialog('open');
-
-                        $(".search-widget:visible").searchslider("hide");
-                        return;
-                    }
-
                     else {
                         console.log("ERROR: Executing click function for " + url);
                         $(".search-widget:visible").searchslider("hide");
                     }
                 }
             });
+        listList.push(actionList);
 
-        var paramList = $("<div></div>")
-            .attr("class", "send-to-param-list")
-            .attr("data-kind", kind)
-            .attr("data-url", link.attr("href"))
-            .modulelist({
-                title: "Send to Parameter",
-                data: [],
-                droppable: false,
-                draggable: false,
-                click: function(event) {}
+        for (var i = 0; i < kind.length; i++) {
+            var aKind = kind[i];
+            var convertUrl = convertUrls[aKind];
+
+            var paramList = $("<div></div>")
+                .attr("class", "send-to-param-list")
+                .attr("data-kind", aKind)
+                .attr("data-url", convertUrl)
+                .modulelist({
+                    title: "Send to Parameter as " + aKind,
+                    data: [],
+                    droppable: false,
+                    draggable: false,
+                    click: function(event) {}
+                });
+            listList.push(paramList);
+        }
+
+        for (var i = 0; i < kind.length; i++) {
+            var aKind = kind[i];
+            var convertUrl = convertUrls[aKind];
+
+            var lsidList = kindToModules[aKind];
+            if (lsidList === null || lsidList === undefined) lsidList = [];
+            var sendToList = lsidsToModules(lsidList).sort(function (a, b) {
+                if (a.name.toLowerCase() < b.name.toLowerCase()) return -1;
+                if (a.name.toLowerCase() > b.name.toLowerCase()) return 1;
+                return 0;
             });
 
-        var moduleList = $("<div></div>")
-            .attr("class", "send-to-module-list")
-            .modulelist({
-                title: "Send to Module",
-                data: sendToList,
-                droppable: false,
-                draggable: true,
-                click: function(event) {
-                    var lsid = this.data.lsid;
-                    var listObject = $(event.target).closest(".search-widget").find(".send-to-param-list");
-                    var kind = listObject.attr("data-kind");
-                    var url = listObject.attr("data-url");
+            var moduleList = $("<div></div>")
+                .attr("class", "send-to-module-list")
+                .attr("data-kind", aKind)
+                .attr("data-url", convertUrl)
+                .modulelist({
+                    title: "Send to Module as " + aKind,
+                    data: sendToList,
+                    droppable: false,
+                    draggable: true,
+                    click: function(event) {
+                        var lsid = this.data.lsid;
+                        var listObject = $(event.target).closest(".send-to-module-list");
+                        var kind = listObject.attr("data-kind");
+                        var url = listObject.attr("data-url");
 
-                    loadRunTaskForm(lsid, false, kind, url);
+                        loadRunTaskForm(lsid, false, kind, url);
 
-                    var checkForRunTaskLoaded = function() {
-                        if (run_task_info.lsid === lsid) {
-                            sendToByKind(url, kind);
-                        }
-                        else {
-                            setTimeout(function() {
-                                checkForRunTaskLoaded();
-                            }, 100);
-                        }
-                    };
+                        var checkForRunTaskLoaded = function() {
+                            if (run_task_info.lsid === lsid) {
+                                sendToByKind(url, kind);
+                            }
+                            else {
+                                setTimeout(function() {
+                                    checkForRunTaskLoaded();
+                                }, 100);
+                            }
+                        };
 
-                    checkForRunTaskLoaded();
-                }
-            });
+                        checkForRunTaskLoaded();
+                    }
+                });
+            listList.push(moduleList);
+        }
 
-        if (moduleList.find(".module-listing").length < 1) {
-            paramList.hide();
-            moduleList.hide();
+        for (var i = 0; i < listList.length; i++) {
+            var aList = listList[i];
+            if (aList.find(".module-listing").length < 1) {
+                aList.hide();
+            }
         }
 
         var widget = $("<div></div>")
             .attr("name", link.attr("href"))
             .attr("class", "search-widget file-widget")
-            .searchslider({
-                lists: [actionList, paramList, moduleList]});
+            .searchslider({lists: listList});
 
         $(appendTo).append(widget);
 
@@ -1281,6 +1283,87 @@ function createGenomeSpaceWidget(linkElement, appendTo) {
 }
 
 function createFileWidget(linkElement, appendTo) {
+    var _constructFileMenuData = function(isRoot, isDirectory, isUpload, isJobFile, isPartialFile) {
+        var data = [];
+
+        if (!isRoot || !isDirectory) {
+            data.push({
+                "lsid": "",
+                "name": "<img src='/gp/pipeline/images/delete.gif' class='module-list-icon'> Delete " + (isDirectory ? "Directory" : "File"),
+                "description": (isDirectory ? "Permanently delete this directory and all child files." : "Permanently delete this file."),
+                "version": "",
+                "documentation": "http://genepattern.org",
+                "categories": [],
+                "suites": [],
+                "tags": []
+            });
+        }
+
+        if (isDirectory) {
+            data.push({
+                "lsid": "",
+                "name": "Create Subdirectory",
+                "description": "Create a subdirectory in this directory.",
+                "version": "",
+                "documentation": "http://genepattern.org",
+                "categories": [],
+                "suites": [],
+                "tags": []
+            });
+
+            data.push({
+                "lsid": "",
+                "name": "Upload Files",
+                "description": "Upload files to this directory.",
+                "version": "",
+                "documentation": "http://genepattern.org",
+                "categories": [],
+                "suites": [],
+                "tags": []
+            });
+        }
+        else if (!isPartialFile) {
+            data.push({
+                "lsid": "",
+                "name": "<img src='/gp/pipeline/images/save.gif' class='module-list-icon'> Save File",
+                "description": "Save a copy of this file to your local computer.",
+                "version": "",
+                "documentation": "http://genepattern.org",
+                "categories": [],
+                "suites": [],
+                "tags": []
+            });
+
+            if (genomeSpaceEnabled && genomeSpaceLoggedIn) {
+                data.push({
+                    "lsid": "",
+                    "name": "<img src='/gp/pages/genomespace/genomespace_icon.gif' class='module-list-icon'> Save to Genomespace",
+                    "description": "Save a copy of this file to your GenomeSpace account.",
+                    "version": "",
+                    "documentation": "http://genepattern.org",
+                    "categories": [],
+                    "suites": [],
+                    "tags": []
+                });
+            }
+        }
+
+        if (isJobFile) {
+            data.push({
+                "lsid": "",
+                "name": "Create Pipeline",
+                "description": "Create a provenance pipeline from this file.",
+                "version": "",
+                "documentation": "http://genepattern.org",
+                "categories": [],
+                "suites": [],
+                "tags": []
+            });
+        }
+
+        return data;
+    };
+
     var _createFileWidgetInner = function(linkElement, appendTo) {
         var link = $(linkElement);
         var url = link.attr("href");
@@ -1302,7 +1385,7 @@ function createFileWidget(linkElement, appendTo) {
 
         var kind = linkElement.attr("data-kind");
 
-        var data = constructFileMenuData(isRoot, isDirectory, isUpload, isJobFile, isPartialFile);
+        var data = _constructFileMenuData(isRoot, isDirectory, isUpload, isJobFile, isPartialFile);
 
         var actionList = $("<div></div>")
             .attr("class", "file-widget-actions")
@@ -1598,87 +1681,6 @@ function uploadPathFromUrl(url) {
     fullPath = fullPath.substring(3); // Remove the /gp
 
     return fullPath;
-}
-
-function constructFileMenuData(isRoot, isDirectory, isUpload, isJobFile, isPartialFile) {
-    var data = [];
-
-    if (!isRoot || !isDirectory) {
-        data.push({
-            "lsid": "",
-            "name": "<img src='/gp/pipeline/images/delete.gif' class='module-list-icon'> Delete " + (isDirectory ? "Directory" : "File"),
-            "description": (isDirectory ? "Permanently delete this directory and all child files." : "Permanently delete this file."),
-            "version": "",
-            "documentation": "http://genepattern.org",
-            "categories": [],
-            "suites": [],
-            "tags": []
-        });
-    }
-
-    if (isDirectory) {
-        data.push({
-            "lsid": "",
-            "name": "Create Subdirectory",
-            "description": "Create a subdirectory in this directory.",
-            "version": "",
-            "documentation": "http://genepattern.org",
-            "categories": [],
-            "suites": [],
-            "tags": []
-        });
-
-        data.push({
-            "lsid": "",
-            "name": "Upload Files",
-            "description": "Upload files to this directory.",
-            "version": "",
-            "documentation": "http://genepattern.org",
-            "categories": [],
-            "suites": [],
-            "tags": []
-        });
-    }
-    else if (!isPartialFile) {
-        data.push({
-            "lsid": "",
-            "name": "<img src='/gp/pipeline/images/save.gif' class='module-list-icon'> Save File",
-            "description": "Save a copy of this file to your local computer.",
-            "version": "",
-            "documentation": "http://genepattern.org",
-            "categories": [],
-            "suites": [],
-            "tags": []
-        });
-
-        if (genomeSpaceEnabled && genomeSpaceLoggedIn) {
-            data.push({
-                "lsid": "",
-                "name": "<img src='/gp/pages/genomespace/genomespace_icon.gif' class='module-list-icon'> Save to Genomespace",
-                "description": "Save a copy of this file to your GenomeSpace account.",
-                "version": "",
-                "documentation": "http://genepattern.org",
-                "categories": [],
-                "suites": [],
-                "tags": []
-            });
-        }
-    }
-
-    if (isJobFile) {
-        data.push({
-            "lsid": "",
-            "name": "Create Pipeline",
-            "description": "Create a provenance pipeline from this file.",
-            "version": "",
-            "documentation": "http://genepattern.org",
-            "categories": [],
-            "suites": [],
-            "tags": []
-        });
-    }
-
-    return data;
 }
 
 function makePipelineNameValid(string) {

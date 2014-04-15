@@ -319,43 +319,45 @@ function sendToMapToMenu() {
 }
 
 function sendToParamForMenu(paramList) {
-    var kind = $(paramList).attr("data-kind");
-    var url = $(paramList).attr("data-url");
-    var params = run_task_info.sendTo[kind];
-    if (params) {
-        for (var i = 0; i < params.length; i++) {
-            var param = params[i];
+    $(paramList).each(function(index, element) {
+        var kind = $(element).attr("data-kind");
+        var url = $(element).attr("data-url");
+        var params = run_task_info.sendTo[kind];
+        if (params) {
+            for (var i = 0; i < params.length; i++) {
+                var param = params[i];
 
-            $("<div></div>")
-                .attr("class", "send-to-param")
-                .attr("name", param)
-                .module({
-                    data: {
-                        "lsid": "",
-                        "name": "Send to " + run_task_info.params[param].displayname,
-                        "description": run_task_info.params[param].description,
-                        "version": "",
-                        "documentation": "http://genepattern.org",
-                        "categories": [],
-                        "suites": [],
-                        "tags": []
-                    },
-                    click: function(event) {
-                        var paramName = $(event.target).closest(".module-listing").attr("name");
-                        setInputField(paramName, url);
-                        $(paramList).closest(".search-widget").searchslider("hide");
-                    },
-                    draggable: false
-                }).appendTo($(paramList));
+                $("<div></div>")
+                    .attr("class", "send-to-param")
+                    .attr("name", param)
+                    .module({
+                        data: {
+                            "lsid": "",
+                            "name": "Send to " + run_task_info.params[param].displayname,
+                            "description": run_task_info.params[param].description,
+                            "version": "",
+                            "documentation": "http://genepattern.org",
+                            "categories": [],
+                            "suites": [],
+                            "tags": []
+                        },
+                        click: function(event) {
+                            var paramName = $(event.target).closest(".module-listing").attr("name");
+                            setInputField(paramName, url);
+                            $(element).closest(".search-widget").searchslider("hide");
+                        },
+                        draggable: false
+                    }).appendTo($(element));
+            }
         }
-    }
 
-    if ($(paramList).find(".module-listing").length < 1) {
-        $(paramList).hide();
-    }
-    else {
-        $(paramList).show();
-    }
+        if ($(element).find(".module-listing").length < 1) {
+            $(element).hide();
+        }
+        else {
+            $(element).show();
+        }
+    });
 }
 
 function loadModuleInfo(module)

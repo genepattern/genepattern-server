@@ -1,5 +1,7 @@
 package org.genepattern.server.genomespace;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
 import java.util.*;
 
 import org.apache.log4j.Logger;
@@ -92,6 +94,18 @@ public class TreeJSON extends JSONArray {
 
         return allClients.toString();
     }
+
+    private static String makeConversionString(Map<String, String> conversionMap) throws UnsupportedEncodingException, JSONException {
+        JSONObject toReturn = new JSONObject();
+
+        for (Map.Entry entry : conversionMap.entrySet()) {
+            String kind = (String) entry.getKey();
+            String url = URLDecoder.decode((String) entry.getValue(), "UTF-8");
+            toReturn.put(kind, url);
+        }
+
+        return toReturn.toString();
+    }
     
     public static JSONObject makeFileJSON(GenomeSpaceFile file, boolean dirOnly, GenomeSpaceBean bean) throws Exception {
         JSONObject object = new JSONObject();
@@ -108,6 +122,10 @@ public class TreeJSON extends JSONArray {
         // Add the kind data
         Set<String> formats = file.getAvailableFormats();
         attr.put("data-kind", makeKindString(formats));
+
+        // Add conversion URLs
+        Map<String, String> conversionMap = file.getConversionUrls();
+        attr.put("data-converturls", makeConversionString(conversionMap));
 
         // Add the directory data
         attr.put("data-directory", file.isDirectory());
