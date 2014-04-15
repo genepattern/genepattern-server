@@ -1,11 +1,9 @@
 package org.genepattern.server.genomespace;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 
 import org.apache.log4j.Logger;
+import org.genepattern.webservice.TaskInfo;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -24,11 +22,11 @@ public class TreeJSON extends JSONArray {
     public static final String TITLE = "title";
     public static final String ATTR = "attr";
     
-    public TreeJSON(List<GenomeSpaceFile> files) {
-        this(files, "");
+    public TreeJSON(List<GenomeSpaceFile> files, GenomeSpaceBean bean) {
+        this(files, "", bean);
     }
     
-    public TreeJSON(List<GenomeSpaceFile> files, String code) {
+    public TreeJSON(List<GenomeSpaceFile> files, String code, GenomeSpaceBean bean) {
         try {
             List<JSONObject> toAdd = new ArrayList<JSONObject>();
             
@@ -39,14 +37,14 @@ public class TreeJSON extends JSONArray {
             else if (code.equals(SAVE_TREE)) {
                 for (GenomeSpaceFile gsf: files) {
                     if (gsf.isDirectory()) {
-                        JSONObject fj = makeFileJSON(gsf, true);
+                        JSONObject fj = makeFileJSON(gsf, true, bean);
                         toAdd.add(fj);
                     }
                 }
             }
             else {
                 for (GenomeSpaceFile gsf: files) {
-                    JSONObject fj = makeFileJSON(gsf);
+                    JSONObject fj = makeFileJSON(gsf, bean);
                     toAdd.add(fj);
                 }
             }
@@ -68,11 +66,34 @@ public class TreeJSON extends JSONArray {
         object.put(DATA, "<em>Empty Directory</em>");
         return object;
     }
-    public static JSONObject makeFileJSON(GenomeSpaceFile file) throws Exception {
-        return makeFileJSON(file, false);
+    public static JSONObject makeFileJSON(GenomeSpaceFile file, GenomeSpaceBean bean) throws Exception {
+        return makeFileJSON(file, false, bean);
+    }
+
+    private static String makeKindString(Set<String> formats) {
+        List<String> toReturn = new ArrayList<String>();
+        for (String kind : formats) {
+            toReturn.add('"' + kind + '"');
+        }
+        return toReturn.toString();
+    }
+
+    private static String makeClientString(Set<String> formats, GenomeSpaceBean bean) {
+        Set<String> allClients = new TreeSet<String>();
+        Map<String, Set<String>> kindToTools = bean.getKindToTools();
+        for (String kind : formats) {
+            Set<String> tools = kindToTools.get(kind);
+            if (tools != null) {
+                for (String tool: tools) {
+                    allClients.add('"' + tool + '"');
+                }
+            }
+        }
+
+        return allClients.toString();
     }
     
-    public static JSONObject makeFileJSON(GenomeSpaceFile file, boolean dirOnly) throws Exception {
+    public static JSONObject makeFileJSON(GenomeSpaceFile file, boolean dirOnly, GenomeSpaceBean bean) throws Exception {
         JSONObject object = new JSONObject();
         
         JSONObject data = new JSONObject();
@@ -81,8 +102,19 @@ public class TreeJSON extends JSONArray {
         JSONObject attr = new JSONObject();
         attr.put("href", file.getUrl());
         if (dirOnly) { attr.put("onclick", "JavaScript:handleSaveClick(this); return false;"); }
-        else { attr.put("onclick", "JavaScript:handleTreeClick(this); return false;"); }
+        else { attr.put("onclick", "JavaScript:openFileWidget(this, '#menus-genomespace'); return false;"); }
         attr.put("name", file.getFormattedId());
+
+        // Add the kind data
+        Set<String> formats = file.getAvailableFormats();
+        attr.put("data-kind", makeKindString(formats));
+
+        // Add the directory data
+        attr.put("data-directory", file.isDirectory());
+
+        // Add the send to GenomeSpace client data
+        String clientsString = makeClientString(formats, bean);
+        attr.put("data-clients", clientsString);
         
         data.put(ATTR, attr);
         
@@ -90,7 +122,7 @@ public class TreeJSON extends JSONArray {
             List<JSONObject> children = new ArrayList<JSONObject>();
             for (GenomeSpaceFile child : file.getChildFilesNoLoad()) {
                 if (child.isDirectory() || !dirOnly) {
-                    JSONObject childJSON = makeFileJSON(child, dirOnly);
+                    JSONObject childJSON = makeFileJSON(child, dirOnly, bean);
                     children.add(childJSON);
                 }
             }

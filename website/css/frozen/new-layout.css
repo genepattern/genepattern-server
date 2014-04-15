@@ -345,9 +345,20 @@ body {
 }
 
 #left-nav-genomespace {
-	padding: 10px !important;
-	width: 328px;
-    bottom: 85px;
+	padding: 0px !important;
+	width: 348px;
+}
+
+#left-nav-genomespace-logo {
+    height: 30px;
+}
+
+#left-nav-genomespace-refresh {
+    float: right;
+}
+
+.left-nav-genomespace-files {
+    padding: 10px;
 }
 
 #left-nav-modules.ui-widget-content a {

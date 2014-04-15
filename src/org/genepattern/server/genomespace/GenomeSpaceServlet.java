@@ -91,10 +91,10 @@ public class GenomeSpaceServlet extends HttpServlet {
         
         TreeJSON json = null;
         if (!tree.isEmpty()) {
-            json = new TreeJSON(tree, TreeJSON.SAVE_TREE);
+            json = new TreeJSON(tree, TreeJSON.SAVE_TREE, bean);
         }
         else {
-            json = new TreeJSON(new ArrayList<GenomeSpaceFile>(), TreeJSON.SAVE_TREE);
+            json = new TreeJSON(new ArrayList<GenomeSpaceFile>(), TreeJSON.SAVE_TREE, bean);
         }
         this.write(response, json);
     }
@@ -115,10 +115,10 @@ public class GenomeSpaceServlet extends HttpServlet {
         
         TreeJSON json = null;
         if (!tree.isEmpty()) {
-            json = new TreeJSON(tree);
+            json = new TreeJSON(tree, bean);
         }
         else {
-            json = new TreeJSON(null, TreeJSON.EMPTY);
+            json = new TreeJSON(null, TreeJSON.EMPTY, bean);
         }
         this.write(response, json);
     }

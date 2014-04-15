@@ -976,6 +976,309 @@ function showErrorMessage(message) {
     }
 }
 
+function createGenomeSpaceWidget(linkElement, appendTo) {
+    var _isGenomeSpaceRoot = function(url) {
+        var parts = url.split("dm.genomespace.org/datamanager/");
+        var path = parts[parts.length-1];
+        var pieces = path.split("/");
+        return pieces.length <= 4;
+    };
+
+    var _createGenomeSpaceWidgetInner = function(linkElement, appendTo) {
+        var link = $(linkElement);
+        var url = link.attr("href");
+        var name = $(linkElement).text();
+        var isDirectory = link.attr("data-directory") === "true";
+        var isRoot = _isGenomeSpaceRoot(url);
+
+        var sendToString = linkElement.attr("data-sendtomodule");
+        if (sendToString === null || sendToString === undefined) sendToString = '[]';
+        var lsidList = JSON.parse(sendToString);
+        var sendToList = lsidsToModules(lsidList).sort(function (a, b) {
+            if (a.name.toLowerCase() < b.name.toLowerCase()) return -1;
+            if (a.name.toLowerCase() > b.name.toLowerCase()) return 1;
+            return 0;
+        });
+
+        var kind = linkElement.attr("data-kind");
+        var clients = linkElement.attr("data-clients");
+
+        var data = _constructGenomepaceMenuData(isRoot, isDirectory, kind, clients);
+
+        var actionList = $("<div></div>")
+            .attr("class", "file-widget-actions")
+            .modulelist({
+                title: name,
+                data: data,
+                droppable: false,
+                draggable: false,
+                click: function(event) {
+                    var saveAction = $(event.target).closest(".module-listing").find(".module-name").text().trim().indexOf("Save File") == 0;
+                    var deleteAction = $(event.target).closest(".module-listing").find(".module-name").text().trim().indexOf("Delete") == 0;
+                    var subdirAction = $(event.target).closest(".module-listing").find(".module-name").text().trim().indexOf("Create Subdirectory") == 0;
+                    var uploadAction = $(event.target).closest(".module-listing").find(".module-name").text().trim().indexOf("Upload") == 0;
+                    var pipelineAction = $(event.target).closest(".module-listing").find(".module-name").text().trim().indexOf("Create Pipeline") == 0;
+                    var genomeSpaceAction = $(event.target).closest(".module-listing").find(".module-name").text().trim().indexOf("Save to Genomespace") == 0;
+
+                    var listObject = $(event.target).closest(".search-widget").find(".send-to-param-list");
+                    var url = listObject.attr("data-url");
+                    var path = uploadPathFromUrl(url);
+
+                    if (saveAction) {
+                        window.location.href = url + "?download";
+                        $(".search-widget:visible").searchslider("hide");
+                        return;
+                    }
+
+                    else if (deleteAction) {
+                        if (confirm('Are you sure you want to delete the selected file or directory?')) {
+                            $.ajax({
+                                type: "DELETE",
+                                url: "/gp/rest/v1/data/delete/" + path,
+                                success: function(data, textStatus, jqXHR) {
+                                    $("#infoMessageDiv #infoMessageContent").text(data);
+                                    $("#infoMessageDiv").show();
+
+                                    if (isUpload) {
+                                        $("#uploadTree").data("dndReady", {});
+                                        $("#uploadTree").jstree("refresh");
+
+                                        $("#uploadDirectoryTree").jstree("refresh");
+                                    }
+                                    if (isJobFile) {
+                                        initRecentJobs();
+                                    }
+                                },
+                                error: function(data, textStatus, jqXHR) {
+                                    if (typeof data === 'object') {
+                                        data = data.responseText;
+                                    }
+
+                                    showErrorMessage(data);
+                                }
+                            });
+
+                            $(".search-widget:visible").searchslider("hide");
+                        }
+                        return;
+                    }
+
+                    else if (subdirAction) {
+                        showDialog("Name the Subdirectory", "What name would you like to give the subdirectory?" +
+                            "<input type='text' class='dialog-subdirectory-name' style='width: 98%;' />", {
+                            "Create": function(event) {
+                                var subdirName = $(".dialog-subdirectory-name").val();
+
+                                var _createSubdirectory = function() {
+                                    $.ajax({
+                                        type: "PUT",
+                                        url: "/gp/rest/v1/data/createDirectory/" + path + encodeURIComponent(subdirName),
+                                        success: function(data, textStatus, jqXHR) {
+                                            $("#infoMessageDiv #infoMessageContent").text(data);
+                                            $("#infoMessageDiv").show();
+
+                                            if (isUpload) {
+                                                $("#uploadTree").data("dndReady", {});
+                                                $("#uploadTree").jstree("refresh");
+
+                                                $("#uploadDirectoryTree").jstree("refresh");
+                                            }
+                                        },
+                                        error: function(data, textStatus, jqXHR) {
+                                            if (typeof data === 'object') {
+                                                data = data.responseText;
+                                            }
+
+                                            showErrorMessage(data);
+                                        }
+                                    });
+                                };
+
+                                // Check for special characters
+                                var regex = new RegExp("[^A-Za-z0-9_.]");
+                                var specialCharacters = regex.test(subdirName);
+                                if(specialCharacters) {
+                                    var outerDialog = $(this);
+                                    showDialog("Special Characters!",
+                                        "The name you selected contains special characters!<br/><br/>" +
+                                            "Some older GenePattern modules do not handle special characters well. " +
+                                            "Are you sure you want to continue?", {
+                                            "Yes": function() {
+                                                _createSubdirectory();
+                                                $(this).dialog("close");
+                                                $(outerDialog).dialog("close");
+                                            },
+                                            "No": function() {
+                                                $(this).dialog("close");
+                                            }
+                                        });
+                                    return;
+                                }
+                                else {
+                                    _createSubdirectory();
+                                    $(this).dialog("close");
+                                }
+                            },
+                            "Cancel": function(event) {
+                                $(this).dialog("close");
+                            }
+                        });
+                        $(".ui-dialog-buttonset:visible button:first").button("disable");
+                        $(".dialog-subdirectory-name").keyup(function(event) {
+                            if ($(event.target).val() === "") {
+                                $(".ui-dialog-buttonset:visible button:first").button("disable");
+                            }
+                            else {
+                                $(".ui-dialog-buttonset:visible button:first").button("enable");
+                            }
+                        });
+
+                        $(".search-widget:visible").searchslider("hide");
+                        return;
+                    }
+
+                    else if (uploadAction) {
+                        var directory = $(event.target).closest(".file-widget").attr("name");
+
+                        $("#upload-dropzone-input").data("origin", directory);
+                        $("#upload-dropzone-input").trigger("click");
+                        return;
+                    }
+
+                    else if (pipelineAction) {
+                        showDialog("Name the Pipeline", "What name would you like to give the pipeline?" +
+                            "<input type='text' class='dialog-pipeline-name' style='width: 98%;' />", {
+                            "Create": function(event) {
+                                var subdirName = $(".dialog-pipeline-name").val();
+                                subdirName = makePipelineNameValid(subdirName);
+
+                                $.ajax({
+                                    type: "PUT",
+                                    url: "/gp/rest/v1/data/createPipeline/" + path + "?name=" + subdirName,
+                                    success: function(data, textStatus, jqXHR) {
+                                        $("#infoMessageDiv #infoMessageContent").text(data);
+                                        $("#infoMessageDiv").show();
+
+                                        var forwardUrl = jqXHR.getResponseHeader("pipeline-forward");
+                                        if (forwardUrl && forwardUrl.length > 0) {
+                                            window.location = forwardUrl;
+                                        }
+                                    },
+                                    error: function(data, textStatus, jqXHR) {
+                                        if (typeof data === 'object') {
+                                            data = data.responseText;
+                                        }
+
+                                        showErrorMessage(data);
+                                    }
+                                });
+
+                                $(this).dialog("close");
+                            },
+                            "Cancel": function(event) {
+                                $(this).dialog("close");
+                            }
+                        });
+                        $(".ui-dialog-buttonset:visible button:first").button("disable");
+                        $(".dialog-pipeline-name").keyup(function(event) {
+                            if ($(event.target).val() === "") {
+                                $(".ui-dialog-buttonset:visible button:first").button("disable");
+                            }
+                            else {
+                                $(".ui-dialog-buttonset:visible button:first").button("enable");
+                            }
+                        });
+
+                        $(".search-widget:visible").searchslider("hide");
+                        return;
+                    }
+
+                    else if (genomeSpaceAction) {
+                        fileURL = url;							// Set the URL of the file
+
+                        $('#genomeSpaceSaveDialog').dialog('open');
+
+                        $(".search-widget:visible").searchslider("hide");
+                        return;
+                    }
+
+                    else {
+                        console.log("ERROR: Executing click function for " + url);
+                        $(".search-widget:visible").searchslider("hide");
+                    }
+                }
+            });
+
+        var paramList = $("<div></div>")
+            .attr("class", "send-to-param-list")
+            .attr("data-kind", kind)
+            .attr("data-url", link.attr("href"))
+            .modulelist({
+                title: "Send to Parameter",
+                data: [],
+                droppable: false,
+                draggable: false,
+                click: function(event) {}
+            });
+
+        var moduleList = $("<div></div>")
+            .attr("class", "send-to-module-list")
+            .modulelist({
+                title: "Send to Module",
+                data: sendToList,
+                droppable: false,
+                draggable: true,
+                click: function(event) {
+                    var lsid = this.data.lsid;
+                    var listObject = $(event.target).closest(".search-widget").find(".send-to-param-list");
+                    var kind = listObject.attr("data-kind");
+                    var url = listObject.attr("data-url");
+
+                    loadRunTaskForm(lsid, false, kind, url);
+
+                    var checkForRunTaskLoaded = function() {
+                        if (run_task_info.lsid === lsid) {
+                            sendToByKind(url, kind);
+                        }
+                        else {
+                            setTimeout(function() {
+                                checkForRunTaskLoaded();
+                            }, 100);
+                        }
+                    };
+
+                    checkForRunTaskLoaded();
+                }
+            });
+
+        if (moduleList.find(".module-listing").length < 1) {
+            paramList.hide();
+            moduleList.hide();
+        }
+
+        var widget = $("<div></div>")
+            .attr("name", link.attr("href"))
+            .attr("class", "search-widget file-widget")
+            .searchslider({
+                lists: [actionList, paramList, moduleList]});
+
+        $(appendTo).append(widget);
+
+        // Init the initial send to parameters
+        var sendToParamList = widget.find(".send-to-param-list");
+        sendToParamForMenu(sendToParamList);
+    }
+
+    if (all_modules_map !== null) {
+        _createGenomeSpaceWidgetInner(linkElement, appendTo);
+    }
+    else {
+        setTimeout(function() {
+            createGenomeSpaceWidget(linkElement, appendTo);
+        }, 100);
+    }
+}
+
 function createFileWidget(linkElement, appendTo) {
     var _createFileWidgetInner = function(linkElement, appendTo) {
         var link = $(linkElement);
@@ -1394,11 +1697,15 @@ function makePipelineNameValid(string) {
 
 function openFileWidget(link, context) {
     var url = $(link).attr("href");
+    var genomeSpace = context === "#menus-genomespace";
 
     // Create the menu widget
     var widgetFound = $(context).find("[name='" + escapeJquerySelector(url) + "']").length > 0;
-    if (!widgetFound) {
+    if (!widgetFound && !genomeSpace) {
         createFileWidget($(link), context);
+    }
+    else if (!widgetFound && genomeSpace) {
+        createGenomeSpaceWidget($(link), context);
     }
 
     // Open the file slider

@@ -36,6 +36,13 @@
                         }
                     });
                 }
+
+                $(document).ready(function() {
+                    $("#left-nav-genomespace-refresh").click(function() {
+                        $(".left-nav-genomespace-refresh-real").trigger("click");
+                    });
+                });
+
                 /* ]]> */
             </script>
             <script src="#{facesContext.externalContext.requestContextPath}/js/jquery/jquery.cookie.js" type="text/javascript" />
@@ -43,10 +50,14 @@
             <link href="/gp/js/themes/default/style.css" rel="stylesheet" type="text/css" />
         </ui:define>
 
-        <h:form>
-            <div style="text-align:right">
-                <strong>Logged in as: #{genomeSpaceBean.username} &nbsp;&nbsp;&nbsp;</strong>
-                <h:commandButton value="Refresh" action="#{genomeSpaceBean.forceFileRefresh}" />
+        <div class="left-nav-top">
+            <button id="left-nav-genomespace-refresh">Refresh</button>
+            <img id="left-nav-genomespace-logo" src="/gp/pages/genomespace/genomespacelogo.png" />
+        </div>
+
+        <h:form styleClass="left-nav-genomespace-files">
+            <div style="display: none;">
+                <h:commandButton value="Refresh" action="#{genomeSpaceBean.forceFileRefresh}" styleClass="left-nav-genomespace-refresh-real"/>
             </div>
             <a4j:commandButton action="#{genomeSpaceBean.blankFileCache}" style="display:none;" value="Refresh Menus" reRender="genomeSpaceMenus" oncomplete="showCorrectArrows();" />
             <t:div rendered="#{genomeSpaceBean.loading}">
