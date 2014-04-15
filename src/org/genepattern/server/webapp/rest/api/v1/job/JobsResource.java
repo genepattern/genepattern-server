@@ -188,8 +188,7 @@ public class JobsResource {
             final @Context HttpServletRequest request,
             final @PathParam("jobId") String jobId,
             final @DefaultValue("true") @QueryParam("includeChildren") boolean includeChildren,
-            final @DefaultValue("true") @QueryParam("includeOutputFiles") boolean includeOutputFiles,
-            final @DefaultValue("false") @QueryParam("includeSendTo") boolean includeSendTo
+            final @DefaultValue("true") @QueryParam("includeOutputFiles") boolean includeOutputFiles
     ) {
         
         final GpContext userContext=Util.getUserContext(request);
@@ -201,7 +200,7 @@ public class JobsResource {
         String jsonStr;
         try {
             JSONObject job=null;
-            job=getJobImpl.getJob(userContext, jobId, includeChildren, includeOutputFiles, includeSendTo);
+            job=getJobImpl.getJob(userContext, jobId, includeChildren, includeOutputFiles);
             if (job==null) {
                 throw new Exception("Unexpected null return value");
             }
@@ -374,8 +373,7 @@ public class JobsResource {
             final @Context UriInfo uriInfo, 
             final @Context HttpServletRequest request,
             final @DefaultValue("true") @QueryParam("includeChildren") boolean includeChildren,
-            final @DefaultValue("true") @QueryParam("includeOutputFiles") boolean includeOutputFiles,
-            final @DefaultValue("true") @QueryParam("includeSendTo") boolean includeSendTo
+            final @DefaultValue("true") @QueryParam("includeOutputFiles") boolean includeOutputFiles
     ) {
         GpContext userContext = Util.getUserContext(request);
 
@@ -397,7 +395,7 @@ public class JobsResource {
             // Put the job JSON in an array
             JSONArray jobs = new JSONArray();
             for (JobInfo jobInfo : recentJobs) {
-                JSONObject jobObject = getJobImpl.getJob(userContext, jobInfo, includeChildren, includeOutputFiles, includeSendTo);
+                JSONObject jobObject = getJobImpl.getJob(userContext, jobInfo, includeChildren, includeOutputFiles);
                 jobs.put(jobObject);
             }
 
@@ -428,8 +426,7 @@ public class JobsResource {
             final @Context UriInfo uriInfo,
             final @Context HttpServletRequest request,
             final @PathParam("jobId") String jobId,
-            final @DefaultValue("true") @QueryParam("includeOutputFiles") boolean includeOutputFiles,
-            final @DefaultValue("false") @QueryParam("includeSendTo") boolean includeSendTo
+            final @DefaultValue("true") @QueryParam("includeOutputFiles") boolean includeOutputFiles
     ) {
         
         final GpContext userContext=Util.getUserContext(request);
@@ -440,7 +437,7 @@ public class JobsResource {
         String jsonStr;
         try {
             boolean includeChildren=true;
-            JSONObject children=getJobImpl.getChildren(userContext, jobId, includeChildren, includeOutputFiles, includeSendTo);
+            JSONObject children=getJobImpl.getChildren(userContext, jobId, includeChildren, includeOutputFiles);
             if (children==null) {
                 throw new Exception("Unexpected null return value");
             }
