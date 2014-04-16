@@ -1107,17 +1107,12 @@ function createGenomeSpaceWidget(linkElement, appendTo) {
                                 var _createSubdirectory = function() {
                                     $.ajax({
                                         type: "PUT",
-                                        url: "/gp/rest/v1/data/createDirectory/" + path + encodeURIComponent(subdirName),
+                                        url: "/gp/rest/v1/genomespace/createDirectory?url=" + encodeURIComponent(url) + "&name=" + encodeURIComponent(subdirName),
                                         success: function(data, textStatus, jqXHR) {
                                             $("#infoMessageDiv #infoMessageContent").text(data);
                                             $("#infoMessageDiv").show();
 
-                                            if (isUpload) {
-                                                $("#uploadTree").data("dndReady", {});
-                                                $("#uploadTree").jstree("refresh");
-
-                                                $("#uploadDirectoryTree").jstree("refresh");
-                                            }
+                                            $(".left-nav-genomespace-refresh-real").trigger("click");
                                         },
                                         error: function(data, textStatus, jqXHR) {
                                             if (typeof data === 'object') {
