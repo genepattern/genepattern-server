@@ -1189,6 +1189,36 @@ function createGenomeSpaceWidget(linkElement, appendTo) {
             });
         listList.push(actionList);
 
+        // Create send to tool lists
+        var toolData = [];
+        for (var i = 0; i < clients.length; i++) {
+            var tool = clients[i];
+            toolData.push({
+                "lsid": "",
+                "name": "<img src='/gp/pages/genomespace/genomespace_icon.gif' class='module-list-icon'> Send to " + tool,
+                "description": "Send this file from GenePattern to " + tool + " using GenomeSpace.",
+                "version": "",
+                "documentation": "http://genomespace.org",
+                "categories": [],
+                "suites": [],
+                "tags": []
+            });
+        }
+
+        var toolList = $("<div></div>")
+            .attr("class", "send-to-param-list")
+            .attr("data-kind", aKind)
+            .attr("data-url", convertUrl)
+            .modulelist({
+                title: "Send to GenomeSpace Tool",
+                data: toolData,
+                droppable: false,
+                draggable: false,
+                click: function(event) {}
+            });
+        listList.push(toolList);
+
+        // Create send to parameter lists
         for (var i = 0; i < kind.length; i++) {
             var aKind = kind[i];
             var convertUrl = convertUrls[aKind];
@@ -1207,6 +1237,7 @@ function createGenomeSpaceWidget(linkElement, appendTo) {
             listList.push(paramList);
         }
 
+        // Create send to module lists
         for (var i = 0; i < kind.length; i++) {
             var aKind = kind[i];
             var convertUrl = convertUrls[aKind];
