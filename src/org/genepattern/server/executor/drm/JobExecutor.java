@@ -310,6 +310,7 @@ public class JobExecutor implements CommandExecutor2 {
         final DrmJobStatus drmJobStatus=getJobStatus(drmJobRecord);
         updateStatus(drmJobRecord, drmJobStatus);
         if (drmJobStatus != null && drmJobStatus.getJobState().is(DrmJobState.TERMINATED)) {
+            log.debug("job is terminated, drmJobStatus.jobState="+drmJobStatus.getJobState());
             handleCompletedJob(drmJobRecord, drmJobStatus);
         }
         else if (drmJobStatus != null && drmJobStatus.getJobState().is(DrmJobState.UNDETERMINED)) {

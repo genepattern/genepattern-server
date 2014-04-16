@@ -36,7 +36,7 @@ public class JobRunnerJob {
     @Column(name="jr_name", nullable=false)
     private String jobRunnerName;
 
-    @Column(name="ext_job_id", nullable=false)
+    @Column(name="ext_job_id", nullable=true)
     private String extJobId;
     
     @Column(name="exit_code", nullable=true)

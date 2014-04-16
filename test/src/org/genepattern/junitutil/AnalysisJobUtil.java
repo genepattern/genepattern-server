@@ -13,6 +13,7 @@ import org.genepattern.server.job.input.Param;
 import org.genepattern.server.job.input.ParamListHelper;
 import org.genepattern.server.rest.ParameterInfoRecord;
 import org.genepattern.server.webservice.server.dao.AnalysisDAO;
+import org.genepattern.webservice.JobInfo;
 import org.genepattern.webservice.ParameterInfo;
 import org.genepattern.webservice.TaskInfo;
 
@@ -51,6 +52,20 @@ public class AnalysisJobUtil {
         final Integer parentJobNumber=-1;
         final ParameterInfo[] parameterInfoArray=initParameterValues(taskContext, jobInput, taskContext.getTaskInfo(), initDefault);
         return addJobToDb(taskContext.getUserId(), taskContext.getTaskInfo(), parameterInfoArray, parentJobNumber); 
+    }
+    
+    public JobInfo fetchJobInfoFromDb(final int jobNumber) {
+        final boolean isInTransaction=HibernateUtil.isInTransaction();
+        try {
+            AnalysisDAO dao = new AnalysisDAO();
+            JobInfo jobInfo = dao.getJobInfo(jobNumber);
+            return jobInfo;
+        }
+        finally {
+            if (!isInTransaction) {
+                HibernateUtil.closeCurrentSession();
+            }
+        }
     }
     
     /**

@@ -140,34 +140,6 @@ public class DbLookup implements DrmLookup {
             }
         }
     }
-
-//    @Override
-//    public void updateJobStatus(Integer gpJobNo, DrmJobStatus drmJobStatus) {
-//        final boolean isInTransaction=HibernateUtil.isInTransaction();
-//        try {
-//            HibernateUtil.beginTransaction();
-//            JobRunnerJob existing = (JobRunnerJob) HibernateUtil.getSession().get(JobRunnerJob.class, gpJobNo);
-//            if (existing==null) {
-//                //TODO: should throw an exception?
-//                log.error("No existing record for "+gpJobNo);
-//                return;
-//            }
-//            //JobRunnerJob is immutable ... so evict it from the session before saving a new instance as an update
-//            HibernateUtil.getSession().evict(existing);
-//            JobRunnerJob update = new JobRunnerJob.Builder(existing).drmJobStatus(drmJobStatus).build();
-//            HibernateUtil.getSession().saveOrUpdate(update);
-//            HibernateUtil.commitTransaction();
-//        }
-//        catch (Throwable t) {
-//            log.error("Error updating entry for gpJobNo="+gpJobNo,t);
-//            HibernateUtil.rollbackTransaction();
-//        }
-//        finally {
-//            if (!isInTransaction) {
-//                HibernateUtil.closeCurrentSession();
-//            }
-//        }
-//    }
     
     @Override
     public void updateJobStatus(final DrmJobRecord drmJobRecord, final DrmJobStatus drmJobStatus) {
