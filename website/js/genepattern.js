@@ -2094,9 +2094,22 @@ function loadJobStatus(jobId) {
     // Hide the search slider if it is open
     $(".search-widget").searchslider("hide");
 
-    // Hide the protocols & run task form, if visible
+    // Hide the protocols, run task form & eula, if visible
     $("#protocols").hide();
     $("#submitJob").hide();
+    $("#eula-block").hide();
+
+    // Clean the Run Task Form for future loads
+    if (Request.cleanJobSubmit === null) { Request.cleanJobSubmit = $("#submitJob").clone(); }
+    else { $("#submitJob").replaceWith(Request.cleanJobSubmit.clone()); }
+    run_task_info = {
+        lsid: null, //lsid of the module
+        name: null, //name of the module
+        params: {}, //contains parameter info necessary to build the job submit form, see the initParam() function for details
+        sendTo: {},
+        param_group_ids: {}
+    };
+    parameter_and_val_groups = {}; //contains params and their values only
 
     // Handle open visualizer flag
     var openVisualizers = $.param("openVisualizers");
