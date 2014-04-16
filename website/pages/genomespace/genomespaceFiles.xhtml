@@ -106,34 +106,7 @@
                             iterate = jq(data["args"][0]).find("li");
                         }
 
-                        iterate.each(function (index) {
-
-                            var node = iterate.get(index);
-                            var name = jq(node).find("a:first").attr("name");
-
-                            // Add the id to the node
-                            jq(node).attr("id", name);
-
-                            // Check for the case of empty directories
-                            var link = jq(node).find("a:first").attr("href");
-                            if (link === "#") return;
-
-                            // Append menu arrow
-                            var arrow = document.createElement("img");
-							arrow.setAttribute("id", "Image_" + name);
-                            arrow.setAttribute("class", "menuArrow");
-                            arrow.setAttribute("src", "/gp/images/smallOptions.gif");
-                            arrow.setAttribute("alt", "menu");
-                            arrow.setAttribute("onmouseover", "MM_swapImage('Image_" + name + "','','/gp/images/smallOptions2.gif',2);");
-                            arrow.setAttribute("onmouseout", "MM_swapImgRestore();");
-                            jq(node).find("a:first").after(arrow);
-                            jq(arrow).hide();
-                        });
-						
 						jq("a em:contains('Empty Directory')").parent().bind("dragstart", function() { return false; });
-
-                        // Load the new file menus
-                        jq("input[type=button][value='Refresh Menus']").trigger("click");
                     });
                 </script>
             </t:div>
