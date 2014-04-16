@@ -1064,12 +1064,11 @@ function createGenomeSpaceWidget(linkElement, appendTo) {
                     var deleteAction = $(event.target).closest(".module-listing").find(".module-name").text().trim().indexOf("Delete") == 0;
                     var subdirAction = $(event.target).closest(".module-listing").find(".module-name").text().trim().indexOf("Create Subdirectory") == 0;
 
-                    var listObject = $(event.target).closest(".search-widget").find(".send-to-param-list");
-                    var url = listObject.attr("data-url");
-                    var path = uploadPathFromUrl(url);
+                    var listObject = $(event.target).closest(".search-widget");
+                    var url = listObject.attr("name");
 
                     if (saveAction) {
-                        window.location.href = url + "?download";
+                        window.location.href = url;
                         $(".search-widget:visible").searchslider("hide");
                         return;
                     }
@@ -1078,20 +1077,12 @@ function createGenomeSpaceWidget(linkElement, appendTo) {
                         if (confirm('Are you sure you want to delete the selected file or directory?')) {
                             $.ajax({
                                 type: "DELETE",
-                                url: "/gp/rest/v1/data/delete/" + path,
+                                url: "/gp/rest/v1/genomespace/delete?url=" + url,
                                 success: function(data, textStatus, jqXHR) {
                                     $("#infoMessageDiv #infoMessageContent").text(data);
                                     $("#infoMessageDiv").show();
 
-                                    if (isUpload) {
-                                        $("#uploadTree").data("dndReady", {});
-                                        $("#uploadTree").jstree("refresh");
-
-                                        $("#uploadDirectoryTree").jstree("refresh");
-                                    }
-                                    if (isJobFile) {
-                                        initRecentJobs();
-                                    }
+                                    $(".left-nav-genomespace-refresh-real").trigger("click");
                                 },
                                 error: function(data, textStatus, jqXHR) {
                                     if (typeof data === 'object') {
@@ -1206,7 +1197,7 @@ function createGenomeSpaceWidget(linkElement, appendTo) {
         }
 
         var toolList = $("<div></div>")
-            .attr("class", "send-to-param-list")
+            .attr("class", "send-to-tool-list")
             .attr("data-kind", aKind)
             .attr("data-url", convertUrl)
             .modulelist({
