@@ -111,6 +111,39 @@ public class GenomeSpaceResource {
         }
     }
 
+    /**
+     * Delete the specified GenomeSpace file
+     * @param request
+     * @param url - the GenomeSpace url for the file
+     * @return
+     */
+    @GET
+    @Path("/tool")
+    public Response sendToTool(@Context HttpServletRequest request, @Context HttpServletResponse response, @QueryParam("tool") String tool, @QueryParam("url") String url) {
+        GpContext userContext = Util.getUserContext(request);
+
+        if (!isGenomeSpaceEnabled(userContext)) {
+            return Response.status(500).entity("GenomeSpace is not enabled").build();
+        }
+
+        if (url == null || tool == null) {
+            return Response.status(500).entity("Null value forwarding to the GenomeSpace tool URL: " + url + " " + tool).build();
+        }
+
+        Object gsSessionObject = request.getSession().getAttribute(GenomeSpaceLoginManager.GS_SESSION_KEY);
+
+        try {
+            GenomeSpaceFile file = getFile(url, request.getSession());
+            URL redirectUrl = GenomeSpaceClientFactory.getGenomeSpaceClient().getSendToToolUrl(gsSessionObject, file, tool);
+            URI redirectUri = new URI(redirectUrl.toString());
+            //response.sendRedirect(redirectUrl.toString());
+            return Response.temporaryRedirect(redirectUri).build(); //.ok().entity("Deleted from GenomeSpace " + file.getName()).build();
+        }
+        catch (Exception e) {
+            return Response.status(500).entity("Error forwarding to the GenomeSpace tool URL: " + e.getMessage()).build();
+        }
+    }
+
 //    /**
 //     * Create the specified subdirectory
 //     * @param request

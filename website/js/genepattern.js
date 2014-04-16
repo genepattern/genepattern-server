@@ -1185,7 +1185,7 @@ function createGenomeSpaceWidget(linkElement, appendTo) {
         for (var i = 0; i < clients.length; i++) {
             var tool = clients[i];
             toolData.push({
-                "lsid": "",
+                "lsid": tool,
                 "name": "<img src='/gp/pages/genomespace/genomespace_icon.gif' class='module-list-icon'> Send to " + tool,
                 "description": "Send this file from GenePattern to " + tool + " using GenomeSpace.",
                 "version": "",
@@ -1205,7 +1205,12 @@ function createGenomeSpaceWidget(linkElement, appendTo) {
                 data: toolData,
                 droppable: false,
                 draggable: false,
-                click: function(event) {}
+                click: function(event) {
+                    var tool = $(event.target).closest(".module-listing").find(".module-lsid").text();
+                    window.open("/gp/rest/v1/genomespace/tool?tool=" + encodeURIComponent(tool) + "&url=" + encodeURIComponent(url));
+                    $(".search-widget:visible").searchslider("hide");
+                    return;
+                }
             });
         listList.push(toolList);
 
