@@ -2045,7 +2045,7 @@ function renderJob(jobJson, tab) {
         .appendTo(jobName);
 
     $("<a></a>")
-        .attr("href", "#")
+        .attr("href", "/gp/jobResults/" + jobJson.jobId + "/")
         .attr("onclick", "openJobWidget(this); return false;")
         .attr("data-jobid", jobJson.jobId)
         .attr("data-json", JSON.stringify(jobJson))
@@ -2148,6 +2148,76 @@ function loadJobStatus(jobId) {
     $.ajax({
         type: "GET",
         url: "/gp/pages/jobResult.jsf?jobNumber=" + jobId + openVisualizers,
+        cache: false,
+        success: function(data, textStatus, jqXHR) {
+            $("#jobResults").html(data);
+            $("#jobResults").show();
+        },
+        error: function(data) {
+            if (typeof data === 'object') {
+                data = data.responseText;
+            }
+
+            showErrorMessage(data);
+        },
+        dataType: "html"
+    });
+}
+
+function loadInAjaxWrapper(link) {
+    $.ajax({
+        type: "GET",
+        url: $(link).attr("href"),
+        cache: false,
+        success: function(data, textStatus, jqXHR) {
+            $("#jobResults").html(data);
+            $("#jobResults").show();
+        },
+        error: function(data) {
+            if (typeof data === 'object') {
+                data = data.responseText;
+            }
+
+            showErrorMessage(data);
+        },
+        dataType: "html"
+    });
+
+    return false;
+}
+
+function loadJobResults(jobResults) {
+    // Abort if not told to load job results
+    if (jobResults === undefined || jobResults === null || jobResults === '' || jobResults === "false" || !jobResults) {
+        return;
+    }
+
+    // Hide the search slider if it is open
+    $(".search-widget").searchslider("hide");
+
+    // Hide the protocols, run task form & eula, if visible
+    $("#protocols").hide();
+    $("#submitJob").hide();
+    $("#eula-block").hide();
+
+    // Clean the Run Task Form for future loads
+    if (Request.cleanJobSubmit === null) { Request.cleanJobSubmit = $("#submitJob").clone(); }
+    else { $("#submitJob").replaceWith(Request.cleanJobSubmit.clone()); }
+    run_task_info = {
+        lsid: null, //lsid of the module
+        name: null, //name of the module
+        params: {}, //contains parameter info necessary to build the job submit form, see the initParam() function for details
+        sendTo: {},
+        param_group_ids: {}
+    };
+    parameter_and_val_groups = {}; //contains params and their values only
+
+    // Add to history so back button works
+    history.pushState(null, document.title, location.protocol + "//" + location.host + location.pathname + "?jobResults=" + true);
+
+    $.ajax({
+        type: "GET",
+        url: "/gp/pages/jobResults.jsf",
         cache: false,
         success: function(data, textStatus, jqXHR) {
             $("#jobResults").html(data);
