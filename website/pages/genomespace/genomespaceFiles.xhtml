@@ -95,7 +95,7 @@
                         },
                         plugins:[ "themes", "json_data", "cookies" ]
                     });
-                    jq("#tree").bind("load_node.jstree", function (event, data) {
+                    $("#tree").bind("load_node.jstree", function (event, data) {
                         var iterate = null;
 
                         // Handle the case of the initial load
@@ -106,7 +106,8 @@
                             iterate = jq(data["args"][0]).find("li");
                         }
 
-						jq("a em:contains('Empty Directory')").parent().bind("dragstart", function() { return false; });
+						$("#tree").find("a em:contains('Empty Directory')").parent().bind("dragstart", function() { return false; });
+                        $("#tree").find("[data-directory='true']").bind("dragstart", function() { return false; });
                     });
                 </script>
             </t:div>
