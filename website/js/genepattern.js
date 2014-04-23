@@ -885,6 +885,7 @@ function initUploads() {
     // Add click to browse functionality
     $("<input />")
         .attr("id", "upload-dropzone-input")
+        .attr("multiple", "multiple")
         .attr("type", "file")
         .change(function(event) {
             var origin = $("#upload-dropzone-input").data("origin");
