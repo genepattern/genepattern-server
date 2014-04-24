@@ -496,31 +496,22 @@ function setModuleSearchTitle(filter) {
 }
 
 function jobStatusPoll() {
-	var continuePolling = $.data($(".current-job-status")[0], "continuePolling");
-	if (continuePolling == undefined || continuePolling) {
- 		$.ajax({
-            cache: false,
-            url: '/gp/rest/v1/jobs/incomplete',
-            dataType: 'json',
-            success: function(data, status, xhr) {
-                var statusBoxes = $(".current-job-status a");
+    var _jobStatusPoll = function() {
+        var continuePolling = $.data($(".current-job-status")[0], "continuePolling");
+        if (continuePolling === undefined) continuePolling = true;
 
-                statusBoxes.each(function(index, ui) {
-                    $(ui).empty();
-                    if (data.length > 0) {
-                        $(ui).text(" " + data.length + " Jobs Processing");
-                        $(ui).prepend("<img src='/gp/images/spin.gif' alt='Jobs Currently Processing' />");
-                        $.data(ui, "continuePolling", true);
-                    }
-                    else {
-                        $(ui).text(" No Jobs Processing");
-                        $(ui).prepend("<img src='/gp/images/complete.gif' alt='No Jobs Processing' />");
-                        $.data(ui, "continuePolling", false);
-                    }
-                });
-            }
-        });
-		}
+        initRecentJobs();
+
+        if (continuePolling) {
+            setTimeout(function() {
+                _jobStatusPoll();
+            }, 30000);
+        }
+    };
+
+    if (userLoggedIn) {
+        _jobStatusPoll();
+    }
 }
 
 function ajaxFileTabUpload(file, directory, done, index){
@@ -1746,26 +1737,26 @@ function createJobStatus(status) {
     // Pending
     if (status.isPending) {
         return $("<div></div>")
-            //.text("Pending")
-            .addClass("job-status-icon");
+            .text("Pending")
+            .addClass("job-status-icon job-status-pending");
     }
     // Processing
     else if (!status.isFinished) {
         return $("<img/>")
-            //.attr("src", "/gp/images/run.gif")
-            .addClass("job-status-icon");
+            .attr("src", "/gp/images/run.gif")
+            .addClass("job-status-icon job-status-processing");
     }
     // Finished and Error
     else if (status.hasError) {
         return $("<img/>")
             .attr("src", "/gp/images/error.gif")
-            .addClass("job-status-icon");
+            .addClass("job-status-icon job-status-error");
     }
     // must be Finished and Success
     else {
         return $("<img/>")
             .attr("src", "/gp/images/complete.gif")
-            .addClass("job-status-icon");
+            .addClass("job-status-icon job-status-finished");
     }
 }
 
@@ -2009,6 +2000,24 @@ function initRecentJobs() {
             if (data.length === 0) {
                 tab.append("<h3 style='text-align:center;'>No Recent Jobs</h3>");
             }
+
+            // Update the Job Status Indicators
+            var jobsProcessing = $(".job-status-processing, .job-status-pending").length;
+            var statusBoxes = $(".current-job-status a");
+
+            statusBoxes.each(function(index, ui) {
+                $(ui).empty();
+                if (jobsProcessing.length > 0) {
+                    $(ui).text(" " + jobsProcessing.length + " Jobs Processing");
+                    $(ui).prepend("<img src='/gp/images/spin.gif' alt='Jobs Currently Processing' />");
+                    $.data($(ui).parent()[0], "continuePolling", true);
+                }
+                else {
+                    $(ui).text(" No Jobs Processing");
+                    $(ui).prepend("<img src='/gp/images/complete.gif' alt='No Jobs Processing' />");
+                    $.data($(ui).parent()[0], "continuePolling", false);
+                }
+            });
         },
         error: function(data, textStatus, jqXHR) {
             if (typeof data === 'object') {

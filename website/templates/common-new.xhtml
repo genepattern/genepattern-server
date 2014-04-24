@@ -148,15 +148,7 @@
 //	                    	initBrowseSuites();
 //	                    }
 //	                });
-	                
-	             	// Load the running jobs, poll every 10 seconds
-	             	if (userLoggedIn) {
-	             		jobStatusPoll();
-		             	setInterval(function() {
-		             		jobStatusPoll();
-		             	}, 30000);
-	             	}
-	            	
+
 	            	// Search box controls
 	                jq("#module-search-box").keyup(function(event) {
 	                    if (jq(".search-widget:visible").length === 0) {
@@ -350,7 +342,8 @@
                             <div id="left-nav-jobs-list"></div>
                             <script type="text/javascript">
                                 $(document).ready(function() {
-                                    initRecentJobs();
+                                    // Load the running jobs, poll every 30 seconds
+                                    jobStatusPoll();
                                 });
                         </script>
                         </h:outputText>
