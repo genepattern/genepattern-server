@@ -427,6 +427,22 @@ body {
 	text-overflow: ellipsis;
 }
 
+.jstree > ul > li > a {
+    max-width: 290px;
+}
+
+.jstree > ul > li > ul > li > a {
+    max-width: 270px;
+}
+
+.jstree > ul > li > ul > li > ul > li > a {
+    max-width: 250px;
+}
+
+.jstree > ul > li > ul > li > ul > li > ul > li > a {
+    max-width: 230px;
+}
+
 .current-job-status {
 	float:left;
 	font-size: 8pt;
