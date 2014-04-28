@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.util.Enumeration;
 import java.util.List;
@@ -174,6 +175,49 @@ public class DataResource {
             return Response.status(Status.INTERNAL_SERVER_ERROR).entity(t.getLocalizedMessage()).build();
         }
     }
+
+    /**
+     * Renames a user upload file
+     * @param request
+     * @param path, for example '/jobResults/14855/all aml test.cvt.gct',
+     *                          '/users/user_id/all_aml_test.cls'
+     * @return
+     */
+    @PUT
+    @Path("/rename")
+    public Response renameFile(@Context HttpServletRequest request, @QueryParam("path") String path, @QueryParam("name") String name) {
+        // Fix for when the preceding slash is missing from the path
+        if (!path.startsWith("/")) {
+            path = "/" + path;
+        }
+
+        // Handle special characters
+        path = URLDecoder.decode(path);
+
+        try {
+            final GpContext userContext=Util.getUserContext(request);
+            if (path.startsWith("/users")) { // If this is a user upload
+                final File uploadFilePath=extractUsersPath(userContext, path);
+                final GpFilePath fileToRename = GpFileObjFactory.getUserUploadFile(userContext, uploadFilePath);
+
+                boolean renamed = DataManager.renameUserUpload(userContext.getUserId(), fileToRename, name);
+
+                if (renamed) {
+                    return Response.ok().entity("Renamed " + fileToRename.getName() + " to " + name).build();
+                }
+                else {
+                    return Response.status(500).entity("Could not rename " + fileToRename.getName()).build();
+                }
+            }
+            else { // Other files not implemented
+                return Response.status(500).entity("Rename not implemented for this file type: " + path).build();
+            }
+        }
+        catch (Throwable t) {
+            return Response.status(Status.INTERNAL_SERVER_ERROR).entity(t.getLocalizedMessage()).build();
+        }
+    }
+
 
     /**
      * Delete the specified jobResults or user upload file

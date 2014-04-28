@@ -1305,11 +1305,7 @@ function createFileWidget(linkElement, appendTo) {
                 "lsid": "",
                 "name": "<img src='/gp/pipeline/images/delete.gif' class='module-list-icon'> Delete " + (isDirectory ? "Directory" : "File"),
                 "description": (isDirectory ? "Permanently delete this directory and all child files." : "Permanently delete this file."),
-                "version": "",
-                "documentation": "http://genepattern.org",
-                "categories": [],
-                "suites": [],
-                "tags": []
+                "version": "", "documentation": "", "categories": [], "suites": [], "tags": []
             });
         }
 
@@ -1318,22 +1314,14 @@ function createFileWidget(linkElement, appendTo) {
                 "lsid": "",
                 "name": "Create Subdirectory",
                 "description": "Create a subdirectory in this directory.",
-                "version": "",
-                "documentation": "http://genepattern.org",
-                "categories": [],
-                "suites": [],
-                "tags": []
+                "version": "", "documentation": "", "categories": [], "suites": [], "tags": []
             });
 
             data.push({
                 "lsid": "",
                 "name": "Upload Files",
                 "description": "Upload files to this directory.",
-                "version": "",
-                "documentation": "http://genepattern.org",
-                "categories": [],
-                "suites": [],
-                "tags": []
+                "version": "", "documentation": "", "categories": [], "suites": [], "tags": []
             });
         }
         else if (!isPartialFile) {
@@ -1341,23 +1329,24 @@ function createFileWidget(linkElement, appendTo) {
                 "lsid": "",
                 "name": "<img src='/gp/pipeline/images/save.gif' class='module-list-icon'> Save File",
                 "description": "Save a copy of this file to your local computer.",
-                "version": "",
-                "documentation": "http://genepattern.org",
-                "categories": [],
-                "suites": [],
-                "tags": []
+                "version": "", "documentation": "", "categories": [], "suites": [], "tags": []
             });
+
+            if (!isDirectory || isUpload) {
+                data.push({
+                    "lsid": "",
+                    "name": "Rename " + (isDirectory ? "Directory" : "File"),
+                    "description": "Rename this file or directory",
+                    "version": "", "documentation": "", "categories": [], "suites": [], "tags": []
+                });
+            }
 
             if (genomeSpaceEnabled && genomeSpaceLoggedIn) {
                 data.push({
                     "lsid": "",
                     "name": "<img src='/gp/pages/genomespace/genomespace_icon.gif' class='module-list-icon'> Save to Genomespace",
                     "description": "Save a copy of this file to your GenomeSpace account.",
-                    "version": "",
-                    "documentation": "http://genepattern.org",
-                    "categories": [],
-                    "suites": [],
-                    "tags": []
+                    "version": "", "documentation": "", "categories": [], "suites": [], "tags": []
                 });
             }
         }
@@ -1367,11 +1356,7 @@ function createFileWidget(linkElement, appendTo) {
                 "lsid": "",
                 "name": "Create Pipeline",
                 "description": "Create a provenance pipeline from this file.",
-                "version": "",
-                "documentation": "http://genepattern.org",
-                "categories": [],
-                "suites": [],
-                "tags": []
+                "version": "", "documentation": "", "categories": [], "suites": [], "tags": []
             });
         }
 
@@ -1414,6 +1399,7 @@ function createFileWidget(linkElement, appendTo) {
                     var uploadAction = $(event.target).closest(".module-listing").find(".module-name").text().trim().indexOf("Upload") == 0;
                     var pipelineAction = $(event.target).closest(".module-listing").find(".module-name").text().trim().indexOf("Create Pipeline") == 0;
                     var genomeSpaceAction = $(event.target).closest(".module-listing").find(".module-name").text().trim().indexOf("Save to Genomespace") == 0;
+                    var renameAction = $(event.target).closest(".module-listing").find(".module-name").text().trim().indexOf("Rename") == 0;
 
                     var listObject = $(event.target).closest(".search-widget").find(".send-to-param-list");
                     var url = listObject.attr("data-url");
@@ -1421,6 +1407,83 @@ function createFileWidget(linkElement, appendTo) {
 
                     if (saveAction) {
                         window.location.href = url + "?download";
+                        $(".search-widget:visible").searchslider("hide");
+                        return;
+                    }
+
+                    else if (renameAction) {
+                        showDialog("Rename the File or Directory", "What name would you like to name the file or directory?" +
+                            "<input type='text' class='dialog-rename' style='width: 98%;' />", {
+                            "Rename": function(event) {
+                                var newName = $(".dialog-rename").val();
+
+                                var _doRename = function() {
+                                    $.ajax({
+                                        type: "PUT",
+                                        url: "/gp/rest/v1/data/rename?path=" + encodeURIComponent(path) + "&name=" + encodeURIComponent(newName),
+                                        success: function(data, textStatus, jqXHR) {
+                                            $("#infoMessageDiv #infoMessageContent").text(data);
+                                            $("#infoMessageDiv").show();
+
+                                            if (isUpload) {
+                                                $("#uploadTree").data("dndReady", {});
+                                                $("#uploadTree").jstree("refresh");
+
+                                                $("#uploadDirectoryTree").jstree("refresh");
+                                            }
+                                            if (isJobFile) {
+                                                initRecentJobs();
+                                            }
+                                        },
+                                        error: function(data, textStatus, jqXHR) {
+                                            if (typeof data === 'object') {
+                                                data = data.responseText;
+                                            }
+
+                                            showErrorMessage(data);
+                                        }
+                                    });
+                                };
+
+                                // Check for special characters
+                                var regex = new RegExp("[^A-Za-z0-9_.]");
+                                var specialCharacters = regex.test(newName);
+                                if (specialCharacters) {
+                                    var outerDialog = $(this);
+                                    showDialog("Special Characters!",
+                                        "The name you selected contains special characters!<br/><br/>" +
+                                            "Some older GenePattern modules do not handle special characters well. " +
+                                            "Are you sure you want to continue?", {
+                                            "Yes": function() {
+                                                _doRename();
+                                                $(this).dialog("close");
+                                                $(outerDialog).dialog("close");
+                                            },
+                                            "No": function() {
+                                                $(this).dialog("close");
+                                            }
+                                        });
+                                    return;
+                                }
+                                else {
+                                    _doRename();
+                                    $(this).dialog("close");
+                                }
+                            },
+                            "Cancel": function(event) {
+                                $(this).dialog("close");
+                            }
+                        });
+                        $(".ui-dialog-buttonset:visible button:first").button("disable");
+                        $(".dialog-rename").keyup(function(event) {
+                            if ($(event.target).val() === "") {
+                                $(".ui-dialog-buttonset:visible button:first").button("disable");
+                            }
+                            else {
+                                $(".ui-dialog-buttonset:visible button:first").button("enable");
+                            }
+                        });
+
                         $(".search-widget:visible").searchslider("hide");
                         return;
                     }
