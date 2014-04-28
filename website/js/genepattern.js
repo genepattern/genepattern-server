@@ -1332,15 +1332,6 @@ function createFileWidget(linkElement, appendTo) {
                 "version": "", "documentation": "", "categories": [], "suites": [], "tags": []
             });
 
-            if (!isDirectory || isUpload) {
-                data.push({
-                    "lsid": "",
-                    "name": "Rename " + (isDirectory ? "Directory" : "File"),
-                    "description": "Rename this file or directory",
-                    "version": "", "documentation": "", "categories": [], "suites": [], "tags": []
-                });
-            }
-
             if (genomeSpaceEnabled && genomeSpaceLoggedIn) {
                 data.push({
                     "lsid": "",
@@ -1349,6 +1340,15 @@ function createFileWidget(linkElement, appendTo) {
                     "version": "", "documentation": "", "categories": [], "suites": [], "tags": []
                 });
             }
+        }
+
+        if (!isPartialFile && isUpload) {
+            data.push({
+                "lsid": "",
+                "name": "Rename " + (isDirectory ? "Directory" : "File"),
+                "description": "Rename this file or directory",
+                "version": "", "documentation": "", "categories": [], "suites": [], "tags": []
+            });
         }
 
         if (isJobFile) {

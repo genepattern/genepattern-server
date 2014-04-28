@@ -144,7 +144,7 @@ public class DataManager {
         File newFileAbsolute = new File(oldFile.getParentFile(), name);
         File newFileRelative = new File(filePath.getRelativeFile().getParent(), name);
         boolean renamed = false;
-        //boolean directory = oldFile.isDirectory();
+        boolean directory = oldFile.isDirectory();
 
         // If the file exists, rename the file on the file system
         if (oldFile.exists()) {
@@ -160,17 +160,24 @@ public class DataManager {
         // Change the record in the database
         boolean inTransaction = HibernateUtil.isInTransaction();
         try {
-            GpContext context = GpContext.getContextForUser(user);
-            GpFilePath newPath = GpFileObjFactory.getUserUploadFile(context, newFileRelative);
+            if (!directory) {
+                GpContext context = GpContext.getContextForUser(user);
+                GpFilePath newPath = GpFileObjFactory.getUserUploadFile(context, newFileRelative);
 
-            // Begin a new transaction
-            UserUploadDao dao = new UserUploadDao();
-            int renamedCount = dao.renameUserUpload(context, filePath, newPath);
-            if (renamedCount < 1) {
-                log.error("Error renaming user upload file record in db, userId=" + user + ", path= '" + filePath.getRelativePath()+"'. numDeleted=" + renamedCount);
+                // Begin a new transaction
+                UserUploadDao dao = new UserUploadDao();
+                int renamedCount = dao.renameUserUpload(context, filePath, newPath);
+                if (renamedCount < 1) {
+                    renamed = false;
+                    log.error("Error renaming user upload file record in db, userId=" + user + ", path= '" + filePath.getRelativePath()+"'. numDeleted=" + renamedCount);
+                }
+                if (!inTransaction) {
+                    HibernateUtil.commitTransaction();
+                }
             }
-            if (!inTransaction) {
-                HibernateUtil.commitTransaction();
+            else {
+                syncUploadFiles(user);
+                renamed = true;
             }
         }
         catch  (Throwable t) {
