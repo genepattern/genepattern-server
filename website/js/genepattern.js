@@ -983,13 +983,10 @@ function createGenomeSpaceWidget(linkElement, appendTo) {
         if (!isRoot || !isDirectory) {
             data.push({
                 "lsid": "",
-                "name": "<img src='/gp/pipeline/images/delete.gif' class='module-list-icon'> Delete " + (isDirectory ? "Directory" : "File"),
+                "name": "Delete " + (isDirectory ? "Directory" : "File"),
                 "description": (isDirectory ? "Permanently delete this directory and all child files." : "Permanently delete this file."),
-                "version": "",
-                "documentation": "http://genepattern.org",
-                "categories": [],
-                "suites": [],
-                "tags": []
+                "version": "<span class='glyphicon glyphicon-remove' />",
+                "documentation": "", "categories": [], "suites": [], "tags": []
             });
         }
 
@@ -998,24 +995,18 @@ function createGenomeSpaceWidget(linkElement, appendTo) {
                 "lsid": "",
                 "name": "Create Subdirectory",
                 "description": "Create a subdirectory in this directory.",
-                "version": "",
-                "documentation": "http://genepattern.org",
-                "categories": [],
-                "suites": [],
-                "tags": []
+                "version": "<span class='glyphicon glyphicon-folder-open' />",
+                "documentation": "", "categories": [], "suites": [], "tags": []
             });
         }
 
         else if (!isDirectory) {
             data.push({
                 "lsid": "",
-                "name": "<img src='/gp/pipeline/images/save.gif' class='module-list-icon'> Save File",
+                "name": "Save File",
                 "description": "Save a copy of this file to your local computer.",
-                "version": "",
-                "documentation": "http://genepattern.org",
-                "categories": [],
-                "suites": [],
-                "tags": []
+                "version": "<span class='glyphicon glyphicon-floppy-save' />",
+                "documentation": "", "categories": [], "suites": [], "tags": []
             });
         }
 
@@ -1172,19 +1163,16 @@ function createGenomeSpaceWidget(linkElement, appendTo) {
         for (var i = 0; i < clients.length; i++) {
             var tool = clients[i];
             toolData.push({
-                "lsid": tool,
-                "name": "<img src='/gp/pages/genomespace/genomespace_icon.gif' class='module-list-icon'> Send to " + tool,
+                "lsid": "",
+                "name": "Send to " + tool,
                 "description": "Send this file from GenePattern to " + tool + " using GenomeSpace.",
-                "version": "",
-                "documentation": "http://genomespace.org",
-                "categories": [],
-                "suites": [],
-                "tags": []
+                "version": "<img src='/gp/pages/genomespace/genomespace_icon.gif' class='module-list-icon'>",
+                "documentation": "http://genomespace.org", "categories": [], "suites": [], "tags": []
             });
         }
 
         var toolList = $("<div></div>")
-            .attr("class", "send-to-tool-list")
+            .attr("class", "file-widget-actions send-to-tool-list")
             .attr("data-kind", aKind)
             .attr("data-url", convertUrl)
             .modulelist({
@@ -1303,9 +1291,9 @@ function createFileWidget(linkElement, appendTo) {
         if (!isRoot || !isDirectory) {
             data.push({
                 "lsid": "",
-                "name": "<img src='/gp/pipeline/images/delete.gif' class='module-list-icon'> Delete " + (isDirectory ? "Directory" : "File"),
+                "name": "Delete " + (isDirectory ? "Directory" : "File"),
                 "description": (isDirectory ? "Permanently delete this directory and all child files." : "Permanently delete this file."),
-                "version": "", "documentation": "", "categories": [], "suites": [], "tags": []
+                "version": "<span class='glyphicon glyphicon-remove' />", "documentation": "", "categories": [], "suites": [], "tags": []
             });
         }
 
@@ -1314,30 +1302,30 @@ function createFileWidget(linkElement, appendTo) {
                 "lsid": "",
                 "name": "Create Subdirectory",
                 "description": "Create a subdirectory in this directory.",
-                "version": "", "documentation": "", "categories": [], "suites": [], "tags": []
+                "version": "<span class='glyphicon glyphicon-folder-open' />", "documentation": "", "categories": [], "suites": [], "tags": []
             });
 
             data.push({
                 "lsid": "",
                 "name": "Upload Files",
                 "description": "Upload files to this directory.",
-                "version": "", "documentation": "", "categories": [], "suites": [], "tags": []
+                "version": "<span class='glyphicon glyphicon-cloud-upload' />", "documentation": "", "categories": [], "suites": [], "tags": []
             });
         }
         else if (!isPartialFile) {
             data.push({
                 "lsid": "",
-                "name": "<img src='/gp/pipeline/images/save.gif' class='module-list-icon'> Save File",
+                "name": "Save File",
                 "description": "Save a copy of this file to your local computer.",
-                "version": "", "documentation": "", "categories": [], "suites": [], "tags": []
+                "version": "<span class='glyphicon glyphicon-floppy-save' />", "documentation": "", "categories": [], "suites": [], "tags": []
             });
 
             if (genomeSpaceEnabled && genomeSpaceLoggedIn) {
                 data.push({
                     "lsid": "",
-                    "name": "<img src='/gp/pages/genomespace/genomespace_icon.gif' class='module-list-icon'> Save to Genomespace",
+                    "name": "Save to Genomespace",
                     "description": "Save a copy of this file to your GenomeSpace account.",
-                    "version": "", "documentation": "", "categories": [], "suites": [], "tags": []
+                    "version": "<img src='/gp/pages/genomespace/genomespace_icon.gif' class='module-list-icon'>", "documentation": "", "categories": [], "suites": [], "tags": []
                 });
             }
         }
@@ -1347,7 +1335,7 @@ function createFileWidget(linkElement, appendTo) {
                 "lsid": "",
                 "name": "Rename " + (isDirectory ? "Directory" : "File"),
                 "description": "Rename this file or directory",
-                "version": "", "documentation": "", "categories": [], "suites": [], "tags": []
+                "version": "<span class='glyphicon glyphicon-random' />", "documentation": "", "categories": [], "suites": [], "tags": []
             });
         }
 
@@ -1356,7 +1344,7 @@ function createFileWidget(linkElement, appendTo) {
                 "lsid": "",
                 "name": "Create Pipeline",
                 "description": "Create a provenance pipeline from this file.",
-                "version": "", "documentation": "", "categories": [], "suites": [], "tags": []
+                "version": "<span class='glyphicon glyphicon-road' />", "documentation": "", "categories": [], "suites": [], "tags": []
             });
         }
 

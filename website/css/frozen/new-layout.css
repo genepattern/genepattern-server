@@ -627,8 +627,8 @@ body {
 .module-list-icon {
     float: left;
     padding: 3px;
-    height: 12px;
-    width: 12px;
+    height: 24px;
+    width: 24px;
 }
 
 #infoMessageDiv {
@@ -793,4 +793,30 @@ body {
     width: 343px;
     top: -68px;
     left: -1px;
+}
+
+/* Glyphicon stuff */
+
+.file-widget-actions .module-listing {
+    position: relative;
+}
+
+.file-widget-actions .module-version {
+    display: block;
+    position: absolute;
+    top: 0px;
+    left: 0px;
+    padding: 5px;
+    font-size: 24pt;
+}
+
+.file-widget-actions .module-name {
+    position: absolute;
+    left: 50px;
+}
+
+.file-widget-actions .module-description {
+    position: absolute;
+    top: 25px;
+    left: 50px;
 }
