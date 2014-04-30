@@ -177,6 +177,63 @@ public class DataResource {
     }
 
     /**
+     * Copies a file from one location to another
+     * @param request
+     * @param from
+     * @param to
+     * @return
+     */
+    @POST
+    @Path("/copy")
+    public Response copyFile(@Context HttpServletRequest request, @QueryParam("from") String from, @QueryParam("to") String to) {
+        // Fix for when the preceding slash is missing from the path
+        if (!from.startsWith("/")) from = "/" + from;
+        if (!to.startsWith("/")) to = "/" + to;
+
+        try {
+            // Handle space characters
+            from = URLDecoder.decode(from, "UTF-8");
+            to = URLDecoder.decode(to, "UTF-8");
+
+            // Get the file location to copy from
+            GpContext userContext = Util.getUserContext(request);
+            GpFilePath fromPath = null;
+            if (from.startsWith("/users")) {
+                File fromFile = extractUsersPath(userContext, from);
+                fromPath = GpFileObjFactory.getUserUploadFile(userContext, fromFile);
+            }
+            else if (from.startsWith("/jobResults")) {
+                String fromFileString = extractJobResultsPath(from);
+                fromPath = GpFileObjFactory.getRequestedGpFileObj("/jobResults", fromFileString);
+            }
+            else {
+                return Response.status(500).entity("Copy not implemented for this source file type: " + from).build();
+            }
+
+            if (to.startsWith("/users")) { // If copying to a user upload
+                File toFile = extractUsersPath(userContext, to);
+                GpFilePath toPath = GpFileObjFactory.getUserUploadFile(userContext, toFile);
+
+                boolean copied = DataManager.copyToUserUpload(userContext.getUserId(), fromPath, toPath);
+
+                if (copied) {
+                    return Response.ok().entity("Copied " + fromPath.getRelativePath() + " to " + toPath.getRelativePath()).build();
+                }
+                else {
+                    return Response.status(500).entity("Could not copy " + fromPath.getRelativePath() + " to " + toPath.getRelativePath()).build();
+                }
+            }
+            else { // Copying to other file locations not supported
+                return Response.status(500).entity("Copy not implemented for this destination file type: " + to).build();
+            }
+        }
+        catch (Throwable t) {
+            return Response.status(Status.INTERNAL_SERVER_ERROR).entity(t.getLocalizedMessage()).build();
+        }
+    }
+
+
+    /**
      * Renames a user upload file
      * @param request
      * @param path, for example '/jobResults/14855/all aml test.cvt.gct',
@@ -191,10 +248,10 @@ public class DataResource {
             path = "/" + path;
         }
 
-        // Handle special characters
-        path = URLDecoder.decode(path);
-
         try {
+            // Handle space characters
+            path = URLDecoder.decode(path, "UTF-8");
+
             final GpContext userContext=Util.getUserContext(request);
             if (path.startsWith("/users")) { // If this is a user upload
                 final File uploadFilePath=extractUsersPath(userContext, path);
@@ -349,6 +406,16 @@ public class DataResource {
         catch (Throwable t) {
             return Response.status(Status.INTERNAL_SERVER_ERROR).entity(t.getLocalizedMessage()).build();
         }
+    }
+
+    /**
+     * Extract the job result file's pathInfo from the full job results path
+     * @param path
+     * @return
+     */
+    private String extractJobResultsPath(String path) {
+        final String pathInfo = "/jobResults";
+        return path.substring(pathInfo.length());
     }
 
     /**

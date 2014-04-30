@@ -1335,7 +1335,7 @@ function createFileWidget(linkElement, appendTo) {
                 "lsid": "",
                 "name": "Rename " + (isDirectory ? "Directory" : "File"),
                 "description": "Rename this file or directory",
-                "version": "<span class='glyphicon glyphicon-random' />", "documentation": "", "categories": [], "suites": [], "tags": []
+                "version": "<span class='glyphicon glyphicon-text-width' />", "documentation": "", "categories": [], "suites": [], "tags": []
             });
         }
 
@@ -1345,6 +1345,13 @@ function createFileWidget(linkElement, appendTo) {
                 "name": "Create Pipeline",
                 "description": "Create a provenance pipeline from this file.",
                 "version": "<span class='glyphicon glyphicon-road' />", "documentation": "", "categories": [], "suites": [], "tags": []
+            });
+
+            data.push({
+                "lsid": "",
+                "name": "Copy to Files Tab",
+                "description": "Copies this file from your job results to your files tab.",
+                "version": "<span class='glyphicon glyphicon-share' />", "documentation": "", "categories": [], "suites": [], "tags": []
             });
         }
 
@@ -1388,6 +1395,7 @@ function createFileWidget(linkElement, appendTo) {
                     var pipelineAction = $(event.target).closest(".module-listing").find(".module-name").text().trim().indexOf("Create Pipeline") == 0;
                     var genomeSpaceAction = $(event.target).closest(".module-listing").find(".module-name").text().trim().indexOf("Save to Genomespace") == 0;
                     var renameAction = $(event.target).closest(".module-listing").find(".module-name").text().trim().indexOf("Rename") == 0;
+                    var jobCopyAction = $(event.target).closest(".module-listing").find(".module-name").text().trim().indexOf("Copy to Files") == 0;
 
                     var listObject = $(event.target).closest(".search-widget").find(".send-to-param-list");
                     var url = listObject.attr("data-url");
@@ -1395,6 +1403,32 @@ function createFileWidget(linkElement, appendTo) {
 
                     if (saveAction) {
                         window.location.href = url + "?download";
+                        $(".search-widget:visible").searchslider("hide");
+                        return;
+                    }
+
+                    else if (jobCopyAction) {
+                        $.ajax({
+                            type: "POST",
+                            url: "/gp/rest/v1/data/copy/?from=" + encodeURIComponent(path) + "&to=/users/" + encodeURIComponent(username) + "/" + encodeURIComponent(name),
+                            success: function(data, textStatus, jqXHR) {
+                                $("#infoMessageDiv #infoMessageContent").text(data);
+                                $("#infoMessageDiv").show();
+
+                                $("#uploadTree").data("dndReady", {});
+                                $("#uploadTree").jstree("refresh");
+
+                                $("#uploadDirectoryTree").jstree("refresh");
+                            },
+                            error: function(data, textStatus, jqXHR) {
+                                if (typeof data === 'object') {
+                                    data = data.responseText;
+                                }
+
+                                showErrorMessage(data);
+                            }
+                        });
+
                         $(".search-widget:visible").searchslider("hide");
                         return;
                     }

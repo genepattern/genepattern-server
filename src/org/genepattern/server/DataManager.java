@@ -133,6 +133,67 @@ public class DataManager {
     }
 
     /**
+     * Copies a file to a new user upload location
+     * @param user
+     * @param from
+     * @param to
+     * @return
+     */
+    public static boolean copyToUserUpload(String user, GpFilePath from, GpFilePath to) {
+        boolean copied = false;
+
+        File fromFile = from.getServerFile();
+        File toFile = to.getServerFile();
+        boolean directory = fromFile.isDirectory();
+
+        // If the file are legit
+        if (fromFile.exists() && !toFile.exists()) {
+            try {
+                // Do the file system copy
+                if (!directory) {
+                    FileUtils.copyFile(fromFile, toFile);
+                    copied = true;
+                }
+                else {
+                    FileUtils.copyDirectory(fromFile, toFile);
+                    copied = true;
+                }
+            }
+            catch (IOException e) {
+                log.error("Failed to copy file from " + fromFile.getAbsolutePath() + " to " + toFile.getAbsolutePath());
+            }
+
+            // Update the database
+            boolean inTransaction = HibernateUtil.isInTransaction();
+            try {
+                if (!directory) {
+                    // Begin a new transaction
+                    GpContext context = GpContext.getContextForUser(user);
+                    UserUploadManager.createUploadFile(context, to, 1);
+                    UserUploadManager.updateUploadFile(context, to, 1, 1);
+                    if (!inTransaction) {
+                        HibernateUtil.commitTransaction();
+                    }
+                }
+                else {
+                    syncUploadFiles(user);
+                    copied = true;
+                }
+            }
+            catch  (Throwable t) {
+                copied = false;
+                // Error updating the DB
+                log.error("Error copying to user upload file record in db, '" + to.getRelativeUri() + "'", t);
+                HibernateUtil.rollbackTransaction();
+            }
+        }
+
+
+
+        return copied;
+    }
+
+    /**
      * Renames a user upload file
      * @param user
      * @param filePath
