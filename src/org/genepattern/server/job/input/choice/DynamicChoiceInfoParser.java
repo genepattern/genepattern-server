@@ -137,7 +137,8 @@ public class DynamicChoiceInfoParser implements ChoiceInfoParser {
 
         FTPFile[] files=null;
         try {
-            RemoteDirLister<FTPFile, ListFtpDirException> remoteLister=CommonsNet_3_3_DirLister.createFromConfig(gpConfig, jobContext);
+            final boolean passiveMode=ChoiceInfo.getFtpPassiveMode(param);
+            RemoteDirLister<FTPFile, ListFtpDirException> remoteLister=CommonsNet_3_3_DirLister.createFromConfig(gpConfig, jobContext, passiveMode);
             files=remoteLister.listFiles(ftpDir);
         }
         catch (ListFtpDirException e) {
