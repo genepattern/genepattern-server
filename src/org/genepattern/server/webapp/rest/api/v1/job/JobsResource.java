@@ -39,6 +39,8 @@ import org.genepattern.server.user.UserProp;
 import org.genepattern.server.user.UserPropKey;
 import org.genepattern.server.webapp.rest.api.v1.Util;
 import org.genepattern.server.webapp.rest.api.v1.job.JobInputValues.Param;
+import org.genepattern.server.webapp.rest.api.v1.job.search.JobSearchLegacy;
+import org.genepattern.server.webapp.rest.api.v1.job.search.JobSearchLegacy.SearchQuery;
 import org.genepattern.server.webservice.server.Analysis;
 import org.genepattern.server.webservice.server.dao.AnalysisDAO;
 import org.genepattern.server.webservice.server.local.IAdminClient;
@@ -165,6 +167,75 @@ public class JobsResource {
         }
         return jobInput;
     }
+
+    /////////////////////////////////////
+    // Job search API
+    /////////////////////////////////////
+
+    @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    @Path("/")
+    public Response getJobSearchResults(
+            final @Context UriInfo uriInfo,
+            final @Context HttpServletRequest request,
+            final @PathParam("userId") String userId,
+            final @PathParam("groupId") String groupId,
+            final @PathParam("batchId") String batchId,
+            final @DefaultValue("1") @PathParam("pageNum") int pageNum,
+            final @PathParam("pageSize") int pageSize,
+            final @DefaultValue("true") @QueryParam("includeChildren") boolean includeChildren,
+            final @DefaultValue("true") @QueryParam("includeOutputFiles") boolean includeOutputFiles,
+            final @DefaultValue("true") @QueryParam("prettyPrint") boolean prettyPrint
+    ) {
+        
+        final GpContext userContext=Util.getUserContext(request);
+        try {
+        
+        final SearchQuery q = new SearchQuery.Builder(userContext)
+                .userId(userId)
+                .groupId(groupId)
+                .batchId(batchId)
+                .pageNum(pageNum)
+                .pageSize(pageSize)
+                .build();
+        final List<JobInfo> jobInfoResults=JobSearchLegacy.doSearch(q);
+        
+        //create JSON representation
+        URI baseUri = uriInfo.getBaseUri();
+        String jobsResourcePath = baseUri.toString() + URI_PATH;
+        GetPipelineJobLegacy getJobImpl = new GetPipelineJobLegacy(jobsResourcePath);
+
+        // Put the job JSON in an array
+        JSONArray jobs = new JSONArray();
+        for (final JobInfo jobInfo : jobInfoResults) {
+            JSONObject jobObject = getJobImpl.getJob(userContext, jobInfo, includeChildren, includeOutputFiles);
+            jobs.put(jobObject);
+        }
+        
+        JSONObject jsonObj=new JSONObject();
+        jsonObj.put("results", jobs);
+
+        final String jsonStr;
+        if (prettyPrint) {
+            final int indentFactor=2;
+            jsonStr=jsonObj.toString(indentFactor);
+        }
+        else {
+            jsonStr=jsonObj.toString();
+        }
+        return Response.ok()
+                .entity(jsonStr)
+                .build();
+        
+        }
+        catch (Throwable t) {
+            log.error(t);
+            final String message="Error in job search: "+t.getLocalizedMessage();            
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+                    .entity(message)
+                    .build();
+        }
+    }
     
     ////////////////////////////////////
     // Getting a job
@@ -188,7 +259,8 @@ public class JobsResource {
             final @Context HttpServletRequest request,
             final @PathParam("jobId") String jobId,
             final @DefaultValue("true") @QueryParam("includeChildren") boolean includeChildren,
-            final @DefaultValue("true") @QueryParam("includeOutputFiles") boolean includeOutputFiles
+            final @DefaultValue("true") @QueryParam("includeOutputFiles") boolean includeOutputFiles,
+            final @DefaultValue("true") @QueryParam("prettyPrint") boolean prettyPrint
     ) {
         
         final GpContext userContext=Util.getUserContext(request);
@@ -206,7 +278,13 @@ public class JobsResource {
             }
             //decorate with 'self'
             job.put("self", self);
-            jsonStr=job.toString();
+            if (prettyPrint) {
+                final int indentFactor=2;
+                jsonStr=job.toString(indentFactor);
+            }
+            else {
+                jsonStr=job.toString();
+            }
         }
         catch (Throwable t) {
             //TODO: customize the response errors, e.g.
