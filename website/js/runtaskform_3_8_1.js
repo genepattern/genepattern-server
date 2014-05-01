@@ -1833,6 +1833,17 @@ function createParamTable(parameterNames, initialValues)
             });
 
             $("<div class='fileGroup'/>").append(addGroupButton).appendTo(valueTd);
+
+            //auto create the minimum of groups specified for this parameter
+            //if no initial values where specified
+            if(initialValuesList == null)
+            {
+                var minGroupInfo = parseInt(groupInfo.minNumGroups);
+                for(var i =0;i<minGroupInfo-1; i++)
+                {
+                    addGroupButton.click();
+                }
+            }
         }
 
         paramsTable.append(createParamDescriptionRow(parameterName));
