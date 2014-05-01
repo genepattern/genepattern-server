@@ -1337,6 +1337,13 @@ function createFileWidget(linkElement, appendTo) {
                 "description": "Rename this file or directory",
                 "version": "<span class='glyphicon glyphicon-text-width' />", "documentation": "", "categories": [], "suites": [], "tags": []
             });
+
+            data.push({
+                "lsid": "",
+                "name": "Move " + (isDirectory ? "Directory" : "File"),
+                "description": "Move this file or directory",
+                "version": "<span class='glyphicon glyphicon-share-alt' />", "documentation": "", "categories": [], "suites": [], "tags": []
+            });
         }
 
         if (isJobFile) {
@@ -1396,6 +1403,7 @@ function createFileWidget(linkElement, appendTo) {
                     var genomeSpaceAction = $(event.target).closest(".module-listing").find(".module-name").text().trim().indexOf("Save to Genomespace") == 0;
                     var renameAction = $(event.target).closest(".module-listing").find(".module-name").text().trim().indexOf("Rename") == 0;
                     var jobCopyAction = $(event.target).closest(".module-listing").find(".module-name").text().trim().indexOf("Copy to Files") == 0;
+                    var moveAction = $(event.target).closest(".module-listing").find(".module-name").text().trim().indexOf("Move") == 0;
 
                     var listObject = $(event.target).closest(".search-widget").find(".send-to-param-list");
                     var url = listObject.attr("data-url");
@@ -1408,25 +1416,61 @@ function createFileWidget(linkElement, appendTo) {
                     }
 
                     else if (jobCopyAction) {
-                        $.ajax({
-                            type: "POST",
-                            url: "/gp/rest/v1/data/copy/?from=" + encodeURIComponent(path) + "&to=/users/" + encodeURIComponent(username) + "/" + encodeURIComponent(name),
-                            success: function(data, textStatus, jqXHR) {
-                                $("#infoMessageDiv #infoMessageContent").text(data);
-                                $("#infoMessageDiv").show();
+                        openUploadDirectoryDialog(null, function() {
+                            var moveToUrl = $(uploadDirectorySelected).attr("href");
+                            var moveToPath = uploadPathFromUrl(moveToUrl)
 
-                                $("#uploadTree").data("dndReady", {});
-                                $("#uploadTree").jstree("refresh");
+                            $.ajax({
+                                type: "POST",
+                                url: "/gp/rest/v1/data/copy/?from=" + encodeURIComponent(path) + "&to=" + encodeURIComponent(moveToPath) + encodeURIComponent(name.trim()),
+                                success: function(data, textStatus, jqXHR) {
+                                    $("#infoMessageDiv #infoMessageContent").text(data);
+                                    $("#infoMessageDiv").show();
 
-                                $("#uploadDirectoryTree").jstree("refresh");
-                            },
-                            error: function(data, textStatus, jqXHR) {
-                                if (typeof data === 'object') {
-                                    data = data.responseText;
+                                    $("#uploadTree").data("dndReady", {});
+                                    $("#uploadTree").jstree("refresh");
+
+                                    $("#uploadDirectoryTree").jstree("refresh");
+                                },
+                                error: function(data, textStatus, jqXHR) {
+                                    if (typeof data === 'object') {
+                                        data = data.responseText;
+                                    }
+
+                                    showErrorMessage(data);
                                 }
+                            });
+                        });
 
-                                showErrorMessage(data);
-                            }
+                        $(".search-widget:visible").searchslider("hide");
+                        return;
+                    }
+
+                    else if (moveAction) {
+                        openUploadDirectoryDialog(null, function() {
+                            var moveToUrl = $(uploadDirectorySelected).attr("href");
+                            var moveToPath = uploadPathFromUrl(moveToUrl)
+
+                            $.ajax({
+                                type: "PUT",
+                                url: "/gp/rest/v1/data/move/?from=" + encodeURIComponent(path) + "&to=" + encodeURIComponent(moveToPath) + encodeURIComponent(name.trim()),
+                                success: function(data, textStatus, jqXHR) {
+                                    $("#infoMessageDiv #infoMessageContent").text(data);
+                                    $("#infoMessageDiv").show();
+
+                                    $("#uploadTree").data("dndReady", {});
+                                    $("#uploadTree").jstree("refresh");
+
+                                    $("#uploadDirectoryTree").jstree("refresh");
+                                },
+                                error: function(data, textStatus, jqXHR) {
+                                    if (typeof data === 'object') {
+                                        data = data.responseText;
+                                    }
+
+                                    showErrorMessage(data);
+                                }
+                            });
                         });
 
                         $(".search-widget:visible").searchslider("hide");

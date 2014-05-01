@@ -28,8 +28,30 @@
             var uploadDirectorySelected = null;
             var uploadFileList = null;
 
-            function openUploadDirectoryDialog(filelist) {
+            function openUploadDirectoryDialog(filelist, selectFunction) {
+                // Default to uploader behavior if no select function given
+                if (selectFunction === undefined || selectFunction === null) {
+                    selectFunction = function () {
+                        // Prevent submitting if no directory is selected
+                        if (uploadDirectorySelected === null) {
+                            return;
+                        }
+
+                        // Get the URL of the directory to save to
+                        var directory = jq(uploadDirectorySelected).attr("href");
+
+                        // Start the upload
+                        uploadAfterDialog(uploadFileList, directory);
+                    }
+                }
+
                 $('#uploadDirectoryDialog').dialog('open');
+                var selectButton = $('#uploadDirectoryDialog').parent().find("button:contains('Select')");
+                selectButton.unbind("click");                       // Unbind all existing click events
+                selectButton.click(function() {                     // Bind specified click event
+                    selectFunction();                               // Execute the provided event
+                    $("#uploadDirectoryDialog").dialog("close");    // Close the dialog
+                });
                 uploadFileList = filelist;
                 return false;
             }
@@ -116,25 +138,11 @@
             dialogClass : "top-dialog",
             width: 500,
             autoOpen: false,
-            title: "Select Directory in Which to Save the File",
+            title: "Select Directory",
             buttons:[
                 {
-                    text:"Select",
-                    click:function () {
-                        // Prevent submitting if no directory is selected
-                        if (uploadDirectorySelected === null) {
-                            return;
-                        }
-
-                        // Get the URL of the directory to save to
-                        var directory = jq(uploadDirectorySelected).attr("href");
-
-                        // Start the upload
-                        uploadAfterDialog(uploadFileList, directory);
-
-                        // Hide the dialog
-                        $("#uploadDirectoryDialog").dialog("close");
-                    }
+                    text: "Select",
+                    click: function () {}
                 },
                 {
                     text:"Cancel",

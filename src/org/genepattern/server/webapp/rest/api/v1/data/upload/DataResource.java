@@ -275,6 +275,61 @@ public class DataResource {
         }
     }
 
+    /**
+     * Moves a file or directory to a new upload file location
+     * @param request
+     * @param from
+     * @param to
+     * @return
+     */
+    @PUT
+    @Path("/move")
+    public Response moveFile(@Context HttpServletRequest request, @QueryParam("from") String from, @QueryParam("to") String to) {
+        // Fix for when the preceding slash is missing from the path
+        if (!from.startsWith("/")) from = "/" + from;
+        if (!to.startsWith("/")) to = "/" + to;
+
+        try {
+            // Handle space characters
+            from = URLDecoder.decode(from, "UTF-8");
+            to = URLDecoder.decode(to, "UTF-8");
+
+            // Get the file location to copy from
+            GpContext userContext = Util.getUserContext(request);
+            GpFilePath fromPath = null;
+            if (from.startsWith("/users")) {
+                File fromFile = extractUsersPath(userContext, from);
+                fromPath = GpFileObjFactory.getUserUploadFile(userContext, fromFile);
+            }
+            else if (from.startsWith("/jobResults")) {
+                String fromFileString = extractJobResultsPath(from);
+                fromPath = GpFileObjFactory.getRequestedGpFileObj("/jobResults", fromFileString);
+            }
+            else {
+                return Response.status(500).entity("Move not implemented for this source file type: " + from).build();
+            }
+
+            if (to.startsWith("/users")) { // If copying to a user upload
+                File toFile = extractUsersPath(userContext, to);
+                GpFilePath toPath = GpFileObjFactory.getUserUploadFile(userContext, toFile);
+
+                boolean moved = DataManager.moveToUserUpload(userContext.getUserId(), fromPath, toPath);
+
+                if (moved) {
+                    return Response.ok().entity("Moved " + fromPath.getRelativePath() + " to " + toPath.getRelativePath()).build();
+                }
+                else {
+                    return Response.status(500).entity("Could not move " + fromPath.getRelativePath() + " to " + toPath.getRelativePath()).build();
+                }
+            }
+            else { // Copying to other file locations not supported
+                return Response.status(500).entity("Move not implemented for this destination file type: " + to).build();
+            }
+        }
+        catch (Throwable t) {
+            return Response.status(Status.INTERNAL_SERVER_ERROR).entity(t.getLocalizedMessage()).build();
+        }
+    }
 
     /**
      * Delete the specified jobResults or user upload file
