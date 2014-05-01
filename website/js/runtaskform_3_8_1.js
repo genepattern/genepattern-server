@@ -1022,7 +1022,9 @@ function createChoiceDiv(parameterName, groupId, initialValuesList)
 
 function createFileDiv(parameterName, groupId, enableBatch, initialValuesList)
 {
-    var fileDiv = $("<div class='fileDiv mainDivBorder'>");
+    var fileUploadDiv = $("<div class='fileUploadDiv'/>");
+
+    var fileDiv = $("<div class='fileDiv mainDivBorder'/>");
 
     //enable dragging of file between groups
     fileDiv.droppable(
@@ -1142,7 +1144,7 @@ function createFileDiv(parameterName, groupId, enableBatch, initialValuesList)
         batchBox.append("<label for='batchCheck" + parameterName + "'>Batch</label>");
         batchBox.tooltip();
 
-        fileDiv.append(batchBox);
+        fileUploadDiv.append(batchBox);
     }
 
     if (paramDetails.allowMultiple)
@@ -1155,10 +1157,10 @@ function createFileDiv(parameterName, groupId, enableBatch, initialValuesList)
     uploadFileBtn.button().click(function()
     {
         console.log("uploadedfile: " + $(this).siblings(".uploadedinputfile").first());
-        $(this).parents("div:first").find(".uploadedinputfile:first").click();
+        $(this).parents(".fileDiv").first().find(".uploadedinputfile:first").click();
     });
 
-    fileDiv.append(uploadFileBtn);
+    fileUploadDiv.append(uploadFileBtn);
     if(paramDetails.required)
     {
         fileInput.addClass("requiredParam");
@@ -1166,10 +1168,10 @@ function createFileDiv(parameterName, groupId, enableBatch, initialValuesList)
 
     var fileInputDiv = $("<div class='inputFileBtn'/>");
     fileInputDiv.append(fileInput);
-    fileDiv.append(fileInputDiv);
+    fileUploadDiv.append(fileInputDiv);
 
     var urlButton = $("<button type='button' class='urlButton'>"+ addUrlText +"</button>");
-    fileDiv.append(urlButton);
+    fileUploadDiv.append(urlButton);
     urlButton.data("groupId", groupId);
     urlButton.button().click(function()
     {
@@ -1233,7 +1235,11 @@ function createFileDiv(parameterName, groupId, enableBatch, initialValuesList)
         openServerFileDialog(this);
     });
 
-    fileDiv.append("<span class='drop-box'>Drag Files Here</span>");
+    fileUploadDiv.append("<span class='drop-box'>Drag Files Here</span>");
+    fileUploadDiv.append("<div class='fileSizeCaption'> 2GB file upload limit using the "+ uploadFileText + " button. For files > 2GB upload from the Files tab. </div>");
+
+    fileDiv.append(fileUploadDiv);
+
     fileDiv.append("<div class='fileListingDiv'/>");
 
     //check if there are predefined file values
@@ -1245,8 +1251,17 @@ function createFileDiv(parameterName, groupId, enableBatch, initialValuesList)
     {
         if(!run_task_info.params[parameterName].initialChoiceValues)
         {
-            //check if max file length will be violated
             var totalFileLength = fileObjListings.length +  initialValuesList.length;
+
+            //check if max file length will be violated
+            //check if we should automatically enable batch in the case when the number of
+            //initial files is greater than the maximum allowed
+            var maxFiles = getMaxFiles(parameterName);
+            if(maxFiles != null && totalFileLength > maxFiles)
+            {
+                paramDetails.isBatch = true;
+            }
+
             validateMaxFiles(parameterName, totalFileLength);
 
             for(var v=0; v < initialValuesList.length; v++)
@@ -2529,6 +2544,23 @@ function handleFiles(files, paramName, fileDiv)
     toggleFileButtons(paramName);
 }
 
+function getMaxFiles(paramName)
+{
+    var paramDetails = run_task_info.params[paramName];
+
+    var maxValue = null;
+    if(paramDetails != null)
+    {
+        //in this case the max num of files is not unlimited
+        if(paramDetails.maxValue != undefined || paramDetails.maxValue != null)
+        {
+            maxValue = parseInt(paramDetails.maxValue);
+        }
+    }
+
+    return maxValue;
+}
+
 function validateMaxFiles(paramName, numFiles)
 {
     //check if max file length will be violated only if this not a batch parameter
@@ -2729,7 +2761,7 @@ function updateParamFileTable(paramName, fileDiv, groupId)
             {
                 // Show the buttons again
                 var fileDiv = $(this).closest(".fileDiv");
-                fileDiv.find("> button, > span").show();
+                fileDiv.find("fileUploadDiv").show();
 
                 var file = $(this).data("pfile");
                 var id = $(this).data("pfileId");
@@ -2787,10 +2819,10 @@ function updateParamFileTable(paramName, fileDiv, groupId)
 
     // Hide or show the buttons if something is selected
     if (!isBatch(paramName) && atMaxFiles(paramName)) {
-        fileDiv.find("> button, > span").hide();
+        fileDiv.find(".fileUploadDiv").hide();
     }
     else {
-        fileDiv.find("> button, > span").show();
+        fileDiv.find(".fileUploadDiv").show();
     }
 }
 
