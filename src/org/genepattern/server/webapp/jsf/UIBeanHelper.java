@@ -153,7 +153,7 @@ public class UIBeanHelper {
     /**
      * special case to url encode each part of a file path, without url encoding the slash ('/') characters,
      * so that it can be used as a reference to a file served by the data servlet.
-     * @param file
+     * @param filePath
      * @return
      */
     public static String encodeFilePath(String filePath) {
@@ -186,15 +186,7 @@ public class UIBeanHelper {
      * @return The server.
      */
     public static String getServer() {
-        //Use GenePatternURL if it is set
-        String server = System.getProperty("GenePatternURL", "");
-        if (server != null && server.trim().length() > 0) {
-            if (server.endsWith("/")) {
-                server = server.substring(0, server.length() - 1);
-            }
-            return server;
-        }
-        //otherwise use the servlet request
+        // Use the servlet request
         HttpServletRequest request = UIBeanHelper.getRequest();
         if (request != null) {
             String portStr = "";
@@ -203,6 +195,15 @@ public class UIBeanHelper {
                 portStr = ":"+port;
             }
             return request.getScheme() + "://" + request.getServerName() + portStr + request.getContextPath();
+        }
+
+        // Otherwise use GenePatternURL if it is set
+        String server = System.getProperty("GenePatternURL", "");
+        if (server != null && server.trim().length() > 0) {
+            if (server.endsWith("/")) {
+                server = server.substring(0, server.length() - 1);
+            }
+            return server;
         }
         
         //TODO: handle this exception
