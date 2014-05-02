@@ -209,6 +209,9 @@ public class JobsResource {
         JSONArray jobs = new JSONArray();
         for (final JobInfo jobInfo : jobInfoResults) {
             JSONObject jobObject = getJobImpl.getJob(userContext, jobInfo, includeChildren, includeOutputFiles);
+            //decorate with 'self'
+            final String self=jobsResourcePath+"/"+jobObject.getString("jobId");
+            jobObject.put("self", self);
             jobs.put(jobObject);
         }
         
