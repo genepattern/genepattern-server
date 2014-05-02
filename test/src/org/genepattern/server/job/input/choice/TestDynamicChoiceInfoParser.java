@@ -248,28 +248,31 @@ public class TestDynamicChoiceInfoParser {
         Assert.assertEquals("num choices", 143, choiceInfo.getChoices().size());
         Assert.assertEquals("always pass", true, true);
     }
-    
-    @SuppressWarnings("unchecked")
-    @Test
-    public void testDynamicDropDownDatasci() {
-        final String choiceDir="ftp://datasci-dev.broadinstitute.org:8882/atlantis-gp-module/";
-        final ParameterInfo pinfo=TestChoiceInfo.initFtpParam(choiceDir);
-        pinfo.getAttributes().put(ChoiceInfo.PROP_CHOICE_DIR_FTP_PASSIVE_MODE, "false");
 
-        // set custom.properties to use a 30 second timeout 
-        GpServerProperties serverProperties=new GpServerProperties.Builder()
-            .addCustomProperty(CommonsNet_3_3_DirLister.PROP_FTP_DATA_TIMEOUT, "30000")
-            .addCustomProperty(CommonsNet_3_3_DirLister.PROP_FTP_SOCKET_TIMEOUT, "30000")
-            .build();
-        GpConfig gpConfig=new GpConfig.Builder()
-            .serverProperties(serverProperties)
-            .build();
-        GpContext gpContext=new GpContextFactory.Builder().build();
-        choiceInfoParser=new DynamicChoiceInfoParser(gpConfig, gpContext);
-        
-        final ChoiceInfo choiceInfo=choiceInfoParser.initChoiceInfo(pinfo);
-        Assert.assertEquals("num choices", 4, choiceInfo.getChoices().size());
-    }
+    //TODO: set up junit test with non-standard ftp port
+    //TODO: set up junit test on an FTP server which does not support passive mode
+    // This commented out code was added for testing an FTP server set up by Phil Montgomery, but it is no longer available
+//    @SuppressWarnings("unchecked")
+//    @Test
+//    public void testDynamicDropDownDatasci() {
+//        final String choiceDir="ftp://datasci-dev.broadinstitute.org:8882/atlantis-gp-module/";
+//        final ParameterInfo pinfo=TestChoiceInfo.initFtpParam(choiceDir);
+//        pinfo.getAttributes().put(ChoiceInfo.PROP_CHOICE_DIR_FTP_PASSIVE_MODE, "false");
+//
+//        // set custom.properties to use a 30 second timeout 
+//        GpServerProperties serverProperties=new GpServerProperties.Builder()
+//            .addCustomProperty(CommonsNet_3_3_DirLister.PROP_FTP_DATA_TIMEOUT, "30000")
+//            .addCustomProperty(CommonsNet_3_3_DirLister.PROP_FTP_SOCKET_TIMEOUT, "30000")
+//            .build();
+//        GpConfig gpConfig=new GpConfig.Builder()
+//            .serverProperties(serverProperties)
+//            .build();
+//        GpContext gpContext=new GpContextFactory.Builder().build();
+//        choiceInfoParser=new DynamicChoiceInfoParser(gpConfig, gpContext);
+//        
+//        final ChoiceInfo choiceInfo=choiceInfoParser.initChoiceInfo(pinfo);
+//        Assert.assertEquals("num choices", 4, choiceInfo.getChoices().size());
+//    }
 
     /**
      * A required parameter with a default value should have an empty item at the start of the drop-down.
