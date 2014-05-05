@@ -10,6 +10,7 @@ import org.genepattern.server.config.GpContext;
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.dm.GpFilePath;
 import org.genepattern.server.dm.jobresult.JobResultFile;
+import org.genepattern.server.webapp.rest.api.v1.Util;
 import org.genepattern.server.webservice.server.dao.AnalysisDAO;
 import org.genepattern.util.GPConstants;
 import org.genepattern.webservice.JobInfo;
@@ -183,6 +184,11 @@ public class GetPipelineJobLegacy implements GetJob {
             job.put("taskName", jobInfo.getTaskName());
             job.put("taskLsid", jobInfo.getTaskLSID());
             job.put("datetime", jobInfo.getDateSubmitted().toString());
+            
+            job.put("dateSubmitted", Util.toIso8601(jobInfo.getDateSubmitted()));
+            if (jobInfo.getDateCompleted() != null) {
+                job.put("dateCompleted", Util.toIso8601(jobInfo.getDateCompleted()));
+            }
             
             //init jobStatus
             final JSONObject jobStatus = new JSONObject();

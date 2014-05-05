@@ -1,5 +1,9 @@
 package org.genepattern.server.webapp.rest.api.v1;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;
@@ -45,6 +49,25 @@ public class Util {
     throws WebServiceException 
     {
         return new LocalAdminClient(username).getTask(taskLSID);
+    }
+    
+    /**
+     * Outputs the date in 'ECMAScript 5 ISO-8601' format.
+     * 
+     * @param date
+     * @return
+     */
+    public static String toIso8601(final Date date) {
+        //TODO: optimize, no need to create a new dateFormat instance for each call
+        //     however, DateFormat is not thread-safe
+        //final TimeZone tz = TimeZone.getTimeZone("UTC");
+        DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mmZ");
+        //df.setTimeZone(tz);
+        String formattedDate = df.format(date);
+        return formattedDate;
+        
+        //TimeZone tz=TimeZone.getTimeZone("UTC");
+        //return DateFormatUtils.ISO_DATE_TIME_ZONE_FORMAT.format(date);
     }
 
 }
