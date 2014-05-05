@@ -40,7 +40,8 @@ import org.genepattern.server.user.UserPropKey;
 import org.genepattern.server.webapp.rest.api.v1.Util;
 import org.genepattern.server.webapp.rest.api.v1.job.JobInputValues.Param;
 import org.genepattern.server.webapp.rest.api.v1.job.search.JobSearchLegacy;
-import org.genepattern.server.webapp.rest.api.v1.job.search.JobSearchLegacy.SearchQuery;
+import org.genepattern.server.webapp.rest.api.v1.job.search.SearchQuery;
+import org.genepattern.server.webapp.rest.api.v1.job.search.SearchResults;
 import org.genepattern.server.webservice.server.Analysis;
 import org.genepattern.server.webservice.server.dao.AnalysisDAO;
 import org.genepattern.server.webservice.server.local.IAdminClient;
@@ -172,17 +173,60 @@ public class JobsResource {
     // Job search API
     /////////////////////////////////////
 
+    /**
+     * Job search API.
+     * Template:
+       <pre>
+       curl -u {userId}:{password} -X GET {GenePatternURL}rest/v1/jobs
+           ?userId={userId}
+           &page={page}
+           &pageSize={pageSize}
+           &groupId={groupId}
+           &batchId={batchId}
+       </pre>
+     * Example query:
+     * <pre>
+        curl -u test:test -X GET http://127.0.0.1:8080/gp/rest/v1/jobs
+     * </pre>
+     *  
+     * @param uriInfo
+     * @param request
+     * @param userId
+     * @param groupId
+     * @param batchId
+     * @param page
+     * @param pageSize
+     * @param includeChildren
+     * @param includeOutputFiles
+     * @param prettyPrint
+     * @return
+     */
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     @Path("/")
     public Response getJobSearchResults(
             final @Context UriInfo uriInfo,
             final @Context HttpServletRequest request,
-            final @PathParam("userId") String userId,
-            final @PathParam("groupId") String groupId,
-            final @PathParam("batchId") String batchId,
-            final @DefaultValue("1") @PathParam("pageNum") int pageNum,
-            final @PathParam("pageSize") int pageSize,
+            /**
+             * optionally, filter all jobs by userId, Note: this is not necessarily the current user.
+             */
+            final @QueryParam("userId") String userId,
+            /**
+             * optionally, filter all jobs by groupId
+             */
+            final @QueryParam("groupId") String groupId,
+            /**
+             * optionally, filter all jobs by batchId
+             */
+            final @QueryParam("batchId") String batchId,
+            /**
+             * optionally, set the page number for paged job results, The first page is page 1.
+             */
+            final @DefaultValue("1") @QueryParam("page") Integer page,
+            /**
+             * optionally, set the number of items per page.
+             */
+            final @QueryParam("pageSize") int pageSize,
             final @DefaultValue("true") @QueryParam("includeChildren") boolean includeChildren,
             final @DefaultValue("true") @QueryParam("includeOutputFiles") boolean includeOutputFiles,
             final @DefaultValue("true") @QueryParam("prettyPrint") boolean prettyPrint
@@ -190,46 +234,72 @@ public class JobsResource {
         
         final GpContext userContext=Util.getUserContext(request);
         try {
-        
-        final SearchQuery q = new SearchQuery.Builder(userContext)
-                .userId(userId)
-                .groupId(groupId)
-                .batchId(batchId)
-                .pageNum(pageNum)
-                .pageSize(pageSize)
-                .build();
-        final List<JobInfo> jobInfoResults=JobSearchLegacy.doSearch(q);
-        
-        //create JSON representation
-        URI baseUri = uriInfo.getBaseUri();
-        String jobsResourcePath = baseUri.toString() + URI_PATH;
-        GetPipelineJobLegacy getJobImpl = new GetPipelineJobLegacy(jobsResourcePath);
 
-        // Put the job JSON in an array
-        JSONArray jobs = new JSONArray();
-        for (final JobInfo jobInfo : jobInfoResults) {
-            JSONObject jobObject = getJobImpl.getJob(userContext, jobInfo, includeChildren, includeOutputFiles);
-            //decorate with 'self'
-            final String self=jobsResourcePath+"/"+jobObject.getString("jobId");
-            jobObject.put("self", self);
-            jobs.put(jobObject);
-        }
-        
-        JSONObject jsonObj=new JSONObject();
-        jsonObj.put("results", jobs);
+            final URI baseUri = uriInfo.getBaseUri();
+            final String jobsResourcePath = baseUri.toString() + URI_PATH;
+            final SearchQuery q = new SearchQuery.Builder(jobsResourcePath, userContext)
+            .userId(userId)
+            .groupId(groupId)
+            .batchId(batchId)
+            .pageNum(page)
+            .pageSize(pageSize)
+            .build();
+            final SearchResults searchResults=JobSearchLegacy.doSearch(q);
+            final List<JobInfo> jobInfoResults=searchResults.getJobInfos();
 
-        final String jsonStr;
-        if (prettyPrint) {
-            final int indentFactor=2;
-            jsonStr=jsonObj.toString(indentFactor);
+            //create JSON representation
+            GetPipelineJobLegacy getJobImpl = new GetPipelineJobLegacy(jobsResourcePath);
+
+            // Put the job JSON in an array
+            JSONArray jobs = new JSONArray();
+            for (final JobInfo jobInfo : jobInfoResults) {
+                JSONObject jobObject = getJobImpl.getJob(userContext, jobInfo, includeChildren, includeOutputFiles);
+                //decorate with 'self'
+                final String self=jobsResourcePath+"/"+jobObject.getString("jobId");
+                jobObject.put("self", self);
+                jobs.put(jobObject);
+            }
+
+            JSONObject jsonObj=new JSONObject();
+            jsonObj.put("items", jobs);
+
+            // Include navigation details
+            /*
+        nav: {
+            page:
+            numPages:
+            numItems:
+            navLinks: {
+                prev: { "rel": "", "name": "", "href": "" }, <-- link
+                first: {}, <-- link
+                prevItems: [ {}, {}, ..., {} ], <-- links
+                current: {}, <-- link
+                nextItems: [ {}, {}, ..., {}], <-- links
+                last: {},
+                next: {} <-- link
+            }
         }
-        else {
-            jsonStr=jsonObj.toString();
-        }
-        return Response.ok()
-                .entity(jsonStr)
-                .build();
-        
+             */
+            JSONObject nav=new JSONObject();
+            nav.put("page", searchResults.getPageLinks().getCurrent().getPage());
+            nav.put("numPages", searchResults.getPageLinks().getNumPages());
+            nav.put("numItems", searchResults.getPageLinks().getNumItems());
+            JSONObject navLinks=searchResults.getPageLinks().navLinksToJson();
+            nav.put("navLinks", navLinks);
+            jsonObj.put("nav", nav);
+
+            final String jsonStr;
+            if (prettyPrint) {
+                final int indentFactor=2;
+                jsonStr=jsonObj.toString(indentFactor);
+            }
+            else {
+                jsonStr=jsonObj.toString();
+            }
+            return Response.ok()
+                    .entity(jsonStr)
+                    .build();
+
         }
         catch (Throwable t) {
             log.error(t);

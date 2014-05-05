@@ -102,7 +102,6 @@ public class InitPipelineJson implements JobInfoVisitor {
         if (parentJob.isNull("children")) {
             children=new JSONObject();
             items=new JSONArray();
-            //TODO: this is wrong
             children.put("href", jobsResourcePath+"/"+parentJob.getString("jobId")+"/children");
             children.put("items", items);
             parentJob.put("children", children);
