@@ -170,6 +170,68 @@
 	border-top: solid #666699 1px;
 }
 
+.jobResults {
+    max-width: 100%;
+}
+
+.jobResults .title {
+    width:100%;
+    background-color: #eef5ff;
+    padding: 5px;
+    border: 1px solid #A3B1DD;
+    border-radius: 5px;
+    text-indent: 10px;
+    font-size: 16px;
+    color: #666;
+    font-weight: bold;
+    line-height: 25pt;
+    margin-bottom: 25px;
+}
+
+.jobResults .jobresults-navigation {
+    float: right;
+}
+
+#jobTable {
+    margin-top: 10px;
+    width: 100% !important;
+    table-layout: fixed;
+}
+
+#jobTable thead {
+    font-weight: bold;
+}
+
+.job-task {
+    font-weight: bold;
+}
+
+#jobresults-show {
+    position: relative;
+    top: -3px;
+}
+
+.jobresults-files {
+    padding-left: 25px;
+    padding-bottom: 10px;
+}
+
+.jobresults-files a {
+    display: inline-block;
+    max-width: 90%;
+    text-overflow: ellipsis;
+    overflow: hidden;
+}
+
+.jobresults-child {
+    padding-left: 25px;
+    font-weight: bold;
+}
+
+.jobresults-child .jobresults-files {
+    font-weight: normal;
+}
+
 .statusReport .icon {
 	width: 90px;
 	color: #666;
@@ -241,13 +303,6 @@
 	font-size:12px;
 	color:#666;	
 }
-.statusReport table.summary {
-	width:100%;
-	border-bottom:solid #94966a 1px;
-	border-right:solid #eef5ff 1px;
-	border-top:solid #fafccf 1px;
-}
-
 
 .statusReport table.summary th {
    background-color:#eee;
@@ -323,8 +378,16 @@
 	font-weight:bold;
 }
 
-.statusReport td.header a {
+.statusReport td.header-sm a {
 	color: #333366;	
+}
+
+.statusReport .header-sm {
+    width: 40px
+}
+
+.statusReport .header-md {
+    width: 100px
 }
 
 .statusReport a {

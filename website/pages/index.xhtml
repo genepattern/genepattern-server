@@ -399,9 +399,10 @@ function showFileInput(id) {
         $(document).ready(function() {
             loadRunTaskForm();
             loadJobStatus(#{runTaskBean.jobId});
+            loadJobResults(#{runTaskBean.jobResults});
         });
     </script>
-    <h:outputText rendered="#{empty runTaskBean.lsid and empty runTaskBean.jobId}">
+    <h:outputText rendered="#{empty runTaskBean.lsid and empty runTaskBean.jobId and empty runTaskBean.jobResults}">
         <script type="text/javascript">
             $(document).ready(function() {
                 $("#protocols").show();

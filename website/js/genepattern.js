@@ -2093,7 +2093,7 @@ function createJobWidget(job) {
 function initRecentJobs() {
     // Init the browse button
     $("#left-nav-jobs-browse").button().click(function() {
-        window.location = "/gp/jobResults";
+        loadJobResults(true);
     });
 
     // Init the jobs
@@ -2325,6 +2325,342 @@ function loadInAjaxWrapper(link) {
     return false;
 }
 
+function populateJobResultsTable(settings, callback) {
+    // Helper functions
+    var _statusToImg = function(status) {
+        if (status.isPending) return $("<span />").text("Pending");                                 // Pending
+        else if (status.hasError) return $("<img />").attr("src", "/gp/images/error.gif");         // Error
+        else if (status.isFinished) return $("<img />").attr("src", "/gp/images/complete.gif");    // Finished
+        else return $("<img />").attr("src", "/gp/images/run.gif");                                // Running
+
+    };
+    var _formatDate = function(dateString) {
+        var date = new Date(dateString);
+        var month = $.datepicker.formatDate("M", date);
+        var day = $.datepicker.formatDate("d", date);
+        var hours = date.getHours() > 12 ? date.getHours() - 12 : (date.getHours() < 1 ? 12 : date.getHours());
+        var minutes = date.getMinutes() < 10 ? "0" + date.getMinutes() : date.getMinutes();
+        var time = hours + ":" + minutes + " " + (date.getHours() <= 11 ? "am" : "pm");
+        return month + " " + day + ", " + time;
+    };
+    var _buildChildJobDisplay = function(job, count, appendTo) {
+        var child = $("<div></div>").addClass("jobresults-child");
+        $("<img />")
+            .attr("src", "/gp/images/arrow2.gif")
+            .appendTo(child);
+        $("<a></a>")
+            .attr("href", "/gp/jobResults/" + job.jobId + "/")
+            .attr("onclick", "openJobWidget(this); return false;")
+            .attr("data-jobid", job.jobId)
+            .attr("data-json", JSON.stringify(job))
+            .append(count + ". " + job.taskName)
+            .appendTo(child);
+        $("<br/>").appendTo(child);
+
+        // Build the job results
+        var results = $("<div></div>").addClass("jobresults-files");
+        for (var j = 0; j < job.outputFiles.length; j++) {
+            var file = job.outputFiles[j];
+            $("<img />")
+                .attr("src", "/gp/images/outputFile.gif")
+                .appendTo(results);
+            $("<a></a>")
+                .attr("href", file.link.href)
+                .attr("onclick", "openFileWidget(this, '#menus-jobs'); return false;")
+                .attr("data-kind", file.link.kind)
+                .append(file.link.name)
+                .appendTo(results);
+            $("<br/>").appendTo(results);
+        }
+        results.appendTo(child);
+
+        child.appendTo(appendTo);
+    };
+    var _buildStatus = function(job) {
+        var status = _statusToImg(job.status);
+        return status[0].outerHTML;
+    };
+    var _buildJobId = function(job) {
+        var id = $("<a></a>")
+            .attr("href", "#")
+            .attr("onclick", "loadJobStatus(" + job.jobId + "); return false;")
+            .text(job.jobId);
+        return id[0].outerHTML;
+    };
+    var _buildDelete = function(job) {
+        var del = $("<input />")
+            .addClass("job-delete-checkbox")
+            .attr("name", job.jobId)
+            .attr("type", "checkbox")
+            .attr("value", job.jobId)
+        return del[0].outerHTML;
+    };
+    var _buildResultFiles = function(job) {
+        // Build the job results
+        var results = $("<div></div>").addClass("jobresults-files");
+        for (var j = 0; j < job.outputFiles.length; j++) {
+            var file = job.outputFiles[j];
+            $("<img />")
+                .attr("src", "/gp/images/outputFile.gif")
+                .appendTo(results);
+            $("<a></a>")
+                .attr("href", file.link.href)
+                .attr("onclick", "openFileWidget(this, '#menus-jobs'); return false;")
+                .attr("data-kind", file.link.kind)
+                .append(file.link.name)
+                .appendTo(results);
+            $("<br/>").appendTo(results);
+        }
+        return results;
+    };
+    var _buildChildJobs = function(job) {
+        // Build the child jobs
+        var children = $("<div></div>").addClass("jobresults-children");
+        if (job.children) {
+            for (var j = 0; j < job.children.items.length; j++) {
+                var child = job.children.items[j];
+                _buildChildJobDisplay(child, j + 1, children);
+            }
+        }
+        return children;
+    };
+    var _buildMain = function(job) {
+        var results = _buildResultFiles(job);
+        var children = _buildChildJobs(job);
+
+        var wrapper = $("<div></div>")
+            .append(
+                $("<a></a>")
+                    .addClass("job-task-toggle")
+                    .attr("href", "#")
+                    .attr("onclick", "return false;")
+                    .append(
+                        $("<img />")
+                            .addClass("jobresults-toggle")
+                            .attr("src", "/gp/images/triangle_black_run.gif")
+                    )
+            )
+            .append(
+                $("<a></a>")
+                    .addClass("job-task")
+                    .attr("href", "/gp/jobResults/" + job.jobId + "/")
+                    .attr("onclick", "openJobWidget(this); return false;")
+                    .attr("data-jobid", job.jobId)
+                    .attr("data-json", JSON.stringify(job))
+                    .text(" " + job.taskName)
+            )
+            .append(results)
+            .append(children);
+        return wrapper[0].outerHTML;
+    };
+    var _buildSize = function(job) {
+        return job.jobId;
+    };
+    var _buildSubmission = function(job) {
+        return _formatDate(job.dateSubmitted);
+    };
+    var _buildCompletion = function(job) {
+        return _formatDate(job.dateCompleted);
+    };
+    var _buildOwner = function(job) {
+        return job.jobId;
+    };
+    var _buildSharing = function(job) {
+        return job.jobId;
+    };
+    var _attachMetadata = function(toReturn, data) {
+        toReturn.draw = settings.draw;
+        toReturn.recordsTotal = data.nav.numItems;
+        toReturn.recordsFiltered = data.nav.numItems;
+    };
+    var _attachRows = function(toReturn, data) {
+        var rows = [];
+
+        // Build the table rows
+        for (var i = 0; i < data.items.length; i++) {
+            var job = data.items[i];
+            var row = [];
+
+            // Append the cells
+            row.push(_buildStatus(job));
+            row.push(_buildJobId(job));
+            row.push(_buildDelete(job));
+            row.push(_buildMain(job));
+            row.push(_buildSize(job));
+            row.push(_buildSubmission(job));
+            row.push(_buildCompletion(job));
+            row.push(_buildOwner(job));
+            row.push(_buildSharing(job));
+
+            // Attach row to the list
+            rows.push(row);
+        }
+
+
+
+        toReturn.data = rows;
+    };
+    var _buildRESTUrl = function() {
+        var pageSize = settings.length;
+        var page = Math.floor(settings.start / pageSize) + 1;
+        return "/gp/rest/v1/jobs/?userId=*&pageSize=" + pageSize + "&page=" + page;
+    };
+
+    // Make the actual ajax request
+    $.ajax({
+        type: "GET",
+        url: _buildRESTUrl(),
+        cache: false,
+        dataType: "json",
+        success: function(data, textStatus, jqXHR) {
+            // The object to send to the callback in the format expected
+            var toReturn = {};
+
+            _attachMetadata(toReturn, data);
+            _attachRows(toReturn, data);
+
+            callback(toReturn);
+
+            // Show the table
+            $("#jobResults").show();
+
+            // Attach the job show/hide toggle
+            $(".job-task-toggle").click(function() {
+                var toggleImage = $(this).parent().find(".jobresults-toggle");
+                var open = toggleImage.attr("src").indexOf("_run") != -1;
+                if (open) {
+                    toggleImage.attr("src", "/gp/images/triangle_black.gif");
+                    $(this).parent().find(".jobresults-files, .jobresults-child").hide();
+                }
+                else {
+                    toggleImage.attr("src", "/gp/images/triangle_black_run.gif");
+                    $(this).parent().find(".jobresults-files, .jobresults-child").show();
+                }
+            });
+        },
+        error: function(data) {
+            showErrorMessage(data);
+        }
+    });
+}
+
+function buildJobResultsPage(data) {
+    // Clear the div
+    $("#jobResults").empty();
+
+    // Build the container
+    var container = $("<div />")
+        .addClass("statusReport")
+        .addClass("jobResults");
+
+    // Build the header
+    $("<div />")
+        .addClass("title")
+        .text("Job Results")
+        .append(
+            $("<div />")
+                .addClass("jobresults-navigation")
+                .text("Show: ")
+                .append(
+                    $("<select></select>")
+                        .attr("id", "jobresults-show")
+                        .attr("name", "show")
+                        .append(
+                            $("<option></option>")
+                                .text("All Job Results")
+                                .attr("value", "all")
+                        )
+                        .append(
+                            $("<option></option>")
+                                .text("My Job Results")
+                                .attr("value", "my")
+                        )
+                )
+        )
+        .appendTo(container);
+
+    // Build the table
+    var jobTable = $("<table></table>")
+        .attr("id", "jobTable")
+        .addClass("summary stripe")
+        .append(
+            $("<thead></thead>")
+                .append(
+                    $("<tr></tr>")
+                        .addClass("summaryTitle")
+                        .append(
+                            $("<td></td>")
+                                .addClass("header-sm")
+                                .text("Status")
+                        )
+                        .append(
+                            $("<td></td>")
+                                .addClass("header-sm")
+                                .text("Job")
+                        )
+                        .append(
+                            $("<td></td>")
+                                .addClass("header-sm")
+                                .text("Delete")
+                        )
+                        .append(
+                            $("<td></td>")
+                                .addClass("header-lg")
+                                .text("Module")
+                        )
+                        .append(
+                            $("<td></td>")
+                                .addClass("header-sm")
+                                .text("Size")
+                        )
+                        .append(
+                            $("<td></td>")
+                                .addClass("header-md")
+                                .text("Submission Date")
+                        )
+                        .append(
+                            $("<td></td>")
+                                .addClass("header-md")
+                                .text("Completion Date")
+                        )
+                        .append(
+                            $("<td></td>")
+                                .addClass("header-md")
+                                .text("Owner")
+                        )
+                        .append(
+                            $("<td></td>")
+                                .addClass("header-sm")
+                                .text("Sharing")
+                        )
+                )
+        )
+        .appendTo(container)
+
+    // Build the table body
+    var tbody = $("<tbody></tbody>")
+        .appendTo(jobTable);
+
+    // Init data tables
+    jobTable.dataTable({
+        serverSide: true,
+        "ajax": function(data, callback, settings) {
+            console.log(data);
+            populateJobResultsTable(data, callback);
+        },
+        "order": [[1, "desc"]],
+        "columnDefs": [
+            { "orderable": false, "targets": 2 }
+        ],
+        "searching": false,
+        //"lengthChange": false,
+        "lengthMenu": [10, 20, 50, 100]
+    });
+
+    // Append the container to the correct past of the page
+    $("#jobResults").append(container);
+}
+
 function loadJobResults(jobResults) {
     // Abort if not told to load job results
     if (jobResults === undefined || jobResults === null || jobResults === '' || jobResults === "false" || !jobResults) {
@@ -2354,21 +2690,6 @@ function loadJobResults(jobResults) {
     // Add to history so back button works
     history.pushState(null, document.title, location.protocol + "//" + location.host + location.pathname + "?jobResults=" + true);
 
-    $.ajax({
-        type: "GET",
-        url: "/gp/pages/jobResults.jsf",
-        cache: false,
-        success: function(data, textStatus, jqXHR) {
-            $("#jobResults").html(data);
-            $("#jobResults").show();
-        },
-        error: function(data) {
-            if (typeof data === 'object') {
-                data = data.responseText;
-            }
-
-            showErrorMessage(data);
-        },
-        dataType: "html"
-    });
+    // Build the page scaffolding
+    buildJobResultsPage();
 }

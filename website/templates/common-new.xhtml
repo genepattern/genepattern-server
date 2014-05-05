@@ -24,6 +24,7 @@
             <link type="text/css" rel="stylesheet" href="#{facesContext.externalContext.requestContextPath}/css/#{uiBean.skin}/jquery-ui-1.9.2.css?version=#{aboutBean.buildTag}" />
             <link type="text/css" rel="stylesheet" href="#{facesContext.externalContext.requestContextPath}/css/#{uiBean.skin}/style.css?version=#{aboutBean.buildTag}" />
             <link type="text/css" rel="stylesheet" href="#{facesContext.externalContext.requestContextPath}/css/#{uiBean.skin}/themes/base/jquery.ui.all.css?version=#{aboutBean.buildTag}" />
+            <link type="text/css" rel="stylesheet" href="#{facesContext.externalContext.requestContextPath}/css/#{uiBean.skin}/jquery.dataTables.min.css?version=#{aboutBean.buildTag}" />
             <link type="text/css" rel="stylesheet" href="#{facesContext.externalContext.requestContextPath}/css/#{uiBean.skin}/jobSharing.css?version=#{aboutBean.buildTag}" />
             <link type="text/css" rel="stylesheet" href="#{facesContext.externalContext.requestContextPath}/css/#{uiBean.skin}/protocols.css?version=#{aboutBean.buildTag}" />
             <link type="text/css" rel="stylesheet" href="#{facesContext.externalContext.requestContextPath}/css/#{uiBean.skin}/style-jobresults.css?version=#{aboutBean.buildTag}" />
@@ -61,6 +62,7 @@
             <script type="text/javascript" src="#{facesContext.externalContext.requestContextPath}/js/jquery/jquery.dialogextend.min.js?version=#{aboutBean.buildTag}" />
             <script type="text/javascript" src="#{facesContext.externalContext.requestContextPath}/js/jquery/jquery.leftnav.js?version=#{aboutBean.buildTag}" />
             <script type="text/javascript" src="#{facesContext.externalContext.requestContextPath}/js/jquery/ddsmoothmenu.js?version=#{aboutBean.buildTag}" />
+            <script type="text/javascript" src="#{facesContext.externalContext.requestContextPath}/js/jquery/jquery.dataTables.min.js?version=#{aboutBean.buildTag}" />
             <script type="text/javascript">var jq = jQuery.noConflict();</script>
 
             <script type="text/javascript" src="#{facesContext.externalContext.requestContextPath}/js/genepattern.js?version=#{aboutBean.buildTag}" />
@@ -229,9 +231,9 @@
 		                        <li><a href="/gp/pages/manageSuite.jsf">Manage</a></li>
 		                    </ul>
 		                </li>
-		                <li><a href="/gp/jobResults">Job Results</a>
+		                <li><a href="/gp/pages/index.jsf?jobResults=true">Job Results</a>
 		                    <ul>
-		                        <li><a href="/gp/jobResults">Results Summary</a></li>
+		                        <li><a href="/gp/pages/index.jsf?jobResults=true">Results Summary</a></li>
 		                    </ul>
 		                </li>
 		                <li><a href="/gp/pages/index.jsf?splash=resources">Resources</a>
@@ -314,7 +316,9 @@
 		                        <input id="module-search-box" type="search" class="search-box" placeholder="Search Modules &amp; Pipelines" />
 		                    </div>
 		                    <div id="module-browse-button">
-		                    	<div class="current-job-status"><a href="/gp/jobResults"></a></div>
+		                    	<div class="current-job-status">
+                                    <a onclick="loadJobResults(true); return false;" href="/gp/pages/index.jsf?jobResults=true"></a>
+                                </div>
 		                        <button>Browse Modules &#x203a;</button>
 		                    </div>
 	                    </div>
@@ -328,7 +332,7 @@
 		            <div id="left-nav-jobs" class="left-nav-tab">
                         <div class="left-nav-top">
                             <div class="current-job-status">
-                                <a href="/gp/jobResults"></a>
+                                <a onclick="loadJobResults(true); return false;" href="/gp/pages/index.jsf?jobResults=true"></a>
                             </div>
                             <button id="left-nav-jobs-browse">Browse Jobs &#x203a;</button>
                         </div>
@@ -352,7 +356,7 @@
 	                <div id="left-nav-files" class="left-nav-tab">
                         <div class="left-nav-top">
                             <div class="current-job-status">
-                                <a href="/gp/jobResults"></a>
+                                <a onclick="loadJobResults(true); return false;" href="/gp/pages/index.jsf?jobResults=true"></a>
                             </div>
                         </div>
 	                    <ui:include src="/pages/uploads/uploadedFiles.xhtml" />
