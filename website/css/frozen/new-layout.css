@@ -797,11 +797,11 @@ body {
 
 /* Glyphicon stuff */
 
-.file-widget-actions .module-listing {
+.file-widget-actions .module-listing, .job-widget-actions .module-listing {
     position: relative;
 }
 
-.file-widget-actions .module-version {
+.file-widget-actions .module-version, .job-widget-actions .module-version {
     display: block;
     position: absolute;
     top: 0px;
@@ -810,12 +810,12 @@ body {
     font-size: 24pt;
 }
 
-.file-widget-actions .module-name {
+.file-widget-actions .module-name, .job-widget-actions .module-name {
     position: absolute;
     left: 50px;
 }
 
-.file-widget-actions .module-description {
+.file-widget-actions .module-description, .job-widget-actions .module-description {
     position: absolute;
     top: 25px;
     left: 50px;

@@ -1901,7 +1901,7 @@ function createJobWidget(job) {
         "lsid": "",
         "name": "Job Status",
         "description": "View the job status page for this job.",
-        "version": "", "documentation": "", "categories": [], "suites": [], "tags": []
+        "version": "<span class='glyphicon glyphicon-info-sign' />", "documentation": "", "categories": [], "suites": [], "tags": []
     });
 
     if (job.status.isFinished) {
@@ -1909,7 +1909,7 @@ function createJobWidget(job) {
             "lsid": "",
             "name": "Download Job",
             "description": "Download a copy of this job, including all input and result files.",
-            "version": "", "documentation": "", "categories": [], "suites": [], "tags": []
+            "version": "<span class='glyphicon glyphicon-download' />", "documentation": "", "categories": [], "suites": [], "tags": []
         });
     }
 
@@ -1917,7 +1917,7 @@ function createJobWidget(job) {
         "lsid": "",
         "name": "Reload Job",
         "description": "Reload this job using the same input parameters.",
-        "version": "", "documentation": "", "categories": [], "suites": [], "tags": []
+        "version": "<span class='glyphicon glyphicon-repeat' />", "documentation": "", "categories": [], "suites": [], "tags": []
     });
 
     if (job.status.isFinished) {
@@ -1925,7 +1925,7 @@ function createJobWidget(job) {
             "lsid": "",
             "name": "Delete Job",
             "description": "Delete this job from the GenePattern server.",
-            "version": "", "documentation": "", "categories": [], "suites": [], "tags": []
+            "version": "<span class='glyphicon glyphicon-remove' />", "documentation": "", "categories": [], "suites": [], "tags": []
         });
     }
 
@@ -1934,7 +1934,7 @@ function createJobWidget(job) {
             "lsid": "",
             "name": "Terminate Job",
             "description": "Terminate this job on the GenePattern server.",
-            "version": "", "documentation": "", "categories": [], "suites": [], "tags": []
+            "version": "<span class='glyphicon glyphicon-off' />", "documentation": "", "categories": [], "suites": [], "tags": []
         });
     }
 
@@ -2544,8 +2544,8 @@ function populateJobResultsTable(settings, callback) {
                 }
             });
         },
-        error: function(data) {
-            showErrorMessage(data);
+        error: function(data, textStatus) {
+            showErrorMessage(textStatus);
         }
     });
 }
@@ -2697,7 +2697,6 @@ function buildJobResultsPage(data) {
             { "orderable": false, "targets": 2 }
         ],
         "searching": false,
-        //"lengthChange": false,
         "lengthMenu": [10, 20, 50, 100]
     });
 
