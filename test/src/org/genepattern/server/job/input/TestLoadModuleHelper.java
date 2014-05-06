@@ -1,13 +1,7 @@
 package org.genepattern.server.job.input;
 
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
 
 import org.genepattern.junitutil.JobInfoLoaderFromMap;
@@ -440,4 +434,36 @@ public class TestLoadModuleHelper {
                 groupArray.getJSONObject(1).getJSONArray("values").get(1));
     }
 
+    @Test
+    public void testFromRequestBatchParam() throws Exception {
+        final TaskInfo taskInfo=taskLoader.getTaskInfo(cmsLsid);
+        final String inputFile1="ftp://ftp.broadinstitute.org/pub/genepattern/datasets/all_aml/all_aml_test.gct";
+        final String inputFile2="ftp://ftp.broadinstitute.org/pub/genepattern/datasets/all_aml/all_aml_train.gct";
+
+        parameterMap=new HashMap<String,String[]>();
+        parameterMap.put("input.file", new String[] {inputFile1, inputFile2} );
+        parameterMap.put("_batchParams", new String[] {"input.file"} );
+
+        LoadModuleHelper loadModuleHelper=new LoadModuleHelper(userContext);
+
+        JobInput actualInitialValues=
+                loadModuleHelper.getInitialValues(
+                        cmsLsid, taskInfo.getParameterInfoArray(), reloadedValues, _fileParam, _formatParam, parameterMap);
+
+        //verify that the input file is a batch parameter with two values set
+        Set<Param> batchParams = actualInitialValues.getBatchParams();
+        Assert.assertNotNull(batchParams);
+        Assert.assertTrue(batchParams.size() == 1);
+
+        Iterator<Param> batchIt = batchParams.iterator();
+        while(batchIt.hasNext())
+        {
+            Param batchParam = batchIt.next();
+            if(!batchParam.getParamId().getFqName().equals("input.file"))
+            {
+                Assert.fail("Unexpected batch parameter found: " + batchParam.getParamId().getFqName()
+                        + ". Expected input.file");
+            }
+        }
+    }
 }

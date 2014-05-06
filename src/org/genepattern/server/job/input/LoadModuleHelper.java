@@ -266,8 +266,26 @@ public class LoadModuleHelper {
         }
         final JobInput initialValues = new JobInput();
         initialValues.setLsid(lsid);
+
+        //check if there are any batch parameters in the request
+        List batchParamsList = new ArrayList();
+        if(parameterMap != null && parameterMap.get("_batchParams") != null)
+        {
+            for(String requestParam : parameterMap.get("_batchParams"))
+            {
+                batchParamsList.add(requestParam);
+            }
+        }
         for(final ParameterInfo pinfo : parameterInfos) {
             final String pname=pinfo.getName();
+
+            boolean isBatch = false;
+
+            //check if this is a batch request parameter
+            if(batchParamsList.contains(pname))
+            {
+                isBatch = true;
+            }
             //1) initialize from default values
             final List<String> defaultValues=ParamListHelper.getDefaultValues(pinfo);
             if (defaultValues != null) {
@@ -309,7 +327,15 @@ public class LoadModuleHelper {
                         initialValues.removeValue(new ParamId(pname));
                         first=false;
                     }
-                    initialValues.addValue(pname, requestParam);
+
+                    if(isBatch)
+                    {
+                        initialValues.addValue(pname, requestParam, true);
+                    }
+                    else
+                    {
+                        initialValues.addValue(pname, requestParam);
+                    }
                 }
             }
             
@@ -318,7 +344,7 @@ public class LoadModuleHelper {
             if (numValues.getMax() != null) {
                 final Param param=initialValues.getParam(pname);
                 if (param!=null) {
-                    if (param.getNumValues()>numValues.getMax()) {
+                    if (!isBatch && param.getNumValues()>numValues.getMax()) {
                         //this is an error: more input values were specified than
                         //this parameter allows so throw an exception
                         throw new Exception(" Error: " + param.getNumValues() + " input values were specified for " +

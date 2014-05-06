@@ -5,12 +5,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.SortedSet;
-import java.util.TreeSet;
+import java.util.*;
 
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -279,7 +274,8 @@ public class RunTaskServlet extends HttpServlet
                 if (parameterMap.containsKey("_format")) {
                     _formatParam=parameterMap.get("_format")[0];
                 }
-            } 
+            }
+
             final LoadModuleHelper loadModuleHelper=new LoadModuleHelper(userContext);
             final JobInput initialValues=loadModuleHelper.getInitialValues(lsid,
                     taskInfo.getParameterInfoArray(),
@@ -290,6 +286,24 @@ public class RunTaskServlet extends HttpServlet
             
             final JSONObject initialValuesJson=LoadModuleHelper.asJsonV2(initialValues);
             responseObject.put("initialValues", initialValuesJson);
+
+            //get list of batch parameters
+            /*String batchParamKey = "_batchParams";
+            if(parameterMap.containsKey(batchParamKey))
+            {
+                List batchParamsList = new ArrayList();
+                for(String requestParam : parameterMap.get(batchParamKey))
+                {
+                    batchParamsList.add(requestParam);
+                }
+                responseObject.put("batchParams", batchParamsList);
+            }*/
+
+            //check if there are any batch parameters
+            if(initialValues.getBatchParams() != null && initialValues.getBatchParams().size() > 0)
+            {
+                responseObject.put("batchParams", initialValues.getBatchParams());
+            }
 
             //add parameter grouping info (i.e advanced parameters
             //check if there are any user defined groups
