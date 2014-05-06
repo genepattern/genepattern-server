@@ -1028,7 +1028,7 @@ function createChoiceDiv(parameterName, groupId, initialValuesList)
     return selectChoiceDiv;
 }
 
-function createFileDiv(parameterName, groupId, enableBatch, initialValuesList, isBatch)
+function createFileDiv(parameterName, groupId, enableBatch, initialValuesList)
 {
     var fileUploadDiv = $("<div class='fileUploadDiv'/>");
 
@@ -1615,7 +1615,7 @@ function populateContentDiv(parameterName, contentDiv, groupId, initialValues, e
 
     if($.inArray(field_types.FILE, run_task_info.params[parameterName].type) != -1)
     {
-        contentDiv.append(createFileDiv(parameterName, groupId, enableBatch, initialValues, isBatch));
+        contentDiv.append(createFileDiv(parameterName, groupId, enableBatch, initialValues));
     }
 
     if($.inArray(field_types.TEXT, run_task_info.params[parameterName].type) != -1)
