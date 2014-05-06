@@ -230,6 +230,7 @@ public class JobsResource {
             final @QueryParam("pageSize") int pageSize,
             final @DefaultValue("true") @QueryParam("includeChildren") boolean includeChildren,
             final @DefaultValue("true") @QueryParam("includeOutputFiles") boolean includeOutputFiles,
+            final @DefaultValue("true") @QueryParam("includePermissions") boolean includePermissions,
             final @DefaultValue("true") @QueryParam("prettyPrint") boolean prettyPrint
     ) {
         
@@ -254,7 +255,7 @@ public class JobsResource {
             // Put the job JSON in an array
             JSONArray jobs = new JSONArray();
             for (final JobInfo jobInfo : jobInfoResults) {
-                JSONObject jobObject = getJobImpl.getJob(userContext, jobInfo, includeChildren, includeOutputFiles);
+                JSONObject jobObject = getJobImpl.getJob(userContext, jobInfo, includeChildren, includeOutputFiles, includePermissions);
                 //decorate with 'self'
                 final String self=jobsResourcePath+"/"+jobObject.getString("jobId");
                 jobObject.put("self", self);
@@ -332,6 +333,7 @@ public class JobsResource {
             final @Context UriInfo uriInfo,
             final @Context HttpServletRequest request,
             final @PathParam("jobId") String jobId,
+            final @DefaultValue("false") @QueryParam("includePermissions") boolean includePermissions,
             final @DefaultValue("true") @QueryParam("includeChildren") boolean includeChildren,
             final @DefaultValue("true") @QueryParam("includeOutputFiles") boolean includeOutputFiles,
             final @DefaultValue("true") @QueryParam("prettyPrint") boolean prettyPrint
@@ -589,9 +591,10 @@ public class JobsResource {
             GetPipelineJobLegacy getJobImpl = new GetPipelineJobLegacy(jobsResourcePath);
 
             // Put the job JSON in an array
+            final boolean includePermissions=false;
             JSONArray jobs = new JSONArray();
             for (JobInfo jobInfo : recentJobs) {
-                JSONObject jobObject = getJobImpl.getJob(userContext, jobInfo, includeChildren, includeOutputFiles);
+                JSONObject jobObject = getJobImpl.getJob(userContext, jobInfo, includeChildren, includeOutputFiles, includePermissions);
                 jobs.put(jobObject);
             }
 

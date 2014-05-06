@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.log4j.Logger;
+import org.genepattern.server.PermissionsHelper;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.dm.GpFilePath;
@@ -84,8 +85,13 @@ public class GetPipelineJobLegacy implements GetJob {
     }
     
     private final String jobsResourcePath;
+    private final boolean includePermissions;
     public GetPipelineJobLegacy(final String jobsResourcePath) {
+        this(jobsResourcePath, false); 
+    }
+    public GetPipelineJobLegacy(final String jobsResourcePath, final boolean includePermissions) {
         this.jobsResourcePath=jobsResourcePath;
+        this.includePermissions=includePermissions;
     }
     
     private JobInfo initJobInfo(final GpContext userContext, final String jobId) throws GetJobException {
@@ -136,10 +142,10 @@ public class GetPipelineJobLegacy implements GetJob {
 
     public JSONObject getJob(final GpContext userContext, final String jobId, final boolean includeChildren, final boolean includeOutputFiles) throws GetJobException {
         final JobInfo jobInfo=initJobInfo(userContext, jobId);
-        return getJob(userContext, jobInfo, includeChildren, includeOutputFiles);
+        return getJob(userContext, jobInfo, includeChildren, includeOutputFiles, includePermissions);
     }
 
-    public JSONObject getJob(final GpContext userContext, final JobInfo jobInfo, final boolean includeChildren, final boolean includeOutputFiles) throws GetJobException {
+    public JSONObject getJob(final GpContext userContext, final JobInfo jobInfo, final boolean includeChildren, final boolean includeOutputFiles, final boolean includePermissions) throws GetJobException {
         //manually create a JSONObject representing the job
         final JSONObject job;
         if (!includeChildren) {
@@ -157,7 +163,42 @@ public class GetPipelineJobLegacy implements GetJob {
                 throw new GetJobException(errorMessage + ": "+t.getLocalizedMessage());
             }
         }
+        if (includePermissions && job!=null) {
+            //only include permissions for the top-level job
+            try {
+            JSONObject permissions=initPermissionsFromJob(userContext, jobInfo);
+            if (permissions!=null) {
+                job.put("permissions", permissions);
+            }
+            }
+            catch (Throwable t) {
+                final String errorMessage="Error initializing permissions for jobId="+jobInfo.getJobNumber();
+                log.error(errorMessage, t);
+                throw new GetJobException(errorMessage + ": "+t.getLocalizedMessage());
+            }
+        }
         return job;
+    }
+    
+    private JSONObject initPermissionsFromJob(final GpContext userContext, final JobInfo jobInfo) throws JSONException {
+        final boolean isInTransaction=HibernateUtil.isInTransaction();
+        try {
+            // constructor starts a new DB transaction
+            final PermissionsHelper ph=new PermissionsHelper(
+                    userContext.isAdmin(), //final boolean _isAdmin, 
+                    userContext.getUserId(), // final String _userId, 
+                    jobInfo.getJobNumber(), // final int _jobNo, 
+                    jobInfo.getUserId(), //final String _rootJobOwner, 
+                    jobInfo.getJobNumber()//, //final int _rootJobNo, 
+                    );
+            JSONObject jsonObj=permissionsToJson(userContext, ph);
+            return jsonObj;
+        }
+        finally {
+            if (!isInTransaction) {
+                HibernateUtil.closeCurrentSession();
+            }
+        }
     }
 
     public JSONObject getChildren(final GpContext userContext, final String jobId, final boolean includeChildren, final boolean includeOutputFiles) throws GetJobException {
@@ -189,6 +230,17 @@ public class GetPipelineJobLegacy implements GetJob {
             if (jobInfo.getDateCompleted() != null) {
                 job.put("dateCompleted", Util.toIso8601(jobInfo.getDateCompleted()));
             }
+
+            //job owner
+            job.put("userId", jobInfo.getUserId());
+            
+            //access permissions
+            //TODO: improve group permissions query
+            /*
+             select a.job_no, a.date_submitted, a.date_completed, a.user_id, a.task_lsid, a.task_name, j.group_id, j.permission_flag
+             from analysis_job a left outer join job_group j on a.job_no = j.job_no  
+             where a.user_id='{userId}'
+            */
             
             //init jobStatus
             final JSONObject jobStatus = new JSONObject();
@@ -249,6 +301,39 @@ public class GetPipelineJobLegacy implements GetJob {
         }
         return job;
 
+    }
+
+    /**
+     * Create JSON representation from the given PermissionsHelper class.
+     * This class was part of the JSF implementation.
+     * For example,
+     * <pre>
+       permissions: {
+           currentUser: <currentUser>, <-- the user for whom these permissions apply, not necessarily the owner of the job
+           canSetPermissions: <true | false>, <-- can the current user change the permissions
+           canWrite: <true | false>, <-- can the current user modify the job (delete or delete files)
+           canRead: <true | false>, <-- can the current user read the job (download files)
+           isShared: <true | false>, <-- is this job shared with other users?
+           isPublic: <true | false> <-- is this job public  
+       }
+     * </pre>
+     * 
+     * @param ph
+     * @return
+     */
+    public static JSONObject permissionsToJson(final GpContext userContext, final PermissionsHelper ph) throws JSONException {
+        if (ph==null) {
+            log.error("PermissionsHelper is null");
+            return null;
+        }
+        JSONObject jsonObj=new JSONObject();
+        jsonObj.put("currentUser", userContext.getUserId());
+        jsonObj.put("canRead", ph.canReadJob());
+        jsonObj.put("canWrite", ph.canWriteJob());
+        jsonObj.put("canSetPermissions", ph.canSetJobPermissions());
+        jsonObj.put("isPublic", ph.isPublic());
+        jsonObj.put("isShared", ph.isShared());
+        return jsonObj;
     }
 
 }
