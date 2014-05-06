@@ -155,7 +155,7 @@ function loadModule(taskId, reloadId, sendFromKind, sendFromUrl)
                 }
                 else
                 {
-                    loadParametersByGroup(module["parameter_groups"], response["parameters"], response["initialValues"]);
+                    loadParametersByGroup(module["parameter_groups"], response["parameters"], response["initialValues"], response["batchParams"]);
                 }
                 //the parameter form elements have been created now make the form visible
                 $("#protocols").hide();
@@ -677,7 +677,7 @@ function setParamDisplayName(parameterInfo)
     run_task_info.params[parameterInfo.name]["displayname"] = run_task_info.params[parameterInfo.name]["displayname"].replace(/\./g,' ');
 }
 
-function initParam(parameterInfo, index, initialValues)
+function initParam(parameterInfo, index, batchParams)
 {
     run_task_info.params[parameterInfo.name] = {};
 
@@ -706,7 +706,15 @@ function initParam(parameterInfo, index, initialValues)
     run_task_info.params[parameterInfo.name].description = parameterInfo.description;
     run_task_info.params[parameterInfo.name].altDescription = parameterInfo.altDescription;
     run_task_info.params[parameterInfo.name].groupInfo = parameterInfo.groupInfo;
-    run_task_info.params[parameterInfo.name].isBatch = false;
+
+    if(batchParams != undefined && batchParams != null && batchParams.indexOf(parameterInfo.name) != -1)
+    {
+        run_task_info.params[parameterInfo.name].isBatch = true;
+    }
+    else
+    {
+        run_task_info.params[parameterInfo.name].isBatch = false;
+    }
 
     // Add parameter to send-to map
     addSendToParam(parameterInfo);
@@ -1020,7 +1028,7 @@ function createChoiceDiv(parameterName, groupId, initialValuesList)
     return selectChoiceDiv;
 }
 
-function createFileDiv(parameterName, groupId, enableBatch, initialValuesList)
+function createFileDiv(parameterName, groupId, enableBatch, initialValuesList, isBatch)
 {
     var fileUploadDiv = $("<div class='fileUploadDiv'/>");
 
@@ -1145,6 +1153,12 @@ function createFileDiv(parameterName, groupId, enableBatch, initialValuesList)
         batchBox.tooltip();
 
         fileUploadDiv.append(batchBox);
+
+        //if this is a batch parameter then pre-select the batch checkbox
+        if(run_task_info.params[parameterName].isBatch)
+        {
+            batchBox.find("input[type='checkbox']").prop('checked', true);
+        }
     }
 
     if (paramDetails.allowMultiple)
@@ -1391,7 +1405,7 @@ function createModeToggle(parameterName)
 }
 
 //initialize the params object with info about the parameters
-function initParams(parameterGroups, parameters, initialValues)
+function initParams(parameterGroups, parameters, batchParams)
 {
     run_task_info.parameterGroups = parameterGroups;
 
@@ -1403,7 +1417,7 @@ function initParams(parameterGroups, parameters, initialValues)
     for(var q=0;q < parameters.length;q++)
     {
         var parameterName = parameters[q].name;
-        initParam(parameters[q], q, initialValues);
+        initParam(parameters[q], q, batchParams);
     }
 }
 
@@ -1601,7 +1615,7 @@ function populateContentDiv(parameterName, contentDiv, groupId, initialValues, e
 
     if($.inArray(field_types.FILE, run_task_info.params[parameterName].type) != -1)
     {
-        contentDiv.append(createFileDiv(parameterName, groupId, enableBatch, initialValues));
+        contentDiv.append(createFileDiv(parameterName, groupId, enableBatch, initialValues, isBatch));
     }
 
     if($.inArray(field_types.TEXT, run_task_info.params[parameterName].type) != -1)
@@ -1618,12 +1632,12 @@ function populateContentDiv(parameterName, contentDiv, groupId, initialValues, e
     }
 }
 
-function loadParametersByGroup(parameterGroups, parameters, initialValues)
+function loadParametersByGroup(parameterGroups, parameters, initialValues, batchParams)
 {
     //check if the params object should be initialized
     if(parameters != null)
     {
-        initParams(parameterGroups, parameters, initialValues);
+        initParams(parameterGroups, parameters, batchParams);
     }
 
     if(parameterGroups == null)
@@ -2144,7 +2158,7 @@ function reset()
     param_file_listing = {};
     parameter_and_val_groups = {};
 
-    loadParametersByGroup(null, null, null);
+    loadParametersByGroup(null, null, null, null);
 }
 
 function isText(param)
