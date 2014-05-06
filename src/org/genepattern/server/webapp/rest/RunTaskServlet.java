@@ -287,22 +287,19 @@ public class RunTaskServlet extends HttpServlet
             final JSONObject initialValuesJson=LoadModuleHelper.asJsonV2(initialValues);
             responseObject.put("initialValues", initialValuesJson);
 
-            //get list of batch parameters
-            /*String batchParamKey = "_batchParams";
-            if(parameterMap.containsKey(batchParamKey))
-            {
-                List batchParamsList = new ArrayList();
-                for(String requestParam : parameterMap.get(batchParamKey))
-                {
-                    batchParamsList.add(requestParam);
-                }
-                responseObject.put("batchParams", batchParamsList);
-            }*/
-
             //check if there are any batch parameters
-            if(initialValues.getBatchParams() != null && initialValues.getBatchParams().size() > 0)
+            Set<Param> batchParams = initialValues.getBatchParams();
+            Set batchParamNames = new HashSet();
+            if(batchParams != null && batchParams.size() > 0)
             {
-                responseObject.put("batchParams", initialValues.getBatchParams());
+                Iterator<Param> batchIt = batchParams.iterator();
+                while(batchIt.hasNext())
+                {
+                    String batchParamName = batchIt.next().getParamId().getFqName();
+                    batchParamNames.add(batchParamName);
+                }
+
+                responseObject.put("batchParams", batchParamNames);
             }
 
             //add parameter grouping info (i.e advanced parameters
