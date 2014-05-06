@@ -232,6 +232,14 @@
     font-weight: normal;
 }
 
+.delete-job-action {
+    color: #000099;
+}
+
+.delete-job-action:hover {
+    color: #6666FF !important;
+}
+
 .statusReport .icon {
 	width: 90px;
 	color: #666;

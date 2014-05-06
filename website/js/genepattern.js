@@ -969,6 +969,12 @@ function showErrorMessage(message) {
     }
 }
 
+function showSuccessMessage(message) {
+    var infoDiv = $("#infoMessageDiv");
+    infoDiv.find("#infoMessageContent").text(message);
+    infoDiv.show();
+}
+
 function createGenomeSpaceWidget(linkElement, appendTo) {
     var _isGenomeSpaceRoot = function(url) {
         var parts = url.split("dm.genomespace.org/datamanager/");
@@ -2601,7 +2607,46 @@ function buildJobResultsPage(data) {
                         .append(
                             $("<td></td>")
                                 .addClass("header-sm")
-                                .text("Delete")
+                                .append(
+                                    $("<a></a>")
+                                        .addClass("delete-job-action")
+                                        .attr("href", "#")
+                                        .text("Delete")
+                                        .click(function() {
+                                            // Gather the jobs to delete
+                                            var jobsDelete = [];
+                                            $(".job-delete-checkbox:checked").each(function(index, element) {
+                                                var id = $(element).val();
+                                                jobsDelete.push(id);
+                                            });
+
+                                            // Make the Delete AJAX call
+                                            $.ajax({
+                                                type: "DELETE",
+                                                url: "/gp/rest/v1/jobs/delete?jobs=" + jobsDelete.join(","),
+                                                cache: false,
+                                                dataType: "text",
+                                                success: function(data, textStatus, jqXHR) {
+                                                    loadJobResults(true);
+                                                    showSuccessMessage(data);
+                                                },
+                                                error: function(data) {
+                                                    showErrorMessage(data);
+                                                }
+                                            });
+
+
+                                        })
+                                )
+                                .append(
+                                    $("<input />")
+                                        .addClass("job-delete-checkbox-master")
+                                        .attr("type", "checkbox")
+                                        .click(function() {
+                                            var isChecked = $(".job-delete-checkbox-master").prop('checked');
+                                            $(".job-delete-checkbox").prop('checked', isChecked);
+                                        })
+                                )
                         )
                         .append(
                             $("<td></td>")
@@ -2645,7 +2690,6 @@ function buildJobResultsPage(data) {
     jobTable.dataTable({
         serverSide: true,
         "ajax": function(data, callback, settings) {
-            console.log(data);
             populateJobResultsTable(data, callback);
         },
         "order": [[1, "desc"]],

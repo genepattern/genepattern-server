@@ -3,6 +3,7 @@ package org.genepattern.server.webapp.rest.api.v1.job;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
@@ -465,6 +466,50 @@ public class JobsResource {
             }
             else {
                 return Response.status(500).entity("Could not delete job " + jobId).build();
+            }
+        }
+        catch (Throwable t) {
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(t.getLocalizedMessage()).build();
+        }
+    }
+
+    /**
+     * Delete the a list of jobs
+     * @param request
+     * @param jobs - a comma separated list of job IDs
+     * @return
+     */
+    @DELETE
+    @Path("/delete")
+    public Response deleteJobs(@Context HttpServletRequest request, @QueryParam("jobs") String jobs) {
+        GpContext userContext = Util.getUserContext(request);
+
+        try {
+            // Split the jobs string on commas
+            String[] jobStrings = jobs.split(",");
+            int[] jobIds = new int[jobStrings.length];
+
+            // Parse individual job IDs to ints
+            int index = 0;
+            for (String job : jobStrings) {
+                int intJobId = Integer.parseInt(job);
+                jobIds[index] = intJobId;
+                index++;
+            }
+
+            // Delete each of the jobs
+            String userId = userContext.getUserId();
+            boolean isAdmin = userContext.isAdmin();
+            List<Integer> deleted = new ArrayList<Integer>();
+            for (int id : jobIds) {
+                deleted.addAll(JobManager.deleteJob(isAdmin, userId, id));
+            }
+
+            if (deleted.size() > 0) {
+                return Response.ok().entity("Deleted Jobs: " + deleted.toString()).build();
+            }
+            else {
+                return Response.status(500).entity("Could not delete jobs: " + jobs).build();
             }
         }
         catch (Throwable t) {
