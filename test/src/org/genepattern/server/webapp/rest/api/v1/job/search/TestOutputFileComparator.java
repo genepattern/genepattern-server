@@ -1,6 +1,7 @@
 package org.genepattern.server.webapp.rest.api.v1.job.search;
 
 import java.io.File;
+import java.io.FileFilter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -28,7 +29,17 @@ public class TestOutputFileComparator {
         outputFiles=new ArrayList<GpFilePath>();
         File cur=FileUtil.getSourceDir(this.getClass());
         File dir=new File(cur, "test_01");
-        for (final File file : dir.listFiles()) {
+        
+        File[] files=dir.listFiles(new FileFilter() {
+            @Override
+            public boolean accept(final File pathname) {
+                if (pathname==null || pathname.getName().startsWith(".")) {
+                    return false;
+                }
+                return true;
+            }
+        });
+        for (final File file : files) {
             GpFilePath gpFilePath=new MockGpFilePath.Builder(file).build();
             outputFiles.add(gpFilePath);
         }

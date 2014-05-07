@@ -51,7 +51,7 @@ public class OutputFileComparator implements Comparator<GpFilePath> {
                     .result();
         case name:
             return ComparisonChain.start()
-                    .compare(left.getName(), right.getName(), Ordering.natural().nullsLast())
+                    .compare(left.getName(), right.getName(), Ordering.from(String.CASE_INSENSITIVE_ORDER).nullsLast())
                     .result();
         }
 
