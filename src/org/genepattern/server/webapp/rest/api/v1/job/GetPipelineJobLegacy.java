@@ -80,7 +80,9 @@ public class GetPipelineJobLegacy implements GetJob {
 
         o.put("fileLength", gpFilePath.getFileLength());
         o.put("lastModified", gpFilePath.getLastModified().getTime());
-        o.put("kind", gpFilePath.getKind());
+        JSONArray kindArr=new JSONArray();
+        kindArr.put(gpFilePath.getKind());
+        o.put("kind", kindArr);
         return o;
     }
     
