@@ -265,9 +265,9 @@ public class LoadModuleHelper {
 
         //check if there are any batch parameters in the request
         List batchParamsList = new ArrayList();
-        if(parameterMap != null && parameterMap.get("_batchParams") != null)
+        if(parameterMap != null && parameterMap.get("_batchParam") != null)
         {
-            for(String requestParam : parameterMap.get("_batchParams"))
+            for(String requestParam : parameterMap.get("_batchParam"))
             {
                 batchParamsList.add(requestParam);
             }

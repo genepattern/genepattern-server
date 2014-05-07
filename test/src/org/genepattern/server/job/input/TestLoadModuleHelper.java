@@ -444,7 +444,7 @@ public class TestLoadModuleHelper {
 
         parameterMap=new HashMap<String,String[]>();
         parameterMap.put("input.file", new String[] {inputFile1, inputFile2} );
-        parameterMap.put("_batchParams", new String[] {"input.file"} );
+        parameterMap.put("_batchParam", new String[] {"input.file"} );
 
         LoadModuleHelper loadModuleHelper=new LoadModuleHelper(userContext);
 
