@@ -1172,7 +1172,7 @@ function createGenomeSpaceWidget(linkElement, appendTo) {
                 "lsid": "",
                 "name": "Send to " + tool,
                 "description": "Send this file from GenePattern to " + tool + " using GenomeSpace.",
-                "version": "<img src='/gp/pages/genomespace/genomespace_icon.gif' class='module-list-icon'>",
+                "version": "<img src='/gp/pages/genomespace/genomespace_icon.png' class='module-list-icon'>",
                 "documentation": "http://genomespace.org", "categories": [], "suites": [], "tags": []
             });
         }
@@ -1331,7 +1331,7 @@ function createFileWidget(linkElement, appendTo) {
                     "lsid": "",
                     "name": "Save to Genomespace",
                     "description": "Save a copy of this file to your GenomeSpace account.",
-                    "version": "<img src='/gp/pages/genomespace/genomespace_icon.gif' class='module-list-icon'>", "documentation": "", "categories": [], "suites": [], "tags": []
+                    "version": "<img src='/gp/pages/genomespace/genomespace_icon.png' class='module-list-icon'>", "documentation": "", "categories": [], "suites": [], "tags": []
                 });
             }
         }
@@ -2459,8 +2459,24 @@ function populateJobResultsTable(settings, callback) {
             .append(children);
         return wrapper[0].outerHTML;
     };
+    var _sizeOfJob = function(job) {
+        var total = 0;
+        for (var i = 0; i < job.outputFiles.length; i++) {
+            var file = job.outputFiles[i];
+            total += file.fileLength;
+        }
+        if (job.children) {
+            for (var i = 0; i < job.children.items.length; i++) {
+                var child = job.children.items[i];
+                total += _sizeOfJob(child);
+            }
+        }
+        return total;
+    };
     var _buildSize = function(job) {
-        return job.jobId;
+        var total = _sizeOfJob(job);
+
+        return _formatFileSize(total);
     };
     var _buildSubmission = function(job) {
         return _formatDate(job.dateSubmitted);
@@ -2469,10 +2485,10 @@ function populateJobResultsTable(settings, callback) {
         return _formatDate(job.dateCompleted);
     };
     var _buildOwner = function(job) {
-        return job.jobId;
+        return job.permissions.currentUser;
     };
     var _buildSharing = function(job) {
-        return job.jobId;
+        return job.permissions.isPublic ? "Public" : "Private";
     };
     var _attachMetadata = function(toReturn, data) {
         toReturn.draw = settings.draw;
@@ -2510,6 +2526,17 @@ function populateJobResultsTable(settings, callback) {
         var pageSize = settings.length;
         var page = Math.floor(settings.start / pageSize) + 1;
         return "/gp/rest/v1/jobs/?userId=*&pageSize=" + pageSize + "&page=" + page;
+    };
+    var _formatFileSize = function(bytes) {
+        var thresh = 1024;
+        if(bytes < thresh) return bytes + ' B';
+        var units = ['kB','MB','GB','TB','PB','EB','ZB','YB'];
+        var u = -1;
+        do {
+            bytes /= thresh;
+            ++u;
+        } while(bytes >= thresh);
+        return bytes.toFixed(1)+' '+units[u];
     };
 
     // Make the actual ajax request
