@@ -77,9 +77,18 @@ public class GetPipelineJobLegacy implements GetJob {
         link.put("href", gpFilePath.getUrl().toExternalForm());
         link.put("name", gpFilePath.getName());
         o.put("link", link);
-
         o.put("fileLength", gpFilePath.getFileLength());
         o.put("lastModified", Util.toIso8601(gpFilePath.getLastModified()));
+        // include relative path, to make it easier to work with files in sub directories
+        try {  // experimental code, catch and log unexpected exceptions
+            String path=gpFilePath.getRelativePath();
+            if (path != null) {
+                o.put("path", path);
+            }
+        }
+        catch (Throwable t) {
+            log.error("Unexpected error in gpFilePath.relativePath", t);
+        }
 
         JSONArray kindArr=new JSONArray();
         kindArr.put(gpFilePath.getKind());
