@@ -79,7 +79,8 @@ public class GetPipelineJobLegacy implements GetJob {
         o.put("link", link);
 
         o.put("fileLength", gpFilePath.getFileLength());
-        o.put("lastModified", gpFilePath.getLastModified().getTime());
+        o.put("lastModified", Util.toIso8601(gpFilePath.getLastModified()));
+
         JSONArray kindArr=new JSONArray();
         kindArr.put(gpFilePath.getKind());
         o.put("kind", kindArr);
