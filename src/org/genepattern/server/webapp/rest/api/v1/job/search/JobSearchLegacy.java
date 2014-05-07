@@ -15,12 +15,20 @@ import org.genepattern.webservice.JobInfo;
 
 /**
  * Re-implementation (based on copy/paste) of existing (circa GP 3.8.1) job search.
+ * This is part of the migration from JSF to RESTful API calls. 
+ * 
  * @author pcarr
  *
  */
 public class JobSearchLegacy {
     private static final Logger log = Logger.getLogger(JobSearchLegacy.class);
 
+    /**
+     * Search the GP DB for job records which match the give SearchQuery.
+     * @param q, the search query, usually generated from the REST API calls.
+     * @return a SearchResults instance containing relevant details for formatting a JSON response 
+     *     to a web client.
+     */
     public static SearchResults doSearch(final SearchQuery q) {
         int numItems=getJobCount(q);
         List<JobInfo> jobInfos=searchJobInfos(q);
@@ -31,7 +39,12 @@ public class JobSearchLegacy {
         return searchResults;
     }
 
-    public static int getJobCount(final SearchQuery q) {
+    /**
+     * Makes a DB call to get a count of jobs which match the given search query.
+     * @param q
+     * @return
+     */
+    private static int getJobCount(final SearchQuery q) {
         //if (jobCount < 0) {
         //final String selectedGroup=q.getSelectedGroup();
         if (q.isBatch()) {

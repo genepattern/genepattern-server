@@ -23,7 +23,7 @@ import org.json.JSONObject;
 
 public class GetPipelineJobLegacy implements GetJob {
     private static final Logger log = Logger.getLogger(GetPipelineJobLegacy.class);
-    
+
     private static List<ParameterInfo> getOutputFiles(final JobInfo jobInfo) {
         List<ParameterInfo> outputs=new ArrayList<ParameterInfo>();
         for(final ParameterInfo pinfo : jobInfo.getParameterInfoArray()) {
@@ -264,6 +264,7 @@ public class GetPipelineJobLegacy implements GetJob {
             job.put("status", jobStatus);
             
             //init resultFiles
+            //TODO: sort output files
             if (includeOutputFiles) {
                 final JSONArray outputFiles=new JSONArray();
                 int numFiles=0;

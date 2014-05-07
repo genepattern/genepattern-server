@@ -180,10 +180,12 @@ public class JobsResource {
        <pre>
        curl -u {userId}:{password} -X GET {GenePatternURL}rest/v1/jobs
            ?userId={userId}
-           &page={page}
-           &pageSize={pageSize}
            &groupId={groupId}
            &batchId={batchId}
+           &page={page}
+           &pageSize={pageSize}
+           &orderBy={jobId | taskName | dateSubmitted | dateComplated | status}, prefix with '-' to reverse order
+           &orderFilesBy={name | date | size}, prefix with '-' to reverse order
        </pre>
      * Example query:
      * <pre>
@@ -228,6 +230,33 @@ public class JobsResource {
              * optionally, set the number of items per page.
              */
             final @QueryParam("pageSize") int pageSize,
+            /**
+             * Optionally set the order of the jobs, default is by jobId.
+             * Examples,
+             * <pre>
+               orderBy=jobId
+               orderBy=-jobId
+               </pre>
+             * 
+             */
+            final @QueryParam("orderBy") String orderBy, 
+            /**
+             * Optionally set the order of the outputFiles for each jobs.
+             *     orderFilesBy={name | date | size}, default sort order is by date.
+             * By default they are ordered by 'date'.
+             * This determines the sort order of files within each job results 'folder'.
+             * 
+             * Examples,
+             * <pre>
+               # sort by date, descending order
+               orderFilesBy=-date
+               # sort by name, ascending order
+               orderFilesBy=name
+               # sort by size, ascending order ('+' is allowed but optional)
+               orderFilesBy+name
+             * </pre>
+             */
+            final @QueryParam("orderFilesBy") String orderFilesBy,
             final @DefaultValue("true") @QueryParam("includeChildren") boolean includeChildren,
             final @DefaultValue("true") @QueryParam("includeOutputFiles") boolean includeOutputFiles,
             final @DefaultValue("true") @QueryParam("includePermissions") boolean includePermissions,
@@ -245,6 +274,8 @@ public class JobsResource {
             .batchId(batchId)
             .pageNum(page)
             .pageSize(pageSize)
+            .orderBy(orderBy)
+            .orderFilesBy(orderFilesBy)
             .build();
             final SearchResults searchResults=JobSearchLegacy.doSearch(q);
             final List<JobInfo> jobInfoResults=searchResults.getJobInfos();

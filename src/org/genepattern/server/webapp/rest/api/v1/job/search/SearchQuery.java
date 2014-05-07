@@ -25,6 +25,8 @@ public class SearchQuery {
     public static final String Q_BATCH_ID="batchId";
     public static final String Q_PAGE="page";
     public static final String Q_PAGE_SIZE="pageSize";
+    public static final String Q_ORDER_BY="orderBy";
+    public static final String Q_ORDER_FILES_BY="orderFilesBy";
 
     /**
      * the full URI to the jobs resource, for constructing links to related resources
@@ -42,25 +44,82 @@ public class SearchQuery {
      * search for jobs owned by this user, can be '*' to indicate all jobs.
      */
     final String userId;
-    final JobSortOrder jobSortOrder;
+
     final String groupId;
     final String batchId;
-    final boolean ascending;
+    
     final int page;
     final int pageSize;
+    
+    final String orderBy;
+    final String orderFilesBy;
+    final JobSortOrder jobSortOrder;
+    final boolean ascending;
 
     private SearchQuery(final Builder in) {
         this.jobsResourcePath=in.jobsResourcePath;
         this.currentUser=in.userContext.getUserId();
         this.currentUserIsAdmin=in.userContext.isAdmin();
+        // filters
         this.userId=in.userId;
-        this.jobSortOrder=in.jobSortOrder;
         this.groupId=in.selectedGroup;
         this.batchId=in.selectedBatchId;
-        this.ascending=in.ascending;
+        // pages
         this.page=in.pageNum;
         this.pageSize=in.pageSize;
+        // order
+        this.orderBy=in.orderBy;
+        this.jobSortOrder=getJobSortOrder(in.orderBy);
+        this.ascending=isAscending(in.orderBy);
+        this.orderFilesBy=in.orderFilesBy;
     }
+    
+    /**
+     * orderBy=jobId | taskName | dateSubmitted | dateCompleted | status
+     * @param orderBy
+     * @return
+     */
+    private JobSortOrder getJobSortOrder(final String orderBy) {
+        if (orderBy==null) {
+            return JobSortOrder.JOB_NUMBER;
+        }
+        final String jobSortColumn;
+        if (orderBy.startsWith("+") || orderBy.startsWith("-")) {
+            jobSortColumn=orderBy.substring(1);
+        }
+        else {
+            jobSortColumn=orderBy;
+        }
+        if ("jobId".equals(jobSortColumn)) {
+            return JobSortOrder.JOB_NUMBER;
+        }
+        else if ("taskName".equals(jobSortColumn)) {
+            return JobSortOrder.MODULE_NAME;
+        }
+        else if ("dateSubmitted".equals(jobSortColumn)) {
+            return JobSortOrder.SUBMITTED_DATE;
+        }
+        else if ("dateCompleted".equals(jobSortColumn)) {
+            return JobSortOrder.COMPLETED_DATE;
+        }
+        else if ("status".equals(jobSortColumn)) { return JobSortOrder.JOB_STATUS; }
+        return JobSortOrder.JOB_NUMBER;
+    }
+    
+    private boolean isAscending(final String orderBy) {
+        if (orderBy==null) {
+            // by default, ascending
+            return true; 
+        }
+        if (orderBy.startsWith("+")) {
+            return true;
+        }
+        if (orderBy.startsWith("-")) {
+            return false;
+        }
+        return true;
+    }
+    
 
     public String getCurrentUser() {
         return currentUser;
@@ -139,13 +198,18 @@ public class SearchQuery {
      * @return the http query string for the search.
      */
     private String getQueryString(int toPage)  throws UnsupportedEncodingException {
-        String queryString=new QueryStringBuilder()
-        .param(Q_USER_ID, userId)
-        .param(Q_GROUP_ID, groupId)
-        .param(Q_BATCH_ID, batchId)
-        .param(Q_PAGE, ""+toPage)
-        .build();
-        return queryString;
+        QueryStringBuilder b=new QueryStringBuilder();
+        b.param(Q_USER_ID, userId);
+        b.param(Q_GROUP_ID, groupId);
+        b.param(Q_BATCH_ID, batchId);
+        b.param(Q_PAGE, ""+toPage);
+        if (orderBy != null) {
+            b.param(Q_ORDER_BY, orderBy);
+        }
+        if (orderFilesBy != null) {
+            b.param(Q_ORDER_FILES_BY, orderFilesBy);
+        }
+        return b.build();
     }
     //        private String getQueryString_Jersey() {
     //            UriBuilder b=UriBuilder.fromPath("");
@@ -161,9 +225,9 @@ public class SearchQuery {
         private static class QueryParam {
             private final String param;
 
-            public QueryParam(final String name) throws UnsupportedEncodingException {
-                this(name, (String)null);
-            }
+            //public QueryParam(final String name) throws UnsupportedEncodingException {
+            //    this(name, (String)null);
+            //}
             public QueryParam(final String name, final String value) throws UnsupportedEncodingException {
                 final String encodedName=URLEncoder.encode(name, "UTF-8");
                 if (value!=null) {
@@ -221,10 +285,10 @@ public class SearchQuery {
         private final String jobsResourcePath;
         private final GpContext userContext;
         private String userId=null; // null or not-set means, currentUser
-        private JobSortOrder jobSortOrder=JobSortOrder.JOB_NUMBER;
         private String selectedGroup=null;
         private String selectedBatchId=null;
-        private boolean ascending=true;
+        private String orderBy=null;
+        private String orderFilesBy=null;
         private int pageNum=1;
         private int pageSize=DEFAULT_PAGE_SIZE;
 
@@ -255,6 +319,15 @@ public class SearchQuery {
 
         public Builder pageSize(final int pageSize) {
             this.pageSize=pageSize;
+            return this;
+        }
+        
+        public Builder orderBy(final String orderBy) {
+            this.orderBy=orderBy;
+            return this;
+        }
+        public Builder orderFilesBy(final String orderFilesBy) {
+            this.orderFilesBy=orderFilesBy;
             return this;
         }
 
