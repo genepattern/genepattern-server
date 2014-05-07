@@ -8,12 +8,15 @@ import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;
 
+import org.apache.log4j.Logger;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.webservice.server.local.LocalAdminClient;
 import org.genepattern.webservice.TaskInfo;
 import org.genepattern.webservice.WebServiceException;
 
 public class Util {
+    private static final Logger log = Logger.getLogger(Util.class);
+
     /**
      * Create a new userContext instance based on the current HTTP request.
      * This method has the effect of requiring a valid logged in gp user, because a 
@@ -58,6 +61,10 @@ public class Util {
      * @return
      */
     public static String toIso8601(final Date date) {
+        if (date==null) {
+            log.debug("Unexpected null arg");
+            return "";
+        }
         //TODO: optimize, no need to create a new dateFormat instance for each call
         //     however, DateFormat is not thread-safe
         //final TimeZone tz = TimeZone.getTimeZone("UTC");
