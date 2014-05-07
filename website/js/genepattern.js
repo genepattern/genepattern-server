@@ -2435,6 +2435,7 @@ function populateJobResultsTable(settings, callback) {
         var children = _buildChildJobs(job);
 
         var wrapper = $("<div></div>")
+            .css("overflow", "hidden")
             .append(
                 $("<a></a>")
                     .addClass("job-task-toggle")

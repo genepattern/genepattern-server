@@ -60,13 +60,24 @@ public class GenomeSpaceServlet extends HttpServlet {
         String directoryURL = request.getParameter("directory");
         String fileURL = request.getParameter("file");
 
-        if (directoryURL == null || fileURL == null) {
-            log.error("No file or directory provided when saving file to GenomeSpace");
+        try {
+            if (directoryURL == null || fileURL == null) {
+                log.error("No file or directory provided when saving file to GenomeSpace");
+                response.sendError(HttpServletResponse.SC_EXPECTATION_FAILED, "Error: No file or directory provided when saving file to GenomeSpace");
+            }
+
+            String statusText = bean.sendFileToGenomeSpace(directoryURL, fileURL);
+
+            if (statusText.contains("Error")) {
+                response.sendError(HttpServletResponse.SC_FORBIDDEN, statusText);
+            }
+            else {
+                this.write(response, statusText);
+            }
         }
-        
-        bean.sendFileToGenomeSpace(directoryURL, fileURL);
-        
-        this.write(response, "OK");
+        catch (IOException e) {
+            log.error("IOError sending error in GenomeSpaceServlet");
+        }
     }
     
     private void loadSaveLevel(HttpServletRequest request, HttpServletResponse response) {

@@ -889,13 +889,12 @@ public class GenomeSpaceBean {
      * and puts it in the GenomeSpace directory selected.
      * 
      * Note: Currently assumes a user upload file.  May want to make this more generic in the future.
-     * @return JSF navigation rule for where to go next
+     * @return - Message to return to the user
      */
     public String sendFileToGenomeSpace(String directoryURL, String fileURL) {
         if (fileURL == null || directoryURL == null) {
             log.error("Error saving a file to GenomeSpace: " + fileURL + " " + directoryURL);
-            this.setMessageToUser("Error Sending File to GenomeSpace");
-            return HOME_NAVIGATION_KEY;
+            return "Error Sending File to GenomeSpace";
         }
         
         try {
@@ -908,33 +907,13 @@ public class GenomeSpaceBean {
             GenomeSpaceClientFactory.getGenomeSpaceClient().saveFileToGenomeSpace(gsSession, file, directory); 
             setMessageToUser("File uploaded to GenomeSpace " + file.getName());
             forceFileRefresh();
+
+            return "Successfully sent " + file.getName() + " to GenomeSpace";
         }
         catch (Throwable e) {
             UIBeanHelper.setErrorMessage(e.getLocalizedMessage());
+            return "Error: " + e.getLocalizedMessage();
         }
-        return HOME_NAVIGATION_KEY;
-        
-        
-        
-        
-        // FIXME: Do the Result File hack.  To be removed once Result Files are fully integrated into GpFilePath
-//        String resultFile = UIBeanHelper.getRequest().getParameter("resultFile");
-//        if ("true".equals(resultFile)) {
-//            try {
-//                GpFilePath file = new JobResultFile("/" + fileToSend);
-//                GenomeSpaceFile directory = getDirectory(directoryTarget);
-//                
-//                HttpSession httpSession = UIBeanHelper.getSession();
-//                Object gsSession = httpSession.getAttribute(GenomeSpaceLoginManager.GS_SESSION_KEY);
-//                GenomeSpaceClientFactory.getGenomeSpaceClient().saveFileToGenomeSpace(gsSession, file, directory); 
-//                setMessageToUser("File uploaded to GenomeSpace " + file.getName());
-//                forceFileRefresh();
-//            }
-//            catch (Exception e) {
-//                UIBeanHelper.setErrorMessage(e.getLocalizedMessage());
-//            }
-//            return HOME_NAVIGATION_KEY;
-//        }
     }
     
     /**
