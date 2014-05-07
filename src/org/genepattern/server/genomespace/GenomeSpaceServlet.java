@@ -76,13 +76,10 @@ public class GenomeSpaceServlet extends HttpServlet {
         List<GenomeSpaceFile> tree = null;
         if (url == null) {
             tree = bean.getFileTree();
-            tree = new ArrayList<GenomeSpaceFile>(tree.get(0).getChildFiles());
+            //tree = new ArrayList<GenomeSpaceFile>(tree.get(0).getChildFiles());
             for (GenomeSpaceFile file : tree) {
-                if (file.getName().equals(bean.getUsername())) {
-                    tree = new ArrayList<GenomeSpaceFile>();
-                    tree.add(file);
-                    break;
-                }
+                tree = new ArrayList<GenomeSpaceFile>();
+                tree.add(file);
             }
         }
         else {
