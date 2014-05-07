@@ -3,12 +3,8 @@ package org.genepattern.server.job.input;
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.StringTokenizer;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
@@ -276,6 +272,31 @@ public class LoadModuleHelper {
                 batchParamsList.add(requestParam);
             }
         }
+
+        //check if there are any file groups in the request
+        JSONObject fileGroupsJson = null;
+        String[] fileGroups = parameterMap.get("_filegroup");
+        if(parameterMap != null && fileGroups != null)
+        {
+            //only take the first file grouping
+            if(fileGroups.length > 1)
+            {
+                log.warn(fileGroups.length + " file groups found. Only taking the first one.");
+            }
+            for(int i=0;i < 1;i++)
+            {
+                try
+                {
+                    fileGroupsJson = new JSONObject(fileGroups[i]);
+                }
+                catch(JSONException je)
+                {
+                    //just log any errors and continue
+                    log.error(je);
+                }
+            }
+        }
+
         for(final ParameterInfo pinfo : parameterInfos) {
             final String pname=pinfo.getName();
 
@@ -321,14 +342,67 @@ public class LoadModuleHelper {
 
             //3) if there's a matching request parameter, use that
             if (parameterMap.containsKey(pname)) {
+                JSONObject pFileGroupObjs = null;
+                Map<Integer, String> fileGroupLookupTable = new HashMap();
+                if(fileGroupsJson != null && fileGroupsJson.has(pname))
+                {
+                    pFileGroupObjs = fileGroupsJson.getJSONObject(pname);
+                    Iterator<String> pfIt = pFileGroupObjs.keys();
+                    while(pfIt.hasNext())
+                    {
+                        String fileGroupName = pfIt.next();
+                        JSONArray valueIndicesList = pFileGroupObjs.getJSONArray(fileGroupName);
+
+                        for(int j=0;j<valueIndicesList.length();j++)
+                        {
+                            if(valueIndicesList.getString(j).contains(".."))
+                            {
+                                NumValuesParser numValuesParser = new NumValuesParserImpl();
+                                NumValues numValues = numValuesParser.parseNumValues(valueIndicesList.getString(j));
+                                if(numValues.getMin() != -1 && numValues.getMax() != -1)
+                                {
+                                    for(int t = numValues.getMin();t <= numValues.getMax(); t++)
+                                    {
+                                        fileGroupLookupTable.put(t, fileGroupName);
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                try
+                                {
+                                    fileGroupLookupTable.put(Integer.parseInt(valueIndicesList.getString(j)), fileGroupName);
+                                }
+                                catch(NumberFormatException ne)
+                                {
+                                    String error = "Invalid file group index : " + valueIndicesList.getString(j) + " specified for parameter " + pname;
+                                    log.error(error);
+                                    throw new Exception(error);
+                                }
+                            }
+                        }
+                    }
+                }
                 boolean first=true;
-                for(String requestParam : parameterMap.get(pname)) {
+                String[] parameterValues = parameterMap.get(pname);
+                for(int i=0;i<parameterValues.length;i++)
+                {
+                    String requestParam = parameterValues[i];
                     if (first) {
                         initialValues.removeValue(new ParamId(pname));
                         first=false;
                     }
 
-                    if(isBatch)
+                    if(fileGroupLookupTable != null && fileGroupLookupTable.size() > 0)
+                    {
+                        //throw an error if no group was defined for the value at this index
+                        if(fileGroupLookupTable.get(i) == null)
+                        {
+                            throw new Exception("No group id found for value at index " + i + " for parameter " + pname);
+                        }
+                        initialValues.addValue(pname, requestParam, new GroupId(fileGroupLookupTable.get(i))) ;
+                    }
+                    else if(isBatch)
                     {
                         initialValues.addValue(pname, requestParam, true);
                     }
