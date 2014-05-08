@@ -3,12 +3,16 @@ package org.genepattern.server.webapp.rest.api.v1.job.search;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.ArrayList;
+import org.json.JSONException;
+
 import java.util.List;
 import com.google.common.base.Strings;
 import org.apache.log4j.Logger;
 import org.genepattern.server.config.GpContext;
+import org.genepattern.server.webapp.rest.api.v1.GpLink;
 import org.genepattern.server.webapp.rest.api.v1.Rel;
 import org.genepattern.server.webservice.server.Analysis.JobSortOrder;
+import org.json.JSONObject;
 
 /**
  * Representation of the search query.
@@ -163,6 +167,49 @@ public class SearchQuery {
         return pageSize * (page-1);
     }
 
+    // more general implementation of the PageLink
+    public static class QueryLink {
+        final String name;
+        final Rel rel;
+        final String href;
+        
+        public QueryLink(final SearchQuery fromQuery, final String name, final Rel rel, final QueryParam queryParam) {
+            this.name=name;
+            this.rel=rel;
+            if (queryParam != null) {
+                this.href=fromQuery.jobsResourcePath+"?"+queryParam.param;
+            }
+            else {
+                this.href=fromQuery.jobsResourcePath;
+            }            
+        }
+ 
+        public String getName() {
+            return name;
+        }
+        public Rel getRel() {
+            return rel;
+        }
+        public String getHref() {
+            return href;
+        }
+
+        public JSONObject toJson() throws JSONException {
+            GpLink.BuilderJson b=new GpLink.BuilderJson();
+            if (rel!=null) {
+                b.rel(rel.name());
+            }
+            if (name!=null) {
+                b.name(name);
+            }
+            if (href!=null) {
+                b.href(href);
+            }
+            JSONObject jsonObj=b.build();
+            return jsonObj;
+        }
+    }
+
     /**
      * Creates a link to a new page, using all other search criteria.
      * @param page
@@ -211,37 +258,29 @@ public class SearchQuery {
         }
         return b.build();
     }
-    //        private String getQueryString_Jersey() {
-    //            UriBuilder b=UriBuilder.fromPath("");
-    //            if (userId!=null) {
-    //                b=b.queryParam(Q_USER_ID, userId);
-    //            }
-    //            final URI uri=b.build();
-    //            String queryString=uri.getRawQuery();
-    //            return queryString;
-    //        }
 
-    public static class QueryStringBuilder {
-        private static class QueryParam {
-            private final String param;
+    public static class QueryParam {
+        private final String param;
 
-            //public QueryParam(final String name) throws UnsupportedEncodingException {
-            //    this(name, (String)null);
-            //}
-            public QueryParam(final String name, final String value) throws UnsupportedEncodingException {
-                final String encodedName=URLEncoder.encode(name, "UTF-8");
-                if (value!=null) {
-                    final String encodedValue=URLEncoder.encode(value, "UTF-8");
-                    param=encodedName+"="+encodedValue;
-                }
-                else {
-                    param=encodedName;
-                }
+        public QueryParam(final String name) throws UnsupportedEncodingException {
+            this(name, (String)null);
+        }
+        public QueryParam(final String name, final String value) throws UnsupportedEncodingException {
+            final String encodedName=URLEncoder.encode(name, "UTF-8");
+            if (value!=null) {
+                final String encodedValue=URLEncoder.encode(value, "UTF-8");
+                param=encodedName+"="+encodedValue;
             }
-            public String toString() {
-                return param;
+            else {
+                param=encodedName;
             }
         }
+        public String toString() {
+            return param;
+        }
+    }
+
+    public static class QueryStringBuilder {
 
         private List<QueryParam> params;
 

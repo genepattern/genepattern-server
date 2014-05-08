@@ -42,6 +42,7 @@ import org.genepattern.server.webapp.rest.api.v1.Util;
 import org.genepattern.server.webapp.rest.api.v1.job.JobInputValues.Param;
 import org.genepattern.server.webapp.rest.api.v1.job.search.JobSearchLegacy;
 import org.genepattern.server.webapp.rest.api.v1.job.search.SearchQuery;
+import org.genepattern.server.webapp.rest.api.v1.job.search.SearchQuery.QueryLink;
 import org.genepattern.server.webapp.rest.api.v1.job.search.SearchResults;
 import org.genepattern.server.webservice.server.Analysis;
 import org.genepattern.server.webservice.server.dao.AnalysisDAO;
@@ -269,13 +270,13 @@ public class JobsResource {
             final URI baseUri = uriInfo.getBaseUri();
             final String jobsResourcePath = baseUri.toString() + URI_PATH;
             final SearchQuery q = new SearchQuery.Builder(jobsResourcePath, userContext)
-            .userId(userId)
-            .groupId(groupId)
-            .batchId(batchId)
-            .pageNum(page)
-            .pageSize(pageSize)
-            .orderBy(orderBy)
-            .orderFilesBy(orderFilesBy)
+                .userId(userId)
+                .groupId(groupId)
+                .batchId(batchId)
+                .pageNum(page)
+                .pageSize(pageSize)
+                .orderBy(orderBy)
+                .orderFilesBy(orderFilesBy)
             .build();
             final SearchResults searchResults=JobSearchLegacy.doSearch(q);
             final List<JobInfo> jobInfoResults=searchResults.getJobInfos();
@@ -311,6 +312,10 @@ public class JobsResource {
                 last: {},
                 next: {} <-- link
             }
+            groupIds: [ "", "", ..., ""], <-- list of available groupIds for the currentUser
+            batchIds: [ "", "", ... , ""], <-- list of available batchIds for the currentUser
+            filterLinks: <-- list of links used to build the filter drop-down menu, e.g. 'all jobs', 'my jobs', 'jobs in group', 'jobs in batch'
+                [ {}, {}, ..., {} ] <-- links
         }
              */
             JSONObject nav=new JSONObject();
@@ -319,7 +324,6 @@ public class JobsResource {
             nav.put("numItems", searchResults.getPageNav().getNumItems());
             JSONObject navLinks=searchResults.getPageNav().navLinksToJson();
             nav.put("navLinks", navLinks);
-            jsonObj.put("nav", nav);
 
             // include batchIds
             if (searchResults.getFilterNav().getBatchIds().size()>0) {
@@ -327,7 +331,7 @@ public class JobsResource {
                 for(final String batchId_entry : searchResults.getFilterNav().getBatchIds()) {
                     batchIds.put(batchId_entry);
                 }
-                jsonObj.put("batchIds", batchIds);
+                nav.put("batchIds", batchIds);
             }
             // include groupIds
             if (searchResults.getFilterNav().getGroupIds().size()>0) {
@@ -335,8 +339,19 @@ public class JobsResource {
                 for(final String groupId_entry : searchResults.getFilterNav().getGroupIds()) {
                     groupIds.put(groupId_entry);
                 }
-                jsonObj.put("groupIds", groupIds);
+                nav.put("groupIds", groupIds);
             }
+            // include filter links
+            if (searchResults.getFilterNav().getFilterLinks().size()>0) {
+                JSONArray filterLinks=new JSONArray();
+                for(final QueryLink link : searchResults.getFilterNav().getFilterLinks()) {
+                    filterLinks.put( link.toJson() );
+                }
+                nav.put("filterLinks", filterLinks);
+            }
+            
+            jsonObj.put("nav", nav);
+
 
             final String jsonStr;
             if (prettyPrint) {

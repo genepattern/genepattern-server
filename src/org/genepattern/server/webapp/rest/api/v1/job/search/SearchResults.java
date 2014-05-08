@@ -21,7 +21,7 @@ public class SearchResults {
         this.resultsInPage=ImmutableList.copyOf( in.jobInfos );
         this.searchDate=in.now;
         this.pageNav=new PageNav(in.query, numItems);
-        this.filterNav=new FilterNav(in.groupIds, in.batchIds);
+        this.filterNav=new FilterNav(in.query, in.groupIds, in.batchIds);
     }
 
     public int getNumResults() {
