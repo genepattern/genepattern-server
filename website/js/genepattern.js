@@ -2524,21 +2524,14 @@ function populateJobResultsTable(settings, callback) {
         toReturn.data = rows;
     };
     var _columnToName = function(col) {
-        if (col === 3) {
-            //Name
-            return "name";
-        }
-        else if (col === 5) {
-            // Date
-            return "date";
-        }
-        else if (col === 4) {
-            // Size
-            return "size";
-        }
+        if (col === 0) return "status";              // Status
+        if (col === 1) return "jobId";               // Job ID
+        if (col === 3) return "taskName";            // Task
+        if (col === 5) return "dateSubmitted";       // Submitted
+        if (col === 5) return "dateCompleted";       // Completed
         else {
             console.log("Error: Unknown Job Result Sort");
-            return "date";
+            return "jobId";
         }
     };
     var _buildRESTUrl = function() {
@@ -2773,9 +2766,9 @@ function buildJobResultsPage(data) {
         "ajax": function(data, callback, settings) {
             populateJobResultsTable(data, callback);
         },
-        "order": [[5, "desc"]],
+        "order": [[1, "desc"]],
         "columnDefs": [
-            { "orderable": false, "targets": [0, 1, 2, 6, 7, 8] }
+            { "orderable": false, "targets": [2, 4, 7, 8] }
         ],
         "searching": false,
         "lengthMenu": [10, 20, 50, 100]
