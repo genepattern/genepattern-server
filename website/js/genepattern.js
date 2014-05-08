@@ -2498,7 +2498,7 @@ function populateJobResultsTable(settings, callback) {
         return _formatDate(job.dateCompleted);
     };
     var _buildOwner = function(job) {
-        return job.permissions.currentUser;
+        return job.userId;
     };
     var _buildSharing = function(job) {
         return job.permissions.isPublic ? "Public" : "Private";
@@ -2550,6 +2550,12 @@ function populateJobResultsTable(settings, callback) {
         var pageSize = settings.length;
         var page = Math.floor(settings.start / pageSize) + 1;
         var filter = $("#main-pane").data("jobresults-filter");
+
+        // Handle user search
+        if (settings.search && settings.search.value) {
+            filter = "userId=" + settings.search.value;
+        }
+
         var sort = _columnToName(settings.order[0].column);
         if (settings.order[0].dir === "desc") sort = "-" + sort;
         return "/gp/rest/v1/jobs/?pageSize=" + pageSize + "&page=" + page + "&orderBy=" + sort + "&" + filter;
@@ -2782,7 +2788,7 @@ function buildJobResultsPage(data) {
         "columnDefs": [
             { "orderable": false, "targets": [2, 4, 7, 8] }
         ],
-        "searching": false,
+        "searching": adminServerAllowed,
         "lengthMenu": [10, 20, 50, 100]
     });
 
