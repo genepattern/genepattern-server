@@ -2523,11 +2523,31 @@ function populateJobResultsTable(settings, callback) {
 
         toReturn.data = rows;
     };
+    var _columnToName = function(col) {
+        if (col === 3) {
+            //Name
+            return "name";
+        }
+        else if (col === 5) {
+            // Date
+            return "date";
+        }
+        else if (col === 4) {
+            // Size
+            return "size";
+        }
+        else {
+            console.log("Error: Unknown Job Result Sort");
+            return "date";
+        }
+    };
     var _buildRESTUrl = function() {
         var pageSize = settings.length;
         var page = Math.floor(settings.start / pageSize) + 1;
         var filter = $("#main-pane").data("jobresults-filter");
-        return "/gp/rest/v1/jobs/?pageSize=" + pageSize + "&page=" + page + "&" + filter;
+        var sort = _columnToName(settings.order[0].column);
+        if (settings.order[0].dir === "desc") sort = "-" + sort;
+        return "/gp/rest/v1/jobs/?pageSize=" + pageSize + "&page=" + page + "&orderBy=" + sort + "&" + filter;
     };
     var _formatFileSize = function(bytes) {
         var thresh = 1024;
@@ -2753,9 +2773,9 @@ function buildJobResultsPage(data) {
         "ajax": function(data, callback, settings) {
             populateJobResultsTable(data, callback);
         },
-        "order": [[1, "desc"]],
+        "order": [[5, "desc"]],
         "columnDefs": [
-            { "orderable": false, "targets": 2 }
+            { "orderable": false, "targets": [0, 1, 2, 6, 7, 8] }
         ],
         "searching": false,
         "lengthMenu": [10, 20, 50, 100]
@@ -2800,7 +2820,8 @@ function loadJobResults(jobResults) {
     parameter_and_val_groups = {}; //contains params and their values only
 
     // Add to history so back button works
-    history.pushState(null, document.title, location.protocol + "//" + location.host + location.pathname + "?jobResults=" + true);
+    var filter = $("#main-pane").data("jobresults-filter");
+    history.pushState(null, document.title, location.protocol + "//" + location.host + location.pathname + "?jobResults=" + encodeURIComponent(filter));
 
     // Build the page scaffolding
     buildJobResultsPage();
