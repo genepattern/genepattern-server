@@ -8,6 +8,7 @@ import org.json.JSONException;
 import java.util.List;
 import com.google.common.base.Strings;
 import org.apache.log4j.Logger;
+import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.webapp.rest.api.v1.GpLink;
 import org.genepattern.server.webapp.rest.api.v1.Rel;
@@ -276,8 +277,9 @@ public class SearchQuery {
     }
 
     public static class Builder {
-        private final String jobsResourcePath;
+        private final GpConfig gpConfig;
         private final GpContext userContext;
+        private final String jobsResourcePath;
         private String userId=null; // null or not-set means, currentUser
         private String selectedGroup=null;
         private String selectedBatchId=null;
@@ -290,9 +292,10 @@ public class SearchQuery {
         private int pageNum=1;
         private int pageSize=DEFAULT_PAGE_SIZE;
 
-        public Builder(final String jobsResourcePath, final GpContext userContext) {
-            this.jobsResourcePath=jobsResourcePath;
+        public Builder(final GpConfig gpConfig, final GpContext userContext, final String jobsResourcePath) {
+            this.gpConfig=gpConfig;
             this.userContext=userContext;
+            this.jobsResourcePath=jobsResourcePath;
         }
 
         public Builder userId(final String userId) {
@@ -331,17 +334,27 @@ public class SearchQuery {
 
         public SearchQuery build() {
             initSortOrder();
+            initPageSize();
             //special-case: if necessary initialize the pageSize
             if (pageSize<=0) {
-                initPageSize();
             } 
             return new SearchQuery(this);
         }
 
+        /**
+         * If necessary, initialize the pageSize.
+         * @param gpConfig
+         * @param userContext
+         */
         private void initPageSize() {
-            //TODO: init from DB
-            log.error("initPageSize not implemented, using hard-coded value: 20");
-            this.pageSize=20;
+            if (this.pageSize>0) {
+                return;
+            }
+            if (this.pageSize==0) {
+                log.error("Undefined behavior, pageSize="+pageSize);
+                //change to default value
+            }
+            this.pageSize=this.gpConfig.getGPIntegerProperty(this.userContext, "job.results.per.page", DEFAULT_PAGE_SIZE);
         }
         
         /**

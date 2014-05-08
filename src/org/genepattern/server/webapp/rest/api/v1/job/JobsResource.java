@@ -29,7 +29,9 @@ import org.genepattern.codegenerator.CodeGeneratorUtil;
 import org.genepattern.server.JobInfoManager;
 import org.genepattern.server.JobInfoWrapper;
 import org.genepattern.server.JobManager;
+import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
+import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.job.input.JobInput;
 import org.genepattern.server.rest.GpServerException;
@@ -264,12 +266,13 @@ public class JobsResource {
             final @DefaultValue("true") @QueryParam("prettyPrint") boolean prettyPrint
     ) {
         
+        final GpConfig gpConfig=ServerConfigurationFactory.instance();
         final GpContext userContext=Util.getUserContext(request);
         try {
 
             final URI baseUri = uriInfo.getBaseUri();
             final String jobsResourcePath = baseUri.toString() + URI_PATH;
-            final SearchQuery q = new SearchQuery.Builder(jobsResourcePath, userContext)
+            final SearchQuery q = new SearchQuery.Builder(gpConfig, userContext, jobsResourcePath)
                 .userId(userId)
                 .groupId(groupId)
                 .batchId(batchId)

@@ -1,8 +1,10 @@
 package org.genepattern.server.webapp.rest.api.v1.job.search;
 
+import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.webapp.rest.api.v1.Rel;
 import org.junit.Assert;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 /**
@@ -13,12 +15,19 @@ import org.junit.Test;
 public class TestPageNav {
     private static final String jobsResourcePath="http://127.0.0.1:8080/gp/rest/v1/jobs";
     private static final boolean initIsAdmin=false;
+    private static GpConfig gpConfig;
     private static final GpContext userContext=GpContext.getContextForUser("test", initIsAdmin);
+    
+    @BeforeClass
+    public static void beforeClass() {
+        gpConfig=new GpConfig.Builder()
+            .build();
+    }
     
     @Test
     public void testDefaultSearch() {
         int numItems=20;
-        SearchQuery q=new SearchQuery.Builder(jobsResourcePath, userContext)
+        SearchQuery q=new SearchQuery.Builder(gpConfig, userContext, jobsResourcePath)
             .pageNum(1)
             .pageSize(20)
         .build();
@@ -33,7 +42,7 @@ public class TestPageNav {
     @Test
     public void testPageNavWithRanges() {
         int numItems=405;
-        SearchQuery q=new SearchQuery.Builder(jobsResourcePath, userContext)
+        SearchQuery q=new SearchQuery.Builder(gpConfig, userContext, jobsResourcePath)
             .pageNum(22)
             .pageSize(10)
         .build();
