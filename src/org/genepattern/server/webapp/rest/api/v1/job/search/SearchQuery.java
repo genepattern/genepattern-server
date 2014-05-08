@@ -84,20 +84,31 @@ public class SearchQuery {
     public boolean isCurrentUserAdmin() {
         return currentUserIsAdmin;
     }
-    public boolean isShowEveryonesJobs() {
+    /**
+     * For the 'All job results' drop-down, an admin user can see all jobs.
+     * A non-admin user can see all of their jobs plus all public jobs.
+     * @return
+     */
+    public boolean isShowAll() {
         return "*".equals(userId);
     }
-    public String getSelectedGroup() {
+    public String getGroupId() {
         return groupId;
     }
     public String getBatchId() {
         return batchId;
     }
-    public boolean isBatch() {
+    public String getUserId() {
+        return userId;
+    }
+    public boolean isBatchFilter() {
         return !Strings.isNullOrEmpty(batchId);
     }
-    public boolean isGroup() {
+    public boolean isGroupFilter() {
         return !Strings.isNullOrEmpty(groupId);
+    }
+    public boolean isUserFilter() {
+        return !Strings.isNullOrEmpty(userId);
     }
 
     public JobSortOrder getJobSortOrder() {
