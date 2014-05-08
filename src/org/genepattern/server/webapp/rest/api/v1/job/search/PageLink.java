@@ -11,17 +11,17 @@ import org.json.JSONObject;
  *
  */
 public class PageLink {
-    final int pageNum;
+    final int page;
     String name=null;
     Rel rel=null;
     String href=null;
 
     public PageLink(final int pageNum) {
-        this.pageNum=pageNum;
+        this.page=pageNum;
     }
 
     public int getPage() {
-        return pageNum;
+        return page;
     }
     public String getName() {
         return name;
