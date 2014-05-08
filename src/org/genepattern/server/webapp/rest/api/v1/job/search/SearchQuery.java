@@ -24,6 +24,7 @@ public class SearchQuery {
     private static final Logger log = Logger.getLogger(SearchQuery.class);
 
     public static final int DEFAULT_PAGE_SIZE=20;
+
     public static final String Q_USER_ID="userId";
     public static final String Q_GROUP_ID="groupId";
     public static final String Q_BATCH_ID="batchId";
@@ -73,58 +74,12 @@ public class SearchQuery {
         this.pageSize=in.pageSize;
         // order
         this.orderBy=in.orderBy;
-        this.jobSortOrder=getJobSortOrder(in.orderBy);
-        this.ascending=isAscending(in.orderBy);
+        //Builder parses the 'orderBy' param
+        this.jobSortOrder=in.jobSortOrder;
+        this.ascending=in.ascending;
         this.orderFilesBy=in.orderFilesBy;
     }
     
-    /**
-     * orderBy=jobId | taskName | dateSubmitted | dateCompleted | status
-     * @param orderBy
-     * @return
-     */
-    private JobSortOrder getJobSortOrder(final String orderBy) {
-        if (orderBy==null) {
-            return JobSortOrder.JOB_NUMBER;
-        }
-        final String jobSortColumn;
-        if (orderBy.startsWith("+") || orderBy.startsWith("-")) {
-            jobSortColumn=orderBy.substring(1);
-        }
-        else {
-            jobSortColumn=orderBy;
-        }
-        if ("jobId".equals(jobSortColumn)) {
-            return JobSortOrder.JOB_NUMBER;
-        }
-        else if ("taskName".equals(jobSortColumn)) {
-            return JobSortOrder.MODULE_NAME;
-        }
-        else if ("dateSubmitted".equals(jobSortColumn)) {
-            return JobSortOrder.SUBMITTED_DATE;
-        }
-        else if ("dateCompleted".equals(jobSortColumn)) {
-            return JobSortOrder.COMPLETED_DATE;
-        }
-        else if ("status".equals(jobSortColumn)) { return JobSortOrder.JOB_STATUS; }
-        return JobSortOrder.JOB_NUMBER;
-    }
-    
-    private boolean isAscending(final String orderBy) {
-        if (orderBy==null) {
-            // by default, ascending
-            return true; 
-        }
-        if (orderBy.startsWith("+")) {
-            return true;
-        }
-        if (orderBy.startsWith("-")) {
-            return false;
-        }
-        return true;
-    }
-    
-
     public String getCurrentUser() {
         return currentUser;
     }
@@ -328,6 +283,10 @@ public class SearchQuery {
         private String selectedBatchId=null;
         private String orderBy=null;
         private String orderFilesBy=null;
+
+        private JobSortOrder jobSortOrder=JobSortOrder.JOB_NUMBER;
+        private boolean ascending=false;
+
         private int pageNum=1;
         private int pageSize=DEFAULT_PAGE_SIZE;
 
@@ -371,6 +330,7 @@ public class SearchQuery {
         }
 
         public SearchQuery build() {
+            initSortOrder();
             //special-case: if necessary initialize the pageSize
             if (pageSize<=0) {
                 initPageSize();
@@ -382,6 +342,59 @@ public class SearchQuery {
             //TODO: init from DB
             log.error("initPageSize not implemented, using hard-coded value: 20");
             this.pageSize=20;
+        }
+        
+        /**
+         * Parse the 'orderBy' query parameter, to set the jobSortOrder and ascending flags.
+         *     orderBy=jobId | taskName | dateSubmitted | dateCompleted | status
+         * With an optional '+' or '-' prefix.
+         * @param orderBy
+         * @return
+         */
+        private void initSortOrder() {
+            if (orderBy==null) {
+                //use default values
+                return;
+            }
+
+            final String jobSortColumn;
+            if (orderBy.startsWith("+") || orderBy.startsWith("-")) {
+                jobSortColumn=orderBy.substring(1);
+            }
+            else {
+                jobSortColumn=orderBy;
+            }
+            if ("jobId".equals(jobSortColumn)) {
+                this.jobSortOrder=JobSortOrder.JOB_NUMBER;
+            }
+            else if ("taskName".equals(jobSortColumn)) {
+                this.jobSortOrder=JobSortOrder.MODULE_NAME;
+            }
+            else if ("dateSubmitted".equals(jobSortColumn)) {
+                this.jobSortOrder=JobSortOrder.SUBMITTED_DATE;
+            }
+            else if ("dateCompleted".equals(jobSortColumn)) {
+                this.jobSortOrder=JobSortOrder.COMPLETED_DATE;
+            }
+            else if ("status".equals(jobSortColumn)) { 
+                this.jobSortOrder=JobSortOrder.JOB_STATUS; 
+            }
+            else {
+                log.error("Invalid orderBy="+orderBy);
+                //break out of this method, use default values
+                return;
+            }
+
+            // set the ascending flag here, after we initialize the jobSortOrder
+            if (orderBy.startsWith("-")) {
+                this.ascending=false;
+            }
+            else if (orderBy.startsWith("+")) {
+                this.ascending=true;
+            }
+            else {
+                this.ascending=true;
+            }
         }
     }
 }
