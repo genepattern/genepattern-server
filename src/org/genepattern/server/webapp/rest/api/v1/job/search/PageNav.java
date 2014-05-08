@@ -23,7 +23,7 @@ public class PageNav {
     private PageLink first=null;
     private List<PageLink> prevRange=new ArrayList<PageLink>();
     private PageLink current=null;
-    private List<PageLink> nextRange=new ArrayList<PageLink>();;
+    private List<PageLink> nextRange=new ArrayList<PageLink>();
     private PageLink last=null;
     private PageLink next=null;
 
