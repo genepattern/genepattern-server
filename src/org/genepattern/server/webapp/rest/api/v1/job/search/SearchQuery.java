@@ -335,9 +335,6 @@ public class SearchQuery {
         public SearchQuery build() {
             initSortOrder();
             initPageSize();
-            //special-case: if necessary initialize the pageSize
-            if (pageSize<=0) {
-            } 
             return new SearchQuery(this);
         }
 
