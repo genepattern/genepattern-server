@@ -2789,6 +2789,9 @@ function buildJobResultsPage(data) {
             { "orderable": false, "targets": [2, 4, 7, 8] }
         ],
         "searching": adminServerAllowed,
+        "oLanguage": {
+            "sSearch": "Owner Search: "
+        },
         "lengthMenu": [10, 20, 50, 100]
     });
 
