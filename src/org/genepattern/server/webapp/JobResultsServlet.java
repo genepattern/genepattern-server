@@ -144,7 +144,7 @@ public class JobResultsServlet extends HttpServlet implements Servlet {
         
         //special case: list all job results
         if (jobNumber == null) {
-            RequestDispatcher rd = this.getServletContext().getRequestDispatcher("/pages/index.jsf?jobresults=true");
+            RequestDispatcher rd = this.getServletContext().getRequestDispatcher("/pages/index.jsf?jobresults=" + UIBeanHelper.encode("userId=" + UIBeanHelper.getUserId()));
             response.addHeader("Pragma", "no-cache");
             response.addHeader("Cache-Control", "no-cache");
             response.addHeader("Cache-Control", "no-store");

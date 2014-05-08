@@ -231,9 +231,9 @@
 		                        <li><a href="/gp/pages/manageSuite.jsf">Manage</a></li>
 		                    </ul>
 		                </li>
-		                <li><a href="/gp/pages/index.jsf?jobResults=true">Job Results</a>
+		                <li><a href="/gp/pages/index.jsf?jobResults=userId%3D${requestScope.userID}">Job Results</a>
 		                    <ul>
-		                        <li><a href="/gp/pages/index.jsf?jobResults=true">Results Summary</a></li>
+		                        <li><a href="/gp/pages/index.jsf?jobResults=userId%3D${requestScope.userID}">Results Summary</a></li>
 		                    </ul>
 		                </li>
 		                <li><a href="/gp/pages/index.jsf?splash=resources">Resources</a>
@@ -317,7 +317,7 @@
 		                    </div>
 		                    <div id="module-browse-button">
 		                    	<div class="current-job-status">
-                                    <a onclick="loadJobResults(true); return false;" href="/gp/pages/index.jsf?jobResults=true"></a>
+                                    <a onclick="loadJobResults('userId=${requestScope.userID}'); return false;" href="/gp/pages/index.jsf?jobResults=userId%3D${requestScope.userID}"></a>
                                 </div>
 		                        <button>Browse Modules &#x203a;</button>
 		                    </div>
@@ -332,7 +332,7 @@
 		            <div id="left-nav-jobs" class="left-nav-tab">
                         <div class="left-nav-top">
                             <div class="current-job-status">
-                                <a onclick="loadJobResults(true); return false;" href="/gp/pages/index.jsf?jobResults=true"></a>
+                                <a onclick="loadJobResults('userId=${requestScope.userID}'); return false;" href="/gp/pages/index.jsf?jobResults=userId%3D${requestScope.userID}"></a>
                             </div>
                             <button id="left-nav-jobs-browse">Browse Jobs &#x203a;</button>
                         </div>
@@ -356,7 +356,7 @@
 	                <div id="left-nav-files" class="left-nav-tab">
                         <div class="left-nav-top">
                             <div class="current-job-status">
-                                <a onclick="loadJobResults(true); return false;" href="/gp/pages/index.jsf?jobResults=true"></a>
+                                <a onclick="loadJobResults('userId=${requestScope.userID}'); return false;" href="/gp/pages/index.jsf?jobResults=userId%3D${requestScope.userID}"></a>
                             </div>
                         </div>
 	                    <ui:include src="/pages/uploads/uploadedFiles.xhtml" />

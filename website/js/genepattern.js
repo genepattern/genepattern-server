@@ -2099,7 +2099,7 @@ function createJobWidget(job) {
 function initRecentJobs() {
     // Init the browse button
     $("#left-nav-jobs-browse").button().click(function() {
-        loadJobResults(true);
+        loadJobResults("userId=" + username);
     });
 
     // Init the jobs
@@ -2526,7 +2526,8 @@ function populateJobResultsTable(settings, callback) {
     var _buildRESTUrl = function() {
         var pageSize = settings.length;
         var page = Math.floor(settings.start / pageSize) + 1;
-        return "/gp/rest/v1/jobs/?userId=*&pageSize=" + pageSize + "&page=" + page;
+        var filter = $("#main-pane").data("jobresults-filter");
+        return "/gp/rest/v1/jobs/?pageSize=" + pageSize + "&page=" + page + "&" + filter;
     };
     var _formatFileSize = function(bytes) {
         var thresh = 1024;
@@ -2571,6 +2572,42 @@ function populateJobResultsTable(settings, callback) {
                     $(this).parent().find(".jobresults-files, .jobresults-child").show();
                 }
             });
+
+            // Set the job results filter options
+            $("#jobresults-filter").empty();
+            var currentFilter = $("#main-pane").data("jobresults-filter");
+            $("#jobresults-filter").append(
+                $("<option></option>")
+                    .val("userId=" + username)
+                    .text("My Job Results")
+            );
+            $("#jobresults-filter").append(
+                $("<option></option>")
+                    .val("userId=*")
+                    .text("All Job Results")
+            );
+            for (var i = 0; i < data.nav.groupIds.length; i++) {
+                var filter = data.nav.groupIds[i];
+                $("#jobresults-filter").append(
+                    $("<option></option>")
+                        .val("groupId=" + filter)
+                        .text("Group: " + filter)
+                );
+            }
+            for (var i = 0; i < data.nav.batchIds.length; i++) {
+                var filter = data.nav.batchIds[i];
+                $("#jobresults-filter").append(
+                    $("<option></option>")
+                        .val("batchId=" + filter)
+                        .text("Batch: " + filter)
+                );
+            }
+            $("#jobresults-filter").find("option").each(function() {
+                if ($(this).val() === currentFilter) {
+                    $(this).attr("selected", "selected");
+                }
+            });
+
         },
         error: function(data, textStatus) {
             showErrorMessage(textStatus);
@@ -2597,18 +2634,13 @@ function buildJobResultsPage(data) {
                 .text("Show: ")
                 .append(
                     $("<select></select>")
-                        .attr("id", "jobresults-show")
+                        .attr("id", "jobresults-filter")
                         .attr("name", "show")
-                        .append(
-                            $("<option></option>")
-                                .text("All Job Results")
-                                .attr("value", "all")
-                        )
-                        .append(
-                            $("<option></option>")
-                                .text("My Job Results")
-                                .attr("value", "my")
-                        )
+                        .change(function() {
+                            var filter = $(this).val();
+                            $("#main-pane").data("jobresults-filter", filter);
+                            loadJobResults(filter);
+                        })
                 )
         )
         .appendTo(container);
@@ -2655,7 +2687,8 @@ function buildJobResultsPage(data) {
                                                 cache: false,
                                                 dataType: "text",
                                                 success: function(data, textStatus, jqXHR) {
-                                                    loadJobResults(true);
+                                                    var filter = $("#main-pane").data("jobresults-filter");
+                                                    loadJobResults(filter);
                                                     showSuccessMessage(data);
                                                 },
                                                 error: function(data) {
@@ -2737,6 +2770,14 @@ function loadJobResults(jobResults) {
     if (jobResults === undefined || jobResults === null || jobResults === '' || jobResults === "false" || !jobResults) {
         return;
     }
+
+    // Handle default job results loads
+    if (jobResults === 'true' || jobResults === true) {
+        jobResults = "userId=" + username;
+    }
+
+    // Set the filter
+    $("#main-pane").data("jobresults-filter", jobResults);
 
     // Hide the search slider if it is open
     $(".search-widget").searchslider("hide");
