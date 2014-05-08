@@ -314,12 +314,29 @@ public class JobsResource {
         }
              */
             JSONObject nav=new JSONObject();
-            nav.put("page", searchResults.getPageLinks().getCurrent().getPage());
-            nav.put("numPages", searchResults.getPageLinks().getNumPages());
-            nav.put("numItems", searchResults.getPageLinks().getNumItems());
-            JSONObject navLinks=searchResults.getPageLinks().navLinksToJson();
+            nav.put("page", searchResults.getPageNav().getCurrent().getPage());
+            nav.put("numPages", searchResults.getPageNav().getNumPages());
+            nav.put("numItems", searchResults.getPageNav().getNumItems());
+            JSONObject navLinks=searchResults.getPageNav().navLinksToJson();
             nav.put("navLinks", navLinks);
             jsonObj.put("nav", nav);
+
+            // include batchIds
+            if (searchResults.getFilterNav().getBatchIds().size()>0) {
+                JSONArray batchIds=new JSONArray();
+                for(final String batchId_entry : searchResults.getFilterNav().getBatchIds()) {
+                    batchIds.put(batchId_entry);
+                }
+                jsonObj.put("batchIds", batchIds);
+            }
+            // include groupIds
+            if (searchResults.getFilterNav().getGroupIds().size()>0) {
+                JSONArray groupIds=new JSONArray();
+                for(final String groupId_entry : searchResults.getFilterNav().getGroupIds()) {
+                    groupIds.put(groupId_entry);
+                }
+                jsonObj.put("groupIds", groupIds);
+            }
 
             final String jsonStr;
             if (prettyPrint) {

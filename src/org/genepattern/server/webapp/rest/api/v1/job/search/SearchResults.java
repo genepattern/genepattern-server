@@ -1,5 +1,6 @@
 package org.genepattern.server.webapp.rest.api.v1.job.search;
 
+import java.util.Collections;
 import java.util.List;
 import com.google.common.collect.ImmutableList;
 import org.genepattern.webservice.JobInfo;
@@ -9,14 +10,18 @@ public class SearchResults {
     // the list of JobInfo to display on the current page
     private final List<JobInfo> resultsInPage;
     // page navigation links
-    private final PageNav pageLinks;
+    private final PageNav pageNav;
+    // pre-built search filters
+    private final FilterNav filterNav;
+    
     private final long searchDate; //the timestamp 
 
     public SearchResults(final Builder in) {
         this.numItems=in.numItems;
         this.resultsInPage=ImmutableList.copyOf( in.jobInfos );
         this.searchDate=in.now;
-        this.pageLinks=new PageNav(in.query, numItems);
+        this.pageNav=new PageNav(in.query, numItems);
+        this.filterNav=new FilterNav(in.groupIds, in.batchIds);
     }
 
     public int getNumResults() {
@@ -30,8 +35,12 @@ public class SearchResults {
         return resultsInPage;
     }
 
-    public PageNav getPageLinks() {
-        return pageLinks;
+    public PageNav getPageNav() {
+        return pageNav;
+    }
+    
+    public FilterNav getFilterNav() {
+        return filterNav;
     }
 
     public static class Builder {
@@ -39,6 +48,9 @@ public class SearchResults {
         private int numItems;
         private List<JobInfo> jobInfos;
         private final long now=System.currentTimeMillis(); //approximate date of the search
+        private List<String> groupIds;
+        private List<String> batchIds;
+        
         public Builder(final SearchQuery query) {
             this.query=query;
         }
@@ -50,8 +62,22 @@ public class SearchResults {
             this.jobInfos=jobInfos;
             return this;
         }
+        public Builder groupIds(final List<String> groupIds) {
+            this.groupIds=groupIds;
+            return this;
+        }
+        public Builder batchIds(final List<String> batchIds) {
+            this.batchIds=batchIds;
+            return this;
+        }
 
         public SearchResults build() {
+            if (groupIds==null) {
+                groupIds=Collections.emptyList();
+            }
+            if (batchIds==null) {
+                batchIds=Collections.emptyList();
+            }
             return new SearchResults(this);
         }
     }

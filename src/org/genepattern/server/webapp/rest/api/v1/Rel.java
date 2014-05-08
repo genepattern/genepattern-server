@@ -13,5 +13,6 @@ public enum Rel {
     last,
     next,
     prev,
-    self
+    self,
+    related
 }
