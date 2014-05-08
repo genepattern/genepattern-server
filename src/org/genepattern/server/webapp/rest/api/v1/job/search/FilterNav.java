@@ -6,8 +6,6 @@ import java.util.List;
 import org.apache.log4j.Logger;
 import org.genepattern.server.auth.GroupPermission;
 import org.genepattern.server.webapp.rest.api.v1.Rel;
-import org.genepattern.server.webapp.rest.api.v1.job.search.SearchQuery.QueryLink;
-import org.genepattern.server.webapp.rest.api.v1.job.search.SearchQuery.QueryParam;
 
 import com.google.common.collect.ImmutableList;
 
@@ -41,28 +39,28 @@ public class FilterNav {
         try {
             // first item is 'My job results'
             filters.add(new QueryLink(q, "My job results", Rel.related, 
-                    new QueryParam(SearchQuery.Q_USER_ID, q.getCurrentUser())));
+                    new GpQueryParam(SearchQuery.Q_USER_ID, q.getCurrentUser())));
             // next item is 'All job results'
             filters.add(new QueryLink(q, "All job results", Rel.related, 
-                    new QueryParam(SearchQuery.Q_USER_ID, "*")));
+                    new GpQueryParam(SearchQuery.Q_USER_ID, "*")));
 
             //add groups, if necessary
             for(final String groupId : groupIds) {
                 if (groupId.endsWith(GroupPermission.PUBLIC)) {
                     // special-case for 'Public job results' 
                     filters.add(new QueryLink(q, "Public job results", Rel.related, 
-                            new QueryParam(SearchQuery.Q_GROUP_ID, GroupPermission.PUBLIC))); // "*"
+                            new GpQueryParam(SearchQuery.Q_GROUP_ID, GroupPermission.PUBLIC))); // "*"
                 }
                 else {
                     filters.add(new QueryLink(q, "In group: "+groupId, Rel.related, 
-                            new QueryParam(SearchQuery.Q_GROUP_ID, groupId)));
+                            new GpQueryParam(SearchQuery.Q_GROUP_ID, groupId)));
                 }
             }
 
             // add batch jobs, if necessary
             for(final String batchId : batchIds) {
                 filters.add(new QueryLink(q, "Batch: "+batchId, Rel.related, 
-                        new QueryParam(SearchQuery.Q_BATCH_ID, batchId)));
+                        new GpQueryParam(SearchQuery.Q_BATCH_ID, batchId)));
 
             }
         }
