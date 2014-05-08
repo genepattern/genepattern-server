@@ -10,6 +10,7 @@ import java.util.*;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
+import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
@@ -97,6 +98,7 @@ public class RunTaskServlet extends HttpServlet
             @QueryParam("reloadJob") String reloadJobId, 
             @QueryParam("_file") String sendFromFile,
             @QueryParam("_format") String sendFromFormat,
+            final @DefaultValue("true") @QueryParam("prettyPrint") boolean prettyPrint,
             @Context HttpServletRequest request)
     {
         try
@@ -324,7 +326,15 @@ public class RunTaskServlet extends HttpServlet
             moduleObject.put("parameter_groups", paramGroupsJson);
             responseObject.put(ModuleJSON.KEY, moduleObject);
 
-            return Response.ok().entity(responseObject.toString()).build();
+            final String jsonStr;
+            if (prettyPrint) {
+                final int indentFactor=2;
+                jsonStr=responseObject.toString(indentFactor);
+            }
+            else {
+                jsonStr=responseObject.toString();
+            }
+            return Response.ok().entity(jsonStr).build();
         }
         catch(Exception e)
         {
