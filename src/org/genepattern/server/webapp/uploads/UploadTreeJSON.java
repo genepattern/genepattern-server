@@ -1,9 +1,12 @@
 package org.genepattern.server.webapp.uploads;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.*;
 
 import org.apache.log4j.Logger;
 import org.genepattern.server.dm.GpFilePath;
+import org.genepattern.server.webapp.jsf.JobHelper;
 import org.genepattern.webservice.TaskInfo;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -91,6 +94,10 @@ public class UploadTreeJSON extends JSONArray {
         // Add partial file data
         boolean isPartial = (file.getNumParts() != file.getNumPartsRecd()) && (file.getNumParts() != 0);
         attr.put("data-partial", isPartial);
+
+        // Add tooltip text
+        DateFormat df = new SimpleDateFormat("yyyy-MM-dd");
+        attr.put("title", df.format(file.getLastModified()) + " - " + JobHelper.getFormattedSize(file.getFileLength()));
         
         data.put(ATTR, attr);
 
