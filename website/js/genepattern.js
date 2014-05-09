@@ -2617,21 +2617,25 @@ function populateJobResultsTable(settings, callback) {
                     .val("userId=*")
                     .text("All Job Results")
             );
-            for (var i = 0; i < data.nav.groupIds.length; i++) {
-                var filter = data.nav.groupIds[i];
-                $("#jobresults-filter").append(
-                    $("<option></option>")
-                        .val("groupId=" + filter)
-                        .text("Group: " + filter)
-                );
+            if (data.nav.groupIds) {
+                for (var i = 0; i < data.nav.groupIds.length; i++) {
+                    var filter = data.nav.groupIds[i];
+                    $("#jobresults-filter").append(
+                        $("<option></option>")
+                            .val("groupId=" + filter)
+                            .text("Group: " + filter)
+                    );
+                }
             }
-            for (var i = 0; i < data.nav.batchIds.length; i++) {
-                var filter = data.nav.batchIds[i];
-                $("#jobresults-filter").append(
-                    $("<option></option>")
-                        .val("batchId=" + filter)
-                        .text("Batch: " + filter)
-                );
+            if (data.nav.batchIds) {
+                for (var i = 0; i < data.nav.batchIds.length; i++) {
+                    var filter = data.nav.batchIds[i];
+                    $("#jobresults-filter").append(
+                        $("<option></option>")
+                            .val("batchId=" + filter)
+                            .text("Batch: " + filter)
+                    );
+                }
             }
             $("#jobresults-filter").find("option").each(function() {
                 if ($(this).val() === currentFilter) {
