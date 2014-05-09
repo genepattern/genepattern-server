@@ -2501,7 +2501,7 @@ function populateJobResultsTable(settings, callback) {
         return job.userId;
     };
     var _buildSharing = function(job) {
-        return job.permissions.isPublic ? "Public" : "Private";
+        return job.permissions.isPublic ? "Public" : (job.permissions.isShared ? "Shared" : "Private");
     };
     var _attachMetadata = function(toReturn, data) {
         toReturn.draw = settings.draw;
