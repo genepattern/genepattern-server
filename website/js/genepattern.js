@@ -2495,7 +2495,12 @@ function populateJobResultsTable(settings, callback) {
         return _formatDate(job.dateSubmitted);
     };
     var _buildCompletion = function(job) {
-        return _formatDate(job.dateCompleted);
+        if (job.dateCompleted) {
+            return _formatDate(job.dateCompleted);
+        }
+        else {
+            return "";
+        }
     };
     var _buildOwner = function(job) {
         return job.userId;
