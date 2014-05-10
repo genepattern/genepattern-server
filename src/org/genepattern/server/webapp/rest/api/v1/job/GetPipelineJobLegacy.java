@@ -69,13 +69,25 @@ public class GetPipelineJobLegacy implements GetJob {
         return null;
     }
     
-    private static JSONObject initOutputFile(final GpFilePath gpFilePath) throws Exception {
+    private static String initHref(final String gpUrl, final GpFilePath gpFilePath) {
+        final String href=gpUrl+gpFilePath.getRelativeUri().toString();
+        return href;
+    }
+    
+    private static JSONObject initOutputFile(final String gpUrl, final String jobId, final GpFilePath gpFilePath) throws Exception {
         //create a JSON representation of a file
         JSONObject o = new JSONObject();
 
         JSONObject link = new JSONObject();
-        link.put("href", gpFilePath.getUrl().toExternalForm());
-        link.put("name", gpFilePath.getName());
+        final String href=initHref(gpUrl, gpFilePath);
+        if (log.isDebugEnabled()) {  
+            // JobResultFile incorrectly uses the GenePatternURL set in the genepattern.properties file
+            log.debug("gpFilePath.url="+gpFilePath.getUrl().toExternalForm());
+            // the current method uses the gpUrl from the HTTP servlet request coming from a web client
+            log.debug("href="+href);
+        }
+        link.put("href", href);
+        link.put("name", gpFilePath.getRelativePath());
         o.put("link", link);
         o.put("fileLength", gpFilePath.getFileLength());
         o.put("lastModified", Util.toIso8601(gpFilePath.getLastModified()));
@@ -95,13 +107,15 @@ public class GetPipelineJobLegacy implements GetJob {
         o.put("kind", kindArr);
         return o;
     }
-    
+
+    private final String gpUrl;
     private final String jobsResourcePath;
     private final boolean includePermissions;
-    public GetPipelineJobLegacy(final String jobsResourcePath) {
-        this(jobsResourcePath, false); 
+    public GetPipelineJobLegacy(final String gpUrl, final String jobsResourcePath) {
+        this(gpUrl, jobsResourcePath, false); 
     }
-    public GetPipelineJobLegacy(final String jobsResourcePath, final boolean includePermissions) {
+    public GetPipelineJobLegacy(final String gpUrl, final String jobsResourcePath, final boolean includePermissions) {
+        this.gpUrl=gpUrl;
         this.jobsResourcePath=jobsResourcePath;
         this.includePermissions=includePermissions;
     }
@@ -161,11 +175,11 @@ public class GetPipelineJobLegacy implements GetJob {
         //manually create a JSONObject representing the job
         final JSONObject job;
         if (!includeChildren) {
-            job = initJsonObject(jobInfo, includeOutputFiles);
+            job = initJsonObject(gpUrl, jobInfo, includeOutputFiles);
         }
         else {
             try {
-                InitPipelineJson walker=new InitPipelineJson(userContext, jobsResourcePath, jobInfo, includeOutputFiles);
+                InitPipelineJson walker=new InitPipelineJson(userContext, gpUrl, jobsResourcePath, jobInfo, includeOutputFiles);
                 walker.prepareJsonObject();
                 job=walker.getJsonObject();
             }
@@ -230,7 +244,7 @@ public class GetPipelineJobLegacy implements GetJob {
      * @param includeOutputFiles, if true include a representation of the output files
      * @return
      */
-    public static JSONObject initJsonObject(final JobInfo jobInfo, final boolean includeOutputFiles) throws GetJobException {
+    public static JSONObject initJsonObject(final String gpUrl, final JobInfo jobInfo, final boolean includeOutputFiles) throws GetJobException {
         final JSONObject job = new JSONObject();
         try {
             job.put("jobId", ""+jobInfo.getJobNumber());
@@ -285,7 +299,7 @@ public class GetPipelineJobLegacy implements GetJob {
                     boolean isExecutionLog=isExecutionLog(pinfo);
                     if (isExecutionLog) {
                         try {
-                            final String executionLogLocation=outputFile.getUrl().toExternalForm();
+                            final String executionLogLocation=initHref(gpUrl, outputFile);
                             jobStatus.put("executionLogLocation", executionLogLocation);
                         }
                         catch (Exception e) {
@@ -295,7 +309,7 @@ public class GetPipelineJobLegacy implements GetJob {
                     else {
                         ++numFiles;
                         try {
-                            JSONObject outputFileJson=initOutputFile(outputFile);
+                            JSONObject outputFileJson=initOutputFile(gpUrl, ""+jobInfo.getJobNumber(), outputFile);
                             outputFiles.put(outputFileJson);
                         }
                         catch (Exception e) {

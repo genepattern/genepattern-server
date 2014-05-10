@@ -29,6 +29,7 @@ public class InitPipelineJson implements JobInfoVisitor {
 
     private final GpContext userContext;
     private final JobInfo jobInfo;
+    private final String gpUrl;
     private final String jobsResourcePath;
     private boolean includeSummary=false;
     private final boolean includeOutputFiles;
@@ -37,7 +38,8 @@ public class InitPipelineJson implements JobInfoVisitor {
     private final Map<Integer,JSONObject> jobMap=new LinkedHashMap<Integer,JSONObject>();
     private final List<GpFilePath> outputFiles=new ArrayList<GpFilePath>();
 
-    public InitPipelineJson(final GpContext userContext, final String jobsResourcePath, final JobInfo jobInfo, final boolean includeOutputFiles) {
+    public InitPipelineJson(final GpContext userContext, final String gpUrl, final String jobsResourcePath, final JobInfo jobInfo, final boolean includeOutputFiles) {
+        this.gpUrl=gpUrl;
         this.jobsResourcePath=jobsResourcePath;
         this.jobInfo=jobInfo;
         this.userContext = userContext;
@@ -78,13 +80,13 @@ public class InitPipelineJson implements JobInfoVisitor {
         return jobJson;
     }
 
-    private JSONObject getOrCreateRecord(GpContext userContext, final JobInfo jobInfo) throws GetJobException {
+    private JSONObject getOrCreateRecord(final GpContext userContext, final String gpUrl, final JobInfo jobInfo) throws GetJobException {
         if (jobInfo==null) {
             return null;
         }
         JSONObject jobJson=jobMap.get(jobInfo.getJobNumber());
         if (jobJson==null) {
-            jobJson=GetPipelineJobLegacy.initJsonObject(jobInfo, includeOutputFiles);
+            jobJson=GetPipelineJobLegacy.initJsonObject(gpUrl, jobInfo, includeOutputFiles);
             jobMap.put(jobInfo.getJobNumber(), jobJson);                
         }
         return jobJson;
@@ -127,10 +129,10 @@ public class InitPipelineJson implements JobInfoVisitor {
     @Override
     public void visitJobInfo(final JobInfo rootJobInfo, final JobInfo parentJobInfo, final JobInfo jobInfo) {
         try {
-            final JSONObject rootJsonObj = getOrCreateRecord(userContext, rootJobInfo);
+            final JSONObject rootJsonObj = getOrCreateRecord(userContext, gpUrl, rootJobInfo);
             this.jobJson=rootJsonObj;
-            final JSONObject parentJsonObj = getOrCreateRecord(userContext, parentJobInfo);
-            final JSONObject jsonObj = getOrCreateRecord(userContext, jobInfo);
+            final JSONObject parentJsonObj = getOrCreateRecord(userContext, gpUrl, parentJobInfo);
+            final JSONObject jsonObj = getOrCreateRecord(userContext, gpUrl, jobInfo);
             addChildRecord(parentJsonObj, jsonObj);
         }
         catch (GetJobException e) {

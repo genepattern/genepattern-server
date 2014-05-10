@@ -33,6 +33,7 @@ import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.database.HibernateUtil;
+import org.genepattern.server.dm.UrlUtil;
 import org.genepattern.server.job.input.JobInput;
 import org.genepattern.server.rest.GpServerException;
 import org.genepattern.server.rest.JobInputApi;
@@ -269,9 +270,8 @@ public class JobsResource {
         final GpConfig gpConfig=ServerConfigurationFactory.instance();
         final GpContext userContext=Util.getUserContext(request);
         try {
-
-            final URI baseUri = uriInfo.getBaseUri();
-            final String jobsResourcePath = baseUri.toString() + URI_PATH;
+            final String gpUrl=UrlUtil.getGpUrl(request);
+            final String jobsResourcePath = uriInfo.getBaseUri().toString() + URI_PATH;
             final SearchQuery q = new SearchQuery.Builder(gpConfig, userContext, jobsResourcePath)
                 .userId(userId)
                 .groupId(groupId)
@@ -285,7 +285,7 @@ public class JobsResource {
             final List<JobInfo> jobInfoResults=searchResults.getJobInfos();
 
             //create JSON representation
-            GetPipelineJobLegacy getJobImpl = new GetPipelineJobLegacy(jobsResourcePath);
+            GetPipelineJobLegacy getJobImpl = new GetPipelineJobLegacy(gpUrl, jobsResourcePath);
 
             // Put the job JSON in an array
             JSONArray jobs = new JSONArray();
@@ -406,11 +406,12 @@ public class JobsResource {
     ) {
         
         final GpContext userContext=Util.getUserContext(request);
-        
+
+        final String gpUrl=UrlUtil.getGpUrl(request);
         final String self=uriInfo.getAbsolutePath().toString();
         final URI baseUri=uriInfo.getBaseUri();
         final String jobsResourcePath=baseUri.toString()+URI_PATH;
-        final GetPipelineJobLegacy getJobImpl = new GetPipelineJobLegacy(jobsResourcePath);
+        final GetPipelineJobLegacy getJobImpl = new GetPipelineJobLegacy(gpUrl, jobsResourcePath);
         String jsonStr;
         try {
             JSONObject job=null;
@@ -639,9 +640,10 @@ public class JobsResource {
             final @DefaultValue("true") @QueryParam("includeChildren") boolean includeChildren,
             final @DefaultValue("true") @QueryParam("includeOutputFiles") boolean includeOutputFiles
     ) {
-        GpContext userContext = Util.getUserContext(request);
+        final GpContext userContext = Util.getUserContext(request);
 
         try {
+            final String gpUrl=UrlUtil.getGpUrl(request);
             // Get the number of recent jobs to show
             UserDAO userDao = new UserDAO();
             Set<UserProp> props = userDao.getUserProps(userContext.getUserId());
@@ -654,7 +656,7 @@ public class JobsResource {
             // Create the object for getting the job JSON
             URI baseUri = uriInfo.getBaseUri();
             String jobsResourcePath = baseUri.toString() + URI_PATH;
-            GetPipelineJobLegacy getJobImpl = new GetPipelineJobLegacy(jobsResourcePath);
+            GetPipelineJobLegacy getJobImpl = new GetPipelineJobLegacy(gpUrl, jobsResourcePath);
 
             // Put the job JSON in an array
             final boolean includePermissions=false;
@@ -696,9 +698,10 @@ public class JobsResource {
         
         final GpContext userContext=Util.getUserContext(request);
         final String self=uriInfo.getAbsolutePath().toString();
+        final String gpUrl=UrlUtil.getGpUrl(request);
         final URI baseUri=uriInfo.getBaseUri();
         final String jobsResourcePath=baseUri.toString()+URI_PATH;
-        final GetPipelineJobLegacy getJobImpl = new GetPipelineJobLegacy(jobsResourcePath);
+        final GetPipelineJobLegacy getJobImpl = new GetPipelineJobLegacy(gpUrl, jobsResourcePath);
         String jsonStr;
         try {
             boolean includeChildren=true;
