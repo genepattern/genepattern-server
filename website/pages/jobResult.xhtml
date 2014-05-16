@@ -221,6 +221,25 @@
                     d.write('applet>');
                     d.close();
                 }
+
+                function attachMenus() {
+                    var data = $("#main-pane").data("job-status-" + currentJobNumber);
+
+                    if (data !== null && data !== undefined) {
+                        // Initialize the job link
+                        var jobLink = $(".jobresult-job");
+                        jobLink.attr("data-jobid", data.jobId);
+                        jobLink.attr("data-json", JSON.stringify(data));
+
+                        // Initialize the job output files
+                        for (var i = 0; i < data.outputFiles.length; i++) {
+                            var file = data.outputFiles[i];
+                            var fileLink = $(".jobresult-file-output[name='" + escapeJquerySelector(file.link.name) + "']");
+                            fileLink.attr("data-kind", file.kind);
+                            fileLink.attr("data-sendtomodule", JSON.stringify(file.sendTo));
+                        }
+                    }
+                }
                 
                 $(document).ready(function () {
                 	$("body").tooltip();
@@ -233,18 +252,11 @@
                     dataType: "json",
                     success: function(data, textStatus, jqXHR) {
                         $(document).ready(function() {
-                            // Initialize the job link
-                            var jobLink = $(".jobresult-job");
-                            jobLink.attr("data-jobid", data.jobId);
-                            jobLink.attr("data-json", JSON.stringify(data));
+                            // Save the resulting JSON
+                            $("#main-pane").data("job-status-" + currentJobNumber, data);
 
-                            // Initialize the job output files
-                            for (var i = 0; i < data.outputFiles.length; i++) {
-                                var file = data.outputFiles[i];
-                                var fileLink = $(".jobresult-file-output[name='" + escapeJquerySelector(file.link.name) + "']");
-                                fileLink.attr("data-kind", file.kind);
-                                fileLink.attr("data-sendtomodule", JSON.stringify(file.sendTo));
-                            }
+                            // Attach the menus
+                            attachMenus();
                         });
                     },
                     error: function(data, textStatus, jqXHR) {
@@ -314,6 +326,10 @@
 							<tr>
 								<td class="title">#{jobStatusBean.jobInfo.jobNumber}.
 									<a class="jobresult-job" href="#" onclick="openJobWidget(this); return false;">#{jobStatusBean.jobInfo.truncatedTaskName}</a>
+                                    <script type="text/javascript">
+                                        // Attach the menus
+                                        attachMenus();
+                                    </script>
 								</td>
 								<td><h:outputText
 										rendered="#{not empty jobStatusBean.jobInfo.inputParameters}">
