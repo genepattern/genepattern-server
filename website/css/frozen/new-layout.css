@@ -820,3 +820,7 @@ body {
     top: 25px;
     left: 50px;
 }
+
+#jobTable_wrapper {
+    padding-bottom: 50px;
+}
