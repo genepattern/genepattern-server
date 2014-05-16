@@ -2752,7 +2752,42 @@ function buildJobResultsPage(data) {
                         .append(
                             $("<td></td>")
                                 .addClass("header-lg")
-                                .text("Module")
+                                .append(
+                                    $("<a></a>")
+                                        .addClass("job-all-toggle")
+                                        .attr("href", "#")
+                                        .click(function(event) {
+                                            var toggleImage = $(".jobresults-all-toggle");
+                                            var open = toggleImage.attr("src").indexOf("_run") != -1;
+                                            if (open) {
+                                                toggleImage.attr("src", "/gp/images/triangle_black.gif");
+                                            }
+                                            else {
+                                                toggleImage.attr("src", "/gp/images/triangle_black_run.gif");
+                                            }
+
+                                            $(".jobresults-toggle").each(function() {
+                                                var closingAll = open;
+                                                var thisOpen = $(this).attr("src").indexOf("_run") != -1;
+
+                                                if (closingAll && thisOpen) {                   // We're closing them all and this is open
+                                                    $(this).trigger("click");
+                                                }
+                                                else if (!closingAll && !thisOpen) {              // We're opening them all and this is closed
+                                                    $(this).trigger("click");
+                                                }
+                                            });
+
+                                            if (event.preventDefault) event.preventDefault();
+                                            if (event.stopPropagation) event.stopPropagation();
+                                        })
+                                        .append(
+                                            $("<img />")
+                                                .addClass("jobresults-all-toggle")
+                                                .attr("src", "/gp/images/triangle_black_run.gif")
+                                        )
+                                )
+                                .append("Module")
                         )
                         .append(
                             $("<td></td>")
