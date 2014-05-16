@@ -1169,7 +1169,7 @@ function createGenomeSpaceWidget(linkElement, appendTo) {
         for (var i = 0; i < clients.length; i++) {
             var tool = clients[i];
             toolData.push({
-                "lsid": "",
+                "lsid": tool,
                 "name": "Send to " + tool,
                 "description": "Send this file from GenePattern to " + tool + " using GenomeSpace.",
                 "version": "<img src='/gp/pages/genomespace/genomespace_icon.png' class='module-list-icon'>",

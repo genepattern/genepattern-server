@@ -824,3 +824,7 @@ body {
 #jobTable_wrapper {
     padding-bottom: 50px;
 }
+
+.send-to-tool-list .module-gear {
+    display: none;
+}
