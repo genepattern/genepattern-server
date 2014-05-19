@@ -1290,6 +1290,69 @@ function createGenomeSpaceWidget(linkElement, appendTo) {
     }
 }
 
+function createInputFileWidget(linkElement, appendTo) {
+    var _constructFileMenuData = function() {
+        var data = [];
+
+        data.push({
+            "lsid": "",
+            "name": "Save or View File",
+            "description": "Will either open the file for viewing or prompt you to save the file.",
+            "version": "<span class='glyphicon glyphicon-floppy-save' />", "documentation": "", "categories": [], "suites": [], "tags": []
+        });
+
+        return data;
+    };
+
+    var _createFileWidgetInner = function(linkElement, appendTo) {
+        var link = $(linkElement);
+        var url = link.attr("href");
+        var name = $(linkElement).text();
+
+        var data = _constructFileMenuData();
+
+        var actionList = $("<div></div>")
+            .attr("class", "file-widget-actions")
+            .modulelist({
+                title: name,
+                data: data,
+                droppable: false,
+                draggable: false,
+                click: function(event) {
+                    var saveAction = $(event.target).closest(".module-listing").find(".module-name").text().trim().indexOf("Save") == 0;
+
+                    if (saveAction) {
+                        window.open(url);
+                        $(".search-widget:visible").searchslider("hide");
+                        return;
+                    }
+
+                    else {
+                        console.log("ERROR: Executing click function for " + url);
+                        $(".search-widget:visible").searchslider("hide");
+                    }
+                }
+            });
+
+        var widget = $("<div></div>")
+            .attr("name", link.attr("href"))
+            .attr("class", "search-widget file-widget")
+            .searchslider({
+                lists: [actionList]});
+
+        $(appendTo).append(widget);
+    }
+
+    if (all_modules_map !== null) {
+        _createFileWidgetInner(linkElement, appendTo);
+    }
+    else {
+        setTimeout(function() {
+            createInputFileWidget(linkElement, appendTo);
+        }, 100);
+    }
+}
+
 function createFileWidget(linkElement, appendTo) {
     var _constructFileMenuData = function(isRoot, isDirectory, isUpload, isJobFile, isPartialFile) {
         var data = [];
@@ -1849,14 +1912,18 @@ function makePipelineNameValid(string) {
 function openFileWidget(link, context) {
     var url = $(link).attr("href");
     var genomeSpace = context === "#menus-genomespace";
+    var inputFile = context === "#menus-inputs";
 
     // Create the menu widget
     var widgetFound = $(context).find("[name='" + escapeJquerySelector(url) + "']").length > 0;
-    if (!widgetFound && !genomeSpace) {
-        createFileWidget($(link), context);
-    }
-    else if (!widgetFound && genomeSpace) {
+    if (!widgetFound && genomeSpace) {
         createGenomeSpaceWidget($(link), context);
+    }
+    else if (!widgetFound && inputFile) {
+        createInputFileWidget($(link), context);
+    }
+    else if (!widgetFound) {
+        createFileWidget($(link), context);
     }
 
     // Open the file slider

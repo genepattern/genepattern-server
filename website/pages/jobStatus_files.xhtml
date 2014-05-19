@@ -47,7 +47,7 @@
                     <img src="/gp/images/inputFile.gif" title="input file" />
                     <strong>#{inputFile.name}</strong>:
                     <h:outputText rendered="#{!empty inputFile.link}" escape="false">
-                        <a style="color:#0066FF;" href="#{inputFile.link}" onclick="return false;">#{inputFile.truncatedDisplayValue}</a>
+                        <a style="color:#0066FF;" href="#{inputFile.link}" onclick="openFileWidget(this, '#menus-inputs'); return false;">#{inputFile.truncatedDisplayValue}</a>
                     </h:outputText>
                     <h:outputText rendered="#{empty inputFile.link}" escape="false">
                         #{inputFile.truncatedDisplayValue}
