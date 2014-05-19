@@ -55,6 +55,15 @@ public class Util {
     }
     
     /**
+     * The default ISO 8601 date format returned when getting JSON representations
+     * of jobs and result files.
+     * <pre>
+       yyyy-MM-dd'T'HH:mm:ss.sZ
+     * </pre>
+     */
+    public static final String DEFAULT_DATE_FORMAT="yyyy-MM-dd'T'HH:mm:ss.sZ";
+    
+    /**
      * Outputs the date in 'ECMAScript 5 ISO-8601' format.
      * 
      * @param date
@@ -65,16 +74,11 @@ public class Util {
             log.debug("Unexpected null arg");
             return "";
         }
-        //TODO: optimize, no need to create a new dateFormat instance for each call
-        //     however, DateFormat is not thread-safe
-        //final TimeZone tz = TimeZone.getTimeZone("UTC");
-        DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mmZ");
-        //df.setTimeZone(tz);
-        String formattedDate = df.format(date);
-        return formattedDate;
-        
-        //TimeZone tz=TimeZone.getTimeZone("UTC");
-        //return DateFormatUtils.ISO_DATE_TIME_ZONE_FORMAT.format(date);
+        //Note: this could be optimized, there is no need to create a new dateFormat instance for each call
+        //     however, DateFormat is not thread-safe, so we can't create this 
+        //     in a static initializer
+        final DateFormat df = new SimpleDateFormat(DEFAULT_DATE_FORMAT);
+        return df.format(date);
     }
 
 }
