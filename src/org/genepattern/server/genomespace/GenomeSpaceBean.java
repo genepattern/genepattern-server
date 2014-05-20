@@ -715,12 +715,12 @@ public class GenomeSpaceBean {
             return null;
         }
     }
-    
+
     public String getTreeJSON() {
         List<GenomeSpaceFile> tree = null;
         tree = getFileTree();
         tree = new ArrayList<GenomeSpaceFile>(tree.get(0).getChildFiles());
-        
+
         TreeJSON json = new TreeJSON(tree, this);
         return json.toString();
     }
