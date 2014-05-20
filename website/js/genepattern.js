@@ -2837,7 +2837,7 @@ function buildJobResultsPage(data) {
                         )
                         .append(
                             $("<td></td>")
-                                .addClass("header-lg")
+                                .css("min-width", "255px")
                                 .append(
                                     $("<a></a>")
                                         .addClass("job-all-toggle")
@@ -2882,12 +2882,12 @@ function buildJobResultsPage(data) {
                         )
                         .append(
                             $("<td></td>")
-                                .addClass("header-md")
+                                .css("min-width", "100px")
                                 .text("Submission Date")
                         )
                         .append(
                             $("<td></td>")
-                                .addClass("header-md")
+                                .css("min-width", "100px")
                                 .text("Completion Date")
                         )
                         .append(

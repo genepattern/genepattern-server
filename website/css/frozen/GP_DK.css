@@ -195,7 +195,10 @@
 #jobTable {
     margin-top: 10px;
     width: 100% !important;
-    table-layout: fixed;
+}
+
+#jobTable th, #jobTable td {
+    overflow: hidden;
 }
 
 #jobTable thead {
