@@ -300,61 +300,8 @@ public class JobsResource {
             JSONObject jsonObj=new JSONObject();
             jsonObj.put("items", jobs);
 
-            // Include navigation details
-            /*
-        nav: {
-            page:
-            numPages:
-            numItems:
-            navLinks: {
-                prev: { "rel": "", "name": "", "href": "" }, <-- link
-                first: {}, <-- link
-                prevItems: [ {}, {}, ..., {} ], <-- links
-                current: {}, <-- link
-                nextItems: [ {}, {}, ..., {}], <-- links
-                last: {},
-                next: {} <-- link
-            }
-            groupIds: [ "", "", ..., ""], <-- list of available groupIds for the currentUser
-            batchIds: [ "", "", ... , ""], <-- list of available batchIds for the currentUser
-            filterLinks: <-- list of links used to build the filter drop-down menu, e.g. 'all jobs', 'my jobs', 'jobs in group', 'jobs in batch'
-                [ {}, {}, ..., {} ] <-- links
-        }
-             */
-            JSONObject nav=new JSONObject();
-            nav.put("page", searchResults.getPageNav().getCurrent().getPage());
-            nav.put("numPages", searchResults.getPageNav().getNumPages());
-            nav.put("numItems", searchResults.getPageNav().getNumItems());
-            JSONObject navLinks=searchResults.getPageNav().navLinksToJson();
-            nav.put("navLinks", navLinks);
-
-            // include batchIds
-            if (searchResults.getFilterNav().getBatchIds().size()>0) {
-                JSONArray batchIds=new JSONArray();
-                for(final String batchId_entry : searchResults.getFilterNav().getBatchIds()) {
-                    batchIds.put(batchId_entry);
-                }
-                nav.put("batchIds", batchIds);
-            }
-            // include groupIds
-            if (searchResults.getFilterNav().getGroupIds().size()>0) {
-                JSONArray groupIds=new JSONArray();
-                for(final String groupId_entry : searchResults.getFilterNav().getGroupIds()) {
-                    groupIds.put(groupId_entry);
-                }
-                nav.put("groupIds", groupIds);
-            }
-            // include filter links
-            if (searchResults.getFilterNav().getFilterLinks().size()>0) {
-                JSONArray filterLinks=new JSONArray();
-                for(final QueryLink link : searchResults.getFilterNav().getFilterLinks()) {
-                    filterLinks.put( link.toJson() );
-                }
-                nav.put("filterLinks", filterLinks);
-            }
-            
+            JSONObject nav = searchResults.navigationDetailsToJson();
             jsonObj.put("nav", nav);
-
 
             final String jsonStr;
             if (prettyPrint) {
@@ -377,7 +324,7 @@ public class JobsResource {
                     .build();
         }
     }
-    
+
     ////////////////////////////////////
     // Getting a job
     ////////////////////////////////////
