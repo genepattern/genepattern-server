@@ -65,6 +65,30 @@
                         },
                         plugins:[ "themes", "json_data", "cookies" ]
                     });
+                    $("#genomeSpaceFileTree").bind("load_node.jstree", function (event, data) {
+                        var iterate = null;
+
+                        // Handle the case of the initial load
+                        if (data["args"][0] === -1) {
+                            iterate = $(this).find("li");
+                        }
+                        else {
+                            iterate = $(data["args"][0]).find("li");
+                        }
+
+                        iterate.each(function (index) {
+
+                            var node = iterate.get(index);
+                            var name = $(node).find("a:first").attr("name");
+
+                            // Add the id to the node
+                            $(node).attr("id", name);
+
+                            // Check for the case of empty directories
+                            var link = $(node).find("a:first").attr("href");
+                            if (link === "#") return;
+                        });
+                    });
                 </script>
             </t:div>
         </h:form>
