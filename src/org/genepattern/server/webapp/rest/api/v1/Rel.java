@@ -9,10 +9,20 @@ package org.genepattern.server.webapp.rest.api.v1;
  * @author pcarr
  */
 public enum Rel {
+    // IANA standard link relations
     first,
     last,
     next,
     prev,
     self,
-    related
+    related,
+    
+    // GP custom link relations
+    gp_job, // a link to a GP job result
+    gp_inputFile,
+    gp_outputFile,
+    gp_stdout,
+    gp_stderr,
+    gp_logFile
+    
 }

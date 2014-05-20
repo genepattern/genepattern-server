@@ -1,7 +1,6 @@
 package org.genepattern.server.webapp.rest.api.v1.job;
 
 import java.io.File;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -13,7 +12,6 @@ import org.genepattern.server.dm.GpFilePath;
 import org.genepattern.server.dm.jobresult.JobResultFile;
 import org.genepattern.server.webapp.rest.api.v1.Util;
 import org.genepattern.server.webservice.server.dao.AnalysisDAO;
-import org.genepattern.util.GPConstants;
 import org.genepattern.webservice.JobInfo;
 import org.genepattern.webservice.JobInfoUtil;
 import org.genepattern.webservice.ParameterInfo;
@@ -34,27 +32,6 @@ public class GetPipelineJobLegacy implements GetJob {
         return outputs;
     }
     
-    private static boolean isExecutionLog(final ParameterInfo param) {
-        boolean isExecutionLog = (
-                param.getName().equals(GPConstants.TASKLOG) || 
-                param.getName().endsWith(GPConstants.PIPELINE_TASKLOG_ENDING));
-        return isExecutionLog;
-    }
-    
-    private static URL getStderrLocation(final JobInfo jobInfo) throws Exception {
-        for(ParameterInfo pinfo : jobInfo.getParameterInfoArray()) {
-            if (pinfo._isStderrFile()) {
-                //construct URI to the file
-                //Hint: the name of the parameter is the name of the file (e.g. name=stderr.txt)
-                //      the value of the parameter includes the jobId (e.g. 2137/stderr.txt)
-                String name=pinfo.getName();
-                JobResultFile stderr=new JobResultFile(jobInfo, new File(name));
-                return stderr.getUrl();
-            }
-        }
-        return null;
-    }
-    
     private static GpFilePath getOutputFile(final JobInfo jobInfo, final ParameterInfo pinfo) {
         if (pinfo.isOutputFile()) {
             String name=pinfo.getName();
@@ -67,45 +44,6 @@ public class GetPipelineJobLegacy implements GetJob {
             }
         }
         return null;
-    }
-    
-    private static String initHref(final String gpUrl, final GpFilePath gpFilePath) {
-        final String href=gpUrl+gpFilePath.getRelativeUri().toString();
-        return href;
-    }
-    
-    private static JSONObject initOutputFile(final String gpUrl, final String jobId, final GpFilePath gpFilePath) throws Exception {
-        //create a JSON representation of a file
-        JSONObject o = new JSONObject();
-
-        JSONObject link = new JSONObject();
-        final String href=initHref(gpUrl, gpFilePath);
-        if (log.isDebugEnabled()) {  
-            // JobResultFile incorrectly uses the GenePatternURL set in the genepattern.properties file
-            log.debug("gpFilePath.url="+gpFilePath.getUrl().toExternalForm());
-            // the current method uses the gpUrl from the HTTP servlet request coming from a web client
-            log.debug("href="+href);
-        }
-        link.put("href", href);
-        link.put("name", gpFilePath.getRelativePath());
-        o.put("link", link);
-        o.put("fileLength", gpFilePath.getFileLength());
-        o.put("lastModified", Util.toIso8601(gpFilePath.getLastModified()));
-        // include relative path, to make it easier to work with files in sub directories
-        try {  // experimental code, catch and log unexpected exceptions
-            String path=gpFilePath.getRelativePath();
-            if (path != null) {
-                o.put("path", path);
-            }
-        }
-        catch (Throwable t) {
-            log.error("Unexpected error in gpFilePath.relativePath", t);
-        }
-
-        JSONArray kindArr=new JSONArray();
-        kindArr.put(gpFilePath.getKind());
-        o.put("kind", kindArr);
-        return o;
     }
 
     private final String gpUrl;
@@ -237,7 +175,7 @@ public class GetPipelineJobLegacy implements GetJob {
         }
         return null;
     }
-
+    
     /**
      * Create a JSONObject representing the job
      * @param jobInfo
@@ -276,49 +214,49 @@ public class GetPipelineJobLegacy implements GetJob {
             jobStatus.put("hasError", hasError);
             final boolean isPending=JobInfoUtil.isPending(jobInfo);
             jobStatus.put("isPending", isPending);
-            URL stderr=null;
-            try {
-                stderr=getStderrLocation(jobInfo);
-            }
-            catch (Throwable t) {
-                log.error("Error getting stderr file for jobId="+jobInfo.getJobNumber(), t);
-            }
-            if (stderr != null) {
-                //TODO: come up with a standard JSON representation of a gp job result file
-                jobStatus.put("stderrLocation", stderr.toExternalForm());
-            }
             job.put("status", jobStatus);
             
             //init resultFiles
             //TODO: sort output files
             if (includeOutputFiles) {
                 final JSONArray outputFiles=new JSONArray();
+                final JSONArray logFiles=new JSONArray();
                 int numFiles=0;
                 for(final ParameterInfo pinfo : getOutputFiles(jobInfo)) {
                     final GpFilePath outputFile = getOutputFile(jobInfo, pinfo);
-                    boolean isExecutionLog=isExecutionLog(pinfo);
+                    boolean isExecutionLog=GpOutputFile.isExecutionLog(pinfo);
                     if (isExecutionLog) {
                         try {
-                            final String executionLogLocation=initHref(gpUrl, outputFile);
+                            JSONObject logFileJson=GpOutputFile.fromGpfilePath(gpUrl, outputFile, pinfo).toJson();
+                            String executionLogLocation=logFileJson.getJSONObject("link")
+                                .getString("href");
                             jobStatus.put("executionLogLocation", executionLogLocation);
+                            logFiles.put(logFileJson);
                         }
                         catch (Exception e) {
+                            log.error("Error initializing executionLogLocation", e);
                             throw new GetJobException("Error initializing executionLogLocation: "+e.getLocalizedMessage());
                         }
                     }
                     else {
                         ++numFiles;
                         try {
-                            JSONObject outputFileJson=initOutputFile(gpUrl, ""+jobInfo.getJobNumber(), outputFile);
+                            JSONObject outputFileJson=GpOutputFile.fromGpfilePath(gpUrl, outputFile, pinfo).toJson();
                             outputFiles.put(outputFileJson);
+                            if (pinfo._isStderrFile()) {
+                                jobStatus.put("stderrLocation", outputFileJson.getJSONObject("link").getString("href"));
+                            }
                         }
                         catch (Exception e) {
-                            throw new GetJobException("Error serializing JSON object for jobId="+jobInfo.getJobNumber());
+                            final String message="Error serializing JSON object for jobId="+jobInfo.getJobNumber();
+                            log.error(message, e);
+                            throw new GetJobException(message);
                         }
                     }
                 }
                 job.put("numOutputFiles", numFiles);
                 job.put("outputFiles", outputFiles);
+                job.put("logFiles", logFiles);
             }
         }
         catch (JSONException e) {
@@ -327,9 +265,8 @@ public class GetPipelineJobLegacy implements GetJob {
                     ": "+e.getLocalizedMessage());
         }
         return job;
-
     }
-
+    
     /**
      * Create JSON representation from the given PermissionsHelper class.
      * This class was part of the JSF implementation.
