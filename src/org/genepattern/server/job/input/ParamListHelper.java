@@ -16,6 +16,8 @@ import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.dm.GpFileObjFactory;
 import org.genepattern.server.dm.GpFilePath;
 import org.genepattern.server.dm.serverfile.ServerFileObjFactory;
+import org.genepattern.server.genomespace.GenomeSpaceClientFactory;
+import org.genepattern.server.genomespace.GenomeSpaceFileManager;
 import org.genepattern.server.job.input.collection.ParamGroupHelper;
 import org.genepattern.server.rest.ParameterInfoRecord;
 import org.genepattern.util.LSID;
@@ -766,6 +768,14 @@ public class ParamListHelper {
      * @deprecated - should replace this with a static call
      */
     public static void forFileListCopyExternalUrlToUserUploads(final GpContext jobContext, final GpFilePath gpPath, final URL url) throws Exception {
+        // for GP-5153
+        if (GenomeSpaceClientFactory.isGenomeSpaceEnabled(jobContext)) {
+            if (GenomeSpaceFileManager.isGenomeSpaceFile(url)) {
+                final String message="File list not supported with GenomeSpace files; We are working on a fix (GP-5153).";
+                log.debug(message+", url="+url);
+                throw new Exception(message);
+            }
+        }
         final File parentDir=gpPath.getServerFile().getParentFile();
         if (!parentDir.exists()) {
             boolean success=parentDir.mkdirs();
