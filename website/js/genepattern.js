@@ -689,38 +689,6 @@ function dirPromptIfNecessary (filelist, directory) {
     }
 }
 
-function uploadDrop(event) {
-    this.classList.remove('runtask-highlight');
-    event.stopPropagation();
-    event.preventDefault();
-
-    var ul = document.createElement("ul");
-    var filelist = event.dataTransfer.files;
-
-    // Prevent uploads from interrupting other uploads
-    if ($("#upload-dropzone-progress:visible").length > 0) {
-        showDialog("Upload Initialization Error", "Please wait for all current uploads to complete before initiating another upload.");
-        return;
-    }
-
-    if (filelist.length < 1) {
-        showDialog("Operation Not Supported", "Sorry! We don't support downloading directly " +
-            "from URL. Please download the file first and then upload here.");
-        return;
-    }
-
-    // Check for special characters
-    var directory = $(event.target).closest(".jstree-closed, .jstree-open").find("a:first").attr("href");
-    if(hasSpecialChars(filelist))
-    {
-        warnSpecialChars(filelist, directory);
-    }
-    else
-    {
-        dirPromptIfNecessary(filelist, directory);
-    }
-}
-
 function initUploadToaster(filelist, directory) {
     // Hide the dropzone
     $("#upload-dropzone-wrapper").hide("slide", { direction: "down" }, 200);
@@ -843,13 +811,64 @@ function uploadAfterDialog(filelist, directory) {
     testForCleanup();
 }
 
+function uploadEnter(evt) {
+    this.classList.add('leftnav-highlight');
+}
+
+function uploadLeave(evt) {
+    this.classList.remove('leftnav-highlight');
+}
+
+function uploadExit(evt) {
+    evt.stopPropagation();
+    evt.preventDefault();
+}
+
+function uploadOver(evt) {
+    this.classList.add('leftnav-highlight');
+    evt.stopPropagation();
+    evt.preventDefault();
+}
+
+function uploadDrop(event) {
+    this.classList.remove('leftnav-highlight');
+    event.stopPropagation();
+    event.preventDefault();
+
+    var ul = document.createElement("ul");
+    var filelist = event.dataTransfer.files;
+
+    // Prevent uploads from interrupting other uploads
+    if ($("#upload-dropzone-progress:visible").length > 0) {
+        showDialog("Upload Initialization Error", "Please wait for all current uploads to complete before initiating another upload.");
+        return;
+    }
+
+    if (filelist.length < 1) {
+        showDialog("Operation Not Supported", "Sorry! We don't support creating upload files directly " +
+            "from URL. Please download the file first and then upload here.");
+        return;
+    }
+
+    // Check for special characters
+    var directory = $(event.target).closest(".jstree-closed, .jstree-open").find("a:first").attr("href");
+    if(hasSpecialChars(filelist))
+    {
+        warnSpecialChars(filelist, directory);
+    }
+    else
+    {
+        dirPromptIfNecessary(filelist, directory);
+    }
+}
+
 function initUploads() {
     // Attach events to the upload drop zone
     var dropzone = $("#upload-dropzone");
-    dropzone[0].addEventListener("dragenter", dragEnter, true);
-    dropzone[0].addEventListener("dragleave", dragLeave, true);
-    dropzone[0].addEventListener("dragexit", dragExit, false);
-    dropzone[0].addEventListener("dragover", dragOver, false);
+    dropzone[0].addEventListener("dragenter", uploadEnter, true);
+    dropzone[0].addEventListener("dragleave", uploadLeave, true);
+    dropzone[0].addEventListener("dragexit", uploadExit, false);
+    dropzone[0].addEventListener("dragover", uploadOver, false);
     dropzone[0].addEventListener("drop", uploadDrop, false);
 
     // Ready AJAX for uploading as a binary file
@@ -915,10 +934,10 @@ function initUploadTreeDND() {
         if (folder === null || folder === undefined || folder.length < 1) return;
         if ($.inArray(folder[0], eventsAttached) > -1) return;
 
-        folder[0].addEventListener("dragenter", dragEnter, true);
-        folder[0].addEventListener("dragleave", dragLeave, true);
-        folder[0].addEventListener("dragexit", dragExit, false);
-        folder[0].addEventListener("dragover", dragOver, false);
+        folder[0].addEventListener("dragenter", uploadEnter, true);
+        folder[0].addEventListener("dragleave", uploadLeave, true);
+        folder[0].addEventListener("dragexit", uploadExit, false);
+        folder[0].addEventListener("dragover", uploadOver, false);
         folder[0].addEventListener("drop", uploadDrop, false);
 
         // Add to list to prevent repeats

@@ -541,6 +541,10 @@ body {
     cursor: pointer;
 }
 
+#upload-dropzone:active {
+    cursor: default;
+}
+
 #upload-dropzone-progress {
     margin: 5px;
     width: 275px;
@@ -827,4 +831,9 @@ body {
 
 .send-to-tool-list .module-gear {
     display: none;
+}
+
+.leftnav-highlight {
+    background-color: #cddcf1 !important;
+    cursor: default !important;
 }
