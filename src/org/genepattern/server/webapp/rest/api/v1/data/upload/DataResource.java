@@ -294,6 +294,11 @@ public class DataResource {
             from = URLDecoder.decode(from, "UTF-8");
             to = URLDecoder.decode(to, "UTF-8");
 
+            // Prevent moving a directory to itself or a child directory
+            if (to.startsWith(from)) {
+                return Response.status(500).entity("Cannot move a directory to itself or a child").build();
+            }
+
             // Get the file location to copy from
             GpContext userContext = Util.getUserContext(request);
             GpFilePath fromPath = null;
