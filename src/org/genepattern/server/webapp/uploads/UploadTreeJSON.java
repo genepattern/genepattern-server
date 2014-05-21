@@ -96,8 +96,10 @@ public class UploadTreeJSON extends JSONArray {
         attr.put("data-partial", isPartial);
 
         // Add tooltip text
-        DateFormat df = new SimpleDateFormat("yyyy-MM-dd");
-        attr.put("title", df.format(file.getLastModified()) + " - " + JobHelper.getFormattedSize(file.getFileLength()));
+        if (!"directory".equals(kind)) {
+            DateFormat df = new SimpleDateFormat("yyyy-MM-dd");
+            attr.put("title", df.format(file.getLastModified()) + " - " + JobHelper.getFormattedSize(file.getFileLength()));
+        }
         
         data.put(ATTR, attr);
 
