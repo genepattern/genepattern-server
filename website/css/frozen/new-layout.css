@@ -837,3 +837,7 @@ body {
     background-color: #cddcf1 !important;
     cursor: default !important;
 }
+
+#jobTable_filter {
+    padding-bottom: 10px;
+}

@@ -2512,18 +2512,18 @@ function populateJobResultsTable(settings, callback) {
                 .appendTo(results);
             $("<br/>").appendTo(results);
         }
-        if (job.status.executionLogLocation) {
-            $("<img />")
-                .attr("src", "/gp/images/outputFile.gif")
-                .appendTo(results);
-            $("<a></a>")
-                .attr("href", job.status.executionLogLocation)
-                .attr("onclick", "openFileWidget(this, '#menus-jobs'); return false;")
-                .attr("data-kind", "txt")
-                .append("Execution Log")
-                .appendTo(results);
-            $("<br/>").appendTo(results);
-        }
+//        if (job.status.executionLogLocation) {
+//            $("<img />")
+//                .attr("src", "/gp/images/outputFile.gif")
+//                .appendTo(results);
+//            $("<a></a>")
+//                .attr("href", job.status.executionLogLocation)
+//                .attr("onclick", "openFileWidget(this, '#menus-jobs'); return false;")
+//                .attr("data-kind", "txt")
+//                .append("Execution Log")
+//                .appendTo(results);
+//            $("<br/>").appendTo(results);
+//        }
         return results;
     };
     var _buildChildJobs = function(job) {
