@@ -2930,7 +2930,8 @@ function buildJobResultsPage(data) {
             "sSearch": "Owner Search: "
         },
         "lengthMenu": [10, 20, 50, 100],
-        stateSave: true
+        stateSave: true,
+        "sPaginationType": "input"
     });
 
     // Append the container to the correct past of the page
