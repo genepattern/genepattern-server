@@ -2417,13 +2417,22 @@ function loadInAjaxWrapper(link) {
     return false;
 }
 
+function getJobFilter() {
+    //return $("#main-pane").data("jobresults-filter");
+    return $.cookie('job-filter');
+};
+function setJobFilter(filter) {
+    //$("#main-pane").data("jobresults-filter", filter);
+    $.cookie('job-filter', filter, { path: '/'});
+}
+
 function populateJobResultsTable(settings, callback) {
     // Helper functions
     var _statusToImg = function(status) {
         if (status.isPending) return $("<span />").text("Pending");                                 // Pending
-        else if (status.hasError) return $("<img />").attr("src", "/gp/images/error.gif");         // Error
-        else if (status.isFinished) return $("<img />").attr("src", "/gp/images/complete.gif");    // Finished
-        else return $("<img />").attr("src", "/gp/images/run.gif");                                // Running
+        else if (status.hasError) return $("<img />").attr("src", "/gp/images/error.gif");          // Error
+        else if (status.isFinished) return $("<img />").attr("src", "/gp/images/complete.gif");     // Finished
+        else return $("<img />").attr("src", "/gp/images/run.gif");                                 // Running
 
     };
     var _formatDate = function(dateString) {
@@ -2622,8 +2631,6 @@ function populateJobResultsTable(settings, callback) {
             rows.push(row);
         }
 
-
-
         toReturn.data = rows;
     };
     var _columnToName = function(col) {
@@ -2640,7 +2647,7 @@ function populateJobResultsTable(settings, callback) {
     var _buildRESTUrl = function() {
         var pageSize = settings.length;
         var page = Math.floor(settings.start / pageSize) + 1;
-        var filter = $("#main-pane").data("jobresults-filter");
+        var filter = getJobFilter();
 
         // Handle user search
         if (settings.search && settings.search.value) {
@@ -2697,7 +2704,7 @@ function populateJobResultsTable(settings, callback) {
 
             // Set the job results filter options
             $("#jobresults-filter").empty();
-            var currentFilter = $("#main-pane").data("jobresults-filter");
+            var currentFilter = getJobFilter();
             $("#jobresults-filter").append(
                 $("<option></option>")
                     .val("userId=" + username)
@@ -2764,7 +2771,7 @@ function buildJobResultsPage(data) {
                         .attr("name", "show")
                         .change(function() {
                             var filter = $(this).val();
-                            $("#main-pane").data("jobresults-filter", filter);
+                            setJobFilter(filter);
                             loadJobResults(filter);
                         })
                 )
@@ -2813,7 +2820,7 @@ function buildJobResultsPage(data) {
                                                 cache: false,
                                                 dataType: "text",
                                                 success: function(data, textStatus, jqXHR) {
-                                                    var filter = $("#main-pane").data("jobresults-filter");
+                                                    var filter = getJobFilter();
                                                     loadJobResults(filter);
                                                     showSuccessMessage(data);
                                                 },
@@ -2922,7 +2929,8 @@ function buildJobResultsPage(data) {
         "oLanguage": {
             "sSearch": "Owner Search: "
         },
-        "lengthMenu": [10, 20, 50, 100]
+        "lengthMenu": [10, 20, 50, 100],
+        stateSave: true
     });
 
     // Append the container to the correct past of the page
@@ -2941,7 +2949,7 @@ function loadJobResults(jobResults) {
     }
 
     // Set the filter
-    $("#main-pane").data("jobresults-filter", jobResults);
+    setJobFilter(filter);
 
     // Hide the search slider if it is open
     $(".search-widget").searchslider("hide");
@@ -2964,7 +2972,7 @@ function loadJobResults(jobResults) {
     parameter_and_val_groups = {}; //contains params and their values only
 
     // Add to history so back button works
-    var filter = $("#main-pane").data("jobresults-filter");
+    var filter = getJobFilter();
     history.pushState(null, document.title, location.protocol + "//" + location.host + location.pathname + "?jobResults=" + encodeURIComponent(filter));
 
     // Build the page scaffolding
