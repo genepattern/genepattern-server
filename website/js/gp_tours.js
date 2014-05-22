@@ -1,4 +1,8 @@
-var last_left_nav_tab = $("#left-nav").tabs( "option", "active");
+var last_left_nav_tab = null;
+
+$(document).ready(function() {
+    last_left_nav_tab = $("#left-nav").tabs( "option", "active");
+});
 
 $(function()
 {
