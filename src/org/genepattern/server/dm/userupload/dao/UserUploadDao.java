@@ -148,9 +148,11 @@ public class UserUploadDao extends BaseDAO {
     }
 
     public int renameUserUpload(GpContext context, GpFilePath oldFilePath, GpFilePath newFilePath) {
-        String hql = "update " + UserUpload.class.getName() + " uu set uu.name = :newName, uu.path = :newPath where uu.userId = :userId and uu.path = :path";
+        String hql = "update " + UserUpload.class.getName() + " uu set uu.name = :newName, uu.kind = :newKind, uu.extension = :newExtension, uu.path = :newPath where uu.userId = :userId and uu.path = :path";
         Query query = HibernateUtil.getSession().createQuery( hql );
         query.setString("newName", newFilePath.getName());
+        query.setString("newKind", newFilePath.getKind());
+        query.setString("newExtension", newFilePath.getExtension());
         query.setString("newPath", newFilePath.getRelativePath());
         query.setString("userId", context.getUserId());
         query.setString("path", oldFilePath.getRelativePath());

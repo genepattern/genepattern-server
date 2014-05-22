@@ -284,6 +284,7 @@ public class DataManager {
             if (!directory) {
                 GpContext context = GpContext.getContextForUser(user);
                 GpFilePath newPath = GpFileObjFactory.getUserUploadFile(context, newFileRelative);
+                newPath.initMetadata();
 
                 // Begin a new transaction
                 UserUploadDao dao = new UserUploadDao();
