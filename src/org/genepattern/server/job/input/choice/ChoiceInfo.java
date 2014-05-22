@@ -91,6 +91,7 @@ public class ChoiceInfo {
      *     ERROR, Error in module manifest, didn't initialize choices.
      *     ERROR, Connection error to remote server (url)
      *     ERROR, Timeout waiting for listing from remote server (url, timeout)
+     *     NOT_INITIALIZED, the server did not initialize the list of choices from the remote directory,
      * 
      * @author pcarr
      *
