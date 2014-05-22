@@ -143,8 +143,12 @@ public class ChoiceInfoHelper {
     }
     
     final static public ChoiceInfo initChoiceInfo(final ParameterInfo pinfo) {
+        final boolean initDropdown=true;
+        return initChoiceInfo(pinfo, initDropdown);
+    }
+    final static public ChoiceInfo initChoiceInfo(final ParameterInfo pinfo, final boolean initDropdown) {
         try {
-            return ChoiceInfo.getChoiceInfoParser().initChoiceInfo(pinfo);
+            return ChoiceInfo.getChoiceInfoParser(initDropdown).initChoiceInfo(pinfo);
         }
         catch (Throwable t) {
             log.error(t);
@@ -156,7 +160,8 @@ public class ChoiceInfoHelper {
         if (ChoiceInfo.hasChoiceInfo(pinfoRecord.getFormal())) {
             //it's a file choice
             log.debug("Checking for cached value for File Choice, "+pinfo.getName()+"="+pinfo.getValue());
-            ChoiceInfo choiceInfo = ChoiceInfo.getChoiceInfoParser().initChoiceInfo(pinfoRecord.getFormal());
+            final boolean initDropdown=true;
+            ChoiceInfo choiceInfo = ChoiceInfo.getChoiceInfoParser(initDropdown).initChoiceInfo(pinfoRecord.getFormal());
             return choiceInfo;
         }
         return null;

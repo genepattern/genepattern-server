@@ -29,10 +29,16 @@ public class DynamicChoiceInfoParser implements ChoiceInfoParser {
     
     private final GpConfig gpConfig;
     private final GpContext jobContext;
+    private final boolean initializeDynamicDropdown;
     
     public DynamicChoiceInfoParser(final GpConfig gpConfig, final GpContext jobContext) {
+        //by default, do the remote call to list the directory contents
+        this(gpConfig, jobContext, true);
+    }
+    public DynamicChoiceInfoParser(final GpConfig gpConfig, final GpContext jobContext, final boolean initializeDynamicDropdown) {
         this.gpConfig=gpConfig;
         this.jobContext=jobContext;
+        this.initializeDynamicDropdown=initializeDynamicDropdown;
     }
 
     @Override
@@ -43,7 +49,13 @@ public class DynamicChoiceInfoParser implements ChoiceInfoParser {
         if (choiceDir != null) {
             log.debug("Initializing drop-down from remote source for param="+param.getName()+", ChoiceInfo.PROP_CHOICE_DIR="+choiceDir);
             try {
-                final ChoiceInfo choiceInfoFromFtp = initChoicesFromFtp(param, choiceDir);
+                final ChoiceInfo choiceInfoFromFtp;
+                if (initializeDynamicDropdown) {
+                    choiceInfoFromFtp = initChoicesFromFtp(param, choiceDir);
+                }
+                else {
+                    choiceInfoFromFtp = initChoicesMeta(param, choiceDir);
+                }
                 log.debug(choiceInfoFromFtp.getStatus());
                 choiceInfoFromFtp.initDefaultValue(param);
                 log.debug("initial selection: "+choiceInfoFromFtp.getSelected());
@@ -107,9 +119,25 @@ public class DynamicChoiceInfoParser implements ChoiceInfoParser {
         log.debug("initial selection: "+choiceInfo.getSelected());
         return choiceInfo;
     }
+
+    /**
+     * Initialize the meta-data for a dynamic drop-down, but don't do a directory listing.
+     * A subsequent callback from a web client will list the files.
+     * @param param
+     * @param ftpDir
+     * @return
+     */
+    private ChoiceInfo initChoicesMeta(final ParameterInfo param, final String ftpDir) {
+        final ChoiceInfo choiceInfo=new ChoiceInfo(param.getName());
+        choiceInfo.setChoiceDir(ftpDir);
+        choiceInfo.setStatus(Flag.NOT_INITIALIZED, "Drop-down menu not initialized");
+        return choiceInfo;
+    }
     
     /**
      * Initialize the ChoiceInfo from an ftp directory.
+     * This method does the remote directory listing, or if 
+     * configured, it will do a local file system listing instead.
      * 
      * @param ftpDir
      * @return

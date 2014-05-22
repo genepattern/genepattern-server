@@ -60,12 +60,14 @@ public class TestDynamicChoiceInfoParser {
     }
     
     private DynamicChoiceInfoParser choiceInfoParser=null;
+    private GpConfig gpConfig=null;
+    private GpContext gpContext=null;
 
     
     @Before
     public void beforeTest() {
-        GpConfig gpConfig=new GpConfig.Builder().build();
-        GpContext gpContext=new GpContextFactory.Builder().build();
+        gpConfig=new GpConfig.Builder().build();
+        gpContext=new GpContextFactory.Builder().build();
         choiceInfoParser=new DynamicChoiceInfoParser(gpConfig, gpContext);
     }
 
@@ -220,6 +222,23 @@ public class TestDynamicChoiceInfoParser {
         listCompare("drop-down items", expected, choiceInfo.getChoices());
         Assert.assertEquals("selected", new Choice("", ""), choiceInfo.getSelected());
     }
+    
+    /**
+     * test case: don't do a remote listing
+     */
+    @Test
+    public void testFtpFileDropdown_noListing() {
+        choiceInfoParser=new DynamicChoiceInfoParser(gpConfig, gpContext, false);
+        final String choiceDir="ftp://gpftp.broadinstitute.org/example_data/gpservertest/DemoFileDropdown/input.dir/";
+        final ParameterInfo pinfo=TestChoiceInfo.initFtpParam(choiceDir);
+        
+        final ChoiceInfo choiceInfo=choiceInfoParser.initChoiceInfo(pinfo);
+        Assert.assertNotNull("choiceInfo.choices", choiceInfo.getChoices());
+        Assert.assertEquals("Expecting an empty list", 0, choiceInfo.getChoices().size());
+        Assert.assertEquals("Expecting an un-initialized drop-down", 
+                ChoiceInfo.Status.Flag.NOT_INITIALIZED, 
+                choiceInfo.getStatus().getFlag());
+    }
 
     /**
      * This is not for automated testing because it fails about half the time.
@@ -347,8 +366,6 @@ public class TestDynamicChoiceInfoParser {
         Assert.assertEquals("selected", new Choice("",""), choiceInfo.getSelected());
     }
 
-
-
     @Test
     @SuppressWarnings("unchecked")
     public void testFtpDirectoryDropdown() {
@@ -410,5 +427,5 @@ public class TestDynamicChoiceInfoParser {
         final Choice expected=makeChoice(choiceDir, "A", true);
         Assert.assertEquals("getValue, no slash", expected, choiceInfo.getValue(value));
     }
-
+    
 }

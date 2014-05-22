@@ -55,7 +55,7 @@ public class ParametersJSON extends JSONObject {
 
 
 
-    public ParametersJSON(JSONObject object) {
+    private ParametersJSON(JSONObject object) {
         try {
             this.put(NAME, object.get(NAME));
             this.put(DESCRIPTION, object.get(DESCRIPTION));
@@ -168,9 +168,9 @@ public class ParametersJSON extends JSONObject {
         }
     }
     
-    public void initChoice(final HttpServletRequest request, final TaskInfo taskInfo, final ParameterInfo pInfo) {
+    public void initChoice(final HttpServletRequest request, final TaskInfo taskInfo, final ParameterInfo pInfo, final boolean initDropdown) {
         try {
-            final ChoiceInfo choiceInfo = ChoiceInfoHelper.initChoiceInfo(pInfo);
+            final ChoiceInfo choiceInfo = ChoiceInfoHelper.initChoiceInfo(pInfo, initDropdown);
             if (choiceInfo != null) {
                 JSONObject choiceInfoJson=ChoiceInfoHelper.initChoiceInfoJson(request, taskInfo, choiceInfo);
                 this.put("choiceInfo", choiceInfoJson);

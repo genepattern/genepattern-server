@@ -114,6 +114,7 @@ public class RunTaskServlet extends HttpServlet
             //Note: we have a helper method to initialize the userId,
             //    see org.genepattern.server.webapp.rest.api.v1.Util#getUserContext
             final boolean initIsAdmin=true;
+            final GpConfig gpConfig=ServerConfigurationFactory.instance();
             final GpContext userContext = GpContext.getContextForUser(userId, initIsAdmin);
             
             JobInput reloadJobInput = null;
@@ -311,7 +312,6 @@ public class RunTaskServlet extends HttpServlet
             JSONArray paramGroupsJson = loadModuleHelper.getParameterGroupsJson(taskInfo, filePath.getServerFile());
             final boolean enableExecutorInputParams=ServerConfigurationFactory.instance().getGPBooleanProperty(userContext, JobConfigParams.PROP_ENABLE_EXECUTOR_INPUT_PARAMS, true);
             if (enableExecutorInputParams) {
-                final GpConfig gpConfig=ServerConfigurationFactory.instance();
                 final JobConfigParams jobConfigParams=JobConfigParams.initJobConfigParams(gpConfig, userContext);
                 if (jobConfigParams != null) {
                     final JSONObject jobConfigGroupJson=jobConfigParams.getInputParamGroup().toJson();
@@ -830,11 +830,13 @@ public class RunTaskServlet extends HttpServlet
         return parametersObject;
     }
 
-    private ParametersJSON initParametersJSON(final HttpServletRequest request, final TaskInfo taskInfo, final ParameterInfo pinfo) {
+    private static ParametersJSON initParametersJSON(final HttpServletRequest request, final TaskInfo taskInfo, final ParameterInfo pinfo) {
+        // don't initialize the drop-down menu; instead wait for the web client to make a callback
+        final boolean initDropdown=false; 
         final ParametersJSON parameter = new ParametersJSON(pinfo);
         parameter.addNumValues(pinfo);
         parameter.addGroupInfo(pinfo);
-        parameter.initChoice(request, taskInfo, pinfo);
+        parameter.initChoice(request, taskInfo, pinfo, initDropdown);
         return parameter;
     }
 

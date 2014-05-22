@@ -25,7 +25,7 @@ public class TestChoiceInfoDefaultValues {
     public void beforeTest() {
         GpConfig gpConfig=new GpConfig.Builder().build();
         GpContext gpContext=new GpContextFactory.Builder().build();
-        parser=new DynamicChoiceInfoParser(gpConfig, gpContext);
+        parser=new DynamicChoiceInfoParser(gpConfig, gpContext, true);
     }
 
     /*

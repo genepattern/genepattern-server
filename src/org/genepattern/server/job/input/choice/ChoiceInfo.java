@@ -99,7 +99,8 @@ public class ChoiceInfo {
         public static enum Flag {
             OK,
             WARNING,
-            ERROR
+            ERROR,
+            NOT_INITIALIZED
         }
         
         final private Flag flag;
@@ -245,16 +246,21 @@ public class ChoiceInfo {
      * @return
      * @deprecated - prefer to pass in a valid gpContext
      */
-    public static ChoiceInfoParser getChoiceInfoParser() {
+    public static ChoiceInfoParser getChoiceInfoParser(final boolean initDropdown) {
+        GpConfig gpConfig=ServerConfigurationFactory.instance();
         GpContext gpContext=GpContext.getServerContext();
-        return getChoiceInfoParser(gpContext);
+        return getChoiceInfoParser(gpConfig, gpContext, initDropdown);
     }
     public static ChoiceInfoParser getChoiceInfoParser(final GpContext gpContext) {
         GpConfig gpConfig=ServerConfigurationFactory.instance();
         return getChoiceInfoParser(gpConfig, gpContext);
     }
     public static ChoiceInfoParser getChoiceInfoParser(final GpConfig gpConfig, final GpContext gpContext) {
-        return new DynamicChoiceInfoParser(gpConfig, gpContext);
+        final boolean initDropdown=true;
+        return getChoiceInfoParser(gpConfig, gpContext, initDropdown);
+    }
+    public static ChoiceInfoParser getChoiceInfoParser(final GpConfig gpConfig, final GpContext gpContext, final boolean initDropdown) {
+        return new DynamicChoiceInfoParser(gpConfig, gpContext, initDropdown);
     }
 
     private final String paramName;
