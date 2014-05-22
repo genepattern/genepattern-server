@@ -106,7 +106,7 @@ public class FileDownloader {
      * 
      * @param taskInfo
      * @param jobInfo
-     * @return an empty list of the job has no input values from a file drop-down selection.
+     * @return an empty list if the job has no input values from a file drop-down selection.
      */
     private static List<Choice> initSelectedChoices(final TaskInfo taskInfo, final JobInfo jobInfo) {
         List<Choice> selectedChoices=null;
