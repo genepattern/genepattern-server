@@ -686,18 +686,22 @@ public class TasksResource {
         }
         if (taskContext.getTaskInfo()==null) {
             String errorMessage="No task with task id: " + taskNameOrLsid + " found " + "for user " + taskContext.getUserId();
+            log.debug(errorMessage);
             return Responses.notFound().entity(errorMessage).build();
         }
         
         final Map<String,ParameterInfoRecord> paramInfoMap=ParameterInfoRecord.initParamInfoMap(taskContext.getTaskInfo());
         if (!paramInfoMap.containsKey(pname)) {
             String errorMessage="No parameter with name="+pname;
+            log.debug(errorMessage);
             return Responses.notFound().entity(errorMessage).build();
         }
         
         ParameterInfoRecord pinfoRecord=paramInfoMap.get(pname);
         if (!ChoiceInfo.hasChoiceInfo(pinfoRecord.getFormal())) {
-            return Responses.notFound().entity(taskContext.getTaskInfo().getName()+"."+pname + " does not have a choiceInfo").build();
+            String errorMessage=taskContext.getTaskInfo().getName()+"."+pname + " does not have a choiceInfo";
+            log.debug(errorMessage);
+            return Responses.notFound().entity(errorMessage).build();
         }
         
         ChoiceInfoParser parser=ChoiceInfo.getChoiceInfoParser(taskContext);
@@ -713,6 +717,7 @@ public class TasksResource {
                 .build();
         }
         catch (Throwable t) {
+            log.error("Unexpected server error in GET "+choiceInfo.getChoiceDir(), t);
             return Response.serverError().entity("Error serializing JSON response: "+t.getLocalizedMessage()).build();
         }
     }
