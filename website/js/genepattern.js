@@ -1519,6 +1519,7 @@ function createFileWidget(linkElement, appendTo) {
                                     $("#uploadTree").jstree("refresh");
 
                                     $("#uploadDirectoryTree").jstree("refresh");
+                                    $(".search-widget:visible").searchslider("hide");
                                 },
                                 error: function(data, textStatus, jqXHR) {
                                     if (typeof data === 'object') {
@@ -1526,11 +1527,11 @@ function createFileWidget(linkElement, appendTo) {
                                     }
 
                                     showErrorMessage(data);
+                                    $(".search-widget:visible").searchslider("hide");
                                 }
                             });
                         });
 
-                        $(".search-widget:visible").searchslider("hide");
                         return;
                     }
 
@@ -1567,7 +1568,7 @@ function createFileWidget(linkElement, appendTo) {
 
                     else if (renameAction) {
                         showDialog("Rename the File or Directory", "What name would you like to name the file or directory?" +
-                            "<input type='text' class='dialog-rename' style='width: 98%;' />", {
+                            "<input type='text' class='dialog-rename' value='" + name.trim() + "' style='width: 98%;' />", {
                             "Rename": function(event) {
                                 var newName = $(".dialog-rename").val();
 
@@ -1588,6 +1589,7 @@ function createFileWidget(linkElement, appendTo) {
                                             if (isJobFile) {
                                                 initRecentJobs();
                                             }
+                                            $(".search-widget:visible").searchslider("hide");
                                         },
                                         error: function(data, textStatus, jqXHR) {
                                             if (typeof data === 'object') {
@@ -1595,19 +1597,44 @@ function createFileWidget(linkElement, appendTo) {
                                             }
 
                                             showErrorMessage(data);
+                                            $(".search-widget:visible").searchslider("hide");
                                         }
                                     });
                                 };
 
-                                // Check for special characters
-                                var regex = new RegExp("[^A-Za-z0-9_.]");
-                                var specialCharacters = regex.test(newName);
-                                if (specialCharacters) {
+                                var _extractExtension = function(filename) {
+                                    var re = /(?:\.([^.]+))?$/;
+                                    var ext = re.exec(filename)[1];
+                                    if (ext === undefined || ext === null) return "";
+                                    else return ext;
+                                };
+
+                                var _extensionChanged = function(oldName, newName) {
+                                    return oldName.trim() !== newName.trim();
+                                };
+
+                                var _containsSpecialCharacters = function(name) {
+                                    var regex = new RegExp("[^A-Za-z0-9_.]");
+                                    return regex.test(newName);
+                                };
+
+                                var extChanged = _extensionChanged(name, newName);
+                                var specialChar = _containsSpecialCharacters(newName);
+
+                                if (extChanged || specialChar) {
                                     var outerDialog = $(this);
-                                    showDialog("Special Characters!",
-                                        "The name you selected contains special characters!<br/><br/>" +
-                                            "Some older GenePattern modules do not handle special characters well. " +
-                                            "Are you sure you want to continue?", {
+                                    var dialogText = "";
+                                    if (extChanged) {
+                                        dialogText += "The name you have selected changes the file's file extension! " +
+                                            "This may break the ability of modules to recognize the file.<br/><br/>";
+                                    }
+                                    if (specialChar) {
+                                        dialogText += "The name you selected contains special characters! " +
+                                            "Some older GenePattern modules do not handle special characters well.<br/><br/>";
+                                    }
+
+                                    showDialog("Rename Warning!",
+                                        dialogText + "Are you sure you want to continue?", {
                                             "Yes": function() {
                                                 _doRename();
                                                 $(this).dialog("close");
@@ -1638,7 +1665,6 @@ function createFileWidget(linkElement, appendTo) {
                             }
                         });
 
-                        $(".search-widget:visible").searchslider("hide");
                         return;
                     }
 
