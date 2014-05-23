@@ -244,24 +244,37 @@ public class ChoiceInfo {
     }
 
     /**
+     * @param initDynamicDropdown, if true initialize dynamic drop-down by doing a remote 'ls' call
+     *     (or loading from a cached copy if it's available).
      * @return
      * @deprecated - prefer to pass in a valid gpContext
      */
-    public static ChoiceInfoParser getChoiceInfoParser(final boolean initDropdown) {
+    public static ChoiceInfoParser getChoiceInfoParser(final boolean initDynamicDropdown) {
         GpConfig gpConfig=ServerConfigurationFactory.instance();
         GpContext gpContext=GpContext.getServerContext();
-        return getChoiceInfoParser(gpConfig, gpContext, initDropdown);
+        return getChoiceInfoParser(gpConfig, gpContext, initDynamicDropdown);
     }
+    
     public static ChoiceInfoParser getChoiceInfoParser(final GpContext gpContext) {
         GpConfig gpConfig=ServerConfigurationFactory.instance();
         return getChoiceInfoParser(gpConfig, gpContext);
     }
+    
     public static ChoiceInfoParser getChoiceInfoParser(final GpConfig gpConfig, final GpContext gpContext) {
-        final boolean initDropdown=true;
-        return getChoiceInfoParser(gpConfig, gpContext, initDropdown);
+        final boolean initDynamicDropdown=true;
+        return getChoiceInfoParser(gpConfig, gpContext, initDynamicDropdown);
     }
-    public static ChoiceInfoParser getChoiceInfoParser(final GpConfig gpConfig, final GpContext gpContext, final boolean initDropdown) {
-        return new DynamicChoiceInfoParser(gpConfig, gpContext, initDropdown);
+    
+    /**
+     * 
+     * @param gpConfig, a valid GP server configuration
+     * @param gpContext, a valid GP context, expecting to have taskInfo set.
+     * @param initDynamicDropdown, if true initialize dynamic drop-down by doing a remote 'ls' call
+     *     (or loading from a cached copy if it's available).
+     * @return
+     */
+    public static ChoiceInfoParser getChoiceInfoParser(final GpConfig gpConfig, final GpContext gpContext, final boolean initDynamicDropdown) {
+        return new DynamicChoiceInfoParser(gpConfig, gpContext, initDynamicDropdown);
     }
 
     private final String paramName;

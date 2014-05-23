@@ -155,17 +155,6 @@ public class ChoiceInfoHelper {
             return null;
         }
     }
-    
-    public static final ChoiceInfo initChoiceInfo(final ParameterInfoRecord pinfoRecord, final ParameterInfo pinfo) {
-        if (ChoiceInfo.hasChoiceInfo(pinfoRecord.getFormal())) {
-            //it's a file choice
-            log.debug("Checking for cached value for File Choice, "+pinfo.getName()+"="+pinfo.getValue());
-            final boolean initDropdown=true;
-            ChoiceInfo choiceInfo = ChoiceInfo.getChoiceInfoParser(initDropdown).initChoiceInfo(pinfoRecord.getFormal());
-            return choiceInfo;
-        }
-        return null;
-    }
 
     /**
      * Get the JSON representation for the given choiceInfo.

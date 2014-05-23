@@ -35,6 +35,15 @@ public class Choice {
     }
 
     /**
+     * Create a new Choice, by default the label and the value will be the same.
+     * @param valueIn
+     * @param isRemoteDir
+     */
+    public Choice(final String valueIn, final boolean isRemoteDir) {
+        this(valueIn, valueIn, isRemoteDir);
+    }
+    
+    /**
      * Create a new Choice with the given label and value.
      * @param labelIn
      * @param valueIn
