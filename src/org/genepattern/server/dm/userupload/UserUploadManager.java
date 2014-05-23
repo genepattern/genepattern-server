@@ -122,7 +122,7 @@ public class UserUploadManager {
      * Otherwise, it is up to the calling method to commit or rollback the transaction.
      * 
      * @param userContext, requires a valid userId,
-     * @param gpFilePath, a GpFilePath to the upload file
+     * @param gpFileObj, a GpFilePath to the upload file
      * @param numParts, the number of parts this file is broken up into, based on the jumploader applet.
      * @throws Exception if a duplicate entry for the file is found in the database
      */
@@ -137,7 +137,7 @@ public class UserUploadManager {
      * Otherwise, it is up to the calling method to commit or rollback the transaction.
      * 
      * @param userContext, requires a valid userId,
-     * @param gpFilePath, a GpFilePath to the upload file
+     * @param gpFileObj, a GpFilePath to the upload file
      * @param numParts, the number of parts this file is broken up into, based on the jumploader applet.
      * @param modDuplicate, whether an existing duplicate entry is updated or if an error is thrown
      * @throws Exception if a duplicate entry for the file is found in the database and modDuplicate is false
@@ -242,7 +242,6 @@ public class UserUploadManager {
      * The root element is the user's upload directory, which typically is not displayed.
      * 
      * @param userContext
-     * @param inDir
      * @return
      */
     static public GpDirectoryNode getFileTree(final GpContext userContext) throws Exception { 
@@ -329,7 +328,7 @@ public class UserUploadManager {
     
     /**
      * query all files from the DB, for the given user.
-     * @param userId
+     * @param userContext
      * @return
      */
     static private List<UserUpload> getAllFiles(final GpContext userContext) {
