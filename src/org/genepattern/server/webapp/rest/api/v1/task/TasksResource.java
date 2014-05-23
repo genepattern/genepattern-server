@@ -656,7 +656,7 @@ public class TasksResource {
      *     WARN, Initialized from cache, problem connecting to remote server
      *     ERROR, Error in module manifest, didn't initialize choices.
      *     ERROR, Connection error to remote server (url)
-     *     ERROR, Timeout waiting for listing from remote server (url, timeout)
+     *     NOT_INITIALIZED, the dynamic drop-down was not initialized from the remote server
      * 
      * @param uriInfo
      * @param taskNameOrLsid
