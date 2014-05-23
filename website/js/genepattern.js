@@ -56,7 +56,8 @@ function ajaxEmailResponse(req) {
 	if (req.readyState == 4) {
 		if (req.status >= 200 && req.status < 300) {
 			// alert('all is well on email submission')
-		} else {
+		}
+        else {
 			alert("There was a problem in email notification:\n" + req.status
 					+ ' -- ' + req.statusText);
 		}
@@ -440,7 +441,7 @@ function jobStatusPoll() {
     }
 }
 
-function ajaxFileTabUpload(file, directory, done, index){
+function ajaxFileTabUpload(file, directory, done, index) {
     var loaded = 0;
     var step = 1024*1024;
     var total = file.size;
@@ -506,7 +507,7 @@ function ajaxFileTabUpload(file, directory, done, index){
 
         var upload = xhr.upload;
 
-        upload.addEventListener('load',function(){
+        upload.addEventListener('load',function() {
             setTimeout(function() {
                 var data = xhr.response;
 
@@ -577,8 +578,7 @@ function ajaxFileTabUpload(file, directory, done, index){
     reader.readAsArrayBuffer(blob);
 }
 
-function hasSpecialChars(filelist)
-{
+function hasSpecialChars(filelist) {
     var regex = new RegExp("[^A-Za-z0-9_.]");
     for (var i = 0; i < filelist.length; i++) {
         var file = filelist[i];
@@ -590,8 +590,7 @@ function hasSpecialChars(filelist)
     return false;
 }
 
-function warnSpecialChars(filelist, directory)
-{
+function warnSpecialChars(filelist, directory) {
     showDialog("Special Characters!",
         "One or more files being uploaded has a name containing special characters!<br/><br/>" +
             "Some older GenePattern modules do not handle special characters well. " +
@@ -674,10 +673,10 @@ function initUploadToaster(filelist, directory) {
             "minimizable" : true,
             "collapsable" : false,
             "minimizeLocation" : "left",
-            "load" : function(evt, dlg){
+            "load" : function(evt, dlg) {
                 $(".upload-dialog").find(".ui-dialog-titlebar-close").hide();
             },
-            "minimize" : function(evt, dlg){
+            "minimize" : function(evt, dlg) {
                 $("#dialog-extend-fixed-container")
                     .find(".upload-dialog")
                     .removeAttr("style");
@@ -805,7 +804,7 @@ function initUploads() {
             }
             try {
                 this.send(ui8a);
-            } catch(e){
+            } catch(e) {
                 this.send(ui8a.buffer);
             }
         };
@@ -834,7 +833,7 @@ function initUploads() {
             }
 
             //check for special characters
-            if(hasSpecialChars(filelist)){
+            if(hasSpecialChars(filelist)) {
                 warnSpecialChars(filelist, directory);
             }
             else
@@ -2883,7 +2882,8 @@ function buildJobResultsPage(data) {
         },
         "lengthMenu": [10, 20, 50, 100],
         stateSave: true,
-        "sPaginationType": "input"
+        "sPaginationType": "input",
+        "bProcessing": true
     });
 
     // Append the container to the correct past of the page
