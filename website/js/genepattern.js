@@ -1371,7 +1371,8 @@ function createFileWidget(linkElement, appendTo) {
                 "lsid": "",
                 "name": "Copy to Files Tab",
                 "description": "Copies this file from your job results to your files tab.",
-                "version": "<span class='glyphicon glyphicon-share' />", "documentation": "", "categories": [], "suites": [], "tags": []
+                "version": "<span class='glyphicon glyphicon-share' style='-webkit-transform:rotateY(180deg); -moz-transform:rotateY(180deg); -o-transform:rotateY(180deg); -ms-transform:rotateY(180deg);' />",
+                "documentation": "", "categories": [], "suites": [], "tags": []
             });
         }
 
