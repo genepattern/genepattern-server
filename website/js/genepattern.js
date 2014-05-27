@@ -2765,23 +2765,27 @@ function buildJobResultsPage(data) {
                                                 jobsDelete.push(id);
                                             });
 
-                                            // Make the Delete AJAX call
-                                            $.ajax({
-                                                type: "DELETE",
-                                                url: "/gp/rest/v1/jobs/delete?jobs=" + jobsDelete.join(","),
-                                                cache: false,
-                                                dataType: "text",
-                                                success: function(data, textStatus, jqXHR) {
-                                                    var filter = getJobFilter();
-                                                    loadJobResults(filter);
-                                                    showSuccessMessage(data);
-                                                },
-                                                error: function(data) {
-                                                    showErrorMessage(data);
-                                                }
-                                            });
-
-
+                                            if (confirm("Are you sure you want to delete these " + jobsDelete.length + " jobs?")) {
+                                                // Make the Delete AJAX call
+                                                $.ajax({
+                                                    type: "DELETE",
+                                                    url: "/gp/rest/v1/jobs/delete?jobs=" + jobsDelete.join(","),
+                                                    cache: false,
+                                                    dataType: "text",
+                                                    success: function(data, textStatus, jqXHR) {
+                                                        var filter = getJobFilter();
+                                                        if (!filter) filter = true;
+                                                        loadJobResults(filter);
+                                                        showSuccessMessage(data);
+                                                    },
+                                                    error: function(data) {
+                                                        var filter = getJobFilter();
+                                                        if (!filter) filter = true;
+                                                        loadJobResults(filter);
+                                                        showErrorMessage(data);
+                                                    }
+                                                });
+                                            }
                                         })
                                 )
                                 .append(
