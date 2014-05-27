@@ -2599,15 +2599,22 @@ function updateParamFileTable(paramName, fileDiv, groupId)
                 for(var group in groups)
                 {
                     var param_files = groups[group].files;
+                    var param_values = groups[group].values;
                     for(var t=0;t<param_files.length;t++)
                     {
                         if(param_files[t].name == file
                             && param_files[t].id == id)
                         {
+                            var idx=$.inArray(param_files[t].name, param_values);
+                            if (idx>-1) {
+                                param_values.splice(idx, 1);
+                                updateValuesForGroup(group, paramName, param_values);
+                            }
                             var fileObjListing = param_files;
                             fileObjListing.splice(t, 1);
                             updateFilesForGroup(group, paramName, fileObjListing);
                         }
+                        
                     }
                 }
                 updateParamFileTable(paramName, fileDiv);
