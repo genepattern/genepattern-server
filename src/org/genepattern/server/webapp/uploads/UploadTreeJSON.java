@@ -92,7 +92,7 @@ public class UploadTreeJSON extends JSONArray {
         attr.put("data-kind", kind);
 
         // Add partial file data
-        boolean isPartial = (file.getNumParts() != file.getNumPartsRecd()) && (file.getNumParts() != 0);
+        boolean isPartial = (file.getNumParts() > file.getNumPartsRecd());
         attr.put("data-partial", isPartial);
 
         // Add tooltip text

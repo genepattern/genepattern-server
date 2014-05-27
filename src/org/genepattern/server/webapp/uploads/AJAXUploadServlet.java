@@ -18,6 +18,7 @@ import java.io.*;
 
 /**
  * Servlet implementation class AJAXUploadServlet
+ * @author Thorin Tabor
  */
 public class AJAXUploadServlet extends HttpServlet {
     private static Logger log = Logger.getLogger(AJAXUploadServlet.class);
@@ -140,6 +141,9 @@ public class AJAXUploadServlet extends HttpServlet {
                 os.write(buf, 0, n);
             }
         }
+        catch (Throwable t) {
+            log.error("Something thrown while writing file chunk: " + t.getLocalizedMessage(), t);
+        }
         finally {
             is.close();
             os.close();
@@ -172,7 +176,7 @@ public class AJAXUploadServlet extends HttpServlet {
             return uploadFilePath;
         }
         catch (Exception e) {
-            log.error(e.getMessage());
+            log.error(e.getMessage(), e);
             throw new FileUploadException("Error initializing upload file reference for '"+relativeFile.getPath()+"': "+e.getLocalizedMessage());
         }
     }
@@ -207,6 +211,7 @@ public class AJAXUploadServlet extends HttpServlet {
                 UserUploadManager.createUploadFile(userContext, file, count);
             }
             catch (Throwable t) {
+                log.error("Error creating entry in DB for '" + file.getName() + "': " + t.getLocalizedMessage(), t);
                 throw new FileUploadException("Error creating entry in DB for '" + file.getName() + "': " + t.getLocalizedMessage());
             }
         }
@@ -215,6 +220,7 @@ public class AJAXUploadServlet extends HttpServlet {
             appendPartition(is, file.getServerFile());
         }
         catch (Throwable t) {
+            log.error("Error appending partition for '" + file.getName() + "': " + t.getLocalizedMessage(), t);
             throw new FileUploadException("Error appending partition for '"+file.getName()+"': "+t.getLocalizedMessage());
         }
 
@@ -222,6 +228,7 @@ public class AJAXUploadServlet extends HttpServlet {
             UserUploadManager.updateUploadFile(userContext, file, index + 1, count);
         }
         catch (Throwable t) {
+            log.error("Error updating database after file chunk appended '" + file.getName() + "': " + t.getLocalizedMessage(), t);
             throw new FileUploadException(t.getLocalizedMessage());
         }
 
