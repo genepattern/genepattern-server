@@ -97,8 +97,12 @@ public class UploadTreeJSON extends JSONArray {
 
         // Add tooltip text
         if (!"directory".equals(kind)) {
+            String hoverString = "";
             DateFormat df = new SimpleDateFormat("yyyy-MM-dd");
-            attr.put("title", df.format(file.getLastModified()) + " - " + JobHelper.getFormattedSize(file.getFileLength()));
+            if (file.getLastModified() !=  null) {
+                hoverString += df.format(file.getLastModified()) + " - ";
+            }
+            attr.put("title", hoverString + JobHelper.getFormattedSize(file.getFileLength()));
         }
         
         data.put(ATTR, attr);
