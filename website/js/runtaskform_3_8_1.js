@@ -814,12 +814,28 @@ function createTextDiv(parameterName, groupId, initialValuesList)
     return textDiv;
 }
 
+/**
+ * Get a unique id for a file div, based on parameterName and groupId.
+ * @param parameterName
+ * @param groupId
+ */
+function createFileDivId(parameterName, groupId) {
+    var divId="fileDiv-";
+    if (parameterName) {
+        divId += parameterName;
+    }
+    divId += "-";
+    if (groupId) {
+        divId += groupId;
+    }
+    return divId;
+}
 
 function createFileDiv(parameterName, groupId, enableBatch, initialValuesList)
 {
+    var fileDivId=createFileDivId(parameterName, groupId);
     var fileUploadDiv = $("<div class='fileUploadDiv'/>");
-
-    var fileDiv = $("<div class='fileDiv mainDivBorder'/>");
+    var fileDiv = $("<div class='fileDiv mainDivBorder' id='"+fileDivId+"' />");
 
     //enable dragging of file between groups
     fileDiv.droppable(
@@ -1079,7 +1095,7 @@ function createFileDiv(parameterName, groupId, enableBatch, initialValuesList)
                     fileObjListings.push(fileObj);
                 }
             }
-
+            
             updateFilesForGroup(groupId, parameterName, fileObjListings);
             updateParamFileTable(parameterName, fileDiv, groupId);
         }

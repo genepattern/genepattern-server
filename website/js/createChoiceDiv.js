@@ -1,7 +1,6 @@
 /**
- * Refactor, split the createChoiceDiv method into two. The initChoiceDiv is called the first time the
- * job input form is loaded.
- * The buildChoiceDiv is called after a dynamic choice is downloaded from the GP server.
+ * Initialize the choiceDiv. This method is called the first time the job input form is loaded.
+ * The buildChoiceDiv is called after a dynamic choice is initialized from the GP server.
  * 
  * @param paramaterName
  * @param groupId
@@ -9,7 +8,6 @@
  */
 function initChoiceDiv(parameterName, groupId, initialValuesList)
 {
-    console.log("initChoiceDiv.outer");
     var selectChoiceDiv = $("<div class='selectChoice' />");
     //check if there are predefined list of choices for this parameter
     var paramDetails = run_task_info.params[parameterName];
@@ -17,8 +15,58 @@ function initChoiceDiv(parameterName, groupId, initialValuesList)
     return buildChoiceDiv(selectChoiceDiv, choiceInfo, paramDetails, parameterName, groupId, initialValuesList);
 }
 
+/**
+ * Helper method, for the given choiceInfo, are there any matching values in the
+ * given list of initialValues.
+ * 
+ * @param choiceInfo
+ * @param initialValues
+ * 
+ * @return an empty array if there are no matches.
+ */
+function getMatchingChoices(choiceInfo, initialValues) {
+    var matching = [];
+    if (!choiceInfo || !choiceInfo.choices || choiceInfo.length==0 || !initialValues || initialValues.length==0 ) {
+        return matching;
+    }
+    for(var i=0; i<choiceInfo.choices.length; i++) {
+        var choice=choiceInfo.choices[i];
+        if (choice.value) {
+            for(var j=0; j<initialValues.length; j++) {
+                if (choice.value == initialValues[j]) {
+                    matching.push(initialValues[j]);
+                }
+            }
+        }
+    }
+    return matching;
+}
+
+/**
+ * Helper method, for the given choiceInfo, are there any 'custom values'
+ * in the given list of initialValues. 
+ * A custom value is defined as anything which is not in the 
+ * drop-down menu.
+ * 
+ * @param choiceInfo
+ * @param initialValues
+ * @returns
+ */
+function getCustomChoices(choiceInfo, initialValues) {
+    if (!choiceInfo || !choiceInfo.choices || choiceInfo.length==0 || !initialValues || initialValues.length==0 ) {
+        console.log("Undefined behavior", choiceInfo, initialValues);
+        return [];
+    }
+    var custom = initialValues.slice(0);
+    var matching = getMatchingChoices(choiceInfo, initialValues);
+    for (var i=0; i<matching.length; ++i) {
+        custom.pop(matching[i]);
+    }
+    return custom;
+}
+
 function buildChoiceDiv(selectChoiceDiv, choiceInfo, paramDetails, parameterName, groupId, initialValuesList) {
-    console.log("initChoiceDiv.inner");
+    console.log("buildChoiceDiv for "+parameterName, "initialValues="+initialValuesList);
     var doLoadChoiceDiv=false;
 
     if(paramDetails != undefined && paramDetails != null && choiceInfo != undefined  && choiceInfo != null && choiceInfo != '')
@@ -58,7 +106,6 @@ function buildChoiceDiv(selectChoiceDiv, choiceInfo, paramDetails, parameterName
         if (groupId !== null) {
             choiceId = choiceId+"_"+groupId;
         }
-        console.log('choiceId='+choiceId);
         var choice = $("<select class='choice' id='"+choiceId+"' />");
 
         if(paramDetails.allowMultiple)
@@ -187,7 +234,8 @@ function buildChoiceDiv(selectChoiceDiv, choiceInfo, paramDetails, parameterName
                 if(matchingValueList.length > 0)
                 {
                     //indicate initial value was found in drop-down list
-                    run_task_info.params[parameterName].initialChoiceValues = true;
+                    //run_task_info.params[parameterName].initialChoiceValues = true;
+                    paramDetails.initialChoiceValues = true; 
                 }
 
                 choice.val(matchingValueList);
@@ -198,7 +246,8 @@ function buildChoiceDiv(selectChoiceDiv, choiceInfo, paramDetails, parameterName
                 //will be selected since the choice is not multiselect
                 if(initialValuesList.length > 0)
                 {
-                    run_task_info.params[parameterName].initialChoiceValues = false;
+                    //run_task_info.params[parameterName].initialChoiceValues = false;
+                    paramDetails.initialChoiceValues = false; 
 
                     if(!(paramDetails.default_value == "" && initialValuesList[0] == "")
                             && $.inArray(initialValuesList[0], matchingValueList) != -1)
@@ -210,7 +259,8 @@ function buildChoiceDiv(selectChoiceDiv, choiceInfo, paramDetails, parameterName
                             || $.inArray(initialValuesList[0], matchingValueList) != -1)
                     {
                         //indicate initial value was found in drop-down list
-                        run_task_info.params[parameterName].initialChoiceValues = true;
+                        //run_task_info.params[parameterName].initialChoiceValues = true;
+                        paramDetails.initialChoiceValues = true; 
                     }
                 }
             }
@@ -219,7 +269,8 @@ function buildChoiceDiv(selectChoiceDiv, choiceInfo, paramDetails, parameterName
         }
         else
         {
-            run_task_info.params[parameterName].initialChoiceValues = true;
+            //run_task_info.params[parameterName].initialChoiceValues = true;
+            paramDetails.initialChoiceValues = true; 
         }
 
         var valueList = [];
@@ -232,13 +283,16 @@ function buildChoiceDiv(selectChoiceDiv, choiceInfo, paramDetails, parameterName
 
     //if this is not a reloaded job where the value was from a drop down list
     //and the type is not also a file
-    if(!run_task_info.params[parameterName].initialChoiceValues
+    if(!paramDetails.initialChoiceValues
+    //if(!run_task_info.params[parameterName].initialChoiceValues
             && $.inArray(field_types.FILE, run_task_info.params[parameterName]) != -1)
     {
         selectChoiceDiv.hide();
     }
     
     if (doLoadChoiceDiv === true) {
+        // HACK: ignore previously selected custom values
+        paramDetails.initialChoiceValues = true; 
         reloadChoiceDiv(selectChoiceDiv, choiceInfo, paramDetails, parameterName, groupId, initialValuesList);
     }
 
@@ -255,9 +309,15 @@ function reloadChoiceDiv(selectChoiceDiv, choiceInfoIn, paramDetails, parameterN
     $.getJSON( choiceInfoIn.href, 
         function( choiceInfo ) {
             console.log("drop-down loaded from: " + choiceInfo.href); 
-            console.log("status: " + choiceInfo.status);
+            console.log("status: " + JSON.stringify(choiceInfo.status, null, 2));
             $(selectChoiceDiv).empty();
             buildChoiceDiv(selectChoiceDiv, choiceInfo, paramDetails, parameterName, groupId, initialValuesList);
+            
+            //if it's a custom value then do the same as a send to parameter
+            var customChoices=getCustomChoices(choiceInfo, initialValuesList);
+            if (customChoices && customChoices.length>0) {
+                setInputField(parameterName, customChoices[0], groupId);
+            }
         } 
     );
 }
