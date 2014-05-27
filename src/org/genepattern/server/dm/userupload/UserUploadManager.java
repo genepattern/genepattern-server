@@ -85,6 +85,38 @@ public class UserUploadManager {
         }
     }
 
+    static public boolean isUploadInDB(final GpContext userContext, final GpFilePath uploadFilePath) throws Exception {
+        // if there is a record in the DB ...
+        boolean isInTransaction = false;
+        try {
+            isInTransaction = HibernateUtil.isInTransaction();
+        }
+        catch (Throwable t) {
+            String message = "DB connection error: "+t.getLocalizedMessage();
+            log.error(message, t);
+            throw new Exception(message);
+        }
+
+        try {
+            UserUploadDao dao = new UserUploadDao();
+            UserUpload fromDb = dao.selectUserUpload(userContext.getUserId(), uploadFilePath);
+            if (!isInTransaction) {
+                HibernateUtil.commitTransaction();
+            }
+            return fromDb != null;
+        }
+        catch (Throwable t) {
+            String message = "DB error getting file meta data: "+t.getLocalizedMessage();
+            log.error(message, t);
+            throw new Exception(message);
+        }
+        finally {
+            if (!isInTransaction) {
+                HibernateUtil.closeCurrentSession();
+            }
+        }
+    }
+
     /**
      * Create an instance of a GpFilePath object from a UserUpload record.
      * 
