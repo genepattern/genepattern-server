@@ -148,6 +148,7 @@ public class UserUploadManager {
         UserUploadDao dao = new UserUploadDao();
         UserUpload uu = dao.selectUserUpload(userContext.getUserId(), gpFileObj);
         if (uu != null && !modDuplicate) {
+            log.error("Duplicate entry found in the database for file: " + gpFileObj.getRelativePath());
             throw new Exception("Duplicate entry found in the database for file: " + gpFileObj.getRelativePath());
         }
         uu = UserUpload.initFromGpFileObj(userContext.getUserId(), uu, gpFileObj);
@@ -161,6 +162,7 @@ public class UserUploadManager {
             return uu;
         }
         catch (RuntimeException e) {
+            log.error("RuntimeException in createUploadFile(), rolling back commit.", e);
             HibernateUtil.rollbackTransaction();
             throw new Exception("Runtime exception creating upload file: " + gpFileObj.getRelativePath());
         }
