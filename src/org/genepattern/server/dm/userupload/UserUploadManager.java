@@ -65,6 +65,10 @@ public class UserUploadManager {
         try {
             UserUploadDao dao = new UserUploadDao();
             UserUpload fromDb = dao.selectUserUpload(userContext.getUserId(), uploadFilePath);
+
+            uploadFilePath.setNumParts(fromDb.getNumParts());
+            uploadFilePath.setNumPartsRecd(fromDb.getNumPartsRecd());
+
             if (initMetaData && fromDb != null) {
                 initMetadata(uploadFilePath, fromDb);
             }
