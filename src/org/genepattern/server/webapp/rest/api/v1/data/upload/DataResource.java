@@ -11,7 +11,6 @@ import java.net.URLEncoder;
 import java.util.Enumeration;
 import java.util.List;
 
-import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.*;
@@ -30,7 +29,6 @@ import org.genepattern.server.dm.GpFileObjFactory;
 import org.genepattern.server.dm.GpFilePath;
 import org.genepattern.server.dm.jobresult.JobResultFile;
 import org.genepattern.server.job.input.JobInputFileUtil;
-import org.genepattern.server.webapp.FileDownloader;
 import org.genepattern.server.webapp.jsf.JobHelper;
 import org.genepattern.server.webapp.rest.api.v1.Util;
 
@@ -829,5 +827,4 @@ public class DataResource {
             }
         }
     }
-
 }
