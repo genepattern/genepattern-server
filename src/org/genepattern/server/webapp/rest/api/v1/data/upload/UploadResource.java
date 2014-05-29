@@ -1,6 +1,7 @@
 package org.genepattern.server.webapp.rest.api.v1.data.upload;
 
 import org.apache.commons.fileupload.FileUploadException;
+import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
 import org.genepattern.server.DataManager;
 import org.genepattern.server.config.GpContext;
@@ -375,6 +376,9 @@ public class UploadResource {
 
             // Update the database
             UserUploadManager.updateUploadFile(userContext, file, file.getNumParts(), file.getNumParts());
+
+            // Delete the temp directory, since we no longer need it
+            FileUtils.deleteDirectory(uploadDir);
 
             return Response.ok().entity(status.toString()).build();
         }
