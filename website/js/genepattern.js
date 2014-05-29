@@ -536,7 +536,7 @@ function ajaxFileTabUpload(file, directory, done, index) {
             processData: false,
             contentType: false,
             data: uploadPayload,
-            url: "/gp/rest/v1/upload/multipart/?path=" + encodeURIComponent(path) + "&token=" + encodeURIComponent(token) + "&index=" + nextChunk,
+            url: "/gp/rest/v1/upload/multipart/?path=" + encodeURIComponent(path) + "&token=" + encodeURIComponent(token) + "&index=" + nextChunk + "&parts=" + totalChunks,
             success: function(data, textStatus, jqXHR) {
                 eventComplete = true;
                 nextChunk++;
@@ -572,7 +572,7 @@ function ajaxFileTabUpload(file, directory, done, index) {
                 processData: false,
                 contentType: false,
                 data: uploadPayload,
-                url: "/gp/rest/v1/upload/multipart/?path=" + encodeURIComponent(path) + "&token=" + encodeURIComponent(token) + "&index=" + nextChunk,
+                url: "/gp/rest/v1/upload/multipart/?path=" + encodeURIComponent(path) + "&token=" + encodeURIComponent(token) + "&index=" + nextChunk + "&parts=" + totalChunks,
                 success: function(data, textStatus, jqXHR) {
                     eventComplete = true;
                     nextChunk++;
@@ -589,7 +589,7 @@ function ajaxFileTabUpload(file, directory, done, index) {
     eventQueue.push(function() {
         $.ajax({
             type: "GET",
-            url: "/gp/rest/v1/upload/multipart/?path=" + encodeURIComponent(path) + "&token=" + encodeURIComponent(token),
+            url: "/gp/rest/v1/upload/multipart/?path=" + encodeURIComponent(path) + "&token=" + encodeURIComponent(token) + "&parts=" + totalChunks,
             success: function(data, textStatus, jqXHR) {
                 var missing = data['missing'];
                 if (missing.length > 0) {
@@ -615,7 +615,7 @@ function ajaxFileTabUpload(file, directory, done, index) {
         progressbar.tooltip();
         $.ajax({
             type: "POST",
-            url: "/gp/rest/v1/upload/multipart/assemble/?path=" + encodeURIComponent(path) + "&token=" + token,
+            url: "/gp/rest/v1/upload/multipart/assemble/?path=" + encodeURIComponent(path) + "&token=" + token + "&parts=" + totalChunks,
             success: function(data, textStatus, jqXHR) {
                 eventComplete = true;
                 token = data['token'];

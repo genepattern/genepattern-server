@@ -147,18 +147,6 @@ public class UploadResource {
     }
 
     public JSONObject getStatusObject(GpContext userContext, String token, String path, GpFilePath file, File uploadDir) throws Exception {
-        return getStatusObject(userContext, token, path, file, uploadDir, true);
-    }
-
-    public JSONObject getStatusObject(GpContext userContext, String token, String path, GpFilePath file, File uploadDir, boolean updateDatabase) throws Exception {
-        // Check if the file is in the DB
-        boolean inDB = UserUploadManager.isUploadInDB(userContext, file);
-
-        // Check if the file is not in the DB and throw an error if it does
-        if (!inDB) {
-            throw new FileUploadException("File upload not initialized");
-        }
-
         // Make list of missing and received
         JSONArray missing = new JSONArray();
         JSONArray received = new JSONArray();
@@ -170,11 +158,6 @@ public class UploadResource {
             else {
                 missing.put(i);
             }
-        }
-
-        // Update the database to match count received, if necessary
-        if (updateDatabase && received.length() != file.getNumPartsRecd()) {
-            UserUploadManager.updateUploadFile(userContext, file, received.length(), file.getNumParts());
         }
 
         // Create the status object to return
@@ -240,9 +223,6 @@ public class UploadResource {
                 throw new FileUploadException("File already exists");
             }
 
-            // Write to the database
-            UserUploadManager.createUploadFile(userContext, file, parts);
-
             // Create the temp directory for the upload
             File fileTempDir = ServerConfigurationFactory.instance().getTemporaryUploadDir(userContext);
 
@@ -269,14 +249,14 @@ public class UploadResource {
     @PUT
     @Path("multipart/")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response updateMultipartUpload(@Context HttpServletRequest request, @QueryParam("token") String token, @QueryParam("path") String path, @QueryParam("index") Integer index) {
+    public Response updateMultipartUpload(@Context HttpServletRequest request, @QueryParam("token") String token, @QueryParam("path") String path, @QueryParam("index") Integer index, @QueryParam("parts") int parts) {
         try {
             // Get the user context
             GpContext userContext = Util.getUserContext(request);
 
             // Get the file we will be uploading to
             GpFilePath file = getUploadFile(userContext, path);
-            file = initUploadFromDB(userContext, file);
+            file.setNumParts(parts);
 
             // Get the temp directory for the upload
             File uploadDir = getUploadDir(token);
@@ -315,14 +295,14 @@ public class UploadResource {
     @GET
     @Path("multipart/")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response getMultipartStatus(@Context HttpServletRequest request, @QueryParam("token") String token, @QueryParam("path") String path) {
+    public Response getMultipartStatus(@Context HttpServletRequest request, @QueryParam("token") String token, @QueryParam("path") String path, @QueryParam("parts") int parts) {
         try {
             // Get the user context
             GpContext userContext = Util.getUserContext(request);
 
             // Get the file we will be writing to
             GpFilePath file = getUploadFile(userContext, path);
-            file = initUploadFromDB(userContext, file);
+            file.setNumParts(parts);
 
             // Get the temp directory for the upload
             File uploadDir = getUploadDir(token);
@@ -340,20 +320,20 @@ public class UploadResource {
     @POST
     @Path("multipart/assemble/")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response assembleMultipartUpload(@Context HttpServletRequest request, @QueryParam("path") String path, @QueryParam("token") String token) {
+    public Response assembleMultipartUpload(@Context HttpServletRequest request, @QueryParam("path") String path, @QueryParam("token") String token, @QueryParam("parts") int parts) {
         try {
             // Get the user context
             GpContext userContext = Util.getUserContext(request);
 
             // Get the file we will be writing to
             GpFilePath file = getUploadFile(userContext, path);
-            file = initUploadFromDB(userContext, file);
+            file.setNumParts(parts);
 
             // Get the temp directory for the upload
             File uploadDir = getUploadDir(token);
 
             // Get the status object
-            JSONObject status = getStatusObject(userContext, token, path, file, uploadDir, false);
+            JSONObject status = getStatusObject(userContext, token, path, file, uploadDir);
 
             // See if any parts are still missing and throw an error if they are
             if (status.getJSONArray("missing").length() > 0) {
@@ -375,7 +355,8 @@ public class UploadResource {
             }
 
             // Update the database
-            UserUploadManager.updateUploadFile(userContext, file, file.getNumParts(), file.getNumParts());
+            UserUploadManager.createUploadFile(userContext, file, fileList.length);
+            UserUploadManager.updateUploadFile(userContext, file, fileList.length, fileList.length);
 
             // Delete the temp directory, since we no longer need it
             FileUtils.deleteDirectory(uploadDir);
