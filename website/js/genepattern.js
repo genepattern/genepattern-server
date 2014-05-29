@@ -867,8 +867,7 @@ function uploadDrop(event) {
     }
 
     if (filelist.length < 1) {
-        showDialog("Operation Not Supported", "Sorry! We don't support creating upload files directly " +
-            "from URL. Please download the file first and then upload here.");
+        showDialog("Operation Not Supported", "Sorry! This drag-and-drop operation is not supported.");
         return;
     }
 
