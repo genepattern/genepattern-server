@@ -441,7 +441,235 @@ function jobStatusPoll() {
     }
 }
 
+/**
+ * Upload the multipart file
+ *
+ * @param file - File object to upload (as per the HTML5 FIle API)
+ * @param directory - The path to the directory to upload to
+ * @param done - Boolean array tracking which files from this set have finished uploading
+ * @param index - The index of this file in the set
+ */
 function ajaxFileTabUpload(file, directory, done, index) {
+    var _readChunk = function(reader, file, nextChunk, size, loadFunc, errorFunc) {
+        reader.onload = loadFunc;
+        reader.onerror = errorFunc;
+
+        var start = nextChunk * size;
+        var blob = file.slice(start, start + size);
+        reader.readAsArrayBuffer(blob);
+    };
+
+    // Init the file reader
+    var reader = new FileReader();
+
+    var path = directory + file.name;                   // The path to the upload
+    var step = 1024*1024;                               // The chunk size
+    var total = file.size;                              // The total file size
+    var totalChunks = Math.ceil(total / step);          // Total number of chunks in file
+    var nextChunk = 0;                                  // Index of the next chunk
+    var eventQueue = [];                                // The queue of events to execute
+    var eventComplete = true ;                          // Flag for if the current event is complete
+    var eventError = null;                              // Flag for if the event has encountered an error
+    var token = null;                                   // The token for this upload resource
+    var totalQueue = null;                              // The total events that were in the queue
+
+    var progressbar = $(".upload-toaster-file[name='" + escapeJquerySelector(file.name) + "']").find(".upload-toaster-file-progress");
+    // Set the cancel button functionality
+    var cancelButton = $(".upload-toaster-file[name='" + escapeJquerySelector(file.name) + "']").find(".upload-toaster-file-cancel")
+        .click(function() {
+            eventError = "";
+
+            // Set the progressbar cancel message
+            progressbar.progressbar("value", 100);
+            progressbar
+                .find(".ui-progressbar-value")
+                .css("background", "#FCF1F3");
+            progressbar
+                .find(".upload-toaster-file-progress-label")
+                .text("Canceled!");
+
+            // Mark this upload as done
+            eventError = "Upload canceled";
+        });
+
+    var _setPercentComplete = function() {
+        var percent = 100 - Math.floor((eventQueue.length / totalQueue) * 100);
+        progressbar.progressbar("value", percent);
+    };
+
+    // Populate the event queue
+
+    // Read the first chunk - Done now so we can detect error states early
+    eventQueue.push(function() {
+        _readChunk(reader, file, nextChunk, step,
+            function() {
+                eventComplete = true;
+                _setPercentComplete();
+            },
+            function() {
+                eventError = "Uploading directories is not supported. Aborting upload.";
+            });
+    });
+
+    // Create the upload resource
+    eventQueue.push(function() {
+        $.ajax({
+            type: "POST",
+            url: "/gp/rest/v1/upload/multipart/?path=" + encodeURIComponent(path) + "&parts=" + totalChunks,
+            success: function(data, textStatus, jqXHR) {
+                eventComplete = true;
+                token = data['token'];
+                _setPercentComplete();
+            },
+            error: function(data, textStatus, jqXHR) {
+                eventError = data;
+            }
+        });
+    });
+
+    // Add the first PUT (since we have already read it in)
+    eventQueue.push(function() {
+        $.ajax({
+            type: "PUT",
+            dataType: "arraybuffer",
+            processData: false,
+            contentType: false,
+            data: reader.result,
+            url: "/gp/rest/v1/upload/multipart/?path=" + encodeURIComponent(path) + "&token=" + encodeURIComponent(token) + "&index=" + nextChunk,
+            success: function(data, textStatus, jqXHR) {
+                eventComplete = true;
+                nextChunk++;
+                _setPercentComplete();
+            },
+            error: function(data, textStatus, jqXHR) {
+                eventError = data;
+            }
+        });
+    });
+
+    // Add the remaining reads then PUTs
+    for (var i = 1; i < totalChunks; i++) {
+
+        // Read the next chunk
+        eventQueue.push(function() {
+            _readChunk(reader, file, nextChunk, step,
+                function() {
+                    eventComplete = true;
+                    _setPercentComplete();
+                },
+                function() {
+                    eventError = "Uploading directories is not supported. Aborting upload.";
+                });
+        });
+
+        // Then upload it
+        eventQueue.push(function() {
+            $.ajax({
+                type: "PUT",
+                dataType: "arraybuffer",
+                processData: false,
+                contentType: false,
+                data: reader.result,
+                url: "/gp/rest/v1/upload/multipart/?path=" + encodeURIComponent(path) + "&token=" + encodeURIComponent(token) + "&index=" + nextChunk,
+                success: function(data, textStatus, jqXHR) {
+                    eventComplete = true;
+                    nextChunk++;
+                    _setPercentComplete();
+                },
+                error: function(data, textStatus, jqXHR) {
+                    eventError = data;
+                }
+            });
+        });
+    }
+
+    // Add the check to make sure everything is uploaded
+    eventQueue.push(function() {
+        $.ajax({
+            type: "GET",
+            url: "/gp/rest/v1/upload/multipart/?path=" + encodeURIComponent(path) + "&token=" + encodeURIComponent(token),
+            success: function(data, textStatus, jqXHR) {
+                var missing = data['missing'];
+                if (missing.length > 0) {
+                    eventError = "Parts missing: " + missing;
+                }
+                else {
+                    eventComplete = true;
+                    _setPercentComplete();
+                }
+            },
+            error: function(data, textStatus, jqXHR) {
+                eventError = data;
+            }
+        });
+    });
+
+    // Add the command to assemble the file
+    eventQueue.push(function() {
+        $.ajax({
+            type: "POST",
+            url: "/gp/rest/v1/upload/multipart/assemble/?path=" + encodeURIComponent(path) + "&token=" + token,
+            success: function(data, textStatus, jqXHR) {
+                eventComplete = true;
+                token = data['token'];
+                _setPercentComplete();
+            },
+            error: function(data, textStatus, jqXHR) {
+                eventError = data;
+            }
+        });
+    });
+
+    // Add the event to mark this upload as done
+    eventQueue.push(function() {
+        progressbar.progressbar("value", 100);
+        done[index] = true;
+        eventComplete = true;
+    });
+
+
+    // Execute the event queue
+    var _checkEventQueue = function() {
+        if (eventError !== null) {                  // OH SHIT - There's an error
+            if (typeof eventError === 'object') {
+                eventError = eventError.responseText;
+            }
+
+            // Set the top error message
+            showErrorMessage(eventError);
+
+            // Set the progressbar error message
+            progressbar.progressbar("value", 100);
+            progressbar
+                .find(".ui-progressbar-value")
+                .css("background", "#FCF1F3");
+            progressbar
+                .find(".upload-toaster-file-progress-label")
+                .text("Error!");
+
+            // Mark this upload as done
+            done[index] = true;
+            return;
+        }
+
+        if (eventComplete) {
+            eventComplete = false;                  // Next event is not complete
+            var event = eventQueue.shift()          // Get the next event
+            if (event !== null && event !== undefined) {
+                event();                            // Execute it
+                setTimeout(_checkEventQueue, 1000); // Check the event queue again in a bit
+            }
+        }
+        else {
+            setTimeout(_checkEventQueue, 1000);     // Check the event queue again in a bit
+        }
+    };
+
+    totalQueue = eventQueue.length;
+    _checkEventQueue();
+}
+
+function ajaxFileTabUpload_Old(file, directory, done, index) {
     var loaded = 0;
     var step = 1024*1024;
     var total = file.size;
@@ -2325,6 +2553,9 @@ function loadJobStatus(jobId) {
         openVisualizers = "&openVisualizers=false";
     }
 
+    // Hide the send to parameter list
+    $(".send-to-param-list").hide();
+
     // Add to history so back button works
     history.pushState(null, document.title, location.protocol + "//" + location.host + location.pathname + "?jobid=" + jobId);
 
@@ -2700,7 +2931,7 @@ function populateJobResultsTable(settings, callback) {
     });
 }
 
-function buildJobResultsPage(data) {
+function buildJobResultsPage() {
     // Clear the div
     $("#jobResults").empty();
 
@@ -2906,9 +3137,6 @@ function loadJobResults(jobResults) {
         jobResults = "userId=" + username;
     }
 
-    // Set the filter
-    setJobFilter(filter);
-
     // Hide the search slider if it is open
     $(".search-widget").searchslider("hide");
 
@@ -2928,6 +3156,9 @@ function loadJobResults(jobResults) {
         param_group_ids: {}
     };
     parameter_and_val_groups = {}; //contains params and their values only
+
+    // Hide the send to parameter list
+    $(".send-to-param-list").hide();
 
     // Add to history so back button works
     var filter = getJobFilter();

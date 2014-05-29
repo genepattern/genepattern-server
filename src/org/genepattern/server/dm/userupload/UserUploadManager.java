@@ -225,9 +225,9 @@ public class UserUploadManager {
             if (uu.getNumParts() != totalParts) {
                 throw new Exception("Expecting numParts to be " + uu.getNumParts() + " but it was " + totalParts);
             }
-            if (uu.getNumPartsRecd() != (partNum - 1)) {
-                throw new Exception("Received partial upload out of order, partNum=" + partNum + ", expecting partNum to be " + (uu.getNumPartsRecd() + 1));
-            }
+//            if (uu.getNumPartsRecd() != (partNum - 1)) {
+//                throw new Exception("Received partial upload out of order, partNum=" + partNum + ", expecting partNum to be " + (uu.getNumPartsRecd() + 1));
+//            }
             uu.setNumPartsRecd(partNum);
             
             uu.init(gpFilePath.getServerFile());
