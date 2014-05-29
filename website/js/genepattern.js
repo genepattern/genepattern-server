@@ -2490,6 +2490,10 @@ function populateJobResultsTable(settings, callback) {
     };
     var _formatDate = function(dateString) {
         var date = new Date(dateString);
+        // Special case for Safari
+        if (!(date instanceof Date && isFinite(date))) {
+            return dateString;
+        }
         var month = $.datepicker.formatDate("M", date);
         var day = $.datepicker.formatDate("d", date);
         var hours = date.getHours() > 12 ? date.getHours() - 12 : (date.getHours() < 1 ? 12 : date.getHours());
