@@ -90,6 +90,13 @@ class LsfCommand {
             extraBsubArgs.add("-g");
             extraBsubArgs.add(jobGroup);
         }
+        
+        //special-case, enable custom hostname
+        final String hostname = this.lsfProperties.getProperty(LsfProperties.Key.HOSTNAME.getKey(), null);
+        if (hostname != null) {
+            extraBsubArgs.add("-m");
+            extraBsubArgs.add(hostname);
+        }
 
         final String cpuSlots=lsfProperties.getProperty(LsfProperties.Key.CPU_SLOTS.getKey());
         if (cpuSlots != null) {

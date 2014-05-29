@@ -156,6 +156,10 @@ executors:
             lsf.use.pre.exec.command: "false"
             # optionally set the number of CPU slots which the job requires, e.g. bsub -n 4 
             #lsf.cpu.slots: 4
+            # optionally set the lsf job group, e.g. bsub -g /genepattern
+            #lsf.group: 
+            # optionally set the lsf hostname(s), e.g. bsub -m "host1 host2"
+            #lsf.hostname: 
             # make sure to include valid list of value for lsf.extra.bsub.args, it doesn't work with an empty string
             #lsf.extra.bsub.args: 
             # default setting, no need to set
