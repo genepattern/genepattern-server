@@ -14,7 +14,8 @@ public class LsfProperties {
         EXTRA_BSUB_ARGS("lsf.extra.bsub.args"),
         JOB_COMPLETION_LISTENER("lsf.job.completion.listener"),
         PRIORITY("lsf.priority"),
-        CPU_SLOTS("lsf.cpu.slots"); // the -n arg to bsub
+        CPU_SLOTS("lsf.cpu.slots"), // the -n arg to bsub
+        JOB_GROUP("lsf.group"); // the -g arg to bsub
         
         private String key="lsf.key";
         Key(String key) {
