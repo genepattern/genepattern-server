@@ -1,6 +1,7 @@
 package org.genepattern.server.executor.lsf;
 
 import java.io.File;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Properties;
@@ -9,8 +10,6 @@ import org.genepattern.server.executor.CommandProperties;
 import org.genepattern.webservice.JobInfo;
 import org.junit.Assert;
 import org.junit.Test;
-
-import scala.actors.threadpool.Arrays;
 
 /**
  * junit tests for setting a custom job group with the original (<= 3.8.1) LsfCommandExecutor.
