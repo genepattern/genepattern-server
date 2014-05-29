@@ -619,7 +619,6 @@ function ajaxFileTabUpload(file, directory, done, index) {
             success: function(data, textStatus, jqXHR) {
                 eventComplete = true;
                 token = data['token'];
-                _setPercentComplete();
             },
             error: function(data, textStatus, jqXHR) {
                 eventError = data;
