@@ -529,12 +529,13 @@ function ajaxFileTabUpload(file, directory, done, index) {
 
     // Add the first PUT (since we have already read it in)
     eventQueue.push(function() {
+        var uploadPayload = new Uint8Array(reader.result);
         $.ajax({
             type: "PUT",
             dataType: "arraybuffer",
             processData: false,
             contentType: false,
-            data: reader.result,
+            data: uploadPayload,
             url: "/gp/rest/v1/upload/multipart/?path=" + encodeURIComponent(path) + "&token=" + encodeURIComponent(token) + "&index=" + nextChunk,
             success: function(data, textStatus, jqXHR) {
                 eventComplete = true;
@@ -564,12 +565,13 @@ function ajaxFileTabUpload(file, directory, done, index) {
 
         // Then upload it
         eventQueue.push(function() {
+            var uploadPayload = new Uint8Array(reader.result);
             $.ajax({
                 type: "PUT",
                 dataType: "arraybuffer",
                 processData: false,
                 contentType: false,
-                data: reader.result,
+                data: uploadPayload,
                 url: "/gp/rest/v1/upload/multipart/?path=" + encodeURIComponent(path) + "&token=" + encodeURIComponent(token) + "&index=" + nextChunk,
                 success: function(data, textStatus, jqXHR) {
                     eventComplete = true;
@@ -606,6 +608,11 @@ function ajaxFileTabUpload(file, directory, done, index) {
 
     // Add the command to assemble the file
     eventQueue.push(function() {
+        progressbar
+            .find(".upload-toaster-file-progress-label")
+            .text("Assembling File...");
+        progressbar.attr("title", "Please wait... For large files this could take several minutes...");
+        progressbar.tooltip();
         $.ajax({
             type: "POST",
             url: "/gp/rest/v1/upload/multipart/assemble/?path=" + encodeURIComponent(path) + "&token=" + token,
@@ -667,143 +674,6 @@ function ajaxFileTabUpload(file, directory, done, index) {
 
     totalQueue = eventQueue.length;
     _checkEventQueue();
-}
-
-function ajaxFileTabUpload_Old(file, directory, done, index) {
-    var loaded = 0;
-    var step = 1024*1024;
-    var total = file.size;
-    var start = 0;
-    var partitionIndex = 0;
-    var partitionCount = Math.ceil(total / step);
-
-    var reader = new FileReader();
-    var xhr = null;
-    var xhrCanceled = false;
-
-    var progressbar = $(".upload-toaster-file[name='" + escapeJquerySelector(file.name) + "']").find(".upload-toaster-file-progress");
-
-    // Set the cancel button functionality
-    var cancelButton = $(".upload-toaster-file[name='" + escapeJquerySelector(file.name) + "']").find(".upload-toaster-file-cancel");
-    cancelButton.click(function() {
-        //var xhr = progressbar.data("xhr");
-        xhr.abort();
-
-        // Set the progressbar cancel message
-        progressbar.progressbar("value", 100);
-        progressbar
-            .find(".ui-progressbar-value")
-            .css("background", "#FCF1F3");
-        progressbar
-            .find(".upload-toaster-file-progress-label")
-            .text("Canceled!");
-
-        // Mark this upload as done
-        xhrCanceled = true;
-        done[index] = true;
-    });
-
-    // Handle the directory error condition
-    reader.onerror = function(event) {
-        // Set the top error message
-        var message = "Uploading directories is not supported. Aborting upload.";
-        showErrorMessage(message);
-
-        // Set the progressbar error message
-        progressbar.progressbar("value", 100);
-        progressbar
-            .find(".ui-progressbar-value")
-            .css("background", "#FCF1F3");
-        progressbar
-            .find(".upload-toaster-file-progress-label")
-            .text("Error!");
-
-        // Mark this upload as done
-        done[index] = true;
-    };
-
-    reader.onload = function(event) {
-        // Double check for canceling
-        if (xhrCanceled) {
-            xhr.abort();
-            return;
-        }
-
-        loaded += event.loaded;
-        xhr = new XMLHttpRequest();
-        progressbar.data("xhr", xhr);
-
-        var upload = xhr.upload;
-
-        upload.addEventListener('load',function() {
-            setTimeout(function() {
-                var data = xhr.response;
-
-                if (data.match("^Error:")) {
-                    xhr.abort();
-
-                    // Set the top error message
-                    showErrorMessage(data);
-
-                    // Set the progressbar error message
-                    progressbar.progressbar("value", 100);
-                    progressbar
-                        .find(".ui-progressbar-value")
-                        .css("background", "#FCF1F3");
-                    progressbar
-                        .find(".upload-toaster-file-progress-label")
-                        .text("Error!");
-
-                    // Restore the dialog if necessary
-                    if ($("#dialog-extend-fixed-container").find(".upload-dialog").length > 0) {
-                        $(".upload-dialog").css("z-index", "9000");
-                        $(".upload-toaster-list").dialogExtend("restore");
-                    }
-
-                    // Mark this upload as done
-                    done[index] = true;
-
-                    return;
-                }
-
-                if (loaded < total) {
-                    blob = file.slice(loaded, loaded + step + 1);
-                    reader.readAsArrayBuffer(blob);
-                }
-                else {
-                    loaded = total;
-                }
-
-                var progress = Math.min(Math.round((loaded/total) * 100), 100);
-                progressbar.progressbar("value", progress);
-
-                if (loaded === total) {
-                    if (!data.match("^Error:")) {
-                        done[index] = true;
-                    }
-                }
-            }, 10);
-        }, false);
-
-        xhr.open("POST", "/gp/AJAXUpload?fileName=" + file.name);
-        xhr.overrideMimeType("application/octet-stream");
-        xhr.setRequestHeader('partitionCount', partitionCount.toString());
-        xhr.setRequestHeader('partitionIndex', partitionIndex.toString());
-        xhr.setRequestHeader('filename', file.name);
-        xhr.setRequestHeader('uploadPath', directory);
-        //xhr.sendAsBinary(event.target.result);
-        xhr.send(event.target.result);
-
-        partitionIndex++;
-
-        // Special case for empty files
-        if (partitionCount === 0) {
-            progressbar.progressbar("value", 100);
-            done[index] = true;
-        }
-    };
-    var blob = file.slice(start, start + step + 1);
-    reader.readAsArrayBuffer(blob);
 }
 
 function hasSpecialChars(filelist) {
