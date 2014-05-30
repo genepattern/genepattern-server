@@ -1,4 +1,4 @@
-package org.genepattern.server.webapp.rest.api.vi.job;
+package org.genepattern.server.webapp.rest.api.v1.job;
 
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;

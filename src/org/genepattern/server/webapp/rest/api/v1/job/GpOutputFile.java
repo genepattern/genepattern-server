@@ -6,8 +6,8 @@ import java.util.List;
 
 import org.apache.log4j.Logger;
 import org.genepattern.server.dm.GpFilePath;
+import org.genepattern.server.webapp.rest.api.v1.DateUtil;
 import org.genepattern.server.webapp.rest.api.v1.Rel;
-import org.genepattern.server.webapp.rest.api.v1.Util;
 import org.genepattern.util.GPConstants;
 import org.genepattern.webservice.ParameterInfo;
 import org.json.JSONArray;
@@ -99,7 +99,7 @@ public class GpOutputFile {
 
         o.put("link", link.toJson());
         o.put("fileLength", fileLength);
-        o.put("lastModified", Util.toIso8601(lastModified));
+        o.put("lastModified", DateUtil.toIso8601(lastModified));
         // include relative path, to make it easier to work with files in sub directories
         try {  
             if (path != null) {
