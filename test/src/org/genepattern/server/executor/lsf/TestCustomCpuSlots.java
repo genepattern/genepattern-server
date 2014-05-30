@@ -36,7 +36,7 @@ public class TestCustomCpuSlots {
         lsfCommand.getLsfJob().getCommand();
         
         Assert.assertEquals(
-            "custom hostname(s)",
+            "custom lsf.cpu.slots",
             Arrays.asList(new String[]{"-R", "rusage[mem=2]", "-M", "2", "-n", "6"}),
             lsfCommand.getLsfJob().getExtraBsubArgs());
     }

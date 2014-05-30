@@ -288,7 +288,7 @@ public class BroadCoreLsfRunner implements JobRunner {
         return arg;
     }
     
-    private LsfJob initLsfJob(final DrmJobSubmission gpJob) {
+    protected LsfJob initLsfJob(final DrmJobSubmission gpJob) {
         final Integer jobId=gpJob.getGpJobNo();
         final File runDir=gpJob.getWorkingDir();
         final File stdinFile=gpJob.getStdinFile();
@@ -344,11 +344,37 @@ public class BroadCoreLsfRunner implements JobRunner {
             }
         }
 
+        //special-case, enable per-user job groups
+        final Value jobGroup = gpJob.getValue(LsfProperties.Key.JOB_GROUP.getKey());
+        if (jobGroup != null) {
+            extraBsubArgs.add("-g");
+            extraBsubArgs.add(jobGroup.join(" "));
+        }
+        
+        //special-case, enable custom hostname
+        Value hostnames=gpJob.getValue(LsfProperties.Key.HOSTNAME.getKey());
+        if (hostnames != null && hostnames.getNumValues() > 0) {
+            extraBsubArgs.add("-m");
+            extraBsubArgs.add(hostnames.join(" "));
+        }
+
         if (gpJob.getCpuCount()!=null) {
             extraBsubArgs.add("-n");
             extraBsubArgs.add(""+gpJob.getCpuCount());
         }
-        
+        else if (gpJob.getNodeCount()!=null) {
+            extraBsubArgs.add("-n");
+            extraBsubArgs.add(""+gpJob.getNodeCount());
+        }
+        else {
+            Integer lsfCpuSlots=gpJob.getGpConfig().getGPIntegerProperty(gpJob.getJobContext(), LsfProperties.Key.CPU_SLOTS.getKey());
+            if (lsfCpuSlots != null) {
+                log.warn("Using deprecated key '"+LsfProperties.Key.CPU_SLOTS.getKey()+"' Use '"+JobRunner.PROP_CPU_COUNT+"' instead.");
+                extraBsubArgs.add("-n");
+                extraBsubArgs.add(""+lsfCpuSlots);
+            }
+        }
+
         if (extraBsubArgsFromConfigFile != null) {
             if (extraBsubArgsFromConfigFile.getNumValues() > 1) {
                 //it's a list
