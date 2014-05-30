@@ -2276,8 +2276,8 @@ function initRecentJobs() {
 
             statusBoxes.each(function(index, ui) {
                 $(ui).empty();
-                if (jobsProcessing.length > 0) {
-                    $(ui).text(" " + jobsProcessing.length + " Jobs Processing");
+                if (jobsProcessing > 0) {
+                    $(ui).text(" " + jobsProcessing + " Jobs Processing");
                     $(ui).prepend("<img src='/gp/images/spin.gif' alt='Jobs Currently Processing' />");
                     $.data($(ui).parent()[0], "continuePolling", true);
                 }
