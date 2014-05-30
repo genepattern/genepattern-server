@@ -118,7 +118,25 @@ executors:
         classname: org.genepattern.server.executor.TestCommandExecutor
         configuration.file: test_command_executor.yaml
 
-    # nested declaration with embedded configuration, <id>: { classname: <classname>, configuration: {}} 
+    #
+    # Lsf integration with the JobRunner API, using the Broad Core library
+    #
+    LsfBroadCore: 
+        # Note: technically, you are using the JobExecutor implementation of the CommandExecutor API ...
+        classname: org.genepattern.server.executor.drm.JobExecutor
+        configuration.properties:
+            # ... which loads the JobRunner with the 'jobRunnerClassname'
+            jobRunnerClassname: org.genepattern.drm.impl.lsf.broadcore.BroadCoreLsfRunner
+            jobRunnerName: LsfBroadCore
+        default.properties:
+            job.logFile: .lsf.out
+            job.queue: genepattern
+    
+
+    #
+    # Lsf integration with the CommandExecutor API
+    # Deprecated in GP 3.8.2 release.
+    #
     LSF:
         classname: org.genepattern.server.executor.lsf.LsfCommandExecutor
         #BroadCore configuration properties

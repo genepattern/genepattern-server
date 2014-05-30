@@ -1,4 +1,4 @@
-package org.genepattern.drm.impl.lsf;
+package org.genepattern.drm.impl.lsf.broadcore;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -28,14 +28,14 @@ import edu.mit.broad.core.lsf.LsfJob;
 
 /**
  * LSF integration via the JobRunner API, based on LsfCommandExecutor2.
- * Uses the Broad Core library for running LSF commands and parsing the results 
- * from stdout.
+ * This implementation uses the Broad Core library for running LSF commands 
+ * and parsing the results from stdout.
  *  
  * @author pcarr
  *
  */
-public class LsfJobRunner implements JobRunner {
-    private static final Logger log = Logger.getLogger(LsfJobRunner.class);
+public class BroadCoreLsfRunner implements JobRunner {
+    private static final Logger log = Logger.getLogger(BroadCoreLsfRunner.class);
 
     @Override
     public void stop() {
