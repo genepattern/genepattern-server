@@ -660,7 +660,7 @@ function ajaxFileTabUpload(file, directory, done, index) {
 
         if (eventComplete) {
             eventComplete = false;                  // Next event is not complete
-            var event = eventQueue.shift()          // Get the next event
+            var event = eventQueue.shift();         // Get the next event
             if (event !== null && event !== undefined) {
                 event();                            // Execute it
                 setTimeout(_checkEventQueue, 1000); // Check the event queue again in a bit
@@ -1318,7 +1318,7 @@ function createGenomeSpaceWidget(linkElement, appendTo) {
         // Init the initial send to parameters
         var sendToParamList = widget.find(".send-to-param-list");
         sendToParamForMenu(sendToParamList);
-    }
+    };
 
     if (all_modules_map !== null) {
         _createGenomeSpaceWidgetInner(linkElement, appendTo);
@@ -1381,7 +1381,7 @@ function createInputFileWidget(linkElement, appendTo) {
                 lists: [actionList]});
 
         $(appendTo).append(widget);
-    }
+    };
 
     if (all_modules_map !== null) {
         _createFileWidgetInner(linkElement, appendTo);
@@ -1528,7 +1528,7 @@ function createFileWidget(linkElement, appendTo) {
                     else if (jobCopyAction) {
                         openUploadDirectoryDialog(null, function() {
                             var moveToUrl = $(uploadDirectorySelected).attr("href");
-                            var moveToPath = uploadPathFromUrl(moveToUrl)
+                            var moveToPath = uploadPathFromUrl(moveToUrl);
 
                             $.ajax({
                                 type: "POST",
@@ -1560,7 +1560,7 @@ function createFileWidget(linkElement, appendTo) {
                     else if (moveAction) {
                         openUploadDirectoryDialog(null, function() {
                             var moveToUrl = $(uploadDirectorySelected).attr("href");
-                            var moveToPath = uploadPathFromUrl(moveToUrl)
+                            var moveToPath = uploadPathFromUrl(moveToUrl);
 
                             $.ajax({
                                 type: "PUT",
@@ -1931,7 +1931,7 @@ function createFileWidget(linkElement, appendTo) {
         // Init the initial send to parameters
         var sendToParamList = widget.find(".send-to-param-list");
         sendToParamForMenu(sendToParamList);
-    }
+    };
 
     if (all_modules_map !== null) {
         _createFileWidgetInner(linkElement, appendTo);
@@ -2197,19 +2197,19 @@ function createJobWidget(job) {
                 var rAction = $(event.target).closest(".module-listing").find(".module-name").text().trim().indexOf("View R") == 0;
 
                 if (javaAction) {
-                    window.open("/gp/rest/v1/jobs/" + job.jobId + "/code?language=Java")
+                    window.open("/gp/rest/v1/jobs/" + job.jobId + "/code?language=Java");
                     $(".search-widget:visible").searchslider("hide");
                     return;
                 }
 
                 else if (matlabAction) {
-                    window.open("/gp/rest/v1/jobs/" + job.jobId + "/code?language=MATLAB")
+                    window.open("/gp/rest/v1/jobs/" + job.jobId + "/code?language=MATLAB");
                     $(".search-widget:visible").searchslider("hide");
                     return;
                 }
 
                 else if (rAction) {
-                    window.open("/gp/rest/v1/jobs/" + job.jobId + "/code?language=R")
+                    window.open("/gp/rest/v1/jobs/" + job.jobId + "/code?language=R");
                     $(".search-widget:visible").searchslider("hide");
                     return;
                 }
@@ -2548,7 +2548,7 @@ function populateJobResultsTable(settings, callback) {
             .addClass("job-delete-checkbox")
             .attr("name", job.jobId)
             .attr("type", "checkbox")
-            .attr("value", job.jobId)
+            .attr("value", job.jobId);
         return del[0].outerHTML;
     };
     var _buildResultFiles = function(job) {
@@ -2968,7 +2968,7 @@ function buildJobResultsPage() {
                         )
                 )
         )
-        .appendTo(container)
+        .appendTo(container);
 
     // Build the table body
     var tbody = $("<tbody></tbody>")
