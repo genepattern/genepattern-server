@@ -517,15 +517,6 @@
 //    equal(prettyDate(now, "2007/01/26 22:23:30"), undefined);
 //});
 
-test("gpUtil", function() {
-    // test gpUtil
-    equal(gpUtil.aNull === null, true, "gpUtil.aNull === null");
-    equal(gpUtil.aNull !== null, false, "gpUtil.aNull !== null");
-    equal(gpUtil.emptyString === null, false, "gpUtil.emptyString === null");
-    equal(gpUtil.emptyString !== null, true, "gpUtil.emptyString !== null");
-    equal(gpUtil.doIt(), true, "test gpUtil");
-});
-
 test("createChoiceDiv", function() {
     // test createFileDivId
     equal(createFileDivId("input.file", ""), "fileDiv-input.file-", "createFileDivId, empty groupId");
