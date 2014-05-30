@@ -9,6 +9,8 @@ import java.util.Map;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 
+import com.google.common.base.Joiner;
+
 
 public class Value {
     static public Value parse(final Object object) throws ConfigurationException {
@@ -160,6 +162,46 @@ public class Value {
             return getValue();
         }
         return values.toString();
+    }
+
+    /**
+     * Call join() with the default ' ' separator character.
+     * @return
+     */
+    public String join() {
+        return join(" ");
+    }
+
+    /**
+     * Print the list of values as a {sep} separated String.
+     * @param sep, the separator character, by default ' '.
+     * @return
+     */
+    public String join(String sep) {
+        if (sep==null) { sep = " "; }
+        if (isMap()) {
+            return joinMap(mapValue, sep, "=");
+        }
+        return join(values, sep);
+    }
+    
+    public static String join(List<String> values, String sep) {
+        if (values==null || values.size()==0) {
+            return "";
+        }
+        else if (values.size()==0) {
+            return values.get(0);
+        }
+        return Joiner.on(sep).join(values.toArray());
+    }
+    
+    public static String joinMap(Map<?,?> map, String sep, String keyValueSep) {
+        if (map==null || map.size()==0) {
+            return "";
+        }
+        return Joiner.on(sep)
+                .withKeyValueSeparator(keyValueSep)  // e.g. '='
+                .join(map);
     }
 }
 
