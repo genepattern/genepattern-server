@@ -443,7 +443,6 @@ public class JobExecutor implements CommandExecutor2 {
         }
         log.debug(jobRunnerName+" terminateJob, gpJobNo="+jobInfo.getJobNumber());
         final DrmJobRecord drmJobRecord=jobLookupTable.lookupJobRecord(jobInfo.getJobNumber());
-        drmJobRecord.getExtJobId();
         boolean cancelled=jobRunner.cancelJob(drmJobRecord);
         log.debug("terminateJob(gpJobId="+jobInfo.getJobNumber()+", extJobId="+drmJobRecord.getExtJobId()+"): cancelled="+cancelled);
     }
