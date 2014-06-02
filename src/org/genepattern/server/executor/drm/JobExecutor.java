@@ -389,6 +389,7 @@ public class JobExecutor implements CommandExecutor2 {
         }
         jobStatusService.shutdownNow();
         svcDelay.shutdownNow();
+        jobCancellationService.shutdownNow();
         log.info("stopped job executor: "+jobRunnerName+" ( "+jobRunnerClassname+" )");
     }
     
