@@ -86,6 +86,27 @@ public class BroadCoreLsfRunner implements JobRunner {
         LocalLsfJob.cancel(jobs);
         return true;
     }
+    
+    private File getLogFile(DrmJobRecord drmJobRecord) {
+        return getRelativeFile(drmJobRecord.getWorkingDir(), drmJobRecord.getLogFile());
+    }
+
+    private File getLogFile(DrmJobSubmission drmJobSubmission) {
+        return getRelativeFile(drmJobSubmission.getWorkingDir(), drmJobSubmission.getLogFile());
+    }
+
+    private File getRelativeFile(final File workingDir, final File file) {
+        if (file == null) {
+            return null;
+        }
+        else if (file.isAbsolute()) {
+            return file;
+        }
+        if (workingDir != null) {
+            return new File(workingDir, file.getPath());
+        }
+        return file;
+    }
 
     private DrmJobStatus handleStatus(final DrmJobRecord drmJobRecord, final LocalLsfJob localJob) {
         final String lsfStatusCode = localJob.getLsfStatusCode();
@@ -99,7 +120,7 @@ public class BroadCoreLsfRunner implements JobRunner {
             //special-case, task cancellation
             String jobStatusMessage=lsfStatusCode;
             int exitCode=-1;
-            final File lsfJobOutputFile=drmJobRecord.getLogFile();
+            final File lsfJobOutputFile=getLogFile(drmJobRecord);
             if (lsfJobOutputFile != null) {
                 try {
                     int count=0;
@@ -127,8 +148,8 @@ public class BroadCoreLsfRunner implements JobRunner {
                 }
             }
             return new DrmJobStatus.Builder(drmJobRecord.getExtJobId(), DrmJobState.FAILED)
-            .jobStatusMessage(jobStatusMessage)
-            .exitCode(exitCode)
+                .jobStatusMessage(jobStatusMessage)
+                .exitCode(exitCode)
             .build();
         }
 
@@ -310,8 +331,9 @@ public class BroadCoreLsfRunner implements JobRunner {
         
         //Note: BroadCore does not handle the %J idiom for the output file
         final String jobReportFilename;
-        if (gpJob.getLogFile() != null) {
-            jobReportFilename=gpJob.getLogFile().getPath();
+        final File logFile = getLogFile(gpJob);
+        if (logFile != null) {
+            jobReportFilename=logFile.getPath();
             lsfJob.setOutputFilename(jobReportFilename);
         }
         else {
