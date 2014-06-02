@@ -58,7 +58,8 @@ public class JobExecutor implements CommandExecutor2 {
     private BlockingQueue<DrmJobRecord> runningJobs;
     private Thread jobHandlerThread;
     
-    private ScheduledExecutorService svc=Executors.newSingleThreadScheduledExecutor(new ThreadFactory() {
+    // wait for a fixed delay before putting a job back on the status checking queue
+    private ScheduledExecutorService svcDelay=Executors.newSingleThreadScheduledExecutor(new ThreadFactory() {
         @Override
         public Thread newThread(final Runnable r) {
             final Thread t=new Thread(r);
@@ -75,6 +76,17 @@ public class JobExecutor implements CommandExecutor2 {
             final Thread t=new Thread(r);
             t.setDaemon(true);
             t.setName("JobExecutor-1");
+            return t;
+        }
+    });
+
+    // call to JobRunner.cancelJob in a separate thread
+    private ScheduledExecutorService jobCancellationService=Executors.newSingleThreadScheduledExecutor(new ThreadFactory() {
+        @Override
+        public Thread newThread(final Runnable r) {
+            final Thread t=new Thread(r);
+            t.setDaemon(true);
+            t.setName("JobRunner-cancel");
             return t;
         }
     });
@@ -323,7 +335,7 @@ public class JobExecutor implements CommandExecutor2 {
             }
             //put it back onto the queue
             final long delay=getDelay(drmJobRecord, drmJobStatus);
-            svc.schedule(new Runnable() {
+            svcDelay.schedule(new Runnable() {
                 @Override
                 public void run() {
                     try {
@@ -376,7 +388,7 @@ public class JobExecutor implements CommandExecutor2 {
             jobRunner.stop();
         }
         jobStatusService.shutdownNow();
-        svc.shutdownNow();
+        svcDelay.shutdownNow();
         log.info("stopped job executor: "+jobRunnerName+" ( "+jobRunnerClassname+" )");
     }
     
@@ -436,6 +448,14 @@ public class JobExecutor implements CommandExecutor2 {
         }
     }
 
+    /**
+     * Terminate the job from a new thread ... wait for 5 seconds to give the job a chance to 
+     * cancel (via JobRunner callback) ... otherwise make a direct call to GPAT.handleJobCompletion
+     * so that the UI indicates that the task was cancelled.
+     * 
+     * @param drmJobRecord
+     * @throws InterruptedException
+     */
     @Override
     public void terminateJob(final JobInfo jobInfo) throws Exception {
         if (jobInfo==null) {
@@ -443,8 +463,42 @@ public class JobExecutor implements CommandExecutor2 {
         }
         log.debug(jobRunnerName+" terminateJob, gpJobNo="+jobInfo.getJobNumber());
         final DrmJobRecord drmJobRecord=jobLookupTable.lookupJobRecord(jobInfo.getJobNumber());
-        boolean cancelled=jobRunner.cancelJob(drmJobRecord);
-        log.debug("terminateJob(gpJobId="+jobInfo.getJobNumber()+", extJobId="+drmJobRecord.getExtJobId()+"): cancelled="+cancelled);
+        if (drmJobRecord==null) {
+            log.debug("drmJobRecord==null");
+        }
+
+        Future<Boolean> f = jobCancellationService.submit(new Callable<Boolean>() {
+            @Override
+            public Boolean call() throws Exception {
+                boolean cancelled=jobRunner.cancelJob(drmJobRecord);
+                return cancelled;
+            }
+        });
+        
+        Boolean cancelled=null;
+        try {
+            //hard-coded ... wait at most 5 seconds to cancel the job before falling back to manually updating the job status record
+            cancelled=f.get(5, TimeUnit.SECONDS);
+        }
+        catch (ExecutionException e) {
+            log.error("Error cancelling job="+drmJobRecord.getGpJobNo(), e);
+        }
+        catch (TimeoutException e) {
+            log.debug("timeout while cancelling job="+drmJobRecord.getGpJobNo(), e);
+        }
+        if (cancelled) {
+            return;
+        }
+        
+        //fallback, either it took too long to cancel, or there was some other error
+        int gpJobNo=jobInfo.getJobNumber();
+        try {
+            log.debug("Calling GPAT.handleJobCompletion for job="+drmJobRecord.getGpJobNo());
+            GenePatternAnalysisTask.handleJobCompletion(gpJobNo, -1, "User terminated job #"+gpJobNo);
+        }
+        catch (Throwable t) {
+            log.error("Error in the call to GPAT.handleJobCompletion for cancelled job="+gpJobNo, t);
+        }
     }
 
     /**
