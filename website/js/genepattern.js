@@ -423,12 +423,22 @@ function setModuleSearchTitle(filter) {
     }
 }
 
+function updateJobStatusPage() {
+    var isJobStatusOpen = $(".on-job-status-page").length > 0;
+    if (isJobStatusOpen && currentJobNumber !== undefined && currentJobNumber !== null) {
+        loadJobStatus(currentJobNumber);
+    }
+}
+
 function jobStatusPoll() {
     var _jobStatusPoll = function() {
         var continuePolling = $.data($(".current-job-status")[0], "continuePolling");
         if (continuePolling === undefined) continuePolling = true;
 
         initRecentJobs();
+
+        // Update the job status page, too, if open
+        updateJobStatusPage();
 
         if (continuePolling) {
             setTimeout(function() {
@@ -2327,7 +2337,12 @@ function renderJob(jobJson, tab) {
         .attr("onclick", "openJobWidget(this); return false;")
         .attr("data-jobid", jobJson.jobId)
         .attr("data-json", JSON.stringify(jobJson))
-        .text(jobJson.taskName + " (" + jobJson.jobId + ")")
+        .text(jobJson.jobId + ". " + jobJson.taskName + " ")
+        .append(
+            $("<span></span>")
+                .attr("class", "glyphicon glyphicon-info-sign")
+                .css("color", "darkgray")
+        )
         .appendTo(jobName);
 
     var jobDetails = $("<div></div>")
@@ -2498,7 +2513,11 @@ function populateJobResultsTable(settings, callback) {
             .attr("onclick", "openJobWidget(this); return false;")
             .attr("data-jobid", job.jobId)
             .attr("data-json", JSON.stringify(job))
-            .append(count + ". " + job.taskName)
+            .append(count + ". " + job.taskName + " ")
+            .append(
+                $("<span></span>")
+                    .attr("class", "glyphicon glyphicon-info-sign")
+            )
             .appendTo(child);
         $("<br/>").appendTo(child);
 
@@ -2605,7 +2624,11 @@ function populateJobResultsTable(settings, callback) {
                     .attr("onclick", "openJobWidget(this); return false;")
                     .attr("data-jobid", job.jobId)
                     .attr("data-json", JSON.stringify(job))
-                    .text(" " + job.taskName)
+                    .text(" " + job.taskName + " ")
+                    .append(
+                        $("<span></span>")
+                            .attr("class", "glyphicon glyphicon-info-sign")
+                    )
             )
             .append(results)
             .append(children);

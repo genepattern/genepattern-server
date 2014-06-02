@@ -11,14 +11,14 @@
 <html xmlns="http://www.w3.org/1999/xhtml"
 	xmlns:ui="http://java.sun.com/jsf/facelets"
 	xmlns:h="http://java.sun.com/jsf/html"
-	xmlns:a4j="http://richfaces.org/a4j"
+    xmlns:a4j="http://richfaces.org/a4j"
 	xmlns:f="http://java.sun.com/jsf/core"
 	xmlns:t="http://myfaces.apache.org/tomahawk"
 	xmlns:c="http://java.sun.com/jstl/core">
 <ui:composition template="/templates/ajax.xhtml">
 	<ui:define name="pageTitle">
-            GenePattern | Job #{(!empty jobStatusBean.jobInfo ) ? jobStatusBean.jobInfo.jobNumber : "not set" }
-        </ui:define>
+        GenePattern | Job #{(!empty jobStatusBean.jobInfo ) ? jobStatusBean.jobInfo.jobNumber : "not set" }
+    </ui:define>
 	<ui:define name="headText">
 		<script type="text/javascript">
                 var currentJobNumber = #{jobStatusBean.jobInfo.jobNumber};
@@ -273,18 +273,13 @@
 
 	<ui:define name="body">
 
+        <div style="display:none;" class="on-job-status-page"></div>
 		<h:outputText rendered="#{!empty jobStatusBean.jobInfo}">
-			<a4j:keepAlive beanName="visualizerStatusBean" />
 			<h:form>
-				<a4j:poll id="poll_jobInfo" eventsQueue="jobStatusQueue"
-					interval="${jobStatusBean.interval}"
-					enabled="#{!jobStatusBean.jobInfo.finished}"
-					ignoreDupResponses="true"
-					actionListener="#{visualizerStatusBean.updateAjaxPoll}"
-					onsubmit="vizPollStarted = true;" oncomplete="processVisualizers()">
+				<div id="poll_jobInfo">
 					<f:param name="jobNumber"
 						value="#{jobStatusBean.jobInfo.jobNumber}" />
-				</a4j:poll>
+				</div>
 			</h:form>
 
 			<div class="statusReport">
@@ -294,7 +289,7 @@
 				</div>
 				<br />
 
-				<a4j:outputPanel id="emailNotificationPanel" ajaxRendered="true">
+				<div id="emailNotificationPanel">
 					<h:outputText rendered="#{not jobStatusBean.finished}">
 						<div style="float: right; margin-right: 10px;" id="emailDiv">
 							<h:form>
@@ -304,7 +299,7 @@
                                 </h:form>
 						</div>
 					</h:outputText>
-				</a4j:outputPanel>
+				</div>
 
 				<!--   div style="float:right;margin-right:10px;"><input type="checkbox" /> Show Execution Logs</div -->
 				<div style="float: right; margin-right: 10px;">
@@ -317,13 +312,12 @@
 				<br /> <br />
 
 				<div id="jobContainer#{jobStatusBean.jobInfo.jobNumber}">
-					<a4j:outputPanel id="jobStatus#{jobStatusBean.jobInfo.jobNumber}"
-						ajaxRendered="true">
+					<div id="jobStatus#{jobStatusBean.jobInfo.jobNumber}">
 						<table class="title" cellpadding="0" cellspacing="0" border="0"
 							id="jobTable#{jobStatusBean.jobInfo.jobNumber}">
 							<tr>
 								<td class="title">#{jobStatusBean.jobInfo.jobNumber}.
-									<a class="jobresult-job" href="#" onclick="openJobWidget(this); return false;">#{jobStatusBean.jobInfo.truncatedTaskName}</a>
+									<a class="jobresult-job" href="#" onclick="openJobWidget(this); return false;">#{jobStatusBean.jobInfo.truncatedTaskName} <span class="glyphicon glyphicon-info-sign" style="text-indent: 0px;"></span></a>
                                     <script type="text/javascript">
                                         // Attach the menus
                                         attachMenus();
@@ -400,14 +394,14 @@
 								</td>
 							</tr>
 						</table>
-					</a4j:outputPanel>
+					</div>
 
 					<h:outputText rendered="#{jobStatusBean.jobInfo.pipeline}">
-						<a4j:outputPanel ajaxRendered="true">
+						<div>
 							<ui:include src="jobStatus_indicator.xhtml">
 								<ui:param name="jobInfo" value="#{jobStatusBean.jobInfo}" />
 							</ui:include>
-						</a4j:outputPanel>
+						</div>
 					</h:outputText>
 
 					<h:outputText
@@ -522,17 +516,16 @@
 					</ui:include>
 
 					<h:form>
-						<a4j:outputPanel id="filePanel#{jobStatusBean.jobInfo.jobNumber}"
-							ajaxRendered="true">
+						<div id="filePanel#{jobStatusBean.jobInfo.jobNumber}">
 							<ui:include src="jobStatus_files.xhtml">
 								<ui:param name="jobInfo" value="#{jobStatusBean.jobInfo}" />
 								<ui:param name="indent" value="#{false}" />
 							</ui:include>
-						</a4j:outputPanel>
+						</div>
 					</h:form>
 
 					<a4j:form>
-						<a4j:outputPanel ajaxRendered="true">
+						<div>
 							<h:outputText rendered="#{jobStatusBean.jobInfo.pipeline}">
 								<t:dataList var="child" value="#{jobStatusBean.allSteps}"
 									rowIndexVar="idx">
@@ -543,7 +536,7 @@
 									</h:outputText>
 								</t:dataList>
 							</h:outputText>
-						</a4j:outputPanel>
+						</div>
 					</a4j:form>
 
 					<t:dataList var="visObj" value="#{visualizerStatusBean.visObjs}">
@@ -551,7 +544,7 @@
 						<!-- place applet tag here -->
 					</t:dataList>
 
-					<a4j:outputPanel ajaxRendered="true">
+					<div>
 						<h:outputText rendered="false">
 							<t:dataList var="visObj"
 								value="#{visualizerStatusBean.newVisObjs}">
@@ -575,16 +568,16 @@
                                 }
                             </script>
 
-					</a4j:outputPanel>
+					</div>
 				</div>
 				<br /> <br />
 
-				<a4j:outputPanel ajaxRendered="true">
+				<div>
 					<h:outputText
 						rendered="#{not empty jobStatusBean.jobInfo.purgeDate}"
 						styleClass="purge_notice"
 						value="These job results are scheduled to be purged from the server on #{jobStatusBean.jobInfo.formattedPurgeDate}" />
-				</a4j:outputPanel>
+				</div>
 
 				<br /> <br />
 
