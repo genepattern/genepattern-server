@@ -486,7 +486,7 @@ public class JobExecutor implements CommandExecutor2 {
         catch (TimeoutException e) {
             log.debug("timeout while cancelling job="+drmJobRecord.getGpJobNo(), e);
         }
-        if (cancelled) {
+        if (cancelled != null && cancelled) {
             return;
         }
         
