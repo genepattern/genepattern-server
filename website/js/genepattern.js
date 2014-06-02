@@ -20,6 +20,7 @@ function toggleCheckBoxes(maincheckbox, parentId) {
 
 // POST /jobResults/<job>/requestEmailNotification
 function requestEmailNotification(cb, jobId, userEmail) {
+    "use strict";
 	$.ajax({
 		type : "POST",
 		url : '/gp/jobResults/' + jobId + '/requestEmailNotification',
@@ -37,6 +38,7 @@ function requestEmailNotification(cb, jobId, userEmail) {
 
 // POST /jobResults/<job>/cancelEmailNotification
 function cancelEmailNotification(cb, jobId, userEmail) {
+    "use strict";
 	$.ajax({
 		type : "POST",
 		url : '/gp/jobResults/' + jobId + '/cancelEmailNotification',
@@ -53,6 +55,7 @@ function cancelEmailNotification(cb, jobId, userEmail) {
 }
 
 function ajaxEmailResponse(req) {
+    "use strict";
 	if (req.readyState == 4) {
 		if (req.status >= 200 && req.status < 300) {
 			// alert('all is well on email submission')
@@ -215,7 +218,7 @@ function initBrowseModules() {
 }
 
 function initBrowseTop() {
-	var allnsuite = $('<div id="module-list-allnsuite"></div>').modulelist({
+	return $('<div id="module-list-allnsuite"></div>').modulelist({
         title: 'Browse Modules &amp; Pipelines',
         data: [
             {
@@ -254,8 +257,6 @@ function initBrowseTop() {
             }
         }
     });
-
-	return allnsuite;
 }
 
 function initSearchSlider() {
@@ -477,8 +478,6 @@ function ajaxFileTabUpload(file, directory, done, index) {
     // Set the cancel button functionality
     var cancelButton = $(".upload-toaster-file[name='" + escapeJquerySelector(file.name) + "']").find(".upload-toaster-file-cancel")
         .click(function() {
-            eventError = "";
-
             // Set the progressbar cancel message
             progressbar.progressbar("value", 100);
             progressbar
@@ -947,7 +946,7 @@ function initUploads() {
 
 function initUploadTreeDND() {
     // Ready the drop & drop aspects of the file tree
-    var eventsAttached = new Array();
+    var eventsAttached = [];
     $("#uploadTree").find(".jstree-closed, .jstree-open").each(function(index, element) {
         var folder = $(element);
 
@@ -985,7 +984,7 @@ function initAllModulesMap(all_modules) {
 }
 
 function lsidsToModules(lsidList) {
-    var toReturn = new Array();
+    var toReturn = [];
     for (var i = 0; i < lsidList.length; i++) {
         var lsid = lsidList[i];
         var module = all_modules_map[lsid];
@@ -2386,6 +2385,17 @@ function openJobWidget(link) {
     $("#menus-jobs").find("[name='job_" + id + "']").searchslider("show");
 }
 
+function getURLParameter(sParam) {
+    var sPageURL = window.location.search.substring(1);
+    var sURLVariables = sPageURL.split('&');
+    for (var i = 0; i < sURLVariables.length; i++) {
+        var sParameterName = sURLVariables[i].split('=');
+        if (sParameterName[0] == sParam) {
+            return sParameterName[1];
+        }
+    }
+}
+
 function loadJobStatus(jobId) {
     // Abort if no job to load
     if (jobId === undefined || jobId === null || jobId === '') {
@@ -2413,7 +2423,7 @@ function loadJobStatus(jobId) {
     parameter_and_val_groups = {}; //contains params and their values only
 
     // Handle open visualizer flag
-    var openVisualizers = $.param("openVisualizers");
+    var openVisualizers = getURLParameter("openVisualizers");
     if (openVisualizers) {
         openVisualizers = "&openVisualizers=true";
     }
@@ -2446,32 +2456,11 @@ function loadJobStatus(jobId) {
     });
 }
 
-function loadInAjaxWrapper(link) {
-    $.ajax({
-        type: "GET",
-        url: $(link).attr("href"),
-        cache: false,
-        success: function(data, textStatus, jqXHR) {
-            $("#jobResults").html(data);
-            $("#jobResults").show();
-        },
-        error: function(data) {
-            if (typeof data === 'object') {
-                data = data.responseText;
-            }
-
-            showErrorMessage(data);
-        },
-        dataType: "html"
-    });
-
-    return false;
-}
-
 function getJobFilter() {
     //return $("#main-pane").data("jobresults-filter");
     return $.cookie('job-filter');
-};
+}
+
 function setJobFilter(filter) {
     //$("#main-pane").data("jobresults-filter", filter);
     $.cookie('job-filter', filter, { path: '/'});
@@ -2919,13 +2908,12 @@ function buildJobResultsPage() {
                                             }
 
                                             $(".jobresults-toggle").each(function() {
-                                                var closingAll = open;
                                                 var thisOpen = $(this).attr("src").indexOf("_run") != -1;
 
-                                                if (closingAll && thisOpen) {                   // We're closing them all and this is open
+                                                if (open && thisOpen) {                   // We're closing them all and this is open
                                                     $(this).trigger("click");
                                                 }
-                                                else if (!closingAll && !thisOpen) {              // We're opening them all and this is closed
+                                                else if (!open && !thisOpen) {              // We're opening them all and this is closed
                                                     $(this).trigger("click");
                                                 }
                                             });
