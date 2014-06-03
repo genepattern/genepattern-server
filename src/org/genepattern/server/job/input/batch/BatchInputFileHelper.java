@@ -353,7 +353,7 @@ public class BatchInputFileHelper {
      * @param initialValue
      * @return
      */
-    private List<GpFilePath> listBatchDir(final ParameterInfo formalParam, final GpFilePath batchInputDir) throws GpServerException {
+    public List<GpFilePath> listBatchDir(final ParameterInfo formalParam, final GpFilePath batchInputDir) throws GpServerException {
         if (batchInputDir==null) {
             throw new IllegalArgumentException("batchInputDir==null");
         }

@@ -1,19 +1,23 @@
 package org.genepattern.server.job.input;
 
 import java.io.File;
+import java.util.HashMap;
 import java.util.List;
 
 import org.genepattern.junitutil.FileUtil;
 import org.genepattern.junitutil.TaskLoader;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.GpContextFactory;
+import org.genepattern.server.dm.GpFilePath;
+import org.genepattern.server.dm.serverfile.ServerFilePath;
 import org.genepattern.server.job.input.Param;
+import org.genepattern.server.job.input.batch.BatchInputFileHelper;
 import org.genepattern.server.rest.GpServerException;
-import org.genepattern.server.rest.JobInputApi;
 import org.genepattern.webservice.ParameterInfo;
 import org.genepattern.webservice.TaskInfo;
 import org.junit.Assert;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.Mockito;
 
@@ -271,37 +275,6 @@ public class TestJobInputHelper {
         Assert.assertEquals("num batch jobs", 2, inputs.size());
     }
     
-//    /**
-//     * Test case for initializing the batch inputs automatically, 
-//     * based on user-supplied input values.
-//     */
-//    @Test
-//    public void testDeduceBatchParams() throws GpServerException {
-//        File clsDir=FileUtil.getSourceFile(TestJobInputHelper.class,"batch_01/cls/");
-//        
-//        JobInputHelper jobInputHelper=new JobInputHelper(userContext, cleLsid, null, taskLoader);
-//        jobInputHelper.setDeduceBatchValues(true);
-//        jobInputHelper.addValue("input.filename", 
-//                clsDir.getAbsolutePath());
-//
-//        List<JobInput> inputs=jobInputHelper.prepareBatch();
-//        Assert.assertEquals("num jobs", 4, inputs.size());
-//    }
-
-//    /**
-//     * Test case for initializing batch inputs automatically, from more than one parameter.
-//     */
-//    @Test
-//    public void testDeduceBatchParamsMulti() throws GpServerException {
-//        final File batchDir=FileUtil.getDataFile("all_aml/");
-//        final JobInputHelper jobInputHelper=new JobInputHelper(userContext, cmsLsid, null, taskLoader);
-//        jobInputHelper.setDeduceBatchValues(true);
-//        jobInputHelper.addValue("input.file", batchDir.getAbsolutePath());
-//        jobInputHelper.addValue("cls.file", batchDir.getAbsolutePath());
-//        final List<JobInput> inputs=jobInputHelper.prepareBatch();
-//        Assert.assertEquals("num batch jobs", 2, inputs.size());
-//    }
-    
     /**
      * Test case for a missing batch input parameter, for instance, 
      *     addBatchDirectory("input.filename", directory) with CMS.
@@ -533,84 +506,108 @@ public class TestJobInputHelper {
         }
     }
     
+    private ParameterInfo makeFileParam(String pname) {
+        ParameterInfo pinfo = new ParameterInfo(pname, "", "");
+        pinfo.setAttributes(new HashMap<String,String>());
+        pinfo.getAttributes().put("MODE", "IN");
+        pinfo.getAttributes().put("TYPE", "FILE");
+        pinfo.getAttributes().put("fileFormat", "fq;fastq;fq.gz;fastq.gz;fq.bz2;fastq.bz2");
+        return pinfo;
+    }
+    
+    @Test
+    public void listBatchDir() throws GpServerException {
+        ParameterInfo pinfo = makeFileParam("input.file.1");
+        File batchDir=new File(FileUtil.getDataDir(), "fastq");
+        GpFilePath inputDir=new ServerFilePath(batchDir.getAbsoluteFile());
+        
+        List<GpFilePath> batchFiles=BatchInputFileHelper.getBatchInputFiles(pinfo, inputDir);
+        Assert.assertEquals(6, batchFiles.size());
+    }
+    
     @Test
     public void pairedEndBatch_asFiles() throws GpServerException {
         // Trimmomatic 0.6
         final String lsid="urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00341:0.6";
         final ParameterInfo[] pinfos=new ParameterInfo[2];
-        
-        // add a file input parameter 
-        pinfos[0] = new ParameterInfo();
-        pinfos[1] = new ParameterInfo();
-        
-        TaskInfo taskInfo = Mockito.mock(TaskInfo.class);
+        pinfos[0] = makeFileParam("input.file.1");
+        pinfos[1] = makeFileParam("input.file.2");
+        final TaskInfo taskInfo = Mockito.mock(TaskInfo.class);
         Mockito.when(taskInfo.getParameterInfoArray()).thenReturn(pinfos);
-        JobInputApi jobInputApi = Mockito.mock(JobInputApi.class);
-        JobInputHelper jobInputHelper = new JobInputHelper(userContext, lsid, jobInputApi, taskInfo);
+
+        JobInputHelper jobInputHelper = new JobInputHelper(userContext, lsid, null, taskInfo);
+        
         jobInputHelper.addBatchValue("input.file.1", createServerFilePathUrl("fastq/a_1.fastq"));
         jobInputHelper.addBatchValue("input.file.1", createServerFilePathUrl("fastq/b_1.fastq"));
         jobInputHelper.addBatchValue("input.file.1", createServerFilePathUrl("fastq/c_1.fastq"));
         jobInputHelper.addBatchValue("input.file.2", createServerFilePathUrl("fastq/a_2.fastq"));
         jobInputHelper.addBatchValue("input.file.2", createServerFilePathUrl("fastq/b_2.fastq"));
         jobInputHelper.addBatchValue("input.file.2", createServerFilePathUrl("fastq/c_2.fastq"));
+        
         List<JobInput> batchJobs=jobInputHelper.prepareBatch();
+        
         Assert.assertEquals("# batch jobs", 3, batchJobs.size());
         Assert.assertEquals( "batch[0].input.file.1", 
-                batchJobs.get(0).getParam("input.file.1").getValues().get(0).getValue(),
-                createServerFilePathUrl("fastq/a_1.fastq"));
+                createServerFilePathUrl("fastq/a_1.fastq"),
+                batchJobs.get(0).getParam("input.file.1").getValues().get(0).getValue());
         Assert.assertEquals( "batch[1].input.file.1", 
-                batchJobs.get(1).getParam("input.file.1").getValues().get(0).getValue(),
-                createServerFilePathUrl("fastq/b_1.fastq"));
+                createServerFilePathUrl("fastq/b_1.fastq"),
+                batchJobs.get(1).getParam("input.file.1").getValues().get(0).getValue());
         Assert.assertEquals( "batch[2].input.file.1", 
-                batchJobs.get(2).getParam("input.file.1").getValues().get(0).getValue(),
-                createServerFilePathUrl("fastq/c_1.fastq"));
+                createServerFilePathUrl("fastq/c_1.fastq"),
+                batchJobs.get(2).getParam("input.file.1").getValues().get(0).getValue());
         Assert.assertEquals( "batch[0].input.file.2", 
-                batchJobs.get(0).getParam("input.file.2").getValues().get(0).getValue(),
-                createServerFilePathUrl("fastq/a_2.fastq"));
+                createServerFilePathUrl("fastq/a_2.fastq"),
+                batchJobs.get(0).getParam("input.file.2").getValues().get(0).getValue());
         Assert.assertEquals( "batch[1].input.file.2", 
-                batchJobs.get(1).getParam("input.file.2").getValues().get(0).getValue(),
-                createServerFilePathUrl("fastq/b_2.fastq"));
+                createServerFilePathUrl("fastq/b_2.fastq"),
+                batchJobs.get(1).getParam("input.file.2").getValues().get(0).getValue());
         Assert.assertEquals( "batch[2].input.file.2", 
-                batchJobs.get(2).getParam("input.file.2").getValues().get(0).getValue(),
-                createServerFilePathUrl("fastq/c_2.fastq"));
-    }
+                createServerFilePathUrl("fastq/c_2.fastq"),
+                batchJobs.get(2).getParam("input.file.2").getValues().get(0).getValue());
 
-//    @Test
-//    public void pairedEndBatch_asDir() throws GpServerException {
-//        // Trimmomatic 0.6
-//        final String lsid="urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00341:0.6";
-//        final ParameterInfo[] pinfos=new ParameterInfo[2];
-//        
-//        // add a file input parameter 
-//        pinfos[0] = new ParameterInfo("input.file.1", "", "Input file 1");
-//        pinfos[1] = new ParameterInfo("input.file.2", "", "Input file 2");
-//        
-//        TaskInfo taskInfo = Mockito.mock(TaskInfo.class);
-//        Mockito.when(taskInfo.getParameterInfoArray()).thenReturn(pinfos);
-//        JobInputApi jobInputApi = Mockito.mock(JobInputApi.class);
-//        JobInputHelper jobInputHelper = new JobInputHelper(userContext, lsid, jobInputApi, taskInfo);
-//        jobInputHelper.addBatchValue("input.file.1", createServerFilePathUrl("fastq/"));
-//        jobInputHelper.addBatchValue("input.file.2", createServerFilePathUrl("fastq/"));
-//        List<JobInput> batchJobs=jobInputHelper.prepareBatch();
-//        Assert.assertEquals("# batch jobs", 3, batchJobs.size());
-//        Assert.assertEquals( "batch[0].input.file.1", 
-//                batchJobs.get(0).getParam("input.file.1").getValues().get(0).getValue(),
-//                createServerFilePathUrl("fastq/a_1.fastq"));
-//        Assert.assertEquals( "batch[1].input.file.1", 
-//                batchJobs.get(1).getParam("input.file.1").getValues().get(0).getValue(),
-//                createServerFilePathUrl("fastq/b_1.fastq"));
-//        Assert.assertEquals( "batch[2].input.file.1", 
-//                batchJobs.get(2).getParam("input.file.1").getValues().get(0).getValue(),
-//                createServerFilePathUrl("fastq/c_1.fastq"));
-//        Assert.assertEquals( "batch[0].input.file.2", 
-//                batchJobs.get(0).getParam("input.file.2").getValues().get(0).getValue(),
-//                createServerFilePathUrl("fastq/a_2.fastq"));
-//        Assert.assertEquals( "batch[1].input.file.2", 
-//                batchJobs.get(1).getParam("input.file.2").getValues().get(0).getValue(),
-//                createServerFilePathUrl("fastq/b_2.fastq"));
-//        Assert.assertEquals( "batch[2].input.file.2", 
-//                batchJobs.get(2).getParam("input.file.2").getValues().get(0).getValue(),
-//                createServerFilePathUrl("fastq/c_2.fastq"));
-//    }
+    }
+    
+    /**
+     * For GP-5189, test batch job with multiple input parameters from the same directory.
+     * @throws GpServerException
+     */
+    @Ignore @Test
+    public void pairedEndBatch_asDir() throws GpServerException {
+        // Trimmomatic 0.6
+        final String lsid="urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00341:0.6";
+        final ParameterInfo[] pinfos=new ParameterInfo[2];
+        pinfos[0] = makeFileParam("input.file.1");
+        pinfos[1] = makeFileParam("input.file.2");
+        final TaskInfo taskInfo = Mockito.mock(TaskInfo.class);
+        Mockito.when(taskInfo.getParameterInfoArray()).thenReturn(pinfos);
+
+        JobInputHelper jobInputHelper = new JobInputHelper(userContext, lsid, null, taskInfo);
+        
+        jobInputHelper.addBatchValue("input.file.1", createServerFilePathUrl("fastq/"));
+        jobInputHelper.addBatchValue("input.file.2", createServerFilePathUrl("fastq/"));
+
+        List<JobInput> batchJobs=jobInputHelper.prepareBatch();
+
+        Assert.assertEquals("# batch jobs", 3, batchJobs.size());
+        Assert.assertEquals( "batch[0].input.file.1", 
+                createServerFilePathUrl("fastq/a_1.fastq"),
+                batchJobs.get(0).getParam("input.file.1").getValues().get(0).getValue());
+        Assert.assertEquals( "batch[1].input.file.1", 
+                createServerFilePathUrl("fastq/b_1.fastq"),
+                batchJobs.get(1).getParam("input.file.1").getValues().get(0).getValue());
+        Assert.assertEquals( "batch[2].input.file.1", 
+                createServerFilePathUrl("fastq/c_1.fastq"),
+                batchJobs.get(2).getParam("input.file.1").getValues().get(0).getValue());
+        Assert.assertEquals( "batch[0].input.file.2", 
+                createServerFilePathUrl("fastq/a_2.fastq"),
+                batchJobs.get(0).getParam("input.file.2").getValues().get(0).getValue());
+        Assert.assertEquals( "batch[1].input.file.2", 
+                createServerFilePathUrl("fastq/b_2.fastq"),
+                batchJobs.get(1).getParam("input.file.2").getValues().get(0).getValue());
+        Assert.assertEquals( "batch[2].input.file.2", 
+                createServerFilePathUrl("fastq/c_2.fastq"),
+                batchJobs.get(2).getParam("input.file.2").getValues().get(0).getValue());
+    }
 
 }
