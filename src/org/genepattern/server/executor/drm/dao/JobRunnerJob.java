@@ -9,9 +9,11 @@ import javax.persistence.Id;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
 
+import org.apache.log4j.Logger;
 import org.genepattern.drm.DrmJobState;
 import org.genepattern.drm.DrmJobStatus;
 import org.genepattern.drm.DrmJobSubmission;
+import org.hibernate.validator.Size;
 
 /**
  * An record (for the the DB or in a runtime cache) used by the DrmLookup class for recording the status of an
@@ -24,31 +26,55 @@ import org.genepattern.drm.DrmJobSubmission;
 @Table(name="job_runner_job",
        uniqueConstraints=@UniqueConstraint(columnNames={"jr_classname", "jr_name", "ext_job_id"}))
 public class JobRunnerJob {
+     private static final Logger log = Logger.getLogger(JobRunnerJob.class);
+     
+     /** DB max length of the status_message column, e.g. varchar2(2000) in Oracle. */
+     public static final int STATUS_MESSAGE_LENGTH=2000;
+   
+    /**
+     * Truncate the string so that it is no longer than MAX characters.
+     * @param in
+     * @param MAX
+     * @return
+     */
+    public static String truncate(String in, int MAX) {
+        if (in==null) {
+            return in;
+        }
+        if (in.length() <= MAX) {
+            return in;
+        }
+        if (MAX<0) {
+            log.error("expecting value >0 for MAX="+MAX);
+        }
+        return in.substring(0, MAX);
+    }
     
     //this is a foreign key to the analysis_job table
     @Id
     @Column(name="gp_job_no")
     private Integer gpJobNo;
 
-    @Column(name="jr_classname", nullable=false)
+    @Column(name="jr_classname", nullable=false, length=511)
     private String jobRunnerClassname;
 
-    @Column(name="jr_name", nullable=false)
+    @Column(name="jr_name", nullable=false, length=255)
     private String jobRunnerName;
 
-    @Column(name="ext_job_id", nullable=true)
+    @Column(name="ext_job_id", nullable=true, length=255)
     private String extJobId;
     
-    @Column(name="exit_code", nullable=true)
+    @Column(name="exit_code", nullable=true, length=255)
     private Integer exitCode;
     
-    @Column(name="terminating_signal", nullable=true)
+    @Column(name="terminating_signal", nullable=true, length=255)
     private String terminatingSignal;
     
-    @Column(name="job_state", nullable=true)
+    @Column(name="job_state", nullable=true, length=255)
     private String jobState;
 
-    @Column(name="status_message", nullable=true)
+    @Column(name="status_message", nullable=true, length=STATUS_MESSAGE_LENGTH)
+    @Size(max=STATUS_MESSAGE_LENGTH)
     private String statusMessage;
     
     @Column(name="status_date", nullable=false)
@@ -91,15 +117,15 @@ public class JobRunnerJob {
     }
 
     public static final class Builder {
-        private final Integer gpJobNo;
-        private final String jobRunnerClassname;
+        private Integer gpJobNo;
+        private String jobRunnerClassname;
         private String jobRunnerName;
         private String extJobId="";
         private Integer exitCode=null;
         private String terminatingSignal;
         private String jobState;
         private String statusMessage;
-        private final String workingDir;
+        private String workingDir;
         private String stdoutFile;
         private String stderrFile;
         private String stdinFile;
@@ -125,6 +151,9 @@ public class JobRunnerJob {
                 return null;
             }
             return in.getPath();
+        }
+        
+        public Builder() {
         }
         
         public Builder(final String jobRunnerClassname, final File workingDir, final Integer gpJobNo) {
@@ -157,6 +186,21 @@ public class JobRunnerJob {
             this.statusMessage=updated.getJobStatusMessage();
             return this;
         }
+        
+        public Builder gpJobNo(int gpJobNo) {
+            this.gpJobNo=gpJobNo;
+            return this;
+        }
+        
+        public Builder jobRunnerClassname(String jobRunnerClassname) {
+            this.jobRunnerClassname=jobRunnerClassname;
+            return this;
+        }
+        
+        public Builder workingDir(String workingDir) {
+            this.workingDir=workingDir;
+            return this;
+        }
 
         public Builder jobRunnerName(final String jobRunnerName) {
             this.jobRunnerName=jobRunnerName;
@@ -183,8 +227,11 @@ public class JobRunnerJob {
             return this;
         }
         
-        public Builder statusMessage(final String statusMessage) {
-            this.statusMessage=statusMessage;
+        public Builder statusMessage(final String statusMessageIn) {
+            this.statusMessage=truncate(statusMessageIn, STATUS_MESSAGE_LENGTH);
+            if (log.isDebugEnabled() && statusMessageIn.length()>STATUS_MESSAGE_LENGTH) {
+                log.warn("truncating statusMessage because it is greater than max DB length="+STATUS_MESSAGE_LENGTH);
+            }
             return this;
         }
         

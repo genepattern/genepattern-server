@@ -36,12 +36,12 @@ drop table job_runner_job;
 
 create table job_runner_job (
     gp_job_no integer not null,
-    jr_classname varchar(255) not null,
+    jr_classname varchar(511) not null,
     jr_name varchar(255) not null,
     ext_job_id varchar(255),
     job_state varchar(255),
     status_date timestamp not null,
-    status_message varchar(255),
+    status_message varchar(2000),
     exit_code integer,
     terminating_signal varchar(255),
     working_dir varchar(255) not null,
