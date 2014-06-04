@@ -516,7 +516,8 @@ function ajaxFileTabUpload(file, directory, done, index) {
                 _setPercentComplete();
             },
             function() {
-                eventError = "Uploading directories is not supported. Aborting upload.";
+                eventError = "Read Error: This could be because your connection closed during the " +
+                    "upload or it could be because you were trying to upload a directory. Aborting upload.";
             });
     });
 
