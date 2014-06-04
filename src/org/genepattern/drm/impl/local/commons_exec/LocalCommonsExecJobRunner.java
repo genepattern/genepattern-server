@@ -11,6 +11,7 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 import org.apache.commons.exec.CommandLine;
 import org.apache.commons.exec.DefaultExecuteResultHandler;
@@ -53,6 +54,7 @@ public class LocalCommonsExecJobRunner implements JobRunner {
     private static final long pending_interval_ms=0L;
     //private static final long pending_interval_ms=30L*1000L;
     private ExecutorService pendingExec=null;
+    private ConcurrentMap<Integer,Future<?>> pendingMap=new ConcurrentHashMap<Integer, Future<?>>();
     
     private void initStatus(DrmJobSubmission gpJob) {
         DrmJobStatus status = new DrmJobStatus.Builder(""+gpJob.getGpJobNo(), DrmJobState.QUEUED)
@@ -89,6 +91,29 @@ public class LocalCommonsExecJobRunner implements JobRunner {
         b.endTime(new Date());
         statusMap.put(gpJobNo, b.build());
     }
+    
+    private DrmJobStatus updateStatus_cancel(int gpJobNo) {
+        DrmJobStatus status = statusMap.get(gpJobNo);
+        DrmJobStatus.Builder b;
+        if (status==null) {
+            log.error("Unexpected null status for gpJobNo="+gpJobNo);
+            b = new DrmJobStatus.Builder().extJobId(""+gpJobNo);
+            b.jobState(DrmJobState.UNDETERMINED);
+        }
+        else {
+            b = new DrmJobStatus.Builder(status);
+            if (status.getJobState().is(DrmJobState.IS_QUEUED)) {
+                b.jobState( DrmJobState.ABORTED );
+            }
+            else {
+                b.jobState( DrmJobState.CANCELLED );
+            }
+        }
+        b.exitCode(-1); // hard-code exitCode for user-cancelled task
+        b.endTime(new Date());
+        b.jobStatusMessage("Task cancelled by user");
+        return statusMap.put(gpJobNo, b.build());
+    }
 
     @Override
     public void stop() {
@@ -107,7 +132,8 @@ public class LocalCommonsExecJobRunner implements JobRunner {
         try {
             initStatus(gpJob);
             if (pending_interval_ms > 0L) {
-                sleepThenStart(gpJob);
+                Future<?> f=sleepThenStart(gpJob);
+                pendingMap.put(gpJob.getGpJobNo(), f);
             }
             else {
                 Executor exec=runJobNoWait(gpJob);
@@ -121,11 +147,11 @@ public class LocalCommonsExecJobRunner implements JobRunner {
         return ""+gpJob.getGpJobNo();
     }
     
-    private void sleepThenStart(final DrmJobSubmission gpJob) {
+    private Future<?> sleepThenStart(final DrmJobSubmission gpJob) {
         if (pendingExec==null) {
             pendingExec=Executors.newSingleThreadExecutor();
         }
-        pendingExec.submit(new Runnable() {
+        Future<?> f = pendingExec.submit(new Runnable() {
             @Override
             public void run() {
                 try {
@@ -149,6 +175,7 @@ public class LocalCommonsExecJobRunner implements JobRunner {
                 }
             }
         });
+        return f;
     }
 
     @Override
@@ -158,11 +185,19 @@ public class LocalCommonsExecJobRunner implements JobRunner {
 
     @Override
     public boolean cancelJob(DrmJobRecord drmJobRecord) throws Exception {
+        Future<?> f=pendingMap.remove(drmJobRecord.getGpJobNo());
+        if (f != null) {
+            //assume it's a pending job
+            boolean mayInterruptIfRunning=true;
+            f.cancel(mayInterruptIfRunning);
+        }
         Executor exec=execMap.remove(drmJobRecord.getGpJobNo());
         if (exec != null) {
             exec.getWatchdog().destroyProcess();
+            updateStatus_cancel(drmJobRecord.getGpJobNo());
             return true;
         }
+        updateStatus_cancel(drmJobRecord.getGpJobNo());
         return false;
     }
     
