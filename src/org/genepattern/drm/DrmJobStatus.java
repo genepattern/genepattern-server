@@ -162,8 +162,8 @@ public class DrmJobStatus {
      *
      */
     public static class Builder {
-        private final String drmJobId;
-        private final DrmJobState jobState;
+        private String drmJobId;
+        private DrmJobState jobState;
         private Date submitTime=null;
         private Date startTime=null;
         private Date endTime=null;
@@ -172,10 +172,37 @@ public class DrmJobStatus {
         private Integer exitCode=null;
         private String terminatingSignal="";
         private ImmutableMap<String,String> resourceUsage=null;
+
+        public Builder() {
+        }
+        
+        //copy constructor
+        public Builder(DrmJobStatus in) {
+            this.drmJobId=in.drmJobId;
+            this.jobState=in.jobState;
+            this.submitTime=in.submitTime;
+            this.startTime=in.startTime;
+            this.endTime=in.endTime;
+            this.cpuTime=in.cpuTime;
+            this.jobStatusMessage=in.jobStatusMessage;
+            this.exitCode=in.exitCode;
+            this.terminatingSignal=in.terminatingSignal;
+            this.resourceUsage=in.resourceUsage;
+        }
         
         public Builder(final String drmJobId, final DrmJobState jobState) {
             this.drmJobId=drmJobId;
             this.jobState=jobState;
+        }
+        
+        public Builder extJobId(final String extJobId) {
+            this.drmJobId=extJobId;
+            return this;
+        }
+        
+        public Builder jobState(final DrmJobState jobState) {
+            this.jobState=jobState;
+            return this;
         }
         
         public Builder submitTime(final Date submitTime) {
