@@ -919,6 +919,20 @@ function initUploads() {
     // Set up the exit prompt
     window.onbeforeunload = function(e) {
         if ($(".upload-dialog:visible").length > 0) {
+            //$("#content").effect("shake");
+            var cover = $("<div></div>")
+                .css("position", "fixed")
+                .css("top", 0)
+                .css("left", 0)
+                .css("width", "100%")
+                .css("height", "100%")
+                .css("z-index", 10000)
+                .css("background-color", "red")
+                .css("opacity", 0.5)
+                .appendTo("body")
+            setTimeout(function() {
+                cover.remove();
+            }, 100);
             return "You are currently uploading files. If you navigate away from this page this will interrupt your file upload.";
         }
     };
