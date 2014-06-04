@@ -9,6 +9,8 @@ import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import org.apache.commons.exec.CommandLine;
 import org.apache.commons.exec.DefaultExecuteResultHandler;
@@ -46,6 +48,11 @@ public class LocalCommonsExecJobRunner implements JobRunner {
 
     private ConcurrentMap<Integer,DrmJobStatus> statusMap=new ConcurrentHashMap<Integer, DrmJobStatus>();
     private ConcurrentMap<Integer,Executor> execMap=new ConcurrentHashMap<Integer, Executor>();
+    
+    //for debugging, keep jobs in the pending state for a little while
+    private static final long pending_interval_ms=0L;
+    //private static final long pending_interval_ms=30L*1000L;
+    private ExecutorService pendingExec=null;
     
     private void initStatus(DrmJobSubmission gpJob) {
         DrmJobStatus status = new DrmJobStatus.Builder(""+gpJob.getGpJobNo(), DrmJobState.QUEUED)
@@ -86,6 +93,9 @@ public class LocalCommonsExecJobRunner implements JobRunner {
     @Override
     public void stop() {
         log.debug("shutting down ...");
+        if (pendingExec != null) {
+            pendingExec.shutdownNow();
+        }
         for(final Executor exec : execMap.values()) {
             exec.getWatchdog().destroyProcess();
             exec.getWatchdog().stop();
@@ -96,14 +106,49 @@ public class LocalCommonsExecJobRunner implements JobRunner {
     public String startJob(DrmJobSubmission gpJob) throws CommandExecutorException {
         try {
             initStatus(gpJob);
-            Executor exec=runJobNoWait(gpJob);
-            execMap.put(gpJob.getGpJobNo(), exec);
-            updateStatus_startJob(gpJob);
+            if (pending_interval_ms > 0L) {
+                sleepThenStart(gpJob);
+            }
+            else {
+                Executor exec=runJobNoWait(gpJob);
+                execMap.put(gpJob.getGpJobNo(), exec);
+                updateStatus_startJob(gpJob);
+            }
         }
         catch (Throwable t) {
             throw new CommandExecutorException("Error starting job: "+gpJob.getGpJobNo(), t);
         }
         return ""+gpJob.getGpJobNo();
+    }
+    
+    private void sleepThenStart(final DrmJobSubmission gpJob) {
+        if (pendingExec==null) {
+            pendingExec=Executors.newSingleThreadExecutor();
+        }
+        pendingExec.submit(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    Thread.sleep(pending_interval_ms);
+                }
+                catch (InterruptedException e) {
+                    // Restore the interrupted status
+                    Thread.currentThread().interrupt();
+                    return;
+                }
+                try {
+                    Executor exec = runJobNoWait(gpJob);
+                    execMap.put(gpJob.getGpJobNo(), exec);
+                    updateStatus_startJob(gpJob);
+                }
+                catch (ExecutionException e) {
+                    updateStatus_complete(gpJob.getGpJobNo(), -1, null);
+                }
+                catch (IOException e) {
+                    updateStatus_complete(gpJob.getGpJobNo(), -1, null);
+                }
+            }
+        });
     }
 
     @Override
@@ -181,7 +226,5 @@ public class LocalCommonsExecJobRunner implements JobRunner {
         }
         return cl;
     }
-
-
 
 }
