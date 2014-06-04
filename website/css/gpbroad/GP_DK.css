@@ -1,11 +1,11 @@
 @charset "UTF-8";
 /* CSS Document */
 
-img {
+.statusReport img {
 	border:0;
 }
 
-.moduleDiv {
+.statusReport .moduleDiv {
 	font-family:Arial, verdana, Helvetica, sans-serif;
 	font-size:12px;
 	color:#666666;
@@ -13,7 +13,7 @@ img {
 	width:100%;
 	float:left;
 }
-table.parameter {
+.statusReport table.parameter {
 	margin:10px 0 0 0;
 	text-align:left;
 	border-bottom:solid #94966a 1px;
@@ -21,123 +21,130 @@ table.parameter {
 	border-top:solid #fafccf 1px;
 }
 
-table.parameter td,th {
+.statusReport table.parameter td,th {
 	padding:4px 10px 2px 10px;
 }
-table.parameter th{
+
+.statusReport table.parameter th{
 	background-color:#ddd;
 }
 
-.moduleTop {
+.statusReport .moduleTop {
 	width:auto;
 }
-.moduleMiddle {
+.statusReport .moduleMiddle {
 	width:100%;
 }
 
-.moduleDiv h1{
+.statusReport .moduleDiv h1{
 	font-size:16px;
 	font-weight:bold;
 	color:#666;
 }
 
 
-.moduleDiv a{
+.statusReport .moduleDiv a{
 	color:#333399;
 	font-weight:bold;
 	font-size:95%;
 	text-decoration:none;
 }
 
-.moduleDiv a:hover{
+.statusReport .moduleDiv a:hover{
 	color:#999;
 }
 
-
-.moduleDiv label.small {
+.statusReport .moduleDiv label.small {
 	font-size:10px;
 }
 
-
-
-.moduleDiv select {
+.statusReport .moduleDiv select {
 	font-size: 10px;
 }
-.moduleDiv table.input{
-}
-.moduleDiv tr.title{
+
+.statusReport .moduleDiv tr.title{
 	font-size:10px;
 }
-.moduleDiv font.tiny{
+
+.statusReport .moduleDiv font.tiny{
 	font-size:8px;
 }
 
-.moduleDiv font.item{
+.statusReport .moduleDiv font.item{
 	font-size:110%;
 	font-weight:normal;
 	color:#333333;
 }
-.moduleDiv font.info{
+
+.statusReport .moduleDiv font.info{
 	font-size:10px;
 	font-weight:normal;
 }
 
-.moduleDiv hr{
+.statusReport .moduleDiv hr{
 	color:#999999;
 }
 
-.shareEdit {
+.statusReport .shareEdit {
 	font-family:Arial, verdana, Helvetica, sans-serif;
 	font-size:12px;
 	color:#333333;
 	margin-left:10px;
 	margin-top:20px;
 }
-.shareEdit h1{
+
+.statusReport .shareEdit h1 {
 	font-size:18px;
 	font-weight:bold;
 	color:#333333;
 }
-.shareEdit table.main {
+.statusReport .shareEdit table.main {
 	border-style:none;
 }
 
-.shareEdit tr.Title {
+.statusReport .shareEdit tr.Title {
 	height:25px;
 	background-color:#D8DAAE;
 }
-.shareEdit tr.White {
+
+.statusReport .shareEdit tr.White {
 	background-color:#FFFFFF;
 }
-.shareEdit tr.Brown {
+
+.statusReport .shareEdit tr.Brown {
 	background-color:#eef5ff;
 }
-.shareEdit td.TD1 {
+
+.statusReport .shareEdit td.TD1 {
 	padding:3px;
 	width:20px;
 	text-align:center;		
 }
-.shareEdit td.TD2 {
+
+.statusReport .shareEdit td.TD2 {
 	padding:3px;
 	width:150px;
 	text-indent:5px;
 }
+
 .shareEdit td.TD3 {
 	padding:3px;
 	vertical-align:middle;
 	text-indent:5px;
 }
-.shareEdit td.TD4 {
+
+.statusReport .shareEdit td.TD4 {
 	padding:3px;
 	width:150px;
 	text-indent:15px;
 }
-.shareEdit td.spacer {
+
+.statusReport .shareEdit td.spacer {
 	width:1px;
 	background-color:#999900;
 }
 
-.jobResults {
+.statusReport .jobResults {
 	color:#333;
 	font-size:12px;
 	font-family:Arial, verdana, Helvetica, sans-serif;
@@ -153,8 +160,7 @@ table.parameter th{
 	float:left;
 }
 
-
-table.title {
+.statusReport table.title {
 	width:100%;
 	padding:5px;
 	background-color: #eef5ff;
@@ -164,25 +170,98 @@ table.title {
 	border-top: solid #666699 1px;
 }
 
-.icon {
-	width:90px;
-	color:#666;
-	font-size:10px;
-	font-weight:normal;
-	line-height:10px;
-	vertical-align:baseline;
-	margin-top:3px;
-	margin-right:5px;
-	float:right;
+.jobResults {
+    max-width: 100%;
 }
 
-.icon img {
+.jobResults .title {
+    width:100%;
+    background-color: #eef5ff;
+    padding: 5px;
+    border: 1px solid #A3B1DD;
+    border-radius: 5px;
+    text-indent: 10px;
+    font-size: 16px;
+    color: #666;
+    font-weight: bold;
+    line-height: 25pt;
+    margin-bottom: 25px;
+}
+
+.jobResults .jobresults-navigation {
+    float: right;
+}
+
+#jobTable {
+    margin-top: 10px;
+    width: 100% !important;
+}
+
+#jobTable th, #jobTable td {
+    overflow: hidden;
+}
+
+#jobTable thead {
+    font-weight: bold;
+}
+
+.job-task {
+    font-weight: bold;
+}
+
+#jobresults-show {
+    position: relative;
+    top: -3px;
+}
+
+.jobresults-files {
+    padding-left: 25px;
+    padding-bottom: 10px;
+}
+
+.jobresults-files a {
+    display: inline-block;
+    max-width: 90%;
+    text-overflow: ellipsis;
+    overflow: hidden;
+}
+
+.jobresults-child {
+    padding-left: 25px;
+    font-weight: bold;
+}
+
+.jobresults-child .jobresults-files {
+    font-weight: normal;
+}
+
+.delete-job-action {
+    color: #000099;
+}
+
+.delete-job-action:hover {
+    color: #6666FF !important;
+}
+
+.statusReport .icon {
+	width: 90px;
+	color: #666;
+	font-size: 10px;
+	font-weight: normal;
+	line-height: 10px;
+	vertical-align: baseline;
+	margin-top: 9px;
+	margin-right: 5px;
+	float: right;
+}
+
+.statusReport .icon img {
 	border:none;
 	margin-top:-5px;
 	margin-right:3px;
 }
 
-.icon2 {
+.statusReport .icon2 {
 	color:#666;
 	font-size:10px;
 	font-weight:normal;
@@ -194,12 +273,12 @@ table.title {
 	padding-right: 15px;
 }
 
-.icon2 img {
+.statusReport .icon2 img {
 	border:none;
 	margin-right:3px;
 }
 
-table.module {
+.statusReport table.module {
 	width: 100%;
 	padding: 5px;
 	background-color: #f0f0ff;
@@ -214,7 +293,7 @@ table.module {
 	margin-top: 2px;
 }
 
-table.worningModule {
+.statusReport table.worningModule {
 	width:100%;
 	padding:5px;
 	background-color:#ffcccc;
@@ -229,77 +308,80 @@ table.worningModule {
 	margin-top:2px;
 }
 
-.reminders {
+.statusReport .reminders {
 	display:block;
 	padding:10px;
 	font-size:12px;
 	color:#666;	
 }
-table.summary {
-	width:100%;
-	border-bottom:solid #94966a 1px;
-	border-right:solid #eef5ff 1px;
-	border-top:solid #fafccf 1px;
-}
 
-
-table.summary th {
+.statusReport table.summary th {
    background-color:#eee;
    border-top:solid #dfdfdf 1px;
    border-left:solid #eef5ff 1px;
    border-bottom:solid #eef5ff 1px;
 }
 
-tr.summaryTitle {
+.statusReport tr.summaryTitle {
 	background-color:#eef5ff;
 }
-.brown {
+
+.statusReport .brown {
 	background-color:#eef5ff;
 }
-.white {
+
+.statusReport .white {
 	background-color:#ffffff;
 }
-table.summary td {
+
+.statusReport table.summary td {
  	line-height:18px;
 	vertical-align:top;
 	padding:6px 15px 1px 5px;
 	border-left:solid #eef5ff 1px;	
 }
 
-table.summary tr.brown td {
+.statusReport table.summary tr.brown td {
 	border-bottom: solid white 1px;
 }
 
- td.center {
+.statusReport td {
+    padding-top: 0px !important;
+}
+
+.statusReport td.center {
 	text-align:center;
 }
- td.right {
+
+.statusReport td.right {
 	text-align:right;
 }
- td.childJob {
+
+.statusReport td.childJob {
 	text-indent:13px;
-	
-}
- td.file {
-	text-indent:13px;
-	
 }
 
- td.childFile {
+.statusReport td.file {
+	text-indent:13px;
+}
+
+.statusReport td.childFile {
 	text-indent:26px;
-	
 }
 
-.indented {
+.statusReport .indented {
 	padding-left:20px;
 }
-td.title {
-	text-indent:10px;
-	font-size:16px;
-	color:#666;
-	font-weight:bold;
+
+.statusReport td.title {
+	text-indent: 10px;
+	font-size: 16px;
+	color: #666;
+	font-weight: bold;
+	font-weight: bold;
 }
-td.smallTitle {
+
+.statusReport td.smallTitle {
 	padding-top:5px;
 	text-indent:10px;
 	font-size:12px;
@@ -307,25 +389,35 @@ td.smallTitle {
 	font-weight:bold;
 }
 
-td.header a {
+.statusReport td.header-sm a {
 	color: #333366;	
 }
 
- a{
-	color:#0066FF;
+.statusReport .header-sm {
+    width: 40px
+}
+
+.statusReport .header-md {
+    width: 100px
+}
+
+.statusReport a {
 	text-decoration:none;
 }
- a.execution {
+
+.statusReport a.execution {
 	font-weight:bold;
 }
- a.ID {
+
+.statusReport a.ID {
 	font-weight:bold;
 }
-a.view {
+
+.statusReport a.view {
 	font-size:12px;
 }
 
-table.indicator {
+.statusReport table.indicator {
 	width:100%;
 	height:3px;
 	color:#fff;
@@ -333,49 +425,54 @@ table.indicator {
 	background-color:#999999;
 	overflow: hidden;
 }
-table.indicator td {
+
+.statusReport table.indicator td {
 	border-left:solid #fff 2px;
 	padding:0 0 0 3px;
 	height:3px;
 	overflow: hidden;
 	line-height: 4px;
 }
-table.indicator td.green {
+
+.statusReport table.indicator td.green {
 	background-color:#CCFF00;	
 }
-table.indicator td.blue {
+
+.statusReport table.indicator td.blue {
 	background-color:#00CCFF;
 }
-table.indicator td.red {
+
+.statusReport table.indicator td.red {
     background-color:#FF0000;
 }
-table.indicator td.grey {
+
+.statusReport table.indicator td.grey {
     background-color:#cccccc;
 }
 
-.jobContent {
+.statusReport .jobContent {
 	width:100%;
 }
 
-table.emailReminder {
+.statusReport table.emailReminder {
 	line-height:22px;
 }
 
-table.emailReminder td {
+.statusReport table.emailReminder td {
 	padding:10px 0 0 3px;
 	vertical-align:top;
 	white-space: nowrap;
 }
 
-#SubMenuContainer {
+.statusReport #SubMenuContainer {
 	width: auto;
 	position:absolute;
 	top:116px;
 	left:411px;
 	z-index:51;
-	}
+}
 
-.SubCell {
+.statusReport .SubCell {
 	display: block;
 	text-decoration:none;
 	text-align:center;
@@ -389,13 +486,13 @@ table.emailReminder td {
 	background-position: -104px 0;
 }
 
-.SubCell:hover {
+.statusReport .SubCell:hover {
 	color:#FFFFFF;
 	font-weight:bold;
 	background-position: 0 0;
 }
 
-table.window {
+.statusReport table.window {
 	width:100%;
 	border:solid #ddd 1px;
 	border-top:solid #eee 1px;
@@ -404,16 +501,18 @@ table.window {
 	margin: 0 0 5px 0;
 }
 
-table.shareEdit {
+.statusReport table.shareEdit {
 	border-bottom:solid #94966a 1px;
 	border-right:solid #eef5ff 1px;
 	border-top:solid #fafccf 1px;
 }
-.files {
+
+.statusReport .files {
 	display:block;
 	text-indent:32px;
 	margin:5px 0 0 0;
 }
-p.narrow {
+
+.statusReport p.narrow {
 	margin:3px 0 3px 0;
 }
