@@ -133,7 +133,6 @@ public class DbLookup implements DrmLookup {
             HibernateUtil.beginTransaction();
             JobRunnerJob existing = (JobRunnerJob) HibernateUtil.getSession().get(JobRunnerJob.class, gpJobNo);
             if (existing==null) {
-                //TODO: should throw an exception?
                 log.error("No existing record for "+gpJobNo);
                 return;
             }

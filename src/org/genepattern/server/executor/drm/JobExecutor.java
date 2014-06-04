@@ -305,7 +305,7 @@ public class JobExecutor implements CommandExecutor2 {
             if (log.isDebugEnabled()) { 
                 log.debug("checkStatus(gpJobNo="+drmJobRecord.getGpJobNo()+") timed out after "+getJobStatus_delay+" "+TimeUnit.MILLISECONDS);
             }
-            //TODO: just a guess, report it as running so that we try again
+            //report it as running so that we try again
             return new DrmJobStatus.Builder(drmJobRecord.getExtJobId(), DrmJobState.RUNNING).build();
         }
         catch (ExecutionException e) {
@@ -462,12 +462,37 @@ public class JobExecutor implements CommandExecutor2 {
         if (jobInfo==null) {
             throw new IllegalArgumentException("jobInfo==null");
         }
-        log.debug(jobRunnerName+" terminateJob, gpJobNo="+jobInfo.getJobNumber());
-        final DrmJobRecord drmJobRecord=jobLookupTable.lookupJobRecord(jobInfo.getJobNumber());
-        if (drmJobRecord==null) {
-            log.debug("drmJobRecord==null");
+        int gpJobNo=jobInfo.getJobNumber();
+        log.debug(jobRunnerName+" terminateJob, gpJobNo="+gpJobNo);
+        final DrmJobRecord drmJobRecord=jobLookupTable.lookupJobRecord(gpJobNo);
+        final DrmJobStatus cancelledStatus = cancelJob(drmJobRecord);
+        if (cancelledStatus.getJobState().is(DrmJobState.TERMINATED)) {
+            boolean removed=runningJobs.remove(drmJobRecord);
+            if (removed) {
+                handleCompletedJob(drmJobRecord, cancelledStatus);
+            }
+            // let polling mechanism detect task cancellation before sending callback
         }
+        else {
+            // send callback to GPAT.handleJobCompletion
+            try {
+                log.debug("Calling GPAT.handleJobCompletion for job="+drmJobRecord.getGpJobNo());
+                GenePatternAnalysisTask.handleJobCompletion(gpJobNo, -1, "User terminated job #"+gpJobNo);
+            }
+            catch (Throwable t) {
+                log.error("Error in the call to GPAT.handleJobCompletion for cancelled job="+gpJobNo, t);
+            }
+        }
+    }
 
+    private DrmJobStatus cancelJob(final DrmJobRecord drmJobRecord) throws InterruptedException {
+        if (drmJobRecord==null) {
+            throw new IllegalArgumentException("drmJobRecord==null");
+        }
+        int gpJobNo=drmJobRecord.getGpJobNo();
+        log.debug(jobRunnerName+" terminateJob, gpJobNo="+gpJobNo);
+        
+        Boolean cancelled=null;
         Future<Boolean> f = jobCancellationService.submit(new Callable<Boolean>() {
             @Override
             public Boolean call() throws Exception {
@@ -476,29 +501,41 @@ public class JobExecutor implements CommandExecutor2 {
             }
         });
         
-        Boolean cancelled=null;
         try {
             //hard-coded ... wait at most 5 seconds to cancel the job before falling back to manually updating the job status record
             cancelled=f.get(5, TimeUnit.SECONDS);
         }
         catch (ExecutionException e) {
-            log.error("Error cancelling job="+drmJobRecord.getGpJobNo(), e);
+            log.error("Error cancelling job="+gpJobNo, e);
         }
         catch (TimeoutException e) {
-            log.debug("timeout while cancelling job="+drmJobRecord.getGpJobNo(), e);
+            log.debug("timeout while cancelling job="+gpJobNo, e);
         }
-        if (cancelled != null && cancelled) {
-            return;
+
+        DrmJobStatus jobStatus = getJobStatus(drmJobRecord);
+        if (cancelled==null) {
+            log.debug("Timeout while cancelling job");
+            return new DrmJobStatus.Builder(jobStatus)
+                .jobStatusMessage("Timeout while cancelling the job")
+            .build();
         }
-        
-        //fallback, either it took too long to cancel, or there was some other error
-        int gpJobNo=jobInfo.getJobNumber();
-        try {
-            log.debug("Calling GPAT.handleJobCompletion for job="+drmJobRecord.getGpJobNo());
-            GenePatternAnalysisTask.handleJobCompletion(gpJobNo, -1, "User terminated job #"+gpJobNo);
+        else if (!cancelled) {
+            log.debug("Cancelled with error");
+            return new DrmJobStatus.Builder(jobStatus)
+                .jobStatusMessage("Cancelled with error")
+            .build();
         }
-        catch (Throwable t) {
-            log.error("Error in the call to GPAT.handleJobCompletion for cancelled job="+gpJobNo, t);
+        else { //cancelled
+            log.debug("Cancelled without error, and before timeout");
+            if (jobStatus.getJobState().is(DrmJobState.TERMINATED)) {
+                return jobStatus;
+            }
+            else {
+                //special-case: change the status message to 'cancelling'
+                return new DrmJobStatus.Builder(jobStatus)
+                    .jobStatusMessage("Cancelling the job")
+                .build();
+            }
         }
     }
 
