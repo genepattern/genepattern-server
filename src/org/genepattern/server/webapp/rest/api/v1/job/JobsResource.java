@@ -409,8 +409,9 @@ public class JobsResource {
             JobManager.terminateJob(userContext.isAdmin(), userContext.getUserId(), intJobId);
             return Response.ok().entity("Terminated Job: " + intJobId).build();
         }
-        catch (Exception e) {
-            return Response.status(500).entity("Could not terminate job " + jobId + " " + e.getLocalizedMessage()).build();
+        catch (Throwable t) {
+            log.error("job termination error, jobId="+jobId, t);            
+            return Response.status(500).entity("Could not terminate job " + jobId + " " + t.getLocalizedMessage()).build();
         }
     }
 
@@ -620,6 +621,24 @@ public class JobsResource {
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(message).build();
         }
     }
+    
+//    /**
+//     * GET status.json for the given jobId.
+//     */
+//    @GET
+//    @Produces(MediaType.APPLICATION_JSON)
+//    @Path("/{jobId}/status.json")
+//    public Response getStatus(
+//            final @Context UriInfo uriInfo,
+//            final @Context HttpServletRequest request,
+//            final @PathParam("jobId") String jobId
+//    ) {
+//
+//        String errorMessage="Method not implemented!";
+//        return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+//                .entity(errorMessage)
+//                .build();
+//    }
     
     /**
      * GET children for the given jobId.
