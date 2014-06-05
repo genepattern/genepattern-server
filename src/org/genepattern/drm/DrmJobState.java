@@ -12,34 +12,40 @@ public enum DrmJobState {
     /** Outer state, use one of the nested states.  */
     IS_QUEUED(null),
       /** The job is queued or being scheduled and executed. */
-      QUEUED(IS_QUEUED),
+      QUEUED(IS_QUEUED, "The job is queued or being scheduled and executed"),
       /** The job has been placed on hold by the system, the administrator, or the submitting user. */
-      QUEUED_HELD(IS_QUEUED),
+      QUEUED_HELD(IS_QUEUED, "The job has been placed on hold by the system, the administrator, or the submitting user"),
     /** Outer state for a job which has been started, use one of the nested states when creating new job status instances. */
     STARTED(null),
       /** The job is running on an execution host. */
-      RUNNING(STARTED),
+      RUNNING(STARTED, "The job is running on an execution host"),
       /** The job has been suspended by the user, the system or the administrator. */
-      SUSPENDED(STARTED),
+      SUSPENDED(STARTED, "The job has been suspended by the user, the system or the administrator"),
       /** The job was re-queued by the system, and is eligible to run. */
-      REQUEUED(STARTED),
+      REQUEUED(STARTED, "The job was re-queued by the system, and is eligible to run"),
       /** The job was re-queued by the system, and is currently placed on hold by the system, the administrator, or the submitting user. */
-      REQUEUED_HELD(STARTED),
+      REQUEUED_HELD(STARTED, "The job was re-queued by the system, and is currently placed on hold by the system, the administrator, or the submitting user"),
     /** Outer state for a completed job, use one of the nested states. */
     TERMINATED(null),
       /** The job finished without an error. */
-      DONE(TERMINATED),
+      DONE(TERMINATED, "The job finished without an error"),
       /** The job exited abnormally before finishing, for example if the command exited with a non-zero exit code or by exceeding a resource usage limit. */
-      FAILED(TERMINATED),
+      FAILED(TERMINATED, "The job exited abnormally before finishing, for example if the command exited with a non-zero exit code or by exceeding a resource usage limit"),
         /** The job was cancelled by the user before entering the running state. */
-        ABORTED(FAILED),
+        ABORTED(FAILED, "The job was cancelled by the user before entering the running state"),
         /** The job was cancelled by the user after entering the running state. */
-        CANCELLED(FAILED)
+        CANCELLED(FAILED, "The job was cancelled by the user after entering the running state")
     ;
     
     private final DrmJobState parent;
+    private final String description;
     private DrmJobState(DrmJobState parent) {
         this.parent=parent;
+        this.description=name();
+    }
+    private DrmJobState(DrmJobState parent, String description) {
+        this.parent=parent;
+        this.description=description;
     }
 
     /**
@@ -59,5 +65,9 @@ public enum DrmJobState {
             }
         }
         return false;
+    }
+    
+    public String getDescription() {
+        return description;
     }
 }
