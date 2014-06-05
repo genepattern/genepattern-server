@@ -2218,10 +2218,10 @@ function submitTask()
             }
 
             if (response.batchId !== undefined) {
-                window.location.replace("/gp/jobResults");
+                window.location.replace("/gp/pages/index.jsf?jobResults=batchId%3D" + response.batchId);
             }
             else if (response.jobId != undefined) {
-                window.location.replace("/gp/jobResults/"+response.jobId+"?openVisualizers=true");
+                window.location.replace("/gp/pages/index.jsf?jobid="+response.jobId+"&openVisualizers=true");
             }
 
             console.log("Response text: " + response.text);

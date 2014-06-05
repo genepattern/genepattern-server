@@ -3031,9 +3031,16 @@ function loadJobResults(jobResults) {
     }
 
     // Handle default job results loads
-    if (jobResults === 'true' || jobResults === true) {
-        jobResults = "userId=" + username;
+    if (jobResults === 'true' || jobResults === true || jobResults === 'null') {
+        var jobResults = getJobFilter();
+        if (jobResults === null) {
+            jobResults = "userId=" + username;
+            setJobFilter(jobResults);
+        }
     }
+
+    // Set the filter
+    setJobFilter(jobResults);
 
     // Hide the search slider if it is open
     $(".search-widget").searchslider("hide");
@@ -3059,8 +3066,7 @@ function loadJobResults(jobResults) {
     $(".send-to-param-list").hide();
 
     // Add to history so back button works
-    var filter = getJobFilter();
-    history.pushState(null, document.title, location.protocol + "//" + location.host + location.pathname + "?jobResults=" + encodeURIComponent(filter));
+    history.pushState(null, document.title, location.protocol + "//" + location.host + location.pathname + "?jobResults=" + encodeURIComponent(jobResults));
 
     // Build the page scaffolding
     buildJobResultsPage();
