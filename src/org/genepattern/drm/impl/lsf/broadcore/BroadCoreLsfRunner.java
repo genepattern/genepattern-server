@@ -171,7 +171,7 @@ public class BroadCoreLsfRunner implements JobRunner {
             return new DrmJobStatus.Builder()
                 .extJobId(drmJobRecord.getExtJobId())
                 .jobState(DrmJobState.QUEUED)
-                .jobStatusMessage("Pending in queue "+localJob.getQueue())
+                .jobStatusMessage("Pending")
             .build();
         }
         
@@ -179,7 +179,7 @@ public class BroadCoreLsfRunner implements JobRunner {
         return new DrmJobStatus.Builder()
             .extJobId(drmJobRecord.getExtJobId()) 
             .jobState(DrmJobState.RUNNING)
-            .jobStatusMessage("Assume it's still running in queue "+localJob.getQueue()+", lsf status is "+lsfStatusCode)
+            .jobStatusMessage("Lsf status is "+lsfStatusCode+", Assume it's still running.")
         .build();
     }
     
