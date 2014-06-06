@@ -5,7 +5,9 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutionException;
@@ -17,7 +19,6 @@ import org.apache.commons.exec.CommandLine;
 import org.apache.commons.exec.DefaultExecuteResultHandler;
 import org.apache.commons.exec.DefaultExecutor;
 import org.apache.commons.exec.ExecuteException;
-import org.apache.commons.exec.ExecuteResultHandler;
 import org.apache.commons.exec.ExecuteWatchdog;
 import org.apache.commons.exec.Executor;
 import org.apache.commons.exec.PumpStreamHandler;
@@ -55,6 +56,8 @@ public class LocalCommonsExecJobRunner implements JobRunner {
     //private static final long pending_interval_ms=30L*1000L;
     private ExecutorService pendingExec=null;
     private ConcurrentMap<Integer,Future<?>> pendingMap=new ConcurrentHashMap<Integer, Future<?>>();
+    // more accurate reporting a user-cancelled tasks
+    private Set<Integer> cancelledJobs = new HashSet<Integer>();
     
     private void initStatus(DrmJobSubmission gpJob) {
         DrmJobStatus status = new DrmJobStatus.Builder(""+gpJob.getGpJobNo(), DrmJobState.QUEUED)
@@ -92,7 +95,9 @@ public class LocalCommonsExecJobRunner implements JobRunner {
         statusMap.put(gpJobNo, b.build());
     }
     
-    private DrmJobStatus updateStatus_cancel(int gpJobNo) {
+    private DrmJobStatus updateStatus_cancel(int gpJobNo, boolean isPending) {
+        cancelledJobs.add(gpJobNo);
+        log.debug("updateStatus_cancel, gpJobNo="+gpJobNo+", isPending="+isPending);
         DrmJobStatus status = statusMap.get(gpJobNo);
         DrmJobStatus.Builder b;
         if (status==null) {
@@ -111,13 +116,15 @@ public class LocalCommonsExecJobRunner implements JobRunner {
         }
         b.exitCode(-1); // hard-code exitCode for user-cancelled task
         b.endTime(new Date());
-        b.jobStatusMessage("Task cancelled by user");
+        b.jobStatusMessage("Job cancelled by user");
         return statusMap.put(gpJobNo, b.build());
     }
 
+    boolean shuttingDown=false;
     @Override
     public void stop() {
         log.debug("shutting down ...");
+        shuttingDown=true;
         if (pendingExec != null) {
             pendingExec.shutdownNow();
         }
@@ -179,26 +186,35 @@ public class LocalCommonsExecJobRunner implements JobRunner {
     }
 
     @Override
-    public DrmJobStatus getStatus(DrmJobRecord drmJobRecord) {
-        return statusMap.get(drmJobRecord.getGpJobNo());
+    public DrmJobStatus getStatus(DrmJobRecord jobRecord) {
+        DrmJobStatus jobStatus=statusMap.get(jobRecord.getGpJobNo());
+        if (jobStatus != null) {
+            return jobStatus;
+        }
+        // special-case: job was terminated in a previous GP instance
+        return new DrmJobStatus.Builder()
+                .extJobId(jobRecord.getExtJobId())
+                .jobState(DrmJobState.UNDETERMINED)
+                .jobStatusMessage("No record for job, assuming it was terminated at shutdown of GP server")
+            .build();
     }
 
     @Override
     public boolean cancelJob(DrmJobRecord drmJobRecord) throws Exception {
+        boolean isPending=false;
         Future<?> f=pendingMap.remove(drmJobRecord.getGpJobNo());
         if (f != null) {
             //assume it's a pending job
+            isPending=true;
             boolean mayInterruptIfRunning=true;
             f.cancel(mayInterruptIfRunning);
         }
+        updateStatus_cancel(drmJobRecord.getGpJobNo(), isPending);
         Executor exec=execMap.remove(drmJobRecord.getGpJobNo());
         if (exec != null) {
             exec.getWatchdog().destroyProcess();
-            updateStatus_cancel(drmJobRecord.getGpJobNo());
-            return true;
         }
-        updateStatus_cancel(drmJobRecord.getGpJobNo());
-        return false;
+        return true;
     }
     
     private class CmdResultHandler extends DefaultExecuteResultHandler {
@@ -209,14 +225,24 @@ public class LocalCommonsExecJobRunner implements JobRunner {
         
         @Override
         public void onProcessComplete(final int exitValue) {
-            super.onProcessComplete(exitValue);
-            updateStatus_complete(gpJobNo, exitValue, null);
+            if (!shuttingDown) {
+                super.onProcessComplete(exitValue);
+                updateStatus_complete(gpJobNo, exitValue, null);
+            }
         }
 
         @Override
         public void onProcessFailed(final ExecuteException e) {
-            super.onProcessFailed(e);
-            updateStatus_complete(gpJobNo, e.getExitValue(), e);
+            if (!shuttingDown) {
+                super.onProcessFailed(e);
+                if (cancelledJobs.contains(gpJobNo)) {
+                    boolean isPending=false;
+                    updateStatus_cancel(gpJobNo, isPending);
+                }
+                else {
+                    updateStatus_complete(gpJobNo, e.getExitValue(), e);
+                }
+            }
         }
     }
     
@@ -239,7 +265,7 @@ public class LocalCommonsExecJobRunner implements JobRunner {
                 new FileOutputStream(errfile));
         }
         
-        final ExecuteResultHandler resultHandler=new CmdResultHandler(gpJob.getGpJobNo());
+        final CmdResultHandler resultHandler=new CmdResultHandler(gpJob.getGpJobNo());
         final ExecuteWatchdog watchDog = new ExecuteWatchdog(ExecuteWatchdog.INFINITE_TIMEOUT);
         final ShutdownHookProcessDestroyer processDestroyer = new ShutdownHookProcessDestroyer();
         
