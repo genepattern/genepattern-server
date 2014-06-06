@@ -1880,7 +1880,7 @@ function createFileWidget(linkElement, appendTo) {
                     else if (genomeSpaceAction) {
                         fileURL = url;							// Set the URL of the file
 
-                        $('#genomeSpaceSaveDialog').dialog('open');
+                        openSaveDialog();
 
                         $(".search-widget:visible").searchslider("hide");
                         return;

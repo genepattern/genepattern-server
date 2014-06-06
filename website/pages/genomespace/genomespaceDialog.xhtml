@@ -14,7 +14,7 @@
       xmlns:c="http://java.sun.com/jstl/core">
     <ui:composition>
         <ui:define name="headText">
-            <style>
+            <style type="text/css">
                 .saveTreeSelected {
                     background-color: #9999CC;
                 }
@@ -27,12 +27,68 @@
                 /* <![CDATA[ */
                 var saveTreeSelected = null;
                 var fileURL = null;
+                var saveTreeInitialized = false;
+
+                function initSaveTree() {
+                    $("#saveTree").jstree({
+                        core:{
+                            "html_titles":true
+                        },
+
+                        "json_data":{
+                            "ajax":{
+                                "url":function (node) {
+                                    if (node === -1) {
+                                        return "/gp/GenomeSpace/saveTree";
+                                    }
+                                    var gsURL = $(node).find("a").attr("href");
+                                    return "/gp/GenomeSpace/saveTree?dir=" + encodeURIComponent(gsURL);
+                                },
+                                "data":function (node) {
+                                    return {
+                                        id:node.attr ? node.attr("id") : 0
+                                    };
+                                }
+                            }
+                        },
+                        "cookies":{
+                            "save_opened":"gsSaveDialog"
+                        },
+                        plugins:[ "themes", "json_data", "cookies" ]
+                    });
+                    $("#saveTree").bind("load_node.jstree", function (event, data) {
+                        var iterate = null;
+
+                        // Handle the case of the initial load
+                        if (data["args"][0] === -1) {
+                            iterate = $(this).find("li");
+                        }
+                        else {
+                            iterate = $(data["args"][0]).find("li");
+                        }
+
+                        iterate.each(function (index) {
+
+                            var node = iterate.get(index);
+                            var name = $(node).find("a:first").attr("name");
+
+                            // Add the id to the node
+                            $(node).attr("id", name);
+
+                            // Check for the case of empty directories
+                            var link = $(node).find("a:first").attr("href");
+                            if (link === "#") return;
+                        });
+
+                        $("#genomeSpaceSaveDialog").parent().find(".ui-button:first").button("disable");
+                    });
+                }
 
                 function openSaveDialog(node) {
-                    var menuId = $(node).closest(".popupMenu").attr("id");		// Get id of the file menu
-                    var arrowId = menuId.replace("menuDiv_", "Image_");			// Get the id of the relevant arrow
-                    var fileLink = $("[id='" + arrowId + "']").prev();			// Get the link to the file
-                    fileURL = fileLink.attr("href");							// Set the URL of the file
+                    if (!saveTreeInitialized) {
+                        initSaveTree();
+                        saveTreeInitialized = true;
+                    }
 
                     $('#genomeSpaceSaveDialog').dialog('open');
                     return false;
@@ -52,60 +108,6 @@
 
         <div id="genomeSpaceSaveDialog">
             <div id="saveTree"></div>
-            <script type="text/javascript">
-                $("#saveTree").jstree({
-                    core:{
-                        "html_titles":true
-                    },
-
-                    "json_data":{
-                        "ajax":{
-                            "url":function (node) {
-                                if (node === -1) {
-                                    return "/gp/GenomeSpace/saveTree";
-                                }
-                                var gsURL = $(node).find("a").attr("href");
-                                return "/gp/GenomeSpace/saveTree?dir=" + encodeURIComponent(gsURL);
-                            },
-                            "data":function (node) {
-                                return {
-                                    id:node.attr ? node.attr("id") : 0
-                                };
-                            }
-                        }
-                    },
-					"cookies":{
-                        "save_opened":"gsSaveDialog"
-                    },
-                    plugins:[ "themes", "json_data", "cookies" ]
-                });
-                $("#saveTree").bind("load_node.jstree", function (event, data) {
-                    var iterate = null;
-
-                    // Handle the case of the initial load
-                    if (data["args"][0] === -1) {
-                        iterate = $(this).find("li");
-                    }
-                    else {
-                        iterate = $(data["args"][0]).find("li");
-                    }
-
-                    iterate.each(function (index) {
-
-                        var node = iterate.get(index);
-                        var name = $(node).find("a:first").attr("name");
-
-                        // Add the id to the node
-                        $(node).attr("id", name);
-
-                        // Check for the case of empty directories
-                        var link = $(node).find("a:first").attr("href");
-                        if (link === "#") return;
-                    });
-
-                    $("#genomeSpaceSaveDialog").parent().find(".ui-button:first").button("disable");
-                });
-            </script>
         </div>
         <script type="text/javascript">
 //            $("#saveTree .jstree-open > ins").hide();
