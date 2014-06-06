@@ -69,7 +69,7 @@ public class VisualizerStatusBean implements Serializable {
         //this is here because the openVisualizers parameter may or may not be set
         //    not sure how to configure this properly with JSF in the faces-config.xml file
         String openVisualizersParameter = UIBeanHelper.getRequest().getParameter("openVisualizers");
-        if (openVisualizersParameter != null) {
+        if ("true".equalsIgnoreCase(openVisualizersParameter)) {
             this.openVisualizers = true;
         }
     }
