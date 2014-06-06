@@ -30,9 +30,10 @@ import org.junit.Test;
  */
 public class TestJobStatus {
 
-    private static final String jobHref = "http://127.0.0.1:8080/gp/jobResults/1";
-    private static final String executionLogLocation = "http://127.0.0.1:8080/gp/jobResults/1/gp_execution_log.txt";
-    private static final String stderrLocation = "http://127.0.0.1:8080/gp/jobResults/1/stderr.txt";
+    private static final int gpJobNo = 1;
+    private static final String jobHref = "http://127.0.0.1:8080/gp/jobResults/"+gpJobNo;
+    private static final String executionLogLocation = "http://127.0.0.1:8080/gp/jobResults/"+gpJobNo+"/gp_execution_log.txt";
+    private static final String stderrLocation = "http://127.0.0.1:8080/gp/jobResults/"+gpJobNo+"/stderr.txt";
 
     private JobInfo jobInfo;
     JobRunnerJob jobStatusRecord;
@@ -58,8 +59,10 @@ public class TestJobStatus {
         
         jobStatusRecord=mock(JobRunnerJob.class);
         statusDate=new Date();
+        when(jobStatusRecord.getGpJobNo()).thenReturn(gpJobNo);
         when(jobStatusRecord.getStatusDate()).thenReturn(statusDate);
         when(jobStatusRecord.getExtJobId()).thenReturn("8937799");
+        when(jobStatusRecord.getStatusMessage()).thenReturn(null);
     }
     
     /**
@@ -85,7 +88,7 @@ public class TestJobStatus {
   }
      */
     @Test
-    public void testGetStatus_default() throws Exception {
+    public void getStatus_default() throws Exception {
         Status status= new Status.Builder().build();
         final JSONObject statusObj = status.toJsonObj();
         
@@ -100,7 +103,7 @@ public class TestJobStatus {
     }
     
     @Test
-    public void testNullArgs() throws JSONException {
+    public void builderNullArgs() throws JSONException {
         Status status= new Status.Builder()
             .jobInfo(null)  //ignore null jobInfo
             .jobStatusRecord(null) //ignore null jobStatusRecord
@@ -116,6 +119,91 @@ public class TestJobStatus {
         Assert.assertFalse("expect no 'stderrLocation'", statusObj.has("stderrLocation"));
     }
     
+    /**
+     * fix for GP-5198
+     * @throws JSONException
+     */
+    @Test
+    public void nullJobStateEnumValue() throws JSONException {
+        when(jobStatusRecord.getJobState()).thenReturn(null);
+        Status status= new Status.Builder()
+            .jobInfo(null)  //ignore null jobInfo
+            .jobStatusRecord(jobStatusRecord)
+            .build();
+        final JSONObject statusObj = status.toJsonObj();
+        Assert.assertEquals("Expecting empty string", 
+                "",
+                statusObj.getString("statusFlag"));
+    }
+    
+    @Test
+    public void emptyJobStateEnumValue() throws JSONException {
+        when(jobStatusRecord.getJobState()).thenReturn("");
+        Status status= new Status.Builder()
+            .jobInfo(null)  //ignore null jobInfo
+            .jobStatusRecord(jobStatusRecord)
+            .build();
+        final JSONObject statusObj = status.toJsonObj();
+        Assert.assertEquals("Expecting empty string", 
+                "",
+                statusObj.getString("statusFlag"));
+    }
+
+    @Test
+    public void bogusJobStateEnumValue() throws JSONException {
+        when(jobStatusRecord.getJobState()).thenReturn("PROCESSING");  // not a valid DrmJobState value
+        Status status= new Status.Builder()
+            .jobInfo(null)  //ignore null jobInfo
+            .jobStatusRecord(jobStatusRecord)
+            .build();
+        final JSONObject statusObj = status.toJsonObj();
+        Assert.assertEquals("Expecting empty string", 
+                "",
+                statusObj.getString("statusFlag"));
+    }
+    
+    @Test
+    public void nullStatusFlagNonNullStatusMessage() throws JSONException {
+        when(jobStatusRecord.getStatusMessage()).thenReturn("Custom status message");  // not a valid DrmJobState value
+        Status status= new Status.Builder()
+            .jobInfo(null)  //ignore null jobInfo
+            .jobStatusRecord(jobStatusRecord)
+            .build();
+        final JSONObject statusObj = status.toJsonObj();
+        Assert.assertEquals( 
+                "Custom status message",
+                statusObj.getString("statusMessage"));
+    }
+
+    @Test
+    public void nullStatusMessageNonNullStatusFlag() throws JSONException {
+        when(jobStatusRecord.getJobState()).thenReturn(DrmJobState.QUEUED.name());  // not a valid DrmJobState value
+        when(jobStatusRecord.getStatusMessage()).thenReturn("");  // not a valid DrmJobState value
+        Status status= new Status.Builder()
+            .jobInfo(null)  //ignore null jobInfo
+            .jobStatusRecord(jobStatusRecord)
+            .build();
+        final JSONObject statusObj = status.toJsonObj();
+        Assert.assertEquals( 
+                "The job is queued or being scheduled and executed",
+                statusObj.getString("statusMessage"));
+    }
+    
+    @Test
+    public void nullJobStatusRecord() throws JSONException {
+        when(jobInfo.getStatus()).thenReturn(JobStatus.PENDING);
+        Status status=new Status.Builder()
+            .jobHref(jobHref)
+            .jobInfo(jobInfo)
+        .build();
+        final JSONObject statusObj = status.toJsonObj();
+        Assert.assertEquals( 
+                "Pending in the GenePattern queue, it has not been submitted to an external queuing system",
+                statusObj.getString("statusMessage"));
+        
+    }
+
+
     @Test
     public void pendingInGp() throws Exception {
         //get job status when there is no entry in the job_runner_job table

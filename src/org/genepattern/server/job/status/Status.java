@@ -5,11 +5,6 @@ import java.util.Date;
 import java.util.List;
 
 import org.apache.log4j.Logger;
-import org.codehaus.jackson.map.AnnotationIntrospector;
-import org.codehaus.jackson.map.ObjectMapper;
-import org.codehaus.jackson.map.SerializationConfig;
-import org.codehaus.jackson.map.annotate.JsonSerialize.Inclusion;
-import org.codehaus.jackson.xc.JaxbAnnotationIntrospector;
 import org.genepattern.drm.DrmJobState;
 import org.genepattern.server.executor.drm.dao.JobRunnerJob;
 import org.genepattern.server.webapp.rest.api.v1.DateUtil;
@@ -24,6 +19,24 @@ import org.json.JSONObject;
 import com.google.common.base.Strings;
 
 /**
+ * Representation of the status of a GenePattern job, used to generate the 'status.json' representation
+ * from the REST API.
+ * 
+ * Example JSON format
+ * <pre>
+   {  
+     "extJobId":"8937799",
+     "isPending":false,
+     "isFinished":true,
+     "hasError":false,
+     "executionLogLocation":"http://127.0.0.1:8080/gp/jobResults/1/gp_execution_log.txt",
+     "stderrLocation":"http://127.0.0.1:8080/gp/jobResults/1/stderr.txt",
+     "statusDate":"2014-06-04T13:20:10-04:00",
+     "statusFlag":"DONE",
+     "statusMessage":"Completed on 2014-06-04T13:20:10-04:00"
+   }
+
+ * </pre>
  * 
  * @author pcarr
  *
@@ -43,7 +56,7 @@ public class Status {
     private Date statusDate=new Date();
     private List<GpLink> links=null;
     
-    public void addLink(GpLink link) {
+    private void addLink(GpLink link) {
         if (links==null) {
             links=new ArrayList<GpLink>();
         }
@@ -120,25 +133,25 @@ public class Status {
         return jobStatus;
     }
     
-    /**
-     * Example output as json string using Jackson library.
-     * @return
-     * @throws Exception
-     */
-    public String toJson() throws Exception {
-        ObjectMapper mapper = new ObjectMapper();
-        mapper.configure(SerializationConfig.Feature.INDENT_OUTPUT, true);
-        mapper.setSerializationInclusion(Inclusion.NON_NULL);
-        
-        AnnotationIntrospector introspector = new JaxbAnnotationIntrospector();
-        mapper.setAnnotationIntrospector(introspector);
-        
-        return mapper.writeValueAsString(this);
-    }
+//    /**
+//     * Example output as json string using Jackson library.
+//     * @return
+//     * @throws Exception
+//     */
+//    public String toJson() throws Exception {
+//        ObjectMapper mapper = new ObjectMapper();
+//        mapper.configure(SerializationConfig.Feature.INDENT_OUTPUT, true);
+//        mapper.setSerializationInclusion(Inclusion.NON_NULL);
+//        
+//        AnnotationIntrospector introspector = new JaxbAnnotationIntrospector();
+//        mapper.setAnnotationIntrospector(introspector);
+//        
+//        return mapper.writeValueAsString(this);
+//    }
     
     /**
      * Construct a new job status instance from the given JobInfo, executionLogLocation, 
-     * and jobStatusRecord (and JobRunnerJob). 
+     * and jobStatusRecord. 
      * 
      * @author pcarr
      *
@@ -179,6 +192,8 @@ public class Status {
         /**
          * Add status details from the newer JobRunner API.
          * This record is loaded from the 'job_runner_job' table.
+         * The values in the jobStatusRecord take precedence over the values in the jobInfo,
+         * so that we can include more detailed job status information such as 'Pending in LSF queue'.
          * 
          * @param jrj
          * @return
@@ -197,69 +212,28 @@ public class Status {
             this.jobHref=jobHref;
             return this;
         }
-
+        
         public Status build() {
             Status status = new Status();
-            DrmJobState jobState=null;
-            if (jobInfo != null) {
-                status.isFinished=JobInfoUtil.isFinished(jobInfo);
-                status.hasError=JobInfoUtil.hasError(jobInfo);
-                status.isPending=JobInfoUtil.isPending(jobInfo);
-                
-                if (status.isPending) {
-                    jobState=DrmJobState.GP_PENDING;
-                    status.statusDate=jobInfo.getDateSubmitted();
-                }
-                else if (status.isFinished) {
-                    jobState=DrmJobState.GP_FINISHED;
-                    status.statusDate=jobInfo.getDateCompleted();
-                }
-                else {
-                    jobState=DrmJobState.GP_PROCESSING;
-                    status.statusDate=jobInfo.getDateSubmitted();
-                }
-                status.statusMessage=jobState.getDescription();
-            }
+            
+            // step 1, initialize from optional JobInfo arg
+            DrmJobState jobState = initFromJobInfo(status);
             if (executionLogLocation != null) {
                 status.executionLogLocation=executionLogLocation;
             }
             if (stderrLocation != null) {
                 status.stderrLocation=stderrLocation;
             }
-            if (jobStatusRecord != null) {
-                //include more details
-                try {
-                    jobState=DrmJobState.valueOf(jobStatusRecord.getJobState());
-                    //state=jobState;
-                    if (jobState.is(DrmJobState.IS_QUEUED)) {
-                        //we are still pending regardless of what the GP DB says!
-                        status.isPending=true;
-                    }
-                    else if (jobState.is(DrmJobState.TERMINATED)) {
-                        status.isFinished=true;
-                    }
-                    // by default, initialize the statusMessage from the description
-                    status.statusMessage=jobState.getDescription();
-                }
-                catch (IllegalArgumentException e) {
-                    log.error("error initializing DrmJobState enum from job_runner_job.job_state column", e);
-                }
-                if (!Strings.isNullOrEmpty(jobStatusRecord.getStatusMessage())) {
-                    status.statusMessage=jobStatusRecord.getStatusMessage();
-                }
-                status.statusDate=jobStatusRecord.getStatusDate();
-                status.extJobId=jobStatusRecord.getExtJobId();
-            }
-            
-            //special-case, when statusMessage is null, use the status flag
-            if (Strings.isNullOrEmpty(status.statusMessage)) {
-                if (jobState != null) {
-                    status.statusMessage=jobState.getDescription();
-                }
-            }
+            // step 2, initialize from optional jobStatusRecord arg
+            jobState = initFromJobStatusRecord(status, jobState);
+
             if (jobState != null) {
                 status.statusFlag=jobState.name();
                 status.jobState=jobState;
+                //special-case, when statusMessage is not set, use the status flag
+                if (Strings.isNullOrEmpty(status.statusMessage)) {
+                    status.statusMessage=jobState.getDescription();
+                }
             }
             if (jobHref != null) {
                 status.addLink( 
@@ -271,6 +245,61 @@ public class Status {
                 status.addLink( new GpLink.Builder().href( jobHref ).addRel( Rel.gp_job ).build() );
             }
             return status;
+        }
+
+        private DrmJobState initFromJobInfo(Status status) {
+            if (jobInfo==null) {
+                // no-op
+                return null;
+            }
+            
+            status.isFinished=JobInfoUtil.isFinished(jobInfo);
+            status.hasError=JobInfoUtil.hasError(jobInfo);
+            status.isPending=JobInfoUtil.isPending(jobInfo);
+
+            DrmJobState jobState=null;
+            if (status.isPending) {
+                jobState=DrmJobState.GP_PENDING;
+                status.statusDate=jobInfo.getDateSubmitted();
+            }
+            else if (status.isFinished) {
+                jobState=DrmJobState.GP_FINISHED;
+                status.statusDate=jobInfo.getDateCompleted();
+            }
+            else {
+                jobState=DrmJobState.GP_PROCESSING;
+                status.statusDate=jobInfo.getDateSubmitted();
+            }
+            return jobState;
+        }
+
+        private DrmJobState initFromJobStatusRecord(Status status, DrmJobState jobState) {
+            if (jobStatusRecord == null) {
+                // no-op
+                return jobState;
+            }
+            String jobStateStr=jobStatusRecord.getJobState();
+            if (!Strings.isNullOrEmpty(jobStateStr)) {
+                try {
+                    jobState=DrmJobState.valueOf(jobStateStr);
+                    if (jobState.is(DrmJobState.IS_QUEUED)) {
+                        //we are still pending regardless of what the GP DB says!
+                        status.isPending=true;
+                    }
+                    else if (jobState.is(DrmJobState.TERMINATED)) {
+                        status.isFinished=true;
+                    }
+                }
+                catch (Throwable t) {
+                    log.error("Error initializing DrmJobState enum from job_runner_job.job_state column="+jobStateStr, t);
+                }
+            }
+            if (!Strings.isNullOrEmpty(jobStatusRecord.getStatusMessage())) {
+                status.statusMessage=jobStatusRecord.getStatusMessage();
+            }
+            status.statusDate=jobStatusRecord.getStatusDate();
+            status.extJobId=jobStatusRecord.getExtJobId();
+            return jobState;
         }
     }
 }
