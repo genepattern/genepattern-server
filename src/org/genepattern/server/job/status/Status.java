@@ -39,6 +39,7 @@ public class Status {
     private DrmJobState jobState=null;
     private String statusFlag="";
     private String statusMessage="";
+    private String extJobId=null;
     private Date statusDate=new Date();
     private List<GpLink> links=null;
     
@@ -104,6 +105,9 @@ public class Status {
         }
         if (statusDate != null) {
             jobStatus.put("statusDate", DateUtil.toIso8601(statusDate));
+        }
+        if (extJobId != null) {
+            jobStatus.put("extJobId", extJobId);
         }
         
         if (links != null) {
@@ -244,6 +248,7 @@ public class Status {
                     status.statusMessage=jobStatusRecord.getStatusMessage();
                 }
                 status.statusDate=jobStatusRecord.getStatusDate();
+                status.extJobId=jobStatusRecord.getExtJobId();
             }
             
             //special-case, when statusMessage is null, use the status flag

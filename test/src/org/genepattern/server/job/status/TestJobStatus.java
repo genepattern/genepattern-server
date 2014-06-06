@@ -59,6 +59,7 @@ public class TestJobStatus {
         jobStatusRecord=mock(JobRunnerJob.class);
         statusDate=new Date();
         when(jobStatusRecord.getStatusDate()).thenReturn(statusDate);
+        when(jobStatusRecord.getExtJobId()).thenReturn("8937799");
     }
     
     /**
@@ -266,6 +267,7 @@ public class TestJobStatus {
     public void pendingInLsf() throws Exception {
         when(jobStatusRecord.getJobState()).thenReturn(DrmJobState.QUEUED.name());
         when(jobStatusRecord.getStatusMessage()).thenReturn("Added to queue on "+DateUtil.toIso8601(dateQueued));
+        when(jobStatusRecord.getExtJobId()).thenReturn("");
         
         Status status=new Status.Builder()
             .jobInfo(jobInfo)
@@ -285,6 +287,7 @@ public class TestJobStatus {
                 DateUtil.toIso8601(statusDate), statusObj.getString("statusDate"));
 
         Assert.assertFalse("Expecting executionLogLocation to not be set", statusObj.has("executionLogLocation"));
+        Assert.assertEquals("extJobId", "", statusObj.getString("extJobId"));
     }
 
     @Test
@@ -310,6 +313,7 @@ public class TestJobStatus {
                 DateUtil.toIso8601(statusDate), statusObj.getString("statusDate"));
 
         Assert.assertFalse("Expecting executionLogLocation to not be set", statusObj.has("executionLogLocation"));
+        Assert.assertEquals("extJobId", "8937799", statusObj.getString("extJobId"));
     }
 
     @Test
