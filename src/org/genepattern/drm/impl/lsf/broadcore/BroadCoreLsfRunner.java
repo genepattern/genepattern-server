@@ -157,15 +157,29 @@ public class BroadCoreLsfRunner implements JobRunner {
         else if (LocalLsfJob.LSF_MISSING.equals(localJob.getStatus())) {
             log.info("LSF Job " + localJob.getBsubJobId() + " is no longer tracked by LSF " +
                     "and does not have an output file either. Marking as lost.");
-            return new DrmJobStatus.Builder(drmJobRecord.getExtJobId(), DrmJobState.UNDETERMINED)
-            .jobStatusMessage("LSF Job " + localJob.getBsubJobId() + " is no longer tracked by LSF " +
-                    "and does not have an output file either. Marking as lost.")
-            .exitCode(-1)
+            return new DrmJobStatus.Builder()
+                .extJobId(drmJobRecord.getExtJobId())
+                .jobState(DrmJobState.UNDETERMINED)
+                .jobStatusMessage("LSF Job " + localJob.getBsubJobId() + " is no longer tracked by LSF " +
+                        "and does not have an output file either. Marking as lost.")
+                .exitCode(-1)
+            .build();
+        }
+        
+        // it's still pending
+        else if (LsfJob.LSF_STATUS_PENDING.equals(lsfStatusCode)) {
+            return new DrmJobStatus.Builder()
+                .extJobId(drmJobRecord.getExtJobId())
+                .jobState(DrmJobState.QUEUED)
+                .jobStatusMessage("Pending in queue "+localJob.getQueue())
             .build();
         }
         
         //assume it's still running
-        return new DrmJobStatus.Builder(drmJobRecord.getExtJobId(), DrmJobState.RUNNING)
+        return new DrmJobStatus.Builder()
+            .extJobId(drmJobRecord.getExtJobId()) 
+            .jobState(DrmJobState.RUNNING)
+            .jobStatusMessage("Assume it's still running in queue "+localJob.getQueue()+", lsf status is "+lsfStatusCode)
         .build();
     }
     
