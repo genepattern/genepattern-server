@@ -9,7 +9,15 @@ package org.genepattern.drm;
 public enum DrmJobState {
     /** The job status cannot be determined. This is a permanent issue, not being solvable by asking again for the job state. */
     UNDETERMINED(null),
-    /** Outer state, use one of the nested states.  */
+    /** The outer status of a GenePattern job. */
+    GP_STATUS(null),
+      /** The job is pending in the GenePattern queue, it has not been submitted to an external queuing system */
+      GP_PENDING(GP_STATUS, "Pending in the GenePattern queue, it has not been submitted to an external queuing system"),
+      /** The job has been submitted to the external queuing system */
+      GP_PROCESSING(GP_STATUS, "Submitted from GenePattern to the external queuing system"),
+      /** The job has completed and it's status is recorded in the GenePattern database */
+      GP_FINISHED(GP_STATUS, "Completed and status is recorded in the GenePattern database"),
+    /** Outer state for a job which has been added to the queue, use one of the nested states.  */
     IS_QUEUED(null),
       /** The job is queued or being scheduled and executed. */
       QUEUED(IS_QUEUED, "The job is queued or being scheduled and executed"),
