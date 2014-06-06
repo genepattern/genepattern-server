@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.genepattern.server.webapp.rest.api.v1.Rel;
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -38,6 +39,34 @@ public class GpLink {
             link.put("rel", relStr);
         }
         return link;
+    }
+    
+    /**
+     * Get the list of 'links' which match the given link relation.
+     * 
+     * @param relToMatch
+     * @param linksArray
+     * @return
+     * @throws JSONException
+     */
+    public static List<JSONObject> findLinks(String relToMatch, final JSONArray linksArray) throws JSONException {
+        List<JSONObject> matches=new ArrayList<JSONObject>();
+        relToMatch=relToMatch.toLowerCase();
+        int N=linksArray.length();
+        for(int i=0; i<N; ++i) {
+            JSONObject link = linksArray.getJSONObject(i);
+            if (link.has("rel")) {
+                String rel=link.getString("rel");
+                String[] rels=rel.split(" ");
+                for(int j=0; j<rels.length; ++j) {
+                    if (relToMatch.equalsIgnoreCase(rels[j])) {
+                        matches.add(link);
+                        break;
+                    }
+                }
+            }
+        }
+        return matches;
     }
     
     public static class Builder {

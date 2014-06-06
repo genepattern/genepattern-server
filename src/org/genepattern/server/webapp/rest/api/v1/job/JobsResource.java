@@ -34,7 +34,10 @@ import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.dm.UrlUtil;
+import org.genepattern.server.executor.drm.DbLookup;
+import org.genepattern.server.executor.drm.dao.JobRunnerJob;
 import org.genepattern.server.job.input.JobInput;
+import org.genepattern.server.job.status.Status;
 import org.genepattern.server.rest.GpServerException;
 import org.genepattern.server.rest.JobInputApi;
 import org.genepattern.server.rest.JobInputApiFactory;
@@ -394,6 +397,53 @@ public class JobsResource {
     }
 
     /**
+     * GET status.json for the given jobId.
+     */
+    @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    @Path("/{jobId}/status.json")
+    public Response getStatus(
+            final @Context UriInfo uriInfo,
+            final @Context HttpServletRequest request,
+            final @PathParam("jobId") String jobId
+            ) {
+
+
+        final GpContext userContext=Util.getUserContext(request);
+        try {
+            JobInfo jobInfo=GetPipelineJobLegacy.initJobInfo(userContext, jobId);
+            JobRunnerJob jobStatusRecord=DbLookup.selectJobRunnerJob(jobInfo.getJobNumber());
+            String stderrLocation=null;
+            String executionLogLocation=null;
+            
+            final String self=uriInfo.getAbsolutePath().toString();
+            final String jobHref = self.substring(0, self.length()-"/status.json".length());
+
+            Status status=new Status.Builder()
+                .jobHref(jobHref)
+                .jobInfo(jobInfo)
+                .jobStatusRecord(jobStatusRecord)
+                .stderrLocation(stderrLocation)
+                .executionLogLocation(executionLogLocation)
+            .build();
+
+            final JSONObject jsonObj = status.toJsonObj();
+            final String jsonStr = jsonObj.toString(2);
+            return Response.ok()
+                    .entity(jsonStr)
+                    .build();
+
+        }
+        catch (Throwable t) {
+            String errorMessage="Error getting status.json for jobId="+jobId;
+            log.error(errorMessage, t);
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+                    .entity(errorMessage)
+                    .build();
+        }
+    }
+    
+    /**
      * Terminate the specified job
      * @param request
      * @param jobId
@@ -621,24 +671,6 @@ public class JobsResource {
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(message).build();
         }
     }
-    
-//    /**
-//     * GET status.json for the given jobId.
-//     */
-//    @GET
-//    @Produces(MediaType.APPLICATION_JSON)
-//    @Path("/{jobId}/status.json")
-//    public Response getStatus(
-//            final @Context UriInfo uriInfo,
-//            final @Context HttpServletRequest request,
-//            final @PathParam("jobId") String jobId
-//    ) {
-//
-//        String errorMessage="Method not implemented!";
-//        return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
-//                .entity(errorMessage)
-//                .build();
-//    }
     
     /**
      * GET children for the given jobId.

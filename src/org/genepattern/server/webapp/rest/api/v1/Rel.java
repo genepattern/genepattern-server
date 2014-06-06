@@ -23,6 +23,7 @@ public enum Rel {
     gp_outputFile,
     gp_stdout,
     gp_stderr,
-    gp_logFile
+    gp_logFile,
+    gp_status // a link to the status.json representation for a GP job
     
 }

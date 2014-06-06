@@ -10,10 +10,12 @@ import org.genepattern.server.config.GpContext;
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.dm.GpFilePath;
 import org.genepattern.server.dm.jobresult.JobResultFile;
+import org.genepattern.server.executor.drm.DbLookup;
+import org.genepattern.server.executor.drm.dao.JobRunnerJob;
+import org.genepattern.server.job.status.Status;
 import org.genepattern.server.webapp.rest.api.v1.DateUtil;
 import org.genepattern.server.webservice.server.dao.AnalysisDAO;
 import org.genepattern.webservice.JobInfo;
-import org.genepattern.webservice.JobInfoUtil;
 import org.genepattern.webservice.ParameterInfo;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -58,7 +60,7 @@ public class GetPipelineJobLegacy implements GetJob {
         this.includePermissions=includePermissions;
     }
     
-    private JobInfo initJobInfo(final GpContext userContext, final String jobId) throws GetJobException {
+    public static JobInfo initJobInfo(final GpContext userContext, final String jobId) throws GetJobException {
         if (userContext==null) {
             throw new IllegalArgumentException("userContext==null");
         }
@@ -176,18 +178,6 @@ public class GetPipelineJobLegacy implements GetJob {
         return null;
     }
     
-    public static JSONObject initStatusJson(final JobInfo jobInfo) throws JSONException {
-        //init jobStatus
-        final JSONObject jobStatus = new JSONObject();
-        final boolean isFinished=JobInfoUtil.isFinished(jobInfo);
-        jobStatus.put("isFinished", isFinished);
-        final boolean hasError=JobInfoUtil.hasError(jobInfo);
-        jobStatus.put("hasError", hasError);
-        final boolean isPending=JobInfoUtil.isPending(jobInfo);
-        jobStatus.put("isPending", isPending);
-        return jobStatus;
-    }
-    
     /**
      * Create a JSONObject representing the job
      * @param jobInfo
@@ -259,8 +249,18 @@ public class GetPipelineJobLegacy implements GetJob {
                 job.put("numOutputFiles", numFiles);
                 job.put("outputFiles", outputFiles);
                 job.put("logFiles", logFiles);
-                
-                final JSONObject jobStatus = initJobStatusJson(jobInfo, executionLogLocation, stderrLocation); 
+
+                JobRunnerJob jobStatusRecord=null;
+                boolean includeJobRunnerStatus=true;
+                if (includeJobRunnerStatus) {
+                    try {
+                        jobStatusRecord=DbLookup.selectJobRunnerJob(jobInfo.getJobNumber());
+                    }
+                    catch (Throwable t) {
+                        log.error("Unexpected error initializing jobStatusRecord from jobId="+jobInfo.getJobNumber(), t);
+                    }
+                }
+                final JSONObject jobStatus = initJobStatusJson(jobInfo, jobStatusRecord, executionLogLocation, stderrLocation); 
                 job.put("status", jobStatus);
             }
         }
@@ -272,22 +272,16 @@ public class GetPipelineJobLegacy implements GetJob {
         return job;
     }
 
-    private static JSONObject initJobStatusJson(final JobInfo jobInfo, String executionLogLocation, String stderrLocation) throws JSONException {
-        //init jobStatus
-        final JSONObject jobStatus = new JSONObject();
-        final boolean isFinished=JobInfoUtil.isFinished(jobInfo);
-        jobStatus.put("isFinished", isFinished);
-        final boolean hasError=JobInfoUtil.hasError(jobInfo);
-        jobStatus.put("hasError", hasError);
-        final boolean isPending=JobInfoUtil.isPending(jobInfo);
-        jobStatus.put("isPending", isPending);
-        if (executionLogLocation != null) {
-            jobStatus.put("executionLogLocation", executionLogLocation);
-        } 
-        if (stderrLocation != null) {
-            jobStatus.put("stderrLocation", stderrLocation);
-        }
-        return jobStatus;
+    private static JSONObject initJobStatusJson(final JobInfo jobInfo, final JobRunnerJob jobStatusRecord, String executionLogLocation, String stderrLocation) throws JSONException  {
+        Status status=new Status.Builder()
+            .jobInfo(jobInfo)
+            .jobStatusRecord(jobStatusRecord)
+            .stderrLocation(stderrLocation)
+            .executionLogLocation(executionLogLocation)
+        .build();
+        
+        final JSONObject statusObj = status.toJsonObj();
+        return statusObj;
     }
     
     /**
