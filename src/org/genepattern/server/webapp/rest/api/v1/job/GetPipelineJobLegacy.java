@@ -176,6 +176,18 @@ public class GetPipelineJobLegacy implements GetJob {
         return null;
     }
     
+    public static JSONObject initStatusJson(final JobInfo jobInfo) throws JSONException {
+        //init jobStatus
+        final JSONObject jobStatus = new JSONObject();
+        final boolean isFinished=JobInfoUtil.isFinished(jobInfo);
+        jobStatus.put("isFinished", isFinished);
+        final boolean hasError=JobInfoUtil.hasError(jobInfo);
+        jobStatus.put("hasError", hasError);
+        final boolean isPending=JobInfoUtil.isPending(jobInfo);
+        jobStatus.put("isPending", isPending);
+        return jobStatus;
+    }
+    
     /**
      * Create a JSONObject representing the job
      * @param jobInfo
@@ -206,18 +218,10 @@ public class GetPipelineJobLegacy implements GetJob {
              where a.user_id='{userId}'
             */
             
-            //init jobStatus
-            final JSONObject jobStatus = new JSONObject();
-            final boolean isFinished=JobInfoUtil.isFinished(jobInfo);
-            jobStatus.put("isFinished", isFinished);
-            final boolean hasError=JobInfoUtil.hasError(jobInfo);
-            jobStatus.put("hasError", hasError);
-            final boolean isPending=JobInfoUtil.isPending(jobInfo);
-            jobStatus.put("isPending", isPending);
-            job.put("status", jobStatus);
-            
             //init resultFiles
             //TODO: sort output files
+            String executionLogLocation=null;
+            String stderrLocation=null;
             if (includeOutputFiles) {
                 final JSONArray outputFiles=new JSONArray();
                 final JSONArray logFiles=new JSONArray();
@@ -228,10 +232,8 @@ public class GetPipelineJobLegacy implements GetJob {
                     if (isExecutionLog) {
                         try {
                             JSONObject logFileJson=GpOutputFile.fromGpfilePath(gpUrl, outputFile, pinfo).toJson();
-                            String executionLogLocation=logFileJson.getJSONObject("link")
-                                .getString("href");
-                            jobStatus.put("executionLogLocation", executionLogLocation);
                             logFiles.put(logFileJson);
+                            executionLogLocation=logFileJson.getJSONObject("link").getString("href");
                         }
                         catch (Exception e) {
                             log.error("Error initializing executionLogLocation", e);
@@ -244,7 +246,7 @@ public class GetPipelineJobLegacy implements GetJob {
                             JSONObject outputFileJson=GpOutputFile.fromGpfilePath(gpUrl, outputFile, pinfo).toJson();
                             outputFiles.put(outputFileJson);
                             if (pinfo._isStderrFile()) {
-                                jobStatus.put("stderrLocation", outputFileJson.getJSONObject("link").getString("href"));
+                                stderrLocation=outputFileJson.getJSONObject("link").getString("href");
                             }
                         }
                         catch (Exception e) {
@@ -257,6 +259,9 @@ public class GetPipelineJobLegacy implements GetJob {
                 job.put("numOutputFiles", numFiles);
                 job.put("outputFiles", outputFiles);
                 job.put("logFiles", logFiles);
+                
+                final JSONObject jobStatus = initJobStatusJson(jobInfo, executionLogLocation, stderrLocation); 
+                job.put("status", jobStatus);
             }
         }
         catch (JSONException e) {
@@ -265,6 +270,24 @@ public class GetPipelineJobLegacy implements GetJob {
                     ": "+e.getLocalizedMessage());
         }
         return job;
+    }
+
+    private static JSONObject initJobStatusJson(final JobInfo jobInfo, String executionLogLocation, String stderrLocation) throws JSONException {
+        //init jobStatus
+        final JSONObject jobStatus = new JSONObject();
+        final boolean isFinished=JobInfoUtil.isFinished(jobInfo);
+        jobStatus.put("isFinished", isFinished);
+        final boolean hasError=JobInfoUtil.hasError(jobInfo);
+        jobStatus.put("hasError", hasError);
+        final boolean isPending=JobInfoUtil.isPending(jobInfo);
+        jobStatus.put("isPending", isPending);
+        if (executionLogLocation != null) {
+            jobStatus.put("executionLogLocation", executionLogLocation);
+        } 
+        if (stderrLocation != null) {
+            jobStatus.put("stderrLocation", stderrLocation);
+        }
+        return jobStatus;
     }
     
     /**
