@@ -2823,6 +2823,16 @@ function populateJobResultsTable(settings, callback) {
                 }
             });
 
+            // Open or collapse as shown
+            var toggleImage = $(".jobresults-all-toggle");
+            if (toggleImage.length > 0) {
+                var open = toggleImage.attr("src").indexOf("_run") != -1;
+                if (!open) {
+                    toggleImage.trigger("click");
+                    toggleImage.trigger("click");
+                }
+            }
+
         },
         error: function(data, textStatus) {
             showErrorMessage(textStatus);
