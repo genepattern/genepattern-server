@@ -2826,7 +2826,7 @@ function uploadFile(paramName, file, fileOrder, fileId, groupId)
         },
         error: function(event) {
             $("#cancelUpload").trigger("click");
-            $("#fileUploadDiv").html("<span style='color:red;'>Error uploading file. This may be due to an incompatible browser, such as Internet Explorer. If so, please use a supported browser (Chrome, Firefox, Safari) or use the Java uploader in the Uploads Tab.</span>");
+            $("#fileUploadDiv").html("<span style='color:red;'>There was an unexpected file transfer error while submitting your job. Please check your network connection and try to submit again or use the Uploader in the Files tab.</span>");
             $("#fileUploadDiv").show();
             console.log("Error uploading the file " + file.name + " :" + event.statusText);
         }
