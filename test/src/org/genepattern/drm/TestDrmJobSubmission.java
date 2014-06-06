@@ -376,8 +376,9 @@ public class TestDrmJobSubmission {
             .logFilename(".lsf.out")
         .build();
         
-        Assert.assertEquals(new File(workingDir, ".lsf.out").getAbsolutePath(), job.getLogFile().getAbsolutePath());
-        
+        Assert.assertEquals(
+                new File(workingDir, ".lsf.out").getAbsolutePath(), 
+                job.getRelativeFile(job.getLogFile()).getAbsolutePath()); 
     }
     
 
