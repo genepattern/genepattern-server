@@ -88,7 +88,7 @@ public class TestWalltime {
     @Test
     public void formatHoursAndMinutes() throws Exception {
         Assert.assertEquals("01:15:45 in 'mm' format", 
-                "1:15",
+                "01:15",
                 Walltime.fromString("01:15:45").formatHoursAndMinutes());
     }
 
@@ -99,6 +99,13 @@ public class TestWalltime {
                 Walltime.fromString("01:15:45").formatMinutes());
     }
     
+    @Test
+    public void formatHoursAndMinutes_45min() throws Exception {
+        Assert.assertEquals("00:45:00 in 'mm' format", 
+                "00:45",
+                Walltime.fromString("00:45:00").formatHoursAndMinutes());
+    }
+
     //parse errors
     /**
      * should throw an exception when the '-' separator is the prefix.

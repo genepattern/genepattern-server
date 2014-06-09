@@ -1,15 +1,18 @@
 package org.genepattern.drm.impl.lsf.broadcore;
 
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import java.io.File;
 import java.util.Arrays;
 
 import org.genepattern.drm.DrmJobSubmission;
 import org.genepattern.drm.JobRunner;
+import org.genepattern.drm.Memory;
 import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.Value;
+import org.genepattern.server.executor.lsf.LsfProperties;
 import org.genepattern.webservice.JobInfo;
 import org.junit.Assert;
 import org.junit.Before;
@@ -39,16 +42,37 @@ public class TestBroadCoreLsfRunner {
         jobInfo = mock(JobInfo.class);
         jobContext = GpContext.getContextForJob(jobInfo);
         gpConfig = mock(GpConfig.class);
-        Mockito.when(gpConfig.getGPIntegerProperty(jobContext, JobRunner.PROP_CPU_COUNT))
+        when(gpConfig.getGPIntegerProperty(jobContext, JobRunner.PROP_CPU_COUNT))
             .thenReturn(null);
-        Mockito.when(gpConfig.getGPIntegerProperty(jobContext, JobRunner.PROP_NODE_COUNT))
+        when(gpConfig.getGPIntegerProperty(jobContext, JobRunner.PROP_NODE_COUNT))
             .thenReturn(null);
-        Mockito.when(gpConfig.getGPIntegerProperty(jobContext, "lsf.cpu.slots"))
+        when(gpConfig.getGPIntegerProperty(jobContext, "lsf.cpu.slots"))
             .thenReturn(null);
+        
         gpJob = new DrmJobSubmission.Builder(jobDir)
             .gpConfig(gpConfig)
             .jobContext(jobContext)
             .build();   
+    }
+    
+    @Test
+    public void jobMemory() {
+        when(gpJob.getMemory()).thenReturn(Memory.fromString("12Gb"));
+        LsfJob lsfJob = lsfRunner.initLsfJob(gpJob);
+        Assert.assertEquals(
+            "job.memory:  12Gb",
+            Arrays.asList(new String[]{"-R", "rusage[mem=12]", "-M", "12"}),
+            lsfJob.getExtraBsubArgs());
+    }
+    
+    @Test
+    public void lsfMaxMemory() {
+        when(gpJob.getProperty(LsfProperties.Key.MAX_MEMORY.getKey())).thenReturn("12");
+        LsfJob lsfJob = lsfRunner.initLsfJob(gpJob);
+        Assert.assertEquals(
+            "job.memory:  12Gb",
+            Arrays.asList(new String[]{"-R", "rusage[mem=12]", "-M", "12"}),
+            lsfJob.getExtraBsubArgs());
     }
     
     @Test
@@ -109,7 +133,7 @@ public class TestBroadCoreLsfRunner {
     
     @Test
     public void lsfCpuSlots() {        
-        Mockito.when(gpConfig.getGPIntegerProperty(jobContext, "lsf.cpu.slots"))
+        when(gpConfig.getGPIntegerProperty(jobContext, "lsf.cpu.slots"))
             .thenReturn(6);
         LsfJob lsfJob = lsfRunner.initLsfJob(gpJob);
         Assert.assertEquals(
@@ -117,6 +141,39 @@ public class TestBroadCoreLsfRunner {
             Arrays.asList(new String[]{"-R", "rusage[mem=2]", "-M", "2", "-n", "6"}),
             lsfJob.getExtraBsubArgs());
 
+    }
+    
+    @Test
+    public void testWalltime_7days() {
+        // 7 days limit
+        when(gpConfig.getGPProperty(jobContext, JobRunner.PROP_WALLTIME)).thenReturn("7-00:00:00");
+        LsfJob lsfJob = lsfRunner.initLsfJob(gpJob);
+        Assert.assertEquals(
+            "job.walltime",
+            Arrays.asList(new String[]{"-R", "rusage[mem=2]", "-M", "2", "-W", "168:00" }),
+            lsfJob.getExtraBsubArgs());
+    }
+
+    @Test
+    public void testWalltime_2hours45min() {
+        // 7 days limit
+        when(gpConfig.getGPProperty(jobContext, JobRunner.PROP_WALLTIME)).thenReturn("02:45:00");
+        LsfJob lsfJob = lsfRunner.initLsfJob(gpJob);
+        Assert.assertEquals(
+            "job.walltime",
+            Arrays.asList(new String[]{"-R", "rusage[mem=2]", "-M", "2", "-W", "02:45" }),
+            lsfJob.getExtraBsubArgs());
+    }
+    
+    @Test
+    public void testWalltime_45min() {
+        // 7 days limit
+        when(gpConfig.getGPProperty(jobContext, JobRunner.PROP_WALLTIME)).thenReturn("00:45:00");
+        LsfJob lsfJob = lsfRunner.initLsfJob(gpJob);
+        Assert.assertEquals(
+            "job.walltime",
+            Arrays.asList(new String[]{"-R", "rusage[mem=2]", "-M", "2", "-W", "00:45" }),
+            lsfJob.getExtraBsubArgs());
     }
     
 }

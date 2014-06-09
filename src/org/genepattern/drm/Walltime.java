@@ -47,7 +47,7 @@ public class Walltime {
         long hours=timeUnit.toHours(duration);
         long minutes=timeUnit.toMinutes(duration);
         minutes = minutes % 60;
-        String spec=""+hours+":"+pad(minutes);
+        String spec=""+pad(hours)+":"+pad(minutes);
         return spec;        
     }
 

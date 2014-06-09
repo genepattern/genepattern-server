@@ -16,6 +16,7 @@ import org.genepattern.drm.DrmJobStatus;
 import org.genepattern.drm.DrmJobSubmission;
 import org.genepattern.drm.JobRunner;
 import org.genepattern.drm.Memory;
+import org.genepattern.drm.Walltime;
 import org.genepattern.server.config.Value;
 import org.genepattern.server.executor.CommandExecutorException;
 import org.genepattern.server.executor.lsf.LsfErrorCheckerImpl;
@@ -373,11 +374,15 @@ public class BroadCoreLsfRunner implements JobRunner {
         lsfJob.setQueue(lsfQueue);
         
         final List<String> extraBsubArgs = new ArrayList<String>();
-        List<String> memFlags=getMemFlags(gpJob);
+        final List<String> memFlags=getMemFlags(gpJob);
         if (memFlags!=null) {
-            for(final String memFlag : memFlags) {
-                extraBsubArgs.add( memFlag );
-            }
+            extraBsubArgs.addAll( memFlags );
+        }
+        
+        final Walltime walltime=gpJob.getWalltime();
+        if (walltime != null) {
+            extraBsubArgs.add("-W");
+            extraBsubArgs.add(walltime.formatHoursAndMinutes());
         }
 
         //special-case, enable per-user job groups
