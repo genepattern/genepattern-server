@@ -9,6 +9,7 @@ import java.util.Arrays;
 import org.genepattern.drm.DrmJobSubmission;
 import org.genepattern.drm.JobRunner;
 import org.genepattern.drm.Memory;
+import org.genepattern.server.config.ConfigurationException;
 import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.Value;
@@ -144,7 +145,7 @@ public class TestBroadCoreLsfRunner {
     }
     
     @Test
-    public void testWalltime_7days() {
+    public void walltime_7days() {
         // 7 days limit
         when(gpConfig.getGPProperty(jobContext, JobRunner.PROP_WALLTIME)).thenReturn("7-00:00:00");
         LsfJob lsfJob = lsfRunner.initLsfJob(gpJob);
@@ -155,7 +156,7 @@ public class TestBroadCoreLsfRunner {
     }
 
     @Test
-    public void testWalltime_2hours45min() {
+    public void walltime_2hours45min() {
         // 7 days limit
         when(gpConfig.getGPProperty(jobContext, JobRunner.PROP_WALLTIME)).thenReturn("02:45:00");
         LsfJob lsfJob = lsfRunner.initLsfJob(gpJob);
@@ -166,7 +167,7 @@ public class TestBroadCoreLsfRunner {
     }
     
     @Test
-    public void testWalltime_45min() {
+    public void walltime_45min() {
         // 7 days limit
         when(gpConfig.getGPProperty(jobContext, JobRunner.PROP_WALLTIME)).thenReturn("00:45:00");
         LsfJob lsfJob = lsfRunner.initLsfJob(gpJob);
@@ -174,6 +175,29 @@ public class TestBroadCoreLsfRunner {
             "job.walltime",
             Arrays.asList(new String[]{"-R", "rusage[mem=2]", "-M", "2", "-W", "00:45" }),
             lsfJob.getExtraBsubArgs());
+    }
+    
+    @Test
+    public void lsfExtraBsubArgs() throws ConfigurationException {
+        when(gpConfig.getValue(jobContext, "lsf.extra.bsub.args")).thenReturn(
+                new Value(Arrays.asList("-g", "/genepattern/gpprod/long", "-m", "node1448 node1449")));
+        LsfJob lsfJob = lsfRunner.initLsfJob(gpJob);
+        Assert.assertEquals(
+            "job.extaArgs",
+            Arrays.asList(new String[]{"-R", "rusage[mem=2]", "-M", "2", "-g", "/genepattern/gpprod/long", "-m", "node1448 node1449" }),
+            lsfJob.getExtraBsubArgs());
+    }
+
+    @Test
+    public void jobExtraArgs() throws ConfigurationException {
+        when(gpConfig.getValue(jobContext, JobRunner.PROP_EXTRA_ARGS)).thenReturn(
+                new Value(Arrays.asList("-g", "/genepattern/gpprod/long", "-m", "node1448 node1449")));
+        LsfJob lsfJob = lsfRunner.initLsfJob(gpJob);
+        Assert.assertEquals(
+            "job.extaArgs",
+            Arrays.asList(new String[]{"-R", "rusage[mem=2]", "-M", "2", "-g", "/genepattern/gpprod/long", "-m", "node1448 node1449" }),
+            lsfJob.getExtraBsubArgs());
+        
     }
     
 }

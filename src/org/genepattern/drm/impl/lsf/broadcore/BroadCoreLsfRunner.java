@@ -366,7 +366,11 @@ public class BroadCoreLsfRunner implements JobRunner {
         
         final String lsfProject=gpJob.getProperty(LsfProperties.Key.PROJECT.getKey());
         final String lsfQueue=gpJob.getQueue();
-        final Value extraBsubArgsFromConfigFile = gpJob.getValue(LsfProperties.Key.EXTRA_BSUB_ARGS.getKey());
+        Value extraBsubArgsFromConfigFile = gpJob.getValue(JobRunner.PROP_EXTRA_ARGS);
+        if (extraBsubArgsFromConfigFile == null) {
+            extraBsubArgsFromConfigFile = gpJob.getValue(LsfProperties.Key.EXTRA_BSUB_ARGS.getKey());
+        }
+        
         final String lsfPriority = gpJob.getProperty(LsfProperties.Key.PRIORITY.getKey());
         final String lsfHostOs = gpJob.getProperty(LsfProperties.Key.HOST_OS.getKey());
 
