@@ -1,0 +1,10 @@
+default.properties:
+    listOfString: ["A", "B", "C"]
+
+#
+# require at least one executor or we get a parse error
+#
+executors:
+    RuntimeExec: 
+        classname: org.genepattern.server.executor.RuntimeCommandExecutor
+    

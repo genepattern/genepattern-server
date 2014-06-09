@@ -141,7 +141,38 @@ public class TestBroadCoreLsfRunner {
             "lsf.cpu.slots",
             Arrays.asList(new String[]{"-R", "rusage[mem=2]", "-M", "2", "-n", "6"}),
             lsfJob.getExtraBsubArgs());
-
+    }
+    
+    @Test
+    public void jobCpuSlots() {        
+        when(gpConfig.getGPIntegerProperty(jobContext, JobRunner.PROP_CPU_COUNT))
+            .thenReturn(6);
+        LsfJob lsfJob = lsfRunner.initLsfJob(gpJob);
+        Assert.assertEquals(
+            "job.cpuCount",
+            Arrays.asList(new String[]{"-R", "rusage[mem=2]", "-M", "2", "-n", "6"}),
+            lsfJob.getExtraBsubArgs());
+    }
+    
+    @Test
+    public void lsfProject() {
+        when(gpConfig.getGPProperty(jobContext, "lsf.project"))
+            .thenReturn("gpdev");
+        LsfJob lsfJob = lsfRunner.initLsfJob(gpJob);
+        Assert.assertEquals(
+            "lsf.project",
+            "gpdev",
+            lsfJob.getProject());
+    }
+    
+    @Test
+    public void lsfPriority() {
+        when(gpConfig.getGPProperty(jobContext, LsfProperties.Key.PRIORITY.getKey())).thenReturn("50");
+        LsfJob lsfJob = lsfRunner.initLsfJob(gpJob);
+        Assert.assertEquals(
+            "lsf.priority",
+            Arrays.asList(new String[]{"-R", "rusage[mem=2]", "-M", "2", "-sp", "50"}),
+            lsfJob.getExtraBsubArgs());
     }
     
     @Test
