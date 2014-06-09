@@ -2720,7 +2720,7 @@ function populateJobResultsTable(settings, callback) {
         if (col === 1) return "jobId";               // Job ID
         if (col === 3) return "taskName";            // Task
         if (col === 5) return "dateSubmitted";       // Submitted
-        if (col === 5) return "dateCompleted";       // Completed
+        if (col === 6) return "dateCompleted";       // Completed
         else {
             console.log("Error: Unknown Job Result Sort");
             return "jobId";
