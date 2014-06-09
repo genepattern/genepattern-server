@@ -68,6 +68,36 @@ public class TestWalltime {
         Assert.assertEquals("parse empty string", Walltime.NOT_SET, wt);
         Assert.assertEquals("toString()", "00:00", wt.toString());
     }
+
+    /**
+     * Expecting -W hh:mm
+     */
+    @Test
+    public void formatHoursAndMinutes_7days() throws Exception {
+        Walltime wt=Walltime.fromString("7-00:00:00");
+        Assert.assertEquals("7 days in 'hh:mm' format", "168:00", wt.formatHoursAndMinutes());
+    }
+    
+    @Test
+    public void formatMinutes_7days() throws Exception {
+        Assert.assertEquals("7 days in 'mm' format", 
+                "10080", 
+                Walltime.fromString("7-00:00:00").formatMinutes());
+    }
+    
+    @Test
+    public void formatHoursAndMinutes() throws Exception {
+        Assert.assertEquals("01:15:45 in 'mm' format", 
+                "1:15",
+                Walltime.fromString("01:15:45").formatHoursAndMinutes());
+    }
+
+    @Test
+    public void formatMinutes() throws Exception {
+        Assert.assertEquals("01:15:45 in 'mm' format", 
+                "75",
+                Walltime.fromString("01:15:45").formatMinutes());
+    }
     
     //parse errors
     /**

@@ -40,6 +40,36 @@ public class Walltime {
         return ""+duration;
     }
 
+    /**
+     * Format as 'hh:mm', for example for the lsf -W command. This rounds down to the nearest minute.
+     */
+    public String formatHoursAndMinutes() {
+        long hours=timeUnit.toHours(duration);
+        long minutes=timeUnit.toMinutes(duration);
+        minutes = minutes % 60;
+        String spec=""+hours+":"+pad(minutes);
+        return spec;        
+    }
+
+    /**
+     * Format as the total number of minutes, for example for the lsf -W command.
+     * This is simply a convenience method for the direct call to the timeunit class:
+     * <pre>
+           ""+this.getTimeUnit().toMinutes(this.getDuration());
+     * </pre>
+     * @return
+     */
+    public String formatMinutes() {
+        return ""+timeUnit.toMinutes(duration);
+    }
+    
+    private static String pad(long m) {
+        if (m<10) {
+            return "0"+m;
+        }
+        return ""+m;
+    }
+
     public boolean equals(final Object obj) {
         if (obj==null) {
             return false;
