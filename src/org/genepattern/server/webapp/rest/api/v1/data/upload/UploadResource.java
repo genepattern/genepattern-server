@@ -71,6 +71,15 @@ public class UploadResource {
     }
 
     /**
+     * Protect against Jersey's tendency to decode %20 to spaces
+     * @param path
+     * @return
+     */
+    private String protectAgainstSpaces(String path) {
+        return path.replaceAll(" ", "%20");
+    }
+
+    /**
      * Get the GenePattern file path to which to upload the file.
      *
      * @param userContext
@@ -216,6 +225,7 @@ public class UploadResource {
             GpContext userContext = Util.getUserContext(request);
 
             // Get the file we will be uploading to
+            path = protectAgainstSpaces(path);
             GpFilePath file = getUploadFile(userContext, path);
 
             // Check if the file exists and throw an error if it does
@@ -241,7 +251,7 @@ public class UploadResource {
      * Put a chunk of the file to the upload resource
      * Requires: upload token in param string
      * Returns: list of missing file chunks
-     * @param request
+     * @param request - The HttpServletRequest
      * @param token
      * @param path
      * @return
@@ -255,6 +265,7 @@ public class UploadResource {
             GpContext userContext = Util.getUserContext(request);
 
             // Get the file we will be uploading to
+            path = protectAgainstSpaces(path);
             GpFilePath file = getUploadFile(userContext, path);
             file.setNumParts(parts);
 
@@ -301,6 +312,7 @@ public class UploadResource {
             GpContext userContext = Util.getUserContext(request);
 
             // Get the file we will be writing to
+            path = protectAgainstSpaces(path);
             GpFilePath file = getUploadFile(userContext, path);
             file.setNumParts(parts);
 
@@ -326,6 +338,7 @@ public class UploadResource {
             GpContext userContext = Util.getUserContext(request);
 
             // Get the file we will be writing to
+            path = protectAgainstSpaces(path);
             GpFilePath file = getUploadFile(userContext, path);
             file.setNumParts(parts);
 
