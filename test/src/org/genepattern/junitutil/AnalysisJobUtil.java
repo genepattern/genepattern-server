@@ -16,6 +16,8 @@ import org.genepattern.server.webservice.server.dao.AnalysisDAO;
 import org.genepattern.webservice.JobInfo;
 import org.genepattern.webservice.ParameterInfo;
 import org.genepattern.webservice.TaskInfo;
+import org.hibernate.Query;
+import org.hibernate.SQLQuery;
 
 public class AnalysisJobUtil {
     public static boolean isSet(final String in) {
@@ -35,10 +37,14 @@ public class AnalysisJobUtil {
      */
     public Integer addJobToDb(final GpContext taskContext, final JobInput jobInput) throws Exception {
         final boolean initDefaultDefault=false;
-        return addJobToDb(taskContext, jobInput, initDefaultDefault);
+        return addJobToDb(taskContext, jobInput, -1, initDefaultDefault);
     }
     
     public Integer addJobToDb(final GpContext taskContext, final JobInput jobInput, final boolean initDefault) throws Exception {
+        return addJobToDb(taskContext, jobInput, -1, initDefault);
+    }
+    
+    public Integer addJobToDb(final GpContext taskContext, final JobInput jobInput, final Integer parentJobNumber, final boolean initDefault) throws Exception {
         if (taskContext==null) {
             throw new IllegalArgumentException("taskContext==null");
         }
@@ -48,8 +54,6 @@ public class AnalysisJobUtil {
         if (taskContext.getTaskInfo()==null) {
             throw new IllegalArgumentException("taskContext.taskInfo must be set");
         }
-        //no support for pipelines, yet
-        final Integer parentJobNumber=-1;
         final ParameterInfo[] parameterInfoArray=initParameterValues(taskContext, jobInput, taskContext.getTaskInfo(), initDefault);
         return addJobToDb(taskContext.getUserId(), taskContext.getTaskInfo(), parameterInfoArray, parentJobNumber); 
     }
@@ -133,12 +137,46 @@ public class AnalysisJobUtil {
         }
     }
     
-    public void deleteJobFromDb(final int jobId) throws Exception {
+    public boolean deleteJobFromDb(final int jobId) throws Exception {
         final boolean isInTransaction=HibernateUtil.isInTransaction();
+        boolean deleted=false;
         try {
             HibernateUtil.beginTransaction();
             AnalysisJob aJob = (AnalysisJob) HibernateUtil.getSession().get(AnalysisJob.class, jobId);
-            HibernateUtil.getSession().delete(aJob);
+            if (aJob != null) {
+                HibernateUtil.getSession().delete(aJob);
+                deleted=true;
+            }
+            if (!isInTransaction) {
+                HibernateUtil.commitTransaction();
+            }
+        }
+        catch (Exception e) {
+            throw e;
+        }
+        catch (Throwable t) {
+            throw new Exception(t);
+        }
+        finally {
+            if (!isInTransaction) {
+                HibernateUtil.closeCurrentSession();
+            }
+        }
+        return deleted;
+    }
+    
+    public void setStatusInDb(final int jobNo, final int statusId) throws Exception {
+        final boolean isInTransaction=HibernateUtil.isInTransaction();
+        try {
+            HibernateUtil.beginTransaction();
+            Query query = HibernateUtil.getSession().createQuery("update org.genepattern.server.domain.AnalysisJob set status_id = :statusId where job_no = :jobNo");
+            query.setInteger("jobNo", jobNo);
+            query.setInteger("statusId", statusId);
+            int result = query.executeUpdate();
+            if (result != 1) {
+                throw new Exception("Failed to update status to"+statusId+" for jobNo="+jobNo);
+            }
+
             if (!isInTransaction) {
                 HibernateUtil.commitTransaction();
             }
