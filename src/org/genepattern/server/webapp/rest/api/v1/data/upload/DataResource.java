@@ -255,6 +255,13 @@ public class DataResource {
                 final File uploadFilePath=extractUsersPath(userContext, path);
                 final GpFilePath fileToRename = GpFileObjFactory.getUserUploadFile(userContext, uploadFilePath);
 
+                // Check whether file with new name already exists
+                File oldFile = fileToRename.getServerFile();
+                File newFileAbsolute = new File(oldFile.getParentFile(), name);
+                if (newFileAbsolute.exists()) {
+                    return Response.status(500).entity("Could not rename " + fileToRename.getName() + ". File already exists.").build();
+                }
+
                 boolean renamed = DataManager.renameUserUpload(userContext.getUserId(), fileToRename, name);
 
                 if (renamed) {
