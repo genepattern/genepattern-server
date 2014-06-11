@@ -2276,8 +2276,9 @@ function initRecentJobs() {
             $("#menus-jobs").empty();
 
             // For each top-level job
-            for (var i = 0; i < data.length; i++) {
-                var jobJson = data[i];
+            var recentJobs = data.recentJobs;
+            for (var i = 0; i < recentJobs.length; i++) {
+                var jobJson = recentJobs[i];
 
                 // Protect against null jobs
                 if (jobJson === null) {
@@ -2290,12 +2291,12 @@ function initRecentJobs() {
             }
 
             // Handle the case of no recent jobs
-            if (data.length === 0) {
+            if (recentJobs.length === 0) {
                 tab.append("<h3 style='text-align:center;'>No Recent Jobs</h3>");
             }
 
             // Update the Job Status Indicators
-            var jobsProcessing = $(".job-status-processing, .job-status-pending").length;
+            var jobsProcessing = data.numProcessingJobs;
             var statusBoxes = $(".current-job-status a");
 
             statusBoxes.each(function(index, ui) {

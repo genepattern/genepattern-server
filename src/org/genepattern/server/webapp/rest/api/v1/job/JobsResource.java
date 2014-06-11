@@ -623,7 +623,17 @@ public class JobsResource {
     }
 
     /**
-     * Get a JSON List of the JSOn objects for the most recent jobs
+     * Get a JSON List of the JSOn objects for the most recent jobs,
+     * as well as the total number of processing jobs for the current user.
+     * 
+     * Response template:
+     * <pre>
+       {
+           numProcessingJobs: 14,
+           recentJobs: [ {}, {}, ..., {} ]
+       } 
+     * </pre>
+     * 
      * @param uriInfo
      * @param request
      * @return
@@ -648,6 +658,7 @@ public class JobsResource {
 
             // Get the recent jobs
             AnalysisDAO dao = new AnalysisDAO();
+            int numProcessingJobs=dao.getNumProcessingJobsByUser(userContext.getUserId());
             List<JobInfo> recentJobs = dao.getRecentJobsForUser(userContext.getUserId(), recentJobsToShow, Analysis.JobSortOrder.SUBMITTED_DATE);
 
             // Create the object for getting the job JSON
@@ -664,7 +675,11 @@ public class JobsResource {
             }
 
             // Return the JSON representation of the jobs
-            return Response.ok().entity(jobs.toString()).build();
+            
+            JSONObject jsonObj=new JSONObject();
+            jsonObj.put("recentJobs", jobs);
+            jsonObj.put("numProcessingJobs", numProcessingJobs);
+            return Response.ok().entity(jsonObj.toString()).build();
         }
         catch (Throwable t) {
             String message = "Error creating JSON representation for recent jobs: " + t.getLocalizedMessage();
