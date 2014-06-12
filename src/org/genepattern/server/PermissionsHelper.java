@@ -15,7 +15,7 @@ import org.genepattern.server.webservice.server.dao.AnalysisDAO;
 
 /**
  * Common interface for getting and setting user and group access permissions for job results.
- * Intended to isolate DAO from JSF beans; and to encode all permissions rules in on place.
+ * Intended to isolate DAO from JSF beans; and to encode all permissions rules in one place.
  * 
  * By convention, the access permissions for a job result are based on the ownership and access permissions of the root job. 
  * This is implemented in this class; not implemented in AnalysisDAO.

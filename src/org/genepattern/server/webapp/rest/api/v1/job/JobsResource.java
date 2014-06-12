@@ -354,7 +354,7 @@ public class JobsResource {
             final @DefaultValue("true") @QueryParam("prettyPrint") boolean prettyPrint
     ) {
         
-        final GpContext userContext=Util.getUserContext(request);
+        final GpContext jobContext=Util.getJobContext(request, jobId);
 
         final String gpUrl=UrlUtil.getGpUrl(request);
         final String self=uriInfo.getAbsolutePath().toString();
@@ -364,7 +364,7 @@ public class JobsResource {
         String jsonStr;
         try {
             JSONObject job=null;
-            job=getJobImpl.getJob(userContext, jobId, includeChildren, includeOutputFiles);
+            job=getJobImpl.getJob(jobContext, jobContext.getJobInfo(), includeChildren, includeOutputFiles, includePermissions);
             if (job==null) {
                 throw new Exception("Unexpected null return value");
             }
@@ -408,11 +408,9 @@ public class JobsResource {
             final @PathParam("jobId") String jobId
             ) {
 
-
-        final GpContext userContext=Util.getUserContext(request);
+        final GpContext jobContext=Util.getJobContext(request, jobId);
         try {
-            JobInfo jobInfo=GetPipelineJobLegacy.initJobInfo(userContext, jobId);
-            JobRunnerJob jobStatusRecord=DbLookup.selectJobRunnerJob(jobInfo.getJobNumber());
+            JobRunnerJob jobStatusRecord=DbLookup.selectJobRunnerJob(jobContext.getJobNumber());
             String stderrLocation=null;
             String executionLogLocation=null;
             
@@ -421,7 +419,7 @@ public class JobsResource {
 
             Status status=new Status.Builder()
                 .jobHref(jobHref)
-                .jobInfo(jobInfo)
+                .jobInfo(jobContext.getJobInfo())
                 .jobStatusRecord(jobStatusRecord)
                 .stderrLocation(stderrLocation)
                 .executionLogLocation(executionLogLocation)
