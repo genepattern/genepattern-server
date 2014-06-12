@@ -1,5 +1,27 @@
 package org.genepattern.server.webapp.rest.api.v1.data.upload;
 
+import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.FilenameFilter;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.util.Arrays;
+import java.util.Comparator;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.ws.rs.GET;
+import javax.ws.rs.POST;
+import javax.ws.rs.PUT;
+import javax.ws.rs.Path;
+import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+
 import org.apache.commons.fileupload.FileUploadException;
 import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
@@ -13,15 +35,6 @@ import org.genepattern.server.webapp.rest.api.v1.Util;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.ws.rs.*;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import java.io.*;
-import java.util.Arrays;
-import java.util.Comparator;
-
 /**
  * RESTful implementation of the /upload resource.
  *
@@ -30,54 +43,6 @@ import java.util.Comparator;
 @Path("/v1/upload")
 public class UploadResource {
     final static private Logger log = Logger.getLogger(UploadResource.class);
-
-    /**
-     * Get the GenePattern file path to which to upload the file
-     *
-     * @param userContext
-     * @param uploadDirPath
-     * @return
-     * @throws org.apache.commons.fileupload.FileUploadException
-     */
-    private File getUploadDirectory(GpContext userContext, String uploadDirPath) throws FileUploadException {
-        if (uploadDirPath == null) {
-            throw new FileUploadException("server error, missing session attribute 'uploadPath'");
-        }
-
-        GpFilePath dir;
-        try {
-            dir = GpFileObjFactory.getRequestedGpFileObj(uploadDirPath);
-
-
-            // Handle special case for root uploads directory
-            if (dir.getRelativeFile().getPath().equals("")) {
-                dir = GpFileObjFactory.getUserUploadFile(userContext, new File("./"));
-            }
-        }
-        catch (Exception e) {
-            throw new FileUploadException("Could not get the appropriate directory path for file upload");
-        }
-
-        // lazily create directory if need be
-        if (!dir.getServerFile().exists()) {
-            boolean success = dir.getServerFile().mkdir();
-            if (!success) {
-                log.error("Failed to mkdir for dir=" + dir.getServerFile().getAbsolutePath());
-                throw new FileUploadException("Could not get the appropriate directory for file upload");
-            }
-        }
-
-        return dir.getRelativeFile();
-    }
-
-    /**
-     * Protect against Jersey's tendency to decode %20 to spaces
-     * @param path
-     * @return
-     */
-    private String protectAgainstSpaces(String path) {
-        return path.replaceAll(" ", "%20");
-    }
 
     /**
      * Get the GenePattern file path to which to upload the file.
@@ -101,10 +66,6 @@ public class UploadResource {
             log.error(e.getMessage(), e);
             throw new FileUploadException("Error initializing upload file reference for '" + uploadPath + "': "+e.getLocalizedMessage());
         }
-    }
-
-    private GpFilePath initUploadFromDB(GpContext userContext, GpFilePath uploadFilePath) throws Exception {
-        return UserUploadManager.getUploadFileObj(userContext, uploadFilePath, false);
     }
 
     public File getTempDir() {
@@ -219,13 +180,17 @@ public class UploadResource {
     @POST
     @Path("multipart/")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response startMultipartUpload(@Context HttpServletRequest request, @QueryParam("path") String path, @QueryParam("parts") int parts) {
+    public Response startMultipartUpload(
+            @Context HttpServletRequest request, 
+            final @QueryParam("path") String path, 
+            @QueryParam("parts") int parts) {
         try {
             // Get the user context
             GpContext userContext = Util.getUserContext(request);
-
-            // Get the file we will be uploading to
-            path = protectAgainstSpaces(path);
+            if (log.isDebugEnabled()) {
+                log.debug("path="+path);
+                log.debug("parts="+parts);
+            }
             GpFilePath file = getUploadFile(userContext, path);
 
             // Check if the file exists and throw an error if it does
@@ -259,13 +224,24 @@ public class UploadResource {
     @PUT
     @Path("multipart/")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response updateMultipartUpload(@Context HttpServletRequest request, @QueryParam("token") String token, @QueryParam("path") String path, @QueryParam("index") Integer index, @QueryParam("parts") int parts) {
+    public Response updateMultipartUpload(
+            @Context HttpServletRequest request, 
+            @QueryParam("token") String token, 
+            @QueryParam("path") String path, 
+            @QueryParam("index") Integer index, 
+            @QueryParam("parts") int parts) 
+    {
         try {
             // Get the user context
             GpContext userContext = Util.getUserContext(request);
 
             // Get the file we will be uploading to
-            path = protectAgainstSpaces(path);
+            if (log.isDebugEnabled()) {
+                log.debug("token="+token);
+                log.debug("path="+path);
+                log.debug("index="+index);
+                log.debug("parts="+parts);
+            }
             GpFilePath file = getUploadFile(userContext, path);
             file.setNumParts(parts);
 
@@ -306,13 +282,21 @@ public class UploadResource {
     @GET
     @Path("multipart/")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response getMultipartStatus(@Context HttpServletRequest request, @QueryParam("token") String token, @QueryParam("path") String path, @QueryParam("parts") int parts) {
+    public Response getMultipartStatus(
+            @Context HttpServletRequest request, 
+            @QueryParam("token") String token, 
+            @QueryParam("path") String path, 
+            @QueryParam("parts") int parts) {
         try {
             // Get the user context
             GpContext userContext = Util.getUserContext(request);
 
             // Get the file we will be writing to
-            path = protectAgainstSpaces(path);
+            if (log.isDebugEnabled()) {
+                log.debug("token="+token);
+                log.debug("path="+path);
+                log.debug("parts="+parts);
+            }
             GpFilePath file = getUploadFile(userContext, path);
             file.setNumParts(parts);
 
@@ -332,13 +316,22 @@ public class UploadResource {
     @POST
     @Path("multipart/assemble/")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response assembleMultipartUpload(@Context HttpServletRequest request, @QueryParam("path") String path, @QueryParam("token") String token, @QueryParam("parts") int parts) {
+    public Response assembleMultipartUpload(
+            @Context HttpServletRequest request, 
+            @QueryParam("path") String path, 
+            @QueryParam("token") String token, 
+            @QueryParam("parts") int parts
+    ) {
         try {
             // Get the user context
             GpContext userContext = Util.getUserContext(request);
 
             // Get the file we will be writing to
-            path = protectAgainstSpaces(path);
+            if (log.isDebugEnabled()) {
+                log.debug("token="+token);
+                log.debug("path="+path);
+                log.debug("parts="+parts);
+            }
             GpFilePath file = getUploadFile(userContext, path);
             file.setNumParts(parts);
 
