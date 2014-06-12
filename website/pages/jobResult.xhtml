@@ -11,7 +11,6 @@
 <html xmlns="http://www.w3.org/1999/xhtml"
 	xmlns:ui="http://java.sun.com/jsf/facelets"
 	xmlns:h="http://java.sun.com/jsf/html"
-    xmlns:a4j="http://richfaces.org/a4j"
 	xmlns:f="http://java.sun.com/jsf/core"
 	xmlns:t="http://myfaces.apache.org/tomahawk"
 	xmlns:c="http://java.sun.com/jstl/core">
@@ -84,12 +83,12 @@
                             document.getElementById("permissionsWorkingImage").src = '/gp/images/error.gif';
                         }
                     }
-                }
+                };
 
                 var handlePermFailure = function (o) {
                     alert("permissions request failed");
                     document.getElementById("permissionsWorkingImage").src = '/gp/images/error.gif';
-                }
+                };
 
                 var permCallback =
                 {
@@ -272,329 +271,333 @@
 	</ui:define>
 
 	<ui:define name="body">
+        <h:outputText rendered="#{jobStatusBean.canViewJob}">
 
-        <div style="display:none;" class="on-job-status-page"></div>
-		<h:outputText rendered="#{!empty jobStatusBean.jobInfo}">
-			<h:form>
-				<div id="poll_jobInfo">
-					<f:param name="jobNumber"
-						value="#{jobStatusBean.jobInfo.jobNumber}" />
-				</div>
-			</h:form>
+            <div style="display:none;" class="on-job-status-page"></div>
+            <h:outputText rendered="#{!empty jobStatusBean.jobInfo}">
+                <h:form>
+                    <div id="poll_jobInfo">
+                        <f:param name="jobNumber"
+                            value="#{jobStatusBean.jobInfo.jobNumber}" />
+                    </div>
+                </h:form>
 
-			<div class="statusReport">
-				<div style="text-align: right;">
-					<h:outputText rendered="#{jobStatusBean.jobInfo.hasVisualizer}">To launch visualizer click <img
-							src="/gp/images/visualizer.gif" /> icon.</h:outputText>
-				</div>
-				<br />
+                <div class="statusReport">
+                    <div style="text-align: right;">
+                        <h:outputText rendered="#{jobStatusBean.jobInfo.hasVisualizer}">To launch visualizer click <img
+                                src="/gp/images/visualizer.gif" /> icon.</h:outputText>
+                    </div>
+                    <br />
 
-				<div id="emailNotificationPanel">
-					<h:outputText rendered="#{not jobStatusBean.finished}">
-						<div style="float: right; margin-right: 10px;" id="emailDiv">
-							<h:form>
-								<h:selectBooleanCheckbox
-									value="#{jobStatusBean.sendEmailNotification}"
-									onclick="setEmailNotification(this, #{jobStatusBean.jobInfo.jobNumber}, '#{jobStatusBean.currentUserId}', '#{jobStatusBean.currentUserEmail}');" /> Email Reminder
-                                </h:form>
-						</div>
-					</h:outputText>
-				</div>
+                    <div id="emailNotificationPanel">
+                        <h:outputText rendered="#{not jobStatusBean.finished}">
+                            <div style="float: right; margin-right: 10px;" id="emailDiv">
+                                <h:form>
+                                    <h:selectBooleanCheckbox
+                                        value="#{jobStatusBean.sendEmailNotification}"
+                                        onclick="setEmailNotification(this, #{jobStatusBean.jobInfo.jobNumber}, '#{jobStatusBean.currentUserId}', '#{jobStatusBean.currentUserEmail}');" /> Email Reminder
+                                    </h:form>
+                            </div>
+                        </h:outputText>
+                    </div>
 
-				<!--   div style="float:right;margin-right:10px;"><input type="checkbox" /> Show Execution Logs</div -->
-				<div style="float: right; margin-right: 10px;">
-					<h:form>
-						<h:selectBooleanCheckbox
-							value="#{jobStatusBean.showExecutionLogs}"
-							onclick="setShowExecutionLogs(this, #{jobStatusBean.jobInfo.jobNumber});" /> Show Execution Logs
+                    <!--   div style="float:right;margin-right:10px;"><input type="checkbox" /> Show Execution Logs</div -->
+                    <div style="float: right; margin-right: 10px;">
+                        <h:form>
+                            <h:selectBooleanCheckbox
+                                value="#{jobStatusBean.showExecutionLogs}"
+                                onclick="setShowExecutionLogs(this, #{jobStatusBean.jobInfo.jobNumber});" /> Show Execution Logs
+                            </h:form>
+                    </div>
+                    <br /> <br />
+
+                    <div id="jobContainer#{jobStatusBean.jobInfo.jobNumber}">
+                        <div id="jobStatus#{jobStatusBean.jobInfo.jobNumber}">
+                            <table class="title" cellpadding="0" cellspacing="0" border="0"
+                                id="jobTable#{jobStatusBean.jobInfo.jobNumber}">
+                                <tr>
+                                    <td class="title">#{jobStatusBean.jobInfo.jobNumber}.
+                                        <a class="jobresult-job" href="#" onclick="openJobWidget(this); return false;">#{jobStatusBean.jobInfo.truncatedTaskName} <span class="glyphicon glyphicon-info-sign" style="text-indent: 0px;"></span></a>
+                                        <script type="text/javascript">
+                                            // Attach the menus
+                                            attachMenus();
+                                        </script>
+                                    </td>
+                                    <td><h:outputText
+                                            rendered="#{not empty jobStatusBean.jobInfo.inputParameters}">
+                                            <div class="icon2">
+                                                <table cellpadding="0" border="0" cellspacing="0">
+                                                    <tr>
+                                                        <td><a
+                                                            href="javascript:toggle('inputParamsDiv#{jobStatusBean.jobInfo.jobNumber}', 'Hide', 'Show');"><img
+                                                                src="/gp/images/parameters.gif" align="left" height="24"
+                                                                vspace="4" /> </a></td>
+                                                        <td><a style="color: #0066FF;"
+                                                            href="javascript:toggle('inputParamsDiv#{jobStatusBean.jobInfo.jobNumber}', 'Hide', 'Show');"><span
+                                                                id="inputParamsDiv#{jobStatusBean.jobInfo.jobNumber}Label">Show</span>
+                                                                Input <br />Parameters</a></td>
+                                                    </tr>
+                                                </table>
+                                            </div>
+                                        </h:outputText> <h:outputText
+                                            rendered="#{jobStatusBean.jobInfo.permissions.editPermissionsAllowed}">
+                                            <div class="icon">
+                                                <a style="color: #0066FF;"
+                                                    href="javascript:toggle('permissionsDiv', 'Hide', 'Edit')">
+                                                    <h:outputText
+                                                        rendered="#{jobStatusBean.jobInfo.permissions.shared}">
+                                                        <img id="permissionsIcon" src="/gp/images/lockOpen.gif"
+                                                            alt="" border="0" align="left" />
+                                                    </h:outputText> <h:outputText
+                                                        rendered="#{not jobStatusBean.jobInfo.permissions.shared}">
+                                                        <img id="permissionsIcon" src="/gp/images/lock.gif" alt=""
+                                                            border="0" align="left" height="24" vspace="4" />
+                                                    </h:outputText> <span id="permissionsDivLabel">Edit</span><br />Sharing...
+                                                </a>
+                                            </div>
+                                        </h:outputText></td>
+
+                                    <td width="30px"><h:outputText
+                                            rendered="#{jobStatusBean.jobInfo.status == 'Pending'}">Pending</h:outputText>
+                                        <h:outputText
+                                            rendered="#{jobStatusBean.jobInfo.status == 'Processing'}">
+                                            <img src="/gp/images/spin.gif"
+                                                alt="#{jobStatusBean.jobInfo.status}"
+                                                id="jobStatusIcon#{jobStatusBean.jobInfo.jobNumber}" />
+                                        </h:outputText> <h:outputText
+                                            rendered="#{jobStatusBean.jobInfo.status == 'Finished'}">
+                                            <img src="/gp/images/complete.gif"
+                                                alt="#{jobStatusBean.jobInfo.status}"
+                                                id="jobStatusIcon#{jobStatusBean.jobInfo.jobNumber}" />
+                                        </h:outputText> <h:outputText
+                                            rendered="#{jobStatusBean.jobInfo.status == 'Error'}">
+                                            <img src="/gp/images/error.gif"
+                                                alt="#{jobStatusBean.jobInfo.status}" border="0"
+                                                id="jobStatusIcon#{jobStatusBean.jobInfo.jobNumber}" />
+                                        </h:outputText></td>
+                                </tr>
+                                <tr>
+                                    <td colspan="3" style="padding-left: 24px;">
+                                        <strong>Source:</strong>
+                                        <t:outputText rendered="#{not empty jobStatusBean.jobInfo.sourceIcon}">
+                                            <img src="#{jobStatusBean.jobInfo.sourceIcon}" width="14px" height="14px" title="#{jobStatusBean.jobInfo.qualityDescription}" alt="#{jobStatusBean.jobInfo.qualityDescription}" style="position: relative; top: 3px"/>
+                                        </t:outputText>
+                                        #{jobStatusBean.jobInfo.source}<br />
+                                        <h:outputText rendered="${jobStatusBean.jobInfo.userId != jobStatusBean.currentUserId}">
+                                            <em>owned by:</em> ${jobStatusBean.jobInfo.userId},
+                                        </h:outputText>
+                                        <em>submitted:</em> <h:outputText value=" " /> <h:outputText value="#{jobStatusBean.jobInfo.dateSubmitted}" converter="gp" />,
+                                        <h:outputText value=" " />
+                                        <em>completed:</em> <h:outputText value=" " />
+                                        <h:outputText value="#{jobStatusBean.jobInfo.dateCompleted}" converter="gp" />,
+                                        <em>size:</em> <h:outputText value=" ${jobStatusBean.jobInfo.formattedSize}" />
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+
+                        <h:outputText rendered="#{jobStatusBean.jobInfo.pipeline}">
+                            <div>
+                                <ui:include src="jobStatus_indicator.xhtml">
+                                    <ui:param name="jobInfo" value="#{jobStatusBean.jobInfo}" />
+                                </ui:include>
+                            </div>
+                        </h:outputText>
+
+                        <h:outputText
+                            rendered="#{jobStatusBean.jobInfo.permissions.editPermissionsAllowed}">
+                            <div id="permissionsDiv" style="display: none;">
+                                <form name="permissionsForm">
+
+                                    <table class="summary" cellpadding="0" cellspacing="0"
+                                        border="0">
+                                        <tr class="summaryTitle">
+                                            <td width="300px">Sharing</td>
+                                            <td>Access</td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Public</strong></td>
+                                            <td><t:outputText escape="false"
+                                                    rendered="#{jobStatusBean.jobInfo.permissions.publicAccessPermission == 'NONE'}">
+                                                    <input type="radio" name="jobAccessPerm:*" value="NONE"
+                                                        checked="checked" />None
+                                                </t:outputText> <t:outputText
+                                                    escape="false"
+                                                    rendered="#{jobStatusBean.jobInfo.permissions.publicAccessPermission != 'NONE'}">
+                                                    <input type="radio" name="jobAccessPerm:*" value="NONE" />None
+                                                </t:outputText> <t:outputText
+                                                    escape="false"
+                                                    rendered="#{jobStatusBean.jobInfo.permissions.publicAccessPermission == 'READ'}">
+                                                    <input type="radio" name="jobAccessPerm:*" value="READ"
+                                                        checked="checked" />Read Only
+                                                </t:outputText> <t:outputText
+                                                    escape="false"
+                                                    rendered="#{jobStatusBean.jobInfo.permissions.publicAccessPermission != 'READ'}">
+                                                    <input type="radio" name="jobAccessPerm:*" value="READ" />Read Only
+                                                </t:outputText> <t:outputText
+                                                    escape="false"
+                                                    rendered="#{jobStatusBean.jobInfo.permissions.publicAccessPermission == 'READ_WRITE'}">
+                                                    <input type="radio" name="jobAccessPerm:*"
+                                                        value="READ_WRITE" checked="checked" />Read and Write
+                                                </t:outputText> <t:outputText
+                                                    escape="false"
+                                                    rendered="#{jobStatusBean.jobInfo.permissions.publicAccessPermission != 'READ_WRITE'}">
+                                                    <input type="radio" name="jobAccessPerm:*"
+                                                        value="READ_WRITE" />Read and Write
+                                                </t:outputText></td>
+                                        </tr>
+                                        <c:if
+                                            test="#{jobStatusBean.jobInfo.permissions.numGroupAccessPermissions gt 0}">
+                                            <tr class="brown">
+                                                <td><strong>Group</strong></td>
+                                                <td></td>
+                                            </tr>
+                                            <t:dataList var="groupPermission" rowIndexVar="rowIndex"
+                                                value="#{jobStatusBean.jobInfo.permissions.groupAccessPermissions}">
+                                                <tr class="brown">
+                                                    <td><img src="/gp/images/arrow2.gif" />#{groupPermission.groupId}</td>
+                                                    <td><t:outputText escape="false"
+                                                            rendered="#{groupPermission.permission == 'NONE'}">
+                                                            <input type="radio"
+                                                                name="jobAccessPerm:#{groupPermission.groupId}"
+                                                                value="NONE" checked="checked" />None
+                                                        </t:outputText> <t:outputText
+                                                            escape="false"
+                                                            rendered="#{groupPermission.permission != 'NONE'}">
+                                                            <input type="radio"
+                                                                name="jobAccessPerm:#{groupPermission.groupId}"
+                                                                value="NONE" />None
+                                                        </t:outputText> <t:outputText
+                                                            escape="false"
+                                                            rendered="#{groupPermission.permission == 'READ'}">
+                                                            <input type="radio"
+                                                                name="jobAccessPerm:#{groupPermission.groupId}"
+                                                                value="READ" checked="checked" />Read Only
+                                                        </t:outputText> <t:outputText
+                                                            escape="false"
+                                                            rendered="#{groupPermission.permission != 'READ'}">
+                                                            <input type="radio"
+                                                                name="jobAccessPerm:#{groupPermission.groupId}"
+                                                                value="READ" />Read Only
+                                                        </t:outputText> <t:outputText
+                                                            escape="false"
+                                                            rendered="#{groupPermission.permission == 'READ_WRITE'}">
+                                                            <input type="radio"
+                                                                name="jobAccessPerm:#{groupPermission.groupId}"
+                                                                value="READ_WRITE" checked="checked" />Read and Write
+                                                        </t:outputText> <t:outputText
+                                                            escape="false"
+                                                            rendered="#{groupPermission.permission != 'READ_WRITE'}">
+                                                            <input type="radio"
+                                                                name="jobAccessPerm:#{groupPermission.groupId}"
+                                                                value="READ_WRITE" />Read and Write
+                                                        </t:outputText></td>
+                                                </tr>
+                                            </t:dataList>
+                                        </c:if>
+                                        <tr class="brown">
+                                            <td style="whitespace: no-wrap;"><input type="button"
+                                                enabled="false" onclick="submitPermissionsRequest(this.form)"
+                                                value="Update Settings" /> <img
+                                                style="vertical-align: middle; display: none;"
+                                                src="/gp/images/spin.gif" id="permissionsWorkingImage" /></td>
+                                            <td align="right"><a style="color: #0066FF;"
+                                                href="javascript:toggle('permissionsDiv', 'Hide', 'Edit')"><img
+                                                    src="/gp/images/cross.gif" /> hide</a></td>
+                                        </tr>
+                                    </table>
+                                    <br />
+                                </form>
+                            </div>
+                        </h:outputText>
+
+                        <ui:include src="jobStatus_inputParams.xhtml">
+                            <ui:param name="jobInfo" value="#{jobStatusBean.jobInfo}" />
+                        </ui:include>
+
+                        <h:form>
+                            <div id="filePanel#{jobStatusBean.jobInfo.jobNumber}">
+                                <ui:include src="jobStatus_files.xhtml">
+                                    <ui:param name="jobInfo" value="#{jobStatusBean.jobInfo}" />
+                                    <ui:param name="indent" value="#{false}" />
+                                </ui:include>
+                            </div>
                         </h:form>
-				</div>
-				<br /> <br />
 
-				<div id="jobContainer#{jobStatusBean.jobInfo.jobNumber}">
-					<div id="jobStatus#{jobStatusBean.jobInfo.jobNumber}">
-						<table class="title" cellpadding="0" cellspacing="0" border="0"
-							id="jobTable#{jobStatusBean.jobInfo.jobNumber}">
-							<tr>
-								<td class="title">#{jobStatusBean.jobInfo.jobNumber}.
-									<a class="jobresult-job" href="#" onclick="openJobWidget(this); return false;">#{jobStatusBean.jobInfo.truncatedTaskName} <span class="glyphicon glyphicon-info-sign" style="text-indent: 0px;"></span></a>
+                        <div>
+                            <h:outputText rendered="#{jobStatusBean.jobInfo.pipeline}">
+                                <t:dataList var="child" value="#{jobStatusBean.allSteps}"
+                                    rowIndexVar="idx">
+                                    <h:outputText rendered="#{idx gt 0}">
+                                        <ui:include src="jobStatus_child.xhtml">
+                                            <ui:param name="childJobInfo" value="#{child}" />
+                                        </ui:include>
+                                    </h:outputText>
+                                </t:dataList>
+                            </h:outputText>
+                        </div>
+
+                        <t:dataList var="visObj" value="#{visualizerStatusBean.visObjs}">
+                            <span id="visualizerSpan#{visObj.key}"></span>
+                            <!-- place applet tag here -->
+                        </t:dataList>
+
+                        <div>
+                            <h:outputText rendered="false">
+                                <t:dataList var="visObj"
+                                    value="#{visualizerStatusBean.newVisObjs}">
                                     <script type="text/javascript">
-                                        // Attach the menus
-                                        attachMenus();
-                                    </script>
-								</td>
-								<td><h:outputText
-										rendered="#{not empty jobStatusBean.jobInfo.inputParameters}">
-										<div class="icon2">
-											<table cellpadding="0" border="0" cellspacing="0">
-												<tr>
-													<td><a
-														href="javascript:toggle('inputParamsDiv#{jobStatusBean.jobInfo.jobNumber}', 'Hide', 'Show');"><img
-															src="/gp/images/parameters.gif" align="left" height="24"
-															vspace="4" /> </a></td>
-													<td><a style="color: #0066FF;"
-														href="javascript:toggle('inputParamsDiv#{jobStatusBean.jobInfo.jobNumber}', 'Hide', 'Show');"><span
-															id="inputParamsDiv#{jobStatusBean.jobInfo.jobNumber}Label">Show</span>
-															Input <br />Parameters</a></td>
-												</tr>
-											</table>
-										</div>
-									</h:outputText> <h:outputText
-										rendered="#{jobStatusBean.jobInfo.permissions.editPermissionsAllowed}">
-										<div class="icon">
-											<a style="color: #0066FF;"
-												href="javascript:toggle('permissionsDiv', 'Hide', 'Edit')">
-												<h:outputText
-													rendered="#{jobStatusBean.jobInfo.permissions.shared}">
-													<img id="permissionsIcon" src="/gp/images/lockOpen.gif"
-														alt="" border="0" align="left" />
-												</h:outputText> <h:outputText
-													rendered="#{not jobStatusBean.jobInfo.permissions.shared}">
-													<img id="permissionsIcon" src="/gp/images/lock.gif" alt=""
-														border="0" align="left" height="24" vspace="4" />
-												</h:outputText> <span id="permissionsDivLabel">Edit</span><br />Sharing...
-											</a>
-										</div>
-									</h:outputText></td>
+                                            addVisualizer('#{visObj.key}', '#{visObj.jobInfo.jobNumber}', '#{visObj.jobInfo.visualizerAppletName}', '#{visObj.jobInfo.visualizerAppletId}', '#{visObj.appletTag}', #{visualizerStatusBean.openVisualizers ? true : false});
+                                        </script>
+                                </t:dataList>
+                            </h:outputText>
+                            <h:outputText
+                                rendered="#{jobStatusBean.jobInfo.status == 'Finished'}">
+                                <t:dataList var="visObj" value="#{visualizerStatusBean.visObjs}">
+                                    <script type="text/javascript">
+                                            addVisualizer('#{visObj.key}', '#{visObj.jobInfo.jobNumber}', '#{visObj.jobInfo.visualizerAppletName}', '#{visObj.jobInfo.visualizerAppletId}', '#{visObj.appletTag}', #{visualizerStatusBean.openVisualizers ? true : false});
+                                        </script>
+                                </t:dataList>
 
-								<td width="30px"><h:outputText
-										rendered="#{jobStatusBean.jobInfo.status == 'Pending'}">Pending</h:outputText>
-									<h:outputText
-										rendered="#{jobStatusBean.jobInfo.status == 'Processing'}">
-										<img src="/gp/images/spin.gif"
-											alt="#{jobStatusBean.jobInfo.status}"
-											id="jobStatusIcon#{jobStatusBean.jobInfo.jobNumber}" />
-									</h:outputText> <h:outputText
-										rendered="#{jobStatusBean.jobInfo.status == 'Finished'}">
-										<img src="/gp/images/complete.gif"
-											alt="#{jobStatusBean.jobInfo.status}"
-											id="jobStatusIcon#{jobStatusBean.jobInfo.jobNumber}" />
-									</h:outputText> <h:outputText
-										rendered="#{jobStatusBean.jobInfo.status == 'Error'}">
-										<img src="/gp/images/error.gif"
-											alt="#{jobStatusBean.jobInfo.status}" border="0"
-											id="jobStatusIcon#{jobStatusBean.jobInfo.jobNumber}" />
-									</h:outputText></td>
-							</tr>
-							<tr>
-								<td colspan="3" style="padding-left: 24px;">
-									<strong>Source:</strong> 
-									<t:outputText rendered="#{not empty jobStatusBean.jobInfo.sourceIcon}">
-	                                	<img src="#{jobStatusBean.jobInfo.sourceIcon}" width="14px" height="14px" title="#{jobStatusBean.jobInfo.qualityDescription}" alt="#{jobStatusBean.jobInfo.qualityDescription}" style="position: relative; top: 3px"/>
-	                                </t:outputText>
-	                                #{jobStatusBean.jobInfo.source}<br />
-									<h:outputText rendered="${jobStatusBean.jobInfo.userId != jobStatusBean.currentUserId}">
-										<em>owned by:</em> ${jobStatusBean.jobInfo.userId}, 
-									</h:outputText>
-									<em>submitted:</em> <h:outputText value=" " /> <h:outputText value="#{jobStatusBean.jobInfo.dateSubmitted}" converter="gp" />,
-									<h:outputText value=" " /> 
-									<em>completed:</em> <h:outputText value=" " />
-									<h:outputText value="#{jobStatusBean.jobInfo.dateCompleted}" converter="gp" />, 
-									<em>size:</em> <h:outputText value=" ${jobStatusBean.jobInfo.formattedSize}" />
-								</td>
-							</tr>
-						</table>
-					</div>
+                            </h:outputText>
+                            <script type="text/javascript">
+                                    if (!vizPollStarted) {
+                                        processVisualizers();
+                                    }
+                                </script>
 
-					<h:outputText rendered="#{jobStatusBean.jobInfo.pipeline}">
-						<div>
-							<ui:include src="jobStatus_indicator.xhtml">
-								<ui:param name="jobInfo" value="#{jobStatusBean.jobInfo}" />
-							</ui:include>
-						</div>
-					</h:outputText>
+                        </div>
+                    </div>
+                    <br /> <br />
 
-					<h:outputText
-						rendered="#{jobStatusBean.jobInfo.permissions.editPermissionsAllowed}">
-						<div id="permissionsDiv" style="display: none;">
-							<form name="permissionsForm">
+                    <div>
+                        <h:outputText
+                            rendered="#{not empty jobStatusBean.jobInfo.purgeDate}"
+                            styleClass="purge_notice"
+                            value="These job results are scheduled to be purged from the server on #{jobStatusBean.jobInfo.formattedPurgeDate}" />
+                    </div>
 
-								<table class="summary" cellpadding="0" cellspacing="0"
-									border="0">
-									<tr class="summaryTitle">
-										<td width="300px">Sharing</td>
-										<td>Access</td>
-									</tr>
-									<tr>
-										<td><strong>Public</strong></td>
-										<td><t:outputText escape="false"
-												rendered="#{jobStatusBean.jobInfo.permissions.publicAccessPermission == 'NONE'}">
-												<input type="radio" name="jobAccessPerm:*" value="NONE"
-													checked="checked" />None
-                                            </t:outputText> <t:outputText
-												escape="false"
-												rendered="#{jobStatusBean.jobInfo.permissions.publicAccessPermission != 'NONE'}">
-												<input type="radio" name="jobAccessPerm:*" value="NONE" />None
-                                            </t:outputText> <t:outputText
-												escape="false"
-												rendered="#{jobStatusBean.jobInfo.permissions.publicAccessPermission == 'READ'}">
-												<input type="radio" name="jobAccessPerm:*" value="READ"
-													checked="checked" />Read Only
-                                            </t:outputText> <t:outputText
-												escape="false"
-												rendered="#{jobStatusBean.jobInfo.permissions.publicAccessPermission != 'READ'}">
-												<input type="radio" name="jobAccessPerm:*" value="READ" />Read Only
-                                            </t:outputText> <t:outputText
-												escape="false"
-												rendered="#{jobStatusBean.jobInfo.permissions.publicAccessPermission == 'READ_WRITE'}">
-												<input type="radio" name="jobAccessPerm:*"
-													value="READ_WRITE" checked="checked" />Read and Write
-                                            </t:outputText> <t:outputText
-												escape="false"
-												rendered="#{jobStatusBean.jobInfo.permissions.publicAccessPermission != 'READ_WRITE'}">
-												<input type="radio" name="jobAccessPerm:*"
-													value="READ_WRITE" />Read and Write
-                                            </t:outputText></td>
-									</tr>
-									<c:if
-										test="#{jobStatusBean.jobInfo.permissions.numGroupAccessPermissions gt 0}">
-										<tr class="brown">
-											<td><strong>Group</strong></td>
-											<td></td>
-										</tr>
-										<t:dataList var="groupPermission" rowIndexVar="rowIndex"
-											value="#{jobStatusBean.jobInfo.permissions.groupAccessPermissions}">
-											<tr class="brown">
-												<td><img src="/gp/images/arrow2.gif" />#{groupPermission.groupId}</td>
-												<td><t:outputText escape="false"
-														rendered="#{groupPermission.permission == 'NONE'}">
-														<input type="radio"
-															name="jobAccessPerm:#{groupPermission.groupId}"
-															value="NONE" checked="checked" />None
-                                                    </t:outputText> <t:outputText
-														escape="false"
-														rendered="#{groupPermission.permission != 'NONE'}">
-														<input type="radio"
-															name="jobAccessPerm:#{groupPermission.groupId}"
-															value="NONE" />None
-                                                    </t:outputText> <t:outputText
-														escape="false"
-														rendered="#{groupPermission.permission == 'READ'}">
-														<input type="radio"
-															name="jobAccessPerm:#{groupPermission.groupId}"
-															value="READ" checked="checked" />Read Only
-                                                    </t:outputText> <t:outputText
-														escape="false"
-														rendered="#{groupPermission.permission != 'READ'}">
-														<input type="radio"
-															name="jobAccessPerm:#{groupPermission.groupId}"
-															value="READ" />Read Only
-                                                    </t:outputText> <t:outputText
-														escape="false"
-														rendered="#{groupPermission.permission == 'READ_WRITE'}">
-														<input type="radio"
-															name="jobAccessPerm:#{groupPermission.groupId}"
-															value="READ_WRITE" checked="checked" />Read and Write
-                                                    </t:outputText> <t:outputText
-														escape="false"
-														rendered="#{groupPermission.permission != 'READ_WRITE'}">
-														<input type="radio"
-															name="jobAccessPerm:#{groupPermission.groupId}"
-															value="READ_WRITE" />Read and Write
-                                                    </t:outputText></td>
-											</tr>
-										</t:dataList>
-									</c:if>
-									<tr class="brown">
-										<td style="whitespace: no-wrap;"><input type="button"
-											enabled="false" onclick="submitPermissionsRequest(this.form)"
-											value="Update Settings" /> <img
-											style="vertical-align: middle; display: none;"
-											src="/gp/images/spin.gif" id="permissionsWorkingImage" /></td>
-										<td align="right"><a style="color: #0066FF;"
-											href="javascript:toggle('permissionsDiv', 'Hide', 'Edit')"><img
-												src="/gp/images/cross.gif" /> hide</a></td>
-									</tr>
-								</table>
-								<br />
-							</form>
-						</div>
-					</h:outputText>
+                    <br /> <br />
 
-					<ui:include src="jobStatus_inputParams.xhtml">
-						<ui:param name="jobInfo" value="#{jobStatusBean.jobInfo}" />
-					</ui:include>
+                </div>
+                <table cellpadding="0" cellspacing="0" border="0"
+                    style="display: none;" id="testTable">
+                    <tr>
+                        <td></td>
+                    </tr>
+                </table>
+                <br />
+                <br />
+            </h:outputText>
+            <h:outputText rendered="#{genomeSpaceBean.loggedIn}">
+                <ui:include src="/pages/genomespace/genomespaceDialog.xhtml" />
+            </h:outputText>
 
-					<h:form>
-						<div id="filePanel#{jobStatusBean.jobInfo.jobNumber}">
-							<ui:include src="jobStatus_files.xhtml">
-								<ui:param name="jobInfo" value="#{jobStatusBean.jobInfo}" />
-								<ui:param name="indent" value="#{false}" />
-							</ui:include>
-						</div>
-					</h:form>
-
-					<a4j:form>
-						<div>
-							<h:outputText rendered="#{jobStatusBean.jobInfo.pipeline}">
-								<t:dataList var="child" value="#{jobStatusBean.allSteps}"
-									rowIndexVar="idx">
-									<h:outputText rendered="#{idx gt 0}">
-										<ui:include src="jobStatus_child.xhtml">
-											<ui:param name="childJobInfo" value="#{child}" />
-										</ui:include>
-									</h:outputText>
-								</t:dataList>
-							</h:outputText>
-						</div>
-					</a4j:form>
-
-					<t:dataList var="visObj" value="#{visualizerStatusBean.visObjs}">
-						<span id="visualizerSpan#{visObj.key}"></span>
-						<!-- place applet tag here -->
-					</t:dataList>
-
-					<div>
-						<h:outputText rendered="false">
-							<t:dataList var="visObj"
-								value="#{visualizerStatusBean.newVisObjs}">
-								<script type="text/javascript">
-                                        addVisualizer('#{visObj.key}', '#{visObj.jobInfo.jobNumber}', '#{visObj.jobInfo.visualizerAppletName}', '#{visObj.jobInfo.visualizerAppletId}', '#{visObj.appletTag}', #{visualizerStatusBean.openVisualizers ? true : false});
-                                    </script>
-							</t:dataList>
-						</h:outputText>
-						<h:outputText
-							rendered="#{jobStatusBean.jobInfo.status == 'Finished'}">
-							<t:dataList var="visObj" value="#{visualizerStatusBean.visObjs}">
-								<script type="text/javascript">
-                                        addVisualizer('#{visObj.key}', '#{visObj.jobInfo.jobNumber}', '#{visObj.jobInfo.visualizerAppletName}', '#{visObj.jobInfo.visualizerAppletId}', '#{visObj.appletTag}', #{visualizerStatusBean.openVisualizers ? true : false});
-                                    </script>
-							</t:dataList>
-
-						</h:outputText>
-						<script type="text/javascript">
-                                if (!vizPollStarted) {
-                                    processVisualizers();
-                                }
-                            </script>
-
-					</div>
-				</div>
-				<br /> <br />
-
-				<div>
-					<h:outputText
-						rendered="#{not empty jobStatusBean.jobInfo.purgeDate}"
-						styleClass="purge_notice"
-						value="These job results are scheduled to be purged from the server on #{jobStatusBean.jobInfo.formattedPurgeDate}" />
-				</div>
-
-				<br /> <br />
-
-			</div>
-			<table cellpadding="0" cellspacing="0" border="0"
-				style="display: none;" id="testTable">
-				<tr>
-					<td></td>
-				</tr>
-			</table>
-			<br />
-			<br />
-		</h:outputText>
-		<h:outputText rendered="#{genomeSpaceBean.loggedIn}">
-			<ui:include src="/pages/genomespace/genomespaceDialog.xhtml" />
-		</h:outputText>
-	</ui:define>
+    </h:outputText>
+    <h:outputText rendered="#{!jobStatusBean.canViewJob}">
+        <h2>Permission Denied</h2>
+    </h:outputText>
+    </ui:define>
 
 </ui:composition>
 </html>
