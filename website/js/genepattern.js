@@ -424,7 +424,7 @@ function setModuleSearchTitle(filter) {
 }
 
 function updateJobStatusPage() {
-    var isJobStatusOpen = $(".on-job-status-page").length > 0;
+    var isJobStatusOpen = $(".on-job-status-page").length > 0 && $("#jobResults:visible").length > 0;
     if (isJobStatusOpen && currentJobNumber !== undefined && currentJobNumber !== null) {
         loadJobStatus(currentJobNumber);
     }
