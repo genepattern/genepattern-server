@@ -27,9 +27,11 @@ import javax.servlet.http.HttpServletResponseWrapper;
 import org.apache.log4j.Logger;
 import org.genepattern.server.JobInfoManager;
 import org.genepattern.server.JobInfoWrapper;
+import org.genepattern.server.PermissionsHelper;
 import org.genepattern.server.user.User;
 import org.genepattern.server.user.UserDAO;
 import org.genepattern.server.user.UserProp;
+import org.genepattern.server.webapp.jsf.AuthorizationHelper;
 import org.genepattern.server.webapp.jsf.UIBeanHelper;
 
 /**
@@ -126,6 +128,13 @@ public class JobStatusBean {
                 }
             }
         }
+    }
+
+    public boolean getCanViewJob() {
+        String user = UIBeanHelper.getUserId();
+        final boolean isAdmin = AuthorizationHelper.adminJobs(user);
+        PermissionsHelper ph = new PermissionsHelper(isAdmin, user, jobInfoWrapper.getJobNumber());
+        return ph.canReadJob();
     }
     
     public JobInfoWrapper getJobInfo() {
