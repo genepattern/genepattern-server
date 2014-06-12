@@ -12,9 +12,9 @@ import org.genepattern.server.dm.GpFilePath;
 import org.genepattern.server.dm.jobresult.JobResultFile;
 import org.genepattern.server.executor.drm.DbLookup;
 import org.genepattern.server.executor.drm.dao.JobRunnerJob;
+import org.genepattern.server.job.JobInfoLoaderDefault;
 import org.genepattern.server.job.status.Status;
 import org.genepattern.server.webapp.rest.api.v1.DateUtil;
-import org.genepattern.server.webservice.server.dao.AnalysisDAO;
 import org.genepattern.webservice.JobInfo;
 import org.genepattern.webservice.ParameterInfo;
 import org.json.JSONArray;
@@ -68,23 +68,13 @@ public class GetPipelineJobLegacy implements GetJob {
             throw new IllegalArgumentException("userContext.userId not set");
         }
         
-        JobInfo jobInfo=null;
-        //expecting jobId to be an integer
-        int jobNo;
-        try {
-            jobNo=Integer.parseInt(jobId);
-        }
-        catch (NumberFormatException e) {
-            throw new GetJobException("Expecting an integer value for jobId="+jobId+" :"
-                    +e.getLocalizedMessage());
-        }
-        if (jobNo<0) {
-            throw new GetJobException("Invalid jobNo="+jobNo+" : Can't be less than 0.");
-        }
         final boolean isInTransaction=HibernateUtil.isInTransaction();
         try {
-            AnalysisDAO analysisDao = new AnalysisDAO();
-            jobInfo = analysisDao.getJobInfo(jobNo);
+            JobInfo jobInfo=new JobInfoLoaderDefault().getJobInfo(userContext, jobId);
+            return jobInfo;
+        }
+        catch (Exception e) {
+            throw new GetJobException(e.getLocalizedMessage());
         }
         catch (Throwable t) {
             log.error("Error initializing jobInfo for jobId="+jobId, t);
@@ -94,8 +84,9 @@ public class GetPipelineJobLegacy implements GetJob {
                 HibernateUtil.closeCurrentSession();
             }
         }
-        return jobInfo;
+        throw new GetJobException("Server error initializing jobInfo, jobId="+jobId);
     }
+
     
     @Override
     public JSONObject getJob(final GpContext userContext, final String jobId)
