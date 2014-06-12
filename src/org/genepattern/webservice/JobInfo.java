@@ -85,7 +85,10 @@ public class JobInfo implements Serializable {
 
         String statusName = "";
         if (aJob.getJobStatus() == null) {
-            log.error("aJob.jobStatus is null", new Exception("aJob.jobStatus is null"));
+            log.error("aJob.jobStatus is null, jobNo="+aJob.getJobNo());
+            if (log.isDebugEnabled()) {
+                log.debug(new Exception("aJob.jobStatus is null, jobNo="+aJob.getJobNo()));
+            }
         }
         else {
             statusName = aJob.getJobStatus().getStatusName();
