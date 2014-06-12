@@ -584,9 +584,10 @@ public class AnalysisDAO extends BaseDAO {
      */
     public int getNumProcessingJobsByUser(final String userId) {
         final String sqlString = "select count(*) from analysis_job where user_id = :userId "+
-                "and (parent is null or parent < 0) and deleted = 0 and status_id not in  ( 3, 4 )";
+                "and (parent is null or parent < 0) and deleted = :deleted and status_id not in  ( 3, 4 )";
         Query sqlQuery = getSession().createSQLQuery(sqlString);
         sqlQuery.setString("userId", userId);
+        sqlQuery.setBoolean("deleted", false);
         Object rval = sqlQuery.uniqueResult();
         return getCount(rval);
     }
