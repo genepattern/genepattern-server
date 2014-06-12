@@ -675,11 +675,13 @@ public class JobsResource {
             }
 
             // Return the JSON representation of the jobs
-            
             JSONObject jsonObj=new JSONObject();
             jsonObj.put("recentJobs", jobs);
             jsonObj.put("numProcessingJobs", numProcessingJobs);
-            return Response.ok().entity(jsonObj.toString()).build();
+            
+            final int indentFactor=2;
+            String jsonStr=jsonObj.toString(indentFactor);
+            return Response.ok().entity(jsonStr).build();
         }
         catch (Throwable t) {
             String message = "Error creating JSON representation for recent jobs: " + t.getLocalizedMessage();
