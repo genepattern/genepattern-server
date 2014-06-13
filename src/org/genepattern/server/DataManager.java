@@ -272,10 +272,12 @@ public class DataManager {
             renamed = oldFile.renameTo(newFileAbsolute);
             if (!renamed) {
                 log.error("Error renaming file: " + oldFile.getPath());
+                return renamed;
             }
         }
         else {
             log.error("File to rename not found: " + oldFile.getAbsolutePath());
+            return renamed;
         }
 
         // Change the record in the database
