@@ -927,8 +927,8 @@ function initUploads() {
                 .css("width", "100%")
                 .css("height", "100%")
                 .css("z-index", 10000)
-                .css("background-color", "red")
-                .css("opacity", 0.5)
+                .css("background-color", "yellow")
+                .css("opacity", 0.3)
                 .appendTo("body")
             setTimeout(function() {
                 cover.remove();
