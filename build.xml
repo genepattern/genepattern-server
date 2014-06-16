@@ -6,7 +6,8 @@
 	<import file="test/build.xml"/>
 	
     <description>JAR deployment for genepattern</description>
-    <property name="java.target" value="1.5" />
+    <property name="java.target" value="1.7" />
+    <property name="java.source" value="1.7" />
     <property location="lib" name="lib_compile" />
     <property location="website/WEB-INF/lib" name="lib" />
 
@@ -182,7 +183,8 @@
     </target>
 
     <target name="compile" depends="init" description="Compiles all the source.">
-        <javac debug="true" target="1.6" classpathref="library.classpath" 
+        <javac debug="true" source="${java.source}" target="${java.target}" 
+            classpathref="library.classpath" 
             destdir="${genepattern.build}" 
             srcdir="${src}" 
             excludes="org/genepattern/server/analysis/*,org/genepattern/server/handler/*,org/genepattern/jaxb/**"
