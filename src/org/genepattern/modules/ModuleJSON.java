@@ -1,7 +1,7 @@
 /*
  The Broad Institute
  SOFTWARE COPYRIGHT NOTICE AGREEMENT
- This software and its documentation are copyright (2003-2012) by the
+ This software and its documentation are copyright (2003-2014) by the
  Broad Institute. All rights are reserved.
 
  This software is supplied without any warranty or guaranteed support
