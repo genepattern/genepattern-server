@@ -4,6 +4,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
+import java.net.URLDecoder;
 import java.net.URLEncoder;
 
 import javax.servlet.http.HttpServletRequest;
@@ -52,6 +53,23 @@ public class UrlUtil {
         return encoded;
 
     }
+    
+    /** Converts a string into something you can safely insert into a URL. */
+    public static String decodeURIcomponent(final String encoded) {
+        String decoded = encoded;
+        try {
+            decoded = URLDecoder.decode(encoded, "UTF-8");
+        }
+        catch (UnsupportedEncodingException e) {
+            log.error("UnsupportedEncodingException for enc=UTF-8", e);
+            decoded = URLDecoder.decode(encoded);
+        }
+        catch (Throwable t) {
+            log.error("Unexpected error decoding string="+encoded);
+        }
+        return decoded;
+    }
+
     
     //alternative implementation which doesn't use any other java classes
     private static String encodeURIcomponent_orig(String s) {

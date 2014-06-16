@@ -150,10 +150,10 @@ public class UploadFileServlet extends HttpServlet {
     private static UploadTreeJSON treeToJson(final List<GpFilePath> tree, Map<String, SortedSet<TaskInfo>> kindToTaskInfo) {
         UploadTreeJSON json = null;
         if (tree != null && !tree.isEmpty()) {
-            json = new UploadTreeJSON(tree, kindToTaskInfo);
+            json = new UploadTreeJSON(tree, "");
         }
         else {
-            json = new UploadTreeJSON(null, UploadTreeJSON.EMPTY, kindToTaskInfo);
+            json = new UploadTreeJSON(null, UploadTreeJSON.EMPTY);
         }
         return json;
     }

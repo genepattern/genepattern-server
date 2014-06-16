@@ -65,6 +65,7 @@ public class UserUploadManager {
         try {
             UserUploadDao dao = new UserUploadDao();
             UserUpload fromDb = dao.selectUserUpload(userContext.getUserId(), uploadFilePath);
+
             if (initMetaData && fromDb != null) {
                 initMetadata(uploadFilePath, fromDb);
             }
@@ -72,6 +73,38 @@ public class UserUploadManager {
                 HibernateUtil.commitTransaction();
             }
             return uploadFilePath;
+        }
+        catch (Throwable t) {
+            String message = "DB error getting file meta data: "+t.getLocalizedMessage();
+            log.error(message, t);
+            throw new Exception(message);
+        }
+        finally {
+            if (!isInTransaction) {
+                HibernateUtil.closeCurrentSession();
+            }
+        }
+    }
+
+    static public boolean isUploadInDB(final GpContext userContext, final GpFilePath uploadFilePath) throws Exception {
+        // if there is a record in the DB ...
+        boolean isInTransaction = false;
+        try {
+            isInTransaction = HibernateUtil.isInTransaction();
+        }
+        catch (Throwable t) {
+            String message = "DB connection error: "+t.getLocalizedMessage();
+            log.error(message, t);
+            throw new Exception(message);
+        }
+
+        try {
+            UserUploadDao dao = new UserUploadDao();
+            UserUpload fromDb = dao.selectUserUpload(userContext.getUserId(), uploadFilePath);
+            if (!isInTransaction) {
+                HibernateUtil.commitTransaction();
+            }
+            return fromDb != null;
         }
         catch (Throwable t) {
             String message = "DB error getting file meta data: "+t.getLocalizedMessage();
@@ -122,7 +155,7 @@ public class UserUploadManager {
      * Otherwise, it is up to the calling method to commit or rollback the transaction.
      * 
      * @param userContext, requires a valid userId,
-     * @param gpFilePath, a GpFilePath to the upload file
+     * @param gpFileObj, a GpFilePath to the upload file
      * @param numParts, the number of parts this file is broken up into, based on the jumploader applet.
      * @throws Exception if a duplicate entry for the file is found in the database
      */
@@ -137,7 +170,7 @@ public class UserUploadManager {
      * Otherwise, it is up to the calling method to commit or rollback the transaction.
      * 
      * @param userContext, requires a valid userId,
-     * @param gpFilePath, a GpFilePath to the upload file
+     * @param gpFileObj, a GpFilePath to the upload file
      * @param numParts, the number of parts this file is broken up into, based on the jumploader applet.
      * @param modDuplicate, whether an existing duplicate entry is updated or if an error is thrown
      * @throws Exception if a duplicate entry for the file is found in the database and modDuplicate is false
@@ -148,6 +181,7 @@ public class UserUploadManager {
         UserUploadDao dao = new UserUploadDao();
         UserUpload uu = dao.selectUserUpload(userContext.getUserId(), gpFileObj);
         if (uu != null && !modDuplicate) {
+            log.error("Duplicate entry found in the database for file: " + gpFileObj.getRelativePath());
             throw new Exception("Duplicate entry found in the database for file: " + gpFileObj.getRelativePath());
         }
         uu = UserUpload.initFromGpFileObj(userContext.getUserId(), uu, gpFileObj);
@@ -161,6 +195,7 @@ public class UserUploadManager {
             return uu;
         }
         catch (RuntimeException e) {
+            log.error("RuntimeException in createUploadFile(), rolling back commit.", e);
             HibernateUtil.rollbackTransaction();
             throw new Exception("Runtime exception creating upload file: " + gpFileObj.getRelativePath());
         }
@@ -187,9 +222,9 @@ public class UserUploadManager {
             if (uu.getNumParts() != totalParts) {
                 throw new Exception("Expecting numParts to be " + uu.getNumParts() + " but it was " + totalParts);
             }
-            if (uu.getNumPartsRecd() != (partNum - 1)) {
-                throw new Exception("Received partial upload out of order, partNum=" + partNum + ", expecting partNum to be " + (uu.getNumPartsRecd() + 1));
-            }
+//            if (uu.getNumPartsRecd() != (partNum - 1)) {
+//                throw new Exception("Received partial upload out of order, partNum=" + partNum + ", expecting partNum to be " + (uu.getNumPartsRecd() + 1));
+//            }
             uu.setNumPartsRecd(partNum);
             
             uu.init(gpFilePath.getServerFile());
@@ -242,7 +277,6 @@ public class UserUploadManager {
      * The root element is the user's upload directory, which typically is not displayed.
      * 
      * @param userContext
-     * @param inDir
      * @return
      */
     static public GpDirectoryNode getFileTree(final GpContext userContext) throws Exception { 
@@ -329,7 +363,7 @@ public class UserUploadManager {
     
     /**
      * query all files from the DB, for the given user.
-     * @param userId
+     * @param userContext
      * @return
      */
     static private List<UserUpload> getAllFiles(final GpContext userContext) {

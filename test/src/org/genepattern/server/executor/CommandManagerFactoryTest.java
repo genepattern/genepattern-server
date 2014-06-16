@@ -166,7 +166,7 @@ public class CommandManagerFactoryTest extends TestCase {
         Map<String,CommandExecutor> map = cmdMgr.getCommandExecutorsMap();
         assertNotNull("Expecting non-null cmdMgr.commandExecutorsMap", map);
         int numExecutors = map.size();
-        assertEquals("Number of executors", 4, numExecutors);
+        assertEquals("Number of executors", 5, numExecutors);
 
         JobInfo jobInfo = new JobInfo();
         jobInfo.setTaskName("SNPFileSorter");

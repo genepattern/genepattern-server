@@ -345,9 +345,20 @@ body {
 }
 
 #left-nav-genomespace {
-	padding: 10px !important;
-	width: 328px;
-    bottom: 85px;
+	padding: 0px !important;
+	width: 348px;
+}
+
+#left-nav-genomespace-logo {
+    height: 30px;
+}
+
+#left-nav-genomespace-refresh {
+    float: right;
+}
+
+.left-nav-genomespace-files {
+    padding: 10px;
 }
 
 #left-nav-modules.ui-widget-content a {
@@ -414,6 +425,22 @@ body {
 .jstree-leaf a {
 	max-width: 260px;
 	text-overflow: ellipsis;
+}
+
+.jstree > ul > li > a {
+    max-width: 290px;
+}
+
+.jstree > ul > li > ul > li > a {
+    max-width: 270px;
+}
+
+.jstree > ul > li > ul > li > ul > li > a {
+    max-width: 250px;
+}
+
+.jstree > ul > li > ul > li > ul > li > ul > li > a {
+    max-width: 230px;
 }
 
 .current-job-status {
@@ -514,6 +541,10 @@ body {
     cursor: pointer;
 }
 
+#upload-dropzone:active {
+    cursor: default;
+}
+
 #upload-dropzone-progress {
     margin: 5px;
     width: 275px;
@@ -600,8 +631,8 @@ body {
 .module-list-icon {
     float: left;
     padding: 3px;
-    height: 12px;
-    width: 12px;
+    height: 32px;
+    width: 32px;
 }
 
 #infoMessageDiv {
@@ -766,4 +797,47 @@ body {
     width: 343px;
     top: -68px;
     left: -1px;
+}
+
+/* Glyphicon stuff */
+
+.file-widget-actions .module-listing, .job-widget-actions .module-listing {
+    position: relative;
+}
+
+.file-widget-actions .module-version, .job-widget-actions .module-version {
+    display: block;
+    position: absolute;
+    top: 0px;
+    left: 0px;
+    padding: 5px;
+    font-size: 24pt;
+}
+
+.file-widget-actions .module-name, .job-widget-actions .module-name {
+    position: absolute;
+    left: 50px;
+}
+
+.file-widget-actions .module-description, .job-widget-actions .module-description {
+    position: absolute;
+    top: 25px;
+    left: 50px;
+}
+
+#jobTable_wrapper {
+    padding-bottom: 50px;
+}
+
+.send-to-tool-list .module-gear {
+    display: none;
+}
+
+.leftnav-highlight {
+    background-color: #cddcf1 !important;
+    cursor: default !important;
+}
+
+#jobTable_filter {
+    padding-bottom: 10px;
 }

@@ -356,5 +356,30 @@ public class TestDrmJobSubmission {
             .jobContext(jobContext)
             .build();        
     }
+    
+    @Test
+    public void testLogfileAbsolute() {
+        File allLogFiles = temp.newFolder("allLogFiles");
+        File absLogFile = new File(allLogFiles, jobNo+"_lsfLog.txt").getAbsoluteFile();
+        DrmJobSubmission job=new DrmJobSubmission.Builder(workingDir)
+            .jobContext(jobContext)
+            .logFile(absLogFile)
+        .build();
+        
+        Assert.assertEquals(absLogFile.getAbsolutePath(), job.getLogFile().getAbsolutePath());
+    }
+    
+    @Test
+    public void testLogfilenameRelative() {
+        DrmJobSubmission job=new DrmJobSubmission.Builder(workingDir)
+            .jobContext(jobContext)
+            .logFilename(".lsf.out")
+        .build();
+        
+        Assert.assertEquals(
+                new File(workingDir, ".lsf.out").getAbsolutePath(), 
+                job.getRelativeFile(job.getLogFile()).getAbsolutePath()); 
+    }
+    
 
 }

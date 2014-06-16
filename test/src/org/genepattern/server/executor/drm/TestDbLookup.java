@@ -110,7 +110,34 @@ public class TestDbLookup {
     public void testInsertJobRecord() throws Exception {
         final DrmJobSubmission jobSubmission=addJob(cle, cleInput, cleCmdLine);
         dbLookup.insertJobRecord(jobSubmission);
-
+    }
+    
+    /**
+     * special-case, when the statusMessage has more characters than the DB column allows.
+     * @throws Exception
+     */
+    @Test
+    public void truncateStatusMessage() throws Exception {
+        final DrmJobSubmission jobSubmission=addJob(cle, cleInput, cleCmdLine);
+        
+        StringBuffer sb=new StringBuffer(2025);
+        sb.append("This is a status message\n");
+        final String TEN_CHARS="----------";
+        for(int i=0; i<200; ++i) {
+            sb.append(TEN_CHARS);
+        }
+        String statusMessage=sb.toString();
+        
+        JobRunnerJob jobRecord = new JobRunnerJob.Builder()
+            .jobRunnerClassname("DemoJobRunner")
+            .jobRunnerName("DemoJobRunner")
+            .workingDir(jobSubmission.getWorkingDir().getAbsolutePath())
+            .gpJobNo(jobSubmission.getGpJobNo())
+            .statusMessage(statusMessage)
+        .build();
+        DbLookup.insertJobRunnerJob(jobRecord);
+        JobRunnerJob updated=DbLookup.selectJobRunnerJob(jobSubmission.getGpJobNo());
+        Assert.assertEquals("", 2000, updated.getStatusMessage().length());
     }
     
     @Test

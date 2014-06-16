@@ -5,16 +5,12 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.SortedSet;
-import java.util.TreeSet;
+import java.util.*;
 
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
+import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
@@ -102,6 +98,7 @@ public class RunTaskServlet extends HttpServlet
             @QueryParam("reloadJob") String reloadJobId, 
             @QueryParam("_file") String sendFromFile,
             @QueryParam("_format") String sendFromFormat,
+            final @DefaultValue("true") @QueryParam("prettyPrint") boolean prettyPrint,
             @Context HttpServletRequest request)
     {
         try
@@ -117,6 +114,7 @@ public class RunTaskServlet extends HttpServlet
             //Note: we have a helper method to initialize the userId,
             //    see org.genepattern.server.webapp.rest.api.v1.Util#getUserContext
             final boolean initIsAdmin=true;
+            final GpConfig gpConfig=ServerConfigurationFactory.instance();
             final GpContext userContext = GpContext.getContextForUser(userId, initIsAdmin);
             
             JobInput reloadJobInput = null;
@@ -279,7 +277,8 @@ public class RunTaskServlet extends HttpServlet
                 if (parameterMap.containsKey("_format")) {
                     _formatParam=parameterMap.get("_format")[0];
                 }
-            } 
+            }
+
             final LoadModuleHelper loadModuleHelper=new LoadModuleHelper(userContext);
             final JobInput initialValues=loadModuleHelper.getInitialValues(lsid,
                     taskInfo.getParameterInfoArray(),
@@ -291,6 +290,21 @@ public class RunTaskServlet extends HttpServlet
             final JSONObject initialValuesJson=LoadModuleHelper.asJsonV2(initialValues);
             responseObject.put("initialValues", initialValuesJson);
 
+            //check if there are any batch parameters
+            Set<Param> batchParams = initialValues.getBatchParams();
+            Set batchParamNames = new HashSet();
+            if(batchParams != null && batchParams.size() > 0)
+            {
+                Iterator<Param> batchIt = batchParams.iterator();
+                while(batchIt.hasNext())
+                {
+                    String batchParamName = batchIt.next().getParamId().getFqName();
+                    batchParamNames.add(batchParamName);
+                }
+
+                responseObject.put("batchParams", batchParamNames);
+            }
+
             //add parameter grouping info (i.e advanced parameters
             //check if there are any user defined groups
             final LibdirStrategy libdirStrategy = new LibdirLegacy();
@@ -298,7 +312,6 @@ public class RunTaskServlet extends HttpServlet
             JSONArray paramGroupsJson = loadModuleHelper.getParameterGroupsJson(taskInfo, filePath.getServerFile());
             final boolean enableExecutorInputParams=ServerConfigurationFactory.instance().getGPBooleanProperty(userContext, JobConfigParams.PROP_ENABLE_EXECUTOR_INPUT_PARAMS, true);
             if (enableExecutorInputParams) {
-                final GpConfig gpConfig=ServerConfigurationFactory.instance();
                 final JobConfigParams jobConfigParams=JobConfigParams.initJobConfigParams(gpConfig, userContext);
                 if (jobConfigParams != null) {
                     final JSONObject jobConfigGroupJson=jobConfigParams.getInputParamGroup().toJson();
@@ -313,7 +326,15 @@ public class RunTaskServlet extends HttpServlet
             moduleObject.put("parameter_groups", paramGroupsJson);
             responseObject.put(ModuleJSON.KEY, moduleObject);
 
-            return Response.ok().entity(responseObject.toString()).build();
+            final String jsonStr;
+            if (prettyPrint) {
+                final int indentFactor=2;
+                jsonStr=responseObject.toString(indentFactor);
+            }
+            else {
+                jsonStr=responseObject.toString();
+            }
+            return Response.ok().entity(jsonStr).build();
         }
         catch(Exception e)
         {
@@ -809,11 +830,13 @@ public class RunTaskServlet extends HttpServlet
         return parametersObject;
     }
 
-    private ParametersJSON initParametersJSON(final HttpServletRequest request, final TaskInfo taskInfo, final ParameterInfo pinfo) {
+    private static ParametersJSON initParametersJSON(final HttpServletRequest request, final TaskInfo taskInfo, final ParameterInfo pinfo) {
+        // don't initialize the drop-down menu; instead wait for the web client to make a callback
+        final boolean initDropdown=false; 
         final ParametersJSON parameter = new ParametersJSON(pinfo);
         parameter.addNumValues(pinfo);
         parameter.addGroupInfo(pinfo);
-        parameter.initChoice(request, taskInfo, pinfo);
+        parameter.initChoice(request, taskInfo, pinfo, initDropdown);
         return parameter;
     }
 

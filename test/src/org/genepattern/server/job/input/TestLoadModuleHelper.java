@@ -1,13 +1,7 @@
 package org.genepattern.server.job.input;
 
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
 
 import org.genepattern.junitutil.JobInfoLoaderFromMap;
@@ -42,7 +36,8 @@ public class TestLoadModuleHelper {
     final private static String cmsLsid="urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00044:9";    
     final private static String ecmrLsid="urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00046:2"; 
     final private static String testLsid="urn:lsid:broad.mit.edu:cancer.software.genepatterntest.module.analysis:00001:1";
-    
+    final private static String cuffdiffLsid="urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00236:6";
+
     private JobInput reloadedValues;
     private String _fileParam;
     private String _formatParam;
@@ -58,6 +53,7 @@ public class TestLoadModuleHelper {
         taskLoader=new TaskLoader();
         taskLoader.addTask(TestLoadModuleHelper.class, "ComparativeMarkerSelection_v9.zip");
         taskLoader.addTask(TestLoadModuleHelper.class, "ExtractComparativeMarkerResults_v2.zip");
+        taskLoader.addTask(TestLoadModuleHelper.class, "Cufflinks.cuffdiff_v6.zip");
 
         jobInfoLoader = new JobInfoLoaderFromMap();
         
@@ -440,4 +436,78 @@ public class TestLoadModuleHelper {
                 groupArray.getJSONObject(1).getJSONArray("values").get(1));
     }
 
+    @Test
+    public void testFromRequestBatchParam() throws Exception {
+        final TaskInfo taskInfo=taskLoader.getTaskInfo(cmsLsid);
+        final String inputFile1="ftp://ftp.broadinstitute.org/pub/genepattern/datasets/all_aml/all_aml_test.gct";
+        final String inputFile2="ftp://ftp.broadinstitute.org/pub/genepattern/datasets/all_aml/all_aml_train.gct";
+
+        parameterMap=new HashMap<String,String[]>();
+        parameterMap.put("input.file", new String[] {inputFile1, inputFile2} );
+        parameterMap.put("_batchParam", new String[] {"input.file"} );
+
+        LoadModuleHelper loadModuleHelper=new LoadModuleHelper(userContext);
+
+        JobInput actualInitialValues=
+                loadModuleHelper.getInitialValues(
+                        cmsLsid, taskInfo.getParameterInfoArray(), reloadedValues, _fileParam, _formatParam, parameterMap);
+
+        //verify that the input file is a batch parameter with two values set
+        Set<Param> batchParams = actualInitialValues.getBatchParams();
+        Assert.assertNotNull(batchParams);
+        Assert.assertTrue(batchParams.size() == 1);
+
+        Iterator<Param> batchIt = batchParams.iterator();
+        while(batchIt.hasNext())
+        {
+            Param batchParam = batchIt.next();
+            if(!batchParam.getParamId().getFqName().equals("input.file"))
+            {
+                Assert.fail("Unexpected batch parameter found: " + batchParam.getParamId().getFqName()
+                        + ". Expected input.file");
+            }
+        }
+    }
+
+    @Test
+    public void testFromRequestFileGroupParam() throws Exception {
+        final TaskInfo taskInfo=taskLoader.getTaskInfo(cuffdiffLsid);
+        final String g1_inputFile1="ftp://ftp.broadinstitute.org/pub/genepattern/datasets/all_aml/all_aml_test.gct";
+        final String g1_inputFile2="ftp://ftp.broadinstitute.org/pub/genepattern/datasets/all_aml/all_aml_test.cls";
+        final String g2_inputFile1="ftp://ftp.broadinstitute.org/pub/genepattern/datasets/all_aml/all_aml_train.gct";
+        final String g2_inputFile2="ftp://ftp.broadinstitute.org/pub/genepattern/datasets/all_aml/all_aml_train.cls";
+
+        parameterMap=new HashMap<String,String[]>();
+        parameterMap.put("aligned.files", new String[] {g1_inputFile1, g1_inputFile2, g2_inputFile1, g2_inputFile2} );
+        parameterMap.put("_filegroup", new String[] {"{aligned.files:{cond1: [0..1], cond2: [2,3]}}"} );
+
+        LoadModuleHelper loadModuleHelper=new LoadModuleHelper(userContext);
+
+        JobInput jobInput=
+                loadModuleHelper.getInitialValues(
+                        cuffdiffLsid, taskInfo.getParameterInfoArray(), reloadedValues, _fileParam, _formatParam, parameterMap);
+
+        JSONObject actual=LoadModuleHelper.asJsonV2(jobInput);
+
+        Assert.assertNotNull(actual);
+
+        JSONArray groupArray=actual.getJSONArray("aligned.files");
+        Assert.assertEquals("num groups", 2, groupArray.length());
+
+        Assert.assertEquals("cond1", groupArray.getJSONObject(0).getString("groupid"));
+        Assert.assertEquals("group[0].length", 2, groupArray.getJSONObject(0).getJSONArray("values").length());
+        Assert.assertEquals("group[0].value[0]", "ftp://ftp.broadinstitute.org/pub/genepattern/datasets/all_aml/all_aml_test.gct",
+               groupArray.getJSONObject(0).getJSONArray("values").get(0));
+        Assert.assertEquals("group[0].value[1]", "ftp://ftp.broadinstitute.org/pub/genepattern/datasets/all_aml/all_aml_test.cls",
+                groupArray.getJSONObject(0).getJSONArray("values").get(1));
+
+        Assert.assertEquals("cond2", groupArray.getJSONObject(1).getString("groupid"));
+        Assert.assertEquals("group[1].length", 2, groupArray.getJSONObject(1).getJSONArray("values").length());
+        Assert.assertEquals("group[1].value[0]", "ftp://ftp.broadinstitute.org/pub/genepattern/datasets/all_aml/all_aml_train.gct",
+                groupArray.getJSONObject(1).getJSONArray("values").get(0));
+        Assert.assertEquals("group[1].value[1]", "ftp://ftp.broadinstitute.org/pub/genepattern/datasets/all_aml/all_aml_train.cls",
+                groupArray.getJSONObject(1).getJSONArray("values").get(1));
+
+
+    }
 }

@@ -33,7 +33,6 @@ import org.genepattern.webservice.TaskInfo;
  */
 public class FileDownloader {
     private static final Logger log = Logger.getLogger(FileDownloader.class);
-
     
     public static final GpContext initJobContext(final Integer jobId) throws JobDispatchException { 
         final JobInfo jobInfo=initJobInfo(jobId);
@@ -84,49 +83,36 @@ public class FileDownloader {
     private final List<Choice> selectedChoices;
 
     private FileDownloader(final GpContext jobContext) {
-        this.selectedChoices=initSelectedChoices(jobContext);
+        this.selectedChoices=initSelectedChoices(jobContext.getTaskInfo(), jobContext.getJobInfo());
     }
-                
-    private FileDownloader(final JobInfo jobInfo, final GetTaskStrategy getTaskStrategyIn) {
-        final GetTaskStrategy getTaskStrategy;
-        if (getTaskStrategyIn == null) {
-            getTaskStrategy=new GetTaskStrategyDefault();
-        }
-        else {
-            getTaskStrategy=getTaskStrategyIn;
-        }
-        final TaskInfo taskInfo=getTaskStrategy.getTaskInfo(jobInfo.getTaskLSID());
-        this.selectedChoices=initSelectedChoices(taskInfo, jobInfo);        
-    }
-
 
     /**
-     * Initialize a list of selected Choices for the given job. For each input parameter, if it has a file drop-down
-     * (aka Choice) and the runtime value was selected from the drop-down, then add it to the list.
+     * Initialize a list of selected Choices for the given job. For each input parameter, 
+     * if it has a file drop-down (aka Choice) and the runtime value was selected from the drop-down, 
+     * then add it to the list.
+     *
+     * Note: as an optimization, rather than doing a remote listing of the 'choiceDir',
+     *     this method just checks if the runtime value is prefixed by the choiceDir.
+     * 
+     * The 'isRemoteDir' flag is set when the runtime value ends with a '/' character.
      * 
      * @param taskInfo
      * @param jobInfo
-     * @return an empty list of the job has no input values from a file drop-down selection.
+     * @return an empty list if the job has no input values from a file drop-down selection.
      */
     private static List<Choice> initSelectedChoices(final TaskInfo taskInfo, final JobInfo jobInfo) {
         List<Choice> selectedChoices=null;
         final Map<String,ParameterInfoRecord> paramInfoMap=ParameterInfoRecord.initParamInfoMap(taskInfo);
-        for(final ParameterInfo pinfo : jobInfo.getParameterInfoArray()) {
-            final ParameterInfoRecord pinfoRecord=paramInfoMap.get( pinfo.getName() );
+        for(final ParameterInfo actualParam : jobInfo.getParameterInfoArray()) {
+            final ParameterInfoRecord pinfoRecord=paramInfoMap.get( actualParam.getName() );
             if (pinfoRecord==null) {
                 //skip, probably here because it's a completed job
-                log.debug("skipping param="+pinfo.getName());
+                log.debug("pinfoRecord==null, skipping param="+actualParam.getName());
             }
             else {
-                final ChoiceInfo choiceInfo=ChoiceInfoHelper.initChoiceInfo(pinfoRecord, pinfo);
-                final Choice selectedChoice= choiceInfo == null ? null : choiceInfo.getValue(pinfo.getValue());
-                final boolean isFileChoiceSelection=
-                        pinfoRecord.getFormal().isInputFile() &&
-                        selectedChoice != null && 
-                        selectedChoice.getValue() != null && 
-                        selectedChoice.getValue().length() > 0;
-                if (isFileChoiceSelection) {
-                    //lazy-init the list
+                Choice selectedChoice=getSelectedChoicesForParam(actualParam, pinfoRecord);
+                if (selectedChoice !=null) {
+                    //lazy init the selectedChoices array
                     if (selectedChoices==null) {
                         selectedChoices=new ArrayList<Choice>();
                     }
@@ -137,50 +123,59 @@ public class FileDownloader {
         if (selectedChoices==null) {
             return Collections.emptyList();
         }
-        return selectedChoices;
+        return Collections.unmodifiableList( selectedChoices );
     }
 
-    /**
-     * Initialize a list of selected Choices for the given job. For each input parameter, if it has a file drop-down
-     * (aka Choice) and the runtime value was selected from the drop-down, then add it to the list.
-     * 
-     * @param taskInfo
-     * @param jobInfo
-     * @return an empty list of the job has no input values from a file drop-down selection.
-     */
-    private static List<Choice> initSelectedChoices(final GpContext jobContext) {
-        final TaskInfo taskInfo=jobContext.getTaskInfo();
-        final JobInfo jobInfo=jobContext.getJobInfo();
+    private static Choice getSelectedChoicesForParam(final ParameterInfo actualParam, final ParameterInfoRecord pinfoRecord) {
+        if (!pinfoRecord.getFormal().isInputFile()) {
+            //skip unless it's an input param
+            log.debug("not input file, skipping param="+actualParam.getName());
+            return null;
+        }
+        if (actualParam.getValue()==null || actualParam.getValue().length()==0) {
+            //skip empty input value
+            log.debug("value not set, skipping param="+actualParam.getName());
+            return null;
+        }
+        final ChoiceInfo choiceInfo=ChoiceInfoHelper.initChoiceInfo(pinfoRecord.getFormal(), false);
+        if (choiceInfo == null) {
+            //skip, this param does not have a choiceInfo
+            log.debug("not a drop-down, skipping param="+actualParam.getName());
+            return null;
+        }
+        if (isPrefix(choiceInfo, actualParam.getValue())) {
+            boolean isRemoteDir=isRemoteDir(actualParam.getValue());
+            return new Choice(actualParam.getValue(), isRemoteDir);
+        }
         
-        List<Choice> selectedChoices=null;
-        final Map<String,ParameterInfoRecord> paramInfoMap=ParameterInfoRecord.initParamInfoMap(taskInfo);
-        for(final ParameterInfo pinfo : jobInfo.getParameterInfoArray()) {
-            final ParameterInfoRecord pinfoRecord=paramInfoMap.get( pinfo.getName() );
-            if (pinfoRecord==null) {
-                //skip, probably here because it's a completed job
-                log.debug("skipping param="+pinfo.getName());
-            }
-            else {
-                final ChoiceInfo choiceInfo=ChoiceInfoHelper.initChoiceInfo(pinfoRecord, pinfo);
-                final Choice selectedChoice= choiceInfo == null ? null : choiceInfo.getValue(pinfo.getValue());
-                final boolean isFileChoiceSelection=
-                        pinfoRecord.getFormal().isInputFile() &&
-                        selectedChoice != null && 
-                        selectedChoice.getValue() != null && 
-                        selectedChoice.getValue().length() > 0;
+        final Choice selectedChoice = choiceInfo.getValue(actualParam.getValue());
+        final boolean isFileChoiceSelection=
+                pinfoRecord.getFormal().isInputFile() &&
+                selectedChoice != null && 
+                selectedChoice.getValue() != null && 
+                selectedChoice.getValue().length() > 0;
                 if (isFileChoiceSelection) {
                     //lazy-init the list
-                    if (selectedChoices==null) {
-                        selectedChoices=new ArrayList<Choice>();
-                    }
-                    selectedChoices.add(selectedChoice);
+                    return selectedChoice;
                 }
-            }
+        return null;
+    }
+    
+    private static boolean isPrefix(final ChoiceInfo choiceInfo, final String paramValue) {
+        if (choiceInfo==null) {
+            return false;
         }
-        if (selectedChoices==null) {
-            return Collections.emptyList();
+        if (choiceInfo.getChoiceDir()==null) {
+            return false;
         }
-        return selectedChoices;
+        if (paramValue==null) {
+            return false;
+        }
+        return paramValue.startsWith(choiceInfo.getChoiceDir());
+    }
+    
+    private static boolean isRemoteDir(final String paramValue) {
+        return paramValue != null && paramValue.endsWith("/");
     }
 
     /**
@@ -189,6 +184,10 @@ public class FileDownloader {
      */
     public boolean hasSelectedChoices() {
         return selectedChoices != null && selectedChoices.size()>0;
+    }
+    
+    public List<Choice> getSelectedChoices() {
+        return  selectedChoices;
     }
 
     /**
@@ -202,12 +201,14 @@ public class FileDownloader {
      */
     public void startDownloadAndWait(final GpContext jobContext) throws InterruptedException, ExecutionException {
         if (selectedChoices == null) {
+            log.debug("selectedChoices==null");
             return;
         }
         if (selectedChoices.size()==0) {
+            log.debug("selectedChoices.size()==0");
             return;
         }
-        
+         
         // loop through all the choices and start downloading ...
         for(final Choice selectedChoice : selectedChoices) {
             try {

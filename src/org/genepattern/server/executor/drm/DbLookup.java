@@ -122,23 +122,7 @@ public class DbLookup implements DrmLookup {
     @Override
     public void insertJobRecord(final DrmJobSubmission jobSubmission) {
         final JobRunnerJob job = new JobRunnerJob.Builder(jobRunnerClassname, jobSubmission).jobRunnerName(jobRunnerName).build();
-        final boolean isInTransaction=HibernateUtil.isInTransaction();
-        try {
-            HibernateUtil.beginTransaction();
-            HibernateUtil.getSession().saveOrUpdate(job);
-            if (!isInTransaction) {
-                HibernateUtil.commitTransaction();
-            }
-        }
-        catch (Throwable t) {
-            log.error("Error adding record for gpJobNo="+jobSubmission.getGpJobNo(), t);
-            HibernateUtil.rollbackTransaction();
-        }
-        finally {
-            if (!isInTransaction) {
-                HibernateUtil.closeCurrentSession();
-            }
-        }
+        insertJobRunnerJob(job);
     }
     
     @Override
@@ -149,7 +133,6 @@ public class DbLookup implements DrmLookup {
             HibernateUtil.beginTransaction();
             JobRunnerJob existing = (JobRunnerJob) HibernateUtil.getSession().get(JobRunnerJob.class, gpJobNo);
             if (existing==null) {
-                //TODO: should throw an exception?
                 log.error("No existing record for "+gpJobNo);
                 return;
             }
@@ -170,6 +153,26 @@ public class DbLookup implements DrmLookup {
         }
     }
 
+    public static void insertJobRunnerJob(final JobRunnerJob jobRecord) {
+        final boolean isInTransaction=HibernateUtil.isInTransaction();
+        try {
+            HibernateUtil.beginTransaction();
+            HibernateUtil.getSession().saveOrUpdate(jobRecord);
+            if (!isInTransaction) {
+                HibernateUtil.commitTransaction();
+            }
+        }
+        catch (Throwable t) {
+            log.error("Error adding record for gpJobNo="+jobRecord.getGpJobNo(), t);
+            HibernateUtil.rollbackTransaction();
+        }
+        finally {
+            if (!isInTransaction) {
+                HibernateUtil.closeCurrentSession();
+            }
+        }
+    }
+    
     public static JobRunnerJob selectJobRunnerJob(final Integer gpJobNo) {
         final boolean isInTransaction=HibernateUtil.isInTransaction();
         try {

@@ -621,6 +621,19 @@ span.drop-box
     min-width: 238px;
 }
 
+.fileSizeCaption
+{
+    font-size: 10px;
+    font-style:italic;
+    margin-left: 5px;
+}
+
+.uploadFileBtnDiv
+{
+    float:left;
+    margin-top: 8px;
+}
+
 
 
 

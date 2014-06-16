@@ -39,6 +39,7 @@ public class MockGpFilePath extends GpFilePath {
         this.paramInfoValue=formFieldValue;
         this.canRead=in.canRead;
         this.relativeUri=initRelativeUri("/mock/", localFile);
+        this.initMetadata();
     }
     
     public static URI initRelativeUri(final String pathPrefixIn, final File serverFile) {

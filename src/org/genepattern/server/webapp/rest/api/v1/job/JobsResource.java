@@ -3,6 +3,7 @@ package org.genepattern.server.webapp.rest.api.v1.job;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
@@ -28,9 +29,15 @@ import org.genepattern.codegenerator.CodeGeneratorUtil;
 import org.genepattern.server.JobInfoManager;
 import org.genepattern.server.JobInfoWrapper;
 import org.genepattern.server.JobManager;
+import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
+import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.database.HibernateUtil;
+import org.genepattern.server.dm.UrlUtil;
+import org.genepattern.server.executor.drm.DbLookup;
+import org.genepattern.server.executor.drm.dao.JobRunnerJob;
 import org.genepattern.server.job.input.JobInput;
+import org.genepattern.server.job.status.Status;
 import org.genepattern.server.rest.GpServerException;
 import org.genepattern.server.rest.JobInputApi;
 import org.genepattern.server.rest.JobInputApiFactory;
@@ -39,6 +46,9 @@ import org.genepattern.server.user.UserProp;
 import org.genepattern.server.user.UserPropKey;
 import org.genepattern.server.webapp.rest.api.v1.Util;
 import org.genepattern.server.webapp.rest.api.v1.job.JobInputValues.Param;
+import org.genepattern.server.webapp.rest.api.v1.job.search.JobSearchLegacy;
+import org.genepattern.server.webapp.rest.api.v1.job.search.SearchQuery;
+import org.genepattern.server.webapp.rest.api.v1.job.search.SearchResults;
 import org.genepattern.server.webservice.server.Analysis;
 import org.genepattern.server.webservice.server.dao.AnalysisDAO;
 import org.genepattern.server.webservice.server.local.IAdminClient;
@@ -165,7 +175,158 @@ public class JobsResource {
         }
         return jobInput;
     }
-    
+
+    /////////////////////////////////////
+    // Job search API
+    /////////////////////////////////////
+
+    /**
+     * Job search API.
+     * Template:
+       <pre>
+       curl -u {userId}:{password} -X GET {GenePatternURL}rest/v1/jobs
+           ?userId={userId}
+           &groupId={groupId}
+           &batchId={batchId}
+           &page={page}
+           &pageSize={pageSize}
+           &orderBy={jobId | taskName | dateSubmitted | dateComplated | status}, prefix with '-' to reverse order
+           &orderFilesBy={name | date | size}, prefix with '-' to reverse order
+       </pre>
+     * Example query:
+     * <pre>
+        curl -u test:test -X GET http://127.0.0.1:8080/gp/rest/v1/jobs
+     * </pre>
+     *  
+     * @param uriInfo
+     * @param request
+     * @param userId
+     * @param groupId
+     * @param batchId
+     * @param page
+     * @param pageSize
+     * @param includeChildren
+     * @param includeOutputFiles
+     * @param prettyPrint
+     * @return
+     */
+    @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    @Path("/")
+    public Response getJobSearchResults(
+            final @Context UriInfo uriInfo,
+            final @Context HttpServletRequest request,
+            /**
+             * optionally, filter all jobs by userId, Note: this is not necessarily the current user.
+             */
+            final @QueryParam("userId") String userId,
+            /**
+             * optionally, filter all jobs by groupId
+             */
+            final @QueryParam("groupId") String groupId,
+            /**
+             * optionally, filter all jobs by batchId
+             */
+            final @QueryParam("batchId") String batchId,
+            /**
+             * optionally, set the page number for paged job results, The first page is page 1.
+             */
+            final @DefaultValue("1") @QueryParam("page") Integer page,
+            /**
+             * optionally, set the number of items per page.
+             */
+            final @QueryParam("pageSize") int pageSize,
+            /**
+             * Optionally set the order of the jobs, default is by jobId.
+             * Examples,
+             * <pre>
+               orderBy=jobId
+               orderBy=-jobId
+               </pre>
+             * 
+             */
+            final @QueryParam("orderBy") String orderBy, 
+            /**
+             * Optionally set the order of the outputFiles for each jobs.
+             *     orderFilesBy={name | date | size}, default sort order is by date.
+             * By default they are ordered by 'date'.
+             * This determines the sort order of files within each job results 'folder'.
+             * 
+             * Examples,
+             * <pre>
+               # sort by date, descending order
+               orderFilesBy=-date
+               # sort by name, ascending order
+               orderFilesBy=name
+               # sort by size, ascending order ('+' is allowed but optional)
+               orderFilesBy+name
+             * </pre>
+             */
+            final @QueryParam("orderFilesBy") String orderFilesBy,
+            final @DefaultValue("true") @QueryParam("includeChildren") boolean includeChildren,
+            final @DefaultValue("true") @QueryParam("includeOutputFiles") boolean includeOutputFiles,
+            final @DefaultValue("true") @QueryParam("includePermissions") boolean includePermissions,
+            final @DefaultValue("true") @QueryParam("prettyPrint") boolean prettyPrint
+    ) {
+        
+        final GpConfig gpConfig=ServerConfigurationFactory.instance();
+        final GpContext userContext=Util.getUserContext(request);
+        try {
+            final String gpUrl=UrlUtil.getGpUrl(request);
+            final String jobsResourcePath = uriInfo.getBaseUri().toString() + URI_PATH;
+            final SearchQuery q = new SearchQuery.Builder(gpConfig, userContext, jobsResourcePath)
+                .userId(userId)
+                .groupId(groupId)
+                .batchId(batchId)
+                .pageNum(page)
+                .pageSize(pageSize)
+                .orderBy(orderBy)
+                .orderFilesBy(orderFilesBy)
+            .build();
+            final SearchResults searchResults=JobSearchLegacy.doSearch(q);
+            final List<JobInfo> jobInfoResults=searchResults.getJobInfos();
+
+            //create JSON representation
+            GetPipelineJobLegacy getJobImpl = new GetPipelineJobLegacy(gpUrl, jobsResourcePath);
+
+            // Put the job JSON in an array
+            JSONArray jobs = new JSONArray();
+            for (final JobInfo jobInfo : jobInfoResults) {
+                JSONObject jobObject = getJobImpl.getJob(userContext, jobInfo, includeChildren, includeOutputFiles, includePermissions);
+                //decorate with 'self'
+                final String self=jobsResourcePath+"/"+jobObject.getString("jobId");
+                jobObject.put("self", self);
+                jobs.put(jobObject);
+            }
+
+            JSONObject jsonObj=new JSONObject();
+            jsonObj.put("items", jobs);
+
+            JSONObject nav = searchResults.navigationDetailsToJson();
+            jsonObj.put("nav", nav);
+
+            final String jsonStr;
+            if (prettyPrint) {
+                final int indentFactor=2;
+                jsonStr=jsonObj.toString(indentFactor);
+            }
+            else {
+                jsonStr=jsonObj.toString();
+            }
+            return Response.ok()
+                    .entity(jsonStr)
+                    .build();
+
+        }
+        catch (Throwable t) {
+            log.error(t);
+            final String message="Error in job search: "+t.getLocalizedMessage();            
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+                    .entity(message)
+                    .build();
+        }
+    }
+
     ////////////////////////////////////
     // Getting a job
     ////////////////////////////////////
@@ -187,27 +348,35 @@ public class JobsResource {
             final @Context UriInfo uriInfo,
             final @Context HttpServletRequest request,
             final @PathParam("jobId") String jobId,
+            final @DefaultValue("false") @QueryParam("includePermissions") boolean includePermissions,
             final @DefaultValue("true") @QueryParam("includeChildren") boolean includeChildren,
             final @DefaultValue("true") @QueryParam("includeOutputFiles") boolean includeOutputFiles,
-            final @DefaultValue("false") @QueryParam("includeSendTo") boolean includeSendTo
+            final @DefaultValue("true") @QueryParam("prettyPrint") boolean prettyPrint
     ) {
         
-        final GpContext userContext=Util.getUserContext(request);
-        
+        final GpContext jobContext=Util.getJobContext(request, jobId);
+
+        final String gpUrl=UrlUtil.getGpUrl(request);
         final String self=uriInfo.getAbsolutePath().toString();
         final URI baseUri=uriInfo.getBaseUri();
         final String jobsResourcePath=baseUri.toString()+URI_PATH;
-        final GetPipelineJobLegacy getJobImpl = new GetPipelineJobLegacy(jobsResourcePath);
+        final GetPipelineJobLegacy getJobImpl = new GetPipelineJobLegacy(gpUrl, jobsResourcePath);
         String jsonStr;
         try {
             JSONObject job=null;
-            job=getJobImpl.getJob(userContext, jobId, includeChildren, includeOutputFiles, includeSendTo);
+            job=getJobImpl.getJob(jobContext, jobContext.getJobInfo(), includeChildren, includeOutputFiles, includePermissions);
             if (job==null) {
                 throw new Exception("Unexpected null return value");
             }
             //decorate with 'self'
             job.put("self", self);
-            jsonStr=job.toString();
+            if (prettyPrint) {
+                final int indentFactor=2;
+                jsonStr=job.toString(indentFactor);
+            }
+            else {
+                jsonStr=job.toString();
+            }
         }
         catch (Throwable t) {
             //TODO: customize the response errors, e.g.
@@ -228,6 +397,51 @@ public class JobsResource {
     }
 
     /**
+     * GET status.json for the given jobId.
+     */
+    @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    @Path("/{jobId}/status.json")
+    public Response getStatus(
+            final @Context UriInfo uriInfo,
+            final @Context HttpServletRequest request,
+            final @PathParam("jobId") String jobId
+            ) {
+
+        final GpContext jobContext=Util.getJobContext(request, jobId);
+        try {
+            JobRunnerJob jobStatusRecord=DbLookup.selectJobRunnerJob(jobContext.getJobNumber());
+            String stderrLocation=null;
+            String executionLogLocation=null;
+            
+            final String self=uriInfo.getAbsolutePath().toString();
+            final String jobHref = self.substring(0, self.length()-"/status.json".length());
+
+            Status status=new Status.Builder()
+                .jobHref(jobHref)
+                .jobInfo(jobContext.getJobInfo())
+                .jobStatusRecord(jobStatusRecord)
+                .stderrLocation(stderrLocation)
+                .executionLogLocation(executionLogLocation)
+            .build();
+
+            final JSONObject jsonObj = status.toJsonObj();
+            final String jsonStr = jsonObj.toString(2);
+            return Response.ok()
+                    .entity(jsonStr)
+                    .build();
+
+        }
+        catch (Throwable t) {
+            String errorMessage="Error getting status.json for jobId="+jobId;
+            log.error(errorMessage, t);
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+                    .entity(errorMessage)
+                    .build();
+        }
+    }
+    
+    /**
      * Terminate the specified job
      * @param request
      * @param jobId
@@ -243,8 +457,9 @@ public class JobsResource {
             JobManager.terminateJob(userContext.isAdmin(), userContext.getUserId(), intJobId);
             return Response.ok().entity("Terminated Job: " + intJobId).build();
         }
-        catch (Exception e) {
-            return Response.status(500).entity("Could not terminate job " + jobId + " " + e.getLocalizedMessage()).build();
+        catch (Throwable t) {
+            log.error("job termination error, jobId="+jobId, t);            
+            return Response.status(500).entity("Could not terminate job " + jobId + " " + t.getLocalizedMessage()).build();
         }
     }
 
@@ -323,6 +538,50 @@ public class JobsResource {
     }
 
     /**
+     * Delete the a list of jobs
+     * @param request
+     * @param jobs - a comma separated list of job IDs
+     * @return
+     */
+    @DELETE
+    @Path("/delete")
+    public Response deleteJobs(@Context HttpServletRequest request, @QueryParam("jobs") String jobs) {
+        GpContext userContext = Util.getUserContext(request);
+
+        try {
+            // Split the jobs string on commas
+            String[] jobStrings = jobs.split(",");
+            int[] jobIds = new int[jobStrings.length];
+
+            // Parse individual job IDs to ints
+            int index = 0;
+            for (String job : jobStrings) {
+                int intJobId = Integer.parseInt(job);
+                jobIds[index] = intJobId;
+                index++;
+            }
+
+            // Delete each of the jobs
+            String userId = userContext.getUserId();
+            boolean isAdmin = userContext.isAdmin();
+            List<Integer> deleted = new ArrayList<Integer>();
+            for (int id : jobIds) {
+                deleted.addAll(JobManager.deleteJob(isAdmin, userId, id));
+            }
+
+            if (deleted.size() > 0) {
+                return Response.ok().entity("Deleted Jobs: " + deleted.toString()).build();
+            }
+            else {
+                return Response.status(500).entity("Could not delete jobs: " + jobs).build();
+            }
+        }
+        catch (Throwable t) {
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(t.getLocalizedMessage()).build();
+        }
+    }
+
+    /**
      * Sets the correct download headers and serves up the zip file for the job
      * @param request
      * @param response
@@ -362,7 +621,17 @@ public class JobsResource {
     }
 
     /**
-     * Get a JSON List of the JSOn objects for the most recent jobs
+     * Get a JSON List of the JSOn objects for the most recent jobs,
+     * as well as the total number of processing jobs for the current user.
+     * 
+     * Response template:
+     * <pre>
+       {
+           numProcessingJobs: 14,
+           recentJobs: [ {}, {}, ..., {} ]
+       } 
+     * </pre>
+     * 
      * @param uriInfo
      * @param request
      * @return
@@ -374,12 +643,12 @@ public class JobsResource {
             final @Context UriInfo uriInfo, 
             final @Context HttpServletRequest request,
             final @DefaultValue("true") @QueryParam("includeChildren") boolean includeChildren,
-            final @DefaultValue("true") @QueryParam("includeOutputFiles") boolean includeOutputFiles,
-            final @DefaultValue("true") @QueryParam("includeSendTo") boolean includeSendTo
+            final @DefaultValue("true") @QueryParam("includeOutputFiles") boolean includeOutputFiles
     ) {
-        GpContext userContext = Util.getUserContext(request);
+        final GpContext userContext = Util.getUserContext(request);
 
         try {
+            final String gpUrl=UrlUtil.getGpUrl(request);
             // Get the number of recent jobs to show
             UserDAO userDao = new UserDAO();
             Set<UserProp> props = userDao.getUserProps(userContext.getUserId());
@@ -387,22 +656,30 @@ public class JobsResource {
 
             // Get the recent jobs
             AnalysisDAO dao = new AnalysisDAO();
+            int numProcessingJobs=dao.getNumProcessingJobsByUser(userContext.getUserId());
             List<JobInfo> recentJobs = dao.getRecentJobsForUser(userContext.getUserId(), recentJobsToShow, Analysis.JobSortOrder.SUBMITTED_DATE);
 
             // Create the object for getting the job JSON
             URI baseUri = uriInfo.getBaseUri();
             String jobsResourcePath = baseUri.toString() + URI_PATH;
-            GetPipelineJobLegacy getJobImpl = new GetPipelineJobLegacy(jobsResourcePath);
+            GetPipelineJobLegacy getJobImpl = new GetPipelineJobLegacy(gpUrl, jobsResourcePath);
 
             // Put the job JSON in an array
+            final boolean includePermissions=false;
             JSONArray jobs = new JSONArray();
             for (JobInfo jobInfo : recentJobs) {
-                JSONObject jobObject = getJobImpl.getJob(userContext, jobInfo, includeChildren, includeOutputFiles, includeSendTo);
+                JSONObject jobObject = getJobImpl.getJob(userContext, jobInfo, includeChildren, includeOutputFiles, includePermissions);
                 jobs.put(jobObject);
             }
 
             // Return the JSON representation of the jobs
-            return Response.ok().entity(jobs.toString()).build();
+            JSONObject jsonObj=new JSONObject();
+            jsonObj.put("recentJobs", jobs);
+            jsonObj.put("numProcessingJobs", numProcessingJobs);
+            
+            final int indentFactor=2;
+            String jsonStr=jsonObj.toString(indentFactor);
+            return Response.ok().entity(jsonStr).build();
         }
         catch (Throwable t) {
             String message = "Error creating JSON representation for recent jobs: " + t.getLocalizedMessage();
@@ -428,19 +705,19 @@ public class JobsResource {
             final @Context UriInfo uriInfo,
             final @Context HttpServletRequest request,
             final @PathParam("jobId") String jobId,
-            final @DefaultValue("true") @QueryParam("includeOutputFiles") boolean includeOutputFiles,
-            final @DefaultValue("false") @QueryParam("includeSendTo") boolean includeSendTo
+            final @DefaultValue("true") @QueryParam("includeOutputFiles") boolean includeOutputFiles
     ) {
         
         final GpContext userContext=Util.getUserContext(request);
         final String self=uriInfo.getAbsolutePath().toString();
+        final String gpUrl=UrlUtil.getGpUrl(request);
         final URI baseUri=uriInfo.getBaseUri();
         final String jobsResourcePath=baseUri.toString()+URI_PATH;
-        final GetPipelineJobLegacy getJobImpl = new GetPipelineJobLegacy(jobsResourcePath);
+        final GetPipelineJobLegacy getJobImpl = new GetPipelineJobLegacy(gpUrl, jobsResourcePath);
         String jsonStr;
         try {
             boolean includeChildren=true;
-            JSONObject children=getJobImpl.getChildren(userContext, jobId, includeChildren, includeOutputFiles, includeSendTo);
+            JSONObject children=getJobImpl.getChildren(userContext, jobId, includeChildren, includeOutputFiles);
             if (children==null) {
                 throw new Exception("Unexpected null return value");
             }

@@ -224,6 +224,26 @@ public class DrmJobSubmission {
         }
         return Collections.emptyList();
     }
+    
+    /**
+     * Helper method for working with files relative to the working directory.
+     * 
+     * @param file, the file (e.g. for stdout redirect)
+     * @return the the file is an absolute path, return it, otherwise return a new file 
+     *     with the workingDir for the job as the parent directory.
+     */
+    public File getRelativeFile(final File file) {
+        if (file == null) {
+            return null;
+        }
+        else if (file.isAbsolute()) {
+            return file;
+        }
+        if (workingDir != null) {
+            return new File(workingDir, file.getPath());
+        }
+        return file;
+    }
 
     //
     // Helper methods for working with the GenePattern Server configuration system

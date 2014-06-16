@@ -14,7 +14,7 @@
       xmlns:c="http://java.sun.com/jstl/core">
     <ui:composition>
         <ui:define name="headText">
-            <style>
+            <style type="text/css">
                 .saveTreeSelected {
                     background-color: #9999CC;
                 }
@@ -27,94 +27,93 @@
                 /* <![CDATA[ */
                 var saveTreeSelected = null;
                 var fileURL = null;
+                var saveTreeInitialized = false;
+
+                function initSaveTree() {
+                    $("#saveTree").jstree({
+                        core:{
+                            "html_titles":true
+                        },
+
+                        "json_data":{
+                            "ajax":{
+                                "url":function (node) {
+                                    if (node === -1) {
+                                        return "/gp/GenomeSpace/saveTree";
+                                    }
+                                    var gsURL = $(node).find("a").attr("href");
+                                    return "/gp/GenomeSpace/saveTree?dir=" + encodeURIComponent(gsURL);
+                                },
+                                "data":function (node) {
+                                    return {
+                                        id:node.attr ? node.attr("id") : 0
+                                    };
+                                }
+                            }
+                        },
+                        "cookies":{
+                            "save_opened":"gsSaveDialog"
+                        },
+                        plugins:[ "themes", "json_data", "cookies" ]
+                    });
+                    $("#saveTree").bind("load_node.jstree", function (event, data) {
+                        var iterate = null;
+
+                        // Handle the case of the initial load
+                        if (data["args"][0] === -1) {
+                            iterate = $(this).find("li");
+                        }
+                        else {
+                            iterate = $(data["args"][0]).find("li");
+                        }
+
+                        iterate.each(function (index) {
+
+                            var node = iterate.get(index);
+                            var name = $(node).find("a:first").attr("name");
+
+                            // Add the id to the node
+                            $(node).attr("id", name);
+
+                            // Check for the case of empty directories
+                            var link = $(node).find("a:first").attr("href");
+                            if (link === "#") return;
+                        });
+
+                        $("#genomeSpaceSaveDialog").parent().find(".ui-button:first").button("disable");
+                    });
+                }
 
                 function openSaveDialog(node) {
-                    var menuId = jq(node).closest(".popupMenu").attr("id");		// Get id of the file menu
-                    var arrowId = menuId.replace("menuDiv_", "Image_");			// Get the id of the relevant arrow
-                    var fileLink = jq("[id='" + arrowId + "']").prev();			// Get the link to the file
-                    fileURL = fileLink.attr("href");							// Set the URL of the file
+                    if (!saveTreeInitialized) {
+                        initSaveTree();
+                        saveTreeInitialized = true;
+                    }
 
-                    jq('#genomeSpaceSaveDialog').dialog('open');
+                    $('#genomeSpaceSaveDialog').dialog('open');
                     return false;
                 }
 
                 function handleSaveClick(node) {
-                    jq(saveTreeSelected).removeClass("saveTreeSelected");
-                    jq(node).addClass("saveTreeSelected");
+                    $(saveTreeSelected).removeClass("saveTreeSelected");
+                    $(node).addClass("saveTreeSelected");
                     saveTreeSelected = node;
-                    jq("#genomeSpaceSaveDialog").parent().find(".ui-button:first").button("enable");
+                    $("#genomeSpaceSaveDialog").parent().find(".ui-button:first").button("enable");
                     return false;
                 }
                 /* ]]> */
             </script>
-            <script src="#{facesContext.externalContext.requestContextPath}/js/jquery/jquery.cookie.js" type="text/javascript" />
-            <script src="#{facesContext.externalContext.requestContextPath}/js/jquery/jquery.jstree.js" type="text/javascript" />
             <link href="/gp/js/themes/default/style.css" rel="stylesheet" type="text/css" />
         </ui:define>
 
         <div id="genomeSpaceSaveDialog">
             <div id="saveTree"></div>
-            <script type="text/javascript">
-                jq("#saveTree").jstree({
-                    core:{
-                        "html_titles":true
-                    },
-
-                    "json_data":{
-                        // "data": #{genomeSpaceBean.treeJSON},
-                        "ajax":{
-                            "url":function (node) {
-                                if (node === -1) {
-                                    return "/gp/GenomeSpace/saveTree";
-                                }
-                                var gsURL = jq(node).find("a").attr("href");
-                                return "/gp/GenomeSpace/saveTree?dir=" + encodeURIComponent(gsURL);
-                            },
-                            "data":function (node) {
-                                return {
-                                    id:node.attr ? node.attr("id") : 0
-                                };
-                            }
-                        }
-                    },
-					"cookies":{
-                        "save_opened":"gsSaveDialog"
-                    },
-                    plugins:[ "themes", "json_data", "cookies" ]
-                });
-                jq("#saveTree").bind("load_node.jstree", function (event, data) {
-                    var iterate = null;
-
-                    // Handle the case of the initial load
-                    if (data["args"][0] === -1) {
-                        iterate = jq(this).find("li");
-                    }
-                    else {
-                        iterate = jq(data["args"][0]).find("li");
-                    }
-
-                    iterate.each(function (index) {
-
-                        var node = iterate.get(index);
-                        var name = jq(node).find("a:first").attr("name");
-
-                        // Add the id to the node
-                        jq(node).attr("id", name);
-
-                        // Check for the case of empty directories
-                        var link = jq(node).find("a:first").attr("href");
-                        if (link === "#") return;
-                    });
-
-                    jq("#genomeSpaceSaveDialog").parent().find(".ui-button:first").button("disable");
-                });
-            </script>
         </div>
         <script type="text/javascript">
-            jq("#saveTree .jstree-open > ins").hide();
-            jq("#saveTree .jstree-closed > ins").hide();
+//            $("#saveTree .jstree-open > ins").hide();
+//            $("#saveTree .jstree-closed > ins").hide();
 
-            jq("#genomeSpaceSaveDialog").dialog({
+            $("#genomeSpaceSaveDialog").dialog({
                 width:500,
                 autoOpen:false,
                 title:"Select GenomeSpace Directory in Which to Save",
@@ -129,31 +128,47 @@
                                 return;
                             }						// Prevent submitting if no file is selected
 
-                            var directory = jq(saveTreeSelected).attr("href");		// Get the URL of the directory to save to
+                            var directory = $(saveTreeSelected).attr("href");		// Get the URL of the directory to save to
                             var file = fileURL;										// Get the URL of the file to save
 
-                            jq.ajax({
+                            $.ajax({
                                 type:"POST",
                                 // The String.fromCharCode(38) is a hack to include the ampersand because JSF won't let it be directly included
                                 url:"/gp/GenomeSpace/saveFile?directory=" + escape(directory) + String.fromCharCode(38) + "file=" + escape(file),
                                 data:{},
-                                success:function (response) {
-                                    jq("#genomeSpaceSaveDialog").dialog("close"); 			// Close the dialog
-                                    jq("#saveTree").html("");
-                                    window.location.replace(window.location.href);
+                                success:function (data, textStatus, jqXHR) {
+                                    $("#genomeSpaceSaveDialog").dialog("close"); 			// Close the dialog
+                                    showSuccessMessage(data.statusText);
+                                    $(".left-nav-genomespace-refresh-real").trigger("click");
+                                },
+                                error:function (data, textStatus, jqXHR) {
+                                    $("#genomeSpaceSaveDialog").dialog("close"); 			// Close the dialog
+
+                                    // Test for 403 and give better error message
+                                    if (data.statusText.indexOf("403") > -1) {
+                                        showErrorMessage("You do not have permission to save to this directory. Please select a directory for which you have write access.");
+                                    }
+                                    else {
+                                        showErrorMessage(data.statusText);
+                                    }
+
+                                    $(".gs-uploading").hide();
+                                    $("#saveTree").show();
+                                    $(".ui-dialog-buttonpane").show();
                                 },
                                 dataType:"text"
                             });
 
                             // Set the dialog in the uploading state
-                            jq("#saveTree").html('<div><h4><img src="/gp/images/runningJob.gif"></img> Uploading to GenomeSpace...</h4></div>');
-                            jq(".ui-dialog-buttonpane").hide();
+                            $("#saveTree").hide();
+                            $("#genomeSpaceSaveDialog").append('<div class="gs-uploading"><h4><img src="/gp/images/runningJob.gif"></img> Uploading to GenomeSpace...</h4></div>');
+                            $(".ui-dialog-buttonpane").hide();
                         }
                     },
                     {
                         text:"Cancel",
                         click:function () {
-                            jq("#genomeSpaceSaveDialog").dialog("close");
+                            $("#genomeSpaceSaveDialog").dialog("close");
                         }
                     }
                 ]

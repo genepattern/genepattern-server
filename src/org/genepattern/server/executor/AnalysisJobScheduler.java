@@ -314,7 +314,9 @@ public class AnalysisJobScheduler implements Runnable {
             jobInfo = dao.getJobInfo(jobId);
         }
         catch (Throwable t) {
-            throw new JobTerminationException("Server error: Not able to load jobInfo for jobId: "+jobId, t);
+            String message="Server error: Not able to load jobInfo for jobId: "+jobId;
+            log.error(message);
+            throw new JobTerminationException(message, t);
         }
         finally {
             HibernateUtil.closeCurrentSession();
@@ -355,23 +357,12 @@ public class AnalysisJobScheduler implements Runnable {
         //terminate pending jobs immediately
         boolean isPending = isPending(jobInfo);
         if (isPending) {
-            terminatePendingJob(jobInfo);
+            GenePatternAnalysisTask.handleJobCompletion(jobInfo.getJobNumber(), -1, "Pending job #"+jobInfo.getJobNumber()+" terminated by user");
             return;
         }
-
-        //terminate the underlying job
+        
+        // terminate the underlying job
         terminateJobWTimeout(jobInfo);
-    }
-    
-    /**
-     * Helper method, special case when a pending job is terminated.
-     * No need to invoke terminate on the job's CommandExecutor.
-     * 
-     * @param jobInfo
-     * @throws JobTerminationException
-     */
-    private static void terminatePendingJob(final JobInfo jobInfo) throws JobTerminationException {
-        GenePatternAnalysisTask.handleJobCompletion(jobInfo.getJobNumber(), -1, "Pending job #"+jobInfo.getJobNumber()+" terminated by user");
     }
     
     /**

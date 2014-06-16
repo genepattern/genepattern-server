@@ -205,7 +205,19 @@ public class BatchInputFileHelper {
         }
         int periodIndex = filename.lastIndexOf('.');
         if (periodIndex > 0) {
-            return filename.substring(0, periodIndex);
+            String basename = filename.substring(0, periodIndex);
+            //special-case for {basename}_1.{ext} or {basename}_2.{ext}
+            int idx_1=basename.lastIndexOf("_1");
+            int idx_2=basename.lastIndexOf("_2");
+            if (idx_1>0) {
+                return basename.substring(0, idx_1);
+            }
+            else if (idx_2>0) {
+                return basename.substring(0, idx_2);
+            }
+            else {
+                return basename;
+            }
         }
         else {
             return filename;
@@ -341,7 +353,7 @@ public class BatchInputFileHelper {
      * @param initialValue
      * @return
      */
-    private List<GpFilePath> listBatchDir(final ParameterInfo formalParam, final GpFilePath batchInputDir) throws GpServerException {
+    public List<GpFilePath> listBatchDir(final ParameterInfo formalParam, final GpFilePath batchInputDir) throws GpServerException {
         if (batchInputDir==null) {
             throw new IllegalArgumentException("batchInputDir==null");
         }

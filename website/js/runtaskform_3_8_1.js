@@ -72,7 +72,7 @@ if (!window.console)
 function loadModule(taskId, reloadId, sendFromKind, sendFromUrl)
 {
     // Fade in a progress indicator
-    $("#loadingContent").fadeIn(1000);
+    $("#loadingContent").fadeIn(800);
 
     var url = window.location.href;
     var getParameters = url.slice(url.indexOf('?') + 1);
@@ -155,7 +155,7 @@ function loadModule(taskId, reloadId, sendFromKind, sendFromUrl)
                 }
                 else
                 {
-                    loadParametersByGroup(module["parameter_groups"], response["parameters"], response["initialValues"]);
+                    loadParametersByGroup(module["parameter_groups"], response["parameters"], response["initialValues"], response["batchParams"]);
                 }
                 //the parameter form elements have been created now make the form visible
                 $("#protocols").hide();
@@ -319,43 +319,45 @@ function sendToMapToMenu() {
 }
 
 function sendToParamForMenu(paramList) {
-    var kind = $(paramList).attr("data-kind");
-    var url = $(paramList).attr("data-url");
-    var params = run_task_info.sendTo[kind];
-    if (params) {
-        for (var i = 0; i < params.length; i++) {
-            var param = params[i];
+    $(paramList).each(function(index, element) {
+        var kind = $(element).attr("data-kind");
+        var url = $(element).attr("data-url");
+        var params = run_task_info.sendTo[kind];
+        if (params) {
+            for (var i = 0; i < params.length; i++) {
+                var param = params[i];
 
-            $("<div></div>")
-                .attr("class", "send-to-param")
-                .attr("name", param)
-                .module({
-                    data: {
-                        "lsid": "",
-                        "name": "Send to " + run_task_info.params[param].displayname,
-                        "description": run_task_info.params[param].description,
-                        "version": "",
-                        "documentation": "http://genepattern.org",
-                        "categories": [],
-                        "suites": [],
-                        "tags": []
-                    },
-                    click: function(event) {
-                        var paramName = $(event.target).closest(".module-listing").attr("name");
-                        setInputField(paramName, url);
-                        $(paramList).closest(".search-widget").searchslider("hide");
-                    },
-                    draggable: false
-                }).appendTo($(paramList));
+                $("<div></div>")
+                    .attr("class", "send-to-param")
+                    .attr("name", param)
+                    .module({
+                        data: {
+                            "lsid": "",
+                            "name": "Send to " + run_task_info.params[param].displayname,
+                            "description": run_task_info.params[param].description,
+                            "version": "",
+                            "documentation": "http://genepattern.org",
+                            "categories": [],
+                            "suites": [],
+                            "tags": []
+                        },
+                        click: function(event) {
+                            var paramName = $(event.target).closest(".module-listing").attr("name");
+                            setInputField(paramName, url);
+                            $(element).closest(".search-widget").searchslider("hide");
+                        },
+                        draggable: false
+                    }).appendTo($(element));
+            }
         }
-    }
 
-    if ($(paramList).find(".module-listing").length < 1) {
-        $(paramList).hide();
-    }
-    else {
-        $(paramList).show();
-    }
+        if ($(element).find(".module-listing").length < 1) {
+            $(element).hide();
+        }
+        else {
+            $(element).show();
+        }
+    });
 }
 
 function loadModuleInfo(module)
@@ -675,7 +677,7 @@ function setParamDisplayName(parameterInfo)
     run_task_info.params[parameterInfo.name]["displayname"] = run_task_info.params[parameterInfo.name]["displayname"].replace(/\./g,' ');
 }
 
-function initParam(parameterInfo, index, initialValues)
+function initParam(parameterInfo, index, batchParams)
 {
     run_task_info.params[parameterInfo.name] = {};
 
@@ -704,7 +706,15 @@ function initParam(parameterInfo, index, initialValues)
     run_task_info.params[parameterInfo.name].description = parameterInfo.description;
     run_task_info.params[parameterInfo.name].altDescription = parameterInfo.altDescription;
     run_task_info.params[parameterInfo.name].groupInfo = parameterInfo.groupInfo;
-    run_task_info.params[parameterInfo.name].isBatch = false;
+
+    if(batchParams != undefined && batchParams != null && batchParams.indexOf(parameterInfo.name) != -1)
+    {
+        run_task_info.params[parameterInfo.name].isBatch = true;
+    }
+    else
+    {
+        run_task_info.params[parameterInfo.name].isBatch = false;
+    }
 
     // Add parameter to send-to map
     addSendToParam(parameterInfo);
@@ -804,223 +814,28 @@ function createTextDiv(parameterName, groupId, initialValuesList)
     return textDiv;
 }
 
-function createChoiceDiv(parameterName, groupId, initialValuesList)
-{
-    var selectChoiceDiv = $("<div class='selectChoice'/>");
-
-    //check if there are predefined list of choices for this parameter
-    var paramDetails = run_task_info.params[parameterName];
-    if(paramDetails.choiceInfo != undefined  && paramDetails.choiceInfo != null && paramDetails.choiceInfo != '')
-    {
-        if(paramDetails.choiceInfo.status != undefined && paramDetails.choiceInfo.status != null
-            && paramDetails.choiceInfo.status != undefined && paramDetails.choiceInfo.status != null
-            && paramDetails.choiceInfo.status.flag != "OK")
-        {
-            var errorDetailsLink = $("<a href='#'> (more...)</a>");
-
-            var errorMessageDiv = $("<p><span class='errorMessage'>No dynamic file selections available</span></p>");
-            errorMessageDiv.append(errorDetailsLink);
-            selectChoiceDiv.append(errorMessageDiv);
-            errorDetailsLink.data("errMsg", paramDetails.choiceInfo.status.message);
-            errorDetailsLink.click(function(event)
-            {
-                event.preventDefault();
-                var errorDetailsDiv = $("<div/>");
-                errorDetailsDiv.append("<p>"+  $(this).data("errMsg") + "</p>");
-                errorDetailsDiv.dialog(
-                    {
-                        title: "Dynamic File Selection Loading Error"
-                    }
-                );
-            });
-        }
-
-        //display drop down showing available file choices
-        var choice = $("<select class='choice' />");
-
-        if(paramDetails.allowMultiple)
-        {
-            choice.attr("multiple", "multiple");
-        }
-
-        if(paramDetails.required)
-        {
-            choice.addClass("requiredParam");
-        }
-
-        choice.data("pname", parameterName);
-        var longChars = 1;
-        for(var c=0;c<paramDetails.choiceInfo.choices.length;c++)
-        {
-            choice.append("<option value='"+paramDetails.choiceInfo.choices[c].value+"'>"
-                + paramDetails.choiceInfo.choices[c].label+"</option>");
-            if(paramDetails.choiceInfo.choices[c].label.length > longChars)
-            {
-                longChars = paramDetails.choiceInfo.choices[c].label.length;
-            }
-        }
-
-        selectChoiceDiv.append(choice);
-
-        var noneSelectedText = "Select an option";
-
-        var cMinWidth = Math.log(longChars) * 83;
-
-        if(cMinWidth == 0)
-        {
-            cMinWidth = Math.log(noneSelectedText.length) * 83;
-        }
-
-        choice.multiselect({
-            multiple: paramDetails.allowMultiple,
-            header: paramDetails.allowMultiple,
-            selectedList: 2,
-            minWidth: cMinWidth,
-            noneSelectedText: noneSelectedText,
-            classes: 'mSelect'
-        });
-
-        choice.multiselect("refresh");
-
-        //disable if no choices are found
-        if(paramDetails.choiceInfo.choices.length == 0)
-        {
-            choice.multiselect("disable");
-        }
-
-        choice.data("maxValue", paramDetails.maxValue);
-        choice.change(function ()
-        {
-            var valueList = [];
-
-            var value = $(this).val();
-
-            //if this a multiselect choice, then check that the maximum number of allowable selections was not reached
-            if($(this).multiselect("option", "multiple"))
-            {
-                var maxVal = parseInt($(this).data("maxValue"));
-                if(!isNaN(maxVal) && value.length() > maxVal)
-                {
-                    //remove the last selection since it will exceed max allowed
-                    if(value.length == 1)
-                    {
-                        $(this).val([]);
-                    }
-                    else
-                    {
-                        value.pop();
-                        $(this).val(value);
-                    }
-
-                    alert("The maximum number of selections is " + $(this).data("maxValue"));
-                    return;
-                }
-                valueList = value;
-            }
-            else
-            {
-                if(value != "")
-                {
-                    valueList.push(value);
-                }
-            }
-
-            var paramName = $(this).data("pname");
-
-            var groupId = getGroupId($(this));
-            updateValuesForGroup(groupId, paramName, valueList);
-        });
-
-        //set the default value
-        choice.children("option").each(function()
-        {
-            if(paramDetails.default_value != "" && $(this).val() == paramDetails.default_value)
-            {
-                $(this).parent().val(paramDetails.default_value);
-                $(this).parent().data("default_value", paramDetails.default_value);
-                $(this).parent().multiselect("refresh");
-            }
-        });
-
-        //select initial values if there are any
-        if( initialValuesList != undefined &&  initialValuesList != null)
-        {
-            var matchingValueList = [];
-            for(var n=0;n<initialValuesList.length;n++)
-            {
-                choice.find("option").each(function()
-                {
-                    if(initialValuesList[n] != "" && initialValuesList[n] == $(this).val())
-                    {
-                        matchingValueList.push(initialValuesList[n]);
-                    }
-                });
-            }
-
-            //should only be one item in the list for now
-            //but handle case when there is more than one item
-            if(choice.multiselect("option", "multiple"))
-            {
-                if(matchingValueList.length > 0)
-                {
-                    //indicate initial value was found in drop-down list
-                    run_task_info.params[parameterName].initialChoiceValues = true;
-                }
-
-                choice.val(matchingValueList);
-            }
-            else
-            {
-                //if there is more than one item in the list then only the first item in the list
-                //will be selected since the choice is not multiselect
-                if(initialValuesList.length > 0)
-                {
-                    run_task_info.params[parameterName].initialChoiceValues = false;
-
-                    if(!(paramDetails.default_value == "" && initialValuesList[0] == "")
-                        && $.inArray(initialValuesList[0], matchingValueList) != -1)
-                    {
-                        choice.val( initialValuesList[0]);
-                    }
-
-                    if((paramDetails.default_value == "" && initialValuesList[0] == "")
-                        || $.inArray(initialValuesList[0], matchingValueList) != -1)
-                    {
-                        //indicate initial value was found in drop-down list
-                        run_task_info.params[parameterName].initialChoiceValues = true;
-                    }
-                }
-            }
-
-            choice.multiselect("refresh");
-        }
-        else
-        {
-            run_task_info.params[parameterName].initialChoiceValues = true;
-        }
-
-        var valueList = [];
-        if(choice.val() != null && choice.val() != "")
-        {
-            valueList.push(choice.val());
-        }
-        updateValuesForGroup(groupId, parameterName, valueList);
+/**
+ * Get a unique id for a file div, based on parameterName and groupId.
+ * @param parameterName
+ * @param groupId
+ */
+function createFileDivId(parameterName, groupId) {
+    var divId="fileDiv-";
+    if (parameterName) {
+        divId += parameterName;
     }
-
-    //if this is not a reloaded job where the value was from a drop down list
-    //and the type is not also a file
-    if(!run_task_info.params[parameterName].initialChoiceValues
-        && $.inArray(field_types.FILE, run_task_info.params[parameterName]) != -1)
-    {
-        selectChoiceDiv.hide();
+    divId += "-";
+    if (groupId) {
+        divId += groupId;
     }
-
-    return selectChoiceDiv;
+    return divId;
 }
 
 function createFileDiv(parameterName, groupId, enableBatch, initialValuesList)
 {
-    var fileDiv = $("<div class='fileDiv mainDivBorder'>");
+    var fileDivId=createFileDivId(parameterName, groupId);
+    var fileUploadDiv = $("<div class='fileUploadDiv'/>");
+    var fileDiv = $("<div class='fileDiv mainDivBorder' id='"+fileDivId+"' />");
 
     //enable dragging of file between groups
     fileDiv.droppable(
@@ -1140,7 +955,13 @@ function createFileDiv(parameterName, groupId, enableBatch, initialValuesList)
         batchBox.append("<label for='batchCheck" + parameterName + "'>Batch</label>");
         batchBox.tooltip();
 
-        fileDiv.append(batchBox);
+        fileUploadDiv.append(batchBox);
+
+        //if this is a batch parameter then pre-select the batch checkbox
+        if(run_task_info.params[parameterName].isBatch)
+        {
+            batchBox.find("input[type='checkbox']").prop('checked', true);
+        }
     }
 
     if (paramDetails.allowMultiple)
@@ -1153,10 +974,10 @@ function createFileDiv(parameterName, groupId, enableBatch, initialValuesList)
     uploadFileBtn.button().click(function()
     {
         console.log("uploadedfile: " + $(this).siblings(".uploadedinputfile").first());
-        $(this).parents("div:first").find(".uploadedinputfile:first").click();
+        $(this).parents(".fileDiv").first().find(".uploadedinputfile:first").click();
     });
 
-    fileDiv.append(uploadFileBtn);
+    fileUploadDiv.append(uploadFileBtn);
     if(paramDetails.required)
     {
         fileInput.addClass("requiredParam");
@@ -1164,10 +985,10 @@ function createFileDiv(parameterName, groupId, enableBatch, initialValuesList)
 
     var fileInputDiv = $("<div class='inputFileBtn'/>");
     fileInputDiv.append(fileInput);
-    fileDiv.append(fileInputDiv);
+    fileUploadDiv.append(fileInputDiv);
 
     var urlButton = $("<button type='button' class='urlButton'>"+ addUrlText +"</button>");
-    fileDiv.append(urlButton);
+    fileUploadDiv.append(urlButton);
     urlButton.data("groupId", groupId);
     urlButton.button().click(function()
     {
@@ -1231,7 +1052,11 @@ function createFileDiv(parameterName, groupId, enableBatch, initialValuesList)
         openServerFileDialog(this);
     });
 
-    fileDiv.append("<span class='drop-box'>Drag Files Here</span>");
+    fileUploadDiv.append("<span class='drop-box'>Drag Files Here</span>");
+    fileUploadDiv.append("<div class='fileSizeCaption'> 2GB file upload limit using the "+ uploadFileText + " button. For files > 2GB upload from the Files tab. </div>");
+
+    fileDiv.append(fileUploadDiv);
+
     fileDiv.append("<div class='fileListingDiv'/>");
 
     //check if there are predefined file values
@@ -1243,8 +1068,17 @@ function createFileDiv(parameterName, groupId, enableBatch, initialValuesList)
     {
         if(!run_task_info.params[parameterName].initialChoiceValues)
         {
-            //check if max file length will be violated
             var totalFileLength = fileObjListings.length +  initialValuesList.length;
+
+            //check if max file length will be violated
+            //check if we should automatically enable batch in the case when the number of
+            //initial files is greater than the maximum allowed
+            var maxFiles = getMaxFiles(parameterName);
+            if(maxFiles != null && totalFileLength > maxFiles)
+            {
+                paramDetails.isBatch = true;
+            }
+
             validateMaxFiles(parameterName, totalFileLength);
 
             for(var v=0; v < initialValuesList.length; v++)
@@ -1261,7 +1095,7 @@ function createFileDiv(parameterName, groupId, enableBatch, initialValuesList)
                     fileObjListings.push(fileObj);
                 }
             }
-
+            
             updateFilesForGroup(groupId, parameterName, fileObjListings);
             updateParamFileTable(parameterName, fileDiv, groupId);
         }
@@ -1374,7 +1208,7 @@ function createModeToggle(parameterName)
 }
 
 //initialize the params object with info about the parameters
-function initParams(parameterGroups, parameters, initialValues)
+function initParams(parameterGroups, parameters, batchParams)
 {
     run_task_info.parameterGroups = parameterGroups;
 
@@ -1386,7 +1220,7 @@ function initParams(parameterGroups, parameters, initialValues)
     for(var q=0;q < parameters.length;q++)
     {
         var parameterName = parameters[q].name;
-        initParam(parameters[q], q, initialValues);
+        initParam(parameters[q], q, batchParams);
     }
 }
 
@@ -1579,7 +1413,7 @@ function populateContentDiv(parameterName, contentDiv, groupId, initialValues, e
     //create the necessary field types for this parameter
     if($.inArray(field_types.CHOICE, run_task_info.params[parameterName].type) != -1)
     {
-        contentDiv.append(createChoiceDiv(parameterName, groupId, initialValues));
+        contentDiv.append(initChoiceDiv(parameterName, groupId, initialValues));
     }
 
     if($.inArray(field_types.FILE, run_task_info.params[parameterName].type) != -1)
@@ -1601,12 +1435,12 @@ function populateContentDiv(parameterName, contentDiv, groupId, initialValues, e
     }
 }
 
-function loadParametersByGroup(parameterGroups, parameters, initialValues)
+function loadParametersByGroup(parameterGroups, parameters, initialValues, batchParams)
 {
     //check if the params object should be initialized
     if(parameters != null)
     {
-        initParams(parameterGroups, parameters, initialValues);
+        initParams(parameterGroups, parameters, batchParams);
     }
 
     if(parameterGroups == null)
@@ -1816,6 +1650,17 @@ function createParamTable(parameterNames, initialValues)
             });
 
             $("<div class='fileGroup'/>").append(addGroupButton).appendTo(valueTd);
+
+            //auto create the minimum of groups specified for this parameter
+            //if no initial values where specified
+            if(initialValuesList == null)
+            {
+                var minGroupInfo = parseInt(groupInfo.minNumGroups);
+                for(var i =0;i<minGroupInfo-1; i++)
+                {
+                    addGroupButton.click();
+                }
+            }
         }
 
         paramsTable.append(createParamDescriptionRow(parameterName));
@@ -1846,6 +1691,7 @@ function loadRunTaskForm(lsid, reloadJob, sendFromKind, sendFromUrl) {
 
     // Hide the protocols if visible
     $("#protocols").hide();
+    $("#jobResults").hide();
 
     // Lazily clone the blank jobSubmit div, and replace a dirty div with the clean one
     if (Request.cleanJobSubmit === null) {
@@ -2115,7 +1961,7 @@ function reset()
     param_file_listing = {};
     parameter_and_val_groups = {};
 
-    loadParametersByGroup(null, null, null);
+    loadParametersByGroup(null, null, null, null);
 }
 
 function isText(param)
@@ -2372,10 +2218,10 @@ function submitTask()
             }
 
             if (response.batchId !== undefined) {
-                window.location.replace("/gp/jobResults");
+                window.location.replace("/gp/pages/index.jsf?jobResults=batchId%3D" + response.batchId);
             }
             else if (response.jobId != undefined) {
-                window.location.replace("/gp/jobResults/"+response.jobId+"?openVisualizers=true");
+                window.location.replace("/gp/pages/index.jsf?jobid="+response.jobId+"&openVisualizers=true");
             }
 
             console.log("Response text: " + response.text);
@@ -2524,6 +2370,23 @@ function handleFiles(files, paramName, fileDiv)
     updateFilesForGroup(groupId, paramName, fileObjListings);
     updateParamFileTable(paramName, null, groupId);
     toggleFileButtons(paramName);
+}
+
+function getMaxFiles(paramName)
+{
+    var paramDetails = run_task_info.params[paramName];
+
+    var maxValue = null;
+    if(paramDetails != null)
+    {
+        //in this case the max num of files is not unlimited
+        if(paramDetails.maxValue != undefined || paramDetails.maxValue != null)
+        {
+            maxValue = parseInt(paramDetails.maxValue);
+        }
+    }
+
+    return maxValue;
 }
 
 function validateMaxFiles(paramName, numFiles)
@@ -2726,7 +2589,7 @@ function updateParamFileTable(paramName, fileDiv, groupId)
             {
                 // Show the buttons again
                 var fileDiv = $(this).closest(".fileDiv");
-                fileDiv.find("> button, > span").show();
+                fileDiv.find("fileUploadDiv").show();
 
                 var file = $(this).data("pfile");
                 var id = $(this).data("pfileId");
@@ -2736,15 +2599,22 @@ function updateParamFileTable(paramName, fileDiv, groupId)
                 for(var group in groups)
                 {
                     var param_files = groups[group].files;
+                    var param_values = groups[group].values;
                     for(var t=0;t<param_files.length;t++)
                     {
                         if(param_files[t].name == file
                             && param_files[t].id == id)
                         {
+                            var idx=$.inArray(param_files[t].name, param_values);
+                            if (idx>-1) {
+                                param_values.splice(idx, 1);
+                                updateValuesForGroup(group, paramName, param_values);
+                            }
                             var fileObjListing = param_files;
                             fileObjListing.splice(t, 1);
                             updateFilesForGroup(group, paramName, fileObjListing);
                         }
+                        
                     }
                 }
                 updateParamFileTable(paramName, fileDiv);
@@ -2784,10 +2654,10 @@ function updateParamFileTable(paramName, fileDiv, groupId)
 
     // Hide or show the buttons if something is selected
     if (!isBatch(paramName) && atMaxFiles(paramName)) {
-        fileDiv.find("> button, > span").hide();
+        fileDiv.find(".fileUploadDiv").hide();
     }
     else {
-        fileDiv.find("> button, > span").show();
+        fileDiv.find(".fileUploadDiv").show();
     }
 }
 
@@ -2956,7 +2826,7 @@ function uploadFile(paramName, file, fileOrder, fileId, groupId)
         },
         error: function(event) {
             $("#cancelUpload").trigger("click");
-            $("#fileUploadDiv").html("<span style='color:red;'>Error uploading file. This may be due to an incompatible browser, such as Internet Explorer. If so, please use a supported browser (Chrome, Firefox, Safari) or use the Java uploader in the Uploads Tab.</span>");
+            $("#fileUploadDiv").html("<span style='color:red;'>There was an unexpected file transfer error while submitting your job. Please check your network connection and try to submit again or use the Uploader in the Files tab.</span>");
             $("#fileUploadDiv").show();
             console.log("Error uploading the file " + file.name + " :" + event.statusText);
         }

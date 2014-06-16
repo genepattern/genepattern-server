@@ -12,6 +12,7 @@ import org.apache.log4j.Logger;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.database.HibernateUtil;
+import org.genepattern.server.dm.GpFileObjFactory;
 import org.genepattern.server.dm.GpFilePath;
 import org.genepattern.server.dm.userupload.UserUploadManager;
 import org.genepattern.server.dm.userupload.dao.UserUpload;
@@ -132,6 +133,188 @@ public class DataManager {
     }
 
     /**
+     * Copies a file to a new user upload location
+     * @param user
+     * @param from
+     * @param to
+     * @return
+     */
+    public static boolean copyToUserUpload(String user, GpFilePath from, GpFilePath to) {
+        boolean copied = false;
+
+        File fromFile = from.getServerFile();
+        File toFile = to.getServerFile();
+        boolean directory = fromFile.isDirectory();
+
+        // If the file are legit
+        if (fromFile.exists() && !toFile.exists()) {
+            try {
+                // Do the file system copy
+                if (!directory) {
+                    FileUtils.copyFile(fromFile, toFile);
+                    copied = true;
+                }
+                else {
+                    FileUtils.copyDirectory(fromFile, toFile);
+                    copied = true;
+                }
+            }
+            catch (IOException e) {
+                log.error("Failed to copy file from " + fromFile.getAbsolutePath() + " to " + toFile.getAbsolutePath());
+            }
+
+            // Update the database
+            boolean inTransaction = HibernateUtil.isInTransaction();
+            try {
+                if (!directory) {
+                    // Begin a new transaction
+                    GpContext context = GpContext.getContextForUser(user);
+                    UserUploadManager.createUploadFile(context, to, 1);
+                    UserUploadManager.updateUploadFile(context, to, 1, 1);
+                    if (!inTransaction) {
+                        HibernateUtil.commitTransaction();
+                    }
+                }
+                else {
+                    syncUploadFiles(user);
+                    copied = true;
+                }
+            }
+            catch  (Throwable t) {
+                copied = false;
+                // Error updating the DB
+                log.error("Error copying to user upload file record in db, '" + to.getRelativeUri() + "'", t);
+                HibernateUtil.rollbackTransaction();
+            }
+        }
+
+        return copied;
+    }
+
+    /**
+     * Moves a file to a new user upload location
+     * @param user
+     * @param from
+     * @param to
+     * @return
+     */
+    public static boolean moveToUserUpload(String user, GpFilePath from, GpFilePath to) {
+        boolean moved = false;
+
+        File fromFile = from.getServerFile();
+        File toFile = to.getServerFile();
+        boolean directory = fromFile.isDirectory();
+
+        // If the file are legit
+        if (fromFile.exists() && !toFile.exists()) {
+            try {
+                // Do the file system copy
+                if (!directory) {
+                    FileUtils.moveFile(fromFile, toFile);
+                    moved = true;
+                }
+                else {
+                    FileUtils.moveDirectory(fromFile, toFile);
+                    moved = true;
+                }
+            }
+            catch (IOException e) {
+                log.error("Failed to move file from " + fromFile.getAbsolutePath() + " to " + toFile.getAbsolutePath());
+            }
+
+            // Update the database
+            boolean inTransaction = HibernateUtil.isInTransaction();
+            try {
+                if (!directory) {
+                    // Begin a new transaction
+                    GpContext context = GpContext.getContextForUser(user);
+                    UserUploadManager.deleteUploadFile(from);
+                    UserUploadManager.createUploadFile(context, to, 1);
+                    UserUploadManager.updateUploadFile(context, to, 1, 1);
+                    if (!inTransaction) {
+                        HibernateUtil.commitTransaction();
+                    }
+                }
+                else {
+                    syncUploadFiles(user);
+                    moved = true;
+                }
+            }
+            catch  (Throwable t) {
+                moved = false;
+                // Error updating the DB
+                log.error("Error copying move to user upload file record in db, '" + to.getRelativeUri() + "'", t);
+                HibernateUtil.rollbackTransaction();
+            }
+        }
+
+
+
+        return moved;
+    }
+
+    /**
+     * Renames a user upload file
+     * @param user
+     * @param filePath
+     * @param name
+     * @return
+     */
+    public static boolean renameUserUpload(String user, GpFilePath filePath, String name) {
+        File oldFile = filePath.getServerFile();
+        File newFileAbsolute = new File(oldFile.getParentFile(), name);
+        File newFileRelative = new File(filePath.getRelativeFile().getParent(), name);
+        boolean renamed = false;
+        boolean directory = oldFile.isDirectory();
+
+        // If the file exists, rename the file on the file system
+        if (oldFile.exists()) {
+            renamed = oldFile.renameTo(newFileAbsolute);
+            if (!renamed) {
+                log.error("Error renaming file: " + oldFile.getPath());
+                return renamed;
+            }
+        }
+        else {
+            log.error("File to rename not found: " + oldFile.getAbsolutePath());
+            return renamed;
+        }
+
+        // Change the record in the database
+        boolean inTransaction = HibernateUtil.isInTransaction();
+        try {
+            if (!directory) {
+                GpContext context = GpContext.getContextForUser(user);
+                GpFilePath newPath = GpFileObjFactory.getUserUploadFile(context, newFileRelative);
+                newPath.initMetadata();
+
+                // Begin a new transaction
+                UserUploadDao dao = new UserUploadDao();
+                int renamedCount = dao.renameUserUpload(context, filePath, newPath);
+                if (renamedCount < 1) {
+                    renamed = false;
+                    log.error("Error renaming user upload file record in db, userId=" + user + ", path= '" + filePath.getRelativePath()+"'. numDeleted=" + renamedCount);
+                }
+                if (!inTransaction) {
+                    HibernateUtil.commitTransaction();
+                }
+            }
+            else {
+                syncUploadFiles(user);
+                renamed = true;
+            }
+        }
+        catch  (Throwable t) {
+            renamed = false;
+            // Error updating the DB
+            log.error("Error renaming user upload file record in db, '" + filePath.getRelativeUri() + "'", t);
+            HibernateUtil.rollbackTransaction();
+        }
+
+        return renamed;
+    }
+
+    /**
      * Delete the user upload file from the server file system, checking permissions based on the given userId.
      * 
      * @param userId, the current user who is requesting to delete the file
@@ -202,7 +385,7 @@ public class DataManager {
      * Note: If for some reason the file no longer exists on the server, still return true.
      * TODO: should have better error handling/doc for when the file is still in the DB but not in the file system.
      * 
-     * @param currentUser
+     * @param currentUserId
      * @param uf
      * @return
      */
@@ -256,7 +439,7 @@ public class DataManager {
      * Wipes all of a user's uploads from the database, then crawls the upload directory for a given user 
      * and adds database entries for all found files, except those whose filenames match a name on the 
      * exclude files list (used to ignore system files)
-     * @param user
+     * @param userId
      */
     public static void syncUploadFiles(String userId) {
         log.debug("syncUploadFiles(userId='"+userId+"') ...");
@@ -302,7 +485,7 @@ public class DataManager {
      * 
      * @param dao
      * @param file
-     * @param user
+     * @param userContext
      * @throws Exception
      */
     private static void handleFileSync(UserUploadDao dao, Set<String> visitedDirs, String[] relPath, File file, GpContext userContext) throws Exception {

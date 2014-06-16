@@ -16,39 +16,29 @@
 <ui:composition template="/templates/common-new.xhtml">
 
 <ui:define name="pageTitle">
-    GenePattern<h:outputText rendered="#{!empty runTaskBean.lsid}"> - #{runTaskBean.name}</h:outputText>
+    GenePattern <h:outputText rendered="#{!empty runTaskBean.lsid}"> - #{runTaskBean.name}</h:outputText>
+    <h:outputText rendered="#{!empty runTaskBean.jobId}"> Job - #{runTaskBean.jobId}</h:outputText>
 </ui:define>
 
 <ui:define name="headText">
-<link  type="text/css" rel="stylesheet" media="screen" href="#{facesContext.externalContext.requestContextPath}/css/#{uiBean.skin}/modules/styles/jquery.multiselect.css?version=#{aboutBean.full}" />
-<link  type="text/css" rel="stylesheet" media="screen" href="#{facesContext.externalContext.requestContextPath}/css/#{uiBean.skin}/jMenu.jquery.css?version=#{aboutBean.full}" />
-<link  type="text/css" rel="stylesheet" media="screen" href="#{facesContext.externalContext.requestContextPath}/css/#{uiBean.skin}/introjs.css?version=#{aboutBean.full}" />
+<link  type="text/css" rel="stylesheet" media="screen" href="#{facesContext.externalContext.requestContextPath}/css/#{uiBean.skin}/modules/styles/jquery.multiselect.css?version=#{aboutBean.buildTag}" />
+<link  type="text/css" rel="stylesheet" media="screen" href="#{facesContext.externalContext.requestContextPath}/css/#{uiBean.skin}/jMenu.jquery.css?version=#{aboutBean.buildTag}" />
+<link  type="text/css" rel="stylesheet" media="screen" href="#{facesContext.externalContext.requestContextPath}/css/#{uiBean.skin}/introjs.css?version=#{aboutBean.buildTag}" />
 
 
 <c:choose>
     <c:when test="#{uiBean.parameterGroups}">
-        <link type="text/css" rel="stylesheet" media="screen" href="#{facesContext.externalContext.requestContextPath}/css/#{uiBean.skin}/runtaskform_3_8_1.css?version=#{aboutBean.full}" />
+        <link type="text/css" rel="stylesheet" media="screen" href="#{facesContext.externalContext.requestContextPath}/css/#{uiBean.skin}/runtaskform_3_8_1.css?version=#{aboutBean.buildTag}" />
     </c:when>
     <c:otherwise>
-        <link  type="text/css" rel="stylesheet" media="screen" href="#{facesContext.externalContext.requestContextPath}/css/#{uiBean.skin}/runtaskform.css?version=#{aboutBean.full}" />
+        <link  type="text/css" rel="stylesheet" media="screen" href="#{facesContext.externalContext.requestContextPath}/css/#{uiBean.skin}/runtaskform.css?version=#{aboutBean.buildTag}" />
     </c:otherwise>
 </c:choose>
 
-<script type="text/javascript" src="#{facesContext.externalContext.requestContextPath}/js/jquery/jquery.multiselect.js?version=#{aboutBean.full}"></script>
-<script type="text/javascript" src="#{facesContext.externalContext.requestContextPath}/js/jquery/jquery.validate.js?version=#{aboutBean.full}"></script>
-<script type="text/javascript" src="#{facesContext.externalContext.requestContextPath}/js/jquery/intro.js?version=#{aboutBean.full}"></script>
-<script type="text/javascript" src="#{facesContext.externalContext.requestContextPath}/js/gp_tours.js?version=#{aboutBean.full}"></script>
-
-
-
-<c:choose>
-    <c:when test="#{uiBean.parameterGroups}">
-        <script type="text/javascript" src="#{facesContext.externalContext.requestContextPath}/js/runtaskform_3_8_1.js?version=#{aboutBean.full}"></script>
-    </c:when>
-    <c:otherwise>
-        <script type="text/javascript" src="#{facesContext.externalContext.requestContextPath}/js/runtaskform.js?version=#{aboutBean.full}"></script>
-    </c:otherwise>
-</c:choose>
+<script type="text/javascript" src="#{facesContext.externalContext.requestContextPath}/js/jquery/jquery.multiselect.js?version=#{aboutBean.buildTag}"></script>
+<script type="text/javascript" src="#{facesContext.externalContext.requestContextPath}/js/jquery/jquery.validate.js?version=#{aboutBean.buildTag}"></script>
+<script type="text/javascript" src="#{facesContext.externalContext.requestContextPath}/js/jquery/intro.js?version=#{aboutBean.buildTag}"></script>
+<script type="text/javascript" src="#{facesContext.externalContext.requestContextPath}/js/gp_tours.js?version=#{aboutBean.buildTag}"></script>
 <script type="text/javascript" language="javascript">
 /* <![CDATA[ */
 function callManagedBean(elExpression, parameters) {
@@ -295,6 +285,8 @@ function showFileInput(id) {
         <img src="/gp/images/ajax.gif" height="150" width="150" alt="Loading..." style="margin-top: 50px;" />
     </div>
 
+    <div id="jobResults" style="display: none;"></div>
+
     <div id="submitJob" style="display: none;">
         <div id="submitErrors"/>
         <div id="submitForm">
@@ -406,9 +398,11 @@ function showFileInput(id) {
     <script type="text/javascript">
         $(document).ready(function() {
             loadRunTaskForm();
+            loadJobStatus(#{runTaskBean.jobId});
+            loadJobResults('#{runTaskBean.jobResults}');
         });
     </script>
-    <h:outputText rendered="#{empty runTaskBean.lsid}">
+    <h:outputText rendered="#{empty runTaskBean.lsid and empty runTaskBean.jobId and empty runTaskBean.jobResults}">
         <script type="text/javascript">
             $(document).ready(function() {
                 $("#protocols").show();

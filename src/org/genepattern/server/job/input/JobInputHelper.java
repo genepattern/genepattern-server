@@ -81,24 +81,22 @@ public class JobInputHelper {
         return url;
     }
 
-    private final GetTaskStrategy getTaskStrategy;
     private final BatchInputFileHelper batchInputFileHelper;
     
     public JobInputHelper(final GpContext userContext, final String lsid) {
         this(userContext, lsid, null);
     }
     public JobInputHelper(final GpContext userContext, final String lsid, final JobInputApi singleJobInputApi) {
-        this(userContext, lsid, singleJobInputApi, null);
+        this(userContext, lsid, singleJobInputApi, new GetTaskStrategyDefault());
     }
-    public JobInputHelper(final GpContext userContext, final String lsid, final JobInputApi jobInputApi, final GetTaskStrategy getTaskStrategyIn) {
+    public JobInputHelper(final GpContext userContext, final String lsid, final JobInputApi jobInputApi, GetTaskStrategy getTaskStrategyIn) {
         if (getTaskStrategyIn == null) {
-            getTaskStrategy=new GetTaskStrategyDefault();
+            getTaskStrategyIn=new GetTaskStrategyDefault();
         }
-        else {
-            getTaskStrategy=getTaskStrategyIn;
-        }
-
-        final TaskInfo taskInfo = getTaskStrategy.getTaskInfo(lsid);
+        final TaskInfo taskInfo = getTaskStrategyIn.getTaskInfo(lsid);
+        this.batchInputFileHelper=new BatchInputFileHelper(userContext, taskInfo, jobInputApi);
+    }
+    public JobInputHelper(final GpContext userContext, final String lsid, final JobInputApi jobInputApi, final TaskInfo taskInfo) {
         this.batchInputFileHelper=new BatchInputFileHelper(userContext, taskInfo, jobInputApi);
     }
     

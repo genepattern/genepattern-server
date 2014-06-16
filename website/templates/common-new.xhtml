@@ -12,8 +12,7 @@
       xmlns:ui="http://java.sun.com/jsf/facelets"
       xmlns:h="http://java.sun.com/jsf/html"
       xmlns:f="http://java.sun.com/jsf/core"
-      xmlns:t="http://myfaces.apache.org/tomahawk"
-      xmlns:c="http://java.sun.com/jstl/core">
+      xmlns:t="http://myfaces.apache.org/tomahawk">
     <f:view contentType="text/html">
         <head>
             <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
@@ -22,18 +21,21 @@
 
             <title><ui:insert name="pageTitle">GenePattern </ui:insert></title>
             
-            <link type="text/css" rel="stylesheet" href="#{facesContext.externalContext.requestContextPath}/css/#{uiBean.skin}/jquery-ui-1.9.2.css?version=#{aboutBean.full}" />
-            <link type="text/css" rel="stylesheet" href="#{facesContext.externalContext.requestContextPath}/css/#{uiBean.skin}/style.css?version=#{aboutBean.full}" />
-            <link type="text/css" rel="stylesheet" href="#{facesContext.externalContext.requestContextPath}/css/#{uiBean.skin}/themes/base/jquery.ui.all.css?version=#{aboutBean.full}" />
-            <link type="text/css" rel="stylesheet" href="#{facesContext.externalContext.requestContextPath}/css/#{uiBean.skin}/jobSharing.css?version=#{aboutBean.full}" />
-            <link type="text/css" rel="stylesheet" href="#{facesContext.externalContext.requestContextPath}/css/#{uiBean.skin}/protocols.css?version=#{aboutBean.full}" />
-            <link type="text/css" rel="stylesheet" href="#{facesContext.externalContext.requestContextPath}/css/#{uiBean.skin}/style-jobresults.css?version=#{aboutBean.full}" />
-            <link type="text/css" rel="stylesheet" href="#{facesContext.externalContext.requestContextPath}/css/#{uiBean.skin}/popupMenu.css?version=#{aboutBean.full}" />
-            <link type="text/css" rel="stylesheet" href="#{facesContext.externalContext.requestContextPath}/css/#{uiBean.skin}/menu.css?version=#{aboutBean.full}" />
-            <link type="text/css" rel="stylesheet" href="#{facesContext.externalContext.requestContextPath}/css/#{uiBean.skin}/gp_tours.css?version=#{aboutBean.full}" />
-            <link type="text/css" rel="stylesheet" href="/gp/js/themes/default/style.css?version=#{aboutBean.full}" />
-            <link type="text/css" rel="stylesheet" href="#{facesContext.externalContext.requestContextPath}/css/#{uiBean.skin}/new-layout.css?version=#{aboutBean.full}" />
-            <link rel="shortcut icon" href="#{facesContext.externalContext.requestContextPath}/skin/favicon.ico?version=#{aboutBean.full}" />
+            <link type="text/css" rel="stylesheet" href="#{facesContext.externalContext.requestContextPath}/css/#{uiBean.skin}/jquery-ui-1.9.2.css?version=#{aboutBean.buildTag}" />
+            <link type="text/css" rel="stylesheet" href="#{facesContext.externalContext.requestContextPath}/css/#{uiBean.skin}/style.css?version=#{aboutBean.buildTag}" />
+            <link type="text/css" rel="stylesheet" href="#{facesContext.externalContext.requestContextPath}/css/#{uiBean.skin}/themes/base/jquery.ui.all.css?version=#{aboutBean.buildTag}" />
+            <link type="text/css" rel="stylesheet" href="#{facesContext.externalContext.requestContextPath}/css/#{uiBean.skin}/jquery.dataTables.min.css?version=#{aboutBean.buildTag}" />
+            <link type="text/css" rel="stylesheet" href="#{facesContext.externalContext.requestContextPath}/css/#{uiBean.skin}/jobSharing.css?version=#{aboutBean.buildTag}" />
+            <link type="text/css" rel="stylesheet" href="#{facesContext.externalContext.requestContextPath}/css/#{uiBean.skin}/protocols.css?version=#{aboutBean.buildTag}" />
+            <link type="text/css" rel="stylesheet" href="#{facesContext.externalContext.requestContextPath}/css/#{uiBean.skin}/style-jobresults.css?version=#{aboutBean.buildTag}" />
+            <link type="text/css" rel="stylesheet" href="#{facesContext.externalContext.requestContextPath}/css/#{uiBean.skin}/popupMenu.css?version=#{aboutBean.buildTag}" />
+            <link type="text/css" rel="stylesheet" href="#{facesContext.externalContext.requestContextPath}/css/#{uiBean.skin}/menu.css?version=#{aboutBean.buildTag}" />
+            <link type="text/css" rel="stylesheet" href="#{facesContext.externalContext.requestContextPath}/css/#{uiBean.skin}/gp_tours.css?version=#{aboutBean.buildTag}" />
+            <link type="text/css" rel="stylesheet" href="#{facesContext.externalContext.requestContextPath}/js/themes/default/style.css?version=#{aboutBean.buildTag}" />
+            <link type="text/css" rel="stylesheet" href="#{facesContext.externalContext.requestContextPath}/css/#{uiBean.skin}/GP_DK.css?version=#{aboutBean.buildTag}" />
+            <link type="text/css" rel="stylesheet" href="#{facesContext.externalContext.requestContextPath}/css/#{uiBean.skin}/glyphicon/glyphicon.css?version=#{aboutBean.buildTag}" />
+            <link type="text/css" rel="stylesheet" href="#{facesContext.externalContext.requestContextPath}/css/#{uiBean.skin}/new-layout.css?version=#{aboutBean.buildTag}" />
+            <link rel="shortcut icon" href="#{facesContext.externalContext.requestContextPath}/skin/favicon.ico?version=#{aboutBean.buildTag}" />
 
             <script type="text/javascript" language="javascript">
                 var contextRoot = '#{facesContext.externalContext.requestContextPath}';
@@ -49,25 +51,30 @@
                 var username = "${requestScope.userID}";
             </script>
             
-            <script type="text/javascript" src="/gp/js/jquery/jquery-1.8.3.js?version=#{aboutBean.full}" />
-            <script type="text/javascript" src="/gp/js/jquery/jquery-ui-1.9.2.js?version=#{aboutBean.full}" />
-            <script type="text/javascript" src="#{facesContext.externalContext.requestContextPath}/js/jquery/jquery.cookie.official.js?version=#{aboutBean.full}" />
-            <script type="text/javascript" src="#{facesContext.externalContext.requestContextPath}/js/jquery/jquery.cookie.js?version=#{aboutBean.full}" />
-            <script type="text/javascript" src="#{facesContext.externalContext.requestContextPath}/js/jquery/jquery.jstree.js?version=#{aboutBean.full}" />
-            <script type="text/javascript" src="#{facesContext.externalContext.requestContextPath}/js/jquery/jquery.blockUI.js?version=#{aboutBean.full}" />
-            <script type="text/javascript" src="#{facesContext.externalContext.requestContextPath}/js/jquery/jquery.highlight-4.js?version=#{aboutBean.full}" />
-            <script type="text/javascript" src="#{facesContext.externalContext.requestContextPath}/js/jquery/jquery.jtruncate.pack.js?version=#{aboutBean.full}" />
-            <script type="text/javascript" src="#{facesContext.externalContext.requestContextPath}/js/jquery/jquery.dialogextend.min.js?version=#{aboutBean.full}" />
-            <script type="text/javascript" src="#{facesContext.externalContext.requestContextPath}/js/jquery/jquery.leftnav.js?version=#{aboutBean.full}" />
-            <script type="text/javascript" src="/gp/js/jquery/ddsmoothmenu.js?version=#{aboutBean.full}" />
+            <script type="text/javascript" src="/gp/js/jquery/jquery-1.8.3.js?version=#{aboutBean.buildTag}" />
+            <script type="text/javascript" src="/gp/js/jquery/jquery-ui-1.9.2.js?version=#{aboutBean.buildTag}" />
+            <script type="text/javascript" src="#{facesContext.externalContext.requestContextPath}/js/jquery/jquery.cookie.official.js?version=#{aboutBean.buildTag}" />
+            <script type="text/javascript" src="#{facesContext.externalContext.requestContextPath}/js/jquery/jquery.cookie.js?version=#{aboutBean.buildTag}" />
+            <script type="text/javascript" src="#{facesContext.externalContext.requestContextPath}/js/jquery/jquery.jstree.js?version=#{aboutBean.buildTag}" />
+            <script type="text/javascript" src="#{facesContext.externalContext.requestContextPath}/js/jquery/jquery.blockUI.js?version=#{aboutBean.buildTag}" />
+            <script type="text/javascript" src="#{facesContext.externalContext.requestContextPath}/js/jquery/jquery.highlight-4.js?version=#{aboutBean.buildTag}" />
+            <script type="text/javascript" src="#{facesContext.externalContext.requestContextPath}/js/jquery/jquery.jtruncate.pack.js?version=#{aboutBean.buildTag}" />
+            <script type="text/javascript" src="#{facesContext.externalContext.requestContextPath}/js/jquery/jquery.dialogextend.min.js?version=#{aboutBean.buildTag}" />
+            <script type="text/javascript" src="#{facesContext.externalContext.requestContextPath}/js/jquery/jquery.leftnav.js?version=#{aboutBean.buildTag}" />
+            <script type="text/javascript" src="#{facesContext.externalContext.requestContextPath}/js/jquery/ddsmoothmenu.js?version=#{aboutBean.buildTag}" />
+            <script type="text/javascript" src="#{facesContext.externalContext.requestContextPath}/js/jquery/jquery.dataTables.min.js?version=#{aboutBean.buildTag}" />
+            <script type="text/javascript" src="#{facesContext.externalContext.requestContextPath}/js/jquery/jquery.dataTables.input.js?version=#{aboutBean.buildTag}" />
+            <script type="text/javascript" src="#{facesContext.externalContext.requestContextPath}/js/jquery/jquery.ajax.file.js?version=#{aboutBean.buildTag}" />
             <script type="text/javascript">var jq = jQuery.noConflict();</script>
 
-            <script type="text/javascript" src="#{facesContext.externalContext.requestContextPath}/js/genepattern.js?version=#{aboutBean.full}" />
-            <script type="text/javascript" src="#{facesContext.externalContext.requestContextPath}/js/mm_menu.js?version=#{aboutBean.full}" />
-            <script type="text/javascript" src="#{facesContext.externalContext.requestContextPath}/js/popupMenu.js?version=#{aboutBean.full}" />
-            <script type="text/javascript" src="#{facesContext.externalContext.requestContextPath}/js/commons-validator-1.3.0.js?version=#{aboutBean.full}" />
-            <script type="text/javascript" src="#{facesContext.externalContext.requestContextPath}/js/protocol.js?version=#{aboutBean.full}" />
-            <script type="text/javascript" src="/gp/js/menu.js?version=#{aboutBean.full}" />
+            <script type="text/javascript" src="#{facesContext.externalContext.requestContextPath}/js/genepattern.js?version=#{aboutBean.buildTag}" />
+            <script type="text/javascript" src="#{facesContext.externalContext.requestContextPath}/js/mm_menu.js?version=#{aboutBean.buildTag}" />
+            <script type="text/javascript" src="#{facesContext.externalContext.requestContextPath}/js/popupMenu.js?version=#{aboutBean.buildTag}" />
+            <script type="text/javascript" src="#{facesContext.externalContext.requestContextPath}/js/commons-validator-1.3.0.js?version=#{aboutBean.buildTag}" />
+            <script type="text/javascript" src="#{facesContext.externalContext.requestContextPath}/js/protocol.js?version=#{aboutBean.buildTag}" />
+            <script type="text/javascript" src="#{facesContext.externalContext.requestContextPath}/js/menu.js?version=#{aboutBean.buildTag}" />
+            <script type="text/javascript" src="#{facesContext.externalContext.requestContextPath}/js/runtaskform_3_8_1.js?version=#{aboutBean.buildTag}"></script>
+            <script type="text/javascript" src="#{facesContext.externalContext.requestContextPath}/js/createChoiceDiv.js?version=#{aboutBean.buildTag}"></script>
 
             <script type="text/javascript" language="javascript">
             	/* <![CDATA[ */
@@ -103,6 +110,7 @@
 	                    success: function(data, status, xhr) {
 	                    	all_modules = data.all_modules;
                             initAllModulesMap(all_modules);
+                            kindToModules = data.kindToModules;
 	                    	
 	                    	// Initialize the displays on the left nav bar
 	                    	$("#loading-modules").hide();
@@ -146,15 +154,7 @@
 //	                    	initBrowseSuites();
 //	                    }
 //	                });
-	                
-	             	// Load the running jobs, poll every 10 seconds
-	             	if (userLoggedIn) {
-	             		jobStatusPoll();
-		             	setInterval(function() {
-		             		jobStatusPoll();
-		             	}, 30000);
-	             	}
-	            	
+
 	            	// Search box controls
 	                jq("#module-search-box").keyup(function(event) {
 	                    if (jq(".search-widget:visible").length === 0) {
@@ -234,9 +234,9 @@
 		                        <li><a href="/gp/pages/manageSuite.jsf">Manage</a></li>
 		                    </ul>
 		                </li>
-		                <li><a href="/gp/jobResults">Job Results</a>
+		                <li><a href="/gp/pages/index.jsf?jobResults=userId%3D${requestScope.userID}">Job Results</a>
 		                    <ul>
-		                        <li><a href="/gp/jobResults">Results Summary</a></li>
+		                        <li><a href="/gp/pages/index.jsf?jobResults=userId%3D${requestScope.userID}">Results Summary</a></li>
 		                    </ul>
 		                </li>
 		                <li><a href="/gp/pages/index.jsf?splash=resources">Resources</a>
@@ -319,7 +319,9 @@
 		                        <input id="module-search-box" type="search" class="search-box" placeholder="Search Modules &amp; Pipelines" />
 		                    </div>
 		                    <div id="module-browse-button">
-		                    	<div class="current-job-status"><a href="/gp/jobResults"></a></div>
+		                    	<div class="current-job-status">
+                                    <a onclick="loadJobResults('userId=${requestScope.userID}'); return false;" href="/gp/pages/index.jsf?jobResults=userId%3D${requestScope.userID}"></a>
+                                </div>
 		                        <button>Browse Modules &#x203a;</button>
 		                    </div>
 	                    </div>
@@ -333,7 +335,7 @@
 		            <div id="left-nav-jobs" class="left-nav-tab">
                         <div class="left-nav-top">
                             <div class="current-job-status">
-                                <a href="/gp/jobResults"></a>
+                                <a onclick="loadJobResults('userId=${requestScope.userID}'); return false;" href="/gp/pages/index.jsf?jobResults=userId%3D${requestScope.userID}"></a>
                             </div>
                             <button id="left-nav-jobs-browse">Browse Jobs &#x203a;</button>
                         </div>
@@ -348,7 +350,8 @@
                             <div id="left-nav-jobs-list"></div>
                             <script type="text/javascript">
                                 $(document).ready(function() {
-                                    initRecentJobs();
+                                    // Load the running jobs, poll every 30 seconds
+                                    jobStatusPoll();
                                 });
                         </script>
                         </h:outputText>
@@ -356,7 +359,7 @@
 	                <div id="left-nav-files" class="left-nav-tab">
                         <div class="left-nav-top">
                             <div class="current-job-status">
-                                <a href="/gp/jobResults"></a>
+                                <a onclick="loadJobResults('userId=${requestScope.userID}'); return false;" href="/gp/pages/index.jsf?jobResults=userId%3D${requestScope.userID}"></a>
                             </div>
                         </div>
 	                    <ui:include src="/pages/uploads/uploadedFiles.xhtml" />
@@ -374,6 +377,8 @@
 
                 <div id="menus-uploads"></div>
                 <div id="menus-jobs"></div>
+                <div id="menus-genomespace"></div>
+                <div id="menus-inputs"></div>
 	
 	            <div id="main-pane">
 	            	<!-- Error message area -->
@@ -401,66 +406,6 @@
 	            	<ui:insert name="body" />
 	            </div>
 	        </div>
-			
-			<!-- Top-level popup menus -->
-            <ui:insert name="popupMenus" />
-            <h:form id="menuForm" forceId="true">
-                <f:param />
-
-                <h:outputText rendered="!#{uiBean.newUI}">
-                    <t:dataList var="jobInfo" value="#{jobsBean.recentJobs}" rowIndexVar="jobIndex">
-                        <ui:include src="../pages/jobsMenu.xhtml">
-                            <ui:param name="job" value="#{jobInfo}" />
-                        </ui:include>
-                        <t:dataList var="fileInfo" value="#{jobInfo.allFileInfos}" rowIndexVar="paramIndex">
-                            <ui:include src="../pages/jobFileMenu.xhtml">
-                                <ui:param name="job" value="#{jobInfo}" />
-                                <ui:param name="fileInfo" value="#{fileInfo}" />
-                            </ui:include>
-                        </t:dataList>
-                    </t:dataList>
-                    <t:dataList var="aFile" value="#{uploadFilesBean.files}" rowIndexVar="dirIndex">
-                        <ui:include src="../pages/uploads/uploadFileMenu.xhtml">
-                            <ui:param name="aFile" value="#{aFile}" />
-                        </ui:include>
-                    </t:dataList>
-                    <t:dataList var="aFile" value="#{uploadFilesBean.directories}" rowIndexVar="dirIndex">
-                        <ui:include src="../pages/uploads/uploadFileMenu.xhtml">
-                            <ui:param name="aFile" value="#{aFile}" />
-                        </ui:include>
-                    </t:dataList>
-                </h:outputText>
-
-                <t:div id="genomeSpaceMenus" forceId="true">
-                    <h:outputText rendered="#{genomeSpaceBean.loggedIn and not genomeSpaceBean.loading}">
-                        <t:dataList var="file" value="#{genomeSpaceBean.allFiles}" rowIndexVar="fileIndex">
-                            <ui:include src="../pages/genomespace/fileMenu.xhtml">
-                                <ui:param name="file" value="#{file}" />
-                            </ui:include>
-                            <script type="text/javascript" language="javascript">menuRegistry._create("#Image_#{file.formattedId}", "#menuDiv_#{file.formattedId}");</script>
-                        </t:dataList>
-                        <t:dataList var="file" value="#{genomeSpaceBean.allDirectories}" rowIndexVar="fileIndex">
-                            <ui:include src="../pages/genomespace/fileMenu.xhtml">
-                                <ui:param name="file" value="#{file}" />
-                            </ui:include>
-                            <script type="text/javascript" language="javascript">menuRegistry._create("#Image_#{file.formattedId}", "#menuDiv_#{file.formattedId}");</script>
-                        </t:dataList>
-                    </h:outputText>
-                </t:div>
-            </h:form>
-            <script type="text/javascript">
-            	$(document).ready(function() {
-            		// Hide menus after click
-                	jq(".popupMenu a").click(function() {
-                		jq(".popupMenu").hide();
-                	});
-                
-                	// Fix Create Pipeline links in IE
-                	if (navigator.userAgent.indexOf("MSIE") !== -1) {
-                		jq("a").filter(function(index) { return jq(this).text() === "Create Pipeline"; }).attr("onclick","JavaScript:Menu.denyIE(null);");
-                	}
-            	});
-            </script>
             
             <!-- Floating footer area -->
             <div id="footer">

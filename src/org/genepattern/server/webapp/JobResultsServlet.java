@@ -144,7 +144,12 @@ public class JobResultsServlet extends HttpServlet implements Servlet {
         
         //special case: list all job results
         if (jobNumber == null) {
-            RequestDispatcher rd = this.getServletContext().getRequestDispatcher("/pages/jobResults.jsf");
+            RequestDispatcher rd = this.getServletContext().getRequestDispatcher("/pages/index.jsf?jobresults=" + UIBeanHelper.encode("userId=" + UIBeanHelper.getUserId()));
+            response.addHeader("Pragma", "no-cache");
+            response.addHeader("Cache-Control", "no-cache");
+            response.addHeader("Cache-Control", "no-store");
+            response.addHeader("Cache-Control", "must-revalidate");
+            response.addHeader("Expires", "Mon, 1 Jan 2006 05:00:00 GMT"); // in the past
             rd.forward(request, response);
             return;
         }
@@ -181,7 +186,7 @@ public class JobResultsServlet extends HttpServlet implements Servlet {
             }
             String openVisualizers = request.getParameter("openVisualizers") == null ? "" : "&openVisualizers=true";
             
-            RequestDispatcher rd = this.getServletContext().getRequestDispatcher("/pages/jobResult.jsf?jobNumber="+jobNumber+openVisualizers);
+            RequestDispatcher rd = this.getServletContext().getRequestDispatcher("/pages/index.jsf?jobid="+jobNumber+openVisualizers);
             response.addHeader("Pragma", "no-cache");
             response.addHeader("Cache-Control", "no-cache");
             response.addHeader("Cache-Control", "no-store");
@@ -506,7 +511,7 @@ public class JobResultsServlet extends HttpServlet implements Servlet {
      *    X-genepattern-setPermissionsException
      * </pre>
      * 
-     * @see PermissionHelper, which has the code which updates the permissions.
+     * see PermissionHelper, which has the code which updates the permissions.
      * 
      * @auther pcarr
      */

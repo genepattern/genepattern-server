@@ -72,7 +72,7 @@ $.widget("gp.module", {
 
         this.version = $('<div>', {
             'class': 'module-version',
-            'text': this.options.data.version ? 'v'+ this.options.data.version : ''
+            'html': /^\d.*/.test(this.options.data.version) ? 'v'+ this.options.data.version : this.options.data.version
         }).appendTo(this.element);
 
         this.name = $('<div>', {

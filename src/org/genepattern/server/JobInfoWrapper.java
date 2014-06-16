@@ -584,6 +584,9 @@ public class JobInfoWrapper implements Serializable {
                     int idx = displayValue.indexOf('_') + 1;
                     displayValue = displayValue.substring(idx);
                 }
+                
+                //special case for URL encoded characters
+                displayValue = UrlUtil.decodeURIcomponent(displayValue);
                 this.setDisplayValue(displayValue);
                 return;
             }

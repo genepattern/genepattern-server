@@ -15,6 +15,12 @@ import org.genepattern.server.dm.UrlUtil;
 import org.genepattern.webservice.JobInfo;
 import org.genepattern.webservice.ParameterInfo;
 
+/**
+ * Internal representation of a job result file as a GpFilePath object.
+ * Use of this class is deprecated, as soon as the dependency on the PARAMETER_INFO CLOB is removed.
+ * @author pcarr
+ *
+ */
 public class JobResultFile extends GpFilePath {
     public static Logger log = Logger.getLogger(JobResultFile.class);
     
@@ -65,6 +71,34 @@ public class JobResultFile extends GpFilePath {
         this("/" + outputParam.getValue());
     }
 
+    /**
+     * Initialize the relative uri path for the given job result file. For example for jobId=5 which produces
+     * and output file named 'all_aml_test.cvt.gct'
+     *     initRelativePath("5", new File("all_aml_test.cvt.gct"));
+     * will return
+     *     /jobResults/5/all_aml_test.cvt.gct
+     * 
+     * This method encodes the File into a valid URI path component which can be used to construct the URL to the file.
+     * 
+     * @param jobId, the GP jobId
+     * @param relativeFile, the File object as a relativePath to the file
+     * @return
+     */
+    public static String initRelativePath(final String jobId, final File relativeFile) {
+        String uriPath = "/jobResults/" + jobId + "/" + UrlUtil.encodeFilePath(relativeFile);
+        return uriPath;
+    }
+    
+    public static URI initRelativeUri(final String jobId, final File relativeFile) {
+        final String uriPath=initRelativePath(jobId, relativeFile);
+        try {
+            return new URI( uriPath );
+        }
+        catch (URISyntaxException e) {
+            log.error(e);
+            throw new IllegalArgumentException(e);
+        }
+    }
     
     private void init(String jobId, File relativeFile) throws ServerConfigurationException {
         if (relativeFile == null) {
@@ -78,14 +112,7 @@ public class JobResultFile extends GpFilePath {
         this.isWorkingDir = relativeFile.getName().equals("") || relativeFile.getName().equals(".");
 
         //init the relativeUri
-        String uriPath = "/jobResults/" + jobId + "/" + UrlUtil.encodeFilePath(relativeFile);
-        try {
-            relativeUri = new URI( uriPath );
-        }
-        catch (URISyntaxException e) {
-            log.error(e);
-            throw new IllegalArgumentException(e);
-        }
+        relativeUri = initRelativeUri(jobId, relativeFile);
         
         //TODO: get the working dir for the job, currently all jobs are stored relative to the "jobs" directory
         GpContext context = GpContext.getServerContext();

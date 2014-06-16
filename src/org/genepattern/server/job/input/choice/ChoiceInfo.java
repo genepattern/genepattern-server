@@ -58,6 +58,17 @@ public class ChoiceInfo {
      */
     public static final String PROP_CHOICE_DIR_FILTER="choiceDirFilter";
     /**
+     * Advanced configuration option for the FTP mode to use when listing the contents of
+     * a choiceDir from a remote FTP server. Passive mode is used by default. This property is
+     * only required if you need to use active mode.
+     * 
+     * E.g.
+     *     p4_choiceDirFtpPassiveMode=false
+     * 
+     */
+    public static final String PROP_CHOICE_DIR_FTP_PASSIVE_MODE="choiceDirFtpPassiveMode";
+    
+    /**
      * ParameterInfo attribute for the module manifest, optionally declare whether a custom value is allowed for the given
      * parameter. This only applies for parameters with a drop-down menu.
      */
@@ -80,6 +91,7 @@ public class ChoiceInfo {
      *     ERROR, Error in module manifest, didn't initialize choices.
      *     ERROR, Connection error to remote server (url)
      *     ERROR, Timeout waiting for listing from remote server (url, timeout)
+     *     NOT_INITIALIZED, the server did not initialize the list of choices from the remote directory,
      * 
      * @author pcarr
      *
@@ -88,7 +100,8 @@ public class ChoiceInfo {
         public static enum Flag {
             OK,
             WARNING,
-            ERROR
+            ERROR,
+            NOT_INITIALIZED
         }
         
         final private Flag flag;
@@ -202,21 +215,66 @@ public class ChoiceInfo {
         }
         return choiceDirFilter;
     }
+    
+    /**
+     * Check the manifest for an optional ftp passive mode flag.
+     * By default and when not set return true.
+     * Return false only if choiceDirFtpPassMode=false
+     * 
+     * @param param
+     * @return
+     */
+    public static boolean getFtpPassiveMode(final ParameterInfo param) {
+        if (param==null) {
+            throw new IllegalArgumentException("param==null");
+        }
+        if (param.getAttributes()==null) {
+            throw new IllegalArgumentException("param.attributes==null");
+        }
+        //final String choiceDirFilter;
+        if ( param.getAttributes().containsKey(ChoiceInfo.PROP_CHOICE_DIR_FTP_PASSIVE_MODE) ) {
+            // return false only if choiceDirFtpPassMode=false
+            final String passiveModeStr = ((String) param.getAttributes().get(ChoiceInfo.PROP_CHOICE_DIR_FTP_PASSIVE_MODE)).trim().toLowerCase();
+            if (passiveModeStr.equals("false")) {
+                return false;
+            }
+        }
+        // by default, return true
+        return true;
+    }
 
     /**
+     * @param initDynamicDropdown, if true initialize dynamic drop-down by doing a remote 'ls' call
+     *     (or loading from a cached copy if it's available).
      * @return
      * @deprecated - prefer to pass in a valid gpContext
      */
-    public static ChoiceInfoParser getChoiceInfoParser() {
+    public static ChoiceInfoParser getChoiceInfoParser(final boolean initDynamicDropdown) {
+        GpConfig gpConfig=ServerConfigurationFactory.instance();
         GpContext gpContext=GpContext.getServerContext();
-        return getChoiceInfoParser(gpContext);
+        return getChoiceInfoParser(gpConfig, gpContext, initDynamicDropdown);
     }
+    
     public static ChoiceInfoParser getChoiceInfoParser(final GpContext gpContext) {
         GpConfig gpConfig=ServerConfigurationFactory.instance();
         return getChoiceInfoParser(gpConfig, gpContext);
     }
+    
     public static ChoiceInfoParser getChoiceInfoParser(final GpConfig gpConfig, final GpContext gpContext) {
-        return new DynamicChoiceInfoParser(gpConfig, gpContext);
+        final boolean initDynamicDropdown=true;
+        return getChoiceInfoParser(gpConfig, gpContext, initDynamicDropdown);
+    }
+    
+    /**
+     * 
+     * @param gpConfig, a valid GP server configuration
+     * @param gpContext, a valid GP context, expecting to have taskInfo set.
+     * @param initDynamicDropdown, if true initialize dynamic drop-down by doing a remote 'ls' call
+     *     (or loading from a cached copy if it's available).
+     * @return
+     */
+    public static ChoiceInfoParser getChoiceInfoParser(final GpConfig gpConfig, final GpContext gpContext, final boolean initDynamicDropdown) {
+        return new DynamicChoiceInfoParser(gpConfig, gpContext, initDynamicDropdown);
     }
 
     private final String paramName;

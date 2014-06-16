@@ -253,11 +253,6 @@
   <managed-bean-scope>request</managed-bean-scope>
  </managed-bean>
  <managed-bean>
-  <managed-bean-name>jumploaderBean</managed-bean-name>
-  <managed-bean-class>org.genepattern.server.webapp.uploads.JumploaderBean</managed-bean-class>
-  <managed-bean-scope>request</managed-bean-scope>
- </managed-bean>
- <managed-bean>
   <managed-bean-name>taskInfoBean</managed-bean-name>
   <managed-bean-class>org.genepattern.server.webapp.jsf.TaskInfoBean</managed-bean-class>
   <managed-bean-scope>request</managed-bean-scope>

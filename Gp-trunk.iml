@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<module type="JAVA_MODULE" version="4">
+  <component name="FacetManager">
+    <facet type="web" name="Web">
+      <configuration>
+        <descriptors>
+          <deploymentDescriptor name="web.xml" url="file://$MODULE_DIR$/installer/gpdist/Tomcat/conf/web.xml" />
+        </descriptors>
+        <webroots>
+          <root url="file://$MODULE_DIR$/installer/gpdist/Tomcat/conf" relative="/WEB-INF" />
+        </webroots>
+      </configuration>
+    </facet>
+    <facet type="web" name="Web2">
+      <configuration>
+        <descriptors>
+          <deploymentDescriptor name="web.xml" url="file://$MODULE_DIR$/installer/gpdist/Tomcat/webapps/ROOT/WEB-INF/web.xml" />
+        </descriptors>
+        <webroots>
+          <root url="file://$MODULE_DIR$/installer/gpdist/Tomcat/webapps/ROOT" relative="/" />
+        </webroots>
+      </configuration>
+    </facet>
+    <facet type="web" name="Web3">
+      <configuration>
+        <descriptors>
+          <deploymentDescriptor name="web.xml" url="file://$MODULE_DIR$/website/WEB-INF/web.xml" />
+        </descriptors>
+        <webroots>
+          <root url="file://$MODULE_DIR$/website" relative="/" />
+        </webroots>
+      </configuration>
+      <facet type="jsf" name="JSF">
+        <configuration />
+      </facet>
+    </facet>
+    <facet type="hibernate" name="Hibernate">
+      <configuration>
+        <datasource-map>
+          <unit-entry name="hibernate.hsqldb.cfg.xml" />
+          <unit-entry name="hibernate.junit.cfg.xml" />
+          <unit-entry name="hibernateSessionFactory" />
+          <unit-entry name="website:WEB-INF:classes:hibernate.hsqldb.cfg.xml" />
+          <unit-entry name="website:WEB-INF:classes:hibernate.junit.cfg.xml" />
+        </datasource-map>
+        <deploymentDescriptor name="hibernate.cfg.xml" url="file://$MODULE_DIR$/src/hibernate.cfg.xml" />
+        <deploymentDescriptor name="hibernate.cfg.xml" url="file://$MODULE_DIR$/src/hibernate.hsqldb.cfg.xml" />
+        <deploymentDescriptor name="hibernate.cfg.xml" url="file://$MODULE_DIR$/src/hibernate.junit.cfg.xml" />
+        <deploymentDescriptor name="hibernate.cfg.xml" url="file://$MODULE_DIR$/src/hibernate.oracle.jndi.cfg.xml" />
+        <deploymentDescriptor name="hibernate.cfg.xml" url="file://$MODULE_DIR$/website/WEB-INF/classes/hibernate.cfg.xml" />
+        <deploymentDescriptor name="hibernate.cfg.xml" url="file://$MODULE_DIR$/website/WEB-INF/classes/hibernate.hsqldb.cfg.xml" />
+        <deploymentDescriptor name="hibernate.cfg.xml" url="file://$MODULE_DIR$/website/WEB-INF/classes/hibernate.junit.cfg.xml" />
+        <deploymentDescriptor name="hibernate.cfg.xml" url="file://$MODULE_DIR$/website/WEB-INF/classes/hibernate.oracle.jndi.cfg.xml" />
+      </configuration>
+    </facet>
+  </component>
+  <component name="NewModuleRootManager" inherit-compiler-output="true">
+    <exclude-output />
+    <content url="file://$MODULE_DIR$">
+      <sourceFolder url="file://$MODULE_DIR$/src" isTestSource="false" />
+    </content>
+    <orderEntry type="inheritedJdk" />
+    <orderEntry type="sourceFolder" forTests="false" />
+    <orderEntry type="library" name="downloads" level="project" />
+    <orderEntry type="library" name="lib9" level="project" />
+    <orderEntry type="module-library">
+      <library>
+        <CLASSES>
+          <root url="jar://$MODULE_DIR$/external-src/commons-httpclient-3.0.1/dist/commons-httpclient.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="library" name="gs-client" level="project" />
+    <orderEntry type="library" name="lib11" level="project" />
+    <orderEntry type="module-library">
+      <library>
+        <CLASSES>
+          <root url="jar://$MODULE_DIR$/test/gp-full.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="library" name="lib10" level="project" />
+    <orderEntry type="library" name="lib5" level="project" />
+    <orderEntry type="library" name="endorsed" level="project" />
+    <orderEntry type="library" name="lib3" level="project" />
+    <orderEntry type="library" name="lib14" level="project" />
+    <orderEntry type="library" name="lib2" level="project" />
+    <orderEntry type="library" name="lib13" level="project" />
+    <orderEntry type="library" name="lib4" level="project" />
+    <orderEntry type="module-library">
+      <library>
+        <CLASSES>
+          <root url="jar://$MODULE_DIR$/fixtures/lib/greenpepper-confluence-plugin-2.8-complete.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="library" name="lib7" level="project" />
+    <orderEntry type="library" name="lib6" level="project" />
+    <orderEntry type="library" name="lib8" level="project" />
+    <orderEntry type="module-library" exported="">
+      <library>
+        <CLASSES>
+          <root url="file://$MODULE_DIR$/lib" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+        <jarDirectory url="file://$MODULE_DIR$/lib" recursive="false" />
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library" exported="">
+      <library>
+        <CLASSES>
+          <root url="file://$MODULE_DIR$/website/WEB-INF/lib" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES>
+          <root url="file://$MODULE_DIR$/website/WEB-INF/lib" />
+        </SOURCES>
+        <jarDirectory url="file://$MODULE_DIR$/website/WEB-INF/lib" recursive="false" />
+        <jarDirectory url="file://$MODULE_DIR$/website/WEB-INF/lib" recursive="false" type="SOURCES" />
+      </library>
+    </orderEntry>
+    <orderEntry type="library" scope="PROVIDED" name="Tomcat 5" level="application_server_libraries" />
+  </component>
+</module>
+

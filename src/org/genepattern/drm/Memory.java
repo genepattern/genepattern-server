@@ -63,6 +63,10 @@ public class Memory {
         }
     }
     
+    public static Memory fromLength(final long lengthInBytes) {
+        return new Memory(lengthInBytes, Unit.b);
+    }
+    
     /**
      * Initialize memory instance from string, for example
      * <pre>

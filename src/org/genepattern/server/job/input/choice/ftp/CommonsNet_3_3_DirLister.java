@@ -46,6 +46,9 @@ public class CommonsNet_3_3_DirLister implements RemoteDirLister<FTPFile,ListFtp
      * @return
      */
     public static RemoteDirLister<FTPFile, ListFtpDirException> createFromConfig(final GpConfig gpConfig, final GpContext gpContext) {
+        return createFromConfig(gpConfig, gpContext, true);
+    }
+    public static RemoteDirLister<FTPFile, ListFtpDirException> createFromConfig(final GpConfig gpConfig, final GpContext gpContext, final boolean passiveMode) {
         int socketTimeout=gpConfig.getGPIntegerProperty(gpContext, PROP_FTP_SOCKET_TIMEOUT, 30000);
         int dataTimeout=gpConfig.getGPIntegerProperty(gpContext, PROP_FTP_DATA_TIMEOUT, 30000);
         
@@ -58,6 +61,7 @@ public class CommonsNet_3_3_DirLister implements RemoteDirLister<FTPFile,ListFtp
             .dataTimeout(dataTimeout)
             .username(username)
             .password(password)
+            .passive(passiveMode)
             .build();
     }
     
@@ -67,6 +71,8 @@ public class CommonsNet_3_3_DirLister implements RemoteDirLister<FTPFile,ListFtp
     // anonymous login
     private final String ftpUsername; //="anonymous";
     private final String ftpPassword; //="gp-help@broadinstitute.org";
+    //toggle passive mode
+    private final boolean passive;
     
     private CommonsNet_3_3_DirLister() {
         this.defaultTimeout_ms=15*1000; //15 seconds
@@ -74,12 +80,15 @@ public class CommonsNet_3_3_DirLister implements RemoteDirLister<FTPFile,ListFtp
         // anonymous login
         this.ftpUsername="anonymous";
         this.ftpPassword="gp-help@broadinstitute.org";
+        // by default, use passive mode FTP transfer
+        this.passive=true;
     }
     private CommonsNet_3_3_DirLister(Builder in) {
         this.defaultTimeout_ms=in.dataTimeout_ms;
         this.socketTimeout_ms=in.socketTimeout_ms;
         this.ftpUsername=in.ftpUsername;
         this.ftpPassword=in.ftpPassword;
+        this.passive=in.passive;
     }
     
     public static final class Builder {
@@ -88,6 +97,7 @@ public class CommonsNet_3_3_DirLister implements RemoteDirLister<FTPFile,ListFtp
         // anonymous login
         private String ftpUsername="anonymous";
         private String ftpPassword="gp-help@broadinstitute.org";
+        private boolean passive=true;
         
         public Builder dataTimeout(int dataTimeout_ms) {
             this.dataTimeout_ms=dataTimeout_ms;
@@ -103,6 +113,10 @@ public class CommonsNet_3_3_DirLister implements RemoteDirLister<FTPFile,ListFtp
         }
         public Builder password(String password) {
             this.ftpPassword=password;
+            return this;
+        }
+        public Builder passive(final boolean b) {
+            this.passive=b;
             return this;
         }
         
@@ -127,11 +141,39 @@ public class CommonsNet_3_3_DirLister implements RemoteDirLister<FTPFile,ListFtp
             throw new ListFtpDirException("Module error, Invalid ftpDir="+ftpDir);
         }
 
+        if (log.isDebugEnabled()) {
+            log.debug("connecting to host="+ftpUrl.getHost());
+        }
+
         FTPFile[] files;
         final FTPClient ftpClient = new FTPClient();
         try {
             ftpClient.setDataTimeout(defaultTimeout_ms);
-            ftpClient.connect(ftpUrl.getHost());
+            if (passive) {
+                ftpClient.enterLocalPassiveMode();
+            }
+            else {
+                ftpClient.enterLocalActiveMode();
+            }
+            final int port;
+            if (ftpUrl.getPort()>0) {
+                port=ftpUrl.getPort();
+            }
+            else if (ftpUrl.getDefaultPort()>0) {
+                port=ftpUrl.getDefaultPort();
+            }
+            else {
+                port=-1;
+            }
+            if (port>0) {
+                log.debug("port="+port);
+                ftpClient.connect(ftpUrl.getHost(), port);
+            }
+            else {
+                log.debug("port=<not set>");
+                ftpClient.connect(ftpUrl.getHost());
+            }
+            
             ftpClient.setSoTimeout(socketTimeout_ms);
             // After connection attempt, you should check the reply code to verify success.
             final int reply = ftpClient.getReplyCode();
@@ -149,7 +191,6 @@ public class CommonsNet_3_3_DirLister implements RemoteDirLister<FTPFile,ListFtp
             }
             ftpClient.setFileType(FTP.ASCII_FILE_TYPE);
             //ftpClient.setFileType(FTP.BINARY_FILE_TYPE);
-            ftpClient.enterLocalPassiveMode();
 
             //check for valid path
             success=ftpClient.changeWorkingDirectory(ftpUrl.getPath());

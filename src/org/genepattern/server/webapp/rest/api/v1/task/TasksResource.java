@@ -384,12 +384,15 @@ public class TasksResource {
             }
 
             // Return the JSON object 
-            final JSONArray allCategories=initAllCategoriesJson( filteredCategories.values() );
-            final JSONArray allSuites=initAllSuitesJson( suiteInfos );
+            JSONArray allCategories = initAllCategoriesJson(filteredCategories.values());
+            JSONArray allSuites = initAllSuitesJson(suiteInfos);
+            JSONObject kindToModules = initSendToModulesMap(filteredTasks);
+
             JSONObject jsonObj=new JSONObject();
             jsonObj.put("all_modules", allModules);
             jsonObj.put("all_categories", allCategories);
             jsonObj.put("all_suites", allSuites);
+            jsonObj.put("kindToModules", kindToModules);
             return Response.ok().entity(jsonObj.toString()).build();
         }
         catch (Throwable t) {
@@ -403,6 +406,28 @@ public class TasksResource {
                 HibernateUtil.closeCurrentSession();
             }
         }
+    }
+
+    private JSONObject initSendToModulesMap(SortedSet<TaskInfo> filteredTasks) {
+        JSONObject toReturn = new JSONObject();
+
+        for (TaskInfo info : filteredTasks) {
+            Set<String> kinds = info._getInputFileTypes();
+
+            for (String kind : kinds) {
+                JSONArray lsids = null;
+                try { lsids = toReturn.getJSONArray(kind); } catch (JSONException e) { lsids = new JSONArray(); }
+                lsids.put(info.getLsid());
+
+                try {
+                    toReturn.put(kind, lsids);
+                } catch (JSONException e) {
+                    log.error("ERROR building sendToModule map in JSON");
+                }
+            }
+        }
+
+        return toReturn;
     }
     
     private JSONArray initAllCategoriesJson(final Collection<String> categoryNames) {
@@ -435,7 +460,7 @@ public class TasksResource {
     /**
      * Wrap a single string as a JSON object to be returned.
      * Currently used for wrapping module categories
-     * @param string
+     * @param category
      * @return
      * @throws JSONException
      */
@@ -631,7 +656,7 @@ public class TasksResource {
      *     WARN, Initialized from cache, problem connecting to remote server
      *     ERROR, Error in module manifest, didn't initialize choices.
      *     ERROR, Connection error to remote server (url)
-     *     ERROR, Timeout waiting for listing from remote server (url, timeout)
+     *     NOT_INITIALIZED, the dynamic drop-down was not initialized from the remote server
      * 
      * @param uriInfo
      * @param taskNameOrLsid
@@ -661,18 +686,22 @@ public class TasksResource {
         }
         if (taskContext.getTaskInfo()==null) {
             String errorMessage="No task with task id: " + taskNameOrLsid + " found " + "for user " + taskContext.getUserId();
+            log.debug(errorMessage);
             return Responses.notFound().entity(errorMessage).build();
         }
         
         final Map<String,ParameterInfoRecord> paramInfoMap=ParameterInfoRecord.initParamInfoMap(taskContext.getTaskInfo());
         if (!paramInfoMap.containsKey(pname)) {
             String errorMessage="No parameter with name="+pname;
+            log.debug(errorMessage);
             return Responses.notFound().entity(errorMessage).build();
         }
         
         ParameterInfoRecord pinfoRecord=paramInfoMap.get(pname);
         if (!ChoiceInfo.hasChoiceInfo(pinfoRecord.getFormal())) {
-            return Responses.notFound().entity(taskContext.getTaskInfo().getName()+"."+pname + " does not have a choiceInfo").build();
+            String errorMessage=taskContext.getTaskInfo().getName()+"."+pname + " does not have a choiceInfo";
+            log.debug(errorMessage);
+            return Responses.notFound().entity(errorMessage).build();
         }
         
         ChoiceInfoParser parser=ChoiceInfo.getChoiceInfoParser(taskContext);
@@ -688,6 +717,7 @@ public class TasksResource {
                 .build();
         }
         catch (Throwable t) {
+            log.error("Unexpected server error in GET "+choiceInfo.getChoiceDir(), t);
             return Response.serverError().entity("Error serializing JSON response: "+t.getLocalizedMessage()).build();
         }
     }

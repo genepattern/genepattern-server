@@ -1,9 +1,12 @@
 package org.genepattern.server.webapp.uploads;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.*;
 
 import org.apache.log4j.Logger;
 import org.genepattern.server.dm.GpFilePath;
+import org.genepattern.server.webapp.jsf.JobHelper;
 import org.genepattern.webservice.TaskInfo;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -23,10 +26,7 @@ public class UploadTreeJSON extends JSONArray {
     public static final String TITLE = "title";
     public static final String ATTR = "attr";
     
-    public UploadTreeJSON(final List<GpFilePath> files, final Map<String, SortedSet<TaskInfo>> kindToTaskInfo) {
-        this(files, "", kindToTaskInfo);
-    }
-    public UploadTreeJSON(final List<GpFilePath> files, final String code, final Map<String, SortedSet<TaskInfo>> kindToTaskInfo) {
+    public UploadTreeJSON(List<GpFilePath> files, String code) {
         try {
             List<JSONObject> toAdd = new ArrayList<JSONObject>();
             
@@ -37,14 +37,14 @@ public class UploadTreeJSON extends JSONArray {
             else if (code.equals(SAVE_TREE)) {
                 for (GpFilePath gsf: files) {
                     if (gsf.isDirectory()) {
-                        JSONObject fj = makeFileJSON(gsf, true, kindToTaskInfo);
+                        JSONObject fj = makeFileJSON(gsf, true);
                         toAdd.add(fj);
                     }
                 }
             }
             else {
                 for (GpFilePath gsf: files) {
-                    JSONObject fj = makeFileJSON(gsf, kindToTaskInfo);
+                    JSONObject fj = makeFileJSON(gsf);
                     toAdd.add(fj);
                 }
             }
@@ -70,11 +70,12 @@ public class UploadTreeJSON extends JSONArray {
         }
         return toReturn.toString();
     }
-    
-    public static JSONObject makeFileJSON(final GpFilePath file, final Map<String, SortedSet<TaskInfo>> kindToTaskInfo) throws Exception {
-        return makeFileJSON(file, false, kindToTaskInfo);
+
+    public static JSONObject makeFileJSON(GpFilePath file) throws Exception {
+        return makeFileJSON(file, false);
     }
-    public static JSONObject makeFileJSON(final GpFilePath file, final boolean dirOnly, final Map<String, SortedSet<TaskInfo>> kindToTaskInfo) throws Exception {
+
+    public static JSONObject makeFileJSON(GpFilePath file, boolean dirOnly) throws Exception {
         JSONObject object = new JSONObject();
         
         JSONObject data = new JSONObject();
@@ -86,76 +87,23 @@ public class UploadTreeJSON extends JSONArray {
         else { attr.put("onclick", "JavaScript:handleTreeClick(this); return false;"); }
         attr.put("name", file.getName());
 
-        // Add the Send to Module data
-        String kind = file.getKind();
-        SortedSet<TaskInfo> tasks = kindToTaskInfo.get(kind);
-        if (tasks == null) tasks = new TreeSet<TaskInfo>();
-        String taskString = makeTaskString(tasks);
-        attr.put("data-sendtomodule", taskString);
-
         // Add the Kind data
+        String kind = file.getKind();
         attr.put("data-kind", kind);
 
         // Add partial file data
-        boolean isPartial = (file.getNumParts() != file.getNumPartsRecd()) && (file.getNumParts() != 0);
+        boolean isPartial = (file.getNumParts() > file.getNumPartsRecd());
         attr.put("data-partial", isPartial);
-        
-        data.put(ATTR, attr);
 
-        if (file.isDirectory()) {
-            final SortedSet<GpFilePath> sortedChildren=new TreeSet<GpFilePath>(UploadFileServlet.dirFirstComparator);
-            sortedChildren.addAll(file.getChildren());
-            List<JSONObject> children = new ArrayList<JSONObject>();
-            for (final GpFilePath child : sortedChildren) {
-                if (child.isDirectory() || !dirOnly) {
-                    JSONObject childJSON = makeFileJSON(child, dirOnly, kindToTaskInfo);
-                    children.add(childJSON);
-                }
+        // Add tooltip text
+        if (!"directory".equals(kind)) {
+            String hoverString = "";
+            DateFormat df = new SimpleDateFormat("yyyy-MM-dd");
+            if (file.getLastModified() !=  null) {
+                hoverString += df.format(file.getLastModified()) + " - ";
             }
-            object.put(CHILDREN, children);
-        }  
-        
-        JSONObject metadata = new JSONObject();
-        metadata.put("id", file.getRelativePath().replaceAll("[^a-zA-Z0-9]", "_"));
-        object.put(METADATA, metadata);
-        
-        object.put(DATA, data);
-        if (file.isDirectory()) {
-            object.put(STATE, STATE_CLOSED);
+            attr.put("title", hoverString + JobHelper.getFormattedSize(file.getFileLength()));
         }
-        
-        return object;
-    }
-
-    public static JSONObject makeFileJSON(GpFilePath file, UploadFilesBean bean) throws Exception {
-        return makeFileJSON(file, false, bean);
-    }
-
-    public static JSONObject makeFileJSON(GpFilePath file, boolean dirOnly, UploadFilesBean bean) throws Exception {
-        JSONObject object = new JSONObject();
-        
-        JSONObject data = new JSONObject();
-        data.put(TITLE, file.getName() + " ");
-        
-        JSONObject attr = new JSONObject();
-        attr.put("href", file.getUrl());
-        if (dirOnly) { attr.put("onclick", "JavaScript:handleSaveClick(this); return false;"); }
-        else { attr.put("onclick", "JavaScript:handleTreeClick(this); return false;"); }
-        attr.put("name", file.getName());
-
-        // Add the Send to Module data
-        String kind = file.getKind();
-        SortedSet<TaskInfo> tasks = bean.getKindToTaskInfo().get(kind);
-        if (tasks == null) tasks = new TreeSet<TaskInfo>();
-        String taskString = makeTaskString(tasks);
-        attr.put("data-sendtomodule", taskString);
-
-        // Add the Kind data
-        attr.put("data-kind", kind);
-
-        // Add partial file data
-        boolean isPartial = file.getNumParts() != file.getNumPartsRecd();
-        attr.put("data-partial", isPartial);
         
         data.put(ATTR, attr);
 
@@ -165,7 +113,7 @@ public class UploadTreeJSON extends JSONArray {
             List<JSONObject> children = new ArrayList<JSONObject>();
             for (GpFilePath child : sortedChildren) {
                 if (child.isDirectory() || !dirOnly) {
-                    JSONObject childJSON = makeFileJSON(child, dirOnly, bean);
+                    JSONObject childJSON = makeFileJSON(child, dirOnly);
                     children.add(childJSON);
                 }
             }

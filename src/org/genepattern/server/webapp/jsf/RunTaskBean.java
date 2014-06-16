@@ -58,6 +58,8 @@ public class RunTaskBean {
     private boolean pipelineWithMissingTasks = false;
     private String name;
     private String lsid;
+    private String jobId;
+    private String jobResults;
     private String[] documentationFilenames;
     private Parameter[] parameters;
     private String version;
@@ -96,6 +98,8 @@ public class RunTaskBean {
      */
     public RunTaskBean() {
         String taskToRun = UIBeanHelper.getRequest().getParameter("lsid");
+        this.jobId = UIBeanHelper.getRequest().getParameter("jobid");
+        this.jobResults = UIBeanHelper.getRequest().getParameter("jobResults");
         splashPage = UIBeanHelper.getRequest().getParameter("splash");
         if (taskToRun == null || taskToRun.length() == 0) {
             ModuleChooserBean chooser = (ModuleChooserBean) UIBeanHelper.getManagedBean("#{moduleChooserBean}");
@@ -156,6 +160,14 @@ public class RunTaskBean {
 
     public String getFormAction() {
         return "SubmitJob";
+    }
+
+    public String getJobId() {
+        return jobId;
+    }
+
+    public String getJobResults() {
+        return jobResults;
     }
 
     public String getLsid() {

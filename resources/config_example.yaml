@@ -118,7 +118,25 @@ executors:
         classname: org.genepattern.server.executor.TestCommandExecutor
         configuration.file: test_command_executor.yaml
 
-    # nested declaration with embedded configuration, <id>: { classname: <classname>, configuration: {}} 
+    #
+    # Lsf integration with the JobRunner API, using the Broad Core library
+    #
+    LsfBroadCore: 
+        # Note: technically, you are using the JobExecutor implementation of the CommandExecutor API ...
+        classname: org.genepattern.server.executor.drm.JobExecutor
+        configuration.properties:
+            # ... which loads the JobRunner with the 'jobRunnerClassname'
+            jobRunnerClassname: org.genepattern.drm.impl.lsf.broadcore.BroadCoreLsfRunner
+            jobRunnerName: LsfBroadCore
+        default.properties:
+            job.logFile: .lsf.out
+            job.queue: genepattern
+    
+
+    #
+    # Lsf integration with the CommandExecutor API
+    # Deprecated in GP 3.8.2 release.
+    #
     LSF:
         classname: org.genepattern.server.executor.lsf.LsfCommandExecutor
         #BroadCore configuration properties
@@ -156,6 +174,10 @@ executors:
             lsf.use.pre.exec.command: "false"
             # optionally set the number of CPU slots which the job requires, e.g. bsub -n 4 
             #lsf.cpu.slots: 4
+            # optionally set the lsf job group, e.g. bsub -g /genepattern
+            #lsf.group: 
+            # optionally set the lsf hostname(s), e.g. bsub -m "host1 host2"
+            #lsf.hostname: 
             # make sure to include valid list of value for lsf.extra.bsub.args, it doesn't work with an empty string
             #lsf.extra.bsub.args: 
             # default setting, no need to set

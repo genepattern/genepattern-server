@@ -49,16 +49,54 @@ import org.genepattern.webservice.JobStatus;
 public class JobExecutor implements CommandExecutor2 {
     private static final Logger log = Logger.getLogger(JobExecutor.class);
     
+    /**
+     * The fully qualified classname of a class which implements the JobRunner interface.
+     * E.g.
+     * <pre>
+           jobRunnerClassname: org.genepattern.drm.impl.local.LocalJobRunner
+     * </pre>
+     */
+    public static final String PROP_JOB_RUNNER_CLASSNAME="jobRunnerClassname";
+    /**
+     * An optional unique name for this executor, so that it can be referred to in the config_yaml file.
+     * E.g.
+     * <pre>
+           jobRunnerName: LocalJobRunner
+     * </pre>
+     */
+    public static final String PROP_JOB_RUNNER_NAME="jobRunnerName";
+    
+    /**
+     * The amount of time in milliseconds to wait in between subsequent calls to check the status for particular running job.
+     * The poller will call JobRunner#getStatus for each open job in order.
+     */
+    public static final String PROP_FIXED_DELAY="fixedDelay";
+    
+    /**
+     * For debugging, optionally set the persistence option for the job status records.
+     * By default it saved to the GP database. It can optionally be set to an in-memory hash.
+     * <pre>
+           lookupType: DB
+           # lookupType: HASHMAP
+     * </pre>
+     * 
+     * @see DrmLookupFactory.Type
+     */
+    public static final String PROP_LOOKUP_TYPE="lookupType";
+    
     private String jobRunnerClassname;
     private String jobRunnerName;
     private JobRunner jobRunner;
     private DrmLookup jobLookupTable;
+    
+    private long fixedDelay=2000L;
 
     private static final int BOUND = 100000;
     private BlockingQueue<DrmJobRecord> runningJobs;
     private Thread jobHandlerThread;
     
-    private ScheduledExecutorService svc=Executors.newSingleThreadScheduledExecutor(new ThreadFactory() {
+    // wait for a fixed delay before putting a job back on the status checking queue
+    private ScheduledExecutorService svcDelay=Executors.newSingleThreadScheduledExecutor(new ThreadFactory() {
         @Override
         public Thread newThread(final Runnable r) {
             final Thread t=new Thread(r);
@@ -75,6 +113,17 @@ public class JobExecutor implements CommandExecutor2 {
             final Thread t=new Thread(r);
             t.setDaemon(true);
             t.setName("JobExecutor-1");
+            return t;
+        }
+    });
+
+    // call to JobRunner.cancelJob in a separate thread
+    private ScheduledExecutorService jobCancellationService=Executors.newSingleThreadScheduledExecutor(new ThreadFactory() {
+        @Override
+        public Thread newThread(final Runnable r) {
+            final Thread t=new Thread(r);
+            t.setDaemon(true);
+            t.setName("JobRunner-cancel");
             return t;
         }
     });
@@ -155,16 +204,13 @@ public class JobExecutor implements CommandExecutor2 {
     private static final long MINUTE=60L*SEC;
     
     /**
-     * For a running job, get the amount of time to wait before putting it back
-     * onto the runningJobs queue.
+     * For a running job, get the number of milliseconds to sleep before adding the job back 
+     * to the runningJobs queue.
      * 
-     * We should wait longer for long running jobs. See the incrementSleep method in GPClient.java for an example
-     * 
-     * 
-     * @return the number of milliseconds to sleep before adding the job back to the runningJobsQueue
+     * @return the number of milliseconds to delay
      */
     private long getDelay(final DrmJobRecord drmJobRecord, final DrmJobStatus drmJobStatus) {
-        return 2000L;
+        return fixedDelay;
     }
     
     // more intelligent delay
@@ -181,10 +227,9 @@ public class JobExecutor implements CommandExecutor2 {
             delta=now.getTime()-startTime.getTime();
         }
         else if (submitTime != null) {
-            delta=now.getTime()-startTime.getTime();
+            delta=now.getTime()-submitTime.getTime();
         }
         else {
-            //TODO: save the timestamp of the last time we called getStatus for this particular job
             delta=SEC;
         }
         
@@ -212,40 +257,54 @@ public class JobExecutor implements CommandExecutor2 {
     @Override
     public void setConfigurationProperties(final CommandProperties properties) {
         log.debug("setting configuration properties ...");
-        this.jobRunnerClassname=properties.getProperty("jobRunnerClassname");
+        this.jobRunnerClassname=properties.getProperty(PROP_JOB_RUNNER_CLASSNAME);
         if (jobRunnerClassname==null || jobRunnerClassname.length()==0) {
             throw new IllegalArgumentException("jobRunnerClassname is not set!");
         }
-        this.jobRunnerName=properties.getProperty("jobRunnerName", "0");
-        String lookupTypeStr=properties.getProperty("lookupType", DrmLookupFactory.Type.DB.name());
+        this.jobRunnerName=properties.getProperty(PROP_JOB_RUNNER_NAME, "0");
+        String lookupTypeStr=properties.getProperty(PROP_LOOKUP_TYPE, DrmLookupFactory.Type.DB.name());
         DrmLookupFactory.Type lookupType=null;
         try {
             lookupType=DrmLookupFactory.Type.valueOf(lookupTypeStr);
         }
         catch (Throwable t) {
-            log.error("Error initializing lookupType from config file, lookupType="+lookupTypeStr, t);
+            log.error("Error initializing value from config file, "+PROP_LOOKUP_TYPE+": "+lookupTypeStr, t);
+        }
+
+        String fixedDelayStr=properties.getProperty(PROP_FIXED_DELAY);
+        if (fixedDelayStr != null && fixedDelayStr.trim().length()>0) {
+            if (log.isDebugEnabled()) {
+                log.debug(PROP_FIXED_DELAY+"="+fixedDelay);
+            }
+            try {
+                this.fixedDelay=Long.parseLong(fixedDelayStr);
+            }
+            catch (Throwable t) {
+                log.error("Error initializing value from config file, "+PROP_FIXED_DELAY+": "+fixedDelayStr, t);
+            }
         }
         if (log.isDebugEnabled()) {
-            log.debug("jobRunnerClassname="+jobRunnerClassname);
-            log.debug("jobRunnerName="+jobRunnerName);
-            log.debug("lookupType="+lookupType);
+            log.debug(PROP_JOB_RUNNER_CLASSNAME+"="+jobRunnerClassname);
+            log.debug(PROP_JOB_RUNNER_NAME+"="+jobRunnerName);
+            log.debug(PROP_LOOKUP_TYPE+"="+lookupType);
+            log.debug(PROP_FIXED_DELAY+"="+fixedDelay);
         }
 
         this.jobRunner=JobExecutor.initJobRunner(jobRunnerClassname);
         this.jobLookupTable=DrmLookupFactory.initializeDrmLookup(lookupType, jobRunnerClassname, jobRunnerName);
-        log.info("Initialized jobRunner from classname="+jobRunnerClassname+", jobRunnerName="+jobRunnerName+", lookupType="+lookupType);
+        log.info("Initialized jobRunner from classname="+jobRunnerClassname+", jobRunnerName="+jobRunnerName);
     }
 
     @Override
     public void start() {
-        log.info("starting job executor: "+jobRunnerName+" ( "+jobRunnerClassname+" ) ...");
+        log.info("starting job executor: "+jobRunnerName+" ( "+jobRunnerName+" ) ...");
         runningJobs=new LinkedBlockingQueue<DrmJobRecord>(BOUND);
         initJobHandler();
         initJobsOnStartup(runningJobs);
     }
 
     private void initJobsOnStartup(final BlockingQueue<DrmJobRecord> toQueue) {
-        log.info("initializing jobs on startup: "+jobRunnerName+" ( "+jobRunnerClassname+" ) ...");
+        log.info("initializing jobs on startup: "+jobRunnerName+" ( "+jobRunnerName+" ) ...");
         final List<DrmJobRecord> jobs=jobLookupTable.getRunningDrmJobRecords();
         log.info("found "+jobs.size()+ " running job(s)");
         for(final DrmJobRecord drmJobId : jobs) {
@@ -278,6 +337,10 @@ public class JobExecutor implements CommandExecutor2 {
     }
 
     private DrmJobStatus getJobStatus(final DrmJobRecord drmJobRecord) throws InterruptedException {
+        return getJobStatus(drmJobRecord, 60000L); //60 seconds
+    }
+
+    private DrmJobStatus getJobStatus(final DrmJobRecord drmJobRecord, final long getJobStatus_delay_ms) throws InterruptedException {
         Future<DrmJobStatus> f=jobStatusService.submit(new Callable<DrmJobStatus>() {
             @Override
             public DrmJobStatus call() throws Exception {
@@ -285,15 +348,14 @@ public class JobExecutor implements CommandExecutor2 {
                 return drmJobStatus;
             }
         });
-        final long getJobStatus_delay=60L*1000L; //60 seconds
         try {
-            return f.get(getJobStatus_delay, TimeUnit.MILLISECONDS);
+            return f.get(getJobStatus_delay_ms, TimeUnit.MILLISECONDS);
         }
         catch (TimeoutException e) {
             if (log.isDebugEnabled()) { 
-                log.debug("checkStatus(gpJobNo="+drmJobRecord.getGpJobNo()+") timed out after "+getJobStatus_delay+" "+TimeUnit.MILLISECONDS);
+                log.debug("checkStatus(gpJobNo="+drmJobRecord.getGpJobNo()+") timed out after "+getJobStatus_delay_ms+" "+TimeUnit.MILLISECONDS);
             }
-            //TODO: just a guess, report it as running so that we try again
+            //report it as running so that we try again
             return new DrmJobStatus.Builder(drmJobRecord.getExtJobId(), DrmJobState.RUNNING).build();
         }
         catch (ExecutionException e) {
@@ -318,12 +380,16 @@ public class JobExecutor implements CommandExecutor2 {
             handleCompletedJob(drmJobRecord, drmJobStatus);
         }
         else {
+            final long delay;
             if (drmJobStatus==null) {
-                log.error("unexpected result from jobRunner.getStatus, drmJobStatus=null");
+                log.error("unexpected result from jobRunner.getStatus, drmJobStatus=null, retry in 30 minutes, gpJobNo="+drmJobRecord.getGpJobNo());
+                delay=30L*60L*1000L;
             }
-            //put it back onto the queue
-            final long delay=getDelay(drmJobRecord, drmJobStatus);
-            svc.schedule(new Runnable() {
+            else {
+                //put it back onto the queue
+                delay=getDelay(drmJobRecord, drmJobStatus);
+            }
+            svcDelay.schedule(new Runnable() {
                 @Override
                 public void run() {
                     try {
@@ -368,7 +434,7 @@ public class JobExecutor implements CommandExecutor2 {
     
     @Override
     public void stop() {
-        log.info("stopping job executor: "+jobRunnerName+" ( "+jobRunnerClassname+" ) ...");
+        log.info("stopping job executor: "+jobRunnerName+" ( "+jobRunnerName+" ) ...");
         if (jobHandlerThread!=null) {
             jobHandlerThread.interrupt();
         }
@@ -376,8 +442,9 @@ public class JobExecutor implements CommandExecutor2 {
             jobRunner.stop();
         }
         jobStatusService.shutdownNow();
-        svc.shutdownNow();
-        log.info("stopped job executor: "+jobRunnerName+" ( "+jobRunnerClassname+" )");
+        svcDelay.shutdownNow();
+        jobCancellationService.shutdownNow();
+        log.info("stopped job executor: "+jobRunnerName+" ( "+jobRunnerName+" )");
     }
     
     public static final boolean isSet(final String str) {
@@ -436,16 +503,80 @@ public class JobExecutor implements CommandExecutor2 {
         }
     }
 
+    /**
+     * Terminate the job from a new thread ... wait for 5 seconds to give the job a chance to 
+     * cancel (via JobRunner callback) ... otherwise make a direct call to GPAT.handleJobCompletion
+     * so that the UI indicates that the task was cancelled.
+     * 
+     * @param drmJobRecord
+     * @throws InterruptedException
+     */
     @Override
-    public void terminateJob(final JobInfo jobInfo) throws Exception {
+    public void terminateJob(final JobInfo jobInfo) {
         if (jobInfo==null) {
             throw new IllegalArgumentException("jobInfo==null");
         }
-        log.debug(jobRunnerName+" terminateJob, gpJobNo="+jobInfo.getJobNumber());
-        final DrmJobRecord drmJobRecord=jobLookupTable.lookupJobRecord(jobInfo.getJobNumber());
-        drmJobRecord.getExtJobId();
-        boolean cancelled=jobRunner.cancelJob(drmJobRecord);
-        log.debug("terminateJob(gpJobId="+jobInfo.getJobNumber()+", extJobId="+drmJobRecord.getExtJobId()+"): cancelled="+cancelled);
+        int gpJobNo=jobInfo.getJobNumber();
+        log.debug(jobRunnerName+" terminateJob, gpJobNo="+gpJobNo);
+        final DrmJobRecord drmJobRecord=jobLookupTable.lookupJobRecord(gpJobNo);
+        boolean cancelled=doCancel(drmJobRecord);
+        if (log.isDebugEnabled()) {
+            log.debug("cancelled, gpJobNo="+gpJobNo+": "+cancelled);
+        }
+    }
+    
+    private boolean doCancel(final DrmJobRecord drmJobRecord) {
+        try {
+            boolean cancelled=cancelJobInThread(drmJobRecord);
+            //Thread.sleep(2000); // brief hard-coded delay to allow for the jobrunner to properly cancel the job
+            //check the status of the job
+            DrmJobStatus cancelledStatus = getJobStatus(drmJobRecord, 5000L); // 5 seconds
+            if (!cancelledStatus.getJobState().is(DrmJobState.TERMINATED)) {
+                cancelledStatus = new DrmJobStatus.Builder(cancelledStatus)
+                     .jobStatusMessage("Cancellation requested from GenePattern user")
+                .build();
+            }
+            updateStatus(drmJobRecord, cancelledStatus);
+            // send callback to GPAT.handleJobCompletion
+            handleCompletedJob(drmJobRecord, cancelledStatus);
+            return cancelled;
+        }
+        catch (InterruptedException e) {
+            //one of these methods was interrupted
+            Thread.currentThread().interrupt();
+        }
+        return false;
+    }
+
+    private Boolean cancelJobInThread(final DrmJobRecord drmJobRecord) throws InterruptedException {
+        if (drmJobRecord==null) {
+            throw new IllegalArgumentException("drmJobRecord==null");
+        }
+        int gpJobNo=drmJobRecord.getGpJobNo();
+        log.debug(jobRunnerName+" terminateJob, gpJobNo="+gpJobNo);
+        
+        Boolean cancelled=null;
+        Future<Boolean> f = jobCancellationService.submit(new Callable<Boolean>() {
+            @Override
+            public Boolean call() throws Exception {
+                boolean cancelled=jobRunner.cancelJob(drmJobRecord);
+                return cancelled;
+            }
+        });
+        
+        try {
+            //hard-coded ... wait at most 5 seconds to cancel the job before falling back to manually updating the job status record
+            cancelled=f.get(5, TimeUnit.SECONDS);
+        }
+        catch (ExecutionException e) {
+            log.error("Error cancelling job="+gpJobNo, e);
+        }
+        catch (TimeoutException e) {
+            log.debug("Timeout while cancelling job="+gpJobNo, e);
+        }
+
+        log.debug("jobRunner.cancelJob returned "+cancelled);
+        return cancelled;
     }
 
     /**

@@ -34,11 +34,11 @@
 	             <li><a href="/gp/pages/manageSuite.jsf">Manage</a></li>
 	         </ul>
 	     </li>
-	     <li><a href="/gp/jobResults">Job Results</a>
-	         <ul>
-	             <li><a href="/gp/jobResults">Results Summary</a></li>
-	         </ul>
-	     </li>
+         <li><a href="/gp/pages/index.jsf?jobResults=userId%3D${requestScope.userID}">Job Results</a>
+             <ul>
+                 <li><a href="/gp/pages/index.jsf?jobResults=userId%3D${requestScope.userID}">Results Summary</a></li>
+             </ul>
+         </li>
 	     <li><a href="/gp/pages/index.jsf?splash=resources">Resources</a>
 	         <ul>
 	             <li><a href="JavaScript:Menu.go('http://www.broadinstitute.org/cancer/software/genepattern/gp_mail.html')">Mailing List</a></li>

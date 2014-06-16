@@ -201,7 +201,7 @@ public class TestPbsDemoConfig {
         
         JobConfigParams jobInputParams=JobConfigParams.initJobConfigParams(gpConfig, taskContext);
         Memory mem=Memory.fromString(jobInputParams.getParam(JobRunner.PROP_MEMORY).getDefaultValue());
-        Assert.assertEquals("", mem.fromString("8g"), mem);
+        Assert.assertEquals("", Memory.fromString("8g"), mem);
     }
 
     /**

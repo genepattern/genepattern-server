@@ -83,6 +83,20 @@ class LsfCommand {
         extraBsubArgs.add("rusage[mem="+maxMemory+"]");
         extraBsubArgs.add("-M");
         extraBsubArgs.add(maxMemory);
+        
+        //special-case, enable per-user job groups
+        final String jobGroup = this.lsfProperties.getProperty(LsfProperties.Key.JOB_GROUP.getKey(), null);
+        if (jobGroup != null) {
+            extraBsubArgs.add("-g");
+            extraBsubArgs.add(jobGroup);
+        }
+        
+        //special-case, enable custom hostname
+        final String hostname = this.lsfProperties.getProperty(LsfProperties.Key.HOSTNAME.getKey(), null);
+        if (hostname != null) {
+            extraBsubArgs.add("-m");
+            extraBsubArgs.add(hostname);
+        }
 
         final String cpuSlots=lsfProperties.getProperty(LsfProperties.Key.CPU_SLOTS.getKey());
         if (cpuSlots != null) {

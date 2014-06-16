@@ -15,8 +15,6 @@
       xmlns:c="http://java.sun.com/jstl/core">
     <ui:composition>
 
-        <script type="text/javascript" src="#{facesContext.externalContext.requestContextPath}/js/gp_tours.js"></script>
-
         <h:outputText rendered="#{moduleChooserBean.noModulesInstalled}">
             <h2><font color="red">There are no modules installed. Click <a href="#{facesContext.externalContext.requestContextPath}/pages/taskCatalog.jsf">here</a> to install modules from the module repository.</font></h2>
         </h:outputText>

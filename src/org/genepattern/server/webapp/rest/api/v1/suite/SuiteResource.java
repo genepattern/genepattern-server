@@ -110,7 +110,7 @@ public class SuiteResource {
                 log.error("Error getting lsid for suite.name=" + suiteInfo.getName());
             }
         }
-        jsonObj.put("documentation", getDocumentation(suiteInfo));
+        //jsonObj.put("documentation", getDocumentation(suiteInfo)); // Documentation not currently supported
         jsonObj.put("tags", new JSONArray());
         return jsonObj;
     }

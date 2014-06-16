@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+
+<!--
+~ Copyright 2013 The Broad Institute, Inc.
+~ SOFTWARE COPYRIGHT NOTICE
+~ This software and its documentation are the copyright of the Broad Institute, Inc. All rights are reserved.
+~
+~ This software is supplied without any warranty or guaranteed support whatsoever. The Broad Institute is not responsible for its use, misuse, or functionality.
+-->
+
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:t="http://myfaces.apache.org/tomahawk">
+    <f:view contentType="text/html">
+        <head>
+            <!-- Use this insert to override the "onLoad" initialization method.  This function is triggered from the body onload event.  -->
+            <ui:insert name="validationInit">
+                <script type="text/javascript" language="javascript"> function onLoad() {} </script>
+            </ui:insert>
+
+            <ui:insert name="headText" />
+
+        </head>
+        <body>
+            <!-- Error message area -->
+            <div id="errorMessageDiv" style="display:none;">
+                            <span id="errorMessageHeader" style="font-weight:bold">
+                                Please correct the following errors before proceeding:
+                            </span>
+                <div id="errorMessageContent"></div>
+            </div>
+
+            <!-- Info message area -->
+            <div id="infoMessageDiv" style="display:none;">
+                <div id="infoMessageContent"></div>
+            </div>
+
+            <!-- Include System Alert Message  -->
+            <t:div id="systemAlertMessage" rendered="#{systemMessageBean.systemMessage != null}">
+                <ui:include src="../pages/systemMessage.xhtml" />
+            </t:div>
+
+            <!-- JSF (Server side) errors or messages -->
+            <ui:include src="../pages/messages.xhtml" />
+            <h:outputText rendered="#{!empty facesContext.maximumSeverity}"><br /></h:outputText>
+
+            <ui:insert name="body" />
+        </body>
+    </f:view>
+</html>
