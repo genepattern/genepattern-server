@@ -1,6 +1,12 @@
+// Implicit variables declared elsewhere
+var genomeSpaceEnabled, genomeSpaceLoggedIn, username, jq, currentJobNumber, userLoggedIn,
+    openUploadDirectoryDialog, uploadDirectorySelected, openSaveDialog, adminServerAllowed,
+    parameter_and_val_groups, run_task_info, fileURL;
+
+
 // used to make sure that a jquery id selector is escaped properly
 function escapeJquerySelector(str) {
-	return str.replace(/([ #;&,.+*~\':"!^$[\]()=>|\/@])/g,'\\$1');
+    return str.replace(/([ #;&,.+*~\':"!^$[\]()=>|\/@])/g,'\\$1');
 }
 
 // toggleCheckBoxes -- used in combination with a "master" checkbox to toggle
@@ -8,108 +14,109 @@ function escapeJquerySelector(str) {
 // share a common container parent
 function toggleCheckBoxes(maincheckbox, parentId) {
     "use strict";
-	var isChecked = maincheckbox.checked;
-	var parentElement = document.getElementById(parentId);
-	var elements = parentElement.getElementsByTagName("input");
-	for (var i = 0; i < elements.length; i++) {
-		if (elements[i].type = "checkbox") {
-			elements[i].checked = isChecked;
-		}
-	}
+    var isChecked = maincheckbox.checked;
+    var parentElement = document.getElementById(parentId);
+    var elements = parentElement.getElementsByTagName("input");
+    for (var i = 0; i < elements.length; i++) {
+        if (elements[i].type = "checkbox") {
+            elements[i].checked = isChecked;
+        }
+    }
 }
 
 // POST /jobResults/<job>/requestEmailNotification
 function requestEmailNotification(cb, jobId, userEmail) {
     "use strict";
-	$.ajax({
-		type : "POST",
-		url : '/gp/jobResults/' + jobId + '/requestEmailNotification',
-		data : 'userEmail=' + userEmail,
-		dataType : "json",
-		success : function(data, textStatus, jqXHR) {
-			ajaxEmailResponse(jqXHR);
-		},
-		error : function(data, textStatus, jqXHR) {
-			cb.checked = false;
-			alert('Error ' + jqXHR.status);
-		}
-	});
+    $.ajax({
+        type : "POST",
+        url : '/gp/jobResults/' + jobId + '/requestEmailNotification',
+        data : 'userEmail=' + userEmail,
+        dataType : "json",
+        success : function(data, textStatus, jqXHR) {
+            ajaxEmailResponse(jqXHR);
+        },
+        error : function(data, textStatus, jqXHR) {
+            cb.checked = false;
+            alert('Error ' + jqXHR.status);
+        }
+    });
 }
 
 // POST /jobResults/<job>/cancelEmailNotification
 function cancelEmailNotification(cb, jobId, userEmail) {
     "use strict";
-	$.ajax({
-		type : "POST",
-		url : '/gp/jobResults/' + jobId + '/cancelEmailNotification',
-		data : 'userEmail=' + userEmail,
-		dataType : "json",
-		success : function(data, textStatus, jqXHR) {
-			ajaxEmailResponse(jqXHR);
-		},
-		error : function(data, textStatus, jqXHR) {
-			cb.checked = false;
-			alert('Error ' + jqXHR.status);
-		}
-	});
+    $.ajax({
+        type : "POST",
+        url : '/gp/jobResults/' + jobId + '/cancelEmailNotification',
+        data : 'userEmail=' + userEmail,
+        dataType : "json",
+        success : function(data, textStatus, jqXHR) {
+            ajaxEmailResponse(jqXHR);
+        },
+        error : function(data, textStatus, jqXHR) {
+            cb.checked = false;
+            alert('Error ' + jqXHR.status);
+        }
+    });
 }
 
 function ajaxEmailResponse(req) {
     "use strict";
-	if (req.readyState == 4) {
-		if (req.status >= 200 && req.status < 300) {
-			// alert('all is well on email submission')
-		}
+    if (req.readyState == 4) {
+        if (req.status >= 200 && req.status < 300) {
+            // alert('all is well on email submission')
+        }
         else {
-			alert("There was a problem in email notification:\n" + req.status
-					+ ' -- ' + req.statusText);
-		}
-	}
+            alert("There was a problem in email notification:\n" + req.status
+                + ' -- ' + req.statusText);
+        }
+    }
 }
 
 // Requires jQuery & jQuery UI
 function showDialog(title, message, button) {
-	var alert = document.createElement("div");
+    "use strict";
+    var alert = document.createElement("div");
 
-	if (typeof (message) == 'string') {
-		alert.innerHTML = message;
-	}
+    if (typeof (message) == 'string') {
+        alert.innerHTML = message;
+    }
     else {
-		$(alert).append(message);
-	}
+        $(alert).append(message);
+    }
 
-	if (button === undefined || button === null) {
-		button = {
-			"OK" : function(event) {
-				$(this).dialog("close");
-				if (event.preventDefault)
-					event.preventDefault();
-				if (event.stopPropagation)
-					event.stopPropagation();
-			}
-		};
-	}
+    if (button === undefined || button === null) {
+        button = {
+            "OK" : function(event) {
+                $(this).dialog("close");
+                if (event.preventDefault)
+                    event.preventDefault();
+                if (event.stopPropagation)
+                    event.stopPropagation();
+            }
+        };
+    }
 
-	$(alert).dialog({
-		modal : true,
-		dialogClass : "top-dialog",
-		width : 400,
-		title : title,
-		buttons : button,
-		close : function() {
-			$(this).dialog("destroy");
-			$(this).remove();
-		}
-	});
+    $(alert).dialog({
+        modal : true,
+        dialogClass : "top-dialog",
+        width : 400,
+        title : title,
+        buttons : button,
+        close : function() {
+            $(this).dialog("destroy");
+            $(this).remove();
+        }
+    });
 
-	// Fix z-index for dialog
-	var z = parseInt($(alert).parent().css("z-index"));
-	if (z < 10000) {
-		z += 9000;
-		$(".top-dialog").css("z-index", z);
-	}
+    // Fix z-index for dialog
+    var z = parseInt($(alert).parent().css("z-index"));
+    if (z < 10000) {
+        z += 9000;
+        $(".top-dialog").css("z-index", z);
+    }
 
-	return alert;
+    return alert;
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -117,7 +124,8 @@ function showDialog(title, message, button) {
 /////////////////////////////////////////////////////////////////////////////////////////
 
 if (typeof $ === 'undefined') {
-	var $ = jq;
+    //noinspection JSUnusedAssignment
+    var $ = jq;
 }
 var all_modules = null;
 var all_modules_map = null;
@@ -126,99 +134,105 @@ var all_suites = null;
 var kindToModules = null;
 
 function getPinnedModules() {
-	var pinned = [];
+    var pinned = [];
 
-	$.each(all_modules, function(i, v) {
-		for (var j = 0; j < v.tags.length; j++) {
-			var tagObj = v.tags[j];
-			if (tagObj.tag == "favorite") {
-				pinned.push(v);
-			}
-		}
-	});
+    $.each(all_modules, function(i, v) {
+        for (var j = 0; j < v.tags.length; j++) {
+            var tagObj = v.tags[j];
+            if (tagObj.tag == "favorite") {
+                pinned.push(v);
+            }
+        }
+    });
 
-	// Sort by position
-	pinned = pinned.sort(function (a, b) {
-		var a_pos = 0;
-		for (var j = 0; j < a.tags.length; j++) {
-			var tagObj = a.tags[j];
-			if (tagObj.tag == "favorite") {
-				a_pos = tagObj.metadata;
-			}
-		}
+    // Sort by position
+    pinned = pinned.sort(function (a, b) {
+        var a_pos = 0;
+        //noinspection JSDuplicatedDeclaration
+        for (var j = 0; j < a.tags.length; j++) {
+            //noinspection JSDuplicatedDeclaration
+            var tagObj = a.tags[j];
+            if (tagObj.tag == "favorite") {
+                a_pos = tagObj.metadata;
+            }
+        }
 
-		var b_pos = 0;
-		for (var j = 0; j < b.tags.length; j++) {
-			var tagObj = b.tags[j];
-			if (tagObj.tag == "favorite") {
-				b_pos = tagObj.metadata;
-			}
-		}
+        var b_pos = 0;
+        //noinspection JSDuplicatedDeclaration
+        for (var j = 0; j < b.tags.length; j++) {
+            //noinspection JSDuplicatedDeclaration
+            var tagObj = b.tags[j];
+            if (tagObj.tag == "favorite") {
+                b_pos = tagObj.metadata;
+            }
+        }
 
-		if (a_pos > b_pos) {
-			return 1;
-		}
-		if (a_pos < b_pos) {
-			return -1;
-		}
+        if (a_pos > b_pos) {
+            return 1;
+        }
+        if (a_pos < b_pos) {
+            return -1;
+        }
 
-		return 0;
-	});
+        return 0;
+    });
 
-	return pinned;
+    return pinned;
 }
 
 function getRecentModules() {
-	var recent = [];
+    var recent = [];
 
-	$.each(all_modules, function(i, v) {
-		for (var j = 0; j < v.tags.length; j++) {
-			var tagObj = v.tags[j];
-			if (tagObj.tag == "recent") {
-				recent.push(v);
-			}
-		}
-	});
+    $.each(all_modules, function(i, v) {
+        for (var j = 0; j < v.tags.length; j++) {
+            var tagObj = v.tags[j];
+            if (tagObj.tag == "recent") {
+                recent.push(v);
+            }
+        }
+    });
 
-	return recent;
+    return recent;
 }
 
 function initBrowseSuites() {
-	var browse = $('<div id="module-list-suites"></div>').modulelist({
+    var browse = $('<div id="module-list-suites"></div>').modulelist({
         title: '<a href="#" onclick="$(\'#module-browse\').searchslider(\'show\');">Browse Modules</a> &raquo; Browse Suites',
         data: all_suites,
         droppable: false,
         draggable: false,
         click: function(event) {
             var filter = $(event.currentTarget).find(".module-name").text();
-            $("#module-search").searchslider("show");
-            $("#module-search").searchslider("tagfilter", filter);
-            $("#module-search").searchslider("set_title", '<a href="#" onclick="$(\'#module-browse\').searchslider(\'show\');">Browse Modules</a> &raquo; <a href="#" onclick="$(\'#module-suites\').searchslider(\'show\');">Browse Suites</a> &raquo; ' + filter);
+            var modSearch = $("#module-search");
+            modSearch.searchslider("show");
+            modSearch.searchslider("tagfilter", filter);
+            modSearch.searchslider("set_title", '<a href="#" onclick="$(\'#module-browse\').searchslider(\'show\');">Browse Modules</a> &raquo; <a href="#" onclick="$(\'#module-suites\').searchslider(\'show\');">Browse Suites</a> &raquo; ' + filter);
         }
     });
 
-	$('#module-suites').searchslider({
+    $('#module-suites').searchslider({
         lists: [browse]
     });
 }
 
 function initBrowseModules() {
-	return $('<div id="module-list-browse"></div>').modulelist({
+    return $('<div id="module-list-browse"></div>').modulelist({
         title: 'Browse Modules by Category',
         data: all_categories,
         droppable: false,
         draggable: false,
         click: function(event) {
             var filter = $(event.currentTarget).find(".module-name").text();
-            $("#module-search").searchslider("show");
-            $("#module-search").searchslider("tagfilter", filter);
-            $("#module-search").searchslider("set_title", '<a href="#" onclick="$(\'#module-browse\').searchslider(\'show\');">Browse Modules</a> &raquo; ' + filter);
+            var modSearch = $("#module-search");
+            modSearch.searchslider("show");
+            modSearch.searchslider("tagfilter", filter);
+            modSearch.searchslider("set_title", '<a href="#" onclick="$(\'#module-browse\').searchslider(\'show\');">Browse Modules</a> &raquo; ' + filter);
         }
     });
 }
 
 function initBrowseTop() {
-	return $('<div id="module-list-allnsuite"></div>').modulelist({
+    return $('<div id="module-list-allnsuite"></div>').modulelist({
         title: 'Browse Modules &amp; Pipelines',
         data: [
             {
@@ -248,12 +262,13 @@ function initBrowseTop() {
         click: function(event) {
             var button = $(event.currentTarget).find(".module-name").text();
             if (button == 'All Modules') {
-                $("#module-search").searchslider("show");
-                $("#module-search").searchslider("filter", '');
-                $("#module-search").searchslider("set_title", '<a href="#" onclick="$(\'#module-browse\').searchslider(\'show\');">Browse Modules</a> &raquo; All Modules');
+                var modSearch = $("#module-search");
+                modSearch.searchslider("show");
+                modSearch.searchslider("filter", '');
+                modSearch.searchslider("set_title", '<a href="#" onclick="$(\'#module-browse\').searchslider(\'show\');">Browse Modules</a> &raquo; All Modules');
             }
             else {
-            	$("#module-suites").searchslider("show");
+                $("#module-suites").searchslider("show");
             }
         }
     });
@@ -262,13 +277,13 @@ function initBrowseTop() {
 function initSearchSlider() {
     var still_loading = false;
 
-	var search = $('<div id="module-list-search"></div>').modulelist({
+    var search = $('<div id="module-list-search"></div>').modulelist({
         title: 'Search: Modules &amp; Pipelines',
         data: all_modules,
         droppable: false,
         draggable: true,
         click: function(event) {
-        	var lsid = $(event.target).closest(".module-listing").module("get_lsid");
+            var lsid = $(event.target).closest(".module-listing").module("get_lsid");
             if (!still_loading) {
                 still_loading = true;
                 setTimeout(function() {
@@ -280,22 +295,23 @@ function initSearchSlider() {
         }
     });
 
-    var modsearch = $('#module-search').searchslider({
+    $('#module-search').searchslider({
         lists: [search]
     });
 }
 
 function initRecent() {
     var still_loading = false;
-	var recent_modules = getRecentModules();
+    var recent_modules = getRecentModules();
 
-	var recent = $('#recent-modules').modulelist({
+    var rmSelection = $('#recent-modules');
+    var recent = rmSelection.modulelist({
         title: "Recent Modules",
         data: recent_modules,
         droppable: false,
         draggable: true,
         click: function(event) {
-        	var lsid = $(event.target).closest(".module-listing").module("get_lsid");
+            var lsid = $(event.target).closest(".module-listing").module("get_lsid");
             if (!still_loading) {
                 still_loading = true;
                 setTimeout(function() {
@@ -306,28 +322,29 @@ function initRecent() {
         }
     });
     recent.modulelist("filter", "recent");
-    $('#recent-modules .module-list-empty').text("No Recent Modules");
+    rmSelection.find('.module-list-empty').text("No Recent Modules");
 }
 
 function calcPosition(placeholder) {
-	return placeholder.index() - 2;
+    return placeholder.index() - 2;
 }
 
 function baseLsid(lsid) {
-	return lsid.substr(0, lsid.lastIndexOf(":"));
+    return lsid.substr(0, lsid.lastIndexOf(":"));
 }
 
 function initPinned() {
     var still_loading = false;
-	var pinned_modules = getPinnedModules();
+    var pinned_modules = getPinnedModules();
 
-	var pinned = $('#pinned-modules').modulelist({
+    var pmSelection = $('#pinned-modules');
+    var pinned = pmSelection.modulelist({
         title: "Favorite Modules",
         data: pinned_modules,
         droppable: true,
         draggable: false,
         click: function(event) {
-        	var lsid = $(event.target).closest(".module-listing").module("get_lsid");
+            var lsid = $(event.target).closest(".module-listing").module("get_lsid");
             if (!still_loading) {
                 still_loading = true;
                 setTimeout(function() {
@@ -338,20 +355,21 @@ function initPinned() {
             }
         },
         add: function(event, ui) {
+            //noinspection JSDuplicatedDeclaration
             var lsid = $(ui.item).find(".module-lsid").text();
 
-        	$.ajax({
+            $.ajax({
                 cache: false,
-        		type: 'POST',
+                type: 'POST',
                 url: '/gp/rest/v1/tags/pin',
                 dataType: 'text',
                 data: JSON.stringify({
-                	user: username,
-                	lsid: baseLsid(lsid),
-                	position: calcPosition(ui.placeholder)
+                    user: username,
+                    lsid: baseLsid(lsid),
+                    position: calcPosition(ui.placeholder)
                 }),
-                success: function(data, status, xhr) {
-                	console.log("pinned");
+                success: function() {
+                    console.log("pinned");
 
                     $(".module-lsid:contains('" + lsid + "')").each(function(index, element) {
                         var module = $(element).parent();
@@ -360,32 +378,33 @@ function initPinned() {
                 }
             });
 
-        	// Reinitialize the widget as a module
-        	var lsid = $(ui.item).find(".module-lsid").text();							// Get the lsid
-        	var source = $("#module-list-search").modulelist("get_module", lsid);		// Get the source widget
-        	var data = source.module("get_data");										// Get the JSON data
-        	var click = source.module("get_click");										// Get the click event
-        	$(ui.item).empty();															// Empty the div
-        	$(ui.item).module({															// Reinitialize
-        		data: data,
-        		draggable: false,
-        		click: click
-        	});
+            // Reinitialize the widget as a module
+            //noinspection JSDuplicatedDeclaration
+            var lsid = $(ui.item).find(".module-lsid").text();							// Get the lsid
+            var source = $("#module-list-search").modulelist("get_module", lsid);		// Get the source widget
+            var data = source.module("get_data");										// Get the JSON data
+            var click = source.module("get_click");										// Get the click event
+            $(ui.item).empty();															// Empty the div
+            $(ui.item).module({															// Reinitialize
+                data: data,
+                draggable: false,
+                click: click
+            });
         },
         remove: function(event, ui) {
             var lsid = $(ui.item).find(".module-lsid").text();
 
-        	$.ajax({
-        		type: 'DELETE',
+            $.ajax({
+                type: 'DELETE',
                 url: '/gp/rest/v1/tags/unpin',
                 dataType: 'text',
                 data: JSON.stringify({
-                	user: username,
-                	lsid: baseLsid(lsid),
-                	position: 0
+                    user: username,
+                    lsid: baseLsid(lsid),
+                    position: 0
                 }),
-                success: function(data, status, xhr) {
-                	console.log("unpinned");
+                success: function() {
+                    console.log("unpinned");
 
                     $(".module-lsid:contains('" + lsid + "')").each(function(index, element) {
                         var module = $(element).parent();
@@ -395,23 +414,23 @@ function initPinned() {
             });
         },
         reposition: function(event, ui) {
-        	$.ajax({
-        		type: 'PUT',
+            $.ajax({
+                type: 'PUT',
                 url: '/gp/rest/v1/tags/repin',
                 dataType: 'text',
                 data: JSON.stringify({
-                	user: username,
-                	lsid: baseLsid($(ui.item).find(".module-lsid").text()),
-                	position: calcPosition(ui.placeholder)
+                    user: username,
+                    lsid: baseLsid($(ui.item).find(".module-lsid").text()),
+                    position: calcPosition(ui.placeholder)
                 }),
-                success: function(data, status, xhr) {
-                	console.log("repinned");
+                success: function() {
+                    console.log("repinned");
                 }
             });
         }
     });
-	pinned.modulelist("tagfilter", "favorite");
-    $('#pinned-modules .module-list-empty').text("Drag Modules Here");
+    pinned.modulelist("tagfilter", "favorite");
+    pmSelection.find('.module-list-empty').text("Drag Modules Here");
 }
 
 function setModuleSearchTitle(filter) {
@@ -484,9 +503,10 @@ function ajaxFileTabUpload(file, directory, done, index) {
     var token = null;                                   // The token for this upload resource
     var totalQueue = null;                              // The total events that were in the queue
 
-    var progressbar = $(".upload-toaster-file[name='" + escapeJquerySelector(file.name) + "']").find(".upload-toaster-file-progress");
+    var uploadToasterFile = $(".upload-toaster-file[name='" + escapeJquerySelector(file.name) + "']");
+    var progressbar = uploadToasterFile.find(".upload-toaster-file-progress");
     // Set the cancel button functionality
-    var cancelButton = $(".upload-toaster-file[name='" + escapeJquerySelector(file.name) + "']").find(".upload-toaster-file-cancel")
+    uploadToasterFile.find(".upload-toaster-file-cancel")
         .click(function() {
             // Set the progressbar cancel message
             progressbar.progressbar("value", 100);
@@ -526,12 +546,12 @@ function ajaxFileTabUpload(file, directory, done, index) {
         $.ajax({
             type: "POST",
             url: "/gp/rest/v1/upload/multipart/?path=" + encodeURIComponent(path) + "&parts=" + totalChunks,
-            success: function(data, textStatus, jqXHR) {
+            success: function(data) {
                 eventComplete = true;
                 token = data['token'];
                 _setPercentComplete();
             },
-            error: function(data, textStatus, jqXHR) {
+            error: function(data) {
                 eventError = data;
             }
         });
@@ -547,12 +567,12 @@ function ajaxFileTabUpload(file, directory, done, index) {
             contentType: false,
             data: uploadPayload,
             url: "/gp/rest/v1/upload/multipart/?path=" + encodeURIComponent(path) + "&token=" + encodeURIComponent(token) + "&index=" + nextChunk + "&parts=" + totalChunks,
-            success: function(data, textStatus, jqXHR) {
+            success: function() {
                 eventComplete = true;
                 nextChunk++;
                 _setPercentComplete();
             },
-            error: function(data, textStatus, jqXHR) {
+            error: function(data) {
                 eventError = data;
             }
         });
@@ -583,12 +603,12 @@ function ajaxFileTabUpload(file, directory, done, index) {
                 contentType: false,
                 data: uploadPayload,
                 url: "/gp/rest/v1/upload/multipart/?path=" + encodeURIComponent(path) + "&token=" + encodeURIComponent(token) + "&index=" + nextChunk + "&parts=" + totalChunks,
-                success: function(data, textStatus, jqXHR) {
+                success: function() {
                     eventComplete = true;
                     nextChunk++;
                     _setPercentComplete();
                 },
-                error: function(data, textStatus, jqXHR) {
+                error: function(data) {
                     eventError = data;
                 }
             });
@@ -600,7 +620,7 @@ function ajaxFileTabUpload(file, directory, done, index) {
         $.ajax({
             type: "GET",
             url: "/gp/rest/v1/upload/multipart/?path=" + encodeURIComponent(path) + "&token=" + encodeURIComponent(token) + "&parts=" + totalChunks,
-            success: function(data, textStatus, jqXHR) {
+            success: function(data) {
                 var missing = data['missing'];
                 if (missing.length > 0) {
                     eventError = "Parts missing: " + missing;
@@ -610,7 +630,7 @@ function ajaxFileTabUpload(file, directory, done, index) {
                     _setPercentComplete();
                 }
             },
-            error: function(data, textStatus, jqXHR) {
+            error: function(data) {
                 eventError = data;
             }
         });
@@ -626,11 +646,11 @@ function ajaxFileTabUpload(file, directory, done, index) {
         $.ajax({
             type: "POST",
             url: "/gp/rest/v1/upload/multipart/assemble/?path=" + encodeURIComponent(path) + "&token=" + token + "&parts=" + totalChunks,
-            success: function(data, textStatus, jqXHR) {
+            success: function(data) {
                 eventComplete = true;
                 token = data['token'];
             },
-            error: function(data, textStatus, jqXHR) {
+            error: function(data) {
                 eventError = data;
             }
         });
@@ -699,7 +719,7 @@ function hasSpecialChars(filelist) {
 
 function warnSpecialChars(filelist, directory) {
     showDialog("Special Characters!",
-        "One or more files being uploaded has a name containing special characters!<br/><br/>" +
+            "One or more files being uploaded has a name containing special characters!<br/><br/>" +
             "Some older GenePattern modules do not handle special characters well. " +
             "Are you sure you want to continue?", {
             "Yes": function() {
@@ -721,46 +741,46 @@ function dirPromptIfNecessary (filelist, directory) {
     }
 }
 
-function initUploadToaster(filelist, directory) {
+function initUploadToaster(filelist) {
     // Hide the dropzone
     $("#upload-dropzone-wrapper").hide("slide", { direction: "down" }, 200);
 
     // Create the dialog contents
-    var toaster = $("<div/>").addClass("upload-toaster-list");
+    var toaster = $("<div></div>").addClass("upload-toaster-list");
     for (var i = 0; i < filelist.length; i++) {
         var file = filelist[i];
-        $("<div/>")
+        $("<div></div>")
             .addClass("upload-toaster-file")
             .attr("name", file.name)
             .append(
-                $("<span/>")
-                    .addClass("upload-toaster-file-name")
-                    .text(file.name)
-            )
+            $("<span></span>")
+                .addClass("upload-toaster-file-name")
+                .text(file.name)
+        )
             .append(
-                $("<div/>")
-                    .addClass("upload-toaster-file-progress")
-                    .progressbar({
-                        change: function(event) {
-                            $(this).find(".upload-toaster-file-progress-label").text($(this).progressbar("value") + "%");
-                        },
-                        complete: function() {
-                            $(this).find(".upload-toaster-file-progress-label").text("Complete!");
-                            $(this).parent().find(".upload-toaster-file-cancel").button("disable");
-                        }
-                    })
-                    .append(
-                        $("<div/>")
-                            .addClass("upload-toaster-file-progress-label")
-                            .text("Pending")
-                    )
+            $("<div></div>")
+                .addClass("upload-toaster-file-progress")
+                .progressbar({
+                    change: function() {
+                        $(this).find(".upload-toaster-file-progress-label").text($(this).progressbar("value") + "%");
+                    },
+                    complete: function() {
+                        $(this).find(".upload-toaster-file-progress-label").text("Complete!");
+                        $(this).parent().find(".upload-toaster-file-cancel").button("disable");
+                    }
+                })
+                .append(
+                $("<div></div>")
+                    .addClass("upload-toaster-file-progress-label")
+                    .text("Pending")
             )
+        )
             .append(
-                $("<button/>")
-                    .addClass("upload-toaster-file-cancel")
-                    .text("Cancel")
-                    .button()
-            )
+            $("<button></button>")
+                .addClass("upload-toaster-file-cancel")
+                .text("Cancel")
+                .button()
+        )
             .appendTo(toaster);
     }
 
@@ -780,10 +800,10 @@ function initUploadToaster(filelist, directory) {
             "minimizable" : true,
             "collapsable" : false,
             "minimizeLocation" : "left",
-            "load" : function(evt, dlg) {
+            "load" : function() {
                 $(".upload-dialog").find(".ui-dialog-titlebar-close").hide();
             },
-            "minimize" : function(evt, dlg) {
+            "minimize" : function() {
                 $("#dialog-extend-fixed-container")
                     .find(".upload-dialog")
                     .removeAttr("style");
@@ -801,15 +821,15 @@ function cleanUploadToaster() {
     $("#dialog-extend-fixed-container").find(".upload-dialog").remove();
 
     // Disable minimize button and enable close if not minimized
-    $(".upload-dialog").find(".ui-dialog-titlebar-minimize").remove();
-    $(".upload-dialog").find(".ui-dialog-titlebar-close").show();
+    var uploadDialog = $(".upload-dialog");
+    uploadDialog.find(".ui-dialog-titlebar-minimize").remove();
+    uploadDialog.find(".ui-dialog-titlebar-close").show();
 
     // Show the dropzone
     $("#upload-dropzone-wrapper").show("slide", { direction: "up" }, 200);
 
     // Refresh the tree
-    $("#uploadTree").data("dndReady", {});
-    $("#uploadTree").jstree("refresh");
+    refreshUploadTree();
 }
 
 function uploadAfterDialog(filelist, directory) {
@@ -843,11 +863,11 @@ function uploadAfterDialog(filelist, directory) {
     testForCleanup();
 }
 
-function uploadEnter(evt) {
+function uploadEnter() {
     this.classList.add('leftnav-highlight');
 }
 
-function uploadLeave(evt) {
+function uploadLeave() {
     this.classList.remove('leftnav-highlight');
 }
 
@@ -902,22 +922,8 @@ function initUploads() {
     dropzone[0].addEventListener("dragover", uploadOver, false);
     dropzone[0].addEventListener("drop", uploadDrop, false);
 
-    // Ready AJAX for uploading as a binary file
-    if (!XMLHttpRequest.prototype.sendAsBinary) {
-        XMLHttpRequest.prototype.sendAsBinary = function(ui8a) {
-            function byteValue(x) {
-                return x.charCodeAt(0) & 0xff;
-            }
-            try {
-                this.send(ui8a);
-            } catch(e) {
-                this.send(ui8a.buffer);
-            }
-        };
-    }
-
     // Set up the exit prompt
-    window.onbeforeunload = function(e) {
+    window.onbeforeunload = function() {
         if ($(".upload-dialog:visible").length > 0) {
             //$("#content").effect("shake");
             var cover = $("<div></div>")
@@ -929,12 +935,13 @@ function initUploads() {
                 .css("z-index", 10000)
                 .css("background-color", "yellow")
                 .css("opacity", 0.3)
-                .appendTo("body")
+                .appendTo("body");
             setTimeout(function() {
                 cover.remove();
             }, 100);
             return "You are currently uploading files. If you navigate away from this page this will interrupt your file upload.";
         }
+        return undefined;
     };
 
     // Add click to browse functionality
@@ -963,9 +970,10 @@ function initUploads() {
         })
         .appendTo("#upload-dropzone-wrapper");
 
-    $("#upload-dropzone").click(function() {
-        $("#upload-dropzone-input").data("origin", "dropzone");
-        $("#upload-dropzone-input").trigger("click");
+    dropzone.click(function() {
+        var dropzoneInput = $("#upload-dropzone-input");
+        dropzoneInput.data("origin", "dropzone");
+        dropzoneInput.trigger("click");
     });
 }
 
@@ -988,10 +996,11 @@ function initUploadTreeDND() {
         // Add to list to prevent repeats
         eventsAttached.push(folder[0]);
 
-        var ready = $("#uploadTree").data("dndReady");
+        var uploadTree = $("#uploadTree");
+        var ready = uploadTree.data("dndReady");
         if (ready === undefined || ready === null) {
-            $("#uploadTree").data("dndReady", {});
-            ready = $("#uploadTree").data("dndReady");
+            uploadTree.data("dndReady", {});
+            ready = uploadTree.data("dndReady");
         }
         ready[folder.attr("id")] = true;
     });
@@ -1047,7 +1056,7 @@ function createGenomeSpaceWidget(linkElement, appendTo) {
         return pieces.length <= 4;
     };
 
-    var _constructGenomeSpaceMenuData = function(isRoot, isDirectory, kind, clients) {
+    var _constructGenomeSpaceMenuData = function(isRoot, isDirectory) {
         var data = [];
 
         if (!isRoot || !isDirectory) {
@@ -1055,7 +1064,7 @@ function createGenomeSpaceWidget(linkElement, appendTo) {
                 "lsid": "",
                 "name": "Delete " + (isDirectory ? "Directory" : "File"),
                 "description": (isDirectory ? "Permanently delete this directory and all child files." : "Permanently delete this file."),
-                "version": "<span class='glyphicon glyphicon-remove' />",
+                "version": "<span class='glyphicon glyphicon-remove' ></span>",
                 "documentation": "", "categories": [], "suites": [], "tags": []
             });
         }
@@ -1065,7 +1074,7 @@ function createGenomeSpaceWidget(linkElement, appendTo) {
                 "lsid": "",
                 "name": "Create Subdirectory",
                 "description": "Create a subdirectory in this directory.",
-                "version": "<span class='glyphicon glyphicon-folder-open' />",
+                "version": "<span class='glyphicon glyphicon-folder-open' ></span>",
                 "documentation": "", "categories": [], "suites": [], "tags": []
             });
         }
@@ -1075,7 +1084,7 @@ function createGenomeSpaceWidget(linkElement, appendTo) {
                 "lsid": "",
                 "name": "Save File",
                 "description": "Save a copy of this file to your local computer.",
-                "version": "<span class='glyphicon glyphicon-floppy-save' />",
+                "version": "<span class='glyphicon glyphicon-floppy-save' ></span>",
                 "documentation": "", "categories": [], "suites": [], "tags": []
             });
         }
@@ -1104,7 +1113,7 @@ function createGenomeSpaceWidget(linkElement, appendTo) {
         var convertUrls = _parseList(linkElement.attr("data-converturls"));
         var listList = [];
 
-        var data = _constructGenomeSpaceMenuData(isRoot, isDirectory, kind, clients);
+        var data = _constructGenomeSpaceMenuData(isRoot, isDirectory);
         var actionList = $("<div></div>")
             .attr("class", "file-widget-actions")
             .modulelist({
@@ -1123,7 +1132,6 @@ function createGenomeSpaceWidget(linkElement, appendTo) {
                     if (saveAction) {
                         window.location.href = url;
                         $(".search-widget:visible").searchslider("hide");
-                        return;
                     }
 
                     else if (deleteAction) {
@@ -1131,13 +1139,12 @@ function createGenomeSpaceWidget(linkElement, appendTo) {
                             $.ajax({
                                 type: "DELETE",
                                 url: "/gp/rest/v1/genomespace/delete?url=" + url,
-                                success: function(data, textStatus, jqXHR) {
-                                    $("#infoMessageDiv #infoMessageContent").text(data);
-                                    $("#infoMessageDiv").show();
+                                success: function(data) {
+                                    showSuccessMessage(data);
 
                                     $(".left-nav-genomespace-refresh-real").trigger("click");
                                 },
-                                error: function(data, textStatus, jqXHR) {
+                                error: function(data) {
                                     if (typeof data === 'object') {
                                         data = data.responseText;
                                     }
@@ -1148,26 +1155,24 @@ function createGenomeSpaceWidget(linkElement, appendTo) {
 
                             $(".search-widget:visible").searchslider("hide");
                         }
-                        return;
                     }
 
                     else if (subdirAction) {
                         showDialog("Name the Subdirectory", "What name would you like to give the subdirectory?" +
                             "<input type='text' class='dialog-subdirectory-name' style='width: 98%;' />", {
-                            "Create": function(event) {
+                            "Create": function() {
                                 var subdirName = $(".dialog-subdirectory-name").val();
 
                                 var _createSubdirectory = function() {
                                     $.ajax({
                                         type: "PUT",
                                         url: "/gp/rest/v1/genomespace/createDirectory?url=" + encodeURIComponent(url) + "&name=" + encodeURIComponent(subdirName),
-                                        success: function(data, textStatus, jqXHR) {
-                                            $("#infoMessageDiv #infoMessageContent").text(data);
-                                            $("#infoMessageDiv").show();
+                                        success: function(data) {
+                                            showSuccessMessage(data);
 
                                             $(".left-nav-genomespace-refresh-real").trigger("click");
                                         },
-                                        error: function(data, textStatus, jqXHR) {
+                                        error: function(data) {
                                             if (typeof data === 'object') {
                                                 data = data.responseText;
                                             }
@@ -1183,7 +1188,7 @@ function createGenomeSpaceWidget(linkElement, appendTo) {
                                 if(specialCharacters) {
                                     var outerDialog = $(this);
                                     showDialog("Special Characters!",
-                                        "The name you selected contains special characters!<br/><br/>" +
+                                            "The name you selected contains special characters!<br/><br/>" +
                                             "Some older GenePattern modules do not handle special characters well. " +
                                             "Are you sure you want to continue?", {
                                             "Yes": function() {
@@ -1195,14 +1200,13 @@ function createGenomeSpaceWidget(linkElement, appendTo) {
                                                 $(this).dialog("close");
                                             }
                                         });
-                                    return;
                                 }
                                 else {
                                     _createSubdirectory();
                                     $(this).dialog("close");
                                 }
                             },
-                            "Cancel": function(event) {
+                            "Cancel": function() {
                                 $(this).dialog("close");
                             }
                         });
@@ -1217,7 +1221,6 @@ function createGenomeSpaceWidget(linkElement, appendTo) {
                         });
 
                         $(".search-widget:visible").searchslider("hide");
-                        return;
                     }
 
                     else {
@@ -1230,6 +1233,7 @@ function createGenomeSpaceWidget(linkElement, appendTo) {
 
         // Create send to tool lists
         var toolData = [];
+        //noinspection JSDuplicatedDeclaration
         for (var i = 0; i < clients.length; i++) {
             var tool = clients[i];
             toolData.push({
@@ -1254,14 +1258,16 @@ function createGenomeSpaceWidget(linkElement, appendTo) {
                     var tool = $(event.target).closest(".module-listing").find(".module-lsid").text();
                     window.open("/gp/rest/v1/genomespace/tool?tool=" + encodeURIComponent(tool) + "&url=" + encodeURIComponent(url));
                     $(".search-widget:visible").searchslider("hide");
-                    return;
                 }
             });
         listList.push(toolList);
 
         // Create send to parameter lists
+        //noinspection JSDuplicatedDeclaration
         for (var i = 0; i < kind.length; i++) {
+            //noinspection JSDuplicatedDeclaration
             var aKind = kind[i];
+            //noinspection JSDuplicatedDeclaration
             var convertUrl = convertUrls[aKind];
 
             var paramList = $("<div></div>")
@@ -1279,8 +1285,11 @@ function createGenomeSpaceWidget(linkElement, appendTo) {
         }
 
         // Create send to module lists
+        //noinspection JSDuplicatedDeclaration
         for (var i = 0; i < kind.length; i++) {
+            //noinspection JSDuplicatedDeclaration
             var aKind = kind[i];
+            //noinspection JSDuplicatedDeclaration
             var convertUrl = convertUrls[aKind];
 
             var lsidList = kindToModules[aKind];
@@ -1325,6 +1334,7 @@ function createGenomeSpaceWidget(linkElement, appendTo) {
             listList.push(moduleList);
         }
 
+        //noinspection JSDuplicatedDeclaration
         for (var i = 0; i < listList.length; i++) {
             var aList = listList[i];
             if (aList.find(".module-listing").length < 1) {
@@ -1362,7 +1372,7 @@ function createInputFileWidget(linkElement, appendTo) {
             "lsid": "",
             "name": "Save or View File",
             "description": "Will either open the file for viewing or prompt you to save the file.",
-            "version": "<span class='glyphicon glyphicon-floppy-save' />", "documentation": "", "categories": [], "suites": [], "tags": []
+            "version": "<span class='glyphicon glyphicon-floppy-save' ></span>", "documentation": "", "categories": [], "suites": [], "tags": []
         });
 
         return data;
@@ -1388,7 +1398,6 @@ function createInputFileWidget(linkElement, appendTo) {
                     if (saveAction) {
                         window.open(url);
                         $(".search-widget:visible").searchslider("hide");
-                        return;
                     }
 
                     else {
@@ -1417,6 +1426,14 @@ function createInputFileWidget(linkElement, appendTo) {
     }
 }
 
+function refreshUploadTree() {
+    var uploadTree = $("#uploadTree");
+    uploadTree.data("dndReady", {});
+    uploadTree.jstree("refresh");
+
+    $("#uploadDirectoryTree").jstree("refresh");
+}
+
 function createFileWidget(linkElement, appendTo) {
     var _constructFileMenuData = function(isRoot, isDirectory, isUpload, isJobFile, isPartialFile) {
         var data = [];
@@ -1426,7 +1443,7 @@ function createFileWidget(linkElement, appendTo) {
                 "lsid": "",
                 "name": "Delete " + (isDirectory ? "Directory" : "File"),
                 "description": (isDirectory ? "Permanently delete this directory and all child files." : "Permanently delete this file."),
-                "version": "<span class='glyphicon glyphicon-remove' />", "documentation": "", "categories": [], "suites": [], "tags": []
+                "version": "<span class='glyphicon glyphicon-remove' ></span>", "documentation": "", "categories": [], "suites": [], "tags": []
             });
         }
 
@@ -1435,14 +1452,14 @@ function createFileWidget(linkElement, appendTo) {
                 "lsid": "",
                 "name": "Create Subdirectory",
                 "description": "Create a subdirectory in this directory.",
-                "version": "<span class='glyphicon glyphicon-folder-open' />", "documentation": "", "categories": [], "suites": [], "tags": []
+                "version": "<span class='glyphicon glyphicon-folder-open' ></span>", "documentation": "", "categories": [], "suites": [], "tags": []
             });
 
             data.push({
                 "lsid": "",
                 "name": "Upload Files",
                 "description": "Upload files to this directory.",
-                "version": "<span class='glyphicon glyphicon-cloud-upload' />", "documentation": "", "categories": [], "suites": [], "tags": []
+                "version": "<span class='glyphicon glyphicon-cloud-upload' ></span>", "documentation": "", "categories": [], "suites": [], "tags": []
             });
         }
         else if (!isPartialFile) {
@@ -1450,7 +1467,7 @@ function createFileWidget(linkElement, appendTo) {
                 "lsid": "",
                 "name": "Save File",
                 "description": "Save a copy of this file to your local computer.",
-                "version": "<span class='glyphicon glyphicon-floppy-save' />", "documentation": "", "categories": [], "suites": [], "tags": []
+                "version": "<span class='glyphicon glyphicon-floppy-save' ></span>", "documentation": "", "categories": [], "suites": [], "tags": []
             });
 
             if (genomeSpaceEnabled && genomeSpaceLoggedIn) {
@@ -1468,14 +1485,14 @@ function createFileWidget(linkElement, appendTo) {
                 "lsid": "",
                 "name": "Rename " + (isDirectory ? "Directory" : "File"),
                 "description": "Rename this file or directory",
-                "version": "<span class='glyphicon glyphicon-text-width' />", "documentation": "", "categories": [], "suites": [], "tags": []
+                "version": "<span class='glyphicon glyphicon-text-width' ></span>", "documentation": "", "categories": [], "suites": [], "tags": []
             });
 
             data.push({
                 "lsid": "",
                 "name": "Move " + (isDirectory ? "Directory" : "File"),
                 "description": "Move this file or directory",
-                "version": "<span class='glyphicon glyphicon-share-alt' />", "documentation": "", "categories": [], "suites": [], "tags": []
+                "version": "<span class='glyphicon glyphicon-share-alt' ></span>", "documentation": "", "categories": [], "suites": [], "tags": []
             });
         }
 
@@ -1484,14 +1501,14 @@ function createFileWidget(linkElement, appendTo) {
                 "lsid": "",
                 "name": "Create Pipeline",
                 "description": "Create a provenance pipeline from this file.",
-                "version": "<span class='glyphicon glyphicon-road' />", "documentation": "", "categories": [], "suites": [], "tags": []
+                "version": "<span class='glyphicon glyphicon-road' ></span>", "documentation": "", "categories": [], "suites": [], "tags": []
             });
 
             data.push({
                 "lsid": "",
                 "name": "Copy to Files Tab",
                 "description": "Copies this file from your job results to your files tab.",
-                "version": "<span class='glyphicon glyphicon-share' style='-webkit-transform:rotateY(180deg); -moz-transform:rotateY(180deg); -o-transform:rotateY(180deg); -ms-transform:rotateY(180deg);' />",
+                "version": "<span class='glyphicon glyphicon-share' style='-webkit-transform:rotateY(180deg); -moz-transform:rotateY(180deg); -o-transform:rotateY(180deg); -ms-transform:rotateY(180deg);' ></span>",
                 "documentation": "", "categories": [], "suites": [], "tags": []
             });
         }
@@ -1546,7 +1563,6 @@ function createFileWidget(linkElement, appendTo) {
                     if (saveAction) {
                         window.location.href = url + "?download";
                         $(".search-widget:visible").searchslider("hide");
-                        return;
                     }
 
                     else if (jobCopyAction) {
@@ -1557,17 +1573,13 @@ function createFileWidget(linkElement, appendTo) {
                             $.ajax({
                                 type: "POST",
                                 url: "/gp/rest/v1/data/copy/?from=" + encodeURIComponent(path) + "&to=" + encodeURIComponent(moveToPath) + encodeURIComponent(name.trim()),
-                                success: function(data, textStatus, jqXHR) {
-                                    $("#infoMessageDiv #infoMessageContent").text(data);
-                                    $("#infoMessageDiv").show();
+                                success: function(data) {
+                                    showSuccessMessage(data);
+                                    refreshUploadTree();
 
-                                    $("#uploadTree").data("dndReady", {});
-                                    $("#uploadTree").jstree("refresh");
-
-                                    $("#uploadDirectoryTree").jstree("refresh");
                                     $(".search-widget:visible").searchslider("hide");
                                 },
-                                error: function(data, textStatus, jqXHR) {
+                                error: function(data) {
                                     if (typeof data === 'object') {
                                         data = data.responseText;
                                     }
@@ -1577,8 +1589,6 @@ function createFileWidget(linkElement, appendTo) {
                                 }
                             });
                         });
-
-                        return;
                     }
 
                     else if (moveAction) {
@@ -1589,16 +1599,11 @@ function createFileWidget(linkElement, appendTo) {
                             $.ajax({
                                 type: "PUT",
                                 url: "/gp/rest/v1/data/move/?from=" + encodeURIComponent(path) + "&to=" + encodeURIComponent(moveToPath) + encodeURIComponent(name.trim()),
-                                success: function(data, textStatus, jqXHR) {
-                                    $("#infoMessageDiv #infoMessageContent").text(data);
-                                    $("#infoMessageDiv").show();
-
-                                    $("#uploadTree").data("dndReady", {});
-                                    $("#uploadTree").jstree("refresh");
-
-                                    $("#uploadDirectoryTree").jstree("refresh");
+                                success: function(data) {
+                                    showSuccessMessage(data);
+                                    refreshUploadTree();
                                 },
-                                error: function(data, textStatus, jqXHR) {
+                                error: function(data) {
                                     if (typeof data === 'object') {
                                         data = data.responseText;
                                     }
@@ -1609,35 +1614,30 @@ function createFileWidget(linkElement, appendTo) {
                         });
 
                         $(".search-widget:visible").searchslider("hide");
-                        return;
                     }
 
                     else if (renameAction) {
                         showDialog("Rename the File or Directory", "What name would you like to name the file or directory?" +
                             "<input type='text' class='dialog-rename' value='" + name.trim() + "' style='width: 98%;' />", {
-                            "Rename": function(event) {
+                            "Rename": function() {
                                 var newName = $(".dialog-rename").val();
 
                                 var _doRename = function() {
                                     $.ajax({
                                         type: "PUT",
                                         url: "/gp/rest/v1/data/rename?path=" + encodeURIComponent(path) + "&name=" + encodeURIComponent(newName),
-                                        success: function(data, textStatus, jqXHR) {
-                                            $("#infoMessageDiv #infoMessageContent").text(data);
-                                            $("#infoMessageDiv").show();
+                                        success: function(data) {
+                                            showSuccessMessage(data);
 
                                             if (isUpload) {
-                                                $("#uploadTree").data("dndReady", {});
-                                                $("#uploadTree").jstree("refresh");
-
-                                                $("#uploadDirectoryTree").jstree("refresh");
+                                                refreshUploadTree();
                                             }
                                             if (isJobFile) {
                                                 initRecentJobs();
                                             }
                                             $(".search-widget:visible").searchslider("hide");
                                         },
-                                        error: function(data, textStatus, jqXHR) {
+                                        error: function(data) {
                                             if (typeof data === 'object') {
                                                 data = data.responseText;
                                             }
@@ -1659,7 +1659,7 @@ function createFileWidget(linkElement, appendTo) {
                                     return _extractExtension(oldName.trim()) !== _extractExtension(newName.trim());
                                 };
 
-                                var _containsSpecialCharacters = function(name) {
+                                var _containsSpecialCharacters = function() {
                                     var regex = new RegExp("[^A-Za-z0-9_.]");
                                     return regex.test(newName);
                                 };
@@ -1680,7 +1680,7 @@ function createFileWidget(linkElement, appendTo) {
                                     }
 
                                     showDialog("Rename Warning!",
-                                        dialogText + "Are you sure you want to continue?", {
+                                            dialogText + "Are you sure you want to continue?", {
                                             "Yes": function() {
                                                 _doRename();
                                                 $(this).dialog("close");
@@ -1690,14 +1690,13 @@ function createFileWidget(linkElement, appendTo) {
                                                 $(this).dialog("close");
                                             }
                                         });
-                                    return;
                                 }
                                 else {
                                     _doRename();
                                     $(this).dialog("close");
                                 }
                             },
-                            "Cancel": function(event) {
+                            "Cancel": function() {
                                 $(this).dialog("close");
                             }
                         });
@@ -1710,8 +1709,6 @@ function createFileWidget(linkElement, appendTo) {
                                 $(".ui-dialog-buttonset:visible button:first").button("enable");
                             }
                         });
-
-                        return;
                     }
 
                     else if (deleteAction) {
@@ -1719,21 +1716,17 @@ function createFileWidget(linkElement, appendTo) {
                             $.ajax({
                                 type: "DELETE",
                                 url: "/gp/rest/v1/data/delete/" + path,
-                                success: function(data, textStatus, jqXHR) {
-                                    $("#infoMessageDiv #infoMessageContent").text(data);
-                                    $("#infoMessageDiv").show();
+                                success: function(data) {
+                                    showSuccessMessage(data);
 
                                     if (isUpload) {
-                                        $("#uploadTree").data("dndReady", {});
-                                        $("#uploadTree").jstree("refresh");
-
-                                        $("#uploadDirectoryTree").jstree("refresh");
+                                        refreshUploadTree();
                                     }
                                     if (isJobFile) {
                                         initRecentJobs();
                                     }
                                 },
-                                error: function(data, textStatus, jqXHR) {
+                                error: function(data) {
                                     if (typeof data === 'object') {
                                         data = data.responseText;
                                     }
@@ -1744,31 +1737,26 @@ function createFileWidget(linkElement, appendTo) {
 
                             $(".search-widget:visible").searchslider("hide");
                         }
-                        return;
                     }
 
                     else if (subdirAction) {
                         showDialog("Name the Subdirectory", "What name would you like to give the subdirectory?" +
                             "<input type='text' class='dialog-subdirectory-name' style='width: 98%;' />", {
-                            "Create": function(event) {
+                            "Create": function() {
                                 var subdirName = $(".dialog-subdirectory-name").val();
 
                                 var _createSubdirectory = function() {
                                     $.ajax({
                                         type: "PUT",
                                         url: "/gp/rest/v1/data/createDirectory/" + path + encodeURIComponent(subdirName),
-                                        success: function(data, textStatus, jqXHR) {
-                                            $("#infoMessageDiv #infoMessageContent").text(data);
-                                            $("#infoMessageDiv").show();
+                                        success: function(data) {
+                                            showSuccessMessage(data);
 
                                             if (isUpload) {
-                                                $("#uploadTree").data("dndReady", {});
-                                                $("#uploadTree").jstree("refresh");
-
-                                                $("#uploadDirectoryTree").jstree("refresh");
+                                                refreshUploadTree();
                                             }
                                         },
-                                        error: function(data, textStatus, jqXHR) {
+                                        error: function(data) {
                                             if (typeof data === 'object') {
                                                 data = data.responseText;
                                             }
@@ -1784,7 +1772,7 @@ function createFileWidget(linkElement, appendTo) {
                                 if(specialCharacters) {
                                     var outerDialog = $(this);
                                     showDialog("Special Characters!",
-                                        "The name you selected contains special characters!<br/><br/>" +
+                                            "The name you selected contains special characters!<br/><br/>" +
                                             "Some older GenePattern modules do not handle special characters well. " +
                                             "Are you sure you want to continue?", {
                                             "Yes": function() {
@@ -1796,14 +1784,13 @@ function createFileWidget(linkElement, appendTo) {
                                                 $(this).dialog("close");
                                             }
                                         });
-                                    return;
                                 }
                                 else {
                                     _createSubdirectory();
                                     $(this).dialog("close");
                                 }
                             },
-                            "Cancel": function(event) {
+                            "Cancel": function() {
                                 $(this).dialog("close");
                             }
                         });
@@ -1818,21 +1805,20 @@ function createFileWidget(linkElement, appendTo) {
                         });
 
                         $(".search-widget:visible").searchslider("hide");
-                        return;
                     }
 
                     else if (uploadAction) {
                         var directory = $(event.target).closest(".file-widget").attr("name");
 
-                        $("#upload-dropzone-input").data("origin", directory);
-                        $("#upload-dropzone-input").trigger("click");
-                        return;
+                        var dropzoneInput = $("#upload-dropzone-input");
+                        dropzoneInput.data("origin", directory);
+                        dropzoneInput.trigger("click");
                     }
 
                     else if (pipelineAction) {
                         showDialog("Name the Pipeline", "What name would you like to give the pipeline?" +
                             "<input type='text' class='dialog-pipeline-name' style='width: 98%;' />", {
-                            "Create": function(event) {
+                            "Create": function() {
                                 var subdirName = $(".dialog-pipeline-name").val();
                                 subdirName = makePipelineNameValid(subdirName);
 
@@ -1840,15 +1826,14 @@ function createFileWidget(linkElement, appendTo) {
                                     type: "PUT",
                                     url: "/gp/rest/v1/data/createPipeline/" + path + "?name=" + subdirName,
                                     success: function(data, textStatus, jqXHR) {
-                                        $("#infoMessageDiv #infoMessageContent").text(data);
-                                        $("#infoMessageDiv").show();
+                                        showSuccessMessage(data);
 
                                         var forwardUrl = jqXHR.getResponseHeader("pipeline-forward");
                                         if (forwardUrl && forwardUrl.length > 0) {
                                             window.location = forwardUrl;
                                         }
                                     },
-                                    error: function(data, textStatus, jqXHR) {
+                                    error: function(data) {
                                         if (typeof data === 'object') {
                                             data = data.responseText;
                                         }
@@ -1859,7 +1844,7 @@ function createFileWidget(linkElement, appendTo) {
 
                                 $(this).dialog("close");
                             },
-                            "Cancel": function(event) {
+                            "Cancel": function() {
                                 $(this).dialog("close");
                             }
                         });
@@ -1874,7 +1859,6 @@ function createFileWidget(linkElement, appendTo) {
                         });
 
                         $(".search-widget:visible").searchslider("hide");
-                        return;
                     }
 
                     else if (genomeSpaceAction) {
@@ -1883,7 +1867,6 @@ function createFileWidget(linkElement, appendTo) {
                         openSaveDialog();
 
                         $(".search-widget:visible").searchslider("hide");
-                        return;
                     }
 
                     else {
@@ -2059,7 +2042,7 @@ function createJobWidget(job) {
         "lsid": "",
         "name": "Job Status",
         "description": "View the job status page for this job.",
-        "version": "<span class='glyphicon glyphicon-info-sign' />", "documentation": "", "categories": [], "suites": [], "tags": []
+        "version": "<span class='glyphicon glyphicon-info-sign' ></span>", "documentation": "", "categories": [], "suites": [], "tags": []
     });
 
     if (job.status.isFinished) {
@@ -2067,7 +2050,7 @@ function createJobWidget(job) {
             "lsid": "",
             "name": "Download Job",
             "description": "Download a copy of this job, including all input and result files.",
-            "version": "<span class='glyphicon glyphicon-download' />", "documentation": "", "categories": [], "suites": [], "tags": []
+            "version": "<span class='glyphicon glyphicon-download' ></span>", "documentation": "", "categories": [], "suites": [], "tags": []
         });
     }
 
@@ -2075,7 +2058,7 @@ function createJobWidget(job) {
         "lsid": "",
         "name": "Reload Job",
         "description": "Reload this job using the same input parameters.",
-        "version": "<span class='glyphicon glyphicon-repeat' />", "documentation": "", "categories": [], "suites": [], "tags": []
+        "version": "<span class='glyphicon glyphicon-repeat' ></span>", "documentation": "", "categories": [], "suites": [], "tags": []
     });
 
     if (job.status.isFinished) {
@@ -2083,7 +2066,7 @@ function createJobWidget(job) {
             "lsid": "",
             "name": "Delete Job",
             "description": "Delete this job from the GenePattern server.",
-            "version": "<span class='glyphicon glyphicon-remove' />", "documentation": "", "categories": [], "suites": [], "tags": []
+            "version": "<span class='glyphicon glyphicon-remove' ></span>", "documentation": "", "categories": [], "suites": [], "tags": []
         });
     }
 
@@ -2092,7 +2075,7 @@ function createJobWidget(job) {
             "lsid": "",
             "name": "Terminate Job",
             "description": "Terminate this job on the GenePattern server.",
-            "version": "<span class='glyphicon glyphicon-off' />", "documentation": "", "categories": [], "suites": [], "tags": []
+            "version": "<span class='glyphicon glyphicon-off' ></span>", "documentation": "", "categories": [], "suites": [], "tags": []
         });
     }
 
@@ -2112,25 +2095,21 @@ function createJobWidget(job) {
 
                 var listObject = $(event.target).closest(".search-widget").find(".send-to-param-list");
                 var url = listObject.attr("data-url");
-                var path = uploadPathFromUrl(url);
 
                 if (statusAction) {
                     loadJobStatus(job.jobId);
-                    return;
                 }
 
                 else if (downloadAction) {
                     $(location).attr('href', '/gp/rest/v1/jobs/' + job.jobId + '/download');
 
                     $(".search-widget:visible").searchslider("hide");
-                    return;
                 }
 
                 else if (reloadAction) {
                     $(location).attr('href', '/gp/pages/index.jsf?lsid' + job.taskLsid + "&reloadJob=" + job.jobId);
 
                     $(".search-widget:visible").searchslider("hide");
-                    return;
                 }
 
                 else if (deleteAction) {
@@ -2138,13 +2117,11 @@ function createJobWidget(job) {
                         $.ajax({
                             type: "DELETE",
                             url: "/gp/rest/v1/jobs/" + job.jobId + "/delete",
-                            success: function(data, textStatus, jqXHR) {
-                                $("#infoMessageDiv #infoMessageContent").text(data);
-                                $("#infoMessageDiv").show();
-
+                            success: function(data) {
+                                showSuccessMessage(data);
                                 initRecentJobs();
                             },
-                            error: function(data, textStatus, jqXHR) {
+                            error: function(data) {
                                 if (typeof data === 'object') {
                                     data = data.responseText;
                                 }
@@ -2154,20 +2131,17 @@ function createJobWidget(job) {
                         });
                     }
                     $(".search-widget:visible").searchslider("hide");
-                    return;
                 }
 
                 else if (terminateAction) {
                     $.ajax({
                         type: "DELETE",
                         url: "/gp/rest/v1/jobs/" + job.jobId + "/terminate",
-                        success: function(data, textStatus, jqXHR) {
-                            $("#infoMessageDiv #infoMessageContent").text(data);
-                            $("#infoMessageDiv").show();
-
+                        success: function(data) {
+                            showSuccessMessage(data);
                             initRecentJobs();
                         },
-                        error: function(data, textStatus, jqXHR) {
+                        error: function(data) {
                             if (typeof data === 'object') {
                                 data = data.responseText;
                             }
@@ -2177,7 +2151,6 @@ function createJobWidget(job) {
                     });
 
                     $(".search-widget:visible").searchslider("hide");
-                    return;
                 }
 
                 else {
@@ -2223,19 +2196,16 @@ function createJobWidget(job) {
                 if (javaAction) {
                     window.open("/gp/rest/v1/jobs/" + job.jobId + "/code?language=Java");
                     $(".search-widget:visible").searchslider("hide");
-                    return;
                 }
 
                 else if (matlabAction) {
                     window.open("/gp/rest/v1/jobs/" + job.jobId + "/code?language=MATLAB");
                     $(".search-widget:visible").searchslider("hide");
-                    return;
                 }
 
                 else if (rAction) {
                     window.open("/gp/rest/v1/jobs/" + job.jobId + "/code?language=R");
                     $(".search-widget:visible").searchslider("hide");
-                    return;
                 }
 
                 else {
@@ -2266,7 +2236,7 @@ function initRecentJobs() {
         type: "GET",
         url: "/gp/rest/v1/jobs/recent",
         dataType: "json",
-        success: function(data, textStatus, jqXHR) {
+        success: function(data) {
             // Clear away the old rendering of the tab
             $("#loading-jobs").hide();
             var tab = $("#left-nav-jobs-list");
@@ -2313,7 +2283,7 @@ function initRecentJobs() {
                 }
             });
         },
-        error: function(data, textStatus, jqXHR) {
+        error: function(data) {
             if (typeof data === 'object') {
                 data = data.responseText;
             }
@@ -2355,22 +2325,23 @@ function renderJob(jobJson, tab) {
         .attr("data-json", JSON.stringify(jobJson))
         .text(jobJson.jobId + ". " + jobJson.taskName + " ")
         .append(
-            $("<span></span>")
-                .attr("class", "glyphicon glyphicon-info-sign")
-                .css("color", "darkgray")
-        )
+        $("<span></span>")
+            .attr("class", "glyphicon glyphicon-info-sign")
+            .css("color", "darkgray")
+    )
         .appendTo(jobName);
 
     var jobDetails = $("<div></div>")
         .addClass("job-details")
         .append(
-            $("<div></div>")
-                .addClass("job-status")
-                .append(createJobStatus(jobJson.status))
-        )
+        $("<div></div>")
+            .addClass("job-status")
+            .append(createJobStatus(jobJson.status))
+    )
         .append(jobJson.datetime)
         .appendTo(jobBox);
 
+    //noinspection JSDuplicatedDeclaration
     for (var j = 0; j < jobJson.outputFiles.length; j++) {
         var file = jobJson.outputFiles[j];
 
@@ -2378,21 +2349,22 @@ function renderJob(jobJson, tab) {
             .addClass("job-file")
             .appendTo(jobDetails);
 
-        var link = $("<a></a>")
+        $("<a></a>")
             .attr("href", file.link.href)
             .attr("onclick", "openFileWidget(this, '#menus-jobs'); return false;")
             .attr("href", file.link.href)
             .attr("data-kind", file.kind)
             .attr("data-sendtomodule", JSON.stringify(file.sendTo))
             .append(
-                $("<img />")
-                    .attr("src", "/gp/images/outputFile.gif"))
+            $("<img />")
+                .attr("src", "/gp/images/outputFile.gif"))
             .append(file.link.name)
             .appendTo(fileBox);
     }
 
     // Handle child jobs
     if (jobJson.children) {
+        //noinspection JSDuplicatedDeclaration
         for (var j = 0; j < jobJson.children.items.length; j++) {
             var child = jobJson.children.items[j];
             renderJob(child, jobDetails);
@@ -2404,7 +2376,8 @@ function openJobWidget(link) {
     var id = $(link).attr("data-jobid");
 
     // Create the job widget
-    var widgetFound = $("#menus-jobs").find("[name='job_" + id + "']").length > 0;
+    var menuJobs = $("#menus-jobs");
+    var widgetFound = menuJobs.find("[name='job_" + id + "']").length > 0;
     if (!widgetFound) {
         // Get the job JSON
         var jobJson = $(link).data("json");
@@ -2413,7 +2386,7 @@ function openJobWidget(link) {
     }
 
     // Open the job slider
-    $("#menus-jobs").find("[name='job_" + id + "']").searchslider("show");
+    menuJobs.find("[name='job_" + id + "']").searchslider("show");
 }
 
 function getURLParameter(sParam) {
@@ -2425,6 +2398,7 @@ function getURLParameter(sParam) {
             return sParameterName[1];
         }
     }
+    return null;
 }
 
 function loadJobStatus(jobId) {
@@ -2438,12 +2412,12 @@ function loadJobStatus(jobId) {
 
     // Hide the protocols, run task form & eula, if visible
     $("#protocols").hide();
-    $("#submitJob").hide();
+    var submitJob = $("#submitJob").hide();
     $("#eula-block").hide();
 
     // Clean the Run Task Form for future loads
-    if (Request.cleanJobSubmit === null) { Request.cleanJobSubmit = $("#submitJob").clone(); }
-    else { $("#submitJob").replaceWith(Request.cleanJobSubmit.clone()); }
+    if (Request.cleanJobSubmit === null) { Request.cleanJobSubmit = submitJob.clone(); }
+    else { submitJob.replaceWith(Request.cleanJobSubmit.clone()); }
     run_task_info = {
         lsid: null, //lsid of the module
         name: null, //name of the module
@@ -2472,9 +2446,10 @@ function loadJobStatus(jobId) {
         type: "GET",
         url: "/gp/pages/jobResult.jsf?jobNumber=" + jobId + openVisualizers,
         cache: false,
-        success: function(data, textStatus, jqXHR) {
-            $("#jobResults").html(data);
-            $("#jobResults").show();
+        success: function(data) {
+            var jobResults = $("#jobResults");
+            jobResults.html(data);
+            jobResults.show();
         },
         error: function(data) {
             if (typeof data === 'object') {
@@ -2488,19 +2463,17 @@ function loadJobStatus(jobId) {
 }
 
 function getJobFilter() {
-    //return $("#main-pane").data("jobresults-filter");
     return $.cookie('job-filter');
 }
 
 function setJobFilter(filter) {
-    //$("#main-pane").data("jobresults-filter", filter);
     $.cookie('job-filter', filter, { path: '/'});
 }
 
 function populateJobResultsTable(settings, callback) {
     // Helper functions
     var _statusToImg = function(status) {
-        if (status.isPending) return $("<span />").text("Pending");                                 // Pending
+        if (status.isPending) return $("<span ></span>").text("Pending");                                 // Pending
         else if (status.hasError) return $("<img />").attr("src", "/gp/images/error.gif");          // Error
         else if (status.isFinished) return $("<img />").attr("src", "/gp/images/complete.gif");     // Finished
         else return $("<img />").attr("src", "/gp/images/run.gif");                                 // Running
@@ -2531,9 +2504,9 @@ function populateJobResultsTable(settings, callback) {
             .attr("data-json", JSON.stringify(job))
             .append(count + ". " + job.taskName + " ")
             .append(
-                $("<span></span>")
-                    .attr("class", "glyphicon glyphicon-info-sign")
-            )
+            $("<span></span>")
+                .attr("class", "glyphicon glyphicon-info-sign")
+        )
             .appendTo(child);
         $("<br/>").appendTo(child);
 
@@ -2623,40 +2596,42 @@ function populateJobResultsTable(settings, callback) {
         var wrapper = $("<div></div>")
             .css("overflow", "hidden")
             .append(
-                $("<a></a>")
-                    .addClass("job-task-toggle")
-                    .attr("href", "#")
-                    .attr("onclick", "return false;")
-                    .append(
-                        $("<img />")
-                            .addClass("jobresults-toggle")
-                            .attr("src", "/gp/images/triangle_black_run.gif")
-                    )
+            $("<a></a>")
+                .addClass("job-task-toggle")
+                .attr("href", "#")
+                .attr("onclick", "return false;")
+                .append(
+                $("<img />")
+                    .addClass("jobresults-toggle")
+                    .attr("src", "/gp/images/triangle_black_run.gif")
             )
+        )
             .append(
-                $("<a></a>")
-                    .addClass("job-task")
-                    .attr("href", "/gp/jobResults/" + job.jobId + "/")
-                    .attr("onclick", "openJobWidget(this); return false;")
-                    .attr("data-jobid", job.jobId)
-                    .attr("data-json", JSON.stringify(job))
-                    .text(" " + job.taskName + " ")
-                    .append(
-                        $("<span></span>")
-                            .attr("class", "glyphicon glyphicon-info-sign")
-                    )
+            $("<a></a>")
+                .addClass("job-task")
+                .attr("href", "/gp/jobResults/" + job.jobId + "/")
+                .attr("onclick", "openJobWidget(this); return false;")
+                .attr("data-jobid", job.jobId)
+                .attr("data-json", JSON.stringify(job))
+                .text(" " + job.taskName + " ")
+                .append(
+                $("<span></span>")
+                    .attr("class", "glyphicon glyphicon-info-sign")
             )
+        )
             .append(results)
             .append(children);
         return wrapper[0].outerHTML;
     };
     var _sizeOfJob = function(job) {
         var total = 0;
+        //noinspection JSDuplicatedDeclaration
         for (var i = 0; i < job.outputFiles.length; i++) {
             var file = job.outputFiles[i];
             total += file.fileLength;
         }
         if (job.children) {
+            //noinspection JSDuplicatedDeclaration
             for (var i = 0; i < job.children.items.length; i++) {
                 var child = job.children.items[i];
                 total += _sizeOfJob(child);
@@ -2759,7 +2734,7 @@ function populateJobResultsTable(settings, callback) {
         url: _buildRESTUrl(),
         cache: false,
         dataType: "json",
-        success: function(data, textStatus, jqXHR) {
+        success: function(data) {
             // The object to send to the callback in the format expected
             var toReturn = {};
 
@@ -2786,22 +2761,25 @@ function populateJobResultsTable(settings, callback) {
             });
 
             // Set the job results filter options
-            $("#jobresults-filter").empty();
+            var jobResultsFilter = $("#jobresults-filter");
+            jobResultsFilter.empty();
             var currentFilter = getJobFilter();
-            $("#jobresults-filter").append(
+            jobResultsFilter.append(
                 $("<option></option>")
                     .val("userId=" + username)
                     .text("My Job Results")
             );
-            $("#jobresults-filter").append(
+            jobResultsFilter.append(
                 $("<option></option>")
                     .val("userId=*")
                     .text("All Job Results")
             );
             if (data.nav.groupIds) {
+                //noinspection JSDuplicatedDeclaration
                 for (var i = 0; i < data.nav.groupIds.length; i++) {
+                    //noinspection JSDuplicatedDeclaration
                     var filter = data.nav.groupIds[i];
-                    $("#jobresults-filter").append(
+                    jobResultsFilter.append(
                         $("<option></option>")
                             .val("groupId=" + filter)
                             .text("Group: " + filter)
@@ -2809,16 +2787,18 @@ function populateJobResultsTable(settings, callback) {
                 }
             }
             if (data.nav.batchIds) {
+                //noinspection JSDuplicatedDeclaration
                 for (var i = 0; i < data.nav.batchIds.length; i++) {
+                    //noinspection JSDuplicatedDeclaration
                     var filter = data.nav.batchIds[i];
-                    $("#jobresults-filter").append(
+                    jobResultsFilter.append(
                         $("<option></option>")
                             .val("batchId=" + filter)
                             .text("Batch: " + filter)
                     );
                 }
             }
-            $("#jobresults-filter").find("option").each(function() {
+            jobResultsFilter.find("option").each(function() {
                 if ($(this).val() === currentFilter) {
                     $(this).attr("selected", "selected");
                 }
@@ -2843,32 +2823,32 @@ function populateJobResultsTable(settings, callback) {
 
 function buildJobResultsPage() {
     // Clear the div
-    $("#jobResults").empty();
+    var jobResults = $("#jobResults").empty();
 
     // Build the container
-    var container = $("<div />")
+    var container = $("<div ></div>")
         .addClass("statusReport")
         .addClass("jobResults");
 
     // Build the header
-    $("<div />")
+    $("<div ></div>")
         .addClass("title")
         .text("Job Results")
         .append(
-            $("<div />")
-                .addClass("jobresults-navigation")
-                .text("Show: ")
-                .append(
-                    $("<select></select>")
-                        .attr("id", "jobresults-filter")
-                        .attr("name", "show")
-                        .change(function() {
-                            var filter = $(this).val();
-                            setJobFilter(filter);
-                            loadJobResults(filter);
-                        })
-                )
+        $("<div ></div>")
+            .addClass("jobresults-navigation")
+            .text("Show: ")
+            .append(
+            $("<select></select>")
+                .attr("id", "jobresults-filter")
+                .attr("name", "show")
+                .change(function() {
+                    var filter = $(this).val();
+                    setJobFilter(filter);
+                    loadJobResults(filter);
+                })
         )
+    )
         .appendTo(container);
 
     // Build the table
@@ -2876,135 +2856,135 @@ function buildJobResultsPage() {
         .attr("id", "jobTable")
         .addClass("summary stripe")
         .append(
-            $("<thead></thead>")
+        $("<thead></thead>")
+            .append(
+            $("<tr></tr>")
+                .addClass("summaryTitle")
                 .append(
-                    $("<tr></tr>")
-                        .addClass("summaryTitle")
-                        .append(
-                            $("<td></td>")
-                                .addClass("header-sm")
-                                .text("Status")
-                        )
-                        .append(
-                            $("<td></td>")
-                                .addClass("header-sm")
-                                .text("Job")
-                        )
-                        .append(
-                            $("<td></td>")
-                                .addClass("header-sm")
-                                .append(
-                                    $("<a></a>")
-                                        .addClass("delete-job-action")
-                                        .attr("href", "#")
-                                        .text("Delete")
-                                        .click(function() {
-                                            // Gather the jobs to delete
-                                            var jobsDelete = [];
-                                            $(".job-delete-checkbox:checked").each(function(index, element) {
-                                                var id = $(element).val();
-                                                jobsDelete.push(id);
-                                            });
+                $("<td></td>")
+                    .addClass("header-sm")
+                    .text("Status")
+            )
+                .append(
+                $("<td></td>")
+                    .addClass("header-sm")
+                    .text("Job")
+            )
+                .append(
+                $("<td></td>")
+                    .addClass("header-sm")
+                    .append(
+                    $("<a></a>")
+                        .addClass("delete-job-action")
+                        .attr("href", "#")
+                        .text("Delete")
+                        .click(function() {
+                            // Gather the jobs to delete
+                            var jobsDelete = [];
+                            $(".job-delete-checkbox:checked").each(function(index, element) {
+                                var id = $(element).val();
+                                jobsDelete.push(id);
+                            });
 
-                                            if (confirm("Are you sure you want to delete these " + jobsDelete.length + " jobs?")) {
-                                                // Make the Delete AJAX call
-                                                $.ajax({
-                                                    type: "DELETE",
-                                                    url: "/gp/rest/v1/jobs/delete?jobs=" + jobsDelete.join(","),
-                                                    cache: false,
-                                                    dataType: "text",
-                                                    success: function(data, textStatus, jqXHR) {
-                                                        var filter = getJobFilter();
-                                                        if (!filter) filter = true;
-                                                        loadJobResults(filter);
-                                                        showSuccessMessage(data);
-                                                    },
-                                                    error: function(data) {
-                                                        var filter = getJobFilter();
-                                                        if (!filter) filter = true;
-                                                        loadJobResults(filter);
-                                                        showErrorMessage(data);
-                                                    }
-                                                });
-                                            }
-                                        })
-                                )
-                                .append(
-                                    $("<input />")
-                                        .addClass("job-delete-checkbox-master")
-                                        .attr("type", "checkbox")
-                                        .click(function() {
-                                            var isChecked = $(".job-delete-checkbox-master").prop('checked');
-                                            $(".job-delete-checkbox").prop('checked', isChecked);
-                                        })
-                                )
-                        )
-                        .append(
-                            $("<td></td>")
-                                .css("min-width", "255px")
-                                .append(
-                                    $("<a></a>")
-                                        .addClass("job-all-toggle")
-                                        .attr("href", "#")
-                                        .click(function(event) {
-                                            var toggleImage = $(".jobresults-all-toggle");
-                                            var open = toggleImage.attr("src").indexOf("_run") != -1;
-                                            if (open) {
-                                                toggleImage.attr("src", "/gp/images/triangle_black.gif");
-                                            }
-                                            else {
-                                                toggleImage.attr("src", "/gp/images/triangle_black_run.gif");
-                                            }
-
-                                            $(".jobresults-toggle").each(function() {
-                                                var thisOpen = $(this).attr("src").indexOf("_run") != -1;
-
-                                                if (open && thisOpen) {                   // We're closing them all and this is open
-                                                    $(this).trigger("click");
-                                                }
-                                                else if (!open && !thisOpen) {              // We're opening them all and this is closed
-                                                    $(this).trigger("click");
-                                                }
-                                            });
-
-                                            if (event.preventDefault) event.preventDefault();
-                                            if (event.stopPropagation) event.stopPropagation();
-                                        })
-                                        .append(
-                                            $("<img />")
-                                                .addClass("jobresults-all-toggle")
-                                                .attr("src", "/gp/images/triangle_black_run.gif")
-                                        )
-                                )
-                                .append("Module")
-                        )
-                        .append(
-                            $("<td></td>")
-                                .addClass("header-sm")
-                                .text("Size")
-                        )
-                        .append(
-                            $("<td></td>")
-                                .css("min-width", "100px")
-                                .text("Submission Date")
-                        )
-                        .append(
-                            $("<td></td>")
-                                .css("min-width", "100px")
-                                .text("Completion Date")
-                        )
-                        .append(
-                            $("<td></td>")
-                                .addClass("header-md")
-                                .text("Owner")
-                        )
-                        .append(
-                            $("<td></td>")
-                                .addClass("header-sm")
-                                .text("Sharing")
-                        )
+                            if (confirm("Are you sure you want to delete these " + jobsDelete.length + " jobs?")) {
+                                // Make the Delete AJAX call
+                                $.ajax({
+                                    type: "DELETE",
+                                    url: "/gp/rest/v1/jobs/delete?jobs=" + jobsDelete.join(","),
+                                    cache: false,
+                                    dataType: "text",
+                                    success: function(data) {
+                                        var filter = getJobFilter();
+                                        if (!filter) filter = true;
+                                        loadJobResults(filter);
+                                        showSuccessMessage(data);
+                                    },
+                                    error: function(data) {
+                                        var filter = getJobFilter();
+                                        if (!filter) filter = true;
+                                        loadJobResults(filter);
+                                        showErrorMessage(data);
+                                    }
+                                });
+                            }
+                        })
                 )
+                    .append(
+                    $("<input />")
+                        .addClass("job-delete-checkbox-master")
+                        .attr("type", "checkbox")
+                        .click(function() {
+                            var isChecked = $(".job-delete-checkbox-master").prop('checked');
+                            $(".job-delete-checkbox").prop('checked', isChecked);
+                        })
+                )
+            )
+                .append(
+                $("<td></td>")
+                    .css("min-width", "255px")
+                    .append(
+                    $("<a></a>")
+                        .addClass("job-all-toggle")
+                        .attr("href", "#")
+                        .click(function(event) {
+                            var toggleImage = $(".jobresults-all-toggle");
+                            var open = toggleImage.attr("src").indexOf("_run") != -1;
+                            if (open) {
+                                toggleImage.attr("src", "/gp/images/triangle_black.gif");
+                            }
+                            else {
+                                toggleImage.attr("src", "/gp/images/triangle_black_run.gif");
+                            }
+
+                            $(".jobresults-toggle").each(function() {
+                                var thisOpen = $(this).attr("src").indexOf("_run") != -1;
+
+                                if (open && thisOpen) {                   // We're closing them all and this is open
+                                    $(this).trigger("click");
+                                }
+                                else if (!open && !thisOpen) {              // We're opening them all and this is closed
+                                    $(this).trigger("click");
+                                }
+                            });
+
+                            if (event.preventDefault) event.preventDefault();
+                            if (event.stopPropagation) event.stopPropagation();
+                        })
+                        .append(
+                        $("<img />")
+                            .addClass("jobresults-all-toggle")
+                            .attr("src", "/gp/images/triangle_black_run.gif")
+                    )
+                )
+                    .append("Module")
+            )
+                .append(
+                $("<td></td>")
+                    .addClass("header-sm")
+                    .text("Size")
+            )
+                .append(
+                $("<td></td>")
+                    .css("min-width", "100px")
+                    .text("Submission Date")
+            )
+                .append(
+                $("<td></td>")
+                    .css("min-width", "100px")
+                    .text("Completion Date")
+            )
+                .append(
+                $("<td></td>")
+                    .addClass("header-md")
+                    .text("Owner")
+            )
+                .append(
+                $("<td></td>")
+                    .addClass("header-sm")
+                    .text("Sharing")
+            )
         )
+    )
         .appendTo(container);
 
     // Build the table body
@@ -3014,7 +2994,7 @@ function buildJobResultsPage() {
     // Init data tables
     jobTable.dataTable({
         serverSide: true,
-        "ajax": function(data, callback, settings) {
+        "ajax": function(data, callback) {
             populateJobResultsTable(data, callback);
         },
         "order": [[1, "desc"]],
@@ -3032,7 +3012,7 @@ function buildJobResultsPage() {
     });
 
     // Append the container to the correct past of the page
-    $("#jobResults").append(container);
+    jobResults.append(container);
 }
 
 function loadJobResults(jobResults) {
@@ -3043,7 +3023,7 @@ function loadJobResults(jobResults) {
 
     // Handle default job results loads
     if (jobResults === 'true' || jobResults === true || jobResults === 'null') {
-        var jobResults = getJobFilter();
+        jobResults = getJobFilter();
         if (jobResults === null) {
             jobResults = "userId=" + username;
             setJobFilter(jobResults);
@@ -3058,12 +3038,12 @@ function loadJobResults(jobResults) {
 
     // Hide the protocols, run task form & eula, if visible
     $("#protocols").hide();
-    $("#submitJob").hide();
+    var submitJob = $("#submitJob").hide();
     $("#eula-block").hide();
 
     // Clean the Run Task Form for future loads
-    if (Request.cleanJobSubmit === null) { Request.cleanJobSubmit = $("#submitJob").clone(); }
-    else { $("#submitJob").replaceWith(Request.cleanJobSubmit.clone()); }
+    if (Request.cleanJobSubmit === null) { Request.cleanJobSubmit = submitJob.clone(); }
+    else { submitJob.replaceWith(Request.cleanJobSubmit.clone()); }
     run_task_info = {
         lsid: null, //lsid of the module
         name: null, //name of the module
