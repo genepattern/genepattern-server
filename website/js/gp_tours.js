@@ -176,7 +176,7 @@ $(function()
         {
             steps.push({
                 element: "#jobTable_paginate",
-                intro: '<div class="tour-header"> Job Results Summary Page </div> Improved page navigation allows' +
+                intro: '<div class="tour-header"> Job Results Summary Page </div> Improvements to page navigation allows' +
                     ' navigation to the next, previous, first, last, or a specific page.',
                 position: 'left',
                 scrollToElement: true
@@ -316,6 +316,7 @@ $(function()
             $("#uploadTree").jstree("refresh");
 
             //window.location.href = startUrl;
+            window.location.href = "/gp";
         });
 
         intro.oncomplete(function()
@@ -330,7 +331,7 @@ $(function()
             $(".gp-tour-step").removeClass("gp-tour-step");
 
             $("#uploadTree").jstree("refresh");
-            //window.location.href = startUrl;
+            window.location.href = "/gp";
         });
 
         last_left_nav_tab =  $("#left-nav").tabs( "option", "active");
