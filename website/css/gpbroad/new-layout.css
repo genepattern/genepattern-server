@@ -273,7 +273,8 @@ body {
     top: 0px;
     margin-top: 71px;
     margin-bottom: 36px;
-	height: initial;
+    height: auto;
+    overflow: hidden;
 }
 
 #left-nav {
