@@ -14,26 +14,26 @@ $(function()
         //create the steps
         var steps = [
             {
-                element: "img[src*='GP-logo.gif']",
-                intro: "You can click the GenePattern icon to return to this home page at any time."
+                element: "#topband",//"img[src*='GP-logo.gif']",
+                intro: '<div class="tour-header"> GP Icon </div>You can click the GenePattern icon to return to this home page at any time.'
             },
             {
                 element: '#navband1',
-                intro: "The navigation bar provides access to other pages."
+                intro: '<div class="tour-header"> Navigation Bar </div>Access other pages from the navigation bar.'
             },
             {
                 element: '#left-nav-modules-tab',
-                intro: 'The Modules tab lists the analyses that you can run. Enter the first few characters of a module or pipeline name in the search box to locate that analysis.',
+                intro: '<div class="tour-header"> Modules Tab </div> In the Modules tab, search for a module or pipeline by starting to type its name. Drag and drop modules to favorites and view recently run modules.',
                 position: 'right'
             },
             {
                 element: '#left-nav-jobs-tab',
-                intro: 'The Jobs tab lists the most recent analyses that you have run and their results files.',
+                intro: '<div class="tour-header"> Jobs Tab </div>  The Jobs tab lists processing and finished jobs with results files.',
                 position: 'right'
             },
             {
                 element: '#left-nav-files-tab',
-                intro: 'The Files tab lists files that you have uploaded to the GenePattern server.',
+                intro: '<div class="tour-header"> Files Tab</div> The Files tab lists uploaded files on the GenePattern server',
                 position: 'right'
             }];
 
@@ -42,7 +42,7 @@ $(function()
         {
             steps.push({
                 element: '#protocols',
-                intro: "The center pane is the main display pane, which GenePattern uses to display information and to prompt you for input.",
+                intro: '<div class="tour-header"> Main Display Pane</div> The main display pane displays interactive information including protocols for common GenePattern analyses.',
                 position: 'left'
             });
         }
@@ -51,7 +51,7 @@ $(function()
         {
             steps.push({
                 element: '#submitJob',
-                intro: "The center pane is the main display pane, which GenePattern uses to display information and to prompt you for input.",
+                intro: '<div class="tour-header"> Main Display Pane</div>The main display pane displays interactive information including protocols for common GenePattern analyses.',
                 position: 'left'
             });
         }
@@ -59,7 +59,7 @@ $(function()
         intro.setOptions({
             steps: steps,
             showStepNumbers: false,
-            skipLabel: "Done",
+            skipLabel: "End Tour",
             tooltipClass: "tourStyle"
         });
 
@@ -68,7 +68,7 @@ $(function()
             //hack to not show the hidden native file upload button
             $("#submitJob").find(".uploadedinputfile").hide();
 
-            //switch the active left navigation tab to the approptiate one for the step
+            //switch the active left navigation tab to the appropriate one for the step
             if(intro._currentStep == 2)
             {
                 $(this).data("last-left-nav-tab", $("#left-nav").tabs( "option", "active"));
@@ -126,7 +126,7 @@ $(function()
             },
             {
                 element: "#menus-jobs .file-widget",
-                intro: '<div class="tour-header"> Jobs Tab </div> The slide out menu has a new option to "Copy To Files Tab". This option will create a copy of the file in the Files Tab',
+                intro: '<div class="tour-header"> Jobs Tab </div> The slide out menu has a new option to <b>Copy To Files Tab</b>. This option will put a copy of the file in the Files Tab',
                 position: 'right',
                 scrollToElement: true
             },
@@ -204,15 +204,11 @@ $(function()
             });
         }
 
-        var startUrl = "#";
         intro.onbeforechange(function(targetElement)
         {
             //switch the active left navigation tab to the appropriate one for the step
             if(intro._currentStep == 0)
             {
-                //keep track of the url the user started on
-                //startUrl = window.location;
-
                 $(".search-widget").searchslider("hide");
 
                 var demoJobJson = {
