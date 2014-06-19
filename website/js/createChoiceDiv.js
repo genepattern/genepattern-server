@@ -1,3 +1,4 @@
+
 /**
  * Initialize the choiceDiv. This method is called the first time the job input form is loaded.
  * The buildChoiceDiv is called after a dynamic choice is initialized from the GP server.
@@ -24,49 +25,82 @@ function initChoiceDiv(parameterName, groupId, initialValuesList)
  * 
  * @return an empty array if there are no matches.
  */
-function getMatchingChoices(choiceInfo, initialValues) {
-    var matching = [];
-    if (!choiceInfo || !choiceInfo.choices || choiceInfo.length==0 || !initialValues || initialValues.length==0 ) {
-        return matching;
-    }
-    for(var i=0; i<choiceInfo.choices.length; i++) {
-        var choice=choiceInfo.choices[i];
-        if (choice.value) {
-            for(var j=0; j<initialValues.length; j++) {
-                if (choice.value == initialValues[j]) {
-                    matching.push(initialValues[j]);
-                }
-            }
+
+/**
+ * Remove all instances of the given value from the given array.
+ * @param fromArray
+ * @param value
+ * @returns
+ */
+function removeItemsFromArray(fromArray, value) {
+    var b = '';
+    for (b in fromArray) {
+        if (fromArray[b] === value) {
+            fromArray.splice(b, 1);
+            break;
         }
     }
-    return matching;
+    return fromArray;
 }
 
 /**
- * Helper method, for the given choiceInfo, are there any 'custom values'
+ * Helper method, for the given choiceInfo, are there any items
+ * which match the given value.
+ * 
+ * @param choiceInfo
+ * @param value
+ * @returns {Boolean}
+ */
+function hasMatchingValue(choiceInfo, value) {
+    for(var i=0; i<choiceInfo.choices.length; ++i) {
+        var choice=choiceInfo.choices[i];
+        if (value === choice.value) {
+            return true;
+        }
+    }
+}
+
+/**
+ * Helper method, for the given choiceInfo, are there any custom values
  * in the given list of initialValues. 
- * A custom value is defined as anything which is not in the 
+ * A custom value is defined as anything which is not in the 'choiceInfo.choices'
  * drop-down menu.
+ * 
+ * Special-case: Ignore the empty string if it is in the list of initialValues.
+ * 
+ * For example, given a drop-down menu containing:
+ *     "A.txt", "B.txt", "C.txt"
+ *     
+ * Given initialValues=A.txt, return []
+ * Given initialValues=D.txt, return [ D.txt ]
+ * Given initialValues="" (empty string), return [], empty array
  * 
  * @param choiceInfo
  * @param initialValues
  * @returns
  */
 function getCustomChoices(choiceInfo, initialValues) {
-    if (!choiceInfo || !choiceInfo.choices || choiceInfo.length==0 || !initialValues || initialValues.length==0 ) {
-        console.log("Undefined behavior", choiceInfo, initialValues);
+    if (!initialValues || initialValues.length==0) {
         return [];
     }
-    var custom = initialValues.slice(0);
-    var matching = getMatchingChoices(choiceInfo, initialValues);
-    for (var i=0; i<matching.length; ++i) {
-        custom.pop(matching[i]);
+    if (!choiceInfo || !choiceInfo.choices || choiceInfo.length==0) {
+        return [];
+    }
+    
+    // check for matching items from the list of initial values
+    // ignore empty string values
+    var custom=[];
+    for(var i=0; i<initialValues.length; ++i) {
+        if (initialValues[i] != "") {
+            if (!hasMatchingValue(choiceInfo, initialValues[i])) {
+                custom.push(initialValues[i]);
+            }
+        }
     }
     return custom;
 }
 
 function buildChoiceDiv(selectChoiceDiv, choiceInfo, paramDetails, parameterName, groupId, initialValuesList) {
-    console.log("buildChoiceDiv for "+parameterName, "initialValues="+initialValuesList);
     var doLoadChoiceDiv=false;
 
     if(paramDetails != undefined && paramDetails != null && choiceInfo != undefined  && choiceInfo != null && choiceInfo != '')
@@ -308,14 +342,17 @@ function buildChoiceDiv(selectChoiceDiv, choiceInfo, paramDetails, parameterName
 function reloadChoiceDiv(selectChoiceDiv, choiceInfoIn, paramDetails, parameterName, groupId, initialValuesList) {
     $.getJSON( choiceInfoIn.href, 
         function( choiceInfo ) {
-            console.log("drop-down loaded from: " + choiceInfo.href); 
-            console.log("status: " + JSON.stringify(choiceInfo.status, null, 2));
+            if (window.console) {
+                console.log("drop-down loaded from: " + choiceInfo.href); 
+                console.log("status: " + JSON.stringify(choiceInfo.status, null, 2));
+            }
             $(selectChoiceDiv).empty();
             buildChoiceDiv(selectChoiceDiv, choiceInfo, paramDetails, parameterName, groupId, initialValuesList);
             
             //if it's a custom value then do the same as a send to parameter
             var customChoices=getCustomChoices(choiceInfo, initialValuesList);
             if (customChoices && customChoices.length>0) {
+                // only if the first item in the list is not the empty string
                 if (customChoices[0] != "") {
                     setInputField(parameterName, customChoices[0], groupId);
                 }
