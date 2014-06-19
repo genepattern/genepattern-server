@@ -316,7 +316,9 @@ function reloadChoiceDiv(selectChoiceDiv, choiceInfoIn, paramDetails, parameterN
             //if it's a custom value then do the same as a send to parameter
             var customChoices=getCustomChoices(choiceInfo, initialValuesList);
             if (customChoices && customChoices.length>0) {
-                setInputField(parameterName, customChoices[0], groupId);
+                if (customChoices[0] != "") {
+                    setInputField(parameterName, customChoices[0], groupId);
+                }
             }
         } 
     );
