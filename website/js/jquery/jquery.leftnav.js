@@ -272,6 +272,10 @@ $.widget("gp.module", {
             .appendTo("body")
             .show("blind", 300);
 
+        clone.find(".truncate_more").show();
+        clone.find(".truncate_ellipsis").hide();
+        clone.find(".clearboth").hide();
+
         $(document).click(function() {
             clone.hide("blind", 300);
             setTimeout(function() {
