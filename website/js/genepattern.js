@@ -445,7 +445,13 @@ function setModuleSearchTitle(filter) {
 function updateJobStatusPage() {
     var isJobStatusOpen = $(".on-job-status-page").length > 0 && $("#jobResults:visible").length > 0;
     if (isJobStatusOpen && currentJobNumber !== undefined && currentJobNumber !== null) {
-        loadJobStatus(currentJobNumber);
+        // Get the status of the current job
+        var status = $("#jobStatusIcon" + currentJobNumber).attr("alt");
+
+        // If the job is still running, refresh
+        if (status !== 'Finished' && status !== 'Error') {
+            loadJobStatus(currentJobNumber);
+        }
     }
 }
 
@@ -456,7 +462,7 @@ function jobStatusPoll() {
 
         initRecentJobs();
 
-        // Update the job status page, too, if open
+        // Update the job status page, if open and running
         updateJobStatusPage();
 
         if (continuePolling) {
@@ -2401,7 +2407,7 @@ function getURLParameter(sParam) {
     return null;
 }
 
-function loadJobStatus(jobId) {
+function loadJobStatus(jobId, forceVisualizers) {
     // Abort if no job to load
     if (jobId === undefined || jobId === null || jobId === '') {
         return;
@@ -2428,7 +2434,13 @@ function loadJobStatus(jobId) {
     parameter_and_val_groups = {}; //contains params and their values only
 
     // Handle open visualizer flag
-    var openVisualizers = getURLParameter("openVisualizers");
+    var openVisualizers;
+    if (forceVisualizers !== undefined) {
+        openVisualizers = forceVisualizers
+    }
+    else {
+        openVisualizers = getURLParameter("openVisualizers");
+    }
     if (openVisualizers) {
         openVisualizers = "&openVisualizers=true";
     }
@@ -2440,7 +2452,11 @@ function loadJobStatus(jobId) {
     $(".send-to-param-list").hide();
 
     // Add to history so back button works
-    history.pushState(null, document.title, location.protocol + "//" + location.host + location.pathname + "?jobid=" + jobId);
+    var visualizerAppend = "";
+    if (getURLParameter("openVisualizers")) {
+        visualizerAppend = openVisualizers;
+    }
+    history.pushState(null, document.title, location.protocol + "//" + location.host + location.pathname + "?jobid=" + jobId + visualizerAppend);
 
     $.ajax({
         type: "GET",
