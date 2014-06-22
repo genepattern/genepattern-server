@@ -26,8 +26,6 @@
     <property name="gp-library-jarname" value="GenePattern.jar" />
     <!-- signed applet stuff for running visualizers from web page -->
     <property name="runVisualizer-jarname" value="runVisualizer.jar" />
-    <property name="signingKey" value="gEnEpAtTeRn" />
-    <property name="keyStore" value="${build}/keystore" />
 
     <path id="genepattern.root">
         <pathelement location="${basedir}" />
@@ -63,7 +61,7 @@
         <property name="genepattern.package" value="org/genepattern" />
 
         <available file="post-compile.xml" property="post-compile.present" />
-        <available file="${keyStore}" property="keyStore.present" />
+        <!-- available file="${keyStore}" property="keyStore.present" / -->
 
         <path id="library.classpath">
             <fileset dir="${lib_compile}">
@@ -342,15 +340,70 @@
         <ant dir="${genepattern.installer}" inheritall="false" inheritrefs="false" target="installers" />
     </target>
 
-    <target name="build-visualizer-applet" depends="init, makeKeystore">
+    <target name="build-visualizer-applet" depends="sign-visualizer-applet" />
+    <target name="compile-visualizer-applet" depends="init">
         <mkdir dir="applet-build" />
         <javac debug="true" destdir="applet-build" srcdir="src" classpathref="library.classpath" includes="org/genepattern/visualizer/*.java" target="1.1" source="1.2" />
-
+    </target>
+    
+    <target name="jar-visualizer-applet" depends="compile-visualizer-applet">
         <jar basedir="applet-build" defaultexcludes="true" includes="org/genepattern/visualizer/*.class" jarfile="${genepattern.build}/${runVisualizer-jarname}">
         </jar>
-        <signjar jar="${genepattern.build}/${runVisualizer-jarname}" alias="Genepattern" storepass="${signingKey}" keypass="${signingKey}" keystore="${keyStore}" />
-
     </target>
+    
+    <target name="init-signjar">
+        <!-- load signjar.properties -->
+        <property file="${user.home}/.gp_build/signjar.properties" />
+        <property file="signjar.properties" />
+        
+        <!-- for properties not set in 'signjar.properties', set defaults directly -->
+        <property name="signjar.keystore" location="${build}/keystore" />
+        <property name="signjar.alias" value="Genepattern" />
+        
+        <!-- if not otherwise defined, prompt for password -->
+        <input message="Password for Jar Signing Key: " addproperty="signjar.storepass" defaultValue="gEnEpAtTeRn">
+            <handler classname="org.apache.tools.ant.input.SecureInputHandler" />
+        </input>
+
+        <available file="${signjar.keystore}" property="keyStore.present" />
+    </target>
+
+    <target name="makeKeystore" depends="init-signjar" unless="keyStore.present">
+        <genkey alias="GenePattern" keypass="${signjar.storepass}" storepass="${signjar.storepass}" keystore="${signjar.keystore}" keyalg="RSA">
+            <dname>
+                <param name="CN" value="GenePattern" />
+                <param name="OU" value="Cancer Genomics" />
+                <param name="O" value="Broad Institute" />
+                <param name="L" value="Cambridge" />
+                <param name="S" value="MA" />
+                <param name="C" value="US" />
+                <param name="EMAILADDRESS" value="gp-help@broadinstitute.org" />
+            </dname>
+        </genkey>
+    </target>
+
+    <target name="sign-visualizer-applet" depends="jar-visualizer-applet,init-signjar,makeKeystore">
+        <echo>signing visualizer applet with keystore=${signjar.keystore}</echo>
+        <signjar jar="${genepattern.build}/${runVisualizer-jarname}"
+                         keystore="${signjar.keystore}"
+                         maxmemory="1024M"
+                         alias="${signjar.alias}"
+                         storepass="${signjar.storepass}"
+        />
+        <signjar jar="external-src/commons-httpclient-3.0.1/dist/commons-httpclient.jar"
+                         keystore="${signjar.keystore}"
+                         maxmemory="1024M"
+                         alias="${signjar.alias}"
+                         storepass="${signjar.storepass}"
+        />
+        <signjar jar="website/WEB-INF/lib/commons-codec-1.3.jar"
+                         keystore="${signjar.keystore}"
+                         maxmemory="1024M"
+                         alias="${signjar.alias}"
+                         storepass="${signjar.storepass}"
+        />
+    </target>
+
     <!-- =================================================================== -->
     <!-- Custom post-compilation step                                        -->
     <!-- =================================================================== -->
@@ -404,20 +457,6 @@
         <antcall target="post-compile" />
     </target>
 
-    <target depends="init" name="makeKeystore" unless="keyStore.present">
-        <genkey alias="GenePattern" keypass="${signingKey}" storepass="${signingKey}" keystore="${keyStore}" keyalg="RSA">
-            <dname>
-                <param name="CN" value="GenePattern" />
-                <param name="OU" value="Cancer Genomics" />
-                <param name="O" value="Broad Institute" />
-                <param name="L" value="Cambridge" />
-                <param name="S" value="MA" />
-                <param name="C" value="US" />
-                <param name="EMAILADDRESS" value="gp-help@broadinstitute.org" />
-            </dname>
-        </genkey>
-    </target>
- 
     <target name="getSvnInfoLastRev" unless="version"
         description="Sets property 'version' to the head svn Last Changed Rev">  
         
