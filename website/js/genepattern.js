@@ -2236,6 +2236,11 @@ function initRecentJobs() {
         loadJobResults("userId=" + username);
     });
 
+    // Init the refresh button
+    $("#left-nav-jobs-refresh").button().click(function() {
+        initRecentJobs();
+    });
+
     // Init the jobs
     $.ajax({
         cache: false,

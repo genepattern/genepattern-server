@@ -667,6 +667,12 @@ body {
 
 #left-nav-jobs-list {
     padding: 10px;
+    position: absolute;
+    top: 54px;
+    bottom: 0px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    width: 328px;
 }
 
 .job-status-icon {

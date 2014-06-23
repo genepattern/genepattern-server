@@ -334,9 +334,7 @@
 	                </div>
 		            <div id="left-nav-jobs" class="left-nav-tab">
                         <div class="left-nav-top">
-                            <div class="current-job-status">
-                                <a onclick="loadJobResults('userId=${requestScope.userID}'); return false;" href="/gp/pages/index.jsf?jobResults=userId%3D${requestScope.userID}"></a>
-                            </div>
+                            <button id="left-nav-jobs-refresh">Refresh</button>
                             <button id="left-nav-jobs-browse">Browse Jobs &#x203a;</button>
                         </div>
                         <h:outputText rendered="!#{uiBean.newUI}">
