@@ -1467,6 +1467,13 @@ function createFileWidget(linkElement, appendTo) {
                 "description": "Upload files to this directory.",
                 "version": "<span class='glyphicon glyphicon-cloud-upload' ></span>", "documentation": "", "categories": [], "suites": [], "tags": []
             });
+
+            data.push({
+                "lsid": "",
+                "name": "Save Directory",
+                "description": "Save a copy of this directory to your local computer as a zip file.",
+                "version": "<span class='glyphicon glyphicon-floppy-save' ></span>", "documentation": "", "categories": [], "suites": [], "tags": []
+            });
         }
         else if (!isPartialFile) {
             data.push({
@@ -1552,22 +1559,30 @@ function createFileWidget(linkElement, appendTo) {
                 droppable: false,
                 draggable: false,
                 click: function(event) {
-                    var saveAction = $(event.target).closest(".module-listing").find(".module-name").text().trim().indexOf("Save File") == 0;
-                    var deleteAction = $(event.target).closest(".module-listing").find(".module-name").text().trim().indexOf("Delete") == 0;
-                    var subdirAction = $(event.target).closest(".module-listing").find(".module-name").text().trim().indexOf("Create Subdirectory") == 0;
-                    var uploadAction = $(event.target).closest(".module-listing").find(".module-name").text().trim().indexOf("Upload") == 0;
-                    var pipelineAction = $(event.target).closest(".module-listing").find(".module-name").text().trim().indexOf("Create Pipeline") == 0;
-                    var genomeSpaceAction = $(event.target).closest(".module-listing").find(".module-name").text().trim().indexOf("Save to Genomespace") == 0;
-                    var renameAction = $(event.target).closest(".module-listing").find(".module-name").text().trim().indexOf("Rename") == 0;
-                    var jobCopyAction = $(event.target).closest(".module-listing").find(".module-name").text().trim().indexOf("Copy to Files") == 0;
-                    var moveAction = $(event.target).closest(".module-listing").find(".module-name").text().trim().indexOf("Move") == 0;
+                    var actionClicked = $(event.target).closest(".module-listing").find(".module-name").text().trim();
+
+                    var saveAction = actionClicked.indexOf("Save File") == 0 || actionClicked.indexOf("Save Directory") == 0;
+                    var deleteAction = actionClicked.indexOf("Delete") == 0;
+                    var subdirAction = actionClicked.indexOf("Create Subdirectory") == 0;
+                    var uploadAction = actionClicked.indexOf("Upload") == 0;
+                    var pipelineAction = actionClicked.indexOf("Create Pipeline") == 0;
+                    var genomeSpaceAction = actionClicked.indexOf("Save to Genomespace") == 0;
+                    var renameAction = actionClicked.indexOf("Rename") == 0;
+                    var jobCopyAction = actionClicked.indexOf("Copy to Files") == 0;
+                    var moveAction = actionClicked.indexOf("Move") == 0;
 
                     var listObject = $(event.target).closest(".search-widget").find(".send-to-param-list");
                     var url = listObject.attr("data-url");
                     var path = uploadPathFromUrl(url);
 
                     if (saveAction) {
-                        window.location.href = url + "?download";
+                        if (isDirectory) {
+                            window.location.href = "/gp/rest/v1/data/download/?path=" + encodeURIComponent(path);
+                        }
+                        else {
+                            window.location.href = url + "?download";
+                        }
+
                         $(".search-widget:visible").searchslider("hide");
                     }
 

@@ -10,6 +10,7 @@ import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.util.Enumeration;
 import java.util.List;
+import java.util.zip.ZipOutputStream;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -22,6 +23,7 @@ import javax.ws.rs.core.Response.Status;
 import org.apache.commons.io.IOUtils;
 import org.apache.log4j.Logger;
 import org.genepattern.server.DataManager;
+import org.genepattern.server.UploadDirectoryZipWriter;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.database.HibernateUtil;
@@ -223,6 +225,61 @@ public class DataResource {
             }
             else { // Copying to other file locations not supported
                 return Response.status(500).entity("Copy not implemented for this destination file type: " + to).build();
+            }
+        }
+        catch (Throwable t) {
+            return Response.status(Status.INTERNAL_SERVER_ERROR).entity(t.getLocalizedMessage()).build();
+        }
+    }
+
+    /**
+     * Download endpoint for DataResource
+     * Currently only downloading directories is implemented.
+     * Downloading files is still performed by our old DataServlet.
+     * @param request
+     * @return
+     */
+    @GET
+    @Path("/download")
+    public Response download(@Context HttpServletRequest request, @Context HttpServletResponse response, @QueryParam("path") String path) {
+        // Fix for when the preceding slash is missing from the path
+        if (!path.startsWith("/")) {
+            path = "/" + path;
+        }
+
+        try {
+            // Handle space characters
+            path = URLDecoder.decode(path, "UTF-8");
+
+            final GpContext userContext = Util.getUserContext(request);
+            if (path.startsWith("/users")) { // If this is a user upload
+                File uploadFilePath = extractUsersPath(userContext, path);
+                GpFilePath fileToDownload = GpFileObjFactory.getUserUploadFile(userContext, uploadFilePath);
+
+                if (fileToDownload.isDirectory()) {
+                    UploadDirectoryZipWriter udzw = new UploadDirectoryZipWriter(fileToDownload);
+
+                    response.setHeader("Content-Disposition", "attachment; filename=" + fileToDownload.getName() + ".zip" + ";");
+                    response.setHeader("Content-Type", "application/octet-stream");
+                    response.setHeader("Cache-Control", "no-store");
+                    response.setHeader("Pragma", "no-cache");
+                    response.setDateHeader("Expires", 0);
+
+                    OutputStream os = response.getOutputStream();
+                    ZipOutputStream zipStream = new ZipOutputStream(os);
+                    udzw.writeFilesToZip(zipStream);
+                    os.close();
+
+                    return Response.ok().build();
+                }
+                else {
+                    // Non-directories not implemented
+                    return Response.status(500).entity("Download not implemented for non-directories. Use DataServlet for: " + path).build();
+                }
+            }
+            else {
+                // Other files not implemented
+                return Response.status(500).entity("Download not implemented for this file type: " + path).build();
             }
         }
         catch (Throwable t) {
