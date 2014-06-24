@@ -343,6 +343,22 @@ body {
 
 #uploadTree {
     padding: 10px;
+    position: absolute;
+    top: 54px;
+    bottom: 0px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    width: 329px;
+}
+
+#genomeSpaceFileTree {
+    padding: 10px;
+    position: absolute;
+    top: 54px;
+    bottom: 0px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    width: 319px;
 }
 
 #left-nav-genomespace {
@@ -673,6 +689,15 @@ body {
     overflow-y: auto;
     overflow-x: hidden;
     width: 328px;
+}
+
+#left-nav-modules-list {
+    position: absolute;
+    top: 76px;
+    bottom: 0px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    width: 349px;
 }
 
 .job-status-icon {
