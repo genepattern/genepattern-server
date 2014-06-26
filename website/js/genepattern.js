@@ -3099,6 +3099,45 @@ function loadJobResults(jobResults) {
     buildJobResultsPage();
 }
 
+function initStatusBox() {
+    $(document).ready(function() {
+        $("#user-box-name").text(username);
+        $("#quota-space-progressbar").progressbar({
+            value: 27
+        });
+        $("#quota-box").tooltip({
+            items: "div",
+            //hide: { effect: "fade", delay: 1000 },
+            content: $("#disk-quota-tooltip").html()
+        })
+            .click(function() {
+                $("#disk-quota-tooltip").dialog({
+                    title: "Disk Quota Usage"
+                }).show();
+            });
+        $(".congestion-slow").tooltip({
+            items: "div",
+            content: $("#congestion-slow-tooltip").html()
+        })
+            .click(function() {
+                $("#congestion-slow-tooltip").dialog({
+                    title: "Slow Jobs Queue"
+                }).show();
+            });
+        $(".congestion-fast").tooltip({
+            items: "div",
+            content: $("#congestion-fast-tooltip").html()
+        })
+            .click(function() {
+                $("#congestion-fast-tooltip").dialog({
+                    title: "Fast Jobs Queue"
+                }).show();
+            });
+        $("#top-status-box").find("[title]").tooltip();
+        $("#user-menu").menu();
+    });
+}
+
 function userBoxClick() {
     setTimeout(function() {
         $("#user-menu").show();

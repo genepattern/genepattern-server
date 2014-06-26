@@ -876,7 +876,7 @@ body {
 
 #top-status-box {
     height: 61px;
-    width: 250px;
+    width: 200px;
     z-index: 6000;
     position: fixed;
     right: 0;
@@ -884,7 +884,6 @@ body {
     padding: 5px;
     border-bottom: 2px solid #4b71aa;
     border-left: 2px solid #4b71aa;
-    /*background: #BDD3E9 url(images/sidebar-topBG.png) repeat-x;*/
     background: #6f97c8 url(images/ui-bg_highlight-hard_35_6f97c8_1x100.png) 50% 50% repeat-x;
     border-radius: 0 0 0 5px;
     color: white;
@@ -893,9 +892,9 @@ body {
 }
 
 #quota-box {
-    top: 41px;
+    top: 55px;
     position: absolute;
-    width: 250px;
+    width: 200px;
     font-size: 7pt;
     font-weight: bold;
     cursor: pointer;
@@ -908,9 +907,9 @@ body {
 #quota-space-label {
     position: absolute;
     font-size: 6pt;
-    width: 250px;
+    width: 200px;
     text-align: center;
-    top: 13px;
+    top: -1px;
     text-shadow: none;
 }
 
@@ -929,7 +928,7 @@ body {
     font-weight: bold;
     color: white;
     text-align: right;
-    max-width: 125px;
+    max-width: 200px;
     overflow: hidden;
     text-overflow: ellipsis;
     letter-spacing: 1px;
