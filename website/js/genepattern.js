@@ -3098,3 +3098,13 @@ function loadJobResults(jobResults) {
     // Build the page scaffolding
     buildJobResultsPage();
 }
+
+function userBoxClick() {
+    setTimeout(function() {
+        $("#user-menu").show();
+        $(document).click(function() {
+            $("#user-menu").hide();
+            $(document).unbind("click");
+        });
+    }, 1);
+}

@@ -270,7 +270,7 @@ body {
     left: 0px;
     right: 0px;
     bottom: 0px;
-    top: 0px;
+    top: 2px;
     margin-top: 71px;
     margin-bottom: 36px;
 	height: auto;
@@ -872,4 +872,104 @@ body {
 
 #jobTable_filter {
     padding-bottom: 10px;
+}
+
+#top-status-box {
+    height: 61px;
+    width: 250px;
+    z-index: 6000;
+    position: fixed;
+    right: 0;
+    top: 0;
+    padding: 5px;
+    border-bottom: 2px solid #4b71aa;
+    border-left: 2px solid #4b71aa;
+    /*background: #BDD3E9 url(images/sidebar-topBG.png) repeat-x;*/
+    background: #6f97c8 url(images/ui-bg_highlight-hard_35_6f97c8_1x100.png) 50% 50% repeat-x;
+    border-radius: 0 0 0 5px;
+    color: white;
+    letter-spacing: 0.5px;
+    text-shadow: 1px 1px #777777;
+}
+
+#quota-box {
+    top: 41px;
+    position: absolute;
+    width: 250px;
+    font-size: 7pt;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+#quota-space-progressbar {
+    height: 10px;
+}
+
+#quota-space-label {
+    position: absolute;
+    font-size: 6pt;
+    width: 250px;
+    text-align: center;
+    top: 13px;
+    text-shadow: none;
+}
+
+#user-box {
+    position: absolute;
+    right: 10px;
+    font-size: 20pt;
+    top: 10px;
+    color: #000099;
+    text-align: right;
+    cursor: pointer;
+}
+
+#user-box-name {
+    font-size: 7pt;
+    font-weight: bold;
+    color: white;
+    text-align: right;
+    max-width: 125px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    letter-spacing: 1px;
+}
+
+.user-box-arrow {
+    font-size: 10pt;
+    position: relative;
+    top: -6px;
+}
+
+#congestion-box {
+    font-size: 20pt;
+    position: absolute;
+    top: 10px;
+    left: 5px;
+}
+
+.congestion-light {
+    width: 55px;
+    display: inline-block;
+    font-size: 30pt;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.congestion-label {
+    font-size: 7pt;
+    width: 15px;
+    line-height: 8pt;
+    display: inline-block;
+    position: relative;
+    top: -3px;
+    left: -13px;
+}
+
+#user-menu {
+    position: fixed;
+    right: 0;
+    top: 40px;
+    z-index: 6001;
+    width: 150px;
 }

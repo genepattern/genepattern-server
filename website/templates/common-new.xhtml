@@ -198,21 +198,123 @@
         <body onload="onLoad();">
 			<!-- Floating header  -->
 			<div id="header">
-				<!-- User settings area -->
-            <t:div id="systemMessageLink">
-                <t:div rendered="#{!empty requestScope.userID}">
-                    <table height="30" border="0" cellpadding="0" cellspacing="0" class="loginsettings">
-                        <tr valign="top">
+
+                <div id="top-status-box">
+                    <div id="congestion-box">
+                        <div class="congestion-light congestion-slow">
+                            <span style="color: rgb(202, 96, 96);">&#9679;</span>
+                            <span class="congestion-label">Slow Jobs</span>
+                        </div>
+                        <div class="congestion-light congestion-fast">
+                            <span style="color: rgb(105, 153, 105);">&#9679;</span>
+                            <span class="congestion-label">Fast Jobs</span>
+                        </div>
+                    </div>
+                    <div id="quota-box">
+                        Disk Quota Used
+                        <div id="quota-space-progressbar">
+                            <span id="quota-space-label">8.1 GB / 30 GB</span>
+                        </div>
+                    </div>
+                    <div id="user-box" onclick="userBoxClick();">
+                        <span class="glyphicon glyphicon-user"></span><span class="user-box-arrow">&#x25BC;</span>
+                        <div id="user-box-name">username</div>
+                    </div>
+                </div>
+                <script type="text/javascript">
+                    $(document).ready(function() {
+                        $("#quota-space-progressbar").progressbar({
+                            value: 27
+                        });
+                        $("#quota-box").tooltip({
+                                items: "div",
+                                //hide: { effect: "fade", delay: 1000 },
+                                content: $("#disk-quota-tooltip").html()
+                            })
+                            .click(function() {
+                                $("#disk-quota-tooltip").dialog({
+                                    title: "Disk Quota Usage"
+                                }).show();
+                            });
+                        $(".congestion-slow").tooltip({
+                                items: "div",
+                                content: $("#congestion-slow-tooltip").html()
+                            })
+                            .click(function() {
+                                $("#congestion-slow-tooltip").dialog({
+                                    title: "Slow Jobs Queue"
+                                }).show();
+                            });
+                        $(".congestion-fast").tooltip({
+                                items: "div",
+                                content: $("#congestion-fast-tooltip").html()
+                            })
+                            .click(function() {
+                                $("#congestion-fast-tooltip").dialog({
+                                    title: "Fast Jobs Queue"
+                                }).show();
+                            });
+                        $("#top-status-box").find("[title]").tooltip();
+                        $("#user-menu").menu();
+                    });
+                </script>
+
+                <!-- Custom Tooltips -->
+                <ul id="user-menu" style="display: none;">
+                    <li class="showSystemMessageSpan" style="display: none;"><a href="#" onclick="showSystemMessage();">View System Message</a></li>
+                    <li><a href="/gp/pages/accountInfo.jsf">My Settings</a></li>
+                    <li><a href="/gp/logout">Sign Out</a></li>
+                </ul>
+                <div id="disk-quota-tooltip" style="display: none;">
+                    <table>
+                        <tr>
+                            <td colspan="2">
+                                <strong>Disk Quota Space Used</strong>
+                            </td>
+                        </tr>
+                        <tr>
                             <td>
-                            	<span id="showSystemMessageSpan" style="display:none;"><a href="#" onclick="showSystemMessage();" style="color:red">System Message</a> | </span>
-                                <h:outputLink value="#{facesContext.externalContext.requestContextPath}/pages/accountInfo.jsf">
-                                    My Settings </h:outputLink> | <h:form style="display: inline;">
-                                <h:outputLink id="logoutLink" value="#{facesContext.externalContext.request.contextPath}/logout"> Sign out </h:outputLink>
-                            </h:form> &#160;${requestScope.userID}&#160;&#160;&#160;</td>
+                                <em>Upload Files</em>
+                            </td>
+                            <td>
+                                3 GB
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <em>Job Output Files</em>
+                            </td>
+                            <td>
+                                3 GB
+                            </td>
                         </tr>
                     </table>
-                </t:div>
-            </t:div>
+                </div>
+                <div id="congestion-slow-tooltip" style="display: none;">
+                    <strong>Slow Jobs Queue</strong> <em>Average Wait Time:</em> 1 day <br/><br/>
+                    The slows jobs queue is experiencing some congestion. Jobs submitted here may take several days before they run.
+                </div>
+                <div id="congestion-fast-tooltip" style="display: none;">
+                    <strong>Fast Jobs Queue</strong> <em>Average Wait Time:</em> 2 minutes <br/><br/>
+                    Congestion is light to none on the fast jobs queue.
+                </div>
+
+				<!-- User settings area -->
+                <!--<t:div id="systemMessageLink" style="display: none;">-->
+                    <!--<t:div rendered="#{!empty requestScope.userID}">-->
+                        <!--<table height="30" border="0" cellpadding="0" cellspacing="0" class="loginsettings">-->
+                            <!--<tr valign="top">-->
+                                <!--<td>-->
+                                    <!--<span class="showSystemMessageSpan" style="display:none;"><a href="#" onclick="showSystemMessage();" style="color:red">System Message</a> | </span>-->
+                                    <!--<h:outputLink value="#{facesContext.externalContext.requestContextPath}/pages/accountInfo.jsf">-->
+                                        <!--My Settings </h:outputLink> | <h:form style="display: inline;">-->
+                                    <!--<h:outputLink id="logoutLink" value="#{facesContext.externalContext.request.contextPath}/logout"> Sign out </h:outputLink>-->
+                                <!--</h:form> &#160;${requestScope.userID}&#160;&#160;&#160;</td>-->
+                            <!--</tr>-->
+                        <!--</table>-->
+                    <!--</t:div>-->
+                <!--</t:div>-->
+
 				<!-- top band with the logo -->
 	            <div id="topband" class="topband">
 	                <h:outputLink value="#{facesContext.externalContext.requestContextPath}/pages/index.jsf" target="_top">
