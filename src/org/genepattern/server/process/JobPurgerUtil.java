@@ -19,8 +19,8 @@ import java.util.Date;
 import java.util.GregorianCalendar;
 
 import org.apache.log4j.Logger;
+import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
-import org.genepattern.server.config.ServerConfigurationFactory;
 
 public class JobPurgerUtil {
     private static Logger log = Logger.getLogger(JobPurgerUtil.class);
@@ -33,16 +33,16 @@ public class JobPurgerUtil {
      * @param now
      * @return
      */
-    public static Date getCutoffForUser(final GpContext userContext, final Date now) {
+    public static Date getCutoffForUser(final GpConfig gpConfig, GpContext userContext, final Date now) {
         if (userContext==null) {
             //use the system defaults
-            return getCutoffForUser(GpContext.getServerContext(), now);
+            userContext=GpContext.getServerContext();
         }
-        final int purgeJobsAfter=ServerConfigurationFactory.instance().getGPIntegerProperty(userContext, "purgeJobsAfter", -1);
-        final String purgeTime=ServerConfigurationFactory.instance().getGPProperty(userContext, "purgeTime", "23:00");
+        final int purgeJobsAfter=gpConfig.getGPIntegerProperty(userContext, "purgeJobsAfter", -1);
+        final String purgeTime=gpConfig.getGPProperty(userContext, "purgeTime", "23:00");
         return getCutoff(now, purgeJobsAfter, purgeTime);
     }
-    
+
     /**
      * Given the current timestamp (now) a purgeTime (time of day) and a purgeJobsAfter interval
      * (the number of days to keep jobs before purging them) get a cutoff date.
@@ -146,28 +146,20 @@ public class JobPurgerUtil {
     }
 
     /**
-     * @deprecated, should pass in a valid userContext
-     */
-    public static Date getJobPurgeDate(final Date jobCompletionDate) {
-        //final String purgeTime = System.getProperty("purgeTime", "23:00");
-        //int purgeJobsAfter = lookupPurgeInterval();
-        //return getJobPurgeDate(purgeJobsAfter, purgeTime, jobCompletionDate);
-        final GpContext userContext=null;
-        return getJobPurgeDate(userContext, jobCompletionDate);
-    }
-
-    /**
      * Helper method which gives the date at which a given job will be purged,  
      * based on the job completion date.
      * 
      * Allows for customization via the 'purgeJobsAfter' and 'purgeTime' configuration properties. 
      * 
+     * @param gpConfig
+     * @param userContext
      * @param jobCompletionDate
+     * 
      * @return the purge date, or null if the date is unknown or if the purger is not configured to purge jobs.
      */
-    public static final Date getJobPurgeDate(final GpContext userContext, final Date jobCompletionDate) {
-        final int purgeJobsAfter=ServerConfigurationFactory.instance().getGPIntegerProperty(userContext, "purgeJobsAfter", -1);
-        final String purgeTime=ServerConfigurationFactory.instance().getGPProperty(userContext, "purgeTime", "23:00");
+    public static final Date getJobPurgeDate(final GpConfig gpConfig, final GpContext userContext, final Date jobCompletionDate) {
+        final int purgeJobsAfter=gpConfig.getGPIntegerProperty(userContext, "purgeJobsAfter", -1);
+        final String purgeTime=gpConfig.getGPProperty(userContext, "purgeTime", "23:00");
 
         return getJobPurgeDate(purgeJobsAfter, purgeTime, jobCompletionDate);
     }

@@ -24,6 +24,7 @@ import java.util.concurrent.Executors;
 import org.apache.log4j.Logger;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.taskdefs.Delete;
+import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.database.HibernateUtil;
@@ -168,8 +169,9 @@ public class Purger02 extends TimerTask {
         
         final ExecutorService exec = Executors.newSingleThreadExecutor();
         for(final String userId : userIds) {
+            final GpConfig gpConfig = ServerConfigurationFactory.instance();
             final GpContext userContext = GpContext.getContextForUser(userId);
-            final Date cutoffDate=JobPurgerUtil.getCutoffForUser(userContext, now);
+            final Date cutoffDate=JobPurgerUtil.getCutoffForUser(gpConfig, userContext, now);
             if (cutoffDate != null) {
                 try {
                     purgeJobsForUser(userContext, cutoffDate);

@@ -7,10 +7,12 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
 
-import org.genepattern.junitutil.ConfigUtil;
+import org.genepattern.junitutil.FileUtil;
+import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
+import org.genepattern.server.config.GpServerProperties;
 import org.junit.Assert;
-import org.junit.BeforeClass;
+import org.junit.Before;
 import org.junit.Test;
 
 /**
@@ -23,10 +25,17 @@ public class TestJobPurgerUtil {
         final DateFormat df=new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         return df.parse(dateSpec);
     }
-
-    @BeforeClass
-    public static void beforeClass() {
-        ConfigUtil.loadConfigFile(TestJobPurgerUtil.class, "config.yaml");
+    
+    private GpConfig gpConfig;
+    private GpContext userContext;
+    
+    @Before
+    public void setUp() {
+        gpConfig = new GpConfig.Builder()
+            .configFile(FileUtil.getSourceFile(this.getClass(), "config.yaml"))
+        .build();
+        
+        userContext=GpContext.getServerContext();
     }
 
     @Test
@@ -55,21 +64,25 @@ public class TestJobPurgerUtil {
     
     @Test
     public void testJobPurgeDate() throws ParseException {
-        System.setProperty("purgeJobsAfter", "5");
-        System.setProperty("purgeTime", "13:25");
+        gpConfig = new GpConfig.Builder()
+            .serverProperties(new GpServerProperties.Builder()
+                .addCustomProperty("purgeJobsAfter", "5")
+                .addCustomProperty("purgeTime", "13:25")
+            .build())
+        .build();
         
         Assert.assertEquals("job run same day, before purgeTime", 
                 parseDateFormat("2109-06-09 13:25:00"), 
-                JobPurgerUtil.getJobPurgeDate(parseDateFormat("2109-06-04 11:43:21")));
+                JobPurgerUtil.getJobPurgeDate(gpConfig, userContext, parseDateFormat("2109-06-04 11:43:21")));
         Assert.assertEquals("job run same day, exactly on purgeTime", 
                 parseDateFormat("2109-06-09 13:25:00"), 
-                JobPurgerUtil.getJobPurgeDate(parseDateFormat("2109-06-04 13:25:00")));
+                JobPurgerUtil.getJobPurgeDate(gpConfig, userContext, parseDateFormat("2109-06-04 13:25:00")));
         Assert.assertEquals("job run same day, after purgeTime", 
                 parseDateFormat("2109-06-10 13:25:00"), 
-                JobPurgerUtil.getJobPurgeDate(parseDateFormat("2109-06-04 19:21:03")));
+                JobPurgerUtil.getJobPurgeDate(gpConfig, userContext, parseDateFormat("2109-06-04 19:21:03")));
         Assert.assertEquals("job run previous day, after purgeTime", 
                 parseDateFormat("2109-06-09 13:25:00"), 
-                JobPurgerUtil.getJobPurgeDate(parseDateFormat("2109-06-03 21:37:41")));
+                JobPurgerUtil.getJobPurgeDate(gpConfig, userContext, parseDateFormat("2109-06-03 21:37:41")));
     }
     
     /**
@@ -77,14 +90,18 @@ public class TestJobPurgerUtil {
      */
     @Test
     public void testJobPurgeDateOverdue() throws ParseException {
-        System.setProperty("purgeJobsAfter", "6");
-        System.setProperty("purgeTime", "12:00");
+        gpConfig = new GpConfig.Builder()
+            .serverProperties(new GpServerProperties.Builder()
+                .addCustomProperty("purgeJobsAfter", "6")
+                .addCustomProperty("purgeTime", "12:00")
+            .build())
+        .build();
  
         Date now = new Date();
         Date jobCompletionDate05 = parseDateFormat("2009-01-01 23:00:00");
         
         Date expectedPurgeDate05 = JobPurgerUtil.getNextPurgeTime(now, "12:00");
-        Assert.assertEquals("job overdue", expectedPurgeDate05, JobPurgerUtil.getJobPurgeDate(jobCompletionDate05));
+        Assert.assertEquals("job overdue", expectedPurgeDate05, JobPurgerUtil.getJobPurgeDate(gpConfig, userContext, jobCompletionDate05));
     }
     
     /**
@@ -92,10 +109,14 @@ public class TestJobPurgerUtil {
      */
     @Test
     public void testJobPurgeDateNoPurgeInterval() {
-        System.setProperty("purgeJobsAfter", "-1");
-        System.setProperty("purgeTime", "23:00");
+        gpConfig = new GpConfig.Builder()
+            .serverProperties(new GpServerProperties.Builder()
+                .addCustomProperty("purgeJobsAfter", "-1")
+                .addCustomProperty("purgeTime", "23:00")
+            .build())
+        .build();
 
-        Assert.assertNull("job", JobPurgerUtil.getJobPurgeDate(new Date()));
+        Assert.assertNull("job", JobPurgerUtil.getJobPurgeDate(gpConfig, userContext, new Date()));
     }
     
     /**
@@ -373,7 +394,7 @@ public class TestJobPurgerUtil {
     @Test public void testCutoffForUser_defaultConfig() throws ParseException {
         final GpContext userContext=GpContext.getContextForUser("test");
         final Date now=parseDateFormat("2013-11-01 23:05:23");
-        final Date cutoff=JobPurgerUtil.getCutoffForUser(userContext, now);
+        final Date cutoff=JobPurgerUtil.getCutoffForUser(gpConfig, userContext, now);
         
         Assert.assertNull("Expecting null cutoffDate, by default the purge interval is '-1', which means don't purge files", cutoff);
     }
@@ -385,7 +406,7 @@ public class TestJobPurgerUtil {
     @Test public void testCutoffForUser_defaultPurgeTime() throws ParseException {
         final GpContext userContext=GpContext.getContextForUser("customInterval");
         final Date now=parseDateFormat("2013-11-01 23:05:23");
-        final Date cutoff=JobPurgerUtil.getCutoffForUser(userContext, now);
+        final Date cutoff=JobPurgerUtil.getCutoffForUser(gpConfig, userContext, now);
         Assert.assertEquals("customInterval is 3",
                 parseDateFormat("2013-10-29 23:00:00"),
                 cutoff);
@@ -398,7 +419,7 @@ public class TestJobPurgerUtil {
     @Test public void testCutoffForUser_customConfig() throws ParseException {
         final GpContext userContext=GpContext.getContextForUser("customUser");
         final Date now=parseDateFormat("2013-11-01 23:05:23");
-        final Date cutoff=JobPurgerUtil.getCutoffForUser(userContext, now);
+        final Date cutoff=JobPurgerUtil.getCutoffForUser(gpConfig, userContext, now);
         Assert.assertEquals("Expecting purgeTime=09:00 and purgeInterval=3",
                 parseDateFormat("2013-10-29 09:00:00"),
                 cutoff);
@@ -408,7 +429,7 @@ public class TestJobPurgerUtil {
         final GpContext userContext=GpContext.getContextForUser("test");
         //by default there is no cutoff 
         final Date completionDate=parseDateFormat("2013-10-25 13:25:00");
-        final Date purgeDate=JobPurgerUtil.getJobPurgeDate(userContext, completionDate);
+        final Date purgeDate=JobPurgerUtil.getJobPurgeDate(gpConfig, userContext, completionDate);
         Assert.assertNull("By default, jobs are not purged", purgeDate);
     }
 
@@ -428,7 +449,7 @@ public class TestJobPurgerUtil {
         cal.add(Calendar.DAY_OF_YEAR, 3);
         final Date expectedPurgeDate=cal.getTime();
 
-        final Date purgeDate=JobPurgerUtil.getJobPurgeDate(userContext, completionDate);
+        final Date purgeDate=JobPurgerUtil.getJobPurgeDate(gpConfig, userContext, completionDate);
         
         Assert.assertEquals("expecting purgeDate to be the next purge date", expectedPurgeDate, purgeDate);
     }
@@ -442,11 +463,12 @@ public class TestJobPurgerUtil {
         cal.setTime(next);
         cal.add(Calendar.DAY_OF_YEAR, -3);
         final Date completionDate=cal.getTime();
-        final Date purgeDate=JobPurgerUtil.getJobPurgeDate(userContext, completionDate);
+        final Date purgeDate=JobPurgerUtil.getJobPurgeDate(gpConfig, userContext, completionDate);
         Assert.assertEquals("custom config, a job which completed at purgeTime", next, purgeDate);
     }
 
-    @Test public void testNextPurgeTime_customConfig_after() throws ParseException {
+    @Test 
+    public void testNextPurgeTime_customConfig_after() throws ParseException {
         final Date now=new Date();
         final Date next=JobPurgerUtil.getNextPurgeTime(now, "09:00");
         final GregorianCalendar cal = new GregorianCalendar();        
@@ -459,7 +481,7 @@ public class TestJobPurgerUtil {
         cal.add(Calendar.DAY_OF_YEAR, 4);
         final Date expectedPurgeDate=cal.getTime();
         
-        final Date purgeDate=JobPurgerUtil.getJobPurgeDate(userContext, completionDate);
+        final Date purgeDate=JobPurgerUtil.getJobPurgeDate(gpConfig, userContext, completionDate);
         Assert.assertEquals("custom config, a job which completed after purgeTime", expectedPurgeDate, purgeDate);
     }
     

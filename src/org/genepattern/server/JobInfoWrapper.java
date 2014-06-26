@@ -20,6 +20,7 @@ import java.util.Set;
 import org.apache.log4j.Logger;
 import org.genepattern.data.pipeline.JobSubmission;
 import org.genepattern.data.pipeline.PipelineModel;
+import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.dm.UrlUtil;
@@ -886,9 +887,10 @@ public class JobInfoWrapper implements Serializable {
 
     private void initPurgeDate() {
         if (jobInfo != null) {
+            final GpConfig gpConfig=ServerConfigurationFactory.instance();
             final String userId=jobInfo.getUserId();
             final GpContext userContext=GpContext.getContextForUser(userId);
-            purgeDate = JobPurgerUtil.getJobPurgeDate(userContext, jobInfo.getDateCompleted());
+            purgeDate = JobPurgerUtil.getJobPurgeDate(gpConfig, userContext, jobInfo.getDateCompleted());
         }
         if (purgeDate != null) {
             formattedPurgeDate = purgeDateFormat.format(purgeDate);
