@@ -25,29 +25,30 @@ public class TestTaskCategoryDao {
     static public void afterClass() throws Exception {
         DbUtil.shutdownDb();
     }
-    
+
+    /**
+     * Run through basic DAO operations as a single test.
+     * When run individually, the results are non-deterministic
+     * because they depend on the order in  which the tests are run.
+     */
     @Test
-    public void testSaveAndQueryTaskCategory() { 
+    public void regressionTest() {
         final String baseLsid="urn:lsid:8080.jtriley.STARAPP-DEV.MIT.EDU:genepatternmodules:17";
-        TaskCategoryRecorder recorder=new TaskCategoryRecorder();
-        recorder.save(baseLsid, "MIT_701X");
-        
-        final List<TaskCategory> records=recorder.query(baseLsid);
-        Assert.assertNotNull("records", records);
-        Assert.assertEquals("records.size", 1, records.size());
-        Assert.assertEquals("records[0].category", "MIT_701X", records.get(0).getCategory());
-    }
-    
-    @Test
-    public void testGetAllRecords() {
-        TaskCategoryRecorder recorder=new TaskCategoryRecorder();
-        
-        //add some more records ...
         final String cleLsid="urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00002";
-        recorder.save(cleLsid, ""); //hidden
-        List<TaskCategory> records=recorder.getAllCustomCategories();
-        Assert.assertNotNull("records", records);
-        Assert.assertEquals("records.size", 2, records.size());
+        final String hiddenLsid="urn:lsid:broad.mit.edu:gptest:00001";
+
+        TaskCategoryRecorder recorder=new TaskCategoryRecorder();
+        recorder.save(baseLsid, "MIT_701X"); //custom category
+        recorder.save(cleLsid, ""); //empty category
+        recorder.save(hiddenLsid, ".hiddenCategory");
+
+        // test 1, query all custom categories
+        Assert.assertEquals("customCategories.size", 3, recorder.getAllCustomCategories().size());
+
+        // test 2, query categories by lsid
+        List<TaskCategory> records=recorder.query(baseLsid);
+        Assert.assertNotNull("query MIT_701X", records);
+        Assert.assertEquals("query MIT_701X, records.size", 1, records.size());
         Assert.assertEquals("records[0].category", "MIT_701X", records.get(0).getCategory());
     }
 
