@@ -13,22 +13,13 @@ import org.genepattern.server.eula.dao.EulaRemoteQueue;
  * @author pcarr
  */
 public class RecordEulaStub implements RecordEula {
-    static public class Singleton {
-        private static final RecordEulaStub INSTANCE = new RecordEulaStub();
-        public static RecordEulaStub instance() {
-            return INSTANCE;
-        }
-    }
-    static public RecordEulaStub instance() {
-        return Singleton.INSTANCE;
-    } 
 
     private Map<String,Date> acceptedEulas = new HashMap<String,Date>();
     private Map<EulaRemoteQueue.Key,EulaRemoteQueue> remoteRecordQueue = new HashMap<EulaRemoteQueue.Key,EulaRemoteQueue>();
     
-    private RecordEulaStub() {
-        //force singleton
+    public RecordEulaStub() {
     }
+
     public void recordLicenseAgreement(final String userId, final EulaInfo eula) throws Exception {
         if (eula==null) {
             throw new IllegalArgumentException("eula==null");

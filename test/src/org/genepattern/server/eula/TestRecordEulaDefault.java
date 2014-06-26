@@ -15,8 +15,6 @@ import org.junit.Test;
  */
 public class TestRecordEulaDefault {
     final String userId="test_RecordEulaDefault_user";
-    //final String lsid="";
-    TaskInfo taskInfo;
     EulaInfo eula;
     
     @Before
@@ -29,12 +27,6 @@ public class TestRecordEulaDefault {
         }
         
         DbUtil.addUserToDb(userId);
-        
-        taskInfo = TaskUtil.getTaskInfoFromZip(this.getClass(), "testLicenseAgreement_v3.zip");         
-        //prove that we loaded the expected module
-        Assert.assertNotNull("taskInfo==null", taskInfo);
-        Assert.assertEquals("taskName", "testLicenseAgreement", taskInfo.getName());
-        Assert.assertEquals("taskLsid", "urn:lsid:9090.gpdev.gpint01:genepatternmodules:812:3", taskInfo.getLsid());
         
         eula = new EulaInfo();
         eula.setLicense("gp_license.txt");
@@ -54,7 +46,6 @@ public class TestRecordEulaDefault {
 
     @Test
     public void testIntegration() {
-        //RecordEula stub = RecordEulaStub.instance();
         RecordEulaDefault recordEula = new RecordEulaDefault();
         try {
             recordEula.recordLicenseAgreement(userId, eula);
@@ -69,7 +60,7 @@ public class TestRecordEulaDefault {
 
     @Test
     public void testIntegration_withRecordEulaStub() {
-        RecordEula stub = RecordEulaStub.instance();
+        RecordEula stub = new RecordEulaStub();
         RecordEulaDefault recordEula = new RecordEulaDefault(stub);
         
         try {

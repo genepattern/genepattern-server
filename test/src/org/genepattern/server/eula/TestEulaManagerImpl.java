@@ -18,10 +18,12 @@ public class TestEulaManagerImpl {
     final static public Logger log = Logger.getLogger(TestEulaManagerImpl.class);
     
     private EulaManagerImpl eulaMgr;
+    private RecordEulaStub recordEulaStub;
 
     @Before
     public void setUp() {
         eulaMgr=new EulaManagerImpl();
+        recordEulaStub=new RecordEulaStub();
     }
 
     /**
@@ -308,7 +310,7 @@ public class TestEulaManagerImpl {
         GpContext taskContext=GpContext.getContextForUser(userId);
         taskContext.setTaskInfo(taskInfo);
         eulaMgr.setGetEulaFromTask(stub);
-        eulaMgr.setRecordEulaStrategy(RecordEulaStub.instance());
+        eulaMgr.setRecordEulaStrategy(recordEulaStub);
         boolean requiresEula=eulaMgr.requiresEula(taskContext);
         Assert.assertFalse("the module requires no eula", requiresEula);
     }
@@ -325,7 +327,7 @@ public class TestEulaManagerImpl {
         GpContext taskContext=GpContext.getContextForUser(userId);
         taskContext.setTaskInfo(taskInfo);
         eulaMgr.setGetEulaFromTask(stub);
-        eulaMgr.setRecordEulaStrategy(RecordEulaStub.instance());
+        eulaMgr.setRecordEulaStrategy(recordEulaStub);
         boolean requiresEula=eulaMgr.requiresEula(taskContext);
         Assert.assertTrue("Expecting to requireEula for a module which has a Eula and a user which has not yet agreed", requiresEula);
     }
@@ -349,7 +351,7 @@ public class TestEulaManagerImpl {
         final String userId="gp_user";
         GpContext taskContext=GpContext.getContextForUser(userId);
         eulaMgr.setGetEulaFromTask(stub);
-        eulaMgr.setRecordEulaStrategy(RecordEulaStub.instance());
+        eulaMgr.setRecordEulaStrategy(recordEulaStub);
         
         try { 
             eulaMgr.requiresEula(taskContext);
@@ -371,7 +373,7 @@ public class TestEulaManagerImpl {
         GpContext taskContext=GpContext.getContextForUser(userId);
         taskContext.setTaskInfo(taskInfo);
         eulaMgr.setGetEulaFromTask(stub);
-        eulaMgr.setRecordEulaStrategy(RecordEulaStub.instance());
+        eulaMgr.setRecordEulaStrategy(recordEulaStub);
         
         try { 
             eulaMgr.requiresEula(taskContext);
@@ -393,7 +395,7 @@ public class TestEulaManagerImpl {
         GpContext taskContext=GpContext.getContextForUser(userId);
         taskContext.setTaskInfo(taskInfo);
         eulaMgr.setGetEulaFromTask(stub);
-        eulaMgr.setRecordEulaStrategy(RecordEulaStub.instance());
+        eulaMgr.setRecordEulaStrategy(recordEulaStub);
         
         try { 
             eulaMgr.requiresEula(taskContext);
@@ -416,7 +418,7 @@ public class TestEulaManagerImpl {
         GpContext taskContext=GpContext.getContextForUser(userId);
         taskContext.setTaskInfo(taskInfo);
         eulaMgr.setGetEulaFromTask(stub);
-        eulaMgr.setRecordEulaStrategy(RecordEulaStub.instance());
+        eulaMgr.setRecordEulaStrategy(recordEulaStub);
 
         try { 
             eulaMgr.requiresEula(taskContext);
@@ -439,7 +441,7 @@ public class TestEulaManagerImpl {
         GpContext taskContext=GpContext.getContextForUser(userId);
         taskContext.setTaskInfo(taskInfo);
         eulaMgr.setGetEulaFromTask(stub);
-        eulaMgr.setRecordEulaStrategy(RecordEulaStub.instance());
+        eulaMgr.setRecordEulaStrategy(recordEulaStub);
 
         try { 
             eulaMgr.requiresEula(taskContext);
@@ -465,7 +467,7 @@ public class TestEulaManagerImpl {
         GpContext taskContext=GpContext.getContextForUser(userId);
         taskContext.setTaskInfo(taskInfo);
         eulaMgr.setGetEulaFromTask(stub);
-        eulaMgr.setRecordEulaStrategy(RecordEulaStub.instance());
+        eulaMgr.setRecordEulaStrategy(recordEulaStub);
         eulaMgr.recordEula(taskContext);
     }
     
@@ -479,7 +481,7 @@ public class TestEulaManagerImpl {
 
         GpContext taskContext=null; 
         eulaMgr.setGetEulaFromTask(stub);
-        eulaMgr.setRecordEulaStrategy(RecordEulaStub.instance());
+        eulaMgr.setRecordEulaStrategy(recordEulaStub);
         try { 
             eulaMgr.recordEula(taskContext);
             Assert.fail("Expecting IllegalArgumentException, when taskContext==null");
@@ -501,7 +503,7 @@ public class TestEulaManagerImpl {
         GpContext taskContext=GpContext.getContextForUser(userId);
         taskContext.setTaskInfo(null);
         eulaMgr.setGetEulaFromTask(stub);
-        eulaMgr.setRecordEulaStrategy(RecordEulaStub.instance());
+        eulaMgr.setRecordEulaStrategy(recordEulaStub);
         try { 
             eulaMgr.recordEula(taskContext);
             Assert.fail("Expecting IllegalArgumentException, when taskContext.taskInfo==null");
@@ -524,7 +526,7 @@ public class TestEulaManagerImpl {
         taskInfo.getAttributes().put("LSID", null);
         taskContext.setTaskInfo(taskInfo);
         eulaMgr.setGetEulaFromTask(stub);
-        eulaMgr.setRecordEulaStrategy(RecordEulaStub.instance());
+        eulaMgr.setRecordEulaStrategy(recordEulaStub);
         try { 
             eulaMgr.recordEula(taskContext);
             Assert.fail("Expecting IllegalArgumentException, when taskContext.taskInfo.lsid==null");
@@ -547,7 +549,7 @@ public class TestEulaManagerImpl {
         taskInfo.getAttributes().put("LSID", "");
         taskContext.setTaskInfo(taskInfo);
         eulaMgr.setGetEulaFromTask(stub);
-        eulaMgr.setRecordEulaStrategy(RecordEulaStub.instance());
+        eulaMgr.setRecordEulaStrategy(recordEulaStub);
         try { 
             eulaMgr.recordEula(taskContext);
             Assert.fail("Expecting IllegalArgumentException, when taskContext.taskInfo.lsid==\"\" (empty string)");
@@ -569,7 +571,7 @@ public class TestEulaManagerImpl {
         GpContext taskContext=GpContext.getContextForUser(userId);
         taskContext.setTaskInfo(taskInfo);
         eulaMgr.setGetEulaFromTask(stub);
-        eulaMgr.setRecordEulaStrategy(RecordEulaStub.instance());
+        eulaMgr.setRecordEulaStrategy(recordEulaStub);
         try { 
             eulaMgr.recordEula(taskContext);
             Assert.fail("Expecting IllegalArgumentException, when taskContext.userId==null");
@@ -591,7 +593,7 @@ public class TestEulaManagerImpl {
         GpContext taskContext=GpContext.getContextForUser(userId);
         taskContext.setTaskInfo(taskInfo);
         eulaMgr.setGetEulaFromTask(stub);
-        eulaMgr.setRecordEulaStrategy(RecordEulaStub.instance());
+        eulaMgr.setRecordEulaStrategy(recordEulaStub);
         try { 
             eulaMgr.recordEula(taskContext);
             Assert.fail("Expecting IllegalArgumentException, when taskContext.userId==\"\" (empty string)");
@@ -613,7 +615,7 @@ public class TestEulaManagerImpl {
         GpContext taskContext=GpContext.getContextForUser(userId);
         taskContext.setTaskInfo(taskInfo);
         eulaMgr.setGetEulaFromTask(stub);
-        eulaMgr.setRecordEulaStrategy(RecordEulaStub.instance());
+        eulaMgr.setRecordEulaStrategy(recordEulaStub);
         eulaMgr.recordEula(taskContext);
         boolean requiresEula=eulaMgr.requiresEula(taskContext);
         Assert.assertFalse("the user has already agreed", requiresEula);
@@ -632,7 +634,7 @@ public class TestEulaManagerImpl {
         GpContext taskContext=GpContext.getContextForUser(userId);
         taskContext.setTaskInfo(taskInfo);
         eulaMgr.setGetEulaFromTask(stub);
-        eulaMgr.setRecordEulaStrategy(RecordEulaStub.instance());
+        eulaMgr.setRecordEulaStrategy(recordEulaStub);
         List<EulaInfo> eulas=eulaMgr.getPendingEulaForModule(taskContext);
         
         //should be empty, for a module which has no eula
@@ -655,7 +657,7 @@ public class TestEulaManagerImpl {
         GpContext taskContext=GpContext.getContextForUser(userId);
         taskContext.setTaskInfo(taskInfo);
         eulaMgr.setGetEulaFromTask(stub);
-        eulaMgr.setRecordEulaStrategy(RecordEulaStub.instance());
+        eulaMgr.setRecordEulaStrategy(recordEulaStub);
         List<EulaInfo> eulas=eulaMgr.getPendingEulaForModule(taskContext);
         
         Assert.assertEquals("pendingEulaForModule.size should be 1 for a module which has one eula", 1, eulas.size());
@@ -677,7 +679,7 @@ public class TestEulaManagerImpl {
         GpContext taskContext=GpContext.getContextForUser(userId);
         taskContext.setTaskInfo(taskInfo);
         eulaMgr.setGetEulaFromTask(stub);
-        eulaMgr.setRecordEulaStrategy(RecordEulaStub.instance());
+        eulaMgr.setRecordEulaStrategy(recordEulaStub);
         eulaMgr.recordEula(taskContext);
         List<EulaInfo> eulas=eulaMgr.getPendingEulaForModule(taskContext);
 
