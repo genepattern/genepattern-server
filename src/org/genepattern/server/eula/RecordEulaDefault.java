@@ -58,7 +58,7 @@ public class RecordEulaDefault implements RecordEula {
     }
     
     private User getUser(final String userId) {
-        //TODO: this method requires active local DB, with valid users 
+        //this method requires active local DB, with valid users 
         final boolean inTransaction=HibernateUtil.isInTransaction();
         try {
             UserDAO dao=new UserDAO();
@@ -74,7 +74,6 @@ public class RecordEulaDefault implements RecordEula {
             }
         }
         
-        //TODO: should deal with this
         return null;
     }
 
