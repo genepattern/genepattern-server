@@ -4,11 +4,9 @@ import java.io.File;
 import java.util.List;
 
 import org.genepattern.junitutil.FileUtil;
-import org.genepattern.server.config.GpContext;
-import org.genepattern.server.executor.CommandExecutor;
-import org.genepattern.server.executor.CommandManager;
-import org.genepattern.server.executor.CommandManagerFactory;
-import org.genepattern.server.config.Value;
+import org.genepattern.server.auth.GroupMembershipWrapper;
+import org.genepattern.server.auth.IGroupMembershipPlugin;
+import org.genepattern.server.auth.XmlGroupMembership;
 import org.genepattern.util.GPConstants;
 import org.genepattern.webservice.JobInfo;
 import org.genepattern.webservice.TaskInfo;
@@ -22,12 +20,25 @@ import org.junit.Test;
  * @author pcarr
  */
 public class TestServerConfigurationModuleProps {
+    private GpConfig gpConfig;
+    
     private TaskInfo taskInfo;
     private JobInfo jobInfo;
     
     @Before
     public void setUp() {
-        initializeYamlConfigFile("test_module_properties.yaml");
+        File configFile=FileUtil.getSourceFile(this.getClass(), "test_module_properties.yaml");
+        File userGroups=FileUtil.getSourceFile(this.getClass(), "userGroups.xml");
+        // wrapper adds the '*' wildcard group
+        IGroupMembershipPlugin groupInfo=new GroupMembershipWrapper(
+                new XmlGroupMembership(userGroups));
+        
+        gpConfig = new GpConfig.Builder()
+            .configFile(configFile)
+            .groupInfo(groupInfo)
+            .build();
+       
+        validateGpConfig();
         
         taskInfo = new TaskInfo();
         taskInfo.setName("ComparativeMarkerSelection");
@@ -39,47 +50,20 @@ public class TestServerConfigurationModuleProps {
     }
     
     /**
-     * Helper class which initializes (or reinitializes) the CommandManager to parse the given
-     * yaml config file from the same location as the source files for the unit tests.
-     *
-     * @param filename
-     */
-    static protected void initializeYamlConfigFile(String filename) {
-        File resourceDir = FileUtil.getSourceDir(TestServerConfigurationModuleProps.class);
-        System.setProperty("genepattern.properties", resourceDir.getAbsolutePath());
-        System.setProperty(ServerConfigurationFactory.PROP_CONFIG_FILE, filename);
-        ServerConfigurationFactory.reloadConfiguration(filename);
-        CommandManagerFactory.initializeCommandManager();
-        
-        validateCommandManager(CommandManagerFactory.getCommandManager());
-    }
-
-    /**
      * assertions for all instance of CommandManager, can be called from all test cases.
      * @param cmdMgr
      */
-    static private void validateCommandManager(CommandManager cmdMgr) {
-        Assert.assertNotNull("Expecting non-null cmdMgr", cmdMgr);
-        
-        List<Throwable> errors = ServerConfigurationFactory.instance().getInitializationErrors();
+    private void validateGpConfig() {
+        Assert.assertNotNull("Expecting non-null gpConfig", gpConfig);
+        List<Throwable> errors = gpConfig.getInitializationErrors();
         
         if (errors != null && errors.size() > 0) {
-            String errorMessage = "CommandManagerFactory initialization error, num="+errors.size();
+            String errorMessage = "gpConfig initialization error, num="+errors.size();
             Throwable first = errors.get(0);
             if (first != null) {
                 errorMessage += " error[0]="+first.getMessage();
             }
             Assert.fail(errorMessage);
-        }
-        
-        Assert.assertNotNull("Expecting non-null cmdMgr.commandExecutorsMap", cmdMgr.getCommandExecutorsMap());
-        //prove that the map is not modifiable
-        try {
-            cmdMgr.getCommandExecutorsMap().put("test", (CommandExecutor)null);
-            Assert.fail("commandExecutorsMap should be unmodifiable");
-        }
-        catch (Exception e) {
-            //expecting an exception to be thrown
         }
     }
 
@@ -89,7 +73,9 @@ public class TestServerConfigurationModuleProps {
 
     private void doTest(final GpContext context, final String prop, final String expected) {
         String message="for "+printContext(context)+" expecting "+prop+"="+expected;
-        Value value=ServerConfigurationFactory.instance().getValue(context, prop);
+        //Value value=ServerConfigurationFactory.instance().getValue(context, prop);
+        
+        Value value=gpConfig.getValue(context,prop);
         Assert.assertEquals(message, expected, value.getValue());
     }
     
@@ -150,6 +136,7 @@ public class TestServerConfigurationModuleProps {
      */
     @Test
     public void testGroupWithCustomValue() {
+        // user 'Broadie C' is in the 'broadgroup'
         GpContext context = GpContext.getContextForUser("Broadie C");
         doTest(context, "BROADGROUP_VALUE");
     }

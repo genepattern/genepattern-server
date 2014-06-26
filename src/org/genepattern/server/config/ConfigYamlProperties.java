@@ -13,6 +13,7 @@ import org.genepattern.server.UserAccountManager;
 import org.genepattern.server.executor.CommandProperties;
 import org.genepattern.server.job.input.JobInput;
 import org.genepattern.server.job.input.ParamValue;
+import org.genepattern.server.auth.IGroupMembershipPlugin;
 import org.genepattern.server.config.Value;
 import org.genepattern.webservice.JobInfo;
 
@@ -24,14 +25,16 @@ import org.genepattern.webservice.JobInfo;
 public class ConfigYamlProperties {
     private static Logger log = Logger.getLogger(ConfigYamlProperties.class);
 
+    private final IGroupMembershipPlugin groupInfo;
     private final JobConfigObj jobConfigObj;
     private PropObj rootProps = new PropObj();
     private Map<String, PropObj> executorPropertiesMap = new LinkedHashMap<String, PropObj>();
     private Map<String,PropObj> groupPropertiesMap = new LinkedHashMap<String, PropObj>();
     private Map<String,PropObj> userPropertiesMap = new LinkedHashMap<String, PropObj>();
     
-    public ConfigYamlProperties(final JobConfigObj jobConfigObj) {
+    public ConfigYamlProperties(final JobConfigObj jobConfigObj, final IGroupMembershipPlugin groupInfo) {
         this.jobConfigObj=jobConfigObj;
+        this.groupInfo=groupInfo;
     }
     
     public JobConfigObj getJobConfiguration() {
@@ -188,7 +191,12 @@ public class ConfigYamlProperties {
         if (context.getUserId() != null) {
             Set<String> groupIds = null;
             if (groupPropertiesMap != null && groupPropertiesMap.size() > 0) {
-                groupIds = UserAccountManager.instance().getGroupMembership().getGroups(context.getUserId());
+                if (groupInfo != null) {
+                    groupIds = groupInfo.getGroups(context.getUserId());
+                }
+                else {
+                    groupIds = UserAccountManager.instance().getGroupMembership().getGroups(context.getUserId());
+                }
             }
             if (groupIds != null) {
                 if (groupIds.size() == 1) {
@@ -303,9 +311,15 @@ public class ConfigYamlProperties {
         String userId = jobInfo.getUserId();
         if (userId != null) {
             Set<String> groupIds = null;
-            if (groupPropertiesMap != null && groupPropertiesMap.size() > 0) {
-                groupIds = UserAccountManager.instance().getGroupMembership().getGroups(userId);
+            if (groupPropertiesMap != null && groupPropertiesMap.size() > 0) { 
+                if (groupInfo != null) {
+                     groupIds = groupInfo.getGroups(userId);
+                }
+                else {
+                    groupIds = UserAccountManager.instance().getGroupMembership().getGroups(userId);
+                }
             }
+            
             if (groupIds != null) {
                 if (groupIds.size() == 1) {
                     // get first element from the set

@@ -143,6 +143,17 @@ public class GpConfigLoader {
     public static GpConfig createFromResourcesDir(final File resourcesDir) {
         GpConfig.Builder builder=new GpConfig.Builder();
         builder.resourcesDir(resourcesDir);
+        GpServerProperties serverProperties=new GpServerProperties.Builder()
+            .resourcesDir(resourcesDir)
+            .build();
+        builder.serverProperties(serverProperties);
+        try {
+            File configFile=initConfigFileFromServerProps(serverProperties);
+            builder.configFile(configFile);
+        }
+        catch (Throwable t) {
+            builder.addError(t);
+        }
         return builder.build();
     }
 

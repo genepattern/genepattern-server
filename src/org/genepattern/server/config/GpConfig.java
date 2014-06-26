@@ -10,6 +10,7 @@ import java.util.Set;
 
 import org.apache.log4j.Logger;
 import org.genepattern.drm.Memory;
+import org.genepattern.server.auth.IGroupMembershipPlugin;
 import org.genepattern.server.executor.CommandExecutorMapper;
 import org.genepattern.server.executor.CommandProperties;
 import org.genepattern.server.repository.RepositoryInfo;
@@ -510,6 +511,7 @@ public class GpConfig {
         private File configFile=null;
         private GpServerProperties serverProperties=null;
         private ConfigFromYaml configFromYaml=null;
+        private IGroupMembershipPlugin groupInfo=null;
         private List<Throwable> initErrors=null;
 
         public Builder genePatternURL(final URL gpUrl) {
@@ -538,12 +540,17 @@ public class GpConfig {
             this.configFile=configFile;
             return this;
         }
+        
+        public Builder groupInfo(final IGroupMembershipPlugin groupInfo) {
+            this.groupInfo=groupInfo;
+            return this;
+        }
 
         public GpConfig build() { 
             //parse the config file here
             if (configFile != null) {
                 try {
-                    configFromYaml=ConfigFileParser.parseYamlFile(configFile);
+                    configFromYaml=ConfigFileParser.parseYamlFile(configFile, groupInfo);
                 }
                 catch (ConfigurationException e) {
                     addError(e);

@@ -1,4 +1,4 @@
-# test case for getting properties when there is a user but not job
+# test case for getting properties when there is a user but no job
 default.properties:
     system.prop.override: SERVER_DEFAULT
     system.prop.override.to.null: 

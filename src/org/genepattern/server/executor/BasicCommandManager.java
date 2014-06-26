@@ -6,10 +6,12 @@ import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import org.apache.log4j.Logger;
 import org.genepattern.server.JobInfoManager;
 import org.genepattern.server.config.ConfigurationException;
+import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.database.HibernateUtil;
@@ -32,6 +34,15 @@ public class BasicCommandManager implements CommandManager {
     private static Logger log = Logger.getLogger(BasicCommandManager.class);
 
     private AnalysisJobScheduler analysisTaskScheduler = null;
+    private final GpConfig gpConfig;
+    
+    public BasicCommandManager() {
+        this(null);
+    }
+
+    public BasicCommandManager(final GpConfig gpConfig) {
+        this.gpConfig=gpConfig;
+    }
     
     @Override
     public void startAnalysisService() { 
@@ -55,8 +66,12 @@ public class BasicCommandManager implements CommandManager {
 
     private boolean getJobQueueSuspendedFlag() {
         GpContext serverContext = GpContext.getServerContext();
-        boolean suspended = ServerConfigurationFactory.instance().getGPBooleanProperty(serverContext, "job.queue.suspend_on_start");
-        return suspended;
+        if (gpConfig != null) {
+            return gpConfig.getGPBooleanProperty(serverContext, "job.queue.suspend_on_start");
+        } 
+        else {
+            return ServerConfigurationFactory.instance().getGPBooleanProperty(serverContext, "job.queue.suspend_on_start");
+        }
     }
     
     //TODO: use paged results to handle large number of 'Processing' jobs
@@ -214,9 +229,7 @@ public class BasicCommandManager implements CommandManager {
         return cmdExecutorsMap.get(cmdExecutorId);
     }
 
-    //implement the CommandExecutorMapper interface
-    @Override
-    public CommandExecutor getCommandExecutor(JobInfo jobInfo) throws CommandExecutorNotFoundException {
+    public CommandExecutor getCommandExecutor(final GpConfig gpConfig, final JobInfo jobInfo) throws CommandExecutorNotFoundException {
         CommandExecutor cmdExec = null;
         
         //special case for pipelines ...
@@ -232,7 +245,7 @@ public class BasicCommandManager implements CommandManager {
         //}
 
         //initialize to default executor
-        String cmdExecId = ServerConfigurationFactory.instance().getCommandExecutorId(jobInfo);
+        String cmdExecId = gpConfig.getCommandExecutorId(jobInfo);
         if (cmdExecId == null) {
             log.info("no commandExecutorId found for job, use the first one from the list.");
             cmdExecId = getFirstCmdExecId();
@@ -251,6 +264,41 @@ public class BasicCommandManager implements CommandManager {
         }
         return cmdExec;
     }
+    
+    public CommandProperties getCommandProperties(final GpConfig gpConfig, final JobInfo jobInfo) {
+        CommandProperties props = gpConfig.getCommandProperties(jobInfo);
+        CommandProperties commandProps = new CommandProperties(props);
+        return commandProps;
+    }
+    
+    public String getCommandExecutorId(CommandExecutor cmdExecutor) {
+                //Map<String,CommandExecutor> map = getCommandExecutorsMap();
+        if (cmdExecutorsMap==null) {
+            log.error("cmdExecutorsMap==null");
+            return null;
+        }
+        if (!cmdExecutorsMap.containsValue(cmdExecutor)) {
+            log.error("commandExecutorsMap does not contain value for "+cmdExecutor.getClass().getCanonicalName());
+            return null;
+        }
+        for(Entry<String,CommandExecutor> entry : cmdExecutorsMap.entrySet()) {
+            if(cmdExecutor == entry.getValue()) {
+                return entry.getKey();
+            }
+        }
+        return null;
+    }
+
+    //implement the CommandExecutorMapper interface
+    @Override
+    public CommandExecutor getCommandExecutor(JobInfo jobInfo) throws CommandExecutorNotFoundException {
+        if (gpConfig != null) {
+            return getCommandExecutor(gpConfig, jobInfo);
+        }
+        else {
+            return getCommandExecutor(ServerConfigurationFactory.instance(), jobInfo);
+        }
+    }
 
     private String getFirstCmdExecId() {
         String firstKey = cmdExecutorsMap.keySet().iterator().next();
@@ -262,9 +310,12 @@ public class BasicCommandManager implements CommandManager {
      */
     @Override
     public CommandProperties getCommandProperties(JobInfo jobInfo) {
-        CommandProperties props = ServerConfigurationFactory.instance().getCommandProperties(jobInfo);
-        CommandProperties commandProps = new CommandProperties(props);
-        return commandProps;
+        if (gpConfig != null) {
+            return getCommandProperties(gpConfig, jobInfo);
+        }
+        else {
+            return getCommandProperties(ServerConfigurationFactory.instance(), jobInfo);
+        }
     }
 
     public Map<String, CommandExecutor> getCommandExecutorsMap() {

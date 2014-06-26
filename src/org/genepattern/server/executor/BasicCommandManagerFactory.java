@@ -6,6 +6,7 @@ import java.util.Map.Entry;
 import org.apache.log4j.Logger;
 import org.genepattern.server.config.ConfigurationException;
 import org.genepattern.server.config.ExecutorConfig;
+import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.JobConfigObj;
 
 /**
@@ -20,8 +21,8 @@ public class BasicCommandManagerFactory {
     public BasicCommandManagerFactory() {
     }
     
-    public BasicCommandManager createCommandManager(final JobConfigObj jobConfigObj) throws ConfigurationException {
-        this.cmdMgr = new BasicCommandManager(); 
+    public BasicCommandManager createCommandManager(final GpConfig gpConfig, final JobConfigObj jobConfigObj) throws ConfigurationException {
+        this.cmdMgr = new BasicCommandManager(gpConfig); 
         initializeCommandExecutors(cmdMgr, jobConfigObj.getExecutors());
         return cmdMgr;
     }

@@ -1,50 +1,67 @@
 package org.genepattern.server.executor;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 import java.io.File;
 import java.util.List;
 import java.util.Map;
 
-import junit.framework.TestCase;
-
-import org.genepattern.server.UserAccountManager;
+import org.genepattern.junitutil.FileUtil;
+import org.genepattern.server.auth.GroupMembershipWrapper;
 import org.genepattern.server.auth.IGroupMembershipPlugin;
-import org.genepattern.server.config.ServerConfigurationFactory;
+import org.genepattern.server.auth.XmlGroupMembership;
+import org.genepattern.server.config.GpConfig;
+import org.genepattern.server.config.GpConfigLoader;
 import org.genepattern.server.config.GpContext;
+import org.genepattern.server.config.GpServerProperties;
 import org.genepattern.server.config.Value;
 import org.genepattern.webservice.JobInfo;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.mockito.Mockito;
 
 /**
  * Unit tests for the CommandManagerFactory.
  * 
  * @author pcarr
  */
-public class CommandManagerFactoryTest extends TestCase {
+public class CommandManagerFactoryTest {
+    private IGroupMembershipPlugin groupInfo;
     
+    @Before
     public void setUp() throws Exception {
-        super.setUp();
-        File resourceDir = new File("resources");
-        String pathToResourceDir = resourceDir.getAbsolutePath();
-        System.setProperty("genepattern.properties", pathToResourceDir);
-        System.setProperty("resources", pathToResourceDir);
+        File userGroups=FileUtil.getSourceFile(this.getClass(), "userGroups.xml");
+        // wrapper adds the '*' wildcard group
+        groupInfo=new GroupMembershipWrapper(
+                new XmlGroupMembership(userGroups));
+
     }
     
+    @After
     public void tearDown() throws Exception {
-        super.tearDown();
     }
     
     /**
      * assertions for all instance of CommandManager, can be called from all test cases.
      * @param cmdMgr
      */
-    private static void validateCommandManager(final CommandManager cmdMgr) {
+    private static void validateCommandManager(final GpConfig gpConfig, final BasicCommandManager cmdMgr) {
         final boolean checkErrors=true;
-        validateCommandManager(cmdMgr, checkErrors);
+        validateCommandManager(gpConfig, cmdMgr, checkErrors);
     }
-    private static void validateCommandManager(final CommandManager cmdMgr, final boolean checkErrors) {
+
+    private static void validateCommandManager(final GpConfig gpConfig, final BasicCommandManager cmdMgr, final boolean checkErrors) {
         assertNotNull("Expecting non-null cmdMgr", cmdMgr);
 
         if (checkErrors) {
-            List<Throwable> errors = ServerConfigurationFactory.instance().getInitializationErrors();
+            //List<Throwable> errors = ServerConfigurationFactory.instance().getInitializationErrors();
+            List<Throwable> errors = gpConfig.getInitializationErrors();
             if (errors != null && errors.size() > 0) {
                 String errorMessage = "CommandManagerFactory initialization error, num="+errors.size();
                 Throwable first = errors.get(0);
@@ -65,103 +82,80 @@ public class CommandManagerFactoryTest extends TestCase {
             //expecting an exception to be thrown
         }
     }
+
     /**
      * assertions for the default CommandManager, when no custom configuration is found.
      * @param cmdMgr
      */
-    private static void validateDefaultConfig(CommandManager cmdMgr) {
+    private static void validateDefaultConfig(final GpConfig gpConfig, final BasicCommandManager cmdMgr) {
         final boolean checkErrors=true;
-        validateDefaultConfig(cmdMgr, checkErrors);
+        validateDefaultConfig(gpConfig, cmdMgr, checkErrors);
     }
-    private static void validateDefaultConfig(CommandManager cmdMgr, final boolean checkErrors) {
-        validateCommandManager(cmdMgr, checkErrors);
+
+    private static void validateDefaultConfig(final GpConfig gpConfig, final BasicCommandManager cmdMgr, final boolean checkErrors) {
+        validateCommandManager(gpConfig, cmdMgr, checkErrors);
         assertEquals("By default, expecting only one CommandExecutor", 1, cmdMgr.getCommandExecutorsMap().size());
     }
 
     /**
-     * Test that the default command manager factory is loaded when no additional configuration is provided.
+     * Test that the default command manager is loaded when no additional configuration is provided.
      */
-    public void testDefaultConfiguration() {
-        CommandManager cmdMgr = CommandManagerFactory.getCommandManager();
-        validateDefaultConfig(cmdMgr);
+    @Test
+    public void defaultConfig() {
+        File resourcesDir=new File("resources");
+        GpConfig gpConfig=GpConfigLoader.createFromResourcesDir(resourcesDir);
+        BasicCommandManager cmdMgr = CommandManagerFactory.createCommandManager(gpConfig);
+        validateDefaultConfig(gpConfig, cmdMgr);
     }
 
     /**
-     * Test that the default command manager factory is loaded when initialized with null input.
+     * Test that the default command manager is loaded when initialized with null gpConfig.
      */
-    public void testNullProperties() {
-        CommandManagerFactory.initializeCommandManager();
-        CommandManager cmdMgr = CommandManagerFactory.getCommandManager();
-        validateDefaultConfig(cmdMgr);
+    @Test
+    public void nullGpConfig() {
+        BasicCommandManager cmdMgr=CommandManagerFactory.createCommandManager(null);
+        validateDefaultConfig(null, cmdMgr, false);
     }
 
     /**
-     * Test that the default command manager factory is loaded when initialized with empty properties.
+     * Test that the default command manager is loaded when there are initialization errors.
      */
-    public void testEmptyProperties() {
-        //Properties props = new Properties();
-        CommandManagerFactory.initializeCommandManager();
-        CommandManager cmdMgr = CommandManagerFactory.getCommandManager();
-        validateDefaultConfig(cmdMgr);
+    @Test
+    public void initializationErrors() {
+        File configFile=FileUtil.getSourceFile(this.getClass(), "filenotfound.yaml");
+        GpConfig gpConfig=new GpConfig.Builder()
+            .configFile(configFile)
+        .build();
+        assertEquals("expecting initialization errors", 1, gpConfig.getInitializationErrors().size());
+        BasicCommandManager cmdMgr = CommandManagerFactory.createCommandManager(gpConfig);
+        validateDefaultConfig(gpConfig, cmdMgr, false);
+    }
+    
+    @Test
+    public void nullJobConfiguration() {
+        GpConfig gpConfig=Mockito.mock(GpConfig.class);
+        Mockito.when(gpConfig.getJobConfiguration()).thenReturn(null);
+        assertNull("expecting null jobConfiguration", gpConfig.getJobConfiguration());
+        BasicCommandManager cmdMgr = CommandManagerFactory.createCommandManager(gpConfig);
+        validateDefaultConfig(gpConfig, cmdMgr);
     }
     
     /**
-     * Test when the server configuration file is set, but it is not a path to a readable file.
-     * Either because the config file does not exist, or because the file is not readable.
+     * Parse the 'config_example.yaml' file which ships with the GenePattern installer.
      */
-    public void testMissingConfigFile() { 
-        //load the config file from the same directory as this class file
-        //Note: make sure your test build copies the test files into the classpath
-        //String classname = this.getClass().getCanonicalName();
-        //String filepath = "test/src/"+classname.replace('.', '/')+"/filenotfound.yaml";
-        String filepath = "filenotfound.yaml";
-        File resourceDir = getSourceDir();
-        System.setProperty("genepattern.properties", resourceDir.getAbsolutePath());
-        System.setProperty(ServerConfigurationFactory.PROP_CONFIG_FILE, filepath);
-        
-        ServerConfigurationFactory.reloadConfiguration();
-        CommandManagerFactory.initializeCommandManager();
-        assertEquals("expecting initializion error", 1, ServerConfigurationFactory.instance().getInitializationErrors().size()); 
-        //now, clear the errors
-        //ServerConfigurationFactory.instance().getInitializationErrors().clear();
-        CommandManager cmdMgr = CommandManagerFactory.getCommandManager();
-        validateDefaultConfig(cmdMgr, false);
-    }
-    
-    /**
-     * load the example file with a relative path.
-     */
-    public void testJobConfigurationExample() {
-        File resourceDir = new File("resources");
-        String pathToResourceDir = resourceDir.getAbsolutePath();
-        System.setProperty("genepattern.properties", pathToResourceDir);
-        ServerConfigurationFactory.reloadConfiguration("config_example.yaml");
-        CommandManagerFactory.initializeCommandManager();
-        CommandManager cmdMgr = CommandManagerFactory.getCommandManager();
-        validateExampleJobConfig(cmdMgr);
+    @Test
+    public void configExample() {
+        File configFile=new File("resources/config_example.yaml");
+        GpConfig gpConfig=new GpConfig.Builder()
+            .configFile(configFile)
+        .build();
+        BasicCommandManager cmdMgr = CommandManagerFactory.createCommandManager(gpConfig);
+        validateExampleJobConfig(gpConfig, cmdMgr);
     }
 
-    /**
-     * load the example file with an absolute path.
-     * @throws Exception
-     */
-    public void testJobConfigurationExampleAbsPath() throws Exception { 
-        System.getProperties().remove("genepattern.properties");
-        String val = System.getProperty("genepattern.properties");
-        assertNull("'genepattern.properties' should not be set", val);
-       
-        File resourceDir = new File("resources");
-        String absPath = resourceDir.getAbsolutePath() + "/" + "config_example.yaml";
-        ServerConfigurationFactory.reloadConfiguration(absPath);
-
-        CommandManagerFactory.initializeCommandManager();
-        CommandManager cmdMgr = CommandManagerFactory.getCommandManager();
-        validateExampleJobConfig(cmdMgr);
-    }
-
-    private void validateExampleJobConfig(CommandManager cmdMgr) {
+    private void validateExampleJobConfig(final GpConfig gpConfig, final BasicCommandManager cmdMgr) {
         assertNotNull("Expecting non-null cmdMgr", cmdMgr);
-        validateCommandManager(cmdMgr);
+        validateCommandManager(gpConfig, cmdMgr);
         
         Map<String,CommandExecutor> map = cmdMgr.getCommandExecutorsMap();
         assertNotNull("Expecting non-null cmdMgr.commandExecutorsMap", map);
@@ -173,7 +167,7 @@ public class CommandManagerFactoryTest extends TestCase {
         jobInfo.setTaskLSID("urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00096:1");
         
         try {
-            CommandExecutor cmdExecutor = cmdMgr.getCommandExecutor(jobInfo);
+            CommandExecutor cmdExecutor = cmdMgr.getCommandExecutor(gpConfig, jobInfo);
             String canonicalName = cmdExecutor.getClass().getCanonicalName();
             assertEquals("expecting LsfCommandExecutor for SNPFileSorter", "org.genepattern.server.executor.lsf.LsfCommandExecutor", canonicalName);
             //assertTrue("expecting LsfCommandExecutor for SNPFileSorter but found "+cmdExecutor.getClass().getCanonicalName()+" instead", (cmdExecutor instanceof LsfCommandExecutor));
@@ -181,7 +175,7 @@ public class CommandManagerFactoryTest extends TestCase {
         catch (Exception e) {
             fail("Exception thrown in getCommandExecutor: "+e.getLocalizedMessage());
         }
-        CommandProperties jobProperties = cmdMgr.getCommandProperties(jobInfo);
+        CommandProperties jobProperties = cmdMgr.getCommandProperties(gpConfig, jobInfo);
         assertNotNull("", jobProperties);
         assertEquals("checking job properties: lsf.max.memory", "12", ""+jobProperties.getProperty("lsf.max.memory"));
         assertEquals("checking job properties: java_flags", "-Xmx12g", jobProperties.getProperty("java_flags"));
@@ -193,51 +187,24 @@ public class CommandManagerFactoryTest extends TestCase {
     }
 
     /**
-     * Helper class which returns the parent File of this source file.
-     * @return
-     */
-    private static File getSourceDir() {
-        String cname = CommandManagerFactoryTest.class.getCanonicalName();
-        int idx = cname.lastIndexOf('.');
-        String dname = cname.substring(0, idx);
-        dname = dname.replace('.', '/');
-        File sourceDir = new File("test/src/" + dname);
-        return sourceDir;
-    }
-
-    /**
-     * Helper class which initializes (or reinitializes) the CommandManager to parse the given
-     * yaml config file from the same location as the source files for the unit tests.
-     *
-     * @param filename
-     */
-    private void initializeYamlConfigFile(String filename) {
-        File resourceDir = getSourceDir();
-        System.setProperty("genepattern.properties", resourceDir.getAbsolutePath());
-        System.setProperty(ServerConfigurationFactory.PROP_CONFIG_FILE, filename);
-        ServerConfigurationFactory.reloadConfiguration(filename);
-        CommandManagerFactory.initializeCommandManager();
-        
-        validateCommandManager(CommandManagerFactory.getCommandManager());
-    }
-
-    /**
      * Test default and custom properties in yaml configuration file.
      */
+    @Test
     public void testYamlConfig() {
-        initializeYamlConfigFile("test_config.yaml");
-        CommandManager cmdMgr = CommandManagerFactory.getCommandManager();
-        validateCommandManager(cmdMgr);
+        File configFile=FileUtil.getSourceFile(this.getClass(), "test_config.yaml");
+        GpConfig gpConfig=new GpConfig.Builder()
+            .configFile(configFile)
+            .groupInfo(groupInfo)
+        .build();
+        BasicCommandManager cmdMgr = CommandManagerFactory.createCommandManager(gpConfig);
+        validateCommandManager(gpConfig, cmdMgr);
         assertEquals("Expecting 2 executors", 2, cmdMgr.getCommandExecutorsMap().size() );
-        validateYamlConfig();
+        validateYamlConfig(gpConfig, cmdMgr);
         
         //additional tests for user and group properties
-        //set up group membership
-        UserAccountManager.instance().refreshUsersAndGroups();
-        IGroupMembershipPlugin groups = UserAccountManager.instance().getGroupMembership();
-        assertTrue("userA is in admingroup", groups.isMember("userA", "admingroup"));
-        assertTrue("userA is in broadgroup", groups.isMember("userA", "broadgroup"));
-        assertTrue("adminuser is in admingroup", groups.isMember("adminuser", "admingroup"));
+        assertTrue("userA is in admingroup", groupInfo.isMember("userA", "admingroup"));
+        assertTrue("userA is in broadgroup", groupInfo.isMember("userA", "broadgroup"));
+        assertTrue("adminuser is in admingroup", groupInfo.isMember("adminuser", "admingroup"));
 
         String userId = "adminuser";
         String taskName = "ComparativeMarkerSelection";
@@ -246,7 +213,7 @@ public class CommandManagerFactoryTest extends TestCase {
         String expectedFilename = "stdout_admingroup.out";
         boolean expectingException = false;
         
-        validateJobConfig(
+        validateJobConfig(gpConfig, cmdMgr,
                 userId,
                 taskName, 
                 taskLsid, 
@@ -258,15 +225,19 @@ public class CommandManagerFactoryTest extends TestCase {
     /**
      * Test default and custom properties in yaml configuration file which has no indenting.
      */
+    @Test
     public void testYamlConfigNoIndent() {
-        initializeYamlConfigFile("test_config_noindent.yaml");
-        CommandManager cmdMgr = CommandManagerFactory.getCommandManager();
-        validateCommandManager(cmdMgr);
+        File configFile=FileUtil.getSourceFile(this.getClass(), "test_config_noindent.yaml");
+        GpConfig gpConfig=new GpConfig.Builder()
+            .configFile(configFile)
+        .build();
+        BasicCommandManager cmdMgr = CommandManagerFactory.createCommandManager(gpConfig);
+        validateCommandManager(gpConfig, cmdMgr);
         assertEquals("Expecting 2 executors", 2, cmdMgr.getCommandExecutorsMap().size() );
-        validateYamlConfig();
+        validateYamlConfig(gpConfig, cmdMgr);
     }
 
-    private void validateYamlConfig() {
+    private void validateYamlConfig(GpConfig gpConfig, BasicCommandManager cmdMgr) {
         String userId = "test_user";
         String taskName = "ConvertLineEndings";
         String taskLsid = "urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00002:2";
@@ -274,7 +245,7 @@ public class CommandManagerFactoryTest extends TestCase {
         String expectedFilename = "stdout.txt";
         boolean expectingException = false;
 
-        validateJobConfig(
+        validateJobConfig(gpConfig, cmdMgr,
                 userId,
                 taskName, 
                 taskLsid, 
@@ -282,7 +253,7 @@ public class CommandManagerFactoryTest extends TestCase {
                 expectedFilename, 
                 expectingException);
         
-        validateJobConfig(
+        validateJobConfig(gpConfig, cmdMgr,
                 userId,
                 "ComparativeMarkerSelection", 
                 "urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00044:2",
@@ -290,7 +261,7 @@ public class CommandManagerFactoryTest extends TestCase {
                 "CMS.out",
                 false);
         
-        validateJobConfig(
+        validateJobConfig(gpConfig, cmdMgr,
                 userId,
                 "ComparativeMarkerSelection",
                 "urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00044:4",
@@ -298,7 +269,7 @@ public class CommandManagerFactoryTest extends TestCase {
                 "CMS.v4.out",
                 false);
 
-        validateJobConfig(
+        validateJobConfig(gpConfig, cmdMgr,
                 userId,
                 "ComparativeMarkerSelection",
                 "urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00044:5",
@@ -306,7 +277,7 @@ public class CommandManagerFactoryTest extends TestCase {
                 "stdout.txt",
                 false);
 
-        validateJobConfig(
+        validateJobConfig(gpConfig, cmdMgr,
                 userId,
                 "moduleA",
                 (String)null,
@@ -314,7 +285,7 @@ public class CommandManagerFactoryTest extends TestCase {
                 "runtimeexec.out",
                 false);
         
-        validateJobConfig(
+        validateJobConfig(gpConfig, cmdMgr,
                 userId,
                 "moduleB",
                 (String)null,
@@ -322,7 +293,7 @@ public class CommandManagerFactoryTest extends TestCase {
                 "moduleB.out",
                 false);
 
-        validateJobConfig(
+        validateJobConfig(gpConfig, cmdMgr,
                 userId,
                 "moduleC",
                 (String)null,
@@ -331,17 +302,15 @@ public class CommandManagerFactoryTest extends TestCase {
                 true);
     }
     
-    private static void validateJobConfig(String userId, String taskName, String taskLsid, String expectedCmdExecId, String exepectedStdoutFilename, boolean expectingException) {
+    private static void validateJobConfig(GpConfig gpConfig, BasicCommandManager cmdMgr, String userId, String taskName, String taskLsid, String expectedCmdExecId, String exepectedStdoutFilename, boolean expectingException) {
         JobInfo jobInfo = new JobInfo();
         jobInfo.setUserId(userId);
         jobInfo.setTaskName(taskName);
         jobInfo.setTaskLSID(taskLsid);
         
-        CommandManager cmdMgr = CommandManagerFactory.getCommandManager();
-        
         CommandExecutor cmdExec = null;
         try {
-            cmdExec = cmdMgr.getCommandExecutor(jobInfo);
+            cmdExec = cmdMgr.getCommandExecutor(gpConfig, jobInfo);
             if (expectingException) {
                 fail("Expecting CommandExecutorNotFoundException, but it wasn't thrown");
             }
@@ -352,8 +321,8 @@ public class CommandManagerFactoryTest extends TestCase {
             }
             return;
         }
-        CommandProperties cmdProps = cmdMgr.getCommandProperties(jobInfo);
-        String cmdExecId = CommandManagerFactory.getCommandExecutorId(cmdExec);
+        CommandProperties cmdProps = cmdMgr.getCommandProperties(gpConfig, jobInfo);
+        String cmdExecId = cmdMgr.getCommandExecutorId(cmdExec);
 
         assertNotNull("expecting non-null CommandExecutor", cmdExec);
         assertEquals("expecting default CommandExecutor", expectedCmdExecId, cmdExecId);
@@ -364,10 +333,14 @@ public class CommandManagerFactoryTest extends TestCase {
         assertEquals("checking 'stdout.filename' property", exepectedStdoutFilename, cmdProps.getProperty("stdout.filename"));
         assertEquals("checking 'java_flags' property", "-Xmx4g", cmdProps.getProperty("java_flags"));
     }
-        
+       
+    @Test
     public void testLsfConfig() {
-        initializeYamlConfigFile("test_config_lsf.yaml");
-        CommandManager cmdMgr = CommandManagerFactory.getCommandManager();
+        File configFile=FileUtil.getSourceFile(this.getClass(), "test_config_lsf.yaml");
+        GpConfig gpConfig=new GpConfig.Builder()
+            .configFile(configFile)
+        .build();
+        BasicCommandManager cmdMgr = CommandManagerFactory.createCommandManager(gpConfig);
         
         JobInfo jobInfo = new JobInfo();
         jobInfo.setTaskName("ComparativeMarkerSelection");
@@ -376,19 +349,26 @@ public class CommandManagerFactoryTest extends TestCase {
         assertEquals("checking 'lsf.output.filename'", ".lsf.out", props.getProperty("lsf.output.filename"));
     }
     
+    @Test
     public void testReloadConfiguration() throws CommandExecutorNotFoundException {
-        initializeYamlConfigFile("test_config.yaml");
-        ServerConfigurationFactory.reloadConfiguration("test_config_reload.yaml");
+        //ServerConfigurationFactory.reloadConfiguration("test_config.yaml");
+        //ServerConfigurationFactory.reloadConfiguration("test_config_reload.yaml");
+        File configFile=FileUtil.getSourceFile(this.getClass(), "test_config_reload.yaml");
+        GpConfig gpConfig=new GpConfig.Builder()
+            .configFile(configFile)
+            .groupInfo(groupInfo)
+        .build();
+        BasicCommandManager cmdMgr = CommandManagerFactory.createCommandManager(gpConfig);
+
         
         JobInfo jobInfo = new JobInfo();
         jobInfo.setUserId("testuser");
         jobInfo.setTaskName("PreprocessDataset");
         jobInfo.setTaskLSID(null);
         
-        CommandManager cmdMgr = CommandManagerFactory.getCommandManager();
         CommandExecutor cmdExec = cmdMgr.getCommandExecutor(jobInfo);
         CommandProperties cmdProps = cmdMgr.getCommandProperties(jobInfo);
-        String cmdExecId = CommandManagerFactory.getCommandExecutorId(cmdExec);
+        String cmdExecId = cmdMgr.getCommandExecutorId(cmdExec);
 
         assertEquals("changed default java_flags", "-Xmx16g", cmdProps.getProperty("java_flags"));
         assertEquals("changed default executor", "RuntimeExec", cmdExecId);
@@ -399,7 +379,7 @@ public class CommandManagerFactoryTest extends TestCase {
         jobInfo.setTaskName("ComparativeMarkerSelection");
         cmdExec = cmdMgr.getCommandExecutor(jobInfo);
         cmdProps = cmdMgr.getCommandProperties(jobInfo);
-        cmdExecId = CommandManagerFactory.getCommandExecutorId(cmdExec);
+        cmdExecId = cmdMgr.getCommandExecutorId(cmdExec);
         
         assertEquals("set java_flags for ComparativeMarkerSelection", "-Xmx2g", cmdProps.getProperty("java_flags"));
         assertEquals("executor for ComparativeMarkerSelection", "RuntimeExec", cmdExecId);
@@ -409,18 +389,22 @@ public class CommandManagerFactoryTest extends TestCase {
      * Check properties set in the 'default.properties' section for a given executor.
      * @throws CommandExecutorNotFoundException
      */
+    @Test
     public void testExecutorDefaultProperties() throws CommandExecutorNotFoundException {
-        initializeYamlConfigFile("test_executor_defaults.yaml");
-        
+        File configFile=FileUtil.getSourceFile(this.getClass(), "test_executor_defaults.yaml");
+        GpConfig gpConfig=new GpConfig.Builder()
+            .configFile(configFile)
+        .build();
+        BasicCommandManager cmdMgr = CommandManagerFactory.createCommandManager(gpConfig);
+
         JobInfo jobInfo = new JobInfo();
         jobInfo.setUserId("admin");
         jobInfo.setTaskName("testEchoSleeper");
         
-        CommandManager cmdMgr = CommandManagerFactory.getCommandManager();
-        CommandExecutor cmdExec = cmdMgr.getCommandExecutor(jobInfo);
-        CommandProperties cmdProps = cmdMgr.getCommandProperties(jobInfo);
+        CommandExecutor cmdExec = cmdMgr.getCommandExecutor(gpConfig, jobInfo);
+        CommandProperties cmdProps = cmdMgr.getCommandProperties(gpConfig, jobInfo);
         
-        assertEquals("Expecting LSF", "LSF", CommandManagerFactory.getCommandExecutorId(cmdExec));
+        assertEquals("Expecting LSF", "LSF", cmdMgr.getCommandExecutorId(cmdExec));
         assertEquals("checking property set in executors->LSF->default.properties ", ".lsf.out", cmdProps.getProperty("lsf.output.filename"));
         assertEquals("checking property override in executors->LSF->default.properties ", "-Xmx4g", cmdProps.getProperty("java_flags"));
     }
@@ -428,16 +412,21 @@ public class CommandManagerFactoryTest extends TestCase {
     /**
      * Unit tests to validate setting a null value.
      */
+    @Test
     public void testNullValues() throws CommandExecutorNotFoundException {
-        initializeYamlConfigFile("test_null_values.yaml");
+        File configFile=FileUtil.getSourceFile(this.getClass(), "test_null_values.yaml");
+        GpConfig gpConfig=new GpConfig.Builder()
+            .configFile(configFile)
+        .build();
+        BasicCommandManager cmdMgr = CommandManagerFactory.createCommandManager(gpConfig);
+
         JobInfo jobInfo = new JobInfo();
         jobInfo.setUserId("test");
         jobInfo.setTaskName("testEchoSleeper");
         
-        CommandManager cmdMgr = CommandManagerFactory.getCommandManager();
-        CommandExecutor cmdExec = cmdMgr.getCommandExecutor(jobInfo);
-        CommandProperties cmdProps = cmdMgr.getCommandProperties(jobInfo);
-        assertEquals("Expecting LSF", "LSF", CommandManagerFactory.getCommandExecutorId(cmdExec));
+        CommandExecutor cmdExec = cmdMgr.getCommandExecutor(gpConfig, jobInfo);
+        CommandProperties cmdProps = cmdMgr.getCommandProperties(gpConfig, jobInfo);
+        assertEquals("Expecting LSF", "LSF", cmdMgr.getCommandExecutorId(cmdExec));
         assertEquals("default.properties->debug.mode", "true", cmdProps.getProperty("debug.mode"));
         
         jobInfo = new JobInfo();
@@ -446,7 +435,7 @@ public class CommandManagerFactoryTest extends TestCase {
         cmdExec = cmdMgr.getCommandExecutor(jobInfo);
         cmdProps = cmdMgr.getCommandProperties(jobInfo);
 
-        assertEquals("Expecting RuntimeExec", "RuntimeExec", CommandManagerFactory.getCommandExecutorId(cmdExec));
+        assertEquals("Expecting RuntimeExec", "RuntimeExec", cmdMgr.getCommandExecutorId(cmdExec));
         assertEquals("", cmdProps.getProperty("debug.mode"));
         
         jobInfo = new JobInfo();
@@ -454,16 +443,21 @@ public class CommandManagerFactoryTest extends TestCase {
         jobInfo.setTaskName("testEchoSleeper");
         cmdExec = cmdMgr.getCommandExecutor(jobInfo);
         cmdProps = cmdMgr.getCommandProperties(jobInfo);
-        assertEquals("Expecting LSF", "LSF", CommandManagerFactory.getCommandExecutorId(cmdExec));
+        assertEquals("Expecting LSF", "LSF", cmdMgr.getCommandExecutorId(cmdExec));
         assertEquals("Expecting empty string", "", cmdProps.getProperty("debug.mode"));
     }
     
     /**
      * Unit tests for custom pipeline executors.
      */
+    @Test
     public void testCustomPipelineExecutor() {
-        initializeYamlConfigFile("test_custom_pipeline_executor.yaml");
-        CommandManager cmdMgr = CommandManagerFactory.getCommandManager();
+        File configFile=FileUtil.getSourceFile(this.getClass(), "test_custom_pipeline_executor.yaml");
+        GpConfig gpConfig=new GpConfig.Builder()
+            .configFile(configFile)
+        .build();
+        BasicCommandManager cmdMgr = CommandManagerFactory.createCommandManager(gpConfig);
+
         assertEquals("# of command executors", 2, cmdMgr.getCommandExecutorsMap().size());
         CommandExecutor runtimeExec=cmdMgr.getCommandExecutorsMap().get("RuntimeExec");
         CommandExecutor pipelineExec=cmdMgr.getCommandExecutorsMap().get("PipelineExec");
@@ -473,13 +467,17 @@ public class CommandManagerFactoryTest extends TestCase {
         assertEquals("custom PipelineExec class", CustomPipelineExecutor.class.getName(), pipelineExec.getClass().getName());
     }
     
+    @Test
     public void testCommandProperties() {
-        initializeYamlConfigFile("test_CommandProperties.yaml");
-        CommandManager cmdMgr = CommandManagerFactory.getCommandManager();
+        File configFile=FileUtil.getSourceFile(this.getClass(), "test_CommandProperties.yaml");
+        GpConfig gpConfig=new GpConfig.Builder()
+            .configFile(configFile)
+        .build();
+        BasicCommandManager cmdMgr = CommandManagerFactory.createCommandManager(gpConfig);
         JobInfo jobInfo = new JobInfo();
         jobInfo.setUserId("admin");
         
-        CommandProperties cmdProps = cmdMgr.getCommandProperties(jobInfo);
+        CommandProperties cmdProps = cmdMgr.getCommandProperties(gpConfig, jobInfo);
         Value val = cmdProps.get("prop.not.set");
         assertNull("Expecting 'null' value when property is not in the config file", val);
 
@@ -503,7 +501,7 @@ public class CommandManagerFactoryTest extends TestCase {
 
         //test executor -> default.properties
         jobInfo.setUserId("test");
-        cmdProps = cmdMgr.getCommandProperties(jobInfo);
+        cmdProps = cmdMgr.getCommandProperties(gpConfig, jobInfo);
         val = cmdProps.get("arg.override.to.null");
         assertNull("executor.default.properties: Override default property to 'null'", val.getValue());
         testCommandProperty(cmdProps, "arg.empty", (String) null, new String[] { null });
@@ -526,98 +524,123 @@ public class CommandManagerFactoryTest extends TestCase {
         //test module.properties
         jobInfo.setUserId("admin");
         jobInfo.setTaskName("module01");
-        cmdProps = cmdMgr.getCommandProperties(jobInfo);
+        cmdProps = cmdMgr.getCommandProperties(gpConfig, jobInfo);
 
         val = cmdProps.get("arg.override.to.null");
         assertNull("module.default.properties: Override default property to 'null'", val.getValue());
         testCommandProperty(cmdProps, "arg.list.03", "moduleOverride.x", new String[] { "moduleOverride.x", "mo4", "mo3.14", "mo1.32e6", "moTrue", "moFalse" });
     }
     
+    @Test
     public void testUserProperties() {
-        initializeYamlConfigFile("test_user_properties.yaml");
-        UserAccountManager.instance().refreshUsersAndGroups();
-        IGroupMembershipPlugin groups = UserAccountManager.instance().getGroupMembership();
-        assertTrue("userA is in admingroup", groups.isMember("userA", "admingroup"));
-        assertTrue("userA is in broadgroup", groups.isMember("userA", "broadgroup"));
-        assertTrue("userC is in broadgroup", groups.isMember("userC", "broadgroup"));
-        assertFalse("userC is not in admingroup", groups.isMember("userC", "admingroup"));
-        assertTrue("adminuser is in admingroup", groups.isMember("adminuser", "admingroup"));
+
+        File configFile=FileUtil.getSourceFile(this.getClass(), "test_user_properties.yaml");
+        GpConfig gpConfig=new GpConfig.Builder()
+            .serverProperties(
+                    new GpServerProperties.Builder()
+                        .useSystemProperties(true)
+                        .initFromSystemProperties(false)
+                    .build()
+            )
+            .configFile(configFile)
+            .groupInfo(groupInfo)
+        .build();
 
         System.setProperty("system.prop", "SYSTEM");
         System.setProperty("system.prop.override", "SYSTEM_VALUE");
         System.setProperty("system.prop.override.to.null", "NOT_NULL");
+
+        assertTrue("userA is in admingroup", groupInfo.isMember("userA", "admingroup"));
+        assertTrue("userA is in broadgroup", groupInfo.isMember("userA", "broadgroup"));
+        assertTrue("userC is in broadgroup", groupInfo.isMember("userC", "broadgroup"));
+        assertFalse("userC is not in admingroup", groupInfo.isMember("userC", "admingroup"));
+        assertTrue("adminuser is in admingroup", groupInfo.isMember("adminuser", "admingroup"));
+
         
-        ServerConfigurationFactory.reloadConfiguration();
+        //ServerConfigurationFactory.reloadConfiguration();
 
         //tests for 'test' user, use 'default.properties', no overrides
         GpContext userContext = GpContext.getContextForUser("test");
-        assertNull("unset property",  ServerConfigurationFactory.instance().getGPProperty(userContext, "NOT_SET"));
+        assertNull("unset property",  gpConfig.getGPProperty(userContext, "NOT_SET"));
         assertEquals("property which is only set in System.properties", 
-                "SYSTEM", ServerConfigurationFactory.instance().getGPProperty(userContext, "system.prop"));
+                "SYSTEM", gpConfig.getGPProperty(userContext, "system.prop"));
         assertEquals("override a system property", 
                 "SERVER_DEFAULT", 
-                ServerConfigurationFactory.instance().getGPProperty(userContext, "system.prop.override"));
-        assertNull(ServerConfigurationFactory.instance().getGPProperty(userContext, "override a system property with a null value"));
-        assertEquals("default property", "DEFAULT_VAL", ServerConfigurationFactory.instance().getGPProperty(userContext, "default.prop"));
-        assertNull("default null value", ServerConfigurationFactory.instance().getGPProperty(userContext, "default.prop.null"));
+                gpConfig.getGPProperty(userContext, "system.prop.override"));
+        assertNull(gpConfig.getGPProperty(userContext, "override a system property with a null value"));
+        assertEquals("default property", "DEFAULT_VAL", gpConfig.getGPProperty(userContext, "default.prop"));
+        assertNull("default null value", gpConfig.getGPProperty(userContext, "default.prop.null"));
 
         //tests for 'userA', with group overrides, userA is in two groups
         userContext = GpContext.getContextForUser("userA");
-        assertEquals("override default prop in group.properties", "admingroup_val", ServerConfigurationFactory.instance().getGPProperty(userContext, "default.prop"));
+        assertEquals("override default prop in group.properties", "admingroup_val", gpConfig.getGPProperty(userContext, "default.prop"));
         
         //tests for 'userC', with group overrides, userC is in one group
         userContext = GpContext.getContextForUser("userC");
-        assertEquals("user override", "userC_val", ServerConfigurationFactory.instance().getGPProperty(userContext, "default.prop") );
-        assertEquals("group override", "-Xmx256m -Dgroup=broadgroup", ServerConfigurationFactory.instance().getGPProperty(userContext, "java_flags"));
+        assertEquals("user override", "userC_val", gpConfig.getGPProperty(userContext, "default.prop") );
+        assertEquals("group override", "-Xmx256m -Dgroup=broadgroup", gpConfig.getGPProperty(userContext, "java_flags"));
         
         //tests for 'userD' with user overrides, userD is not in any group
         userContext = GpContext.getContextForUser("userD");
-        assertEquals("user override", "userD_val", ServerConfigurationFactory.instance().getGPProperty(userContext, "default.prop"));
+        assertEquals("user override", "userD_val", gpConfig.getGPProperty(userContext, "default.prop"));
     }
     
+    @Test
     public void testOverrideSystemProperty() {
-        GpContext userContext = GpContext.getContextForUser("test");
-        initializeYamlConfigFile("test_user_properties.yaml");
-        UserAccountManager.instance().refreshUsersAndGroups();
+        File configFile=FileUtil.getSourceFile(this.getClass(), "test_user_properties.yaml");
+        GpConfig gpConfig=new GpConfig.Builder()
+            .configFile(configFile)
+            .groupInfo(groupInfo)
+            .serverProperties(new GpServerProperties.Builder()
+                .useSystemProperties(false)
+            .build())
+        .build();
+        
         System.setProperty("system.prop.override", "SYSTEM_VALUE");
+        GpContext userContext = GpContext.getContextForUser("test");
         assertEquals("override a system property", 
                 "SERVER_DEFAULT", 
-                ServerConfigurationFactory.instance().getGPProperty(userContext, "system.prop.override"));
+                gpConfig.getGPProperty(userContext, "system.prop.override"));
     }
     
     /**
      * Test getProperty.
      */
+    @Test
     public void testServerProperties() {
-        File resourceDir = getSourceDir();
-        System.setProperty("genepattern.properties", resourceDir.getAbsolutePath());
-        System.setProperty("resources", resourceDir.getAbsolutePath());
-        System.setProperty("require.password", "false");
-        System.setProperty("prop.test.case", "test.case.SYSTEM");
-        ServerConfigurationFactory.reloadConfiguration();
-
-        initializeYamlConfigFile("test_user_properties.yaml");
-        UserAccountManager.instance().refreshUsersAndGroups();
+        File configFile=FileUtil.getSourceFile(this.getClass(), "test_user_properties.yaml");
+        GpConfig gpConfig=new GpConfig.Builder()
+            .serverProperties(
+                    new GpServerProperties.Builder()
+                        .initFromSystemProperties(true)
+                        .gpProperties(FileUtil.getSourceFile(this.getClass(), "genepattern.properties"))
+                        .customProperties(FileUtil.getSourceFile(this.getClass(), "custom.properties"))
+                    .build()
+            )
+            .resourcesDir(FileUtil.getSourceDir(this.getClass()))
+            .configFile(configFile)
+            .groupInfo(groupInfo)
+        .build();
 
         GpContext context = GpContext.getServerContext();
         
-        //assertEquals("3.3.1", ServerConfigurationFactory.instance().getGPProperty(context, "GenePatternVersion"));
-        assertEquals("8080.gp-trunk-dev.120.0.0.1", ServerConfigurationFactory.instance().getGPProperty(context, "lsid.authority"));
-        assertEquals("true", ServerConfigurationFactory.instance().getGPProperty(context, "require.password"));
+        assertEquals("3.3.1", gpConfig.getGPProperty(context, "GenePatternVersion"));
+        assertEquals("'lsid.authority' set in genepattern.properties file", "8080.gp-trunk-dev.120.0.0.1", gpConfig.getGPProperty(context, "lsid.authority"));
+        assertEquals("true", gpConfig.getGPProperty(context, "require.password"));
 
-        assertEquals("set_in_custom.properties", ServerConfigurationFactory.instance().getGPProperty(context, "prop.test.01"));
-        assertEquals("added_in_custom.properties", ServerConfigurationFactory.instance().getGPProperty(context, "prop.test.02"));
+        assertEquals("set_in_custom.properties", gpConfig.getGPProperty(context, "prop.test.01"));
+        assertEquals("added_in_custom.properties", gpConfig.getGPProperty(context, "prop.test.02"));
         
         String userId = "admin";
         GpContext userContext = GpContext.getContextForUser(userId);
-        boolean allowBatchProcess = ServerConfigurationFactory.instance().getGPBooleanProperty(userContext, "allow.batch.process");
+        boolean allowBatchProcess = gpConfig.getGPBooleanProperty(userContext, "allow.batch.process");
         assertEquals("testing getBooleanProperty in genepattern.properties and config.yaml", true, allowBatchProcess);
         
         assertEquals("test-case, a property whic is set in genepattern.properties, but modified in config.yaml", 
-                "test.case.YAML_DEFAULT", ServerConfigurationFactory.instance().getGPProperty(userContext, "prop.test.case"));
+                "test.case.YAML_DEFAULT", gpConfig.getGPProperty(userContext, "prop.test.case"));
         
         //test-case, a property only in genepattern.properties
-        assertEquals("test-case, property set in genepattern.properties", "SET_IN_GP_PROPERTIES", ServerConfigurationFactory.instance().getGPProperty(userContext, "only.in.gp.properties"));
+        assertEquals("test-case, property set in genepattern.properties", "SET_IN_GP_PROPERTIES", gpConfig.getGPProperty(userContext, "only.in.gp.properties"));
     }
     
     private void testCommandProperty(CommandProperties cmdProps, String propName, String expectedValue, String[] expectedValues) {
@@ -635,10 +658,17 @@ public class CommandManagerFactoryTest extends TestCase {
     /**
      * Allow lists of strings as legal values in the configuration file.
      */
+    @Test
     public void testExtraBsubArgs() throws CommandExecutorNotFoundException {
-        initializeYamlConfigFile("test_config_lsf_extraBsubArgs.yaml");
-        CommandManager cmdMgr = CommandManagerFactory.getCommandManager();
-        List<Throwable> errors = ServerConfigurationFactory.instance().getInitializationErrors();
+        File configFile=FileUtil.getSourceFile(this.getClass(), "test_config_lsf_extraBsubArgs.yaml");
+        GpConfig gpConfig=new GpConfig.Builder()
+            .resourcesDir(FileUtil.getSourceDir(this.getClass()))
+            .configFile(configFile)
+            .groupInfo(groupInfo)
+        .build();
+        BasicCommandManager cmdMgr = CommandManagerFactory.createCommandManager(gpConfig);
+
+        List<Throwable> errors = gpConfig.getInitializationErrors();
         for(Throwable t : errors) {
             fail(""+t.getLocalizedMessage());
         }
@@ -649,13 +679,11 @@ public class CommandManagerFactoryTest extends TestCase {
         
         for(int i=1; i<=6; ++i) {
             jobInfo.setTaskName("mod0"+i);
-            CommandProperties props = cmdMgr.getCommandProperties(jobInfo);
             CommandExecutor cmdExec = cmdMgr.getCommandExecutor(jobInfo);
-            assertEquals("", "exec0"+i, CommandManagerFactory.getCommandExecutorId(cmdExec));
+            assertEquals("", "exec0"+i, cmdMgr.getCommandExecutorId(cmdExec));
         }
 
         jobInfo.setTaskName("mod01");
-        CommandProperties props = cmdMgr.getCommandProperties(jobInfo);
         
         Value value = getValue(cmdMgr, "mod01", "lsf.extra.bsub.args");
         assertNull("lsf.extra.bsub.args not set", value);

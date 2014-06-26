@@ -1,11 +1,7 @@
 package org.genepattern.server.executor;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-
 import org.apache.log4j.Logger;
+import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.JobConfigObj;
 import org.genepattern.server.config.ServerConfigurationFactory;
 
@@ -28,8 +24,8 @@ import org.genepattern.server.config.ServerConfigurationFactory;
 public class CommandManagerFactory {
     private static Logger log = Logger.getLogger(CommandManagerFactory.class);
 
+    private static final Object mgrLock=new Object();
     private static boolean running = false;
-    private static List<Throwable> errors = new ArrayList<Throwable>();
     private static BasicCommandManager manager = null;
     
     private CommandManagerFactory() {
@@ -39,12 +35,12 @@ public class CommandManagerFactory {
      * Get the command manager. This method initializes the manager from system properties if necessary.
      */
     public static CommandManager getCommandManager() {
-        if (manager != null) {
+        synchronized(mgrLock) {
+            if (manager == null) {
+                manager = createCommandManager();
+            }
             return manager;
         }
-        //lazy init ...
-        initializeCommandManager();
-        return manager;
     }
     
     public static boolean isRunning() {
@@ -52,71 +48,75 @@ public class CommandManagerFactory {
     }
     
     public static void startJobQueue() {
-        //start the command executors before starting the internal job queue ...
-        log.info("\tstarting job queue...");
-        initializeCommandManager();
-        CommandManager cmdManager = getCommandManager();
-        cmdManager.startCommandExecutors();
-        cmdManager.startAnalysisService();
-        running = true;
+        synchronized(mgrLock) {
+            if (manager==null) {
+                manager = createCommandManager();
+            }
+
+            //start the command executors before starting the internal job queue ...
+            log.info("\tstarting job queue...");
+            manager.startCommandExecutors();
+            manager.startAnalysisService();
+            running = true;
+        }
     }
     
     public static void stopJobQueue() {
-        if (manager == null) {
+        synchronized(mgrLock) {
+            if (manager == null) {
+                running = false;
+                return;
+            }
+
+            //first, stop the internal job queue
+            manager.shutdownAnalysisService();
+
+            //then stop the command executors, which are responsible for stopping/suspending/or allowing to continue each running job ...
+            //pipelines are shut down here
+            manager.stopCommandExecutors();
+
             running = false;
-            return;
         }
-        
-        //first, stop the internal job queue
-        manager.shutdownAnalysisService();
-        
-        //then stop the command executors, which are responsible for stopping/suspending/or allowing to continue each running job ...
-        //pipelines are shut down here
-        manager.stopCommandExecutors();
-        
-        running = false;
     }
     
-    /**
-     * Create a new instance of CommandManager.
-     * This method replaces the current manager with a new instance.
-     * 
-     * @param properties
-     */
-    public static synchronized void initializeCommandManager() {
-        if (manager != null) {
-            log.info("replacing current command manager with a new instance");
-        }
-        final JobConfigObj jobConfigObj=ServerConfigurationFactory.instance().getJobConfiguration();
-        manager = createCommandManager(jobConfigObj);
+    public static BasicCommandManager createCommandManager() {
+        GpConfig gpConfig=ServerConfigurationFactory.instance();
+        return createCommandManager(gpConfig);
     }
-    
-    private static synchronized BasicCommandManager createCommandManager(final JobConfigObj jobConfigObj) {
-        if (ServerConfigurationFactory.instance().getInitializationErrors().size() > 0) {
+
+    public static BasicCommandManager createCommandManager(final GpConfig gpConfig) {
+        log.info("\tinitializing command manager ...");
+        if (gpConfig == null) {
+            log.error("server error, gpConfig==null, creating default command manager");
+            return createDefaultCommandManager();
+        }
+        if (gpConfig.getInitializationErrors().size() > 0) {
             log.error("server configuration errors, creating default command manager");
             return createDefaultCommandManager();
         }
-        
-        BasicCommandManagerFactory basicCmdMgrFactory = new BasicCommandManagerFactory();
+        final JobConfigObj jobConfigObj = gpConfig.getJobConfiguration();
+        if (jobConfigObj==null) {
+            log.error("server error, gpConfig.jobConfigObj==null, creating default command manager");
+            return createDefaultCommandManager();
+        }
         try {
-            BasicCommandManager cmdMgr =  basicCmdMgrFactory.createCommandManager(jobConfigObj);
+            BasicCommandManagerFactory basicCmdMgrFactory = new BasicCommandManagerFactory();
+            BasicCommandManager cmdMgr =  basicCmdMgrFactory.createCommandManager(gpConfig, jobConfigObj);
             return cmdMgr;
         }
         catch (final Exception e) {
-          errors.add(e);
           log.error("Failed to load custom command manager loader class: "+BasicCommandManagerFactory.class.getCanonicalName(), e);
           return createDefaultCommandManager();
         }
     }
     
-    private static synchronized BasicCommandManager createDefaultCommandManager() {
+    private static BasicCommandManager createDefaultCommandManager() {
         BasicCommandManager commandManager = new BasicCommandManager();
         CommandExecutor cmdExecutor = new RuntimeCommandExecutor();
         try {
             commandManager.addCommandExecutor("RuntimeExec", cmdExecutor);
         }
         catch (Exception e) {
-            errors.add(e);
             log.error(e);
         }
         return commandManager;
@@ -127,28 +127,20 @@ public class CommandManagerFactory {
      * @param cmdExecutor
      * @return null if the CommandExecutor is not in the map
      */
-    public static synchronized String getCommandExecutorId(CommandExecutor cmdExecutor) { 
+    public static String getCommandExecutorId(CommandExecutor cmdExecutor) { 
         if (cmdExecutor == null) {
             log.error("null arg");
             return null;
         }
-        if (manager == null) {
-            log.error("manager not initialized");
-            return null;
-        }
         
-        Map<String,CommandExecutor> map = manager.getCommandExecutorsMap();
-        if (!map.containsValue(cmdExecutor)) {
-            log.error("commandExecutorsMap does not contain value for "+cmdExecutor.getClass().getCanonicalName());
-            return null;
-        }
-        
-        for(Entry<String,CommandExecutor> entry : manager.getCommandExecutorsMap().entrySet()) {
-            if(cmdExecutor == entry.getValue()) {
-                return entry.getKey();
+        synchronized(mgrLock) {
+            if (manager == null) {
+                log.error("manager not initialized");
+                return null;
             }
+            
+            return manager.getCommandExecutorId(cmdExecutor);
         }
-        return null;
     }
 
 }

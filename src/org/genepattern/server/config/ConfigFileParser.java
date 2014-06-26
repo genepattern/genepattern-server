@@ -9,6 +9,7 @@ import java.util.Set;
 import java.util.Map.Entry;
 
 import org.apache.log4j.Logger;
+import org.genepattern.server.auth.IGroupMembershipPlugin;
 import org.yaml.snakeyaml.Yaml;
 
 /**
@@ -103,9 +104,9 @@ public class ConfigFileParser {
         reloadCommandManagerProperties(jobConfigObj);
     }
     
-    public static ConfigFromYaml parseYamlFile(final File configYaml) throws ConfigurationException {
+    public static ConfigFromYaml parseYamlFile(final File configYaml, final IGroupMembershipPlugin groupInfo) throws ConfigurationException {
         JobConfigObj jobConfigObj=parse(configYaml);
-        ConfigYamlProperties configYamlProps=initConfigYamlProperties(jobConfigObj);
+        ConfigYamlProperties configYamlProps=initConfigYamlProperties(jobConfigObj, groupInfo);
         return new ConfigFromYaml(jobConfigObj, configYamlProps);
     }
     
@@ -243,8 +244,8 @@ public class ConfigFileParser {
 //        return config;
 //    }
     
-    private static ConfigYamlProperties initConfigYamlProperties(final JobConfigObj jobConfigObj) throws ConfigurationException {
-        final ConfigYamlProperties config=new ConfigYamlProperties(jobConfigObj);
+    private static ConfigYamlProperties initConfigYamlProperties(final JobConfigObj jobConfigObj, final IGroupMembershipPlugin groupInfo) throws ConfigurationException {
+        final ConfigYamlProperties config=new ConfigYamlProperties(jobConfigObj, groupInfo);
         for(final Entry<String,ExecutorConfig> entry : jobConfigObj.getExecutors().entrySet()) {
             final String execId=entry.getKey();
             final ExecutorConfig execObj=entry.getValue();
