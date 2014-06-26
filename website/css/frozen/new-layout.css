@@ -955,6 +955,18 @@ body {
     cursor: pointer;
 }
 
+.congestion-green {
+    color: rgb(105, 153, 105)
+}
+
+.congestion-yellow {
+    color: yellow;
+}
+
+.congestion-red {
+    color: rgb(202, 96, 96);
+}
+
 .congestion-label {
     font-size: 7pt;
     width: 15px;

@@ -3100,41 +3100,92 @@ function loadJobResults(jobResults) {
 }
 
 function initStatusBox() {
+    // Hard-coded values until we hook this into server-side calls
+    var diskQuota = "30 GB";
+    var diskUsed = "8.1 GB";
+    var percentUsed = 27;
+    var slowClass = "congestion-red";
+    var fastClass = "congestion-green";
+    var quotaTooltip = '\
+        <table>\
+            <tr>\
+                <td colspan="2">\
+                    <strong>Disk Quota Space Used</strong>\
+                </td>\
+            </tr>\
+            <tr>\
+                <td>\
+                    <em>Upload Files</em>\
+                </td>\
+                <td>\
+                    3 GB\
+                </td>\
+            </tr>\
+            <tr>\
+                <td>\
+                    <em>Job Output Files</em>\
+                </td>\
+                <td>\
+                    3 GB\
+                </td>\
+            </tr>\
+        </table>';
+    var slowCongestionTooltip = '\
+        <strong>Large Jobs Queue</strong> <em>Average Wait Time:</em> 1 day <br/><br/>\
+        The slows jobs queue is experiencing some congestion. Jobs submitted here may take several days before they run.';
+    var fastCongestionTooltip = '\
+        <strong>Small Jobs Queue</strong> <em>Average Wait Time:</em> 2 minutes <br/><br/>\
+        Congestion is light to none on the fast jobs queue.';
+
     $(document).ready(function() {
+        // Set up the user box
         $("#user-box-name").text(username);
+        $("#user-menu").menu();
+
+        // Set up the disk quota box
+        $("#quota-space-label").text(diskUsed + " / " + diskQuota);
         $("#quota-space-progressbar").progressbar({
-            value: 27
+            value: percentUsed
         });
+        $("#disk-quota-tooltip").html(quotaTooltip);
         $("#quota-box").tooltip({
-            items: "div",
-            //hide: { effect: "fade", delay: 1000 },
-            content: $("#disk-quota-tooltip").html()
-        })
+                items: "div",
+                //hide: { effect: "fade", delay: 1000 },
+                content: $("#disk-quota-tooltip").html()
+            })
             .click(function() {
                 $("#disk-quota-tooltip").dialog({
-                    title: "Disk Quota Usage"
+                    title: "Disk Quota Space Used"
                 }).show();
             });
-        $(".congestion-slow").tooltip({
-            items: "div",
-            content: $("#congestion-slow-tooltip").html()
-        })
+
+        // Set up the congestion box
+        $("#congestion-slow-tooltip").html(slowCongestionTooltip);
+        $(".congestion-slow")
+            .tooltip({
+                items: "div",
+                content: $("#congestion-slow-tooltip").html()
+            })
             .click(function() {
                 $("#congestion-slow-tooltip").dialog({
-                    title: "Slow Jobs Queue"
+                    title: "Large Jobs Queue Status"
                 }).show();
-            });
-        $(".congestion-fast").tooltip({
-            items: "div",
-            content: $("#congestion-fast-tooltip").html()
-        })
+            })
+            .find(".congestion-icon")
+            .addClass(slowClass);
+        $("#congestion-fast-tooltip").html(fastCongestionTooltip);
+        $(".congestion-fast")
+            .tooltip({
+                items: "div",
+                content: $("#congestion-fast-tooltip").html()
+            })
             .click(function() {
                 $("#congestion-fast-tooltip").dialog({
-                    title: "Fast Jobs Queue"
+                    title: "Small Jobs Queue Status"
                 }).show();
-            });
-        $("#top-status-box").find("[title]").tooltip();
-        $("#user-menu").menu();
+            })
+            .find(".congestion-icon")
+            .addClass(fastClass);
     });
 }
 

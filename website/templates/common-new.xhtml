@@ -202,17 +202,17 @@
                 <div id="top-status-box">
                     <div id="congestion-box">
                         <div class="congestion-light congestion-slow">
-                            <span style="color: rgb(202, 96, 96);">&#9679;</span>
-                            <span class="congestion-label">Slow Jobs</span>
+                            <span class="congestion-icon">&#9679;</span>
+                            <span class="congestion-label">Large Jobs</span>
                         </div>
                         <div class="congestion-light congestion-fast">
-                            <span style="color: rgb(105, 153, 105);">&#9679;</span>
-                            <span class="congestion-label">Fast Jobs</span>
+                            <span class="congestion-icon">&#9679;</span>
+                            <span class="congestion-label">Small Jobs</span>
                         </div>
                     </div>
                     <div id="quota-box">
                         <div id="quota-space-progressbar">
-                            <span id="quota-space-label">8.1 GB / 30 GB</span>
+                            <span id="quota-space-label"></span>
                         </div>
                     </div>
                     <div id="user-box" onclick="userBoxClick();">
@@ -230,39 +230,9 @@
                     <li><a href="/gp/pages/accountInfo.jsf">My Settings</a></li>
                     <li><a href="/gp/logout">Sign Out</a></li>
                 </ul>
-                <div id="disk-quota-tooltip" style="display: none;">
-                    <table>
-                        <tr>
-                            <td colspan="2">
-                                <strong>Disk Quota Space Used</strong>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>
-                                <em>Upload Files</em>
-                            </td>
-                            <td>
-                                3 GB
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>
-                                <em>Job Output Files</em>
-                            </td>
-                            <td>
-                                3 GB
-                            </td>
-                        </tr>
-                    </table>
-                </div>
-                <div id="congestion-slow-tooltip" style="display: none;">
-                    <strong>Slow Jobs Queue</strong> <em>Average Wait Time:</em> 1 day <br/><br/>
-                    The slows jobs queue is experiencing some congestion. Jobs submitted here may take several days before they run.
-                </div>
-                <div id="congestion-fast-tooltip" style="display: none;">
-                    <strong>Fast Jobs Queue</strong> <em>Average Wait Time:</em> 2 minutes <br/><br/>
-                    Congestion is light to none on the fast jobs queue.
-                </div>
+                <div id="disk-quota-tooltip" style="display: none;"></div>
+                <div id="congestion-slow-tooltip" style="display: none;"></div>
+                <div id="congestion-fast-tooltip" style="display: none;"></div>
 
 				<!-- top band with the logo -->
 	            <div id="topband" class="topband">
