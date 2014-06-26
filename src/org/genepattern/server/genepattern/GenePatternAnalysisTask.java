@@ -1697,8 +1697,6 @@ public class GenePatternAnalysisTask {
         }
         final int jobId=jobInfo.getJobNumber();
         log.debug("job "+jobId+" completed with exitValue="+exitValue);
-
-        JobInfo parentJobInfo = new AnalysisDAO().getParent(jobId);
         
         //handle special-case when handleJobCompletion has already been called for this job
         if (isFinished(jobInfo)) {
@@ -1846,7 +1844,7 @@ public class GenePatternAnalysisTask {
 
         try {
             HibernateUtil.beginTransaction();
-            recordJobCompletion(jobInfo, parentJobInfo, jobStatus);
+            recordJobCompletion(jobInfo, jobStatus);
             HibernateUtil.commitTransaction();
         }
         catch (Throwable t) {
@@ -1858,7 +1856,8 @@ public class GenePatternAnalysisTask {
         }
         
         //if the job is in a pipeline, notify the pipeline handler
-        if (parentJobInfo != null) {
+        boolean isInPipeline = jobInfo._getParentJobNumber() >= 0;
+        if (isInPipeline) {
             boolean wakeupJobQueue = PipelineHandler.handleJobCompletion(jobInfo.getJobNumber());
             if (wakeupJobQueue) {
                 //if the pipeline has more steps, wake up the job queue
@@ -2038,7 +2037,7 @@ public class GenePatternAnalysisTask {
         }
     };
     
-    private static void recordJobCompletion(JobInfo jobInfo, JobInfo parentJobInfo, int jobStatus) {
+    private static void recordJobCompletion(final JobInfo jobInfo, final int jobStatus) {
         if (jobInfo == null) {
             log.error("jobInfo == null, not recording job completion");
             return;
@@ -2047,15 +2046,15 @@ public class GenePatternAnalysisTask {
         try {
             long elapsedTime = (System.currentTimeMillis() - jobStartTime) / 1000;
             Date now = new Date(Calendar.getInstance().getTimeInMillis());
-            updateJobInfo(jobInfo, parentJobInfo, jobStatus, now);
-            UsageLog.logJobCompletion(jobInfo, parentJobInfo, now, elapsedTime);
+            updateJobInfo(jobInfo, jobStatus, now);
+            UsageLog.logJobCompletion(jobInfo, now, elapsedTime);
         } 
         catch (RuntimeException e) {
             log.error(e);
         }
     }
     
-    private static void updateJobInfo(final JobInfo jobInfo, final JobInfo parentJobInfo, final int jobStatus, final Date completionDate) {
+    private static void updateJobInfo(final JobInfo jobInfo, final int jobStatus, final Date completionDate) {
         if (jobInfo == null) {
             log.error("jobInfo == null");
             return;

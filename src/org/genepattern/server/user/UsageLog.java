@@ -19,7 +19,7 @@ import org.genepattern.webservice.JobInfo;
 
 public class UsageLog {
 
-    public static void logJobCompletion(JobInfo jobInfo, JobInfo parentJobInfo, Date completionDate, long elapsedTime) {
+    public static void logJobCompletion(JobInfo jobInfo, Date completionDate, long elapsedTime) {
 
         JobCompletionEvent event = new JobCompletionEvent();
         event.setCompletionDate(completionDate);
@@ -29,12 +29,13 @@ public class UsageLog {
         event.setTaskLsid(jobInfo.getTaskLSID());
         event.setTaskName(jobInfo.getTaskName());
         event.setCompletionStatus(jobInfo.getStatus());
-        if (parentJobInfo == null) {
+        final int parentJobNo=jobInfo._getParentJobNumber();
+        if (parentJobNo < 0) {
             event.setType("TASK");
         }
         else {
             event.setType("PIPELINE");
-            event.setParentJobNumber(parentJobInfo.getJobNumber());
+            event.setParentJobNumber(parentJobNo);
         }
 
         HibernateUtil.getSession().save(event);
