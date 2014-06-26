@@ -3144,14 +3144,22 @@ function initStatusBox() {
 
         // Set up the disk quota box
         $("#quota-space-label").text(diskUsed + " / " + diskQuota);
-        $("#quota-space-progressbar").progressbar({
+        var jqQuotaProgress = $("#quota-space-progressbar");
+        jqQuotaProgress.progressbar({
             value: percentUsed
         });
-        $("#disk-quota-tooltip").html(quotaTooltip);
+        if (percentUsed >= 90) {
+            jqQuotaProgress.find(".ui-progressbar-value").addClass("quota-space-red");
+        }
+        else if (percentUsed >= 75) {
+            jqQuotaProgress.find(".ui-progressbar-value").addClass("quota-space-yellow");
+        }
+        var jqQuotaTooltip = $("#disk-quota-tooltip");
+        jqQuotaTooltip.html(quotaTooltip);
         $("#quota-box").tooltip({
                 items: "div",
                 //hide: { effect: "fade", delay: 1000 },
-                content: $("#disk-quota-tooltip").html()
+                content: jqQuotaTooltip.html()
             })
             .click(function() {
                 $("#disk-quota-tooltip").dialog({
@@ -3160,11 +3168,12 @@ function initStatusBox() {
             });
 
         // Set up the congestion box
-        $("#congestion-slow-tooltip").html(slowCongestionTooltip);
+        var jqSlowTooltip = $("#congestion-slow-tooltip");
+        jqSlowTooltip.html(slowCongestionTooltip);
         $(".congestion-slow")
             .tooltip({
                 items: "div",
-                content: $("#congestion-slow-tooltip").html()
+                content: jqSlowTooltip.html()
             })
             .click(function() {
                 $("#congestion-slow-tooltip").dialog({
@@ -3173,11 +3182,12 @@ function initStatusBox() {
             })
             .find(".congestion-icon")
             .addClass(slowClass);
-        $("#congestion-fast-tooltip").html(fastCongestionTooltip);
+        var jqFastTooltip = $("#congestion-fast-tooltip");
+        jqFastTooltip.html(fastCongestionTooltip);
         $(".congestion-fast")
             .tooltip({
                 items: "div",
-                content: $("#congestion-fast-tooltip").html()
+                content: jqFastTooltip.html()
             })
             .click(function() {
                 $("#congestion-fast-tooltip").dialog({

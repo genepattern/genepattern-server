@@ -904,6 +904,14 @@ body {
     height: 10px;
 }
 
+.quota-space-yellow {
+    color: rgba(192, 192, 0, 0.5);
+}
+
+.quota-space-red {
+    color: rgba(202, 96, 96, 0.5);
+}
+
 #quota-space-label {
     position: absolute;
     font-size: 6pt;
@@ -960,7 +968,7 @@ body {
 }
 
 .congestion-yellow {
-    color: yellow;
+    color: rgb(192, 192, 0);
 }
 
 .congestion-red {
