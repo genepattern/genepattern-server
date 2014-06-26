@@ -24,7 +24,7 @@ import org.hibernate.validator.Size;
  */
 @Entity
 @Table(name="job_runner_job",
-       uniqueConstraints=@UniqueConstraint(columnNames={"jr_classname", "jr_name", "ext_job_id"}))
+       uniqueConstraints=@UniqueConstraint(columnNames={"jr_classname", "jr_name"}))
 public class JobRunnerJob {
      private static final Logger log = Logger.getLogger(JobRunnerJob.class);
      
