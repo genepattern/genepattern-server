@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.genepattern.server.eula.dao.EulaRemoteQueue;
+import org.junit.Ignore;
 
 /**
  * For debugging and prototyping, this implementation records eula to an
@@ -12,6 +13,7 @@ import org.genepattern.server.eula.dao.EulaRemoteQueue;
  * 
  * @author pcarr
  */
+@Ignore
 public class RecordEulaStub implements RecordEula {
 
     private Map<String,Date> acceptedEulas = new HashMap<String,Date>();
