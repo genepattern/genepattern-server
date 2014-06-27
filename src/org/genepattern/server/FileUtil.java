@@ -18,6 +18,28 @@ public class FileUtil {
     private static Logger log = Logger.getLogger(FileUtil.class);
 
     /**
+     * Replace all File.separator characters with the forward slash ('/').
+     * @param file
+     * @return
+     */
+    public static final String getPathForwardSlashed(final File file) {
+        return getPath(file, "/");
+    }
+
+    /**
+     * Replace all File.separator characters with the given separatorChar.
+     * 
+     * @param file, e.g. "dir\\subdir\\file.txt"
+     * @param separatorChar, e.g. "/"
+     * @return
+     */
+    public static final String getPath(final File file, final String separatorChar) {
+        String path = file.getPath();
+        String r = path.replace( File.separator, separatorChar);
+        return r;
+    }
+
+    /**
      * Helper method to compare two files, returning true if they are equal, or if their canonical paths are equal.
      */
     public static boolean fileEquals(File f1, File f2) {

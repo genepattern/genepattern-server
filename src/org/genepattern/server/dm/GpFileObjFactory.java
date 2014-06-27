@@ -9,6 +9,7 @@ import java.util.Date;
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.log4j.Logger;
+import org.genepattern.server.FileUtil;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.dm.jobresult.JobResultFile;
@@ -205,7 +206,7 @@ public class GpFileObjFactory {
         //2) construct a URI from the file, to get the relative uri path
         //   e.g. uriPath=/users/<user_id>[/relativeParentDir]/filename
         //Note: creating a File obj so that we can use UrlUtil methods to encode the path
-        File tmp = new File("/users/"+userContext.getUserId()+"/"+getPathForwardSlashed(new File(relativePath)));
+        File tmp = new File("/users/"+userContext.getUserId()+"/"+FileUtil.getPathForwardSlashed(new File(relativePath)));
 
         String tmpPath = UrlUtil.encodeFilePath(tmp);
         URI relativeUri = null;
@@ -422,17 +423,6 @@ public class GpFileObjFactory {
         }
         //skip past the first slash
         return new File( pathInfo.substring(1) );
-    }
-
-    /**
-     * replace all separators with the forward slash ('/').
-     * @param file
-     * @return
-     */
-    static private String getPathForwardSlashed(File file) {
-        String path = file.getPath();
-        String r = path.replace( File.separator, "/");
-        return r;
     }
 
 }
