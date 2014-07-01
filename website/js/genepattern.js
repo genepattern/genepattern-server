@@ -2246,11 +2246,6 @@ function createJobWidget(job) {
 }
 
 function initRecentJobs() {
-    // Init the browse button
-    $("#left-nav-jobs-browse").button().click(function() {
-        loadJobResults("userId=" + username);
-    });
-
     // Init the refresh button
     $("#left-nav-jobs-refresh").button().click(function() {
         initRecentJobs();
