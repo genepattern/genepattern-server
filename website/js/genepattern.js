@@ -3104,8 +3104,7 @@ function initStatusBox() {
     var diskQuota = "30 GB";
     var diskUsed = "8.1 GB";
     var percentUsed = 27;
-    var slowClass = "congestion-red";
-    var fastClass = "congestion-green";
+    var congestionClass = "congestion-red";
     var quotaTooltip = '\
         <table>\
             <tr>\
@@ -3130,12 +3129,9 @@ function initStatusBox() {
                 </td>\
             </tr>\
         </table>';
-    var slowCongestionTooltip = '\
+    var congestionTooltip = '\
         <strong>Large Jobs Queue</strong> <em>Average Wait Time:</em> 1 day <br/><br/>\
         The slows jobs queue is experiencing some congestion. Jobs submitted here may take several days before they run.';
-    var fastCongestionTooltip = '\
-        <strong>Small Jobs Queue</strong> <em>Average Wait Time:</em> 2 minutes <br/><br/>\
-        Congestion is light to none on the fast jobs queue.';
 
     $(document).ready(function() {
         // Set up the user box
@@ -3158,7 +3154,6 @@ function initStatusBox() {
         jqQuotaTooltip.html(quotaTooltip);
         $("#quota-box").tooltip({
                 items: "div",
-                //hide: { effect: "fade", delay: 1000 },
                 content: jqQuotaTooltip.html()
             })
             .click(function() {
@@ -3168,34 +3163,20 @@ function initStatusBox() {
             });
 
         // Set up the congestion box
-        var jqSlowTooltip = $("#congestion-slow-tooltip");
-        jqSlowTooltip.html(slowCongestionTooltip);
-        $(".congestion-slow")
+        var jqCongestionTooltip = $("#congestion-tooltip");
+        jqCongestionTooltip.html(congestionTooltip);
+        $(".congestion")
             .tooltip({
                 items: "div",
-                content: jqSlowTooltip.html()
+                content: jqCongestionTooltip.html()
             })
             .click(function() {
-                $("#congestion-slow-tooltip").dialog({
-                    title: "Large Jobs Queue Status"
+                $("#congestion-tooltip").dialog({
+                    title: "Jobs Queue Status"
                 }).show();
             })
             .find(".congestion-icon")
-            .addClass(slowClass);
-        var jqFastTooltip = $("#congestion-fast-tooltip");
-        jqFastTooltip.html(fastCongestionTooltip);
-        $(".congestion-fast")
-            .tooltip({
-                items: "div",
-                content: jqFastTooltip.html()
-            })
-            .click(function() {
-                $("#congestion-fast-tooltip").dialog({
-                    title: "Small Jobs Queue Status"
-                }).show();
-            })
-            .find(".congestion-icon")
-            .addClass(fastClass);
+            .addClass(congestionClass);
     });
 }
 
