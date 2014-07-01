@@ -209,6 +209,18 @@
     font-weight: bold;
 }
 
+.job-task .glyphicon {
+    color: rgb(169, 169, 169);
+}
+
+.jobresults-child a .glyphicon {
+    color: rgb(169, 169, 169);
+}
+
+.jobresult-job .glyphicon {
+    color: rgb(169, 169, 169);
+}
+
 #jobresults-show {
     position: relative;
     top: -3px;
