@@ -66,8 +66,6 @@ public class EulaManagerImpl implements IEulaManager {
         if (recordEulaStrategy != null) {
             return recordEulaStrategy;
         }
-        //for debugging, the RecordEulaStub can be used
-        //return RecordEulaStub.instance(); 
         return new RecordEulaDefault();
     }
     
