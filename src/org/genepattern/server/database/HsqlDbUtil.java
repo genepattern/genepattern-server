@@ -36,15 +36,7 @@ public class HsqlDbUtil {
      * HSQL.args= -port 9001  -database.0 file:../resources/GenePatternDB -dbname.0 xdb
      */
     public static void startDatabase() throws Throwable {
-        log.debug("Starting HSQL Database...");
-        // TODO - get from properties file
-        //  String port = System.getProperty("HSQL_port", "9001");
-        //  String dbFile = System.getProperty("HSQL.dbfile", "../resources/GenePatternDB");
-        //  String dbUrl = "file:" + dbFile;
-        //  String dbName = System.getProperty("HSQL.dbName", "xdb");
-        //  String[] args = new String[] { "-port", port, "-database.0", dbUrl, "-dbname.0", dbName };
-        String args = System.getProperty("HSQL.args", " -port 9001  -database.0 file:../resources/GenePatternDB -dbname.0 xdb");
-        //String expectedSchemaVersion = ServerProperties.instance().getProperty("GenePatternVersion");
+        String hsqlArgs = System.getProperty("HSQL.args", " -port 9001  -database.0 file:../resources/GenePatternDB -dbname.0 xdb");
         final String expectedSchemaVersion;
         
         final String gpVersion = ServerConfigurationFactory.instance().getGenePatternVersion();
@@ -58,8 +50,13 @@ public class HsqlDbUtil {
             expectedSchemaVersion=gpVersion;
         }
 
+        startDatabase(hsqlArgs, expectedSchemaVersion);
+    }
+    
+    public static void startDatabase(final String hsqlArgs, final String expectedSchemaVersion) throws Throwable {
+        log.debug("Starting HSQL Database...");
 
-        StringTokenizer strTok = new StringTokenizer(args);
+        StringTokenizer strTok = new StringTokenizer(hsqlArgs);
         List<String> argsList = new ArrayList<String>();
         //int i=0;
         while (strTok.hasMoreTokens()){
@@ -74,12 +71,11 @@ public class HsqlDbUtil {
         }
         String[] argsArray = new String[argsList.size()];
         argsArray = argsList.toArray(argsArray);
-        //TODO: instead of invoking main, start the server by constructing the server
-        //    so that status can be checked and handled here
         Server.main(argsArray);
         
         try {
             // 1) ...
+            // HibernateUtil.init();
             HibernateUtil.beginTransaction();
             try {
                 // 2) ...
@@ -313,13 +309,4 @@ public class HsqlDbUtil {
         }
     }
 
-    public static void main(String args[]) {
-        try {
-            startDatabase();
-            System.in.read();
-        }
-        catch (Throwable t) {
-            t.printStackTrace();
-        }
-    }
 }

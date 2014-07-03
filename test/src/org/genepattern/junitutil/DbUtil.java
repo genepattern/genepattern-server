@@ -7,6 +7,7 @@ import org.genepattern.server.UserAccountManager;
 import org.genepattern.server.auth.AuthenticationException;
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.database.HsqlDbUtil;
+import org.hibernate.Query;
 import org.junit.Assert;
 import org.junit.Ignore;
 
@@ -35,8 +36,6 @@ public class DbUtil {
     public static void initDb(final File hsqlDbDir, final String hsqlDbName, final String gpVersion) throws Exception {
         //some of the classes being tested require a Hibernate Session connected to a GP DB
         if (!isDbInitialized) { 
-            final String hibernateConfigFile="hibernate.junit.cfg.xml";
-            
             final boolean deleteDbFiles=true;
             if (deleteDbFiles) {
                 if (hsqlDbDir.exists()) {
@@ -57,14 +56,13 @@ public class DbUtil {
                 }
             }
             
-            //TODO: use DbUnit to improve Hibernate and DB configuration for the unit tests 
-            System.setProperty("hibernate.configuration.file", hibernateConfigFile);
-            
-            //String args = System.getProperty("HSQL.args", " -port 9001  -database.0 file:../resources/GenePatternDB -dbname.0 xdb");
-            //System.setProperty("HSQL.args", " -port 9001  -database.0 file:testdb/GenePatternDB -dbname.0 xdb");
             final String path=hsqlDbDir.getPath()+"/"+hsqlDbName;
             System.setProperty("HSQL.args", " -port 9001  -database.0 file:"+path+" -dbname.0 xdb");
-            System.setProperty("hibernate.connection.url", "jdbc:hsqldb:hsql://127.0.0.1:9001/xdb");
+
+            final String hibernateConfigFile="hibernate.junit.cfg.xml";
+            final String hibernateConnectionUrl="jdbc:hsqldb:hsql://127.0.0.1:9001/xdb";
+            System.setProperty("hibernate.configuration.file", hibernateConfigFile);
+            System.setProperty("hibernate.connection.url", hibernateConnectionUrl);
             System.setProperty("GenePatternVersion", gpVersion);
 
             File resourceDir = new File("resources");
@@ -122,6 +120,36 @@ public class DbUtil {
             }
         } 
         return gp_username;
+    }
+    
+    /**
+     * Remove all rows from the database, for the given hibernate mapped entity.
+     * 
+     * @param entityClass
+     * @return
+     * @throws Exception
+     */
+    public static int deleteAllRows(Class<?> entityClass) throws Exception {
+        final boolean isInTransaction=HibernateUtil.isInTransaction();
+        try {
+            final String hql="delete from "+entityClass.getSimpleName();
+            HibernateUtil.beginTransaction();
+            final Query query=HibernateUtil.getSession().createQuery(hql);
+            int numDeleted=query.executeUpdate();
+            if (!isInTransaction) {
+                HibernateUtil.commitTransaction();
+            }
+            return numDeleted;
+        }
+        catch (Throwable t) {
+            HibernateUtil.rollbackTransaction();
+            throw new Exception("Error deleting items from entityClass="+entityClass.getSimpleName(), t);
+        }
+        finally {
+            if (!isInTransaction) {
+                HibernateUtil.closeCurrentSession();
+            }
+        }
     }
 
 }

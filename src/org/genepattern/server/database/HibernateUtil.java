@@ -33,45 +33,29 @@ public class HibernateUtil {
     private static ConcurrentMap<String,SessionFactory> sessionFactoryMap = new ConcurrentHashMap<String,SessionFactory>();
     
     static {
-        init();
+        final String hibernateConfigurationFile = System.getProperty("hibernate.configuration.file", "hibernate.cfg.xml");
+        final String connectionUrl=null;
+        init(hibernateConfigurationFile, connectionUrl);
     }
-    
-    private static void init() {
+
+    public static void init(final String hibernateConfigurationFile, final String connectionUrl) {
         //create the default session factory
-        String configResource = System.getProperty("hibernate.configuration.file", "hibernate.cfg.xml");
         try {
-            SessionFactory sessionFactory = createSessionFactory(configResource, true, null);
+            SessionFactory sessionFactory = createSessionFactory(hibernateConfigurationFile, connectionUrl);
             sessionFactoryMap.put("default", sessionFactory);
         }
         catch (Throwable ex) {
-            log.error("Error initializing SessionFactory from '"+configResource+"': "+ex);
+            log.error("Error initializing SessionFactory from '"+hibernateConfigurationFile+"': "+ex);
             log.debug("", ex);
         }
-        
-        //[optionally] create a secondary session factory dedicated to handling analysis jobs
-        String analysis_job_datasource = System.getProperty("hibernate.connection.datasource.analysis_job");
-        if (analysis_job_datasource != null) {
-            try {
-                SessionFactory sessionFactory = createSessionFactory(configResource, false, analysis_job_datasource);
-                sessionFactoryMap.put("analysis_job", sessionFactory);
-            }
-            catch (Throwable ex) {
-                log.error("Error initializing sessionFactory for secondary datasource '"+analysis_job_datasource+"': "+ex);
-                log.debug("", ex);
-            }
-        }
-        
     }
 
-    private static SessionFactory createSessionFactory(String configResource, boolean mergeSystemProperties, String datasource) {
-        //Configuration config = new Configuration();
+    private static SessionFactory createSessionFactory(String configResource, final String connectionUrl) {
         AnnotationConfiguration config = new AnnotationConfiguration();
         config.configure(configResource);
-        if (mergeSystemProperties) {
-            mergeSystemProperties(config);
-        }
-        if (datasource != null) {
-            config.setProperty("hibernate.connection.datasource", datasource);
+        mergeSystemProperties(config);
+        if (connectionUrl != null) {
+            config.setProperty("hibernate.connection.url", connectionUrl);
         }
         return config.buildSessionFactory();
     }
@@ -86,18 +70,14 @@ public class HibernateUtil {
         }
     }
 
+    public static void setSessionFactory(final String key, SessionFactory sessionFactory) {
+        sessionFactoryMap.put(key, sessionFactory);
+    }
+    
     public static SessionFactory getSessionFactory() {
-        //String threadName = Thread.currentThread().getName();
-        //ThreadGroup threadGroup = Thread.currentThread().getThreadGroup();
-        //choose the thread factory based on thread group
-        return getSessionFactory("default");
+        return sessionFactoryMap.get("default");
     }
  
-    private static SessionFactory getSessionFactory(String key) {
-        SessionFactory sessionFactory = sessionFactoryMap.get(key);
-        return sessionFactory;
-    }
-
     public static Session getSession() {
         SessionFactory sessionFactory = getSessionFactory();
         if (sessionFactory != null) {
@@ -106,14 +86,6 @@ public class HibernateUtil {
         throw new ExceptionInInitializerError("Hibernate session factory is not initialized");
     }
     
-    public static Session getSession(String sessionType) {
-        SessionFactory sessionFactory = getSessionFactory(sessionType);
-        if (sessionFactory != null) {
-            return sessionFactory.getCurrentSession();
-        }
-        throw new ExceptionInInitializerError("Hibernate session factory is not initialized");
-    }
-
     /**
      * Close the current session, if open.
      * 
