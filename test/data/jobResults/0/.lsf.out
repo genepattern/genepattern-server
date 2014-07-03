@@ -1,0 +1,36 @@
+Sender: LSF System <lsf@node1459>
+Subject: Job 597604: <929270> Done
+
+Job <929270> was submitted from host <vgpprod01> by user <gpprod> in cluster <cromwell>.
+Job was executed on host(s) <node1459>, in queue <genepattern>, as user <gpprod> in cluster <cromwell>.
+</home/unix/gpprod> was used as the home directory.
+</xchip/gpprod/servers/genepattern/jobResults/929270> was used as the working directory.
+Started at Thu Jun 26 18:29:54 2014
+Results reported at Thu Jun 26 18:29:56 2014
+
+Your job looked like:
+
+------------------------------------------------------------
+# LSBATCH: User input
+'/broad/software/free/Linux/redhat_5_x86_64/pkgs/sun-java-jdk_1.6.0-21_x86_64/bin/java' '-Xmx8g' '-cp' '/xchip/gpprod/servers/genepattern/taskLib/PreprocessDataset.5.13639/Preprocess.jar:/xchip/gpprod/servers/genepattern/taskLib/PreprocessDataset.5.13639/broad-cg.jar:/xchip/gpprod/servers/genepattern/taskLib/PreprocessDataset.5.13639/trove.jar:/xchip/gpprod/servers/genepattern/taskLib/PreprocessDataset.5.13639/Jama-1.0.1.jar:/xchip/gpprod/servers/genepattern/taskLib/PreprocessDataset.5.13639/gp-modules.jar' 'edu.mit.broad.modules.preprocess.Preprocess' '-F' '/xchip/gpprod/servers/genepattern/jobResults/929270/all_aml_test.gct' '-r' '3' '-V' '1' '-n' '0' '-f' '3' '-d' '100' '-t' '20' '-c' '20000' '-p' '1' '-e' '0' '-O' 'all_aml_test.preprocessed' '-g' '0' >> 'stdout.txt'
+------------------------------------------------------------
+
+Successfully completed.
+
+Resource usage summary:
+
+    CPU time   :      2.07 sec.
+    Max Memory :         3 MB
+    Max Swap   :        39 MB
+
+    Max Processes  :         1
+    Max Threads    :         1
+
+The output (if any) follows:
+
+
+
+PS:
+
+Read file </xchip/gpprod/servers/genepattern/jobResults/929270/stderr.txt> for stderr output of this job.
+

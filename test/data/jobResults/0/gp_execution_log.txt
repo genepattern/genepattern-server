@@ -1,0 +1,18 @@
+# Created: Thu Jun 26 18:30:01 EDT 2014 by pcarr@broad.mit.edu
+# Job: 929270    server:  http://genepattern.broadinstitute.org/gp/
+# Module: PreprocessDataset urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00020:5
+# Parameters: 
+#    input.filename = ftp://ftp.broadinstitute.org/pub/genepattern/datasets/all_aml/all_aml_test.gct
+#    threshold.and.filter = 1
+#    floor = 20
+#    ceiling = 20000
+#    min.fold.change = 3
+#    min.delta = 100
+#    num.outliers.to.exclude = 0
+#    row.normalization = 0
+#    row.sampling.rate = 1
+#    threshold.for.removing.rows = 
+#    number.of.columns.above.threshold = 
+#    log2.transform = 0
+#    output.file.format = 3
+#    output.file = <input.filename_basename>.preprocessed
