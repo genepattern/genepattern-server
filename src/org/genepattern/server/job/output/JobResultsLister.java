@@ -2,9 +2,12 @@ package org.genepattern.server.job.output;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.FileSystem;
+import java.nio.file.FileSystems;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.PathMatcher;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
@@ -12,16 +15,17 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
-import org.genepattern.server.config.GpConfig;
-import org.genepattern.server.config.GpContext;
+import org.apache.log4j.Logger;
 import org.genepattern.server.util.JobResultsFilenameFilter;
 
 public class JobResultsLister extends SimpleFileVisitor<Path> {
-    private GpConfig gpConfig;
-    private GpContext gpContext;
+    private static final Logger log = Logger.getLogger(JobResultsLister.class);
+
     private final String jobId;
     private final Path workingDir;
     private final JobResultsFilenameFilter filenameFilter;
+    // ignored paths are never recorded into the DB
+    private final PathMatcher ignoredPaths;
     final List<JobOutputFile> out=new ArrayList<JobOutputFile>();
     final List<JobOutputFile> hidden=new ArrayList<JobOutputFile>();
     private boolean walkHiddenDirectories=false;
@@ -30,12 +34,44 @@ public class JobResultsLister extends SimpleFileVisitor<Path> {
         this.jobId=jobId;
         this.workingDir=jobDir.toPath();
         this.filenameFilter=null;
+        this.ignoredPaths=initIgnoredPaths();
     }
 
     JobResultsLister(String jobId, File workingDirAsFile, JobResultsFilenameFilter filenameFilter) {
         this.jobId=jobId;
         this.workingDir=workingDirAsFile.toPath();
         this.filenameFilter=filenameFilter;
+        this.ignoredPaths=initIgnoredPaths();
+    }
+    
+    static class CompositePathMatcher implements PathMatcher {
+        private List<PathMatcher> matchers=new ArrayList<PathMatcher>();
+        
+        public void add(PathMatcher pathMatcher) {
+            matchers.add(pathMatcher);
+        }
+
+        @Override
+        public boolean matches(Path path) {
+            if (matchers==null) {
+                return false;
+            }
+            for(final PathMatcher matcher : matchers) {
+                if (matcher.matches(path)) {
+                    return true;
+                }
+            }
+            return false;
+        }
+    }
+    
+    public PathMatcher initIgnoredPaths() {
+        final FileSystem fs=FileSystems.getDefault();
+
+        CompositePathMatcher c = new CompositePathMatcher();
+        c.add( fs.getPathMatcher("glob:**/.svn**"));
+        c.add( fs.getPathMatcher("glob:**/*~"));
+        return c;
     }
 
     public void walkFiles() throws IOException {
@@ -73,6 +109,18 @@ public class JobResultsLister extends SimpleFileVisitor<Path> {
     }
 
     private boolean checkAdd(Path file, BasicFileAttributes attrs) {
+//        try {
+//            if (Files.isHidden(file)) {
+//                return false;
+//            }
+//        }
+//        catch  (IOException e) {
+//            log.error(e);
+//        }
+        if (ignoredPaths.matches(file)) {
+            return false;
+        }
+        
         Path rel=workingDir.relativize(file);
         Path parentPath=rel.getParent();
         File parentFile= parentPath == null ? null : parentPath.toFile();
