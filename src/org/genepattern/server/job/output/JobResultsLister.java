@@ -20,30 +20,6 @@ import org.genepattern.server.util.JobResultsFilenameFilter;
 
 public class JobResultsLister extends SimpleFileVisitor<Path> {
     private static final Logger log = Logger.getLogger(JobResultsLister.class);
-
-    private final String jobId;
-    private final Path workingDir;
-    private final JobResultsFilenameFilter filenameFilter;
-    // ignored paths are never recorded into the DB
-    private final PathMatcher ignoredPaths;
-    final List<JobOutputFile> out=new ArrayList<JobOutputFile>();
-    final List<JobOutputFile> hidden=new ArrayList<JobOutputFile>();
-    private boolean walkHiddenDirectories=false;
-
-    JobResultsLister(String jobId, File jobDir) {
-        this.jobId=jobId;
-        this.workingDir=jobDir.toPath();
-        this.filenameFilter=null;
-        this.ignoredPaths=initIgnoredPaths();
-    }
-
-    JobResultsLister(String jobId, File workingDirAsFile, JobResultsFilenameFilter filenameFilter) {
-        this.jobId=jobId;
-        this.workingDir=workingDirAsFile.toPath();
-        this.filenameFilter=filenameFilter;
-        this.ignoredPaths=initIgnoredPaths();
-    }
-    
     static class CompositePathMatcher implements PathMatcher {
         private List<PathMatcher> matchers=new ArrayList<PathMatcher>();
         
@@ -65,7 +41,7 @@ public class JobResultsLister extends SimpleFileVisitor<Path> {
         }
     }
     
-    public PathMatcher initIgnoredPaths() {
+    public static PathMatcher initIgnoredPaths() {
         final FileSystem fs=FileSystems.getDefault();
 
         CompositePathMatcher c = new CompositePathMatcher();
@@ -73,17 +49,44 @@ public class JobResultsLister extends SimpleFileVisitor<Path> {
         c.add( fs.getPathMatcher("glob:**/*~"));
         return c;
     }
+    
+    /**
+     * Hard coded list of ignore paths which are never recorded into the database.
+     * <pre>  .svn folders, files ending in '~'.
+     * </pre>
+     */
+    public static PathMatcher ignoredPaths=initIgnoredPaths();
 
+
+    private final String jobId;
+    private final Path workingDir;
+    private final JobResultsFilenameFilter filenameFilter;
+    final List<JobOutputFile> out=new ArrayList<JobOutputFile>();
+    final List<JobOutputFile> hidden=new ArrayList<JobOutputFile>();
+    private boolean walkHiddenDirectories=false;
+
+    public JobResultsLister(String jobId, File jobDir) {
+        this.jobId=jobId;
+        this.workingDir=jobDir.toPath();
+        this.filenameFilter=null;
+    }
+
+    public JobResultsLister(String jobId, File workingDirAsFile, JobResultsFilenameFilter filenameFilter) {
+        this.jobId=jobId;
+        this.workingDir=workingDirAsFile.toPath();
+        this.filenameFilter=filenameFilter;
+    }
+    
     public void walkFiles() throws IOException {
         Files.walkFileTree(workingDir, this);
     }
 
 
-    List<JobOutputFile> getOutputFiles() {
+    public List<JobOutputFile> getOutputFiles() {
         return out;
     }
     
-    List<JobOutputFile> getHiddenFiles() {
+    public List<JobOutputFile> getHiddenFiles() {
         return hidden;
     }
 
@@ -109,14 +112,6 @@ public class JobResultsLister extends SimpleFileVisitor<Path> {
     }
 
     private boolean checkAdd(Path file, BasicFileAttributes attrs) {
-//        try {
-//            if (Files.isHidden(file)) {
-//                return false;
-//            }
-//        }
-//        catch  (IOException e) {
-//            log.error(e);
-//        }
         if (ignoredPaths.matches(file)) {
             return false;
         }
