@@ -18,7 +18,7 @@ import org.genepattern.server.executor.drm.dao.JobRunnerJob;
 import org.genepattern.server.job.input.JobInput;
 import org.genepattern.webservice.JobInfo;
 import org.genepattern.webservice.TaskInfo;
-import org.junit.AfterClass;
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -28,6 +28,9 @@ import org.junit.rules.TemporaryFolder;
 
 /**
  * jUnit test cases for creating, updating, and deleting entries from the 'job_runner_job' table.
+ * 
+ * Assume that the tests are not run in parallel, but that they can be run in any order.
+ * 
  * @author pcarr
  *
  */
@@ -49,9 +52,10 @@ public class TestDbLookup {
             "all_aml_train.cvt.gct"
     };
 
+    private DrmJobSubmission jobSubmission;
     private DbLookup dbLookup;
     private File jobResultsDir;
-
+    
     private DrmJobSubmission addJob(final TaskInfo taskInfo, final JobInput jobInput, final String[] commandLine) throws Exception {
         jobInput.setLsid(taskInfo.getLsid());
         final GpContext taskContext=new GpContextFactory.Builder()
@@ -85,7 +89,6 @@ public class TestDbLookup {
 
     @BeforeClass
     public static void beforeClass() throws Exception{
-        //some of the classes being tested require a Hibernate Session connected to a GP DB
         DbUtil.initDb();
         
         final String cleZip="modules/ConvertLineEndings_v2.zip";
@@ -96,19 +99,19 @@ public class TestDbLookup {
         cleInput.addValue("input.filename", "ftp://ftp.broadinstitute.org/pub/genepattern/datasets/all_aml/all_aml_train.gct");
     }
     
-    @AfterClass
-    public static void afterClass() throws Exception {
-        DbUtil.shutdownDb();
+    @Before
+    public void before() throws Exception {
+        DbUtil.deleteAllRows(JobRunnerJob.class);
+        jobSubmission=addJob(cle, cleInput, cleCmdLine);
+        dbLookup = new DbLookup(jobRunnerClassname, jobRunnerName);
     }
     
-    @Before
-    public void before() {
-        dbLookup = new DbLookup(jobRunnerClassname, jobRunnerName);
+    @After
+    public void after() throws Exception {
     }
         
     @Test
     public void testInsertJobRecord() throws Exception {
-        final DrmJobSubmission jobSubmission=addJob(cle, cleInput, cleCmdLine);
         dbLookup.insertJobRecord(jobSubmission);
     }
     
@@ -117,9 +120,7 @@ public class TestDbLookup {
      * @throws Exception
      */
     @Test
-    public void truncateStatusMessage() throws Exception {
-        final DrmJobSubmission jobSubmission=addJob(cle, cleInput, cleCmdLine);
-        
+    public void truncateStatusMessage() throws Exception {  
         StringBuffer sb=new StringBuffer(2025);
         sb.append("This is a status message\n");
         final String TEN_CHARS="----------";
@@ -137,13 +138,11 @@ public class TestDbLookup {
         .build();
         DbLookup.insertJobRunnerJob(jobRecord);
         JobRunnerJob updated=DbLookup.selectJobRunnerJob(jobSubmission.getGpJobNo());
-        Assert.assertEquals("", 2000, updated.getStatusMessage().length());
+        Assert.assertEquals("jobRunnerJob.statusMessage.length", 2000, updated.getStatusMessage().length());
     }
     
     @Test
     public void testQuery() throws Exception {
-        final DrmJobSubmission jobSubmission=addJob(cle, cleInput, cleCmdLine);
-        
         Assert.assertEquals("Expecting null entry before adding job_runner_job", null, 
                 dbLookup.lookupJobRecord(jobSubmission.getGpJobNo()));
 
@@ -155,7 +154,6 @@ public class TestDbLookup {
     
     @Test
     public void testUpdate() throws Exception {
-        final DrmJobSubmission jobSubmission=addJob(cle, cleInput, cleCmdLine);
         dbLookup.insertJobRecord(jobSubmission);
         
         final DrmJobRecord jobRecord=dbLookup.lookupJobRecord(jobSubmission.getGpJobNo());
@@ -170,7 +168,7 @@ public class TestDbLookup {
         DbLookup dbLookup=new DbLookup(jobRunnerClassname, jobRunnerName);
         List<DrmJobRecord> runningJobs=dbLookup.getRunningDrmJobRecords();
         Assert.assertNotNull("runningDrmJobRecords", runningJobs);
-        Assert.assertEquals("num running jobs", 1, runningJobs.size());
+        Assert.assertEquals("num running jobs", 0, runningJobs.size());
     }
     
     @Test
