@@ -2,6 +2,7 @@ package org.genepattern.server;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -34,8 +35,24 @@ public class FileUtil {
      * @return
      */
     public static final String getPath(final File file, final String separatorChar) {
-        String path = file.getPath();
-        String r = path.replace( File.separator, separatorChar);
+        String pathStr = file.getPath();
+        return replaceSeparatorChars(pathStr, separatorChar);
+    }
+    
+    /**
+     * Replace all File.separator characters with the given separatorChar.
+     * 
+     * @param file, e.g. "dir\\subdir\\file.txt"
+     * @param separatorChar, e.g. "/"
+     * @return
+     */
+    public static final String getPath(final Path path, final String separatorChar) {
+        String pathStr=path.toString();
+        return replaceSeparatorChars(pathStr, separatorChar);
+    }
+    
+    public static final String replaceSeparatorChars(final String pathStr, final String separatorChar) {
+        String r = pathStr.replace( File.separator, separatorChar);
         return r;
     }
 
