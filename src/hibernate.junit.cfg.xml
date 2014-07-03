@@ -59,6 +59,7 @@
     <mapping class="org.genepattern.server.task.category.dao.TaskCategory" />
     <mapping class="org.genepattern.server.executor.drm.dao.JobRunnerJob" />
     <mapping class="org.genepattern.server.job.input.dao.JobInputValue" />
+    <mapping class="org.genepattern.server.job.output.JobOutputFile" />
 
   </session-factory>
 </hibernate-configuration>
