@@ -159,6 +159,9 @@ import org.genepattern.server.job.input.cache.CachedFile;
 import org.genepattern.server.job.input.cache.FileCache;
 import org.genepattern.server.job.input.choice.Choice;
 import org.genepattern.server.job.input.choice.ChoiceInfo;
+import org.genepattern.server.job.output.JobOutputFile;
+import org.genepattern.server.job.output.JobResultsLister;
+import org.genepattern.server.job.output.dao.JobOutputDao;
 import org.genepattern.server.plugin.PluginManagerLegacy;
 import org.genepattern.server.rest.ParameterInfoRecord;
 import org.genepattern.server.taskinstall.InstallInfo;
@@ -1704,6 +1707,7 @@ public class GenePatternAnalysisTask {
             return;
         }
         
+        GpConfig gpConfig = ServerConfigurationFactory.instance();
         GpContext jobContext = GpContext.getContextForJob(jobInfo);
         
         //validate the jobDir
@@ -1855,6 +1859,9 @@ public class GenePatternAnalysisTask {
             HibernateUtil.closeCurrentSession();
         }
         
+        // new api, in a new transaction, just in case of errors
+        recordOutputFilesToDb(gpConfig, jobContext, jobDir);
+        
         //if the job is in a pipeline, notify the pipeline handler
         boolean isInPipeline = jobInfo._getParentJobNumber() >= 0;
         if (isInPipeline) {
@@ -1862,6 +1869,41 @@ public class GenePatternAnalysisTask {
             if (wakeupJobQueue) {
                 //if the pipeline has more steps, wake up the job queue
                 CommandManagerFactory.getCommandManager().wakeupJobQueue();
+            }
+        }
+    }
+    
+    private static void recordOutputFilesToDb(GpConfig gpConfig, GpContext jobContext, File jobDir) {
+        log.debug("recording files to db, jobId="+jobContext.getJobNumber());
+        List<JobOutputFile> jobOutputFiles=null;
+        
+        JobResultsFilenameFilter filenameFilter = JobOutputFile.initFilterFromConfig(gpConfig,jobContext);
+        JobResultsLister lister=new JobResultsLister(""+jobContext.getJobNumber(), jobDir, filenameFilter);
+        try {
+            lister.walkFiles();
+            jobOutputFiles=lister.getOutputFiles();
+        }
+        catch (IOException e) {
+            log.error("output files not recorded to database, disk usage will not be accurate for jobId="+jobContext.getJobNumber(), e);
+            return;
+        } 
+
+        final boolean isInTransaction=HibernateUtil.isInTransaction();
+        try {
+            HibernateUtil.beginTransaction();
+            JobOutputDao dao=new JobOutputDao();
+            dao.recordOutputFiles(jobOutputFiles);
+            if (!isInTransaction) {
+                HibernateUtil.commitTransaction();
+            }            
+        }
+        catch (Throwable t) {
+            log.error("output files not recorded to database, disk usage will not be accurate for jobId="+jobContext.getJobNumber(), t);
+            HibernateUtil.rollbackTransaction();
+        }
+        finally {
+            if (!isInTransaction) {
+                HibernateUtil.closeCurrentSession();
             }
         }
     }
