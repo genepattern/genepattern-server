@@ -266,11 +266,40 @@
                         showErrorMessage(data);
                     }
                 });
+
+                function initPendingStatus() {
+                    $(document).ready(function() {
+                        var congestionClass = "congestion-red";
+                        var congestionTooltip = '\
+                            <strong>Large Jobs Queue</strong> <em>Average Wait Time:</em> 1 day <br/><br/>\
+                            The slows jobs queue is experiencing some congestion. Jobs submitted here may take several days before they run.';
+
+                        // Set up the congestion box
+                        var jqCongestionTooltip = $("#congestion-tooltip");
+                        jqCongestionTooltip.html(congestionTooltip);
+
+                        $(".congestion")
+                                .tooltip({
+                                    items: "div",
+                                    content: jqCongestionTooltip.html()
+                                })
+                                .click(function() {
+                                    $("#congestion-tooltip").dialog({
+                                        title: "Jobs Queue Status"
+                                    }).show();
+                                })
+                                .find(".congestion-icon")
+                                .addClass(congestionClass);
+                    });
+                }
+
+                initPendingStatus();
                 /* ]]> */
             </script>
 	</ui:define>
 
 	<ui:define name="body">
+        <div id="congestion-tooltip" style="display: none;"></div>
         <h:outputText rendered="#{jobStatusBean.canViewJob}">
 
             <div style="display:none;" class="on-job-status-page"></div>
@@ -358,7 +387,12 @@
                                         </h:outputText></td>
 
                                     <td width="30px"><h:outputText
-                                            rendered="#{jobStatusBean.jobInfo.status == 'Pending'}">Pending</h:outputText>
+                                            rendered="#{jobStatusBean.jobInfo.status == 'Pending'}">
+                                            <div class="congestion-light congestion">
+                                                <span class="congestion-icon">&#9679;</span><br/>
+                                                Pending
+                                            </div>
+                                            </h:outputText>
                                         <h:outputText
                                             rendered="#{jobStatusBean.jobInfo.status == 'Processing'}">
                                             <img src="/gp/images/spin.gif"
@@ -374,7 +408,8 @@
                                             <img src="/gp/images/error.gif"
                                                 alt="#{jobStatusBean.jobInfo.status}" border="0"
                                                 id="jobStatusIcon#{jobStatusBean.jobInfo.jobNumber}" />
-                                        </h:outputText></td>
+                                        </h:outputText>
+                                    </td>
                                 </tr>
                                 <tr>
                                     <td colspan="3" style="padding-left: 24px;">

@@ -3099,7 +3099,6 @@ function initStatusBox() {
     var diskQuota = "30 GB";
     var diskUsed = "8.1 GB";
     var percentUsed = 27;
-    var congestionClass = "congestion-red";
     var quotaTooltip = '\
         <table>\
             <tr>\
@@ -3124,9 +3123,6 @@ function initStatusBox() {
                 </td>\
             </tr>\
         </table>';
-    var congestionTooltip = '\
-        <strong>Large Jobs Queue</strong> <em>Average Wait Time:</em> 1 day <br/><br/>\
-        The slows jobs queue is experiencing some congestion. Jobs submitted here may take several days before they run.';
 
     $(document).ready(function() {
         // Set up the user box
@@ -3156,22 +3152,6 @@ function initStatusBox() {
                     title: "Disk Quota Space Used"
                 }).show();
             });
-
-        // Set up the congestion box
-        var jqCongestionTooltip = $("#congestion-tooltip");
-        jqCongestionTooltip.html(congestionTooltip);
-        $(".congestion")
-            .tooltip({
-                items: "div",
-                content: jqCongestionTooltip.html()
-            })
-            .click(function() {
-                $("#congestion-tooltip").dialog({
-                    title: "Jobs Queue Status"
-                }).show();
-            })
-            .find(".congestion-icon")
-            .addClass(congestionClass);
     });
 }
 
