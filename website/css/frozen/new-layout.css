@@ -956,11 +956,15 @@ body {
 }
 
 .congestion-light {
-    width: 55px;
     display: inline-block;
-    font-size: 30pt;
-    font-weight: bold;
+    font-size: 8pt;
     cursor: pointer;
+    text-align: center;
+}
+
+.congestion-icon {
+    font-size: 30pt;
+    text-shadow: 1px 1px black;
 }
 
 .congestion-green {
