@@ -4,13 +4,10 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
 import org.apache.log4j.Logger;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.database.BaseDAO;
 import org.genepattern.server.database.HibernateUtil;
-import org.genepattern.server.dm.GpFileObjFactory;
 import org.genepattern.server.dm.GpFilePath;
 import org.hibernate.Query;
 
