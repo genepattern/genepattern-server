@@ -59,26 +59,26 @@ public class JobResultsLister extends SimpleFileVisitor<Path> {
 
 
     private final String jobId;
-    private final Path workingDir;
+    private final File workingDir;
+    private final Path workingDirPath;
     private final JobResultsFilenameFilter filenameFilter;
     final List<JobOutputFile> out=new ArrayList<JobOutputFile>();
     final List<JobOutputFile> hidden=new ArrayList<JobOutputFile>();
     private boolean walkHiddenDirectories=false;
 
     public JobResultsLister(String jobId, File jobDir) {
-        this.jobId=jobId;
-        this.workingDir=jobDir.toPath();
-        this.filenameFilter=null;
+        this(jobId, jobDir, null);
     }
 
-    public JobResultsLister(String jobId, File workingDirAsFile, JobResultsFilenameFilter filenameFilter) {
+    public JobResultsLister(String jobId, File workingDir, JobResultsFilenameFilter filenameFilter) {
         this.jobId=jobId;
-        this.workingDir=workingDirAsFile.toPath();
+        this.workingDir=workingDir;
+        this.workingDirPath=workingDir.toPath();
         this.filenameFilter=filenameFilter;
     }
     
     public void walkFiles() throws IOException {
-        Files.walkFileTree(workingDir, this);
+        Files.walkFileTree(workingDirPath, this);
     }
 
 
@@ -111,16 +111,15 @@ public class JobResultsLister extends SimpleFileVisitor<Path> {
         });
     }
 
-    private boolean checkAdd(Path file, BasicFileAttributes attrs) {
+    private boolean checkAdd(Path file, BasicFileAttributes attrs) throws IOException {
         if (ignoredPaths.matches(file)) {
             return false;
         }
         
-        Path rel=workingDir.relativize(file);
-        Path parentPath=rel.getParent();
-        File parentFile= parentPath == null ? null : parentPath.toFile();
-        JobOutputFile jobOutputFile=JobOutputFile.from(jobId, rel, attrs);
-        if (filenameFilter==null || filenameFilter.accept(parentFile, rel.getFileName().toString())) {
+        File relativeFile=workingDirPath.relativize(file).toFile();
+        JobOutputFile jobOutputFile=JobOutputFile.from(jobId, workingDir, relativeFile);
+        
+        if (filenameFilter==null || filenameFilter.accept(relativeFile.getParentFile(), relativeFile.getName())) {
             out.add( jobOutputFile );
             return true;
         }
@@ -131,7 +130,7 @@ public class JobResultsLister extends SimpleFileVisitor<Path> {
 
     @Override
     public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
-        if (dir.equals(workingDir)) {
+        if (dir.equals(workingDirPath)) {
             //don't include the working directory in the list of results
             return FileVisitResult.CONTINUE;
         }

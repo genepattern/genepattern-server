@@ -29,7 +29,7 @@ public class TestJobOutputLister {
         JobResultsLister lister=new JobResultsLister(jobId, jobDir);
         lister.walkFiles();
         List<JobOutputFile> outputFiles=lister.getOutputFiles();
-        assertEquals("num files", 13, outputFiles.size());
+        assertEquals("num files", 14, outputFiles.size());
     }
     
     @Test
@@ -38,7 +38,7 @@ public class TestJobOutputLister {
         JobResultsLister lister=new JobResultsLister(jobId, jobDir, filenameFilter);
         lister.walkFiles();
         List<JobOutputFile> outputFiles=lister.getOutputFiles();
-        assertEquals("num files", 12, outputFiles.size());
+        assertEquals("num files", 13, outputFiles.size());
         List<JobOutputFile> hiddenFiles=lister.getHiddenFiles();
         assertEquals("num hidden", 1, hiddenFiles.size());
         assertEquals("hidden[0].isHidden", true, hiddenFiles.get(0).isHidden());
@@ -57,7 +57,7 @@ public class TestJobOutputLister {
         JobResultsLister lister=new JobResultsLister(jobId, jobDir, filenameFilter);
         lister.walkFiles();
         List<JobOutputFile> outputFiles=lister.getOutputFiles();
-        assertEquals("num files", 11, outputFiles.size());
+        assertEquals("num files", 12, outputFiles.size());
         List<JobOutputFile> hiddenFiles=lister.getHiddenFiles();
         assertEquals("num hidden", 2, hiddenFiles.size());
         assertEquals("hidden[0].isHidden", true, hiddenFiles.get(0).isHidden());

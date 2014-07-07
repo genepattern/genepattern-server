@@ -20,6 +20,7 @@ import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.Value;
 import org.genepattern.server.util.JobResultsFilenameFilter;
+import org.genepattern.util.SemanticUtil;
 
 /**
  * Hibernate mapping class for saving job output files.
@@ -60,9 +61,55 @@ public class JobOutputFile {
         }
 
         Path relativePath=jobDirPath.relativize(outputFilePath);
-        return from(jobId, relativePath, attrs);
-    }
+        
+        JobOutputFile out=new JobOutputFile();
+        out.gpJobNo=Integer.parseInt(jobId);
+        out.path=FileUtil.getPath(relativePath, "/");
+        
+        if (attrs != null) {
+            out.lastModified=new Date(attrs.lastModifiedTime().toMillis());
+            out.fileLength=attrs.size();
+            if (attrs.isDirectory()) {
+                out.kind="directory";
+            }
+            else { 
+                out.kind=initKind(outputFile);
+            }
+            out.extension=initExtension(outputFile);
+        }
 
+        return out;        
+    }
+    
+    public static String initExtension(final File file) {
+        if (file==null) {
+            log.error("file==null");
+            return "";
+        }
+        if (file.exists() && file.isDirectory()) {
+            return "";
+        }
+        
+        int idx = file.getName().lastIndexOf('.');
+        if (idx > 0 && idx < file.getName().length() - 1) {
+            return file.getName().substring(idx+1);
+        }
+        return "";
+    }
+    
+    public static String initKind(final File file) {
+        if (file==null) {
+            return "";
+        }
+        if (file.exists()) {
+            if (file.isDirectory()) {
+                return "directory";
+            }
+            return SemanticUtil.getKind(file);
+        }
+        return "";
+    }
+    
     public static JobResultsFilenameFilter initDefaultFilter() {
         JobResultsFilenameFilter filenameFilter = new JobResultsFilenameFilter();
         filenameFilter.addExactMatch("gp_execution_log.txt");
@@ -88,22 +135,6 @@ public class JobOutputFile {
             }
         }
         return filenameFilter;
-    }
-    
-    public static JobOutputFile from(final String jobId, final Path relativePath, final BasicFileAttributes attrs) {
-        JobOutputFile out=new JobOutputFile();
-        out.gpJobNo=Integer.parseInt(jobId);
-        out.path=FileUtil.getPath(relativePath, "/");
-        
-        if (attrs != null) {
-            out.lastModified=new Date(attrs.lastModifiedTime().toMillis());
-            out.fileLength=attrs.size();
-            if (attrs.isDirectory()) {
-                out.kind="directory";
-            }
-        }
-
-        return out;
     }
     
     // ---  primary key fields -------

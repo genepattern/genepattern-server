@@ -15,6 +15,9 @@ public class TestJobOutputFile {
     private File jobDirAbs;
     private File resultFile;
     private File resultFileAbs;
+    private File outputDir;
+    private File odfFile;
+    private File gctFile;
     
     @Before
     public void setUp() {
@@ -22,6 +25,11 @@ public class TestJobOutputFile {
         jobDirAbs=jobDir.getAbsoluteFile();
         resultFile=new File(jobDirAbs, "all_aml_test.preprocessed.gct");
         resultFileAbs=resultFile.getAbsoluteFile();
+        
+        outputDir=FileUtil.getDataFile("jobResults/0/a/");
+        odfFile=FileUtil.getDataFile("jobResults/0/all_aml_test.comp.marker.odf");
+        gctFile=FileUtil.getDataFile("jobResults/0/all_aml_test.preprocessed.gct");
+
     }
     
     @Test
@@ -34,6 +42,8 @@ public class TestJobOutputFile {
     public void fromRelativePaths() throws Exception {
         JobOutputFile out=JobOutputFile.from(""+jobId, jobDir, resultFile);
         assertEquals("out.path", "all_aml_test.preprocessed.gct", out.getPath());
+        assertEquals("out.kind", "gct", out.getKind());
+        assertEquals("out.extension", "gct", out.getExtension());
     }
     
     @Test
@@ -81,4 +91,48 @@ public class TestJobOutputFile {
         assertEquals("out.path", "file_does_not_exist.txt", out.getPath());
         assertEquals("out.fileLength", 0L, out.getFileLength());
     }
+
+    @Test
+    public void extensionFromDirectory() {
+        String extension=JobOutputFile.initExtension(outputDir);
+        assertEquals("outputDir.extension", "", extension);
+    }
+    
+    @Test
+    public void extensionsFromOdf() {
+        assertEquals("odfFile.extension", "odf", JobOutputFile.initExtension(odfFile));
+    }
+    
+    @Test 
+    public void extensionFromGct() {
+        assertEquals("gctFile.extension", "gct", JobOutputFile.initExtension(gctFile));
+    }
+    
+    @Test
+    public void extensionFromNull() {
+        assertEquals("null.extension", "", JobOutputFile.initExtension(null));
+    }
+    
+    
+    @Test
+    public void kindFromDirectory() {
+        String kind=JobOutputFile.initKind(outputDir);
+        assertEquals("outputDir.kind", "directory", kind);
+    }
+    
+    @Test
+    public void kindFromOdf() {
+        assertEquals("odfFile.kind", "Comparative Marker Selection", JobOutputFile.initKind(odfFile));
+    }
+    
+    @Test 
+    public void kindFromGct() {
+        assertEquals("gctFile.kind", "gct", JobOutputFile.initExtension(gctFile));
+    }
+
+    @Test
+    public void kindFromNull() {
+        assertEquals("null.kind", "", JobOutputFile.initKind(null));
+    }
+
 }

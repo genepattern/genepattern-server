@@ -29,6 +29,7 @@ public class TestJobOutputDao {
             "a/b/02.txt",
             "a/file1.txt",
             "a/file2.txt",
+            "all_aml_test.comp.marker.odf",
             "all_aml_test.preprocessed.gct",
             // "gp_execution_log.txt",   <-- hidden by the default filter
             "stderr.txt",
@@ -55,7 +56,7 @@ public class TestJobOutputDao {
         boolean includeHidden=false;
         boolean includeDeleted=false;
         List<JobOutputFile> results=dao.selectOutputFiles(gpJobNo, includeHidden, includeDeleted);
-        assertEquals("num items", 12, results.size());
+        assertEquals("num items", 13, results.size());
         
         for(int i=0; i<expectedPaths.length; ++i) {
             assertEquals("results["+i+"]", expectedPaths[i], results.get(i).getPath());
@@ -66,7 +67,7 @@ public class TestJobOutputDao {
         String relativePath="a/b/01.txt";
         dao.setDeleted(gpJobNo, relativePath);
         results=dao.selectOutputFiles(gpJobNo, includeHidden, includeDeleted);
-        assertEquals("num items after deleting one item", 11, results.size());
+        assertEquals("num items after deleting one item", 12, results.size());
         
         JobOutputFile modified=dao.selectOutputFile(gpJobNo,  relativePath);
         assertEquals("modified.deleted", true, modified.isDeleted());
