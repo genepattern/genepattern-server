@@ -1,6 +1,7 @@
 package org.genepattern.junitutil;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -8,6 +9,7 @@ import java.util.Map.Entry;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.domain.AnalysisJob;
+import org.genepattern.server.domain.JobStatus;
 import org.genepattern.server.job.input.JobInput;
 import org.genepattern.server.job.input.Param;
 import org.genepattern.server.job.input.ParamListHelper;
@@ -17,7 +19,6 @@ import org.genepattern.webservice.JobInfo;
 import org.genepattern.webservice.ParameterInfo;
 import org.genepattern.webservice.TaskInfo;
 import org.hibernate.Query;
-import org.hibernate.SQLQuery;
 
 public class AnalysisJobUtil {
     public static boolean isSet(final String in) {
@@ -72,6 +73,26 @@ public class AnalysisJobUtil {
         }
     }
     
+    public int deleteJobFromDb(final int jobNo) {
+        final boolean isInTransaction=HibernateUtil.isInTransaction();
+        try {
+            HibernateUtil.beginTransaction();
+            final String hqlDelete = "delete "+AnalysisJob.class.getName()+" a where a.jobNo = :jobNo";
+            int deletedEntities = HibernateUtil.getSession().createQuery( hqlDelete )
+                    .setInteger( "jobNo", jobNo )
+                    .executeUpdate();
+            if (!isInTransaction) {
+                HibernateUtil.commitTransaction();
+            }
+            return deletedEntities;
+        }
+        finally {
+            if (!isInTransaction) {
+                HibernateUtil.closeCurrentSession();
+            }
+        }
+    }
+    
     /**
      * Based on JobInputApiLegacy code; this method does file transfers for external url values for file list parameters.
      * @param userContext
@@ -108,6 +129,63 @@ public class AnalysisJobUtil {
         ParameterInfo[] actualParams = actualParameters.toArray(new ParameterInfo[0]);
         return actualParams;
     }
+    
+    public Integer addJobToDb() {
+        return addJobToDb(GpContext.getServerContext());
+    }
+    public Integer addJobToDb(final GpContext userContext) {
+        final int parentJobId=-1;
+        return addJobToDb(userContext, parentJobId);
+    }
+
+    /**
+     * Create a new entry in the analysis_job table, used primarily to generate a new job_id.
+     * @param userContext, optionally set userId, taskName, and taskLsid
+     * @param parentJobId, when parentJobId >= 0 set this as a child step in a pipeline
+     * @return
+     */
+    public Integer addJobToDb(final GpContext userContext, final int parentJobId) {
+        final boolean isInTransaction=HibernateUtil.isInTransaction();
+        Integer jobId = null;
+        try {
+            String parameter_info = ""; //empty CLOB
+
+            AnalysisJob aJob = new AnalysisJob();
+            aJob.setSubmittedDate(new Date());
+            aJob.setParameterInfo(parameter_info);
+            if (userContext != null) {
+                aJob.setUserId(userContext.getUserId());
+            }
+            if (userContext != null && userContext.getTaskInfo() != null) {
+                aJob.setTaskName(userContext.getTaskInfo().getName());
+                aJob.setTaskLsid(userContext.getTaskInfo().getLsid());
+            }
+            if (parentJobId >= 0) {
+                aJob.setParent(parentJobId);
+            }
+
+            JobStatus js = new JobStatus();
+            js.setStatusId(JobStatus.JOB_PENDING);
+            js.setStatusName(JobStatus.PENDING);
+            aJob.setJobStatus(js);
+
+            HibernateUtil.beginTransaction();
+            jobId = (Integer) HibernateUtil.getSession().save(aJob);
+            if (!isInTransaction) {
+                HibernateUtil.commitTransaction();
+            }
+        }
+        finally {
+            if (!isInTransaction) {
+                HibernateUtil.closeCurrentSession();
+            }
+        }
+        
+        return jobId;
+    }
+    
+
+
 
     
     public Integer addJobToDb(final String userId, final TaskInfo taskInfo, final ParameterInfo[] parameterInfoArray, final Integer parentJobNumber) throws Exception {
@@ -135,34 +213,6 @@ public class AnalysisJobUtil {
                 HibernateUtil.closeCurrentSession();
             }
         }
-    }
-    
-    public boolean deleteJobFromDb(final int jobId) throws Exception {
-        final boolean isInTransaction=HibernateUtil.isInTransaction();
-        boolean deleted=false;
-        try {
-            HibernateUtil.beginTransaction();
-            AnalysisJob aJob = (AnalysisJob) HibernateUtil.getSession().get(AnalysisJob.class, jobId);
-            if (aJob != null) {
-                HibernateUtil.getSession().delete(aJob);
-                deleted=true;
-            }
-            if (!isInTransaction) {
-                HibernateUtil.commitTransaction();
-            }
-        }
-        catch (Exception e) {
-            throw e;
-        }
-        catch (Throwable t) {
-            throw new Exception(t);
-        }
-        finally {
-            if (!isInTransaction) {
-                HibernateUtil.closeCurrentSession();
-            }
-        }
-        return deleted;
     }
     
     public void setStatusInDb(final int jobNo, final int statusId) throws Exception {
