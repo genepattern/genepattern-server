@@ -2,10 +2,14 @@ package org.genepattern.server.dm;
 
 import java.io.File;
 import java.net.URI;
+import java.util.List;
 
 import org.apache.log4j.Logger;
+import org.genepattern.server.UserAccountManager;
+import org.genepattern.server.auth.IGroupMembershipPlugin;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.job.input.cache.FileCache;
+import org.genepattern.server.job.input.dao.JobInputValueRecorder;
 
 
 public class UserUploadFile extends GpFilePath {
@@ -38,7 +42,6 @@ public class UserUploadFile extends GpFilePath {
     }
 
     public String getFormFieldValue() {
-        //TODO: experimental, untested implementation
         String formFieldValue = "";
         try {
             formFieldValue = this.getUrl().toExternalForm();
@@ -59,9 +62,8 @@ public class UserUploadFile extends GpFilePath {
             return true;
         }
 
-        //HACK: special-case for cached data files from external URL
+        // special-case for cached data files from external URL
         if (owner.equals( FileCache.CACHE_USER_ID )) {
-            //TODO: implement access permissions for user data files
             return true;
         }
 
@@ -73,8 +75,44 @@ public class UserUploadFile extends GpFilePath {
             return false;
         }
         
-        return owner.equals( userContext.getUserId() );
+        if (userContext.getUserId()==null) {
+            log.debug("userContext.userId==null");
+            return false;
+        }
+        
+        if ( owner.equals( userContext.getUserId() ) ) {
+            if (log.isDebugEnabled()) {
+                log.debug("file owned by userId="+userContext.getUserId());
+            }
+            return true;
+        }
+        
+        // special-case, is this an input file for a shared job
+        boolean isSharedJobInput=canRead(userContext, this.getFormFieldValue());
+        if (log.isDebugEnabled() && isSharedJobInput) {
+            log.debug("isShared, userId="+userContext.getUserId()+", file="+this.getFormFieldValue());
+        }
+        return isSharedJobInput;
     }
     
-    
+    public boolean canRead(final GpContext userContext, final String inputValue) {
+        String userId=userContext.getUserId();
+        try {
+            List<String> matchingGroups=new JobInputValueRecorder().fetchMatchingGroups(inputValue);
+            if (matchingGroups.size()==0) {
+                return false;
+            }
+            IGroupMembershipPlugin groupMembership = UserAccountManager.instance().getGroupMembership();
+            for(final String groupId : matchingGroups) {
+                if (groupMembership.isMember(userId, groupId)) {
+                    return true;
+                } 
+            }
+        }
+        catch (Exception e) {
+            log.error("Error checking access permissions for userId="+userId+", file="+inputValue, e);
+        }
+        return false; 
+    }
+
 }

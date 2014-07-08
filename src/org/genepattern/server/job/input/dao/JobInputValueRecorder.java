@@ -10,6 +10,7 @@ import org.genepattern.server.job.input.JobInput;
 import org.genepattern.server.job.input.Param;
 import org.genepattern.server.job.input.ParamValue;
 import org.hibernate.Query;
+import org.hibernate.SQLQuery;
 import org.hibernate.Session;
 
 /**
@@ -78,11 +79,56 @@ public class JobInputValueRecorder {
             return jobInput;
         }
         catch (Throwable t) {
-            //TODO: log error
-            throw new Exception("Error getting records from job_input_value table, for gpJobNo="+gpJobNo, t);
+            final String message="Error getting records from job_input_value table, for gpJobNo="+gpJobNo;
+            log.error(message, t);
+            throw new Exception(message, t);
         }
         finally {
             if (!inTransaction) {
+                HibernateUtil.closeCurrentSession();
+            }
+        }
+    }
+    
+    public List<Integer> fetchMatchingJobs(final String inputValue) throws Exception {
+        boolean inTransaction=HibernateUtil.isInTransaction();
+        try {
+            final String hql = "select gpJobNo from "+JobInputValue.class.getName()+" where pvalue = :pvalue";
+            HibernateUtil.beginTransaction();
+            Session session = HibernateUtil.getSession();
+            Query query = session.createQuery(hql);
+            query.setString("pvalue", inputValue);
+            return (List<Integer>) query.list();
+        }
+        catch (Throwable t) {
+            String message="Error selecting matching jobs for input value="+inputValue;
+            log.error(message, t);
+            throw new Exception(message);
+        }
+        finally {
+            if (!inTransaction) {
+                HibernateUtil.closeCurrentSession();
+            }
+        }
+    }
+    
+    public List<String> fetchMatchingGroups(final String inputValue) throws Exception {
+        final boolean isInTransaction=HibernateUtil.isInTransaction();
+        try {
+            String sql="select distinct(jg.group_id) from job_input_value ji left outer join job_group jg on ji.gp_job_no = jg.job_no "+
+                    "where ji.pvalue = :pvalue";
+            
+            //String hql="select distinct(jg.groupId) from "+JobInputValue.class.getName()+" as ji left outer join "+
+            //        JobGroup.class.getName()+" as jg on ji.gpJobNo = jg.jobNo  where ji.pvalue = :pvalue";
+            HibernateUtil.beginTransaction();
+            Session session = HibernateUtil.getSession();
+            SQLQuery query=session.createSQLQuery(sql);
+            //Query query = session.createQuery(hql);
+            query.setString("pvalue", inputValue);
+            return (List<String>) query.list();
+        }
+        finally {
+            if (!isInTransaction) {
                 HibernateUtil.closeCurrentSession();
             }
         }

@@ -1,6 +1,7 @@
 package org.genepattern.server.job.input.dao;
 
 import java.io.File;
+import java.util.List;
 
 import org.genepattern.junitutil.AnalysisJobUtil;
 import org.genepattern.junitutil.DbUtil;
@@ -120,7 +121,13 @@ public class TestJobInputValueDao {
         Assert.assertEquals("job.queue", "broad", jobInputOut.getParam("job.queue").getValues().get(0).getValue());
         Assert.assertEquals("job.memory", "8gb", jobInputOut.getParam("job.memory").getValues().get(0).getValue());
         Assert.assertEquals("walltime (empty string)", "", jobInputOut.getParam("walltime").getValues().get(0).getValue());
+        
+        List<Integer> matchingJobs=new JobInputValueRecorder().fetchMatchingJobs(gpUrl+"users/"+userId+"/all_aml_test_01.cls");
+        Assert.assertEquals("query jobIds by input param, num jobs", 1, matchingJobs.size());
+        Assert.assertEquals("query jobIds by input param, job number", (Integer) jobNo, (Integer) matchingJobs.get(0));
+        
+        List<String> matchingGroups=new JobInputValueRecorder().fetchMatchingGroups(gpUrl+"users/"+userId+"/all_aml_test_01.cls");
+        Assert.assertEquals("query groupIds by input param, num groups", 0, matchingGroups.size());        
     }
-    
 
 }

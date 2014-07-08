@@ -263,9 +263,6 @@ public class DataServlet extends HttpServlet implements Servlet {
         final URL requestUrl = getRequestUrl( request );
         GpFilePath requestedFile = null;
         try {
-            //TODO: delete the following commented out line(s), it is here to illustrate
-            //    how to get a GpFileObj from an arbitrary GP URL
-            //requestedFile = GpFileObjFactory.getRequestedGpFileObj(requestUrl);
             requestedFile = GpFileObjFactory.getRequestedGpFileObj(request);
         }
         catch (Throwable t) {
@@ -295,15 +292,14 @@ public class DataServlet extends HttpServlet implements Servlet {
 
         //2) check if the current user is authorized to read the file
         boolean canRead = false;
-        boolean isAdmin = AuthorizationHelper.adminJobs(gpUserId);
-        if (isAdmin) {
+        final boolean initIsAdmin=true;
+        GpContext userContext=GpContext.getContextForUser(gpUserId, initIsAdmin);
+        if (userContext.isAdmin()) {
             //admin users can read all files
-            canRead = true;
+            canRead=true;
         }
         else {
-            //otherwise, only the owner of a file can read it
-            //TODO: implement sharing for user upload files
-            canRead = gpUserId != null && gpUserId.equals( requestedFile.getOwner() );
+            canRead=requestedFile.canRead(userContext.isAdmin(), userContext);
         }
         
         if (!canRead) {
