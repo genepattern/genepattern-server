@@ -82,14 +82,14 @@ public class JobResultsLister extends SimpleFileVisitor<Path> {
     }
 
 
-    public List<JobOutputFile> getOutputFiles() {
-        return out;
+    public List<JobOutputFile> getHiddenFiles() {
+        return Collections.unmodifiableList(hidden);
     }
     
-    public List<JobOutputFile> getHiddenFiles() {
-        return hidden;
+    public List<JobOutputFile> getOutputFiles() {
+        return Collections.unmodifiableList(out);
     }
-
+    
     public void sortByPath() {
         // sort by relative pathname
         Collections.sort(out, new Comparator<JobOutputFile>() {
@@ -134,7 +134,7 @@ public class JobResultsLister extends SimpleFileVisitor<Path> {
             //don't include the working directory in the list of results
             return FileVisitResult.CONTINUE;
         }
-        boolean isHiddenDir= ! checkAdd(dir, attrs);
+        boolean isHiddenDir = ! checkAdd(dir, attrs);
         if (isHiddenDir && !walkHiddenDirectories) {
             return FileVisitResult.SKIP_SUBTREE;
         }

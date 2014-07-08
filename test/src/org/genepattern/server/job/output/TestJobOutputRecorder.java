@@ -10,9 +10,9 @@ import org.genepattern.junitutil.DbUtil;
 import org.genepattern.junitutil.FileUtil;
 import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
+import org.genepattern.server.config.GpContextFactory;
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.job.output.dao.JobOutputDao;
-import org.genepattern.server.util.JobResultsFilenameFilter;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -31,24 +31,19 @@ public class TestJobOutputRecorder {
     public void setUp() throws Exception {
         DbUtil.initDb();
         jobDir=FileUtil.getDataFile("jobResults/"+gpJobNo+"/").getAbsoluteFile();
+        gpContext=new GpContextFactory.Builder()
+            .jobNumber(0)
+            .build();
     }
 
     @Test
     public void onJobCompletion() throws IOException {
-        JobResultsFilenameFilter filenameFilter = JobOutputFile.initFilterFromConfig(gpConfig,gpContext);
-        JobResultsLister lister=new JobResultsLister(""+gpJobNo, jobDir, filenameFilter);
-        lister.walkFiles();
-        List<JobOutputFile> jobOutputFiles=lister.getOutputFiles();
+        JobOutputRecorder.recordOutputFilesToDb(gpConfig, gpContext, jobDir);
 
         List<JobOutputFile> results;
         try {
             HibernateUtil.beginTransaction();
             JobOutputDao dao=new JobOutputDao();
-            dao.recordOutputFiles(jobOutputFiles);
-            HibernateUtil.commitTransaction();
-        
-            HibernateUtil.beginTransaction();
-
             boolean includeHidden=true;
             boolean includeDeleted=false;
             results=dao.selectOutputFiles(gpJobNo, includeHidden, includeDeleted);
@@ -57,10 +52,18 @@ public class TestJobOutputRecorder {
             HibernateUtil.closeCurrentSession();
         }
         
-        long total=0L;
+        assertEquals("number of records in database", 14, results.size());
+        
+        long totalFileSize=0L;
+        int numFiles=0;
         for(final JobOutputFile out : results) {
-            total+=out.getFileLength();
+            if (!out.isHidden() && !"directory".equals(out.getKind())) {
+                System.out.println(out.getPath());
+                ++numFiles;
+                totalFileSize += out.getFileLength();
+            }
         }
-        assertEquals("total size in bytes", 3534258, total);
+        assertEquals("num non-hidden regular files", 10, numFiles);
+        assertEquals("total file size in bytes", 3533748, totalFileSize); 
     }
 }
