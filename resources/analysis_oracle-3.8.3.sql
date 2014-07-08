@@ -8,9 +8,9 @@ create table  job_output (
     gpFileType varchar(255),
     hidden number(1,0) default 0 not null,
     deleted number(1,0) default 0 not null,
-    primary key (gp_job_no, path)
+    primary key (gp_job_no, path),
+    constraint jo_gpjn_fk foreign key (GP_JOB_NO) references ANALYSIS_JOB(JOB_NO) on delete cascade
 );
-
 
 -- update schema version
 update props set value='3.8.3' where key='schemaVersion';

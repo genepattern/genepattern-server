@@ -118,6 +118,7 @@ import org.genepattern.codegenerator.AbstractPipelineCodeGenerator;
 import org.genepattern.data.pipeline.PipelineModel;
 import org.genepattern.drm.JobRunner;
 import org.genepattern.drm.Memory;
+import org.genepattern.server.DbException;
 import org.genepattern.server.InputFilePermissionsHelper;
 import org.genepattern.server.JobInfoManager;
 import org.genepattern.server.JobInfoWrapper;
@@ -1858,7 +1859,12 @@ public class GenePatternAnalysisTask {
         }
         
         // new api, in a new transaction, just in case of errors
-        JobOutputRecorder.recordOutputFilesToDb(gpConfig, jobContext, jobDir);
+        try {
+            JobOutputRecorder.recordOutputFilesToDb(gpConfig, jobContext, jobDir);
+        }
+        catch (DbException e) {
+            //ignore, error is already logged
+        }
         
         //if the job is in a pipeline, notify the pipeline handler
         boolean isInPipeline = jobInfo._getParentJobNumber() >= 0;

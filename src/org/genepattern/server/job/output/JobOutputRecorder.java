@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.log4j.Logger;
+import org.genepattern.server.DbException;
 import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.database.HibernateUtil;
@@ -21,7 +22,7 @@ import org.genepattern.server.util.JobResultsFilenameFilter;
 public class JobOutputRecorder {
     private static final Logger log = Logger.getLogger(JobOutputRecorder.class);
    
-    public static void recordOutputFilesToDb(GpConfig gpConfig, GpContext jobContext, File jobDir) {
+    public static void recordOutputFilesToDb(GpConfig gpConfig, GpContext jobContext, File jobDir) throws DbException {
         log.debug("recording files to db, jobId="+jobContext.getJobNumber());
         List<JobOutputFile> allFiles=new ArrayList<JobOutputFile>();
         
@@ -47,8 +48,10 @@ public class JobOutputRecorder {
             }            
         }
         catch (Throwable t) {
-            log.error("output files not recorded to database, disk usage will not be accurate for jobId="+jobContext.getJobNumber(), t);
+            final String errorMessage="Error recording output files for jobId="+jobContext.getJobNumber();
+            log.error(errorMessage, t);
             HibernateUtil.rollbackTransaction();
+            throw new DbException(errorMessage, t);
         }
         finally {
             if (!isInTransaction) {

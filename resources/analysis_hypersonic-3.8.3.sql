@@ -8,7 +8,8 @@ create table  job_output (
     gpFileType varchar(255),
     hidden bit not null,
     deleted bit not null,
-    primary key (gp_job_no, path)
+    primary key (gp_job_no, path),
+    constraint jo_gpjn_fk foreign key (GP_JOB_NO) references ANALYSIS_JOB(JOB_NO) on delete cascade
 );
 
 -- update schema version
