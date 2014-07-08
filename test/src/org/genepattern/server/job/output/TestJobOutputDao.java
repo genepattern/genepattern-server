@@ -6,15 +6,17 @@ import java.io.File;
 import java.util.Collections;
 import java.util.List;
 
+import org.genepattern.junitutil.AnalysisJobUtil;
 import org.genepattern.junitutil.DbUtil;
 import org.genepattern.junitutil.FileUtil;
 import org.genepattern.server.job.output.dao.JobOutputDao;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
 public class TestJobOutputDao {
 
-    private Integer gpJobNo=0;
+    private Integer gpJobNo=null;
     private File jobDir;
     private List<JobOutputFile> jobOutputFiles=Collections.emptyList();
     
@@ -38,11 +40,19 @@ public class TestJobOutputDao {
 
     @Before
     public void setUp() throws Exception {
-        jobDir=FileUtil.getDataFile("jobResults/"+gpJobNo+"/").getAbsoluteFile();
+        DbUtil.initDb();
+        gpJobNo=new AnalysisJobUtil().addJobToDb();
+        jobDir=FileUtil.getDataFile("jobResults/0/").getAbsoluteFile();
         JobResultsLister lister=new JobResultsLister(""+gpJobNo, jobDir, JobOutputFile.initDefaultFilter());
         lister.walkFiles();
         jobOutputFiles=lister.getOutputFiles();
-        DbUtil.initDb();
+    }
+    
+    @After
+    public void tearDown() {
+        if (gpJobNo != null) {
+            new AnalysisJobUtil().deleteJobFromDb(gpJobNo);
+        }
     }
 
     @Test
