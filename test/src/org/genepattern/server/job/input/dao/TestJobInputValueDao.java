@@ -127,7 +127,7 @@ public class TestJobInputValueDao {
         Assert.assertEquals("query jobIds by input param, job number", (Integer) jobNo, (Integer) matchingJobs.get(0));
         
         List<String> matchingGroups=new JobInputValueRecorder().fetchMatchingGroups(gpUrl+"users/"+userId+"/all_aml_test_01.cls");
-        Assert.assertEquals("query groupIds by input param, num groups", 0, matchingGroups.size());        
+        Assert.assertEquals("query groupIds by input param, num groups", 0, matchingGroups.size());
     }
 
 }

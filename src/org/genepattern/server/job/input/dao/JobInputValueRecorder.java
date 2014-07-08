@@ -115,15 +115,12 @@ public class JobInputValueRecorder {
     public List<String> fetchMatchingGroups(final String inputValue) throws Exception {
         final boolean isInTransaction=HibernateUtil.isInTransaction();
         try {
-            String sql="select distinct(jg.group_id) from job_input_value ji left outer join job_group jg on ji.gp_job_no = jg.job_no "+
-                    "where ji.pvalue = :pvalue";
+            String sql="select distinct(jg.group_id) from job_input_value ji, job_group jg  "+
+                    "where ji.pvalue = :pvalue and jg.job_no = ji.gp_job_no";
             
-            //String hql="select distinct(jg.groupId) from "+JobInputValue.class.getName()+" as ji left outer join "+
-            //        JobGroup.class.getName()+" as jg on ji.gpJobNo = jg.jobNo  where ji.pvalue = :pvalue";
             HibernateUtil.beginTransaction();
             Session session = HibernateUtil.getSession();
             SQLQuery query=session.createSQLQuery(sql);
-            //Query query = session.createQuery(hql);
             query.setString("pvalue", inputValue);
             return (List<String>) query.list();
         }
