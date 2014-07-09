@@ -28,6 +28,7 @@ public class DrmJobStatus {
     private final Date startTime;
     private final Date endTime;
     private final CpuTime cpuTime;
+    private final Memory memory;
     private final String jobStatusMessage;
     private final Integer exitCode;
     private final String terminatingSignal;
@@ -46,6 +47,7 @@ public class DrmJobStatus {
         this.terminatingSignal=builder.terminatingSignal;
         this.resourceUsage=builder.resourceUsage;
         this.cpuTime=builder.cpuTime;
+        this.memory=builder.memory;
         
         //for debugging
         StringBuffer buf=new StringBuffer();
@@ -58,8 +60,9 @@ public class DrmJobStatus {
             buf.append(", endTime="); buf.append(endTime);
             buf.append("\n    jobStatusMessage="); buf.append(jobStatusMessage);
             buf.append(", terminatingSignal="); buf.append(terminatingSignal);
-            buf.append("\nresourceUsage="); buf.append(resourceUsage);
             buf.append("\ncpuTime="+cpuTime);
+            buf.append("\nmemory="+memory);
+            buf.append("\nresourceUsage="); buf.append(resourceUsage);
         }
         this.toString=buf.toString();
     }
@@ -114,11 +117,18 @@ public class DrmJobStatus {
     }
 
     /**
-     * Get the amount of cpu time used by the job, can be null of this is not known.
+     * Get the amount of cpu time used by the job, can be null if this is not known.
      * @return
      */
     public CpuTime getCpuTime() {
         return cpuTime;
+    }
+    
+    /**
+     * Get the amount of memory usedbythe job, can be null if this is not known.
+     */
+    public Memory getMemory() {
+        return memory;
     }
 
     /**
@@ -168,6 +178,7 @@ public class DrmJobStatus {
         private Date startTime=null;
         private Date endTime=null;
         private CpuTime cpuTime=new CpuTime();
+        private Memory memory=null;
         private String jobStatusMessage="";
         private Integer exitCode=null;
         private String terminatingSignal="";
@@ -184,6 +195,7 @@ public class DrmJobStatus {
             this.startTime=in.startTime;
             this.endTime=in.endTime;
             this.cpuTime=in.cpuTime;
+            this.memory=in.memory;
             this.jobStatusMessage=in.jobStatusMessage;
             this.exitCode=in.exitCode;
             this.terminatingSignal=in.terminatingSignal;
@@ -237,6 +249,21 @@ public class DrmJobStatus {
         
         public Builder cpuTime(final CpuTime cpuTime) {
             this.cpuTime=cpuTime;
+            return this;
+        }
+
+        public Builder memory(final long sizeInBytes) {
+            this.memory=Memory.fromSizeInBytes(sizeInBytes);
+            return this;
+        }
+
+        public Builder memory(final String memSpec) {
+            this.memory=Memory.fromString(memSpec);
+            return this;
+        }
+        
+        public Builder memory(final Memory memory) {
+            this.memory=memory;
             return this;
         }
         

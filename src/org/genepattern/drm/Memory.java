@@ -63,8 +63,8 @@ public class Memory {
         }
     }
     
-    public static Memory fromLength(final long lengthInBytes) {
-        return new Memory(lengthInBytes, Unit.b);
+    public static Memory fromSizeInBytes(final long sizeInBytes) {
+        return new Memory(sizeInBytes, Unit.b);
     }
     
     /**
