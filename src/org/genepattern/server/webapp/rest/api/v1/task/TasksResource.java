@@ -590,9 +590,9 @@ public class TasksResource {
         }
         
         //form a JSON response, from the given taskInfo
-        JSONObject jsonObj=null;
+        String jsonStr="";
         try {
-            jsonObj=new JSONObject();
+            JSONObject jsonObj=new JSONObject();
             String href=getTaskInfoPath(request, taskInfo);
             jsonObj.put("href", href);
             jsonObj.put("name", taskInfo.getName());
@@ -613,13 +613,22 @@ public class TasksResource {
                 paramsJson.put(paramJson);
             }
             jsonObj.put("params", paramsJson);
+            
+            final boolean prettyPrint=true;
+            if (prettyPrint) {
+                final int indentFactor=2;
+                jsonStr=jsonObj.toString(indentFactor);
+            }
+            else {
+                jsonStr=jsonObj.toString();
+            }
         }
         catch (Throwable t) {
             final String errorMessage="Error constructing json response for task="+taskNameOrLsid+": "+
                     t.getLocalizedMessage();
             return Response.serverError().entity(errorMessage).build();
         }
-        return Response.ok().entity(jsonObj.toString()).build();        
+        return Response.ok().entity(jsonStr).build();        
     }
     
 
