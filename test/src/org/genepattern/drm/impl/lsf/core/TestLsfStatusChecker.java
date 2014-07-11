@@ -1,6 +1,6 @@
 package org.genepattern.drm.impl.lsf.core;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
 
 import java.io.File;
 import java.util.Arrays;
@@ -11,7 +11,9 @@ import org.genepattern.drm.DrmJobState;
 import org.genepattern.drm.DrmJobStatus;
 import org.genepattern.drm.Memory;
 import org.genepattern.junitutil.FileUtil;
+import org.genepattern.server.executor.lsf.TestLsfErrorCheckerImpl;
 import org.joda.time.DateTime;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -107,6 +109,39 @@ JOBID   USER    STAT  QUEUE      FROM_HOST   EXEC_HOST   JOB_NAME   SUBMIT_TIME 
         assertEquals("endTime", new DateTime("2014-07-10T12:32:15").toDate(), jobStatus.getEndTime());
         assertEquals("cpuUsage", 2400, jobStatus.getCpuTime().getTime());
         assertEquals("memUsage", Memory.fromString("32mb"), jobStatus.getMemory());
+    }
+    
+    /**
+     * Special-case, when the job was terminated by the LSF system because the memory limit was reached.
+     */
+    @Test
+    public void parseTerminatedMemLimit() throws InterruptedException {
+        // load log file from LsfErrorCheckerImpl test case
+        File lsfLogFile=FileUtil.getSourceFile(TestLsfErrorCheckerImpl.class, "memory_limit_lsf.out.txt");
+        DrmJobStatus jobStatus=LsfBjobsParser.parseAsJobStatus(
+                "6284289 gpdev   EXIT  genepattern gpint01     node1459    23478      11/02-11:00:20 default    000:00:02.40 32     2550   25751,25758,25760 11/02-12:31:24 11/02-12:32:15",
+                lsfLogFile);
+        
+        assertTrue("jobState for job cancelled by LSF because of memory limit", jobStatus.getJobState().is(DrmJobState.TERMINATED));
+        assertTrue("Expecting RESOURCE_LIMIT jobState", jobStatus.getJobState().is(DrmJobState.RESOURCE_LIMIT));
+        assertTrue("Expecting TERM_MEMLIMT jobState", jobStatus.getJobState().is(DrmJobState.TERM_MEMLIMIT));
+    }
+    
+    /**
+     * Special-case, when the job was terminated bty the LSF system because of a walltime limit.
+     * @throws Exception
+     */
+    @Test
+    public void parseTerminatedRunLimit() throws InterruptedException {
+        File lsfLogFile=FileUtil.getSourceFile(TestLsfErrorCheckerImpl.class, "walltime_limit_lsf.out.txt");
+        DrmJobStatus jobStatus=LsfBjobsParser.parseAsJobStatus(
+                "1782219 gpdev   EXIT  genepattern gpint01     node1459    66406      07/11-12:44:43 default    000:00:03.29 33     2550   6625,6626,6628 07/11-12:44:45 07/11-12:46:00",
+                lsfLogFile);
+
+        assertTrue("jobState for job cancelled by LSF because of runlimit", jobStatus.getJobState().is(DrmJobState.TERMINATED));
+        assertTrue("Expecting RESOURCE_LIMIT jobState", jobStatus.getJobState().is(DrmJobState.RESOURCE_LIMIT));
+        assertTrue("Expecting TERM_MEMLIMT jobState", jobStatus.getJobState().is(DrmJobState.TERM_RUNLIMIT));
+        assertEquals("expected exitCode", new Integer(134), jobStatus.getExitCode());
     }
     
     @Test

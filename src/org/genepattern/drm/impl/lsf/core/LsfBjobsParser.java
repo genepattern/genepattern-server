@@ -69,6 +69,22 @@ public class LsfBjobsParser {
                         jobState=DrmJobState.CANCELLED;
                         jobStatusMessage=DrmJobState.CANCELLED.getDescription();
                     }
+                    else if (lsfErrorStatus != null &&
+                            lsfErrorStatus.getExitCode()==1 &&
+                            lsfErrorStatus.getErrorMessage().contains("TERM_MEMLIMIT: job killed after reaching LSF memory usage limit.")                    
+                    ) {
+                        //special-case: job terminated because of memory limit
+                        jobState=DrmJobState.TERM_MEMLIMIT;
+                        jobStatusMessage="TERM_MEMLIMIT: job killed after reaching LSF memory usage limit.";
+                    }
+                    else if (lsfErrorStatus != null &&
+                            lsfErrorStatus.getExitCode()==134 &&
+                            lsfErrorStatus.getErrorMessage().startsWith("TERM_RUNLIMIT")
+                    ) {
+                        //special-case: job terminated because of runtime (wallclock) limit
+                        jobState=DrmJobState.TERM_RUNLIMIT;
+                        jobStatusMessage=lsfErrorStatus.getErrorMessage();
+                    }
                     else {
                         jobState=lsfState.getDrmJobState();
                         jobStatusMessage=lsfState.getDescription();
