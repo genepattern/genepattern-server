@@ -1,5 +1,6 @@
 package org.genepattern.drm.impl.lsf.core;
 
+import java.io.File;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -11,7 +12,10 @@ import java.util.regex.Pattern;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.genepattern.drm.CpuTime;
+import org.genepattern.drm.DrmJobState;
 import org.genepattern.drm.DrmJobStatus;
+import org.genepattern.server.executor.lsf.LsfErrorCheckerImpl;
+import org.genepattern.server.executor.lsf.LsfErrorStatus;
 
 /**
  * Parse the output from the 'bjobs -W' command.
@@ -31,58 +35,162 @@ public class LsfBjobsParser {
     private static final String NA = "-";
     private static final String memUsageUnits="mb";
     
-    public static DrmJobStatus parseAsJobStatus(String line) {
+    public static DrmJobStatus parseAsJobStatus(final String line) throws InterruptedException {
+        File lsfLogFile=null;
+        return parseAsJobStatus(line, lsfLogFile);
+    }
+
+    public static DrmJobStatus parseAsJobStatus(final String line, final File lsfLogFile) throws InterruptedException {
         Matcher lineMatcher = LINE_PATTERN.matcher(line);
+        
         if (lineMatcher.matches()) {
+            final LsfState lsfState=LsfState.valueOf(lineMatcher.group("STATUS"));
+            final Date submitTime=parseDate(lineMatcher.group("SUBMITTIME"));
+            final Date startTime=parseDate(lineMatcher.group("STARTTIME"));
+            final Date endTime=parseDate(lineMatcher.group("FINISHTIME"));
+            final DrmJobState jobState;
+            final String jobStatusMessage;
+            Integer exitCode=null;
+            if (lsfState != null) {
+                //special-case for cancelled job before it started
+                if (lsfState==LsfState.EXIT && startTime==null) {
+                    jobState=DrmJobState.ABORTED;
+                    jobStatusMessage="Job was cancelled before it started running.";
+                }
+                else if (lsfState==LsfState.EXIT && lsfLogFile != null) {
+                    //for completed job, parse the lsf log file (.lsf.out) for exitCode and custom status message
+                    waitForFile(lsfLogFile);
+                    LsfErrorStatus lsfErrorStatus = checkStatusFromLsfLogFile(lsfLogFile);
+                    if (lsfErrorStatus != null && 
+                            lsfErrorStatus.getExitCode()==130 && 
+                            lsfErrorStatus.getErrorMessage().contains("TERM_OWNER: job killed by owner.")
+                    ) {
+                        //special-case: job cancelled after it started running
+                        jobState=DrmJobState.CANCELLED;
+                        jobStatusMessage=DrmJobState.CANCELLED.getDescription();
+                    }
+                    else {
+                        jobState=lsfState.getDrmJobState();
+                        jobStatusMessage=lsfState.getDescription();
+                    }
+                    if (lsfErrorStatus != null) {
+                        exitCode=lsfErrorStatus.getExitCode();
+                    }
+                }
+                else {
+                    jobState=lsfState.getDrmJobState();
+                    jobStatusMessage=lsfState.getDescription();
+                }
+            }
+            else {
+                jobState=null;
+                jobStatusMessage=null;
+            }
+
             DrmJobStatus.Builder b = new DrmJobStatus.Builder();
             b.extJobId(lineMatcher.group("JOBID"));
             
-            LsfState lsfStatus=LsfState.valueOf(lineMatcher.group("STATUS"));
-            if (lsfStatus != null) {
-                b.jobState(lsfStatus.getDrmJobState());
-                b.jobStatusMessage(lsfStatus.getDescription());
+            if (lsfState != null) {
+                b.jobState(jobState);
+                b.jobStatusMessage(jobStatusMessage);
             }
+            b.submitTime(submitTime);
+            b.startTime(startTime);
+            b.endTime(endTime);
+            CpuTime cpuTime=null;
             try {
-                b.submitTime(parseDate(lineMatcher.group("SUBMITTIME")));
-                b.startTime(parseDate(lineMatcher.group("STARTTIME")));
-                b.endTime(parseDate(lineMatcher.group("FINISHTIME")));
-            }
-            catch (ParseException e) {
-                log.error(e);
-            }
-            try {
-                long millis= (Integer.parseInt(lineMatcher.group("CPUhours")) * 3600 * 1000)
-                 + (Integer.parseInt(lineMatcher.group("CPUmins")) * 60 * 1000)
-                 + Math.round(Double.parseDouble(lineMatcher.group("CPUsecs")) * 1000);
-                b.cpuTime(new CpuTime(millis, TimeUnit.MILLISECONDS));
+                cpuTime=parseCpuTime(lineMatcher);
             }
             catch (NumberFormatException e) {
                 log.error("error parsing cpuTime from line="+line, e);
             }
-            
+            if (cpuTime != null) {
+                b.cpuTime(cpuTime);
+            }
             Long memUsage=parseOptionalLong(lineMatcher.group("MEM"));
             if (memUsage != null) {
                 b.memory(memUsage+" "+memUsageUnits);
+            }
+            if (exitCode != null) {
+                b.exitCode(exitCode);
             }
             return b.build();
         }
         log.error("Unable to initialize DrmJobStatus from line="+line);
         return null;
     }
+
+    public static void waitForFile(final File file) throws InterruptedException {
+        //wait 3 seconds to give the job a chance to write the .lsf.out file
+        final int sleepInterval=3000;
+        final int retryCount=5;
+        waitForFile(file, sleepInterval, retryCount);
+    }
+
+    public static void waitForFile(final File file, int sleepInterval, int retryCount) throws InterruptedException {
+        int count=0;
+        while(count<retryCount && !file.exists()) {
+            ++count;
+            Thread.sleep(sleepInterval);
+        }
+    }
     
+    /**
+     * For a completed job ...
+     * ... read the ".lsf.out" logFile to get the exitCode.
+     */
+    public static LsfErrorStatus checkStatusFromLsfLogFile(final File lsfLogFile) {
+//        int exitCode=-1;
+        if (lsfLogFile != null) {
+//            try {
+//                int count=0;
+//                //wait 3 seconds to give the job a chance to write the .lsf.out file
+//                int sleepInterval=3000;
+//                int retryCount=5;
+//                while(count<retryCount && !lsfJobOutputFile.exists()) {
+//                    ++count;
+//                    Thread.sleep(sleepInterval);
+//                }
+                if (lsfLogFile.exists()) {
+                    log.debug("checking error status ... lsfJobOutputFile="+lsfLogFile);
+                    LsfErrorCheckerImpl errorCheck = new LsfErrorCheckerImpl(lsfLogFile);
+                    LsfErrorStatus status = errorCheck.getStatus();
+                    return status;
+                }
+//            }
+//            catch(Exception e) {
+//                //log and ignore any errors in getting info about the Lsf error and continue
+//                log.error("Error writing lsf error to stderr", e); 
+//            }
+        }
+        log.error("Error getting LsfErrorStatus from lsfLogFile="+lsfLogFile);
+        return null;
+    }
+    
+    private static CpuTime parseCpuTime(Matcher lineMatcher) throws NumberFormatException {
+        long millis= (Integer.parseInt(lineMatcher.group("CPUhours")) * 3600 * 1000)
+                + (Integer.parseInt(lineMatcher.group("CPUmins")) * 60 * 1000)
+                + Math.round(Double.parseDouble(lineMatcher.group("CPUsecs")) * 1000);
+        return new CpuTime(millis, TimeUnit.MILLISECONDS);
+    }
 
     private static String parseAsString(String str) {
         return NA.equals(str) ? null : str;
     }
     
-    private static Date parseDate(String date) throws ParseException {
+    private static Date parseDate(String date) {
         if (NA.equals(date)) {
             return null;
         }
         Calendar now = Calendar.getInstance();
         Calendar result = Calendar.getInstance();
-        result.setTime(DATE_FORMAT.parse(date));
-        
+        try {
+            result.setTime(DATE_FORMAT.parse(date));
+        }
+        catch (ParseException e) {
+            log.error("Error parsing date from string="+date, e);
+            return null;
+        }
         // silly LSF does not have the year in the date format
         // assume the year is this year but if the date ends up being
         // in the future set it to last year
