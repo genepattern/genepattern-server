@@ -30,7 +30,8 @@ public class LsfErrorCheckerImpl implements ILsfErrorChecker
             int exitCode = -1;
 
             String line;
-            boolean lsfErrorFound = false;
+            boolean termMemLimit_errorFound = false;
+            boolean termRunLimit_errorFound = false;
             while((line = reader.readLine()) != null)
             {
                 //do not write any error including and after the PS section
@@ -38,29 +39,42 @@ public class LsfErrorCheckerImpl implements ILsfErrorChecker
                 {
                     break;
                 }
+                
+                //do not write any error including and after the output section
+                if(line.startsWith("The output (if any) follows:")) {
+                    break;
+                }
 
                 //if job failed because it ran out of memory or was killed by admin
                 if(line.contains("TERM_MEMLIMIT") || line.contains("TERM_OWNER")
-                        || lsfErrorFound)
+                        || termMemLimit_errorFound)
                 {
                     message.append(line);
                     message.append("\n");
 
                     if(line.contains("exit code"))
                     {
-                        //parse out exit code
-                        int startIndex = line.indexOf("exit code");
-                        String exitCodeString = line.substring(startIndex+10, line.length()-1);
-                        try
-                        {
-                            exitCode = Integer.parseInt(exitCodeString);
-                        }
-                        catch(NumberFormatException e)
-                        {
-                            e.printStackTrace();
-                        }
+                        exitCode = parseExitCode(line);
                     }
-                    lsfErrorFound = true;
+                    termMemLimit_errorFound = true;
+                }
+                
+                else if (line.startsWith("TERM_RUNLIMIT")) {
+                    termRunLimit_errorFound=true;
+                    message.append(line);
+                    message.append("\n");
+                    // look ahead
+                    line = reader.readLine();
+                    if (line == null) {
+                        break;
+                    }
+                    message.append(line);
+                    message.append("\n");
+                    exitCode=parseExitCode(line);
+                }
+                else if (termRunLimit_errorFound) {
+                    message.append(line);
+                    message.append("\n");
                 }
             }
 
@@ -77,6 +91,19 @@ public class LsfErrorCheckerImpl implements ILsfErrorChecker
                 try{reader.close();} catch(IOException e){};
             }
         }
+    }
+
+    private int parseExitCode(String line) {
+        //parse out exit code
+        int startIndex = line.indexOf("exit code");
+        String exitCodeString = line.substring(startIndex+10, line.length()-1);
+        try {
+            return Integer.parseInt(exitCodeString);
+        }
+        catch(NumberFormatException e) {
+            log.error("Error parsing exit code from line="+line, e);
+        }
+        return -1;
     }
 
     public LsfErrorStatus getStatus()

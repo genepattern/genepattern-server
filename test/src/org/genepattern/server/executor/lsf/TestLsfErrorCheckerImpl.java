@@ -76,6 +76,14 @@ public class TestLsfErrorCheckerImpl
     }
 
     /**
+     * Make sure we can detect a walltime limit error from LSF
+     */
+    @Test
+    public void testWalltimeError() {
+        validateLsfLogResults("walltime_limit_lsf.out.txt", "walltime_limit_expected_message.txt", 134);
+    }
+
+    /**
      * Make sure we can detect an out of memory error from LSF
      */
     @Test
@@ -83,8 +91,9 @@ public class TestLsfErrorCheckerImpl
     {
         validateLsfLogResults("bkill_job_lsf.out.txt", "bkill_job_lsf_expected_message.txt", 130);
     }
+    
 
-    private void validateLsfLogResults(String logFileName, String expectedMessageFileName, int exitCode)
+    private void validateLsfLogResults(String logFileName, String expectedMessageFileName, int expectedExitCode)
     {
         final File lsfFile= getLsfLogFile(logFileName);
         Assert.assertNotNull(lsfFile);
@@ -94,7 +103,7 @@ public class TestLsfErrorCheckerImpl
         Assert.assertNotNull(status);
 
         //check that the lsf exit code is 1
-        Assert.assertEquals(status.getExitCode(), exitCode);
+        Assert.assertEquals(expectedExitCode, status.getExitCode());
 
         String expectedMessage = getMessage(expectedMessageFileName);
         Assert.assertNotNull(expectedMessage);

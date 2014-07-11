@@ -10,7 +10,3 @@ Resource usage summary:
     Max Processes  :         1
     Max Threads    :         1
 
-The output (if any) follows:
-
-
-

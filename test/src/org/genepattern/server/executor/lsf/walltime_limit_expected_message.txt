@@ -1,0 +1,12 @@
+TERM_RUNLIMIT: job killed after reaching LSF run time limit.
+Exited with exit code 134.
+
+Resource usage summary:
+
+    CPU time   :      3.29 sec.
+    Max Memory :        33 MB
+    Max Swap   :      2550 MB
+
+    Max Processes  :         3
+    Max Threads    :        23
+
