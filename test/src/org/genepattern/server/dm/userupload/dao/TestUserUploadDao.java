@@ -157,7 +157,7 @@ public class TestUserUploadDao {
             UserUploadDao dao = new UserUploadDao();
             final boolean includeTempFiles=true;
             List<UserUpload> userUploads=dao.selectAllUserUpload(adminUser, includeTempFiles);
-            Assert.assertEquals("num files not including tmp", 18, userUploads.size());
+            Assert.assertEquals("num files including tmp", 18, userUploads.size());
         }
         finally {
             HibernateUtil.closeCurrentSession();
