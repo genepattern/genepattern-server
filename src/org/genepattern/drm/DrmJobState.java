@@ -42,7 +42,11 @@ public enum DrmJobState {
         /** The job was cancelled by the user before entering the running state. */
         ABORTED(FAILED, "The job was cancelled by the user before entering the running state"),
         /** The job was cancelled by the user after entering the running state. */
-        CANCELLED(FAILED, "The job was cancelled by the user after entering the running state")
+        CANCELLED(FAILED, "The job was cancelled by the user after entering the running state"),
+        /** The job was terminated because resource limit was reached, for example 'TERM_MEMLIMIT'. */
+        RESOURCE_LIMIT(FAILED, "The job was terminated because a resource limit was reached"),
+          TERM_MEMLIMIT(RESOURCE_LIMIT, "The job was killed after reaching the memory usage limit."),
+          TERM_RUNLIMIT(RESOURCE_LIMIT, "The job was killed after reaching the runtime usage limit.")
     ;
     
     private final DrmJobState parent;
