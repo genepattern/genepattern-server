@@ -147,8 +147,8 @@ public class TestUserUploadDao {
     }
 
     /**
-     * test case for geting the filtered list of files from the user uploads tab,
-     * filter out the tmp files.
+     * test case for geting the list of files from the user uploads tab,
+     * including the tmp files.
      */
     @Test
     public void testSelectAllUserUploadIncludeTmpFiles() {
