@@ -1,10 +1,12 @@
 package org.genepattern.server.dm.userupload.dao;
 
+import java.math.BigInteger;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.regex.Matcher;
 import org.apache.log4j.Logger;
+import org.genepattern.drm.Memory;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.database.BaseDAO;
 import org.genepattern.server.database.HibernateUtil;
@@ -182,4 +184,32 @@ public class UserUploadDao extends BaseDAO {
         return numDeleted;
     }
 
+
+    public Memory sizeOfAllUserUploads(final String userId, final boolean includeTempFiles)
+    {
+        //SQLQuery query = HibernateUtil.getSession().createSQLQuery(sql).addScalar("total", Hibernate.BIG_INTEGER);
+
+        Memory size = null;
+        if (userId == null) return size;
+
+        HibernateUtil.beginTransaction();
+
+        String hql = "SELECT SUM(uu.fileLength) FROM " + UserUpload.class.getName() + " uu WHERE uu.userId = :userId";
+
+        if (!includeTempFiles) {
+            hql += " and uu.path not like '"+TMP_DIR+"/%' and uu.path not like '"+TMP_DIR+"' ";
+        }
+
+        Query query = HibernateUtil.getSession().createQuery(hql);
+        query.setString("userId", userId);
+
+        List<Long> sizeList = query.list();
+
+        for(int i =0; i < sizeList.size();i++)
+        {
+            size = Memory.fromSizeInBytes(sizeList.get(i));
+        }
+
+        return size;
+    }
 }

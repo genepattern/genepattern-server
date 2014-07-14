@@ -4,6 +4,7 @@ import java.io.File;
 import java.util.Date;
 import java.util.List;
 
+import org.genepattern.drm.Memory;
 import org.genepattern.junitutil.DbUtil;
 import org.genepattern.server.database.HibernateUtil;
 import org.junit.AfterClass;
@@ -65,7 +66,7 @@ public class TestUserUploadDao {
             
             
             //-------------------------
-            // test acount
+            // test account
             //-------------------------            
             createUserUploadRecord(testUser, new File("tmp/"), 10 * DAY_IN_MS);
             //exact date isn't purged
@@ -162,7 +163,43 @@ public class TestUserUploadDao {
         finally {
             HibernateUtil.closeCurrentSession();
         }
-        
+
+    }
+
+    /**
+     * test case for getting the length of files from the user uploads tab,
+     * excluding the tmp files.
+     */
+    @Test
+    public void testGetSizeOfUserUploadExceptTmpFiles() {
+        //set up
+        try {
+            UserUploadDao dao = new UserUploadDao();
+            final boolean includeTempFiles=false;
+            Memory size = dao.sizeOfAllUserUploads(adminUser, includeTempFiles);
+            Assert.assertEquals("size of files excluding tmp", 70, size.getNumBytes());
+        }
+        finally {
+            HibernateUtil.closeCurrentSession();
+        }
+    }
+
+    /**
+     * test case for getting the length of files from the user uploads tab,
+     * including the tmp files.
+     */
+    @Test
+    public void testGetSizeOfUserUploadIncludeTmpFiles() {
+        //set up
+        try {
+            UserUploadDao dao = new UserUploadDao();
+            final boolean includeTempFiles=true;
+            Memory size = dao.sizeOfAllUserUploads(adminUser, includeTempFiles);
+            Assert.assertEquals("size of files including tmp", 180, size.getNumBytes());
+        }
+        finally {
+            HibernateUtil.closeCurrentSession();
+        }
     }
 
     static private void createUserUploadRecord(final String userId, final File relativeFile) {
@@ -200,7 +237,9 @@ public class TestUserUploadDao {
         uu.setLastModified(lastModified);
         uu.setNumParts(1);
         uu.setNumPartsRecd(1);
-        
+
+        uu.setFileLength(10);
+
         final boolean isInTransaction=HibernateUtil.isInTransaction();
         try {
             HibernateUtil.beginTransaction();
