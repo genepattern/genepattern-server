@@ -205,6 +205,7 @@ public class UserUploadDao extends BaseDAO {
 
         List<Long> sizeList = query.list();
 
+        //should just return a list of 1 item
         for(int i =0; i < sizeList.size();i++)
         {
             size = Memory.fromSizeInBytes(sizeList.get(i));
