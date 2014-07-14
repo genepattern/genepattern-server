@@ -11,6 +11,7 @@ import org.apache.commons.net.ftp.FTPReply;
 import org.apache.log4j.Logger;
 import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
+import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.job.input.choice.RemoteDirLister;
 
 /**
@@ -48,7 +49,10 @@ public class CommonsNet_3_3_DirLister implements RemoteDirLister<FTPFile,ListFtp
     public static RemoteDirLister<FTPFile, ListFtpDirException> createFromConfig(final GpConfig gpConfig, final GpContext gpContext) {
         return createFromConfig(gpConfig, gpContext, true);
     }
-    public static RemoteDirLister<FTPFile, ListFtpDirException> createFromConfig(final GpConfig gpConfig, final GpContext gpContext, final boolean passiveMode) {
+    public static RemoteDirLister<FTPFile, ListFtpDirException> createFromConfig(GpConfig gpConfig, final GpContext gpContext, final boolean passiveMode) {
+        if (gpConfig==null) {
+            gpConfig=ServerConfigurationFactory.instance();
+        }
         int socketTimeout=gpConfig.getGPIntegerProperty(gpContext, PROP_FTP_SOCKET_TIMEOUT, 30000);
         int dataTimeout=gpConfig.getGPIntegerProperty(gpContext, PROP_FTP_DATA_TIMEOUT, 30000);
         
