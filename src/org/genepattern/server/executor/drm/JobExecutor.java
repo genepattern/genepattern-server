@@ -176,7 +176,12 @@ public class JobExecutor implements CommandExecutor2 {
         try {
             final int exitCode;
             if (jobStatus.getExitCode()==null) {
-                exitCode=-1;
+                if (DrmJobState.DONE==jobStatus.getJobState()) {
+                    exitCode=0;
+                }
+                else {
+                    exitCode=-1;
+                }
             }
             else {
                 exitCode=jobStatus.getExitCode();
