@@ -187,29 +187,47 @@ public class UserUploadDao extends BaseDAO {
 
     public Memory sizeOfAllUserUploads(final String userId, final boolean includeTempFiles)
     {
-        //SQLQuery query = HibernateUtil.getSession().createSQLQuery(sql).addScalar("total", Hibernate.BIG_INTEGER);
-
         Memory size = null;
         if (userId == null) return size;
 
-        HibernateUtil.beginTransaction();
+        final boolean isInTransaction=HibernateUtil.isInTransaction();
 
-        String hql = "SELECT SUM(uu.fileLength) FROM " + UserUpload.class.getName() + " uu WHERE uu.userId = :userId";
-
-        if (!includeTempFiles) {
-            hql += " and uu.path not like '"+TMP_DIR+"/%' and uu.path not like '"+TMP_DIR+"' ";
-        }
-
-        Query query = HibernateUtil.getSession().createQuery(hql);
-        query.setString("userId", userId);
-
-        List<Long> sizeList = query.list();
-
-        //should just return a list of 1 item
-        for(int i =0; i < sizeList.size();i++)
+        try
         {
-            size = Memory.fromSizeInBytes(sizeList.get(i));
+            HibernateUtil.beginTransaction();
+
+            String hql = "SELECT SUM(uu.fileLength) FROM " + UserUpload.class.getName() + " uu WHERE uu.userId = :userId";
+
+            if (!includeTempFiles) {
+                hql += " and uu.path not like '"+TMP_DIR+"/%' and uu.path not like '"+TMP_DIR+"' ";
+            }
+
+            Query query = HibernateUtil.getSession().createQuery(hql);
+            query.setString("userId", userId);
+
+            List<Long> sizeList = query.list();
+
+            //should just return a list of 1 item
+            for(int i =0; i < sizeList.size();i++)
+            {
+                size = Memory.fromSizeInBytes(sizeList.get(i));
+            }
         }
+        catch (Throwable t)
+        {
+            //log error
+            log.error(t);
+            HibernateUtil.rollbackTransaction();
+        }
+        finally
+        {
+            if (!isInTransaction)
+            {
+                HibernateUtil.closeCurrentSession();
+            }
+        }
+
+
 
         return size;
     }
