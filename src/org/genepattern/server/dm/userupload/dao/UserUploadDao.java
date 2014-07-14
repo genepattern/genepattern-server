@@ -185,6 +185,14 @@ public class UserUploadDao extends BaseDAO {
     }
 
 
+    /**
+     * Get the total size of files for the given user.
+     *
+     * @param userId, requires a valid user id, otherwise will return null.
+     * @param includeTempFiles, whether to include temp files when retrieving the total file size.
+     *
+     * @return a Memory object containing the total size of files
+     */
     public Memory sizeOfAllUserUploads(final String userId, final boolean includeTempFiles)
     {
         Memory size = null;
