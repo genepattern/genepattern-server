@@ -19,8 +19,6 @@ import org.genepattern.drm.Memory;
 import org.genepattern.drm.Walltime;
 import org.genepattern.server.config.Value;
 import org.genepattern.server.executor.CommandExecutorException;
-import org.genepattern.server.executor.lsf.LsfErrorCheckerImpl;
-import org.genepattern.server.executor.lsf.LsfErrorStatus;
 import org.genepattern.server.executor.lsf.LsfProperties;
 import org.genepattern.webservice.ParameterInfo;
 
@@ -96,10 +94,6 @@ public class CmdLineLsfRunner implements JobRunner {
         return true;
     }
     
-    private File getLogFile(DrmJobRecord drmJobRecord) {
-        return getRelativeFile(drmJobRecord.getWorkingDir(), drmJobRecord.getLogFile());
-    }
-
     private File getLogFile(DrmJobSubmission drmJobSubmission) {
         return getRelativeFile(drmJobSubmission.getWorkingDir(), drmJobSubmission.getLogFile());
     }
@@ -115,81 +109,6 @@ public class CmdLineLsfRunner implements JobRunner {
             return new File(workingDir, file.getPath());
         }
         return file;
-    }
-
-    private DrmJobStatus handleStatus(final DrmJobRecord drmJobRecord, final LocalLsfJob localJob) {
-        final String lsfStatusCode = localJob.getLsfStatusCode();
-        
-        if (LsfJob.LSF_STATUS_DONE.equals(lsfStatusCode)) {
-            return new DrmJobStatus.Builder(drmJobRecord.getExtJobId(), DrmJobState.DONE)
-            .exitCode(0)
-            .build();
-        }
-        else if (LsfJob.LSF_STATUS_EXIT.equals(lsfStatusCode)) {
-            //special-case, task cancellation
-            String jobStatusMessage=lsfStatusCode;
-            int exitCode=-1;
-            final File lsfJobOutputFile=getLogFile(drmJobRecord);
-            if (lsfJobOutputFile != null) {
-                try {
-                    int count=0;
-                    //wait 3 seconds to give the job a chance to write the .lsf.out file
-                    int sleepInterval=3000;
-                    int retryCount=5;
-                    while(count<retryCount && !lsfJobOutputFile.exists()) {
-                        ++count;
-                        Thread.sleep(sleepInterval);
-                    }
-                    if (lsfJobOutputFile.exists()) {
-                        log.debug("checking error status ... lsfJobOutputFile="+lsfJobOutputFile);
-                        LsfErrorCheckerImpl errorCheck = new LsfErrorCheckerImpl(lsfJobOutputFile);
-                        LsfErrorStatus status = errorCheck.getStatus();
-                        if(status != null) {
-                            jobStatusMessage = status.getErrorMessage();
-                            exitCode=status.getExitCode();
-                            log.debug("exitCode="+exitCode+", message="+jobStatusMessage);
-                        }
-                    }
-                }
-                catch(Exception e) {
-                    //log and ignore any errors in getting info about the Lsf error and continue
-                    log.error("Error writing lsf error to stderr", e); 
-                }
-            }
-            return new DrmJobStatus.Builder(drmJobRecord.getExtJobId(), DrmJobState.FAILED)
-                .jobStatusMessage(jobStatusMessage)
-                .exitCode(exitCode)
-            .build();
-        }
-
-        // If a job is marked as missing, it's never coming back :(
-        else if (LocalLsfJob.LSF_MISSING.equals(localJob.getStatus())) {
-            log.info("LSF Job " + localJob.getBsubJobId() + " is no longer tracked by LSF " +
-                    "and does not have an output file either. Marking as lost.");
-            return new DrmJobStatus.Builder()
-                .extJobId(drmJobRecord.getExtJobId())
-                .jobState(DrmJobState.UNDETERMINED)
-                .jobStatusMessage("LSF Job " + localJob.getBsubJobId() + " is no longer tracked by LSF " +
-                        "and does not have an output file either. Marking as lost.")
-                .exitCode(-1)
-            .build();
-        }
-        
-        // it's still pending
-        else if (LsfJob.LSF_STATUS_PENDING.equals(lsfStatusCode)) {
-            return new DrmJobStatus.Builder()
-                .extJobId(drmJobRecord.getExtJobId())
-                .jobState(DrmJobState.QUEUED)
-                .jobStatusMessage("Pending")
-            .build();
-        }
-        
-        //assume it's still running
-        return new DrmJobStatus.Builder()
-            .extJobId(drmJobRecord.getExtJobId()) 
-            .jobState(DrmJobState.RUNNING)
-            .jobStatusMessage("Lsf status is "+lsfStatusCode+", Assume it's still running.")
-        .build();
     }
     
     /**
