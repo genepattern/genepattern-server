@@ -60,7 +60,7 @@ JOBID   USER    STAT  QUEUE      FROM_HOST   EXEC_HOST   JOB_NAME   SUBMIT_TIME 
          1992893 gpdev   DONE  genepattern gpint01     node1457    66467      07/14-12:44:09 default    000:00:00.14 3      39     23721 07/14-12:44:14 07/14-12:44:15
          */
         
-        File lsfLogFile=FileUtil.getSourceFile(this.getClass(), "completed_job.lsf.out");
+        File lsfLogFile=FileUtil.getSourceFile(TestLsfErrorCheckerImpl.class, "completed_job.lsf.out");
         DrmJobStatus jobStatus=LsfBjobsParser.parseAsJobStatus(
                 "1992893 gpdev   DONE  genepattern gpint01     node1457    66467      07/14-12:44:09 default    000:00:00.14 3      39     23721 07/14-12:44:14 07/14-12:44:15",
                 lsfLogFile);
