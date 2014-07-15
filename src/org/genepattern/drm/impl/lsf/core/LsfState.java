@@ -18,7 +18,7 @@ public enum LsfState {
     SSUSP(DrmJobState.SUSPENDED ,   "0x08",    "The running job was suspended by the system because an execution host was overloaded or the queue run window closed."),
     USUSP(DrmJobState.SUSPENDED,    "0x10",    "The running job was suspended by its owner or the LSF system administrator."),
     EXIT (DrmJobState.FAILED,       "0x20",    "The job has terminated with a non-zero status - it may have been aborted due to an error in its execution, or killed by its owner or by the LSF system administrator."),
-    DONE (DrmJobState.DONE,         "0x40",    "The job has terminated with status 0."),
+    DONE (DrmJobState.DONE,         "0x40",    "Successfully completed."),  //The job has terminated with status 0
     PDONE(DrmJobState.DONE,         "(0x80)",  "Post job process done successfully."),
     PERR (DrmJobState.FAILED,       "(0x100)", "Post job process has error."),
     WAIT (DrmJobState.QUEUED,       "(0x200)", "Chunk job waiting its turn to exec."),
