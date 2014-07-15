@@ -12,6 +12,21 @@ create table  job_output (
     constraint jo_gpjn_fk foreign key (GP_JOB_NO) references ANALYSIS_JOB(JOB_NO) on delete cascade
 );
 
+--
+-- add time logging columns to the job_runner_job table
+--
+alter table job_runner_job add column 
+    submit_time timestamp default null
+before status_date;
+
+alter table job_runner_job add column 
+    start_time timestamp default null
+before status_date;
+
+alter table job_runner_job add column 
+    end_time timestamp default null
+before status_date;
+
 -- update schema version
 update props set value='3.8.3' where key='schemaVersion';
 

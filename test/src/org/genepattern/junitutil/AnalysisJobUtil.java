@@ -184,10 +184,6 @@ public class AnalysisJobUtil {
         return jobId;
     }
     
-
-
-
-    
     public Integer addJobToDb(final String userId, final TaskInfo taskInfo, final ParameterInfo[] parameterInfoArray, final Integer parentJobNumber) throws Exception {
         if (taskInfo.getID() < 0) {
             //force arbitrary task_id

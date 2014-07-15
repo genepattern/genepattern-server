@@ -16,7 +16,7 @@ import org.genepattern.drm.DrmJobSubmission;
 import org.hibernate.validator.Size;
 
 /**
- * An record (for the the DB or in a runtime cache) used by the DrmLookup class for recording the status of an
+ * A record (for the the DB or in a runtime cache) used by the DrmLookup class for recording the status of an
  * external job.
  * 
  * @author pcarr
@@ -77,8 +77,33 @@ public class JobRunnerJob {
     @Size(max=STATUS_MESSAGE_LENGTH)
     private String statusMessage;
     
+    /**
+     * The date that the status was recorded into the database.
+     */
     @Column(name="status_date", nullable=false)
     private Date statusDate;
+
+    /**
+     * The time that the job was submitted to the remote queue.
+     * Can be null, when the job has not yet been submitted.
+     * This is not the same as the date the job was added to the GenePattern queue.
+     */
+    @Column(name="submit_time", nullable=true)
+    private Date submitTime;
+
+    /**
+     * The time that the job started on the remote queue.
+     * Can be null, when the job has not yet started.
+     */
+    @Column(name="start_time", nullable=true)
+    private Date startTime;
+
+    /**
+     * The time that the job completed on the remote queue.
+     * Can be null, when the job has not yet completed.
+     */
+    @Column(name="end_time", nullable=true)
+    private Date endTime;
 
     @Column(name="working_dir", nullable=false)
     private String workingDir;
@@ -114,6 +139,9 @@ public class JobRunnerJob {
         this.logFile=builder.logFile;
         
         this.statusDate=statusDate;
+        this.submitTime=builder.submitTime;
+        this.startTime=builder.startTime;
+        this.endTime=builder.endTime;
     }
 
     public static final class Builder {
@@ -130,6 +158,10 @@ public class JobRunnerJob {
         private String stderrFile;
         private String stdinFile;
         private String logFile;
+        
+        private Date submitTime=null;
+        private Date startTime=null;
+        private Date endTime=null;
         
         public Builder(final String jobRunnerClassname, final DrmJobSubmission in) {
             this.gpJobNo=in.getGpJobNo();
@@ -254,6 +286,21 @@ public class JobRunnerJob {
             this.logFile=logFile;
             return this;
         }
+        
+        public Builder submitTime(final Date submitTime) {
+            this.submitTime=submitTime;
+            return this;
+        }
+        
+        public Builder startTime(final Date startTime) {
+            this.startTime=startTime;
+            return this;
+        }
+        
+        public Builder endTime(final Date endTime) {
+            this.endTime=endTime;
+            return this;
+        }
 
         public JobRunnerJob build() {
             return new JobRunnerJob(this);
@@ -316,6 +363,18 @@ public class JobRunnerJob {
         return logFile;
     }
 
+    public Date getSubmitTime() {
+        return submitTime;
+    }
+
+    public Date getStartTime() {
+        return startTime;
+    }
+
+    public Date getEndTime() {
+        return endTime;
+    }
+
     //private no-arg constructor for hibernate
     private JobRunnerJob() {
     }
@@ -371,5 +430,17 @@ public class JobRunnerJob {
     
     private void setLogFile(final String logFile) {
         this.logFile = logFile;
+    }
+
+    private void setSubmitTime(Date submitTime) {
+        this.submitTime = submitTime;
+    }
+
+    private void setStartTime(Date startTime) {
+        this.startTime = startTime;
+    }
+
+    private void setEndTime(Date endTime) {
+        this.endTime = endTime;
     }
 }

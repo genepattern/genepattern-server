@@ -1,6 +1,7 @@
 package org.genepattern.server.executor.drm;
 
 import java.io.File;
+import java.util.Date;
 import java.util.List;
 
 import org.genepattern.drm.DrmJobRecord;
@@ -18,6 +19,7 @@ import org.genepattern.server.executor.drm.dao.JobRunnerJob;
 import org.genepattern.server.job.input.JobInput;
 import org.genepattern.webservice.JobInfo;
 import org.genepattern.webservice.TaskInfo;
+import org.joda.time.DateTime;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -165,7 +167,6 @@ public class TestDbLookup {
     
     @Test
     public void testGetRunningDrmRecords() {
-        DbLookup dbLookup=new DbLookup(jobRunnerClassname, jobRunnerName);
         List<DrmJobRecord> runningJobs=dbLookup.getRunningDrmJobRecords();
         Assert.assertNotNull("runningDrmJobRecords", runningJobs);
         Assert.assertEquals("num running jobs", 0, runningJobs.size());
@@ -174,7 +175,6 @@ public class TestDbLookup {
     @Test
     public void testEmptyExtJobId() throws Exception {
         jobResultsDir=temp.newFolder("jobResults");
-        final DbLookup dbLookup=new DbLookup(jobRunnerClassname, jobRunnerName);
 
         //test fk relationship
         final DrmJobSubmission jobSubmission_01=addJob(cle, cleInput, cleCmdLine);
@@ -205,6 +205,35 @@ public class TestDbLookup {
         int gpJobNo_01=jobSubmission_01.getJobInfo().getJobNumber();
         deleteJob(gpJobNo_01);
         Assert.assertNull("cascade", dbLookup.lookupJobRecord(gpJobNo_01));
+    }
+    
+    @Test
+    public void jobQueueTimes() {
+        Date lsfSubmitTime=new DateTime("2014-07-15T09:00:00").toDate();
+        Date lsfStartTime =new DateTime("2014-07-15T09:15:21").toDate();
+        Date lsfEndTime   =new DateTime("2014-07-15T10:15:21").toDate();
+        
+        int gpJobNo=new AnalysisJobUtil().addJobToDb();
+        
+        JobRunnerJob jobRecord=new JobRunnerJob.Builder()
+            .gpJobNo(gpJobNo)
+            .workingDir(new File(jobResultsDir, ""+gpJobNo).getAbsolutePath())
+            .jobRunnerClassname(jobRunnerClassname)
+            .jobRunnerName(jobRunnerName)
+            .extJobId("EXT_"+gpJobNo)
+            .jobState(DrmJobState.DONE)
+            .statusMessage(DrmJobState.DONE.getDescription())
+            .exitCode(0)
+            .submitTime(lsfSubmitTime)
+            .startTime(lsfStartTime)
+            .endTime(lsfEndTime)
+        .build();
+        dbLookup.insertJobRunnerJob(jobRecord);
+        
+        JobRunnerJob query=dbLookup.selectJobRunnerJob(gpJobNo);
+        Assert.assertEquals("jobRunnerJob.submitTime", lsfSubmitTime, query.getSubmitTime());
+        Assert.assertEquals("jobRunnerJob.startTime", lsfStartTime, query.getStartTime());
+        Assert.assertEquals("jobRunnerJob.endTime", lsfEndTime, query.getEndTime());
     }
 
 }
