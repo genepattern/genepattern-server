@@ -30,54 +30,49 @@ public class LsfErrorCheckerImpl implements ILsfErrorChecker
             int exitCode = -1;
 
             String line;
-            boolean termMemLimit_errorFound = false;
-            boolean termRunLimit_errorFound = false;
+            boolean appendMessage = false;
             while((line = reader.readLine()) != null)
             {
-                //do not write any error including and after the PS section
-                if(line.startsWith("PS:"))
-                {
-                    break;
-                }
-                
                 //do not write any error including and after the output section
                 if(line.startsWith("The output (if any) follows:")) {
                     break;
                 }
-
-                //if job failed because it ran out of memory or was killed by admin
-                if(line.contains("TERM_MEMLIMIT") || line.contains("TERM_OWNER")
-                        || termMemLimit_errorFound)
-                {
-                    message.append(line);
-                    message.append("\n");
-
-                    if(line.contains("exit code"))
-                    {
-                        exitCode = parseExitCode(line);
-                    }
-                    termMemLimit_errorFound = true;
-                }
                 
-                else if (line.startsWith("TERM_RUNLIMIT")) {
-                    termRunLimit_errorFound=true;
+                if (line.startsWith("Successfully completed.")) {
+                    message.append(line);
+                    exitCode=0;
+                    break;
+                }
+                else if (line.startsWith("TERM_OWNER: ")) { // job killed by owner.
                     message.append(line);
                     message.append("\n");
-                    // look ahead
-                    line = reader.readLine();
-                    if (line == null) {
+                    appendMessage=true;
+                }
+                else if (line.startsWith("TERM_MEMLIMIT: ")) { // job killed after reaching LSF memory usage limit.
+                    message.append(line);
+                    message.append("\n");
+                    appendMessage=true;
+                }
+                else if (line.startsWith("TERM_RUNLIMIT: ")) { // job killed after reaching LSF run time limit.
+                    message.append(line);
+                    message.append("\n");
+                    appendMessage=true;
+                }
+                else if (line.startsWith("Exited with exit code")) {
+                    exitCode = parseExitCode(line);
+                    message.append(line);
+                    if (appendMessage) {
+                        message.append("\n");
+                    }
+                    else {
                         break;
                     }
+                }
+                else if (appendMessage) {
                     message.append(line);
                     message.append("\n");
-                    exitCode=parseExitCode(line);
-                }
-                else if (termRunLimit_errorFound) {
-                    message.append(line);
-                    message.append("\n");
-                }
+                } 
             }
-
             errorStatus = new LsfErrorStatus(exitCode, message.toString());
         }
         catch(IOException io)

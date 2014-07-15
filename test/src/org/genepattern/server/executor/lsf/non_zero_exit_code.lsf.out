@@ -1,0 +1,36 @@
+Sender: LSF System <lsf@node1457>
+Subject: Job 2029936: <66472> Exited
+
+Job <66472> was submitted from host <gpint01> by user <gpdev> in cluster <cromwell>.
+Job was executed on host(s) <node1457>, in queue <genepattern>, as user <gpdev> in cluster <cromwell>.
+</home/unix/gpdev> was used as the home directory.
+</xchip/gpdev/servers/gp-trunk/jobResults/66472> was used as the working directory.
+Started at Mon Jul 14 20:24:43 2014
+Results reported at Mon Jul 14 20:24:44 2014
+
+Your job looked like:
+
+------------------------------------------------------------
+# LSBATCH: User input
+'/broad/software/free/Linux/redhat_5_x86_64/pkgs/oracle-java-jdk_1.7.0-51_x86_64/bin/java' '-Xmx1g' '-cp' '/xchip/gpdev/servers/gp-trunk/taskLib/TestStep.0.3.4557/TestStepPackage.jar:/xchip/gpdev/servers/gp-trunk/taskLib/TestStep.0.3.4557/gp-annotations.jar:/xchip/gpdev/servers/gp-trunk/taskLib/TestStep.0.3.4557/jopt-simple-3.3.jar' 'org.genepattern.testmodule.teststep.TestStep' '--message=Job with non-zero exitCode and no stderr' '--exitCode=-120' '--runningTime=0' '--verbose=yes' '--copyInputFiles=no' >> 'stdout.txt'
+------------------------------------------------------------
+
+Exited with exit code 136.
+
+Resource usage summary:
+
+    CPU time   :      0.44 sec.
+    Max Memory :         3 MB
+    Max Swap   :        39 MB
+
+    Max Processes  :         1
+    Max Threads    :         1
+
+The output (if any) follows:
+
+
+
+PS:
+
+Read file </xchip/gpdev/servers/gp-trunk/jobResults/66472/stderr.txt> for stderr output of this job.
+

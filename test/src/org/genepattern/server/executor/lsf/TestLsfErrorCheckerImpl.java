@@ -1,7 +1,5 @@
 package org.genepattern.server.executor.lsf;
 
-import org.apache.log4j.Logger;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.Assert;
 import org.genepattern.junitutil.FileUtil;
@@ -18,49 +16,27 @@ import java.io.IOException;
  * Time: 1:05:28 PM
  * To change this template use File | Settings | File Templates.
  */
-public class TestLsfErrorCheckerImpl
-{
-    final static public Logger log = Logger.getLogger(TestLsfErrorCheckerImpl.class);
+public class TestLsfErrorCheckerImpl {
 
-    @Before
-    public void setUp(){}
-
-
-    private static File getLsfLogFile(String filename) {
-        return FileUtil.getSourceFile(TestLsfErrorCheckerImpl.class, filename);
-    }
-
-    private static String getMessage(String filename)
-    {
+    private static String getExpectedMessageFromFilename(String filename) throws IOException {
         File file = FileUtil.getSourceFile(TestLsfErrorCheckerImpl.class, filename);
-
         String message = null;
-
-
 	    BufferedReader reader = null;
-        try
-        {
+        try {
             reader = new BufferedReader(new FileReader(file));
             StringBuffer messageBuffer = new StringBuffer();
 
             String line;
-            while((line = reader.readLine()) != null)
-            {
+            while((line = reader.readLine()) != null) {
                 messageBuffer.append(line);
                 messageBuffer.append("\n");
             }
 
             message = messageBuffer.toString();
         }
-        catch(IOException io)
-        {
-           io.printStackTrace();
-        }
-        finally
-        {
-            if(reader != null)
-            {
-                try{reader.close();} catch(IOException e){};
+        finally {
+            if (reader != null) {
+                reader.close();
             }
         }
         return message;
@@ -70,44 +46,52 @@ public class TestLsfErrorCheckerImpl
      * Make sure we can detect an out of memory error from LSF
      */
     @Test
-    public void testOutOfMemoryError()
-    {
-        validateLsfLogResults("memory_limit_lsf.out.txt", "memory_limit_expected_message.txt", 1);        
+    public void outOfMemoryError() throws IOException {
+        File lsfLogFile=FileUtil.getSourceFile(this.getClass(), "memory_limit_lsf.out.txt");
+        LsfErrorStatus lsfStatus = new LsfErrorCheckerImpl(lsfLogFile).getStatus();
+        Assert.assertNotNull("Expecting non-null lsfStatus", lsfStatus);
+        Assert.assertEquals("exitCode", 1, lsfStatus.getExitCode());
+        Assert.assertEquals("errorMessage", getExpectedMessageFromFilename("memory_limit_expected_message.txt"), lsfStatus.getErrorMessage());
     }
 
     /**
      * Make sure we can detect a walltime limit error from LSF
      */
     @Test
-    public void testWalltimeError() {
-        validateLsfLogResults("walltime_limit_lsf.out.txt", "walltime_limit_expected_message.txt", 134);
+    public void walltimeError() throws IOException {
+        File lsfLogFile=FileUtil.getSourceFile(this.getClass(), "walltime_limit_lsf.out.txt");
+        LsfErrorStatus lsfStatus = new LsfErrorCheckerImpl(lsfLogFile).getStatus();
+        Assert.assertNotNull("Expecting non-null lsfStatus", lsfStatus);
+        Assert.assertEquals("exitCode", 134, lsfStatus.getExitCode());
+        Assert.assertEquals("errorMessage", getExpectedMessageFromFilename("walltime_limit_expected_message.txt"), lsfStatus.getErrorMessage());
     }
 
     /**
      * Make sure we can detect an out of memory error from LSF
      */
     @Test
-    public void testJobAbortByAdmin()
-    {
-        validateLsfLogResults("bkill_job_lsf.out.txt", "bkill_job_lsf_expected_message.txt", 130);
+    public void cancelled() throws IOException {
+        File lsfLogFile=FileUtil.getSourceFile(this.getClass(), "bkill_job_lsf.out.txt");
+        LsfErrorStatus lsfStatus = new LsfErrorCheckerImpl(lsfLogFile).getStatus();
+        Assert.assertNotNull("Expecting non-null lsfStatus", lsfStatus);
+        Assert.assertEquals("exitCode", 130, lsfStatus.getExitCode());
+        Assert.assertEquals("errorMessage", getExpectedMessageFromFilename("bkill_job_lsf_expected_message.txt"), lsfStatus.getErrorMessage());
     }
     
-
-    private void validateLsfLogResults(String logFileName, String expectedMessageFileName, int expectedExitCode)
-    {
-        final File lsfFile= getLsfLogFile(logFileName);
-        Assert.assertNotNull(lsfFile);
-
-        LsfErrorCheckerImpl errorCheck = new LsfErrorCheckerImpl(lsfFile);
-        LsfErrorStatus status = errorCheck.getStatus();
-        Assert.assertNotNull(status);
-
-        //check that the lsf exit code is 1
-        Assert.assertEquals(expectedExitCode, status.getExitCode());
-
-        String expectedMessage = getMessage(expectedMessageFileName);
-        Assert.assertNotNull(expectedMessage);
-
-        Assert.assertEquals(expectedMessage,status.getErrorMessage());
+    @Test
+    public void completedSuccessfully() {
+        File lsfLogFile=FileUtil.getSourceFile(this.getClass(), "completed_job.lsf.out");
+        LsfErrorStatus lsfStatus = new LsfErrorCheckerImpl(lsfLogFile).getStatus();
+        Assert.assertNotNull("Expecting non-null lsfStatus", lsfStatus);
+        Assert.assertEquals("exitCode", 0, lsfStatus.getExitCode());
+        Assert.assertEquals("errorMessage", "Successfully completed.", lsfStatus.getErrorMessage());
+    }
+    
+    @Test
+    public void nonZeroExitCode() {
+        File lsfLogFile=FileUtil.getSourceFile(this.getClass(), "non_zero_exit_code.lsf.out");
+        LsfErrorStatus lsfStatus = new LsfErrorCheckerImpl(lsfLogFile).getStatus();
+        Assert.assertEquals("exitCode", 136, lsfStatus.getExitCode());
+        Assert.assertEquals("errorMessage", "Exited with exit code 136.", lsfStatus.getErrorMessage());
     }
 }
