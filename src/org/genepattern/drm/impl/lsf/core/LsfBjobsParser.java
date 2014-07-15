@@ -102,6 +102,11 @@ public class LsfBjobsParser {
                 jobState=null;
                 jobStatusMessage=null;
             }
+            
+            //check for exitCode
+            if (exitCode==null && jobState==DrmJobState.DONE) {
+                exitCode=0;
+            }
 
             DrmJobStatus.Builder b = new DrmJobStatus.Builder();
             b.extJobId(lineMatcher.group("JOBID"));

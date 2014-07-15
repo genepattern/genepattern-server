@@ -1,0 +1,36 @@
+Sender: LSF System <lsf@node1457>
+Subject: Job 1992893: <66467> Done
+
+Job <66467> was submitted from host <gpint01> by user <gpdev> in cluster <cromwell>.
+Job was executed on host(s) <node1457>, in queue <genepattern>, as user <gpdev> in cluster <cromwell>.
+</home/unix/gpdev> was used as the home directory.
+</xchip/gpdev/servers/gp-trunk/jobResults/66467> was used as the working directory.
+Started at Mon Jul 14 12:44:14 2014
+Results reported at Mon Jul 14 12:44:15 2014
+
+Your job looked like:
+
+------------------------------------------------------------
+# LSBATCH: User input
+'/broad/software/free/Linux/redhat_5_x86_64/pkgs/perl_5.10.1/bin/perl' '/xchip/gpdev/servers/gp-trunk/taskLib/ConvertLineEndings.2.3853/to_host.pl' '/xchip/gpdev/servers/gp-trunk/users/pcarr@broadinstitute.org/uploads/all_aml_test.cls' 'all_aml_test.cvt.cls' >> 'stdout.txt'
+------------------------------------------------------------
+
+Successfully completed.
+
+Resource usage summary:
+
+    CPU time   :      0.14 sec.
+    Max Memory :         3 MB
+    Max Swap   :        39 MB
+
+    Max Processes  :         1
+    Max Threads    :         1
+
+The output (if any) follows:
+
+
+
+PS:
+
+Read file </xchip/gpdev/servers/gp-trunk/jobResults/66467/stderr.txt> for stderr output of this job.
+
