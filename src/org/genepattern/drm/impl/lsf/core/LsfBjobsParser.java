@@ -161,28 +161,13 @@ public class LsfBjobsParser {
      * ... read the ".lsf.out" logFile to get the exitCode.
      */
     public static LsfErrorStatus checkStatusFromLsfLogFile(final File lsfLogFile) {
-//        int exitCode=-1;
         if (lsfLogFile != null) {
-//            try {
-//                int count=0;
-//                //wait 3 seconds to give the job a chance to write the .lsf.out file
-//                int sleepInterval=3000;
-//                int retryCount=5;
-//                while(count<retryCount && !lsfJobOutputFile.exists()) {
-//                    ++count;
-//                    Thread.sleep(sleepInterval);
-//                }
-                if (lsfLogFile.exists()) {
-                    log.debug("checking error status ... lsfJobOutputFile="+lsfLogFile);
-                    LsfErrorCheckerImpl errorCheck = new LsfErrorCheckerImpl(lsfLogFile);
-                    LsfErrorStatus status = errorCheck.getStatus();
-                    return status;
-                }
-//            }
-//            catch(Exception e) {
-//                //log and ignore any errors in getting info about the Lsf error and continue
-//                log.error("Error writing lsf error to stderr", e); 
-//            }
+            if (lsfLogFile.exists()) {
+                log.debug("checking error status ... lsfJobOutputFile="+lsfLogFile);
+                LsfErrorCheckerImpl errorCheck = new LsfErrorCheckerImpl(lsfLogFile);
+                LsfErrorStatus status = errorCheck.getStatus();
+                return status;
+            }
         }
         log.error("Error getting LsfErrorStatus from lsfLogFile="+lsfLogFile);
         return null;
