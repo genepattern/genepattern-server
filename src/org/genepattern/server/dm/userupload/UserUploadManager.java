@@ -199,6 +199,9 @@ public class UserUploadManager {
             HibernateUtil.rollbackTransaction();
             throw new Exception("Runtime exception creating upload file: " + gpFileObj.getRelativePath());
         }
+        finally {
+            HibernateUtil.closeCurrentSession();
+        }
     }
       
 

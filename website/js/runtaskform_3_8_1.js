@@ -27,23 +27,21 @@ var fileId = 0;
 //saved so it can reused when for the reset operation
 
 var Request = {
-    parameter: function(name)
-    {
+    parameter: function (name) {
         var result = this.parameters()[name];
-        if(result != undefined && result != null)
-        {
+        if (result != undefined && result != null) {
             return  decodeURIComponent(result);
         }
 
         return result;
     },
 
-    parameters: function() {
+    parameters: function () {
         var result = {};
         var url = window.location.href;
         var parameters = url.slice(url.indexOf('?') + 1).split('&');
 
-        for(var i = 0;  i < parameters.length; i++) {
+        for (var i = 0; i < parameters.length; i++) {
             var parameter = parameters[i].split('=');
             result[parameter[0]] = parameter[1];
         }
@@ -53,10 +51,8 @@ var Request = {
     cleanJobSubmit: null
 };
 
-function htmlEncode(value)
-{
-    if(value == undefined || value == null || value == "")
-    {
+function htmlEncode(value) {
+    if (value == undefined || value == null || value == "") {
         return value;
     }
 
@@ -64,13 +60,17 @@ function htmlEncode(value)
 }
 
 //For those browsers that dont have it so at least they won't crash.
-if (!window.console)
-{
-    window.console = { time:function(){}, timeEnd:function(){}, group:function(){}, groupEnd:function(){}, log:function(){} };
+if (!window.console) {
+    window.console = { time: function () {
+        }, timeEnd: function () {
+        }, group: function () {
+        }, groupEnd: function () {
+        }, log: function () {
+        }
+    };
 }
 
-function loadModule(taskId, reloadId, sendFromKind, sendFromUrl)
-{
+function loadModule(taskId, reloadId, sendFromKind, sendFromUrl) {
     // Fade in a progress indicator
     $("#loadingContent").fadeIn(800);
 
@@ -90,16 +90,15 @@ function loadModule(taskId, reloadId, sendFromKind, sendFromUrl)
         type: "GET",
         url: "/gp/rest/RunTask/load" + queryString,
         cache: false,
-        data: { "lsid" : taskId, "reloadJob":  reloadId},
-        success: function(response) {
+        data: { "lsid": taskId, "reloadJob": reloadId},
+        success: function (response) {
             // Hide the loading indicator
             $("#loadingContent").hide();
 
             var message = response["MESSAGE"];
             var error = response["ERROR"];
 
-            if (error !== undefined && error !== null)
-            {
+            if (error !== undefined && error !== null) {
                 alert(error);
             }
             if (message !== undefined && message !== null) {
@@ -109,22 +108,19 @@ function loadModule(taskId, reloadId, sendFromKind, sendFromUrl)
             if (response["module"] !== undefined &&
                 response["module"] !== null
                 && response["parameters"] != undefined
-                && response["parameters"] !== undefined )
-            {
+                && response["parameters"] !== undefined) {
 
                 run_task_info.reloadJobId = reloadId;
                 var module = response["module"];
                 loadModuleInfo(module);
 
                 //check if there are missing tasks (only applies to pipelines)
-                if(module["missing_tasks"])
-                {
+                if (module["missing_tasks"]) {
 
                     $("#missingTasksDiv").append("<p class='errorMessage'>WARNING: This pipeline requires modules or module " +
                         "versions which are not installed on this server.</p>");
                     var installTasksButton = $("<button> Install missing tasks</button>");
-                    installTasksButton.button().click(function()
-                    {
+                    installTasksButton.button().click(function () {
                         window.location.replace("/gp/viewPipeline.jsp?name=" + run_task_info.lsid);
                     });
 
@@ -137,8 +133,7 @@ function loadModule(taskId, reloadId, sendFromKind, sendFromUrl)
                     $("#rCode").parents("tr:first").hide();
 
                 }
-                else if(module["private_tasks"])
-                {
+                else if (module["private_tasks"]) {
                     $("#missingTasksDiv").append("<p class='errorMessage'>WARNING: This pipeline includes tasks " +
                         "which you do not have permission to run on this server.</p>");
                     $(".submitControlsDiv").hide();
@@ -147,14 +142,12 @@ function loadModule(taskId, reloadId, sendFromKind, sendFromUrl)
                     $("#matlabCode").parents("tr:first").hide();
                     $("#rCode").parents("tr:first").hide();
                 }
-                else if(module["eula"])
-                {
+                else if (module["eula"]) {
                     clearEulas();
                     generateEulas(module["eula"], reloadId, sendFromKind, sendFromUrl);
                     $("#eula-block").show();
                 }
-                else
-                {
+                else {
                     loadParametersByGroup(module["parameter_groups"], response["parameters"], response["initialValues"], response["batchParams"]);
                 }
                 //the parameter form elements have been created now make the form visible
@@ -178,8 +171,7 @@ function loadModule(taskId, reloadId, sendFromKind, sendFromUrl)
                 sendToMapToMenu();
             }
         },
-        error: function(xhr, ajaxOptions, thrownError)
-        {
+        error: function (xhr, ajaxOptions, thrownError) {
             console.log("Response from server: status=" + xhr.status + " text=" + xhr.responseText);
             console.log(thrownError);
 
@@ -212,7 +204,7 @@ function generateEulas(eula, reloadId, sendFromKind, sendFromUrl) {
         .addClass("license-center")
         .appendTo(block);
 
-    $(eula.pendingEulas).each(function(index, item) {
+    $(eula.pendingEulas).each(function (index, item) {
         var thisEula = $("<div></div>")
             .addClass("eula")
             .appendTo(block);
@@ -234,15 +226,15 @@ function generateEulas(eula, reloadId, sendFromKind, sendFromUrl) {
             .appendTo(thisEula);
     });
 
-    var initialQueryString = "lsid=" + encodeURIComponent( eula.currentLsid );
+    var initialQueryString = "lsid=" + encodeURIComponent(eula.currentLsid);
     if (reloadId) {
-        initialQueryString = initialQueryString + "&reloadJob=" + encodeURIComponent( reloadId );
+        initialQueryString = initialQueryString + "&reloadJob=" + encodeURIComponent(reloadId);
     }
     if (sendFromUrl) {
-        initialQueryString = initialQueryString + "&_file="+encodeURIComponent(sendFromUrl);
+        initialQueryString = initialQueryString + "&_file=" + encodeURIComponent(sendFromUrl);
     }
     if (sendFromKind) {
-        initialQueryString = initialQueryString + "&_format="+encodeURIComponent(sendFromKind);
+        initialQueryString = initialQueryString + "&_format=" + encodeURIComponent(sendFromKind);
     }
 
     $("<div></div>")
@@ -254,36 +246,36 @@ function generateEulas(eula, reloadId, sendFromKind, sendFromUrl) {
             .append($('<input type="hidden"></input>')
                 .attr("name", "lsid")
                 .attr("value", eula.currentLsid)
-            )
+        )
             .append($("<input></input>")
                 .attr("type", "hidden")
                 .attr("name", "initialQueryString")
                 .attr("value", initialQueryString)
-            )
+        )
             .append($("<input></input>")
                 .attr("type", "hidden")
                 .attr("name", "reloadJob")
                 .attr("value", "")
-            )
+        )
             .append(eula.pendingEulas.length > 1 ?
                 $("<p>Do you accept all the license agreements?</p>").addClass("license-agree-text") :
                 $("<p>Do you accept the license agreement?</p>").addClass("license-agree-text")
-            )
+        )
             .append($("<input></input>")
                 .attr("type", "submit")
                 .attr("value", "OK")
-            )
+        )
             .append($("<input></input>")
                 .attr("type", "button")
                 .attr("onclick", "document.location='/gp/pages/index.jsf'")
                 .attr("value", "Cancel")
-            )
         )
+    )
         .appendTo(block);
 
-        setTimeout(function() {
-            $("#submitJob").hide();
-        }, 10);
+    setTimeout(function () {
+        $("#submitJob").hide();
+    }, 10);
 }
 
 function clearEulas() {
@@ -297,7 +289,7 @@ function clearAllSendToParams() {
 function sendToMapToMenu() {
     // Insert into the old menus
     var starts = $(".send-to-param-start");
-    starts.each(function(index, start) {
+    starts.each(function (index, start) {
         var kind = $(start).attr("data-kind");
         var url = $(start).attr("data-url");
         var params = run_task_info.sendTo[kind];
@@ -313,13 +305,13 @@ function sendToMapToMenu() {
 
     // Insert into the new menus
     var paramLists = $(".send-to-param-list");
-    paramLists.each(function(index, paramList) {
+    paramLists.each(function (index, paramList) {
         sendToParamForMenu(paramList);
     });
 }
 
 function sendToParamForMenu(paramList) {
-    $(paramList).each(function(index, element) {
+    $(paramList).each(function (index, element) {
         var kind = $(element).attr("data-kind");
         var url = $(element).attr("data-url");
         var params = run_task_info.sendTo[kind];
@@ -341,7 +333,7 @@ function sendToParamForMenu(paramList) {
                             "suites": [],
                             "tags": []
                         },
-                        click: function(event) {
+                        click: function (event) {
                             var paramName = $(event.target).closest(".module-listing").attr("name");
                             setInputField(paramName, url);
                             $(element).closest(".search-widget").searchslider("hide");
@@ -360,19 +352,16 @@ function sendToParamForMenu(paramList) {
     });
 }
 
-function loadModuleInfo(module)
-{
+function loadModuleInfo(module) {
     run_task_info.lsid = module["LSID"];
     run_task_info.name = module["name"];
 
-    if(run_task_info.lsid == undefined)
-    {
+    if (run_task_info.lsid == undefined) {
         throw("Unknown task LSID");
         return;
     }
 
-    if(run_task_info.name == undefined)
-    {
+    if (run_task_info.name == undefined) {
         throw("Unknown task name");
         return;
     }
@@ -380,30 +369,25 @@ function loadModuleInfo(module)
     $("#task_name").prepend(run_task_info.name);
 
     //add version drop down
-    if(module["lsidVersions"] !== undefined)
-    {
-        for(var v =0; v <module["lsidVersions"].length; v++)
-        {
+    if (module["lsidVersions"] !== undefined) {
+        for (var v = 0; v < module["lsidVersions"].length; v++) {
             var versionnum = module["lsidVersions"][v];
             var index = versionnum.lastIndexOf(":");
-            if(index == -1)
-            {
+            if (index == -1) {
                 alert("An error occurred while loading module versions.\nInvalid lsid: " + module["lsidVersions"][v]);
             }
 
-            var version = versionnum.substring(index+1, versionnum.length);
+            var version = versionnum.substring(index + 1, versionnum.length);
             var modversion = "<option value='" + versionnum + "'>" + version + "</option>";
             $('#task_versions').append(modversion);
 
-            if(module["lsidVersions"][v] == run_task_info.lsid)
-            {
-                $('#task_versions').val(versionnum).attr('selected',true);
+            if (module["lsidVersions"][v] == run_task_info.lsid) {
+                $('#task_versions').val(versionnum).attr('selected', true);
             }
         }
 
         //if there is only one version then replace the drop down with text
-        if(module["lsidVersions"].length == 1)
-        {
+        if (module["lsidVersions"].length == 1) {
             $("#task_versions").replaceWith("<span class='normal'>" + $('#task_versions option:selected').text() + "</span>");
         }
 
@@ -416,8 +400,7 @@ function loadModuleInfo(module)
          classes: "multiselect"
          });*/
 
-        $('#task_versions').change(function()
-        {
+        $('#task_versions').change(function () {
             var changeTaskVersion = "index.jsf?lsid=" + $(this).val();
             window.open(changeTaskVersion, '_self');
         });
@@ -427,15 +410,13 @@ function loadModuleInfo(module)
     var exportLink = "/gp/makeZip.jsp?name=" + run_task_info.lsid;
     $("#export").attr("href", exportLink);
     $("#export").data("pipeline", isPipeline);
-    $("#export").click(function(e)
-    {
+    $("#export").click(function (e) {
         var isPipeline = $(this).data("pipeline");
 
-        if(isPipeline)
-        {
+        if (isPipeline) {
             e.preventDefault();
             //prompt the user if they want to include modules
-            var dialog = $("<div><p>Press 'Include modules' to include all modules used by " +  run_task_info.name +
+            var dialog = $("<div><p>Press 'Include modules' to include all modules used by " + run_task_info.name +
                 " in the exported zip file. </p> <p>Press 'Pipeline only' to include only the " + run_task_info.name + " pipeline definition itself. </p></div>");
             dialog.dialog({
                 title: "Export Pipeline",
@@ -444,16 +425,16 @@ function loadModuleInfo(module)
                 width: 500,
                 modal: true,
                 buttons: {
-                    "Include modules": function() {
+                    "Include modules": function () {
                         window.open("/gp/makeZip.jsp?name=" + run_task_info.lsid + "&includeDependents=1");
-                        $( this ).dialog( "close" );
+                        $(this).dialog("close");
                     },
-                    "Pipeline only": function() {
+                    "Pipeline only": function () {
                         window.open("/gp/makeZip.jsp?name=" + run_task_info.lsid);
-                        $( this ).dialog( "close" );
+                        $(this).dialog("close");
                     },
-                    "Cancel Export": function() {
-                        $( this ).dialog( "close" );
+                    "Cancel Export": function () {
+                        $(this).dialog("close");
                     }
                 }
             });
@@ -462,49 +443,42 @@ function loadModuleInfo(module)
 
     });
 
-    var propertiesLink = "/gp/addTask.jsp?name="+run_task_info.lsid+"&view=1";
-    if(isPipeline)
-    {
-        propertiesLink = "/gp/viewPipeline.jsp?name="+run_task_info.lsid;
+    var propertiesLink = "/gp/addTask.jsp?name=" + run_task_info.lsid + "&view=1";
+    if (isPipeline) {
+        propertiesLink = "/gp/viewPipeline.jsp?name=" + run_task_info.lsid;
     }
 
-    var propertiesLink = "/gp/addTask.jsp?name="+run_task_info.lsid+"&view=1";
+    var propertiesLink = "/gp/addTask.jsp?name=" + run_task_info.lsid + "&view=1";
 
-    if(module["taskType"] == "pipeline")
-    {
-        propertiesLink = "/gp/viewPipeline.jsp?name="+run_task_info.lsid;
+    if (module["taskType"] == "pipeline") {
+        propertiesLink = "/gp/viewPipeline.jsp?name=" + run_task_info.lsid;
     }
 
     $("#properties").attr("href", propertiesLink);
 
     var hasDescription = false;
-    if(module["description"] !== undefined
-        && module["description"] != "")
-    {
+    if (module["description"] !== undefined
+        && module["description"] != "") {
         $("#mod_description").append(module["description"]);
         hasDescription = true;
     }
 
     //if module has doc specified or if for some reason
     // the hasDoc field was not set then show the doc link
-    if(module["hasDoc"] == undefined || module["hasDoc"])
-    {
+    if (module["hasDoc"] == undefined || module["hasDoc"]) {
         var docLink = "/gp/getTaskDoc.jsp?name=" + run_task_info.lsid;
         $("#documentation").attr("href", docLink);
     }
-    else
-    {
+    else {
         //otherwise hide the documentation link
         $("#documentation").hide();
     }
 
 
-    if(module["editable"] != undefined && module["editable"])
-    {
+    if (module["editable"] != undefined && module["editable"]) {
         var editLink = "/gp/modules/creator.jsf?lsid=" + run_task_info.lsid;
 
-        if(module["taskType"] == "pipeline")
-        {
+        if (module["taskType"] == "pipeline") {
             editLink = "/gp/pipeline/index.jsf?lsid=" + run_task_info.lsid;
         }
 
@@ -514,40 +488,33 @@ function loadModuleInfo(module)
     //add source info
     $("#source_info_tooltip").hide();
 
-    if(module["source_info"] !== undefined && module["source_info"] != null)
-    {
+    if (module["source_info"] !== undefined && module["source_info"] != null) {
         var label = module["source_info"].label;
         var iconUrl = module["source_info"].iconUrl;
         var briefDescription = module["source_info"].briefDesc;
         var fullDescription = module["source_info"].fullDesc;
 
         var empty = true;
-        if(label !== undefined && label !== '' && label !== null)
-        {
+        if (label !== undefined && label !== '' && label !== null) {
             $("#source_info").append(label);
         }
 
-        if(iconUrl !== undefined && iconUrl !== '' && iconUrl !== null)
-        {
+        if (iconUrl !== undefined && iconUrl !== '' && iconUrl !== null) {
             $("#source_info").prepend("<img src='" + iconUrl + "' width='18' height='16' />");
             empty = false;
         }
 
-        if(briefDescription !== undefined && briefDescription !== '' && briefDescription !== null)
-        {
+        if (briefDescription !== undefined && briefDescription !== '' && briefDescription !== null) {
             $("#source_info_tooltip").append(briefDescription);
             $("#source_info").data("hasBriefDescription", true);
         }
-        else
-        {
+        else {
             $("#source_info").data("hasBriefDescription", false);
         }
 
-        if(fullDescription !== undefined && fullDescription !== '' && fullDescription !== null)
-        {
+        if (fullDescription !== undefined && fullDescription !== '' && fullDescription !== null) {
             var readMoreLink = $("<a href='#'> Read More</a>");
-            readMoreLink.click(function(event)
-            {
+            readMoreLink.click(function (event) {
                 event.preventDefault();
                 $("#source_info_tooltip").hide();
 
@@ -557,37 +524,31 @@ function loadModuleInfo(module)
             $("#source_info_tooltip").append(readMoreLink);
         }
 
-        $("#source_info").hover(function(e)
-        {
+        $("#source_info").hover(function (e) {
             $("#source_info_tooltip").css("position", "absolute");
             $("#source_info_tooltip").css("top", $("#source_info").position().top + 15);
             $("#source_info_tooltip").css("right", 20);
 
-            setTimeout(function()
-            {
-                if($("#source_info").is(":hover"))
-                {
-                    if($("#source_info").data("hasBriefDescription"))
-                    {
+            setTimeout(function () {
+                if ($("#source_info").is(":hover")) {
+                    if ($("#source_info").data("hasBriefDescription")) {
                         $("#source_info_tooltip").show();
                     }
                 }
             }, 1150);
         });
 
-        $("body").mousemove(function()
-        {
-            if(!$("#source_info_tooltip").is(":hover"))
-            {
+        $("body").mousemove(function () {
+            if (!$("#source_info_tooltip").is(":hover")) {
                 $("#source_info_tooltip").hide();
             }
         });
 
-        $("#source_info_tooltip").mouseleave(function() {
+        $("#source_info_tooltip").mouseleave(function () {
             $("#source_info_tooltip").hide();
         });
 
-        $("#source_info_tooltip").focusout(function() {
+        $("#source_info_tooltip").focusout(function () {
             $("#source_info_tooltip").hide();
         });
 
@@ -595,8 +556,7 @@ function loadModuleInfo(module)
     }
 }
 
-function setParamFieldType(parameterInfo)
-{
+function setParamFieldType(parameterInfo) {
     //set the field types of this parameter
     run_task_info.params[parameterInfo.name].type = [];
     var isFile = false;
@@ -605,13 +565,11 @@ function setParamFieldType(parameterInfo)
     var isText = false;
 
     var allowCustomChoice = true;
-    if(parameterInfo.choiceInfo != undefined  && parameterInfo.choiceInfo != null && parameterInfo.choiceInfo != '')
-    {
-        isChoice= true;
+    if (parameterInfo.choiceInfo != undefined && parameterInfo.choiceInfo != null && parameterInfo.choiceInfo != '') {
+        isChoice = true;
 
         //check if a custom choice is allowed
-        if(!parameterInfo.choiceInfo.choiceAllowCustom)
-        {
+        if (!parameterInfo.choiceInfo.choiceAllowCustom) {
             allowCustomChoice = false;
         }
 
@@ -620,18 +578,14 @@ function setParamFieldType(parameterInfo)
     }
 
     //other types will be set if custom choice is allowed
-    if(allowCustomChoice)
-    {
-        if(parameterInfo.TYPE == "FILE" && parameterInfo.MODE == "IN")
-        {
+    if (allowCustomChoice) {
+        if (parameterInfo.TYPE == "FILE" && parameterInfo.MODE == "IN") {
             isFile = true;
             run_task_info.params[parameterInfo.name].type.push(field_types.FILE);
         }
 
-        if(!isFile && !isChoice)
-        {
-            if(parameterInfo.type == "PASSWORD")
-            {
+        if (!isFile && !isChoice) {
+            if (parameterInfo.type == "PASSWORD") {
                 run_task_info.params[parameterInfo.name].type.push(field_types.PASSWORD);
             }
             run_task_info.params[parameterInfo.name].type.push(field_types.TEXT);
@@ -639,34 +593,29 @@ function setParamFieldType(parameterInfo)
     }
 }
 
-function setAllowMultipleValuesForParam(parameterInfo)
-{
+function setAllowMultipleValuesForParam(parameterInfo) {
     run_task_info.params[parameterInfo.name]["allowMultiple"] = false;
-    if(parameterInfo.maxValue == undefined
+    if (parameterInfo.maxValue == undefined
         || parameterInfo.maxValue == null
-        || parseInt(parameterInfo.maxValue) != 1)
-    {
+        || parseInt(parameterInfo.maxValue) != 1) {
         run_task_info.params[parameterInfo.name]["allowMultiple"] = true;
     }
 }
 
-function setParamOptionalOrRequired(parameterInfo)
-{
+function setParamOptionalOrRequired(parameterInfo) {
     //check if this is a required parameter
     run_task_info.params[parameterInfo.name]["required"] = false;
 
-    if(parameterInfo.optional.length == 0 || parameterInfo.minValue != 0)
-    {
+    if (parameterInfo.optional.length == 0 || parameterInfo.minValue != 0) {
         run_task_info.params[parameterInfo.name]["required"] = true;
     }
 }
 
-function setParamDisplayName(parameterInfo)
-{
+function setParamDisplayName(parameterInfo) {
     //set the display name
     run_task_info.params[parameterInfo.name]["displayname"] = parameterInfo.name;
     //use the alternate name if there is one (this is usually set for pipelines)
-    if(parameterInfo.altName != undefined
+    if (parameterInfo.altName != undefined
         && parameterInfo.altName != null
         && parameterInfo.altName.replace(/ /g, '') != "") ////trims spaces to check for empty string
     {
@@ -674,11 +623,10 @@ function setParamDisplayName(parameterInfo)
     }
 
     //replace . with spaces for parameter display name
-    run_task_info.params[parameterInfo.name]["displayname"] = run_task_info.params[parameterInfo.name]["displayname"].replace(/\./g,' ');
+    run_task_info.params[parameterInfo.name]["displayname"] = run_task_info.params[parameterInfo.name]["displayname"].replace(/\./g, ' ');
 }
 
-function initParam(parameterInfo, index, batchParams)
-{
+function initParam(parameterInfo, index, batchParams) {
     run_task_info.params[parameterInfo.name] = {};
 
     //keep track of position of element in list
@@ -707,12 +655,10 @@ function initParam(parameterInfo, index, batchParams)
     run_task_info.params[parameterInfo.name].altDescription = parameterInfo.altDescription;
     run_task_info.params[parameterInfo.name].groupInfo = parameterInfo.groupInfo;
 
-    if(batchParams != undefined && batchParams != null && batchParams.indexOf(parameterInfo.name) != -1)
-    {
+    if (batchParams != undefined && batchParams != null && batchParams.indexOf(parameterInfo.name) != -1) {
         run_task_info.params[parameterInfo.name].isBatch = true;
     }
-    else
-    {
+    else {
         run_task_info.params[parameterInfo.name].isBatch = false;
     }
 
@@ -733,20 +679,17 @@ function addSendToParam(parameterInfo) {
     }
 }
 
-function createTextDiv(parameterName, groupId, initialValuesList)
-{
+function createTextDiv(parameterName, groupId, initialValuesList) {
     var textDiv = $("<div class='textDiv'/>");
 
     var paramDetails = run_task_info.params[parameterName];
 
     var textField = null;
     var isPassword = $.inArray(field_types.PASSWORD, run_task_info.params[parameterName].type) != -1;
-    if(isPassword)
-    {
+    if (isPassword) {
         textField = $("<input type='password' class='pValue' />");
     }
-    else
-    {
+    else {
         textField = $("<input type='text' class='pValue' />");
     }
 
@@ -756,7 +699,7 @@ function createTextDiv(parameterName, groupId, initialValuesList)
     textField.get(0).addEventListener("dragleave", dragLeave, true);
     textField.get(0).addEventListener("dragexit", dragExit, false);
     textField.get(0).addEventListener("dragover", dragOver, false);
-    textField.get(0).addEventListener("drop", function(event) {
+    textField.get(0).addEventListener("drop", function (event) {
         $(this).removeClass('runtask-highlight');
         var link = event.dataTransfer.getData('Text');
         $(this).val(link);
@@ -765,8 +708,7 @@ function createTextDiv(parameterName, groupId, initialValuesList)
         $(this).trigger("change");
     }, true);
 
-    textField.change(function()
-    {
+    textField.change(function () {
         var valueList = [];
         valueList.push($(this).val());
 
@@ -780,29 +722,24 @@ function createTextDiv(parameterName, groupId, initialValuesList)
 
     var textValueList = [];
 
-    if(textField.val() != "")
-    {
+    if (textField.val() != "") {
         textValueList.push(textField.val());
     }
 
     updateValuesForGroup(groupId, parameterName, textValueList);
 
-    if(paramDetails.required == 0 && paramDetails.minValue != 0)
-    {
+    if (paramDetails.required == 0 && paramDetails.minValue != 0) {
         textField.addClass("requiredParam");
     }
 
     //select initial values if there are any
-    if( initialValuesList != undefined &&  initialValuesList != null)
-    {
+    if (initialValuesList != undefined && initialValuesList != null) {
         var inputFieldValue = "";
-        for(v=0; v <  initialValuesList.length; v++)
-        {
+        for (v = 0; v < initialValuesList.length; v++) {
             inputFieldValue += initialValuesList[v];
 
             // add a comma between items in this list
-            if(v < ( initialValuesList.length-1))
-            {
+            if (v < ( initialValuesList.length - 1)) {
                 inputFieldValue += ",";
             }
         }
@@ -820,7 +757,7 @@ function createTextDiv(parameterName, groupId, initialValuesList)
  * @param groupId
  */
 function createFileDivId(parameterName, groupId) {
-    var divId="fileDiv-";
+    var divId = "fileDiv-";
     if (parameterName) {
         divId += parameterName;
     }
@@ -831,78 +768,71 @@ function createFileDivId(parameterName, groupId) {
     return divId;
 }
 
-function createFileDiv(parameterName, groupId, enableBatch, initialValuesList)
-{
-    var fileDivId=createFileDivId(parameterName, groupId);
+function createFileDiv(parameterName, groupId, enableBatch, initialValuesList) {
+    var fileDivId = createFileDivId(parameterName, groupId);
     var fileUploadDiv = $("<div class='fileUploadDiv'/>");
-    var fileDiv = $("<div class='fileDiv mainDivBorder' id='"+fileDivId+"' />");
+    var fileDiv = $("<div class='fileDiv mainDivBorder' id='" + fileDivId + "' />");
 
     //enable dragging of file between groups
     fileDiv.droppable(
-    {
-        hoverClass: 'runtask-highlight',
-        drop: function(event, ui)
         {
-            try
-            {
-                var target = $(event.target);
+            hoverClass: 'runtask-highlight',
+            drop: function (event, ui) {
+                try {
+                    var target = $(event.target);
 
-                var draggable = ui.draggable;
-                var draggablePRow = draggable.find("td").parents(".pRow").first();
-                if(draggablePRow == undefined || draggablePRow == null || draggablePRow.size() == 0)
-                {
-                    //do nothing since this is not droppable
-                    return;
+                    var draggable = ui.draggable;
+                    var draggablePRow = draggable.find("td").parents(".pRow").first();
+                    if (draggablePRow == undefined || draggablePRow == null || draggablePRow.size() == 0) {
+                        //do nothing since this is not droppable
+                        return;
+                    }
+                    var draggableParamName = draggablePRow.attr("id");
+                    var draggableGroupId = draggable.parents(".valueEntryDiv").first().data("groupId");
+
+                    var targetPRow = target.parents(".pRow").first();
+                    if (targetPRow == undefined || targetPRow == null || targetPRow.size() == 0) {
+                        //do nothing since this is not expected
+                        return;
+                    }
+                    var targetParamName = targetPRow.attr("id");
+
+                    var filename = draggable.text();
+                    filename = $.trim(filename);
+                    var targetGroupId = target.parents(".valueEntryDiv").first().data("groupId");
+
+                    var fileObjListings = getFilesForGroup(targetGroupId, targetParamName);
+
+                    validateMaxFiles(targetParamName, fileObjListings.length + 1);
+
+                    var fileObj = {
+                        name: filename,
+                        id: fileId++
+                    };
+                    fileObjListings.push(fileObj);
+                    updateFilesForGroup(targetGroupId, targetParamName, fileObjListings);
+                    updateParamFileTable(targetParamName, null, groupId);
+
+
+                    var rowIndex = $(ui.helper).find("input[name='rowindex']").val();
+                    var dfileObjListings = getFilesForGroup(draggableGroupId, draggableParamName);
+
+                    dfileObjListings.splice(rowIndex, 1);
+                    updateFilesForGroup(draggableGroupId, draggableParamName, dfileObjListings);
+                    updateParamFileTable(draggableParamName, null, draggableGroupId);
                 }
-                var draggableParamName = draggablePRow.attr("id");
-                var draggableGroupId = draggable.parents(".valueEntryDiv").first().data("groupId");
-
-                var targetPRow = target.parents(".pRow").first();
-                if(targetPRow == undefined || targetPRow == null || targetPRow.size() == 0)
-                {
-                    //do nothing since this is not expected
-                    return;
+                catch (err) {
+                    //drop failed do nothing but log error
+                    console.log("Error: " + err.message);
                 }
-                var targetParamName = targetPRow.attr("id");
-
-                var filename = draggable.text();
-                filename = $.trim(filename);
-                var targetGroupId = target.parents(".valueEntryDiv").first().data("groupId");
-
-                var fileObjListings = getFilesForGroup(targetGroupId, targetParamName);
-
-                validateMaxFiles(targetParamName, fileObjListings.length + 1);
-
-                var fileObj = {
-                    name: filename,
-                    id: fileId++
-                };
-                fileObjListings.push(fileObj);
-                updateFilesForGroup(targetGroupId , targetParamName, fileObjListings);
-                updateParamFileTable(targetParamName, null, groupId);
-
-
-                var rowIndex = $(ui.helper).find("input[name='rowindex']").val();
-                var dfileObjListings = getFilesForGroup(draggableGroupId, draggableParamName);
-
-                dfileObjListings.splice(rowIndex, 1);
-                updateFilesForGroup(draggableGroupId , draggableParamName, dfileObjListings);
-                updateParamFileTable(draggableParamName, null, draggableGroupId);
             }
-            catch(err)
-            {
-                //drop failed do nothing but log error
-                console.log("Error: " + err.message);
-            }
-        }
-    });
+        });
 
     var paramDetails = run_task_info.params[parameterName];
 
     var uploadFileText = "Upload Files...";
     var addUrlText = "Add Paths or URLs...";
-    if(!paramDetails.allowMultiple)
-    {
+    if (!paramDetails.allowMultiple) {
         uploadFileText = "Upload File...";
         addUrlText = "Add Path or URL...";
     }
@@ -911,13 +841,11 @@ function createFileDiv(parameterName, groupId, enableBatch, initialValuesList)
     fileInput.data("pname", parameterName);
 
     // Create the single/batch run mode toggle
-    if(enableBatch)
-    {
+    if (enableBatch) {
         var batchBox = $("<div class='batchBox' title='A job will be launched for every file with a matching type.'></div>");
         // Add the checkbox
         var batchCheck = $("<input type='checkbox' id='batchCheck" + parameterName + "' />");
-        batchCheck.change(function()
-        {
+        batchCheck.change(function () {
             var paramName = $(this).parents("tr").first().data("pname");
             if ($(this).is(":checked")) {
                 run_task_info.params[paramName].isBatch = true;
@@ -929,8 +857,7 @@ function createFileDiv(parameterName, groupId, enableBatch, initialValuesList)
                 //allow multi-select from file browser when in batch mode
                 $(this).parents(".fileDiv").find(".uploadedinputfile").attr("multiple", "multiple");
             }
-            else
-            {
+            else {
                 //remove row highlight indicating batch mode
                 $(this).closest(".pRow").css("background-color", "#FFFFFF");
                 $(this).closest(".pRow").next().css("background-color", "#FFFFFF");
@@ -943,8 +870,7 @@ function createFileDiv(parameterName, groupId, enableBatch, initialValuesList)
                 var maxNum = run_task_info.params[paramName].maxValue;
 
                 //disable multiselect for this param if it is not file list param
-                if(maxNum <= 1)
-                {
+                if (maxNum <= 1) {
                     $(this).parents(".fileDiv").find(".uploadedinputfile").removeAttr("multiple");
                 }
 
@@ -958,28 +884,24 @@ function createFileDiv(parameterName, groupId, enableBatch, initialValuesList)
         fileUploadDiv.append(batchBox);
 
         //if this is a batch parameter then pre-select the batch checkbox
-        if(run_task_info.params[parameterName].isBatch)
-        {
+        if (run_task_info.params[parameterName].isBatch) {
             batchBox.find("input[type='checkbox']").prop('checked', true);
         }
     }
 
-    if (paramDetails.allowMultiple)
-    {
+    if (paramDetails.allowMultiple) {
         //make the file input field multiselect, so you can select more than one file
         fileInput.attr("multiple", "multiple");
     }
 
-    var uploadFileBtn = $("<button class='uploadBtn' type='button'>"+ uploadFileText + "</button>");
-    uploadFileBtn.button().click(function()
-    {
+    var uploadFileBtn = $("<button class='uploadBtn' type='button'>" + uploadFileText + "</button>");
+    uploadFileBtn.button().click(function () {
         console.log("uploadedfile: " + $(this).siblings(".uploadedinputfile").first());
         $(this).parents(".fileDiv").first().find(".uploadedinputfile:first").click();
     });
 
     fileUploadDiv.append(uploadFileBtn);
-    if(paramDetails.required)
-    {
+    if (paramDetails.required) {
         fileInput.addClass("requiredParam");
     }
 
@@ -987,11 +909,10 @@ function createFileDiv(parameterName, groupId, enableBatch, initialValuesList)
     fileInputDiv.append(fileInput);
     fileUploadDiv.append(fileInputDiv);
 
-    var urlButton = $("<button type='button' class='urlButton'>"+ addUrlText +"</button>");
+    var urlButton = $("<button type='button' class='urlButton'>" + addUrlText + "</button>");
     fileUploadDiv.append(urlButton);
     urlButton.data("groupId", groupId);
-    urlButton.button().click(function()
-    {
+    urlButton.button().click(function () {
         var urlDiv = $("<div class='urlDiv'/>");
 
         urlDiv.append("Enter url:");
@@ -1000,8 +921,7 @@ function createFileDiv(parameterName, groupId, enableBatch, initialValuesList)
 
         var urlActionDiv = $("<div class='center'/>");
         var enterButton = $("<button>Enter</button>");
-        enterButton.button().click(function()
-        {
+        enterButton.button().click(function () {
             var paramName = $(this).parents("tr:first").data("pname");
 
             var url = $(this).parents("div:nth-child(2)").find(".urlInput").first().val();
@@ -1012,8 +932,7 @@ function createFileDiv(parameterName, groupId, enableBatch, initialValuesList)
 
             //check if this is not an empty string and
             // no non-space characters were entered
-            if($.trim(url) == '')
-            {
+            if ($.trim(url) == '') {
                 return;
             }
 
@@ -1039,8 +958,7 @@ function createFileDiv(parameterName, groupId, enableBatch, initialValuesList)
         urlActionDiv.append(enterButton);
 
         var cancelButton = $("<button>Cancel</button>");
-        cancelButton.button().click(function()
-        {
+        cancelButton.button().click(function () {
             $(this).parents("td:first").children().show();
             $(this).parents(".urlDiv").first().remove();
         });
@@ -1053,7 +971,7 @@ function createFileDiv(parameterName, groupId, enableBatch, initialValuesList)
     });
 
     fileUploadDiv.append("<span class='drop-box'>Drag Files Here</span>");
-    fileUploadDiv.append("<div class='fileSizeCaption'> 2GB file upload limit using the "+ uploadFileText + " button. For files > 2GB upload from the Files tab. </div>");
+    fileUploadDiv.append("<div class='fileSizeCaption'> 2GB file upload limit using the " + uploadFileText + " button. For files > 2GB upload from the Files tab. </div>");
 
     fileDiv.append(fileUploadDiv);
 
@@ -1063,45 +981,39 @@ function createFileDiv(parameterName, groupId, enableBatch, initialValuesList)
     var fileObjListings = getFilesForGroup(groupId, parameterName);
 
     //also check if this parameter is also a choice parameter
-    if(initialValuesList != undefined &&  initialValuesList != null
-        && initialValuesList.length > 0)
-    {
-        if(!run_task_info.params[parameterName].initialChoiceValues)
-        {
-            var totalFileLength = fileObjListings.length +  initialValuesList.length;
+    if (initialValuesList != undefined && initialValuesList != null
+        && initialValuesList.length > 0) {
+        if (!run_task_info.params[parameterName].initialChoiceValues) {
+            var totalFileLength = fileObjListings.length + initialValuesList.length;
 
             //check if max file length will be violated
             //check if we should automatically enable batch in the case when the number of
             //initial files is greater than the maximum allowed
             var maxFiles = getMaxFiles(parameterName);
-            if(maxFiles != null && totalFileLength > maxFiles)
-            {
+            if (maxFiles != null && totalFileLength > maxFiles) {
                 paramDetails.isBatch = true;
             }
 
             validateMaxFiles(parameterName, totalFileLength);
 
-            for(var v=0; v < initialValuesList.length; v++)
-            {
+            for (var v = 0; v < initialValuesList.length; v++) {
                 //check if the file name is not empty
-                if( initialValuesList[v] != null &&  initialValuesList[v] != "")
-                {
+                if (initialValuesList[v] != null && initialValuesList[v] != "") {
                     var fileObj =
                     {
-                        name:  initialValuesList[v],
+                        name: initialValuesList[v],
                         id: fileId++
                     };
 
                     fileObjListings.push(fileObj);
                 }
             }
-            
+
             updateFilesForGroup(groupId, parameterName, fileObjListings);
             updateParamFileTable(parameterName, fileDiv, groupId);
         }
     }
-    else
-    {
+    else {
         //set the value of the parameter to empty array since no initial values were specified
         updateValuesForGroup(groupId, parameterName, []);
     }
@@ -1115,8 +1027,7 @@ function createFileDiv(parameterName, groupId, enableBatch, initialValuesList)
     dropbox.addEventListener("dragover", dragOver, false);
     dropbox.addEventListener("drop", drop, true);
 
-    if(run_task_info.params[parameterName].initialChoiceValues)
-    {
+    if (run_task_info.params[parameterName].initialChoiceValues) {
         fileDiv.hide();
     }
 
@@ -1125,8 +1036,7 @@ function createFileDiv(parameterName, groupId, enableBatch, initialValuesList)
 
 //add toggle to switch between field types for a parameter that has multiple
 //i.e. file drop-down parameters (CHOICE and FILE field types)
-function createModeToggle(parameterName)
-{
+function createModeToggle(parameterName) {
     var paramDetails = run_task_info.params[parameterName];
 
     var toggleChoiceFileDiv = $("<div class='fieldTypeToggle'/>");
@@ -1134,8 +1044,7 @@ function createModeToggle(parameterName)
 
     //this count is used create elements with unique ids for elements associated with the parameter
     var nextCount = run_task_info.params[parameterName].count;
-    if(nextCount == undefined || nextCount == null)
-    {
+    if (nextCount == undefined || nextCount == null) {
         nextCount = 0;
         run_task_info.params[parameterName].count = nextCount;
     }
@@ -1144,39 +1053,33 @@ function createModeToggle(parameterName)
     var idPName = nextCount + "_" + parameterName;
     var fileChoiceOptions = $("<div class='fileChoiceOptions'>");
 
-    if($.inArray(field_types.CHOICE, run_task_info.params[parameterName].type) != -1)
-    {
-         fileChoiceOptions.append('<input id="selectFile_' + idPName + '" name="field_toggle_' + idPName + '" type="radio" /><label for="selectFile_'+ idPName +'">Select a file</label>');
+    if ($.inArray(field_types.CHOICE, run_task_info.params[parameterName].type) != -1) {
+        fileChoiceOptions.append('<input id="selectFile_' + idPName + '" name="field_toggle_' + idPName + '" type="radio" /><label for="selectFile_' + idPName + '">Select a file</label>');
     }
 
-    if($.inArray(field_types.FILE, run_task_info.params[parameterName].type) != -1)
-    {
-        fileChoiceOptions.append('<input id="customFile_'+ idPName + '" name="field_toggle_' + idPName + '" type="radio" /><label for="customFile_'+ idPName +'">Upload your own file</label> ');
+    if ($.inArray(field_types.FILE, run_task_info.params[parameterName].type) != -1) {
+        fileChoiceOptions.append('<input id="customFile_' + idPName + '" name="field_toggle_' + idPName + '" type="radio" /><label for="customFile_' + idPName + '">Upload your own file</label> ');
     }
 
     fileChoiceOptions.find(":radio:checked").removeAttr("checked");
-    if(paramDetails.initialChoiceValues)
-    {
-        fileChoiceOptions.find('input[id="selectFile_'+ idPName + '"]').attr("checked", "checked");
+    if (paramDetails.initialChoiceValues) {
+        fileChoiceOptions.find('input[id="selectFile_' + idPName + '"]').attr("checked", "checked");
     }
-    else
-    {
-        fileChoiceOptions.find('input[id="customFile_'+ idPName + '"]').attr("checked", "checked");
+    else {
+        fileChoiceOptions.find('input[id="customFile_' + idPName + '"]').attr("checked", "checked");
     }
 
     toggleChoiceFileDiv.append(fileChoiceOptions);
 
     fileChoiceOptions.buttonset();
 
-    fileChoiceOptions.find("label.ui-button:not(:last)").each(function()
-    {
+    fileChoiceOptions.find("label.ui-button:not(:last)").each(function () {
         $(this).after('<span class="elemSpacing">  or  </span>');
     });
 
     fileChoiceOptions.data("pname", parameterName);
 
-    fileChoiceOptions.change(function()
-    {
+    fileChoiceOptions.change(function () {
         var selectedOption = ($(this).find(":radio:checked + label").text());
         var pname = $(this).data("pname");
 
@@ -1189,12 +1092,10 @@ function createModeToggle(parameterName)
         $(this).parents("td:first").find(".fileDiv").toggle();
         $(this).parents("td:first").find(".selectChoice").toggle();
 
-        if(selectedOption == "Select a file")
-        {
+        if (selectedOption == "Select a file") {
             var defaultValue = $(this).parents("td:first").find(".choice").data("default_value");
 
-            if(defaultValue == undefined || defaultValue == null)
-            {
+            if (defaultValue == undefined || defaultValue == null) {
                 defaultValue = "";
             }
 
@@ -1208,27 +1109,22 @@ function createModeToggle(parameterName)
 }
 
 //initialize the params object with info about the parameters
-function initParams(parameterGroups, parameters, batchParams)
-{
+function initParams(parameterGroups, parameters, batchParams) {
     run_task_info.parameterGroups = parameterGroups;
 
-    if(parameters == undefined || parameters == null)
-    {
+    if (parameters == undefined || parameters == null) {
         return;
     }
 
-    for(var q=0;q < parameters.length;q++)
-    {
+    for (var q = 0; q < parameters.length; q++) {
         var parameterName = parameters[q].name;
         initParam(parameters[q], q, batchParams);
     }
 }
 
-function getNextGroupId(parameterName)
-{
+function getNextGroupId(parameterName) {
     var paramGroupInfo = parameter_and_val_groups[parameterName];
-    if(paramGroupInfo == null)
-    {
+    if (paramGroupInfo == null) {
         paramGroupInfo = {};
         paramGroupInfo.groupCountIncrementer = 0;
         parameter_and_val_groups[parameterName] = paramGroupInfo;
@@ -1238,9 +1134,8 @@ function getNextGroupId(parameterName)
     nextGroupId++;
     parameter_and_val_groups[parameterName].groupCountIncrementer = nextGroupId;
 
-    if(parameter_and_val_groups[parameterName].groups == undefined ||
-        parameter_and_val_groups[parameterName].groups == null)
-    {
+    if (parameter_and_val_groups[parameterName].groups == undefined ||
+        parameter_and_val_groups[parameterName].groups == null) {
         parameter_and_val_groups[parameterName].groups = {};
     }
 
@@ -1249,78 +1144,65 @@ function getNextGroupId(parameterName)
     return nextGroupId;
 }
 
-function getGroupId(element)
-{
+function getGroupId(element) {
     var valueEntryDiv = element.parents(".valueEntryDiv");
-    if(valueEntryDiv == undefined || valueEntryDiv == null
+    if (valueEntryDiv == undefined || valueEntryDiv == null
         || valueEntryDiv.data("groupId") == undefined
-        || valueEntryDiv.data("groupId") == null)
-    {
+        || valueEntryDiv.data("groupId") == null) {
         javascript_abort("Error retrieving group id");
     }
 
     return valueEntryDiv.data("groupId");
 }
 
-function updateValuesForGroup(groupId, paramName, valueList)
-{
-    if(parameter_and_val_groups[paramName].groups[groupId] == undefined
-        || parameter_and_val_groups[paramName].groups[groupId] == null )
-    {
+function updateValuesForGroup(groupId, paramName, valueList) {
+    if (parameter_and_val_groups[paramName].groups[groupId] == undefined
+        || parameter_and_val_groups[paramName].groups[groupId] == null) {
         javascript_abort("Error retrieving group Id " + groupId + " for parameter " + paramName);
     }
 
     parameter_and_val_groups[paramName].groups[groupId].values = valueList;
 }
 
-function getFileGroupIdByIndex(paramName, index)
-{
-    if(parameter_and_val_groups[paramName] == undefined || parameter_and_val_groups[paramName] == null
+function getFileGroupIdByIndex(paramName, index) {
+    if (parameter_and_val_groups[paramName] == undefined || parameter_and_val_groups[paramName] == null
         || parameter_and_val_groups[paramName].groups == undefined
-        || parameter_and_val_groups[paramName].groups == null )
-    {
+        || parameter_and_val_groups[paramName].groups == null) {
         javascript_abort("Error retrieving first group for parameter " + paramName);
     }
 
     var groupIds = Object.keys(parameter_and_val_groups[paramName].groups);
     //check if index is out of range
-    if(index < groupIds.length )
-    {
+    if (index < groupIds.length) {
         return groupIds[index];
     }
 
     javascript_abort("Error retrieving group: index out of range " + index);
 }
 
-function getFilesForGroup(groupId, paramName)
-{
-    if(parameter_and_val_groups[paramName].groups[groupId] == undefined
-        || parameter_and_val_groups[paramName].groups[groupId] == null )
-    {
+function getFilesForGroup(groupId, paramName) {
+    if (parameter_and_val_groups[paramName].groups[groupId] == undefined
+        || parameter_and_val_groups[paramName].groups[groupId] == null) {
         javascript_abort("Error retrieving group Id " + groupId + " for parameter " + paramName);
     }
 
-    if(parameter_and_val_groups[paramName].groups[groupId].files == undefined ||
-        parameter_and_val_groups[paramName].groups[groupId].files == null)
-    {
+    if (parameter_and_val_groups[paramName].groups[groupId].files == undefined ||
+        parameter_and_val_groups[paramName].groups[groupId].files == null) {
         parameter_and_val_groups[paramName].groups[groupId].files = [];
     }
 
     return parameter_and_val_groups[paramName].groups[groupId].files;
 }
 
-function updateFilesForGroup(groupId, paramName, filesList)
-{
-    if(parameter_and_val_groups[paramName].groups[groupId] == undefined
-        || parameter_and_val_groups[paramName].groups[groupId] == null )
-    {
+function updateFilesForGroup(groupId, paramName, filesList) {
+    if (parameter_and_val_groups[paramName].groups[groupId] == undefined
+        || parameter_and_val_groups[paramName].groups[groupId] == null) {
         javascript_abort("Error retrieving group Id " + groupId + " for parameter " + paramName);
     }
     parameter_and_val_groups[paramName].groups[groupId].files = filesList;
 }
 
-function createParamValueEntryDiv(parameterName, initialValuesObj)
-{
+function createParamValueEntryDiv(parameterName, initialValuesObj) {
     var contentDiv = $("<div class='valueEntryDiv'/>");
     var groupId = getNextGroupId(parameterName);
     contentDiv.data("groupId", groupId);
@@ -1329,9 +1211,8 @@ function createParamValueEntryDiv(parameterName, initialValuesObj)
     var groupingEnabled = false;
 
     var groupInfo = run_task_info.params[parameterName].groupInfo;
-    if(groupInfo != null && (groupInfo.maxValue == null || groupInfo.maxValue == undefined
-        || groupInfo.maxValue > 1))
-    {
+    if (groupInfo != null && (groupInfo.maxValue == null || groupInfo.maxValue == undefined
+        || groupInfo.maxValue > 1)) {
         groupingEnabled = true;
 
         //do not allow batch if grouping is enabled
@@ -1340,8 +1221,7 @@ function createParamValueEntryDiv(parameterName, initialValuesObj)
 
     var initialValues = null;
     var groupid = null;
-    if(initialValuesObj != undefined && initialValuesObj != null)
-    {
+    if (initialValuesObj != undefined && initialValuesObj != null) {
         initialValues = initialValuesObj.values;
         groupid = initialValuesObj.groupid;
     }
@@ -1349,18 +1229,15 @@ function createParamValueEntryDiv(parameterName, initialValuesObj)
     populateContentDiv(parameterName, contentDiv, groupId, initialValues, enableBatch);
 
     //check if grouping is enabled
-    if(groupingEnabled)
-    {
+    if (groupingEnabled) {
         var groupColumnLabel = groupInfo.groupColumnLabel;
-        if(groupColumnLabel == undefined && groupColumnLabel == null)
-        {
+        if (groupColumnLabel == undefined && groupColumnLabel == null) {
             groupColumnLabel = "file group";
         }
 
         var groupingDiv = $("<div class='groupingDiv'/>");
         var groupTextField = $("<input class='groupingTextField' type='text'/>");
-        groupTextField.change(function()
-        {
+        groupTextField.change(function () {
             var paramName = $(this).parents(".pRow").first().attr("id");
             var groupId = getGroupId($(this));
 
@@ -1368,12 +1245,10 @@ function createParamValueEntryDiv(parameterName, initialValuesObj)
             parameter_and_val_groups[paramName].groups[groupId].name = value;
         });
 
-        if(groupid == undefined || groupid == null)
-        {
+        if (groupid == undefined || groupid == null) {
             groupid = "";
         }
-        else
-        {
+        else {
             groupTextField.val(groupid);
             parameter_and_val_groups[parameterName].groups[groupId].name = groupid;
         }
@@ -1388,8 +1263,7 @@ function createParamValueEntryDiv(parameterName, initialValuesObj)
 
         //add delete button to remove this group
         var delButton = $("<img class='images floatRight' src='/gp/images/delete-blue.png'/>");
-        delButton.button().click(function()
-        {
+        delButton.button().click(function () {
             //TODO remove the grouping;
             var paramName = $(this).parents(".pRow").first().attr("id");
             var groupId = getGroupId($(this));
@@ -1399,8 +1273,7 @@ function createParamValueEntryDiv(parameterName, initialValuesObj)
             $(this).parents(".valueEntryDiv").remove();
         });
 
-        if($("#"+jqEscape(parameterName)).find(".valueEntryDiv").length != 0)
-        {
+        if ($("#" + jqEscape(parameterName)).find(".valueEntryDiv").length != 0) {
             contentDiv.prepend(delButton);
         }
     }
@@ -1408,81 +1281,66 @@ function createParamValueEntryDiv(parameterName, initialValuesObj)
     return contentDiv;
 }
 
-function populateContentDiv(parameterName, contentDiv, groupId, initialValues, enableBatch)
-{
+function populateContentDiv(parameterName, contentDiv, groupId, initialValues, enableBatch) {
     //create the necessary field types for this parameter
-    if($.inArray(field_types.CHOICE, run_task_info.params[parameterName].type) != -1)
-    {
+    if ($.inArray(field_types.CHOICE, run_task_info.params[parameterName].type) != -1) {
         contentDiv.append(initChoiceDiv(parameterName, groupId, initialValues));
     }
 
-    if($.inArray(field_types.FILE, run_task_info.params[parameterName].type) != -1)
-    {
+    if ($.inArray(field_types.FILE, run_task_info.params[parameterName].type) != -1) {
         contentDiv.append(createFileDiv(parameterName, groupId, enableBatch, initialValues));
     }
 
-    if($.inArray(field_types.TEXT, run_task_info.params[parameterName].type) != -1)
-    {
+    if ($.inArray(field_types.TEXT, run_task_info.params[parameterName].type) != -1) {
         //this must be a text entry
         contentDiv.append(createTextDiv(parameterName, groupId, initialValues));
     }
 
-    if(run_task_info.params[parameterName].type.length > 1)
-    {
+    if (run_task_info.params[parameterName].type.length > 1) {
         //multiple field types specified so add a toggle buttons
         //right now this would only be for a file drop-down parameter
         contentDiv.prepend(createModeToggle(parameterName));
     }
 }
 
-function loadParametersByGroup(parameterGroups, parameters, initialValues, batchParams)
-{
+function loadParametersByGroup(parameterGroups, parameters, initialValues, batchParams) {
     //check if the params object should be initialized
-    if(parameters != null)
-    {
+    if (parameters != null) {
         initParams(parameterGroups, parameters, batchParams);
     }
 
-    if(parameterGroups == null)
-    {
+    if (parameterGroups == null) {
         parameterGroups = run_task_info.parameterGroups
     }
 
-    if(run_task_info.params == null)
-    {
+    if (run_task_info.params == null) {
         throw new Error("Error initializating parameters");
     }
 
-    if(run_task_info.params == null)
-    {
+    if (run_task_info.params == null) {
         throw new Error("Error initializating parameter groups");
     }
 
-    for(var i=0;i<run_task_info.parameterGroups.length;i++)
-    {
+    for (var i = 0; i < run_task_info.parameterGroups.length; i++) {
         //check if any parameters were found in the group
         //if so then do nothing and continue
-        if(parameterGroups[i].parameters == undefined || parameterGroups[i].parameters == null
-            || parameterGroups[i].parameters.length == 0)
-        {
+        if (parameterGroups[i].parameters == undefined || parameterGroups[i].parameters == null
+            || parameterGroups[i].parameters.length == 0) {
             continue;
         }
 
         var pGroupName = parameterGroups[i].name;
 
-        if(pGroupName == undefined && pGroupName == null)
-        {
+        if (pGroupName == undefined && pGroupName == null) {
             pGroupName = "  ";
         }
 
         //set up the parameter group section(s)
         var headings = pGroupName.split("/");
         var curHeaderDiv = $("#paramsListingDiv");
-        for(var h=0;h < headings.length;h++)
-        {
+        for (var h = 0; h < headings.length; h++) {
             var pHeadingId = run_task_info.param_group_ids[headings[h]];
-            if( pHeadingId == undefined || pHeadingId == null)
-            {
+            if (pHeadingId == undefined || pHeadingId == null) {
                 pHeadingId = "paramGroup_" + i + "_" + h;
                 run_task_info.param_group_ids[headings[h]] = pHeadingId;
 
@@ -1493,14 +1351,12 @@ function loadParametersByGroup(parameterGroups, parameters, initialValues, batch
                 var headerTitleDiv = $("<div class='pHeaderTitleDiv'/>");
                 var toggleImg = $("<img src ='/gp/images/toggle_collapse.png' width='19' height='19' class='paramSectionToggle'/>");
 
-                headerTitleDiv.click(function()
-                {
+                headerTitleDiv.click(function () {
                     $(this).next().toggle();
 
                     var toggleImg = $(this).find(".paramSectionToggle");
 
-                    if(toggleImg == null)
-                    {
+                    if (toggleImg == null) {
                         //toggle image not found
                         // just log error and return
                         console.log("Could not find toggle image for hiding and showing parameter groups sections");
@@ -1510,34 +1366,28 @@ function loadParametersByGroup(parameterGroups, parameters, initialValues, batch
 
                     //change the toggle image to indicate hide or show
                     var imageSrc = toggleImg.attr("src");
-                    if(imageSrc.indexOf('collapse') != -1)
-                    {
+                    if (imageSrc.indexOf('collapse') != -1) {
                         imageSrc = imageSrc.replace("collapse", "expand");
                     }
-                    else
-                    {
+                    else {
                         imageSrc = imageSrc.replace("expand", "collapse");
                     }
 
                     toggleImg.attr("src", imageSrc);
                 });
 
-                if(parameterGroups.length > 1)
-                {
+                if (parameterGroups.length > 1) {
                     //only provide hide/show toggle for a group with a name
-                    if(pGroupName.length > 0)
-                    {
+                    if (pGroupName.length > 0) {
                         headerTitleDiv.append(toggleImg);
                     }
 
-                    if(h==0)
-                    {
+                    if (h == 0) {
                         newHeaderDiv.addClass("solid-border");
                         newHeaderDiv.addClass("paramgroup-spacing");
                         headerTitleDiv.addClass("top-level-background");
                     }
-                    else
-                    {
+                    else {
                         newHeaderDiv.addClass("dotted-border");
 
                         headerTitleDiv.addClass("background");
@@ -1549,9 +1399,8 @@ function loadParametersByGroup(parameterGroups, parameters, initialValues, batch
                 headerTitleDiv.append(headings[h]);
 
                 //add a description if this is the last heading item
-                if(h== headings.length -1 && (parameterGroups[i].description != undefined && parameterGroups[i].description != null
-                    && parameterGroups[i].description.length > 0))
-                {
+                if (h == headings.length - 1 && (parameterGroups[i].description != undefined && parameterGroups[i].description != null
+                    && parameterGroups[i].description.length > 0)) {
                     newHeaderDiv.prepend("<div class='pHeaderDescription'>" + parameterGroups[i].description + "</div>");
                 }
             }
@@ -1561,9 +1410,8 @@ function loadParametersByGroup(parameterGroups, parameters, initialValues, batch
         }
 
         //check if the new section should be hidden
-        if(parameterGroups[i].hidden != undefined && parameterGroups[i].hidden != null
-            && parameterGroups[i].hidden)
-        {
+        if (parameterGroups[i].hidden != undefined && parameterGroups[i].hidden != null
+            && parameterGroups[i].hidden) {
             curHeaderDiv.prev().find(".paramSectionToggle").click();
         }
 
@@ -1572,19 +1420,16 @@ function loadParametersByGroup(parameterGroups, parameters, initialValues, batch
     }
 }
 
-function createParamTable(parameterNames, initialValues)
-{
+function createParamTable(parameterNames, initialValues) {
     var paramsTable = $("<table class='paramsTable'/>");
 
     //return empty paramsTable if no parameter names were specified
-    if(parameterNames == undefined || parameterNames == null)
-    {
+    if (parameterNames == undefined || parameterNames == null) {
         return paramsTable;
     }
 
 
-    for(var q=0;q < parameterNames.length;q++)
-    {
+    for (var q = 0; q < parameterNames.length; q++) {
         var parameterName = parameterNames[q];
 
         var paramRow = $("<tr id='" + parameterName + "' class='pRow'/>");
@@ -1597,8 +1442,7 @@ function createParamTable(parameterNames, initialValues)
         $("<td class='pTitle'>").append(nameDiv).appendTo(paramRow);
 
         nameDiv.append(run_task_info.params[parameterName].displayname);
-        if(run_task_info.params[parameterName].required)
-        {
+        if (run_task_info.params[parameterName].required) {
             nameDiv.append("*");
         }
 
@@ -1609,38 +1453,31 @@ function createParamTable(parameterNames, initialValues)
         //can be null or undefined if this is not a job reload
         var initialValuesList = null;
 
-        if(initialValues != null && initialValues != undefined)
-        {
+        if (initialValues != null && initialValues != undefined) {
             initialValuesList = initialValues[parameterName];
         }
         run_task_info.params[parameterName].initialValues = initialValuesList;
 
         var initialValuesByGroup = run_task_info.params[parameterName].initialValues;
-        if(initialValuesByGroup != undefined && initialValuesByGroup != null)
-        {
-            for(var g=0;g<initialValuesByGroup.length;g++)
-            {
+        if (initialValuesByGroup != undefined && initialValuesByGroup != null) {
+            for (var g = 0; g < initialValuesByGroup.length; g++) {
                 valueTd.append(createParamValueEntryDiv(parameterName, initialValuesByGroup[g]));
             }
         }
-        else
-        {
+        else {
             valueTd.append(createParamValueEntryDiv(parameterName, null));
         }
         //check if grouping is enabled
         var groupInfo = run_task_info.params[parameterName].groupInfo;
-        if(groupInfo != null && (groupInfo.maxValue == null || groupInfo.maxValue == undefined
-            || groupInfo.maxValue > 1))
-        {
+        if (groupInfo != null && (groupInfo.maxValue == null || groupInfo.maxValue == undefined
+            || groupInfo.maxValue > 1)) {
             var groupColumnLabel = groupInfo.groupColumnLabel;
-            if(groupColumnLabel == undefined && groupColumnLabel == null)
-            {
+            if (groupColumnLabel == undefined && groupColumnLabel == null) {
                 groupColumnLabel = "file group";
             }
 
             var addGroupButton = $("<button>Add Another " + groupColumnLabel + "</button>");
-            addGroupButton.button().click(function(event)
-            {
+            addGroupButton.button().click(function (event) {
                 event.preventDefault();
 
                 var parameterName = $(this).parents(".pRow").attr("id");
@@ -1653,11 +1490,9 @@ function createParamTable(parameterNames, initialValues)
 
             //auto create the minimum of groups specified for this parameter
             //if no initial values where specified
-            if(initialValuesList == null)
-            {
+            if (initialValuesList == null) {
                 var minGroupInfo = parseInt(groupInfo.minNumGroups);
-                for(var i =0;i<minGroupInfo-1; i++)
-                {
+                for (var i = 0; i < minGroupInfo - 1; i++) {
                     addGroupButton.click();
                 }
             }
@@ -1669,20 +1504,19 @@ function createParamTable(parameterNames, initialValues)
     return paramsTable;
 }
 
-function createParamDescriptionRow(parameterName)
-{
+function createParamDescriptionRow(parameterName) {
     var paramDetails = run_task_info.params[parameterName];
 
     //append parameter description table
     var pDescription = paramDetails.description;
-    if(paramDetails.altDescription != undefined
+    if (paramDetails.altDescription != undefined
         && paramDetails.altDescription != null
         && paramDetails.altDescription.replace(/ /g, '') != "") //trims spaces to check for empty string
     {
         pDescription = paramDetails.altDescription;
     }
 
-    return $("<tr class='paramDescription'><td></td><td colspan='3'>" + pDescription +"</td></tr>");
+    return $("<tr class='paramDescription'><td></td><td colspan='3'>" + pDescription + "</td></tr>");
 }
 
 function loadRunTaskForm(lsid, reloadJob, sendFromKind, sendFromUrl) {
@@ -1715,8 +1549,7 @@ function loadRunTaskForm(lsid, reloadJob, sendFromKind, sendFromUrl) {
 
     parameter_and_val_groups = {}; //contains params and their values only
 
-    $("#toggleDesc").click(function()
-    {
+    $("#toggleDesc").click(function () {
         //show descriptions
         $("#paramsListingDiv").find(".paramDescription").toggle();
     });
@@ -1728,8 +1561,7 @@ function loadRunTaskForm(lsid, reloadJob, sendFromKind, sendFromUrl) {
     else {
         reloadJob = "";
     }
-    if(reloadJob == undefined || reloadJob == null)
-    {
+    if (reloadJob == undefined || reloadJob == null) {
         reloadJob = "";
     }
 
@@ -1737,19 +1569,16 @@ function loadRunTaskForm(lsid, reloadJob, sendFromKind, sendFromUrl) {
         lsid = Request.parameter('lsid');
     }
 
-    if((lsid == undefined || lsid == null || lsid  == "")
-        && (reloadJob == undefined || reloadJob == null || reloadJob  == ""))
-    {
+    if ((lsid == undefined || lsid == null || lsid == "")
+        && (reloadJob == undefined || reloadJob == null || reloadJob == "")) {
         $("#protocols").show();
         return;
     }
-    else
-    {
+    else {
         loadModule(lsid, reloadJob, sendFromKind, sendFromUrl);
     }
 
-    $("#submitJob input[type='file']").live("change", function()
-    {
+    $("#submitJob input[type='file']").live("change", function () {
         var paramName = $(this).data("pname");
 
         var groupId = getGroupId($(this));
@@ -1758,8 +1587,7 @@ function loadRunTaskForm(lsid, reloadJob, sendFromKind, sendFromUrl) {
         //create a copy of files so that the input file field
         //can be reset so that files with the same name can be reuploaded
         var uploadedFiles = [];
-        for(var t=0;t<this.files.length;t++)
-        {
+        for (var t = 0; t < this.files.length; t++) {
             uploadedFiles.push(this.files[t]);
         }
 
@@ -1774,8 +1602,7 @@ function loadRunTaskForm(lsid, reloadJob, sendFromKind, sendFromUrl) {
         validateMaxFiles(paramName, totalFileLength);
 
         //add newly selected files to table of file listing
-        for(var f=0;f < uploadedFiles.length;f++)
-        {
+        for (var f = 0; f < uploadedFiles.length; f++) {
             var fileObj = {
                 name: uploadedFiles[f].name,
                 object: uploadedFiles[f],
@@ -1791,17 +1618,15 @@ function loadRunTaskForm(lsid, reloadJob, sendFromKind, sendFromUrl) {
     });
 
     /* begin other options menu code*/
-    var selected = function( event, ui ) {
-        $(this).popup( "close" );
+    var selected = function (event, ui) {
+        $(this).popup("close");
     };
 
-    $("button.Reset").click(function()
-    {
+    $("button.Reset").click(function () {
         reset();
     });
 
-    $("button.Run").click(function()
-    {
+    $("button.Run").click(function () {
         //Submit this job to the server
         runJob();
     });
@@ -1826,16 +1651,14 @@ function loadRunTaskForm(lsid, reloadJob, sendFromKind, sendFromUrl) {
         e.preventDefault();
     });
 
-    document.body.addEventListener('drop', function(e) {
+    document.body.addEventListener('drop', function (e) {
         e.preventDefault();
     }, false);
 
     //add action for when cancel upload button is clicked
     $("#cancelUpload").hide();
-    $("#cancelUpload").button().click(function()
-    {
-        for(var y=0;y<fileUploadRequests.length;y++)
-        {
+    $("#cancelUpload").button().click(function () {
+        for (var y = 0; y < fileUploadRequests.length; y++) {
             fileUploadRequests[y].abort();
         }
 
@@ -1850,21 +1673,17 @@ function loadRunTaskForm(lsid, reloadJob, sendFromKind, sendFromUrl) {
     $("#matlabCode").data("language", "MATLAB");
     $("#rCode").data("language", "R");
 
-    $("#removeViewCode").button().click(function()
-    {
+    $("#removeViewCode").button().click(function () {
         $("#viewCodeDiv").hide();
     });
 
     /*add action for when one of the view code languages is selected */
     $("#viewCodeDiv").hide();
-    $(".viewCode").click(function()
-    {
+    $(".viewCode").click(function () {
         var language = $(this).data("language");
-        $("#viewCodeDiv").children().each(function()
-        {
+        $("#viewCodeDiv").children().each(function () {
             //if this is not the delete button then remove it
-            if($(this).attr("id") != "removeViewCode")
-            {
+            if ($(this).attr("id") != "removeViewCode") {
                 $(this).remove();
             }
         });
@@ -1878,14 +1697,11 @@ function loadRunTaskForm(lsid, reloadJob, sendFromKind, sendFromUrl) {
 
         //add parameters and their values to the query string
         var paramNames = Object.keys(parameter_and_val_groups);
-        for(var t=0;t<paramNames.length;t++)
-        {
+        for (var t = 0; t < paramNames.length; t++) {
             var groupNames = Object.keys(parameter_and_val_groups[paramNames[t]].groups);
-            for(var g=0;g<groupNames.length;g++)
-            {
-                var valuesList =parameter_and_val_groups[paramNames[t]].groups[groupNames[g]].values;
-                if(valuesList != undefined && valuesList != null && valuesList.length > 0)
-                {
+            for (var g = 0; g < groupNames.length; g++) {
+                var valuesList = parameter_and_val_groups[paramNames[t]].groups[groupNames[g]].values;
+                if (valuesList != undefined && valuesList != null && valuesList.length > 0) {
                     queryString += "&" + paramNames[t] + "=" + valuesList[0];
                 }
             }
@@ -1895,25 +1711,22 @@ function loadRunTaskForm(lsid, reloadJob, sendFromKind, sendFromUrl) {
             type: "GET",
             url: "/gp/rest/RunTask/viewCode" + queryString,
             cache: false,
-            data: { "lsid" : run_task_info.lsid,
-                "reloadJob":  run_task_info.reloadJobId,
+            data: { "lsid": run_task_info.lsid,
+                "reloadJob": run_task_info.reloadJobId,
                 "language": language},
-            success: function(response) {
+            success: function (response) {
 
-                if (response["code"] == undefined || response["code"] == null)
-                {
+                if (response["code"] == undefined || response["code"] == null) {
                     $("#viewCodeDiv").append("<p>An error occurred while retrieving the code</p>")
                 }
-                else
-                {
+                else {
                     $("#viewCodeDiv").append("<p>" + htmlEncode(response["code"]) + "</p>");
                     //add a link to the appropriate programmers guide
-                    $("#viewCodeDiv").append("<span><hr/>For more details go to the Programmer's Guide section: <a href='http://www.broadinstitute.org/cancer/software/genepattern/gp_guides/programmers/sections/gp_" + language.toLowerCase()+"'> " +
+                    $("#viewCodeDiv").append("<span><hr/>For more details go to the Programmer's Guide section: <a href='http://www.broadinstitute.org/cancer/software/genepattern/gp_guides/programmers/sections/gp_" + language.toLowerCase() + "'> " +
                         "Using GenePattern from " + language + "</a></span>");
                 }
             },
-            error: function(xhr, ajaxOptions, thrownError)
-            {
+            error: function (xhr, ajaxOptions, thrownError) {
                 console.log("Response from server: status=" + xhr.status + " text=" + xhr.responseText);
                 console.log(thrownError);
 
@@ -1923,8 +1736,7 @@ function loadRunTaskForm(lsid, reloadJob, sendFromKind, sendFromUrl) {
         });
     });
 
-    $("#otherOptions").click(function(event)
-    {
+    $("#otherOptions").click(function (event) {
         var menu = $("#otherOptionsMenu");
         menu.menu();
 
@@ -1938,23 +1750,21 @@ function loadRunTaskForm(lsid, reloadJob, sendFromKind, sendFromUrl) {
 
         event.stopPropagation();
 
-        $(document).click(function()
-        {
+        $(document).click(function () {
             $("#otherOptionsMenu").hide();
         });
     });
 }
 
-$("#optionsMenu").blur(function() {
+$("#optionsMenu").blur(function () {
     menu.hide();
 });
 
-$("#optionsMenu").focusout(function() {
+$("#optionsMenu").focusout(function () {
     menu.hide();
 });
 
-function reset()
-{
+function reset() {
     $(".paramsTable").empty();
 
     //remove all input file parameter file listings
@@ -1964,8 +1774,7 @@ function reset()
     loadParametersByGroup(null, null, null, null);
 }
 
-function isText(param)
-{
+function isText(param) {
     var selector = "#" + jqEscape(param);
     var input = $(selector);
     if (input.length === 0) return;
@@ -1973,8 +1782,7 @@ function isText(param)
     return input.attr("type") === "text";
 }
 
-function isDropDown(param)
-{
+function isDropDown(param) {
     var selector = "#" + jqEscape(param);
     var input = $(selector);
     if (input.length === 0) return;
@@ -1982,8 +1790,7 @@ function isDropDown(param)
     return input.get(0).tagName === "SELECT";
 }
 
-function isFile(param)
-{
+function isFile(param) {
     var selector = "#" + jqEscape(param);
     var input = $(selector);
     if (input.length === 0) return;
@@ -1992,39 +1799,33 @@ function isFile(param)
     return input.attr("type") === "file";
 }
 
-function validate()
-{
+function validate() {
     var missingReqParameters = [];
     var missingGroupNames = [];
     var paramNames = Object.keys(parameter_and_val_groups);
-    for(var p=0;p<paramNames.length;p++)
-    {
+    for (var p = 0; p < paramNames.length; p++) {
         var groups = parameter_and_val_groups[paramNames[p]].groups;
-        if(groups == null)
-        {
+        if (groups == null) {
             continue;
         }
 
         var groupIds = Object.keys(groups);
-        for(var g=0;g<groupIds.length;g++)
-        {
+        for (var g = 0; g < groupIds.length; g++) {
             var values = parameter_and_val_groups[paramNames[p]].groups[groupIds[g]].values;
             var files = parameter_and_val_groups[paramNames[p]].groups[groupIds[g]].files;
 
             var required = run_task_info.params[paramNames[p]].required;
             //check if it is required and there is no value specified
-            if(required && (values == undefined || values == null
+            if (required && (values == undefined || values == null
                 || values.length == 0 || (values.length == 1 && values[0] == ""))
-                && (files == undefined || files == null || files.length == 0))
-            {
+                && (files == undefined || files == null || files.length == 0)) {
                 missingReqParameters.push(paramNames[p]);
                 break;
             }
 
             //check that group names were specified if there is more than one group
             var groupName = parameter_and_val_groups[paramNames[p]].groups[groupIds[g]].name;
-            if((groupName == undefined || groupName == null || groupName.length == 0) && groupIds.length > 1)
-            {
+            if ((groupName == undefined || groupName == null || groupName.length == 0) && groupIds.length > 1) {
                 //if there is more than one group defined then they must be named
                 missingGroupNames.push(paramNames[p]);
                 break;
@@ -2035,13 +1836,11 @@ function validate()
     //remove any existing error messages
     $(".errorMessage").remove();
     $("#missingRequiredParams").remove();
-    $(".errorHighlight").each(function()
-    {
+    $(".errorHighlight").each(function () {
         $(this).removeClass("errorHighlight");
     });
 
-    if(missingReqParameters.length > 0)
-    {
+    if (missingReqParameters.length > 0) {
         //create div to list of all parameters with missing values
         var missingReqParamsDiv = $("<div id='missingRequiredParams'/>");
 
@@ -2053,18 +1852,16 @@ function validate()
 
         var errorMessage = "<div class='errorMessage'>This field is required</div>";
 
-        for(p=0;p<missingReqParameters.length;p++)
-        {
+        for (p = 0; p < missingReqParameters.length; p++) {
             var displayname = missingReqParameters[p];
 
             //check if the parameter has an alternate name
-            if(run_task_info.params[missingReqParameters[p]].displayname != undefined
-                && run_task_info.params[missingReqParameters[p]].displayname!= "")
-            {
+            if (run_task_info.params[missingReqParameters[p]].displayname != undefined
+                && run_task_info.params[missingReqParameters[p]].displayname != "") {
                 displayname = run_task_info.params[missingReqParameters[p]].displayname;
             }
 
-            pListing.append("<li>"+displayname+"</li>");
+            pListing.append("<li>" + displayname + "</li>");
 
             $("#" + jqEscape(missingReqParameters[p])).find(".paramValueTd").addClass("errorHighlight");
             $("#" + jqEscape(missingReqParameters[p])).find(".paramValueTd").append(errorMessage);
@@ -2074,8 +1871,7 @@ function validate()
     }
 
     //do something similar if missing group names were found
-    if(missingGroupNames.length > 0)
-    {
+    if (missingGroupNames.length > 0) {
         //create div to list of all parameters with missing values
         var missingGroupNamesDiv = $("<div id='missingGroupNamesParams'/>");
         $("#submitErrors").append(missingGroupNamesDiv);
@@ -2086,24 +1882,20 @@ function validate()
 
         var errorMessage = "<div class='errorMessage'>This value is required</div>";
 
-        for(p=0;p<missingGroupNames.length;p++)
-        {
+        for (p = 0; p < missingGroupNames.length; p++) {
             var displayname = missingGroupNames[p];
 
             //check if the parameter has an alternate name
-            if(run_task_info.params[missingGroupNames[p]].displayname != undefined
-                && run_task_info.params[missingGroupNames[p]].displayname!= "")
-            {
+            if (run_task_info.params[missingGroupNames[p]].displayname != undefined
+                && run_task_info.params[missingGroupNames[p]].displayname != "") {
                 displayname = run_task_info.params[missingGroupNames[p]].displayname;
             }
 
-            pListing.append("<li>"+displayname+"</li>");
+            pListing.append("<li>" + displayname + "</li>");
 
             $("#" + jqEscape(missingGroupNames[p])).find(".paramValueTd").addClass("errorHighlight");
-            $("#" + jqEscape(missingGroupNames[p])).find(".paramValueTd").find(".groupingTextField").each(function()
-            {
-                if($(this).val() == undefined || $(this).val() == null || $(this).val().length == 0)
-                {
+            $("#" + jqEscape(missingGroupNames[p])).find(".paramValueTd").find(".groupingTextField").each(function () {
+                if ($(this).val() == undefined || $(this).val() == null || $(this).val().length == 0) {
                     $(this).after(errorMessage);
                 }
             });
@@ -2115,21 +1907,17 @@ function validate()
     return true;
 }
 
-function runJob()
-{
+function runJob() {
     //validate that all required inputs have been specified
-    if(!validate())
-    {
+    if (!validate()) {
         return;
     }
 
     //upload all the input files if there are any
-    if(!allFilesUploaded())
-    {
+    if (!allFilesUploaded()) {
         uploadAllFiles();
     }
-    else
-    {
+    else {
         //add the file locations to the file parameter object that will
         submitTask();
     }
@@ -2138,7 +1926,7 @@ function runJob()
 function buildBatchList() {
     var batchParams = [];
     var parameterNames = Object.keys(parameter_and_val_groups);
-    for (var p=0;p<parameterNames.length;p++) {
+    for (var p = 0; p < parameterNames.length; p++) {
         var paramName = parameterNames[p];
         if (isBatch(paramName)) {
             batchParams.push(paramName);
@@ -2148,8 +1936,7 @@ function buildBatchList() {
     return batchParams;
 }
 
-function submitTask()
-{
+function submitTask() {
     setAllFileParamValues();
 
     //Change text of blocking div
@@ -2162,30 +1949,26 @@ function submitTask()
 
     var param_values_by_group = {};
     var parameterNames = Object.keys(parameter_and_val_groups);
-    for(var p=0;p<parameterNames.length;p++)
-    {
+    for (var p = 0; p < parameterNames.length; p++) {
         var paramName = parameterNames[p];
         param_values_by_group[paramName] = [];
         var groupIds = Object.keys(parameter_and_val_groups[paramName].groups);
 
         //sort the groups by their numeric id to retain order of groups
         //since the ids are generated sequentially
-        groupIds.sort(function(a, b) {
+        groupIds.sort(function (a, b) {
             a = parseInt(a);
             b = parseInt(b);
 
             return a < b ? -1 : (a > b ? 1 : 0);
         });
 
-        for(var g=0;g<groupIds.length;g++)
-        {
+        for (var g = 0; g < groupIds.length; g++) {
             var groupInfo = parameter_and_val_groups[paramName].groups[groupIds[g]];
             var groupName = groupInfo.name;
-            if(groupName == undefined || groupName == null)
-            {
+            if (groupName == undefined || groupName == null) {
                 //if there is more than one group defined then they must be named
-                if(groupIds.length == 1)
-                {
+                if (groupIds.length == 1) {
                     groupName = "";
                 }
             }
@@ -2198,8 +1981,8 @@ function submitTask()
 
     var taskJsonObj =
     {
-        "lsid" : run_task_info.lsid,
-        "params" : JSON.stringify(param_values_by_group),
+        "lsid": run_task_info.lsid,
+        "params": JSON.stringify(param_values_by_group),
         "batchParams": buildBatchList()
     };
 
@@ -2209,7 +1992,7 @@ function submitTask()
         contentType: 'application/json',
         data: JSON.stringify(taskJsonObj),
         timeout: 60000,  //timeout added to specifically to handle cases of file choice ftp listing taking too long
-        success: function(response) {
+        success: function (response) {
 
             var message = response["MESSAGE"];
 
@@ -2221,13 +2004,12 @@ function submitTask()
                 window.location.replace("/gp/pages/index.jsf?jobResults=batchId%3D" + response.batchId);
             }
             else if (response.jobId != undefined) {
-                window.location.replace("/gp/pages/index.jsf?jobid="+response.jobId+"&openVisualizers=true");
+                window.location.replace("/gp/pages/index.jsf?jobid=" + response.jobId + "&openVisualizers=true");
             }
 
             console.log("Response text: " + response.text);
         },
-        error: function(xhr, ajaxOptions, thrownError)
-        {
+        error: function (xhr, ajaxOptions, thrownError) {
             alert("Error: \n" + xhr.responseText);
             console.log("Error: " + xhr.responseText);
             console.log("Error on server: " + thrownError);
@@ -2241,35 +2023,30 @@ function submitTask()
     });
 }
 
-function dragEnter(evt)
-{
+function dragEnter(evt) {
     this.classList.add('runtask-highlight');
 //    evt.stopPropagation();
 //    evt.preventDefault();
 }
 
-function dragLeave(evt)
-{
+function dragLeave(evt) {
     this.classList.remove('runtask-highlight');
 //    evt.stopPropagation();
 //    evt.preventDefault();
 }
 
-function dragExit(evt)
-{
+function dragExit(evt) {
     evt.stopPropagation();
     evt.preventDefault();
 }
 
-function dragOver(evt)
-{
+function dragOver(evt) {
     this.classList.add('runtask-highlight');
     evt.stopPropagation();
     evt.preventDefault();
 }
 
-function drop(evt)
-{
+function drop(evt) {
     this.classList.remove('runtask-highlight');
     evt.stopPropagation();
     evt.preventDefault();
@@ -2277,25 +2054,22 @@ function drop(evt)
     //Check and prevent upload of directories
     //Works only on browsers that support the HTML5 FileSystem API
     //right now this is Chrome v21 and up
-    if(evt.dataTransfer && evt.dataTransfer.items){
+    if (evt.dataTransfer && evt.dataTransfer.items) {
         var items = evt.dataTransfer.items;
-        var length   = items.length;
+        var length = items.length;
 
-        for(var i=0; i<length; i++)
-        {
+        for (var i = 0; i < length; i++) {
             var entry = items[i];
-            if(entry.getAsEntry)
-            {
+            if (entry.getAsEntry) {
                 //Standard HTML5 API
                 entry = entry.getAsEntry();
             }
-            else if(entry.webkitGetAsEntry)
-            {
+            else if (entry.webkitGetAsEntry) {
                 //WebKit implementation of HTML5 API.
                 entry = entry.webkitGetAsEntry();
             }
 
-            if(entry && entry.isDirectory){
+            if (entry && entry.isDirectory) {
                 //do to continur if any directories are found
                 alert("Directory uploads are not allowed.");
                 return;
@@ -2308,25 +2082,21 @@ function drop(evt)
 
     var target = $(evt.target);
     var paramName = target.parents(".pRow").first().data("pname");
-    if(paramName == undefined)
-    {
+    if (paramName == undefined) {
         console.log("Error: Could not find the parameter this file belongs to.");
         return;
     }
 
     // Only call the handler if 1 or more files was dropped.
-    if (count > 0)
-    {
+    if (count > 0) {
         checkFileSizes(files);
 
         handleFiles(files, paramName, target);
     }
-    else
-    {
-        if(evt.dataTransfer.getData('Text') != null
-            && evt.dataTransfer.getData('Text')  !== undefined
-            && evt.dataTransfer.getData('Text') != "")
-        {
+    else {
+        if (evt.dataTransfer.getData('Text') != null
+            && evt.dataTransfer.getData('Text') !== undefined
+            && evt.dataTransfer.getData('Text') != "") {
             //This must be a url and not a file
             var groupId = getGroupId(target);
             var fileObjListings = getFilesForGroup(groupId, paramName);
@@ -2347,8 +2117,7 @@ function drop(evt)
     }
 }
 
-function handleFiles(files, paramName, fileDiv)
-{
+function handleFiles(files, paramName, fileDiv) {
     var groupId = getGroupId(fileDiv);
     var fileObjListings = getFilesForGroup(groupId, paramName);
 
@@ -2356,8 +2125,7 @@ function handleFiles(files, paramName, fileDiv)
     validateMaxFiles(paramName, totalFileLength);
 
     //add newly selected files to table of file listing
-    for(var f=0; f < files.length; f++)
-    {
+    for (var f = 0; f < files.length; f++) {
         var fileObj = {
             name: files[f].name,
             object: files[f],
@@ -2372,16 +2140,13 @@ function handleFiles(files, paramName, fileDiv)
     toggleFileButtons(paramName);
 }
 
-function getMaxFiles(paramName)
-{
+function getMaxFiles(paramName) {
     var paramDetails = run_task_info.params[paramName];
 
     var maxValue = null;
-    if(paramDetails != null)
-    {
+    if (paramDetails != null) {
         //in this case the max num of files is not unlimited
-        if(paramDetails.maxValue != undefined || paramDetails.maxValue != null)
-        {
+        if (paramDetails.maxValue != undefined || paramDetails.maxValue != null) {
             maxValue = parseInt(paramDetails.maxValue);
         }
     }
@@ -2389,12 +2154,10 @@ function getMaxFiles(paramName)
     return maxValue;
 }
 
-function validateMaxFiles(paramName, numFiles)
-{
+function validateMaxFiles(paramName, numFiles) {
     //check if max file length will be violated only if this not a batch parameter
     //in the case of batch we want to allow specifying any number of files
-    if(isBatch(paramName))
-    {
+    if (isBatch(paramName)) {
         return;
     }
 
@@ -2402,33 +2165,28 @@ function validateMaxFiles(paramName, numFiles)
 
     var maxFilesLimitExceeded = false;
 
-    if(paramDetails != null)
-    {
+    if (paramDetails != null) {
         //in this case the max num of files is not unlimited
-        if(paramDetails.maxValue != undefined || paramDetails.maxValue != null)
-        {
+        if (paramDetails.maxValue != undefined || paramDetails.maxValue != null) {
             var maxValue = parseInt(paramDetails.maxValue);
-            if(numFiles > maxValue)
-            {
-                maxFilesLimitExceeded =  true;
+            if (numFiles > maxValue) {
+                maxFilesLimitExceeded = true;
             }
         }
     }
 
     //check that the user did not add more files than allowed
-    if(maxFilesLimitExceeded)
-    {
+    if (maxFilesLimitExceeded) {
         alert("The maximum number of files that can be provided to the " + paramName +
             " parameter has been reached. Please delete some files " +
             "before continuing.");
         throw new Error("The maximum number of files that can be provided to " +
-            "this parameter (" + paramName +") has been reached. Please delete some files " +
+            "this parameter (" + paramName + ") has been reached. Please delete some files " +
             "before continuing.");
     }
 }
 
-function checkFileSizes(files)
-{
+function checkFileSizes(files) {
     //check if any of these files is > 2GB
     for (var i = 0; i < files.length; i++) {
         var file = files[i];
@@ -2451,8 +2209,8 @@ function checkFileSizes(files)
                 width: 500,
                 modal: true,
                 buttons: {
-                    "OK": function() {
-                        $( this ).dialog( "close" );
+                    "OK": function () {
+                        $(this).dialog("close");
                     }
                 }
             });
@@ -2461,12 +2219,9 @@ function checkFileSizes(files)
     }
 }
 
-function updateParamFileTable(paramName, fileDiv, groupId)
-{
-    if(groupId == undefined || groupId == null)
-    {
-        if(fileDiv == undefined || fileDiv == null)
-        {
+function updateParamFileTable(paramName, fileDiv, groupId) {
+    if (groupId == undefined || groupId == null) {
+        if (fileDiv == undefined || fileDiv == null) {
             javascript_abort("Not able to update file listing for " + paramName);
         }
 
@@ -2475,27 +2230,21 @@ function updateParamFileTable(paramName, fileDiv, groupId)
 
     var files = getFilesForGroup(groupId, paramName);
 
-    if(fileDiv == null)
-    {
+    if (fileDiv == null) {
         var paramRow = $("#" + jqEscape(paramName));
         //check if a groupId was given
-        if(groupId != undefined && groupId != null)
-        {
-            paramRow.find(".valueEntryDiv").each(function()
-            {
-                if($(this).data("groupId") == groupId)
-                {
+        if (groupId != undefined && groupId != null) {
+            paramRow.find(".valueEntryDiv").each(function () {
+                if ($(this).data("groupId") == groupId) {
                     fileDiv = $(this).find(".fileDiv");
                 }
             });
         }
-        else
-        {
+        else {
             fileDiv = paramRow.find(".fileDiv").first();
         }
 
-        if(fileDiv == null)
-        {
+        if (fileDiv == null) {
             javascript_abort("Error populating file listing for " + paramName);
         }
     }
@@ -2503,26 +2252,22 @@ function updateParamFileTable(paramName, fileDiv, groupId)
     var fileListingDiv = fileDiv.find(".fileListingDiv");
 
     var hideFiles = false;
-    if(fileListingDiv.find(".editFilesLink").text() == "Show Files...")
-    {
+    if (fileListingDiv.find(".editFilesLink").text() == "Show Files...") {
         hideFiles = true;
     }
 
     //remove previous file info data
     $(fileListingDiv).empty();
 
-    if(files != null && files != undefined && files.length > 0)
-    {
+    if (files != null && files != undefined && files.length > 0) {
         //if there is one file and it is null or en empty string then do nothing and return
-        if(files.length == 1 && (files[0].name == null || files[0].name == ""))
-        {
+        if (files.length == 1 && (files[0].name == null || files[0].name == "")) {
             return;
         }
 
         //toggle view if this is a file choice parameter
         var fileChoiceToggle = fileDiv.parents(".pRow:first").find("input[id^=customFile_]");
-        if(fileChoiceToggle.length != 0)
-        {
+        if (fileChoiceToggle.length != 0) {
             //switch view to custom file view
             fileChoiceToggle.click();
 
@@ -2532,19 +2277,16 @@ function updateParamFileTable(paramName, fileDiv, groupId)
         var pData = $("<div class='fileDetails'/>");
 
         var editLink = $("<a class='editFilesLink' href='#'><img src='/gp/images/arrows-down.gif'/>Hide Files...</a>");
-        editLink.click(function(event)
-        {
+        editLink.click(function (event) {
             event.preventDefault();
 
             var editLinkMode = $(this).text();
-            if(editLinkMode == "Show Files...")
-            {
+            if (editLinkMode == "Show Files...") {
                 $(this).text("Hide Files...");
                 $(this).prepend("<img src='/gp/images/arrows-down.gif'/>");
                 fileListingDiv.find(".paramFilesTable").removeClass("hidden");
             }
-            else
-            {
+            else {
                 $(this).text("Show Files...");
                 $(this).prepend("<img src='/gp/images/arrows.gif'/>");
                 fileListingDiv.find(".paramFilesTable").addClass("hidden");
@@ -2561,11 +2303,9 @@ function updateParamFileTable(paramName, fileDiv, groupId)
         var table = $("<table class='paramFilesTable'/>");
         var tbody = $("<tbody/>");
         table.append(tbody);
-        for(var i=0;i<files.length;i++)
-        {
+        for (var i = 0; i < files.length; i++) {
             //ignore any file names that are empty or null
-            if(files[i].name == null || files[i].name == "")
-            {
+            if (files[i].name == null || files[i].name == "") {
                 continue;
             }
 
@@ -2573,20 +2313,17 @@ function updateParamFileTable(paramName, fileDiv, groupId)
             var fileTData = $("<td class='pfileAction'/>");
 
             //determine if this is a  url
-            if(files[i].name.indexOf("://") != -1)
-            {
-                fileRow.append("<td><a href='" + files[i].name + "'> "+ files[i].name + "</a></td>");
+            if (files[i].name.indexOf("://") != -1) {
+                fileRow.append("<td><a href='" + files[i].name + "'> " + files[i].name + "</a></td>");
             }
-            else
-            {
+            else {
                 fileRow.append("<td>" + files[i].name + "</td>");
             }
             var delButton = $("<img class='images delBtn' src='/gp/images/delete-blue.png'/>");
             delButton.data("pfile", files[i].name);
             delButton.data("pfileId", files[i].id);
 
-            delButton.button().click(function()
-            {
+            delButton.button().click(function () {
                 // Show the buttons again
                 var fileDiv = $(this).closest(".fileDiv");
                 fileDiv.find("fileUploadDiv").show();
@@ -2596,17 +2333,14 @@ function updateParamFileTable(paramName, fileDiv, groupId)
 
                 var paramName = $(this).parents(".pRow").first().attr("id");
                 var groups = parameter_and_val_groups[paramName].groups;
-                for(var group in groups)
-                {
+                for (var group in groups) {
                     var param_files = groups[group].files;
                     var param_values = groups[group].values;
-                    for(var t=0;t<param_files.length;t++)
-                    {
-                        if(param_files[t].name == file
-                            && param_files[t].id == id)
-                        {
-                            var idx=$.inArray(param_files[t].name, param_values);
-                            if (idx>-1) {
+                    for (var t = 0; t < param_files.length; t++) {
+                        if (param_files[t].name == file
+                            && param_files[t].id == id) {
+                            var idx = $.inArray(param_files[t].name, param_values);
+                            if (idx > -1) {
                                 param_values.splice(idx, 1);
                                 updateValuesForGroup(group, paramName, param_values);
                             }
@@ -2614,7 +2348,7 @@ function updateParamFileTable(paramName, fileDiv, groupId)
                             fileObjListing.splice(t, 1);
                             updateFilesForGroup(group, paramName, fileObjListing);
                         }
-                        
+
                     }
                 }
                 updateParamFileTable(paramName, fileDiv);
@@ -2631,7 +2365,7 @@ function updateParamFileTable(paramName, fileDiv, groupId)
         fileListingDiv.append(div);
 
         tbody.find("tr").draggable({
-            helper: function(event) {
+            helper: function (event) {
                 var object = $('<div class="drag-row"><table class="paramFilesTable"></table></div>')
                     .find('table').append($(event.target).closest('tr').clone()).end();
                 var rowIndex = $(event.target) // Get the closest tr parent element
@@ -2646,8 +2380,7 @@ function updateParamFileTable(paramName, fileDiv, groupId)
 
         //set visibility of the file listing to hidden if that was its previous state
         // by default the file listing is visible
-        if(hideFiles)
-        {
+        if (hideFiles) {
             editLink.click();
         }
     }
@@ -2661,17 +2394,13 @@ function updateParamFileTable(paramName, fileDiv, groupId)
     }
 }
 
-function getFileCountForParam(paramName)
-{
+function getFileCountForParam(paramName) {
     var groups = parameter_and_val_groups[paramName].groups;
     var count = 0;
 
-    if(groups != undefined || groups != null)
-    {
-        for(var group in groups)
-        {
-            if(groups[group].files != undefined && groups[group].files != null)
-            {
+    if (groups != undefined || groups != null) {
+        for (var group in groups) {
+            if (groups[group].files != undefined && groups[group].files != null) {
                 count += groups[group].files.length;
             }
         }
@@ -2681,8 +2410,7 @@ function getFileCountForParam(paramName)
 }
 function atMaxFiles(paramName) {
     //if this ia a batch parameter then allow mutiple files to be provided
-    if(isBatch(paramName))
-    {
+    if (isBatch(paramName)) {
         return false;
     }
 
@@ -2699,35 +2427,28 @@ function atMaxFiles(paramName) {
 }
 
 
-function uploadAllFiles()
-{
-    if (!allFilesUploaded())
-    {
+function uploadAllFiles() {
+    if (!allFilesUploaded()) {
         $('#runTaskSettingsDiv').block({
             message: '<h1> Please wait... </h1>',
             overlayCSS: { backgroundColor: '#F8F8F8' }
         });
 
         $("#cancelUpload").show();
-        var count =0;
+        var count = 0;
 
         var parameterNames = Object.keys(parameter_and_val_groups);
-        for(var p=0;p<parameterNames.length;p++)
-        {
+        for (var p = 0; p < parameterNames.length; p++) {
             var paramName = parameterNames[p];
             var groupIds = Object.keys(parameter_and_val_groups[paramName].groups);
-            for(var g=0;g<groupIds.length;g++)
-            {
+            for (var g = 0; g < groupIds.length; g++) {
                 var groupId = groupIds[g];
                 var group = parameter_and_val_groups[paramName].groups[groupId];
 
-                if(group.files != undefined && group.files != null)
-                {
-                    for(var f=0;f<group.files.length;f++)
-                    {
+                if (group.files != undefined && group.files != null) {
+                    for (var f = 0; f < group.files.length; f++) {
                         var fileObj = group.files[f];
-                        if(fileObj.object != undefined && fileObj.object != null)
-                        {
+                        if (fileObj.object != undefined && fileObj.object != null) {
                             count++;
                             uploadFile(paramName, fileObj.object, f, count, groupId);
                         }
@@ -2739,24 +2460,22 @@ function uploadAllFiles()
 }
 
 // upload file
-function uploadFile(paramName, file, fileOrder, fileId, groupId)
-{
+function uploadFile(paramName, file, fileOrder, fileId, groupId) {
     var id = fileId;
     fileId = "file_" + fileId;
     $("#fileUploadDiv").append("<div id='" + fileId + "'/>");
-    $("#"+fileId).before("<p>" + file.name + "</p>");
-    $("#"+fileId).append("<div class='progress-label' id='" + fileId + "Percentage'/>");
+    $("#" + fileId).before("<p>" + file.name + "</p>");
+    $("#" + fileId).append("<div class='progress-label' id='" + fileId + "Percentage'/>");
 
     //initialize the progress bar to 0
-    $("#"+fileId).progressbar({
+    $("#" + fileId).progressbar({
         value: 0
     });
-    $("#"+fileId + "Percentage").text("0%");
+    $("#" + fileId + "Percentage").text("0%");
 
     var destinationUrl = "/gp/rest/RunTask/upload";
 
-    if(paramName == null || paramName == undefined)
-    {
+    if (paramName == null || paramName == undefined) {
         console.log("An error occurred uploading files for module: " + run_task_info.name);
         console.log("DEBUG: parameter_and_val_groups is " + parameter_and_val_groups);
 
@@ -2770,21 +2489,19 @@ function uploadFile(paramName, file, fileOrder, fileId, groupId)
     formData.append('paramName', paramName);
     formData.append('index', id);
 
-    var progressEvent = function(event) {
-        if (event.lengthComputable)
-        {
+    var progressEvent = function (event) {
+        if (event.lengthComputable) {
 
             var percentComplete = Math.round(event.loaded * 100 / event.total);
             console.log("percent complete: " + percentComplete);
 
-            $("#"+fileId).progressbar({
+            $("#" + fileId).progressbar({
                 value: percentComplete
             });
 
-            $("#"+fileId + "Percentage").text(percentComplete.toString() + "%");
+            $("#" + fileId + "Percentage").text(percentComplete.toString() + "%");
         }
-        else
-        {
+        else {
             $("#fileUploadDiv").append('<p>Unable to determine progress</p>');
         }
     };
@@ -2797,7 +2514,7 @@ function uploadFile(paramName, file, fileOrder, fileId, groupId)
         data: formData,
         processData: false,
         contentType: false,
-        xhr: function() {
+        xhr: function () {
             xhr = new window.XMLHttpRequest();
             //Upload progress
             if (xhr.upload) {
@@ -2806,7 +2523,7 @@ function uploadFile(paramName, file, fileOrder, fileId, groupId)
 
             return xhr;
         },
-        success: function(event) {
+        success: function (event) {
             console.log("on load response: " + event);
 
             var parsedEvent = typeof event === "string" ? $.parseJSON(event) : event;
@@ -2817,14 +2534,13 @@ function uploadFile(paramName, file, fileOrder, fileId, groupId)
 
             updateFilesForGroup(groupId, paramName, groupFileInfo);
 
-            if(allFilesUploaded())
-            {
+            if (allFilesUploaded()) {
                 $("#cancelUpload").hide();
                 submitTask();
             }
 
         },
-        error: function(event) {
+        error: function (event) {
             $("#cancelUpload").trigger("click");
             $("#fileUploadDiv").html("<span style='color:red;'>There was an unexpected file transfer error while submitting your job. Please check your network connection and try to submit again or use the Uploader in the Files tab.</span>");
             $("#fileUploadDiv").show();
@@ -2838,38 +2554,32 @@ function uploadFile(paramName, file, fileOrder, fileId, groupId)
 }
 
 /*
-add the list of file paths/urls specified for file parameters which will be sent to the server
-*/
-function setAllFileParamValues()
-{
+ add the list of file paths/urls specified for file parameters which will be sent to the server
+ */
+function setAllFileParamValues() {
     //now set the final file listing values for the file parameters
     var paramNames = Object.keys(parameter_and_val_groups);
-    for(var p=0;p<paramNames.length;p++)
-    {
+    for (var p = 0; p < paramNames.length; p++) {
         var paramName = paramNames[p];
         var groups = parameter_and_val_groups[paramName].groups;
-        if(groups == null)
-        {
+        if (groups == null) {
             javascript_abort("Error: could not retrieve groups for parameter " + paramName);
         }
         var groupNames = Object.keys(groups);
-        for(var g=0; g <groupNames.length;g++)
-        {
+        for (var g = 0; g < groupNames.length; g++) {
             var param_files = parameter_and_val_groups[paramName].groups[groupNames[g]].files;
             var param_value_listing = parameter_and_val_groups[paramName].groups[groupNames[g]].values;
 
-            if(param_value_listing != null &&
+            if (param_value_listing != null &&
                 param_value_listing != undefined &&
-                param_value_listing.length > 0 || (param_files == undefined || param_files == null))
-            {
+                param_value_listing.length > 0 || (param_files == undefined || param_files == null)) {
                 //check if value already set from a choice list and this is a file parameter
                 continue;
             }
 
             var fileList = [];
 
-            for(var f=0; f < param_files.length; f++)
-            {
+            for (var f = 0; f < param_files.length; f++) {
                 var nextFileObj = param_files[f];
 
                 fileList.push(nextFileObj.name);
@@ -2881,8 +2591,7 @@ function setAllFileParamValues()
 
 function isBatch(paramName) {
     var paramDetails = run_task_info.params[paramName];
-    if(paramDetails == null)
-    {
+    if (paramDetails == null) {
         javascript_abort("No info found for parameter " + paramName);
     }
 
@@ -2896,19 +2605,14 @@ function makeBatch(paramName) {
     input.closest(".fileDiv").find(".ui-buttonset").find("label:last").click();
 }
 
-function allFilesUploaded()
-{
-    for(var paramNames in parameter_and_val_groups)
-    {
+function allFilesUploaded() {
+    for (var paramNames in parameter_and_val_groups) {
         var groups = parameter_and_val_groups[paramNames].groups;
-        for(var groupId in groups)
-        {
+        for (var groupId in groups) {
             var files = groups[groupId].files;
-            for(var fileObjIndex in files)
-            {
+            for (var fileObjIndex in files) {
                 //check if any file objects still exist
-                if(files[fileObjIndex].object != undefined && files[fileObjIndex].object != null)
-                {
+                if (files[fileObjIndex].object != undefined && files[fileObjIndex].object != null) {
                     return false;
                 }
             }
@@ -2917,13 +2621,11 @@ function allFilesUploaded()
     return true;
 }
 
-function javascript_abort(message)
-{
+function javascript_abort(message) {
 
     var abortMsg = 'This is not an error. This is just to abort javascript';
 
-    if(message != undefined && message != null && message != "")
-    {
+    if (message != undefined && message != null && message != "") {
         abortMsg = "Request to abort javascript execution: " + message;
         alert(abortMsg);
     }
@@ -2937,17 +2639,13 @@ function jqEscape(str) {
     return str.replace(/([;&,\.\+\*\~':"\!\^$%@\[\]\(\)=>\|])/g, '\\$1');
 }
 
-function getParamValueEntryDivByGroupId(paramName, groupId)
-{
+function getParamValueEntryDivByGroupId(paramName, groupId) {
     var valueElement = null;
     var paramRow = $("#" + jqEscape(paramName));
 
-    if(groupId != undefined && groupId != null && groupId.length > 0)
-    {
-        paramRow.find(".valueEntryDiv").each(function()
-        {
-            if($(this).data("groupId") == groupId)
-            {
+    if (groupId != undefined && groupId != null && groupId.length > 0) {
+        paramRow.find(".valueEntryDiv").each(function () {
+            if ($(this).data("groupId") == groupId) {
                 valueElement = $(this);
             }
         });
@@ -2956,12 +2654,10 @@ function getParamValueEntryDivByGroupId(paramName, groupId)
     return valueElement;
 }
 
-function setParameter(paramName, value, groupId)
-{
+function setParameter(paramName, value, groupId) {
     var paramDetails = run_task_info.params[paramName];
 
-    if(paramDetails == undefined || paramDetails == null)
-    {
+    if (paramDetails == undefined || paramDetails == null) {
         alert("Unable to set the parameter value for " + paramName);
     }
 
@@ -2969,8 +2665,7 @@ function setParameter(paramName, value, groupId)
 
     var valueEntryDiv = getParamValueEntryDivByGroupId(paramName, groupId);
 
-    if(valueEntryDiv == undefined || valueEntryDiv == null)
-    {
+    if (valueEntryDiv == undefined || valueEntryDiv == null) {
         //if you get here then the groupId is probably null or not valid
         //in that case just grab the first value entry div
         valueEntryDiv = paramRow.find(".paramValueTd").find(".valueEntryDiv").first();
@@ -2978,22 +2673,19 @@ function setParameter(paramName, value, groupId)
 
     //if the type is choice and for the case of a file choice parameter
     //check that the choice is visible and not the upload your own file div
-    if($.inArray(field_types.CHOICE, paramDetails.type) != -1
-        && valueEntryDiv.find(".choice").is(":visible"))
-    {
+    if ($.inArray(field_types.CHOICE, paramDetails.type) != -1
+        && valueEntryDiv.find(".choice").is(":visible")) {
         valueEntryDiv.find(".choice").val(value);
         valueEntryDiv.find(".choice").multiselect("refresh");
         return
     }
 
-    if($.inArray(field_types.FILE, paramDetails.type) != -1)
-    {
+    if ($.inArray(field_types.FILE, paramDetails.type) != -1) {
         setInputField(paramName, value, groupId);
         return;
     }
 
-    if($.inArray(field_types.TEXT, paramDetails.type) != -1)
-    {
+    if ($.inArray(field_types.TEXT, paramDetails.type) != -1) {
         paramRow.find(".paramValueTd").find(".textDiv").find(".pValue").first().val(value);
         return;
     }
@@ -3009,7 +2701,7 @@ function toggleFileButtons(paramName) {
 
 function getUsername() {
     var parts = $("#systemMessageLink td").text().split(" ");
-    return $.trim(parts[parts.length-1]);
+    return $.trim(parts[parts.length - 1]);
 }
 
 function cloneTask() {
