@@ -99,7 +99,13 @@ public class LsfStatusChecker {
      * Runs the 'bjobs -W' command for the given list of jobRecords.
      */
     public void checkStatus() throws CmdException, InterruptedException {
+        if (log.isDebugEnabled()) {
+            log.debug("checkStatus for jobId="+jobRecord.getExtJobId());
+        }
         final List<String> cmd=initStatusCmd(jobRecord);
+        if (log.isDebugEnabled()) {
+            log.debug("cmd="+cmd);
+        }
         final List<String> out=cmdRunner.runCmd(cmd);
         if (out==null) {
             throw new CmdException("Null output from cmd="+cmd);
@@ -111,8 +117,16 @@ public class LsfStatusChecker {
         if (out.size()!=1) {
             throw new CmdException("Can only accept one line from 'bjobs -W' command, num lines="+out.size());
         }
-        
-        jobStatus = LsfBjobsParser.parseAsJobStatus(out.get(0), lsfLogFile);
+
+        String line=out.get(0);
+        if (log.isDebugEnabled()) {
+            log.debug("line="+line);
+            log.debug("lsfLogFile="+lsfLogFile);
+        }
+        jobStatus = LsfBjobsParser.parseAsJobStatus(line, lsfLogFile);
+        if (log.isDebugEnabled()) {
+            log.debug("jobStatus="+jobStatus);
+        }
     }
 
     public DrmJobStatus getStatus() {

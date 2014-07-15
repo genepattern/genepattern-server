@@ -61,10 +61,16 @@ public class CmdLineLsfRunner implements JobRunner {
 
     @Override
     public DrmJobStatus getStatus(final DrmJobRecord jobRecord) {
+        if (log.isTraceEnabled()) {
+            log.trace("getStatus for jobId="+jobRecord.getExtJobId());
+        }
         LsfStatusChecker statusChecker=new LsfStatusChecker(jobRecord);
         try {
             statusChecker.checkStatus();
             DrmJobStatus jobStatus=statusChecker.getStatus();
+            if (log.isTraceEnabled()) {
+                log.trace("jobStatus="+jobStatus);
+            }
             return jobStatus;
         }
         catch (CmdException e) {
@@ -83,7 +89,9 @@ public class CmdLineLsfRunner implements JobRunner {
 
     @Override
     public boolean cancelJob(final DrmJobRecord drmJobRecord) throws Exception {
-        log.debug("cancelJob, gpJobNo="+drmJobRecord.getGpJobNo()+", lsfJobNo="+drmJobRecord.getExtJobId());
+        if (log.isDebugEnabled()) {
+            log.debug("cancelJob, gpJobNo="+drmJobRecord.getGpJobNo()+", lsfJobNo="+drmJobRecord.getExtJobId());
+        }
         final LocalLsfJob lsfJob = new LocalLsfJob();
         lsfJob.setBsubJobId(drmJobRecord.getExtJobId());
         lsfJob.setLsfStatusCode("RUN");
