@@ -1,6 +1,7 @@
 package org.genepattern.server.executor.lsf;
 
 import org.apache.log4j.Logger;
+import org.genepattern.drm.DrmJobState;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -20,7 +21,10 @@ public class LsfErrorCheckerImpl implements ILsfErrorChecker
 
     LsfErrorStatus errorStatus = null;
 
-    public LsfErrorCheckerImpl(File lsfLogFile)
+    public LsfErrorCheckerImpl(File lsfLogFile) {
+        this(true, lsfLogFile);
+    }
+    public LsfErrorCheckerImpl(boolean hasStarted, File lsfLogFile)
     {
 	    BufferedReader reader = null;
         try
@@ -28,6 +32,7 @@ public class LsfErrorCheckerImpl implements ILsfErrorChecker
             reader = new BufferedReader(new FileReader(lsfLogFile));
             StringBuffer message = new StringBuffer();
             int exitCode = -1;
+            DrmJobState jobState=DrmJobState.TERMINATED;
 
             String line;
             boolean appendMessage = false;
@@ -41,19 +46,28 @@ public class LsfErrorCheckerImpl implements ILsfErrorChecker
                 if (line.startsWith("Successfully completed.")) {
                     message.append(line);
                     exitCode=0;
+                    jobState=DrmJobState.DONE;
                     break;
                 }
                 else if (line.startsWith("TERM_OWNER: ")) { // job killed by owner.
+                    if (!hasStarted) {
+                        jobState=DrmJobState.ABORTED;
+                    }
+                    else {
+                        jobState=DrmJobState.CANCELLED;
+                    }
                     message.append(line);
                     message.append("\n");
                     appendMessage=true;
                 }
                 else if (line.startsWith("TERM_MEMLIMIT: ")) { // job killed after reaching LSF memory usage limit.
+                    jobState=DrmJobState.TERM_MEMLIMIT;
                     message.append(line);
                     message.append("\n");
                     appendMessage=true;
                 }
                 else if (line.startsWith("TERM_RUNLIMIT: ")) { // job killed after reaching LSF run time limit.
+                    jobState=DrmJobState.TERM_RUNLIMIT;
                     message.append(line);
                     message.append("\n");
                     appendMessage=true;
@@ -65,6 +79,7 @@ public class LsfErrorCheckerImpl implements ILsfErrorChecker
                         message.append("\n");
                     }
                     else {
+                        jobState=DrmJobState.FAILED;
                         break;
                     }
                 }
@@ -73,7 +88,7 @@ public class LsfErrorCheckerImpl implements ILsfErrorChecker
                     message.append("\n");
                 } 
             }
-            errorStatus = new LsfErrorStatus(exitCode, message.toString());
+            errorStatus = new LsfErrorStatus(jobState, exitCode, message.toString());
         }
         catch(IOException io)
         {

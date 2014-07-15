@@ -2,6 +2,7 @@ package org.genepattern.server.executor.lsf;
 
 import org.junit.Test;
 import org.junit.Assert;
+import org.genepattern.drm.DrmJobState;
 import org.genepattern.junitutil.FileUtil;
 
 import java.io.File;
@@ -52,6 +53,7 @@ public class TestLsfErrorCheckerImpl {
         Assert.assertNotNull("Expecting non-null lsfStatus", lsfStatus);
         Assert.assertEquals("exitCode", 1, lsfStatus.getExitCode());
         Assert.assertEquals("errorMessage", getExpectedMessageFromFilename("memory_limit_expected_message.txt"), lsfStatus.getErrorMessage());
+        Assert.assertEquals("jobState", DrmJobState.TERM_MEMLIMIT, lsfStatus.getJobState());
     }
 
     /**
@@ -64,6 +66,7 @@ public class TestLsfErrorCheckerImpl {
         Assert.assertNotNull("Expecting non-null lsfStatus", lsfStatus);
         Assert.assertEquals("exitCode", 134, lsfStatus.getExitCode());
         Assert.assertEquals("errorMessage", getExpectedMessageFromFilename("walltime_limit_expected_message.txt"), lsfStatus.getErrorMessage());
+        Assert.assertEquals("jobState", DrmJobState.TERM_RUNLIMIT, lsfStatus.getJobState());
     }
 
     /**
@@ -76,6 +79,7 @@ public class TestLsfErrorCheckerImpl {
         Assert.assertNotNull("Expecting non-null lsfStatus", lsfStatus);
         Assert.assertEquals("exitCode", 130, lsfStatus.getExitCode());
         Assert.assertEquals("errorMessage", getExpectedMessageFromFilename("bkill_job_lsf_expected_message.txt"), lsfStatus.getErrorMessage());
+        Assert.assertEquals("jobState", DrmJobState.CANCELLED, lsfStatus.getJobState());
     }
     
     @Test
@@ -85,6 +89,7 @@ public class TestLsfErrorCheckerImpl {
         Assert.assertNotNull("Expecting non-null lsfStatus", lsfStatus);
         Assert.assertEquals("exitCode", 0, lsfStatus.getExitCode());
         Assert.assertEquals("errorMessage", "Successfully completed.", lsfStatus.getErrorMessage());
+        Assert.assertEquals("jobState", DrmJobState.DONE, lsfStatus.getJobState());
     }
     
     @Test
@@ -93,5 +98,6 @@ public class TestLsfErrorCheckerImpl {
         LsfErrorStatus lsfStatus = new LsfErrorCheckerImpl(lsfLogFile).getStatus();
         Assert.assertEquals("exitCode", 136, lsfStatus.getExitCode());
         Assert.assertEquals("errorMessage", "Exited with exit code 136.", lsfStatus.getErrorMessage());
+        Assert.assertEquals("jobState", DrmJobState.FAILED, lsfStatus.getJobState());
     }
 }

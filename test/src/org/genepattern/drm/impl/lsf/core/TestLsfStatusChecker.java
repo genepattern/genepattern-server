@@ -67,6 +67,7 @@ JOBID   USER    STAT  QUEUE      FROM_HOST   EXEC_HOST   JOB_NAME   SUBMIT_TIME 
         assertEquals("drmJobId", ""+1992893, jobStatus.getDrmJobId());
         assertEquals("jobState", DrmJobState.DONE, jobStatus.getJobState());
         assertEquals("exitCode", (Integer)0, jobStatus.getExitCode());
+        assertEquals("statusMessage", "Successfully completed.", jobStatus.getJobStatusMessage());
     }
     
     @Test
@@ -162,14 +163,15 @@ JOBID   USER    STAT  QUEUE      FROM_HOST   EXEC_HOST   JOB_NAME   SUBMIT_TIME 
         assertEquals("expected exitCode", new Integer(134), jobStatus.getExitCode());
     }
     
-    @Ignore @Test
+    @Test
     public void parseNonZeroExitCode() throws InterruptedException {
-        File lsfLogFile=FileUtil.getSourceFile(this.getClass(), "non_zero_exit_code.lsf.out");
+        File lsfLogFile=FileUtil.getSourceFile(TestLsfErrorCheckerImpl.class, "non_zero_exit_code.lsf.out");
         DrmJobStatus jobStatus=LsfBjobsParser.parseAsJobStatus(
                 "2029936 gpdev   EXIT  genepattern gpint01     node1457    66472      07/14-20:24:39 default    000:00:00.43 3      39     10904 07/14-20:24:43 07/14-20:24:44",
                 lsfLogFile);
         assertTrue("jobState isTerminated", jobStatus.getJobState().is(DrmJobState.TERMINATED));
         assertEquals("exitCode", (Integer)136, jobStatus.getExitCode());
+        assertEquals("jobStatusMessage", "Exited with exit code 136.", jobStatus.getJobStatusMessage());
     }
     
     @Test

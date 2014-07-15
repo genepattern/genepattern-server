@@ -41,104 +41,74 @@ public class LsfBjobsParser {
     }
 
     public static DrmJobStatus parseAsJobStatus(final String line, final File lsfLogFile) throws InterruptedException {
-        Matcher lineMatcher = LINE_PATTERN.matcher(line);
-        
-        if (lineMatcher.matches()) {
-            final LsfState lsfState=LsfState.valueOf(lineMatcher.group("STATUS"));
-            final Date submitTime=parseDate(lineMatcher.group("SUBMITTIME"));
-            final Date startTime=parseDate(lineMatcher.group("STARTTIME"));
-            final Date endTime=parseDate(lineMatcher.group("FINISHTIME"));
-            final DrmJobState jobState;
-            final String jobStatusMessage;
-            Integer exitCode=null;
-            if (lsfState != null) {
-                //special-case for cancelled job before it started
-                if (lsfState==LsfState.EXIT && startTime==null) {
-                    jobState=DrmJobState.ABORTED;
-                    jobStatusMessage="Job was cancelled before it started running.";
-                }
-                else if (lsfState==LsfState.EXIT && lsfLogFile != null) {
-                    //for completed job, parse the lsf log file (.lsf.out) for exitCode and custom status message
-                    waitForFile(lsfLogFile);
-                    LsfErrorStatus lsfErrorStatus = checkStatusFromLsfLogFile(lsfLogFile);
-                    if (lsfErrorStatus != null && 
-                            lsfErrorStatus.getExitCode()==130 && 
-                            lsfErrorStatus.getErrorMessage().contains("TERM_OWNER: job killed by owner.")
-                    ) {
-                        //special-case: job cancelled after it started running
-                        jobState=DrmJobState.CANCELLED;
-                        jobStatusMessage=DrmJobState.CANCELLED.getDescription();
-                    }
-                    else if (lsfErrorStatus != null &&
-                            lsfErrorStatus.getExitCode()==1 &&
-                            lsfErrorStatus.getErrorMessage().contains("TERM_MEMLIMIT: job killed after reaching LSF memory usage limit.")                    
-                    ) {
-                        //special-case: job terminated because of memory limit
-                        jobState=DrmJobState.TERM_MEMLIMIT;
-                        jobStatusMessage="TERM_MEMLIMIT: job killed after reaching LSF memory usage limit.";
-                    }
-                    else if (lsfErrorStatus != null &&
-                            lsfErrorStatus.getExitCode()==134 &&
-                            lsfErrorStatus.getErrorMessage().startsWith("TERM_RUNLIMIT")
-                    ) {
-                        //special-case: job terminated because of runtime (wallclock) limit
-                        jobState=DrmJobState.TERM_RUNLIMIT;
-                        jobStatusMessage=lsfErrorStatus.getErrorMessage();
-                    }
-                    else {
-                        jobState=lsfState.getDrmJobState();
-                        jobStatusMessage=lsfState.getDescription();
-                    }
-                    if (lsfErrorStatus != null) {
-                        exitCode=lsfErrorStatus.getExitCode();
-                    }
-                }
-                else {
-                    jobState=lsfState.getDrmJobState();
-                    jobStatusMessage=lsfState.getDescription();
-                }
-            }
-            else {
-                jobState=null;
-                jobStatusMessage=null;
-            }
-            
-            //check for exitCode
-            if (exitCode==null && jobState==DrmJobState.DONE) {
-                exitCode=0;
-            }
-
-            DrmJobStatus.Builder b = new DrmJobStatus.Builder();
-            b.extJobId(lineMatcher.group("JOBID"));
-            
-            if (lsfState != null) {
-                b.jobState(jobState);
-                b.jobStatusMessage(jobStatusMessage);
-            }
-            b.submitTime(submitTime);
-            b.startTime(startTime);
-            b.endTime(endTime);
-            CpuTime cpuTime=null;
-            try {
-                cpuTime=parseCpuTime(lineMatcher);
-            }
-            catch (NumberFormatException e) {
-                log.error("error parsing cpuTime from line="+line, e);
-            }
-            if (cpuTime != null) {
-                b.cpuTime(cpuTime);
-            }
-            Long memUsage=parseOptionalLong(lineMatcher.group("MEM"));
-            if (memUsage != null) {
-                b.memory(memUsage+" "+memUsageUnits);
-            }
-            if (exitCode != null) {
-                b.exitCode(exitCode);
-            }
-            return b.build();
+        final Matcher lineMatcher = LINE_PATTERN.matcher(line);
+        if (!lineMatcher.matches()) {
+            log.error("Unable to initialize DrmJobStatus from line="+line);
+            return null;
         }
-        log.error("Unable to initialize DrmJobStatus from line="+line);
-        return null;
+
+        final LsfState lsfState=LsfState.valueOf(lineMatcher.group("STATUS"));
+        final Date submitTime=parseDate(lineMatcher.group("SUBMITTIME"));
+        final Date startTime=parseDate(lineMatcher.group("STARTTIME"));
+        final Date endTime=parseDate(lineMatcher.group("FINISHTIME"));
+        final DrmJobState jobState;
+        final String jobStatusMessage;
+        Integer exitCode=null;
+        
+        if (lsfState==LsfState.EXIT && lsfLogFile != null) {
+            //for completed jobs, parse the lsf log file (.lsf.out)
+            waitForFile(lsfLogFile);  // <-- on NFS it can take a bit for the log file to get written
+            LsfErrorStatus lsfErrorStatus = checkStatusFromLsfLogFile(startTime != null, lsfLogFile);
+            jobState = lsfErrorStatus.getJobState();
+            exitCode = lsfErrorStatus.getExitCode();
+            jobStatusMessage = lsfErrorStatus.getErrorMessage();
+        }
+        else if (lsfState==LsfState.EXIT && startTime==null) {
+            jobState=DrmJobState.ABORTED;
+            jobStatusMessage="Job was cancelled before it started running.";
+        }
+        else if (lsfState != null) {
+            jobState=lsfState.getDrmJobState();
+            jobStatusMessage=lsfState.getDescription();
+        }
+        else {
+            jobState=null;
+            jobStatusMessage=null;
+       }  
+
+        //check for exitCode
+        if (exitCode==null && jobState==DrmJobState.DONE) {
+            exitCode=0;
+        }
+
+        DrmJobStatus.Builder b = new DrmJobStatus.Builder();
+        b.extJobId(lineMatcher.group("JOBID"));
+
+        if (lsfState != null) {
+            b.jobState(jobState);
+            b.jobStatusMessage(jobStatusMessage);
+        }
+        b.submitTime(submitTime);
+        b.startTime(startTime);
+        b.endTime(endTime);
+        CpuTime cpuTime=null;
+        try {
+            cpuTime=parseCpuTime(lineMatcher);
+        }
+        catch (NumberFormatException e) {
+            log.error("error parsing cpuTime from line="+line, e);
+        }
+        if (cpuTime != null) {
+            b.cpuTime(cpuTime);
+        }
+        Long memUsage=parseOptionalLong(lineMatcher.group("MEM"));
+        if (memUsage != null) {
+            b.memory(memUsage+" "+memUsageUnits);
+        }
+        if (exitCode != null) {
+            b.exitCode(exitCode);
+        }
+        return b.build();
     }
 
     public static void waitForFile(final File file) throws InterruptedException {
@@ -160,11 +130,11 @@ public class LsfBjobsParser {
      * For a completed job ...
      * ... read the ".lsf.out" logFile to get the exitCode.
      */
-    public static LsfErrorStatus checkStatusFromLsfLogFile(final File lsfLogFile) {
+    public static LsfErrorStatus checkStatusFromLsfLogFile(boolean hasStarted, final File lsfLogFile) {
         if (lsfLogFile != null) {
             if (lsfLogFile.exists()) {
                 log.debug("checking error status ... lsfJobOutputFile="+lsfLogFile);
-                LsfErrorCheckerImpl errorCheck = new LsfErrorCheckerImpl(lsfLogFile);
+                LsfErrorCheckerImpl errorCheck = new LsfErrorCheckerImpl(hasStarted, lsfLogFile);
                 LsfErrorStatus status = errorCheck.getStatus();
                 return status;
             }
