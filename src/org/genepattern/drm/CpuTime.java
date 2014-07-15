@@ -14,7 +14,10 @@ public class CpuTime {
     private final TimeUnit timeUnit;
     
     public CpuTime() {
-        this(0, TimeUnit.MILLISECONDS);
+        this(0L, TimeUnit.MILLISECONDS);
+    }
+    public CpuTime(long numMillis) {
+        this(numMillis, TimeUnit.MILLISECONDS);
     }
     public CpuTime(long time, TimeUnit timeUnit) {
         this.time=time;
