@@ -10,6 +10,7 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.apache.log4j.Logger;
 import org.genepattern.server.FileUtil;
+import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.dm.jobresult.JobResultFile;
@@ -29,8 +30,18 @@ public class GpFileObjFactory {
      * @return
      * @throws Exception
      */
-    static public GpFilePath getUserUploadDir(GpContext userContext) throws Exception {
-        File userUploadDir = ServerConfigurationFactory.instance().getUserUploadDir(userContext);
+    public static GpFilePath getUserUploadDir(GpContext userContext) throws Exception {
+        GpConfig gpConfig=ServerConfigurationFactory.instance();
+        return getUserUploadDir(gpConfig, userContext);
+    }
+
+    public static GpFilePath getUserUploadDir(GpConfig gpConfig, GpContext userContext) throws Exception {
+        if (gpConfig == null) {
+            log.error("gpConfig==null, using ServerConfigurationFactory.instance");
+            gpConfig=ServerConfigurationFactory.instance();
+        }
+
+        File userUploadDir = gpConfig.getUserUploadDir(userContext);
         //1) construct a file reference to the server file
         //   e.g. serverFile=<user.upload.dir>/relativePath
         
@@ -64,8 +75,24 @@ public class GpFileObjFactory {
      * @param uploadFile, a relative path to the upload file, relative to the user's upload directory.
      * @return
      * @throws Exception
+     * 
+     * @deprecated, should pass in a valid GpConfig.
      */
     static public GpFilePath getUserUploadFile(GpContext userContext, File uploadFile) throws Exception {
+        final GpConfig gpConfig=ServerConfigurationFactory.instance();
+        return getUserUploadFile(gpConfig, userContext, uploadFile);
+    }
+    
+    /**
+     * Create a GpFileObj whose path is relative to the user's upload directory.
+     * 
+     * @param gpConfig, the server configuration instance.
+     * @param userContext, must contain a valid user_id.
+     * @param uploadFile, a relative path to the upload file, relative to the user's upload directory.
+     * @return
+     * @throws Exception
+     */
+    static public GpFilePath getUserUploadFile(GpConfig gpConfig, final GpContext userContext, final File uploadFile) throws Exception {
         if (uploadFile == null) {
             throw new IllegalArgumentException("uploadFile must not be null");
         }
@@ -86,15 +113,19 @@ public class GpFileObjFactory {
         if (userContext.getUserId() == null) {
             throw new IllegalArgumentException("A valid userId is required, userId=null");
         }
+        if (gpConfig == null) {
+            log.error("gpConfig==null, using ServerConfigurationFactory.instance");
+            gpConfig=ServerConfigurationFactory.instance();
+        }
         
         //Note: see UserAccountManager class. If the system is running as expected, the user's home directory is created
         //    before the account is created, therefore we can assume the userId is a valid directory name
         if (userContext.getUserId().contains("/") || userContext.getUserId().contains(File.pathSeparator)) {
             throw new IllegalArgumentException("A valid userId is required, userId='"+userContext.getUserId()+"'. Your userId contains a pathSeparator character ('/').");
         }
-        File userUploadDir = ServerConfigurationFactory.instance().getUserUploadDir(userContext);
+        File userUploadDir = gpConfig.getUserUploadDir(userContext);
 
-        //TODO: relativize the path, at the moment, just manually removing './'
+        //relativize the path by manually removing './'
         String relativePath = uploadFile.getPath();
         if (relativePath.startsWith("./") || relativePath.startsWith("."+File.separator)) {
             relativePath = relativePath.substring(2);
