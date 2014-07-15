@@ -377,6 +377,21 @@ public class JobsResource {
             else {
                 jsonStr=job.toString();
             }
+            
+            //for debugging
+            if (log.isDebugEnabled()) {
+                try {
+                    if (job.getJSONObject("status").getBoolean("isFinished")) {
+                        if (job.getInt("numOutputFiles")==0) {
+                            log.debug("Hmmm ... no output files for a completed job");
+                        }
+                    }
+                }
+                catch (Throwable t) {
+                    //ignore
+                    log.error("Unexpected error in debugging code", t);
+                }
+            }
         }
         catch (Throwable t) {
             //TODO: customize the response errors, e.g.
