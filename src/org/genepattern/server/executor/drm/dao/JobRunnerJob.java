@@ -10,9 +10,11 @@ import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
 
 import org.apache.log4j.Logger;
+import org.genepattern.drm.CpuTime;
 import org.genepattern.drm.DrmJobState;
 import org.genepattern.drm.DrmJobStatus;
 import org.genepattern.drm.DrmJobSubmission;
+import org.genepattern.drm.Memory;
 import org.hibernate.validator.Size;
 
 /**
@@ -104,7 +106,37 @@ public class JobRunnerJob {
      */
     @Column(name="end_time", nullable=true)
     private Date endTime;
-
+    
+    /**
+     * The amount of cpu time used for the job, in number of milliseconds.
+     */
+    @Column(name="cpu_time", nullable=false)
+    private long cpuTime;
+    
+    /**
+     * The maximum memory usage for the job, in number of bytes.
+     */
+    @Column(name="max_mem", nullable=false)
+    private long maxMem;
+    
+    /**
+     * The maximum swap space usage for the job, in number of bytes.
+     */
+    @Column(name="max_swap", nullable=false)
+    private long maxSwap;
+    
+    /**
+     * The maximum number of processes for the job, for example, as reported in the .lsf.out log file.
+     */
+    @Column(name="max_processes", nullable=false)
+    private int maxProcesses;
+    
+    /**
+     * The maximum number of threads used by the job, for example, as reported in the .lsf.out log file.
+     */
+    @Column(name="max_threads", nullable=false)
+    private int maxThreads;
+    
     @Column(name="working_dir", nullable=false)
     private String workingDir;
     
@@ -142,6 +174,12 @@ public class JobRunnerJob {
         this.submitTime=builder.submitTime;
         this.startTime=builder.startTime;
         this.endTime=builder.endTime;
+        
+        this.cpuTime=builder.cpuTime;
+        this.maxMem=builder.maxMem;
+        this.maxSwap=builder.maxSwap;
+        this.maxProcesses=builder.maxProcesses;
+        this.maxThreads=builder.maxThreads;
     }
 
     public static final class Builder {
@@ -162,6 +200,12 @@ public class JobRunnerJob {
         private Date submitTime=null;
         private Date startTime=null;
         private Date endTime=null;
+        
+        private long cpuTime=0L;
+        private long maxMem=0L;
+        private long maxSwap=0L;
+        private int maxThreads=0;
+        private int maxProcesses=0;
         
         public Builder(final String jobRunnerClassname, final DrmJobSubmission in) {
             this.gpJobNo=in.getGpJobNo();
@@ -301,6 +345,31 @@ public class JobRunnerJob {
             this.endTime=endTime;
             return this;
         }
+        
+        public Builder cpuTime(final CpuTime cpuTime) {
+            this.cpuTime=cpuTime.asMillis();
+            return this;
+        }
+        
+        public Builder maxMemory(final Memory maxMemory) {
+            this.maxMem=maxMemory.getNumBytes();
+            return this;
+        }
+        
+        public Builder maxSwap(final Memory maxSwap) {
+            this.maxSwap=maxSwap.getNumBytes();
+            return this;
+        }
+        
+        public Builder maxProcesses(final int maxProcesses) {
+            this.maxProcesses=maxProcesses;
+            return this;
+        }
+        
+        public Builder maxThreads(final int maxThreads) {
+            this.maxThreads=maxThreads;
+            return this;
+        }
 
         public JobRunnerJob build() {
             return new JobRunnerJob(this);
@@ -375,6 +444,26 @@ public class JobRunnerJob {
         return endTime;
     }
 
+    public long getCpuTime() {
+        return cpuTime;
+    }
+
+    public long getMaxMemory() {
+        return maxMem;
+    }
+    
+    public long getMaxSwap() {
+        return maxSwap;
+    }
+
+    public int getMaxProcesses() {
+        return maxProcesses;
+    }
+
+    public int getMaxThreads() {
+        return maxThreads;
+    }
+
     //private no-arg constructor for hibernate
     private JobRunnerJob() {
     }
@@ -442,5 +531,21 @@ public class JobRunnerJob {
 
     private void setEndTime(Date endTime) {
         this.endTime = endTime;
+    }
+
+    private void setCpuTime(Long cpuTime) {
+        this.cpuTime = cpuTime;
+    }
+
+    private void setMaxMem(Long maxMem) {
+        this.maxMem = maxMem;
+    }
+
+    private void setMaxProcesses(int maxProcesses) {
+        this.maxProcesses = maxProcesses;
+    }
+
+    private void setMaxThreads(int maxThreads) {
+        this.maxThreads = maxThreads;
     }
 }

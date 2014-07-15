@@ -27,6 +27,26 @@ alter table job_runner_job add column
     end_time timestamp default null
 before status_date;
 
+alter table job_runner_job add column
+    cpu_time bigint default 0
+before status_date;
+    
+alter table job_runner_job add column
+    max_mem bigint default 0
+before status_date;
+
+alter table job_runner_job add column
+    max_swap bigint default 0
+before status_date;
+
+alter table job_runner_job add column
+    max_processes integer default 0
+before status_date;
+
+alter table job_runner_job add column
+    max_threads integer default 0
+before status_date;
+
 -- update schema version
 update props set value='3.8.3' where key='schemaVersion';
 

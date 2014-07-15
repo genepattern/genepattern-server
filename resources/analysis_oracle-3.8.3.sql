@@ -18,7 +18,12 @@ create table  job_output (
 alter table job_runner_job add ( 
     submit_time timestamp default null,
     start_time timestamp default null,
-    end_time timestamp default null
+    end_time timestamp default null,
+    cpu_time number(19,0) default 0,
+    max_mem number(19,0) default 0,
+    max_swap number(19,0) default 0,
+    max_processes integer default 0,
+    max_threads integer default 0
 );
 
 -- update schema version
