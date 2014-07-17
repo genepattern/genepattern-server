@@ -28,6 +28,9 @@ import org.apache.log4j.Logger;
 import org.genepattern.server.JobInfoManager;
 import org.genepattern.server.JobInfoWrapper;
 import org.genepattern.server.PermissionsHelper;
+import org.genepattern.server.congestion.CongestionListener;
+import org.genepattern.server.dm.congestion.Congestion;
+import org.genepattern.server.congestion.CongestionManager;
 import org.genepattern.server.user.User;
 import org.genepattern.server.user.UserDAO;
 import org.genepattern.server.user.UserProp;
@@ -247,4 +250,40 @@ public class JobStatusBean {
         UIBeanHelper.getFacesContext().responseComplete();
     }
 
+    /**
+     * Get the CSS class for the appropriate congestion light color
+     * @return
+     */
+    public String getCongestionClass() {
+        CongestionManager.QueueStatus status = CongestionManager.getQueueStatus(jobInfoWrapper.getTaskLSID());
+
+        switch (status) {
+            case RED:
+                return "congestion-red";
+            case YELLOW:
+                return "congestion-yellow";
+            case GREEN:
+                return "congestion-green";
+            default:
+                log.error("Error getting job queue status for " + jobInfoWrapper.getTaskLSID());
+                return "congestion-error";
+        }
+    }
+
+    /**
+     * Get the estimated wait time for the task
+     * @return
+     */
+    public String getEstimatedWait() {
+        // Lazily initialize listener
+        CongestionListener.init();
+
+        Congestion congestion = CongestionManager.getCongestion(jobInfoWrapper.getTaskLSID());
+        if (congestion == null) {
+            return "No estimate available";
+        }
+        else {
+            return CongestionManager.prettyRuntime(congestion.getRuntime());
+        }
+    }
 }

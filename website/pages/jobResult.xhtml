@@ -269,14 +269,8 @@
 
                 function initPendingStatus() {
                     $(document).ready(function() {
-                        var congestionClass = "congestion-red";
-                        var congestionTooltip = '\
-                            <strong>Large Jobs Queue</strong> <em>Average Wait Time:</em> 1 day <br/><br/>\
-                            The slows jobs queue is experiencing some congestion. Jobs submitted here may take several days before they run.';
-
                         // Set up the congestion box
                         var jqCongestionTooltip = $("#congestion-tooltip");
-                        jqCongestionTooltip.html(congestionTooltip);
 
                         $(".congestion")
                                 .tooltip({
@@ -287,9 +281,7 @@
                                     $("#congestion-tooltip").dialog({
                                         title: "Jobs Queue Status"
                                     }).show();
-                                })
-                                .find(".congestion-icon")
-                                .addClass(congestionClass);
+                                });
                     });
                 }
 
@@ -299,7 +291,6 @@
 	</ui:define>
 
 	<ui:define name="body">
-        <div id="congestion-tooltip" style="display: none;"></div>
         <h:outputText rendered="#{jobStatusBean.canViewJob}">
 
             <div style="display:none;" class="on-job-status-page"></div>
@@ -386,13 +377,28 @@
                                             </div>
                                         </h:outputText></td>
 
-                                    <td width="30px"><h:outputText
-                                            rendered="#{jobStatusBean.jobInfo.status == 'Pending'}">
-                                            <div class="congestion-light congestion">
+                                    <td width="30px">
+                                        <h:outputText rendered="#{jobStatusBean.jobInfo.status == 'Pending'}">
+                                            <div id="status-congestion-light" class="congestion-light congestion #{jobStatusBean.congestionClass}">
                                                 <span class="congestion-icon">&#9679;</span><br/>
                                                 Pending
                                             </div>
-                                            </h:outputText>
+                                            <div id="congestion-tooltip" style="display: none;">
+                                                <strong>Job Queue Status</strong><br/>
+                                                <h:outputText rendered="#{jobStatusBean.congestionClass == 'congestion-green'}">
+                                                    The job queue is experiencing light or no wait times for this job.
+                                                </h:outputText>
+                                                <h:outputText rendered="#{jobStatusBean.congestionClass == 'congestion-yellow'}">
+                                                    The job queue is experiencing moderate wait times for this job. Pending times of several hours are possible.
+                                                </h:outputText>
+                                                <h:outputText rendered="#{jobStatusBean.congestionClass == 'congestion-red'}">
+                                                    The job queue is experiencing severe wait times for this job. Pending times of several days are possible.
+                                                </h:outputText>
+                                                <br/><br/>
+                                                <strong>Estimated Total Wait Time</strong><br/>
+                                                #{jobStatusBean.estimatedWait}
+                                            </div>
+                                        </h:outputText>
                                         <h:outputText
                                             rendered="#{jobStatusBean.jobInfo.status == 'Processing'}">
                                             <img src="/gp/images/spin.gif"
