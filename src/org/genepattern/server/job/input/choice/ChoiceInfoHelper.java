@@ -212,17 +212,6 @@ public class ChoiceInfoHelper {
             return null;
         }
     }
-
-    public static GpFilePath getLocalPathFromSelection(final Choice selectedChoice) throws Exception {
-        final URL url=JobInputHelper.initExternalUrl(selectedChoice.getValue());
-        if (url==null) {
-            //it's not an external url
-            return null;
-        }
-        
-        GpFilePath localPath=CachedFtpFile.getLocalPath(url);
-        return localPath;
-    }
     
     public static void appendChoice(final Choice choice, final ParameterInfo pinfo) {
         //append choice to beginning of menu
