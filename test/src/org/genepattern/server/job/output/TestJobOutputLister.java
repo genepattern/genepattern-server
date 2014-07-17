@@ -13,6 +13,7 @@ import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.Value;
 import org.genepattern.server.util.JobResultsFilenameFilter;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
@@ -22,6 +23,24 @@ public class TestJobOutputLister {
     private String jobId="0";
     private File jobDir;
     private DefaultGpFileTypeFilter filter;
+    // check sort by path
+    private final String[] expectedPaths=new String[] {
+            "", // <-- working dir, hidden by default filter
+            ".gp_job_status",
+            ".gp_job_status/readme.txt",
+            ".lsf.out",
+            "a",
+            "a/b",
+            "a/b/01.txt",
+            "a/b/02.txt",
+            "a/file1.txt",
+            "a/file2.txt",
+            "all_aml_test.comp.marker.odf",
+            "all_aml_test.preprocessed.gct",
+            "gp_execution_log.txt",   // <-- hidden by the default filter
+            "stderr.txt",
+            "stdout.txt"
+    };
 
     @Before
     public void setUp() {
@@ -34,6 +53,13 @@ public class TestJobOutputLister {
         JobResultsLister lister=new JobResultsLister(jobId, jobDir);
         lister.walkFiles();
         List<JobOutputFile> outputFiles=lister.getOutputFiles();
+        
+        String[] actualPaths=new String[outputFiles.size()];
+        for(int i=0; i<outputFiles.size(); ++i) {
+            actualPaths[i] = outputFiles.get(i).getPath();
+        }
+        Assert.assertArrayEquals("expected paths", expectedPaths, actualPaths);
+        
         assertEquals("num files", 15, outputFiles.size());
         
         //expect the first entry to be the job_dir
