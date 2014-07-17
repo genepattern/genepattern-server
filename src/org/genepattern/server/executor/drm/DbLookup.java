@@ -182,6 +182,7 @@ public class DbLookup implements DrmLookup {
         }
         catch (Throwable t) {
             log.error("Error getting entry for gpJobNo="+gpJobNo,t);
+            //TODO: throw new DbException("Error getting entry for gpJobNo="+gpJobNo,t);
             return null;
         }
         finally {
