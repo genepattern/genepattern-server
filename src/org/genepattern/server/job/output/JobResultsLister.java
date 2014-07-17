@@ -34,14 +34,13 @@ public class JobResultsLister extends SimpleFileVisitor<Path> {
      * <pre>  .svn folders, files ending in '~'.
      * </pre>
      */
-    public static PathMatcher DEFAULT_IGNORED_PATHS=initIgnoredPaths();
+    public static final PathMatcher DEFAULT_IGNORED_PATHS=initIgnoredPaths();
 
     private final String jobId;
     private final File workingDir;
     private final Path workingDirPath;
     private final GpFileTypeFilter fileFilter;
     final List<JobOutputFile> allFiles=new ArrayList<JobOutputFile>();
-    final List<JobOutputFile> outputFiles=new ArrayList<JobOutputFile>();
     final List<JobOutputFile> hiddenFiles=new ArrayList<JobOutputFile>();
     private boolean walkHiddenDirectories=true;
     private PathMatcher ignoredPaths=DEFAULT_IGNORED_PATHS;
@@ -106,10 +105,7 @@ public class JobResultsLister extends SimpleFileVisitor<Path> {
             hiddenFiles.add(jobOutputFile);
             return false;
         }
-        else {
-            outputFiles.add(jobOutputFile);
-            return true;
-        }
+        return true;
     }
     
     @Override

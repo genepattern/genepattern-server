@@ -35,6 +35,9 @@ public class DefaultGpFileTypeFilter implements GpFileTypeFilter {
 
     @Override
     public boolean accept(File dir, String name) {
+        if (filenameFilter==null) {
+            return true;
+        }
         return filenameFilter.accept(dir, name);
     }
 
