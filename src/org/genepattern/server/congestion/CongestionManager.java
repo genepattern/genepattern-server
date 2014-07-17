@@ -263,7 +263,21 @@ public class CongestionManager {
      * @return
      */
     static private int getJobsWaiting(Congestion congestion) {
-        // TODO: Implement
-        return 3;
+        boolean inTransaction = HibernateUtil.isInTransaction();
+
+        CongestionDao dao = new CongestionDao();
+
+        try {
+            int waiting = dao.getVirtualQueueCount(congestion.getVirtualQueue());
+
+            if (!inTransaction) {
+                HibernateUtil.commitTransaction();
+            }
+            return waiting;
+        }
+        catch (Throwable t) {
+            log.error("Error in getJobsWaiting()", t);
+            return 0;
+        }
     }
 }
