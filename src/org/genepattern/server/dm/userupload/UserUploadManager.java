@@ -175,35 +175,40 @@ public class UserUploadManager {
      * @param modDuplicate, whether an existing duplicate entry is updated or if an error is thrown
      * @throws Exception if a duplicate entry for the file is found in the database and modDuplicate is false
      */
-    static public UserUpload createUploadFile(GpContext userContext, GpFilePath gpFileObj, int numParts, boolean modDuplicate) throws Exception {
-        boolean inTransaction = HibernateUtil.isInTransaction();
-        
-        UserUploadDao dao = new UserUploadDao();
-        UserUpload uu = dao.selectUserUpload(userContext.getUserId(), gpFileObj);
-        if (uu != null && !modDuplicate) {
-            log.error("Duplicate entry found in the database for file: " + gpFileObj.getRelativePath());
-            throw new Exception("Duplicate entry found in the database for file: " + gpFileObj.getRelativePath());
-        }
-        uu = UserUpload.initFromGpFileObj(userContext.getUserId(), uu, gpFileObj);
-        uu.setNumParts(numParts);
-
+    public static UserUpload createUploadFile(GpContext userContext, GpFilePath gpFileObj, int numParts, boolean modDuplicate) throws Exception {
+        final boolean inTransaction = HibernateUtil.isInTransaction(); 
+        log.debug("inTransaction="+inTransaction);
         try {
-            dao.saveOrUpdate( uu );
-            if (!inTransaction) {
-                HibernateUtil.commitTransaction();
+            // constructor begins a DB connection
+            HibernateUtil.beginTransaction();
+            UserUploadDao dao = new UserUploadDao();
+            UserUpload uu = dao.selectUserUpload(userContext.getUserId(), gpFileObj);
+            if (uu != null && !modDuplicate) {
+                log.error("Duplicate entry found in the database for relativePath=" + gpFileObj.getRelativePath());
+                throw new Exception("Duplicate entry found in the database for file: " + gpFileObj.getRelativePath());
             }
-            return uu;
-        }
-        catch (RuntimeException e) {
-            log.error("RuntimeException in createUploadFile(), rolling back commit.", e);
-            HibernateUtil.rollbackTransaction();
-            throw new Exception("Runtime exception creating upload file: " + gpFileObj.getRelativePath());
+            try {
+                uu = UserUpload.initFromGpFileObj(userContext.getUserId(), uu, gpFileObj);
+                uu.setNumParts(numParts);
+                dao.saveOrUpdate( uu );
+                if (!inTransaction) {
+                    HibernateUtil.commitTransaction();
+                }
+                
+                return uu;
+            }
+            catch (Throwable t) {
+                log.error("Error in createUploadFile() for relativePath="+gpFileObj.getRelativePath(), t);
+                HibernateUtil.rollbackTransaction();
+                throw new Exception("Runtime exception creating upload file: " + gpFileObj.getRelativePath());
+            }
         }
         finally {
-            HibernateUtil.closeCurrentSession();
+            if (!inTransaction) {
+                HibernateUtil.closeCurrentSession();
+            }
         }
     }
-      
 
     /**
      * Update the record of the user upload file in the database.
