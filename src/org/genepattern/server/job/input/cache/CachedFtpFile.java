@@ -36,7 +36,6 @@ import com.enterprisedt.net.ftp.FileTransferClient;
 abstract public class CachedFtpFile implements CachedFile {
     private static Logger log = Logger.getLogger(CachedFtpFile.class);
     
-    
     /**
      * Enum of downloaders, used to specify which implementation to use.
      * @author pcarr
@@ -185,12 +184,19 @@ abstract public class CachedFtpFile implements CachedFile {
 
     }
 
+    private final GpConfig gpConfig;
     private final URL url;
     private final GpFilePath localPath;
     
-    private CachedFtpFile(final GpConfig gpConfig, final String urlString) {
+    private CachedFtpFile(final GpConfig gpConfigIn, final String urlString) {
         if (log.isDebugEnabled()) {
             log.debug("Initializing CachedFtpFile, type="+this.getClass().getName());
+        }
+        if (gpConfigIn==null) {
+            this.gpConfig=ServerConfigurationFactory.instance();
+        }
+        else {
+            this.gpConfig=gpConfigIn;
         }
         this.url=JobInputHelper.initExternalUrl(urlString);
         if (url==null) {
@@ -221,10 +227,6 @@ abstract public class CachedFtpFile implements CachedFile {
         return getLocalPathForFile(gpConfig, url);
     }
     
-    /** @deprecated, should pass in the GpConfig instance. */
-    public static final GpFilePath getLocalPathForDownloadingFile(final URL url) {
-        return getLocalPath(ServerConfigurationFactory.instance(), url, "cache.downloading");
-    }
     public static final GpFilePath getLocalPathForDownloadingFile(final GpConfig gpConfig, final URL url) {
         return getLocalPath(gpConfig, url, "cache.downloading");
     }
@@ -360,16 +362,23 @@ abstract public class CachedFtpFile implements CachedFile {
         // If the real path exists, assume it's up to date
         final File realFile = realPath.getServerFile();
         if (realFile.exists()) {
+            if (log.isDebugEnabled()) {
+                log.debug("file already downloaded to "+
+                        realPath.getServerFile()+"\n"+
+                        "from url "+url);
+            }
             return;
         }
 
         // otherwise, download to tmp location
-        final GpFilePath tempPath = getLocalPathForDownloadingFile(url);
+        final GpFilePath tempPath = getLocalPathForDownloadingFile(gpConfig, url);
         final File tempFile = tempPath.getServerFile();
-
         boolean deleteExisting=true;
         boolean interrupted=false;
         try {
+            if (log.isDebugEnabled()) {
+                log.debug("downloading from "+url+" to "+tempFile);
+            }
             boolean success=downloadFile(url, tempFile, deleteExisting);
             if (!success) {
                 throw new DownloadException("Error downloading from '"+url.toExternalForm()+"' to temp file: "+tempFile.getAbsolutePath());
@@ -383,11 +392,16 @@ abstract public class CachedFtpFile implements CachedFile {
             interrupted=true;
         }
         if (interrupted) {
-            // blow away the partial download
+            if (log.isDebugEnabled()) {
+                log.debug("download interrupted, deleting partial download");
+            }
             // Note: we may want to leave it around so that we can pick up from where we left off
             boolean deleted=tempFile.delete();
             if (!deleted) {
                 log.error("failed to delete tempFile: "+tempFile);
+            }
+            else if (log.isDebugEnabled()) {
+                log.debug("deleted tempFile: "+tempFile);
             }
             throw new InterruptedException();
         }
