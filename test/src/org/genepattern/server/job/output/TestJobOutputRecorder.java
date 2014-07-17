@@ -55,7 +55,7 @@ public class TestJobOutputRecorder {
             HibernateUtil.closeCurrentSession();
         }
         
-        assertEquals("number of records in database", 14, results.size());
+        assertEquals("number of records in database", 15, results.size());
         
         long totalFileSize=0L;
         int numFiles=0;

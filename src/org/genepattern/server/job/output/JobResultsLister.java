@@ -16,7 +16,6 @@ import java.util.Comparator;
 import java.util.List;
 
 import org.apache.log4j.Logger;
-import org.genepattern.server.util.JobResultsFilenameFilter;
 
 public class JobResultsLister extends SimpleFileVisitor<Path> {
     private static final Logger log = Logger.getLogger(JobResultsLister.class);
@@ -35,44 +34,44 @@ public class JobResultsLister extends SimpleFileVisitor<Path> {
      * <pre>  .svn folders, files ending in '~'.
      * </pre>
      */
-    public static PathMatcher ignoredPaths=initIgnoredPaths();
-
+    public static PathMatcher DEFAULT_IGNORED_PATHS=initIgnoredPaths();
 
     private final String jobId;
     private final File workingDir;
     private final Path workingDirPath;
-    private final JobResultsFilenameFilter filenameFilter;
-    final List<JobOutputFile> out=new ArrayList<JobOutputFile>();
-    final List<JobOutputFile> hidden=new ArrayList<JobOutputFile>();
-    private boolean walkHiddenDirectories=false;
+    private final GpFileTypeFilter fileFilter;
+    final List<JobOutputFile> allFiles=new ArrayList<JobOutputFile>();
+    final List<JobOutputFile> outputFiles=new ArrayList<JobOutputFile>();
+    final List<JobOutputFile> hiddenFiles=new ArrayList<JobOutputFile>();
+    private boolean walkHiddenDirectories=true;
+    private PathMatcher ignoredPaths=DEFAULT_IGNORED_PATHS;
 
     public JobResultsLister(String jobId, File jobDir) {
         this(jobId, jobDir, null);
     }
 
-    public JobResultsLister(String jobId, File workingDir, JobResultsFilenameFilter filenameFilter) {
+    public JobResultsLister(String jobId, File workingDir, GpFileTypeFilter fileFilter) throws NumberFormatException {
         this.jobId=jobId;
         this.workingDir=workingDir;
         this.workingDirPath=workingDir.toPath();
-        this.filenameFilter=filenameFilter;
+        this.fileFilter=fileFilter;
     }
     
     public void walkFiles() throws IOException {
         Files.walkFileTree(workingDirPath, this);
     }
 
-
     public List<JobOutputFile> getHiddenFiles() {
-        return Collections.unmodifiableList(hidden);
+        return Collections.unmodifiableList(hiddenFiles);
     }
     
     public List<JobOutputFile> getOutputFiles() {
-        return Collections.unmodifiableList(out);
+        return Collections.unmodifiableList(allFiles);
     }
     
     public void sortByPath() {
         // sort by relative pathname
-        Collections.sort(out, new Comparator<JobOutputFile>() {
+        Collections.sort(allFiles, new Comparator<JobOutputFile>() {
             @Override
             public int compare(JobOutputFile o1, JobOutputFile o2) {
                 return o1.getPath().compareTo(o2.getPath());
@@ -82,7 +81,7 @@ public class JobResultsLister extends SimpleFileVisitor<Path> {
 
     public void sortByLastModified() {
         // sort by relative pathname
-        Collections.sort(out, new Comparator<JobOutputFile>() {
+        Collections.sort(allFiles, new Comparator<JobOutputFile>() {
 
             @Override
             public int compare(JobOutputFile o1, JobOutputFile o2) {
@@ -97,23 +96,24 @@ public class JobResultsLister extends SimpleFileVisitor<Path> {
         }
         
         File relativeFile=workingDirPath.relativize(file).toFile();
-        JobOutputFile jobOutputFile=JobOutputFile.from(jobId, workingDir, relativeFile);
-        
-        if (filenameFilter==null || filenameFilter.accept(relativeFile.getParentFile(), relativeFile.getName())) {
-            out.add( jobOutputFile );
+        GpFileType gpFileType=null;
+        if (fileFilter!=null) {
+            gpFileType=fileFilter.getGpFileType(workingDir, relativeFile, attrs);
+        }
+        JobOutputFile jobOutputFile = JobOutputFile.from(jobId, workingDir, relativeFile, attrs, gpFileType);
+        allFiles.add(jobOutputFile);
+        if (jobOutputFile.isHidden()) {
+            hiddenFiles.add(jobOutputFile);
+            return false;
+        }
+        else {
+            outputFiles.add(jobOutputFile);
             return true;
         }
-        jobOutputFile.setHidden(true);
-        hidden.add( jobOutputFile );
-        return false;
     }
-
+    
     @Override
     public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
-        if (dir.equals(workingDirPath)) {
-            //don't include the working directory in the list of results
-            return FileVisitResult.CONTINUE;
-        }
         boolean isHiddenDir = ! checkAdd(dir, attrs);
         if (isHiddenDir && !walkHiddenDirectories) {
             return FileVisitResult.SKIP_SUBTREE;

@@ -32,34 +32,33 @@ import org.genepattern.util.SemanticUtil;
 @Table(name="job_output", uniqueConstraints={@UniqueConstraint(columnNames={"gp_job_no", "path"})})
 public class JobOutputFile {
     private static final Logger log = Logger.getLogger(JobOutputFile.class);
-
-    public static JobOutputFile from(final String jobId, File jobDir, final String relativePath) throws IOException {
-        return from(jobId, jobDir, new File(relativePath));
-    }
     
-    public static JobOutputFile from(final String jobId, File jobDir, File outputFile) throws IOException {
+    private static final GpFileTypeFilter defaultFileTypeFilter=new DefaultGpFileTypeFilter();
+
+    public static JobOutputFile from(final String jobId, File jobDir, final File relativeFile, final GpFileType gpFileType) throws IOException {
+        return from(jobId, jobDir, relativeFile, null, gpFileType);
+    }
+
+    public static JobOutputFile from(final String jobId, File jobDir, final File relativeFile, BasicFileAttributes attrs, GpFileType gpFileType) throws IOException {
         if (!jobDir.isAbsolute()) {
             log.warn("expecting absolute path to job directory");
             jobDir=jobDir.getAbsoluteFile();
         }
         
-        if (outputFile.isAbsolute()) {
+        final File absoluteFile;
+        if (relativeFile.isAbsolute()) {
             log.warn("expecting relative path to job result file");
+            absoluteFile=relativeFile;
         }
         else {
-            outputFile = new File(jobDir, outputFile.getPath());
+            absoluteFile = new File(jobDir, relativeFile.getPath());
         }
 
         Path jobDirPath=jobDir.toPath();
-        Path outputFilePath=outputFile.getAbsoluteFile().toPath();
-        BasicFileAttributes attrs=null;
-        try {
-            attrs=Files.readAttributes(outputFilePath, BasicFileAttributes.class);
+        Path outputFilePath=absoluteFile.getAbsoluteFile().toPath();
+        if (attrs==null) {  
+            attrs = initFileAttributes(outputFilePath);
         }
-        catch (Throwable t) {
-            log.debug("error getting attributes for outputFilePath="+outputFilePath.toString(), t);
-        }
-
         Path relativePath=jobDirPath.relativize(outputFilePath);
         
         JobOutputFile out=new JobOutputFile();
@@ -73,12 +72,38 @@ public class JobOutputFile {
                 out.kind="directory";
             }
             else { 
-                out.kind=initKind(outputFile);
+                out.kind=initKind(absoluteFile);
             }
-            out.extension=initExtension(outputFile);
+            out.extension=initExtension(absoluteFile);
+        }
+        
+        if (gpFileType==null) {
+            gpFileType = defaultFileTypeFilter.getGpFileType(jobDir, relativeFile, attrs);
+        }
+        
+        if (gpFileType != null) {
+            out.gpFileType=gpFileType.name();
+            if (gpFileType.isHidden()) {
+                out.hidden=true;
+            }
+        }
+        
+        if (!outputFilePath.toFile().exists()) {
+            out.setDeleted(true);
         }
 
         return out;        
+    }
+
+    public static BasicFileAttributes initFileAttributes(final Path outputFilePath) {
+        BasicFileAttributes attrs=null;
+        try {
+            attrs=Files.readAttributes(outputFilePath, BasicFileAttributes.class);
+        }
+        catch (Throwable t) {
+            log.debug("error getting attributes for outputFilePath="+outputFilePath.toString(), t);
+        }
+        return attrs;
     }
     
     public static String initExtension(final File file) {

@@ -25,13 +25,13 @@ public class JobOutputRecorder {
     public static void recordOutputFilesToDb(GpConfig gpConfig, GpContext jobContext, File jobDir) throws DbException {
         log.debug("recording files to db, jobId="+jobContext.getJobNumber());
         List<JobOutputFile> allFiles=new ArrayList<JobOutputFile>();
-        
-        JobResultsFilenameFilter filenameFilter = JobOutputFile.initFilterFromConfig(gpConfig,jobContext);
-        JobResultsLister lister=new JobResultsLister(""+jobContext.getJobNumber(), jobDir, filenameFilter);
+        DefaultGpFileTypeFilter filter=new DefaultGpFileTypeFilter();
+        JobResultsFilenameFilter filenameFilter = JobOutputFile.initFilterFromConfig(gpConfig, jobContext);
+        filter.setJobResultsFilenameFilter(filenameFilter);
+        JobResultsLister lister=new JobResultsLister(""+jobContext.getJobNumber(), jobDir, filter);
         try {
             lister.walkFiles();
             allFiles.addAll( lister.getOutputFiles() );
-            allFiles.addAll( lister.getHiddenFiles() );
         }
         catch (IOException e) {
             log.error("output files not recorded to database, disk usage will not be accurate for jobId="+jobContext.getJobNumber(), e);

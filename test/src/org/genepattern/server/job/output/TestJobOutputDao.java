@@ -22,6 +22,7 @@ public class TestJobOutputDao {
     
     // check sort by path
     final String[] expectedPaths=new String[] {
+            // "", <-- working dir hidden by default
             ".gp_job_status",
             ".gp_job_status/readme.txt",
             ".lsf.out",
@@ -43,7 +44,7 @@ public class TestJobOutputDao {
         DbUtil.initDb();
         gpJobNo=new AnalysisJobUtil().addJobToDb();
         jobDir=FileUtil.getDataFile("jobResults/0/").getAbsoluteFile();
-        JobResultsLister lister=new JobResultsLister(""+gpJobNo, jobDir, JobOutputFile.initDefaultFilter());
+        JobResultsLister lister=new JobResultsLister(""+gpJobNo, jobDir, new DefaultGpFileTypeFilter());
         lister.walkFiles();
         jobOutputFiles=lister.getOutputFiles();
     }
@@ -60,6 +61,7 @@ public class TestJobOutputDao {
         JobOutputDao dao=new JobOutputDao();
         
         // Create
+        assertEquals("num items to save", 15, jobOutputFiles.size());
         dao.recordOutputFiles(jobOutputFiles);
         
         // Read
