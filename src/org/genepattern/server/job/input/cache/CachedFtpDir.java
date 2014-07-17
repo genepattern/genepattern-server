@@ -24,7 +24,6 @@ import org.genepattern.server.dm.UrlUtil;
 import org.genepattern.server.job.input.JobInputHelper;
 import org.genepattern.server.job.input.choice.FtpDirFilter;
 import org.genepattern.server.job.input.choice.RemoteDirLister;
-import org.genepattern.server.job.input.choice.ftp.CommonsNet_3_3_DirLister;
 import org.genepattern.server.job.input.choice.ftp.ListFtpDirException;
 
 /**
@@ -72,14 +71,7 @@ public class CachedFtpDir implements CachedFile {
     // check for completed downloads after a server restart
     private final GpFilePath tmpDir;
 
-    /**
-     * @deprecated - prefer that you pass in a valid GpContext
-     * @param urlString
-     */
-    public CachedFtpDir(final String urlString) {
-        this((GpContext)null, urlString);
-    }
-    public CachedFtpDir(final GpContext jobContextIn, final String urlString) {
+    public CachedFtpDir(final GpConfig gpConfigIn, final GpContext jobContextIn, final String urlString) {
         if (log.isDebugEnabled()) {
             log.debug("Initializing CachedFtpFile, type="+this.getClass().getName());
         }
@@ -87,14 +79,21 @@ public class CachedFtpDir implements CachedFile {
         if (url==null) {
             throw new IllegalArgumentException("value is not an external url: "+urlString);
         }
-        this.gpConfig=ServerConfigurationFactory.instance();
+        
+        if (gpConfigIn==null) {
+            this.gpConfig=ServerConfigurationFactory.instance();
+        }
+        else {
+            this.gpConfig=gpConfigIn;
+        }
         if (jobContextIn==null) {
             this.jobContext=GpContext.getServerContext();
         }
         else {
             this.jobContext=jobContextIn;
         }
-        this.localPath=CachedFtpFile.getLocalPath(url);
+
+        this.localPath=CachedFtpFile.getLocalPath(this.gpConfig, url);
         if (this.localPath==null) {
             throw new IllegalArgumentException("error initializing local path for external url: "+urlString);
         }
@@ -102,7 +101,7 @@ public class CachedFtpDir implements CachedFile {
             log.debug("url="+url.toExternalForm());
             log.debug("localPath.serverFile="+localPath.getServerFile());
         }
-        this.tmpDir=CachedFtpFile.getLocalPathForDir(url);
+        this.tmpDir=CachedFtpFile.getLocalPathForDir(gpConfig, url);
     }
 
     @Override
@@ -144,7 +143,7 @@ public class CachedFtpDir implements CachedFile {
             final boolean isDir=false;
             for(final String fileToDownload : filesToDownload) {
                 try {
-                    final Future<?> f = FileCache.instance().getFutureObj(jobContext, fileToDownload, isDir);
+                    final Future<?> f = FileCache.instance().getFutureObj(gpConfig, jobContext, fileToDownload, isDir);
                     f.get(100, TimeUnit.MILLISECONDS);
                 }
                 catch (TimeoutException e) {
@@ -154,7 +153,7 @@ public class CachedFtpDir implements CachedFile {
             }
             // now loop through all of the files and wait for each download to complete
             for(final String fileToDownload : filesToDownload) {
-                final Future<?> f = FileCache.instance().getFutureObj(jobContext, fileToDownload, isDir);
+                final Future<?> f = FileCache.instance().getFutureObj(gpConfig, jobContext, fileToDownload, isDir);
                 f.get();
             }
         }
@@ -201,7 +200,7 @@ public class CachedFtpDir implements CachedFile {
         //1) get the listing of data files
         FTPFile[] files=null;
         try {
-            RemoteDirLister<FTPFile, ListFtpDirException> lister=CommonsNet_3_3_DirLister.createFromConfig(gpConfig, jobContext);
+            RemoteDirLister<FTPFile, ListFtpDirException> lister=FileCache.initDirLister(gpConfig, jobContext);
             files=lister.listFiles(ftpDir);
         }
         catch (ListFtpDirException e) {

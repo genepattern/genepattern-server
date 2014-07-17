@@ -15,6 +15,7 @@ import java.util.concurrent.Future;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
+import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.dm.GpFileObjFactory;
@@ -45,29 +46,29 @@ abstract public class CachedFtpFile implements CachedFile {
         /** Hand coded implementation with Java 6 standard library methods */
         JAVA_6 {
             @Override
-            public CachedFtpFile newCachedFtpFile(final String urlString) {
-                return Factory.instance().newStdJava6Impl(urlString);
+            public CachedFtpFile newCachedFtpFile(final GpConfig gpConfig, final String urlString) {
+                return Factory.instance().newStdJava6Impl(gpConfig, urlString);
             }
         },
         /** Apache Commons Net 3.3 implementation */
         COMMONS_NET_3_3 {
             @Override
-            public CachedFtpFile newCachedFtpFile(String urlString) {
-                return Factory.instance().newApacheCommonsImpl(urlString);
+            public CachedFtpFile newCachedFtpFile(final GpConfig gpConfig, String urlString) {
+                return Factory.instance().newApacheCommonsImpl(gpConfig, urlString);
             }
         },
         /** edtFTPj, Enterprise Distributed Technologies library, with additional handling for interrupted exceptions */
         EDT_FTP_J {
             @Override
-            public CachedFtpFile newCachedFtpFile(String urlString) {
-                return Factory.instance().newEdtFtpJImpl(urlString);
+            public CachedFtpFile newCachedFtpFile(final GpConfig gpConfig, String urlString) {
+                return Factory.instance().newEdtFtpJImpl(gpConfig, urlString);
             }
         },
         /** edtFTPj, Enterprise Distributed Technologies library, single line static method call, with no support for handling interrupted exceptions */
         EDT_FTP_J_SIMPLE {
             @Override
-            public CachedFtpFile newCachedFtpFile(String urlString) {
-                return Factory.instance().newEdtFtpJImpl_simple(urlString);
+            public CachedFtpFile newCachedFtpFile(final GpConfig gpConfig, String urlString) {
+                return Factory.instance().newEdtFtpJImpl_simple(gpConfig, urlString);
             }
         };
 
@@ -78,7 +79,7 @@ abstract public class CachedFtpFile implements CachedFile {
          * @param urlString
          * @return
          */
-        public abstract CachedFtpFile newCachedFtpFile(final String urlString);
+        public abstract CachedFtpFile newCachedFtpFile(final GpConfig gpConfig, final String urlString);
     }
 
     public static class Factory {
@@ -99,9 +100,9 @@ abstract public class CachedFtpFile implements CachedFile {
         
         private Type defaultType=Type.JAVA_6;
 
-        public CachedFtpFile newCachedFtpFile(final String urlString) {
+        public CachedFtpFile newCachedFtpFile(final GpConfig gpConfig, final String urlString) {
             GpContext serverContext=GpContext.getServerContext();
-            String str=ServerConfigurationFactory.instance().getGPProperty(serverContext, Type.PROP_FTP_DOWNLOADER_TYPE, Type.EDT_FTP_J.name());
+            String str=gpConfig.getGPProperty(serverContext, Type.PROP_FTP_DOWNLOADER_TYPE, Type.EDT_FTP_J.name());
             Type type=null;
             try {
                 type=Type.valueOf(str);
@@ -110,15 +111,20 @@ abstract public class CachedFtpFile implements CachedFile {
                 log.error(t);
                 type=defaultType;
             }
-            return newCachedFtpFile(type, urlString);
+            return newCachedFtpFile(type, gpConfig, urlString);
         }
 
-        public CachedFtpFile newCachedFtpFile(final Type type, final String urlString) {
+        public CachedFtpFile newCachedFtpFile(final Type type, final GpConfig gpConfig, final String urlString) {
             if (type==null) {
                 log.error("type==null");
-                return defaultType.newCachedFtpFile(urlString);
+                return defaultType.newCachedFtpFile(gpConfig, urlString);
             }
-            return type.newCachedFtpFile(urlString);
+            return type.newCachedFtpFile(gpConfig, urlString);
+        }
+
+        /** @deprecated, should pass in a GpConfig */
+        public CachedFtpFile newStdJava6Impl(final String urlString) {
+            return new StdJava_6_Impl(ServerConfigurationFactory.instance(), urlString);
         }
 
         /**
@@ -126,8 +132,13 @@ abstract public class CachedFtpFile implements CachedFile {
          * @param urlString
          * @return
          */
-        public CachedFtpFile newStdJava6Impl(final String urlString) {
-            return new StdJava_6_Impl(urlString);
+        public CachedFtpFile newStdJava6Impl(final GpConfig gpConfig, final String urlString) {
+            return new StdJava_6_Impl(gpConfig, urlString);
+        }
+        
+        /** @deprecated, should pass in a GpConfig */
+        public CachedFtpFile newApacheCommonsImpl(final String urlString) {
+            return newApacheCommonsImpl(ServerConfigurationFactory.instance(), urlString);
         }
         
         /**
@@ -135,8 +146,13 @@ abstract public class CachedFtpFile implements CachedFile {
          * @param urlString
          * @return
          */
-        public CachedFtpFile newApacheCommonsImpl(final String urlString) {
-            return new CommonsNet_3_3_Impl(urlString);
+        public CachedFtpFile newApacheCommonsImpl(final GpConfig gpConfig, final String urlString) {
+            return new CommonsNet_3_3_Impl(gpConfig, urlString);
+        }
+        
+        /** @deprecated, should pass in a GpConfig */
+        public CachedFtpFile newEdtFtpJImpl(final String urlString) {
+            return newEdtFtpJImpl(ServerConfigurationFactory.instance(), urlString);
         }
         
         /**
@@ -146,8 +162,13 @@ abstract public class CachedFtpFile implements CachedFile {
          * @param urlString
          * @return
          */
-        public CachedFtpFile newEdtFtpJImpl(final String urlString) {
-            return new EdtFtpJImpl(urlString, interruptionService);
+        public CachedFtpFile newEdtFtpJImpl(final GpConfig gpConfig, final String urlString) {
+            return new EdtFtpJImpl(gpConfig, urlString, interruptionService);
+        }
+        
+        /** @deprecated, should pass in a GpConfig */
+        public CachedFtpFile newEdtFtpJImpl_simple(final String urlString) {
+            return new EdtFtpJ_simple(ServerConfigurationFactory.instance(), urlString);            
         }
         
         /**
@@ -158,17 +179,16 @@ abstract public class CachedFtpFile implements CachedFile {
          * @param urlString
          * @return
          */
-        public CachedFtpFile newEdtFtpJImpl_simple(final String urlString) {
-            return new EdtFtpJ_simple(urlString);
+        public CachedFtpFile newEdtFtpJImpl_simple(final GpConfig gpConfig, final String urlString) {
+            return new EdtFtpJ_simple(gpConfig, urlString);
         }
-
 
     }
 
     private final URL url;
     private final GpFilePath localPath;
     
-    private CachedFtpFile(final String urlString) {
+    private CachedFtpFile(final GpConfig gpConfig, final String urlString) {
         if (log.isDebugEnabled()) {
             log.debug("Initializing CachedFtpFile, type="+this.getClass().getName());
         }
@@ -176,7 +196,7 @@ abstract public class CachedFtpFile implements CachedFile {
         if (url==null) {
             throw new IllegalArgumentException("value is not an external url: "+urlString);
         }
-        this.localPath=getLocalPath(url);
+        this.localPath=getLocalPath(gpConfig, url);
         if (this.localPath==null) {
             throw new IllegalArgumentException("error initializing local path for external url: "+urlString);
         }
@@ -197,28 +217,32 @@ abstract public class CachedFtpFile implements CachedFile {
      * @param url
      * @return
      */
-    public static final GpFilePath getLocalPath(final URL url) {
-        return getLocalPathForFile(url);
+    public static final GpFilePath getLocalPath(final GpConfig gpConfig, final URL url) {
+        return getLocalPathForFile(gpConfig, url);
     }
     
+    /** @deprecated, should pass in the GpConfig instance. */
     public static final GpFilePath getLocalPathForDownloadingFile(final URL url) {
-        return getLocalPath(url, "cache.downloading");
+        return getLocalPath(ServerConfigurationFactory.instance(), url, "cache.downloading");
+    }
+    public static final GpFilePath getLocalPathForDownloadingFile(final GpConfig gpConfig, final URL url) {
+        return getLocalPath(gpConfig, url, "cache.downloading");
     }
     
-    public static final GpFilePath getLocalPathForFile(final URL url) {
-        return getLocalPath(url, "cache");
+    public static final GpFilePath getLocalPathForFile(final GpConfig gpConfig, final URL url) {
+        return getLocalPath(gpConfig, url, "cache");
     }
     
-    public static final GpFilePath getLocalPathForDir(final URL url) {
-        return getLocalPath(url, "cache.dir");
+    public static final GpFilePath getLocalPathForDir(final GpConfig gpConfig, final URL url) {
+        return getLocalPath(gpConfig, url, "cache.dir");
     }
     
-    private static final GpFilePath getLocalPath(final URL fromExternalUrl, final String toRootDir) {
+    private static final GpFilePath getLocalPath(final GpConfig gpConfig, final URL fromExternalUrl, final String toRootDir) {
         final GpContext userContext=GpContext.getContextForUser(FileCache.CACHE_USER_ID);
         final String relPath= toRootDir+"/"+fromExternalUrl.getHost()+"/"+fromExternalUrl.getPath();
         final File relFile=new File(relPath);
         try {
-            GpFilePath localPath=GpFileObjFactory.getUserUploadFile(userContext, relFile);
+            GpFilePath localPath=GpFileObjFactory.getUserUploadFile(gpConfig, userContext, relFile);
             return localPath;
         }
         catch (Exception e) {
@@ -397,8 +421,8 @@ abstract public class CachedFtpFile implements CachedFile {
         // this is the same default as edtFTP
         final public static int DEFAULT_BUFFER_SIZE = 16384;
 
-        private StdJava_6_Impl(final String urlString) {
-            super(urlString);
+        private StdJava_6_Impl(final GpConfig gpConfig, final String urlString) {
+            super(gpConfig, urlString);
         }
 
         public boolean downloadFile(final URL fromUrl, final File toFile, final boolean deleteExisting, final int connectTimeout_ms, final int readTimeout_ms) 
@@ -474,8 +498,8 @@ abstract public class CachedFtpFile implements CachedFile {
 
     public static final class CommonsNet_3_3_Impl extends CachedFtpFile {
 
-        private CommonsNet_3_3_Impl(final String urlString) {
-            super(urlString);
+        private CommonsNet_3_3_Impl(final GpConfig gpConfig, final String urlString) {
+            super(gpConfig, urlString);
         }
 
         @Override
@@ -489,8 +513,8 @@ abstract public class CachedFtpFile implements CachedFile {
     }
 
     public static final class EdtFtpJ_simple extends CachedFtpFile {
-        private EdtFtpJ_simple(final String urlString) {
-            super(urlString);
+        private EdtFtpJ_simple(final GpConfig gpConfig, final String urlString) {
+            super(gpConfig, urlString);
         }
 
         @Override
@@ -520,8 +544,8 @@ abstract public class CachedFtpFile implements CachedFile {
         private static Logger log = Logger.getLogger(EdtFtpJImpl.class);
         final ExecutorService ex;
 
-        private EdtFtpJImpl(final String urlString, final ExecutorService ex) {
-            super(urlString);
+        private EdtFtpJImpl(final GpConfig gpConfig, final String urlString, final ExecutorService ex) {
+            super(gpConfig, urlString);
             this.ex=ex;
         }
 

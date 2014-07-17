@@ -824,7 +824,7 @@ public class GenePatternAnalysisTask {
                     final GpFilePath cachedFile;
                     try {
                         // this method waits, if necessary, for the file to be transferred to a local path
-                        Future<CachedFile> f = FileCache.instance().getFutureObj(jobContext, selectedChoice.getValue(), selectedChoice.isRemoteDir());
+                        Future<CachedFile> f = FileCache.instance().getFutureObj(gpConfig, jobContext, selectedChoice.getValue(), selectedChoice.isRemoteDir());
                         cachedFile=f.get().getLocalPath();
                     }
                     catch (Throwable t) {

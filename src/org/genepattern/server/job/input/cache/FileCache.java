@@ -14,8 +14,14 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
+import org.apache.commons.net.ftp.FTPFile;
 import org.apache.log4j.Logger;
+import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
+import org.genepattern.server.config.ServerConfigurationFactory;
+import org.genepattern.server.job.input.choice.RemoteDirLister;
+import org.genepattern.server.job.input.choice.ftp.CommonsNet_3_3_DirLister;
+import org.genepattern.server.job.input.choice.ftp.ListFtpDirException;
 
 /**
  * Maintain a cache of input files downloaded from an external source. 
@@ -38,6 +44,20 @@ public class FileCache {
      * These shared files are saved in the user uploads tab for the '.cache' user account. 
      */
     public static final String CACHE_USER_ID=".cache";
+    
+    public static final RemoteDirLister<FTPFile, ListFtpDirException> initDirLister() {
+        return initDirLister(null, null);
+    }
+
+    public static final RemoteDirLister<FTPFile, ListFtpDirException> initDirLister(GpConfig gpConfig, GpContext jobContext) {
+        if (gpConfig==null) {
+            gpConfig=ServerConfigurationFactory.instance();
+        }
+        if (jobContext==null) {
+            jobContext=GpContext.getServerContext();
+        }
+        return CommonsNet_3_3_DirLister.createFromConfig(gpConfig, jobContext);
+    }
 
     private static final FileCache instance=new FileCache();
     public static FileCache instance() {
@@ -83,7 +103,7 @@ public class FileCache {
      * @param externalUrl
      * @return
      */
-    private CachedFile initCachedFileObj(final GpContext jobContext, final String externalUrl, final boolean isRemoteDir) {
+    private CachedFile initCachedFileObj(final GpConfig gpConfig, final GpContext jobContext, final String externalUrl, final boolean isRemoteDir) {
         final File mappedFile=MapLocalEntry.initLocalFileSelection(externalUrl);
         if (mappedFile!=null) {
             if (!mappedFile.exists()) {
@@ -107,10 +127,10 @@ public class FileCache {
          *     ftpDownloader.type: EDT_FTP_J_SIMPLE
          */
         if (!isRemoteDir) {
-            return CachedFtpFile.Factory.instance().newCachedFtpFile(externalUrl);
+            return CachedFtpFile.Factory.instance().newCachedFtpFile(gpConfig, externalUrl);
         }
         else {
-            return new CachedFtpDir(jobContext, externalUrl);
+            return new CachedFtpDir(gpConfig, jobContext, externalUrl);
         }
      }
     
@@ -152,7 +172,7 @@ public class FileCache {
         }
     }
 
-    public synchronized Future<CachedFile> getFutureObj(final GpContext jobContext, final String externalUrl, final boolean isRemoteDir) {
+    public synchronized Future<CachedFile> getFutureObj(final GpConfig gpConfig, final GpContext jobContext, final String externalUrl, final boolean isRemoteDir) {
         if (log.isDebugEnabled()) {
             StringBuffer sb=new StringBuffer();
             sb.append("checking for cached ");
@@ -165,7 +185,7 @@ public class FileCache {
             sb.append(" from "+externalUrl+" ... ");
             log.debug(sb.toString());
         }
-        final CachedFile obj = initCachedFileObj(jobContext, externalUrl, isRemoteDir);
+        final CachedFile obj = initCachedFileObj(gpConfig, jobContext, externalUrl, isRemoteDir);
         if (obj.isDownloaded()) {
             //already downloaded
             if (log.isDebugEnabled()) {
