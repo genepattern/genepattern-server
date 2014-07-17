@@ -26,6 +26,17 @@ alter table job_runner_job add (
     max_threads integer default 0
 );
 
+create table task_congestion (
+    id number(19,0) not null,
+    lsid varchar(255 char),
+    runtime number(19,0),
+    virtual_queue varchar(255 char),
+    primary key (id),
+    unique (lsid)
+);
+create sequence task_congestion_SEQ;
+create index idx_task_congestion_lsid on task_congestion (lsid);
+
 -- update schema version
 update props set value='3.8.3' where key='schemaVersion';
 
