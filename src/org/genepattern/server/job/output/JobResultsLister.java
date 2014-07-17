@@ -20,26 +20,6 @@ import org.genepattern.server.util.JobResultsFilenameFilter;
 
 public class JobResultsLister extends SimpleFileVisitor<Path> {
     private static final Logger log = Logger.getLogger(JobResultsLister.class);
-    static class CompositePathMatcher implements PathMatcher {
-        private List<PathMatcher> matchers=new ArrayList<PathMatcher>();
-        
-        public void add(PathMatcher pathMatcher) {
-            matchers.add(pathMatcher);
-        }
-
-        @Override
-        public boolean matches(Path path) {
-            if (matchers==null) {
-                return false;
-            }
-            for(final PathMatcher matcher : matchers) {
-                if (matcher.matches(path)) {
-                    return true;
-                }
-            }
-            return false;
-        }
-    }
     
     public static PathMatcher initIgnoredPaths() {
         final FileSystem fs=FileSystems.getDefault();
