@@ -10,6 +10,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 import org.apache.log4j.Logger;
+import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.eula.GetTaskStrategy;
@@ -199,7 +200,7 @@ public class FileDownloader {
      * @throws InterruptedException
      * @throws ExecutionException
      */
-    public void startDownloadAndWait(final GpContext jobContext) throws InterruptedException, ExecutionException {
+    public void startDownloadAndWait(final GpConfig gpConfig, final GpContext jobContext) throws InterruptedException, ExecutionException {
         if (selectedChoices == null) {
             log.debug("selectedChoices==null");
             return;
@@ -214,7 +215,7 @@ public class FileDownloader {
             try {
                 final String selectedValue=selectedChoice.getValue();
                 final boolean isDir=selectedChoice.isRemoteDir();
-                final Future<?> f = FileCache.instance().getFutureObj(jobContext, selectedValue, isDir);
+                final Future<?> f = FileCache.instance().getFutureObj(gpConfig, jobContext, selectedValue, isDir);
                 f.get(100, TimeUnit.MILLISECONDS);
             }
             catch (TimeoutException e) {
@@ -226,7 +227,7 @@ public class FileDownloader {
         for(final Choice selectedChoice : selectedChoices) {
             final String selectedValue=selectedChoice.getValue();
             final boolean isDir=selectedChoice.isRemoteDir();
-            final Future<?> f = FileCache.instance().getFutureObj(jobContext, selectedValue, isDir);
+            final Future<?> f = FileCache.instance().getFutureObj(gpConfig, jobContext, selectedValue, isDir);
             f.get();
         }    
     }

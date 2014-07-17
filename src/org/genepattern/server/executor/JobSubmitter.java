@@ -5,7 +5,9 @@ import java.io.StringWriter;
 import java.util.concurrent.ExecutionException;
 
 import org.apache.log4j.Logger;
+import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
+import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.genepattern.GenePatternAnalysisTask;
 import org.genepattern.server.jobqueue.JobQueueUtil;
 import org.genepattern.webservice.JobInfo;
@@ -67,7 +69,8 @@ public class JobSubmitter implements Runnable {
         boolean interrupted=false;
         try {
             log.debug("submitting job "+jobId);
-            startDownloadAndWait(jobContext);
+            GpConfig gpConfig=ServerConfigurationFactory.instance();
+            startDownloadAndWait(gpConfig, jobContext);
             log.debug("calling genePattern.onJob("+jobId+")");
             genePattern.onJob(jobId);
         }
@@ -96,14 +99,14 @@ public class JobSubmitter implements Runnable {
         }
     }
     
-    private void startDownloadAndWait(final GpContext jobContext) throws JobDispatchException, ExecutionException, InterruptedException {
+    private void startDownloadAndWait(final GpConfig gpConfig, final GpContext jobContext) throws JobDispatchException, ExecutionException, InterruptedException {
         FileDownloader downloader=FileDownloader.fromJobContext(jobContext);
         if (!downloader.hasSelectedChoices()) {
             log.debug("No selected choices");
             return;
         }
         log.debug("downloading files for jobId="+jobId+" ...");
-        downloader.startDownloadAndWait(jobContext);
+        downloader.startDownloadAndWait(gpConfig, jobContext);
     }
 
     //handle errors during job dispatch (moved from GPAT.onJob)
