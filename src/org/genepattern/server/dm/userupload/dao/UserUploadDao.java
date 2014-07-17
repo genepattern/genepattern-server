@@ -1,10 +1,10 @@
 package org.genepattern.server.dm.userupload.dao;
 
-import java.math.BigInteger;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.regex.Matcher;
+
 import org.apache.log4j.Logger;
 import org.genepattern.drm.Memory;
 import org.genepattern.server.config.GpContext;
