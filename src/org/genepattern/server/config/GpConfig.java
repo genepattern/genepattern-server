@@ -509,6 +509,7 @@ public class GpConfig {
         private String genePatternVersion=null;
         private File resourcesDir=null;
         private File configFile=null;
+        private GpServerProperties.Builder serverPropertiesBuilder=null;
         private GpServerProperties serverProperties=null;
         private ConfigFromYaml configFromYaml=null;
         private IGroupMembershipPlugin groupInfo=null;
@@ -545,6 +546,14 @@ public class GpConfig {
             this.groupInfo=groupInfo;
             return this;
         }
+        
+        public Builder addProperty(String key, String value) {
+            if (serverPropertiesBuilder==null) {
+                serverPropertiesBuilder=new GpServerProperties.Builder();
+            }
+            serverPropertiesBuilder.addCustomProperty(key, value);
+            return this;
+        }
 
         public GpConfig build() { 
             //parse the config file here
@@ -565,6 +574,10 @@ public class GpConfig {
                 else if (serverProperties != null) {
                     resourcesDir=serverProperties.getResourcesDir();
                 }
+            }
+            
+            if (serverProperties==null && serverPropertiesBuilder != null) {
+                serverProperties=serverPropertiesBuilder.build();
             }
 
             return new GpConfig(this);
