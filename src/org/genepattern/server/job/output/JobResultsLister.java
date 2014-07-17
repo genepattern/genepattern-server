@@ -73,7 +73,7 @@ public class JobResultsLister extends SimpleFileVisitor<Path> {
         Collections.sort(allFiles, new Comparator<JobOutputFile>() {
             @Override
             public int compare(JobOutputFile o1, JobOutputFile o2) {
-                return o1.getPath().compareTo(o2.getPath());
+                return o1.getPath().toLowerCase().compareTo(o2.getPath().toLowerCase());
             }
         });
     }

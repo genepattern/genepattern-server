@@ -52,6 +52,7 @@ public class TestJobOutputLister {
     public void listResultFiles_noFilter() throws IOException {
         JobResultsLister lister=new JobResultsLister(jobId, jobDir);
         lister.walkFiles();
+        lister.sortByPath();
         List<JobOutputFile> outputFiles=lister.getOutputFiles();
         
         String[] actualPaths=new String[outputFiles.size()];
