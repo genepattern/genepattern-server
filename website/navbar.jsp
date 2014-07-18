@@ -44,13 +44,9 @@
 	             <li><a href="JavaScript:Menu.go('http://www.broadinstitute.org/cancer/software/genepattern/gp_mail.html')">Mailing List</a></li>
 	             <li><a href="/gp/pages/contactUs.jsf">Report Bugs</a></li>
 	             <li><a href="/gp/pages/contactUs.jsf">Contact Us</a></li>
-	         </ul>
-	     </li>
-	     <li><a href="/gp/pages/index.jsf?splash=downloads">Downloads</a>
-	         <ul>
-	             <li><a href="/gp/pages/downloadProgrammingLibaries.jsf">Programming Languages</a></li>
-	             <li><a href="JavaScript:Menu.go('http://www.broadinstitute.org/cancer/software/genepattern/datasets/')">Public Datasets</a></li>
-	             <li><a href="JavaScript:Menu.go('http://www.broadinstitute.org/software/gparc/')">GParc</a></li>
+                 <li><a href="/gp/pages/downloadProgrammingLibaries.jsf">Programming Languages</a></li>
+                 <li><a href="JavaScript:Menu.go('http://www.broadinstitute.org/cancer/software/genepattern/datasets/')">Public Datasets</a></li>
+                 <li><a href="JavaScript:Menu.go('http://www.broadinstitute.org/software/gparc/')">GParc</a></li>
 	         </ul>
 	     </li>
 	     <li class="adminServerAllowed"><a href="/gp/pages/serverSettings.jsf">Administration</a>

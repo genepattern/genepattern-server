@@ -67,14 +67,29 @@
     }
 </style>
 <!-- top of page login and search items -->
-<div id="systemMessageLink">
-	<table height="30" border="0" cellpadding="0" cellspacing="0">
-	    <tr valign="top">
-	        <td class="loginsettings2">
-	            <a href="<%=request.getContextPath()%>/pages/accountInfo.jsf">My Settings</a>
-	            &nbsp;&nbsp;|&nbsp;&nbsp;
-	            <a href="<%=request.getContextPath()%>/logout">Sign out</a>&nbsp;&nbsp;<%=request.getAttribute("userID")%>
-	            &nbsp;&nbsp;&nbsp;&nbsp;</td>
-	    </tr>
-	</table>
+<div id="top-status-box" style="display: none;">
+    <div id="quota-box">
+        <div id="quota-space-progressbar">
+            <span id="quota-space-label"></span>
+        </div>
+    </div>
+    <div id="user-box" onclick="userBoxClick();">
+        <span class="glyphicon glyphicon-user"></span><span class="user-box-arrow">&#x25BC;</span>
+        <div id="user-box-name"></div>
+    </div>
 </div>
+<script type="text/javascript">
+    $(document).ready(function() {
+        if (userLoggedIn) {
+            initStatusBox();
+        }
+    });
+</script>
+
+<!-- Custom Tooltips -->
+<ul id="user-menu" style="display: none;">
+    <li class="showSystemMessageSpan" style="display: none;"><a href="#" onclick="showSystemMessage();">View System Message</a></li>
+    <li><a href="/gp/pages/accountInfo.jsf">My Settings</a></li>
+    <li><a href="/gp/logout">Sign Out</a></li>
+</ul>
+<div id="disk-quota-tooltip" style="display: none;"></div>
