@@ -1,14 +1,14 @@
 package org.genepattern.server.executor.lsf;
 
-import org.junit.Test;
-import org.junit.Assert;
-import org.genepattern.drm.DrmJobState;
-import org.genepattern.junitutil.FileUtil;
-
-import java.io.File;
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+
+import org.genepattern.drm.DrmJobState;
+import org.genepattern.junitutil.FileUtil;
+import org.junit.Assert;
+import org.junit.Test;
 
 /**
  * Created by IntelliJ IDEA.
@@ -52,7 +52,12 @@ public class TestLsfErrorCheckerImpl {
         LsfErrorStatus lsfStatus = new LsfErrorCheckerImpl(lsfLogFile).getStatus();
         Assert.assertNotNull("Expecting non-null lsfStatus", lsfStatus);
         Assert.assertEquals("exitCode", 1, lsfStatus.getExitCode());
-        Assert.assertEquals("errorMessage", getExpectedMessageFromFilename("memory_limit_expected_message.txt"), lsfStatus.getErrorMessage());
+        
+        //String expectedMessage="TERM_MEMLIMIT: job killed after reaching LSF memory usage limit.\n"+
+        //        "Exited with exit code 1.";
+        String expectedMessage=getExpectedMessageFromFilename("memory_limit_expected_message.txt");
+
+        Assert.assertEquals("errorMessage", expectedMessage, lsfStatus.getErrorMessage());
         Assert.assertEquals("jobState", DrmJobState.TERM_MEMLIMIT, lsfStatus.getJobState());
     }
 
@@ -65,7 +70,11 @@ public class TestLsfErrorCheckerImpl {
         LsfErrorStatus lsfStatus = new LsfErrorCheckerImpl(lsfLogFile).getStatus();
         Assert.assertNotNull("Expecting non-null lsfStatus", lsfStatus);
         Assert.assertEquals("exitCode", 134, lsfStatus.getExitCode());
-        Assert.assertEquals("errorMessage", getExpectedMessageFromFilename("walltime_limit_expected_message.txt"), lsfStatus.getErrorMessage());
+        
+        //String expectedMessage="TERM_RUNLIMIT: job killed after reaching LSF run time limit.\n"+
+        //        "Exited with exit code 134.";
+        String expectedMessage=getExpectedMessageFromFilename("walltime_limit_expected_message.txt");
+        Assert.assertEquals("errorMessage", expectedMessage, lsfStatus.getErrorMessage());
         Assert.assertEquals("jobState", DrmJobState.TERM_RUNLIMIT, lsfStatus.getJobState());
     }
 
@@ -78,7 +87,11 @@ public class TestLsfErrorCheckerImpl {
         LsfErrorStatus lsfStatus = new LsfErrorCheckerImpl(lsfLogFile).getStatus();
         Assert.assertNotNull("Expecting non-null lsfStatus", lsfStatus);
         Assert.assertEquals("exitCode", 130, lsfStatus.getExitCode());
-        Assert.assertEquals("errorMessage", getExpectedMessageFromFilename("bkill_job_lsf_expected_message.txt"), lsfStatus.getErrorMessage());
+        
+        //String expectedMessage="TERM_OWNER: job killed by owner.\n"+
+        //        "Exited with exit code 130.";
+        String expectedMessage=getExpectedMessageFromFilename("bkill_job_lsf_expected_message.txt");
+        Assert.assertEquals("errorMessage", expectedMessage, lsfStatus.getErrorMessage());
         Assert.assertEquals("jobState", DrmJobState.CANCELLED, lsfStatus.getJobState());
     }
     

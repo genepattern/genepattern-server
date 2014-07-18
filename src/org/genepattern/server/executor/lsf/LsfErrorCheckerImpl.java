@@ -81,7 +81,6 @@ public class LsfErrorCheckerImpl implements ILsfErrorChecker
                     }
                     else {
                         jobState=DrmJobState.FAILED;
-                        break;
                     }
                 }
                 else if (line.trim().startsWith("Max Processes")) {
