@@ -7,6 +7,7 @@ import org.genepattern.server.job.input.JobInput;
 import org.genepattern.server.webapp.jsf.AuthorizationHelper;
 import org.genepattern.webservice.JobInfo;
 import org.genepattern.webservice.TaskInfo;
+import org.genepattern.webservice.TaskInfoCache;
 
 public class GpContext {
     //hard-coded default value is true for compatibility with GP 3.2.4 and earlier
@@ -70,6 +71,20 @@ public class GpContext {
         if (taskInfo != null) {
             context.setTaskInfo(taskInfo);
         }
+        return context;
+    }
+
+    public static GpContext getContextForTask(String lsid) {
+        TaskInfo taskInfo = TaskInfoCache.instance().getTask(lsid);
+        return getContextForTask(taskInfo);
+    }
+
+    public static GpContext getContextForTask(TaskInfo taskInfo) {
+        GpContext context = new GpContext();
+        if (taskInfo != null) {
+            context.setTaskInfo(taskInfo);
+        }
+
         return context;
     }
 

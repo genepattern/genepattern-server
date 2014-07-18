@@ -206,8 +206,8 @@ public class CongestionManager {
      * @return
      */
     static private String getVirtualQueue(String lsid) {
-        // TODO: Implement
-        return "";
+        GpContext context = GpContext.getContextForTask(lsid);
+        return ServerConfigurationFactory.instance().getGPProperty(context, "queue.name", "");
     }
 
     /**
