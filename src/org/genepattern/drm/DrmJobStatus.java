@@ -29,6 +29,9 @@ public class DrmJobStatus {
     private final Date endTime;
     private final CpuTime cpuTime;
     private final Memory memory;
+    private final Memory maxSwap;
+    private final Integer maxProcesses;
+    private final Integer maxThreads;
     private final String jobStatusMessage;
     private final Integer exitCode;
     private final String terminatingSignal;
@@ -48,6 +51,9 @@ public class DrmJobStatus {
         this.resourceUsage=builder.resourceUsage;
         this.cpuTime=builder.cpuTime;
         this.memory=builder.memory;
+        this.maxSwap=builder.maxSwap;
+        this.maxProcesses=builder.maxProcesses;
+        this.maxThreads=builder.maxThreads;
         
         //for debugging
         StringBuffer buf=new StringBuffer();
@@ -62,6 +68,9 @@ public class DrmJobStatus {
             buf.append(", terminatingSignal="); buf.append(terminatingSignal);
             buf.append("\ncpuTime="+cpuTime);
             buf.append("\nmemory="+memory);
+            buf.append("\nmaxSwap="+maxSwap);
+            buf.append("\nmaxProcesses="+maxProcesses);
+            buf.append("\nmaxThreads="+maxThreads);
             buf.append("\nresourceUsage="); buf.append(resourceUsage);
         }
         this.toString=buf.toString();
@@ -125,10 +134,26 @@ public class DrmJobStatus {
     }
     
     /**
-     * Get the amount of memory usedbythe job, can be null if this is not known.
+     * Get the amount of memory used by the job, can be null if this is not known.
      */
     public Memory getMemory() {
         return memory;
+    }
+    
+    /**
+     * Get the amount of swap memory used by the job, can be null if this is not known.
+     * @return
+     */
+    public Memory getMaxSwap() {
+        return maxSwap;
+    }
+    
+    public Integer getMaxProcesses() {
+        return maxProcesses;
+    }
+    
+    public Integer getMaxThreads() {
+        return maxThreads;
     }
 
     /**
@@ -179,6 +204,9 @@ public class DrmJobStatus {
         private Date endTime=null;
         private CpuTime cpuTime=new CpuTime();
         private Memory memory=null;
+        private Memory maxSwap=null;
+        private Integer maxProcesses=null;
+        private Integer maxThreads=null;
         private String jobStatusMessage="";
         private Integer exitCode=null;
         private String terminatingSignal="";
@@ -196,6 +224,9 @@ public class DrmJobStatus {
             this.endTime=in.endTime;
             this.cpuTime=in.cpuTime;
             this.memory=in.memory;
+            this.maxSwap=in.maxSwap;
+            this.maxProcesses=in.maxProcesses;
+            this.maxThreads=in.maxThreads;
             this.jobStatusMessage=in.jobStatusMessage;
             this.exitCode=in.exitCode;
             this.terminatingSignal=in.terminatingSignal;
@@ -264,6 +295,31 @@ public class DrmJobStatus {
         
         public Builder memory(final Memory memory) {
             this.memory=memory;
+            return this;
+        }
+        
+        public Builder maxSwap(final long sizeInBytes) {
+            this.maxSwap=Memory.fromSizeInBytes(sizeInBytes);
+            return this;
+        }
+        
+        public Builder maxSwap(final String memSpec) {
+            this.maxSwap=Memory.fromString(memSpec);
+            return this;
+        }
+        
+        public Builder maxSwap(final Memory maxSwap) {
+            this.maxSwap=maxSwap;
+            return this;
+        } 
+        
+        public Builder maxProcesses(final Integer maxProcesses) {
+            this.maxProcesses=maxProcesses;
+            return this;
+        }
+        
+        public Builder maxThreads(final Integer maxThreads) {
+            this.maxThreads=maxThreads;
             return this;
         }
         
