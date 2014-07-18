@@ -12,6 +12,9 @@ create table  job_output (
     constraint jo_gpjn_fk foreign key (GP_JOB_NO) references ANALYSIS_JOB(JOB_NO) on delete cascade
 );
 
+--
+-- add time logging columns to the job_runner_job table
+--
 alter table job_runner_job add column 
     submit_time timestamp default null
 before status_date;
@@ -25,19 +28,19 @@ alter table job_runner_job add column
 before status_date;
 
 alter table job_runner_job add column
-    cpu_time bigint default 0
+    cpu_time bigint default null
 before status_date;
     
 alter table job_runner_job add column
-    max_mem bigint default 0
+    max_mem bigint default null
 before status_date;
 
 alter table job_runner_job add column
-    max_swap bigint default 0
+    max_swap bigint default null
 before status_date;
 
 alter table job_runner_job add column
-    max_processes integer default 0
+    max_processes integer default null
 before status_date;
 
 alter table job_runner_job add column
