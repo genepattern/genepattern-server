@@ -199,7 +199,7 @@
 			<!-- Floating header  -->
 			<div id="header">
 
-                <div id="top-status-box">
+                <div id="top-status-box" style="display: none;">
                     <div id="quota-box">
                         <div id="quota-space-progressbar">
                             <span id="quota-space-label"></span>
@@ -211,13 +211,16 @@
                     </div>
                 </div>
                 <script type="text/javascript">
-                    initStatusBox();
+                    $(document).ready(function() {
+                        if (userLoggedIn) {
+                            initStatusBox();
+                        }
+                    });
                 </script>
 
                 <!-- Custom Tooltips -->
                 <ul id="user-menu" style="display: none;">
                     <li class="showSystemMessageSpan" style="display: none;"><a href="#" onclick="showSystemMessage();">View System Message</a></li>
-                    <li><a href="/gp/pages/accountInfo.jsf">Job Queue Status</a></li>
                     <li><a href="/gp/pages/accountInfo.jsf">My Settings</a></li>
                     <li><a href="/gp/logout">Sign Out</a></li>
                 </ul>

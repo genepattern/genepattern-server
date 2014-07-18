@@ -961,3 +961,126 @@ strong.filtered-number
     line-height: 16px;
     color: #000000;
 }
+
+#top-status-box {
+    height: 61px;
+    width: 125px;
+    z-index: 6000;
+    position: fixed;
+    right: 0;
+    top: 0;
+    padding: 5px;
+    border-radius: 0 0 0 5px;
+    color: white;
+    text-shadow: 1px 1px black;
+    letter-spacing: 1px;
+}
+
+#quota-box {
+    top: 54px;
+    position: absolute;
+    width: 150px;
+    font-size: 7pt;
+    font-weight: bold;
+    cursor: pointer;
+    right: 5px;
+}
+
+#quota-space-progressbar {
+    height: 10px;
+}
+
+.quota-space-yellow {
+    color: rgba(192, 192, 0, 0.5);
+}
+
+.quota-space-red {
+    color: rgba(202, 96, 96, 0.5);
+}
+
+#quota-space-label {
+    position: absolute;
+    font-size: 6pt;
+    width: 150px;
+    text-align: center;
+    top: -1px;
+    text-shadow: none;
+}
+
+#user-box {
+    position: absolute;
+    right: 10px;
+    font-size: 14pt;
+    top: 5px;
+    color: white;
+    text-align: right;
+    cursor: pointer;
+}
+
+#user-box-name {
+    font-size: 7pt;
+    font-weight: bold;
+    color: white;
+    text-align: right;
+    max-width: 200px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    position: relative;
+    top: 5px;
+}
+
+.user-box-arrow {
+    font-size: 10pt;
+    position: relative;
+    top: -6px;
+}
+
+#congestion-box {
+    font-size: 20pt;
+    position: absolute;
+    top: 5px;
+    left: 5px;
+    z-index: 6001;
+}
+
+.congestion-light {
+    display: inline-block;
+    font-size: 8pt;
+    cursor: pointer;
+    text-align: center;
+}
+
+.congestion-icon {
+    font-size: 30pt;
+    text-shadow: 1px 1px black;
+}
+
+.congestion-green {
+    color: rgb(105, 153, 105)
+}
+
+.congestion-yellow {
+    color: rgb(192, 192, 0);
+}
+
+.congestion-red {
+    color: rgb(202, 96, 96);
+}
+
+.congestion-label {
+    font-size: 7pt;
+    width: 15px;
+    line-height: 8pt;
+    display: inline-block;
+    position: relative;
+    top: -3px;
+    left: -13px;
+}
+
+#user-menu {
+    position: fixed;
+    right: 0;
+    top: 30px;
+    z-index: 6001;
+    width: 150px;
+}

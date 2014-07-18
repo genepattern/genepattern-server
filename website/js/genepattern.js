@@ -3152,6 +3152,8 @@ function initStatusBox() {
                     title: "Disk Quota Space Used"
                 }).show();
             });
+
+        $("#top-status-box").show();
     });
 }
 
