@@ -1,5 +1,7 @@
 package org.genepattern.server.job.status;
 
+import static org.genepattern.server.webapp.rest.api.v1.DateUtil.*;
+import static org.junit.Assert.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -7,6 +9,7 @@ import java.util.Date;
 import java.util.List;
 
 import org.genepattern.drm.DrmJobState;
+import org.genepattern.drm.Memory;
 import org.genepattern.server.domain.JobStatus;
 import org.genepattern.server.executor.drm.dao.JobRunnerJob;
 import org.genepattern.server.webapp.rest.api.v1.DateUtil;
@@ -21,7 +24,6 @@ import org.json.JSONObject;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-
 
 /**
  * junit tests for the getting the job status.
@@ -45,7 +47,7 @@ public class TestJobStatus {
     private Date statusDate;
     
     @Before
-    public void setUp() {
+    public void setUp() { 
         jobInfo=mock(JobInfo.class);
 
         DateTime dt = new DateTime("2014-06-01T08:55:10.23");
@@ -131,7 +133,7 @@ public class TestJobStatus {
             .jobStatusRecord(jobStatusRecord)
             .build();
         final JSONObject statusObj = status.toJsonObj();
-        Assert.assertEquals("Expecting empty string", 
+        assertEquals("Expecting empty string", 
                 "",
                 statusObj.getString("statusFlag"));
     }
@@ -144,7 +146,7 @@ public class TestJobStatus {
             .jobStatusRecord(jobStatusRecord)
             .build();
         final JSONObject statusObj = status.toJsonObj();
-        Assert.assertEquals("Expecting empty string", 
+        assertEquals("Expecting empty string", 
                 "",
                 statusObj.getString("statusFlag"));
     }
@@ -157,7 +159,7 @@ public class TestJobStatus {
             .jobStatusRecord(jobStatusRecord)
             .build();
         final JSONObject statusObj = status.toJsonObj();
-        Assert.assertEquals("Expecting empty string", 
+        assertEquals("Expecting empty string", 
                 "",
                 statusObj.getString("statusFlag"));
     }
@@ -170,7 +172,7 @@ public class TestJobStatus {
             .jobStatusRecord(jobStatusRecord)
             .build();
         final JSONObject statusObj = status.toJsonObj();
-        Assert.assertEquals( 
+        assertEquals( 
                 "Custom status message",
                 statusObj.getString("statusMessage"));
     }
@@ -184,7 +186,7 @@ public class TestJobStatus {
             .jobStatusRecord(jobStatusRecord)
             .build();
         final JSONObject statusObj = status.toJsonObj();
-        Assert.assertEquals( 
+        assertEquals( 
                 "The job is queued or being scheduled and executed",
                 statusObj.getString("statusMessage"));
     }
@@ -197,7 +199,7 @@ public class TestJobStatus {
             .jobInfo(jobInfo)
         .build();
         final JSONObject statusObj = status.toJsonObj();
-        Assert.assertEquals( 
+        assertEquals( 
                 "Pending in the GenePattern queue, it has not been submitted to an external queuing system",
                 statusObj.getString("statusMessage"));
         
@@ -216,14 +218,14 @@ public class TestJobStatus {
         
         final JSONObject statusObj = status.toJsonObj();
         
-        Assert.assertEquals("isPending", true, statusObj.getBoolean("isPending"));
-        Assert.assertEquals("isFinished", false, statusObj.getBoolean("isFinished"));
-        Assert.assertEquals("hasError", false, statusObj.getBoolean("hasError"));
-        Assert.assertEquals("jobState", "GP_PENDING", statusObj.getString("statusFlag"));
-        Assert.assertEquals("statusMessage", 
+        assertEquals("isPending", true, statusObj.getBoolean("isPending"));
+        assertEquals("isFinished", false, statusObj.getBoolean("isFinished"));
+        assertEquals("hasError", false, statusObj.getBoolean("hasError"));
+        assertEquals("jobState", "GP_PENDING", statusObj.getString("statusFlag"));
+        assertEquals("statusMessage", 
                 "Pending in the GenePattern queue, it has not been submitted to an external queuing system", 
                 statusObj.getString("statusMessage"));
-        Assert.assertEquals("statusDate", 
+        assertEquals("statusDate", 
                 "2014-06-01T08:55:10"+tzOffsetStr, statusObj.getString("statusDate"));
 
         Assert.assertFalse("Expecting executionLogLocation to not be set", statusObj.has("executionLogLocation"));
@@ -232,7 +234,7 @@ public class TestJobStatus {
         Assert.assertTrue("Expecting a 'links' array", statusObj.has("links"));
         JSONArray linksArray = statusObj.getJSONArray("links");
         List<JSONObject> selfLinks = GpLink.findLinks(Rel.self.name(), linksArray);
-        Assert.assertEquals("Expecting 1 'self' link", 1, selfLinks.size());
+        assertEquals("Expecting 1 'self' link", 1, selfLinks.size());
         Assert.assertTrue( "self", matchesRel("self", selfLinks.get(0).getString("rel") ));
         Assert.assertTrue( "gp_status", matchesRel(Rel.gp_status.name(), selfLinks.get(0).getString("rel") ));
     }
@@ -275,14 +277,14 @@ public class TestJobStatus {
         //final JSONObject statusObj = new JSONObject( status.toJson() );
         final JSONObject statusObj = status.toJsonObj();
         
-        Assert.assertEquals("isPending", false, statusObj.getBoolean("isPending"));
-        Assert.assertEquals("isFinished", false, statusObj.getBoolean("isFinished"));
-        Assert.assertEquals("hasError", false, statusObj.getBoolean("hasError"));
-        Assert.assertEquals("statusFlag", "GP_PROCESSING", statusObj.getString("statusFlag"));
-        Assert.assertEquals("statusMessage", 
+        assertEquals("isPending", false, statusObj.getBoolean("isPending"));
+        assertEquals("isFinished", false, statusObj.getBoolean("isFinished"));
+        assertEquals("hasError", false, statusObj.getBoolean("hasError"));
+        assertEquals("statusFlag", "GP_PROCESSING", statusObj.getString("statusFlag"));
+        assertEquals("statusMessage", 
                 "Submitted from GenePattern to the external queuing system", 
                 statusObj.getString("statusMessage"));
-        Assert.assertEquals("statusDate", 
+        assertEquals("statusDate", 
                 "2014-06-01T08:55:10"+tzOffsetStr, statusObj.getString("statusDate"));
         
         Assert.assertFalse("Expecting executionLogLocation to not be set", statusObj.has("executionLogLocation"));
@@ -303,17 +305,17 @@ public class TestJobStatus {
         //final JSONObject statusObj = new JSONObject( status.toJson() );
         final JSONObject statusObj = status.toJsonObj();
         
-        Assert.assertEquals("isPending", false, statusObj.getBoolean("isPending"));
-        Assert.assertEquals("isFinished", true, statusObj.getBoolean("isFinished"));
-        Assert.assertEquals("hasError", false, statusObj.getBoolean("hasError"));
-        Assert.assertEquals("statusFlag", "GP_FINISHED", statusObj.getString("statusFlag"));
-        Assert.assertEquals("statusMessage", 
+        assertEquals("isPending", false, statusObj.getBoolean("isPending"));
+        assertEquals("isFinished", true, statusObj.getBoolean("isFinished"));
+        assertEquals("hasError", false, statusObj.getBoolean("hasError"));
+        assertEquals("statusFlag", "GP_FINISHED", statusObj.getString("statusFlag"));
+        assertEquals("statusMessage", 
                 "Completed and status is recorded in the GenePattern database", 
                 statusObj.getString("statusMessage"));
-        Assert.assertEquals("statusDate", 
+        assertEquals("statusDate", 
                 DateUtil.toIso8601(dateCompleted), statusObj.getString("statusDate"));
         
-        Assert.assertEquals( "executionLogLocation",
+        assertEquals( "executionLogLocation",
                 executionLogLocation,
                 statusObj.getString("executionLogLocation"));
     }
@@ -333,20 +335,20 @@ public class TestJobStatus {
         
         final JSONObject statusObj = status.toJsonObj();
         
-        Assert.assertEquals("isPending", false, statusObj.getBoolean("isPending"));
-        Assert.assertEquals("isFinished", true, statusObj.getBoolean("isFinished"));
-        Assert.assertEquals("hasError", true, statusObj.getBoolean("hasError"));
-        Assert.assertEquals("statusFlag", "GP_FINISHED", statusObj.getString("statusFlag"));
-        Assert.assertEquals("statusMessage", 
+        assertEquals("isPending", false, statusObj.getBoolean("isPending"));
+        assertEquals("isFinished", true, statusObj.getBoolean("isFinished"));
+        assertEquals("hasError", true, statusObj.getBoolean("hasError"));
+        assertEquals("statusFlag", "GP_FINISHED", statusObj.getString("statusFlag"));
+        assertEquals("statusMessage", 
                 "Completed and status is recorded in the GenePattern database", 
                 statusObj.getString("statusMessage"));
-        Assert.assertEquals("statusDate", 
+        assertEquals("statusDate", 
                 DateUtil.toIso8601(dateCompleted), statusObj.getString("statusDate"));
         
-        Assert.assertEquals( "executionLogLocation",
+        assertEquals( "executionLogLocation",
                 executionLogLocation,
                 statusObj.getString("executionLogLocation"));
-        Assert.assertEquals( "stderrLocation",
+        assertEquals( "stderrLocation",
                 stderrLocation,
                 statusObj.getString("stderrLocation"));
     }
@@ -364,18 +366,18 @@ public class TestJobStatus {
         
         final JSONObject statusObj = status.toJsonObj();
         
-        Assert.assertEquals("isPending", true, statusObj.getBoolean("isPending"));
-        Assert.assertEquals("isFinished", false, statusObj.getBoolean("isFinished"));
-        Assert.assertEquals("hasError", false, statusObj.getBoolean("hasError"));
-        Assert.assertEquals("statusFlag", "QUEUED", statusObj.getString("statusFlag"));
-        Assert.assertEquals("statusMessage", 
+        assertEquals("isPending", true, statusObj.getBoolean("isPending"));
+        assertEquals("isFinished", false, statusObj.getBoolean("isFinished"));
+        assertEquals("hasError", false, statusObj.getBoolean("hasError"));
+        assertEquals("statusFlag", "QUEUED", statusObj.getString("statusFlag"));
+        assertEquals("statusMessage", 
                 "Added to queue on "+DateUtil.toIso8601(dateQueued),
                 statusObj.getString("statusMessage"));
-        Assert.assertEquals("statusDate", 
+        assertEquals("statusDate", 
                 DateUtil.toIso8601(statusDate), statusObj.getString("statusDate"));
 
         Assert.assertFalse("Expecting executionLogLocation to not be set", statusObj.has("executionLogLocation"));
-        Assert.assertEquals("extJobId", "", statusObj.getString("extJobId"));
+        assertEquals("extJobId", "", statusObj.getString("extJobId"));
     }
 
     @Test
@@ -390,25 +392,48 @@ public class TestJobStatus {
         
         final JSONObject statusObj = status.toJsonObj();
         
-        Assert.assertEquals("isPending", false, statusObj.getBoolean("isPending"));
-        Assert.assertEquals("isFinished", false, statusObj.getBoolean("isFinished"));
-        Assert.assertEquals("hasError", false, statusObj.getBoolean("hasError"));
-        Assert.assertEquals("statusFlag", "RUNNING", statusObj.getString("statusFlag"));
-        Assert.assertEquals("statusMessage", 
+        assertEquals("isPending", false, statusObj.getBoolean("isPending"));
+        assertEquals("isFinished", false, statusObj.getBoolean("isFinished"));
+        assertEquals("hasError", false, statusObj.getBoolean("hasError"));
+        assertEquals("statusFlag", "RUNNING", statusObj.getString("statusFlag"));
+        assertEquals("statusMessage", 
                 "Started on "+DateUtil.toIso8601(dateStarted),
                 statusObj.getString("statusMessage"));
-        Assert.assertEquals("statusDate", 
+        assertEquals("statusDate", 
                 DateUtil.toIso8601(statusDate), statusObj.getString("statusDate"));
 
         Assert.assertFalse("Expecting executionLogLocation to not be set", statusObj.has("executionLogLocation"));
-        Assert.assertEquals("extJobId", "8937799", statusObj.getString("extJobId"));
+        assertEquals("extJobId", "8937799", statusObj.getString("extJobId"));
     }
 
     @Test
-    public void finishedInLsf() throws Exception { 
+    public void finishedInLsf_fullStatusCheck() throws Exception { 
         when(jobStatusRecord.getJobState()).thenReturn(DrmJobState.DONE.name());
         when(jobStatusRecord.getStatusMessage()).thenReturn("Completed on "+DateUtil.toIso8601(dateCompleted));
         when(jobStatusRecord.getStatusDate()).thenReturn(dateCompleted);
+        
+        //include usage stats
+        Date submitTime=new DateTime("2014-07-17T11:55:23").toDate();
+        Date startTime=new DateTime("2014-07-18T01:55:23").toDate();
+        Date endTime=new DateTime("2014-07-18T13:55:23").toDate();
+        
+        // 4 hours 37 minutes 20.12 seconds
+        Long cpuTimeMillis =
+                (4 * HOUR) + (37 * MIN) + (20 * SEC) + 120;
+        
+        Memory maxMemory=Memory.fromString("21266 MB");
+        Memory maxSwap=Memory.fromString("21341 MB");
+        Integer maxProcesses=2;
+        Integer maxThreads=4;
+        
+        when(jobStatusRecord.getSubmitTime()).thenReturn(submitTime);
+        when(jobStatusRecord.getStartTime()).thenReturn(startTime);
+        when(jobStatusRecord.getEndTime()).thenReturn(endTime);
+        when(jobStatusRecord.getCpuTime()).thenReturn(cpuTimeMillis);
+        when(jobStatusRecord.getMaxMemory()).thenReturn(maxMemory.getNumBytes());
+        when(jobStatusRecord.getMaxSwap()).thenReturn(maxSwap.getNumBytes());
+        when(jobStatusRecord.getMaxProcesses()).thenReturn(maxProcesses);
+        when(jobStatusRecord.getMaxThreads()).thenReturn(maxThreads);
         
         Status status=new Status.Builder()
             .jobInfo(jobInfo)
@@ -418,20 +443,118 @@ public class TestJobStatus {
         
         final JSONObject statusObj = status.toJsonObj();
         
-        Assert.assertEquals("isPending", false, statusObj.getBoolean("isPending"));
-        Assert.assertEquals("isFinished", true, statusObj.getBoolean("isFinished"));
-        Assert.assertEquals("hasError", false, statusObj.getBoolean("hasError"));
-        Assert.assertEquals("statusFlag", "DONE", statusObj.getString("statusFlag"));
-        Assert.assertEquals("statusMessage", 
+        assertEquals("isPending", false, statusObj.getBoolean("isPending"));
+        assertEquals("isFinished", true, statusObj.getBoolean("isFinished"));
+        assertEquals("hasError", false, statusObj.getBoolean("hasError"));
+        assertEquals("statusFlag", "DONE", statusObj.getString("statusFlag"));
+        assertEquals("statusMessage", 
                 "Completed on "+DateUtil.toIso8601(dateCompleted),
                 statusObj.getString("statusMessage"));
-        Assert.assertEquals("statusDate", 
+        assertEquals("statusDate", 
                 DateUtil.toIso8601(dateCompleted), statusObj.getString("statusDate"));
 
-        Assert.assertEquals( "executionLogLocation",
+        assertEquals( "executionLogLocation",
                 executionLogLocation,
                 statusObj.getString("executionLogLocation"));
+        
+        assertEquals("submitTime", "2014-07-17T11:55:23"+tzOffsetStr, statusObj.getString("submitTime"));
+        assertEquals("startTime",  "2014-07-18T01:55:23"+tzOffsetStr, statusObj.getString("startTime"));
+        assertEquals("endTime",    "2014-07-18T13:55:23"+tzOffsetStr, statusObj.getString("endTime"));
+        
+        assertEquals("cpuTimeMillis", cpuTimeMillis, (Long) statusObj.getLong("cpuTimeMillis"));
+        assertEquals("cpuTime", "4 hours, 37 minutes, 20 seconds and 120 milliseconds", statusObj.getString("cpuTime"));
+        
+        assertEquals("maxMemoryBytes", maxMemory.getNumBytes(), statusObj.getLong("maxMemoryBytes")); 
+        assertEquals("maxMemory", "21266 mb", statusObj.getString("maxMemory"));
+
+        assertEquals("maxSwapBytes", maxSwap.getNumBytes(), statusObj.getLong("maxSwapBytes")); 
+        assertEquals("maxSwap", "21341 mb", statusObj.getString("maxSwap"));
+        assertEquals("maxProcesses", maxProcesses, (Integer) statusObj.getInt("maxProcesses"));
+        assertEquals("maxThreads", maxThreads, (Integer) statusObj.getInt("maxThreads"));
     }
+    
+    @Test
+    public void submitTimeNotSet() throws JSONException {
+        when(jobStatusRecord.getSubmitTime()).thenReturn(null);
+        Status status=new Status.Builder()
+            .jobStatusRecord(jobStatusRecord)
+        .build();
+        final JSONObject statusObj = status.toJsonObj();
+        assertFalse("expecting no submitTime", statusObj.has("submitTime"));
+    }
+
+    @Test
+    public void startTimeNotSet() throws JSONException {
+        when(jobStatusRecord.getStartTime()).thenReturn(null);
+        Status status=new Status.Builder()
+            .jobStatusRecord(jobStatusRecord)
+        .build();
+        final JSONObject statusObj = status.toJsonObj();
+        assertFalse("expecting no startTime", statusObj.has("startTime"));
+    }
+
+    @Test
+    public void endTimeNotSet() throws JSONException {
+        when(jobStatusRecord.getEndTime()).thenReturn(null);
+        Status status=new Status.Builder()
+            .jobStatusRecord(jobStatusRecord)
+        .build();
+        final JSONObject statusObj = status.toJsonObj();
+        assertFalse("expecting no endTime", statusObj.has("endTime"));
+    }
+
+    @Test
+    public void cpuTimeNotSet() throws JSONException {
+        when(jobStatusRecord.getCpuTime()).thenReturn(null);
+        Status status=new Status.Builder()
+            .jobStatusRecord(jobStatusRecord)
+        .build();
+        final JSONObject statusObj = status.toJsonObj();
+        assertFalse("expecting no cpuTime", statusObj.has("cpuTime"));
+    }
+    
+    @Test
+    public void maxMemoryNotSet() throws JSONException {
+        when(jobStatusRecord.getMaxMemory()).thenReturn(null);
+        Status status=new Status.Builder()
+            .jobStatusRecord(jobStatusRecord)
+        .build();
+        final JSONObject statusObj = status.toJsonObj();
+        assertFalse("expecting no maxMemory", statusObj.has("maxMemory"));
+        assertFalse("expecting no maxMemoryBytes", statusObj.has("maxMemoryBytes"));
+    }
+    
+    @Test
+    public void maxSwapNotSet() throws JSONException {
+        when(jobStatusRecord.getMaxSwap()).thenReturn(null);
+        Status status=new Status.Builder()
+            .jobStatusRecord(jobStatusRecord)
+        .build();
+        final JSONObject statusObj = status.toJsonObj();
+        assertFalse("expecting no maxSwap", statusObj.has("maxSwap"));
+        assertFalse("expecting no maxSwapBytes", statusObj.has("maxSwapBytes"));
+    }
+    
+    @Test
+    public void maxProcessesNotSet() throws JSONException {
+        when(jobStatusRecord.getMaxProcesses()).thenReturn(null);
+        Status status=new Status.Builder()
+            .jobStatusRecord(jobStatusRecord)
+        .build();
+        final JSONObject statusObj = status.toJsonObj();
+        assertFalse("expecting no maxProcesses", statusObj.has("maxProcesses"));
+    }
+    
+    @Test
+    public void maxThreadsNotSet() throws JSONException {
+        when(jobStatusRecord.getMaxThreads()).thenReturn(null);
+        Status status=new Status.Builder()
+            .jobStatusRecord(jobStatusRecord)
+        .build();
+        final JSONObject statusObj = status.toJsonObj();
+        assertFalse("expecting no maxThreads", statusObj.has("maxThreads"));
+    }
+    
 
     @Test
     public void finishedInLsfWithError() throws Exception { 
@@ -448,17 +571,17 @@ public class TestJobStatus {
         
         final JSONObject statusObj = status.toJsonObj();
         
-        Assert.assertEquals("isPending", false, statusObj.getBoolean("isPending"));
-        Assert.assertEquals("isFinished", true, statusObj.getBoolean("isFinished"));
-        Assert.assertEquals("hasError", true, statusObj.getBoolean("hasError"));
-        Assert.assertEquals("statusFlag", "FAILED", statusObj.getString("statusFlag"));
-        Assert.assertEquals("statusMessage", 
+        assertEquals("isPending", false, statusObj.getBoolean("isPending"));
+        assertEquals("isFinished", true, statusObj.getBoolean("isFinished"));
+        assertEquals("hasError", true, statusObj.getBoolean("hasError"));
+        assertEquals("statusFlag", "FAILED", statusObj.getString("statusFlag"));
+        assertEquals("statusMessage", 
                 "Failed on "+DateUtil.toIso8601(dateCompleted),
                 statusObj.getString("statusMessage"));
-        Assert.assertEquals("statusDate", 
+        assertEquals("statusDate", 
                 DateUtil.toIso8601(dateCompleted), statusObj.getString("statusDate"));
 
-        Assert.assertEquals( "executionLogLocation",
+        assertEquals( "executionLogLocation",
                 executionLogLocation,
                 statusObj.getString("executionLogLocation"));
     }

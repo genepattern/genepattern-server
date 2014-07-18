@@ -5,7 +5,9 @@ import java.util.Date;
 import java.util.List;
 
 import org.apache.log4j.Logger;
+import org.genepattern.drm.CpuTime;
 import org.genepattern.drm.DrmJobState;
+import org.genepattern.drm.Memory;
 import org.genepattern.server.executor.drm.dao.JobRunnerJob;
 import org.genepattern.server.webapp.rest.api.v1.DateUtil;
 import org.genepattern.server.webapp.rest.api.v1.Rel;
@@ -54,6 +56,14 @@ public class Status {
     private String statusMessage="";
     private String extJobId=null;
     private Date statusDate=new Date();
+    private Date submitTime=null; // date the job was submitted to the external queue
+    private Date startTime=null;  // date the job started in the external queue
+    private Date endTime=null;    // date the job ending in the external queue
+    private CpuTime cpuTime=null;
+    private Memory maxMemory=null;
+    private Memory maxSwap=null;
+    private Integer maxProcesses=null;
+    private Integer maxThreads=null;
     private List<GpLink> links=null;
     
     private void addLink(GpLink link) {
@@ -94,6 +104,38 @@ public class Status {
         return statusDate;
     }
     
+    public Date getSubmitTime() {
+        return submitTime;
+    }
+    
+    public Date getStartTime() {
+        return startTime;
+    }
+    
+    public Date getEndTime() {
+        return endTime;
+    }
+    
+    public CpuTime getCpuTime() {
+        return cpuTime;
+    }
+    
+    public Memory getMaxMemory() {
+        return maxMemory;
+    }
+    
+    public Memory getMaxSwap() {
+        return maxSwap;
+    }
+    
+    public Integer getMaxProcesses() {
+        return maxProcesses;
+    }
+    
+    public Integer getMaxThreads() {
+        return maxThreads;
+    }
+    
     public DrmJobState getJobState() {
         return jobState;
     }
@@ -118,6 +160,33 @@ public class Status {
         }
         if (statusDate != null) {
             jobStatus.put("statusDate", DateUtil.toIso8601(statusDate));
+        }
+        if (submitTime != null) {
+            jobStatus.put("submitTime", DateUtil.toIso8601(submitTime));
+        }
+        if (startTime != null) {
+            jobStatus.put("startTime", DateUtil.toIso8601(startTime));
+        }
+        if (endTime != null) {
+            jobStatus.put("endTime", DateUtil.toIso8601(endTime));
+        }
+        if (cpuTime != null) {
+            jobStatus.put("cpuTimeMillis",    cpuTime.asMillis());
+            jobStatus.put("cpuTime", cpuTime.format());
+        }
+        if (maxMemory != null) {
+            jobStatus.put("maxMemoryBytes", maxMemory.getNumBytes());
+            jobStatus.put("maxMemory", maxMemory.format());
+        }
+        if (maxSwap != null) {
+            jobStatus.put("maxSwapBytes", maxSwap.getNumBytes());
+            jobStatus.put("maxSwap", maxSwap.format());
+        }
+        if (maxProcesses != null) {
+            jobStatus.put("maxProcesses", maxProcesses);
+        }
+        if (maxThreads != null) {
+            jobStatus.put("maxThreads", maxThreads);
         }
         if (extJobId != null) {
             jobStatus.put("extJobId", extJobId);
@@ -243,6 +312,25 @@ public class Status {
                             .build() 
                 );
                 status.addLink( new GpLink.Builder().href( jobHref ).addRel( Rel.gp_job ).build() );
+            }
+            
+            if (jobStatusRecord != null) {
+                status.submitTime=jobStatusRecord.getSubmitTime();
+                status.startTime=jobStatusRecord.getStartTime();
+                status.endTime=jobStatusRecord.getEndTime();
+
+                if (jobStatusRecord.getCpuTime() != null) {
+                    status.cpuTime= new CpuTime(jobStatusRecord.getCpuTime());
+                }
+                if (jobStatusRecord.getMaxMemory() != null) {
+                    status.maxMemory=Memory.fromSizeInBytes(jobStatusRecord.getMaxMemory());
+                }
+                if (jobStatusRecord.getMaxSwap() != null) {
+                    status.maxSwap=Memory.fromSizeInBytes(jobStatusRecord.getMaxSwap());
+                }
+                
+                status.maxProcesses=jobStatusRecord.getMaxProcesses();
+                status.maxThreads=jobStatusRecord.getMaxThreads();
             }
             return status;
         }
