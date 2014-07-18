@@ -2,6 +2,9 @@ package org.genepattern.drm;
 
 import java.util.concurrent.TimeUnit;
 
+import org.joda.time.Duration;
+import org.joda.time.format.PeriodFormat;
+
 /**
  * Generic representation of the cpu time limit for 
  * a job submitted to the queue.
@@ -33,5 +36,9 @@ public class CpuTime {
     
     public long asMillis() {
         return TimeUnit.MILLISECONDS.convert(time, timeUnit);
+    }
+    
+    public String format() {
+        return PeriodFormat.getDefault().print(new Duration(asMillis()).toPeriod());
     }
 }
