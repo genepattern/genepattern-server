@@ -1,5 +1,7 @@
 package org.genepattern.server.executor.drm;
 
+import static org.junit.Assert.assertEquals;
+
 import java.io.File;
 import java.util.Date;
 import java.util.List;
@@ -27,6 +29,7 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -248,11 +251,72 @@ public class TestDbLookup {
         Assert.assertEquals("jobRunnerJob.submitTime", lsfSubmitTime, query.getSubmitTime());
         Assert.assertEquals("jobRunnerJob.startTime", lsfStartTime, query.getStartTime());
         Assert.assertEquals("jobRunnerJob.endTime", lsfEndTime, query.getEndTime());
-        Assert.assertEquals("jobRunnerJob.cpuTime", cpuTime.asMillis(), query.getCpuTime());
-        Assert.assertEquals("jobRunnerJob.maxMemory", maxMemory.getNumBytes(), query.getMaxMemory());
-        Assert.assertEquals("jobRunnerJob.maxSwap", maxSwap.getNumBytes(), query.getMaxSwap());
-        Assert.assertEquals("jobRunnerJob.maxProcesses", maxProcesses, query.getMaxProcesses());
-        Assert.assertEquals("jobRunnerJob.maxThreads", maxThreads, query.getMaxThreads());
+        Assert.assertEquals("jobRunnerJob.cpuTime", (Long) cpuTime.asMillis(), query.getCpuTime());
+        Assert.assertEquals("jobRunnerJob.maxMemory", (Long) maxMemory.getNumBytes(), query.getMaxMemory());
+        Assert.assertEquals("jobRunnerJob.maxSwap", (Long) maxSwap.getNumBytes(), query.getMaxSwap());
+        Assert.assertEquals("jobRunnerJob.maxProcesses", (Integer) maxProcesses, query.getMaxProcesses());
+        Assert.assertEquals("jobRunnerJob.maxThreads", (Integer) maxThreads, query.getMaxThreads());
+    }
+    
+    @Test
+    public void updateJobRecord() {
+        int gpJobNo=new AnalysisJobUtil().addJobToDb();
+        String jrClassname="org.genepattern.drm.impl.lsf.core.CmdLineLsfRunner";
+        String jrName="CmdLineLsfRunner";
+        String workingDir="/opt/genepattern/jobResults/"+gpJobNo;
+        String stdoutFile="stdout.txt";
+        String stderrFile="stderr.txt";
+        JobRunnerJob jobRecord_01=new JobRunnerJob.Builder()
+            .gpJobNo(gpJobNo)
+            .jobRunnerClassname(jrClassname)
+            .jobRunnerName(jrName)
+            .workingDir(workingDir)
+            .stdoutFile(stdoutFile)
+            .stderrFile(stderrFile)
+        .build();
+        DbLookup.insertJobRunnerJob(jobRecord_01);
+
+        Date submitTime=DateTime.parse("20140717T10:50:21").toDate();
+        Date startTime=DateTime.parse("20140717T10:51:21").toDate();
+        Date endTime=DateTime.parse("20140717T11:01:21").toDate();
+        CpuTime cpuTime=new CpuTime(5, TimeUnit.MINUTES);
+        Memory maxMem=Memory.fromString("4 Gb");
+        Memory maxSwap=Memory.fromString("8 Gb");
+        Integer maxProcesses=1;
+        Integer maxThreads=1;
+        DrmJobStatus jobStatus=new DrmJobStatus.Builder()
+             .extJobId("EXT_"+gpJobNo)
+             .jobState(DrmJobState.DONE)
+             .jobStatusMessage(DrmJobState.DONE.getDescription())
+             .exitCode(0)
+             .submitTime(submitTime)
+             .startTime(startTime)
+             .endTime(endTime)
+             .cpuTime(cpuTime)
+             .memory(maxMem)
+             .maxSwap(maxSwap.getNumBytes())
+             .maxProcesses(maxProcesses)
+             .maxThreads(maxThreads)
+        .build();
+        DrmJobRecord jobRecord=new DrmJobRecord.Builder()
+            .gpJobNo(gpJobNo)
+        .build();
+        dbLookup.updateJobStatus(jobRecord, jobStatus);
+        JobRunnerJob updated=DbLookup.selectJobRunnerJob(gpJobNo);
+        assertEquals("gpJobNo", (Integer) gpJobNo, updated.getGpJobNo());
+        assertEquals("jobRunnerClassname", jrClassname, updated.getJobRunnerClassname());
+        assertEquals("jobRunnerName", jrName, updated.getJobRunnerName());
+        assertEquals("workingDir", workingDir, updated.getWorkingDir());
+        assertEquals("stdoutFile", stdoutFile, updated.getStdoutFile());
+        assertEquals("stderrFile", stderrFile, updated.getStderrFile());
+        assertEquals("submitTime", submitTime, updated.getSubmitTime());
+        assertEquals("startTime", startTime, updated.getStartTime());
+        assertEquals("endTime", endTime, updated.getEndTime());
+        assertEquals("cpuTime", (Long) cpuTime.asMillis(), updated.getCpuTime());
+        assertEquals("maxMem", (Long) maxMem.getNumBytes(), updated.getMaxMemory());
+        assertEquals("maxSwap", (Long) maxSwap.getNumBytes(), updated.getMaxSwap());
+        assertEquals("maxProcesses", (Integer) maxProcesses, updated.getMaxProcesses());
+        assertEquals("maxThreads", (Integer) maxThreads, updated.getMaxThreads());
     }
     
 

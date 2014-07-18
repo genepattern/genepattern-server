@@ -110,32 +110,32 @@ public class JobRunnerJob {
     /**
      * The amount of cpu time used for the job, in number of milliseconds.
      */
-    @Column(name="cpu_time", nullable=false)
-    private long cpuTime;
+    @Column(name="cpu_time", nullable=true)
+    private Long cpuTime=null;
     
     /**
      * The maximum memory usage for the job, in number of bytes.
      */
-    @Column(name="max_mem", nullable=false)
-    private long maxMem;
+    @Column(name="max_mem", nullable=true)
+    private Long maxMem=null;
     
     /**
      * The maximum swap space usage for the job, in number of bytes.
      */
-    @Column(name="max_swap", nullable=false)
-    private long maxSwap;
+    @Column(name="max_swap", nullable=true)
+    private Long maxSwap;
     
     /**
      * The maximum number of processes for the job, for example, as reported in the .lsf.out log file.
      */
-    @Column(name="max_processes", nullable=false)
-    private int maxProcesses;
+    @Column(name="max_processes", nullable=true)
+    private Integer maxProcesses;
     
     /**
      * The maximum number of threads used by the job, for example, as reported in the .lsf.out log file.
      */
-    @Column(name="max_threads", nullable=false)
-    private int maxThreads;
+    @Column(name="max_threads", nullable=true)
+    private Integer maxThreads;
     
     @Column(name="working_dir", nullable=false)
     private String workingDir;
@@ -201,11 +201,11 @@ public class JobRunnerJob {
         private Date startTime=null;
         private Date endTime=null;
         
-        private long cpuTime=0L;
-        private long maxMem=0L;
-        private long maxSwap=0L;
-        private int maxThreads=0;
-        private int maxProcesses=0;
+        private Long cpuTime=null;
+        private Long maxMem=null;
+        private Long maxSwap=null;
+        private Integer maxThreads=null;
+        private Integer maxProcesses=null;
         
         public Builder(final String jobRunnerClassname, final DrmJobSubmission in) {
             this.gpJobNo=in.getGpJobNo();
@@ -243,23 +243,54 @@ public class JobRunnerJob {
             this.jobRunnerClassname=in.jobRunnerClassname;
             this.jobRunnerName=in.jobRunnerName;
             this.extJobId=in.extJobId;
-            this.exitCode=in.exitCode;
-            this.terminatingSignal=in.terminatingSignal;
             this.jobState=in.jobState;
             this.statusMessage=in.statusMessage;
+            this.exitCode=in.exitCode;
+            this.terminatingSignal=in.terminatingSignal;
             this.workingDir=in.workingDir;
-            this.stdoutFile=in.stdoutFile;
-            this.stderrFile=in.stderrFile;
             this.stdinFile=in.stdinFile;
+            this.stdoutFile=in.stdoutFile;
             this.logFile=in.logFile;
+            this.stderrFile=in.stderrFile;
+            this.submitTime=in.submitTime;
+            this.startTime=in.startTime;
+            this.endTime=in.endTime;
+            this.cpuTime=in.cpuTime;
+            this.maxMem=in.maxMem;
+            this.maxSwap=in.maxSwap;
+            this.maxProcesses=in.maxProcesses;
+            this.maxThreads=in.maxThreads;
         }
         
         public Builder drmJobStatus(final DrmJobStatus updated) {
             this.extJobId=updated.getDrmJobId();
-            this.exitCode=updated.getExitCode();
-            this.terminatingSignal=updated.getTerminatingSignal();
             this.jobState=updated.getJobState().name();
             this.statusMessage=updated.getJobStatusMessage();
+            this.exitCode=updated.getExitCode();
+            this.terminatingSignal=updated.getTerminatingSignal();
+            this.submitTime=updated.getSubmitTime();
+            this.startTime=updated.getStartTime();
+            this.endTime=updated.getEndTime();
+            if (updated.getCpuTime() == null) {
+                this.cpuTime=null;
+            }
+            else {
+                this.cpuTime=updated.getCpuTime().asMillis();
+            }
+            if (updated.getMemory() == null) {
+                this.maxMem=null;
+            }
+            else {
+                this.maxMem = updated.getMemory().getNumBytes();
+            }
+            if (updated.getMaxSwap() == null) {
+                this.maxSwap=null;
+            }
+            else {
+                this.maxSwap=updated.getMaxSwap().getNumBytes();
+            }
+            this.maxProcesses=updated.getMaxProcesses();
+            this.maxThreads=updated.getMaxThreads();
             return this;
         }
         
@@ -444,23 +475,23 @@ public class JobRunnerJob {
         return endTime;
     }
 
-    public long getCpuTime() {
+    public Long getCpuTime() {
         return cpuTime;
     }
 
-    public long getMaxMemory() {
+    public Long getMaxMemory() {
         return maxMem;
     }
     
-    public long getMaxSwap() {
+    public Long getMaxSwap() {
         return maxSwap;
     }
 
-    public int getMaxProcesses() {
+    public Integer getMaxProcesses() {
         return maxProcesses;
     }
 
-    public int getMaxThreads() {
+    public Integer getMaxThreads() {
         return maxThreads;
     }
 
@@ -541,11 +572,11 @@ public class JobRunnerJob {
         this.maxMem = maxMem;
     }
 
-    private void setMaxProcesses(int maxProcesses) {
+    private void setMaxProcesses(Integer maxProcesses) {
         this.maxProcesses = maxProcesses;
     }
 
-    private void setMaxThreads(int maxThreads) {
+    private void setMaxThreads(Integer maxThreads) {
         this.maxThreads = maxThreads;
     }
 }
