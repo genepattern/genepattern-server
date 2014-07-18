@@ -5,12 +5,18 @@ import java.util.TimeZone;
 
 import org.apache.log4j.Logger;
 import org.joda.time.DateTimeZone;
+import org.joda.time.Duration;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
+import org.joda.time.format.ISOPeriodFormat;
 
 public class DateUtil {
     private static final Logger log = Logger.getLogger(DateUtil.class);
 
+    public static final Long SEC = 1000L;
+    public static final Long MIN = 60*SEC;
+    public static final Long HOUR = 60*MIN;
+    
     /**
      * The default ISO 8601 date formatter returned when getting JSON representations
      * of jobs and result files.
@@ -54,6 +60,10 @@ public class DateUtil {
             return isoNoMillis.withZone(jodaTz)
                 .print(date.getTime());
         }
+    }
+    
+    public static String toIso8601_duration(final long durationInMillis) {
+        return ISOPeriodFormat.standard().print(new Duration(durationInMillis).toPeriod());
     }
 
 }
