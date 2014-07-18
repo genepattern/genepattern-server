@@ -53,6 +53,16 @@ public class Memory {
             if (in==b) return k;
             return Unit.values()[in.ordinal()+2];
         }
+        
+        Unit asTwoChar() {
+            if (this==b) {
+                return this;
+            }
+            if ((this.ordinal() % 2 == 1)) {
+                return Unit.values()[this.ordinal()+1];
+            }
+            return this;
+        }
 
         private final long multiplier;
         private Unit(long multiplier) {
@@ -155,7 +165,31 @@ public class Memory {
     }
     
     public String toString() {
+        if (isIntValue()) {
+            return ""+(int)value+" "+unit.name();
+        }
         return ""+value+" "+unit.name();
+    }
+    
+    /**
+     * Helper method, for the formatter, to avoid '512.0 mb' when '512 mb' is correct.
+     * @return
+     */
+    public boolean isIntValue() {
+        if ((value == Math.floor(value)) && !Double.isInfinite(value)) {
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Human readable representation by scaling the raw number of bytes up to a reasable approximation.
+     * This uses the #round function.
+     * For example, long numBytes=2969658452L will be formatted as '2832 mb'.
+     * @return
+     */
+    public String format() {
+        return round().toString();
     }
 
     /**
@@ -183,6 +217,36 @@ public class Memory {
         }
         //dead code
         return toXmxUnits(Unit.gb);
+    }
+
+    /** 
+     * Create a new Memory instance in units which are easy to read.
+     * In some cases precision is lost.
+     * @return a new Memory instance
+     */
+    public Memory round() {
+        Unit unit=Unit.b;
+        do {
+            long num=getNumBytes() / unit.getMultiplier();
+            long mod=getNumBytes() % unit.getMultiplier();
+            if (num < 1024) {
+                final long numUnits;
+                if (mod==0) {
+                    numUnits = (long)Math.max(1, Math.round( ((double)numBytes) / unit.getMultiplier() ));
+                }
+                else {  //scale down and round to nearest int
+                    unit=Unit.scaleDown(unit);
+                    numUnits=1024L*num + (long) Math.round(((double)mod) / unit.getMultiplier());
+                }
+                return new Memory(numUnits, unit.asTwoChar());
+            }
+            if (unit==Unit.p || unit==Unit.pb) {
+                long numUnits = (long)Math.max(1, Math.round( ((double)numBytes) / unit.getMultiplier() ));
+                return new Memory(numUnits, unit.asTwoChar());
+            }
+            unit=Unit.scaleUp(unit);
+        }
+        while (true);
     }
 
     /**

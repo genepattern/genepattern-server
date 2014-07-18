@@ -1,5 +1,7 @@
 package org.genepattern.drm;
 
+import static org.junit.Assert.assertEquals;
+
 import org.genepattern.drm.Memory.Unit;
 import org.junit.Assert;
 import org.junit.Test;
@@ -215,9 +217,76 @@ public class TestMemory {
     }
     
     @Test
+    public void format_toBytes() {
+        long numBytes=Memory.fromString("32 b").getNumBytes();
+        Memory mem=Memory.fromSizeInBytes(numBytes);
+        assertEquals("mem.format", "32 b", mem.format());
+    }
+
+    @Test
+    public void format_toKb() {
+        long numBytes=Memory.fromString("1365 kb").getNumBytes();
+        Memory mem=Memory.fromSizeInBytes(numBytes);
+        assertEquals("mem.format", "1365 kb", mem.format());
+    }
+
+    @Test
+    public void format_toMb() {
+        long numBytes=Memory.fromString("512 mb").getNumBytes();
+        Memory mem=Memory.fromSizeInBytes(numBytes);
+        assertEquals("mem.format", "512 mb", mem.format());
+    }
+    
+    @Test
+    public void format_toGb() {
+        long numBytes=Memory.fromString("2048 Mb").getNumBytes();
+        Memory mem=Memory.fromSizeInBytes(numBytes);
+        assertEquals("mem.format", "2 gb", mem.format());
+    }
+    
+    @Test
+    public void format_toGb_resolution() {
+        //long numBytes=Memory.fromString("2832 Mb").getNumBytes();
+        long numBytes=2969658452L;
+        Memory mem=Memory.fromSizeInBytes(numBytes);
+        assertEquals("mem.format", "2832 mb", mem.format());
+    }
+
+
+    @Test
+    public void format_toGb_fractional() {
+        long numBytes=Memory.fromString("2.5 Gb").getNumBytes();
+        Memory mem=Memory.fromSizeInBytes(numBytes);
+        assertEquals("mem.format", "2560 mb", mem.format());
+    }
+
+    @Test
+    public void format_toTb_exactly_one() {
+        long numBytes=Memory.fromString("1 Tb").getNumBytes();
+        Memory mem=Memory.fromSizeInBytes(numBytes);
+        assertEquals("mem.format", "1 tb", mem.format());
+    }
+    
+    @Test
+    public void format_toPb() {
+        long numBytes=Memory.fromString("1024 Tb").getNumBytes();
+        Memory mem=Memory.fromSizeInBytes(numBytes);
+        assertEquals("mem.format", "1 pb", mem.format());
+        
+    }
+    
+    //1050624
+    @Test
+    public void format_toPb_overflow() {
+        long numBytes=Memory.fromString("1050624 Tb").getNumBytes();
+        Memory mem=Memory.fromSizeInBytes(numBytes);
+        assertEquals("mem.format", "1026 pb", mem.format());
+    }
+
+    @Test
     public void testEquals() {
         final String spec="8 gb";
-        Assert.assertEquals(spec, Memory.fromString(spec), Memory.fromString(spec)); 
+        assertEquals(spec, Memory.fromString(spec), Memory.fromString(spec)); 
     }
     
     @Test
