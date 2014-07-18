@@ -54,14 +54,18 @@ public class LsfBjobsParser {
         final DrmJobState jobState;
         final String jobStatusMessage;
         Integer exitCode=null;
+        Integer maxProcesses=null;
+        Integer maxThreads=null;
         
-        if (lsfState==LsfState.EXIT && lsfLogFile != null) {
+        if ((lsfState==LsfState.EXIT || lsfState==LsfState.DONE) && lsfLogFile != null) {
             //for completed jobs, parse the lsf log file (.lsf.out)
             waitForFile(lsfLogFile);  // <-- on NFS it can take a bit for the log file to get written
             LsfErrorStatus lsfErrorStatus = checkStatusFromLsfLogFile(startTime != null, lsfLogFile);
             jobState = lsfErrorStatus.getJobState();
             exitCode = lsfErrorStatus.getExitCode();
             jobStatusMessage = lsfErrorStatus.getErrorMessage();
+            maxProcesses = lsfErrorStatus.getMaxProcesses();
+            maxThreads = lsfErrorStatus.getMaxThreads();
         }
         else if (lsfState==LsfState.EXIT && startTime==null) {
             jobState=DrmJobState.ABORTED;
@@ -105,9 +109,15 @@ public class LsfBjobsParser {
         if (memUsage != null) {
             b.memory(memUsage+" "+memUsageUnits);
         }
+        Long swapUsage=parseOptionalLong(lineMatcher.group("SWAP"));
+        if (swapUsage != null) {
+            b.maxSwap(swapUsage+" "+memUsageUnits);
+        }
         if (exitCode != null) {
             b.exitCode(exitCode);
         }
+        b.maxProcesses(maxProcesses);
+        b.maxThreads(maxThreads);
         return b.build();
     }
 

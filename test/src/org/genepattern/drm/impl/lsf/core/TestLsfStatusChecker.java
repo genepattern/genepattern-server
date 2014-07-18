@@ -14,7 +14,6 @@ import org.genepattern.junitutil.FileUtil;
 import org.genepattern.server.executor.lsf.TestLsfErrorCheckerImpl;
 import org.joda.time.DateTime;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
 public class TestLsfStatusChecker {
@@ -68,6 +67,14 @@ JOBID   USER    STAT  QUEUE      FROM_HOST   EXEC_HOST   JOB_NAME   SUBMIT_TIME 
         assertEquals("jobState", DrmJobState.DONE, jobStatus.getJobState());
         assertEquals("exitCode", (Integer)0, jobStatus.getExitCode());
         assertEquals("statusMessage", "Successfully completed.", jobStatus.getJobStatusMessage());
+        assertEquals("cpuTime", 140, jobStatus.getCpuTime().asMillis());
+        assertEquals("submitTime", new DateTime("2014-07-14T12:44:09").toDate(), jobStatus.getSubmitTime());
+        assertEquals("startTime", new DateTime("2014-07-14T12:44:14").toDate(), jobStatus.getStartTime());
+        assertEquals("endTime", new DateTime("2014-07-14T12:44:15").toDate(), jobStatus.getEndTime());
+        assertEquals("memory", Memory.fromString("3 mb"), jobStatus.getMemory());
+        assertEquals("maxSwap", Memory.fromString("39 mb"), jobStatus.getMaxSwap());
+        assertEquals("maxProcesses", (Integer)1, jobStatus.getMaxProcesses());
+        assertEquals("maxThreads", (Integer)1, jobStatus.getMaxThreads());
     }
     
     @Test
@@ -172,6 +179,13 @@ JOBID   USER    STAT  QUEUE      FROM_HOST   EXEC_HOST   JOB_NAME   SUBMIT_TIME 
         assertTrue("jobState isTerminated", jobStatus.getJobState().is(DrmJobState.TERMINATED));
         assertEquals("exitCode", (Integer)136, jobStatus.getExitCode());
         assertEquals("jobStatusMessage", "Exited with exit code 136.", jobStatus.getJobStatusMessage());
+    }
+    
+    // Note: max_swap, max_processes, and max_threads are not logged yet  
+
+    @Test
+    public void parseMaxSwap() {
+        
     }
     
     @Test

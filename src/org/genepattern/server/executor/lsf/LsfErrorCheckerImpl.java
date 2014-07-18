@@ -33,6 +33,8 @@ public class LsfErrorCheckerImpl implements ILsfErrorChecker
             StringBuffer message = new StringBuffer();
             int exitCode = -1;
             DrmJobState jobState=DrmJobState.TERMINATED;
+            Integer maxThreads=null;
+            Integer maxProcesses=null;
 
             String line;
             boolean appendMessage = false;
@@ -47,7 +49,6 @@ public class LsfErrorCheckerImpl implements ILsfErrorChecker
                     message.append(line);
                     exitCode=0;
                     jobState=DrmJobState.DONE;
-                    break;
                 }
                 else if (line.startsWith("TERM_OWNER: ")) { // job killed by owner.
                     if (!hasStarted) {
@@ -83,12 +84,28 @@ public class LsfErrorCheckerImpl implements ILsfErrorChecker
                         break;
                     }
                 }
+                else if (line.trim().startsWith("Max Processes")) {
+                    maxProcesses = parseResourceUsageIntValue(line);
+                    if (appendMessage) {
+                        message.append(line);
+                        message.append("\n");
+                    }
+                }
+                else if (line.trim().startsWith("Max Threads")) {
+                    maxThreads = parseResourceUsageIntValue(line);
+                    if (appendMessage) {
+                        message.append(line);
+                        message.append("\n");
+                    }
+                }
                 else if (appendMessage) {
                     message.append(line);
                     message.append("\n");
                 } 
             }
             errorStatus = new LsfErrorStatus(jobState, exitCode, message.toString());
+            errorStatus.setMaxThreads(maxThreads);
+            errorStatus.setMaxProcesses(maxProcesses);
         }
         catch(IOException io)
         {
@@ -114,6 +131,16 @@ public class LsfErrorCheckerImpl implements ILsfErrorChecker
             log.error("Error parsing exit code from line="+line, e);
         }
         return -1;
+    }
+    
+    private Integer parseResourceUsageIntValue(String line) {
+        try {
+            return Integer.valueOf(line.substring(line.indexOf(":")+1).trim());
+        }
+        catch (Throwable t) {
+            log.error("Error parsing integer from line="+line, t);
+        }
+        return null;
     }
 
     public LsfErrorStatus getStatus()
