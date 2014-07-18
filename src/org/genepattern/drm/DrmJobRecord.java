@@ -96,7 +96,7 @@ public class DrmJobRecord {
     }
 
     public static final class Builder {
-        private final Integer gpJobNo;
+        private Integer gpJobNo=null;
         private String extJobId="";
         private File workingDir=null;
         private File stdinFile=null;
@@ -104,6 +104,8 @@ public class DrmJobRecord {
         private File stderrFile=null;
         private File logFile=null;
 
+        public Builder() {
+        }
         public Builder(final Integer gpJobNo) {
             this.gpJobNo=gpJobNo;
         }
@@ -126,6 +128,11 @@ public class DrmJobRecord {
             this.stdoutFile=in.stdoutFile;
             this.stderrFile=in.stderrFile;
             this.logFile=in.logFile;
+        }
+        
+        public Builder gpJobNo(final Integer gpJobNo) {
+            this.gpJobNo=gpJobNo;
+            return this;
         }
         
         public Builder extJobId(final String extJobId) {
