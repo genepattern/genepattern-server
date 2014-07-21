@@ -425,20 +425,7 @@ public class JobsResource {
 
         final GpContext jobContext=Util.getJobContext(request, jobId);
         try {
-            JobRunnerJob jobStatusRecord=DbLookup.selectJobRunnerJob(jobContext.getJobNumber());
-            String stderrLocation=null;
-            String executionLogLocation=null;
-            
-            final String self=uriInfo.getAbsolutePath().toString();
-            final String jobHref = self.substring(0, self.length()-"/status.json".length());
-
-            Status status=new Status.Builder()
-                .jobHref(jobHref)
-                .jobInfo(jobContext.getJobInfo())
-                .jobStatusRecord(jobStatusRecord)
-                .stderrLocation(stderrLocation)
-                .executionLogLocation(executionLogLocation)
-            .build();
+            Status status = lookupJobStatus(uriInfo, jobContext);
 
             final JSONObject jsonObj = status.toJsonObj();
             final String jsonStr = jsonObj.toString(2);
@@ -454,6 +441,24 @@ public class JobsResource {
                     .entity(errorMessage)
                     .build();
         }
+    }
+
+    private Status lookupJobStatus(final UriInfo uriInfo, final GpContext jobContext) {
+        JobRunnerJob jobStatusRecord=DbLookup.selectJobRunnerJob(jobContext.getJobNumber());
+        String stderrLocation=null;
+        String executionLogLocation=null;
+        
+        final String self=uriInfo.getAbsolutePath().toString();
+        final String jobHref = self.substring(0, self.length()-"/status.json".length());
+
+        Status status=new Status.Builder()
+            .jobHref(jobHref)
+            .jobInfo(jobContext.getJobInfo())
+            .jobStatusRecord(jobStatusRecord)
+            .stderrLocation(stderrLocation)
+            .executionLogLocation(executionLogLocation)
+        .build();
+        return status;
     }
     
     /**
