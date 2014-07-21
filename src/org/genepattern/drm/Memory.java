@@ -155,8 +155,13 @@ public class Memory {
     private static final long initNumBytes(final double value, final Unit unit) {
         return Math.round(value * unit.getMultiplier());
     }
+
     public long getNumBytes() {
         return numBytes;
+    }
+    
+    public String getDisplayValue() {
+        return format();
     }
 
     public double numGb() {

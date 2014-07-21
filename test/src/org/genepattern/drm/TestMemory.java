@@ -282,6 +282,13 @@ public class TestMemory {
         Memory mem=Memory.fromSizeInBytes(numBytes);
         assertEquals("mem.format", "1026 pb", mem.format());
     }
+    
+    @Test
+    public void displayValue() {
+        String fromConfig="8 gb";
+        Memory mem=Memory.fromString(fromConfig);
+        assertEquals("mem.displayValue", "8 gb", mem.getDisplayValue());
+    }
 
     @Test
     public void testEquals() {
