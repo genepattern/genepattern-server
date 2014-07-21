@@ -1,5 +1,7 @@
 package org.genepattern.drm;
 
+import java.util.EnumSet;
+
 import org.apache.log4j.Logger;
 
 /**
@@ -18,8 +20,9 @@ public class Memory {
     private static final Logger log = Logger.getLogger(Memory.class);
 
     /**
-     * A unit of memory in bytes.
-     * 
+     * A unit of memory in bytes, based on a 1024 scale factor.
+     *     1kb == 1024b, 1mb == 1024kb and so on.
+     * This is the standard when measuring processor or virtual memory.
      * 
      * @author pcarr
      *
@@ -36,8 +39,16 @@ public class Memory {
         tb(1099511627776L),
         p (1125899906842624L),
         pb(1125899906842624L);
+        
+        /** to make it easier to iterate through each scale value. */
+        static final EnumSet<Unit> elements=EnumSet.of(Unit.b, Unit.kb, Unit.mb, Unit.gb, Unit.tb, Unit.pb);
 
-        static Unit scaleDown(Unit in) {
+        /**
+         * Convenience method for getting the unit one below the given unit.
+         * @param in
+         * @return
+         */
+        static final Unit scaleDown(Unit in) {
             if (in==b) {
                 throw new IllegalArgumentException("Can't scale down from "+in);
             }
@@ -46,7 +57,12 @@ public class Memory {
             return Unit.values()[in.ordinal()-2];
         }
         
-        static Unit scaleUp(Unit in) {
+        /**
+         * Convenience method for getting the unit one above the given unit.
+         * @param in
+         * @return
+         */
+        static final Unit scaleUp(Unit in) {
             if (in==p || in==pb) {
                 return in;
             }
@@ -54,31 +70,54 @@ public class Memory {
             return Unit.values()[in.ordinal()+2];
         }
         
-        Unit asTwoChar() {
-            if (this==b) {
-                return this;
+        /**
+         * Convenience method for getting the preferred unit for the given number of bytes.
+         * This returns the Unit such that converting the given numBytes into the returned Unit
+         * will be a value < 1024, except when it's scaled to Unit.pb.
+         * 
+         * @param numBytes
+         * @return
+         */
+        static final Unit getPreferredUnit(long numBytes) {
+            Unit prev=Unit.b;
+            for(Unit unit : Unit.elements) {
+                if (numBytes < unit.getMultiplier()) {
+                    return prev;
+                }
+                prev=unit;
             }
-            if ((this.ordinal() % 2 == 1)) {
-                return Unit.values()[this.ordinal()+1];
+            if (numBytes >= Unit.pb.getMultiplier()) {
+                return Unit.pb;
             }
-            return this;
+            return prev;
         }
 
         private final long multiplier;
         private Unit(long multiplier) {
             this.multiplier=multiplier;
         }
-        long getMultiplier() {
+        
+        /**
+         * Get the number of bytes represented by this unit.
+         * @return
+         */
+        public long getMultiplier() {
             return multiplier;
         }
     }
     
-    public static Memory fromSizeInBytes(final long sizeInBytes) {
-        return new Memory(sizeInBytes, Unit.b);
+    /** 
+     * Create a new Memory instance based on the number of bytes.
+     * 
+     * @return a new Memory instance
+     */
+    public static final Memory fromSizeInBytes(long numBytes) {
+        String displayValue=formatNumBytes(numBytes);
+        return new Memory(numBytes, displayValue);
     }
-    
+
     /**
-     * Initialize memory instance from string, for example
+     * Create a new memory instance from the given string, for example
      * <pre>
        maxMemory: "8 Gb"
        maxMemory: "8"
@@ -89,7 +128,7 @@ public class Memory {
      * number (double) value and a memory.unit (string).
      * Memory units are not case sensitive.
      * If no unit is specified, then by default, 'Gb' is used.
-     * Bytes must be specified as in integer, for other units, fractional (double) values
+     * Bytes must be specified as an integer, for other units, fractional (double) values
      * are allowed. Rounding occurs in the getNumBytes method.
      * 
      * @param str
@@ -130,30 +169,81 @@ public class Memory {
         }
         double value=Double.valueOf(valueSpec);
 
-        return new Memory(value, unit);
+        // when initialized from string, set the displayValue to the input string
+        return new Memory(value, unit, in);
+    }
+
+    /**
+     * Human readable representation by scaling the raw number of bytes up to a reasonable approximation.
+     * For example, long numBytes=2969658452L will be formatted as '2832 mb'.
+     * 
+     * @return
+     */
+    public static final String formatNumBytes(final long numBytes) {
+        for(Unit unit : Unit.elements) {
+            final long num=numBytes / unit.getMultiplier();
+            final long mod=numBytes % unit.getMultiplier();
+            if (num < 1024) {
+                final long numUnits;
+                if (mod==0) {
+                    numUnits = (long)Math.max(1, Math.round( ((double)numBytes) / unit.getMultiplier() ));
+                }
+                else {  //scale down and round to nearest int
+                    unit=Unit.scaleDown(unit);
+                    numUnits=1024L*num + (long) Math.round(((double)mod) / unit.getMultiplier());
+                }
+                String displayValue=toString(numUnits, unit);
+                return displayValue;
+            }
+        }
+        // scale to petabytes
+        long numUnits = (long)Math.max(1, Math.round( ((double)numBytes) / Unit.pb.getMultiplier() ));
+        String displayValue=toString(numUnits, Unit.pb);
+        return displayValue;
     }
 
     private final double value;
     private final Unit unit;
     private final Long numBytes;
+    private final String displayValue;
 
     // copy constructor
-    private Memory(final Memory in) {
+    public Memory(final Memory in) {
         this.value=in.value;
         this.unit=in.unit;
-        this.numBytes=initNumBytes(value, unit);
+        this.numBytes=in.numBytes;
+        this.displayValue=in.displayValue;
     }
-    private Memory(final double value, final Unit unit) {
+    
+    /**
+     * Create a new Memory instance.
+     * @param numBytes, the amount of memory in bytes
+     * @param displayValue, a formatted display value for the UI
+     */
+    protected Memory(final long numBytes, final String displayValue) {
+        if (numBytes < 0) {
+            throw new IllegalArgumentException("numBytes must be >= 0");
+        }
+        this.value=numBytes;
+        this.unit=Unit.b;
+        this.numBytes=numBytes;
+        this.displayValue=displayValue;
+    }
+
+    /**
+     * Create a new Memory instance.
+     * @param value, the amount of memory
+     * @param unit, in the given units
+     * @param displayValue, a formatted display value for the UI
+     */
+    protected Memory(final double value, final Unit unit, final String displayValue) {
         if (value < 0) {
             throw new IllegalArgumentException("value must be >= 0");
         }
         this.value=value;
         this.unit=unit;
-        this.numBytes=initNumBytes(value, unit);
-    }
-
-    private static final long initNumBytes(final double value, final Unit unit) {
-        return Math.round(value * unit.getMultiplier());
+        this.numBytes=Math.round(value * unit.getMultiplier());
+        this.displayValue=displayValue;
     }
 
     public long getNumBytes() {
@@ -161,7 +251,7 @@ public class Memory {
     }
     
     public String getDisplayValue() {
-        return format();
+        return displayValue;
     }
 
     public double numGb() {
@@ -169,32 +259,36 @@ public class Memory {
         return numGb;
     }
     
-    public String toString() {
-        if (isIntValue()) {
-            return ""+(int)value+" "+unit.name();
-        }
-        return ""+value+" "+unit.name();
-    }
-    
     /**
-     * Helper method, for the formatter, to avoid '512.0 mb' when '512 mb' is correct.
-     * @return
-     */
-    public boolean isIntValue() {
-        if ((value == Math.floor(value)) && !Double.isInfinite(value)) {
-            return true;
-        }
-        return false;
-    }
-
-    /**
-     * Human readable representation by scaling the raw number of bytes up to a reasable approximation.
-     * This uses the #round function.
+     * Human readable representation by scaling the raw number of bytes up to a reasonable approximation.
+     * This calls #formatNumBytes.
      * For example, long numBytes=2969658452L will be formatted as '2832 mb'.
      * @return
      */
     public String format() {
-        return round().toString();
+        return formatNumBytes(numBytes);
+    }
+    
+    public String toString() {
+        return toString(this.value, this.unit);
+    }
+    
+    public static String toString(double value, Unit unit) {
+        if (isIntValue(value)) {
+            return ""+(int)value+" "+unit.name();
+        }
+        return ""+value+" "+unit.name();
+    }
+
+    /**
+     * Helper method, for the toString method, to avoid '512.0 mb' when '512 mb' is correct.
+     * @return
+     */
+    private static boolean isIntValue(double value) {
+        if ((value == Math.floor(value)) && !Double.isInfinite(value)) {
+            return true;
+        }
+        return false;
     }
 
     /**
@@ -222,36 +316,6 @@ public class Memory {
         }
         //dead code
         return toXmxUnits(Unit.gb);
-    }
-
-    /** 
-     * Create a new Memory instance in units which are easy to read.
-     * In some cases precision is lost.
-     * @return a new Memory instance
-     */
-    public Memory round() {
-        Unit unit=Unit.b;
-        do {
-            long num=getNumBytes() / unit.getMultiplier();
-            long mod=getNumBytes() % unit.getMultiplier();
-            if (num < 1024) {
-                final long numUnits;
-                if (mod==0) {
-                    numUnits = (long)Math.max(1, Math.round( ((double)numBytes) / unit.getMultiplier() ));
-                }
-                else {  //scale down and round to nearest int
-                    unit=Unit.scaleDown(unit);
-                    numUnits=1024L*num + (long) Math.round(((double)mod) / unit.getMultiplier());
-                }
-                return new Memory(numUnits, unit.asTwoChar());
-            }
-            if (unit==Unit.p || unit==Unit.pb) {
-                long numUnits = (long)Math.max(1, Math.round( ((double)numBytes) / unit.getMultiplier() ));
-                return new Memory(numUnits, unit.asTwoChar());
-            }
-            unit=Unit.scaleUp(unit);
-        }
-        while (true);
     }
 
     /**
