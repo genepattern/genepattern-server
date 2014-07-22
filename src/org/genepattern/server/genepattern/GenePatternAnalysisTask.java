@@ -145,6 +145,8 @@ import org.genepattern.server.executor.CommandExecutor2Wrapper;
 import org.genepattern.server.executor.CommandManagerFactory;
 import org.genepattern.server.executor.JobDispatchException;
 import org.genepattern.server.executor.JobSubmissionException;
+import org.genepattern.server.executor.events.JobCompletionEvent;
+import org.genepattern.server.executor.events.JobEventBus;
 import org.genepattern.server.executor.pipeline.PipelineException;
 import org.genepattern.server.executor.pipeline.PipelineHandler;
 import org.genepattern.server.genomespace.GenomeSpaceClient;
@@ -1874,6 +1876,9 @@ public class GenePatternAnalysisTask {
                 CommandManagerFactory.getCommandManager().wakeupJobQueue();
             }
         }
+
+        // Publish a job completion event for the JobEventBus
+        JobEventBus.instance().post(new JobCompletionEvent(jobId));
     }
 
     private static boolean isFinished(JobInfo jobInfo) {

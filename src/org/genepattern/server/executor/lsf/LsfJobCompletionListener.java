@@ -6,8 +6,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.FutureTask;
 
 import org.apache.log4j.Logger;
-import org.genepattern.server.executor.events.JobCompletionEvent;
-import org.genepattern.server.executor.events.JobEventBus;
 import org.genepattern.server.genepattern.GenePatternAnalysisTask;
 import org.genepattern.util.GPConstants;
 
@@ -142,9 +140,6 @@ public class LsfJobCompletionListener implements JobCompletionListener {
                       }
                   }
                   GenePatternAnalysisTask.handleJobCompletion(gpJobId, exitValue, errorMessage, jobDir, stdoutFile, stderrFile);
-
-                  // Publish a job completion event for the JobEventBus
-                  JobEventBus.instance().post(new JobCompletionEvent(gpJobId));
 
                   return exitValue;
             }});
