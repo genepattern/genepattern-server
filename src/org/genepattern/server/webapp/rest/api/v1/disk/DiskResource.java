@@ -26,6 +26,7 @@ public class DiskResource
     /**
      * This is a method to get the disk usage and quota for a user
      * @param request
+     * curl --user {userid} {GenePatternURL}/rest/v1/disk
      */
     @GET
     @Produces(MediaType.APPLICATION_JSON)
