@@ -162,6 +162,26 @@ public class JobOutputFile {
         return filenameFilter;
     }
     
+    /**
+     * Get the link to the job result file, hard coded template,
+     *     {gpUrl}/jobResults/{gpJobNo}/{relativePath}
+     * 
+     * @param gpUrl
+     * @return
+     */
+    public String getHref(final String gpUrl) {
+        StringBuilder sb=new StringBuilder();
+        sb.append(gpUrl);
+        if (!gpUrl.endsWith("/")) {
+            sb.append("/");
+        }
+        sb.append("jobResults/");
+        sb.append(gpJobNo);
+        sb.append("/");
+        sb.append(path);
+        return sb.toString();
+    }
+    
     // ---  primary key fields -------
     @Id
     @Column(name="gp_job_no", nullable=false)
