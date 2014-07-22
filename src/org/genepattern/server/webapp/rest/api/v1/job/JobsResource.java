@@ -37,6 +37,7 @@ import org.genepattern.server.dm.UrlUtil;
 import org.genepattern.server.executor.drm.DbLookup;
 import org.genepattern.server.executor.drm.dao.JobRunnerJob;
 import org.genepattern.server.job.input.JobInput;
+import org.genepattern.server.job.status.JobStatusLoaderFromDb;
 import org.genepattern.server.job.status.Status;
 import org.genepattern.server.rest.GpServerException;
 import org.genepattern.server.rest.JobInputApi;
@@ -444,21 +445,9 @@ public class JobsResource {
     }
 
     private Status lookupJobStatus(final UriInfo uriInfo, final GpContext jobContext) {
-        JobRunnerJob jobStatusRecord=DbLookup.selectJobRunnerJob(jobContext.getJobNumber());
-        String stderrLocation=null;
-        String executionLogLocation=null;
-        
         final String self=uriInfo.getAbsolutePath().toString();
         final String jobHref = self.substring(0, self.length()-"/status.json".length());
-
-        Status status=new Status.Builder()
-            .jobHref(jobHref)
-            .jobInfo(jobContext.getJobInfo())
-            .jobStatusRecord(jobStatusRecord)
-            .stderrLocation(stderrLocation)
-            .executionLogLocation(executionLogLocation)
-        .build();
-        return status;
+        return new JobStatusLoaderFromDb(jobHref).loadJobStatus(jobContext);
     }
     
     /**
