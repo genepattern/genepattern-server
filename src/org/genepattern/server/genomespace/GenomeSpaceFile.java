@@ -6,10 +6,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.text.SimpleDateFormat;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import org.apache.log4j.Logger;
 import org.genepattern.server.config.GpContext;
@@ -239,8 +236,11 @@ public class GenomeSpaceFile extends GpFilePath {
             conversionUrls = new HashMap<String, String>();
 
             // Add URLs for conversion formats
-            for (String format : this.getConversionsWithKind()) {
-                conversionUrls.put(format, this.getEncodedConversionUrl(format));
+            Set<String> conversions = this.getConversionsWithKind();
+            if (conversions != null) {
+                for (String format : conversions) {
+                    conversionUrls.put(format, this.getEncodedConversionUrl(format));
+                }
             }
         }
         

@@ -90,6 +90,14 @@ public class GenomeSpaceFileManager {
             String filename = extractFilename(url);
             String kind = extractKind(url, filename);
             String extension = SemanticUtil.getExtension(new File(filename));
+
+            // Handle nulls
+            if (kind == null) {
+                kind = filename;
+            }
+            if (extension == null) {
+                extension = filename;
+            }
             
             boolean converted = determineConversion(kind, extension);
 
