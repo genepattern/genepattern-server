@@ -18,8 +18,10 @@ import org.genepattern.junitutil.AnalysisJobUtil;
 import org.genepattern.junitutil.DbUtil;
 import org.genepattern.junitutil.FileUtil;
 import org.genepattern.junitutil.TaskUtil;
+import org.genepattern.server.DbException;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.executor.drm.dao.JobRunnerJob;
+import org.genepattern.server.executor.drm.dao.JobRunnerJobDao;
 import org.genepattern.server.job.input.JobInput;
 import org.genepattern.webservice.JobInfo;
 import org.genepattern.webservice.TaskInfo;
@@ -28,7 +30,6 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -144,7 +145,7 @@ public class TestDbLookup {
             .statusMessage(statusMessage)
         .build();
         DbLookup.insertJobRunnerJob(jobRecord);
-        JobRunnerJob updated=DbLookup.selectJobRunnerJob(jobSubmission.getGpJobNo());
+        JobRunnerJob updated=new JobRunnerJobDao().selectJobRunnerJob(jobSubmission.getGpJobNo());
         Assert.assertEquals("jobRunnerJob.statusMessage.length", 2000, updated.getStatusMessage().length());
     }
     
@@ -166,7 +167,7 @@ public class TestDbLookup {
         final DrmJobRecord jobRecord=dbLookup.lookupJobRecord(jobSubmission.getGpJobNo());
         final DrmJobStatus drmJobStatus = new DrmJobStatus.Builder("EXT_"+jobSubmission.getJobInfo().getJobNumber(), DrmJobState.QUEUED).build();
         dbLookup.updateJobStatus(jobRecord, drmJobStatus);        
-        final JobRunnerJob jobRunnerJob=DbLookup.selectJobRunnerJob(jobSubmission.getGpJobNo());
+        final JobRunnerJob jobRunnerJob=new JobRunnerJobDao().selectJobRunnerJob(jobSubmission.getGpJobNo());
         Assert.assertEquals("update job_state", DrmJobState.QUEUED.name(), jobRunnerJob.getJobState());
     }
     
@@ -213,7 +214,7 @@ public class TestDbLookup {
     }
     
     @Test
-    public void jobQueueTimesAndResourceUsage() {
+    public void jobQueueTimesAndResourceUsage() throws DbException {
         Date lsfSubmitTime=new DateTime("2014-07-15T09:00:00").toDate();
         Date lsfStartTime =new DateTime("2014-07-15T09:15:21").toDate();
         Date lsfEndTime   =new DateTime("2014-07-15T10:15:21").toDate();
@@ -246,7 +247,7 @@ public class TestDbLookup {
         .build();
         dbLookup.insertJobRunnerJob(jobRecord);
         
-        JobRunnerJob query=dbLookup.selectJobRunnerJob(gpJobNo);
+        JobRunnerJob query=new JobRunnerJobDao().selectJobRunnerJob(gpJobNo);
         Assert.assertEquals("jobRunnerJob.submitTime", lsfSubmitTime, query.getSubmitTime());
         Assert.assertEquals("jobRunnerJob.startTime", lsfStartTime, query.getStartTime());
         Assert.assertEquals("jobRunnerJob.endTime", lsfEndTime, query.getEndTime());
@@ -258,7 +259,7 @@ public class TestDbLookup {
     }
     
     @Test
-    public void updateJobRecord() {
+    public void updateJobRecord() throws DbException {
         int gpJobNo=new AnalysisJobUtil().addJobToDb();
         String jrClassname="org.genepattern.drm.impl.lsf.core.CmdLineLsfRunner";
         String jrName="CmdLineLsfRunner";
@@ -301,7 +302,7 @@ public class TestDbLookup {
             .gpJobNo(gpJobNo)
         .build();
         dbLookup.updateJobStatus(jobRecord, jobStatus);
-        JobRunnerJob updated=DbLookup.selectJobRunnerJob(gpJobNo);
+        JobRunnerJob updated=new JobRunnerJobDao().selectJobRunnerJob(gpJobNo);
         assertEquals("gpJobNo", (Integer) gpJobNo, updated.getGpJobNo());
         assertEquals("jobRunnerClassname", jrClassname, updated.getJobRunnerClassname());
         assertEquals("jobRunnerName", jrName, updated.getJobRunnerName());

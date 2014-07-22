@@ -10,8 +10,10 @@ import org.genepattern.drm.DrmJobRecord;
 import org.genepattern.drm.DrmJobState;
 import org.genepattern.drm.DrmJobStatus;
 import org.genepattern.drm.DrmJobSubmission;
+import org.genepattern.server.DbException;
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.executor.drm.dao.JobRunnerJob;
+import org.genepattern.server.executor.drm.dao.JobRunnerJobDao;
 import org.hibernate.Query;
 
 /**
@@ -115,7 +117,13 @@ public class DbLookup implements DrmLookup {
 
     @Override
     public DrmJobRecord lookupJobRecord(final Integer gpJobNo) {
-        final JobRunnerJob jobRunnerJob=selectJobRunnerJob(gpJobNo);
+        JobRunnerJob jobRunnerJob=null;
+        try {
+            jobRunnerJob=selectJobRunnerJob(gpJobNo);
+        }
+        catch (DbException e) {
+            //ignore
+        }
         return fromJobRunnerJob(jobRunnerJob);
     }
 
@@ -173,23 +181,8 @@ public class DbLookup implements DrmLookup {
         }
     }
     
-    public static JobRunnerJob selectJobRunnerJob(final Integer gpJobNo) {
-        final boolean isInTransaction=HibernateUtil.isInTransaction();
-        try {
-            HibernateUtil.beginTransaction();
-            JobRunnerJob existing = (JobRunnerJob) HibernateUtil.getSession().get(JobRunnerJob.class, gpJobNo);
-            return existing;
-        }
-        catch (Throwable t) {
-            log.error("Error getting entry for gpJobNo="+gpJobNo,t);
-            //TODO: throw new DbException("Error getting entry for gpJobNo="+gpJobNo,t);
-            return null;
-        }
-        finally {
-            if (!isInTransaction) {
-                HibernateUtil.closeCurrentSession();
-            }
-        }
+    public JobRunnerJob selectJobRunnerJob(final Integer gpJobNo) throws DbException {
+        return new JobRunnerJobDao().selectJobRunnerJob(gpJobNo);
     }
     
 }

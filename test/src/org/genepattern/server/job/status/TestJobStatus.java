@@ -38,7 +38,7 @@ public class TestJobStatus {
     private static final String stderrLocation = "http://127.0.0.1:8080/gp/jobResults/"+gpJobNo+"/stderr.txt";
 
     private JobInfo jobInfo;
-    JobRunnerJob jobStatusRecord;
+    JobRunnerJob jobRunnerJob;
     private Date dateSubmitted; // added to GP
     private Date dateQueued; // bsub command
     private Date dateStarted; // lsf status from PENDING -> RUNNING
@@ -59,12 +59,12 @@ public class TestJobStatus {
         when(jobInfo.getDateSubmitted()).thenReturn(dateSubmitted);
         when(jobInfo.getDateCompleted()).thenReturn(null);
         
-        jobStatusRecord=mock(JobRunnerJob.class);
+        jobRunnerJob=mock(JobRunnerJob.class);
         statusDate=new Date();
-        when(jobStatusRecord.getGpJobNo()).thenReturn(gpJobNo);
-        when(jobStatusRecord.getStatusDate()).thenReturn(statusDate);
-        when(jobStatusRecord.getExtJobId()).thenReturn("8937799");
-        when(jobStatusRecord.getStatusMessage()).thenReturn(null);
+        when(jobRunnerJob.getGpJobNo()).thenReturn(gpJobNo);
+        when(jobRunnerJob.getStatusDate()).thenReturn(statusDate);
+        when(jobRunnerJob.getExtJobId()).thenReturn("8937799");
+        when(jobRunnerJob.getStatusMessage()).thenReturn(null);
     }
     
     /**
@@ -127,10 +127,10 @@ public class TestJobStatus {
      */
     @Test
     public void nullJobStateEnumValue() throws JSONException {
-        when(jobStatusRecord.getJobState()).thenReturn(null);
+        when(jobRunnerJob.getJobState()).thenReturn(null);
         Status status= new Status.Builder()
             .jobInfo(null)  //ignore null jobInfo
-            .jobStatusRecord(jobStatusRecord)
+            .jobStatusRecord(jobRunnerJob)
             .build();
         final JSONObject statusObj = status.toJsonObj();
         assertEquals("Expecting empty string", 
@@ -140,10 +140,10 @@ public class TestJobStatus {
     
     @Test
     public void emptyJobStateEnumValue() throws JSONException {
-        when(jobStatusRecord.getJobState()).thenReturn("");
+        when(jobRunnerJob.getJobState()).thenReturn("");
         Status status= new Status.Builder()
             .jobInfo(null)  //ignore null jobInfo
-            .jobStatusRecord(jobStatusRecord)
+            .jobStatusRecord(jobRunnerJob)
             .build();
         final JSONObject statusObj = status.toJsonObj();
         assertEquals("Expecting empty string", 
@@ -153,10 +153,10 @@ public class TestJobStatus {
 
     @Test
     public void bogusJobStateEnumValue() throws JSONException {
-        when(jobStatusRecord.getJobState()).thenReturn("PROCESSING");  // not a valid DrmJobState value
+        when(jobRunnerJob.getJobState()).thenReturn("PROCESSING");  // not a valid DrmJobState value
         Status status= new Status.Builder()
             .jobInfo(null)  //ignore null jobInfo
-            .jobStatusRecord(jobStatusRecord)
+            .jobStatusRecord(jobRunnerJob)
             .build();
         final JSONObject statusObj = status.toJsonObj();
         assertEquals("Expecting empty string", 
@@ -166,10 +166,10 @@ public class TestJobStatus {
     
     @Test
     public void nullStatusFlagNonNullStatusMessage() throws JSONException {
-        when(jobStatusRecord.getStatusMessage()).thenReturn("Custom status message");  // not a valid DrmJobState value
+        when(jobRunnerJob.getStatusMessage()).thenReturn("Custom status message");  // not a valid DrmJobState value
         Status status= new Status.Builder()
             .jobInfo(null)  //ignore null jobInfo
-            .jobStatusRecord(jobStatusRecord)
+            .jobStatusRecord(jobRunnerJob)
             .build();
         final JSONObject statusObj = status.toJsonObj();
         assertEquals( 
@@ -179,11 +179,11 @@ public class TestJobStatus {
 
     @Test
     public void nullStatusMessageNonNullStatusFlag() throws JSONException {
-        when(jobStatusRecord.getJobState()).thenReturn(DrmJobState.QUEUED.name());  // not a valid DrmJobState value
-        when(jobStatusRecord.getStatusMessage()).thenReturn("");  // not a valid DrmJobState value
+        when(jobRunnerJob.getJobState()).thenReturn(DrmJobState.QUEUED.name());  // not a valid DrmJobState value
+        when(jobRunnerJob.getStatusMessage()).thenReturn("");  // not a valid DrmJobState value
         Status status= new Status.Builder()
             .jobInfo(null)  //ignore null jobInfo
-            .jobStatusRecord(jobStatusRecord)
+            .jobStatusRecord(jobRunnerJob)
             .build();
         final JSONObject statusObj = status.toJsonObj();
         assertEquals( 
@@ -355,13 +355,13 @@ public class TestJobStatus {
     
     @Test
     public void pendingInLsf() throws Exception {
-        when(jobStatusRecord.getJobState()).thenReturn(DrmJobState.QUEUED.name());
-        when(jobStatusRecord.getStatusMessage()).thenReturn("Added to queue on "+DateUtil.toIso8601(dateQueued));
-        when(jobStatusRecord.getExtJobId()).thenReturn("");
+        when(jobRunnerJob.getJobState()).thenReturn(DrmJobState.QUEUED.name());
+        when(jobRunnerJob.getStatusMessage()).thenReturn("Added to queue on "+DateUtil.toIso8601(dateQueued));
+        when(jobRunnerJob.getExtJobId()).thenReturn("");
         
         Status status=new Status.Builder()
             .jobInfo(jobInfo)
-            .jobStatusRecord(jobStatusRecord)
+            .jobStatusRecord(jobRunnerJob)
         .build();
         
         final JSONObject statusObj = status.toJsonObj();
@@ -382,12 +382,12 @@ public class TestJobStatus {
 
     @Test
     public void runningInLsf() throws Exception { 
-        when(jobStatusRecord.getJobState()).thenReturn(DrmJobState.RUNNING.name());
-        when(jobStatusRecord.getStatusMessage()).thenReturn("Started on "+DateUtil.toIso8601(dateStarted));
+        when(jobRunnerJob.getJobState()).thenReturn(DrmJobState.RUNNING.name());
+        when(jobRunnerJob.getStatusMessage()).thenReturn("Started on "+DateUtil.toIso8601(dateStarted));
         
         Status status=new Status.Builder()
             .jobInfo(jobInfo)
-            .jobStatusRecord(jobStatusRecord)
+            .jobStatusRecord(jobRunnerJob)
         .build();
         
         final JSONObject statusObj = status.toJsonObj();
@@ -408,9 +408,9 @@ public class TestJobStatus {
 
     @Test
     public void finishedInLsf_fullStatusCheck() throws Exception { 
-        when(jobStatusRecord.getJobState()).thenReturn(DrmJobState.DONE.name());
-        when(jobStatusRecord.getStatusMessage()).thenReturn("Completed on "+DateUtil.toIso8601(dateCompleted));
-        when(jobStatusRecord.getStatusDate()).thenReturn(dateCompleted);
+        when(jobRunnerJob.getJobState()).thenReturn(DrmJobState.DONE.name());
+        when(jobRunnerJob.getStatusMessage()).thenReturn("Completed on "+DateUtil.toIso8601(dateCompleted));
+        when(jobRunnerJob.getStatusDate()).thenReturn(dateCompleted);
         
         //include usage stats
         Date submitTime=new DateTime("2014-07-17T11:55:23").toDate();
@@ -426,19 +426,19 @@ public class TestJobStatus {
         Integer maxProcesses=2;
         Integer maxThreads=4;
         
-        when(jobStatusRecord.getSubmitTime()).thenReturn(submitTime);
-        when(jobStatusRecord.getStartTime()).thenReturn(startTime);
-        when(jobStatusRecord.getEndTime()).thenReturn(endTime);
-        when(jobStatusRecord.getCpuTime()).thenReturn(cpuTimeMillis);
-        when(jobStatusRecord.getMaxMemory()).thenReturn(maxMemory.getNumBytes());
-        when(jobStatusRecord.getMaxSwap()).thenReturn(maxSwap.getNumBytes());
-        when(jobStatusRecord.getMaxProcesses()).thenReturn(maxProcesses);
-        when(jobStatusRecord.getMaxThreads()).thenReturn(maxThreads);
+        when(jobRunnerJob.getSubmitTime()).thenReturn(submitTime);
+        when(jobRunnerJob.getStartTime()).thenReturn(startTime);
+        when(jobRunnerJob.getEndTime()).thenReturn(endTime);
+        when(jobRunnerJob.getCpuTime()).thenReturn(cpuTimeMillis);
+        when(jobRunnerJob.getMaxMemory()).thenReturn(maxMemory.getNumBytes());
+        when(jobRunnerJob.getMaxSwap()).thenReturn(maxSwap.getNumBytes());
+        when(jobRunnerJob.getMaxProcesses()).thenReturn(maxProcesses);
+        when(jobRunnerJob.getMaxThreads()).thenReturn(maxThreads);
         
         Status status=new Status.Builder()
             .jobInfo(jobInfo)
             .executionLogLocation(executionLogLocation)
-            .jobStatusRecord(jobStatusRecord)
+            .jobStatusRecord(jobRunnerJob)
         .build();
         
         final JSONObject statusObj = status.toJsonObj();
@@ -475,9 +475,9 @@ public class TestJobStatus {
     
     @Test
     public void submitTimeNotSet() throws JSONException {
-        when(jobStatusRecord.getSubmitTime()).thenReturn(null);
+        when(jobRunnerJob.getSubmitTime()).thenReturn(null);
         Status status=new Status.Builder()
-            .jobStatusRecord(jobStatusRecord)
+            .jobStatusRecord(jobRunnerJob)
         .build();
         final JSONObject statusObj = status.toJsonObj();
         assertFalse("expecting no submitTime", statusObj.has("submitTime"));
@@ -485,9 +485,9 @@ public class TestJobStatus {
 
     @Test
     public void startTimeNotSet() throws JSONException {
-        when(jobStatusRecord.getStartTime()).thenReturn(null);
+        when(jobRunnerJob.getStartTime()).thenReturn(null);
         Status status=new Status.Builder()
-            .jobStatusRecord(jobStatusRecord)
+            .jobStatusRecord(jobRunnerJob)
         .build();
         final JSONObject statusObj = status.toJsonObj();
         assertFalse("expecting no startTime", statusObj.has("startTime"));
@@ -495,9 +495,9 @@ public class TestJobStatus {
 
     @Test
     public void endTimeNotSet() throws JSONException {
-        when(jobStatusRecord.getEndTime()).thenReturn(null);
+        when(jobRunnerJob.getEndTime()).thenReturn(null);
         Status status=new Status.Builder()
-            .jobStatusRecord(jobStatusRecord)
+            .jobStatusRecord(jobRunnerJob)
         .build();
         final JSONObject statusObj = status.toJsonObj();
         assertFalse("expecting no endTime", statusObj.has("endTime"));
@@ -505,9 +505,9 @@ public class TestJobStatus {
 
     @Test
     public void cpuTimeNotSet() throws JSONException {
-        when(jobStatusRecord.getCpuTime()).thenReturn(null);
+        when(jobRunnerJob.getCpuTime()).thenReturn(null);
         Status status=new Status.Builder()
-            .jobStatusRecord(jobStatusRecord)
+            .jobStatusRecord(jobRunnerJob)
         .build();
         final JSONObject statusObj = status.toJsonObj();
         assertFalse("expecting no cpuTime", statusObj.has("cpuTime"));
@@ -515,9 +515,9 @@ public class TestJobStatus {
     
     @Test
     public void maxMemoryNotSet() throws JSONException {
-        when(jobStatusRecord.getMaxMemory()).thenReturn(null);
+        when(jobRunnerJob.getMaxMemory()).thenReturn(null);
         Status status=new Status.Builder()
-            .jobStatusRecord(jobStatusRecord)
+            .jobStatusRecord(jobRunnerJob)
         .build();
         final JSONObject statusObj = status.toJsonObj();
         assertFalse("expecting no maxMemory", statusObj.has("maxMemory"));
@@ -526,9 +526,9 @@ public class TestJobStatus {
     
     @Test
     public void maxSwapNotSet() throws JSONException {
-        when(jobStatusRecord.getMaxSwap()).thenReturn(null);
+        when(jobRunnerJob.getMaxSwap()).thenReturn(null);
         Status status=new Status.Builder()
-            .jobStatusRecord(jobStatusRecord)
+            .jobStatusRecord(jobRunnerJob)
         .build();
         final JSONObject statusObj = status.toJsonObj();
         assertFalse("expecting no maxSwap", statusObj.has("maxSwap"));
@@ -537,9 +537,9 @@ public class TestJobStatus {
     
     @Test
     public void maxProcessesNotSet() throws JSONException {
-        when(jobStatusRecord.getMaxProcesses()).thenReturn(null);
+        when(jobRunnerJob.getMaxProcesses()).thenReturn(null);
         Status status=new Status.Builder()
-            .jobStatusRecord(jobStatusRecord)
+            .jobStatusRecord(jobRunnerJob)
         .build();
         final JSONObject statusObj = status.toJsonObj();
         assertFalse("expecting no maxProcesses", statusObj.has("maxProcesses"));
@@ -547,9 +547,9 @@ public class TestJobStatus {
     
     @Test
     public void maxThreadsNotSet() throws JSONException {
-        when(jobStatusRecord.getMaxThreads()).thenReturn(null);
+        when(jobRunnerJob.getMaxThreads()).thenReturn(null);
         Status status=new Status.Builder()
-            .jobStatusRecord(jobStatusRecord)
+            .jobStatusRecord(jobRunnerJob)
         .build();
         final JSONObject statusObj = status.toJsonObj();
         assertFalse("expecting no maxThreads", statusObj.has("maxThreads"));
@@ -559,14 +559,14 @@ public class TestJobStatus {
     @Test
     public void finishedInLsfWithError() throws Exception { 
         when(jobInfo.getStatus()).thenReturn(JobStatus.ERROR);
-        when(jobStatusRecord.getJobState()).thenReturn(DrmJobState.FAILED.name());
-        when(jobStatusRecord.getStatusMessage()).thenReturn("Failed on "+DateUtil.toIso8601(dateCompleted));
-        when(jobStatusRecord.getStatusDate()).thenReturn(dateCompleted);
+        when(jobRunnerJob.getJobState()).thenReturn(DrmJobState.FAILED.name());
+        when(jobRunnerJob.getStatusMessage()).thenReturn("Failed on "+DateUtil.toIso8601(dateCompleted));
+        when(jobRunnerJob.getStatusDate()).thenReturn(dateCompleted);
         
         Status status=new Status.Builder()
             .jobInfo(jobInfo)
             .executionLogLocation(executionLogLocation)
-            .jobStatusRecord(jobStatusRecord)
+            .jobStatusRecord(jobRunnerJob)
         .build();
         
         final JSONObject statusObj = status.toJsonObj();

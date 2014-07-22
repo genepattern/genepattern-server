@@ -113,6 +113,22 @@ public class JobOutputDao {
         }
     }
     
+    public List<JobOutputFile> selectStderrFiles(final Integer gpJobNo) {
+        final boolean isInTransaction=HibernateUtil.isInTransaction();
+        HibernateUtil.beginTransaction();
+        try {
+            Criteria query=HibernateUtil.getSession().createCriteria(JobOutputFile.class);
+            query=query.add( Restrictions.eq("gpJobNo", gpJobNo ) );
+            query=query.add( Restrictions.eq("gpFileType", GpFileType.STDERR.name() ) );
+            return (List<JobOutputFile>) query.list();
+        }
+        finally {
+            if (!isInTransaction) {
+                HibernateUtil.closeCurrentSession();
+            }
+        }
+    }
+    
     public boolean deleteOutputFile(final Integer gpJobNo, final String path) {
         final boolean isInTransaction=HibernateUtil.isInTransaction();
         HibernateUtil.beginTransaction();

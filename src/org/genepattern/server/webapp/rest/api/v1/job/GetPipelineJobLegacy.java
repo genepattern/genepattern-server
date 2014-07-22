@@ -12,6 +12,7 @@ import org.genepattern.server.dm.GpFilePath;
 import org.genepattern.server.dm.jobresult.JobResultFile;
 import org.genepattern.server.executor.drm.DbLookup;
 import org.genepattern.server.executor.drm.dao.JobRunnerJob;
+import org.genepattern.server.executor.drm.dao.JobRunnerJobDao;
 import org.genepattern.server.job.JobInfoLoaderDefault;
 import org.genepattern.server.job.status.Status;
 import org.genepattern.server.webapp.rest.api.v1.DateUtil;
@@ -245,7 +246,7 @@ public class GetPipelineJobLegacy implements GetJob {
                 boolean includeJobRunnerStatus=true;
                 if (includeJobRunnerStatus) {
                     try {
-                        jobStatusRecord=DbLookup.selectJobRunnerJob(jobInfo.getJobNumber());
+                        jobStatusRecord=new JobRunnerJobDao().selectJobRunnerJob(jobInfo.getJobNumber());
                     }
                     catch (Throwable t) {
                         log.error("Unexpected error initializing jobStatusRecord from jobId="+jobInfo.getJobNumber(), t);
