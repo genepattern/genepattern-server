@@ -2,6 +2,7 @@ package org.genepattern.server.quota;
 
 import org.apache.log4j.Logger;
 import org.genepattern.drm.Memory;
+import org.genepattern.server.DbException;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.dm.userupload.dao.UserUploadDao;
@@ -23,11 +24,7 @@ public class DiskInfo
     private Memory diskQuota;
 
     private DiskInfo()
-    {
-        this.diskUsageTotal = Memory.fromSizeInBytes(-1);
-        this.diskUsageFilesTab = Memory.fromSizeInBytes(-1);
-        this.diskUsageTmp = Memory.fromSizeInBytes(-1);
-    }
+    {}
 
     public void setDiskUsageTotal(Memory diskUsageTotal)
     {
@@ -56,7 +53,7 @@ public class DiskInfo
         this.diskQuota = diskQuota;
     }
 
-    public static DiskInfo createDiskInfo(GpContext context)
+    public static DiskInfo createDiskInfo(GpContext context) throws DbException
     {
 
         DiskInfo diskInfo = new DiskInfo();
@@ -79,6 +76,7 @@ public class DiskInfo
         catch (Throwable t)
         {
             log.error(t);
+            throw new DbException(t);
         }
         finally
         {
