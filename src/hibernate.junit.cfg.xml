@@ -48,6 +48,7 @@
     <mapping resource="org/genepattern/server/executor/sge/JobSge.hbm.xml" />  
     
     <!-- annotated classes -->
+    <mapping class="org.genepattern.server.dm.congestion.Congestion" />
     <mapping class="org.genepattern.server.dm.userupload.dao.UserUpload" />
     <mapping class="org.genepattern.server.dm.jobinput.JobInput" />
     <mapping class="org.genepattern.server.dm.jobinput.JobInputAttribute" />
