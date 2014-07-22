@@ -4,6 +4,8 @@ import java.util.EnumSet;
 
 import org.apache.log4j.Logger;
 
+import javax.xml.bind.annotation.XmlRootElement;
+
 /**
  * Generic representation of an amount of memory, so that it is easier to initialize memory settings from 
  * the config file. Examples:
@@ -16,6 +18,8 @@ import org.apache.log4j.Logger;
  * @author pcarr
  *
  */
+
+@XmlRootElement
 public class Memory {
     private static final Logger log = Logger.getLogger(Memory.class);
 
@@ -258,7 +262,7 @@ public class Memory {
         double numGb=(double) getNumBytes() / (double) Unit.gb.getMultiplier();
         return numGb;
     }
-    
+
     /**
      * Human readable representation by scaling the raw number of bytes up to a reasonable approximation.
      * This calls #formatNumBytes.
