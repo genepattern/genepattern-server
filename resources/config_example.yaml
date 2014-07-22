@@ -57,7 +57,9 @@ default.properties:
     # Can be a list of paths
     #server.browse.file.system.root: [ "/Users/SharedData",  "/Custom/Path" ]
     
-    
+    #set the disk quota
+    #quota: 20 GB
+
     # PipelineDependencyCache, hidden features in the 3.6.0 release.
     # Set this to true to enable.
     # 1) check for dependent modules and pipelines when deleting a task
