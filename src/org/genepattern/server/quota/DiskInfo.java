@@ -3,12 +3,12 @@ package org.genepattern.server.quota;
 import org.apache.log4j.Logger;
 import org.genepattern.drm.Memory;
 import org.genepattern.server.DbException;
+import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.dm.userupload.dao.UserUploadDao;
 
 import javax.xml.bind.annotation.XmlRootElement;
-import java.util.List;
 
 /**
  * Created by nazaire on 7/10/14.
@@ -53,7 +53,7 @@ public class DiskInfo
         this.diskQuota = diskQuota;
     }
 
-    public static DiskInfo createDiskInfo(GpContext context) throws DbException
+    public static DiskInfo createDiskInfo(GpConfig gpConfig, GpContext context) throws DbException
     {
 
         DiskInfo diskInfo = new DiskInfo();
@@ -72,6 +72,9 @@ public class DiskInfo
             diskInfo.setDiskUsageTotal(diskUsageTotal);
             diskInfo.setDiskUsageFilesTab(diskUsageFilesTab);
             diskInfo.setDiskUsageTmp(diskUsageTmp);
+
+            //now get the quota from the gpconfig
+            diskInfo.setDiskQuota(gpConfig.getGPMemoryProperty(context, "quota"));
         }
         catch (Throwable t)
         {
