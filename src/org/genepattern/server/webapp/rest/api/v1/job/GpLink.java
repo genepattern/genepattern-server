@@ -1,6 +1,7 @@
 package org.genepattern.server.webapp.rest.api.v1.job;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import org.genepattern.server.webapp.rest.api.v1.Rel;
@@ -28,6 +29,18 @@ public class GpLink {
         this.name=in.name;
         this.rels=ImmutableList.copyOf(in.rels);
         this.href=in.href;
+    }
+    
+    public String getHref() {
+        return href;
+    }
+    
+    public String getName() {
+        return name;
+    }
+    
+    public List<Rel> getRels() {
+        return Collections.unmodifiableList(rels);
     }
     
     public JSONObject toJson() throws JSONException {
