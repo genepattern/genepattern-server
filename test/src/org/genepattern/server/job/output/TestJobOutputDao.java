@@ -65,14 +65,20 @@ public class TestJobOutputDao {
         dao.recordOutputFiles(jobOutputFiles);
         
         // Read
-        boolean includeHidden=false;
-        boolean includeDeleted=false;
+        final boolean includeHidden=false;
+        final boolean includeDeleted=false;
         List<JobOutputFile> results=dao.selectOutputFiles(gpJobNo, includeHidden, includeDeleted);
         assertEquals("num items", 13, results.size());
         
         for(int i=0; i<expectedPaths.length; ++i) {
             assertEquals("results["+i+"]", expectedPaths[i], results.get(i).getPath());
         }
+        
+        // Select GpExecutionLog
+        List<JobOutputFile> gpExecutionLogs=dao.selectGpExecutionLogs(gpJobNo);
+        assertEquals("gpExecutionLogs.size", 1, gpExecutionLogs.size());
+        assertEquals("gpExecutionLogs[0].gpFileType", GpFileType.GP_EXECUTION_LOG.name(), gpExecutionLogs.get(0).getGpFileType());
+        assertEquals("gpExecutionLogs[0].path", "gp_execution_log.txt", gpExecutionLogs.get(0).getPath());
         
         // Update
         // handle, onDeleteFile event by marking the entry as 'deleted'

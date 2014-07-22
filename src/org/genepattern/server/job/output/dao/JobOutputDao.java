@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.apache.log4j.Logger;
 import org.genepattern.server.database.HibernateUtil;
+import org.genepattern.server.job.output.GpFileType;
 import org.genepattern.server.job.output.JobOutputFile;
 import org.hibernate.Criteria;
 import org.hibernate.criterion.Restrictions;
@@ -88,6 +89,22 @@ public class JobOutputDao {
             query=query.add( Restrictions.eq("gpJobNo", gpJobNo ) );
             query=query.add( Restrictions.eq("path", path ) );
             return (JobOutputFile) query.uniqueResult();
+        }
+        finally {
+            if (!isInTransaction) {
+                HibernateUtil.closeCurrentSession();
+            }
+        }
+    }
+    
+    public List<JobOutputFile> selectGpExecutionLogs(final Integer gpJobNo) {
+        final boolean isInTransaction=HibernateUtil.isInTransaction();
+        HibernateUtil.beginTransaction();
+        try {
+            Criteria query=HibernateUtil.getSession().createCriteria(JobOutputFile.class);
+            query=query.add( Restrictions.eq("gpJobNo", gpJobNo ) );
+            query=query.add( Restrictions.eq("gpFileType", GpFileType.GP_EXECUTION_LOG.name() ) );
+            return (List<JobOutputFile>) query.list();
         }
         finally {
             if (!isInTransaction) {
