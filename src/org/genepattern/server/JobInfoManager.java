@@ -21,7 +21,6 @@ import java.util.zip.ZipOutputStream;
 import org.apache.log4j.Logger;
 import org.genepattern.server.JobInfoWrapper.ParameterInfoWrapper;
 import org.genepattern.server.config.GpContext;
-import org.genepattern.server.config.GpContextFactory;
 import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.domain.JobStatus;

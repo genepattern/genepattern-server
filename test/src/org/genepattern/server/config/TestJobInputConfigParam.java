@@ -43,7 +43,7 @@ public class TestJobInputConfigParam {
         jobInput.addValue("job.queue", "userCustomQueue");
         jobInput.addValue("job.memory", "28gb");
         
-        GpContext jobContext=new GpContextFactory.Builder()
+        GpContext jobContext=new GpContext.Builder()
             .jobInput(jobInput)
             .build();
         

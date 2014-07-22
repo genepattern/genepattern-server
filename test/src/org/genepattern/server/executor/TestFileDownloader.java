@@ -1,7 +1,6 @@
 package org.genepattern.server.executor;
 
 import org.genepattern.server.config.GpContext;
-import org.genepattern.server.config.GpContextFactory;
 import org.genepattern.server.job.input.choice.TestChoiceInfo;
 import org.genepattern.webservice.JobInfo;
 import org.genepattern.webservice.ParameterInfo;
@@ -33,7 +32,7 @@ public class TestFileDownloader {
         JobInfo jobInfo = Mockito.mock(JobInfo.class);
 
         Mockito.when(jobInfo.getParameterInfoArray()).thenReturn(jobResultParams);
-        GpContext jobContext = new GpContextFactory.Builder()
+        GpContext jobContext = new GpContext.Builder()
             .jobInfo(jobInfo)
             .taskInfo(taskInfo)
         .build();
@@ -58,7 +57,7 @@ public class TestFileDownloader {
         JobInfo jobInfo = Mockito.mock(JobInfo.class);
 
         Mockito.when(jobInfo.getParameterInfoArray()).thenReturn(jobResultParams);
-        GpContext jobContext = new GpContextFactory.Builder()
+        GpContext jobContext = new GpContext.Builder()
             .jobInfo(jobInfo)
             .taskInfo(taskInfo)
         .build();

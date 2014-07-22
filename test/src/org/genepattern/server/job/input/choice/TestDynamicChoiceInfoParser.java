@@ -11,7 +11,6 @@ import java.util.Map;
 import org.genepattern.junitutil.TaskUtil;
 import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
-import org.genepattern.server.config.GpContextFactory;
 import org.genepattern.server.config.GpServerProperties;
 import org.genepattern.server.job.input.TestLoadModuleHelper;
 import org.genepattern.server.job.input.choice.ftp.CommonsNet_3_3_DirLister;
@@ -67,7 +66,7 @@ public class TestDynamicChoiceInfoParser {
     @Before
     public void beforeTest() {
         gpConfig=new GpConfig.Builder().build();
-        gpContext=new GpContextFactory.Builder().build();
+        gpContext=new GpContext.Builder().build();
         choiceInfoParser=new DynamicChoiceInfoParser(gpConfig, gpContext);
     }
 
@@ -260,7 +259,7 @@ public class TestDynamicChoiceInfoParser {
         GpConfig gpConfig=new GpConfig.Builder()
             .serverProperties(serverProperties)
             .build();
-        GpContext gpContext=new GpContextFactory.Builder().build();
+        GpContext gpContext=new GpContext.Builder().build();
         choiceInfoParser=new DynamicChoiceInfoParser(gpConfig, gpContext);
         
         final ChoiceInfo choiceInfo=choiceInfoParser.initChoiceInfo(pinfo);

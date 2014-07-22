@@ -36,7 +36,7 @@ public class TestGetExecutorId {
     
     @Test
     public void testDefaultExecutor() {   
-        GpContext gpContext=new GpContextFactory.Builder()
+        GpContext gpContext=new GpContext.Builder()
             .userId("test")
             .build();
         
@@ -47,7 +47,7 @@ public class TestGetExecutorId {
     public void testPipelineExecutor() {
         final File zipFile=FileUtil.getDataFile("modules/testPipelineGolubNoViewers.zip");
         final TaskInfo taskInfo=TaskUtil.getTaskInfoFromZip(zipFile);
-        GpContext gpContext=new GpContextFactory.Builder()
+        GpContext gpContext=new GpContext.Builder()
             .userId("test")
             .taskInfo(taskInfo)
             .build();
@@ -57,7 +57,7 @@ public class TestGetExecutorId {
     
     @Test
     public void testExecutorForGroup() {
-        GpContext gpContext=new GpContextFactory.Builder()
+        GpContext gpContext=new GpContext.Builder()
             .userId("adminuser")
             .build();
         Assert.assertEquals("executor for 'adminuser' in group 'admingroup'", "AdminGroupJobRunner", gpConfig.getGPProperty(gpContext, "executor"));
@@ -65,7 +65,7 @@ public class TestGetExecutorId {
     
     @Test
     public void testExecutorForUser() {
-        GpContext gpContext=new GpContextFactory.Builder()
+        GpContext gpContext=new GpContext.Builder()
             .userId("userA")
             .build();
         Assert.assertEquals("executor for 'userA'", "UserAJobRunner", gpConfig.getGPProperty(gpContext, "executor"));
@@ -73,7 +73,7 @@ public class TestGetExecutorId {
     
     @Test
     public void testExecutorViaExecutorPropertiesByUser() {
-        GpContext gpContext=new GpContextFactory.Builder()
+        GpContext gpContext=new GpContext.Builder()
             .userId("userB")
             .build();
         Assert.assertEquals("executor for 'userB'", "DemoPbsJobRunner", gpConfig.getGPProperty(gpContext, "executor"));
@@ -82,7 +82,7 @@ public class TestGetExecutorId {
     
     @Test
     public void testExecutorViaExecutorPropertiesByGroup() {
-        GpContext gpContext=new GpContextFactory.Builder()
+        GpContext gpContext=new GpContext.Builder()
             .userId("Broadie C")
             .build();
         Assert.assertEquals("executor for 'Broadie C' in group 'broadgroup'", "BroadGroupJobRunner", gpConfig.getGPProperty(gpContext, "executor"));

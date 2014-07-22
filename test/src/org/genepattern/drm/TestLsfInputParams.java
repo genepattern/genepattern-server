@@ -5,7 +5,6 @@ import java.io.File;
 import org.genepattern.junitutil.FileUtil;
 import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
-import org.genepattern.server.config.GpContextFactory;
 import org.genepattern.server.config.GpServerProperties;
 import org.genepattern.server.job.input.choice.ChoiceInfo;
 import org.genepattern.server.job.input.choice.ChoiceInfoHelper;
@@ -30,7 +29,7 @@ public class TestLsfInputParams {
         final GpConfig gpConfig=new GpConfig.Builder()
             .serverProperties(serverProperties)
             .build();
-        final GpContext gpContext=new GpContextFactory.Builder()
+        final GpContext gpContext=new GpContext.Builder()
             .build();
         final JobConfigParams lsfParams=JobConfigParams.initJobConfigParams(gpConfig, gpContext);
         

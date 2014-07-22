@@ -31,7 +31,7 @@ public class TestConfigLoader {
     
     @Test
     public void testCustomConfigFile() {
-        GpContext gpContext=new GpContextFactory.Builder().build();
+        GpContext gpContext=new GpContext.Builder().build();
         File configYaml=FileUtil.getSourceFile(this.getClass(), "test_module_properties.yaml");
         GpConfig gpConfig=GpConfigLoader.createFromConfigYaml(configYaml);
         Value value=gpConfig.getValue(gpContext, "test.prop");
@@ -41,7 +41,7 @@ public class TestConfigLoader {
     @Test
     public void testDrmConfig() {   
         File configYaml=FileUtil.getSourceFile(TestDrmJobSubmission.class, "drm_test.yaml");
-        GpContext gpContext=new GpContextFactory.Builder()
+        GpContext gpContext=new GpContext.Builder()
             .userId("test_user")
             .build();
         GpConfig gpConfig=GpConfigLoader.createFromConfigYaml(configYaml);

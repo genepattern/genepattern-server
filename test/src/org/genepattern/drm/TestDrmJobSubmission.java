@@ -10,7 +10,6 @@ import java.util.Map;
 import org.genepattern.junitutil.ConfigUtil;
 import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
-import org.genepattern.server.config.GpContextFactory;
 import org.genepattern.server.config.GpServerProperties;
 import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.config.Value;
@@ -48,7 +47,7 @@ public class TestDrmJobSubmission {
         final JobInfo jobInfo=new JobInfo();
         jobInfo.setJobNumber(jobNumber);
         jobInfo.setTaskName(taskName);
-        final GpContext taskContext=new GpContextFactory.Builder()
+        final GpContext taskContext=new GpContext.Builder()
             .userId(userId)
             .jobInfo(jobInfo)
             .taskInfo(taskInfo)
@@ -349,7 +348,7 @@ public class TestDrmJobSubmission {
     
     @Test(expected=IllegalArgumentException.class)
     public void testNullJobInfo() {
-        jobContext=new GpContextFactory.Builder()
+        jobContext=new GpContext.Builder()
             .jobNumber(jobNo)
             .build();
         new DrmJobSubmission.Builder(workingDir)

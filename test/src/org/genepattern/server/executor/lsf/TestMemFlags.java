@@ -9,7 +9,6 @@ import org.genepattern.drm.JobRunner;
 import org.genepattern.junitutil.FileUtil;
 import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
-import org.genepattern.server.config.GpContextFactory;
 import org.genepattern.server.config.GpServerProperties;
 import org.junit.Assert;
 import org.junit.Test;
@@ -47,7 +46,7 @@ public class TestMemFlags {
     @Test
     public void testDefaultValues() {
         final GpConfig gpConfig=initDefaultConfig();
-        final GpContext gpContext=new GpContextFactory.Builder()
+        final GpContext gpContext=new GpContext.Builder()
             .build();
        
         final List<String> memFlags=LsfCommand2.getMemFlags(gpConfig, gpContext);

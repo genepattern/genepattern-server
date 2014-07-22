@@ -19,7 +19,6 @@ import org.genepattern.junitutil.DbUtil;
 import org.genepattern.junitutil.FileUtil;
 import org.genepattern.junitutil.TaskUtil;
 import org.genepattern.server.config.GpContext;
-import org.genepattern.server.config.GpContextFactory;
 import org.genepattern.server.executor.drm.dao.JobRunnerJob;
 import org.genepattern.server.job.input.JobInput;
 import org.genepattern.webservice.JobInfo;
@@ -66,7 +65,7 @@ public class TestDbLookup {
     
     private DrmJobSubmission addJob(final TaskInfo taskInfo, final JobInput jobInput, final String[] commandLine) throws Exception {
         jobInput.setLsid(taskInfo.getLsid());
-        final GpContext taskContext=new GpContextFactory.Builder()
+        final GpContext taskContext=new GpContext.Builder()
             .userId(userId)
             .taskInfo(taskInfo)
         .build();
@@ -74,7 +73,7 @@ public class TestDbLookup {
         final boolean initDefault=true;
         final int jobNumber=jobUtil.addJobToDb(taskContext, jobInput, initDefault);
         final JobInfo jobInfo=jobUtil.fetchJobInfoFromDb(jobNumber);
-        final GpContext jobContext=new GpContextFactory.Builder()
+        final GpContext jobContext=new GpContext.Builder()
             .userId(userId)
             .jobInfo(jobInfo)
             .taskInfo(taskInfo)

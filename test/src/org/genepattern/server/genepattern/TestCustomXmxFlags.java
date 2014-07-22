@@ -6,7 +6,6 @@ import org.genepattern.drm.Memory;
 import org.genepattern.junitutil.FileUtil;
 import org.genepattern.junitutil.TaskUtil;
 import org.genepattern.server.config.GpContext;
-import org.genepattern.server.config.GpContextFactory;
 import org.genepattern.util.GPConstants;
 import org.genepattern.webservice.TaskInfo;
 import org.junit.Assert;
@@ -21,7 +20,7 @@ public class TestCustomXmxFlags {
     private static GpContext createJobContext(final String name, final String cmdLine) {
         final TaskInfo taskInfo=createTask(name, cmdLine);
         final File taskLibDir=new File("taskLib/"+name+".1.0");
-        final GpContext taskContext=new GpContextFactory.Builder()
+        final GpContext taskContext=new GpContext.Builder()
             .taskInfo(taskInfo)
             .taskLibDir(taskLibDir)
             .build();
@@ -117,7 +116,7 @@ public class TestCustomXmxFlags {
     public void testGolubPipeline() {
         final File golubZip=FileUtil.getDataFile("modules/Golub.Slonim.1999.Nature.all.aml.pipeline_v2_modules_only.zip");
         final TaskInfo taskInfo=TaskUtil.getTaskInfoFromZip(golubZip);
-        final GpContext jobContext=new GpContextFactory.Builder()
+        final GpContext jobContext=new GpContext.Builder()
             .taskInfo(taskInfo)
             .build();
 

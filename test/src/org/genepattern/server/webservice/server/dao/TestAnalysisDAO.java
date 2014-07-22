@@ -9,7 +9,6 @@ import org.genepattern.junitutil.DbUtil;
 import org.genepattern.junitutil.FileUtil;
 import org.genepattern.junitutil.TaskUtil;
 import org.genepattern.server.config.GpContext;
-import org.genepattern.server.config.GpContextFactory;
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.job.input.JobInput;
 import org.genepattern.webservice.TaskInfo;
@@ -88,7 +87,7 @@ public class TestAnalysisDAO {
         jobs=new ArrayList<Integer>();
         
         jobUtil=new AnalysisJobUtil();
-        gpContext=new GpContextFactory.Builder()
+        gpContext=new GpContext.Builder()
             .userId(testUser)
             .taskInfo(taskInfo)
             .build();

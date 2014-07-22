@@ -7,7 +7,6 @@ import java.util.List;
 import org.genepattern.junitutil.FileUtil;
 import org.genepattern.junitutil.TaskLoader;
 import org.genepattern.server.config.GpContext;
-import org.genepattern.server.config.GpContextFactory;
 import org.genepattern.server.dm.GpFilePath;
 import org.genepattern.server.dm.serverfile.ServerFilePath;
 import org.genepattern.server.job.input.Param;
@@ -61,7 +60,7 @@ public class TestJobInputHelper {
     @BeforeClass
     static public void beforeClass() {
         adminUserId="admin";
-        userContext=new GpContextFactory.Builder()
+        userContext=new GpContext.Builder()
             .userId(adminUserId)
             .isAdmin(true)
             .build();

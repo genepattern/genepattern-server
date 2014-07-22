@@ -8,7 +8,6 @@ import org.genepattern.junitutil.DbUtil;
 import org.genepattern.junitutil.FileUtil;
 import org.genepattern.junitutil.TaskUtil;
 import org.genepattern.server.config.GpContext;
-import org.genepattern.server.config.GpContextFactory;
 import org.genepattern.server.job.input.GroupId;
 import org.genepattern.server.job.input.JobInput;
 import org.genepattern.webservice.TaskInfo;
@@ -41,7 +40,7 @@ public class TestJobInputValueDao {
     public void beforeTest() {
         final File zipFile=FileUtil.getDataFile(cleZip);
         final TaskInfo taskInfo=TaskUtil.getTaskInfoFromZip(zipFile);
-        gpContext=new GpContextFactory.Builder()
+        gpContext=new GpContext.Builder()
             .userId(userId)
             .taskInfo(taskInfo)
             .build();

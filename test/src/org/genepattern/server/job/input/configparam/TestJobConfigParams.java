@@ -7,7 +7,6 @@ import org.genepattern.junitutil.FileUtil;
 import org.genepattern.junitutil.TaskUtil;
 import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
-import org.genepattern.server.config.GpContextFactory;
 import org.genepattern.server.job.input.choice.ChoiceInfoHelper;
 import org.genepattern.util.GPConstants;
 import org.genepattern.webservice.ParameterInfo;
@@ -33,7 +32,7 @@ public class TestJobConfigParams {
     @Test
     public void testNullGpConfig() {
         final GpConfig gpConfig=null;
-        final GpContext gpContext=new GpContextFactory.Builder().build();
+        final GpContext gpContext=new GpContext.Builder().build();
         JobConfigParams jobConfigParams=JobConfigParams.initJobConfigParams(gpConfig, gpContext);
         Assert.assertNull("When gpConfig is null, return null", jobConfigParams);
     }
@@ -42,7 +41,7 @@ public class TestJobConfigParams {
     public void testDefault() {
         final File zipFile=FileUtil.getDataFile("modules/ComparativeMarkerSelection_v9.zip");
         final TaskInfo taskInfo=TaskUtil.getTaskInfoFromZip(zipFile);
-        final GpContext taskContext=new GpContextFactory.Builder()
+        final GpContext taskContext=new GpContext.Builder()
             .userId(userId)
             .taskInfo(taskInfo)
             .build();
@@ -72,7 +71,7 @@ public class TestJobConfigParams {
         // module declares 'job.memory=6gb'
         mockTask.getTaskInfoAttributes().put(JobRunner.PROP_MEMORY, "6gb");
 
-        final GpContext taskContext=new GpContextFactory.Builder()
+        final GpContext taskContext=new GpContext.Builder()
             .userId(userId)
             .taskInfo(mockTask)
             .build();

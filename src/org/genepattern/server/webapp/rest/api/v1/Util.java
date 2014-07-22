@@ -9,7 +9,6 @@ import javax.ws.rs.core.Response;
 import org.apache.log4j.Logger;
 import org.genepattern.server.PermissionsHelper;
 import org.genepattern.server.config.GpContext;
-import org.genepattern.server.config.GpContextFactory;
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.webapp.jsf.AuthorizationHelper;
 import org.genepattern.server.webservice.server.dao.AnalysisDAO;
@@ -82,7 +81,7 @@ public class Util {
 
                 final boolean isAdmin = AuthorizationHelper.adminServer(userId);
 
-                GpContextFactory.Builder b=new GpContextFactory.Builder();
+                GpContext.Builder b=new GpContext.Builder();
                 b.userId(userId);
                 b.isAdmin(isAdmin);
 

@@ -7,7 +7,6 @@ import org.genepattern.junitutil.FileUtil;
 import org.genepattern.junitutil.TaskUtil;
 import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
-import org.genepattern.server.config.GpContextFactory;
 import org.genepattern.server.config.GpServerProperties;
 import org.genepattern.server.job.input.JobInput;
 import org.genepattern.server.job.input.configparam.JobConfigParams;
@@ -61,7 +60,7 @@ public class TestPbsDemoConfig {
     
     @Test
     public void testExtraInputParams() {
-        GpContext gpContext=GpContextFactory.createContextForUser("test");
+        GpContext gpContext=GpContext.createContextForUser("test");
         final String executor=gpConfig.getExecutorId(gpContext);
         Assert.assertEquals("DemoPbsJobRunner", executor);
         Assert.assertEquals(
@@ -87,7 +86,7 @@ public class TestPbsDemoConfig {
     public void testChangeDefaultByModule() {
         //final String cleLsid="urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00002:2";
         //for a default user, about to run ConvertLineEndings
-        GpContext gpContext=new GpContextFactory.Builder()
+        GpContext gpContext=new GpContext.Builder()
             .userId("test")
             .taskInfo(cleTaskInfo)
             .build();
@@ -98,7 +97,7 @@ public class TestPbsDemoConfig {
     
     @Test
     public void testExecutorDefaults() {
-        GpContext gpContext=new GpContextFactory.Builder()
+        GpContext gpContext=new GpContext.Builder()
             .userId("test")
             .build();
         
@@ -125,7 +124,7 @@ public class TestPbsDemoConfig {
     
     @Test
     public void testCustomExecutorProperties_himem() {
-        GpContext gpContext=new GpContextFactory.Builder()
+        GpContext gpContext=new GpContext.Builder()
             .userId("test")
             .taskInfo(exampleTaskInfo)
             .build();
@@ -145,7 +144,7 @@ public class TestPbsDemoConfig {
         JobInput jobInput=new JobInput();
         jobInput.addValue("pbs.vmem", "120gb");
         
-        GpContext gpContext=new GpContextFactory.Builder()
+        GpContext gpContext=new GpContext.Builder()
             .userId("test")
             .taskInfo(exampleTaskInfo)
             .jobInput(jobInput)
@@ -157,7 +156,7 @@ public class TestPbsDemoConfig {
     
     @Test
     public void testSetExecutorInExecutopProps() {
-        GpContext gpContext=new GpContextFactory.Builder()
+        GpContext gpContext=new GpContext.Builder()
             .userId("test")
             .taskInfo(igvTaskInfo)
             .build();
@@ -180,7 +179,7 @@ public class TestPbsDemoConfig {
         taskInfo.getTaskInfoAttributes().put(GPConstants.LSID, "");
         taskInfo.getTaskInfoAttributes().put(JobRunner.PROP_MEMORY, "8g");
 
-        final GpContext taskContext=new GpContextFactory.Builder()
+        final GpContext taskContext=new GpContext.Builder()
             .userId("test")
             .taskInfo(taskInfo)
             .build();

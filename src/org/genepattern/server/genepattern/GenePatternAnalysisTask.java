@@ -128,7 +128,6 @@ import org.genepattern.server.PermissionsHelper;
 import org.genepattern.server.TaskIDNotFoundException;
 import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
-import org.genepattern.server.config.GpContextFactory;
 import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.config.Value;
 import org.genepattern.server.database.HibernateUtil;
@@ -635,7 +634,7 @@ public class GenePatternAnalysisTask {
         final GpConfig gpConfig = ServerConfigurationFactory.instance();
         final GpContext jobContext;
         try {
-            jobContext=GpContextFactory.createContextForJob(jobId);
+            jobContext=GpContext.createContextForJob(jobId);
         }
         catch (Throwable t) {
             log.error("Error initializing jobContext for jobId="+jobId, t);

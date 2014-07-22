@@ -10,7 +10,6 @@ import org.genepattern.junitutil.DbUtil;
 import org.genepattern.junitutil.FileUtil;
 import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
-import org.genepattern.server.config.GpContextFactory;
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.job.output.dao.JobOutputDao;
 import org.junit.Before;
@@ -34,7 +33,7 @@ public class TestJobOutputRecorder {
         DbUtil.initDb();
         gpJobNo=new AnalysisJobUtil().addJobToDb();
         jobDir=FileUtil.getDataFile("jobResults/0/").getAbsoluteFile();
-        gpContext=new GpContextFactory.Builder()
+        gpContext=new GpContext.Builder()
             .jobNumber(gpJobNo)
             .build();
     }

@@ -7,7 +7,6 @@ import java.util.Map.Entry;
 import org.genepattern.junitutil.JobInfoLoaderFromMap;
 import org.genepattern.junitutil.TaskLoader;
 import org.genepattern.server.config.GpContext;
-import org.genepattern.server.config.GpContextFactory;
 import org.genepattern.server.dm.GpFilePath;
 import org.genepattern.server.job.JobInfoLoader;
 import org.genepattern.webservice.ParameterInfo;
@@ -46,7 +45,7 @@ public class TestLoadModuleHelper {
     @BeforeClass
     static public void beforeClass() {
         adminUserId="admin";
-        userContext=new GpContextFactory.Builder()
+        userContext=new GpContext.Builder()
             .userId(adminUserId)
             .isAdmin(true)
             .build();
