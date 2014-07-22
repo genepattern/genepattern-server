@@ -216,15 +216,6 @@ public class TestMemory {
         Assert.assertEquals("numBytes for '"+spec+"'", 1319413953331L, Memory.fromString(spec).getNumBytes());
     }
 
-    @Test()
-    public void testDisplayValue()
-    {
-        final String expectedDisplayValueMB = "145 mb";
-
-        Memory actual = Memory.fromString("145 MB");
-        Assert.assertEquals(expectedDisplayValueMB, actual.getDisplayValue());
-    }
-
     @Test
     public void format_toBytes() {
         long numBytes=Memory.fromString("32 b").getNumBytes();
@@ -293,10 +284,24 @@ public class TestMemory {
     }
     
     @Test
-    public void displayValue() {
+    public void displayValueFromString() {
         String fromConfig="8 gb";
         Memory mem=Memory.fromString(fromConfig);
         assertEquals("mem.displayValue", "8 gb", mem.getDisplayValue());
+    }
+    
+    @Test()
+    public void testDisplayValueFromString_MB() {
+        final String expectedDisplayValueMB = "145 MB";
+        Memory actual = Memory.fromString("145 MB");
+        Assert.assertEquals(expectedDisplayValueMB, actual.getDisplayValue());
+    }
+    
+    @Test
+    public void displayValueFromBytes() {
+        long numBytes=Memory.fromString("512 MB").getNumBytes();
+        Memory actual=Memory.fromSizeInBytes( numBytes );
+        Assert.assertEquals("displayValue", "512 mb", actual.getDisplayValue()); 
     }
 
     @Test
