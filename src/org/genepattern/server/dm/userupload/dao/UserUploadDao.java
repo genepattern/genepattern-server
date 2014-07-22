@@ -218,7 +218,17 @@ public class UserUploadDao extends BaseDAO {
             //should just return a list of 1 item
             for(int i =0; i < sizeList.size();i++)
             {
-                size = Memory.fromSizeInBytes(sizeList.get(i));
+                Long sizeInBytes = sizeList.get(i);
+
+                //if this is null assume that the size is 0
+                if(sizeInBytes != null)
+                {
+                    size = Memory.fromSizeInBytes(sizeList.get(i));
+                }
+                else
+                {
+                    size = Memory.fromSizeInBytes(0);
+                }
             }
         }
         catch (Throwable t)
