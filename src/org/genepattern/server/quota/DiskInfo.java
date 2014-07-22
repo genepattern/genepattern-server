@@ -55,7 +55,6 @@ public class DiskInfo
 
     public static DiskInfo createDiskInfo(GpConfig gpConfig, GpContext context) throws DbException
     {
-
         DiskInfo diskInfo = new DiskInfo();
 
         final boolean isInTransaction= HibernateUtil.isInTransaction();
@@ -67,7 +66,12 @@ public class DiskInfo
 
             Memory diskUsageTotal = userUploadDao.sizeOfAllUserUploads(context.getUserId(), true);
             Memory diskUsageFilesTab = userUploadDao.sizeOfAllUserUploads(context.getUserId(), false);
-            Memory diskUsageTmp = Memory.fromSizeInBytes(diskUsageTotal.getNumBytes() - diskUsageFilesTab.getNumBytes());
+
+            Memory diskUsageTmp = null;
+            if(diskUsageTotal != null && diskUsageFilesTab != null)
+            {
+                diskUsageTmp = Memory.fromSizeInBytes(diskUsageTotal.getNumBytes() - diskUsageFilesTab.getNumBytes());
+            }
 
             diskInfo.setDiskUsageTotal(diskUsageTotal);
             diskInfo.setDiskUsageFilesTab(diskUsageFilesTab);
