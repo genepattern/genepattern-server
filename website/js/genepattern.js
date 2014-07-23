@@ -1746,6 +1746,9 @@ function createFileWidget(linkElement, appendTo) {
                                     if (isJobFile) {
                                         initRecentJobs();
                                     }
+
+                                    //check the disk quota
+                                    checkDiskQuota();
                                 },
                                 error: function(data) {
                                     if (typeof data === 'object') {

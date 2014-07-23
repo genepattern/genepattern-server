@@ -99,7 +99,7 @@ function checkDiskQuota()
                 $("button.Run").attr("disabled", "disabled");
                 $("button.Run").removeClass("ui-state-default").addClass("whiteBg");
 
-                var quotaExceededMsg = $("<div class='errorMessage'>Disk usage quota exceeded. </div>");
+                var quotaExceededMsg = $("<div id='diskQuotaMessage' class='errorMessage'>Disk usage quota exceeded. </div>");
                 quotaExceededMsg.append("Disk Usage: " +  response.diskUsageFilesTab.displayValue + ". Quota: " + response.diskQuota.displayValue + ".");
                 quotaExceededMsg.append("<p>Job submission has been disabled. Please delete some files from the Files tab.</p>");
                 $("#paramsListingDiv").before(quotaExceededMsg);
@@ -109,6 +109,8 @@ function checkDiskQuota()
                 //enable the job submit button
                 $("button.Run").removeClass("whiteBg").addClass("ui-state-default");
                 $("button.Run").removeAttr("disabled");
+
+                $("#diskQuotaMessage").remove();
             }
         },
         error: function (xhr, ajaxOptions, thrownError) {
