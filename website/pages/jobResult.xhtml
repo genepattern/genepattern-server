@@ -378,7 +378,7 @@
                                         </h:outputText></td>
 
                                     <td width="30px">
-                                        <h:outputText rendered="#{jobStatusBean.jobInfo.status == 'Pending'}">
+                                        <h:outputText rendered="#{jobStatusBean.jobStatus.isPending}">
                                             <div id="status-congestion-light" class="congestion-light congestion #{jobStatusBean.congestionClass}">
                                                 <span class="congestion-icon">&#9679;</span><br/>
                                                 Pending
@@ -399,18 +399,17 @@
                                                 #{jobStatusBean.estimatedWait}
                                             </div>
                                         </h:outputText>
-                                        <h:outputText
-                                            rendered="#{jobStatusBean.jobInfo.status == 'Processing'}">
+                                        <h:outputText rendered="#{jobStatusBean.jobStatus.isRunning}">
                                             <img src="/gp/images/spin.gif"
                                                 alt="#{jobStatusBean.jobInfo.status}"
                                                 id="jobStatusIcon#{jobStatusBean.jobInfo.jobNumber}" />
-                                        </h:outputText> <h:outputText
-                                            rendered="#{jobStatusBean.jobInfo.status == 'Finished'}">
+                                        </h:outputText> 
+                                        <h:outputText rendered="#{jobStatusBean.jobStatus.isFinished and !jobStatusBean.jobStatus.hasError}">
                                             <img src="/gp/images/complete.gif"
                                                 alt="#{jobStatusBean.jobInfo.status}"
                                                 id="jobStatusIcon#{jobStatusBean.jobInfo.jobNumber}" />
-                                        </h:outputText> <h:outputText
-                                            rendered="#{jobStatusBean.jobInfo.status == 'Error'}">
+                                        </h:outputText> 
+                                        <h:outputText rendered="#{jobStatusBean.jobStatus.hasError}">
                                             <img src="/gp/images/error.gif"
                                                 alt="#{jobStatusBean.jobInfo.status}" border="0"
                                                 id="jobStatusIcon#{jobStatusBean.jobInfo.jobNumber}" />
@@ -432,6 +431,12 @@
                                         <em>completed:</em> <h:outputText value=" " />
                                         <h:outputText value="#{jobStatusBean.jobInfo.dateCompleted}" converter="gp" />,
                                         <em>size:</em> <h:outputText value=" ${jobStatusBean.jobInfo.formattedSize}" />
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td colspan="3" style="padding-left: 24px;">
+                                    <a style="color: #0066FF;" href="javascript:toggle('statusDetailsDiv#{jobStatusBean.jobInfo.jobNumber}', 'Hide', 'Show');"><span
+                                    id="statusDetailsDiv#{jobStatusBean.jobInfo.jobNumber}Label">Show</span> details</a>
                                     </td>
                                 </tr>
                             </table>
@@ -554,6 +559,10 @@
 
                         <ui:include src="jobStatus_inputParams.xhtml">
                             <ui:param name="jobInfo" value="#{jobStatusBean.jobInfo}" />
+                        </ui:include>
+                        
+                        <ui:include src="jobStatus_statusDetails.xhtml">
+                            <ui:param name="jobStatus" value="#{jobStatusBean.jobStatus}" />
                         </ui:include>
 
                         <h:form>

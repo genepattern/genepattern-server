@@ -1,0 +1,56 @@
+<!--
+  ~ Copyright 2014 The Broad Institute, Inc.
+  ~ SOFTWARE COPYRIGHT NOTICE
+  ~ This software and its documentation are the copyright of the Broad Institute, Inc. All rights are reserved.
+  ~
+  ~ This software is supplied without any warranty or guaranteed support whatsoever. The Broad Institute is not responsible for its use, misuse, or functionality.
+  -->
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:t="http://myfaces.apache.org/tomahawk">
+
+<!-- include job status details in the JSF job status page
+    Inputs:
+     int jobNumber
+     org.genepattern.server.job.status.Status jobStatus
+     int indent
+ -->
+    <ui:composition>
+        <div id="statusDetailsDiv#{jobStatus.gpJobNo}" class="jobContent" style="display: none;" >
+            <br />
+            <table class="window">
+                <tr>
+                    <td align="center">
+                        <table class="summary" style="width: 100%;" border="0" cellpadding="0" cellspacing="0" bgcolor="#FFFFFF">
+                            <tr>
+                                <th></th>
+                                <th></th>
+                            </tr>
+                            <tr><td>Added to GenePattern</td><td><h:outputText value="#{jobStatus.dateSubmittedToGp}" converter="gp" /></td></tr>
+                            <tr><td>Submitted to queue</td><td><h:outputText value="#{jobStatus.submitTime}" converter="gp" /></td></tr>
+                            <tr><td>Started running</td><td><h:outputText value="#{jobStatus.startTime}" converter="gp" /></td></tr>
+                            <tr><td>Finished running</td><td><h:outputText value="#{jobStatus.endTime}" converter="gp" /></td></tr>
+                            <tr><td>Completed in GenePattern</td><td><h:outputText value="#{jobStatus.dateCompletedInGp}" converter="gp" /></td></tr>
+                            <tr><th colspan="2">Usage stats</th></tr>
+                            <tr><td>CPU usage</td><td><h:outputText value="#{jobStatus.cpuTime.format}"  /></td></tr>
+                            <tr><td>Max memory</td><td><h:outputText value="#{jobStatus.maxMemory.displayValue}"  /></td></tr>
+                            <tr><td>Max swap</td><td><h:outputText value="#{jobStatus.maxSwap.displayValue}"  /></td></tr>
+                            <tr><td>Max processes</td><td><h:outputText value="#{jobStatus.maxProcesses}"  /></td></tr>
+                            <tr><td>Max threads</td><td><h:outputText value="#{jobStatus.maxThreads}"  /></td></tr>
+                        </table>
+                    </td>
+                </tr>
+                <tr>
+                    <td align="right" valign="middle">
+                        <a style="color:#0066FF;" href="javascript:toggle('statusDetailsDiv#{jobStatus.gpJobNo}', 'Hide', 'Show')"><img src="/gp/images/cross.gif" /> hide</a>
+                    </td>
+                </tr>
+            </table>
+        </div>
+
+    </ui:composition>
+</html>

@@ -1,7 +1,10 @@
 package org.genepattern.server.job.status;
 
-import static org.genepattern.server.webapp.rest.api.v1.DateUtil.*;
-import static org.junit.Assert.*;
+import static org.genepattern.server.webapp.rest.api.v1.DateUtil.HOUR;
+import static org.genepattern.server.webapp.rest.api.v1.DateUtil.MIN;
+import static org.genepattern.server.webapp.rest.api.v1.DateUtil.SEC;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -585,5 +588,62 @@ public class TestJobStatus {
                 executionLogLocation,
                 statusObj.getString("executionLogLocation"));
     }
+    
+//    @Test
+//    public void detailsMap() {
+//        final Integer gpJobNo=23;
+//        final Date dateSubmittedToGp=new DateTime("2014-07-22T10:15:09").toDate();
+//        final Date submitTime=new DateTime("2014-07-22T13:15:09").toDate();
+//        final Date startTime=new DateTime("2014-07-22T13:16:09").toDate();
+//        final Date endTime=new DateTime("2014-07-22T15:16:09").toDate();
+//        final Date dateCompletedInGp=new DateTime("2014-07-22T15:55:10").toDate();
+//        final String extJobId="ext_23";
+//        final Integer exitCode=0;
+//        final DrmJobState jobState=DrmJobState.DONE;
+//        final CpuTime cpuTime=new CpuTime(117, TimeUnit.MINUTES);
+//        final Memory maxMem=Memory.fromString("2.5 Gb");
+//        
+//        DateFormat df=new SimpleDateFormat();
+//        JobRunnerJob jrj=new JobRunnerJob.Builder()
+//            .gpJobNo(gpJobNo)
+//            .extJobId(extJobId)
+//            .submitTime(submitTime)
+//            .startTime(startTime)
+//            .endTime(endTime)
+//            .jobState(jobState)
+//            .exitCode(exitCode)
+//            .cpuTime(cpuTime)
+//            .maxMemory(maxMem)
+//        .build();
+//        
+//        
+//        Status status=new Status.Builder()
+//            .dateSubmittedToGp(dateSubmittedToGp)
+//            .dateCompletedInGp(dateCompletedInGp)
+//            .jobStatusRecord(jrj)
+//        .build();
+//        
+//        assertEquals("GenePattern Job #", ""+gpJobNo, status.getDetailsMap().get("GenePattern Job #"));
+//        assertEquals("External Job Id", extJobId, status.getDetailsMap().get("External Job Id"));
+//        assertEquals("Job Status", jobState.name(), status.getDetailsMap().get("Job Status"));
+//        assertEquals("Job Status Message", jobState.getDescription(), status.getDetailsMap().get("Job Status Message"));
+//        assertEquals("Exit Code", ""+exitCode, status.getDetailsMap().get("Exit Code"));
+//        
+//        assertEquals("Date Submitted to GenePattern", 
+//                df.format(dateSubmittedToGp), 
+//                status.getDetailsMap().get("Date Submitted to GenePattern"));
+//        assertEquals("Submit Time", 
+//                df.format(submitTime), status.getDetailsMap().get("Submit Time"));
+//        assertEquals("Start Time", 
+//                df.format(startTime), status.getDetailsMap().get("Start Time"));
+//        assertEquals("End Time", 
+//                df.format(endTime), status.getDetailsMap().get("End Time"));
+//        assertEquals("Date Completed in GenePattern", 
+//                df.format(dateCompletedInGp), 
+//                status.getDetailsMap().get("Date Completed in GenePattern"));
+//        
+//        assertEquals("CPU Usage", cpuTime.format(), status.getDetailsMap().get("CPU Usage"));
+//        assertEquals("Max Memory", maxMem.format(), status.getDetailsMap().get("Max Memory"));
+//    }
 
 }

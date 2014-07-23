@@ -47,6 +47,10 @@ import com.google.common.base.Strings;
 public class Status {
     private static final Logger log = Logger.getLogger(Status.class);
 
+    private Integer gpJobNo=null;
+    private Date dateSubmittedToGp=null;
+    private Date dateCompletedInGp=null;
+    private String extJobId=null;
     private String executionLogLocation=null;
     private String stderrLocation=null;
     private boolean hasError=false;
@@ -55,11 +59,11 @@ public class Status {
     private DrmJobState jobState=null;
     private String statusFlag="";
     private String statusMessage="";
-    private String extJobId=null;
     private Date statusDate=new Date();
     private Date submitTime=null; // date the job was submitted to the external queue
     private Date startTime=null;  // date the job started in the external queue
     private Date endTime=null;    // date the job ending in the external queue
+    private Integer exitCode=null;
     private CpuTime cpuTime=null;
     private Memory maxMemory=null;
     private Memory maxSwap=null;
@@ -72,6 +76,10 @@ public class Status {
             links=new ArrayList<GpLink>();
         }
         links.add(link);
+    }
+    
+    public Integer getGpJobNo() {
+        return gpJobNo;
     }
     
     public String getExecutionLogLocation() {
@@ -94,6 +102,10 @@ public class Status {
         return isPending;
     }
     
+    public boolean getIsRunning() {
+        return !isFinished && !isPending;
+    }
+    
     public String getStatusFlag() {
         return statusFlag;
     }
@@ -103,6 +115,10 @@ public class Status {
     
     public Date getStatusDate() {
         return statusDate;
+    }
+    
+    public Date getDateSubmittedToGp() {
+        return dateSubmittedToGp;
     }
     
     public Date getSubmitTime() {
@@ -115,6 +131,14 @@ public class Status {
     
     public Date getEndTime() {
         return endTime;
+    }
+    
+    public Date getDateCompletedInGp() {
+        return dateCompletedInGp;
+    }
+    
+    public Integer getExitCode() {
+        return exitCode;
     }
     
     public CpuTime getCpuTime() {
@@ -143,6 +167,55 @@ public class Status {
     
     public List<GpLink> getLinks() {
         return Collections.unmodifiableList(links);
+    }
+    
+//    private String formatDate(Date in) {
+//        if (in==null) {
+//            return "";
+//        }
+//        return new SimpleDateFormat().format(in);
+//    }
+//    
+//    /**
+//     * Convert to a map, for default display in the JSF page.
+//     * @return
+//     */
+//    public Map<String,String> getDetailsMap() {
+//        Map<String,String> detailsMap=new LinkedHashMap<String,String>();
+//        detailsMap.put("GenePattern Job #", ""+gpJobNo);
+//        detailsMap.put("External Job Id", extJobId);
+//        if (jobState != null) {
+//            detailsMap.put("Job Status", jobState.name());
+//        }
+//        else {
+//            detailsMap.put("Job Status", "");
+//        }
+//        if (exitCode != null) {
+//            detailsMap.put("Exit Code", ""+exitCode);
+//        }
+//        else {
+//            detailsMap.put("Exit Code", "");
+//        }
+//        detailsMap.put("Job Status Message", statusMessage);
+//        detailsMap.put("Date Submitted to GenePattern", formatDate(dateSubmittedToGp));
+//        detailsMap.put("Submit Time", formatDate(submitTime));
+//        detailsMap.put("Start Time", formatDate(startTime));
+//        detailsMap.put("End Time", formatDate(endTime));
+//        detailsMap.put("Date Completed in GenePattern", formatDate(dateCompletedInGp));
+//        if (cpuTime != null) {
+//            detailsMap.put("CPU Usage", cpuTime.format());
+//        }
+//        
+//        return Collections.unmodifiableMap(detailsMap);
+//    }
+    
+    /**
+     * Get the string formatted JSON representation.
+     * @return
+     * @throws JSONException
+     */
+    public String getJson() throws JSONException {
+        return toJsonObj().toString(2);
     }
     
     public JSONObject toJsonObj() throws JSONException {
@@ -231,11 +304,30 @@ public class Status {
      *
      */
     public static class Builder {
+        private Integer gpJobNo;
+        private Date dateSubmittedToGp=null;
+        private Date dateCompletedInGp=null;
+        private String extJobId;
         private JobInfo jobInfo=null;
         private String executionLogLocation=null;
         private String stderrLocation=null;
         private JobRunnerJob jobStatusRecord=null;
         private String jobHref;
+        
+        public Builder extJobId(final String extJobId) {
+            this.extJobId=extJobId;
+            return this;
+        }
+        
+        public Builder dateSubmittedToGp(final Date dateSubmittedToGp) {
+            this.dateSubmittedToGp=dateSubmittedToGp;
+            return this;
+        }
+        
+        public Builder dateCompletedInGp(final Date dateCompletedInGp) {
+            this.dateCompletedInGp=dateCompletedInGp;
+            return this;
+        }
 
         /**
          * initialize status from the given JobInfo.
@@ -289,6 +381,10 @@ public class Status {
         
         public Status build() {
             Status status = new Status();
+            status.gpJobNo=gpJobNo;
+            status.extJobId=extJobId;
+            status.dateSubmittedToGp=dateSubmittedToGp;
+            status.dateCompletedInGp=dateCompletedInGp;
             
             // step 1, initialize from optional JobInfo arg
             DrmJobState jobState = initFromJobInfo(status);
@@ -320,9 +416,11 @@ public class Status {
             }
             
             if (jobStatusRecord != null) {
+                status.gpJobNo=jobStatusRecord.getGpJobNo();
                 status.submitTime=jobStatusRecord.getSubmitTime();
                 status.startTime=jobStatusRecord.getStartTime();
                 status.endTime=jobStatusRecord.getEndTime();
+                status.exitCode=jobStatusRecord.getExitCode();
 
                 if (jobStatusRecord.getCpuTime() != null) {
                     status.cpuTime= new CpuTime(jobStatusRecord.getCpuTime());
@@ -346,6 +444,9 @@ public class Status {
                 return null;
             }
             
+            status.gpJobNo=jobInfo.getJobNumber();
+            status.dateSubmittedToGp=jobInfo.getDateSubmitted();
+            status.dateCompletedInGp=jobInfo.getDateCompleted();
             status.isFinished=JobInfoUtil.isFinished(jobInfo);
             status.hasError=JobInfoUtil.hasError(jobInfo);
             status.isPending=JobInfoUtil.isPending(jobInfo);

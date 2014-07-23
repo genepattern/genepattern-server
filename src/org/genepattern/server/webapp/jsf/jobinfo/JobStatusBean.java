@@ -28,14 +28,20 @@ import org.apache.log4j.Logger;
 import org.genepattern.server.JobInfoManager;
 import org.genepattern.server.JobInfoWrapper;
 import org.genepattern.server.PermissionsHelper;
+import org.genepattern.server.config.GpContext;
 import org.genepattern.server.congestion.CongestionListener;
+import org.genepattern.server.dm.UrlUtil;
 import org.genepattern.server.dm.congestion.Congestion;
+import org.genepattern.server.job.status.JobStatusLoaderFromDb;
+import org.genepattern.server.job.status.Status;
 import org.genepattern.server.congestion.CongestionManager;
 import org.genepattern.server.user.User;
 import org.genepattern.server.user.UserDAO;
 import org.genepattern.server.user.UserProp;
 import org.genepattern.server.webapp.jsf.AuthorizationHelper;
 import org.genepattern.server.webapp.jsf.UIBeanHelper;
+import org.genepattern.server.webservice.server.dao.AnalysisDAO;
+import org.genepattern.webservice.JobInfo;
 
 /**
  * Access job status for a single job result from a JSF page.
@@ -45,6 +51,7 @@ import org.genepattern.server.webapp.jsf.UIBeanHelper;
 public class JobStatusBean {
     private static Logger log = Logger.getLogger(JobStatusBean.class);
     
+    private Status jobStatus = null;
     private JobInfoWrapper jobInfoWrapper = null;
     private List<JobInfoWrapper> allSteps = null;
     private String currentUserId = null;
@@ -107,8 +114,16 @@ public class JobStatusBean {
         HttpServletRequest request = UIBeanHelper.getRequest();
         String contextPath = request.getContextPath();
         String cookie = request.getHeader("Cookie");   
+        
+        AnalysisDAO analysisDao = new AnalysisDAO();
+        JobInfo jobInfo = analysisDao.getJobInfo(jobNumber);
+
+        
         JobInfoManager jobInfoManager = new JobInfoManager();
-        this.jobInfoWrapper = jobInfoManager.getJobInfo(cookie, contextPath, currentUserId, jobNumber);
+        //this.jobInfoWrapper = jobInfoManager.getJobInfo(cookie, contextPath, currentUserId, jobNumber);
+        this.jobInfoWrapper = jobInfoManager.getJobInfo(cookie, contextPath, currentUserId, jobInfo);
+        final String gpUrl=UrlUtil.getGpUrl(request);
+
           
         if (jobInfoWrapper == null) {
             String errorMessage = "Job # "+jobNumber+" is deleted.";
@@ -131,6 +146,13 @@ public class JobStatusBean {
                 }
             }
         }
+        
+        // initialize job status
+        GpContext jobContext=new GpContext.Builder()
+            .userId(currentUserId)
+            .jobInfo(jobInfo)
+        .build();
+        this.jobStatus = new JobStatusLoaderFromDb(gpUrl).loadJobStatus(jobContext);
     }
 
     public boolean getCanViewJob() {
@@ -150,6 +172,15 @@ public class JobStatusBean {
 
 	public void setOpenVisualizers(boolean openVisualizers) {
 		this.openVisualizers = openVisualizers;
+	}
+
+	/**
+	 * Get the job status details. This method uses the same model as the REST api call to 
+	 *     GET /rest/v1/jobs/{jobId}/status.json
+	 * @return
+	 */
+	public Status getJobStatus() {
+	    return jobStatus;
 	}
 
     /**
