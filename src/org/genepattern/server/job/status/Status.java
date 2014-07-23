@@ -314,6 +314,11 @@ public class Status {
         private JobRunnerJob jobStatusRecord=null;
         private String jobHref;
         
+        public Builder gpJobNo(final Integer gpJobNo) {
+            this.gpJobNo=gpJobNo;
+            return this;
+        }
+        
         public Builder extJobId(final String extJobId) {
             this.extJobId=extJobId;
             return this;
