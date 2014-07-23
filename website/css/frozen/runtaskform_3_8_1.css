@@ -326,6 +326,11 @@ img.buttonIcon {
 	vertical-align:top;
 }
 
+.whiteBg
+{
+    background-color: white;
+}
+
 #mod_description
 {
     float: left;

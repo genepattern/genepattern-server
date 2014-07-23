@@ -70,6 +70,55 @@ if (!window.console) {
     };
 }
 
+function checkDiskQuota()
+{
+    $.ajax({
+        type: "GET",
+        url: "/gp/rest/v1/disk",
+        cache: false,
+        success: function (response) {
+
+            console.log(response);
+
+            var isAboveQuota = false;
+
+            if(response.diskQuota != null && response.diskUsageFilesTab != null)
+            {
+                var diskQuotaBytes = response.diskQuota.numBytes;
+
+                //only look at files tab in determining in quota was exceeed
+                var diskUsageBytes = response.diskUsageFilesTab.numBytes;
+
+                isAboveQuota = diskUsageBytes > diskQuotaBytes;
+            }
+
+            if(isAboveQuota)
+            {
+                //display a message and keep the job submit button disabled
+                //disable the job submit button - do not allow the user to submit any jobs
+                $("button.Run").attr("disabled", "disabled");
+                $("button.Run").removeClass("ui-state-default").addClass("whiteBg");
+
+                var quotaExceededMsg = $("<div class='errorMessage'>Disk usage quota exceeded. </div>");
+                quotaExceededMsg.append("Disk Usage: " +  response.diskUsageFilesTab.displayValue + ". Quota: " + response.diskQuota.displayValue + ".");
+                quotaExceededMsg.append("<p>Job submission has been disabled. Please delete some files from the Files tab.</p>");
+                $("#paramsListingDiv").before(quotaExceededMsg);
+            }
+            else
+            {
+                //enable the job submit button
+                $("button.Run").removeClass("whiteBg").addClass("ui-state-default");
+                $("button.Run").removeAttr("disabled");
+            }
+        },
+        error: function (xhr, ajaxOptions, thrownError) {
+            console.log("Response from server: status=" + xhr.status + " text=" + xhr.responseText);
+            console.log(thrownError);
+        },
+        dataType: "json"
+    });
+}
+
 function loadModule(taskId, reloadId, sendFromKind, sendFromUrl) {
     // Fade in a progress indicator
     $("#loadingContent").fadeIn(800);
@@ -169,6 +218,8 @@ function loadModule(taskId, reloadId, sendFromKind, sendFromUrl) {
                 // Update send-to-param options in file menus
                 clearAllSendToParams();
                 sendToMapToMenu();
+
+               checkDiskQuota();
             }
         },
         error: function (xhr, ajaxOptions, thrownError) {
