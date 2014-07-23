@@ -35,7 +35,6 @@ create table task_congestion (
     unique (lsid)
 );
 create sequence task_congestion_SEQ;
-create index idx_task_congestion_lsid on task_congestion (lsid);
 
 -- update schema version
 update props set value='3.8.3' where key='schemaVersion';
