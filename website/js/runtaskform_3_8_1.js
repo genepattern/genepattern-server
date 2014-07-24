@@ -103,7 +103,8 @@ function handleDiskQuotaMsg(diskInfo, aboveQuota)
         $("button.Run").attr("disabled", "disabled");
         $("button.Run").removeClass("ui-state-default").addClass("whiteBg");
 
-        var quotaExceededMsg = $("<div id='diskQuotaMessage' class='errorMessage'>Disk usage quota exceeded. </div>");
+        var quotaExceededMsg = $("<div id='diskQuotaMessage' class='errorMessageBig'>Disk usage quota exceeded. </div>");
+        quotaExceededMsg.prepend("<img class='elemSpacing' src='/gp/images/exclamation.png' width='20' height='17' />");
         quotaExceededMsg.append("Disk Usage: " +  diskInfo.diskUsageFilesTab.displayValue + ". Quota: " + diskInfo.diskQuota.displayValue + ".");
         quotaExceededMsg.append("<p>Job submission has been disabled. Please delete some files from the Files tab.</p>");
         $("#paramsListingDiv").before(quotaExceededMsg);

@@ -262,6 +262,13 @@ button.urlButton
     color: red;
 }
 
+.errorMessageBig
+{
+    font-weight: bold;
+    color: red;
+    font-size: 14px;
+}
+
 .elemSpacing
 {
     margin: 0 7px 0 7px;
