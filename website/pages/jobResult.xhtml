@@ -398,8 +398,8 @@
                                                     The job queue is experiencing severe wait times for this job. Pending times of several days are possible.
                                                 </h:outputText>
                                                 <br/><br/>
-                                                <strong>Estimated Total Wait Time</strong><br/>
-                                                #{jobStatusBean.estimatedWait}
+                                                <strong>Estimated Queueing Time</strong><br/>
+                                                #{jobStatusBean.estimatedQueuetime}
                                             </div>
                                         </h:outputText>
                                         <h:outputText rendered="#{jobStatusBean.jobStatus.isRunning}">
