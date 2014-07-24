@@ -250,7 +250,7 @@ public class Status {
         }
         if (cpuTime != null) {
             jobStatus.put("cpuTimeMillis",    cpuTime.asMillis());
-            jobStatus.put("cpuTime", cpuTime.format());
+            jobStatus.put("cpuTime", cpuTime.getDisplayValue());
         }
         if (maxMemory != null) {
             jobStatus.put("maxMemoryBytes", maxMemory.getNumBytes());
