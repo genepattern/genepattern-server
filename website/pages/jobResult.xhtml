@@ -243,8 +243,8 @@
                 
                 $(document).ready(function () {
                 	$("body").tooltip();
-                    var id="statusDetailsDiv"+#{jobStatusBean.jobInfo.jobNumber};
-                	gpUtil.initToggleDiv(id, 'Hide', 'Show');
+                	gpUtil.initToggleDiv("statusDetailsDiv"+#{jobStatusBean.jobInfo.jobNumber}, 'Hide', 'Show');
+                	gpUtil.initToggleDiv("inputParamsDiv"+#{jobStatusBean.jobInfo.jobNumber},   'Hide', 'Show');
                 });
 
                 $.ajax({
@@ -352,11 +352,11 @@
                                                 <table cellpadding="0" border="0" cellspacing="0">
                                                     <tr>
                                                         <td><a
-                                                            href="javascript:toggle('inputParamsDiv#{jobStatusBean.jobInfo.jobNumber}', 'Hide', 'Show');"><img
+                                                            href="javascript:gpUtil.toggleDiv('inputParamsDiv#{jobStatusBean.jobInfo.jobNumber}', 'Hide', 'Show');"><img
                                                                 src="/gp/images/parameters.gif" align="left" height="24"
                                                                 vspace="4" /> </a></td>
                                                         <td><a style="color: #0066FF;"
-                                                            href="javascript:toggle('inputParamsDiv#{jobStatusBean.jobInfo.jobNumber}', 'Hide', 'Show');"><span
+                                                            href="javascript:gpUtil.toggleDiv('inputParamsDiv#{jobStatusBean.jobInfo.jobNumber}', 'Hide', 'Show');"><span
                                                                 id="inputParamsDiv#{jobStatusBean.jobInfo.jobNumber}Label">Show</span>
                                                                 Input <br />Parameters</a></td>
                                                     </tr>
