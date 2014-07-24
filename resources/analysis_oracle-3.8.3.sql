@@ -37,6 +37,7 @@ create table task_congestion (
     id number(19,0) not null,
     lsid varchar(255 char),
     runtime number(19,0),
+    queuetime number(19,0),
     virtual_queue varchar(255 char),
     primary key (id),
     unique (lsid)
