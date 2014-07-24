@@ -279,6 +279,8 @@ public class TestDbLookup {
         .build();
         DbLookup.insertJobRunnerJob(jobRecord_01);
 
+        String extJobId="EXT_"+gpJobNo;
+        String queueId="genepattern_long";
         Date submitTime=DateTime.parse("20140717T10:50:21").toDate();
         Date startTime=DateTime.parse("20140717T10:51:21").toDate();
         Date endTime=DateTime.parse("20140717T11:01:21").toDate();
@@ -288,7 +290,8 @@ public class TestDbLookup {
         Integer maxProcesses=1;
         Integer maxThreads=1;
         DrmJobStatus jobStatus=new DrmJobStatus.Builder()
-             .extJobId("EXT_"+gpJobNo)
+             .extJobId(extJobId)
+             .queueId(queueId)
              .jobState(DrmJobState.DONE)
              .jobStatusMessage(DrmJobState.DONE.getDescription())
              .exitCode(0)
@@ -312,6 +315,8 @@ public class TestDbLookup {
         assertEquals("workingDir", workingDir, updated.getWorkingDir());
         assertEquals("stdoutFile", stdoutFile, updated.getStdoutFile());
         assertEquals("stderrFile", stderrFile, updated.getStderrFile());
+        assertEquals("extJobId", extJobId, updated.getExtJobId());
+        assertEquals("queueId", queueId, updated.getQueueId());
         assertEquals("submitTime", submitTime, updated.getSubmitTime());
         assertEquals("startTime", startTime, updated.getStartTime());
         assertEquals("endTime", endTime, updated.getEndTime());
@@ -321,6 +326,5 @@ public class TestDbLookup {
         assertEquals("maxProcesses", (Integer) maxProcesses, updated.getMaxProcesses());
         assertEquals("maxThreads", (Integer) maxThreads, updated.getMaxThreads());
     }
-    
 
 }

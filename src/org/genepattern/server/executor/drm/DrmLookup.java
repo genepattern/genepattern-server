@@ -49,9 +49,8 @@ public interface DrmLookup {
     /**
      * Update the record for a job.
      * 
-     * @param gpJobId, the GenePattern job id.
+     * @param drmJobRecord, must include the GenePattern job id.
      * @param drmJobStatus, the current status as reported by the external JobRunner.
      */
-    //void updateJobStatus(final Integer gpJobNo, final DrmJobStatus drmJobStatus);
     void updateJobStatus(final DrmJobRecord drmJobRecord, final DrmJobStatus drmJobStatus);
 }
