@@ -381,7 +381,7 @@
                                         </h:outputText></td>
 
                                     <td width="30px">
-                                        <h:outputText rendered="#{jobStatusBean.jobStatus.isPending}">
+                                        <h:outputText rendered="#{jobStatusBean.jobStatus.isPending and not jobStatusBean.jobStatus.hasError}">
                                             <div id="status-congestion-light" class="congestion-light congestion #{jobStatusBean.congestionClass}">
                                                 <span class="congestion-icon">&#9679;</span><br/>
                                                 Pending
@@ -402,12 +402,12 @@
                                                 #{jobStatusBean.estimatedQueuetime}
                                             </div>
                                         </h:outputText>
-                                        <h:outputText rendered="#{jobStatusBean.jobStatus.isRunning}">
+                                        <h:outputText rendered="#{jobStatusBean.jobStatus.isRunning and not jobStatusBean.jobStatus.hasError}">
                                             <img src="/gp/images/spin.gif"
                                                 alt="#{jobStatusBean.jobInfo.status}"
                                                 id="jobStatusIcon#{jobStatusBean.jobInfo.jobNumber}" />
                                         </h:outputText> 
-                                        <h:outputText rendered="#{jobStatusBean.jobStatus.isFinished and !jobStatusBean.jobStatus.hasError}">
+                                        <h:outputText rendered="#{jobStatusBean.jobStatus.isFinished and not jobStatusBean.jobStatus.hasError}">
                                             <img src="/gp/images/complete.gif"
                                                 alt="#{jobStatusBean.jobInfo.status}"
                                                 id="jobStatusIcon#{jobStatusBean.jobInfo.jobNumber}" />
