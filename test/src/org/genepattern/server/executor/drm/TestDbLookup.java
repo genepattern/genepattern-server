@@ -215,6 +215,7 @@ public class TestDbLookup {
     
     @Test
     public void jobQueueTimesAndResourceUsage() throws DbException {
+        String queueId="genepattern_long";
         Date lsfSubmitTime=new DateTime("2014-07-15T09:00:00").toDate();
         Date lsfStartTime =new DateTime("2014-07-15T09:15:21").toDate();
         Date lsfEndTime   =new DateTime("2014-07-15T10:15:21").toDate();
@@ -233,6 +234,7 @@ public class TestDbLookup {
             .jobRunnerClassname(jobRunnerClassname)
             .jobRunnerName(jobRunnerName)
             .extJobId("EXT_"+gpJobNo)
+            .queueId(queueId)
             .jobState(DrmJobState.DONE)
             .statusMessage(DrmJobState.DONE.getDescription())
             .exitCode(0)
@@ -248,6 +250,7 @@ public class TestDbLookup {
         dbLookup.insertJobRunnerJob(jobRecord);
         
         JobRunnerJob query=new JobRunnerJobDao().selectJobRunnerJob(gpJobNo);
+        Assert.assertEquals("jobRunnerJob.queueId", queueId, query.getQueueId());
         Assert.assertEquals("jobRunnerJob.submitTime", lsfSubmitTime, query.getSubmitTime());
         Assert.assertEquals("jobRunnerJob.startTime", lsfStartTime, query.getStartTime());
         Assert.assertEquals("jobRunnerJob.endTime", lsfEndTime, query.getEndTime());

@@ -66,19 +66,9 @@ public class JobRunnerJob {
     @Column(name="ext_job_id", nullable=true, length=255)
     private String extJobId;
     
-    @Column(name="exit_code", nullable=true, length=255)
-    private Integer exitCode;
-    
-    @Column(name="terminating_signal", nullable=true, length=255)
-    private String terminatingSignal;
-    
-    @Column(name="job_state", nullable=true, length=255)
-    private String jobState;
+    @Column(name="queue_id", nullable=true, length=511)
+    private String queueId;
 
-    @Column(name="status_message", nullable=true, length=STATUS_MESSAGE_LENGTH)
-    @Size(max=STATUS_MESSAGE_LENGTH)
-    private String statusMessage;
-    
     /**
      * The date that the status was recorded into the database.
      */
@@ -106,6 +96,19 @@ public class JobRunnerJob {
      */
     @Column(name="end_time", nullable=true)
     private Date endTime;
+    
+    @Column(name="job_state", nullable=true, length=255)
+    private String jobState;
+
+    @Column(name="status_message", nullable=true, length=STATUS_MESSAGE_LENGTH)
+    @Size(max=STATUS_MESSAGE_LENGTH)
+    private String statusMessage;
+    
+    @Column(name="exit_code", nullable=true, length=255)
+    private Integer exitCode;
+    
+    @Column(name="terminating_signal", nullable=true, length=255)
+    private String terminatingSignal;
     
     /**
      * The amount of cpu time used for the job, in number of milliseconds.
@@ -160,6 +163,7 @@ public class JobRunnerJob {
         this.jobRunnerClassname=builder.jobRunnerClassname;
         this.jobRunnerName=builder.jobRunnerName;
         this.extJobId=builder.extJobId;
+        this.queueId=builder.queueId;
         this.exitCode=builder.exitCode;
         this.terminatingSignal=builder.terminatingSignal;
         this.jobState=builder.jobState;
@@ -187,6 +191,7 @@ public class JobRunnerJob {
         private String jobRunnerClassname;
         private String jobRunnerName;
         private String extJobId="";
+        private String queueId=null; // null means 'not set'
         private Integer exitCode=null;
         private String terminatingSignal;
         private String jobState;
@@ -243,6 +248,7 @@ public class JobRunnerJob {
             this.jobRunnerClassname=in.jobRunnerClassname;
             this.jobRunnerName=in.jobRunnerName;
             this.extJobId=in.extJobId;
+            this.queueId=in.queueId;
             this.jobState=in.jobState;
             this.statusMessage=in.statusMessage;
             this.exitCode=in.exitCode;
@@ -264,6 +270,7 @@ public class JobRunnerJob {
         
         public Builder drmJobStatus(final DrmJobStatus updated) {
             this.extJobId=updated.getDrmJobId();
+            this.queueId=updated.getQueueId();
             this.jobState=updated.getJobState().name();
             this.statusMessage=updated.getJobStatusMessage();
             this.exitCode=updated.getExitCode();
@@ -316,6 +323,11 @@ public class JobRunnerJob {
         
         public Builder extJobId(final String extJobId) {
             this.extJobId=extJobId;
+            return this;
+        }
+        
+        public Builder queueId(final String queueId) {
+            this.queueId=queueId;
             return this;
         }
         
@@ -423,6 +435,10 @@ public class JobRunnerJob {
         return extJobId;
     }
     
+    public String getQueueId() {
+        return queueId;
+    }
+    
     public Integer getExitCode() {
         return exitCode;
     }
@@ -514,6 +530,10 @@ public class JobRunnerJob {
 
     private void setExtJobId(final String extJobId) {
         this.extJobId = extJobId;
+    }
+    
+    private void setQueueId(final String queueId) {
+        this.queueId=queueId;
     }
     
     private void setExitCode(final Integer exitCode) {
