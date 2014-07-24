@@ -31,6 +31,11 @@ public class CongestionDao extends BaseDAO {
         return null;
     }
 
+    /**
+     * Get the number of jobs currently waiting in the queue
+     * @param virtualQueue
+     * @return
+     */
     public int getVirtualQueueCount(String virtualQueue) {
         String hql = "select count(*) from task_congestion tc, analysis_job aj where tc.virtual_queue = :virtualQueue and tc.lsid = aj.task_lsid and aj.status_id = 1";
         Query query = HibernateUtil.getSession().createSQLQuery(hql);
@@ -57,5 +62,21 @@ public class CongestionDao extends BaseDAO {
             log.error("Unknown type returned from query: " + result.getClass().getName());
         }
         return count;
+    }
+
+    /**
+     * Update the queue time estimate for the given queue
+     * @param virtualQueue
+     * @param averageQueuetime
+     * @return
+     */
+    public int updateQueuetime(String virtualQueue, long averageQueuetime) {
+        String hql = "update task_congestion set queuetime = :averageQueuetime where virtual_queue = :virtualQueue";
+        Query query = HibernateUtil.getSession().createSQLQuery(hql);
+        query.setString("virtualQueue", virtualQueue);
+        query.setLong("averageQueuetime", averageQueuetime);
+        query.setReadOnly(true);
+
+        return query.executeUpdate();
     }
 }

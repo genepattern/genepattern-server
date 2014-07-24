@@ -70,17 +70,17 @@ public class CongestionManager {
     }
 
     /**
-     * Update the congestion data for a particular task
+     * Update the congestion runtime data for a particular task
      * Use when you don't already have a congestion object
      *
-     * Explicitly updates runtime, lazily updates virtual queue.
+     * Explicitly updates runtime, lazily updates queue.
      *
      * @param lsid
      * @param runtime
      * @return
      * @throws Exception
      */
-    static public Congestion updateCongestion(String lsid, long runtime, long queuetime) throws Exception {
+    static public Congestion updateCongestionRuntime(String lsid, String queueName, long runtime) throws Exception {
         boolean inTransaction = HibernateUtil.isInTransaction();
 
         CongestionDao dao = new CongestionDao();
@@ -93,10 +93,50 @@ public class CongestionManager {
             }
 
             if (congestion == null) {
-                return createCongestion(lsid, runtime, queuetime);
+                return createCongestion(lsid, queueName, runtime, 0);
             }
 
-            return updateCongestion(congestion, runtime, queuetime);
+            return updateCongestionRuntime(congestion, queueName, runtime);
+        }
+        catch (Throwable t) {
+            log.error("Error in updateCongestion(), rolling back commit.", t);
+            HibernateUtil.rollbackTransaction();
+            throw new Exception("Error updating congestion: " + lsid);
+        }
+    }
+
+    /**
+     * Update the congestion queue time data for a particular task
+     * Use when you don't already have a congestion object
+     *
+     * Explicitly updates runtime, lazily updates queue.
+     *
+     * @param lsid
+     * @param queuetime
+     * @return
+     * @throws Exception
+     */
+    static public void updateCongestionQueuetime(String lsid, String queueName, long queuetime) throws Exception {
+        boolean inTransaction = HibernateUtil.isInTransaction();
+
+        CongestionDao dao = new CongestionDao();
+
+        try {
+            Congestion congestion = dao.getCongestion(lsid);
+
+            if (!inTransaction) {
+                HibernateUtil.commitTransaction();
+            }
+
+            if (congestion == null) {
+                congestion = createCongestion(lsid, queueName, 0, queuetime);
+            }
+
+            String virtualQueue = getVirtualQueue(congestion.getLsid(), queueName);
+            long averageQueuetime = calculateQueuetime(dao, virtualQueue, queuetime);
+
+            dao.updateQueuetime(virtualQueue, averageQueuetime);
+            HibernateUtil.commitTransaction();
         }
         catch (Throwable t) {
             log.error("Error in updateCongestion(), rolling back commit.", t);
@@ -116,7 +156,7 @@ public class CongestionManager {
      * @return
      * @throws Exception
      */
-    static public Congestion updateCongestion(Congestion congestion, long runtime, long queuetime) throws Exception {
+    static public Congestion updateCongestionRuntime(Congestion congestion, String queueName, long runtime) throws Exception {
         boolean inTransaction = HibernateUtil.isInTransaction();
 
         CongestionDao dao = new CongestionDao();
@@ -124,10 +164,7 @@ public class CongestionManager {
         long averageRuntime = calculateRuntime(congestion, runtime);
         congestion.setRuntime(averageRuntime);
 
-        long averageQueuetime = calculateQueuetime(congestion, queuetime);
-        congestion.setQueuetime(averageQueuetime);
-
-        String virtualQueue = getVirtualQueue(congestion.getLsid());
+        String virtualQueue = getVirtualQueue(congestion.getLsid(), queueName);
         congestion.setVirtualQueue(virtualQueue);
 
         try {
@@ -155,13 +192,13 @@ public class CongestionManager {
 
         String prettyPrint = "";
         if (day > 0) {
-            prettyPrint += day + (day == 1 ? "day" : "days") + " ";
+            prettyPrint += day + (day == 1 ? " day" : " days") + " ";
         }
         if (hour > 0 || day > 0) {
-            prettyPrint += hour + (hour == 1 ? "hour" : "hours") + " ";
+            prettyPrint += hour + (hour == 1 ? " hour" : " hours") + " ";
         }
         if (minute > 0 || hour > 0 || day > 0) {
-            prettyPrint += minute + (minute == 1 ? "minute" : "minutes") + " ";
+            prettyPrint += minute + (minute == 1 ? " minute" : " minutes") + " ";
         }
 
         if (minute == 0 && hour == 0 && day == 0) {
@@ -179,11 +216,11 @@ public class CongestionManager {
      * @return
      * @throws Exception
      */
-    static private Congestion createCongestion(String lsid, long runtime, long queuetime) throws Exception {
+    static private Congestion createCongestion(String lsid, String queueName, long runtime, long queuetime) throws Exception {
         boolean inTransaction = HibernateUtil.isInTransaction();
 
         CongestionDao dao = new CongestionDao();
-        String virtualQueue = getVirtualQueue(lsid);
+        String virtualQueue = getVirtualQueue(lsid, queueName);
 
         Congestion congestion = new Congestion();
         congestion.setLsid(lsid);
@@ -209,9 +246,14 @@ public class CongestionManager {
      * @param lsid
      * @return
      */
-    static private String getVirtualQueue(String lsid) {
-        GpContext context = GpContext.getContextForTask(lsid);
-        return ServerConfigurationFactory.instance().getGPProperty(context, "queue.name", "");
+    static private String getVirtualQueue(String lsid, String queueNameOverride) {
+        if (queueNameOverride == null) {
+            GpContext context = GpContext.getContextForTask(lsid);
+            return ServerConfigurationFactory.instance().getGPProperty(context, "queue.name", "");
+        }
+        else {
+            return queueNameOverride;
+        }
     }
 
     /**
@@ -229,33 +271,33 @@ public class CongestionManager {
         GpContext context = GpContext.getServerContext();
         int weight = ServerConfigurationFactory.instance().getGPIntegerProperty(context, "congestion.compare.weight", 3);
 
-        /*
+        // If runtime likely wasn't set properly, this is the best estimate we have
+        if (congestion.getRuntime() == 0) {
+            return runtime;
+        }
+        // Otherwise do the calculation
+        else {
+            /*
             Pretend the last WEIGHT jobs took the current average amount of time to complete,
             then average with the runtime of the current completed job.
          */
-        return (congestion.getRuntime() * weight + runtime) / (weight + 1);
+            return (congestion.getRuntime() * weight + runtime) / (weight + 1);
+        }
     }
 
     /**
      * Calculates an estimated queuetime for a task based on the just completed queuetime
      * and the previous queuetime data.
      *
-     * Formula:
-     * Averages the current queuetime with the previous average, weighting the previous average as configured.
-     *
-     * @param congestion
+     * @param dao
+     * @param virtualQueue
      * @param queuetime
      * @return
      */
-    static private long calculateQueuetime(Congestion congestion, long queuetime) {
-        GpContext context = GpContext.getServerContext();
-        int weight = ServerConfigurationFactory.instance().getGPIntegerProperty(context, "congestion.compare.weight", 3);
-
-        /*
-            Pretend the last WEIGHT jobs took the current average amount of time to complete,
-            then average with the runtime of the current completed job.
-         */
-        return (congestion.getQueuetime() * weight + queuetime) / (weight + 1);
+    static private long calculateQueuetime(CongestionDao dao, String virtualQueue, long queuetime) {
+        int count = dao.getVirtualQueueCount(virtualQueue);
+        if (count == 0) return 0;
+        else return queuetime;
     }
 
     /**
