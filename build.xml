@@ -162,6 +162,7 @@
             <batchtest todir="${junit.report.dir}/xml" filtertrace="on">
                 <fileset dir="test/src">
                     <exclude name="org/genepattern/junitutil/*.java" />
+                    <exclude name="**/RecordEulaStub.java" />
                     <include name="**/*.java" />
                 </fileset>
             </batchtest>
@@ -347,7 +348,18 @@
     </target>
     
     <target name="jar-visualizer-applet" depends="compile-visualizer-applet">
-        <jar basedir="applet-build" defaultexcludes="true" includes="org/genepattern/visualizer/*.class" jarfile="${genepattern.build}/${runVisualizer-jarname}">
+        <mkdir dir="${genepattern.build}/META-INF" />
+        <manifest file="${genepattern.build}/META-INF/MANIFEST.MF">
+            <attribute name="Permissions" value="all-permissions" />
+            <attribute name="Trusted-Library" value="true" />
+            <attribute name="Application-Name" value="GenePattern Visualizer launcher" />
+        </manifest>
+
+        <jar basedir="applet-build" 
+            manifest="${genepattern.build}/META-INF/MANIFEST.MF"
+            defaultexcludes="true" 
+            includes="org/genepattern/visualizer/*.class" 
+            jarfile="${genepattern.build}/${runVisualizer-jarname}">
         </jar>
     </target>
     
