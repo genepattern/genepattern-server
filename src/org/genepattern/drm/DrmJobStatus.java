@@ -23,6 +23,7 @@ public class DrmJobStatus {
     }
     
     private final String drmJobId;
+    private final String queueId;
     private final DrmJobState jobState;
     private final Date submitTime;
     private final Date startTime;
@@ -41,6 +42,7 @@ public class DrmJobStatus {
     
     private DrmJobStatus(final Builder builder) {
         this.drmJobId=builder.drmJobId;
+        this.queueId=builder.queueId;
         this.jobState=builder.jobState;
         this.submitTime=builder.submitTime;
         this.startTime=builder.startTime;
@@ -58,6 +60,7 @@ public class DrmJobStatus {
         //for debugging
         StringBuffer buf=new StringBuffer();
         buf.append("drmJobId="); buf.append(drmJobId);
+        buf.append("queueId="); buf.append(queueId);
         buf.append(", jobState="); buf.append(jobState); 
         buf.append(", exitCode="); buf.append(exitCode);
         if (log.isDebugEnabled()) {
@@ -82,6 +85,13 @@ public class DrmJobStatus {
      */
     public String getDrmJobId() {
         return drmJobId;
+    }
+    
+    /**
+     * Get the queue to which the job was submitted, by default return the empty string.
+     */
+    public String getQueueId() {
+        return queueId;
     }
 
     /**
@@ -198,6 +208,7 @@ public class DrmJobStatus {
      */
     public static class Builder {
         private String drmJobId;
+        private String queueId=null;
         private DrmJobState jobState;
         private Date submitTime=null;
         private Date startTime=null;
@@ -218,6 +229,7 @@ public class DrmJobStatus {
         //copy constructor
         public Builder(DrmJobStatus in) {
             this.drmJobId=in.drmJobId;
+            this.queueId=in.queueId;
             this.jobState=in.jobState;
             this.submitTime=in.submitTime;
             this.startTime=in.startTime;
@@ -240,6 +252,11 @@ public class DrmJobStatus {
         
         public Builder extJobId(final String extJobId) {
             this.drmJobId=extJobId;
+            return this;
+        }
+        
+        public Builder queueId(final String queueId) {
+            this.queueId=queueId;
             return this;
         }
         
