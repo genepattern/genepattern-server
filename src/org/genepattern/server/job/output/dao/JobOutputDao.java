@@ -3,6 +3,7 @@ package org.genepattern.server.job.output.dao;
 import java.util.List;
 
 import org.apache.log4j.Logger;
+import org.genepattern.server.DbException;
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.job.output.GpFileType;
 import org.genepattern.server.job.output.JobOutputFile;
@@ -97,7 +98,7 @@ public class JobOutputDao {
         }
     }
     
-    public List<JobOutputFile> selectGpExecutionLogs(final Integer gpJobNo) {
+    public List<JobOutputFile> selectGpExecutionLogs(final Integer gpJobNo) throws DbException {
         final boolean isInTransaction=HibernateUtil.isInTransaction();
         HibernateUtil.beginTransaction();
         try {
@@ -106,6 +107,11 @@ public class JobOutputDao {
             query=query.add( Restrictions.eq("gpFileType", GpFileType.GP_EXECUTION_LOG.name() ) );
             return (List<JobOutputFile>) query.list();
         }
+        catch (Throwable t) {
+            final String message="Error querying gp_execution_log for gpJobNo="+gpJobNo;
+            log.error(message,t);
+            throw new DbException(message+", "+t.getLocalizedMessage());
+        }
         finally {
             if (!isInTransaction) {
                 HibernateUtil.closeCurrentSession();
@@ -113,7 +119,7 @@ public class JobOutputDao {
         }
     }
     
-    public List<JobOutputFile> selectStderrFiles(final Integer gpJobNo) {
+    public List<JobOutputFile> selectStderrFiles(final Integer gpJobNo) throws DbException {
         final boolean isInTransaction=HibernateUtil.isInTransaction();
         HibernateUtil.beginTransaction();
         try {
@@ -121,6 +127,11 @@ public class JobOutputDao {
             query=query.add( Restrictions.eq("gpJobNo", gpJobNo ) );
             query=query.add( Restrictions.eq("gpFileType", GpFileType.STDERR.name() ) );
             return (List<JobOutputFile>) query.list();
+        }
+        catch (Throwable t) {
+            final String message="Error querying stderr files for gpJobNo="+gpJobNo;
+            log.error(message,t);
+            throw new DbException(message+", "+t.getLocalizedMessage());
         }
         finally {
             if (!isInTransaction) {

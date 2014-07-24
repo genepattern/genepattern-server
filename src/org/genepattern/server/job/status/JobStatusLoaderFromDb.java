@@ -42,33 +42,54 @@ public class JobStatusLoaderFromDb implements JobStatusLoader {
 
     @Override
     public Status loadJobStatus(GpContext jobContext) {
-        final boolean isInTransaction=HibernateUtil.isInTransaction();
-        int gpJobNo=jobContext.getJobNumber();
-        try {
-            JobRunnerJob jobStatusRecord=jobRunnerJobDao.selectJobRunnerJob(gpJobNo);
-            String executionLogLocation=null;
-            List<JobOutputFile> executionLogs=jobOutputDao.selectGpExecutionLogs(gpJobNo);
-            if (executionLogs != null && executionLogs.size()>0) {
-                executionLogLocation=executionLogs.get(0).getHref(gpUrl);
-            }
-            String stderrLocation=null;
-            List<JobOutputFile> stderrFiles=jobOutputDao.selectStderrFiles(gpJobNo);
-            if (stderrFiles != null && stderrFiles.size()>0) {
-                stderrLocation=stderrFiles.get(0).getHref(gpUrl);
-            }
-            String jobHref=initJobHref(gpJobNo);
+        final int gpJobNo=jobContext.getJobNumber();
+        final String jobHref=initJobHref(gpJobNo);
+        JobRunnerJob jobStatusRecord=null;
+        String executionLogLocation=null;
+        String stderrLocation=null;
 
-            Status status=new Status.Builder()
-                .jobHref(jobHref)
-                .jobInfo(jobContext.getJobInfo())
-                .jobStatusRecord(jobStatusRecord)
-                .stderrLocation(stderrLocation)
-                .executionLogLocation(executionLogLocation)
-            .build();
+        final boolean isInTransaction=HibernateUtil.isInTransaction();
+        try {
+            try {
+                jobStatusRecord=jobRunnerJobDao.selectJobRunnerJob(gpJobNo);
+            }
+            catch (DbException e) {
+                // error logged in calling method
+            }
+            try { 
+                List<JobOutputFile> executionLogs=jobOutputDao.selectGpExecutionLogs(gpJobNo);
+                if (executionLogs != null && executionLogs.size()>0) {
+                    executionLogLocation=executionLogs.get(0).getHref(gpUrl);
+                }
+                List<JobOutputFile> stderrFiles=jobOutputDao.selectStderrFiles(gpJobNo);
+                if (stderrFiles != null && stderrFiles.size()>0) {
+                    stderrLocation=stderrFiles.get(0).getHref(gpUrl);
+                }
+            }
+            catch (DbException e) {
+                // error logged in calling method
+                if (jobContext.getJobInfo() != null) {
+                    // TODO initialize from jobInfo
+                }
+            }
+
+            final Status.Builder b=new Status.Builder();
+            b.jobHref(jobHref);
+            b.jobInfo(jobContext.getJobInfo());
+            if (jobStatusRecord != null) {
+                b.jobStatusRecord(jobStatusRecord);
+            }
+            if (stderrLocation != null) {
+                b.stderrLocation(stderrLocation);
+            }
+            if (executionLogLocation != null) {
+                b.executionLogLocation(executionLogLocation);
+            }
+            final Status status=b.build();
             return status;
         }
-        catch (DbException e) {
-            log.error("", e);
+        catch (Throwable t) {
+            log.error("Unexpected exception in loadJobStatus for gpJobNo="+gpJobNo, t);
             return null;
         }
         finally {

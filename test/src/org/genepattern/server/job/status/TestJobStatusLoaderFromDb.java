@@ -1,6 +1,7 @@
 package org.genepattern.server.job.status;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
+import static org.mockito.Mockito.*;
 
 import java.io.File;
 import java.io.IOException;
@@ -17,6 +18,7 @@ import org.genepattern.server.job.output.GpFileType;
 import org.genepattern.server.job.output.JobOutputFile;
 import org.genepattern.server.job.output.dao.JobOutputDao;
 import org.genepattern.server.webapp.rest.api.v1.Rel;
+import org.genepattern.webservice.JobInfo;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -42,15 +44,40 @@ public class TestJobStatusLoaderFromDb {
             .jobNumber(gpJobNo)
         .build();
         
-        jobRunnerDao=Mockito.mock(JobRunnerJobDao.class);
-        jobOutputDao=Mockito.mock(JobOutputDao.class);
+        jobRunnerDao=mock(JobRunnerJobDao.class);
+        jobOutputDao=mock(JobOutputDao.class);
+    }
+
+    /**
+     * Initialize Status when there is a valid JobInfo instance but no entry in the job_runner_job table.
+     */
+    @Test
+    public void fromJobInfo_nullJobRunnerJob() throws DbException {
+        JobInfo jobInfo=mock(JobInfo.class);
+        when(jobRunnerDao.selectJobRunnerJob(gpJobNo)).thenThrow(new DbException());
+        when(jobInfo.getStatus()).thenReturn(org.genepattern.server.domain.JobStatus.FINISHED);
+        when(jobInfo.getJobNumber()).thenReturn(gpJobNo);
+        
+        jobContext=new GpContext.Builder()
+            .userId(userId)
+            .jobInfo(jobInfo)
+        .build();
+        JobStatusLoader loader=new JobStatusLoaderFromDb(gpUrl, jobRunnerDao, jobOutputDao);
+        Status status = loader.loadJobStatus(jobContext);
+        
+        assertNotNull("expecting non-null status", status);
+        
+        assertEquals("hasError", false, status.isHasError());
+        assertEquals("isFinished", true, status.getIsFinished());
+        assertEquals("isRunning", false, status.getIsRunning());
+        assertEquals("isPending", false, status.getIsPending());
     }
     
     //TODO: initialize Status directly from job_runner_job table, without a valid JobInfo record
     @Ignore @Test
     public void fromJobRunnerJob() throws DbException {
         JobRunnerJob jobRunnerJob=Mockito.mock(JobRunnerJob.class);
-        Mockito.when(jobRunnerDao.selectJobRunnerJob(gpJobNo)).thenReturn(jobRunnerJob);
+        when(jobRunnerDao.selectJobRunnerJob(gpJobNo)).thenReturn(jobRunnerJob);
         JobStatusLoader loader=new JobStatusLoaderFromDb(gpUrl, jobRunnerDao, jobOutputDao);
         Status status = loader.loadJobStatus(jobContext);
         /* Example status.json
@@ -76,7 +103,7 @@ public class TestJobStatusLoaderFromDb {
                "rel": "gp_job"
            }
          */ 
-        JobStatusLoader loader=new JobStatusLoaderFromDb(gpUrl, jobRunnerDao, jobOutputDao);
+        JobStatusLoaderFromDb loader=new JobStatusLoaderFromDb(gpUrl, jobRunnerDao, jobOutputDao);
         Status status = loader.loadJobStatus(jobContext);
         assertEquals("links.size", 2, status.getLinks().size());
         assertEquals("links[0].href", gpUrl+"rest/v1/jobs/"+gpJobNo+"/status.json", status.getLinks().get(0).getHref());

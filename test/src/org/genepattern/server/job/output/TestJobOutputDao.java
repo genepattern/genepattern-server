@@ -9,6 +9,7 @@ import java.util.List;
 import org.genepattern.junitutil.AnalysisJobUtil;
 import org.genepattern.junitutil.DbUtil;
 import org.genepattern.junitutil.FileUtil;
+import org.genepattern.server.DbException;
 import org.genepattern.server.job.output.dao.JobOutputDao;
 import org.junit.After;
 import org.junit.Before;
@@ -57,7 +58,7 @@ public class TestJobOutputDao {
     }
 
     @Test
-    public void recordOutputFiles() {
+    public void recordOutputFiles() throws DbException {
         JobOutputDao dao=new JobOutputDao();
         
         // Create
