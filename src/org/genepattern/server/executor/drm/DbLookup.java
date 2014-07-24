@@ -135,50 +135,11 @@ public class DbLookup implements DrmLookup {
     
     @Override
     public void updateJobStatus(final DrmJobRecord drmJobRecord, final DrmJobStatus drmJobStatus) {
-        final Integer gpJobNo=drmJobRecord.getGpJobNo();
-        final boolean isInTransaction=HibernateUtil.isInTransaction();
-        try {
-            HibernateUtil.beginTransaction();
-            JobRunnerJob existing = (JobRunnerJob) HibernateUtil.getSession().get(JobRunnerJob.class, gpJobNo);
-            if (existing==null) {
-                log.error("No existing record for "+gpJobNo);
-                return;
-            }
-            //JobRunnerJob is immutable ... so evict it from the session before saving a new instance as an update
-            HibernateUtil.getSession().evict(existing);
-            JobRunnerJob update = new JobRunnerJob.Builder(existing).drmJobStatus(drmJobStatus).build();
-            HibernateUtil.getSession().saveOrUpdate(update);
-            HibernateUtil.commitTransaction();
-        }
-        catch (Throwable t) {
-            log.error("Error updating entry for gpJobNo="+gpJobNo,t);
-            HibernateUtil.rollbackTransaction();
-        }
-        finally {
-            if (!isInTransaction) {
-                HibernateUtil.closeCurrentSession();
-            }
-        }
+        new JobRunnerJobDao().updateJobStatus(drmJobRecord.getGpJobNo(), drmJobStatus);
     }
 
     public static void insertJobRunnerJob(final JobRunnerJob jobRecord) {
-        final boolean isInTransaction=HibernateUtil.isInTransaction();
-        try {
-            HibernateUtil.beginTransaction();
-            HibernateUtil.getSession().saveOrUpdate(jobRecord);
-            if (!isInTransaction) {
-                HibernateUtil.commitTransaction();
-            }
-        }
-        catch (Throwable t) {
-            log.error("Error adding record for gpJobNo="+jobRecord.getGpJobNo(), t);
-            HibernateUtil.rollbackTransaction();
-        }
-        finally {
-            if (!isInTransaction) {
-                HibernateUtil.closeCurrentSession();
-            }
-        }
+        new JobRunnerJobDao().insertJobRunnerJob(jobRecord);
     }
     
     public JobRunnerJob selectJobRunnerJob(final Integer gpJobNo) throws DbException {

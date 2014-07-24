@@ -247,7 +247,7 @@ public class TestDbLookup {
             .maxProcesses(maxProcesses)
             .maxThreads(maxThreads)
         .build();
-        dbLookup.insertJobRunnerJob(jobRecord);
+        DbLookup.insertJobRunnerJob(jobRecord);
         
         JobRunnerJob query=new JobRunnerJobDao().selectJobRunnerJob(gpJobNo);
         Assert.assertEquals("jobRunnerJob.queueId", queueId, query.getQueueId());
