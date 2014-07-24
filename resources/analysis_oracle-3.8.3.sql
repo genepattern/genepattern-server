@@ -13,6 +13,13 @@ create table  job_output (
 );
 
 --
+-- add queue_id column to the job_runner_job table
+--
+alter table job_runner_job add ( 
+    queue_id varchar(511) default null
+);
+
+--
 -- add time logging columns to the job_runner_job table
 --
 alter table job_runner_job add ( 
