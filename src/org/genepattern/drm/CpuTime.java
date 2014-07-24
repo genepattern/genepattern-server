@@ -22,7 +22,10 @@ public class CpuTime {
     public CpuTime(long numMillis) {
         this(numMillis, TimeUnit.MILLISECONDS);
     }
-    public CpuTime(long time, TimeUnit timeUnit) {
+    public CpuTime(long time, TimeUnit timeUnit) throws IllegalArgumentException {
+        if (time<0) {
+            throw new IllegalArgumentException("time must be > 0");
+        }
         this.time=time;
         this.timeUnit=timeUnit;
     }
@@ -38,7 +41,15 @@ public class CpuTime {
         return TimeUnit.MILLISECONDS.convert(time, timeUnit);
     }
     
-    public String format() {
+    /**
+     * Get (default) human readable display value for this instance.
+     * @return
+     */
+    public String getDisplayValue() {
         return PeriodFormat.getDefault().print(new Duration(asMillis()).toPeriod());
+    }
+    
+    public String toString() {
+        return ""+time+" "+timeUnit.toString();
     }
 }
