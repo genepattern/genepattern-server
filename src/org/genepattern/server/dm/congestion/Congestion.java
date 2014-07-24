@@ -15,6 +15,7 @@ public class Congestion {
 
     private String lsid;
     private long runtime;
+    private long queuetime;
 
     @Column(name = "virtual_queue")
     private String virtualQueue;
@@ -41,6 +42,14 @@ public class Congestion {
 
     public void setRuntime(long runtime) {
         this.runtime = runtime;
+    }
+
+    public long getQueuetime() {
+        return queuetime;
+    }
+
+    public void setQueuetime(long runtime) {
+        this.runtime = queuetime;
     }
 
     public String getVirtualQueue() {

@@ -80,7 +80,7 @@ public class CongestionManager {
      * @return
      * @throws Exception
      */
-    static public Congestion updateCongestion(String lsid, long runtime) throws Exception {
+    static public Congestion updateCongestion(String lsid, long runtime, long queuetime) throws Exception {
         boolean inTransaction = HibernateUtil.isInTransaction();
 
         CongestionDao dao = new CongestionDao();
@@ -93,10 +93,10 @@ public class CongestionManager {
             }
 
             if (congestion == null) {
-                return createCongestion(lsid, runtime);
+                return createCongestion(lsid, runtime, queuetime);
             }
 
-            return updateCongestion(congestion, runtime);
+            return updateCongestion(congestion, runtime, queuetime);
         }
         catch (Throwable t) {
             log.error("Error in updateCongestion(), rolling back commit.", t);
@@ -116,13 +116,16 @@ public class CongestionManager {
      * @return
      * @throws Exception
      */
-    static public Congestion updateCongestion(Congestion congestion, long runtime) throws Exception {
+    static public Congestion updateCongestion(Congestion congestion, long runtime, long queuetime) throws Exception {
         boolean inTransaction = HibernateUtil.isInTransaction();
 
         CongestionDao dao = new CongestionDao();
 
         long averageRuntime = calculateRuntime(congestion, runtime);
         congestion.setRuntime(averageRuntime);
+
+        long averageQueuetime = calculateQueuetime(congestion, queuetime);
+        congestion.setQueuetime(averageQueuetime);
 
         String virtualQueue = getVirtualQueue(congestion.getLsid());
         congestion.setVirtualQueue(virtualQueue);
@@ -176,7 +179,7 @@ public class CongestionManager {
      * @return
      * @throws Exception
      */
-    static private Congestion createCongestion(String lsid, long runtime) throws Exception {
+    static private Congestion createCongestion(String lsid, long runtime, long queuetime) throws Exception {
         boolean inTransaction = HibernateUtil.isInTransaction();
 
         CongestionDao dao = new CongestionDao();
@@ -185,6 +188,7 @@ public class CongestionManager {
         Congestion congestion = new Congestion();
         congestion.setLsid(lsid);
         congestion.setRuntime(runtime);
+        congestion.setQueuetime(queuetime);
         congestion.setVirtualQueue(virtualQueue);
 
         try {
@@ -230,6 +234,28 @@ public class CongestionManager {
             then average with the runtime of the current completed job.
          */
         return (congestion.getRuntime() * weight + runtime) / (weight + 1);
+    }
+
+    /**
+     * Calculates an estimated queuetime for a task based on the just completed queuetime
+     * and the previous queuetime data.
+     *
+     * Formula:
+     * Averages the current queuetime with the previous average, weighting the previous average as configured.
+     *
+     * @param congestion
+     * @param queuetime
+     * @return
+     */
+    static private long calculateQueuetime(Congestion congestion, long queuetime) {
+        GpContext context = GpContext.getServerContext();
+        int weight = ServerConfigurationFactory.instance().getGPIntegerProperty(context, "congestion.compare.weight", 3);
+
+        /*
+            Pretend the last WEIGHT jobs took the current average amount of time to complete,
+            then average with the runtime of the current completed job.
+         */
+        return (congestion.getQueuetime() * weight + queuetime) / (weight + 1);
     }
 
     /**
