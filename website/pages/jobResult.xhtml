@@ -19,8 +19,9 @@
         GenePattern | Job #{(!empty jobStatusBean.jobInfo ) ? jobStatusBean.jobInfo.jobNumber : "not set" }
     </ui:define>
 	<ui:define name="headText">
+        <script type="text/javascript" src="#{facesContext.externalContext.requestContextPath}/js/gpUtil.js"></script>
 		<script type="text/javascript">
-                var currentJobNumber = #{jobStatusBean.jobInfo.jobNumber};
+                var currentJobNumber = #{jobStatusBean.jobInfo.jobNumber};                
 
                 function setEmailNotification(cb, jobId, userId, userEmail) {
                     var valid = userEmail != null &amp;&amp; userEmail.length > 0;
@@ -242,6 +243,8 @@
                 
                 $(document).ready(function () {
                 	$("body").tooltip();
+                    var id="statusDetailsDiv"+#{jobStatusBean.jobInfo.jobNumber};
+                	gpUtil.initToggleDiv(id, 'Hide', 'Show');
                 });
 
                 $.ajax({
@@ -435,7 +438,7 @@
                                 </tr>
                                 <tr>
                                     <td colspan="3" style="padding-left: 24px;">
-                                    <a style="color: #0066FF;" href="javascript:toggle('statusDetailsDiv#{jobStatusBean.jobInfo.jobNumber}', 'Hide', 'Show');"><span
+                                    <a style="color: #0066FF;" href="javascript:gpUtil.toggleDiv('statusDetailsDiv#{jobStatusBean.jobInfo.jobNumber}', 'Hide', 'Show');"><span
                                     id="statusDetailsDiv#{jobStatusBean.jobInfo.jobNumber}Label">Show</span> details</a>
                                     </td>
                                 </tr>

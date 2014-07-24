@@ -36,7 +36,7 @@
                             <tr><td>Finished running</td><td><h:outputText value="#{jobStatus.endTime}" converter="gp" /></td></tr>
                             <tr><td>Completed in GenePattern</td><td><h:outputText value="#{jobStatus.dateCompletedInGp}" converter="gp" /></td></tr>
                             <tr><th colspan="2">Usage stats</th></tr>
-                            <tr><td>CPU usage</td><td><h:outputText value="#{jobStatus.cpuTime.format}"  /></td></tr>
+                            <tr><td>CPU usage</td><td><h:outputText value="#{jobStatus.cpuTime.displayValue}"  /></td></tr>
                             <tr><td>Max memory</td><td><h:outputText value="#{jobStatus.maxMemory.displayValue}"  /></td></tr>
                             <tr><td>Max swap</td><td><h:outputText value="#{jobStatus.maxSwap.displayValue}"  /></td></tr>
                             <tr><td>Max processes</td><td><h:outputText value="#{jobStatus.maxProcesses}"  /></td></tr>
@@ -46,7 +46,7 @@
                 </tr>
                 <tr>
                     <td align="right" valign="middle">
-                        <a style="color:#0066FF;" href="javascript:toggle('statusDetailsDiv#{jobStatus.gpJobNo}', 'Hide', 'Show')"><img src="/gp/images/cross.gif" /> hide</a>
+                        <a style="color:#0066FF;" href="javascript:gpUtil.toggleDiv('statusDetailsDiv#{jobStatus.gpJobNo}', 'Hide', 'Show')"><img src="/gp/images/cross.gif" /> hide</a>
                     </td>
                 </tr>
             </table>

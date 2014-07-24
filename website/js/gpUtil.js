@@ -68,11 +68,59 @@ var gpUtil = function() {
         return formatTimezone(theDate.getTimezoneOffset());
     }
 
+    /**
+     * Hide or show the div based on whether or not the cookie has been set.
+     * By default the div is hidden, unless the cookie was set.
+     */
+    function initToggleDiv(id, openLabel, closedLabel) {
+        if ($.cookie("show_"+id)) {
+            //show it
+            toggleHideShowDiv(true, id, openLabel, closedLabel);
+        }
+        else {
+            //hide it
+            toggleHideShowDiv(false, id, openLabel, closedLabel);
+        }
+    }
+
+    /**
+     * Toggle visibility of the div with the given id, saving visibility state as a cookie for subsequent page reloads.
+     */
+    function toggleDiv(id, openLabel, closedLabel) {
+        var show = !($("#"+id).is(":visible"));
+        toggleHideShowDiv(show, id, openLabel, closedLabel);
+    }
+
+    /**
+     * Helper method which optionally changes the content of the id{Label}.
+     */
+    function toggleHideShowDiv(show, id, openLabel, closedLabel) {
+        if (show===true) {
+            $("#"+id).show();
+        }
+        else {
+            $("#"+id).hide();
+        }
+        var isVisible = ($("#"+id).is(":visible"));
+        // optionally toggle the label content
+        if (openLabel) {
+            $("#"+id+"Label").html(isVisible ? openLabel : closedLabel);
+        }
+        if (isVisible) {
+            $.cookie("show_"+id, "true");
+        }
+        else {
+            $.removeCookie("show_"+id);
+        }
+    }
+
     // declare 'public' functions
     return {
         formatTimezone:formatTimezone,
         getTimezoneOffsetIso:getTimezoneOffsetIso,
         formatDate:formatDate,
-        formatTimeOfDay:formatTimeOfDay
+        formatTimeOfDay:formatTimeOfDay,
+        initToggleDiv:initToggleDiv,
+        toggleDiv:toggleDiv
     };
 }();
