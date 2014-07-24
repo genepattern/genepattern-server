@@ -70,7 +70,53 @@ if (!window.console) {
     };
 }
 
-function checkDiskQuota()
+function isAboveQuota(diskInfo, diskUsageAddon)
+{
+    var isAboveQuota = false;
+    if(diskInfo != null && diskInfo.diskUsageFilesTab != null && diskInfo.diskQuota)
+    {
+        var diskUsage = diskInfo.diskUsageFilesTab.numBytes;
+        var diskQuota = diskInfo.diskQuota.numBytes;
+        isAboveQuota = diskUsage > diskQuota;
+    }
+
+    //this is to check if adding the specified amount of bytes to
+    //the disk usage will cause the disk usage to be exceed
+    if(diskUsageAddon != undefined && diskUsageAddon != null)
+    {
+        var diskUsagePlus = diskUsage + diskUsageAddon;
+        isAboveQuota = diskUsagePlus > diskQuota;
+    }
+
+    return isAboveQuota;
+}
+
+function handleDiskQuotaMsg(diskInfo, aboveQuota)
+{
+    //remove any previous disk quota messages
+    $("#diskQuotaMessage").remove();
+
+    if(aboveQuota)
+    {
+        //display a message and keep the job submit button disabled
+        //disable the job submit button - do not allow the user to submit any jobs
+        $("button.Run").attr("disabled", "disabled");
+        $("button.Run").removeClass("ui-state-default").addClass("whiteBg");
+
+        var quotaExceededMsg = $("<div id='diskQuotaMessage' class='errorMessage'>Disk usage quota exceeded. </div>");
+        quotaExceededMsg.append("Disk Usage: " +  diskInfo.diskUsageFilesTab.displayValue + ". Quota: " + diskInfo.diskQuota.displayValue + ".");
+        quotaExceededMsg.append("<p>Job submission has been disabled. Please delete some files from the Files tab.</p>");
+        $("#paramsListingDiv").before(quotaExceededMsg);
+    }
+    else
+    {
+        //enable the job submit button
+        $("button.Run").removeClass("whiteBg").addClass("ui-state-default");
+        $("button.Run").removeAttr("disabled");
+    }
+}
+
+function checkDiskQuota(successFunction)
 {
     $.ajax({
         type: "GET",
@@ -80,37 +126,20 @@ function checkDiskQuota()
 
             console.log(response);
 
-            var isAboveQuota = false;
+            var aboveQuota = false;
 
             if(response.diskQuota != null && response.diskUsageFilesTab != null)
             {
-                var diskQuotaBytes = response.diskQuota.numBytes;
-
-                //only look at files tab in determining in quota was exceeed
-                var diskUsageBytes = response.diskUsageFilesTab.numBytes;
-
-                isAboveQuota = diskUsageBytes > diskQuotaBytes;
+                //fileSizeInBytes contains additional bytes to add to the total disk usage
+                //when checking if disk quota is exceeded
+                aboveQuota = isAboveQuota(response);
             }
 
-            if(isAboveQuota)
-            {
-                //display a message and keep the job submit button disabled
-                //disable the job submit button - do not allow the user to submit any jobs
-                $("button.Run").attr("disabled", "disabled");
-                $("button.Run").removeClass("ui-state-default").addClass("whiteBg");
+            handleDiskQuotaMsg(response, aboveQuota);
 
-                var quotaExceededMsg = $("<div id='diskQuotaMessage' class='errorMessage'>Disk usage quota exceeded. </div>");
-                quotaExceededMsg.append("Disk Usage: " +  response.diskUsageFilesTab.displayValue + ". Quota: " + response.diskQuota.displayValue + ".");
-                quotaExceededMsg.append("<p>Job submission has been disabled. Please delete some files from the Files tab.</p>");
-                $("#paramsListingDiv").before(quotaExceededMsg);
-            }
-            else
+            if(successFunction != undefined && successFunction != null)
             {
-                //enable the job submit button
-                $("button.Run").removeClass("whiteBg").addClass("ui-state-default");
-                $("button.Run").removeAttr("disabled");
-
-                $("#diskQuotaMessage").remove();
+                successFunction(response, aboveQuota);
             }
         },
         error: function (xhr, ajaxOptions, thrownError) {

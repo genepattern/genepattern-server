@@ -547,8 +547,8 @@ function ajaxFileTabUpload(file, directory, done, index) {
             });
     });
 
-    // Create the upload resource
-    eventQueue.push(function() {
+    function createUploadPath()
+    {
         $.ajax({
             type: "POST",
             url: "/gp/rest/v1/upload/multipart/?path=" + encodeURIComponent(path) + "&parts=" + totalChunks,
@@ -559,6 +559,33 @@ function ajaxFileTabUpload(file, directory, done, index) {
             },
             error: function(data) {
                 eventError = data;
+            }
+        });
+    }
+    // Create the upload resource
+    eventQueue.push(function() {
+        checkDiskQuota(function(diskInfo, exceeded)
+        {
+            //first check if uploading this file with cause
+            // the disk quota to be exceeded
+            var willBeExceeded = isAboveQuota(diskInfo, file.size);
+
+            if(!exceeded && !willBeExceeded)
+            {
+                createUploadPath();
+            }
+            else
+            {
+                //error if disk quota was already exceeded before
+                //uploading this file
+                if(exceeded)
+                {
+                    eventError = "Disk quota exceeded";
+                }
+                else
+                {
+                    eventError = "Uploading this file will cause the disk quota to be exceeded";
+                }
             }
         });
     });
