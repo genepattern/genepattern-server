@@ -200,7 +200,7 @@ public class UploadResource {
 
             if(diskInfo.isAboveQuota())
             {
-                //disk usage exceeded so abort the fail upload
+                //disk usage exceeded so abort the file upload
                 throw new FileUploadException("Disk usage exceeded.");
             }
 
