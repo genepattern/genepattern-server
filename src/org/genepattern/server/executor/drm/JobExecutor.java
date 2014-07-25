@@ -22,14 +22,22 @@ import org.genepattern.drm.DrmJobState;
 import org.genepattern.drm.DrmJobStatus;
 import org.genepattern.drm.DrmJobSubmission;
 import org.genepattern.drm.JobRunner;
+import org.genepattern.server.DbException;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.executor.CommandExecutor2;
 import org.genepattern.server.executor.CommandExecutorException;
 import org.genepattern.server.executor.CommandProperties;
+import org.genepattern.server.executor.drm.dao.JobRunnerJob;
+import org.genepattern.server.executor.drm.dao.JobRunnerJobDao;
+import org.genepattern.server.executor.events.JobEventBus;
+import org.genepattern.server.executor.events.JobStartedEvent;
 import org.genepattern.server.genepattern.GenePatternAnalysisTask;
+import org.genepattern.server.job.status.Status;
 import org.genepattern.webservice.JobInfo;
 import org.genepattern.webservice.JobStatus;
+
+import com.google.common.eventbus.EventBus;
 
 
 /**
@@ -84,50 +92,6 @@ public class JobExecutor implements CommandExecutor2 {
      */
     public static final String PROP_LOOKUP_TYPE="lookupType";
     
-    private String jobRunnerClassname;
-    private String jobRunnerName;
-    private JobRunner jobRunner;
-    private DrmLookup jobLookupTable;
-    
-    private long fixedDelay=2000L;
-
-    private static final int BOUND = 100000;
-    private BlockingQueue<DrmJobRecord> runningJobs;
-    private Thread jobHandlerThread;
-    
-    // wait for a fixed delay before putting a job back on the status checking queue
-    private ScheduledExecutorService svcDelay=Executors.newSingleThreadScheduledExecutor(new ThreadFactory() {
-        @Override
-        public Thread newThread(final Runnable r) {
-            final Thread t=new Thread(r);
-            t.setDaemon(true);
-            t.setName("JobExecutor-0");
-            return t;
-        }
-    });
-
-    // call to JobRunner.getStatus in a separate thread so that it can be killed after a timeout period
-    private ScheduledExecutorService jobStatusService=Executors.newSingleThreadScheduledExecutor(new ThreadFactory() {
-        @Override
-        public Thread newThread(final Runnable r) {
-            final Thread t=new Thread(r);
-            t.setDaemon(true);
-            t.setName("JobExecutor-1");
-            return t;
-        }
-    });
-
-    // call to JobRunner.cancelJob in a separate thread
-    private ScheduledExecutorService jobCancellationService=Executors.newSingleThreadScheduledExecutor(new ThreadFactory() {
-        @Override
-        public Thread newThread(final Runnable r) {
-            final Thread t=new Thread(r);
-            t.setDaemon(true);
-            t.setName("JobRunner-cancel");
-            return t;
-        }
-    });
-
     /**
      * Load JobRunner from classname.
      * @param classname
@@ -170,6 +134,66 @@ public class JobExecutor implements CommandExecutor2 {
         }
     }
     
+    public JobExecutor() {
+        this( JobEventBus.instance() );
+    }
+    
+    public JobExecutor(EventBus eventBus) {
+        this.eventBus=eventBus;
+    }
+    
+    private String jobRunnerClassname;
+    private String jobRunnerName;
+    private JobRunner jobRunner;
+    private DrmLookup jobLookupTable;
+    private EventBus eventBus;
+    
+    private long fixedDelay=2000L;
+
+    private BlockingQueue<DrmJobRecord> runningJobs;
+    private Thread jobHandlerThread;
+    
+    // wait for a fixed delay before putting a job back on the status checking queue
+    private ScheduledExecutorService svcDelay=Executors.newSingleThreadScheduledExecutor(new ThreadFactory() {
+        @Override
+        public Thread newThread(final Runnable r) {
+            final Thread t=new Thread(r);
+            t.setDaemon(true);
+            t.setName("JobExecutor-0");
+            return t;
+        }
+    });
+
+    // call to JobRunner.getStatus in a separate thread so that it can be killed after a timeout period
+    private ScheduledExecutorService jobStatusService=Executors.newSingleThreadScheduledExecutor(new ThreadFactory() {
+        @Override
+        public Thread newThread(final Runnable r) {
+            final Thread t=new Thread(r);
+            t.setDaemon(true);
+            t.setName("JobExecutor-1");
+            return t;
+        }
+    });
+
+    // call to JobRunner.cancelJob in a separate thread
+    private ScheduledExecutorService jobCancellationService=Executors.newSingleThreadScheduledExecutor(new ThreadFactory() {
+        @Override
+        public Thread newThread(final Runnable r) {
+            final Thread t=new Thread(r);
+            t.setDaemon(true);
+            t.setName("JobRunner-cancel");
+            return t;
+        }
+    });
+    
+    protected void setJobLookupTable(DrmLookup jobLookupTable) {
+        this.jobLookupTable=jobLookupTable;
+    }
+    
+    protected void fireJobStartedEvent(Status prevStatus, Status newStatus) {
+        eventBus.post(new JobStartedEvent(prevStatus, newStatus));
+    }
+
     private void handleCompletedJob(final DrmJobRecord jobRecord, final DrmJobStatus jobStatus) {
         log.debug("handleCompletedJob, gpJobNo="+jobRecord.getGpJobNo()+",extJobId="+jobRecord.getExtJobId()+", jobStatus="+jobStatus);
         final Integer gpJobNo=jobRecord.getGpJobNo();
@@ -296,13 +320,14 @@ public class JobExecutor implements CommandExecutor2 {
         }
 
         this.jobRunner=JobExecutor.initJobRunner(jobRunnerClassname);
-        this.jobLookupTable=DrmLookupFactory.initializeDrmLookup(lookupType, jobRunnerClassname, jobRunnerName);
+        setJobLookupTable( DrmLookupFactory.initializeDrmLookup(lookupType, jobRunnerClassname, jobRunnerName) );
         log.info("Initialized jobRunner from classname="+jobRunnerClassname+", jobRunnerName="+jobRunnerName);
     }
 
     @Override
     public void start() {
         log.info("starting job executor: "+jobRunnerName+" ( "+jobRunnerName+" ) ...");
+        final int BOUND = 100000;
         runningJobs=new LinkedBlockingQueue<DrmJobRecord>(BOUND);
         initJobHandler();
         initJobsOnStartup(runningJobs);
@@ -321,7 +346,7 @@ public class JobExecutor implements CommandExecutor2 {
         }
     }
     
-    private void updateStatus(final DrmJobRecord drmJobRecord, final DrmJobStatus drmJobStatus) {
+    protected void updateStatus(final DrmJobRecord drmJobRecord, final DrmJobStatus drmJobStatus) {
         if (drmJobStatus==null) {
             //ignore
             log.debug("drmJobStatus==null");
@@ -332,13 +357,82 @@ public class JobExecutor implements CommandExecutor2 {
             log.debug("drmJobRecord==null");
             return;
         }
+        Integer gpJobNo=drmJobRecord.getGpJobNo();
         if (log.isDebugEnabled()) {
-            log.debug("recording status for gpJobId="+drmJobRecord.getGpJobNo()+
+            log.debug("recording status for gpJobNo="+gpJobNo+
                     ", drmJobStatus="+drmJobStatus);
         }
+        if (gpJobNo==null) {
+            //ignore
+            log.debug("gpJobNo==null");
+            return;
+        }
         
-        //record this to the lookup table
-        jobLookupTable.updateJobStatus(drmJobRecord, drmJobStatus);
+        JobRunnerJob prevJobRunnerJob=null;
+        try {
+            // init previous status
+            prevJobRunnerJob = new JobRunnerJobDao().selectJobRunnerJob(gpJobNo);
+            // record new status to the job_runner_job table
+            new JobRunnerJobDao().updateJobStatus(gpJobNo, drmJobStatus);
+        }
+        catch (DbException e) {
+            //ignore exception
+        }
+
+        // check for transition from !RUNNING -> RUNNING
+        if (drmJobStatus.getJobState().is(DrmJobState.STARTED)) {
+            if (prevJobRunnerJob == null || !isRunning(prevJobRunnerJob.getJobState())) {
+                //fire job started event
+                fireJobStartedEvent(gpJobNo, prevJobRunnerJob, drmJobStatus);
+            }
+        }
+        
+    }
+    
+    protected boolean isRunning(final String job_state) {
+        try {
+            return DrmJobState.valueOf(job_state).is(DrmJobState.RUNNING);
+        }
+        catch (Throwable t) {
+            log.error("Unexpected error initializing DrmJobState from db, job_state="+job_state, t);
+        }
+        return false;
+    }
+    
+    protected void fireJobStartedEvent(final Integer gpJobNo, final JobRunnerJob prevJobRunnerJob,final DrmJobStatus drmJobStatus) {
+        JobRunnerJob curJobRunnerJob=getCurrentJobRunnerJob(gpJobNo);
+        Status prevStatus=null;
+        if (prevJobRunnerJob != null) {
+            prevStatus=new Status.Builder()
+                .jobStatusRecord(prevJobRunnerJob)
+            .build();
+        }
+        Status curStatus=null;
+        if (curJobRunnerJob != null) {
+            curStatus=new Status.Builder()
+                .jobStatusRecord(curJobRunnerJob)
+            .build();
+        }
+        
+        // asssume it's a job started event, this commented out code shows how to check, in cases when we are not sure
+        //if (curStatus != null && curStatus.getIsRunning()) {
+        //    // the job is running, was it not running before?
+        //    if (prevStatus == null || !prevStatus.getIsRunning()) {
+        //        fireJobStartedEvent(prevStatus, curStatus);
+        //    }
+        //}
+        fireJobStartedEvent(prevStatus, curStatus);
+    }
+    
+    protected JobRunnerJob getCurrentJobRunnerJob(Integer gpJobNo) {
+        try {
+            JobRunnerJob jobRunnerJob = new JobRunnerJobDao().selectJobRunnerJob(gpJobNo);
+            return jobRunnerJob;
+        }
+        catch (DbException e) {
+            //ignore exception
+        }
+        return null;
     }
 
     private DrmJobStatus getJobStatus(final DrmJobRecord drmJobRecord) throws InterruptedException {
