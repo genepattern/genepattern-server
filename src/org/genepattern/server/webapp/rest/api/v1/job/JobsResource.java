@@ -24,8 +24,10 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 
+import com.sun.jersey.api.client.ClientResponse;
 import org.apache.log4j.Logger;
 import org.genepattern.codegenerator.CodeGeneratorUtil;
+import org.genepattern.server.DbException;
 import org.genepattern.server.JobInfoManager;
 import org.genepattern.server.JobInfoWrapper;
 import org.genepattern.server.JobManager;
@@ -37,6 +39,7 @@ import org.genepattern.server.dm.UrlUtil;
 import org.genepattern.server.job.input.JobInput;
 import org.genepattern.server.job.status.JobStatusLoaderFromDb;
 import org.genepattern.server.job.status.Status;
+import org.genepattern.server.quota.DiskInfo;
 import org.genepattern.server.rest.GpServerException;
 import org.genepattern.server.rest.JobInputApi;
 import org.genepattern.server.rest.JobInputApiFactory;
@@ -116,7 +119,28 @@ public class JobsResource {
             final JobInputValues jobInputValues) 
     {
         final GpContext jobContext=Util.getUserContext(request);
-        
+
+        try
+        {
+            //check if the user is above their disk quota
+            //first check if the disk quota is or will be exceeded
+            DiskInfo diskInfo = DiskInfo.createDiskInfo(ServerConfigurationFactory.instance(), userContext);
+
+            if(diskInfo.isAboveQuota())
+            {
+                //disk usage exceeded so do not allow user to run a job
+                return Response.status(ClientResponse.Status.FORBIDDEN).entity("Disk usage exceeded.").build();
+            }
+        }
+        catch(DbException db)
+        {
+            throw new WebApplicationException(
+                    Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+                            .entity(db.getMessage())
+                            .build()
+            );
+        }
+
         final JSONObject rval=new JSONObject();
         try {
             //TODO: add support for batch jobs to REST API

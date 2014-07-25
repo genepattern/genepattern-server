@@ -22,12 +22,14 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 
+import org.apache.commons.fileupload.FileUploadException;
 import org.apache.log4j.Logger;
 import org.genepattern.codegenerator.CodeGeneratorUtil;
 import org.genepattern.data.pipeline.GetIncludedTasks;
 import org.genepattern.modules.ModuleJSON;
 import org.genepattern.modules.ParametersJSON;
 import org.genepattern.modules.ResponseJSON;
+import org.genepattern.server.DbException;
 import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
@@ -43,6 +45,7 @@ import org.genepattern.server.job.input.LoadModuleHelper;
 import org.genepattern.server.job.input.Param;
 import org.genepattern.server.job.input.ReloadJobHelper;
 import org.genepattern.server.job.input.configparam.JobConfigParams;
+import org.genepattern.server.quota.DiskInfo;
 import org.genepattern.server.repository.SourceInfo;
 import org.genepattern.server.repository.SourceInfoLoader;
 import org.genepattern.server.rest.GpServerException;
@@ -429,6 +432,28 @@ public class RunTaskServlet extends HttpServlet
         @Context HttpServletRequest request)
     {
         final GpContext userContext = Util.getUserContext(request);
+
+        try
+        {
+            //check if the user is above their disk quota
+            //first check if the disk quota is or will be exceeded
+            DiskInfo diskInfo = DiskInfo.createDiskInfo(ServerConfigurationFactory.instance(), userContext);
+
+            if(diskInfo.isAboveQuota())
+            {
+                //disk usage exceeded so do not allow user to run a job
+                return Response.status(ClientResponse.Status.FORBIDDEN).entity("Disk usage exceeded.").build();
+            }
+        }
+        catch(DbException db)
+        {
+            throw new WebApplicationException(
+                    Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+                            .entity(db.getMessage())
+                            .build()
+            );
+        }
+
         final boolean enableJobConfigParams=ServerConfigurationFactory.instance().getGPBooleanProperty(userContext, JobConfigParams.PROP_ENABLE_EXECUTOR_INPUT_PARAMS, true);
         if (enableJobConfigParams) {
             return newAddJob(userContext, jobSubmitInfo, request);
