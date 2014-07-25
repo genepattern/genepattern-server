@@ -296,7 +296,7 @@ public class CongestionManager {
      */
     static private long calculateQueuetime(CongestionDao dao, String virtualQueue, long queuetime) {
         int count = dao.getVirtualQueueCount(virtualQueue);
-        if (count == 0) return 0;
+        if (count <= 1) return 0;
         else return queuetime;
     }
 

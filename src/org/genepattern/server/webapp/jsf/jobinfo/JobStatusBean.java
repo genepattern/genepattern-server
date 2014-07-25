@@ -306,9 +306,6 @@ public class JobStatusBean {
      * @return
      */
     public String getEstimatedQueuetime() {
-        // Lazily initialize listener
-        CongestionListener.init();
-
         Congestion congestion = CongestionManager.getCongestion(jobInfoWrapper.getTaskLSID());
         if (congestion == null) {
             return "No estimate available";
@@ -323,9 +320,6 @@ public class JobStatusBean {
      * @return
      */
     public String getEstimatedRuntime() {
-        // Lazily initialize listener
-        CongestionListener.init();
-
         Congestion congestion = CongestionManager.getCongestion(jobInfoWrapper.getTaskLSID());
         if (congestion == null) {
             return "No estimate available";

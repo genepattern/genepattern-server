@@ -11,6 +11,7 @@ import org.genepattern.server.executor.drm.dao.JobRunnerJobDao;
 import org.genepattern.server.executor.events.JobCompletionEvent;
 import org.genepattern.server.executor.events.JobEventBus;
 import org.genepattern.server.executor.events.JobProcessingEvent;
+import org.genepattern.server.executor.events.JobStartedEvent;
 
 import javax.swing.event.ChangeEvent;
 
@@ -34,8 +35,8 @@ public class CongestionListener {
     }
 
     @Subscribe
-    public void updateUponProcessing(JobProcessingEvent event) {
-        int jobId = (Integer) event.getSource();
+    public void updateUponProcessing(JobStartedEvent event) {
+        int jobId = event.getJobStatus().getGpJobNo();
 
         AnalysisJobDAO dao = new AnalysisJobDAO();
         AnalysisJob job = dao.findById(jobId);
@@ -55,26 +56,22 @@ public class CongestionListener {
             }
         }
 
-        // If the job has completed, update the congestion data
-        // This will ignore canceled or erroneous jobs
-        if (job.getJobStatus().getStatusId() == JobStatus.JOB_FINISHED) {
-            // Get the task LSID
-            String lsid = job.getTaskLsid();
+        // Get the task LSID
+        String lsid = job.getTaskLsid();
 
-            // Find the time difference between submission and start time, then convert to seconds
-            // If JobRunnerJob isn't available, fall back to 0
-            long queuetime = jrjJob != null ? ((jrjJob.getStartTime().getTime() - jrjJob.getSubmitTime().getTime()) / 1000) : 0;
+        // Find the time difference between submission and start time, then convert to seconds
+        // If JobRunnerJob isn't available, fall back to 0
+        long queuetime = jrjJob != null ? ((jrjJob.getStartTime().getTime() - jrjJob.getSubmitTime().getTime()) / 1000) : 0;
 
-            // Get the queue name
-            String queueName = jrjJob != null ? jrjJob.getQueueId() : null;
+        // Get the queue name
+        String queueName = jrjJob != null ? jrjJob.getQueueId() : null;
 
-            // Update the database
-            try {
-                CongestionManager.updateCongestionQueuetime(lsid, queueName, queuetime);
-            }
-            catch (Exception e) {
-                log.error("Error updating congestion data for job ID: " + jobId);
-            }
+        // Update the database
+        try {
+            CongestionManager.updateCongestionQueuetime(lsid, queueName, queuetime);
+        }
+        catch (Exception e) {
+            log.error("Error updating congestion data for job ID: " + jobId);
         }
     }
 
