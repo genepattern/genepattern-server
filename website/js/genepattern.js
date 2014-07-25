@@ -551,7 +551,7 @@ function ajaxFileTabUpload(file, directory, done, index) {
     {
         $.ajax({
             type: "POST",
-            url: "/gp/rest/v1/upload/multipart/?path=" + encodeURIComponent(path) + "&parts=" + totalChunks,
+            url: "/gp/rest/v1/upload/multipart/?path=" + encodeURIComponent(path) + "&parts=" + totalChunks + "&fileSize=" + file.size,
             success: function(data) {
                 eventComplete = true;
                 token = data['token'];

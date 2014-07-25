@@ -31,6 +31,7 @@ import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.dm.GpFileObjFactory;
 import org.genepattern.server.dm.GpFilePath;
 import org.genepattern.server.dm.userupload.UserUploadManager;
+import org.genepattern.server.quota.DiskInfo;
 import org.genepattern.server.webapp.rest.api.v1.Util;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -183,14 +184,32 @@ public class UploadResource {
     public Response startMultipartUpload(
             @Context HttpServletRequest request, 
             final @QueryParam("path") String path, 
-            @QueryParam("parts") int parts) {
+            @QueryParam("parts") int parts,
+            @QueryParam("fileSize") long fileSize) {
         try {
             // Get the user context
             GpContext userContext = Util.getUserContext(request);
             if (log.isDebugEnabled()) {
                 log.debug("path="+path);
                 log.debug("parts="+parts);
+                log.debug("fileSize=" + fileSize);
             }
+
+            //first check if the disk quota is or will be exceeded
+            DiskInfo diskInfo = DiskInfo.createDiskInfo(ServerConfigurationFactory.instance(), userContext);
+
+            if(diskInfo.isAboveQuota())
+            {
+                //disk usage exceeded so abort the fail upload
+                throw new FileUploadException("Disk usage exceeded.");
+            }
+
+            if(diskInfo.isAboveQuota(fileSize))
+            {
+                //disk usage exceeded so abort the fail upload
+                throw new FileUploadException("Uploading file will cause disk usage to be exceeded");
+            }
+
             GpFilePath file = getUploadFile(userContext, path);
 
             // Check if the file exists and throw an error if it does

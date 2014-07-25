@@ -1,5 +1,6 @@
 package org.genepattern.server.quota;
 
+import org.apache.commons.fileupload.FileUploadException;
 import org.apache.log4j.Logger;
 import org.genepattern.drm.Memory;
 import org.genepattern.server.DbException;
@@ -94,5 +95,27 @@ public class DiskInfo
         }
 
         return diskInfo;
+    }
+
+    public boolean isAboveQuota()
+    {
+        return isAboveQuota(-1);
+    }
+
+    public boolean isAboveQuota(long fileSizeInBytes)
+    {
+        if(diskQuota == null || diskUsageFilesTab == null)
+        {
+            return false;
+        }
+
+        long diskUsagePlus = diskUsageFilesTab.getNumBytes() + fileSizeInBytes;
+
+        if(fileSizeInBytes > 0)
+        {
+            diskUsagePlus += fileSizeInBytes;
+        }
+
+        return diskUsagePlus > diskQuota.getNumBytes();
     }
 }
