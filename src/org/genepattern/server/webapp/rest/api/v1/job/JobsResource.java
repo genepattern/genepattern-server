@@ -124,7 +124,7 @@ public class JobsResource {
         {
             //check if the user is above their disk quota
             //first check if the disk quota is or will be exceeded
-            DiskInfo diskInfo = DiskInfo.createDiskInfo(ServerConfigurationFactory.instance(), userContext);
+            DiskInfo diskInfo = DiskInfo.createDiskInfo(ServerConfigurationFactory.instance(), jobContext);
 
             if(diskInfo.isAboveQuota())
             {
