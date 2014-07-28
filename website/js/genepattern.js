@@ -1651,7 +1651,7 @@ function createFileWidget(linkElement, appendTo) {
                             {
                                 //first check if disk quota was already exceeded
                                 exceeded = diskInfo.aboveQuota;
-                                willBeExceeded = diskQuotaCheckPlus(diskInfo, fileSize);
+                                willBeExceeded = diskQuotaCheckPlus(diskInfo, parseInt(fileSize));
                             }
 
                             if(exceeded)
