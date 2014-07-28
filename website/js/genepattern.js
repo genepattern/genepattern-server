@@ -477,6 +477,27 @@ function jobStatusPoll() {
     }
 }
 
+function diskQuotaCheckPlus(diskInfo, fileSize)
+{
+    var exceeded = false;
+    if(diskInfo != undefined && diskInfo != null)
+    {
+        //this is to check if adding the specified amount of bytes to
+        //the disk usage will cause the disk usage to be exceed
+        if(diskInfo.diskUsageFilesTab != undefined && diskInfo.diskUsageFilesTab
+            && diskInfo.diskUsageFilesTab.numBytes != undefined
+            && diskInfo.diskUsageFilesTab.numBytes != null
+            && diskInfo.diskQuota.numBytes != undefined
+            && diskInfo.diskQuota.numBytes != null)
+        {
+            var diskUsagePlus = diskInfo.diskUsageFilesTab.numBytes + fileSize;
+            exceeded = diskUsagePlus > diskInfo.diskQuota.numBytes;
+        }
+    }
+
+    return exceeded;
+}
+
 /**
  * Upload the multipart file
  *
@@ -562,30 +583,34 @@ function ajaxFileTabUpload(file, directory, done, index) {
             }
         });
     }
+
     // Create the upload resource
     eventQueue.push(function() {
-        checkDiskQuota(function(diskInfo, exceeded)
+        checkDiskQuota(function(diskInfo)
         {
-            //first check if uploading this file with cause
-            // the disk quota to be exceeded
-            var willBeExceeded = isAboveQuota(diskInfo, file.size);
+            //error if disk quota was already exceeded before
+            //uploading this file
+            var exceeded = false;
+            var willBeExceeded = false;
 
-            if(!exceeded && !willBeExceeded)
+            if(diskInfo != undefined && diskInfo != null)
             {
-                createUploadPath();
+                //first check if disk quota was already exceeded
+                exceeded = diskInfo.aboveQuota;
+                willBeExceeded = diskQuotaCheckPlus(diskInfo, file.size);
+            }
+
+            if(exceeded)
+            {
+                eventError = "Disk quota exceeded";
+            }
+            else if (willBeExceeded)
+            {
+                eventError = "Uploading this file will cause the disk quota to be exceeded";
             }
             else
             {
-                //error if disk quota was already exceeded before
-                //uploading this file
-                if(exceeded)
-                {
-                    eventError = "Disk quota exceeded";
-                }
-                else
-                {
-                    eventError = "Uploading this file will cause the disk quota to be exceeded";
-                }
+                createUploadPath();
             }
         });
     });
@@ -1567,6 +1592,7 @@ function createFileWidget(linkElement, appendTo) {
         var isPartialFile = linkElement.attr("data-partial") === "true";
 
         var kind = linkElement.attr("data-kind");
+        var fileSize = linkElement.attr("data-size");
 
         var lsidList = kindToModules[kind];
         if (lsidList === null || lsidList === undefined) lsidList = [];
@@ -1614,28 +1640,54 @@ function createFileWidget(linkElement, appendTo) {
                     }
 
                     else if (jobCopyAction) {
-                        openUploadDirectoryDialog(null, function() {
-                            var moveToUrl = $(uploadDirectorySelected).attr("href");
-                            var moveToPath = uploadPathFromUrl(moveToUrl);
+                        checkDiskQuota(function(diskInfo)
+                        {
+                            //error if disk quota was already exceeded before
+                            //uploading this file
+                            var exceeded = false;
+                            var willBeExceeded = false;
 
-                            $.ajax({
-                                type: "POST",
-                                url: "/gp/rest/v1/data/copy/?from=" + encodeURIComponent(path) + "&to=" + encodeURIComponent(moveToPath) + encodeURIComponent(name.trim()),
-                                success: function(data) {
-                                    showSuccessMessage(data);
-                                    refreshUploadTree();
+                            if(diskInfo != undefined && diskInfo != null)
+                            {
+                                //first check if disk quota was already exceeded
+                                exceeded = diskInfo.aboveQuota;
+                                willBeExceeded = diskQuotaCheckPlus(diskInfo, fileSize);
+                            }
 
-                                    $(".search-widget:visible").searchslider("hide");
-                                },
-                                error: function(data) {
-                                    if (typeof data === 'object') {
-                                        data = data.responseText;
-                                    }
+                            if(exceeded)
+                            {
+                                showErrorMessage("Disk quota exceeded");
+                            }
+                            else if (willBeExceeded)
+                            {
+                                showErrorMessage("Uploading this file will cause the disk quota to be exceeded");
+                            }
+                            else
+                            {
+                                openUploadDirectoryDialog(null, function() {
+                                    var moveToUrl = $(uploadDirectorySelected).attr("href");
+                                    var moveToPath = uploadPathFromUrl(moveToUrl);
 
-                                    showErrorMessage(data);
-                                    $(".search-widget:visible").searchslider("hide");
-                                }
-                            });
+                                    $.ajax({
+                                        type: "POST",
+                                        url: "/gp/rest/v1/data/copy/?from=" + encodeURIComponent(path) + "&to=" + encodeURIComponent(moveToPath) + encodeURIComponent(name.trim()),
+                                        success: function(data) {
+                                            showSuccessMessage(data);
+                                            refreshUploadTree();
+
+                                            $(".search-widget:visible").searchslider("hide");
+                                        },
+                                        error: function(data) {
+                                            if (typeof data === 'object') {
+                                                data = data.responseText;
+                                            }
+
+                                            showErrorMessage(data);
+                                            $(".search-widget:visible").searchslider("hide");
+                                        }
+                                    });
+                                });
+                            }
                         });
                     }
 
@@ -2405,6 +2457,7 @@ function renderJob(jobJson, tab) {
             .attr("onclick", "openFileWidget(this, '#menus-jobs'); return false;")
             .attr("href", file.link.href)
             .attr("data-kind", file.kind)
+            .attr("data-size", file.fileLength)
             .attr("data-sendtomodule", JSON.stringify(file.sendTo))
             .append(
             $("<img />")

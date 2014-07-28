@@ -91,12 +91,12 @@ function isAboveQuota(diskInfo, diskUsageAddon)
     return isAboveQuota;
 }
 
-function handleDiskQuotaMsg(diskInfo, aboveQuota)
+function handleDiskQuotaMsg(diskInfo)
 {
     //remove any previous disk quota messages
     $("#diskQuotaMessage").remove();
 
-    if(aboveQuota)
+    if(diskInfo != null && diskInfo.aboveQuota == true)
     {
         //display a message and keep the job submit button disabled
         //disable the job submit button - do not allow the user to submit any jobs
@@ -127,20 +127,14 @@ function checkDiskQuota(successFunction)
 
             console.log(response);
 
-            var aboveQuota = false;
-
-            if(response.diskQuota != null && response.diskUsageFilesTab != null)
+            if(response != null)
             {
-                //fileSizeInBytes contains additional bytes to add to the total disk usage
-                //when checking if disk quota is exceeded
-                aboveQuota = isAboveQuota(response);
+                handleDiskQuotaMsg(response);
             }
-
-            handleDiskQuotaMsg(response, aboveQuota);
 
             if(successFunction != undefined && successFunction != null)
             {
-                successFunction(response, aboveQuota);
+                successFunction(response);
             }
         },
         error: function (xhr, ajaxOptions, thrownError) {
