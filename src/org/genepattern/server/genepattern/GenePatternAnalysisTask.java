@@ -108,7 +108,10 @@ import java.util.zip.ZipFile;
 import java.util.zip.ZipInputStream;
 
 import javax.servlet.ServletContext;
+import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.core.Response;
 
+import com.sun.jersey.api.client.ClientResponse;
 import org.apache.log4j.Logger;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.Target;
@@ -163,6 +166,7 @@ import org.genepattern.server.job.input.choice.Choice;
 import org.genepattern.server.job.input.choice.ChoiceInfo;
 import org.genepattern.server.job.output.JobOutputRecorder;
 import org.genepattern.server.plugin.PluginManagerLegacy;
+import org.genepattern.server.quota.DiskInfo;
 import org.genepattern.server.rest.ParameterInfoRecord;
 import org.genepattern.server.taskinstall.InstallInfo;
 import org.genepattern.server.taskinstall.InstallInfo.Type;
@@ -663,6 +667,28 @@ public class GenePatternAnalysisTask {
             String errorMessage = 
                 "Job did not run because there is not enough disk space available.\n";
             throw new JobDispatchException(errorMessage);
+        }
+
+        //check if the user is above their disk quota
+        try
+        {
+            DiskInfo diskInfo = DiskInfo.createDiskInfo(ServerConfigurationFactory.instance(), jobContext);
+
+            if(diskInfo.isAboveQuota())
+            {
+                String errorMessage = "Job did not run because disk usage quota exceeded." +
+                        "DiskUsage: " + diskInfo.getDiskUsageFilesTab().getDisplayValue()
+                        + ". Disk Quota: " + diskInfo.getDiskQuota().getDisplayValue();
+                //disk usage exceeded so do not allow user to run a job
+                throw new JobDispatchException(errorMessage);
+            }
+        }
+        catch(DbException db)
+        {
+            //just log exception and continue
+            //do not want to prevent job from running if there was an
+            //error getting the disk usage
+            log.error(db);
         }
 
         File rootJobDir = null;
