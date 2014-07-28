@@ -220,30 +220,6 @@ public class ConfigFileParser {
         setCommandManagerProperties(jobConfigObj);
     }
 
-//    private static CommandManagerProperties initCmdMgrProps(final JobConfigObj jobConfigObj) throws ConfigurationException {
-//        CommandManagerProperties config=new CommandManagerProperties();
-//        for(final String execId : jobConfigObj.getExecutors().keySet()) {
-//            final ExecutorConfig execObj = jobConfigObj.getExecutors().get(execId);
-//            //load executor->default.properties
-//            if (execObj.defaultProperties != null) { 
-//                PropObj propObj = config.getPropsForExecutor(execId);
-//                for (String key : (Set<String>) (Set) execObj.defaultProperties.keySet()) {
-//                    Value value = execObj.defaultProperties.get(key);
-//                    propObj.addDefaultProperty(key, value);
-//                }
-//            }
-//        }
-//        //store top level default.properties
-//        config.getTop().setDefaultProperties(jobConfigObj.getDefaultProperties());
-//        //store top level module.properties
-//        config.getTop().setModuleProperties(jobConfigObj.getModuleProperties());
-//        //store custom group.properties
-//        initializeCustomProperties(config, jobConfigObj.getGroupPropertiesObj(), true);
-//        //store custom user.properties
-//        initializeCustomProperties(config, jobConfigObj.getUserPropertiesObj(), false);
-//        return config;
-//    }
-    
     private static ConfigYamlProperties initConfigYamlProperties(final JobConfigObj jobConfigObj, final IGroupMembershipPlugin groupInfo) throws ConfigurationException {
         final ConfigYamlProperties config=new ConfigYamlProperties(jobConfigObj, groupInfo);
         for(final Entry<String,ExecutorConfig> entry : jobConfigObj.getExecutors().entrySet()) {
