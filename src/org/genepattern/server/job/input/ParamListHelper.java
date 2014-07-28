@@ -1,6 +1,9 @@
 package org.genepattern.server.job.input;
 
 import java.io.File;
+import java.io.FileOutputStream;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -10,12 +13,15 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.regex.Pattern;
 
+import org.apache.commons.io.CopyUtils;
+import org.apache.commons.io.IOUtils;
 import org.apache.log4j.Logger;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.dm.GpFileObjFactory;
 import org.genepattern.server.dm.GpFilePath;
 import org.genepattern.server.dm.serverfile.ServerFileObjFactory;
+import org.genepattern.server.genomespace.GenomeSpaceClient;
 import org.genepattern.server.genomespace.GenomeSpaceClientFactory;
 import org.genepattern.server.genomespace.GenomeSpaceFileManager;
 import org.genepattern.server.job.input.collection.ParamGroupHelper;
@@ -408,7 +414,7 @@ public class ParamListHelper {
      * 
      * Invalid inputs include any external urls.
      *     
-     * @param valueIn
+     * @param paramValueIn
      * @return
      */
     public GpFilePath initDirectoryInputValue(final ParamValue paramValueIn) throws Exception {
@@ -617,9 +623,15 @@ public class ParamListHelper {
             tmpList.add(rec);
         }
         
-        //if necessary, download data from external sites
+        // If necessary, download data from external sites
         if (downloadExternalFiles) {
             for(final Record rec : tmpList) {
+                // Handle GenomeSpace URLs
+                if (rec.type.equals(Record.Type.GENOMESPACE_URL)) {
+                    fileListGenomeSpaceToUploads(jobContext, rec.gpFilePath, rec.url);
+                }
+
+                // Handle external URLs
                 if (rec.type.equals(Record.Type.EXTERNAL_URL)) {
                     forFileListCopyExternalUrlToUserUploads(rec.gpFilePath, rec.url);
                 }
@@ -636,10 +648,16 @@ public class ParamListHelper {
     private Record initFromValue(final ParamValue pval) throws Exception {
         return ParamListHelper.initFromValue(jobContext, pval);
     }
-    public static Record initFromValue(final GpContext jobContext, final ParamValue pval) throws Exception 
-    {
+    public static Record initFromValue(final GpContext jobContext, final ParamValue pval) throws Exception {
         final String value=pval.getValue();
-        URL externalUrl=JobInputHelper.initExternalUrl(value);
+        URL externalUrl = JobInputHelper.initExternalUrl(value);
+
+        // Handle GenomeSpace URLs
+        if (externalUrl != null && GenomeSpaceFileManager.isGenomeSpaceFile(externalUrl)) {
+            GpFilePath gpPath = JobInputFileUtil.getDistinctPathForExternalUrl(jobContext, externalUrl);
+            return new Record(Record.Type.GENOMESPACE_URL, gpPath, externalUrl);
+        }
+
         if (externalUrl != null) {
             //this method does not download the file
             GpFilePath gpPath=JobInputFileUtil.getDistinctPathForExternalUrl(jobContext, externalUrl);
@@ -712,7 +730,8 @@ public class ParamListHelper {
         public enum Type {
             SERVER_PATH,
             EXTERNAL_URL,
-            SERVER_URL
+            SERVER_URL,
+            GENOMESPACE_URL
         }
         Type type;
         GpFilePath gpFilePath;
@@ -799,6 +818,51 @@ public class ParamListHelper {
             //add a record of the file to the DB, so that a link will appear in the Uploads tab
             JobInputFileUtil jobInputFileUtil=new JobInputFileUtil(jobContext);
             jobInputFileUtil.updateUploadsDb(gpPath);
+        }
+    }
+
+    /**
+     * Copy a GenomeSpace file to be an upload file for file list processing
+     *
+     * @param jobContext
+     * @param gpPath
+     * @param url
+     * @throws Exception
+     */
+    public static void fileListGenomeSpaceToUploads(GpContext jobContext, GpFilePath gpPath, URL url) throws Exception {
+        if (GenomeSpaceClientFactory.isGenomeSpaceEnabled(jobContext)) {
+            // Make sure the user is logged into GenomeSpace
+            GenomeSpaceClient gsClient = GenomeSpaceClientFactory.getGenomeSpaceClient();
+
+            final File parentDir = gpPath.getServerFile().getParentFile();
+            if (!parentDir.exists()) {
+                boolean success = parentDir.mkdirs();
+                if (!success) {
+                    String message = "Error creating upload directory for GenomeSpace url: dir=" + parentDir.getPath() + ", url=" + url.toExternalForm();
+                    log.error(message);
+                    throw new Exception(message);
+                }
+            }
+            final File dataFile = gpPath.getServerFile();
+            if (dataFile.exists()) {
+                // Do nothing, assume the file has already been transferred
+                //TODO: should implement a more robust caching mechanism, using HTTP HEAD to see if we need to
+                log.debug("Downloaded GenomeSpace already exists: " + dataFile.getPath());
+            }
+            else {
+                InputStream is = gsClient.getInputStream(jobContext.getUserId(), url);
+                OutputStream os = new FileOutputStream(dataFile);
+
+                IOUtils.copy(is, os);
+
+                //add a record of the file to the DB, so that a link will appear in the Uploads tab
+                JobInputFileUtil jobInputFileUtil=new JobInputFileUtil(jobContext);
+                jobInputFileUtil.updateUploadsDb(gpPath);
+            }
+        }
+        else {
+            log.warn("GenomeSpace file added when GenomeSpace is not enabled: " + url.toString());
+            throw new Exception("GenomeSpace not enabled. Need to enable GenomeSpace to download GenomeSpace files:" + url.toString());
         }
     }
     
