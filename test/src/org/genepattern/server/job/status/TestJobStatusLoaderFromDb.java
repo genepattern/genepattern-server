@@ -141,6 +141,7 @@ public class TestJobStatusLoaderFromDb {
         
         JobRunnerJob jobRunnerJob=Mockito.mock(JobRunnerJob.class);
         when(jobRunnerJob.getJobState()).thenReturn(DrmJobState.DONE.name());
+        when(jobRunnerJob.getQueueId()).thenReturn("genepattern_long");
         when(jobRunnerDao.selectJobRunnerJob(gpJobNo)).thenReturn(jobRunnerJob);
         JobStatusLoader loader=new JobStatusLoaderFromDb(gpUrl, jobRunnerDao, jobOutputDao);
         Status status = loader.loadJobStatus(jobContext);
@@ -149,6 +150,8 @@ public class TestJobStatusLoaderFromDb {
         assertEquals("isFinished", true, status.getIsFinished());
         assertEquals("isRunning", false, status.getIsRunning());
         assertEquals("isPending", false, status.getIsPending());
+        assertEquals("queueId", "genepattern_long", status.getQueueId());
+        
         /* Example status.json
            "hasError": true,
            "isFinished": true,

@@ -48,6 +48,7 @@ public class TestJobStatus {
     private Date dateCompleted; // lsf status from RUNNING -> FINISHED
     private String tzOffsetStr;
     private Date statusDate;
+    private String queueId="genepattern_long";
     
     @Before
     public void setUp() { 
@@ -437,6 +438,7 @@ public class TestJobStatus {
         when(jobRunnerJob.getMaxSwap()).thenReturn(maxSwap.getNumBytes());
         when(jobRunnerJob.getMaxProcesses()).thenReturn(maxProcesses);
         when(jobRunnerJob.getMaxThreads()).thenReturn(maxThreads);
+        when(jobRunnerJob.getQueueId()).thenReturn(queueId);
         
         Status status=new Status.Builder()
             .jobInfo(jobInfo)
@@ -474,6 +476,7 @@ public class TestJobStatus {
         assertEquals("maxSwap", "21341 mb", statusObj.getString("maxSwap"));
         assertEquals("maxProcesses", maxProcesses, (Integer) statusObj.getInt("maxProcesses"));
         assertEquals("maxThreads", maxThreads, (Integer) statusObj.getInt("maxThreads"));
+        assertEquals("queueId", queueId, statusObj.getString("queueId"));
     }
     
     @Test

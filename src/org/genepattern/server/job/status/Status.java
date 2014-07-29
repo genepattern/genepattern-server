@@ -69,6 +69,7 @@ public class Status {
     private Memory maxSwap=null;
     private Integer maxProcesses=null;
     private Integer maxThreads=null;
+    private String queueId=null;
     private List<GpLink> links=null;
     
     private void addLink(GpLink link) {
@@ -159,6 +160,10 @@ public class Status {
     
     public Integer getMaxThreads() {
         return maxThreads;
+    }
+    
+    public String getQueueId() {
+        return queueId;
     }
     
     public DrmJobState getJobState() {
@@ -265,6 +270,9 @@ public class Status {
         }
         if (maxThreads != null) {
             jobStatus.put("maxThreads", maxThreads);
+        }
+        if (queueId != null) {
+            jobStatus.put("queueId", queueId);
         }
         if (extJobId != null) {
             jobStatus.put("extJobId", extJobId);
@@ -439,6 +447,7 @@ public class Status {
                 
                 status.maxProcesses=jobStatusRecord.getMaxProcesses();
                 status.maxThreads=jobStatusRecord.getMaxThreads();
+                status.queueId=jobStatusRecord.getQueueId();
             }
             return status;
         }
