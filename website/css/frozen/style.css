@@ -990,12 +990,12 @@ strong.filtered-number
     height: 10px;
 }
 
-.quota-space-yellow {
-    color: rgba(192, 192, 0, 0.5);
+.ui-progressbar.quota-space-yellow  .ui-progressbar-value{
+    background: rgba(192, 192, 0, 0.5);
 }
 
-.quota-space-red {
-    color: rgba(202, 96, 96, 0.5);
+.ui-progressbar.quota-space-red .ui-progressbar-value {
+    background: rgba(202, 96, 96, 0.5);
 }
 
 #quota-space-label {

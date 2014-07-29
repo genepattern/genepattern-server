@@ -3177,66 +3177,98 @@ function loadJobResults(jobResults) {
     buildJobResultsPage();
 }
 
-function initStatusBox() {
+function renderStatusBox(diskInfo)
+{
     // Hard-coded values until we hook this into server-side calls
-    var diskQuota = "30 GB";
-    var diskUsed = "8.1 GB";
-    var percentUsed = 27;
-    var quotaTooltip = '\
-        <table>\
-            <tr>\
-                <td colspan="2">\
-                    <strong>Disk Quota Space Used</strong>\
-                </td>\
-            </tr>\
-            <tr>\
-                <td>\
-                    <em>Upload Files</em>\
-                </td>\
-                <td>\
-                    3 GB\
-                </td>\
-            </tr>\
-            <tr>\
-                <td>\
-                    <em>Job Output Files</em>\
-                </td>\
-                <td>\
-                    3 GB\
-                </td>\
-            </tr>\
-        </table>';
+    var diskQuotaDisplay = "unavailable";
+    var diskUsedDisplay = "unavailable";
+    var diskQuotaBytes = null;
+    var diskUsedBytes = null;
+    var percentUsed = 0;
+
+    //diskInfo = null;
+    if(diskInfo != undefined && diskInfo != null)
+    {
+        if(diskInfo.diskUsageFilesTab != undefined && diskInfo.diskUsageFilesTab != null)
+        {
+            diskUsedBytes = diskInfo.diskUsageTotal.numBytes;
+            diskUsedDisplay = diskInfo.diskUsageTotal.displayValue;
+            diskUsedDisplay = diskUsedDisplay.toUpperCase();
+        }
+
+        if(diskInfo.diskQuota != undefined && diskInfo.diskQuota != null)
+        {
+            diskQuotaBytes = diskInfo.diskQuota.numBytes;
+            diskQuotaDisplay = diskInfo.diskQuota.displayValue;
+            diskQuotaDisplay = diskQuotaDisplay.toUpperCase();
+        }
+
+        if($.isNumeric( diskUsedBytes) && $.isNumeric(diskQuotaBytes))
+        {
+            percentUsed = (diskUsedBytes / diskQuotaBytes) * 100;
+        }
+    }
+
+    var quotaTooltip = $("<table></table>");
 
     $(document).ready(function() {
         // Set up the user box
         $("#user-box-name").text(username);
         $("#user-menu").menu();
 
-        // Set up the disk quota box
-        $("#quota-space-label").text(diskUsed + " / " + diskQuota);
+
+        $("#quota-space-label").text(diskUsedDisplay + " / " + diskQuotaDisplay);
+
         var jqQuotaProgress = $("#quota-space-progressbar");
         jqQuotaProgress.progressbar({
             value: percentUsed
         });
+
         if (percentUsed >= 90) {
-            jqQuotaProgress.find(".ui-progressbar-value").addClass("quota-space-red");
+            jqQuotaProgress.addClass("quota-space-red");
         }
         else if (percentUsed >= 75) {
-            jqQuotaProgress.find(".ui-progressbar-value").addClass("quota-space-yellow");
+            jqQuotaProgress.addClass("quota-space-yellow");
         }
+
         var jqQuotaTooltip = $("#disk-quota-tooltip");
-        jqQuotaTooltip.html(quotaTooltip);
-        $("#quota-box").tooltip({
-                items: "div",
-                content: jqQuotaTooltip.html()
-            })
-            .click(function() {
-                $("#disk-quota-tooltip").dialog({
-                    title: "Disk Quota Space Used"
-                }).show();
-            });
+
+        quotaTooltip.append("<tr><td><em>Files tab:</em></td><td>" + diskUsedDisplay +"</td></tr>")
+        quotaTooltip.append("<tr><td><em>Quota:</em></td><td>" + diskQuotaDisplay +"</td></tr>")
+
+        jqQuotaTooltip.append(quotaTooltip);
+
+
+        $("#quota-box").click(function() {
+            $("#disk-quota-tooltip").dialog({
+                title: "Disk Usage and Quota"
+            }).show();
+        });
 
         $("#top-status-box").show();
+    });
+}
+
+function initStatusBox()
+{
+    $.ajax({
+        type: "GET",
+        url: "/gp/rest/v1/disk",
+        cache: false,
+        success: function (response)
+        {
+            console.log(response);
+
+            if(response != null)
+            {
+                renderStatusBox(response);
+            }
+        },
+        error: function (xhr, ajaxOptions, thrownError) {
+            console.log("Response from server: status=" + xhr.status + " text=" + xhr.responseText);
+            console.log(thrownError);
+        },
+        dataType: "json"
     });
 }
 
