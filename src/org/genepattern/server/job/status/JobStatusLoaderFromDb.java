@@ -10,7 +10,6 @@ import org.genepattern.server.executor.drm.dao.JobRunnerJob;
 import org.genepattern.server.executor.drm.dao.JobRunnerJobDao;
 import org.genepattern.server.job.output.JobOutputFile;
 import org.genepattern.server.job.output.dao.JobOutputDao;
-import org.genepattern.server.webapp.rest.api.v1.job.JobsResource;
 
 /**
  * Initialize the Status object by making DB queries of the newer tables:
