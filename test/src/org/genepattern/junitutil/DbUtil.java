@@ -26,6 +26,13 @@ public class DbUtil {
         }
     }
     
+    /**
+     * To help with debugging turn off batch mode by setting this property before you call initDb.
+     * <pre>
+       System.setProperty("hibernate.jdbc.factory_class", "org.hibernate.jdbc.NonBatchingBatcherFactory");
+     * </pre>
+     * @throws Exception
+     */
     public static void initDb() throws Exception { 
         final File hsqlDbDir=new File("junitdb");
         final String hsqlDbName="GenePatternDB";
