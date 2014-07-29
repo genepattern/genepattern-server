@@ -83,6 +83,10 @@ public class Status {
         return gpJobNo;
     }
     
+    public String getExtJobId() {
+        return extJobId;
+    }
+    
     public String getExecutionLogLocation() {
         return executionLogLocation;
     }
