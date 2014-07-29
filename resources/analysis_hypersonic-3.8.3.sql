@@ -12,6 +12,10 @@ create table  job_output (
     constraint jo_gpjn_fk foreign key (GP_JOB_NO) references ANALYSIS_JOB(JOB_NO) on delete cascade
 );
 
+alter table job_runner_job add column
+    lsid varchar(255) 
+before jr_classname;
+
 --
 -- add queue_id column to the job_runner_job table
 --
