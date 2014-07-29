@@ -108,10 +108,7 @@ import java.util.zip.ZipFile;
 import java.util.zip.ZipInputStream;
 
 import javax.servlet.ServletContext;
-import javax.ws.rs.WebApplicationException;
-import javax.ws.rs.core.Response;
 
-import com.sun.jersey.api.client.ClientResponse;
 import org.apache.log4j.Logger;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.Target;
@@ -661,35 +658,7 @@ public class GenePatternAnalysisTask {
             return;
         }
 
-        //is disk space available
-        final boolean allowNewJob = gpConfig.getGPBooleanProperty(jobContext, "allow.new.job", true);
-        if (!allowNewJob) {
-            String errorMessage = 
-                "Job did not run because there is not enough disk space available.\n";
-            throw new JobDispatchException(errorMessage);
-        }
-
-        //check if the user is above their disk quota
-        try
-        {
-            DiskInfo diskInfo = DiskInfo.createDiskInfo(ServerConfigurationFactory.instance(), jobContext);
-
-            if(diskInfo.isAboveQuota())
-            {
-                String errorMessage = "Job did not run because disk usage quota exceeded." +
-                        "DiskUsage: " + diskInfo.getDiskUsageFilesTab().getDisplayValue()
-                        + ". Disk Quota: " + diskInfo.getDiskQuota().getDisplayValue();
-                //disk usage exceeded so do not allow user to run a job
-                throw new JobDispatchException(errorMessage);
-            }
-        }
-        catch(DbException db)
-        {
-            //just log exception and continue
-            //do not want to prevent job from running if there was an
-            //error getting the disk usage
-            log.error(db);
-        }
+        checkDiskQuota(gpConfig, jobContext);
 
         File rootJobDir = null;
         try {
@@ -1548,6 +1517,46 @@ public class GenePatternAnalysisTask {
         }
 
         runCommand(gpConfig, jobContext, commandTokens, environmentVariables, outDir, stdoutFile, stderrFile, stdinFile);
+    }
+
+    /**
+     * Check the user's disk usage quota before running the job. If the user is at or above their quota a 
+     * JobDispatchException is thrown.
+     * 
+     * @param gpConfig
+     * @param jobContext
+     * @throws JobDispatchException
+     */
+    private void checkDiskQuota(final GpConfig gpConfig, final GpContext jobContext) throws JobDispatchException {
+        //is disk space available
+        final boolean allowNewJob = gpConfig.getGPBooleanProperty(jobContext, "allow.new.job", true);
+        if (!allowNewJob) {
+            String errorMessage = 
+                "Job did not run because there is not enough disk space available.\n";
+            throw new JobDispatchException(errorMessage);
+        }
+
+        //check if the user is above their disk quota
+        try
+        {
+            DiskInfo diskInfo = DiskInfo.createDiskInfo(gpConfig, jobContext);
+
+            if(diskInfo.isAboveQuota())
+            {
+                String errorMessage = "Job did not run because disk usage quota exceeded." +
+                        "DiskUsage: " + diskInfo.getDiskUsageFilesTab().getDisplayValue()
+                        + ". Disk Quota: " + diskInfo.getDiskQuota().getDisplayValue();
+                //disk usage exceeded so do not allow user to run a job
+                throw new JobDispatchException(errorMessage);
+            }
+        }
+        catch(DbException db)
+        {
+            //just log exception and continue
+            //do not want to prevent job from running if there was an
+            //error getting the disk usage
+            log.error(db);
+        }
     }
     
     private ChoiceInfo initChoiceInfo(final GpContext jobContext, final ParameterInfoRecord pinfoRecord, final ParameterInfo pinfo) {
