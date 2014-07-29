@@ -21,7 +21,6 @@ import org.genepattern.server.job.output.dao.JobOutputDao;
 import org.genepattern.server.webapp.rest.api.v1.Rel;
 import org.genepattern.webservice.JobInfo;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.Mockito;
 
