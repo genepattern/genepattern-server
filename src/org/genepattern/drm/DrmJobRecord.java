@@ -11,6 +11,7 @@ import java.io.File;
  */
 public class DrmJobRecord {
     private final Integer gpJobNo;
+    private final String lsid;
     private final String extJobId;    
     private final File workingDir;    
     private final File stdinFile;
@@ -24,6 +25,13 @@ public class DrmJobRecord {
      */
     public Integer getGpJobNo() {
         return gpJobNo;
+    }
+    
+    /**
+     * Get the task lsid.
+     */
+    public String getLsid() {
+        return lsid;
     }
 
     /**
@@ -87,6 +95,7 @@ public class DrmJobRecord {
 
     private DrmJobRecord(final Builder builder) {
         this.gpJobNo=builder.gpJobNo;
+        this.lsid=builder.lsid;
         this.extJobId=builder.extJobId;
         this.workingDir=builder.workingDir;
         this.stdinFile=builder.stdinFile;
@@ -97,6 +106,7 @@ public class DrmJobRecord {
 
     public static final class Builder {
         private Integer gpJobNo=null;
+        private String lsid;
         private String extJobId="";
         private File workingDir=null;
         private File stdinFile=null;
@@ -106,13 +116,16 @@ public class DrmJobRecord {
 
         public Builder() {
         }
-        public Builder(final Integer gpJobNo) {
+        
+        public Builder(final Integer gpJobNo, final String lsid) {
             this.gpJobNo=gpJobNo;
+            this.lsid=lsid;
         }
         
         public Builder(final String extJobId, final DrmJobSubmission in) {
             this.extJobId=extJobId;
             this.gpJobNo=in.getGpJobNo();
+            this.lsid=in.getJobContext().getLsid();
             this.workingDir=in.getWorkingDir();
             this.stdinFile=in.getStdinFile();
             this.stdoutFile=in.getStdoutFile();
@@ -122,6 +135,7 @@ public class DrmJobRecord {
         
         public Builder(final DrmJobRecord in) {
             this.gpJobNo=in.gpJobNo;
+            this.lsid=in.lsid;
             this.extJobId=in.extJobId;
             this.workingDir=in.workingDir;
             this.stdinFile=in.stdinFile;
@@ -132,6 +146,11 @@ public class DrmJobRecord {
         
         public Builder gpJobNo(final Integer gpJobNo) {
             this.gpJobNo=gpJobNo;
+            return this;
+        }
+        
+        public Builder lsid(final String lsid) {
+            this.lsid=lsid;
             return this;
         }
         

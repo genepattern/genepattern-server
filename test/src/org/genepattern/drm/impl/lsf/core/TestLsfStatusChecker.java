@@ -18,6 +18,7 @@ import org.junit.Test;
 
 public class TestLsfStatusChecker {
     private int gpJobNo=0;
+    private String cleLsid="urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00002:2";
     private DrmJobRecord jobRecord;
 
     /*
@@ -46,7 +47,7 @@ JOBID   USER    STAT  QUEUE      FROM_HOST   EXEC_HOST   JOB_NAME   SUBMIT_TIME 
     
     @Before
     public void setUp() {
-        jobRecord=new DrmJobRecord.Builder(gpJobNo)
+        jobRecord=new DrmJobRecord.Builder(gpJobNo, cleLsid)
         .build();
     }
     

@@ -190,8 +190,8 @@ public class JobExecutor implements CommandExecutor2 {
         this.jobLookupTable=jobLookupTable;
     }
     
-    protected void fireJobStartedEvent(Status prevStatus, Status newStatus) {
-        eventBus.post(new JobStartedEvent(prevStatus, newStatus));
+    protected void fireJobStartedEvent(final String lsid, final Status prevStatus, final Status newStatus) {
+        eventBus.post(new JobStartedEvent(lsid, prevStatus, newStatus));
     }
 
     private void handleCompletedJob(final DrmJobRecord jobRecord, final DrmJobStatus jobStatus) {
@@ -383,7 +383,7 @@ public class JobExecutor implements CommandExecutor2 {
         if (drmJobStatus.getJobState().is(DrmJobState.STARTED)) {
             if (prevJobRunnerJob == null || !isRunning(prevJobRunnerJob.getJobState())) {
                 //fire job started event
-                fireJobStartedEvent(gpJobNo, prevJobRunnerJob, drmJobStatus);
+                fireJobStartedEvent(gpJobNo, drmJobRecord.getLsid(), prevJobRunnerJob, drmJobStatus);
             }
         }
         
@@ -399,7 +399,7 @@ public class JobExecutor implements CommandExecutor2 {
         return false;
     }
     
-    protected void fireJobStartedEvent(final Integer gpJobNo, final JobRunnerJob prevJobRunnerJob,final DrmJobStatus drmJobStatus) {
+    protected void fireJobStartedEvent(final Integer gpJobNo, final String lsid, final JobRunnerJob prevJobRunnerJob, final DrmJobStatus drmJobStatus) {
         JobRunnerJob curJobRunnerJob=getCurrentJobRunnerJob(gpJobNo);
         Status prevStatus=null;
         if (prevJobRunnerJob != null) {
@@ -421,7 +421,7 @@ public class JobExecutor implements CommandExecutor2 {
         //        fireJobStartedEvent(prevStatus, curStatus);
         //    }
         //}
-        fireJobStartedEvent(prevStatus, curStatus);
+        fireJobStartedEvent(lsid, prevStatus, curStatus);
     }
     
     protected JobRunnerJob getCurrentJobRunnerJob(Integer gpJobNo) {
@@ -578,7 +578,9 @@ public class JobExecutor implements CommandExecutor2 {
             .logFilename(logFilename);
         final DrmJobSubmission drmJobSubmission=builder.build();
         
-        jobLookupTable.insertJobRecord(drmJobSubmission);
+        final JobRunnerJob jobRecord = new JobRunnerJob.Builder(jobRunnerClassname, drmJobSubmission).jobRunnerName(jobRunnerName).build();
+        new JobRunnerJobDao().insertJobRunnerJob(jobRecord);
+        
         //TODO: make fault tolerant in the event that (1) startJob gets hung or (2) startJob throws an exception
         final String extJobId=jobRunner.startJob(drmJobSubmission);
         final DrmJobRecord drmJobRecord = new DrmJobRecord.Builder(extJobId, drmJobSubmission)

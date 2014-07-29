@@ -53,7 +53,7 @@ public class DbLookup implements DrmLookup {
             return null;
         }
         final File workingDir=asFile(jobRunnerJob.getWorkingDir());
-        DrmJobRecord.Builder builder = new DrmJobRecord.Builder(jobRunnerJob.getGpJobNo());
+        DrmJobRecord.Builder builder = new DrmJobRecord.Builder(jobRunnerJob.getGpJobNo(), jobRunnerJob.getLsid());
         builder = builder.extJobId(jobRunnerJob.getExtJobId());
         builder = builder.workingDir(workingDir);
         builder = builder.stdinFile(asFile(workingDir, jobRunnerJob.getStdinFile()));

@@ -39,7 +39,9 @@ public class DrmLookupFactory {
             @Override
             public DrmJobRecord lookupJobRecord(Integer gpJobNo) {
                 final String extJobId=""+gpJobNo;
-                return new DrmJobRecord.Builder(gpJobNo)
+                final String lsid="";
+                log.warn("lsid not set");
+                return new DrmJobRecord.Builder(gpJobNo, lsid)
                     .extJobId(extJobId)
                     .build();
             }

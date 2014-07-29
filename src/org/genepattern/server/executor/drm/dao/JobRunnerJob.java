@@ -56,6 +56,9 @@ public class JobRunnerJob {
     @Id
     @Column(name="gp_job_no")
     private Integer gpJobNo;
+    
+    @Column(name="lsid", nullable=false, length=255)
+    private String lsid;
 
     @Column(name="jr_classname", nullable=false, length=511)
     private String jobRunnerClassname;
@@ -160,6 +163,7 @@ public class JobRunnerJob {
     }
     private JobRunnerJob(final Builder builder, final Date statusDate) {
         this.gpJobNo=builder.gpJobNo;
+        this.lsid=builder.lsid;
         this.jobRunnerClassname=builder.jobRunnerClassname;
         this.jobRunnerName=builder.jobRunnerName;
         this.extJobId=builder.extJobId;
@@ -188,6 +192,7 @@ public class JobRunnerJob {
 
     public static final class Builder {
         private Integer gpJobNo;
+        private String lsid="";
         private String jobRunnerClassname;
         private String jobRunnerName;
         private String extJobId="";
@@ -214,6 +219,7 @@ public class JobRunnerJob {
         
         public Builder(final String jobRunnerClassname, final DrmJobSubmission in) {
             this.gpJobNo=in.getGpJobNo();
+            this.lsid=in.getJobContext().getLsid();
             this.jobRunnerClassname=jobRunnerClassname;
             this.workingDir=in.getWorkingDir().getAbsolutePath();
             this.stdoutFile=fileAsString(in.getStdoutFile());
@@ -245,6 +251,7 @@ public class JobRunnerJob {
         
         public Builder(final JobRunnerJob in) {
             this.gpJobNo=in.gpJobNo;
+            this.lsid=in.lsid;
             this.jobRunnerClassname=in.jobRunnerClassname;
             this.jobRunnerName=in.jobRunnerName;
             this.extJobId=in.extJobId;
@@ -303,6 +310,11 @@ public class JobRunnerJob {
         
         public Builder gpJobNo(int gpJobNo) {
             this.gpJobNo=gpJobNo;
+            return this;
+        }
+        
+        public Builder lsid(final String lsid) {
+            this.lsid=lsid;
             return this;
         }
         
@@ -422,6 +434,10 @@ public class JobRunnerJob {
     public Integer getGpJobNo() {
         return gpJobNo;
     }
+    
+    public String getLsid() {
+        return lsid;
+    }
 
     public String getJobRunnerClassname() {
         return jobRunnerClassname;
@@ -518,6 +534,10 @@ public class JobRunnerJob {
     //private setters for hibernate, making this class 'kind-of' immutable 
     private void setGpJobNo(final Integer gpJobNo) {
         this.gpJobNo = gpJobNo;
+    }
+    
+    private void setLsid(final String lsid) {
+        this.lsid = lsid;
     }
 
     private void setJobRunnerClassname(final String jobRunnerClassname) {

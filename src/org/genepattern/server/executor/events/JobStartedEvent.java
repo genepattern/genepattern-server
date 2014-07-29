@@ -13,7 +13,7 @@ import org.genepattern.server.job.status.Status;
  *
  */
 public class JobStartedEvent extends JobStatusChangedEvent {
-    public JobStartedEvent(Status prevJobStatus, Status curJobStatus) {
-        super(prevJobStatus, curJobStatus);
+    public JobStartedEvent(final String lsid, final Status prevJobStatus, final Status curJobStatus) {
+        super(lsid, prevJobStatus, curJobStatus);
     }
 }

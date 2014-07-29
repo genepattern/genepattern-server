@@ -26,7 +26,6 @@ import org.genepattern.server.job.input.JobInput;
 import org.genepattern.webservice.JobInfo;
 import org.genepattern.webservice.TaskInfo;
 import org.joda.time.DateTime;
-import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -114,10 +113,6 @@ public class TestDbLookup {
         dbLookup = new DbLookup(jobRunnerClassname, jobRunnerName);
     }
     
-    @After
-    public void after() throws Exception {
-    }
-        
     @Test
     public void testInsertJobRecord() throws Exception {
         dbLookup.insertJobRecord(jobSubmission);
@@ -142,6 +137,7 @@ public class TestDbLookup {
             .jobRunnerName("DemoJobRunner")
             .workingDir(jobSubmission.getWorkingDir().getAbsolutePath())
             .gpJobNo(jobSubmission.getGpJobNo())
+            .lsid(jobSubmission.getJobContext().getLsid())
             .statusMessage(statusMessage)
         .build();
         DbLookup.insertJobRunnerJob(jobRecord);
@@ -156,8 +152,8 @@ public class TestDbLookup {
 
         dbLookup.insertJobRecord(jobSubmission);
         DrmJobRecord jobRecord=dbLookup.lookupJobRecord(jobSubmission.getGpJobNo());
-        Assert.assertEquals("jobRecord.gpJobNo", jobSubmission.getGpJobNo(), jobRecord.getGpJobNo());
-        Assert.assertEquals("jobRecord.extJobId", "", jobRecord.getExtJobId());
+        assertEquals("jobRecord.gpJobNo", jobSubmission.getGpJobNo(), jobRecord.getGpJobNo());
+        assertEquals("jobRecord.extJobId", "", jobRecord.getExtJobId());
     }
     
     @Test

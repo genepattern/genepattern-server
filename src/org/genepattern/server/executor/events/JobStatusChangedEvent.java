@@ -6,8 +6,8 @@ import org.genepattern.server.job.status.Status;
 public class JobStatusChangedEvent extends JobStatusEvent {
     protected final Status prevJobStatus;
 
-    public JobStatusChangedEvent(Status prevJobStatus, Status curJobStatus) {
-        super(curJobStatus);
+    public JobStatusChangedEvent(final String lsid, final Status prevJobStatus, final Status curJobStatus) {
+        super(lsid, curJobStatus);
         this.prevJobStatus=prevJobStatus;
     }
 

@@ -22,6 +22,7 @@ public class TestJobExecutor {
     EventBus eventBus;
     JobExecutor jobExecutor;
     DrmLookup jobLookupTable;
+    private final String cleLsid="urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00002:2";
     
     JobStartedListener jobStartedListener;
     static class JobStartedListener {
@@ -59,7 +60,7 @@ public class TestJobExecutor {
         // cause a new JobStartedEvent to occur
         Status prevStatus=null;
         Status newStatus=null;
-        jobExecutor.fireJobStartedEvent(prevStatus, newStatus);
+        jobExecutor.fireJobStartedEvent(cleLsid, prevStatus, newStatus);
         assertEquals("after event, count", 1, jobStartedListener.getCount());
     }
     
@@ -77,7 +78,7 @@ public class TestJobExecutor {
         // cause a new JobStartedEvent to occur
         Status prevStatus=null;
         Status newStatus=null;
-        jobExecutor.fireJobStartedEvent(prevStatus, newStatus);
+        jobExecutor.fireJobStartedEvent(cleLsid, prevStatus, newStatus);
         assertEquals("after event, count", 1, jobStartedListener.getCount());
     }
 
