@@ -1,5 +1,6 @@
 package org.genepattern.server.executor.drm;
 
+import java.beans.Statement;
 import java.io.File;
 import java.util.Date;
 import java.util.List;
@@ -97,7 +98,7 @@ public class JobExecutor implements CommandExecutor2 {
      * @param classname
      * @return
      */
-    private static JobRunner initJobRunner(final String classname) { 
+    protected static JobRunner initJobRunner(final String classname, final CommandProperties properties) { 
         log.debug("initializing JobRunner from classname="+classname);
         try {
             final ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
@@ -106,6 +107,15 @@ public class JobExecutor implements CommandExecutor2 {
                 log.error(""+svcClass.getCanonicalName()+" does not implement "+JobRunner.class.getCanonicalName());
             }
             final JobRunner jobRunner = (JobRunner) svcClass.newInstance();
+            boolean success=initJobRunnerProperties(jobRunner, properties);
+            if (success) {
+                log.debug("initialized JobRunner properties for classname="+classname);
+            }
+            success=startJobRunner(jobRunner);
+            if (success) {
+                log.debug("started JobRunner for classname="+classname);
+            }
+            
             return jobRunner;
         }
         catch (Throwable t) {
@@ -131,6 +141,51 @@ public class JobExecutor implements CommandExecutor2 {
                     throw new Exception("Server configuration error: the jobRunner was not initialized from classname="+classname);
                 }
             };
+        }
+    }
+    
+    /**
+     * Use reflection to invoke the jobRunner#setCommandProperties method.
+     * This is a workaround because the JobRunner API does not include this method.
+     * 
+     * @param jobRunner
+     * @param properties
+     * @return
+     */
+    protected static boolean initJobRunnerProperties(final JobRunner jobRunner, final CommandProperties properties) {
+        if (jobRunner==null) {
+            return false;
+        }
+        Statement stmt = new Statement(jobRunner, "setCommandProperties", new Object[] { properties });
+        try {
+            stmt.execute();
+            return true;
+        }
+        catch (Throwable t) {
+            //ignore, because this is expected to fail when the job runner does not have a setProperties method
+            return false;
+        }
+    }
+    
+    /**
+     * Use reflection to invoke the jobRunner#start method.
+     * This is a workaround because the JobRunner API does not include this method.
+     * 
+     * @param jobRunner
+     * @return
+     */
+    protected static boolean startJobRunner(final JobRunner jobRunner) {
+        if (jobRunner==null) {
+            return false;
+        }
+        Statement stmt = new Statement(jobRunner, "start", new Object[] { });
+        try {
+            stmt.execute();
+            return true;
+        }
+        catch (Throwable t) {
+            //ignore, because this is expected to fail when the job runner does not have a setProperties method
+            return false;
         }
     }
     
@@ -311,7 +366,7 @@ public class JobExecutor implements CommandExecutor2 {
             log.debug(PROP_FIXED_DELAY+"="+fixedDelay);
         }
 
-        this.jobRunner=JobExecutor.initJobRunner(jobRunnerClassname);
+        this.jobRunner=JobExecutor.initJobRunner(jobRunnerClassname, properties);
         setJobLookupTable( DrmLookupFactory.initializeDrmLookup(lookupType, jobRunnerClassname, jobRunnerName) );
         log.info("Initialized jobRunner from classname="+jobRunnerClassname+", jobRunnerName="+jobRunnerName);
     }

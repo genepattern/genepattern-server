@@ -21,7 +21,7 @@ import org.junit.Test;
 import com.google.common.eventbus.EventBus;
 import com.google.common.eventbus.Subscribe;
 
-public class TestJobExecutor {
+public class TestJobExecutorEvents {
     private EventBus eventBus;
     private JobExecutor jobExecutor;
     private DrmLookup jobLookupTable;
