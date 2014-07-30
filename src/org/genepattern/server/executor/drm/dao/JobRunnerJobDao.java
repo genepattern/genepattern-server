@@ -46,7 +46,7 @@ public class JobRunnerJobDao {
         }
     }
     
-    public void updateJobStatus(final Integer gpJobNo, final DrmJobStatus drmJobStatus) {
+    public void updateJobStatus(final Integer gpJobNo, final DrmJobStatus drmJobStatus) throws DbException {
         final boolean isInTransaction=HibernateUtil.isInTransaction();
         try {
             HibernateUtil.beginTransaction();
@@ -55,14 +55,45 @@ public class JobRunnerJobDao {
                 log.error("No existing record for "+gpJobNo);
                 return;
             }
-            //JobRunnerJob is immutable ... so evict it from the session before saving a new instance as an update
-            HibernateUtil.getSession().evict(existing);
-            JobRunnerJob update = new JobRunnerJob.Builder(existing).drmJobStatus(drmJobStatus).build();
-            HibernateUtil.getSession().saveOrUpdate(update);
-            HibernateUtil.commitTransaction();
+            updateJobStatus(existing, drmJobStatus);
+            if (!isInTransaction) {
+                HibernateUtil.commitTransaction();
+            }
         }
         catch (Throwable t) {
             log.error("Error updating entry for gpJobNo="+gpJobNo,t);
+            HibernateUtil.rollbackTransaction();
+            throw new DbException("Error updating entry for gpJobNo="+gpJobNo+": "+t.getLocalizedMessage());
+        }
+        finally {
+            if (!isInTransaction) {
+                HibernateUtil.closeCurrentSession();
+            }
+        }
+    }
+
+    public void updateJobStatus(final JobRunnerJob existing, final DrmJobStatus drmJobStatus) {
+        //JobRunnerJob is immutable ... so evict it from the session before saving a new instance as an update
+        HibernateUtil.getSession().evict(existing);
+        JobRunnerJob update = new JobRunnerJob.Builder(existing).drmJobStatus(drmJobStatus).build();
+        saveOrUpdate(update);
+    }
+
+    public void saveOrUpdate(final JobRunnerJob jobRunnerJob) {
+        if (jobRunnerJob==null) {
+            log.error("No entry to update");
+            return;
+        }
+        final boolean isInTransaction=HibernateUtil.isInTransaction();
+        try {
+            HibernateUtil.beginTransaction();
+            HibernateUtil.getSession().saveOrUpdate(jobRunnerJob);
+            if (!isInTransaction) {
+                HibernateUtil.commitTransaction();
+            }
+        }
+        catch (Throwable t) {
+            log.error("Error updating entry for gpJobNo="+jobRunnerJob.getGpJobNo(),t);
             HibernateUtil.rollbackTransaction();
         }
         finally {
