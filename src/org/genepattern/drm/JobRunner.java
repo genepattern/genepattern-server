@@ -22,6 +22,13 @@ public interface JobRunner {
      */
     public static final String PROP_LOGFILE="job.logFile";
     public static final String PROP_QUEUE="job.queue";
+    /** 
+     * The 'job.virtualQueue' property, when set, is used for estimating waiting times for pending jobs. 
+     * It was added as a feature for the LSF integration. 
+     * The 'bsub' command line uses the 'job.queue' value, the GP  database uses the 'job.virtualQueue' value. 
+     * It can be used as an alias to the actual queue name used by the external system.
+     */
+    public static final String PROP_VIRTUAL_QUEUE="job.virtualQueue";
     public static final String PROP_MEMORY="job.memory";
     public static final String PROP_JAVA_XMX="job.javaXmx";
     public static final String PROP_WALLTIME="job.walltime";

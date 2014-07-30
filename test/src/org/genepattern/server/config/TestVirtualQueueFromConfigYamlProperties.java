@@ -6,6 +6,7 @@ import static org.mockito.Mockito.*;
 import java.io.File;
 import java.util.Arrays;
 
+import org.genepattern.drm.JobRunner;
 import org.genepattern.junitutil.FileUtil;
 import org.genepattern.server.auth.IGroupMembershipPlugin;
 import org.genepattern.webservice.TaskInfo;
@@ -21,7 +22,7 @@ import org.junit.Test;
  *
  */
 public class TestVirtualQueueFromConfigYamlProperties {
-    private File configFile;
+    //private File configFile;
     private JobConfigObj jobConfigObj;
     private IGroupMembershipPlugin groupInfo;
     private ConfigYamlProperties configYamlProps;
@@ -30,7 +31,8 @@ public class TestVirtualQueueFromConfigYamlProperties {
 
     @Before
     public void setUp() throws ConfigurationException {
-        this.configFile=FileUtil.getSourceFile(this.getClass(), "virtual_queue_executor_properties_test.yaml");
+        // use the example config file from resources directory
+        File configFile=new File("resources/config_example_virtual_queue.yaml");
         this.jobConfigObj=ConfigFileParser.parse(configFile);
         this.groupInfo=mock(IGroupMembershipPlugin.class);
         this.configYamlProps=ConfigFileParser.initConfigYamlProperties(jobConfigObj, groupInfo);
@@ -44,10 +46,10 @@ public class TestVirtualQueueFromConfigYamlProperties {
     public void virtualQueue_default() {
         assertEquals("expected 'job.queue'", 
                 "genepattern", 
-                configYamlProps.getProperty(gpContext, "job.queue"));
+                configYamlProps.getProperty(gpContext, JobRunner.PROP_QUEUE));
         assertEquals("expected default 'job.virtualQueue'", 
                 "genepattern_short",
-                configYamlProps.getProperty(gpContext, "job.virtualQueue"));
+                configYamlProps.getProperty(gpContext, JobRunner.PROP_VIRTUAL_QUEUE));
         assertEquals("expected default 'job.extraArgs'",
                 null,
                 configYamlProps.getValue(gpContext, "job.extraArgs"));

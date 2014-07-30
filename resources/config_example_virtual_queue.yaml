@@ -1,3 +1,13 @@
+#
+# Example GenePattern configuration file for the 'virtual queue' feature.
+#
+# When a 'job.virtualQueue' property is set, this defines the queue name that
+# is stored in the GP database for estimating pending time and other job reporting
+# calculations.
+#
+# The 'job.queue' value is used as the command line arg for the external queuing system,
+# such as the lsf bsub command.
+#
 default.properties:
     executor: LSF
 
@@ -7,7 +17,9 @@ executor.properties: {
     #    job.virtualQueue: genepattern_short
     #},
     "genepattern_long": {
+        # this is the queue name used on the LSF bsub command line
         job.queue: genepattern,
+        # this is the queue name in the GP database, for estimating pending time
         job.virtualQueue: genepattern_long,
         job.extraArgs: [ "-g", "/genepattern/gpprod/long",  "-m", "node1448 node1449 node1450 node1451 node1452 node1453 node1454 node1455" ]
     }
@@ -24,3 +36,6 @@ executors:
 module.properties:
     TopHat:
         executor.props: "genepattern_long"
+    MyGpLongCustomMem:
+        executor.props: "genepattern_long"
+        job.memory: 12 Gb
