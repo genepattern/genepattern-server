@@ -145,7 +145,7 @@ import org.genepattern.server.executor.CommandExecutor2Wrapper;
 import org.genepattern.server.executor.CommandManagerFactory;
 import org.genepattern.server.executor.JobDispatchException;
 import org.genepattern.server.executor.JobSubmissionException;
-import org.genepattern.server.executor.events.JobCompletionEvent;
+import org.genepattern.server.executor.events.GpJobRecordedEvent;
 import org.genepattern.server.executor.events.JobEventBus;
 import org.genepattern.server.executor.pipeline.PipelineException;
 import org.genepattern.server.executor.pipeline.PipelineHandler;
@@ -162,6 +162,7 @@ import org.genepattern.server.job.input.cache.FileCache;
 import org.genepattern.server.job.input.choice.Choice;
 import org.genepattern.server.job.input.choice.ChoiceInfo;
 import org.genepattern.server.job.output.JobOutputRecorder;
+import org.genepattern.server.job.status.Status;
 import org.genepattern.server.plugin.PluginManagerLegacy;
 import org.genepattern.server.quota.DiskInfo;
 import org.genepattern.server.rest.ParameterInfoRecord;
@@ -172,7 +173,6 @@ import org.genepattern.server.util.JobResultsFilenameFilter;
 import org.genepattern.server.util.PropertiesManager_3_2;
 import org.genepattern.server.webapp.jsf.AuthorizationHelper;
 import org.genepattern.server.webservice.server.DirectoryManager;
-import org.genepattern.server.webservice.server.Status;
 import org.genepattern.server.webservice.server.dao.AdminDAO;
 import org.genepattern.server.webservice.server.dao.AnalysisDAO;
 import org.genepattern.server.webservice.server.local.LocalAdminClient;
@@ -1913,7 +1913,15 @@ public class GenePatternAnalysisTask {
         }
 
         // Publish a job completion event for the JobEventBus
-        JobEventBus.instance().post(new JobCompletionEvent(jobId));
+        fireGpJobRecordedEvent(jobInfo);
+    }
+    
+    protected static void fireGpJobRecordedEvent(final JobInfo jobInfo) {
+        String lsid=jobInfo.getTaskLSID();
+        Status jobStatus=new Status.Builder()
+            .jobInfo(jobInfo)
+        .build();
+        JobEventBus.instance().post(new GpJobRecordedEvent(lsid, jobStatus));
     }
 
     private static boolean isFinished(JobInfo jobInfo) {
@@ -3220,7 +3228,7 @@ public class GenePatternAnalysisTask {
      * 
      * @author Jim Lerner
      */
-    public static Vector<String> installTask(final String name, final String description, final ParameterInfo[] params, final TaskInfoAttributes taskInfoAttributes, final String requestedTaskOwner, final int requestedAccessId, final Status taskIntegrator, final InstallInfo taskInstallInfo)
+    public static Vector<String> installTask(final String name, final String description, final ParameterInfo[] params, final TaskInfoAttributes taskInfoAttributes, final String requestedTaskOwner, final int requestedAccessId, final org.genepattern.server.webservice.server.Status taskIntegrator, final InstallInfo taskInstallInfo)
     throws OmnigeneException, RemoteException 
     {
         final String originalUsername = requestedTaskOwner;
@@ -3338,7 +3346,7 @@ public class GenePatternAnalysisTask {
 	return taskLSID;
     }
 
-    public static String installNewTask(String name, String description, ParameterInfo[] params, TaskInfoAttributes taskInfoAttributes, String username, int access_id, Status taskIntegrator, InstallInfo installInfo)
+    public static String installNewTask(String name, String description, ParameterInfo[] params, TaskInfoAttributes taskInfoAttributes, String username, int access_id, org.genepattern.server.webservice.server.Status taskIntegrator, InstallInfo installInfo)
     throws OmnigeneException, RemoteException, TaskInstallationException {
         LSID taskLSID = null;
         String requestedLSID = taskInfoAttributes.get(LSID);
@@ -3502,7 +3510,7 @@ public class GenePatternAnalysisTask {
     /**
      * @deprecated - should pass in a TaskInstallInfo arg
      */
-    public static String installNewTask(final String zipFilename, final String username, final int access_id, final boolean recursive, final Status taskIntegrator) 
+    public static String installNewTask(final String zipFilename, final String username, final int access_id, final boolean recursive, final org.genepattern.server.webservice.server.Status taskIntegrator) 
     throws TaskInstallationException 
     {
         return installNewTask(zipFilename, username, access_id, recursive, taskIntegrator, null);
@@ -3519,7 +3527,7 @@ public class GenePatternAnalysisTask {
      * @author Jim Lerner
      * @see #installTask
      */
-    public static String installNewTask(final String zipFilename, final String username, final int access_id, final boolean recursive, final Status taskIntegrator, final InstallInfo installInfo) 
+    public static String installNewTask(final String zipFilename, final String username, final int access_id, final boolean recursive, final org.genepattern.server.webservice.server.Status taskIntegrator, final InstallInfo installInfo) 
     throws TaskInstallationException 
     {
         Vector<String> vProblems = new Vector<String>();
@@ -3808,7 +3816,7 @@ public class GenePatternAnalysisTask {
         return lsid;
     }
 
-    public static String installNewTaskFromRepository(final URL repositoryUrl, final String zipUrl, final String zipFilename, final String username, final int access_id, final Status taskIntegrator) 
+    public static String installNewTaskFromRepository(final URL repositoryUrl, final String zipUrl, final String zipFilename, final String username, final int access_id, final org.genepattern.server.webservice.server.Status taskIntegrator) 
     throws TaskInstallationException
     {
         log.debug("Installing task from repository");
@@ -3827,7 +3835,7 @@ public class GenePatternAnalysisTask {
         return rval;
     }
 
-    public static String installNewTask(String zipFilename, String username, int access_id, Status taskIntegrator, InstallInfo installInfo)
+    public static String installNewTask(String zipFilename, String username, int access_id, org.genepattern.server.webservice.server.Status taskIntegrator, InstallInfo installInfo)
         throws TaskInstallationException {
         return installNewTask(zipFilename, username, access_id, true, taskIntegrator, installInfo);
     }
@@ -3846,11 +3854,11 @@ public class GenePatternAnalysisTask {
      *             if any problems occured in accessing the remote file or storing it locally
      * @author Jim Lerner
      */
-    public static String downloadTask(String zipURL, Status statusMonitor, long expectedLength) throws IOException {
+    public static String downloadTask(String zipURL, org.genepattern.server.webservice.server.Status statusMonitor, long expectedLength) throws IOException {
 	return downloadTask(zipURL, statusMonitor, expectedLength, true);
     }
 
-    public static String downloadTask(String zipURL, Status statusMonitor, long expectedLength, boolean verbose)
+    public static String downloadTask(String zipURL, org.genepattern.server.webservice.server.Status statusMonitor, long expectedLength, boolean verbose)
 	    throws IOException {
 	File zipFile = null;
 	long downloadedBytes = 0;

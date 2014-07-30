@@ -1,12 +1,10 @@
 package org.genepattern.server.congestion;
 
+import java.util.Date;
+
 import org.apache.log4j.Logger;
-import org.genepattern.server.domain.AnalysisJob;
-import org.genepattern.server.domain.AnalysisJobDAO;
-import org.genepattern.server.domain.JobStatus;
-import org.genepattern.server.executor.drm.dao.JobRunnerJob;
-import org.genepattern.server.executor.drm.dao.JobRunnerJobDao;
-import org.genepattern.server.executor.events.JobCompletionEvent;
+import org.genepattern.server.executor.events.GpJobRecordedEvent;
+import org.genepattern.server.executor.events.JobCompletedEvent;
 import org.genepattern.server.executor.events.JobEventBus;
 import org.genepattern.server.executor.events.JobStartedEvent;
 import org.genepattern.server.job.status.Status;
@@ -38,7 +36,7 @@ public class CongestionListener {
             log.error("event.jobStatus==null, ignoring");
             return;
         }
-        final String lsid=event.getJobLsid();
+        final String lsid=event.getTaskLsid();
         final long queuetime=getQueueTimeInSeconds(event.getJobStatus());
         final String queueName=event.getJobStatus().getQueueId();
 
@@ -52,8 +50,22 @@ public class CongestionListener {
     }
     
     /**
-     * Find the time difference between submission and start time, then convert to seconds
-     * If JobRunnerJob isn't available, fall back to 0
+     * Helper method to calculate the interval between two dates.
+     * @param start
+     * @param end
+     * @return the interval in number of seconds, or null if either arg is null.
+     */
+    protected long asSeconds(final Date start, final Date end) {
+        if (end == null || start == null) {
+            return -1;
+        }
+        // just in case you swap the args
+        return Math.abs((end.getTime() - start.getTime()) / 1000);
+    }
+
+    /**
+     * Find the time difference between submission and start time, then convert to seconds.
+     * If JobRunnerJob isn't available, fall back to 0.
      * 
      * @param jobStatus, the Status instance from the JobStatusEvent.
      * @return
@@ -77,49 +89,72 @@ public class CongestionListener {
         return queuetime;
     }
 
+    /**
+     * Calculate the estimated runtime of the job in seconds,
+     * based on the cpuTime.
+     * If the cpuTime isn't available, use the queue startTime and endTime as a fall back.
+     * For legacy jobs, if the queue times are not available,
+     * use the GP dateSubmitted and dateCompleted as a fall back.
+     * 
+     * @param jobStatus
+     * @return
+     */
+    protected long getRuntimeInSeconds(final Status jobStatus) {
+        if (jobStatus.getCpuTime() != null) {
+            if (log.isDebugEnabled()) {
+                log.debug("gpJobNo="+jobStatus.getGpJobNo()+", computing runtime from cpuTime: "+jobStatus.getCpuTime());
+            }
+            return jobStatus.getCpuTime().asSeconds();
+        }
+        long runtime=asSeconds(jobStatus.getStartTime(), jobStatus.getEndTime());
+        if (runtime >= 0) {
+            if (log.isDebugEnabled()) {
+                log.debug("gpJobNo="+jobStatus.getGpJobNo()+", computing runtime from jobStatus.startTime and jobStatus.endTime: "+runtime+" s");
+            }
+            return runtime;
+        }
+        runtime=asSeconds(jobStatus.getDateSubmittedToGp(), jobStatus.getDateCompletedInGp());
+        if (runtime >= 0) {
+            if (log.isDebugEnabled()) {
+                log.debug("gpJobNo="+jobStatus.getGpJobNo()+", computing runtime from jobStatus.dateSubmittedToGp and jobStatus.dateCompletedInGp: "+runtime+" s");
+            }
+            return runtime;
+        }
+        log.error("Not enough jobStatus info to calculate runtime for gpJobNo="+jobStatus.getGpJobNo());
+        return 0;
+    }
+    
     @Subscribe
-    public void updateUponCompletion(JobCompletionEvent event) {
-        // Get the job
-        int jobId = (Integer) event.getSource();
-
-        AnalysisJobDAO dao = new AnalysisJobDAO();
-        AnalysisJob job = dao.findById(jobId);
-
-        JobRunnerJobDao jrjDao = new JobRunnerJobDao();
-        JobRunnerJob jrjJob = null;
-
-        try {
-            jrjJob = jrjDao.selectJobRunnerJob(jobId);
-        }
-        catch (Exception e) {
-            log.error("Error with JobRunnerJob for id: " + jobId + ", exiting updateCongestionTable()", e);
-        }
-        finally {
-            if (jrjJob == null) {
-                log.warn("Null JobRunnerJob for id: " + jobId);
-            }
-        }
-
-        // If the job has completed, update the congestion data
-        // This will ignore canceled or erroneous jobs
-        if (job.getJobStatus().getStatusId() == JobStatus.JOB_FINISHED) {
-            // Get the task LSID
-            String lsid = job.getTaskLsid();
-
-            // Find the time difference between submission and start time, then convert to seconds
-            // If JobRunnerJob isn't available, fall back to full pending + running time
-            long runtime = jrjJob != null ? jrjJob.getCpuTime() : ((job.getCompletedDate().getTime() - job.getSubmittedDate().getTime()) / 1000);
-
-            // Get the queue name
-            String queueName = jrjJob != null ? jrjJob.getQueueId() : null;
-
-            // Update the database
-            try {
-                CongestionManager.updateCongestionRuntime(lsid, queueName, runtime);
-            }
-            catch (Exception e) {
-                log.error("Error updating congestion data for job ID: " + jobId);
-            }
+    public void onJobCompletedEvent(JobCompletedEvent event) {
+        if (log.isDebugEnabled()) {
+            log.debug("gpJobNo="+event.getJobStatus().getGpJobNo()+", "+event.getJobStatus().getJobState());
         }
     }
+    
+    @Subscribe
+    public void onGpJobRecordedEvent(final GpJobRecordedEvent event) {
+        if (log.isDebugEnabled()) {
+            log.debug("gpJobNo="+event.getJobStatus().getGpJobNo()+", "+event.getJobStatus().getJobState());
+        }
+        if (event.getJobStatus()==null) {
+            log.error("event.jobStatus==null");
+            return;
+        }
+        if (!event.getJobStatus().getIsFinished()) {
+            log.error("jobStatus.isFinished==false, gpJobNo="+event.getJobStatus().getGpJobNo());
+            return;
+        }
+        
+        String lsid = event.getTaskLsid();
+        String queueName = event.getJobStatus().getQueueId();
+        long runtime=getRuntimeInSeconds(event.getJobStatus());
+        // Update the database
+        try {
+            CongestionManager.updateCongestionRuntime(lsid, queueName, runtime);
+        }
+        catch (Throwable t) {
+            log.error("Error updating congestion data for job ID: " + event.getJobStatus().getGpJobNo(), t);
+        }
+    }
+
 }

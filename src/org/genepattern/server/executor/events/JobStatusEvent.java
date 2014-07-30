@@ -12,19 +12,19 @@ import org.genepattern.server.job.status.Status;
  *
  */
 public class JobStatusEvent {
-    protected final String lsid;
+    protected final String taskLsid;
     protected final Status jobStatus;
     
-    public JobStatusEvent(final String lsid, final Status jobStatus) {
-        this.lsid=lsid;
+    public JobStatusEvent(final String taskLsid, final Status jobStatus) {
+        this.taskLsid=taskLsid;
         this.jobStatus=jobStatus;
     }
     
     /**
      * Get the lsid of the job.
      */
-    public String getJobLsid() {
-        return lsid;
+    public String getTaskLsid() {
+        return taskLsid;
     }
     
     /**
