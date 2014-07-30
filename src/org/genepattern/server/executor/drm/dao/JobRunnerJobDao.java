@@ -72,11 +72,18 @@ public class JobRunnerJobDao {
         }
     }
 
-    public void updateJobStatus(final JobRunnerJob existing, final DrmJobStatus drmJobStatus) {
+    /**
+     * Update the existing job_runner_job entry with new values from the given jobStatus.
+     * @param existing
+     * @param drmJobStatus
+     * @return the updated JobRunnerJob instance
+     */
+    public JobRunnerJob updateJobStatus(final JobRunnerJob existing, final DrmJobStatus jobStatus) {
         //JobRunnerJob is immutable ... so evict it from the session before saving a new instance as an update
         HibernateUtil.getSession().evict(existing);
-        JobRunnerJob update = new JobRunnerJob.Builder(existing).drmJobStatus(drmJobStatus).build();
+        JobRunnerJob update = new JobRunnerJob.Builder(existing).drmJobStatus(jobStatus).build();
         saveOrUpdate(update);
+        return update;
     }
 
     public void saveOrUpdate(final JobRunnerJob jobRunnerJob) {
