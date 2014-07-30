@@ -47,7 +47,7 @@ public class DbLookup implements DrmLookup {
         return f;
     }
 
-    private static final DrmJobRecord fromJobRunnerJob(final JobRunnerJob jobRunnerJob) {
+    public static final DrmJobRecord fromJobRunnerJob(final JobRunnerJob jobRunnerJob) {
         if (jobRunnerJob==null) {
             //null means there is no record in the db
             return null;
@@ -135,7 +135,12 @@ public class DbLookup implements DrmLookup {
     
     @Override
     public void updateJobStatus(final DrmJobRecord drmJobRecord, final DrmJobStatus drmJobStatus) {
-        new JobRunnerJobDao().updateJobStatus(drmJobRecord.getGpJobNo(), drmJobStatus);
+        try {
+            new JobRunnerJobDao().updateJobStatus(drmJobRecord.getGpJobNo(), drmJobStatus);
+        }
+        catch (DbException e) {
+            //ignore, exception logged in JobRunnerJobDao
+        }
     }
 
     public static void insertJobRunnerJob(final JobRunnerJob jobRecord) {
