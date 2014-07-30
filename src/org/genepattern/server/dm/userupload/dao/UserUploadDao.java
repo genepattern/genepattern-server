@@ -1,16 +1,17 @@
 package org.genepattern.server.dm.userupload.dao;
 
-import java.util.Collections;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 import java.util.regex.Matcher;
 
 import org.apache.log4j.Logger;
 import org.genepattern.drm.Memory;
+import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
+import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.database.BaseDAO;
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.dm.GpFilePath;
+import org.genepattern.server.webapp.jsf.JobHelper;
 import org.hibernate.Query;
 
 public class UserUploadDao extends BaseDAO {
@@ -184,6 +185,88 @@ public class UserUploadDao extends BaseDAO {
         return numDeleted;
     }
 
+    public List<UserDiskPair> allDiskUsage() {
+        boolean isInTransaction = HibernateUtil.isInTransaction();
+        List<UserDiskPair> pairList = new ArrayList<UserDiskPair>();
+
+        try {
+            HibernateUtil.beginTransaction();
+
+            String hql = "SELECT uu.userId, SUM(uu.fileLength) FROM " + UserUpload.class.getName() + " uu GROUP BY uu.userId";
+            // "SELECT LIST(uu.userId, SUM(uu.fileLength)) FROM " + UserUpload.class.getName() + " uu WHERE uu.path NOT LIKE '" + TMP_DIR + "/%' GROUP BY uu.userId"; // "SELECT , SUM(uu.file_length) FROM user_upload uu"; // GROUP BY uu.user_id
+
+            Query query = HibernateUtil.getSession().createQuery(hql);
+            query.setReadOnly(true);
+
+            List<Object[]> queryList = query.list();
+
+            for (Object[] usageObject : queryList) {
+                UserDiskPair pair = new UserDiskPair(usageObject);
+                pairList.add(pair);
+            }
+
+            Collections.sort(pairList, new Comparator<UserDiskPair>() {
+                @Override
+                public int compare(UserDiskPair a, UserDiskPair b) {
+                    return a.getDiskUsage() < b.getDiskUsage() ? 1
+                            : a.getDiskUsage() > b.getDiskUsage() ? -1
+                            : 0;
+                }
+            });
+        }
+        catch (Throwable t) {
+            log.error(t);
+            HibernateUtil.rollbackTransaction();
+        }
+        finally {
+            if (!isInTransaction) {
+                HibernateUtil.closeCurrentSession();
+            }
+
+            return pairList;
+        }
+    }
+
+    public class UserDiskPair {
+        private String user;
+        private long diskUsage;
+
+        public UserDiskPair(Object[] query) {
+            this.setUser((String) query[0]);
+            this.setDiskUsage((Long) query[1]);
+        }
+
+        public String getUser() {
+            return user;
+        }
+
+        public void setUser(String user) {
+            this.user = user;
+        }
+
+        public long getDiskUsage() {
+            return diskUsage;
+        }
+
+        public void setDiskUsage(long diskUsage) {
+            this.diskUsage = diskUsage;
+        }
+
+        public String getPrettyDiskUsage() {
+            return JobHelper.getFormattedSize(diskUsage);
+        }
+
+        public Memory getDiskQuota() {
+            GpConfig config = ServerConfigurationFactory.instance();
+            GpContext context = GpContext.getContextForUser(user);
+            return config.getGPMemoryProperty(context, "quota", new Memory(32212254720l));
+        }
+
+        public boolean isOverQuota() {
+            Memory quota = this.getDiskQuota();
+            return quota.getNumBytes() < diskUsage;
+        }
+    }
 
     /**
      * Get the total size of files for the given user.
@@ -193,15 +276,13 @@ public class UserUploadDao extends BaseDAO {
      *
      * @return a Memory object containing the total size of files
      */
-    public Memory sizeOfAllUserUploads(final String userId, final boolean includeTempFiles)
-    {
+    public Memory sizeOfAllUserUploads(String userId, boolean includeTempFiles) {
         Memory size = null;
         if (userId == null) return size;
 
-        final boolean isInTransaction=HibernateUtil.isInTransaction();
+        final boolean isInTransaction = HibernateUtil.isInTransaction();
 
-        try
-        {
+        try {
             HibernateUtil.beginTransaction();
 
             String hql = "SELECT SUM(uu.fileLength) FROM " + UserUpload.class.getName() + " uu WHERE uu.userId = :userId";
@@ -216,8 +297,7 @@ public class UserUploadDao extends BaseDAO {
             List<Long> sizeList = query.list();
 
             //should just return a list of 1 item
-            for(int i =0; i < sizeList.size();i++)
-            {
+            for(int i =0; i < sizeList.size();i++) {
                 Long sizeInBytes = sizeList.get(i);
 
                 //if this is null assume that the size is 0

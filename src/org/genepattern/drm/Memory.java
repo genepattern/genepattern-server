@@ -3,6 +3,7 @@ package org.genepattern.drm;
 import java.util.EnumSet;
 
 import org.apache.log4j.Logger;
+import org.genepattern.server.webapp.jsf.JobHelper;
 
 import javax.xml.bind.annotation.XmlRootElement;
 
@@ -217,6 +218,13 @@ public class Memory {
         this.unit=in.unit;
         this.numBytes=in.numBytes;
         this.displayValue=in.displayValue;
+    }
+
+    public Memory(Long bytes) {
+        this.value = bytes;
+        this.unit = Unit.b;
+        this.numBytes = bytes;
+        this.displayValue = JobHelper.getFormattedSize(bytes);
     }
     
     /**

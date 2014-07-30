@@ -36,6 +36,7 @@ import javax.faces.model.SelectItem;
 
 import org.apache.log4j.Logger;
 import org.genepattern.server.config.ServerConfigurationFactory;
+import org.genepattern.server.dm.userupload.dao.UserUploadDao;
 import org.genepattern.server.purger.PurgerFactory;
 import org.genepattern.server.util.PropertiesManager_3_2;
 
@@ -66,7 +67,8 @@ public class ServerSettingsBean implements Serializable {
         if (modes == null) {
             modes = new TreeMap<String, String[]>();
             modes.put("Access", new String[] { "gp.allowed.clients" });
-            modes.put("Command Line Prefix", new String[] { "gp.allowed.clients" });
+            modes.put("Command Line Prefix", null);
+            modes.put("Disk Quota", new String[] { "gp.allowed.clients" });
             modes.put("File Purge", new String[] { "purgeJobsAfter", "purgeTime" });
             modes.put("Gene Pattern Log", null);
             modes.put("Web Server Log", null);
@@ -816,4 +818,8 @@ public class ServerSettingsBean implements Serializable {
         PurgerFactory.instance().restart();
     }
 
+    public List<UserUploadDao.UserDiskPair> getDiskUsages() {
+        UserUploadDao userUploadDao = new UserUploadDao();
+        return userUploadDao.allDiskUsage();
+    }
 }

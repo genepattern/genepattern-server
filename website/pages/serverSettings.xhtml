@@ -58,6 +58,9 @@
             </h:form>
         </ui:define>
         <ui:define name="body">
+            <t:div rendered="#{serverSettingsBean.currentMode == 'Disk Quota'}">
+                <ui:include src="serverSettingsDiskQuota.xhtml" />
+            </t:div>
             <t:div rendered="#{serverSettingsBean.currentMode == 'Access'}">
                 <ui:include src="serverSettingsAccess.xhtml" />
             </t:div>
