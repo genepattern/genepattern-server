@@ -221,9 +221,6 @@ public class JobExecutor implements CommandExecutor2 {
                 GenePatternAnalysisTask.handleJobCompletion(gpJobNo, exitCode);
             }
         }
-        catch (NumberFormatException e) {
-            log.error("Unexpected error getting gp job number as an integer, gpJobId="+gpJobNo, e);
-        }
         catch (Throwable t) {
             log.error("Unexpected error in handleCompletedJob for drmJobId="+jobStatus.getDrmJobId()+", gpJobId="+gpJobNo, t);
         }
@@ -346,6 +343,12 @@ public class JobExecutor implements CommandExecutor2 {
         }
     }
     
+    /**
+     * Update the job_runner_job table and publish JobStatusEvents.
+     * 
+     * @param drmJobRecord
+     * @param drmJobStatus
+     */
     protected void updateStatus(final DrmJobRecord drmJobRecord, final DrmJobStatus drmJobStatus) {
         if (drmJobStatus==null) {
             //ignore
@@ -377,6 +380,7 @@ public class JobExecutor implements CommandExecutor2 {
         }
         catch (DbException e) {
             //ignore exception
+            log.error("Error connecting to database", e);
         }
 
         // check for transition from !RUNNING -> RUNNING
@@ -587,11 +591,11 @@ public class JobExecutor implements CommandExecutor2 {
             .build();
         if (!isSet(extJobId)) {
             final DrmJobStatus drmJobStatus = new DrmJobStatus.Builder(extJobId, DrmJobState.FAILED).build();
-            jobLookupTable.updateJobStatus(drmJobRecord, drmJobStatus);
+            new JobRunnerJobDao().updateJobStatus(drmJobRecord.getGpJobNo(), drmJobStatus);
             throw new CommandExecutorException("invalid drmJobId returned from startJob, gpJobId="+gpJobNo);
         }
         else {
-            jobLookupTable.updateJobStatus(drmJobRecord, new DrmJobStatus.Builder(extJobId, DrmJobState.QUEUED).build());
+            new JobRunnerJobDao().updateJobStatus(drmJobRecord.getGpJobNo(), new DrmJobStatus.Builder(extJobId, DrmJobState.QUEUED).build());
             try {
                 runningJobs.put(drmJobRecord);
             }
