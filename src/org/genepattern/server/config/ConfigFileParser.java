@@ -115,7 +115,7 @@ public class ConfigFileParser {
      * @param configFile
      * @return
      */
-    private static JobConfigObj parse(final File configurationFile) throws ConfigurationException {
+    protected static JobConfigObj parse(final File configurationFile) throws ConfigurationException {
         Reader reader = null;
         try {
             reader = new FileReader(configurationFile);
@@ -220,7 +220,7 @@ public class ConfigFileParser {
         setCommandManagerProperties(jobConfigObj);
     }
 
-    private static ConfigYamlProperties initConfigYamlProperties(final JobConfigObj jobConfigObj, final IGroupMembershipPlugin groupInfo) throws ConfigurationException {
+    protected static ConfigYamlProperties initConfigYamlProperties(final JobConfigObj jobConfigObj, final IGroupMembershipPlugin groupInfo) throws ConfigurationException {
         final ConfigYamlProperties config=new ConfigYamlProperties(jobConfigObj, groupInfo);
         for(final Entry<String,ExecutorConfig> entry : jobConfigObj.getExecutors().entrySet()) {
             final String execId=entry.getKey();
