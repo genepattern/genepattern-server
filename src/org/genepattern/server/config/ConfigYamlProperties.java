@@ -169,6 +169,8 @@ public class ConfigYamlProperties {
             &&
             key.startsWith(JobRunner.PROP_PREFIX)
             &&
+            context.getTaskInfo().giveTaskInfoAttributes() != null
+            &&
             context.getTaskInfo().giveTaskInfoAttributes().containsKey(key)
         ) {
             rval=new Value(context.getTaskInfo().giveTaskInfoAttributes().get(key));
