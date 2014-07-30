@@ -1,0 +1,26 @@
+default.properties:
+    executor: LSF
+
+executor.properties: {
+    #"genepattern_short": {
+    #    job.queue: genepattern,
+    #    job.virtualQueue: genepattern_short
+    #},
+    "genepattern_long": {
+        job.queue: genepattern,
+        job.virtualQueue: genepattern_long,
+        job.extraArgs: [ "-g", "/genepattern/gpprod/long",  "-m", "node1448 node1449 node1450 node1451 node1452 node1453 node1454 node1455" ]
+    }
+}
+
+executors:
+    LSF: 
+        classname: org.genepattern.server.executor.RuntimeCommandExecutor
+        default.properties:
+            #executor.props: "genepattern_short"
+            job.queue: genepattern
+            job.virtualQueue: genepattern_short
+
+module.properties:
+    TopHat:
+        executor.props: "genepattern_long"
