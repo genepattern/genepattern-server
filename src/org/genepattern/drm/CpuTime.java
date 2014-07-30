@@ -37,6 +37,10 @@ public class CpuTime {
         return timeUnit;
     }
     
+    public long asSeconds() {
+        return TimeUnit.SECONDS.convert(time, timeUnit);
+    }
+    
     public long asMillis() {
         return TimeUnit.MILLISECONDS.convert(time, timeUnit);
     }
