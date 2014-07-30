@@ -30,6 +30,7 @@ import org.genepattern.server.executor.CommandExecutorException;
 import org.genepattern.server.executor.CommandProperties;
 import org.genepattern.server.executor.drm.dao.JobRunnerJob;
 import org.genepattern.server.executor.drm.dao.JobRunnerJobDao;
+import org.genepattern.server.executor.events.JobCompletedEvent;
 import org.genepattern.server.executor.events.JobEventBus;
 import org.genepattern.server.executor.events.JobStartedEvent;
 import org.genepattern.server.genepattern.GenePatternAnalysisTask;
@@ -38,7 +39,6 @@ import org.genepattern.webservice.JobInfo;
 import org.genepattern.webservice.JobStatus;
 
 import com.google.common.eventbus.EventBus;
-
 
 /**
  * A generic CommandExecutor which uses the newer JobRunner API for submitting jobs to a queuing systems.
@@ -190,13 +190,8 @@ public class JobExecutor implements CommandExecutor2 {
         this.jobLookupTable=jobLookupTable;
     }
     
-    protected void fireJobStartedEvent(final String lsid, final Status prevStatus, final Status newStatus) {
-        eventBus.post(new JobStartedEvent(lsid, prevStatus, newStatus));
-    }
-
-    private void handleCompletedJob(final DrmJobRecord jobRecord, final DrmJobStatus jobStatus) {
-        log.debug("handleCompletedJob, gpJobNo="+jobRecord.getGpJobNo()+",extJobId="+jobRecord.getExtJobId()+", jobStatus="+jobStatus);
-        final Integer gpJobNo=jobRecord.getGpJobNo();
+    private void handleCompletedJob(final Integer gpJobNo, final DrmJobStatus jobStatus) {
+        log.debug("handleCompletedJob, gpJobNo="+gpJobNo+",extJobId="+jobStatus.getDrmJobId()+", jobStatus="+jobStatus);
         try {
             final int exitCode;
             if (jobStatus.getExitCode()==null) {
@@ -346,53 +341,68 @@ public class JobExecutor implements CommandExecutor2 {
     /**
      * Update the job_runner_job table and publish JobStatusEvents.
      * 
-     * @param drmJobRecord
+     * @param gpJobNo
+     * @param taskLsid
      * @param drmJobStatus
      */
-    protected void updateStatus(final DrmJobRecord drmJobRecord, final DrmJobStatus drmJobStatus) {
-        if (drmJobStatus==null) {
-            //ignore
-            log.debug("drmJobStatus==null");
-            return;
+    protected void updateStatus(final Integer gpJobNo, final String taskLsid, final DrmJobStatus drmJobStatus) {
+        JobRunnerJob existingJobRunnerJob = null;
+        try {
+            existingJobRunnerJob = new JobRunnerJobDao().selectJobRunnerJob(gpJobNo);
         }
-        if (drmJobRecord==null) {
-            //ignore
-            log.debug("drmJobRecord==null");
-            return;
+        catch (DbException e) {
+            // ignore
         }
-        Integer gpJobNo=drmJobRecord.getGpJobNo();
-        if (log.isDebugEnabled()) {
-            log.debug("recording status for gpJobNo="+gpJobNo+
-                    ", drmJobStatus="+drmJobStatus);
+        updateStatus(gpJobNo, taskLsid, existingJobRunnerJob, drmJobStatus);
+    }
+    
+    protected void updateStatus(final Integer gpJobNo, final String taskLsid, final JobRunnerJob existingJobRunnerJob, final DrmJobStatus updatedJobStatus) {
+        if (updatedJobStatus==null) {
+            //ignore
+            log.debug("updatedJobStatus==null");
+            return;
         }
         if (gpJobNo==null) {
             //ignore
             log.debug("gpJobNo==null");
             return;
         }
-        
-        JobRunnerJob prevJobRunnerJob=null;
-        try {
-            // init previous status
-            prevJobRunnerJob = new JobRunnerJobDao().selectJobRunnerJob(gpJobNo);
-            // record new status to the job_runner_job table
-            new JobRunnerJobDao().updateJobStatus(gpJobNo, drmJobStatus);
+        if (log.isDebugEnabled()) {
+            log.debug("recording status for gpJobNo="+gpJobNo+
+                    ", updatedJobStatus="+updatedJobStatus);
         }
-        catch (DbException e) {
+        
+        JobRunnerJob updatedJobRunnerJob=null;
+        try {
+            // record updated status to the job_runner_job table
+            updatedJobRunnerJob = new JobRunnerJobDao()
+                .updateJobStatus(existingJobRunnerJob, updatedJobStatus);
+        }
+        catch (Throwable t) {
             //ignore exception
-            log.error("Error connecting to database", e);
+            log.error("Error connecting to database", t);
+        }
+        if (updatedJobRunnerJob==null) {
+            log.debug("Initializing job_runner_job entry from updatedJobStatus");
+            updatedJobRunnerJob=new JobRunnerJob.Builder().drmJobStatus(updatedJobStatus).build();
         }
 
+        final Status prevStatus=initStatus(existingJobRunnerJob);
+        final Status nextStatus=initStatus(updatedJobRunnerJob);
         // check for transition from !RUNNING -> RUNNING
-        if (drmJobStatus.getJobState().is(DrmJobState.STARTED)) {
-            if (prevJobRunnerJob == null || !isRunning(prevJobRunnerJob.getJobState())) {
+        if (updatedJobStatus.getJobState().is(DrmJobState.STARTED)) {
+            if (existingJobRunnerJob == null || !isRunning(existingJobRunnerJob.getJobState())) {
                 //fire job started event
-                fireJobStartedEvent(gpJobNo, drmJobRecord.getLsid(), prevJobRunnerJob, drmJobStatus);
+                fireJobStartedEvent(taskLsid, prevStatus, nextStatus);
             }
         }
-        
+        // check for transition to TERMINATED
+        else if (updatedJobStatus.getJobState().is(DrmJobState.TERMINATED)) {
+            //fire job completed event
+            fireJobCompletedEvent(taskLsid, prevStatus, nextStatus);
+        } 
     }
-    
+
     protected boolean isRunning(final String job_state) {
         try {
             return DrmJobState.valueOf(job_state).is(DrmJobState.RUNNING);
@@ -403,41 +413,34 @@ public class JobExecutor implements CommandExecutor2 {
         return false;
     }
     
-    protected void fireJobStartedEvent(final Integer gpJobNo, final String lsid, final JobRunnerJob prevJobRunnerJob, final DrmJobStatus drmJobStatus) {
-        JobRunnerJob curJobRunnerJob=getCurrentJobRunnerJob(gpJobNo);
-        Status prevStatus=null;
-        if (prevJobRunnerJob != null) {
-            prevStatus=new Status.Builder()
-                .jobStatusRecord(prevJobRunnerJob)
-            .build();
+    protected Status initStatus(final JobRunnerJob jobRunnerJob) {
+        if (jobRunnerJob==null) {
+            return null;
         }
-        Status curStatus=null;
-        if (curJobRunnerJob != null) {
-            curStatus=new Status.Builder()
-                .jobStatusRecord(curJobRunnerJob)
-            .build();
-        }
-        
-        // asssume it's a job started event, this commented out code shows how to check, in cases when we are not sure
-        //if (curStatus != null && curStatus.getIsRunning()) {
-        //    // the job is running, was it not running before?
-        //    if (prevStatus == null || !prevStatus.getIsRunning()) {
-        //        fireJobStartedEvent(prevStatus, curStatus);
-        //    }
-        //}
-        fireJobStartedEvent(lsid, prevStatus, curStatus);
+        Status status=new Status.Builder()
+            .jobStatusRecord(jobRunnerJob)
+        .build();
+        return status;
+    }
+
+    protected void fireJobStartedEvent(final String lsid, final Status prevStatus, final Status newStatus) {
+        eventBus.post(new JobStartedEvent(lsid, prevStatus, newStatus));
+    }
+
+    protected void fireJobCompletedEvent(final String lsid, final Status prevStatus, final Status newStatus) {
+        eventBus.post(new JobCompletedEvent(lsid, prevStatus, newStatus));
     }
     
-    protected JobRunnerJob getCurrentJobRunnerJob(Integer gpJobNo) {
-        try {
-            JobRunnerJob jobRunnerJob = new JobRunnerJobDao().selectJobRunnerJob(gpJobNo);
-            return jobRunnerJob;
-        }
-        catch (DbException e) {
-            //ignore exception
-        }
-        return null;
-    }
+//    protected JobRunnerJob getCurrentJobRunnerJob(Integer gpJobNo) {
+//        try {
+//            JobRunnerJob jobRunnerJob = new JobRunnerJobDao().selectJobRunnerJob(gpJobNo);
+//            return jobRunnerJob;
+//        }
+//        catch (DbException e) {
+//            //ignore exception
+//        }
+//        return null;
+//    }
 
     private DrmJobStatus getJobStatus(final DrmJobRecord drmJobRecord) throws InterruptedException {
         return getJobStatus(drmJobRecord, 60000L); //60 seconds
@@ -458,8 +461,8 @@ public class JobExecutor implements CommandExecutor2 {
             if (log.isDebugEnabled()) { 
                 log.debug("checkStatus(gpJobNo="+drmJobRecord.getGpJobNo()+") timed out after "+getJobStatus_delay_ms+" "+TimeUnit.MILLISECONDS);
             }
-            //report it as running so that we try again
-            return new DrmJobStatus.Builder(drmJobRecord.getExtJobId(), DrmJobState.RUNNING).build();
+            // return null so that we try again
+            return null;
         }
         catch (ExecutionException e) {
             final String jobStatusMessage="ExecutionException in checkStatus(gpJobNo="+drmJobRecord.getGpJobNo()+")";
@@ -473,14 +476,17 @@ public class JobExecutor implements CommandExecutor2 {
     private void checkJobStatus(final DrmJobRecord drmJobRecord) throws InterruptedException {
         //check it's status
         final DrmJobStatus drmJobStatus=getJobStatus(drmJobRecord);
-        updateStatus(drmJobRecord, drmJobStatus);
+        // can return null if there was a connection timeout or other problem getting the status from the jobrunner
+        if (drmJobStatus != null) {
+            updateStatus(drmJobRecord.getGpJobNo(), drmJobRecord.getLsid(), drmJobStatus);
+        }
         if (drmJobStatus != null && drmJobStatus.getJobState().is(DrmJobState.TERMINATED)) {
             log.debug("job is terminated, drmJobStatus.jobState="+drmJobStatus.getJobState());
-            handleCompletedJob(drmJobRecord, drmJobStatus);
+            handleCompletedJob(drmJobRecord.getGpJobNo(), drmJobStatus);
         }
         else if (drmJobStatus != null && drmJobStatus.getJobState().is(DrmJobState.UNDETERMINED)) {
             log.debug("unexpected result from jobRunner.getStatus, jobState="+drmJobStatus.getJobState());
-            handleCompletedJob(drmJobRecord, drmJobStatus);
+            handleCompletedJob(drmJobRecord.getGpJobNo(), drmJobStatus);
         }
         else {
             final long delay;
@@ -591,11 +597,21 @@ public class JobExecutor implements CommandExecutor2 {
             .build();
         if (!isSet(extJobId)) {
             final DrmJobStatus drmJobStatus = new DrmJobStatus.Builder(extJobId, DrmJobState.FAILED).build();
-            new JobRunnerJobDao().updateJobStatus(drmJobRecord.getGpJobNo(), drmJobStatus);
+            try {
+                new JobRunnerJobDao().updateJobStatus(drmJobRecord.getGpJobNo(), drmJobStatus);
+            }
+            catch (DbException e) {
+                // ignore
+            }
             throw new CommandExecutorException("invalid drmJobId returned from startJob, gpJobId="+gpJobNo);
         }
         else {
-            new JobRunnerJobDao().updateJobStatus(drmJobRecord.getGpJobNo(), new DrmJobStatus.Builder(extJobId, DrmJobState.QUEUED).build());
+            try {
+                new JobRunnerJobDao().updateJobStatus(drmJobRecord.getGpJobNo(), new DrmJobStatus.Builder(extJobId, DrmJobState.QUEUED).build());
+            }
+            catch (DbException e1) {
+                // ignore
+            }
             try {
                 runningJobs.put(drmJobRecord);
             }
@@ -641,9 +657,9 @@ public class JobExecutor implements CommandExecutor2 {
                      .jobStatusMessage("Cancellation requested from GenePattern user")
                 .build();
             }
-            updateStatus(drmJobRecord, cancelledStatus);
+            updateStatus(drmJobRecord.getGpJobNo(), drmJobRecord.getLsid(), cancelledStatus);
             // send callback to GPAT.handleJobCompletion
-            handleCompletedJob(drmJobRecord, cancelledStatus);
+            handleCompletedJob(drmJobRecord.getGpJobNo(), cancelledStatus);
             return cancelled;
         }
         catch (InterruptedException e) {
@@ -689,7 +705,8 @@ public class JobExecutor implements CommandExecutor2 {
      */
     @Override
     public int handleRunningJob(JobInfo jobInfo) throws Exception {
-        final DrmJobRecord drmJobRecord=jobLookupTable.lookupJobRecord(jobInfo.getJobNumber());
+        final JobRunnerJob existing=new JobRunnerJobDao().selectJobRunnerJob(jobInfo.getJobNumber());
+        final DrmJobRecord drmJobRecord=DbLookup.fromJobRunnerJob(existing);
         if (drmJobRecord==null || drmJobRecord.getExtJobId()==null) {
             //no match found, what to do?
             log.error("No matching drmJobId found for gpJobId="+jobInfo.getJobNumber());
@@ -706,7 +723,7 @@ public class JobExecutor implements CommandExecutor2 {
         }
         // an rval < 0 indicates to the calling method to ignore this
         if (drmJobStatus.getJobState().is(DrmJobState.TERMINATED)) {
-            handleCompletedJob(drmJobRecord, drmJobStatus);
+            handleCompletedJob(drmJobRecord.getGpJobNo(), drmJobStatus);
             return -1;
         }
         //it's still processing
