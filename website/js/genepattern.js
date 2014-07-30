@@ -3180,8 +3180,8 @@ function loadJobResults(jobResults) {
 function renderStatusBox(diskInfo)
 {
     // Hard-coded values until we hook this into server-side calls
-    var diskQuotaDisplay = "unavailable";
-    var diskUsedDisplay = "unavailable";
+    var diskQuotaDisplay = null;
+    var diskUsedDisplay = null;
     var diskQuotaBytes = null;
     var diskUsedBytes = null;
     var percentUsed = 0;
@@ -3207,46 +3207,68 @@ function renderStatusBox(diskInfo)
         {
             percentUsed = (diskUsedBytes / diskQuotaBytes) * 100;
         }
+
+        var quotaTooltip = $("<table></table>");
+
+        $(document).ready(function() {
+            // Set up the user box
+            $("#user-box-name").text(username);
+            $("#user-menu").menu();
+
+            $("#top-status-box").show();
+
+            var diskAndQuotaLabel = null;
+            var title = "Disk Usage and Quota";
+            if(diskUsedDisplay == null)
+            {
+                //disk usage is not available
+                //so stop and do not display anything
+                return;
+            }
+            else if(diskQuotaDisplay == null)
+            {
+                diskAndQuotaLabel = diskUsedDisplay;
+                title = "Disk Usage";
+            }
+            else
+            {
+                diskAndQuotaLabel = diskUsedDisplay + " / " + diskQuotaDisplay;
+            }
+
+            $("#quota-space-label").text(diskAndQuotaLabel);
+
+            var jqQuotaProgress = $("#quota-space-progressbar");
+            jqQuotaProgress.progressbar({
+                value: percentUsed
+            });
+
+            if (percentUsed >= 90) {
+                jqQuotaProgress.addClass("quota-space-red");
+            }
+            else if (percentUsed >= 75) {
+                jqQuotaProgress.addClass("quota-space-yellow");
+            }
+
+            var jqQuotaTooltip = $("#disk-quota-tooltip");
+
+            quotaTooltip.append("<tr><td><em>Files tab:</em></td><td>" + diskUsedDisplay +"</td></tr>")
+
+            //only display quota information if it is available
+            if(diskQuotaDisplay != null)
+            {
+                quotaTooltip.append("<tr><td><em>Quota:</em></td><td>" + diskQuotaDisplay +"</td></tr>")
+            }
+
+            jqQuotaTooltip.append(quotaTooltip);
+
+
+            $("#quota-box").click(function() {
+                $("#disk-quota-tooltip").dialog({
+                    title: title
+                }).show();
+            });
+        });
     }
-
-    var quotaTooltip = $("<table></table>");
-
-    $(document).ready(function() {
-        // Set up the user box
-        $("#user-box-name").text(username);
-        $("#user-menu").menu();
-
-
-        $("#quota-space-label").text(diskUsedDisplay + " / " + diskQuotaDisplay);
-
-        var jqQuotaProgress = $("#quota-space-progressbar");
-        jqQuotaProgress.progressbar({
-            value: percentUsed
-        });
-
-        if (percentUsed >= 90) {
-            jqQuotaProgress.addClass("quota-space-red");
-        }
-        else if (percentUsed >= 75) {
-            jqQuotaProgress.addClass("quota-space-yellow");
-        }
-
-        var jqQuotaTooltip = $("#disk-quota-tooltip");
-
-        quotaTooltip.append("<tr><td><em>Files tab:</em></td><td>" + diskUsedDisplay +"</td></tr>")
-        quotaTooltip.append("<tr><td><em>Quota:</em></td><td>" + diskQuotaDisplay +"</td></tr>")
-
-        jqQuotaTooltip.append(quotaTooltip);
-
-
-        $("#quota-box").click(function() {
-            $("#disk-quota-tooltip").dialog({
-                title: "Disk Usage and Quota"
-            }).show();
-        });
-
-        $("#top-status-box").show();
-    });
 }
 
 function initStatusBox()
