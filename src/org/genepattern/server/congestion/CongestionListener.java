@@ -104,7 +104,12 @@ public class CongestionListener {
             if (log.isDebugEnabled()) {
                 log.debug("gpJobNo="+jobStatus.getGpJobNo()+", computing runtime from cpuTime: "+jobStatus.getCpuTime());
             }
-            return jobStatus.getCpuTime().asSeconds();
+            if (jobStatus.getCpuTime().getTime()==0) {
+                log.warn("cpuTime==0, fallback to startTime and endTime");
+            }
+            else {
+                return jobStatus.getCpuTime().asSeconds();
+            }
         }
         long runtime=asSeconds(jobStatus.getStartTime(), jobStatus.getEndTime());
         if (runtime >= 0) {
@@ -129,20 +134,12 @@ public class CongestionListener {
         if (log.isDebugEnabled()) {
             log.debug("gpJobNo="+event.getJobStatus().getGpJobNo()+", "+event.getJobStatus().getJobState());
         }
-    }
-    
-    @Subscribe
-    public void onGpJobRecordedEvent(final GpJobRecordedEvent event) {
-        if (log.isDebugEnabled()) {
-            log.debug("gpJobNo="+event.getJobStatus().getGpJobNo()+", "+event.getJobStatus().getJobState());
-        }
         if (event.getJobStatus()==null) {
             log.error("event.jobStatus==null");
             return;
         }
         if (!event.getJobStatus().getIsFinished()) {
             log.error("jobStatus.isFinished==false, gpJobNo="+event.getJobStatus().getGpJobNo());
-            return;
         }
         
         String lsid = event.getTaskLsid();
@@ -154,6 +151,13 @@ public class CongestionListener {
         }
         catch (Throwable t) {
             log.error("Error updating congestion data for job ID: " + event.getJobStatus().getGpJobNo(), t);
+        }
+    }
+    
+    // @Subscribe
+    public void onGpJobRecordedEvent(final GpJobRecordedEvent event) {
+        if (log.isDebugEnabled()) {
+            log.debug("gpJobNo="+event.getJobStatus().getGpJobNo()+", "+event.getJobStatus().getJobState());
         }
     }
 
