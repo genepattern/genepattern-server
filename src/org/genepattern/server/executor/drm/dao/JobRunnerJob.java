@@ -335,9 +335,15 @@ public class JobRunnerJob {
             this.statusMessage=updated.getJobStatusMessage();
             this.exitCode=updated.getExitCode();
             this.terminatingSignal=updated.getTerminatingSignal();
-            this.submitTime=updated.getSubmitTime();
-            this.startTime=updated.getStartTime();
-            this.endTime=updated.getEndTime();
+            if (updated.getSubmitTime() != null) {
+                this.submitTime=updated.getSubmitTime();
+            }
+            if (updated.getStartTime() != null) {
+                this.startTime=updated.getStartTime();
+            }
+            if (updated.getEndTime() != null) {
+                this.endTime=updated.getEndTime();
+            }
             if (updated.getCpuTime() == null) {
                 this.cpuTime=null;
             }
