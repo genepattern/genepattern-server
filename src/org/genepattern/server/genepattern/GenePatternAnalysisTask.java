@@ -1920,6 +1920,7 @@ public class GenePatternAnalysisTask {
         String lsid=jobInfo.getTaskLSID();
         Status jobStatus=new Status.Builder()
             .jobInfo(jobInfo)
+            .dateCompletedInGp(new Date())
         .build();
         JobEventBus.instance().post(new GpJobRecordedEvent(lsid, jobStatus));
     }
