@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.apache.log4j.Logger;
+import org.genepattern.drm.JobRunner;
 import org.genepattern.drm.Memory;
 import org.genepattern.server.auth.IGroupMembershipPlugin;
 import org.genepattern.server.executor.CommandExecutorMapper;
@@ -278,6 +279,30 @@ public class GpConfig {
             log.error("Error parsing memory value for property, "+key+"="+val, t);
             return defaultValue;
         }
+    }
+
+    /**
+     * Helper method for getting the queueId for a job. In most cases this is equivalent to the 'job.queue' property.
+     * When the 'job.virtualQueue' is set, then that value is used.
+     * The default value is the empty string when neither property is set.
+     * 
+     * @param gpContext
+     * @return
+     */
+    public String getQueueId(final GpContext gpContext) {
+        return getQueueId(gpContext, "");
+    }
+    
+    public String getQueueId(final GpContext gpContext, final String defaultValue) {
+        String queueId=getGPProperty(gpContext, JobRunner.PROP_VIRTUAL_QUEUE);
+        if (queueId!=null) {
+            return queueId;
+        }
+        queueId=getGPProperty(gpContext, JobRunner.PROP_QUEUE);
+        if (queueId!=null) {
+            return queueId;
+        }
+        return defaultValue;
     }
 
     //helper methods for locating server files and folders

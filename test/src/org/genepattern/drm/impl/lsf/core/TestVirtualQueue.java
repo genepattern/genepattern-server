@@ -9,7 +9,6 @@ import java.util.Arrays;
 import org.genepattern.drm.DrmJobSubmission;
 import org.genepattern.drm.JobRunner;
 import org.genepattern.drm.Memory;
-import org.genepattern.junitutil.FileUtil;
 import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.webservice.JobInfo;
@@ -59,22 +58,6 @@ public class TestVirtualQueue {
         
         lsfRunner = new CmdLineLsfRunner();
     }
-    
-//    @Test
-//    public void jobMemory() {
-//        DrmJobSubmission customMemJob=mock(DrmJobSubmission.class);
-//        when(customMemJob.getGpConfig()).thenReturn(gpConfig);
-//        when(customMemJob.getWorkingDir()).thenReturn(jobDir);
-//        when(customMemJob.getCpuCount()).thenReturn(null);
-//        when(customMemJob.getNodeCount()).thenReturn(null);
-//        when(customMemJob.getMemory()).thenReturn(Memory.fromString("12Gb"));
-//        LsfJob lsfJob = lsfRunner.initLsfJob(customMemJob);
-//        assertEquals(
-//            "job.memory:  12Gb",
-//            Arrays.asList(new String[]{"-R", "rusage[mem=12]", "-M", "12"}),
-//            lsfJob.getExtraBsubArgs());
-//    }
-
     
     /**
      * Get LSF command line when the default 'job.virtualQueue'
@@ -164,6 +147,42 @@ public class TestVirtualQueue {
                 Arrays.asList(new String[]{"-R", "rusage[mem=12]", "-M", "12", "-g", "/genepattern/gpprod/long",  "-m", "node1448 node1449 node1450 node1451 node1452 node1453 node1454 node1455"}),
                 lsfJob.getExtraBsubArgs());
     }
-
+    
+    /**
+     * The default queueId from the 'resources/config_example_virtual_queue.yaml' file is 'genepattern_short'.
+     */
+    @Test
+    public void queueId_defaultVirtualQueue() {
+        GpContext gpContext=mock(GpContext.class);
+        assertEquals("queueId", "genepattern_short", gpConfig.getQueueId(gpContext));
+    }
+    
+    /**
+     * When the 'job.queue' and the 'job.virtualQueue' are not set, the queueId is the empty string.
+     */
+    @Test
+    public void queueId_noQueue_noVirtualQueue() {
+        TaskInfo taskInfo=mock(TaskInfo.class);
+        when(taskInfo.getName()).thenReturn("MyLocalExecutor");
+        GpContext gpContext=mock(GpContext.class);
+        when(gpContext.getTaskInfo()).thenReturn(taskInfo);
+        //check the executor
+        assertEquals("expected 'executorId'", "LocalExecutor", gpConfig.getExecutorId(gpContext));
+        assertEquals("queueId", "", gpConfig.getQueueId(gpContext));
+    }
+    
+    /**
+     * When the 'job.queue' is set and the 'job.virtualQueue' is not set, the queueId is the job.queue.
+     */
+    @Test
+    public void queueId_noVirtualQueue() {
+        TaskInfo taskInfo=mock(TaskInfo.class);
+        when(taskInfo.getName()).thenReturn("MyCustomQueue");
+        GpContext gpContext=mock(GpContext.class);
+        when(gpContext.getTaskInfo()).thenReturn(taskInfo);
+        //check the executor
+        assertEquals("expected 'executorId'", "LocalExecutor", gpConfig.getExecutorId(gpContext));
+        assertEquals("queueId", "my_queue", gpConfig.getQueueId(gpContext));
+    }
 
 }
