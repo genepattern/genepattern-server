@@ -18,6 +18,8 @@ import org.genepattern.drm.DrmJobSubmission;
 import org.genepattern.drm.Memory;
 import org.hibernate.validator.Size;
 
+import com.google.common.base.Strings;
+
 /**
  * A record (for the the DB or in a runtime cache) used by the DrmLookup class for recording the status of an
  * external job.
@@ -325,7 +327,10 @@ public class JobRunnerJob {
         
         public Builder drmJobStatus(final DrmJobStatus updated) {
             this.extJobId=updated.getDrmJobId();
-            this.queueId=updated.getQueueId();
+            if (!Strings.isNullOrEmpty( updated.getQueueId() )) {
+                //special-case, only update the DB the queueId is set 
+                this.queueId=updated.getQueueId();
+            }
             this.jobState=updated.getJobState().name();
             this.statusMessage=updated.getJobStatusMessage();
             this.exitCode=updated.getExitCode();
