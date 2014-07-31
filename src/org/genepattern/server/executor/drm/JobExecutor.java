@@ -24,6 +24,7 @@ import org.genepattern.drm.DrmJobStatus;
 import org.genepattern.drm.DrmJobSubmission;
 import org.genepattern.drm.JobRunner;
 import org.genepattern.server.DbException;
+import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.executor.CommandExecutor2;
@@ -632,7 +633,9 @@ public class JobExecutor implements CommandExecutor2 {
         final Integer gpJobNo=jobContext.getJobNumber();
         log.debug(jobRunnerName+" runCommand, gpJobNo="+gpJobNo);
         
-        final String logFilename=ServerConfigurationFactory.instance().getGPProperty(jobContext, JobRunner.PROP_LOGFILE);
+        final GpConfig gpConfig=ServerConfigurationFactory.instance();
+        final String logFilename=gpConfig.getGPProperty(jobContext, JobRunner.PROP_LOGFILE);
+        final String queueId=gpConfig.getQueueId(jobContext);
         DrmJobSubmission.Builder builder=new DrmJobSubmission.Builder(runDir)
             .jobContext(jobContext)
             .commandLine(commandLine)
@@ -643,17 +646,18 @@ public class JobExecutor implements CommandExecutor2 {
             .logFilename(logFilename);
         final DrmJobSubmission drmJobSubmission=builder.build();
         
-        final JobRunnerJob jobRecord = new JobRunnerJob.Builder(jobRunnerClassname, drmJobSubmission).jobRunnerName(jobRunnerName).build();
+        final JobRunnerJob jobRecord = new JobRunnerJob.Builder(jobRunnerClassname, drmJobSubmission)
+            .jobRunnerName(jobRunnerName)
+            .queueId(queueId)
+        .build();
         new JobRunnerJobDao().insertJobRunnerJob(jobRecord);
         
         //TODO: make fault tolerant in the event that (1) startJob gets hung or (2) startJob throws an exception
         final String extJobId=jobRunner.startJob(drmJobSubmission);
-        final DrmJobRecord drmJobRecord = new DrmJobRecord.Builder(extJobId, drmJobSubmission)
-            .build();
         if (!isSet(extJobId)) {
             final DrmJobStatus drmJobStatus = new DrmJobStatus.Builder(extJobId, DrmJobState.FAILED).build();
             try {
-                new JobRunnerJobDao().updateJobStatus(drmJobRecord.getGpJobNo(), drmJobStatus);
+                new JobRunnerJobDao().updateJobStatus(gpJobNo, drmJobStatus);
             }
             catch (DbException e) {
                 // ignore
@@ -662,12 +666,17 @@ public class JobExecutor implements CommandExecutor2 {
         }
         else {
             try {
-                new JobRunnerJobDao().updateJobStatus(drmJobRecord.getGpJobNo(), new DrmJobStatus.Builder(extJobId, DrmJobState.QUEUED).build());
+                DrmJobStatus jobStatus=new DrmJobStatus.Builder(extJobId, DrmJobState.QUEUED)
+                    .queueId(queueId)
+                .build();
+                new JobRunnerJobDao().updateJobStatus(gpJobNo, jobStatus);
             }
             catch (DbException e1) {
                 // ignore
             }
             try {
+                final DrmJobRecord drmJobRecord = new DrmJobRecord.Builder(extJobId, drmJobSubmission)
+                .build();
                 runningJobs.put(drmJobRecord);
             }
             catch (InterruptedException e) {
