@@ -31,14 +31,20 @@ public class CongestionManager {
     /**
      * Get the status of the job queue for the specified task
      *
-     * @param lsid
+     * @param queue
      * @return
      */
-    static public QueueStatus getQueueStatus(String lsid) {
+    static public QueueStatus getQueueStatus(String queue) {
         boolean inTransaction = HibernateUtil.isInTransaction();
+
+        CongestionDao dao = new CongestionDao();
+
         try {
-            CongestionDao dao = new CongestionDao();
-            Congestion congestion = dao.getCongestion(lsid);
+            Congestion congestion = dao.getCongestion(queue);
+
+            if (!inTransaction) {
+                HibernateUtil.commitTransaction();
+            }
 
             // If the status is unknown, assume yellow
             if (congestion == null) {
@@ -51,67 +57,16 @@ public class CongestionManager {
             log.error("Error in getQueueStatus()", t);
             return QueueStatus.YELLOW;
         }
-        finally {
-            if (!inTransaction) {
-                HibernateUtil.closeCurrentSession();
-            }
-        }
     }
 
     /**
      * Get a congestion object by LSID
-     * @param lsid
+     * @param queue
      * @return
      */
-    static public Congestion getCongestion(String lsid) {
-        final boolean inTransaction = HibernateUtil.isInTransaction();
-        try {
-            CongestionDao dao = new CongestionDao();
-            return dao.getCongestion(lsid);
-        }
-        catch (Throwable t) {
-            log.error("Unexpected error in getCongestion for lsid="+lsid, t);
-            return null;
-        }
-        finally {
-            if (!inTransaction) {
-                HibernateUtil.closeCurrentSession();
-            }
-        }
-    }
-
-    /**
-     * Update the congestion runtime data for a particular task
-     * Use when you don't already have a congestion object
-     *
-     * Explicitly updates runtime, lazily updates queue.
-     *
-     * @param lsid
-     * @param runtime
-     * @return
-     * @throws Exception
-     */
-    static public Congestion updateCongestionRuntime(String lsid, String queueName, long runtime) throws Exception {
-        boolean inTransaction = HibernateUtil.isInTransaction();
-        try {
-            CongestionDao dao = new CongestionDao();
-            Congestion congestion = dao.getCongestion(lsid);
-            if (congestion == null) {
-                return createCongestion(lsid, queueName, runtime, 0);
-            }
-
-            return updateCongestionRuntime(congestion, queueName, runtime);
-        }
-        catch (Throwable t) {
-            log.error("Error in updateCongestion(), rolling back commit.", t);
-            HibernateUtil.rollbackTransaction();
-            throw new Exception("Error updating congestion: " + lsid);
-        }
-        finally {
-            if (!inTransaction) {
-                HibernateUtil.closeCurrentSession();
-            }
-        }
+    static public Congestion getCongestion(String queue) {
+        CongestionDao dao = new CongestionDao();
+        return dao.getCongestion(queue);
     }
 
     /**
@@ -120,72 +75,34 @@ public class CongestionManager {
      *
      * Explicitly updates runtime, lazily updates queue.
      *
-     * @param lsid
      * @param queuetime
      * @return
      * @throws Exception
      */
-    static public void updateCongestionQueuetime(String lsid, String queueId, long queuetime) throws Exception {
-        final boolean inTransaction = HibernateUtil.isInTransaction();
+    static public void updateCongestionQueuetime(String queueName, long queuetime) throws Exception {
+        boolean inTransaction = HibernateUtil.isInTransaction();
+
+        CongestionDao dao = new CongestionDao();
+
         try {
-            CongestionDao dao = new CongestionDao();
-            Congestion congestion = dao.getCongestion(lsid);
+            Congestion congestion = dao.getCongestion(queueName);
+
             if (congestion == null) {
-                congestion = createCongestion(lsid, queueId, 0, queuetime);
+                createCongestion(queueName, queuetime);
+                return;
             }
 
-            long averageQueuetime = calculateQueuetime(dao, queueId, queuetime);
+            long estimatedQueuetime = calculateQueuetime(dao, queueName, queuetime);
 
-            dao.updateQueuetime(queueId, averageQueuetime);
-            if (!inTransaction) {
-                HibernateUtil.commitTransaction();
-            }
-        }
-        catch (Throwable t) {
-            log.error("Error in updateCongestion(), rolling back commit.", t);
-            HibernateUtil.rollbackTransaction();
-            throw new Exception("Error updating congestion: " + lsid);
-        }
-        finally {
-            if (!inTransaction) {
-                HibernateUtil.closeCurrentSession();
-            }
-        }
-    }
-
-    /**
-     * Update the congestion data for a particular task
-     * Use when you have a congestion object
-     *
-     * Explicitly updates runtime, lazily updates virtual queue.
-     *
-     * @param congestion
-     * @param runtime
-     * @return
-     * @throws Exception
-     */
-    static public Congestion updateCongestionRuntime(Congestion congestion, String queueId, long runtime) throws Exception {
-        final boolean inTransaction = HibernateUtil.isInTransaction();
-        try {
-            CongestionDao dao = new CongestionDao();
-            long averageRuntime = calculateRuntime(congestion, runtime);
-            congestion.setRuntime(averageRuntime);
-            congestion.setVirtualQueue(queueId);
+            congestion.setQueuetime(estimatedQueuetime);
             dao.saveOrUpdate(congestion);
-            if (!inTransaction) {
-                HibernateUtil.commitTransaction();
-            }
-            return congestion;
+
+            HibernateUtil.commitTransaction();
         }
         catch (Throwable t) {
             log.error("Error in updateCongestion(), rolling back commit.", t);
             HibernateUtil.rollbackTransaction();
-            throw new Exception("Runtime exception updating congestion: " + congestion.getLsid());
-        }
-        finally {
-            if (!inTransaction) {
-                HibernateUtil.closeCurrentSession();
-            }
+            throw new Exception("Error updating congestion: " + queueName);
         }
     }
 
@@ -219,23 +136,23 @@ public class CongestionManager {
     }
 
     /**
-     * Creates a new congestion object from a task lsid and an initial runtime
+     * Creates a new congestion object from queue and an initial queuetime
      *
-     * @param lsid
-     * @param runtime
+     * @param queue
+     * @param queuetime
      * @return
      * @throws Exception
      */
-    static private Congestion createCongestion(String lsid, String queueId, long runtime, long queuetime) throws Exception {
-        final boolean inTransaction = HibernateUtil.isInTransaction();
-        try {
-            CongestionDao dao = new CongestionDao();
+    static private Congestion createCongestion(String queue, long queuetime) throws Exception {
+        boolean inTransaction = HibernateUtil.isInTransaction();
 
-            Congestion congestion = new Congestion();
-            congestion.setLsid(lsid);
-            congestion.setRuntime(runtime);
-            congestion.setQueuetime(queuetime);
-            congestion.setVirtualQueue(queueId);
+        CongestionDao dao = new CongestionDao();
+
+        Congestion congestion = new Congestion();
+        congestion.setQueuetime(queuetime);
+        congestion.setQueue(queue);
+
+        try {
             dao.save(congestion);
             HibernateUtil.commitTransaction();
             return congestion;
@@ -243,41 +160,7 @@ public class CongestionManager {
         catch (Throwable t) {
             log.error("Error in createCongestion(), rolling back commit.", t);
             HibernateUtil.rollbackTransaction();
-            throw new Exception("Runtime exception creating congestion: " + lsid);
-        }
-        finally {
-            if (!inTransaction) {
-                HibernateUtil.closeCurrentSession();
-            }
-        }
-    }
-
-    /**
-     * Calculates an estimated runtime for a task based on the just completed runtime
-     * and the previous runtime data.
-     *
-     * Formula:
-     * Averages the current runtime with the previous average, weighting the previous average as configured.
-     *
-     * @param congestion
-     * @param runtime
-     * @return
-     */
-    static private long calculateRuntime(Congestion congestion, long runtime) {
-        GpContext context = GpContext.getServerContext();
-        int weight = ServerConfigurationFactory.instance().getGPIntegerProperty(context, "congestion.compare.weight", 3);
-
-        // If runtime likely wasn't set properly, this is the best estimate we have
-        if (congestion.getRuntime() == 0) {
-            return runtime;
-        }
-        // Otherwise do the calculation
-        else {
-            /*
-            Pretend the last WEIGHT jobs took the current average amount of time to complete,
-            then average with the runtime of the current completed job.
-         */
-            return (congestion.getRuntime() * weight + runtime) / (weight + 1);
+            throw new Exception("Runtime exception creating congestion: " + congestion.getQueue());
         }
     }
 
@@ -291,7 +174,7 @@ public class CongestionManager {
      * @return
      */
     static private long calculateQueuetime(CongestionDao dao, String virtualQueue, long queuetime) {
-        int count = dao.getVirtualQueueCount(virtualQueue);
+        int count = dao.getQueueCount(virtualQueue);
         if (count <= 1) return 0;
         else return queuetime;
     }
@@ -327,10 +210,12 @@ public class CongestionManager {
      * @return
      */
     static private int getJobsWaiting(Congestion congestion) {
-        final boolean inTransaction = HibernateUtil.isInTransaction();
+        boolean inTransaction = HibernateUtil.isInTransaction();
+
+        CongestionDao dao = new CongestionDao();
+
         try {
-            CongestionDao dao = new CongestionDao();
-            int waiting = dao.getVirtualQueueCount(congestion.getVirtualQueue());
+            int waiting = dao.getQueueCount(congestion.getQueue());
 
             if (!inTransaction) {
                 HibernateUtil.commitTransaction();
@@ -340,11 +225,6 @@ public class CongestionManager {
         catch (Throwable t) {
             log.error("Error in getJobsWaiting()", t);
             return 0;
-        }
-        finally {
-            if (!inTransaction) {
-                HibernateUtil.closeCurrentSession();
-            }
         }
     }
 }

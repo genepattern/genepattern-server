@@ -7,18 +7,14 @@ import javax.persistence.*;
  * @author Thorin Tabor
  */
 @Entity
-@Table(name="task_congestion", uniqueConstraints = {@UniqueConstraint(columnNames={"lsid"})})
+@Table(name="queue_congestion", uniqueConstraints = {@UniqueConstraint(columnNames={"queue"})})
 public class Congestion {
     @Id
     @GeneratedValue
     private long id;
 
-    private String lsid;
-    private long runtime;
     private long queuetime;
-
-    @Column(name = "virtual_queue")
-    private String virtualQueue;
+    private String queue;
 
     public long getId() {
         return id;
@@ -28,35 +24,19 @@ public class Congestion {
         this.id = id;
     }
 
-    public String getLsid() {
-        return lsid;
-    }
-
-    public void setLsid(String lsid) {
-        this.lsid = lsid;
-    }
-
-    public long getRuntime() {
-        return runtime;
-    }
-
-    public void setRuntime(long runtime) {
-        this.runtime = runtime;
-    }
-
     public long getQueuetime() {
         return queuetime;
     }
 
-    public void setQueuetime(long runtime) {
-        this.runtime = queuetime;
+    public void setQueuetime(long queuetime) {
+        this.queuetime = queuetime;
     }
 
-    public String getVirtualQueue() {
-        return virtualQueue;
+    public String getQueue() {
+        return queue;
     }
 
-    public void setVirtualQueue(String virtualQueue) {
-        this.virtualQueue = virtualQueue;
+    public void setQueue(String queue) {
+        this.queue = queue;
     }
 }

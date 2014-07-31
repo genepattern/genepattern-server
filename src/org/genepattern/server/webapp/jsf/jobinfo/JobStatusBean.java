@@ -25,6 +25,7 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpServletResponseWrapper;
 
 import org.apache.log4j.Logger;
+import org.genepattern.server.DbException;
 import org.genepattern.server.JobInfoManager;
 import org.genepattern.server.JobInfoWrapper;
 import org.genepattern.server.PermissionsHelper;
@@ -32,6 +33,8 @@ import org.genepattern.server.config.GpContext;
 import org.genepattern.server.congestion.CongestionListener;
 import org.genepattern.server.dm.UrlUtil;
 import org.genepattern.server.dm.congestion.Congestion;
+import org.genepattern.server.executor.drm.dao.JobRunnerJob;
+import org.genepattern.server.executor.drm.dao.JobRunnerJobDao;
 import org.genepattern.server.job.status.JobStatusLoaderFromDb;
 import org.genepattern.server.job.status.Status;
 import org.genepattern.server.congestion.CongestionManager;
@@ -53,6 +56,7 @@ public class JobStatusBean {
     
     private Status jobStatus = null;
     private JobInfoWrapper jobInfoWrapper = null;
+    private JobRunnerJob jrj = null;
     private List<JobInfoWrapper> allSteps = null;
     private String currentUserId = null;
     private String currentUserEmail = null;
@@ -281,12 +285,28 @@ public class JobStatusBean {
         UIBeanHelper.getFacesContext().responseComplete();
     }
 
+    public JobRunnerJob getJobRunnerJob() {
+        if (this.jrj == null) {
+            JobRunnerJobDao dao = new JobRunnerJobDao();
+            JobRunnerJob jrj = null;
+            try {
+                jrj = dao.selectJobRunnerJob(jobInfoWrapper.getJobNumber());
+            } catch (DbException e) {
+                log.warn("Trouble getting JobRunnerJob for job number:" + jobInfoWrapper.getJobNumber());
+            }
+            this.jrj = jrj;
+        }
+
+        return this.jrj;
+    }
+
     /**
      * Get the CSS class for the appropriate congestion light color
      * @return
      */
     public String getCongestionClass() {
-        CongestionManager.QueueStatus status = CongestionManager.getQueueStatus(jobInfoWrapper.getTaskLSID());
+        String queue = this.getJobStatus().getQueueId();
+        CongestionManager.QueueStatus status = CongestionManager.getQueueStatus(queue);
 
         switch (status) {
             case RED:
@@ -296,7 +316,7 @@ public class JobStatusBean {
             case GREEN:
                 return "congestion-green";
             default:
-                log.error("Error getting job queue status for " + jobInfoWrapper.getTaskLSID());
+                log.error("Error getting job queue status for " + jobInfoWrapper.getJobNumber());
                 return "congestion-error";
         }
     }
@@ -306,26 +326,14 @@ public class JobStatusBean {
      * @return
      */
     public String getEstimatedQueuetime() {
-        Congestion congestion = CongestionManager.getCongestion(jobInfoWrapper.getTaskLSID());
+        String queue = this.getJobStatus().getQueueId();
+        Congestion congestion = CongestionManager.getCongestion(queue);
+
         if (congestion == null) {
             return "No estimate available";
         }
         else {
             return CongestionManager.prettyRuntime(congestion.getQueuetime());
-        }
-    }
-
-    /**
-     * Get the estimated runtime for the task
-     * @return
-     */
-    public String getEstimatedRuntime() {
-        Congestion congestion = CongestionManager.getCongestion(jobInfoWrapper.getTaskLSID());
-        if (congestion == null) {
-            return "No estimate available";
-        }
-        else {
-            return CongestionManager.prettyRuntime(congestion.getRuntime());
         }
     }
 }

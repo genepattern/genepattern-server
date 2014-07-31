@@ -10,18 +10,18 @@ import java.math.BigInteger;
 import java.util.List;
 
 /**
- * Created by tabor on 7/15/14.
+ * @author Thorin Tabor
  */
 public class CongestionDao extends BaseDAO {
     private static Logger log = Logger.getLogger(CongestionDao.class);
 
     /**
-     * Get a congestion object from the database, based on the task's lsid
-     * @param lsid
+     * Get a congestion object from the database, based on the queue name
+     * @param queue
      * @return
      */
-    public Congestion getCongestion(String lsid) {
-        String hql = "from " + Congestion.class.getName() + " cg where cg.lsid = '" + lsid + "'";
+    public Congestion getCongestion(String queue) {
+        String hql = "from " + Congestion.class.getName() + " cg where cg.queue = '" + queue + "'";
         Query query = HibernateUtil.getSession().createQuery(hql);
 
         List<Congestion> rval = query.list();
@@ -33,13 +33,18 @@ public class CongestionDao extends BaseDAO {
 
     /**
      * Get the number of jobs currently waiting in the queue
-     * @param virtualQueue
+     * @param queue
      * @return
      */
-    public int getVirtualQueueCount(String virtualQueue) {
-        String hql = "select count(*) from task_congestion tc, analysis_job aj where tc.virtual_queue = :virtualQueue and tc.lsid = aj.task_lsid and aj.status_id = 1";
+    public int getQueueCount(String queue) {
+        // Handle special case for nulls
+        String selectCase = null;
+        if ("".equals(queue)) { selectCase = "is null"; }
+        else { selectCase = "= :queue"; }
+
+        String hql = "select count(*) from analysis_job aj, job_runner_job jrj where jrj.queue_id " + selectCase + " and jrj.gp_job_no = aj.job_no and aj.status_id = 1";
         Query query = HibernateUtil.getSession().createSQLQuery(hql);
-        query.setString("virtualQueue", virtualQueue);
+        if (!"".equals(queue)) query.setString("queue", queue);
         query.setReadOnly(true);
 
         int count = 0;
@@ -62,21 +67,5 @@ public class CongestionDao extends BaseDAO {
             log.error("Unknown type returned from query: " + result.getClass().getName());
         }
         return count;
-    }
-
-    /**
-     * Update the queue time estimate for the given queue
-     * @param virtualQueue
-     * @param averageQueuetime
-     * @return
-     */
-    public int updateQueuetime(String virtualQueue, long averageQueuetime) {
-        String hql = "update task_congestion set queuetime = :averageQueuetime where virtual_queue = :virtualQueue";
-        Query query = HibernateUtil.getSession().createSQLQuery(hql);
-        query.setString("virtualQueue", virtualQueue);
-        query.setLong("averageQueuetime", averageQueuetime);
-        query.setReadOnly(true);
-
-        return query.executeUpdate();
     }
 }
