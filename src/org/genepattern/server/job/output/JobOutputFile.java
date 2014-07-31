@@ -41,7 +41,7 @@ public class JobOutputFile {
 
     public static JobOutputFile from(final String jobId, File jobDir, final File relativeFile, BasicFileAttributes attrs, GpFileType gpFileType) throws IOException {
         if (!jobDir.isAbsolute()) {
-            log.warn("expecting absolute path to job directory");
+            log.debug("relative path to job directory, jobDir="+jobDir);
             jobDir=jobDir.getAbsoluteFile();
         }
         
