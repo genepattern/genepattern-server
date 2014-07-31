@@ -1,0 +1,19 @@
+#
+# Example job configuration for the RuntimeExec CommandExecutor
+# This was the default job runner before GP 3.9.0
+#
+# Note: this is a YAML file, indentation is important, TAB characters are not permitted.
+#     You must use an exact number of spaces to denote each indentation level.
+#     This file uses 4 space characters for each level.
+#
+
+default.properties:
+    executor: RuntimeExec
+    
+executors:
+    # default executor for all jobs, it is included in GenePattern
+    RuntimeExec:
+        classname: org.genepattern.server.executor.RuntimeCommandExecutor
+        configuration.properties:
+            # the total number of jobs to run concurrently
+            num.threads: 20

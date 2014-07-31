@@ -7,7 +7,7 @@
 #
 
 default.properties:
-    executor: RuntimeExec
+    executor: LocalJobRunner
     java_flags: -Xmx512m -Dhttp.proxyHost=<http.proxyHost> -Dhttp.proxyPort=<http.proxyPort>
     # flag to allow users to input arbitrary network file paths as value to input file input parameters
     #allow.input.file.paths: false
@@ -90,8 +90,13 @@ default.properties:
     
 executors:
     # default executor for all jobs, it is included in GenePattern
-    RuntimeExec:
-        classname: org.genepattern.server.executor.RuntimeCommandExecutor
+    # switched from RuntimeExec to LocalJobRunner in 3.9.0
+    LocalJobRunner:
+        classname: org.genepattern.server.executor.drm.JobExecutor
         configuration.properties:
-            # the total number of jobs to run concurrently
-            num.threads: 20
+            jobRunnerClassname: org.genepattern.drm.impl.local.commons_exec.LocalCommonsExecJobRunner
+            jobRunnerName: CommonsExecJobRunner
+            # polling interval for running jobs
+            fixedDelay: 2000
+            # name of hidden log file added to each job result directory
+            job.logFile: ".rte.out"

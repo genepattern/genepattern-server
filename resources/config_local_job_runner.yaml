@@ -1,0 +1,23 @@
+#
+# Example job configuration for the RuntimeExec CommandExecutor
+# This was the default job runner before GP 3.9.0
+#
+# Note: this is a YAML file, indentation is important, TAB characters are not permitted.
+#     You must use an exact number of spaces to denote each indentation level.
+#     This file uses 4 space characters for each level.
+#
+
+default.properties:
+    executor: LocalJobRunner
+    
+executors:
+    LocalJobRunner:
+        classname: org.genepattern.server.executor.drm.JobExecutor
+        configuration.properties:
+            jobRunnerClassname: org.genepattern.drm.impl.local.commons_exec.LocalCommonsExecJobRunner
+            jobRunnerName: CommonsExecJobRunner
+            # polling interval for running jobs
+            fixedDelay: 2000
+            # name of hidden log file added to each job result directory
+            job.logFile: ".rte.out"
+            
