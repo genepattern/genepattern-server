@@ -26,12 +26,21 @@ executor.properties: {
 }
 
 executors:
-    LSF: 
-        classname: org.genepattern.server.executor.RuntimeCommandExecutor
+    #
+    # Lsf integration via the JobRunner API
+    #
+    LSF:
+        classname: org.genepattern.server.executor.drm.JobExecutor
+        configuration.properties:
+            jobRunnerClassname: org.genepattern.drm.impl.lsf.core.CmdLineLsfRunner
+            jobRunnerName: CmdLineLsfRunner
         default.properties:
             #executor.props: "genepattern_short"
             job.queue: genepattern
             job.virtualQueue: genepattern_short
+
+    LocalExecutor: 
+        classname: org.genepattern.server.executor.RuntimeCommandExecutor
 
 module.properties:
     TopHat:
@@ -39,3 +48,8 @@ module.properties:
     MyGpLongCustomMem:
         executor.props: "genepattern_long"
         job.memory: 12 Gb
+    MyLocalExecutor:
+        executor: LocalExecutor
+    MyCustomQueue:
+        executor: LocalExecutor
+        job.queue: my_queue
