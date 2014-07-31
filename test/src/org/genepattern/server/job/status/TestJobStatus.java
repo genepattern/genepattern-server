@@ -3,8 +3,7 @@ package org.genepattern.server.job.status;
 import static org.genepattern.server.webapp.rest.api.v1.DateUtil.HOUR;
 import static org.genepattern.server.webapp.rest.api.v1.DateUtil.MIN;
 import static org.genepattern.server.webapp.rest.api.v1.DateUtil.SEC;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -417,9 +416,11 @@ public class TestJobStatus {
         when(jobRunnerJob.getStatusDate()).thenReturn(dateCompleted);
         
         //include usage stats
+        Date addedToGp=new DateTime("2014-07-17T10:55:23").toDate();
         Date submitTime=new DateTime("2014-07-17T11:55:23").toDate();
         Date startTime=new DateTime("2014-07-18T01:55:23").toDate();
         Date endTime=new DateTime("2014-07-18T13:55:23").toDate();
+        Date completedInGp=new DateTime("2014-07-18T14:00:00").toDate();
         
         // 4 hours 37 minutes 20.12 seconds
         Long cpuTimeMillis =
@@ -430,6 +431,9 @@ public class TestJobStatus {
         Integer maxProcesses=2;
         Integer maxThreads=4;
         
+        when(jobInfo.getDateSubmitted()).thenReturn(addedToGp);
+        when(jobInfo.getDateCompleted()).thenReturn(completedInGp);
+
         when(jobRunnerJob.getSubmitTime()).thenReturn(submitTime);
         when(jobRunnerJob.getStartTime()).thenReturn(startTime);
         when(jobRunnerJob.getEndTime()).thenReturn(endTime);
@@ -462,9 +466,11 @@ public class TestJobStatus {
                 executionLogLocation,
                 statusObj.getString("executionLogLocation"));
         
-        assertEquals("submitTime", "2014-07-17T11:55:23"+tzOffsetStr, statusObj.getString("submitTime"));
-        assertEquals("startTime",  "2014-07-18T01:55:23"+tzOffsetStr, statusObj.getString("startTime"));
-        assertEquals("endTime",    "2014-07-18T13:55:23"+tzOffsetStr, statusObj.getString("endTime"));
+        assertEquals("addedToGp",     "2014-07-17T10:55:23"+tzOffsetStr, statusObj.getString("addedToGp"));
+        assertEquals("submitTime",    "2014-07-17T11:55:23"+tzOffsetStr, statusObj.getString("submitTime"));
+        assertEquals("startTime",     "2014-07-18T01:55:23"+tzOffsetStr, statusObj.getString("startTime"));
+        assertEquals("endTime",       "2014-07-18T13:55:23"+tzOffsetStr, statusObj.getString("endTime"));
+        assertEquals("completedInGp", "2014-07-18T14:00:00"+tzOffsetStr, statusObj.getString("completedInGp"));
         
         assertEquals("cpuTimeMillis", cpuTimeMillis, (Long) statusObj.getLong("cpuTimeMillis"));
         assertEquals("cpuTime", "4 hours, 37 minutes, 20 seconds and 120 milliseconds", statusObj.getString("cpuTime"));
@@ -477,6 +483,28 @@ public class TestJobStatus {
         assertEquals("maxProcesses", maxProcesses, (Integer) statusObj.getInt("maxProcesses"));
         assertEquals("maxThreads", maxThreads, (Integer) statusObj.getInt("maxThreads"));
         assertEquals("queueId", queueId, statusObj.getString("queueId"));
+        
+        assertNotNull("has eventLog", statusObj.getJSONArray("eventLog"));
+        assertEquals("eventLog[0].event", "Added to GenePattern", 
+                statusObj.getJSONArray("eventLog").getJSONObject(0).get("event"));
+        assertEquals("eventLog[0].time", "2014-07-17T10:55:23"+tzOffsetStr, 
+                statusObj.getJSONArray("eventLog").getJSONObject(0).get("time"));
+        assertEquals("eventLog[1].event", "Submitted to queue", 
+                statusObj.getJSONArray("eventLog").getJSONObject(1).get("event"));
+        assertEquals("eventLog[1].time", "2014-07-17T11:55:23"+tzOffsetStr, 
+                statusObj.getJSONArray("eventLog").getJSONObject(1).get("time"));
+        assertEquals("eventLog[2].event", "Started running", 
+                statusObj.getJSONArray("eventLog").getJSONObject(2).get("event"));
+        assertEquals("eventLog[2].time", "2014-07-18T01:55:23"+tzOffsetStr, 
+                statusObj.getJSONArray("eventLog").getJSONObject(2).get("time"));
+        assertEquals("eventLog[3].event", "Finished running", 
+                statusObj.getJSONArray("eventLog").getJSONObject(3).get("event"));
+        assertEquals("eventLog[3].time", "2014-07-18T13:55:23"+tzOffsetStr, 
+                statusObj.getJSONArray("eventLog").getJSONObject(3).get("time"));
+        assertEquals("eventLog[4].event", "Completed in GenePattern", 
+                statusObj.getJSONArray("eventLog").getJSONObject(4).get("event"));
+        assertEquals("eventLog[4].time", "2014-07-18T14:00:00"+tzOffsetStr, 
+                statusObj.getJSONArray("eventLog").getJSONObject(4).get("time"));
     }
     
     @Test

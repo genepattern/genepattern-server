@@ -1,5 +1,6 @@
 package org.genepattern.server.job.status;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
@@ -177,46 +178,65 @@ public class Status {
     public List<GpLink> getLinks() {
         return Collections.unmodifiableList(links);
     }
+
+    /**
+     * An entry in the job event log.
+     * @author pcarr
+     *
+     */
+    public static class JobEvent {
+        private String event;
+        private String simpleFormat;
+        private String isoFormat;
+        
+
+        private String formatDate(Date in) {
+            if (in==null) {
+                return "";
+            }
+            return new SimpleDateFormat().format(in);
+        }
+        
+        public JobEvent() {
+        }
+        public JobEvent(String event, Date date) {
+            this.event=event;
+            this.simpleFormat=formatDate(date);
+            this.isoFormat=DateUtil.toIso8601(date);
+        }
+        
+        public String getEvent() {
+            return event;
+        }
+        public String getTime() {
+            return simpleFormat;
+        }
+        
+        public JSONObject toJsonObj() throws JSONException {
+            final JSONObject eventObj=new JSONObject();
+            eventObj.put("event", event);
+            eventObj.put("time", isoFormat);
+            return eventObj;
+        }
+        
+        public static JSONArray toJsonObj(final List<JobEvent> eventLog) throws JSONException {
+            final JSONArray eventsObj=new JSONArray();
+            for(final JobEvent jobEvent : eventLog) {
+                eventsObj.put(jobEvent.toJsonObj());
+            }
+            return eventsObj;
+        }
+    }
     
-//    private String formatDate(Date in) {
-//        if (in==null) {
-//            return "";
-//        }
-//        return new SimpleDateFormat().format(in);
-//    }
-//    
-//    /**
-//     * Convert to a map, for default display in the JSF page.
-//     * @return
-//     */
-//    public Map<String,String> getDetailsMap() {
-//        Map<String,String> detailsMap=new LinkedHashMap<String,String>();
-//        detailsMap.put("GenePattern Job #", ""+gpJobNo);
-//        detailsMap.put("External Job Id", extJobId);
-//        if (jobState != null) {
-//            detailsMap.put("Job Status", jobState.name());
-//        }
-//        else {
-//            detailsMap.put("Job Status", "");
-//        }
-//        if (exitCode != null) {
-//            detailsMap.put("Exit Code", ""+exitCode);
-//        }
-//        else {
-//            detailsMap.put("Exit Code", "");
-//        }
-//        detailsMap.put("Job Status Message", statusMessage);
-//        detailsMap.put("Date Submitted to GenePattern", formatDate(dateSubmittedToGp));
-//        detailsMap.put("Submit Time", formatDate(submitTime));
-//        detailsMap.put("Start Time", formatDate(startTime));
-//        detailsMap.put("End Time", formatDate(endTime));
-//        detailsMap.put("Date Completed in GenePattern", formatDate(dateCompletedInGp));
-//        if (cpuTime != null) {
-//            detailsMap.put("CPU Usage", cpuTime.format());
-//        }
-//        
-//        return Collections.unmodifiableMap(detailsMap);
-//    }
+    public List<JobEvent> getJobEvents() {
+        List<JobEvent> eventLog = new ArrayList<JobEvent>();
+        eventLog.add(new JobEvent("Added to GenePattern", dateSubmittedToGp));
+        eventLog.add(new JobEvent("Submitted to queue", submitTime));
+        eventLog.add(new JobEvent("Started running", startTime));
+        eventLog.add(new JobEvent("Finished running", endTime));
+        eventLog.add(new JobEvent("Completed in GenePattern", dateCompletedInGp));
+        return Collections.unmodifiableList(eventLog);
+    }
     
     /**
      * Get the string formatted JSON representation.
@@ -248,6 +268,9 @@ public class Status {
         if (statusDate != null) {
             jobStatus.put("statusDate", DateUtil.toIso8601(statusDate));
         }
+        if (dateSubmittedToGp != null) {
+            jobStatus.put("addedToGp", DateUtil.toIso8601(dateSubmittedToGp));
+        }
         if (submitTime != null) {
             jobStatus.put("submitTime", DateUtil.toIso8601(submitTime));
         }
@@ -256,6 +279,9 @@ public class Status {
         }
         if (endTime != null) {
             jobStatus.put("endTime", DateUtil.toIso8601(endTime));
+        }
+        if (dateCompletedInGp != null) {
+            jobStatus.put("completedInGp", DateUtil.toIso8601(dateCompletedInGp));
         }
         if (cpuTime != null) {
             jobStatus.put("cpuTimeMillis",    cpuTime.asMillis());
@@ -289,6 +315,10 @@ public class Status {
             }
             jobStatus.put("links", linksArr);
         }
+
+        List<JobEvent> jobEvents=getJobEvents();
+        JSONArray eventLog=JobEvent.toJsonObj(jobEvents);
+        jobStatus.put("eventLog", eventLog);
         return jobStatus;
     }
     
