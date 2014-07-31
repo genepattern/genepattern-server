@@ -571,7 +571,7 @@ public class TestJobInputHelper {
      * For GP-5189, test batch job with multiple input parameters from the same directory.
      * @throws GpServerException
      */
-    @Ignore @Test
+    @Test
     public void pairedEndBatch_asDir() throws GpServerException {
         // Trimmomatic 0.6
         final String lsid="urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00341:0.6";

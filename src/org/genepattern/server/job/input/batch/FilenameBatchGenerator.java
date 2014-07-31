@@ -36,14 +36,14 @@ public class FilenameBatchGenerator implements BatchGenerator {
         this.extractBatchValues=false;
         this.batchValues=initializedBatchValues;
     }
-    
+
     @Override
     public List<JobInput> prepareBatch(final JobInput batchInputTemplate) throws GpServerException {
         if (extractBatchValues) {
             extractBatchValues(batchInputTemplate);
         }
         JobInput jobInput=new JobInput(batchInputTemplate);
-    
+
         if (batchValues.size()==0) {
             //no batch params
             List<JobInput> rval=new ArrayList<JobInput>();
@@ -115,12 +115,37 @@ public class FilenameBatchGenerator implements BatchGenerator {
     public void appendBatchValuesToJobInputTemplate(final JobInput jobInput, final Set<String> commonBasenames) throws GpServerException {
         //if there are any common basenames, only add the parameters which match
         //ensure the values are added in the correct order
+        List<String> usedFiles = new ArrayList();
+
         for(final Entry<String,List<GpFilePath>> entry : batchValues.entrySet()) {
             SortedMap<String, GpFilePath> sortedValues=new TreeMap<String, GpFilePath>();
+            //ignore basenames found more than once after a new value has been set
+            List<String> ignoredBasenames = new ArrayList();
             for(final GpFilePath inputFile : entry.getValue()) {
                 final String basename=BatchInputFileHelper.getBaseFilename(inputFile);
                 if (commonBasenames.contains(basename)) {
-                    sortedValues.put(basename,inputFile);
+
+                    //if this basename was not found before then just save the value
+                    if(!sortedValues.containsKey(basename))
+                    {
+                        sortedValues.put(basename,inputFile);
+                        //this is done to prevent using duplicate values for different batch
+                        //params when there are multiple files with the same basename
+                        if(!usedFiles.contains(inputFile.getServerFile().getAbsolutePath()))
+                        {
+                            usedFiles.add(inputFile.getServerFile().getAbsolutePath());
+                            ignoredBasenames.add(basename);
+                        }
+                    }
+                    else
+                    {
+                        //if this basename was found before then set this new value as the current
+                        //only if the current value was not unique
+                        if(!ignoredBasenames.contains(basename) && !usedFiles.contains(inputFile.getServerFile().getAbsolutePath()))
+                        {
+                            sortedValues.put(basename,inputFile);
+                        }
+                    }
                 }
             }
             for(final Entry<String,GpFilePath> next : sortedValues.entrySet()) {
