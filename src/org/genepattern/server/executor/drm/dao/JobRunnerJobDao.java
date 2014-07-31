@@ -80,7 +80,10 @@ public class JobRunnerJobDao {
      */
     public JobRunnerJob updateJobStatus(final JobRunnerJob existing, final DrmJobStatus jobStatus) {
         //JobRunnerJob is immutable ... so evict it from the session before saving a new instance as an update
-        HibernateUtil.getSession().evict(existing);
+        boolean isInTransaction=HibernateUtil.isInTransaction();
+        if (isInTransaction) {
+            HibernateUtil.getSession().evict(existing);
+        }
         JobRunnerJob update = new JobRunnerJob.Builder(existing).drmJobStatus(jobStatus).build();
         saveOrUpdate(update);
         return update;
