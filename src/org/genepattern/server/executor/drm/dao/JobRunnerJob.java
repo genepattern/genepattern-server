@@ -11,6 +11,7 @@ import javax.persistence.UniqueConstraint;
 
 import org.apache.log4j.Logger;
 import org.genepattern.drm.CpuTime;
+import org.genepattern.drm.DrmJobRecord;
 import org.genepattern.drm.DrmJobState;
 import org.genepattern.drm.DrmJobStatus;
 import org.genepattern.drm.DrmJobSubmission;
@@ -51,6 +52,53 @@ public class JobRunnerJob {
         }
         return in.substring(0, MAX);
     }
+    
+        private static File asFile(final File parent, final String path) {
+        File rel=asFile(path);
+        if (rel==null) {
+            return null;
+        }
+        if (rel.isAbsolute()) {
+            return rel;
+        }
+        if (parent != null) {
+            return new File(parent, path);
+        }
+        return rel;
+    }
+    
+    private static File asFile(final String path) {
+        if (path==null || path.length()==0) {
+            //not set
+            return null;
+        }
+        File f = new File(path);
+        return f;
+    }
+
+    /**
+     * Helper method for creating a new DrmJobRecord from a given JobRunnerJob.
+     * @param jobRunnerJob
+     * @return
+     */
+    public static final DrmJobRecord toDrmJobRecord(final JobRunnerJob jobRunnerJob) {
+        if (jobRunnerJob==null) {
+            //null means there is no record in the db
+            return null;
+        }
+        final File workingDir=asFile(jobRunnerJob.getWorkingDir());
+        DrmJobRecord.Builder builder = new DrmJobRecord.Builder(jobRunnerJob.getGpJobNo(), jobRunnerJob.getLsid());
+        builder = builder.extJobId(jobRunnerJob.getExtJobId());
+        builder = builder.workingDir(workingDir);
+        builder = builder.stdinFile(asFile(workingDir, jobRunnerJob.getStdinFile()));
+        builder = builder.stdoutFile(asFile(workingDir, jobRunnerJob.getStdoutFile()));
+        builder = builder.stderrFile(asFile(workingDir, jobRunnerJob.getStderrFile()));
+        builder = builder.logFile(asFile(workingDir, jobRunnerJob.getLogFile()));
+        return builder.build();
+    }
+    
+
+    
     
     //this is a foreign key to the analysis_job table
     @Id

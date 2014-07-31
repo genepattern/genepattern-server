@@ -1,6 +1,5 @@
 package org.genepattern.server.executor.drm;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -24,45 +23,6 @@ import org.hibernate.Query;
 public class DbLookup implements DrmLookup {
     private static final Logger log = Logger.getLogger(DbLookup.class);
 
-    private static File asFile(final File parent, final String path) {
-        File rel=asFile(path);
-        if (rel==null) {
-            return null;
-        }
-        if (rel.isAbsolute()) {
-            return rel;
-        }
-        if (parent != null) {
-            return new File(parent, path);
-        }
-        return rel;
-    }
-    
-    private static File asFile(final String path) {
-        if (path==null || path.length()==0) {
-            //not set
-            return null;
-        }
-        File f = new File(path);
-        return f;
-    }
-
-    public static final DrmJobRecord fromJobRunnerJob(final JobRunnerJob jobRunnerJob) {
-        if (jobRunnerJob==null) {
-            //null means there is no record in the db
-            return null;
-        }
-        final File workingDir=asFile(jobRunnerJob.getWorkingDir());
-        DrmJobRecord.Builder builder = new DrmJobRecord.Builder(jobRunnerJob.getGpJobNo(), jobRunnerJob.getLsid());
-        builder = builder.extJobId(jobRunnerJob.getExtJobId());
-        builder = builder.workingDir(workingDir);
-        builder = builder.stdinFile(asFile(workingDir, jobRunnerJob.getStdinFile()));
-        builder = builder.stdoutFile(asFile(workingDir, jobRunnerJob.getStdoutFile()));
-        builder = builder.stderrFile(asFile(workingDir, jobRunnerJob.getStderrFile()));
-        builder = builder.logFile(asFile(workingDir, jobRunnerJob.getLogFile()));
-        return builder.build();
-    }
-    
     private final String jobRunnerClassname;
     private final String jobRunnerName;
     
@@ -99,7 +59,7 @@ public class DbLookup implements DrmLookup {
             }
             List<DrmJobRecord> records=new ArrayList<DrmJobRecord>();
             for(final JobRunnerJob dbRow : dbRows) {
-                records.add( fromJobRunnerJob(dbRow) );
+                records.add( JobRunnerJob.toDrmJobRecord(dbRow) );
             }
             
             return records;
@@ -124,7 +84,7 @@ public class DbLookup implements DrmLookup {
         catch (DbException e) {
             //ignore
         }
-        return fromJobRunnerJob(jobRunnerJob);
+        return JobRunnerJob.toDrmJobRecord(jobRunnerJob);
     }
 
     @Override

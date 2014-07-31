@@ -761,7 +761,7 @@ public class JobExecutor implements CommandExecutor2 {
     @Override
     public int handleRunningJob(JobInfo jobInfo) throws Exception {
         final JobRunnerJob existing=new JobRunnerJobDao().selectJobRunnerJob(jobInfo.getJobNumber());
-        final DrmJobRecord drmJobRecord=DbLookup.fromJobRunnerJob(existing);
+        final DrmJobRecord drmJobRecord=JobRunnerJob.toDrmJobRecord(existing);
         if (drmJobRecord==null || drmJobRecord.getExtJobId()==null) {
             //no match found, what to do?
             log.error("No matching drmJobId found for gpJobId="+jobInfo.getJobNumber());
