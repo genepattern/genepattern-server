@@ -709,6 +709,7 @@ function ajaxFileTabUpload(file, directory, done, index) {
                 eventComplete = true;
                 token = data['token'];
 
+                //update the disk usage
                 initStatusBox();
             },
             error: function(data) {
@@ -1254,6 +1255,8 @@ function createGenomeSpaceWidget(linkElement, appendTo) {
                                             "Are you sure you want to continue?", {
                                             "Yes": function() {
                                                 _createSubdirectory();
+                                                //update the disk usage
+                                                initStatusBox();
                                                 $(this).dialog("close");
                                                 $(outerDialog).dialog("close");
                                             },
