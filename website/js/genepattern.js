@@ -708,6 +708,8 @@ function ajaxFileTabUpload(file, directory, done, index) {
             success: function(data) {
                 eventComplete = true;
                 token = data['token'];
+
+                initStatusBox();
             },
             error: function(data) {
                 eventError = data;
@@ -1334,7 +1336,7 @@ function createGenomeSpaceWidget(linkElement, appendTo) {
                 .attr("data-kind", aKind)
                 .attr("data-url", convertUrl)
                 .modulelist({
-                    title: "Send to Parameter as " + aKind,
+                    title: "Send to  Parameter as " + aKind,
                     data: [],
                     droppable: false,
                     draggable: false,
