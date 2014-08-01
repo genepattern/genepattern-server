@@ -6,6 +6,9 @@ import java.util.List;
 
 import org.apache.log4j.Logger;
 import org.genepattern.server.database.HibernateUtil;
+import org.genepattern.server.executor.events.GpJobAddedEvent;
+import org.genepattern.server.executor.events.JobEventBus;
+import org.genepattern.server.job.status.Status;
 //import org.genepattern.server.jobqueue.dao.JobQueueStatusDao;
 import org.genepattern.webservice.JobInfo;
 import org.hibernate.Query;
@@ -22,18 +25,12 @@ public class JobQueueUtil {
     static public void addJobToQueue(JobInfo jobInfo, JobQueue.Status statusId) 
     throws Exception
     {
-        addJobToQueue(jobInfo.getJobNumber(), jobInfo._getParentJobNumber(), jobInfo.getDateSubmitted(), statusId);
-    }
-
-    static public void addJobToQueue(int jobNo, int parent, Date dateSubmitted, JobQueue.Status statusId) 
-    throws Exception
-    { 
         final boolean isInTransaction = HibernateUtil.isInTransaction();
 
         JobQueue record = new JobQueue();
-        record.setJobNo(jobNo);
-        record.setParentJobNo(parent);
-        record.setDateSubmitted(dateSubmitted);
+        record.setJobNo(jobInfo.getJobNumber());
+        record.setParentJobNo(jobInfo._getParentJobNumber());
+        record.setDateSubmitted(jobInfo.getDateSubmitted());
         record.setStatus(statusId.toString());
 
         try {
@@ -47,8 +44,21 @@ public class JobQueueUtil {
             HibernateUtil.rollbackTransaction();
             throw new Exception("Error saving internal job status to db: "+t.getLocalizedMessage());
         }
+        
+        fireGpJobAddedEvent(jobInfo);
     }
     
+    /**
+     * Fire a new job added event.
+     */
+    protected static void fireGpJobAddedEvent(final JobInfo jobInfo) {
+        Status jobStatus = new Status.Builder()
+            .jobInfo(jobInfo)
+        .build();
+        GpJobAddedEvent event = new GpJobAddedEvent(jobInfo.getTaskLSID(), jobStatus);
+        JobEventBus.instance().post(event);
+    }
+
     static public List<JobQueue> getPendingJobs(int maxJobCount) 
     throws Exception
     {
