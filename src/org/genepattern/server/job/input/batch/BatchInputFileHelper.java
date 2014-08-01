@@ -3,10 +3,7 @@ package org.genepattern.server.job.input.batch;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import org.apache.log4j.Logger;
 import org.genepattern.server.config.GpContext;
@@ -113,6 +110,9 @@ public class BatchInputFileHelper {
         }
         List<GpFilePath> filePaths = new ArrayList<GpFilePath>();
         File[] files = batchDir.getServerFile().listFiles(listFilesFilter);
+
+        //sort the files in ascending order
+        Arrays.sort(files);
         for(File file : files) {
             final String fileUrl = parentUrl + UrlUtil.encodeURIcomponent( file.getName() );
             try {
