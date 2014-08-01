@@ -32,7 +32,9 @@ public class CongestionDao extends BaseDAO {
     }
 
     /**
-     * Get the number of jobs currently waiting in the queue
+     * Get the number of jobs currently waiting in the queue.
+     * Technically, this is the number of jobs which have not yet started running on the external queue,
+     * which can in some cases include jobs which have not been submitted yet (e.g. before LSF bsub).
      * @param queue
      * @return
      */
