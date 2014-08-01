@@ -41,10 +41,19 @@ public class TestJobStatus {
 
     private JobInfo jobInfo;
     JobRunnerJob jobRunnerJob;
-    private Date dateSubmitted; // added to GP
-    private Date dateQueued; // bsub command
-    private Date dateStarted; // lsf status from PENDING -> RUNNING
-    private Date dateCompleted; // lsf status from RUNNING -> FINISHED
+    private Date dateAddedToGp; // added to GP
+    private Date dateSubmittedToQueue; // bsub command
+    private Date dateStartedInQueue; // lsf status from PENDING -> RUNNING
+    private Date dateFinishedInQueue; // lsf status from RUNNING -> FINISHED
+    private Date dateCompletedInGp;
+
+//    //include usage stats
+//    Date addedToGp=new DateTime("2014-07-17T10:55:23").toDate();
+//    Date submitTime=new DateTime("2014-07-17T11:55:23").toDate();
+//    Date startTime=new DateTime("2014-07-18T01:55:23").toDate();
+//    Date endTime=new DateTime("2014-07-18T13:55:23").toDate();
+//    Date completedInGp=new DateTime("2014-07-18T14:00:00").toDate();
+
     private String tzOffsetStr;
     private Date statusDate;
     private String queueId="genepattern_long";
@@ -55,11 +64,12 @@ public class TestJobStatus {
 
         DateTime dt = new DateTime("2014-06-01T08:55:10.23");
         tzOffsetStr=DateTimeFormat.forPattern("ZZ").print(dt);
-        dateSubmitted = dt.toDate();
-        dateQueued=dt.plusMinutes(3).plusSeconds(15).toDate();
-        dateStarted=dt.plusDays(1).plusHours(-5).plusMinutes(23).toDate();
-        dateCompleted=dt.plusDays(3).plusHours(4).plusMinutes(25).toDate();
-        when(jobInfo.getDateSubmitted()).thenReturn(dateSubmitted);
+        dateAddedToGp = dt.toDate();
+        dateSubmittedToQueue=dt.plusMinutes(3).plusSeconds(15).toDate();
+        dateStartedInQueue=dt.plusDays(1).plusHours(-5).plusMinutes(23).toDate();
+        dateFinishedInQueue=dt.plusDays(3).plusHours(4).plusMinutes(25).toDate();
+        dateCompletedInGp=dt.plusMinutes(5).toDate();
+        when(jobInfo.getDateSubmitted()).thenReturn(dateAddedToGp);
         when(jobInfo.getDateCompleted()).thenReturn(null);
         
         jobRunnerJob=mock(JobRunnerJob.class);
@@ -207,7 +217,6 @@ public class TestJobStatus {
                 statusObj.getString("statusMessage"));
         
     }
-
 
     @Test
     public void pendingInGp() throws Exception {
@@ -359,7 +368,7 @@ public class TestJobStatus {
     @Test
     public void pendingInLsf() throws Exception {
         when(jobRunnerJob.getJobState()).thenReturn(DrmJobState.QUEUED.name());
-        when(jobRunnerJob.getStatusMessage()).thenReturn("Added to queue on "+DateUtil.toIso8601(dateQueued));
+        when(jobRunnerJob.getStatusMessage()).thenReturn("Added to queue on "+DateUtil.toIso8601(dateSubmittedToQueue));
         when(jobRunnerJob.getExtJobId()).thenReturn("");
         
         Status status=new Status.Builder()
@@ -374,7 +383,7 @@ public class TestJobStatus {
         assertEquals("hasError", false, statusObj.getBoolean("hasError"));
         assertEquals("statusFlag", "QUEUED", statusObj.getString("statusFlag"));
         assertEquals("statusMessage", 
-                "Added to queue on "+DateUtil.toIso8601(dateQueued),
+                "Added to queue on "+DateUtil.toIso8601(dateSubmittedToQueue),
                 statusObj.getString("statusMessage"));
         assertEquals("statusDate", 
                 DateUtil.toIso8601(statusDate), statusObj.getString("statusDate"));
@@ -386,7 +395,7 @@ public class TestJobStatus {
     @Test
     public void runningInLsf() throws Exception { 
         when(jobRunnerJob.getJobState()).thenReturn(DrmJobState.RUNNING.name());
-        when(jobRunnerJob.getStatusMessage()).thenReturn("Started on "+DateUtil.toIso8601(dateStarted));
+        when(jobRunnerJob.getStatusMessage()).thenReturn("Started on "+DateUtil.toIso8601(dateStartedInQueue));
         
         Status status=new Status.Builder()
             .jobInfo(jobInfo)
@@ -400,7 +409,7 @@ public class TestJobStatus {
         assertEquals("hasError", false, statusObj.getBoolean("hasError"));
         assertEquals("statusFlag", "RUNNING", statusObj.getString("statusFlag"));
         assertEquals("statusMessage", 
-                "Started on "+DateUtil.toIso8601(dateStarted),
+                "Started on "+DateUtil.toIso8601(dateStartedInQueue),
                 statusObj.getString("statusMessage"));
         assertEquals("statusDate", 
                 DateUtil.toIso8601(statusDate), statusObj.getString("statusDate"));
@@ -412,8 +421,8 @@ public class TestJobStatus {
     @Test
     public void finishedInLsf_fullStatusCheck() throws Exception { 
         when(jobRunnerJob.getJobState()).thenReturn(DrmJobState.DONE.name());
-        when(jobRunnerJob.getStatusMessage()).thenReturn("Completed on "+DateUtil.toIso8601(dateCompleted));
-        when(jobRunnerJob.getStatusDate()).thenReturn(dateCompleted);
+        when(jobRunnerJob.getStatusMessage()).thenReturn("Completed on "+DateUtil.toIso8601(dateFinishedInQueue));
+        when(jobRunnerJob.getStatusDate()).thenReturn(dateFinishedInQueue);
         
         //include usage stats
         Date addedToGp=new DateTime("2014-07-17T10:55:23").toDate();
@@ -433,6 +442,7 @@ public class TestJobStatus {
         
         when(jobInfo.getDateSubmitted()).thenReturn(addedToGp);
         when(jobInfo.getDateCompleted()).thenReturn(completedInGp);
+        when(jobInfo.getStatus()).thenReturn(JobStatus.FINISHED);
 
         when(jobRunnerJob.getSubmitTime()).thenReturn(submitTime);
         when(jobRunnerJob.getStartTime()).thenReturn(startTime);
@@ -457,10 +467,10 @@ public class TestJobStatus {
         assertEquals("hasError", false, statusObj.getBoolean("hasError"));
         assertEquals("statusFlag", "DONE", statusObj.getString("statusFlag"));
         assertEquals("statusMessage", 
-                "Completed on "+DateUtil.toIso8601(dateCompleted),
+                "Completed on "+DateUtil.toIso8601(dateFinishedInQueue),
                 statusObj.getString("statusMessage"));
         assertEquals("statusDate", 
-                DateUtil.toIso8601(dateCompleted), statusObj.getString("statusDate"));
+                DateUtil.toIso8601(dateFinishedInQueue), statusObj.getString("statusDate"));
 
         assertEquals( "executionLogLocation",
                 executionLogLocation,
@@ -589,13 +599,12 @@ public class TestJobStatus {
         assertFalse("expecting no maxThreads", statusObj.has("maxThreads"));
     }
     
-
     @Test
     public void finishedInLsfWithError() throws Exception { 
         when(jobInfo.getStatus()).thenReturn(JobStatus.ERROR);
         when(jobRunnerJob.getJobState()).thenReturn(DrmJobState.FAILED.name());
-        when(jobRunnerJob.getStatusMessage()).thenReturn("Failed on "+DateUtil.toIso8601(dateCompleted));
-        when(jobRunnerJob.getStatusDate()).thenReturn(dateCompleted);
+        when(jobRunnerJob.getStatusMessage()).thenReturn("Failed on "+DateUtil.toIso8601(dateFinishedInQueue));
+        when(jobRunnerJob.getStatusDate()).thenReturn(dateFinishedInQueue);
         
         Status status=new Status.Builder()
             .jobInfo(jobInfo)
@@ -610,71 +619,32 @@ public class TestJobStatus {
         assertEquals("hasError", true, statusObj.getBoolean("hasError"));
         assertEquals("statusFlag", "FAILED", statusObj.getString("statusFlag"));
         assertEquals("statusMessage", 
-                "Failed on "+DateUtil.toIso8601(dateCompleted),
+                "Failed on "+DateUtil.toIso8601(dateFinishedInQueue),
                 statusObj.getString("statusMessage"));
         assertEquals("statusDate", 
-                DateUtil.toIso8601(dateCompleted), statusObj.getString("statusDate"));
+                DateUtil.toIso8601(dateFinishedInQueue), statusObj.getString("statusDate"));
 
         assertEquals( "executionLogLocation",
                 executionLogLocation,
                 statusObj.getString("executionLogLocation"));
     }
-    
-//    @Test
-//    public void detailsMap() {
-//        final Integer gpJobNo=23;
-//        final Date dateSubmittedToGp=new DateTime("2014-07-22T10:15:09").toDate();
-//        final Date submitTime=new DateTime("2014-07-22T13:15:09").toDate();
-//        final Date startTime=new DateTime("2014-07-22T13:16:09").toDate();
-//        final Date endTime=new DateTime("2014-07-22T15:16:09").toDate();
-//        final Date dateCompletedInGp=new DateTime("2014-07-22T15:55:10").toDate();
-//        final String extJobId="ext_23";
-//        final Integer exitCode=0;
-//        final DrmJobState jobState=DrmJobState.DONE;
-//        final CpuTime cpuTime=new CpuTime(117, TimeUnit.MINUTES);
-//        final Memory maxMem=Memory.fromString("2.5 Gb");
-//        
-//        DateFormat df=new SimpleDateFormat();
-//        JobRunnerJob jrj=new JobRunnerJob.Builder()
-//            .gpJobNo(gpJobNo)
-//            .extJobId(extJobId)
-//            .submitTime(submitTime)
-//            .startTime(startTime)
-//            .endTime(endTime)
-//            .jobState(jobState)
-//            .exitCode(exitCode)
-//            .cpuTime(cpuTime)
-//            .maxMemory(maxMem)
-//        .build();
-//        
-//        
-//        Status status=new Status.Builder()
-//            .dateSubmittedToGp(dateSubmittedToGp)
-//            .dateCompletedInGp(dateCompletedInGp)
-//            .jobStatusRecord(jrj)
-//        .build();
-//        
-//        assertEquals("GenePattern Job #", ""+gpJobNo, status.getDetailsMap().get("GenePattern Job #"));
-//        assertEquals("External Job Id", extJobId, status.getDetailsMap().get("External Job Id"));
-//        assertEquals("Job Status", jobState.name(), status.getDetailsMap().get("Job Status"));
-//        assertEquals("Job Status Message", jobState.getDescription(), status.getDetailsMap().get("Job Status Message"));
-//        assertEquals("Exit Code", ""+exitCode, status.getDetailsMap().get("Exit Code"));
-//        
-//        assertEquals("Date Submitted to GenePattern", 
-//                df.format(dateSubmittedToGp), 
-//                status.getDetailsMap().get("Date Submitted to GenePattern"));
-//        assertEquals("Submit Time", 
-//                df.format(submitTime), status.getDetailsMap().get("Submit Time"));
-//        assertEquals("Start Time", 
-//                df.format(startTime), status.getDetailsMap().get("Start Time"));
-//        assertEquals("End Time", 
-//                df.format(endTime), status.getDetailsMap().get("End Time"));
-//        assertEquals("Date Completed in GenePattern", 
-//                df.format(dateCompletedInGp), 
-//                status.getDetailsMap().get("Date Completed in GenePattern"));
-//        
-//        assertEquals("CPU Usage", cpuTime.format(), status.getDetailsMap().get("CPU Usage"));
-//        assertEquals("Max Memory", maxMem.format(), status.getDetailsMap().get("Max Memory"));
-//    }
 
+    /**
+     * For GP-5285, when the status from the external queue is DONE, but the files have not yet been recorded into GP,
+     * make sure isFinished is false.
+     */
+    @Test
+    public void finishedInLsf_stillProcessingInGp() {
+        when(jobRunnerJob.getJobState()).thenReturn(DrmJobState.DONE.name());
+        when(jobRunnerJob.getSubmitTime()).thenReturn(dateSubmittedToQueue);
+        when(jobRunnerJob.getStartTime()).thenReturn(dateStartedInQueue);
+        when(jobRunnerJob.getEndTime()).thenReturn(dateFinishedInQueue);
+        
+        when(jobInfo.getDateSubmitted()).thenReturn(dateAddedToGp);
+        when(jobInfo.getDateCompleted()).thenReturn(null);
+        when(jobInfo.getStatus()).thenReturn(JobStatus.PROCESSING);
+        
+        Status status=new Status.Builder().jobInfo(jobInfo).jobStatusRecord(jobRunnerJob).build();
+        assertEquals("isFinished", false, status.getIsFinished());
+    }
 }

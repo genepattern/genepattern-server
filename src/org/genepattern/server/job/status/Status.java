@@ -484,7 +484,18 @@ public class Status {
                 status.maxThreads=jobStatusRecord.getMaxThreads();
                 status.queueId=jobStatusRecord.getQueueId();
             }
+            
+            // when jobInfo != null, only set the isFinished flag after the 
+            // output files have been recorded to the DB
+            initIsFinished(status);
             return status;
+        }
+        
+        private boolean initIsFinished(Status status) {
+            if (jobInfo != null) {
+                return status.isFinished = JobInfoUtil.isFinished(jobInfo);
+            }
+            return status.isFinished;
         }
 
         private DrmJobState initFromJobInfo(Status status) {
