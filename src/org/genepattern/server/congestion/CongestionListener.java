@@ -1,30 +1,20 @@
 package org.genepattern.server.congestion;
 
 import org.apache.log4j.Logger;
-import org.genepattern.server.executor.events.JobEventBus;
 import org.genepattern.server.executor.events.JobStartedEvent;
 import org.genepattern.server.job.status.Status;
 
 import com.google.common.eventbus.Subscribe;
 
 /**
- * Listen for job completion events and update the database as appropriate
+ * Listen for job completion events and update the database as appropriate.
+ * You must register this listener with the JobEvent bus in order to listen for events.
+ * The registration is done in the JobEvenBus initializer.
  *
  * @author Thorin Tabor
  */
 public class CongestionListener {
     private static Logger log = Logger.getLogger(CongestionListener.class);
-    private static boolean isInit = false;
-
-    /**
-     * Initialize the listener, register it to the JobEventBus
-     */
-    public static void init() {
-        if (!isInit) {
-            JobEventBus.instance().register(new CongestionListener());
-            isInit = true;
-        }
-    }
 
     @Subscribe
     public void updateUponProcessing(JobStartedEvent event) {

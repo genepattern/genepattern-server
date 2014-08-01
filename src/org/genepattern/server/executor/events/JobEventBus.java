@@ -9,16 +9,18 @@ import org.genepattern.server.congestion.CongestionListener;
  * @author Thorin Tabor
  */
 public class JobEventBus {
-    private static EventBus singleton = null;
+    private static EventBus eventBus = initEventBus();
+    private static EventBus initEventBus() {
+        EventBus eventBus = new EventBus();
+        eventBus.register(new CongestionListener());
+        return eventBus;
+    }
 
+    /**
+     * Global singleton EventBus for all GenePattern event handling.
+     * @return
+     */
     public static EventBus instance() {
-        if (singleton == null) {
-            singleton = new EventBus();
-
-            // Lazily initialize listener
-            CongestionListener.init();
-        }
-
-        return singleton;
+        return eventBus;
     }
 }
