@@ -487,6 +487,7 @@ function diskQuotaCheckPlus(diskInfo, fileSize)
         if(diskInfo.diskUsageFilesTab != undefined && diskInfo.diskUsageFilesTab
             && diskInfo.diskUsageFilesTab.numBytes != undefined
             && diskInfo.diskUsageFilesTab.numBytes != null
+            && diskInfo.diskQuota != undefined && diskInfo.diskQuota != null
             && diskInfo.diskQuota.numBytes != undefined
             && diskInfo.diskQuota.numBytes != null)
         {
@@ -3177,7 +3178,7 @@ function loadJobResults(jobResults) {
     buildJobResultsPage();
 }
 
-function renderStatusBox(diskInfo)
+function updateDiskUsageBox(diskInfo)
 {
     // Hard-coded values until we hook this into server-side calls
     var diskQuotaDisplay = null;
@@ -3283,7 +3284,7 @@ function initStatusBox()
 
             if(response != null)
             {
-                renderStatusBox(response);
+                updateDiskUsageBox(response);
             }
         },
         error: function (xhr, ajaxOptions, thrownError) {

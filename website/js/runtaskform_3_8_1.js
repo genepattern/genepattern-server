@@ -130,6 +130,9 @@ function checkDiskQuota(successFunction)
             if(response != null)
             {
                 handleDiskQuotaMsg(response);
+
+                //update the disk usage status box
+                updateDiskUsageBox(response);
             }
 
             if(successFunction != undefined && successFunction != null)
