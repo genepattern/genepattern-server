@@ -9,7 +9,10 @@ package org.genepattern.drm;
 public enum DrmJobState {
     /** The job status cannot be determined. This is a permanent issue, not being solvable by asking again for the job state. */
     UNDETERMINED(null),
-    /** The outer status of a GenePattern job. */
+    /** 
+     * The outer status of a GenePattern job, for internal use by the GenePattern Server.
+     * The 'GP_' prefixed status should not be returned when implementing JobRunner#getStatus.
+     */
     GP_STATUS(null),
       /** The job is pending in the GenePattern queue, it has not been submitted to an external queuing system */
       GP_PENDING(GP_STATUS, "Pending in the GenePattern queue, it has not been submitted to an external queuing system"),
