@@ -25,6 +25,17 @@ public class UrlUtil {
      * This method is based on the client request rather than the server configuration
      * setting for the GenePatternURL.
      * 
+     * Template:
+     *     {protocol}:{hostname}[:{port}]{contextPath}
+     * Which does not include the trailing slash.
+     * 
+     * For example, when 
+     *     request.requestUrl=http://gpdev.broadinstitute.org/gp/rest/v1/jobs/67262
+     *     request.contextPath=/gp
+     *     request.servletPath=/rest
+     * then return
+     *     http://gpdev.broadinstitute.org/gp
+     * 
      * @param request
      * @return
      */
@@ -36,14 +47,21 @@ public class UrlUtil {
             log.debug("serverName="+request.getServerName());
             log.debug("serverPort="+request.getServerPort());
             log.debug("contextPath="+request.getContextPath());
-            log.debug("servletPath"+request.getServletPath());
+            log.debug("servletPath="+request.getServletPath());
+            log.debug("pathInfo="+request.getPathInfo());
+            log.debug("protocol="+request.getProtocol());
         }
-        String gpUrl = request.getScheme() + "://"+ request.getServerName();
-        if (request.getServerPort() > 0) {
-            gpUrl += ":"+request.getServerPort();
+        final StringBuffer sb=request.getRequestURL();
+        int idx=sb.indexOf(request.getContextPath());
+        if (idx<0) {
+            log.error("request.getContextPath not defined: "+request.getRequestURL().toString());
+            idx=0;
         }
-        gpUrl += request.getContextPath();
-        return gpUrl;
+        idx=sb.indexOf(request.getServletPath());
+        if (idx<0) {
+            log.error("request.servletPath not defined, requestURL="+request.getRequestURL().toString());
+        }
+        return sb.substring(0, idx);
     }
     
     /** Converts a string into something you can safely insert into a URL. */
