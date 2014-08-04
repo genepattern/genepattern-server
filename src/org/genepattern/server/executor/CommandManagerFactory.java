@@ -34,7 +34,7 @@ public class CommandManagerFactory {
     /**
      * Get the command manager. This method initializes the manager from system properties if necessary.
      */
-    public static CommandManager getCommandManager() {
+    public static BasicCommandManager getCommandManager() {
         synchronized(mgrLock) {
             if (manager == null) {
                 manager = createCommandManager();
@@ -79,12 +79,12 @@ public class CommandManagerFactory {
         }
     }
     
-    public static BasicCommandManager createCommandManager() {
+    protected static BasicCommandManager createCommandManager() {
         GpConfig gpConfig=ServerConfigurationFactory.instance();
         return createCommandManager(gpConfig);
     }
 
-    public static BasicCommandManager createCommandManager(final GpConfig gpConfig) {
+    protected static BasicCommandManager createCommandManager(final GpConfig gpConfig) {
         log.info("\tinitializing command manager ...");
         if (gpConfig == null) {
             log.error("server error, gpConfig==null, creating default command manager");
@@ -111,6 +111,7 @@ public class CommandManagerFactory {
     }
     
     private static BasicCommandManager createDefaultCommandManager() {
+        log.error("Settig the CommandExecutor to 'RuntimeExec'; Edit the config file to use the newer JobRunner API");
         BasicCommandManager commandManager = new BasicCommandManager();
         CommandExecutor cmdExecutor = new RuntimeCommandExecutor();
         try {
@@ -122,25 +123,4 @@ public class CommandManagerFactory {
         return commandManager;
     }
     
-    /**
-     * Helper method, get the id (key into the commandExecutorsMap) for the given CommandExecutor.
-     * @param cmdExecutor
-     * @return null if the CommandExecutor is not in the map
-     */
-    public static String getCommandExecutorId(CommandExecutor cmdExecutor) { 
-        if (cmdExecutor == null) {
-            log.error("null arg");
-            return null;
-        }
-        
-        synchronized(mgrLock) {
-            if (manager == null) {
-                log.error("manager not initialized");
-                return null;
-            }
-            
-            return manager.getCommandExecutorId(cmdExecutor);
-        }
-    }
-
 }

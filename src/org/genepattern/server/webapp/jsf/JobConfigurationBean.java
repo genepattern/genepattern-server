@@ -3,6 +3,7 @@ package org.genepattern.server.webapp.jsf;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map.Entry;
 
 import org.apache.log4j.Logger;
 import org.genepattern.server.config.ServerConfigurationFactory;
@@ -23,14 +24,14 @@ public class JobConfigurationBean {
      * @author pcarr
      */
     public static class Obj {
-        private CommandExecutor exec = null;
-        private String id = "";
-        private String classname = "";
+        private final CommandExecutor exec;
+        private final String id;
+        private final String classname;
         
-        public Obj(CommandExecutor exec) {
+        public Obj(String id, CommandExecutor exec) {
+            this.id = id;
             this.exec = exec;
             this.classname = exec.getClass().getCanonicalName();
-            this.id = CommandManagerFactory.getCommandExecutorId(this.exec);
         }
         
         public String getId() {
@@ -145,10 +146,9 @@ public class JobConfigurationBean {
         commandExecutors = new ArrayList<Obj>();
 
         CommandManager f = CommandManagerFactory.getCommandManager();
-        Iterable<CommandExecutor> l = f.getCommandExecutorsMap().values();
-        for(CommandExecutor cmd : l) {
-            commandExecutors.add(new Obj(cmd));
-        } 
+        for(Entry<String,CommandExecutor> entry : f.getCommandExecutorsMap().entrySet()) {
+            commandExecutors.add(new Obj(entry.getKey(), entry.getValue()));
+        }
         return commandExecutors;
     }
 
