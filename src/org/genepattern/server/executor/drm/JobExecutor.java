@@ -121,27 +121,7 @@ public class JobExecutor implements CommandExecutor2 {
         }
         catch (Throwable t) {
             log.error("Error loading JobRunner for classname: "+classname+", "+t.getLocalizedMessage(), t);
-            return new JobRunner() {
-
-                @Override
-                public void stop() {
-                }
-
-                @Override
-                public String startJob(final DrmJobSubmission drmJobSubmission) throws CommandExecutorException {
-                    throw new CommandExecutorException("Server configuration error: the jobRunner was not initialized from classname="+classname);
-                }
-
-                @Override
-                public DrmJobStatus getStatus(DrmJobRecord drmJobRecord) {
-                    return null;
-                }
-
-                @Override
-                public boolean cancelJob(final DrmJobRecord drmJobRecord) throws Exception {
-                    throw new Exception("Server configuration error: the jobRunner was not initialized from classname="+classname);
-                }
-            };
+            return new NoOpJobRunner(classname);
         }
     }
     
