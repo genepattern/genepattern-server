@@ -29,6 +29,15 @@ public class UrlUtil {
      * @return
      */
     public static String getGpUrl(final HttpServletRequest request) {
+        if (log.isDebugEnabled()) {
+            log.debug("requestURL="+request.getRequestURL().toString());
+            log.debug("requestURI="+request.getRequestURI());
+            log.debug("scheme="+request.getScheme());
+            log.debug("serverName="+request.getServerName());
+            log.debug("serverPort="+request.getServerPort());
+            log.debug("contextPath="+request.getContextPath());
+            log.debug("servletPath"+request.getServletPath());
+        }
         String gpUrl = request.getScheme() + "://"+ request.getServerName();
         if (request.getServerPort() > 0) {
             gpUrl += ":"+request.getServerPort();
