@@ -4,12 +4,11 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import org.genepattern.server.config.GpContext;
-import org.genepattern.server.config.ServerConfigurationFactory;
-import org.genepattern.server.webservice.server.dao.AnalysisDAO;
 import java.util.Map.Entry;
 
 import org.apache.log4j.Logger;
+import org.genepattern.server.config.GpContext;
+import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.eula.GetTaskStrategy;
 import org.genepattern.server.eula.GetTaskStrategyDefault;
@@ -21,6 +20,7 @@ import org.genepattern.server.job.input.ParamListHelper;
 import org.genepattern.server.job.input.dao.JobInputValueRecorder;
 import org.genepattern.server.jobqueue.JobQueue;
 import org.genepattern.server.jobqueue.JobQueueUtil;
+import org.genepattern.server.webservice.server.dao.AnalysisDAO;
 import org.genepattern.webservice.JobInfo;
 import org.genepattern.webservice.ParameterInfo;
 import org.genepattern.webservice.TaskInfo;
@@ -36,7 +36,7 @@ import org.genepattern.webservice.TaskInfo;
  *     3) when a list of values is supplied, automatically generate a file list file before adding the job to the queue
  *     4) when an external URL is supplied, GET the contents of the file before adding the job to the queue
  *     
- * TODO: 
+ *     Note: 
  *     5) transferring data from an external URL as well as generating a file list can take a while, we should
  *         update this code so that it does not have to block the web client.
  *     
@@ -245,7 +245,7 @@ public class JobInputApiImplV2 implements JobInputApi {
                 throw new JobSubmissionException(t.getLocalizedMessage());
             }
 
-            //TODO: record the working dir with the jobInfo and save to DB
+            //Note: should record the working dir with the jobInfo and save to DB
             //jobInfo.setWorkingDir(jobDir.getPath());
             // make directory to hold input and output files
             if (!jobDir.exists()) {
