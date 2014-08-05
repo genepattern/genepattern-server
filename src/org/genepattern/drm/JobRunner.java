@@ -61,7 +61,7 @@ public interface JobRunner {
     public static final String PROP_ERROR_STATUS_STDERR="job.error_status.stderr";
 
     /**
-     * Set a boolean value, when true, it means flag the job as ERROR if ther is a non-zero exit code.
+     * Set a boolean value, when true, it means flag the job as ERROR if there is a non-zero exit code.
      * Example config file entry
      * <pre>
      *     job.error_status.exit_value: true
