@@ -404,6 +404,7 @@ public class JobExecutor implements CommandExecutor2 {
         }
         catch (DbException e) {
             // ignore
+            log.debug("no job_runner_job entry for gpJobNo="+gpJobNo, e);
         }
         updateStatus(gpJobNo, taskLsid, existingJobRunnerJob, drmJobStatus);
     }
@@ -417,6 +418,10 @@ public class JobExecutor implements CommandExecutor2 {
         if (gpJobNo==null) {
             //ignore
             log.debug("gpJobNo==null");
+            return;
+        }
+        if (existingJobRunnerJob==null) {
+            log.debug("existingJobRunnerJob==null");
             return;
         }
         if (log.isDebugEnabled()) {
@@ -688,13 +693,15 @@ public class JobExecutor implements CommandExecutor2 {
         JobRunnerJob jobRunnerJob=null;
         try {
             jobRunnerJob=new JobRunnerJobDao().selectJobRunnerJob(jobInfo.getJobNumber());
-            return JobRunnerJob.toDrmJobRecord(jobRunnerJob);
+            if (jobRunnerJob != null) {
+                return JobRunnerJob.toDrmJobRecord(jobRunnerJob);
+            }
         }
         catch (DbException e) {
             //ignore
         }
 
-        // no record found in DB, create new instance from jobInfo
+        log.debug("no record found in DB, create new instance from jobInfo, gpJobNo="+jobInfo.getJobNumber());
         DrmJobRecord drmJobRecord=new DrmJobRecord.Builder()
             .gpJobNo(jobInfo.getJobNumber())
             .lsid(jobInfo.getTaskLSID())
