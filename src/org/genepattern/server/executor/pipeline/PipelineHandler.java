@@ -35,6 +35,7 @@ import org.genepattern.server.dm.jobresult.JobResultFile;
 import org.genepattern.server.domain.AnalysisJob;
 import org.genepattern.server.domain.JobStatus;
 import org.genepattern.server.executor.AnalysisJobScheduler;
+import org.genepattern.server.executor.BasicCommandManager;
 import org.genepattern.server.executor.CommandExecutorException;
 import org.genepattern.server.executor.CommandManagerFactory;
 import org.genepattern.server.executor.JobSubmissionException;
@@ -143,38 +144,50 @@ public class PipelineHandler {
             log.error("Ignoring null arg");
             return;
         }
+        
         // handle special-case: pipeline already finished before user terminated event was processed
         if (JobStatus.ERROR.equals(jobInfo.getStatus()) || JobStatus.FINISHED.equals(jobInfo.getStatus())) {
             log.info("job #"+jobInfo.getJobNumber()+" already finished, status="+jobInfo.getStatus());
             return;
         }
         
-        //get current job and terminate it ... if all steps have already completed ... log an error but do nothing
-        int processingJobId = -1;
+        // terminate processing jobs
         HibernateUtil.beginTransaction();
         List<Object[]> jobInfoObjs = getChildJobObjs(jobInfo.getJobNumber());
         HibernateUtil.closeCurrentSession();
+        
+        List<Integer> processingJobIds=new ArrayList<Integer>();
         for(Object[] row : jobInfoObjs) {
             int jobId = (Integer) row[0];
             int statusId = (Integer) row[1];
-            if (JobStatus.JOB_PROCESSING == statusId) {
-                processingJobId = jobId;
+            if (isProcessingByStatusId(statusId)) {
+                processingJobIds.add(jobId);
             }
         }
-        if (processingJobId >= 0) {
+        for(final Integer processingJobId : processingJobIds) {
             try {
-                CommandManagerFactory.getCommandManager().terminateJob(processingJobId);
+                if (log.isDebugEnabled()) {
+                    log.debug("terminating pipeline step, job #"+processingJobId);
+                }
+                final BasicCommandManager cmdMgr=CommandManagerFactory.getCommandManager();
+                cmdMgr.terminateJob(processingJobId);
             }
             catch (Throwable t) {
                 log.error("Error terminating job #"+processingJobId+" in pipeline "+jobInfo.getJobNumber(), t);
-                return;
             }
-            return;
         }
-        else {
+        if (processingJobIds.size() == 0) {
             terminatePipelineSteps(jobInfo.getJobNumber());
             handlePipelineJobCompletion(jobInfo.getJobNumber(), -1, "Job #"+jobInfo.getJobNumber()+" terminated by user.");
         }
+    }
+    
+    protected static boolean isProcessingByStatusId(int statusId) {
+        return statusId==JobStatus.JOB_PROCESSING;
+    }
+    
+    protected static boolean isFinishedByStatusId(int statusId) {
+        return statusId==JobStatus.JOB_FINISHED || statusId==JobStatus.JOB_ERROR;
     }
     
     /**
@@ -1258,7 +1271,7 @@ public class PipelineHandler {
             return url;
         }
         catch (Exception e) {
-            log.error(e.getLocalizedMessage());
+            log.error("Error getting inherited output file fromJob="+fromJob+", fileStr="+fileStr, e);
             return "";            
         }
     }

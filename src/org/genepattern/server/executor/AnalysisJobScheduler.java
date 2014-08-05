@@ -33,6 +33,9 @@ import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.domain.JobStatus;
+import org.genepattern.server.executor.drm.JobExecutor;
+import org.genepattern.server.executor.drm.dao.JobRunnerJob;
+import org.genepattern.server.executor.drm.dao.JobRunnerJobDao;
 import org.genepattern.server.genepattern.GenePatternAnalysisTask;
 import org.genepattern.server.job.input.cache.FileCache;
 import org.genepattern.server.jobqueue.JobQueue;
@@ -344,6 +347,7 @@ public class AnalysisJobScheduler implements Runnable {
         boolean isFinished = isFinished(jobInfo); 
         if (isFinished) {
             log.debug("job #"+jobInfo.getJobNumber()+" is already finished");
+            terminateJobRunnerJob(jobInfo);
             return;
         }
 
@@ -394,8 +398,9 @@ public class AnalysisJobScheduler implements Runnable {
                 //note: don't terminate completed jobs
                 boolean isFinished = isFinished(jobInfo); 
                 if (isFinished) {
-                    log.debug("job "+jobInfo.getJobNumber()+"is already finished");
-                    return -1;
+                    log.debug("job #"+jobInfo.getJobNumber()+" is already finished");
+                    terminateJobRunnerJob(jobInfo);
+                    return jobInfo.getJobNumber();
                 }
                 
                 try {
@@ -466,5 +471,28 @@ public class AnalysisJobScheduler implements Runnable {
         return false;        
     }
 
+    private static boolean terminateJobRunnerJob(final JobInfo jobInfo) {
+        Integer gpJobNo=jobInfo.getJobNumber();
+        JobRunnerJob jrj = null;
+        try {
+            jrj=new JobRunnerJobDao().selectJobRunnerJob(gpJobNo);
+        } // <- throws DbException
+        catch (Throwable t) {
+            log.error(t);
+        }
+        if (jrj == null) {
+            log.debug("No entry in job_runner_job table for gpJobNo="+gpJobNo);
+            return false;
+        }
+        String jrName=jrj.getJobRunnerName();
+        JobExecutor jobExec=CommandManagerFactory.getCommandManager().lookupJobExecutorByJobRunnerName(jrName);
+        if (jobExec != null) {
+            jobExec.terminateJob(jobInfo);
+            return true;
+        }
+        return false;
+    }
+
+    
 }
 
