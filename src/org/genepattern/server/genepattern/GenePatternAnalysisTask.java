@@ -1883,14 +1883,16 @@ public class GenePatternAnalysisTask {
             addFileToOutputParameters(jobInfo, taskLog.getName(), taskLog.getName(), null);
         }
 
+        JobInfo updatedJobInfo;
         try {
             HibernateUtil.beginTransaction();
-            recordJobCompletion(jobInfo, jobStatus);
+            updatedJobInfo=recordJobCompletion(jobInfo, jobStatus);
             HibernateUtil.commitTransaction();
         }
         catch (Throwable t) {
             log.error("Error recording job completion for job #"+jobInfo.getJobNumber(), t);
             HibernateUtil.rollbackTransaction();
+            updatedJobInfo=jobInfo;
         }
         finally {
             HibernateUtil.closeCurrentSession();
@@ -1907,7 +1909,7 @@ public class GenePatternAnalysisTask {
         //if the job is in a pipeline, notify the pipeline handler
         boolean isInPipeline = jobInfo._getParentJobNumber() >= 0;
         if (isInPipeline) {
-            boolean wakeupJobQueue = PipelineHandler.handleJobCompletion(jobInfo);
+            boolean wakeupJobQueue = PipelineHandler.handleJobCompletion(updatedJobInfo);
             if (wakeupJobQueue) {
                 //if the pipeline has more steps, wake up the job queue
                 CommandManagerFactory.getCommandManager().wakeupJobQueue();
@@ -1922,7 +1924,7 @@ public class GenePatternAnalysisTask {
         catch (DbException e) {
             //ignore, innner method logs the error
         }
-        fireGpJobRecordedEvent(jrj, jobInfo);
+        fireGpJobRecordedEvent(jrj, updatedJobInfo);
     }
     
     protected static void fireGpJobRecordedEvent(final JobRunnerJob jobRunnerJob, final JobInfo jobInfo) {
@@ -2107,27 +2109,29 @@ public class GenePatternAnalysisTask {
         }
     };
     
-    private static void recordJobCompletion(final JobInfo jobInfo, final int jobStatus) {
+    private static JobInfo recordJobCompletion(final JobInfo jobInfo, final int jobStatus) {
         if (jobInfo == null) {
             log.error("jobInfo == null, not recording job completion");
-            return;
+            return null;
         }
         long jobStartTime = jobInfo.getDateSubmitted().getTime();
         try {
             long elapsedTime = (System.currentTimeMillis() - jobStartTime) / 1000;
             Date now = new Date(Calendar.getInstance().getTimeInMillis());
-            updateJobInfo(jobInfo, jobStatus, now);
+            JobInfo updatedJobInfo=updateJobInfo(jobInfo, jobStatus, now);
             UsageLog.logJobCompletion(jobInfo, now, elapsedTime);
+            return updatedJobInfo;
         } 
-        catch (RuntimeException e) {
-            log.error(e);
+        catch (Throwable t) {
+            log.error(t);
         }
+        return null;
     }
     
-    private static void updateJobInfo(final JobInfo jobInfo, final int jobStatus, final Date completionDate) {
+    private static JobInfo updateJobInfo(final JobInfo jobInfo, final int jobStatus, final Date completionDate) {
         if (jobInfo == null) {
             log.error("jobInfo == null");
-            return;
+            return null;
         }
 
         AnalysisJobDAO home = new AnalysisJobDAO();
@@ -2145,6 +2149,8 @@ public class GenePatternAnalysisTask {
         aJob.setCompletedDate(completionDate);
         
         HibernateUtil.getSession().update(aJob);
+        
+        return new JobInfo(aJob);
     }
 
     /**
