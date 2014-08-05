@@ -16,6 +16,7 @@ import org.genepattern.server.executor.events.JobCompletedEvent;
 import org.genepattern.server.executor.events.JobStartedEvent;
 import org.genepattern.server.job.status.Status;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import com.google.common.eventbus.EventBus;
@@ -35,9 +36,14 @@ public class TestJobExecutorEvents {
         @Subscribe
         public void recordJobStartedEvent(JobStartedEvent evt) {
             ++count;
+            this.recent=evt;
         }
         public int getCount() {
             return count;
+        }
+        JobStartedEvent recent=null;
+        public JobStartedEvent getRecent() {
+            return recent;
         }
     }
     private JobCompletedListener jobCompletedListener;
@@ -98,17 +104,36 @@ public class TestJobExecutorEvents {
         assertEquals("before events, count", 0, jobStartedListener.getCount());
         
         // update status, presumably from null to PENDING
+        JobRunnerJob existing=null;
         when(jobStatus.getJobState()).thenReturn(DrmJobState.QUEUED);
-        jobExecutor.updateStatus(gpJobNo, cleLsid, jobStatus);
+        jobExecutor.updateStatus(gpJobNo, cleLsid, existing, jobStatus);
         assertEquals("after PENDING event, count", 0, jobStartedListener.getCount());
-        
+            
         // cause a new JobStartedEvent to occur
+        existing=mock(JobRunnerJob.class);
         when(jobStatus.getJobState()).thenReturn(DrmJobState.RUNNING);
-        jobExecutor.updateStatus(gpJobNo, cleLsid, jobStatus);
+        jobExecutor.updateStatus(gpJobNo, cleLsid, existing, jobStatus);
         
         assertEquals("after RUNNING event, count", 1, jobStartedListener.getCount());
+        assertEquals("after RUNNING event, jobStatus.isRunning", true, jobStartedListener.getRecent().getJobStatus().getIsRunning());
     }
     
+    /**
+     * Make sure to fire job started event after it transitions from null -> RUNNING
+     */
+    @Ignore @Test
+    public void fireJobStartedEvent_existingRecordIsNull() {
+        assertEquals("before events, count", 0, jobStartedListener.getCount());
+        
+        // cause a new JobStartedEvent to occur
+        JobRunnerJob existing=null;
+        when(jobStatus.getJobState()).thenReturn(DrmJobState.RUNNING);
+        jobExecutor.updateStatus(gpJobNo, cleLsid, existing, jobStatus);
+        
+        assertEquals("after RUNNING event, count", 1, jobStartedListener.getCount());
+        assertEquals("after RUNNING event, jobStatus.isRunning", true, jobStartedListener.getRecent().getJobStatus().getIsRunning());
+    }
+
     @Test 
     public void fireJobCompletedEvent() {
         JobRunnerJob existingJobRunnerJob=mock(JobRunnerJob.class);
