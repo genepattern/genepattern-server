@@ -145,6 +145,8 @@ import org.genepattern.server.executor.CommandExecutor2Wrapper;
 import org.genepattern.server.executor.CommandManagerFactory;
 import org.genepattern.server.executor.JobDispatchException;
 import org.genepattern.server.executor.JobSubmissionException;
+import org.genepattern.server.executor.drm.dao.JobRunnerJob;
+import org.genepattern.server.executor.drm.dao.JobRunnerJobDao;
 import org.genepattern.server.executor.events.GpJobRecordedEvent;
 import org.genepattern.server.executor.events.JobEventBus;
 import org.genepattern.server.executor.pipeline.PipelineException;
@@ -1917,9 +1919,18 @@ public class GenePatternAnalysisTask {
     }
     
     protected static void fireGpJobRecordedEvent(final JobInfo jobInfo) {
+        JobRunnerJob jrj=null;
+        try {
+            jrj=new JobRunnerJobDao().selectJobRunnerJob(jobInfo.getJobNumber());
+        }
+        catch (DbException e) {
+            //ignore, innner method logs the error
+        }
+        
         String lsid=jobInfo.getTaskLSID();
         Status jobStatus=new Status.Builder()
             .jobInfo(jobInfo)
+            .jobStatusRecord(jrj)
             .dateCompletedInGp(new Date())
         .build();
         JobEventBus.instance().post(new GpJobRecordedEvent(lsid, jobStatus));
