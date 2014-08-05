@@ -684,6 +684,24 @@ public class JobExecutor implements CommandExecutor2 {
         }
     }
 
+    protected DrmJobRecord lookupJobRecord(JobInfo jobInfo) {
+        JobRunnerJob jobRunnerJob=null;
+        try {
+            jobRunnerJob=new JobRunnerJobDao().selectJobRunnerJob(jobInfo.getJobNumber());
+            return JobRunnerJob.toDrmJobRecord(jobRunnerJob);
+        }
+        catch (DbException e) {
+            //ignore
+        }
+
+        // no record found in DB, create new instance from jobInfo
+        DrmJobRecord drmJobRecord=new DrmJobRecord.Builder()
+            .gpJobNo(jobInfo.getJobNumber())
+            .lsid(jobInfo.getTaskLSID())
+        .build();
+        return drmJobRecord;
+    }
+    
     /**
      * Terminate the job from a new thread ... wait for 5 seconds to give the job a chance to 
      * cancel (via JobRunner callback) ... otherwise make a direct call to GPAT.handleJobCompletion
@@ -699,7 +717,7 @@ public class JobExecutor implements CommandExecutor2 {
         }
         int gpJobNo=jobInfo.getJobNumber();
         log.debug(jobRunnerName+" terminateJob, gpJobNo="+gpJobNo);
-        final DrmJobRecord drmJobRecord=jobLookupTable.lookupJobRecord(gpJobNo);
+        DrmJobRecord drmJobRecord=lookupJobRecord(jobInfo);
         boolean cancelled=doCancel(drmJobRecord);
         if (log.isDebugEnabled()) {
             log.debug("cancelled, gpJobNo="+gpJobNo+": "+cancelled);
@@ -708,7 +726,7 @@ public class JobExecutor implements CommandExecutor2 {
     
     private boolean doCancel(final DrmJobRecord drmJobRecord) {
         try {
-            boolean cancelled=cancelJobInThread(drmJobRecord);
+            Boolean cancelled=cancelJobInThread(drmJobRecord);
             //Thread.sleep(2000); // brief hard-coded delay to allow for the jobrunner to properly cancel the job
             //check the status of the job
             DrmJobStatus cancelledStatus = getJobStatus(drmJobRecord, 5000L); // 5 seconds
@@ -720,11 +738,17 @@ public class JobExecutor implements CommandExecutor2 {
             updateStatus(drmJobRecord.getGpJobNo(), drmJobRecord.getLsid(), cancelledStatus);
             // send callback to GPAT.handleJobCompletion
             handleCompletedJob(drmJobRecord.getGpJobNo(), cancelledStatus);
+            if (cancelled==null) {
+                return false;
+            }
             return cancelled;
         }
         catch (InterruptedException e) {
             //one of these methods was interrupted
             Thread.currentThread().interrupt();
+        }
+        catch (Throwable t) {
+            log.error("Unexpected error cancelling job, gpJobNo="+drmJobRecord.getGpJobNo(), t);
         }
         return false;
     }
@@ -733,7 +757,7 @@ public class JobExecutor implements CommandExecutor2 {
         if (drmJobRecord==null) {
             throw new IllegalArgumentException("drmJobRecord==null");
         }
-        int gpJobNo=drmJobRecord.getGpJobNo();
+        final int gpJobNo=drmJobRecord.getGpJobNo();
         log.debug(jobRunnerName+" terminateJob, gpJobNo="+gpJobNo);
         
         Boolean cancelled=null;
