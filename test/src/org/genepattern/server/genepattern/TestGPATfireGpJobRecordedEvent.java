@@ -1,14 +1,18 @@
 package org.genepattern.server.genepattern;
 
+import static org.junit.Assert.assertEquals;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
 import java.util.Date;
 
 import org.genepattern.server.domain.JobStatus;
+import org.genepattern.server.executor.drm.dao.JobRunnerJob;
 import org.genepattern.server.executor.events.GpJobRecordedEvent;
 import org.genepattern.server.executor.events.JobEventBus;
 import org.genepattern.server.job.status.Status;
 import org.genepattern.webservice.JobInfo;
 import org.joda.time.DateTime;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -27,11 +31,13 @@ public class TestGPATfireGpJobRecordedEvent {
     static class GpJobRecordedListener {
         public String taskLsid=null;
         public Status jobStatus=null;
+        public boolean isInPipeline=false;
 
         @Subscribe
         public void onGpJobRecorded(final GpJobRecordedEvent evt) {
             this.taskLsid=evt.getTaskLsid();
             this.jobStatus=evt.getJobStatus();
+            this.isInPipeline=evt.getIsInPipeline();
         }
     }
     
@@ -41,19 +47,40 @@ public class TestGPATfireGpJobRecordedEvent {
         listener=new GpJobRecordedListener();
         //eventBus.register(listener);
         JobEventBus.instance().register(listener);
-        jobInfo=new JobInfo();
-        jobInfo.setJobNumber(gpJobNo);
-        jobInfo.setStatus(JobStatus.FINISHED);
-        jobInfo.setTaskLSID(cleLsid);
-        jobInfo.setDateSubmitted(submittedDate);
-        jobInfo.setDateCompleted(completedDate);
+        jobInfo=mock(JobInfo.class);
+        when(jobInfo.getJobNumber()).thenReturn(gpJobNo);
+        when(jobInfo.getStatus()).thenReturn(JobStatus.FINISHED);
+        when(jobInfo.getTaskLSID()).thenReturn(cleLsid);
+        when(jobInfo.getDateSubmitted()).thenReturn(submittedDate);
+        when(jobInfo.getDateCompleted()).thenReturn(completedDate);
+        when(jobInfo._getParentJobNumber()).thenReturn(-1);
     }
     
     @Test
-    public void handleGpJobRecordedEvent() {
-        GenePatternAnalysisTask.fireGpJobRecordedEvent(jobInfo);
-        Assert.assertEquals("after fire event, taskLsid", cleLsid, listener.taskLsid);
-        Assert.assertEquals("dateCompletedInGp", completedDate, listener.jobStatus.getDateCompletedInGp());
-        Assert.assertEquals("dateSubmittedTpGp", submittedDate, listener.jobStatus.getDateSubmittedToGp());
+    public void handleGpJobRecordedEvent_nullJrj() {
+        GenePatternAnalysisTask.fireGpJobRecordedEvent(null, jobInfo);
+        assertEquals("after fire event, taskLsid", cleLsid, listener.taskLsid);
+        assertEquals("dateCompletedInGp", completedDate, listener.jobStatus.getDateCompletedInGp());
+        assertEquals("dateSubmittedTpGp", submittedDate, listener.jobStatus.getDateSubmittedToGp());
+        assertEquals("isFinished", true, listener.jobStatus.getIsFinished());
+        assertEquals("isInPipeline", false, listener.isInPipeline);
+    }
+    
+    @Test
+    public void handleGpJobRecordedEvent_withJrj() {
+        JobRunnerJob jrj=mock(JobRunnerJob.class);
+        GenePatternAnalysisTask.fireGpJobRecordedEvent(jrj, jobInfo);
+        assertEquals("after fire event, taskLsid", cleLsid, listener.taskLsid);
+        assertEquals("dateCompletedInGp", completedDate, listener.jobStatus.getDateCompletedInGp());
+        assertEquals("dateSubmittedTpGp", submittedDate, listener.jobStatus.getDateSubmittedToGp());
+        assertEquals("isFinished", true, listener.jobStatus.getIsFinished());
+        assertEquals("isInPipeline", false, listener.isInPipeline);
+    }
+    
+    @Test
+    public void handleGpJobRecordedEvent_isInPipeline() {
+        when(jobInfo._getParentJobNumber()).thenReturn(37);
+        GenePatternAnalysisTask.fireGpJobRecordedEvent(null, jobInfo);
+        assertEquals("isInPipeline", true, listener.isInPipeline);
     }
 }

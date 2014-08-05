@@ -8,9 +8,15 @@ import org.genepattern.server.job.status.Status;
  *
  */
 public class GpJobRecordedEvent extends JobStatusEvent {
+    private final boolean isInPipeline;
 
-    public GpJobRecordedEvent(final String lsid, final Status jobStatus) {
+    public GpJobRecordedEvent(final boolean isInPipeline, final String lsid, final Status jobStatus) {
         super(lsid, jobStatus);
+        this.isInPipeline=isInPipeline;
+    }
+    
+    public Boolean getIsInPipeline() {
+        return isInPipeline;
     }
 
 }

@@ -1915,10 +1915,6 @@ public class GenePatternAnalysisTask {
         }
 
         // Publish a job completion event for the JobEventBus
-        fireGpJobRecordedEvent(jobInfo);
-    }
-    
-    protected static void fireGpJobRecordedEvent(final JobInfo jobInfo) {
         JobRunnerJob jrj=null;
         try {
             jrj=new JobRunnerJobDao().selectJobRunnerJob(jobInfo.getJobNumber());
@@ -1926,14 +1922,18 @@ public class GenePatternAnalysisTask {
         catch (DbException e) {
             //ignore, innner method logs the error
         }
-        
+        fireGpJobRecordedEvent(jrj, jobInfo);
+    }
+    
+    protected static void fireGpJobRecordedEvent(final JobRunnerJob jobRunnerJob, final JobInfo jobInfo) {
         String lsid=jobInfo.getTaskLSID();
         Status jobStatus=new Status.Builder()
             .jobInfo(jobInfo)
-            .jobStatusRecord(jrj)
+            .jobStatusRecord(jobRunnerJob)
             .dateCompletedInGp(new Date())
         .build();
-        JobEventBus.instance().post(new GpJobRecordedEvent(lsid, jobStatus));
+        boolean isInPipeline = jobInfo._getParentJobNumber() >= 0;
+        JobEventBus.instance().post(new GpJobRecordedEvent(isInPipeline, lsid, jobStatus));
     }
 
     private static boolean isFinished(JobInfo jobInfo) {
