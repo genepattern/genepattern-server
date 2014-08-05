@@ -38,6 +38,8 @@ executors:
             #executor.props: "genepattern_short"
             job.queue: genepattern
             job.virtualQueue: genepattern_short
+            # save lsf output to the '.lsf.out' file in the jobResults directory
+            job.logFile: .lsf.out
 
     LocalExecutor: 
         classname: org.genepattern.server.executor.RuntimeCommandExecutor
