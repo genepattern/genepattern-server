@@ -17,6 +17,7 @@ import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.domain.AnalysisJob;
 import org.genepattern.server.domain.JobStatus;
+import org.genepattern.server.executor.drm.JobExecutor;
 import org.genepattern.server.executor.pipeline.PipelineExecutor;
 import org.genepattern.server.webservice.server.dao.AnalysisDAO;
 import org.genepattern.webservice.JobInfo;
@@ -74,7 +75,7 @@ public class BasicCommandManager implements CommandManager {
         }
     }
     
-    //TODO: use paged results to handle large number of 'Processing' jobs
+    //Note: would be nice to use paged results to handle large number of 'Processing' jobs
     public void handleJobsOnServerStartup() {
         log.info("handling 'DISPATCHING' and 'PROCESSING' jobs on server startup ...");
         List<MyJobInfoWrapper> openJobs = getOpenJobs();
@@ -217,12 +218,21 @@ public class BasicCommandManager implements CommandManager {
     
     //map cmdExecId - commandExecutor
     private LinkedHashMap<String,CommandExecutor> cmdExecutorsMap = new LinkedHashMap<String,CommandExecutor>();
+    private LinkedHashMap<String,JobExecutor> jobExecutorsMap = new LinkedHashMap<String,JobExecutor>();
     
     public void addCommandExecutor(String id, CommandExecutor cmdExecutor) throws ConfigurationException {
         if (cmdExecutorsMap.containsKey(id)) {
             throw new ConfigurationException("duplicate id: "+id);
         }
         cmdExecutorsMap.put(id, cmdExecutor);
+        //special-case for JobExecutor
+        if (cmdExecutor instanceof JobExecutor) {
+            JobExecutor jobExec = (JobExecutor) cmdExecutor;
+            if (jobExecutorsMap.containsKey(jobExec.getJobRunnerName())) {
+                throw new ConfigurationException("duplicate jobRunnerName: "+jobExec.getJobRunnerName());
+            }
+            jobExecutorsMap.put( jobExec.getJobRunnerName(), jobExec );
+        }
     }
     
     public CommandExecutor getCommandExecutorById(String cmdExecutorId) {
@@ -238,11 +248,6 @@ public class BasicCommandManager implements CommandManager {
             log.debug("job "+jobInfo.getJobNumber()+" is a pipeline");
             return getPipelineExecutor();
         }
-        //TODO: special case for visualizers ... if a job is a visualizer ignore it
-        //boolean isVisualizer = JobInfoManager.isVisualizer(jobInfo);
-        //if (isVisualizer) {
-        //    
-        //}
 
         //initialize to default executor
         String cmdExecId = gpConfig.getCommandExecutorId(jobInfo);
@@ -272,7 +277,6 @@ public class BasicCommandManager implements CommandManager {
     }
     
     public String getCommandExecutorId(CommandExecutor cmdExecutor) {
-                //Map<String,CommandExecutor> map = getCommandExecutorsMap();
         if (cmdExecutorsMap==null) {
             log.error("cmdExecutorsMap==null");
             return null;
@@ -287,6 +291,25 @@ public class BasicCommandManager implements CommandManager {
             }
         }
         return null;
+    }
+    
+    /**
+     * For a given jobRunnerName, get the JobExecutor instance that was initialized at startup from the
+     * config_yaml file. This name is usually selected from the 'jr_name' column of the  'job_runner_job' table in the DB.
+     * This was added to support reverse-looked to ge the correct JobExecutor that was used to launch a job.
+     * 
+     * Assumptions:
+     *     Each 'jobRunnerName' in the config_yaml file must be unique.
+     *     The 'jobRunnerName' must always be associated with the same exact JobRunnerClassname.
+     * 
+     * @param jobRunnerName
+     * @return
+     */
+    public JobExecutor lookupJobExecutorByJobRunnerName(final String jobRunnerName) {
+        if (jobExecutorsMap == null) {
+            return null;
+        }
+        return jobExecutorsMap.get(jobRunnerName);
     }
 
     //implement the CommandExecutorMapper interface

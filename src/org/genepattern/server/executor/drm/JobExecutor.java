@@ -361,6 +361,22 @@ public class JobExecutor implements CommandExecutor2 {
         initJobsOnStartup(runningJobs);
     }
 
+    /**
+     * Get the 'jobRunnerName', as set in the config_yaml file.
+     * @return
+     */
+    public String getJobRunnerName() {
+        return jobRunnerName;
+    }
+
+    /**
+     * Get the 'jobRunnerClassname', as set in the config_yaml file.
+     * @return
+     */
+    public String getJobRunnerClassname() {
+        return jobRunnerClassname;
+    }
+
     private void initJobsOnStartup(final BlockingQueue<DrmJobRecord> toQueue) {
         log.info("initializing jobs on startup: "+jobRunnerName+" ( "+jobRunnerName+" ) ...");
         final List<DrmJobRecord> jobs=jobLookupTable.getRunningDrmJobRecords();
