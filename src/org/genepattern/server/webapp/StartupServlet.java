@@ -66,6 +66,9 @@ public class StartupServlet extends HttpServlet {
 
     public void init(ServletConfig config) throws ServletException {
         super.init(config);
+        
+        //this is for debugging only
+        //System.setProperty("hibernate.jdbc.factory_class", "org.hibernate.jdbc.NonBatchingBatcherFactory");
 
         log.info("\tinitializing properties...");
         ServletContext application = config.getServletContext();
