@@ -77,9 +77,23 @@ public class TestJobOutputFile {
     }
     
     @Test
+    public void nullPath() {
+        JobOutputFile out=new JobOutputFile();
+        out.setPath(null);
+        assertEquals("out.path", "./", out.getPath());
+    }
+    
+    @Test
+    public void emptyStringPath() {
+        JobOutputFile out=new JobOutputFile();
+        out.setPath("");
+        assertEquals("out.path", "./", out.getPath());
+    }
+
+    @Test
     public void jobDir() throws Exception {
         JobOutputFile out=JobOutputFile.from(""+jobId, jobDir, new File(""), null, GpFileType.GP_JOB_DIR);
-        assertEquals("out.path", "", out.getPath());
+        assertEquals("out.path", "./", out.getPath());
         assertEquals("out.kind", "directory", out.getKind());
         assertEquals("out.fileLength", jobDirAbs.length(), out.getFileLength());
         assertEquals("out.gpFileType", GpFileType.GP_JOB_DIR.name(), out.getGpFileType());

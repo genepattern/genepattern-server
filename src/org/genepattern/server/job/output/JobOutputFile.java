@@ -33,6 +33,9 @@ import org.genepattern.util.SemanticUtil;
 public class JobOutputFile {
     private static final Logger log = Logger.getLogger(JobOutputFile.class);
     
+    /** To work around Oracle limitations, which prevent an empty string from being used as part of a primary key in the DB. */
+    public static final String JOB_DIR_PATH="./";
+    
     private static final GpFileTypeFilter defaultFileTypeFilter=new DefaultGpFileTypeFilter();
 
     public static JobOutputFile from(final String jobId, File jobDir, final File relativeFile, final GpFileType gpFileType) throws IOException {
@@ -63,7 +66,7 @@ public class JobOutputFile {
         
         JobOutputFile out=new JobOutputFile();
         out.gpJobNo=Integer.parseInt(jobId);
-        out.path=FileUtil.getPath(relativePath, "/");
+        out.setPath(FileUtil.getPath(relativePath, "/"));
         
         if (attrs != null) {
             out.lastModified=new Date(attrs.lastModifiedTime().toMillis());
@@ -187,7 +190,8 @@ public class JobOutputFile {
     @Column(name="gp_job_no", nullable=false)
     private Integer gpJobNo=0;
     @Id
-    private String path="";
+    @Column(name="path", nullable=false)
+    private String path=JOB_DIR_PATH;
     // ---  end primary key fields -------
     private String gpFileType="";  // STDOUT, STDERR, LOG, FILE, DIR
     private String extension="";
@@ -196,6 +200,9 @@ public class JobOutputFile {
     private long fileLength=0L;
     @Column(name="last_modified")
     private Date lastModified=new Date();
+    private boolean hidden;
+    private boolean deleted;
+
 
     public Integer getGpJobNo() {
         return gpJobNo;
@@ -206,8 +213,13 @@ public class JobOutputFile {
     public String getPath() {
         return path;
     }
-    public void setPath(String path) {
-        this.path = path;
+    public void setPath(final String path) {
+        if (path==null || path.length()==0) {
+            this.path=JOB_DIR_PATH;
+        }
+        else {
+            this.path = path;
+        }
     }
     public String getGpFileType() {
         return gpFileType;
@@ -251,8 +263,5 @@ public class JobOutputFile {
     public void setDeleted(boolean deleted) {
         this.deleted = deleted;
     }
-
-    private boolean hidden;
-    private boolean deleted;
 
 }
