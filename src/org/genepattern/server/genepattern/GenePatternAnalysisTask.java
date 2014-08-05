@@ -1907,7 +1907,7 @@ public class GenePatternAnalysisTask {
         //if the job is in a pipeline, notify the pipeline handler
         boolean isInPipeline = jobInfo._getParentJobNumber() >= 0;
         if (isInPipeline) {
-            boolean wakeupJobQueue = PipelineHandler.handleJobCompletion(jobInfo.getJobNumber());
+            boolean wakeupJobQueue = PipelineHandler.handleJobCompletion(jobInfo);
             if (wakeupJobQueue) {
                 //if the pipeline has more steps, wake up the job queue
                 CommandManagerFactory.getCommandManager().wakeupJobQueue();

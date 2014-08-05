@@ -38,7 +38,6 @@ import org.genepattern.server.executor.AnalysisJobScheduler;
 import org.genepattern.server.executor.CommandExecutorException;
 import org.genepattern.server.executor.CommandManagerFactory;
 import org.genepattern.server.executor.JobSubmissionException;
-import org.genepattern.server.executor.JobTerminationException;
 import org.genepattern.server.genepattern.GenePatternAnalysisTask;
 import org.genepattern.server.jobqueue.JobQueue;
 import org.genepattern.server.jobqueue.JobQueueUtil;
@@ -129,7 +128,7 @@ public class PipelineHandler {
             int parentParentJobId = pipelineJobInfo._getParentJobNumber();
             if (parentParentJobId >= 0) {
                 //special-case: a nested pipeline with zero steps, make sure to notify the parent pipeline that this step has completed
-                boolean wakeupJobQueue = PipelineHandler.handleJobCompletion(pipelineJobInfo.getJobNumber());
+                boolean wakeupJobQueue = PipelineHandler.handleJobCompletion(pipelineJobInfo);
                 if (wakeupJobQueue) {
                     //if the pipeline has more steps, wake up the job queue
                     CommandManagerFactory.getCommandManager().wakeupJobQueue();
@@ -166,8 +165,8 @@ public class PipelineHandler {
             try {
                 CommandManagerFactory.getCommandManager().terminateJob(processingJobId);
             }
-            catch (JobTerminationException e) {
-                log.error("Error terminating job #"+processingJobId+" in pipeline "+jobInfo.getJobNumber(), e);
+            catch (Throwable t) {
+                log.error("Error terminating job #"+processingJobId+" in pipeline "+jobInfo.getJobNumber(), t);
                 return;
             }
             return;
@@ -262,24 +261,23 @@ public class PipelineHandler {
      * @param completionDate
      * @return
      */
-    public static boolean handleJobCompletion(int completedJobId) {
-        if (completedJobId < 0) {
-            log.error("Invalid jobNumber: "+completedJobId);
+    public static boolean handleJobCompletion(final JobInfo completedJobInfo) {
+        if (completedJobInfo==null) {
+            log.error("completedJobInfo==null");
+            return false;
         }
-        JobInfo completedJobInfo = null;
         JobInfo parentJobInfo=null;
         int parentJobId = -1;
         final boolean isInTransaction=HibernateUtil.isInTransaction();
         try {
             AnalysisDAO ds = new AnalysisDAO();
-            completedJobInfo = ds.getJobInfo(completedJobId);
             parentJobId = completedJobInfo._getParentJobNumber();
             if (parentJobId >= 0) {
                 parentJobInfo = ds.getJobInfo(parentJobId);
             }
         }
         catch (Throwable t) {
-            log.error("Unexpected exception in handleJobCompletion("+completedJobId+")", t);
+            log.error("Unexpected exception in handleJobCompletion("+completedJobInfo.getJobNumber()+")", t);
         }
         finally {
             if (!isInTransaction) {
