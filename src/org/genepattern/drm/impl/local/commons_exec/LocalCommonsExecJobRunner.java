@@ -30,6 +30,7 @@ import org.genepattern.drm.DrmJobStatus;
 import org.genepattern.drm.DrmJobSubmission;
 import org.genepattern.drm.JobRunner;
 import org.genepattern.server.executor.CommandExecutorException;
+import org.genepattern.server.executor.CommandProperties;
 
 /**
  * An implementation of a local job runner using the Apache Commons Exec package.
@@ -48,14 +49,41 @@ import org.genepattern.server.executor.CommandExecutorException;
 public class LocalCommonsExecJobRunner implements JobRunner {
     private static final Logger log = Logger.getLogger(LocalCommonsExecJobRunner.class);
 
+    private long getPendingInterval() {
+        return 0L;
+        // for debugging, keep jobs in the pending state for a little while
+        //return 5L+ (Long) Math.round((60.0*1000.0*Math.random()));
+    }
+
+    private int numThreads=-1;
+    
+    public void setCommandProperties(CommandProperties properties) {
+        log.debug("setCommandProperties");
+        String numThreadsProp=null;
+        if (properties != null) {
+            numThreadsProp=properties.getProperty("num.threads");
+        }
+        if (numThreadsProp != null) {
+            try {
+                this.numThreads = Integer.parseInt(numThreadsProp);
+                log.debug("numThreads="+numThreads);
+            }
+            catch (Throwable t) {
+                log.error("Error parsing num.threads="+numThreadsProp);
+            }
+        }
+    }
+
+    public void start() {
+        log.debug("started JobRunner, classname="+this.getClass());
+    }
+
     private ConcurrentMap<Integer,DrmJobStatus> statusMap=new ConcurrentHashMap<Integer, DrmJobStatus>();
     private ConcurrentMap<Integer,Executor> execMap=new ConcurrentHashMap<Integer, Executor>();
     
-    //for debugging, keep jobs in the pending state for a little while
-    private static final long pending_interval_ms=0L;
-    //private static final long pending_interval_ms=30L*1000L;
     private ExecutorService pendingExec=null;
     private ConcurrentMap<Integer,Future<?>> pendingMap=new ConcurrentHashMap<Integer, Future<?>>();
+    
     // more accurate reporting a user-cancelled tasks
     private Set<Integer> cancelledJobs = new HashSet<Integer>();
     
@@ -138,8 +166,9 @@ public class LocalCommonsExecJobRunner implements JobRunner {
     public String startJob(DrmJobSubmission gpJob) throws CommandExecutorException {
         try {
             initStatus(gpJob);
+            final long pending_interval_ms=getPendingInterval();
             if (pending_interval_ms > 0L) {
-                Future<?> f=sleepThenStart(gpJob);
+                Future<?> f=sleepThenStart(pending_interval_ms, gpJob);
                 pendingMap.put(gpJob.getGpJobNo(), f);
             }
             else {
@@ -154,7 +183,7 @@ public class LocalCommonsExecJobRunner implements JobRunner {
         return ""+gpJob.getGpJobNo();
     }
     
-    private Future<?> sleepThenStart(final DrmJobSubmission gpJob) {
+    private Future<?> sleepThenStart(final long pending_interval_ms, final DrmJobSubmission gpJob) {
         if (pendingExec==null) {
             pendingExec=Executors.newSingleThreadExecutor();
         }
@@ -201,6 +230,7 @@ public class LocalCommonsExecJobRunner implements JobRunner {
 
     @Override
     public boolean cancelJob(DrmJobRecord drmJobRecord) throws Exception {
+        log.debug("cancelJob, gpJobNo="+drmJobRecord.getGpJobNo());
         boolean isPending=false;
         Future<?> f=pendingMap.remove(drmJobRecord.getGpJobNo());
         if (f != null) {
@@ -245,10 +275,18 @@ public class LocalCommonsExecJobRunner implements JobRunner {
             }
         }
     }
-    
-    private Executor runJobNoWait(final DrmJobSubmission gpJob) throws ExecutionException, IOException {
-        CommandLine cl = initCommand(gpJob);
-        
+
+    private CommandLine initCommand(final DrmJobSubmission gpJob) {
+        boolean handleQuoting=false;
+        List<String> gpCommand = gpJob.getCommandLine();
+        CommandLine cl=new CommandLine(gpCommand.get(0));
+        for(int i=1; i<gpCommand.size(); ++i) {
+            cl.addArgument(gpCommand.get(i), handleQuoting);
+        }
+        return cl;
+    }
+
+    private Executor initExecutorForJob(final DrmJobSubmission gpJob) throws ExecutionException, IOException {
         File outfile = gpJob.getRelativeFile(gpJob.getStdoutFile());
         File errfile = gpJob.getRelativeFile(gpJob.getStderrFile());
         File infile = gpJob.getRelativeFile(gpJob.getStdinFile());
@@ -265,7 +303,6 @@ public class LocalCommonsExecJobRunner implements JobRunner {
                 new FileOutputStream(errfile));
         }
         
-        final CmdResultHandler resultHandler=new CmdResultHandler(gpJob.getGpJobNo());
         final ExecuteWatchdog watchDog = new ExecuteWatchdog(ExecuteWatchdog.INFINITE_TIMEOUT);
         final ShutdownHookProcessDestroyer processDestroyer = new ShutdownHookProcessDestroyer();
         
@@ -274,18 +311,24 @@ public class LocalCommonsExecJobRunner implements JobRunner {
         exec.setStreamHandler( pumpStreamHandler );
         exec.setWatchdog(watchDog);
         exec.setProcessDestroyer(processDestroyer);
-        exec.execute(cl, resultHandler);
         return exec;
     }
 
-    private CommandLine initCommand(final DrmJobSubmission gpJob) {
-        boolean handleQuoting=false;
-        List<String> gpCommand = gpJob.getCommandLine();
-        CommandLine cl=new CommandLine(gpCommand.get(0));
-        for(int i=1; i<gpCommand.size(); ++i) {
-            cl.addArgument(gpCommand.get(i), handleQuoting);
-        }
-        return cl;
+    private Executor runJobNoWait(final DrmJobSubmission gpJob) throws ExecutionException, IOException {
+        Executor exec=initExecutorForJob(gpJob);
+        CommandLine cl = initCommand(gpJob);
+        final CmdResultHandler resultHandler=new CmdResultHandler(gpJob.getGpJobNo());
+        exec.execute(cl, resultHandler);
+        
+        return exec;
+    }
+    
+    private void runJobAndWait(final DrmJobSubmission gpJob) throws InterruptedException, ExecutionException, IOException {
+        Executor exec=initExecutorForJob(gpJob);
+        CommandLine cl = initCommand(gpJob);
+        final CmdResultHandler resultHandler=new CmdResultHandler(gpJob.getGpJobNo());
+        exec.execute(cl, resultHandler);
+        resultHandler.waitFor();
     }
 
 }
