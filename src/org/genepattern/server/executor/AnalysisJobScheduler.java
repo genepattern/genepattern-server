@@ -29,10 +29,10 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 import org.apache.log4j.Logger;
-import org.genepattern.server.database.HibernateUtil;
-import org.genepattern.server.domain.JobStatus;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
+import org.genepattern.server.database.HibernateUtil;
+import org.genepattern.server.domain.JobStatus;
 import org.genepattern.server.genepattern.GenePatternAnalysisTask;
 import org.genepattern.server.job.input.cache.FileCache;
 import org.genepattern.server.jobqueue.JobQueue;
@@ -335,11 +335,15 @@ public class AnalysisJobScheduler implements Runnable {
             log.error("invalid null arg to terminateJob");
             return;
         }
+        
+        if (log.isDebugEnabled()) {
+            log.debug("terminateJob, gpJobNo="+jobInfo.getJobNumber());
+        }
 
         //note: don't terminate completed jobs
         boolean isFinished = isFinished(jobInfo); 
         if (isFinished) {
-            log.debug("job "+jobInfo.getJobNumber()+"is already finished");
+            log.debug("job #"+jobInfo.getJobNumber()+" is already finished");
             return;
         }
 
