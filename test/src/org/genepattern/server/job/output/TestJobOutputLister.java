@@ -25,7 +25,7 @@ public class TestJobOutputLister {
     private DefaultGpFileTypeFilter filter;
     // check sort by path
     private final String[] expectedPaths=new String[] {
-            "", // <-- working dir, hidden by default filter
+            "./", // <-- working dir, hidden by default filter
             ".gp_job_status",
             ".gp_job_status/readme.txt",
             ".lsf.out",
@@ -64,7 +64,7 @@ public class TestJobOutputLister {
         assertEquals("num files", 15, outputFiles.size());
         
         //expect the first entry to be the job_dir
-        assertEquals("outputFiles[0].path", "", outputFiles.get(0).getPath());
+        assertEquals("outputFiles[0].path", "./", outputFiles.get(0).getPath());
         assertEquals("outputFiles[0].gpFileType", GpFileType.GP_JOB_DIR.name(), outputFiles.get(0).getGpFileType());
 
         //expect the next entry to be an output_dir
