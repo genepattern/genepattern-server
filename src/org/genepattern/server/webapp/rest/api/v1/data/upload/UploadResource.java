@@ -201,13 +201,15 @@ public class UploadResource {
             if(diskInfo.isAboveQuota())
             {
                 //disk usage exceeded so abort the file upload
-                throw new FileUploadException("Disk usage exceeded.");
+                throw new FileUploadException("Disk usage quota exceeded. Disk Usage:" + diskInfo.getDiskUsageFilesTab().getDisplayValue().toUpperCase()
+                        + ". Quota: " + diskInfo.getDiskQuota().getDisplayValue().toUpperCase() + ". Please delete some files from the Files Tab.");
             }
 
             if(diskInfo.isAboveQuota(fileSize))
             {
                 //disk usage exceeded so abort the fail upload
-                throw new FileUploadException("Uploading file will cause disk usage to be exceeded");
+                throw new FileUploadException("Uploading file will cause disk usage to be exceeded. Disk Usage:" + diskInfo.getDiskUsageFilesTab().getDisplayValue().toUpperCase()
+                        + ". Quota: " + diskInfo.getDiskQuota().getDisplayValue().toUpperCase() + ". Please delete some files from the Files Tab.");
             }
 
             GpFilePath file = getUploadFile(userContext, path);

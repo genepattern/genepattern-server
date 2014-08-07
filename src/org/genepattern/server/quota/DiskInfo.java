@@ -99,7 +99,7 @@ public class DiskInfo
 
     public boolean isAboveQuota()
     {
-        return isAboveQuota(-1);
+        return isAboveQuota(0);
     }
 
     public boolean isAboveQuota(long fileSizeInBytes)
