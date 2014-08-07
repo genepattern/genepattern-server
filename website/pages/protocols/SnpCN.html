@@ -117,7 +117,7 @@
                 </li>
                 <li>SNPFileCreator uses the Human Genome of May 2004 (hg17) to include
                     Chromosome and Physical Location columns in the .snp file. By default, it sorts the SNPs
-                    by chromosome and physical location, as required by the SnpViewer module.
+                    by chromosome and physical location, as required by the IGV module.
                 </li>
             </ul>
 
@@ -168,7 +168,7 @@
             <p>CopyNumberDivideByNormals creates one of two files:
             <ul>
                 <li>.cn (default) does not include genotype calls.
-                <li>.xcn includes genetype calls. The SnpViewer module requires genotype calls to detect and display LOH.
+                <li>.xcn includes genetype calls.
             </ul>
             <div class="gpLinks">
                 <ul>
@@ -190,54 +190,25 @@
         </div>
 
         <div class="steps">
-            <h2>Step 4: SnpViewer</h2>
+            <h2>Step 4: IGV</h2>
 
-            <p>SnpViewer displays SNP copy number and loss of heterozygosity (LOH) data using heat maps.
-                By default, the viewer displays all chromosomes. To zoom in on a chromosome, select it from the
-                Chromosome drop-down list in the viewer tool bar. To zoom in on a region of the chromosome,
-                select the <i>zoom in</i> tool and click on the heat map.</p>
+            <p>The <a href="http://www.broadinstitute.org/igv/home">Integrative Genomics Viewer (IGV) </a> is a high-performance visualization tool for interactive exploration of large, integrated genomic datasets. It supports a wide variety of data types, including array-based and next-generation sequence data, and genomic annotations.
+                By default, IGV displays all chromosomes. To zoom in on a chromosome, select it from the chromosome tool bar. </p>
 
             <div class="gpLinks">
                 <ul>
-                    <li><a href="/gp/pages/index.jsf?lsid=SnpViewer" onclick="return openModuleWindow(this, event);"
-                            >Open SnpViewer module</a></li>
-                    <li><a href="/gp/pages/index.jsf?lsid=SnpViewer&dataset.filename=ftp://ftp.broadinstitute.org/pub/genepattern/datasets/protocols/GISTIC_Hind_subset.xcorrected.xcn&sample.info.filename=ftp://ftp.broadinstitute.org/pub/genepattern/datasets/gistic/sample_info_subset.txt&sample.list.filename=ftp://ftp.broadinstitute.org/pub/genepattern/datasets/gistic/sample_list_subset.txt" onclick="return openModuleWindow(this, event);"
-                            >Open SnpViewer module with example data</a></li>
+                    <li><a href="/gp/pages/index.jsf?lsid=IGV" onclick="return openModuleWindow(this, event);"
+                            >Open IGV module</a></li>
+                    <li><a href="/gp/pages/index.jsf?lsid=IGV&input.file=ftp://ftp.broadinstitute.org/pub/genepattern/datasets/protocols/GISTIC_Hind_subset.xcorrected.cn&genomeId=hg19" onclick="return openModuleWindow(this, event);"
+                            >Open IGV module with example data</a></li>
 
                 </ul>
             </div>
-            <h5>Considerations</h5>
-            <ul>
-                <li>To view a .xcn or .cn file that is on your local drive, run the SnpViewer without specifying
-                    any parameters. When the viewer starts, use the File menu to load the file into the viewer.
-                    If you specify a local file as a parameter to the SNPViewer module,
-                    GenePattern copies the file to the GenePattern server, which can be time consuming for a large
-                    .xcn or .cn file.
-                </li>
-                <li>To detect and display LOH calls, the
-                    SnpViewer module requires genotype calls (.xcn file format). The LOH calls are: </p>
-                    <ul>
-                        <li>Loss: AB in normal and A or B in target.</li>
-                        <li>Retained: AB in both normal and target or No Call in normal and AB in target.</li>
-                        <li>Conflict: A or B in normal and AB in target.</li>
-                        <li>Non-informative/no call: A or B in normal or No Call in normal or target.</li>
-                    </ul>
-                </li>
-                <li>By default, the viewer displays all chromosomes. To zoom in on a chromosome, select it from the
-                    Chromosome drop-down list in the viewer tool bar. To zoom in on a region of the chromosome,
-                    select the <i>zoom in</i> tool and click on the heat map.
-                </li>
-                <li>To sort samples by copy number amplification or deletion: zoom in on a chromosome; select the
-                    <i>define a region of interest</i> tool; in the heat map, click the start of the region of interest and
-                    then the end of that region; a red bar to the left of the heat map defines the region of interest;
-                    right-click the red bar and select <i>sort of amplification</i> or <i>sort of deletion</i>.
-                </li>
-            </ul>
 
             <table width="100%" border="0" cellpadding="0" cellspacing="0">
                 <tr>
                     <td align="right">learn more:<br />
-                        <a href="/gp/getTaskDoc.jsp?name=SnpViewer">SnpViewer</a>
+                        <a href="/gp/getTaskDoc.jsp?name=IGV">IGV</a>
                     </td>
                 </tr>
             </table>
