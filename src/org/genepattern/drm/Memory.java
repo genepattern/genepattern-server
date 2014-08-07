@@ -117,7 +117,7 @@ public class Memory {
      * @return a new Memory instance
      */
     public static final Memory fromSizeInBytes(long numBytes) {
-        String displayValue=formatNumBytes(numBytes);
+        String displayValue=JobHelper.getFormattedSize(numBytes);
         return new Memory(numBytes, displayValue);
     }
 
