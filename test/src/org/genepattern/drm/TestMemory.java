@@ -301,7 +301,7 @@ public class TestMemory {
     public void displayValueFromBytes() {
         long numBytes=Memory.fromString("512 MB").getNumBytes();
         Memory actual=Memory.fromSizeInBytes( numBytes );
-        Assert.assertEquals("displayValue", "512 mb", actual.getDisplayValue()); 
+        Assert.assertEquals("displayValue", "512 MB", actual.getDisplayValue());
     }
 
     @Test
