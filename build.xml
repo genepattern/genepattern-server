@@ -57,7 +57,7 @@
         <property name="genepattern.common" value="${genepattern.root}" />
         <property name="genepattern.build" value="${genepattern.root}/build" />
         <property name="defaultInstallDir" value="/xchip/gpint/gpdev03/gp-3.2" />
-        <property name="genepattern.installer" value="${genepattern.root}/installer" />
+        <property name="genepattern.installer" value="${genepattern.root}/installer-2014" />
         <property name="genepattern.package" value="org/genepattern" />
 
         <available file="post-compile.xml" property="post-compile.present" />
@@ -116,9 +116,9 @@
         <delete quiet="true" failonerror="false">
             <fileset dir="src/" includes="**/*.class" />
             <fileset dir="website/" includes="**/*.class" />
-            <fileset dir="installer/GP_server_Build_Output/" includes="**/*" />
-            <fileset dir="installer/server_Build_Output/" includes="**/*" />
-            <fileset dir="installer/" includes=".buildinstaller*.tmp/**" />
+            <fileset dir="installer-2014/GP_server_Build_Output/" includes="**/*" />
+            <fileset dir="installer-2014/server_Build_Output/" includes="**/*" />
+            <fileset dir="installer-2014/" includes=".buildinstaller*.tmp/**" />
             </delete>
         <delete quiet="true" failonerror="false" includeemptydirs="true">
             <fileset dir="build/" includes="**/*" excludes="placeholder.txt, log4j.properties" />
@@ -423,7 +423,7 @@
         <ant antfile="post-compile.xml" dir="${genepattern.root}" />
     </target>
     <!--            classpathref="library.classpath" -->
-    <target depends="init,prepare-compile,common,analysis,clients,build-visualizer-applet" name="website">
+    <target depends="init,prepare-compile,common,analysis,build-visualizer-applet" name="website">
         <mkdir dir="${genepattern.build}/website/classes" />
         <mkdir dir="${genepattern.build}/website/lib" />
         <ant antfile="build.xml" dir="${genepattern.root}/clients/MATLAB" />
@@ -547,7 +547,7 @@
     <target name="installLocal" depends="init, uninstall">
         <!-- install the new one -->
         <copy overwrite="true" 
-              file="./installer/GP_server_Build_Output/Web_Installers/InstData/Linux/NoVM/GPserver.bin"
+              file="./installer-2014/GP_server_Build_Output/Web_Installers/InstData/Linux/NoVM/GPserver.bin"
               todir="./" />
 
         <chmod file="./GPserver.bin" perm="a+rwx" />
@@ -570,7 +570,7 @@
 
     <target name="jspc">
         <property name="webapp.path" value="website" />
-        <property name="tomcat.home" value="installer/gpdist/Tomcat" />
+        <property name="tomcat.home" value="installer-2014/gpdist/Tomcat" />
         <property name="output.dir" value="${webapp.path}/WEB-INF/src" />
         <mkdir dir="${webapp.path}/WEB-INF/src" />
         <delete>
