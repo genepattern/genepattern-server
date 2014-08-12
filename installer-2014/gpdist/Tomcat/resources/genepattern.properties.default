@@ -1,0 +1,220 @@
+# version number
+GenePatternVersion=3.7.0
+tag=12335
+
+# Tomcat http port number
+GENEPATTERN_PORT=8080
+
+# URL base for GenePattern.  To override dynamically constructed URL if needed
+GenePatternURL=http://127.0.0.1:8080/gp/
+# Flag which redirects all users to the fully qualified host name of your server
+redirect.to.fq.host=false
+# Set the fully qualified host name of your server
+fqHostName=127.0.0.1
+
+# servletContextPath, when not using default '/gp'
+GP_Path=/gp
+
+# purgeJobsAfter=-1 to disable, 1-n for number of days to retain before purging jobs
+purgeJobsAfter=7
+# time of day to purge jobs (HH:MM, 24 hour format)
+purgeTime=23:00
+# email address of person to notify for website error messages (eg. JSP precompile failures)
+webmaster=@
+
+# the mail server for sending messages from the GenePattern server
+#smtp.server=smtp.broadinstitute.org
+
+# standard Java task execution environment will have up to 512 MB of memory for each module
+#java_flags=-Xmx512M
+visualizer_java_flags=-Xmx512m
+
+job.results.per.page=10
+
+# Switch to enable password logins. See RegistrationBean.
+require.password=false
+
+# Allow users to input arbitrary network file paths as value to input file input parameters
+allow.input.file.paths=false
+
+#root directory for browsing server if allow.input.file.paths is true. 
+server.browse.file.system.root=/
+
+# Note: The 'input.file.mode' property must be set to 'path'
+#    This setting is here for experimental purposes and for a future release of GP
+#    Options will include 'path', 'copy', 'move', and 'link'
+input.file.mode=path
+
+# web upload directories
+java.io.tmpdir=./temp
+
+# soap upload directory, set in WEB-INF/server-config.wsdd
+# note: if you change this value you must also edit the server-config.wsdd file
+soap.attachment.dir=../temp/attachments
+
+# Switch to display the terms of service for the hosted service
+show.terms.of.service=false
+
+# Event Logging -- disabled by default.  this should not be enabled if using an HSQL database
+event.logging.enabled=false
+
+# Allow users to create new accounts?
+create.account.allowed=true
+
+# Show the link to the registration page on the login page?
+show.registration.link=true
+
+# session timeout interval for logged in sessions, in seconds (default, 4h=14400s)
+session.maxInactiveInterval=14400
+
+#***********************************************************
+# Database Parameters
+#***********************************************************
+# By default the database is accessed by JNDI DataSource
+# make sure any dependent jar files are added to the Tomcat/common/lib directory (e.g. hsqldb.jar or ojdbc14.jar)
+
+# The name of the hibernate configuration file loaded from the Tomcat/webapps/gp/WEB-INF/classes directory
+hibernate.configuration.file=hibernate.cfg.xml
+# you can specify another name for the file which is helpful for customizing an oracle installation
+#hibernate.configuration.file=hibernate.oracle.jndi.cfg.xml
+
+#***********************************************************
+# HSQL Section
+#***********************************************************
+database.vendor=HSQL
+HSQL_port=9001
+HSQL.class=org.hsqldb.Server
+HSQL.args= -port 9001  -database.0 file:../resources/GenePatternDB -dbname.0 xdb
+HSQL.schema=analysis_hypersonic-
+# default table type is memory
+hsqldb.default_table_type=cached
+#if you used a non-default HSQL_port (not 9001) you need to edit the Tomcat/webapps/gp/META-INF/context.xml file                                                                                               
+#e.g. url="jdbc:hsqldb:hsql://127.0.0.1:9001/xdb" 
+#hibernate.connection.datasource=java:comp/env/jdbc/gp/hsql
+
+# **********************************************************
+# Custom Authentication
+# **********************************************************
+#the name of the [optional] IAuthenticationPlugin class
+#authentication.class=org.genepattern.server.auth.DefaultGenePatternAuthentication
+#the name of the [optional] IGroupMembershipPlugin class
+#group.membership.class=org.genepattern.server.auth.XmlGroupMembership
+
+# **********************************************************
+# Job configuration / Server properties 
+#
+# additional configuration settings should be set in the config file, by default, config_default.yaml
+# **********************************************************
+config.file=config_default.yaml
+
+# **********************************************************
+# You probably don't want to edit anything below here!!!
+# **********************************************************
+
+# filename extensions for documentation files
+files.doc=html,htm,xhtml,pdf,rtf,txt,doc,docx
+
+# definitions for standard GenePattern server substition variables
+perl=/usr/bin/perl
+java=/usr/bin/java
+java1.5=/usr/bin/java
+
+r_flags=--no-save --quiet --slave --no-restore
+run_r_path=/Users/tabor/GenePatternServer/Tomcat/webapps/gp/WEB-INF/classes/
+
+# Edit R_HOME to point to R 2.0.1 home directory
+R_HOME=
+R2.5_HOME=/Library/Frameworks/R.framework/Versions/2.5/Resources
+R=<java> -DR_HOME=<R_HOME> -Dr_flags=<r_flags> -cp <run_r_path> RunR
+R2.5=<java> -DR_suppress=<R.suppress.messages.file> -DR_HOME=<R2.5_HOME> -Dr_flags=<r_flags> -cp <run_r_path> RunR
+R.suppress.messages.file=/Users/tabor/GenePatternServer/resources/R_suppress.txt
+# location for patches
+patches=/Users/tabor/GenePatternServer/patches
+# location for ant (for patching)
+ant=<java> -cp <tomcatCommonLib>/tools.jar -jar <tomcatCommonLib>/ant-launcher.jar -Dant.home=<tomcatCommonLib> -lib <tomcatCommonLib>
+
+# Broad Institute module repository url
+ModuleRepositoryURL=http://www.broadinstitute.org/webservices/gpModuleRepository
+DefaultModuleRepositoryURL=http://www.broadinstitute.org/webservices/gpModuleRepository
+ModuleRepositoryURLs=http://www.broadinstitute.org/webservices/gpModuleRepository,http://www.broadinstitute.org/webservices/gparcModuleRepository,http://www.broadinstitute.org/webservices/betaModuleRepository
+
+SuiteRepositoryURL=http://www.broadinstitute.org/webservices/gpModuleRepository/suite
+DefaultSuiteRepositoryURL=http://www.broadinstitute.org/webservices/gpModuleRepository/suite
+SuiteRepositoryURLs=http://www.broadinstitute.org/webservices/genepatternmodulerepository/suite
+
+
+DefaultPatchRepositoryURL=http://www.broadinstitute.org/cgi-bin/cancer/software/genepattern/gp_patch_repository.cgi
+DefaultPatchURL=http://www.broadinstitute.org/cgi-bin/cancer/software/genepattern/gp_patch.cgi
+patchQualifiers=build.tag,os.arch,os.name,os.version,java.version,sun.arch.data.model,sun.cpu.endian,sun.cpu.isalist,sun.os.patch.level,path.separator
+
+# Entries for LSID management
+lsid.authority=tabor.broadinstitute.org
+lsid.show=1
+
+num.threads=20
+
+# directories for files, all relative to GenePatternServer/Tomcat directory
+resources=../resources
+tasklib=../taskLib
+jobs=./webapps/gp/jobResults
+
+# set this to 'true' if you want the system message to automatically popup an alert window
+# systemMessage.enableJavaScriptAlert=false
+
+tomcatCommonLib=/Users/tabor/GenePatternServer/Tomcat/common/lib
+webappDir=/Users/tabor/GenePatternServer/Tomcat/webapps/gp
+
+# genepattern.log file controlled by WEB-INF/classes/log4j.properties:
+log4j.appender.R.File=logs/genepattern.log
+# webserver.log file controlled by WEB-INF/classes/log4j.properties:
+log4j.appender.All.File=logs/webserver.log
+# java.io.tmpdir set in StartGenePatternServer.lax and WEB-INF/web.xml
+
+# number of concurrently running pipelines
+pipeline.num.threads=20
+
+# classpath for pipelines
+#
+pipeline.cp=<webappDir><file.separator>WEB-INF<file.separator>classes/
+    <path.separator><webappDir><file.separator>WEB-INF<file.separator>lib<file.separator>axis-ant.jar/
+    <path.separator><webappDir><file.separator>WEB-INF<file.separator>lib<file.separator>mail.jar/
+    <path.separator><webappDir><file.separator>WEB-INF<file.separator>lib<file.separator>wsdl4j-1.5.1.jar/
+    <path.separator><webappDir><file.separator>WEB-INF<file.separator>lib<file.separator>activation.jar/
+    <path.separator><webappDir><file.separator>WEB-INF<file.separator>lib<file.separator>saaj.jar/
+    <path.separator><webappDir><file.separator>WEB-INF<file.separator>lib<file.separator>jaxrpc.jar/
+    <path.separator><webappDir><file.separator>WEB-INF<file.separator>lib<file.separator>gp-full.jar/
+    <path.separator><webappDir><file.separator>WEB-INF<file.separator>lib<file.separator>log4j-1.2.11.jar/
+    <path.separator><webappDir><file.separator>WEB-INF<file.separator>lib<file.separator>axis.jar/
+    <path.separator><webappDir><file.separator>WEB-INF<file.separator>lib<file.separator>commons-logging-1.0.4.jar/
+    <path.separator><webappDir><file.separator>WEB-INF<file.separator>lib<file.separator>commons-discovery-0.2.jar/
+    <path.separator><webappDir><file.separator>WEB-INF<file.separator>lib<file.separator>jaxb-rt-1.0-ea.jar/
+    <path.separator><webappDir><file.separator>WEB-INF<file.separator>lib<file.separator>dom4j-1.6.1.jar/
+    <path.separator><webappDir><file.separator>WEB-INF<file.separator>lib<file.separator>antlr-2.7.6rc1.jar/
+    <path.separator><webappDir><file.separator>WEB-INF<file.separator>lib<file.separator>cglib-nodep-2.1_3.jar/
+    <path.separator><webappDir><file.separator>WEB-INF<file.separator>lib<file.separator>commons-collections-2.1.1.jar/
+    <path.separator><webappDir><file.separator>WEB-INF<file.separator>lib<file.separator>jdom.jar
+
+# main class for running pipelines
+pipeline.main=org.genepattern.server.webapp.RunPipelineSoap
+
+# args to the vm running the pieline can be supplied here (e.g. extra -Dname=val)
+pipeline.vmargs=-DGenePatternURL=<GenePatternURL>
+
+# required for compatibility with GP 3.1.1 and earlier pipelines
+pipeline.decorator=
+
+installedPatchLSIDs=urn:lsid:broad.mit.edu:cancer.software.genepattern.server.patch:00002:1,urn:lsid:broad.mit.edu:cancer.software.genepattern.server.patch:00002:1,urn:lsid:broad.mit.edu:cancer.software.genepattern.server.patch:00004:1,urn:lsid:broad.mit.edu:cancer.software.genepattern.server.patch:00006:1,urn:lsid:broad.mit.edu:cancer.software.genepattern.server.patch:00007:1,urn:lsid:broad.mit.edu:cancer.software.genepattern.server.patch:00008:1,urn:lsid:broad.mit.edu:cancer.software.genepattern.server.patch:00009:1,urn:lsid:broad.mit.edu:cancer.software.genepattern.server.patch:00012:1
+gp.allowed.clients=Any
+
+# module chooser options
+module.chooser.show.category.view=true
+module.chooser.show.suite.view=true
+module.chooser.show.all.view=true
+module.chooser.show.search=true
+
+# cache TaskInfo in server memory, rather than querying the DB
+# set to 'false' to disable the cache
+taskInfoCache.enable=true
+
+# GenomeSpace options
+#javax.net.ssl.trustStore=./GenePatternServer/resources/gstruststore.prefilled
