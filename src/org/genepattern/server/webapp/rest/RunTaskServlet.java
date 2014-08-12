@@ -5,7 +5,13 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.*;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -22,7 +28,6 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 
-import org.apache.commons.fileupload.FileUploadException;
 import org.apache.log4j.Logger;
 import org.genepattern.codegenerator.CodeGeneratorUtil;
 import org.genepattern.data.pipeline.GetIncludedTasks;
@@ -295,7 +300,7 @@ public class RunTaskServlet extends HttpServlet
 
             //check if there are any batch parameters
             Set<Param> batchParams = initialValues.getBatchParams();
-            Set batchParamNames = new HashSet();
+            Set<String> batchParamNames = new HashSet<String>();
             if(batchParams != null && batchParams.size() > 0)
             {
                 Iterator<Param> batchIt = batchParams.iterator();
@@ -313,16 +318,13 @@ public class RunTaskServlet extends HttpServlet
             final LibdirStrategy libdirStrategy = new LibdirLegacy();
             final TasklibPath filePath = new TasklibPath(libdirStrategy, taskInfo, "paramgroups.json");
             JSONArray paramGroupsJson = loadModuleHelper.getParameterGroupsJson(taskInfo, filePath.getServerFile());
-            final boolean enableExecutorInputParams=ServerConfigurationFactory.instance().getGPBooleanProperty(userContext, JobConfigParams.PROP_ENABLE_EXECUTOR_INPUT_PARAMS, true);
-            if (enableExecutorInputParams) {
-                final JobConfigParams jobConfigParams=JobConfigParams.initJobConfigParams(gpConfig, userContext);
-                if (jobConfigParams != null) {
-                    final JSONObject jobConfigGroupJson=jobConfigParams.getInputParamGroup().toJson();
-                    paramGroupsJson.put(jobConfigGroupJson);
-                    for(final ParameterInfo jobConfigParameterInfo : jobConfigParams.getParams()) {
-                        JSONObject j=this.initParametersJSON(request, taskInfo, jobConfigParameterInfo);
-                        parametersArray.put(j);
-                    }
+            final JobConfigParams jobConfigParams=JobConfigParams.initJobConfigParams(gpConfig, userContext);
+            if (jobConfigParams != null) {
+                final JSONObject jobConfigGroupJson=jobConfigParams.getInputParamGroup().toJson();
+                paramGroupsJson.put(jobConfigGroupJson);
+                for(final ParameterInfo jobConfigParameterInfo : jobConfigParams.getParams()) {
+                    JSONObject jsonObj=RunTaskServlet.initParametersJSON(request, taskInfo, jobConfigParameterInfo);
+                    parametersArray.put(jsonObj);
                 }
             }
 
@@ -454,119 +456,119 @@ public class RunTaskServlet extends HttpServlet
             );
         }
 
-        final boolean enableJobConfigParams=ServerConfigurationFactory.instance().getGPBooleanProperty(userContext, JobConfigParams.PROP_ENABLE_EXECUTOR_INPUT_PARAMS, true);
-        if (enableJobConfigParams) {
+        //final boolean enableJobConfigParams=ServerConfigurationFactory.instance().getGPBooleanProperty(userContext, JobConfigParams.PROP_ENABLE_EXECUTOR_INPUT_PARAMS, true);
+        //if (enableJobConfigParams) {
             return newAddJob(userContext, jobSubmitInfo, request);
-        }
-        else {
-            return origAddJob(userContext, jobSubmitInfo, request);
-        }
+        //}
+        //else {
+        //   return origAddJob(userContext, jobSubmitInfo, request);
+        //}
     }
     
-    /**
-     * 
-     * @param jobSubmitInfo
-     * @param request
-     * @return
-     * 
-     * @deprecated - As of 3.8.1 should use the newer implementation of this method.
-     */
-    private Response origAddJob(final GpContext userContext, final JobSubmitInfo jobSubmitInfo, final HttpServletRequest request) {
-        try
-        {
-            if(jobSubmitInfo.getLsid() == null)
-            {
-                throw new Exception("No lsid received");
-            }
-
-            final JobInputHelper jobInputHelper=new JobInputHelper(userContext, jobSubmitInfo.getLsid());
-
-            TaskInfo taskInfo = getTaskInfo(jobSubmitInfo.getLsid(), userContext.getUserId());
-
-            JSONObject parameters = new JSONObject(jobSubmitInfo.getParameters());
-            ParameterInfo[] pInfoArray = taskInfo.getParameterInfoArray();
-
-            for(ParameterInfo pInfo : pInfoArray)
-            {
-                String parameterName = pInfo.getName();
-                boolean isBatch = isBatchParam(jobSubmitInfo, parameterName);
-                JSONArray valueList;
-
-                if(!parameters.has(parameterName))
-                {
-                    continue;
-                }
-
-                JSONArray groupInfos = parameters.getJSONArray(parameterName);
-
-                for(int g=0;g<groupInfos.length();g++)
-                {
-                    JSONObject groupInfo = groupInfos.getJSONObject(g);
-                    String groupName = groupInfo.getString("name");
-                    Object val = groupInfo.get("values");
-
-                    if (val instanceof JSONArray) {
-                        valueList=(JSONArray) val;
-                    }
-                    else {
-                        valueList = new JSONArray((String)parameters.get(parameterName));
-                    }
-                    for(int v=0; v<valueList.length();v++)
-                    {
-                        if(groupName != null && groupName.length() != 0)
-                        {
-                            jobInputHelper.addSingleOrBatchValue(pInfo, valueList.getString(v), new GroupId(groupName), isBatch);
-                        }
-                        else
-                        {
-                            jobInputHelper.addSingleOrBatchValue(pInfo, valueList.getString(v), isBatch);
-                        }
-                    }
-                }
-            }
-
-            final List<JobInput> batchInputs;
-            batchInputs=jobInputHelper.prepareBatch();
-            final JobReceipt receipt=jobInputHelper.submitBatch(batchInputs);
-
-            
-            //TODO: if necessary, add batch details to the JSON representation
-            String jobId="-1";
-            if (receipt.getJobIds().size()>0) {
-                jobId=receipt.getJobIds().get(0);
-            }
-            ResponseJSON result = new ResponseJSON();
-            result.addChild("jobId", receipt.getJobIds().get(0));
-            if (receipt.getBatchId() != null && receipt.getBatchId().length()>0) {
-                result.addChild("batchId", receipt.getBatchId());
-                request.getSession().setAttribute(JobBean.DISPLAY_BATCH, receipt.getBatchId());
-            }
-            return Response.ok(result.toString()).build();
-        }
-        catch (GpServerException e) {
-            String message = "An error occurred while submitting the job";
-            if(e.getMessage() != null)
-            {
-                message = message + ": " + e.getMessage();
-            }
-            return Response.status(ClientResponse.Status.FORBIDDEN).entity(message).build();
-        }        
-        catch(Throwable t)
-        {
-            String message = "An error occurred while submitting the job";
-            if(t.getMessage() != null)
-            {
-                message = message + ": " + t.getMessage();
-            }
-            log.error(message);
-
-            throw new WebApplicationException(
-                Response.status(Response.Status.INTERNAL_SERVER_ERROR)
-                    .entity(message)
-                    .build()
-            );
-        }
-    }
+//    /**
+//     * 
+//     * @param jobSubmitInfo
+//     * @param request
+//     * @return
+//     * 
+//     * @deprecated - As of 3.8.1 should use the newer implementation of this method.
+//     */
+//    private Response origAddJob(final GpContext userContext, final JobSubmitInfo jobSubmitInfo, final HttpServletRequest request) {
+//        try
+//        {
+//            if(jobSubmitInfo.getLsid() == null)
+//            {
+//                throw new Exception("No lsid received");
+//            }
+//
+//            final JobInputHelper jobInputHelper=new JobInputHelper(userContext, jobSubmitInfo.getLsid());
+//
+//            TaskInfo taskInfo = getTaskInfo(jobSubmitInfo.getLsid(), userContext.getUserId());
+//
+//            JSONObject parameters = new JSONObject(jobSubmitInfo.getParameters());
+//            ParameterInfo[] pInfoArray = taskInfo.getParameterInfoArray();
+//
+//            for(ParameterInfo pInfo : pInfoArray)
+//            {
+//                String parameterName = pInfo.getName();
+//                boolean isBatch = isBatchParam(jobSubmitInfo, parameterName);
+//                JSONArray valueList;
+//
+//                if(!parameters.has(parameterName))
+//                {
+//                    continue;
+//                }
+//
+//                JSONArray groupInfos = parameters.getJSONArray(parameterName);
+//
+//                for(int g=0;g<groupInfos.length();g++)
+//                {
+//                    JSONObject groupInfo = groupInfos.getJSONObject(g);
+//                    String groupName = groupInfo.getString("name");
+//                    Object val = groupInfo.get("values");
+//
+//                    if (val instanceof JSONArray) {
+//                        valueList=(JSONArray) val;
+//                    }
+//                    else {
+//                        valueList = new JSONArray((String)parameters.get(parameterName));
+//                    }
+//                    for(int v=0; v<valueList.length();v++)
+//                    {
+//                        if(groupName != null && groupName.length() != 0)
+//                        {
+//                            jobInputHelper.addSingleOrBatchValue(pInfo, valueList.getString(v), new GroupId(groupName), isBatch);
+//                        }
+//                        else
+//                        {
+//                            jobInputHelper.addSingleOrBatchValue(pInfo, valueList.getString(v), isBatch);
+//                        }
+//                    }
+//                }
+//            }
+//
+//            final List<JobInput> batchInputs;
+//            batchInputs=jobInputHelper.prepareBatch();
+//            final JobReceipt receipt=jobInputHelper.submitBatch(batchInputs);
+//
+//            
+//            //TODO: if necessary, add batch details to the JSON representation
+//            String jobId="-1";
+//            if (receipt.getJobIds().size()>0) {
+//                jobId=receipt.getJobIds().get(0);
+//            }
+//            ResponseJSON result = new ResponseJSON();
+//            result.addChild("jobId", receipt.getJobIds().get(0));
+//            if (receipt.getBatchId() != null && receipt.getBatchId().length()>0) {
+//                result.addChild("batchId", receipt.getBatchId());
+//                request.getSession().setAttribute(JobBean.DISPLAY_BATCH, receipt.getBatchId());
+//            }
+//            return Response.ok(result.toString()).build();
+//        }
+//        catch (GpServerException e) {
+//            String message = "An error occurred while submitting the job";
+//            if(e.getMessage() != null)
+//            {
+//                message = message + ": " + e.getMessage();
+//            }
+//            return Response.status(ClientResponse.Status.FORBIDDEN).entity(message).build();
+//        }        
+//        catch(Throwable t)
+//        {
+//            String message = "An error occurred while submitting the job";
+//            if(t.getMessage() != null)
+//            {
+//                message = message + ": " + t.getMessage();
+//            }
+//            log.error(message);
+//
+//            throw new WebApplicationException(
+//                Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+//                    .entity(message)
+//                    .build()
+//            );
+//        }
+//    }
 
     /**
      * Added this in 3.8.1 release to enable additional job configuration input parameters.

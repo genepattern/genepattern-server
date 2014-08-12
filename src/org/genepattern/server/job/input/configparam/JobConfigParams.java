@@ -30,8 +30,6 @@ import com.google.common.collect.ImmutableList;
 public class JobConfigParams {
     private static Logger log = Logger.getLogger(JobConfigParams.class);
 
-    public static final String PROP_ENABLE_EXECUTOR_INPUT_PARAMS="enableExecutorInputParams";
-    
     /**
      * At runtime, when loading the job input form for a given module for a given user
      * (both specified in the taskContext), initialize a JobConfigParams object
