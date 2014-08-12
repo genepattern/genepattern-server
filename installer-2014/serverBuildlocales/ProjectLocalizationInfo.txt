@@ -1,0 +1,256 @@
+# InstallAnywhere Localization Information and Mapping File
+#
+# This file provides information for the mappings of localization properties
+#     to the action for which the localization is provided.  This file is meant
+#     to be used in conjunction with the custom_xx files found in the same
+#     directory.
+#
+# Notes on the conventions used in this file:
+#     '+--'  denotes a data object that belongs to another given object (it
+#            defines some portion of the properties of its owner object).  This
+#            data object possesses one or more properties that are localizable
+#     '|--'  denotes a parent-child relationship between two objects (typically,
+#            this relationship is represented visually as a hierarchy or nesting
+#            in the Install task of InstallAnywhere's Advanced Designer)
+#     'NoEP' denotes an object that exists in the tree, but does not possess any
+#            externalizable/localizable properties
+#
+#     The relationships described above can be used to help identify the correct
+#     property to configure an object when working with the custom_xx files.
+#
+# Product Name: GenePattern
+# Project File: /xchip/gpdev/users/genepatt/projects/gp-trunk/installer/server.iap_xml
+# Generated:    Wed Aug 14 10:20:34 EDT 2013
+
+
+---- PRE-INSTALL ACTIONS ----
+-- EditVariableTable.3fa71743879a (NoEP)
+-- EditMultipleVariables.ea07e1498b69 (NoEP)
+-- EditVariableTable.3fa77e76879a (NoEP)
+-- EditVariableTable.3fa78898879a (NoEP)
+-- EditMultipleVariables.3fa64fd38790 (NoEP)
+-- GetRegEntry.9c3989d58479 (NoEP)
+-- GetRegEntry.080fed078e8c (NoEP)
+-- CustomAction.fc6ca1dd88e2 (NoEP)
+-- CustomAction.12451eb087c2 (NoEP)
+-- EditVariableTable.0f7e2288a5f1 (NoEP)
+-- ExecuteScript.0efe683aa33d (NoEP)
+-- IntroAction.72a1c5a5b1d6
+   +-- Help.72a1c5a6b1d6
+-- DisplayScrollingMessage.1f3de6dba442
+-- ActionGroup.1885607d9cd2 (NoEP)
+   |-- LicenseAgrAction.1fd0f094a5aa
+   |   +-- Help.1fd0f095a5aa
+   |-- LicenseAgrAction.1fd243c0a5aa
+   |   +-- Help.1fddd0c8a5aa
+   |-- LicenseAgrAction.1fd3acd6a5aa
+   |   +-- Help.1fddd0c9a5aa
+-- DisplayMessage.c6150ff19bc2
+   +-- Help.c6150ff29bc2
+-- InstallDirAction.72a1c5a5b1d7
+   +-- Help.72a1c5a6b1d7
+-- ShortcutLocAction.72a1c5a5b1d8
+   +-- Help.72a1c5a6b1d8
+-- EditMultipleVariables.0ebb85cba1d1 (NoEP)
+-- EditMultipleVariables.0f9a4e91a6af (NoEP)
+-- EditMultipleVariables.1e4b3660a1e6 (NoEP)
+-- AntRunner.edaf3302920a (NoEP)
+-- PlugInAction.40f81d5ca67d (NoEP)
+-- EditVariableTable.ea9dd0159c09 (NoEP)
+-- CustomAction.df4dde6d9259 (NoEP)
+-- GetUserInput.9c15fc95842d
+   +-- GUIGroupData.9c17de94842d
+       +-- GUIComponentData.9c17de95842d
+   +-- Help.9c15fc96842d
+-- GetUserInput.c21cba6a8a3a
+   +-- GUIGroupData.c21cba6b8a3a
+       +-- GUIComponentData.c21cba6a8a3b
+   +-- Help.c224f0dd8a41
+-- ShowDialogAction.d9f737aea213
+-- GetUserInput.d9f35ed8a212
+   +-- GUIGroupData.d9f99b56a213
+       +-- GUIComponentData.d9f99b57a213
+   +-- Help.d9f35ed9a212
+-- CustomAction.41142830a735 (NoEP)
+-- GetUserInput.35173a9ab622
+   +-- GUIGroupData.35179c0eb622
+       +-- GUIComponentData.35179c0fb622
+   +-- Help.35173a9bb622
+-- CustomAction.20be4b82bb15 (NoEP)
+-- CustomAction.caf6f6769fcf (NoEP)
+-- ShowDialogAction.20c28394bb15
+-- EditVariableTable.0f812e51a600 (NoEP)
+-- EditVariableTable.1f6da0dfa4f0 (NoEP)
+-- CustomAction.e1e8a535bbc3 (NoEP)
+-- EditVariableTable.6ce841f6a27b (NoEP)
+-- EditVariableTable.9b05edc69879 (NoEP)
+-- InstallSummary.72a1c5afb1d8
+   +-- VariablePropertyData.a12e5ff38a3f
+   +-- Help.72a1c5b0b1d8
+
+
+---- POST-INSTALL ACTIONS ----
+-- Comment.4791a863b9a2 (NoEP)
+-- EditVariableTable.551e2e128ec8 (NoEP)
+-- ASCIIFileManipulator.9beca9d983e2
+-- SpeedASCIIFileManipulator.98ec1761976e
+-- ASCIIFileManipulator.9598e282995a
+-- ASCIIFileManipulator.9c9d2bb985a5
+-- ASCIIFileManipulator.3371d63db721
+-- ASCIIFileManipulator.da094140a30e
+-- ASCIIFileManipulator.d5531da3a535
+-- ASCIIFileManipulator.0f32ac95bc93
+-- Comment.478ffb01b9a2 (NoEP)
+-- ASCIIFileManipulator.27389a048c8d
+-- Comment.47900c56b9a2 (NoEP)
+-- ASCIIFileManipulator.47811f0cb949
+-- Comment.47929786b9a2 (NoEP)
+-- AntRunner.29228022ac97 (NoEP)
+-- Comment.47947185b9a2 (NoEP)
+-- ExecuteScript.00cba3af8998 (NoEP)
+-- Comment.9d76bb598765 (NoEP)
+-- Comment.9d7603918765 (NoEP)
+-- AntRunner.cfa008388fd9 (NoEP)
+-- ExecuteScript.a14d9fe48b19 (NoEP)
+-- ExecuteScript.1fa279b1ba7e (NoEP)
+-- ExecuteScript.198ffaadb9f4
+-- ExecFile.e73281718b3e (NoEP)
+-- InstallFinishAction.72a1c5b9b1d8
+   +-- Help.72a1c5bab1d8
+-- Comment.47960852b9a2 (NoEP)
+-- ActionGroup.4c51a3899ff7 (NoEP)
+   |-- AntRunner.29732c0dac9c (NoEP)
+   |-- CustomAction.f919e62a9b43 (NoEP)
+   |-- LaunchDefaultBrowser.9bf31d129263
+   |-- Exec.fed8b687bcbd
+   |-- ShowDialogAction.b32d08ccbb95
+
+
+---- PRE-UNINSTALL ACTIONS ----
+-- UninstallIntroAction.986089148a46
+   +-- Help.986089158a46
+-- EditMultipleVariables.00b1bfaa8957 (NoEP)
+-- PlugInUAction.20d67fe1bbba (NoEP)
+-- UCustomAction.20d72bb1bbbc (NoEP)
+-- ShowDialogAction.20d77b1abbbc
+-- UCustomAction.00b153208957 (NoEP)
+-- UninstallIntroActionConsole.986089148a47
+
+
+---- POST-UNINSTALL ACTIONS ----
+-- UninstallCompleteAction.986089158a4a
+-- UninstallCompleteActionConsole.986089158a4b
+
+
+---- EXTERNAL ID TREE ----
+-- Installer.72a1c4b4b1bf
+   +-- Help.72a1c4beb1c0
+   +-- InstallFrameConfigurator.72a1c4e6b1c1
+   +-- InstallerInfoData.72a1c4c9b1c0
+   |-- InstallSet.72a1c57eb1d3
+   |-- InstallBundle.72a1c57db1d4
+   |-- InstallBundle.72a1c587b1d4
+   |-- OSHost.6d3e31d789ec (NoEP)
+   |   |-- GhostDirectory.72a1c569b1d2 (NoEP)
+   |   |   |-- ASCIIFileManipulator.06ce7c9e8de1
+   |   |   |-- ASCIIFileManipulator.06c350518dc6
+   |   |   |-- Exec.0081260688de
+   |   |   |-- InstallDirectory.72a1c5c4b1d9 (NoEP)
+   |   |   |   |-- InstallUninstaller.72a1c627b1da
+   |   |   |-- MakeExecutable.1e2286c2bfa5
+   |   |   |-- MakeExecutable.9f66eaecbe01
+   |   |   |-- MakeExecutable.72b26ed9b6d6
+   |   |   |-- MakeExecutable.0a435abfb993
+   |   |   |-- CreateShortcut.1f94aef3ba1c
+   |   |   |-- CreateShortcut.e36a51a49f00
+   |   |   |-- MakeExecutable.cbe07101a254
+   |   |-- GhostDirectory.1e6c27aaa1f5 (NoEP)
+   |       |-- CreateShortcut.1f035f27a3e0
+   |       |-- CreateShortcut.ab3dde1d8fb1
+   |       |-- CreateShortcut.1ff5149fb9a5
+   |       |-- CreateShortcut.e34c5705adcf
+   |       |-- CreateShortcut.1f05a5bba3e1
+   |       |-- CreateShortcut.ab3e464b8fb3
+   |       |-- CreateShortcut.1e6cee84a1fb
+   |       |-- CreateShortcut.a6a9e2578cce
+   |       |-- CreateShortcut.ab0f6a91a55f
+   |       |-- CreateShortcut.cbe0710ca259
+   |-- Billboard.72a1c573b1d2
+
+
+---- LEGEND ----
+AllOrFeaturesActionConsole              ==>      Console: Choose Uninstall Type
+ASCIIFileManipulator                    ==>      Modify Text File - Single File
+ASCIIFileManipulatorZip                 ==>      Modify Text File - In Archive
+Billboard                               ==>      Billboard
+BuildTimeMergeModule                    ==>      Import Merge Module
+ChooseFile                              ==>      Panel: Choose File
+ChooseFolder                            ==>      Panel: Choose Folder
+ChooseInstallSetAction                  ==>      Panel: Choose Install Sets
+ChooseInstallSetActionConsole           ==>      Console: Choose Install Sets
+ChooseJavaVMAction                      ==>      Panel: Choose Java VM
+ChooseJavaVMActionConsole               ==>      Console: Choose Java VM
+CompareRegExpression                    ==>      Match Regular Expression
+CompareVariable                         ==>      Compare InstallAnywhere Variables
+CreateDialog                            ==>      Panel: Get User Input - Simple
+CreateDIMFileShortcut                   ==>      Create Alias, Link, Shortcut to DIM file
+CreateShortcut                          ==>      Create Alias, Link, Shortcut
+CustomizeBundles                        ==>      Panel: Choose Features to Uninstall
+CustomizeBundlesConsole                 ==>      Console: Choose Features to Uninstall
+DisplayMessage                          ==>      Panel: Display Message
+DisplayMessageConsole                   ==>      Console: Display Message
+DisplayScrollingMessage                 ==>      Panel: Scrolling Message
+EditEnvironment                         ==>      Set System Environment Variable
+Exec                                    ==>      Execute Command
+FindFileOrFolder                        ==>      Panel: Find File/Folder
+GetPassword                             ==>      Panel: Get Password
+GetPasswordConsole                      ==>      Console: Get Password
+GetUserInput                            ==>      Panel: Get User Input - Advanced
+GetUserInputConsole                     ==>      Console: Get User Input
+HTMLPanelAction                         ==>      Panel: Display HTML
+i5OSLibraryOverrideConsole              ==>      Console: System i (i5/OS) Override Library Console
+i5OSLibraryOverridePanel                ==>      Panel: System i (i5/OS) Override Library Panel
+i5OSLoginCredential                     ==>      Panel: Get System i (i5/OS) Login Credential
+ImportantNoteAction                     ==>      Panel: Important Note
+ImportantNoteActionConsole              ==>      Console: Important Note
+InstallBundle                           ==>      Product Feature
+InstallCompleteAction                   ==>      Panel: Install Complete
+InstallCompleteActionConsole            ==>      Console: Install Complete
+InstallDirAction                        ==>      Panel: Choose Install Folder
+InstallDirActionConsole                 ==>      Console: Choose Install Folder
+InstallFailedAction                     ==>      Panel: Install Failed
+InstallFailedActionConsole              ==>      Console: Install Failed
+InstallFinishAction                     ==>      Panel: Install Complete
+InstallIFSAction                        ==>      Panel: Choose Remote System i (i5/OS) Install Folder
+InstallPanelAction                      ==>      Panel: Custom Code
+InstallProgressAction                   ==>      Install Progress
+InstallSet                              ==>      Install Set
+InstallSummary                          ==>      Panel: Pre-Install Summary
+InstallSummaryConsole                   ==>      Console: Pre-Install Summary
+InstallUninstaller                      ==>      Create Uninstaller
+IntroAction                             ==>      Panel: Introduction
+IntroActionConsole                      ==>      Console: Introduction
+LaunchDefaultBrowser                    ==>      Launch Default Browser
+LicenseAgrAction                        ==>      Panel: License Agreement
+LicenseAgrActionConsole                 ==>      Console: License Agreement
+MakeExecutable                          ==>      Create LaunchAnywhere for Java Application
+MakeRegEntry                            ==>      Set Windows Registry - Single Entry
+NTServiceController                     ==>      Start, Stop, Pause Windows Service
+PlugInPanelAction                       ==>      Plug-in
+PrintToConsole                          ==>      Output Text to Console
+PromptUserConsole                       ==>      Console: Show Message Console 'Dialog'
+ReadyToInstallActionConsole             ==>      Console: Ready To Install
+SetSerialNumber                         ==>      Panel: Get Serial Number
+SetSerialNumberConsole                  ==>      Console: Get Serial Number
+ShortcutLocAction                       ==>      Panel: Choose Alias, Link, Shortcut Folder
+ShortcutLocActionConsole                ==>      Console: Choose Link Folder
+ShowDialogAction                        ==>      Show Message Dialog
+SpeedASCIIFileManipulator               ==>      Modify Text File - Multiple Files
+Subuninstaller                          ==>      Execute Uninstaller
+UninstallAllOrFeaturesAction            ==>      Panel: Choose Uninstall Type
+UninstallCompleteAction                 ==>      Panel: Uninstall Complete
+UninstallCompleteActionConsole          ==>      Console: Uninstall Complete
+UninstallIntroAction                    ==>      Panel: Uninstaller Introduction
+UninstallIntroActionConsole             ==>      Console: Uninstaller Introduction
+UninstallIsmpSoftware                   ==>      Uninstall InstallShield Universal Software
+UninstallProgressAction                 ==>      Uninstall Progress

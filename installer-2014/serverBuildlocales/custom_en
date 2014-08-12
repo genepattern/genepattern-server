@@ -1,0 +1,762 @@
+# InstallAnywhere Localization File
+#
+# External strings for locale: English (en)
+# See the 'ProjectLocalizationInfo.txt' file in this same directory for information 
+#     regarding mappings between the properties shown below and your InstallAnywhere
+#     project.
+#
+# External/Locale property names can take one of three forms:
+#     <ActionName>.<ReferenceID>.<ActionProperty>          (e.g., Installer.858175031081.productName)
+#     <ActionName>.<ReferenceID>.<ActionProperty>.<Index>  (e.g., Installer.858175031081.installLabels.01)
+#         - where the <ActionProperty> is a Vector and the <Index> represents the place within the
+#           Vector where the value of the property should be inserted
+#     _ia.<SomeProperty>                                   (e.g., _ia.MyCustomCodePanelProperty)
+#         - where <SomeProperty> is used as an identifier for a localized value by custom code
+#
+# External/Locale property values should be plain text strings.  Special or i18n characters
+#     that cannot be represented by ASCII characters should be written using escaped unicode.
+#     - see the utility 'native2ascii' distributed with your JDK
+#
+# Product Name: GenePattern
+# Project File: /xchip/gpdev/users/genepatt/projects/gp-trunk/installer/server.iap_xml
+# Generated:    Wed Aug 14 10:20:34 EDT 2013
+
+
+# ASCIIFileManipulator.06c350518dc6.additionalText=
+ASCIIFileManipulator.06c350518dc6.additionalText=
+
+# ASCIIFileManipulator.06ce7c9e8de1.additionalText=
+ASCIIFileManipulator.06ce7c9e8de1.additionalText=
+
+# ASCIIFileManipulator.0f32ac95bc93.additionalText=
+ASCIIFileManipulator.0f32ac95bc93.additionalText=
+
+# ASCIIFileManipulator.27389a048c8d.additionalText=
+ASCIIFileManipulator.27389a048c8d.additionalText=
+
+# ASCIIFileManipulator.3371d63db721.additionalText=
+ASCIIFileManipulator.3371d63db721.additionalText=
+
+# ASCIIFileManipulator.47811f0cb949.additionalText=
+ASCIIFileManipulator.47811f0cb949.additionalText=
+
+# ASCIIFileManipulator.9598e282995a.additionalText=
+ASCIIFileManipulator.9598e282995a.additionalText=
+
+# ASCIIFileManipulator.9beca9d983e2.additionalText=
+ASCIIFileManipulator.9beca9d983e2.additionalText=
+
+# ASCIIFileManipulator.9c9d2bb985a5.additionalText=
+ASCIIFileManipulator.9c9d2bb985a5.additionalText=
+
+# ASCIIFileManipulator.d5531da3a535.additionalText=
+ASCIIFileManipulator.d5531da3a535.additionalText=
+
+# ASCIIFileManipulator.da094140a30e.additionalText=http.proxyHost=$HTTP_PROXYSERVER$\nhttp.proxyPort=$HTTP_PROXYPORT$\nftp.proxyHost=$HTTP_PROXYSERVER$\nftp.proxyPort=$HTTP_PROXYPORT$\n\n\n\n\n\n
+ASCIIFileManipulator.da094140a30e.additionalText=http.proxyHost=$HTTP_PROXYSERVER$\nhttp.proxyPort=$HTTP_PROXYPORT$\nftp.proxyHost=$HTTP_PROXYSERVER$\nftp.proxyPort=$HTTP_PROXYPORT$\n\n\n\n\n\n
+
+# Billboard.72a1c573b1d2.imageName=billboard_default.png
+Billboard.72a1c573b1d2.imageName=billboard_default.png
+
+# Billboard.72a1c573b1d2.imagePath=com/zerog/ia/installer/images/
+Billboard.72a1c573b1d2.imagePath=com/zerog/ia/installer/images/
+
+# CreateShortcut.1e6cee84a1fb.args=
+CreateShortcut.1e6cee84a1fb.args=
+
+# CreateShortcut.1e6cee84a1fb.destinationName=R
+CreateShortcut.1e6cee84a1fb.destinationName=R
+
+# CreateShortcut.1e6cee84a1fb.workingDir=$USER_INSTALL_DIR$
+CreateShortcut.1e6cee84a1fb.workingDir=$USER_INSTALL_DIR$
+
+# CreateShortcut.1f035f27a3e0.args=
+CreateShortcut.1f035f27a3e0.args=
+
+# CreateShortcut.1f035f27a3e0.destinationName=StartGenePatternServer
+CreateShortcut.1f035f27a3e0.destinationName=StartGenePatternServer
+
+# CreateShortcut.1f035f27a3e0.workingDir=
+CreateShortcut.1f035f27a3e0.workingDir=
+
+# CreateShortcut.1f05a5bba3e1.args=
+CreateShortcut.1f05a5bba3e1.args=
+
+# CreateShortcut.1f05a5bba3e1.destinationName=StopGenePatternServer
+CreateShortcut.1f05a5bba3e1.destinationName=StopGenePatternServer
+
+# CreateShortcut.1f05a5bba3e1.workingDir=
+CreateShortcut.1f05a5bba3e1.workingDir=
+
+# CreateShortcut.1f94aef3ba1c.args=
+CreateShortcut.1f94aef3ba1c.args=
+
+# CreateShortcut.1f94aef3ba1c.destinationName=StartGenePatternServer.app
+CreateShortcut.1f94aef3ba1c.destinationName=StartGenePatternServer.app
+
+# CreateShortcut.1f94aef3ba1c.workingDir=
+CreateShortcut.1f94aef3ba1c.workingDir=
+
+# CreateShortcut.1ff5149fb9a5.args=
+CreateShortcut.1ff5149fb9a5.args=
+
+# CreateShortcut.1ff5149fb9a5.destinationName=StartGenePatternServer.app
+CreateShortcut.1ff5149fb9a5.destinationName=StartGenePatternServer.app
+
+# CreateShortcut.1ff5149fb9a5.workingDir=
+CreateShortcut.1ff5149fb9a5.workingDir=
+
+# CreateShortcut.a6a9e2578cce.args=
+CreateShortcut.a6a9e2578cce.args=
+
+# CreateShortcut.a6a9e2578cce.destinationName=Perl
+CreateShortcut.a6a9e2578cce.destinationName=Perl
+
+# CreateShortcut.a6a9e2578cce.workingDir=$USER_INSTALL_DIR$
+CreateShortcut.a6a9e2578cce.workingDir=$USER_INSTALL_DIR$
+
+# CreateShortcut.ab0f6a91a55f.args=
+CreateShortcut.ab0f6a91a55f.args=
+
+# CreateShortcut.ab0f6a91a55f.destinationName=GenePatternHome.html
+CreateShortcut.ab0f6a91a55f.destinationName=GenePatternHome.html
+
+# CreateShortcut.ab0f6a91a55f.workingDir=
+CreateShortcut.ab0f6a91a55f.workingDir=
+
+# CreateShortcut.ab3dde1d8fb1.args=
+CreateShortcut.ab3dde1d8fb1.args=
+
+# CreateShortcut.ab3dde1d8fb1.destinationName=StartGenePatternServer
+CreateShortcut.ab3dde1d8fb1.destinationName=StartGenePatternServer
+
+# CreateShortcut.ab3dde1d8fb1.workingDir=
+CreateShortcut.ab3dde1d8fb1.workingDir=
+
+# CreateShortcut.ab3e464b8fb3.args=
+CreateShortcut.ab3e464b8fb3.args=
+
+# CreateShortcut.ab3e464b8fb3.destinationName=StopGenePatternServer
+CreateShortcut.ab3e464b8fb3.destinationName=StopGenePatternServer
+
+# CreateShortcut.ab3e464b8fb3.workingDir=
+CreateShortcut.ab3e464b8fb3.workingDir=
+
+# CreateShortcut.cbe0710ca259.args=
+CreateShortcut.cbe0710ca259.args=
+
+# CreateShortcut.cbe0710ca259.destinationName=GenePattern
+CreateShortcut.cbe0710ca259.destinationName=GenePattern
+
+# CreateShortcut.cbe0710ca259.workingDir=
+CreateShortcut.cbe0710ca259.workingDir=
+
+# CreateShortcut.e34c5705adcf.args=
+CreateShortcut.e34c5705adcf.args=
+
+# CreateShortcut.e34c5705adcf.destinationName=StopGenePatternServer.app
+CreateShortcut.e34c5705adcf.destinationName=StopGenePatternServer.app
+
+# CreateShortcut.e34c5705adcf.workingDir=
+CreateShortcut.e34c5705adcf.workingDir=
+
+# CreateShortcut.e36a51a49f00.args=
+CreateShortcut.e36a51a49f00.args=
+
+# CreateShortcut.e36a51a49f00.destinationName=StopGenePatternServer.app
+CreateShortcut.e36a51a49f00.destinationName=StopGenePatternServer.app
+
+# CreateShortcut.e36a51a49f00.workingDir=
+CreateShortcut.e36a51a49f00.workingDir=
+
+# DisplayMessage.c6150ff19bc2.message=GenePattern will install R version 2.5.0 into this directory:\n\n     /Library/Frameworks/R.framework/Versions/2.5\n\nIf you do not have write permission to this directory, the GenePattern server  will still install successfully, but R-language modules will be unusable. 
+DisplayMessage.c6150ff19bc2.message=GenePattern will install R version 2.5.0 into this directory:\n\n     /Library/Frameworks/R.framework/Versions/2.5\n\nIf you do not have write permission to this directory, the GenePattern server  will still install successfully, but R-language modules will be unusable. 
+
+# DisplayMessage.c6150ff19bc2.stepTitle=Install R version 2.5.0
+DisplayMessage.c6150ff19bc2.stepTitle=Install R version 2.5.0
+
+# DisplayScrollingMessage.1f3de6dba442.messageText=Please install R2.5 on your computer before proceeding further with the GenePattern installation. R is required to run some analysis modules (e.g. SVM). If you do not install R, GenePattern will still function. \n<br><br>The GenePattern server configuration step in the installation will ask you to enter the directory where R is installed. Default installation of R on Linux is /usr/lib/R. \n<br><br>\nR is freely available from http://www.r-project.org/.
+DisplayScrollingMessage.1f3de6dba442.messageText=Please install R2.5 on your computer before proceeding further with the GenePattern installation. R is required to run some analysis modules (e.g. SVM). If you do not install R, GenePattern will still function. \n<br><br>The GenePattern server configuration step in the installation will ask you to enter the directory where R is installed. Default installation of R on Linux is /usr/lib/R. \n<br><br>\nR is freely available from http://www.r-project.org/.
+
+# DisplayScrollingMessage.1f3de6dba442.stepPrompt=Please install R on your computer before proceeding...
+DisplayScrollingMessage.1f3de6dba442.stepPrompt=Please install R on your computer before proceeding...
+
+# DisplayScrollingMessage.1f3de6dba442.title=Install R for your system
+DisplayScrollingMessage.1f3de6dba442.title=Install R for your system
+
+# Exec.0081260688de.commandLineArgs=chmod 775 $USER_INSTALL_DIR$$/$StartR.app$/$RAqua.app$/$Contents$/$bin$/$*
+Exec.0081260688de.commandLineArgs=chmod 775 $USER_INSTALL_DIR$$/$StartR.app$/$RAqua.app$/$Contents$/$bin$/$*
+
+# Exec.fed8b687bcbd.commandLineArgs=/usr/bin/konqueror http://127.0.0.1:$GENEPATTERN_PORT$/gp/pages/login.jsf?username=$webmaster$&origin=../installFrame.jsp
+Exec.fed8b687bcbd.commandLineArgs=/usr/bin/konqueror http://127.0.0.1:$GENEPATTERN_PORT$/gp/pages/login.jsf?username=$webmaster$&origin=../installFrame.jsp
+
+# ExecuteScript.198ffaadb9f4.dialogLabel=Executing Installation Script...
+ExecuteScript.198ffaadb9f4.dialogLabel=Executing Installation Script...
+
+# GetUserInput.35173a9ab622.prompt=Please enter a string to use as your LSID authority. This must be unique for this server.  Recommended authority string is the webserver port followed by  user name followed by full host name of this server (e.g. 8080.user.computer3.broadinstitute.org)
+GetUserInput.35173a9ab622.prompt=Please enter a string to use as your LSID authority. This must be unique for this server.  Recommended authority string is the webserver port followed by  user name followed by full host name of this server (e.g. 8080.user.computer3.broadinstitute.org)
+
+# GetUserInput.35173a9ab622.title=LSID Authority
+GetUserInput.35173a9ab622.title=LSID Authority
+
+# GetUserInput.9c15fc95842d.prompt=Below are the settings that the GenePattern server will use
+GetUserInput.9c15fc95842d.prompt=Below are the settings that the GenePattern server will use
+
+# GetUserInput.9c15fc95842d.title=GenePattern server configuration
+GetUserInput.9c15fc95842d.title=GenePattern server configuration
+
+# GetUserInput.c21cba6a8a3a.prompt=Below are the settings that the GenePattern server will use
+GetUserInput.c21cba6a8a3a.prompt=Below are the settings that the GenePattern server will use
+
+# GetUserInput.c21cba6a8a3a.title=GenePattern server configuration
+GetUserInput.c21cba6a8a3a.title=GenePattern server configuration
+
+# GetUserInput.d9f35ed8a212.prompt=Please provide the proxy server and port for your web (HTTP) proxy.   \nIf your proxy requires authentication you will need to provide the username and password to the server at the end of the installation process in order to be able to install GenePattern modules from the catalog.
+GetUserInput.d9f35ed8a212.prompt=Please provide the proxy server and port for your web (HTTP) proxy.   \nIf your proxy requires authentication you will need to provide the username and password to the server at the end of the installation process in order to be able to install GenePattern modules from the catalog.
+
+# GetUserInput.d9f35ed8a212.title=Web Proxy Settings
+GetUserInput.d9f35ed8a212.title=Web Proxy Settings
+
+# GUIComponentData.1ec8e994a387.defaultValue=$R25$
+GUIComponentData.1ec8e994a387.defaultValue=$R25$
+
+# GUIComponentData.1ec8e994a387.label=R 2.5:
+GUIComponentData.1ec8e994a387.label=R 2.5:
+
+# GUIComponentData.1eca62c7a38b.defaultValue=$PERL$
+GUIComponentData.1eca62c7a38b.defaultValue=$PERL$
+
+# GUIComponentData.1eca62c7a38b.label=Perl:
+GUIComponentData.1eca62c7a38b.label=Perl:
+
+# GUIComponentData.35179c0fb622.defaultValue=$LSID_AUTHORITY$
+GUIComponentData.35179c0fb622.defaultValue=$LSID_AUTHORITY$
+
+# GUIComponentData.35179c0fb622.label=LSID Authority
+GUIComponentData.35179c0fb622.label=LSID Authority
+
+# GUIComponentData.9c166848842d.defaultValue=$GENEPATTERN_PORT$
+GUIComponentData.9c166848842d.defaultValue=$GENEPATTERN_PORT$
+
+# GUIComponentData.9c166848842d.label=webserver port:
+GUIComponentData.9c166848842d.label=webserver port:
+
+# GUIComponentData.9c17de95842d.defaultValue=$webmaster$
+GUIComponentData.9c17de95842d.defaultValue=$webmaster$
+
+# GUIComponentData.9c17de95842d.label=email address to notify for problems:
+GUIComponentData.9c17de95842d.label=email address to notify for problems:
+
+# GUIComponentData.9c185f71842d.defaultValue=$purgeJobsAfter$
+GUIComponentData.9c185f71842d.defaultValue=$purgeJobsAfter$
+
+# GUIComponentData.9c185f71842d.label=# days to hold data before purging:
+GUIComponentData.9c185f71842d.label=# days to hold data before purging:
+
+# GUIComponentData.9c193ed1842d.defaultValue=$purgeTime$
+GUIComponentData.9c193ed1842d.defaultValue=$purgeTime$
+
+# GUIComponentData.9c193ed1842d.label=time of  day to run job purge:
+GUIComponentData.9c193ed1842d.label=time of  day to run job purge:
+
+# GUIComponentData.9d917cd487f9.defaultValue=$HSQL_port$
+GUIComponentData.9d917cd487f9.defaultValue=$HSQL_port$
+
+# GUIComponentData.9d917cd487f9.label=HSQL port:
+GUIComponentData.9d917cd487f9.label=HSQL port:
+
+# GUIComponentData.c21cba6a8a3b.defaultValue=$webmaster$
+GUIComponentData.c21cba6a8a3b.defaultValue=$webmaster$
+
+# GUIComponentData.c21cba6a8a3b.label=email address to notify for problems:
+GUIComponentData.c21cba6a8a3b.label=email address to notify for problems:
+
+# GUIComponentData.c21cba6a8a3c.defaultValue=$purgeJobsAfter$
+GUIComponentData.c21cba6a8a3c.defaultValue=$purgeJobsAfter$
+
+# GUIComponentData.c21cba6a8a3c.label=# days to hold data before purging:
+GUIComponentData.c21cba6a8a3c.label=# days to hold data before purging:
+
+# GUIComponentData.c21cba6a8a3d.defaultValue=$purgeTime$
+GUIComponentData.c21cba6a8a3d.defaultValue=$purgeTime$
+
+# GUIComponentData.c21cba6a8a3d.label=time of  day to run job purge:
+GUIComponentData.c21cba6a8a3d.label=time of  day to run job purge:
+
+# GUIComponentData.c21cba6a8a3e.defaultValue=$GENEPATTERN_PORT$
+GUIComponentData.c21cba6a8a3e.defaultValue=$GENEPATTERN_PORT$
+
+# GUIComponentData.c21cba6a8a3e.label=webserver port:
+GUIComponentData.c21cba6a8a3e.label=webserver port:
+
+# GUIComponentData.c21cba6a8a3f.defaultValue=$HSQL_port$
+GUIComponentData.c21cba6a8a3f.defaultValue=$HSQL_port$
+
+# GUIComponentData.c21cba6a8a3f.label=HSQL port:
+GUIComponentData.c21cba6a8a3f.label=HSQL port:
+
+# GUIComponentData.c21cba6a8a41.defaultValue=$PERL$
+GUIComponentData.c21cba6a8a41.defaultValue=$PERL$
+
+# GUIComponentData.c21cba6a8a41.label=Perl:
+GUIComponentData.c21cba6a8a41.label=Perl:
+
+# GUIComponentData.d9f99b57a213.defaultValue=
+GUIComponentData.d9f99b57a213.defaultValue=
+
+# GUIComponentData.d9f99b57a213.label=Proxy Server
+GUIComponentData.d9f99b57a213.label=Proxy Server
+
+# GUIComponentData.d9f9aa99a213.defaultValue=
+GUIComponentData.d9f9aa99a213.defaultValue=
+
+# GUIComponentData.d9f9aa99a213.label=Proxy Port
+GUIComponentData.d9f9aa99a213.label=Proxy Port
+
+# GUIGroupData.1ec8e993a387.caption=
+GUIGroupData.1ec8e993a387.caption=
+
+# GUIGroupData.1eca62c6a38b.caption=
+GUIGroupData.1eca62c6a38b.caption=
+
+# GUIGroupData.35179c0eb622.caption=
+GUIGroupData.35179c0eb622.caption=
+
+# GUIGroupData.9c166847842d.caption=
+GUIGroupData.9c166847842d.caption=
+
+# GUIGroupData.9c17de94842d.caption=
+GUIGroupData.9c17de94842d.caption=
+
+# GUIGroupData.9c185f70842d.caption=
+GUIGroupData.9c185f70842d.caption=
+
+# GUIGroupData.9c193ed0842d.caption=
+GUIGroupData.9c193ed0842d.caption=
+
+# GUIGroupData.9d917cd387f9.caption=
+GUIGroupData.9d917cd387f9.caption=
+
+# GUIGroupData.c21cba6b8a3a.caption=
+GUIGroupData.c21cba6b8a3a.caption=
+
+# GUIGroupData.c21cba6b8a3b.caption=
+GUIGroupData.c21cba6b8a3b.caption=
+
+# GUIGroupData.c21cba6b8a3c.caption=
+GUIGroupData.c21cba6b8a3c.caption=
+
+# GUIGroupData.c21cba6b8a3d.caption=
+GUIGroupData.c21cba6b8a3d.caption=
+
+# GUIGroupData.c21cba6b8a3e.caption=
+GUIGroupData.c21cba6b8a3e.caption=
+
+# GUIGroupData.c21cba6b8a40.caption=
+GUIGroupData.c21cba6b8a40.caption=
+
+# GUIGroupData.d9f99b56a213.caption=
+GUIGroupData.d9f99b56a213.caption=
+
+# GUIGroupData.d9f9aa98a213.caption=
+GUIGroupData.d9f9aa98a213.caption=
+
+# InstallBundle.72a1c57db1d4.bundleName=Application
+InstallBundle.72a1c57db1d4.bundleName=Application
+
+# InstallBundle.72a1c57db1d4.description=This installs the application feature.
+InstallBundle.72a1c57db1d4.description=This installs the application feature.
+
+# InstallBundle.72a1c587b1d4.bundleName=Help
+InstallBundle.72a1c587b1d4.bundleName=Help
+
+# InstallBundle.72a1c587b1d4.description=This installs the help feature.
+InstallBundle.72a1c587b1d4.description=This installs the help feature.
+
+# InstallDirAction.72a1c5a5b1d7.additionalText=
+InstallDirAction.72a1c5a5b1d7.additionalText=
+
+# InstallDirAction.72a1c5a5b1d7.prompt=Where Would You Like to Install?
+InstallDirAction.72a1c5a5b1d7.prompt=Where Would You Like to Install?
+
+# InstallDirAction.72a1c5a5b1d7.stepTitle=Choose Install Folder
+InstallDirAction.72a1c5a5b1d7.stepTitle=Choose Install Folder
+
+# Installer.72a1c4b4b1bf.installLabels.00=Introduction
+Installer.72a1c4b4b1bf.installLabels.00=Introduction
+
+# Installer.72a1c4b4b1bf.installLabels.01=Install R for your system
+Installer.72a1c4b4b1bf.installLabels.01=Install R for your system
+
+# Installer.72a1c4b4b1bf.installLabels.02=Apache Tomcat License Agreement
+Installer.72a1c4b4b1bf.installLabels.02=Apache Tomcat License Agreement
+
+# Installer.72a1c4b4b1bf.installLabels.03=ActiveState Perl License Agreement
+Installer.72a1c4b4b1bf.installLabels.03=ActiveState Perl License Agreement
+
+# Installer.72a1c4b4b1bf.installLabels.04=R License Agreement
+Installer.72a1c4b4b1bf.installLabels.04=R License Agreement
+
+# Installer.72a1c4b4b1bf.installLabels.05=Choose Install Folder
+Installer.72a1c4b4b1bf.installLabels.05=Choose Install Folder
+
+# Installer.72a1c4b4b1bf.installLabels.06=Choose $SHORTCUT_NAME$ Folder
+Installer.72a1c4b4b1bf.installLabels.06=Choose $SHORTCUT_NAME$ Folder
+
+# Installer.72a1c4b4b1bf.installLabels.07=GenePattern server configuration
+Installer.72a1c4b4b1bf.installLabels.07=GenePattern server configuration
+
+# Installer.72a1c4b4b1bf.installLabels.08=Web Proxy Settings
+Installer.72a1c4b4b1bf.installLabels.08=Web Proxy Settings
+
+# Installer.72a1c4b4b1bf.installLabels.09=LSID Authority
+Installer.72a1c4b4b1bf.installLabels.09=LSID Authority
+
+# Installer.72a1c4b4b1bf.installLabels.10=Pre-Installation Summary
+Installer.72a1c4b4b1bf.installLabels.10=Pre-Installation Summary
+
+# Installer.72a1c4b4b1bf.installLabels.11=Installing...
+Installer.72a1c4b4b1bf.installLabels.11=Installing...
+
+# Installer.72a1c4b4b1bf.installLabels.12=Install Complete
+Installer.72a1c4b4b1bf.installLabels.12=Install Complete
+
+# Installer.72a1c4b4b1bf.installLabels.13=Installing...
+Installer.72a1c4b4b1bf.installLabels.13=Installing...
+
+# Installer.72a1c4b4b1bf.installLabels.14=Install Complete
+Installer.72a1c4b4b1bf.installLabels.14=Install Complete
+
+# Installer.72a1c4b4b1bf.installProgressImageName=introImage.png
+Installer.72a1c4b4b1bf.installProgressImageName=introImage.png
+
+# Installer.72a1c4b4b1bf.installProgressImagePath=com/zerog/ia/installer/images/
+Installer.72a1c4b4b1bf.installProgressImagePath=com/zerog/ia/installer/images/
+
+# Installer.72a1c4b4b1bf.panelImageName=introImage.png
+Installer.72a1c4b4b1bf.panelImageName=introImage.png
+
+# Installer.72a1c4b4b1bf.panelImagePath=com/zerog/ia/installer/images/
+Installer.72a1c4b4b1bf.panelImagePath=com/zerog/ia/installer/images/
+
+# Installer.72a1c4b4b1bf.rulesFailedMessage=The installer cannot run on your configuration. It will now quit.
+Installer.72a1c4b4b1bf.rulesFailedMessage=The installer cannot run on your configuration. It will now quit.
+
+# InstallerInfoData.72a1c4c9b1c0.email=gp-help@broadinstitute.org
+InstallerInfoData.72a1c4c9b1c0.email=gp-help@broadinstitute.org
+
+# InstallerInfoData.72a1c4c9b1c0.installerName=GPserver
+InstallerInfoData.72a1c4c9b1c0.installerName=GPserver
+
+# InstallerInfoData.72a1c4c9b1c0.installerTitle=GenePattern
+InstallerInfoData.72a1c4c9b1c0.installerTitle=GenePattern
+
+# InstallerInfoData.72a1c4c9b1c0.productName=GenePattern
+InstallerInfoData.72a1c4c9b1c0.productName=GenePattern
+
+# InstallerInfoData.72a1c4c9b1c0.vendorName=Broad Institute, MIT
+InstallerInfoData.72a1c4c9b1c0.vendorName=Broad Institute, MIT
+
+# InstallerInfoData.72a1c4c9b1c0.vendorURL=http://www.broadinstitute.org/cancer/software/genepattern
+InstallerInfoData.72a1c4c9b1c0.vendorURL=http://www.broadinstitute.org/cancer/software/genepattern
+
+# InstallFinishAction.72a1c5b9b1d8.installErrorMessage=The installation of $PRODUCT_NAME$ $version.major$.$version.minor$  is finished, but some errors occurred during the install.   The install log will be opened for your review  when the installer is closed.
+InstallFinishAction.72a1c5b9b1d8.installErrorMessage=The installation of $PRODUCT_NAME$ $version.major$.$version.minor$  is finished, but some errors occurred during the install.   The install log will be opened for your review  when the installer is closed.
+
+# InstallFinishAction.72a1c5b9b1d8.installFatalMessage=The installation of $PRODUCT_NAME$ $version.major$.$version.minor$ is finished, but some serious errors occurred during the install.   The install log will be opened for your review  when the installer is closed.
+InstallFinishAction.72a1c5b9b1d8.installFatalMessage=The installation of $PRODUCT_NAME$ $version.major$.$version.minor$ is finished, but some serious errors occurred during the install.   The install log will be opened for your review  when the installer is closed.
+
+# InstallFinishAction.72a1c5b9b1d8.installSuccessMessage=Congratulations! $PRODUCT_NAME$  $version.major$.$version.minor$ has been installed to:\n     $USER_INSTALL_DIR$\nA web page to complete the installation will open after you close this installer.  Press \"Done\" to close the installer.
+InstallFinishAction.72a1c5b9b1d8.installSuccessMessage=Congratulations! $PRODUCT_NAME$  $version.major$.$version.minor$ has been installed to:\n     $USER_INSTALL_DIR$\nA web page to complete the installation will open after you close this installer.  Press \"Done\" to close the installer.
+
+# InstallFinishAction.72a1c5b9b1d8.installWarningMessage=Congratulations! $PRODUCT_NAME$  $version.major$.$version.minor$ has been installed to:\n     $USER_INSTALL_DIR$\nSome warnings were generated during the install. The install log will be opened for your review  when the installer is closed. Press \"Done\" to quit the installer.
+InstallFinishAction.72a1c5b9b1d8.installWarningMessage=Congratulations! $PRODUCT_NAME$  $version.major$.$version.minor$ has been installed to:\n     $USER_INSTALL_DIR$\nSome warnings were generated during the install. The install log will be opened for your review  when the installer is closed. Press \"Done\" to quit the installer.
+
+# InstallFinishAction.72a1c5b9b1d8.rebootNotNeededMessage=
+InstallFinishAction.72a1c5b9b1d8.rebootNotNeededMessage=
+
+# InstallFinishAction.72a1c5b9b1d8.rebootRecommendedMessage=You should restart the system to complete the installation.
+InstallFinishAction.72a1c5b9b1d8.rebootRecommendedMessage=You should restart the system to complete the installation.
+
+# InstallFinishAction.72a1c5b9b1d8.rebootRequiredMessage=You need to restart the system to complete the installation.
+InstallFinishAction.72a1c5b9b1d8.rebootRequiredMessage=You need to restart the system to complete the installation.
+
+# InstallFinishAction.72a1c5b9b1d8.windowTitle=Install Complete
+InstallFinishAction.72a1c5b9b1d8.windowTitle=Install Complete
+
+# InstallFrameConfigurator.72a1c4e6b1c1.uninstallerTitle=Uninstall $PRODUCT_NAME$
+InstallFrameConfigurator.72a1c4e6b1c1.uninstallerTitle=Uninstall $PRODUCT_NAME$
+
+# InstallSet.72a1c57eb1d3.description=The most common application features will be installed.  This option is recommended for most users.
+InstallSet.72a1c57eb1d3.description=The most common application features will be installed.  This option is recommended for most users.
+
+# InstallSet.72a1c57eb1d3.imageName=typical.png
+InstallSet.72a1c57eb1d3.imageName=typical.png
+
+# InstallSet.72a1c57eb1d3.imagePath=com/zerog/ia/installer/images/
+InstallSet.72a1c57eb1d3.imagePath=com/zerog/ia/installer/images/
+
+# InstallSet.72a1c57eb1d3.installSetName=Typical
+InstallSet.72a1c57eb1d3.installSetName=Typical
+
+# InstallSet.7386bd62b6f4.description=Choose this option to customize the features to be installed.
+InstallSet.7386bd62b6f4.description=Choose this option to customize the features to be installed.
+
+# InstallSet.7386bd62b6f4.imageName=customIcon.png
+InstallSet.7386bd62b6f4.imageName=customIcon.png
+
+# InstallSet.7386bd62b6f4.imagePath=com/zerog/ia/installer/images/
+InstallSet.7386bd62b6f4.imagePath=com/zerog/ia/installer/images/
+
+# InstallSet.7386bd62b6f4.installSetName=Custom
+InstallSet.7386bd62b6f4.installSetName=Custom
+
+# InstallSummary.72a1c5afb1d8.stepPrompt=Please Review the Following Before Continuing:
+InstallSummary.72a1c5afb1d8.stepPrompt=Please Review the Following Before Continuing:
+
+# InstallSummary.72a1c5afb1d8.title=Pre-Installation Summary
+InstallSummary.72a1c5afb1d8.title=Pre-Installation Summary
+
+# InstallUninstaller.72a1c627b1da.destinationName=Uninstall $PRODUCT_NAME$
+InstallUninstaller.72a1c627b1da.destinationName=Uninstall $PRODUCT_NAME$
+
+# IntroAction.72a1c5a5b1d6.message=InstallAnywhere will guide you through the installation of $PRODUCT_NAME$ \n\nVersion: $version.major$.$version.minor$ ($buildtag$) \nBuilt on $builddate$\n\nClick the 'Next' button to proceed to the next screen. If you want to change something on a previous screen, click the 'Previous' button.\n\nYou may cancel this installation at any time by clicking the 'Cancel' button.\n\nGenePattern installs Apache Tomcat, and on some platforms, R and Perl.  You will be presented with the license agreements from each of the relevant software packages for consent prior to configuring the rest of GenePattern and performing the installation.
+IntroAction.72a1c5a5b1d6.message=InstallAnywhere will guide you through the installation of $PRODUCT_NAME$ \n\nVersion: $version.major$.$version.minor$ ($buildtag$) \nBuilt on $builddate$\n\nClick the 'Next' button to proceed to the next screen. If you want to change something on a previous screen, click the 'Previous' button.\n\nYou may cancel this installation at any time by clicking the 'Cancel' button.\n\nGenePattern installs Apache Tomcat, and on some platforms, R and Perl.  You will be presented with the license agreements from each of the relevant software packages for consent prior to configuring the rest of GenePattern and performing the installation.
+
+# IntroAction.72a1c5a5b1d6.stepTitle=Introduction
+IntroAction.72a1c5a5b1d6.stepTitle=Introduction
+
+# LaunchDefaultBrowser.9bf31d129263.urlPath=http://127.0.0.1:$GENEPATTERN_PORT$/gp/pages/login.jsf?username=$webmaster$&origin=../installFrame.jsp
+LaunchDefaultBrowser.9bf31d129263.urlPath=http://127.0.0.1:$GENEPATTERN_PORT$/gp/pages/login.jsf?username=$webmaster$&origin=../installFrame.jsp
+
+# LicenseAgrAction.1fd0f094a5aa.resourceName=LICENSE
+LicenseAgrAction.1fd0f094a5aa.resourceName=LICENSE
+
+# LicenseAgrAction.1fd0f094a5aa.resourcePath=$IA_PROJECT_DIR$/gpdist/Tomcat/
+LicenseAgrAction.1fd0f094a5aa.resourcePath=$IA_PROJECT_DIR$/gpdist/Tomcat/
+
+# LicenseAgrAction.1fd0f094a5aa.stepPrompt=Installation and use of Apache Tomcat requires acceptance of the following license agreement:
+LicenseAgrAction.1fd0f094a5aa.stepPrompt=Installation and use of Apache Tomcat requires acceptance of the following license agreement:
+
+# LicenseAgrAction.1fd0f094a5aa.title=Apache Tomcat License Agreement
+LicenseAgrAction.1fd0f094a5aa.title=Apache Tomcat License Agreement
+
+# LicenseAgrAction.1fd243c0a5aa.existingFilePath=EULA-Community_License.txt
+LicenseAgrAction.1fd243c0a5aa.existingFilePath=EULA-Community_License.txt
+
+# LicenseAgrAction.1fd243c0a5aa.resourceName=EULA-Community_License.txt
+LicenseAgrAction.1fd243c0a5aa.resourceName=EULA-Community_License.txt
+
+# LicenseAgrAction.1fd243c0a5aa.resourcePath=$IA_PROJECT_DIR$/../resources/
+LicenseAgrAction.1fd243c0a5aa.resourcePath=$IA_PROJECT_DIR$/../resources/
+
+# LicenseAgrAction.1fd243c0a5aa.stepPrompt=Installation and use of ActiveState Perl requires acceptance of the following license agreement:
+LicenseAgrAction.1fd243c0a5aa.stepPrompt=Installation and use of ActiveState Perl requires acceptance of the following license agreement:
+
+# LicenseAgrAction.1fd243c0a5aa.title=ActiveState Perl License Agreement
+LicenseAgrAction.1fd243c0a5aa.title=ActiveState Perl License Agreement
+
+# LicenseAgrAction.1fd3acd6a5aa.existingFilePath=RLicense
+LicenseAgrAction.1fd3acd6a5aa.existingFilePath=RLicense
+
+# LicenseAgrAction.1fd3acd6a5aa.resourceName=RLicense
+LicenseAgrAction.1fd3acd6a5aa.resourceName=RLicense
+
+# LicenseAgrAction.1fd3acd6a5aa.resourcePath=$IA_PROJECT_DIR$/../resources/
+LicenseAgrAction.1fd3acd6a5aa.resourcePath=$IA_PROJECT_DIR$/../resources/
+
+# LicenseAgrAction.1fd3acd6a5aa.stepPrompt=Installation and use of R requires acceptance of the following license agreement:
+LicenseAgrAction.1fd3acd6a5aa.stepPrompt=Installation and use of R requires acceptance of the following license agreement:
+
+# LicenseAgrAction.1fd3acd6a5aa.title=R License Agreement
+LicenseAgrAction.1fd3acd6a5aa.title=R License Agreement
+
+# MakeExecutable.0a435abfb993.destinationName=StartGenePatternServer
+MakeExecutable.0a435abfb993.destinationName=StartGenePatternServer
+
+# MakeExecutable.1e2286c2bfa5.destinationName=StopGenePatternServer
+MakeExecutable.1e2286c2bfa5.destinationName=StopGenePatternServer
+
+# MakeExecutable.72b26ed9b6d6.destinationName=StartGenePatternServer
+MakeExecutable.72b26ed9b6d6.destinationName=StartGenePatternServer
+
+# MakeExecutable.9f66eaecbe01.destinationName=StopGenePatternServer
+MakeExecutable.9f66eaecbe01.destinationName=StopGenePatternServer
+
+# MakeExecutable.cbe07101a254.destinationName=GenePattern
+MakeExecutable.cbe07101a254.destinationName=GenePattern
+
+# ShortcutLocAction.72a1c5a5b1d8.macPrompt=Where would you like to create aliases?
+ShortcutLocAction.72a1c5a5b1d8.macPrompt=Where would you like to create aliases?
+
+# ShortcutLocAction.72a1c5a5b1d8.macTitle=Choose Alias Folder
+ShortcutLocAction.72a1c5a5b1d8.macTitle=Choose Alias Folder
+
+# ShortcutLocAction.72a1c5a5b1d8.unixPrompt=Where would you like to create links?
+ShortcutLocAction.72a1c5a5b1d8.unixPrompt=Where would you like to create links?
+
+# ShortcutLocAction.72a1c5a5b1d8.unixTitle=Choose Link Folder
+ShortcutLocAction.72a1c5a5b1d8.unixTitle=Choose Link Folder
+
+# ShortcutLocAction.72a1c5a5b1d8.winPrompt=Where would you like to create product icons?
+ShortcutLocAction.72a1c5a5b1d8.winPrompt=Where would you like to create product icons?
+
+# ShortcutLocAction.72a1c5a5b1d8.winTitle=Choose Shortcut Folder
+ShortcutLocAction.72a1c5a5b1d8.winTitle=Choose Shortcut Folder
+
+# ShowDialogAction.20c28394bb15.buttonLabel=OK
+ShowDialogAction.20c28394bb15.buttonLabel=OK
+
+# ShowDialogAction.20c28394bb15.cancelButtonLabel=Cancel
+ShowDialogAction.20c28394bb15.cancelButtonLabel=Cancel
+
+# ShowDialogAction.20c28394bb15.detailsButtonLabel=Details...
+ShowDialogAction.20c28394bb15.detailsButtonLabel=Details...
+
+# ShowDialogAction.20c28394bb15.label=$GENEPATTERN_RUNNING_MESSAGE$ Port $GENEPATTERN_PORT$ is in use.
+ShowDialogAction.20c28394bb15.label=$GENEPATTERN_RUNNING_MESSAGE$ Port $GENEPATTERN_PORT$ is in use.
+
+# ShowDialogAction.20c28394bb15.narrative=Stop the running GenePattern server to continue.
+ShowDialogAction.20c28394bb15.narrative=Stop the running GenePattern server to continue.
+
+# ShowDialogAction.20c28394bb15.title=GenePattern is already running
+ShowDialogAction.20c28394bb15.title=GenePattern is already running
+
+# ShowDialogAction.20d77b1abbbc.buttonLabel=OK
+ShowDialogAction.20d77b1abbbc.buttonLabel=OK
+
+# ShowDialogAction.20d77b1abbbc.cancelButtonLabel=Cancel
+ShowDialogAction.20d77b1abbbc.cancelButtonLabel=Cancel
+
+# ShowDialogAction.20d77b1abbbc.detailsButtonLabel=Details...
+ShowDialogAction.20d77b1abbbc.detailsButtonLabel=Details...
+
+# ShowDialogAction.20d77b1abbbc.label=GenePattern is running
+ShowDialogAction.20d77b1abbbc.label=GenePattern is running
+
+# ShowDialogAction.20d77b1abbbc.narrative=Please stop the running GenePattern server before uninstalling.
+ShowDialogAction.20d77b1abbbc.narrative=Please stop the running GenePattern server before uninstalling.
+
+# ShowDialogAction.20d77b1abbbc.title=Please Stop GenePattern
+ShowDialogAction.20d77b1abbbc.title=Please Stop GenePattern
+
+# ShowDialogAction.b32d08ccbb95.buttonLabel=OK
+ShowDialogAction.b32d08ccbb95.buttonLabel=OK
+
+# ShowDialogAction.b32d08ccbb95.cancelButtonLabel=Cancel
+ShowDialogAction.b32d08ccbb95.cancelButtonLabel=Cancel
+
+# ShowDialogAction.b32d08ccbb95.detailsButtonLabel=Details...
+ShowDialogAction.b32d08ccbb95.detailsButtonLabel=Details...
+
+# ShowDialogAction.b32d08ccbb95.label=Could not launch browser
+ShowDialogAction.b32d08ccbb95.label=Could not launch browser
+
+# ShowDialogAction.b32d08ccbb95.narrative=The Installer was unable to launch or confirm the launch of your default web browser. Please open the followign URL in your web browser to walk through the final four steps to complete the installation\n\nhttp://localhost:$GENEPATTERN_PORT$/gp/installFrame.jsp
+ShowDialogAction.b32d08ccbb95.narrative=The Installer was unable to launch or confirm the launch of your default web browser. Please open the followign URL in your web browser to walk through the final four steps to complete the installation\n\nhttp://localhost:$GENEPATTERN_PORT$/gp/installFrame.jsp
+
+# ShowDialogAction.b32d08ccbb95.title=Could not launch browser
+ShowDialogAction.b32d08ccbb95.title=Could not launch browser
+
+# ShowDialogAction.d9f737aea213.buttonLabel=No
+ShowDialogAction.d9f737aea213.buttonLabel=No
+
+# ShowDialogAction.d9f737aea213.cancelButtonLabel=Yes
+ShowDialogAction.d9f737aea213.cancelButtonLabel=Yes
+
+# ShowDialogAction.d9f737aea213.detailsButtonLabel=Details...
+ShowDialogAction.d9f737aea213.detailsButtonLabel=Details...
+
+# ShowDialogAction.d9f737aea213.label=Is a web proxy Required?
+ShowDialogAction.d9f737aea213.label=Is a web proxy Required?
+
+# ShowDialogAction.d9f737aea213.narrative=Do you use a web (http) proxy to connect to web sites outside of your organization?
+ShowDialogAction.d9f737aea213.narrative=Do you use a web (http) proxy to connect to web sites outside of your organization?
+
+# ShowDialogAction.d9f737aea213.title=Web proxy Required?
+ShowDialogAction.d9f737aea213.title=Web proxy Required?
+
+# SpeedASCIIFileManipulator.98ec1761976e.additionalText=
+SpeedASCIIFileManipulator.98ec1761976e.additionalText=
+
+# UninstallCompleteAction.986089158a4a.rebootNotNeededMessage=
+UninstallCompleteAction.986089158a4a.rebootNotNeededMessage=
+
+# UninstallCompleteAction.986089158a4a.rebootRecommendedMessage=You should restart the system to complete the uninstallation.
+UninstallCompleteAction.986089158a4a.rebootRecommendedMessage=You should restart the system to complete the uninstallation.
+
+# UninstallCompleteAction.986089158a4a.rebootRequiredMessage=You need to restart the system to complete the uninstallation.
+UninstallCompleteAction.986089158a4a.rebootRequiredMessage=You need to restart the system to complete the uninstallation.
+
+# UninstallCompleteAction.986089158a4a.stepTitle=Uninstall Complete
+UninstallCompleteAction.986089158a4a.stepTitle=Uninstall Complete
+
+# UninstallCompleteAction.986089158a4a.uninstallIncompleteMessage=The following items could not be removed:
+UninstallCompleteAction.986089158a4a.uninstallIncompleteMessage=The following items could not be removed:
+
+# UninstallCompleteAction.986089158a4a.uninstallSuccessMessage=All items were successfully uninstalled.
+UninstallCompleteAction.986089158a4a.uninstallSuccessMessage=All items were successfully uninstalled.
+
+# UninstallCompleteActionConsole.986089158a4b.incompleteMessage=Some items could not be removed.
+UninstallCompleteActionConsole.986089158a4b.incompleteMessage=Some items could not be removed.
+
+# UninstallCompleteActionConsole.986089158a4b.message=All items were successfully uninstalled.
+UninstallCompleteActionConsole.986089158a4b.message=All items were successfully uninstalled.
+
+# UninstallCompleteActionConsole.986089158a4b.title=Uninstall Complete
+UninstallCompleteActionConsole.986089158a4b.title=Uninstall Complete
+
+# UninstallIntroAction.986089148a46.message=About to uninstall...\n\n$PRODUCT_NAME$\n\nThis utility removes GenePattern features known to InstallAnywhere. To remove GenePattern completely, run this utility, delete the GenePattern installation folder, and remove the GenePattern desktop icons. \n\nMac users: To uninstall R, use the utility provided by R.
+UninstallIntroAction.986089148a46.message=About to uninstall...\n\n$PRODUCT_NAME$\n\nThis utility removes GenePattern features known to InstallAnywhere. To remove GenePattern completely, run this utility, delete the GenePattern installation folder, and remove the GenePattern desktop icons. \n\nMac users: To uninstall R, use the utility provided by R.
+
+# UninstallIntroAction.986089148a46.stepTitle=Uninstall $PRODUCT_NAME$
+UninstallIntroAction.986089148a46.stepTitle=Uninstall $PRODUCT_NAME$
+
+# UninstallIntroActionConsole.986089148a47.message=About to uninstall...\n\n$PRODUCT_NAME$\n\nThis will remove features installed by InstallAnywhere.  It will not remove files and folders created after the installation.
+UninstallIntroActionConsole.986089148a47.message=About to uninstall...\n\n$PRODUCT_NAME$\n\nThis will remove features installed by InstallAnywhere.  It will not remove files and folders created after the installation.
+
+# UninstallIntroActionConsole.986089148a47.stepTitle=Uninstall $PRODUCT_NAME$
+UninstallIntroActionConsole.986089148a47.stepTitle=Uninstall $PRODUCT_NAME$
+
+# VariablePropertyData.1f807ddaa544.propertyName=Perl
+VariablePropertyData.1f807ddaa544.propertyName=Perl
+
+# VariablePropertyData.1f807ddaa544.propertyValue=$PERL$
+VariablePropertyData.1f807ddaa544.propertyValue=$PERL$
+
+# VariablePropertyData.335e7b97b4a0.propertyName=purge job results:
+VariablePropertyData.335e7b97b4a0.propertyName=purge job results:
+
+# VariablePropertyData.335e7b97b4a0.propertyValue=at $purgeTime$ after $purgeJobsAfter$ days
+VariablePropertyData.335e7b97b4a0.propertyValue=at $purgeTime$ after $purgeJobsAfter$ days
+
+# VariablePropertyData.734b05dcab9b.propertyName=LSID Authority:
+VariablePropertyData.734b05dcab9b.propertyName=LSID Authority:
+
+# VariablePropertyData.734b05dcab9b.propertyValue=$LSID_AUTHORITY$
+VariablePropertyData.734b05dcab9b.propertyValue=$LSID_AUTHORITY$
+
+# VariablePropertyData.a12e5ff28a41.propertyName=email address to notify for problems:
+VariablePropertyData.a12e5ff28a41.propertyName=email address to notify for problems:
+
+# VariablePropertyData.a12e5ff28a41.propertyValue=$webmaster$
+VariablePropertyData.a12e5ff28a41.propertyValue=$webmaster$
+
+# VariablePropertyData.a12e5ff38a3f.propertyName=server port:
+VariablePropertyData.a12e5ff38a3f.propertyName=server port:
+
+# VariablePropertyData.a12e5ff38a3f.propertyValue=$GENEPATTERN_PORT$
+VariablePropertyData.a12e5ff38a3f.propertyValue=$GENEPATTERN_PORT$
+
+# VariablePropertyData.a12e5ff38a41.propertyName=HSQL port:
+VariablePropertyData.a12e5ff38a41.propertyName=HSQL port:
+
+# VariablePropertyData.a12e5ff38a41.propertyValue=$HSQL_port$
+VariablePropertyData.a12e5ff38a41.propertyValue=$HSQL_port$
+
+# VariablePropertyData.e5013dd2bc1d.propertyName=R2.5
+VariablePropertyData.e5013dd2bc1d.propertyName=R2.5
+
+# VariablePropertyData.e5013dd2bc1d.propertyValue=$R25$$/$bin$/$R
+VariablePropertyData.e5013dd2bc1d.propertyValue=$R25$$/$bin$/$R
+

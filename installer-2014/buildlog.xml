@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<BuildLog created="8/12/14 5:14:50 PM">
+	<BuildInstance name="GenePattern" path="/xchip/gpdev/users/genepatt/projects/gp-trunk/installer-2014/server.iap_xml">
+		<BuildBegin>8/12/14 5:15:04 PM</BuildBegin>
+		<BuildConfiguration Name="Migrated Configuration">
+			<BeginTime>8/12/14 5:15:04 PM</BeginTime>
+			<EndTime>8/12/14 5:19:38 PM</EndTime>
+			<Script status="SUCCESS">
+				<description>InstallAnywhere can not create the software identification tag because the required fields are missing under Project &gt; Software Tag</description>
+			</Script>
+			<InstallResources/>
+			<OtherErrors>
+				<Build Error type="Non-Fatal Error" description="Error finding Win32 VM pack. &quot;SunJRE1.6.0_25Win32.vm&quot; Build using OracleJRE170u45_Windows32.vm (Oracle JRE 1.7.0_45 Windows(x32))."/>
+				<Build Error type="Non-Fatal Error" description="Error finding Win32 VM pack. &quot;SunJRE1.6.0_25Win32.vm&quot; Build using OracleJRE170u45_Windows32.vm (Oracle JRE 1.7.0_45 Windows(x32))."/>
+				<Build Error type="Non-Fatal Error" description="Error finding Linux VM pack. &quot;SunJRE1.6.0_22Linux.vm&quot; Build using SUN_160_B23_LINUX_64Bit.vm (Sun_JRE_160_B23_Linux64Bit)."/>
+			</OtherErrors>
+			<Installers status="SUCCESS">
+				<Platforms>
+					<MacOSNoVM output="MacOSX" status="SUCCESS"></MacOSNoVM>
+					<Win32NoVM output="Windows" status="SUCCESS"></Win32NoVM>
+					<Win32VM output="Windows" status="SUCCESS"></Win32VM>
+					<LinuxNoVM output="Linux" status="SUCCESS"></LinuxNoVM>
+					<LinuxVM output="Linux" status="SUCCESS"></LinuxVM>
+					<PureJava output="Java" status="SUCCESS"></PureJava>
+				</Platforms>
+			</Installers>
+			<BuildList/>
+		</BuildConfiguration>
+		<BuildEnd>8/12/14 5:19:41 PM</BuildEnd>
+	</BuildInstance>
+</BuildLog>

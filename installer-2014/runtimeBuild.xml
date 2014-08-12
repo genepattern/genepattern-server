@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project default="post-install" name="post-install">
+	
+	<target name="backupResources">
+		<copyfile src="${USER_INSTALL_DIR}/resources/genepattern.properties" dest="${USER_INSTALL_DIR}/resources/genepattern.properties.save"/>
+	</target>
+
+	<target name="saveDefaultProperties">
+		<copyfile src="${USER_INSTALL_DIR}/resources/genepattern.properties" dest="${USER_INSTALL_DIR}/resources/genepattern.properties.default"/>
+	</target>
+
+	
+
+	<target name="post-install" depends="saveDefaultProperties"/>
+
+	<target name="sleep5seconds">
+		<sleep seconds="5"/>
+	</target>
+
+    <target name="waitForStartup">
+        <echo>
+        Running target waitForStartup ...
+        url=http://127.0.0.1:${port}/gp/installFrame.jsp
+        </echo>
+        <!-- commented out for debugging
+        <waitfor maxwait="30" maxwaitunit="second">
+            <http url="http://127.0.0.1:${port}/gp/installFrame.jsp"/>
+        </waitfor>
+        -->
+    </target>
+
+     
+	<target name="zip_old_tasks">
+		<delete file="resources/GenePatternDB.lck"/>
+		<echo> BASE= ${basedir}</echo>
+		<java classname="edu.mit.genome.gp.server.ZipTask" fork="true">
+		    <jvmarg value="-Dgenepattern.properties=../resources"/>
+     		    <jvmarg value="-Dlog4j.configuration=webapps/gp/WEB-INF/classes/log4j.properties"/>
+     		    <arg value="../modules_pre_12"/> 
+        		 <classpath>
+			    	<fileset dir="webapps/gp/WEB-INF/lib">
+        				<include name="**/*.jar"/>
+    				</fileset>      
+ 		   		<pathelement location="webapps/gp/WEB-INF/classes"/>
+  			</classpath>
+       	</java>
+	</target>
+
+	<target name="load_old_custom_zipped_tasks">
+		
+		<java classname="edu.mit.genome.gp.server.InstallTasks" fork="true" output="${basedir}/install_old_custom_modules.out">
+		    <jvmarg value="-Dgenepattern.properties=${resourcedir}"/>
+     		    <jvmarg value="-DexcludeTasksFromLSIDAuthority=broad.mit.edu"/>
+     		    <jvmarg value="-Dlog4j.configuration=${basedir}/webapps/gp/WEB-INF/classes/log4j.properties"/>
+     		    <arg value="${oldTasksZipDir}"/> 
+        		 <classpath>
+			    	<fileset dir="${basedir}/webapps/gp/WEB-INF/lib">
+        				<include name="**/*.jar"/>
+    				</fileset>      
+ 		   		<pathelement location="${basedir}/webapps/gp/WEB-INF/classes"/>
+  			</classpath>
+       	</java>
+	</target>
+
+
+
+	<target name="create_database">
+		<java classname="edu.mit.genome.gp.server.CreateDatabase" fork="true">
+		    <jvmarg value="-Dgenepattern.properties=${basedir}/../resources"/>
+     		    <jvmarg value="-Dlog4j.configuration=${basedir}/webapps/gp/WEB-INF/classes/log4j.properties"/>
+     		    <arg value="${basedir}/../modules"/> 
+     		    <classpath>
+     		    	<fileset dir="${basedir}/webapps/gp/WEB-INF/lib">
+        			<include name="**/*.jar"/>
+    			</fileset>      
+ 		   	<pathelement location="${basedir}/webapps/gp/WEB-INF/classes"/>
+     		    </classpath>
+	       	</java>
+	</target>
+
+
+</project>
