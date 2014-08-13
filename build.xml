@@ -124,9 +124,9 @@
             <fileset dir="build/" includes="**/*" excludes="placeholder.txt, log4j.properties" />
         </delete>
         <ant antfile="build.xml" dir="clients/MATLAB" target="clean" />
-        <ant antfile="build.xml" dir="clients/R" target="clean" >
-            <property name="R.client.downloads" location="${R.client.downloads}" />
-        </ant>
+        <!--<ant antfile="build.xml" dir="clients/R" target="clean" >-->
+            <!--<property name="R.client.downloads" location="${R.client.downloads}" />-->
+        <!--</ant>-->
     </target>
     
     <target name="findbugs" depends="init, compile, common" description="Findbugs Test">
