@@ -29,7 +29,9 @@ import org.genepattern.server.DbException;
 import org.genepattern.server.JobInfoManager;
 import org.genepattern.server.JobInfoWrapper;
 import org.genepattern.server.PermissionsHelper;
+import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
+import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.congestion.CongestionManager;
 import org.genepattern.server.dm.UrlUtil;
 import org.genepattern.server.dm.congestion.Congestion;
@@ -54,6 +56,7 @@ public class JobStatusBean {
     private static Logger log = Logger.getLogger(JobStatusBean.class);
     
     private Status jobStatus = null;
+    private boolean showEstimatedQueuetime = false; // by default, don't show the estimated queuetime (GP-5313)
     private JobInfoWrapper jobInfoWrapper = null;
     private JobRunnerJob jrj = null;
     private List<JobInfoWrapper> allSteps = null;
@@ -156,6 +159,8 @@ public class JobStatusBean {
             .jobInfo(jobInfo)
         .build();
         this.jobStatus = new JobStatusLoaderFromDb(gpUrl).loadJobStatus(jobContext);
+        GpConfig gpConfig=ServerConfigurationFactory.instance();
+        this.showEstimatedQueuetime = gpConfig.getGPBooleanProperty(jobContext, GpConfig.PROP_SHOW_ESTIMATED_QUEUETIME, false);
     }
 
     public boolean getCanViewJob() {
@@ -320,6 +325,10 @@ public class JobStatusBean {
         }
     }
 
+    public boolean getShowEstimatedQueuetime() {
+        return showEstimatedQueuetime;
+    }
+    
     /**
      * Get the estimated queue time for the task
      * @return

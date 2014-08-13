@@ -397,9 +397,11 @@
                                                 <h:outputText rendered="#{jobStatusBean.congestionClass == 'congestion-red'}">
                                                     The job queue is experiencing severe wait times for this job. Pending times of several days are possible.
                                                 </h:outputText>
-                                                <br/><br/>
-                                                <strong>Estimated Queueing Time</strong><br/>
-                                                #{jobStatusBean.estimatedQueuetime}
+                                                <h:outputText rendered="#{jobStatusBean.showEstimatedQueuetime}" escape="false">
+                                                    <br/><br/>
+                                                    <strong>Estimated Queueing Time</strong><br/>
+                                                    #{jobStatusBean.estimatedQueuetime}
+                                                </h:outputText>
                                             </div>
                                         </h:outputText>
                                         <h:outputText rendered="#{jobStatusBean.jobStatus.isRunning and not jobStatusBean.jobStatus.hasError}">

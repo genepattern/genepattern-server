@@ -23,6 +23,11 @@ public class GpConfig {
     private static Logger log = Logger.getLogger(GpConfig.class);
 
     /**
+     * When true, display the 'Estimated Queue Time' details for the Congestion Indicator.
+     */
+    public static final String PROP_SHOW_ESTIMATED_QUEUETIME="gp.showEstimatedQueuetime";
+
+    /**
      * Initialize the GenePatternURL from System.property
      * @return
      */
