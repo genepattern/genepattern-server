@@ -1,6 +1,7 @@
 package org.genepattern.server.quota;
 
-import org.apache.commons.fileupload.FileUploadException;
+import javax.xml.bind.annotation.XmlRootElement;
+
 import org.apache.log4j.Logger;
 import org.genepattern.drm.Memory;
 import org.genepattern.server.DbException;
@@ -8,8 +9,6 @@ import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.dm.userupload.dao.UserUploadDao;
-
-import javax.xml.bind.annotation.XmlRootElement;
 
 /**
  * Created by nazaire on 7/10/14.
