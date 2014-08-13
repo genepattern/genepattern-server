@@ -49,7 +49,6 @@ public class Param {
      * @return
      */
     public List<ParamValue> getValues() {
-        //TODO: this createa a new list each time, perhaps there is a better way
         return Collections.unmodifiableList( new ArrayList<ParamValue>( groupedValues.values() ) );
     }
 
