@@ -47,7 +47,6 @@ import org.genepattern.server.user.UserDAO;
 import org.genepattern.server.user.UserProp;
 import org.genepattern.server.user.UserPropKey;
 import org.genepattern.server.webapp.rest.api.v1.Util;
-import org.genepattern.server.webapp.rest.api.v1.job.JobInputValues.Param;
 import org.genepattern.server.webapp.rest.api.v1.job.search.JobSearchLegacy;
 import org.genepattern.server.webapp.rest.api.v1.job.search.SearchQuery;
 import org.genepattern.server.webapp.rest.api.v1.job.search.SearchResults;
@@ -80,14 +79,33 @@ import org.json.JSONObject;
  *      http://127.0.0.1:8080/gp/rest/v1/jobs
  * </pre>
  * 
- * <p>To add a batch of job to the server, use the 'isBatchParam' property.</p>
+ * <p>Optionally set the 'groupId' for modules which accect file group parameters.
  * <pre>
    {
      "lsid":<actualLsid>,
      "params": [
        { "name": <paramName>,
-         "isBatch": <true | false>, //if not set, it means it's not a batch parameter
-         "batchFilter": //if set, this can be used to define a glob patter for matching input files in the given directory
+         "groupId": <groupName1>,
+         "values": [ ... ]
+       },
+       // repeat the paramName for each grouping of input files
+       { "name": <paramName>,
+         "groupId": <groupName2>,
+         "values": [ ... ]
+       }
+     ]
+   }
+
+ * <pre>
+ * 
+ * 
+ * <p>To add a batch of job to the server, use the 'batchParam' property.</p>
+ * <pre>
+   {
+     "lsid":<actualLsid>,
+     "params": [
+       { "name": <paramName>,
+         "batchParam": <true | false>, //if not set, it means it's not a batch parameter
          "values": [ //list of values, for a file input parameter, if the value is for a directory, then ...
          ]
        },
@@ -144,7 +162,7 @@ public class JobsResource {
         final JSONObject rval=new JSONObject();
         try {
             //TODO: add support for batch jobs to REST API
-            final JobInput jobInput=parseJobInput(jobInputValues);
+            final JobInput jobInput= JobInputValues.parseJobInput(jobInputValues);
             final boolean initDefault=true;
             final JobInputApi impl = JobInputApiFactory.createJobInputApi(jobContext, initDefault);
             final String jobId = impl.postJob(jobContext, jobInput);
@@ -188,17 +206,6 @@ public class JobsResource {
         }
     }
     
-    private JobInput parseJobInput(final JobInputValues jobInputValues) {
-        JobInput jobInput=new JobInput();
-        jobInput.setLsid(jobInputValues.lsid);
-        for(final Param param : jobInputValues.params) {
-            for(final String value : param.values) {
-                jobInput.addValue(param.name, value, param.batchParam);
-            }
-        }
-        return jobInput;
-    }
-
     /////////////////////////////////////
     // Job search API
     /////////////////////////////////////

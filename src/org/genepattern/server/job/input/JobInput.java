@@ -86,6 +86,17 @@ public class JobInput {
         final ParamId paramId = new ParamId(name);
         addValue(paramId, value, GroupId.EMPTY, batchParam);
     }
+    
+    public void addValue(final String name, final String value, final String groupName, final boolean batchParam) {
+        GroupId groupId;
+        if (groupName==null) {
+            groupId=GroupId.EMPTY;
+        }
+        else {
+            groupId=new GroupId(groupName);
+        }
+        addValue(new ParamId(name), value, groupId, batchParam);
+    }
 
     public void addValue(final ParamId id, final String value, final GroupId groupId, final boolean batchParam) {
         if (id==null) {

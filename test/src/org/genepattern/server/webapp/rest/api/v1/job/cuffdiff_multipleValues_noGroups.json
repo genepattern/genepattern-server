@@ -1,0 +1,10 @@
+{"lsid":"urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00236:7",
+ "params": [
+   { "name": "aligned.files", "values": [  
+       "http://127.0.0.1:8080/gp/users/test/01.bam",
+       "http://127.0.0.1:8080/gp/users/test/02.bam",
+       "http://127.0.0.1:8080/gp/users/test/03.bam"
+      ] 
+   }
+  ]
+}
