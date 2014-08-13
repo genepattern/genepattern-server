@@ -22,15 +22,6 @@ import com.google.common.collect.ImmutableList;
 public class GpConfig {
     private static Logger log = Logger.getLogger(GpConfig.class);
 
-    private final URL genePatternURL;
-    private final String genePatternVersion;
-    private final File resourcesDir;
-    private final List<Throwable> initErrors;
-    private final GpRepositoryProperties repoConfig;
-    private final GpServerProperties serverProperties;
-    private final ConfigYamlProperties yamlProperties;
-    private final File configFile;
-
     /**
      * Initialize the GenePatternURL from System.property
      * @return
@@ -68,6 +59,17 @@ public class GpConfig {
             .resourcesDir(resourcesDir)
             .build();
     }
+
+    private final URL genePatternURL;
+    private final String genePatternVersion;
+    private final File resourcesDir;
+    private final List<Throwable> initErrors;
+    private final GpRepositoryProperties repoConfig;
+    private final GpServerProperties serverProperties;
+    private final ConfigYamlProperties yamlProperties;
+    private final File configFile;
+    // config helper method
+    private final ValueLookup valueLookup;
 
     public GpConfig(final Builder in) {
         this.resourcesDir=in.resourcesDir;
@@ -141,9 +143,6 @@ public class GpConfig {
         return resourcesDir;
     }
 
-    // config helper method
-    private final ValueLookup valueLookup;
-    
     public Value getValue(final GpContext context, final String key) {
         if (valueLookup==null) {
             return null;
