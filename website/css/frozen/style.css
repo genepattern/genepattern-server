@@ -1060,7 +1060,8 @@ strong.filtered-number
 }
 
 .congestion-yellow {
-    color: rgb(192, 192, 0);
+    /* color: rgb(192, 192, 0); */ /* actually yellow */
+    color: rgb(235,182,48); /* orange is the new yellow */
 }
 
 .congestion-red {
